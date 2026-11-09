@@ -340,6 +340,10 @@ extern double segment_distance_exact_bounded(const double *a,
 extern double point_motion_nad_exact(const double *p0, const double *p1,
   int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
   int64 ta, int64 tb);
+extern double point_motion_edges_distance_at(const double *p0,
+  const double *p1, int64 s0, int64 s1, int64 t, Edge **edges, int nedges);
+extern bool point_motion_in_polygon_at(const double *p0, const double *p1,
+  int64 s0, int64 s1, int64 t, Edge **edges, int nedges);
 extern bool translation_is_exact(const double *b, int nb, const double *p);
 extern double convex_motion_nad_exact(const double *b, int nb,
   const double *p0, const double *p1, const double *g, int ng);

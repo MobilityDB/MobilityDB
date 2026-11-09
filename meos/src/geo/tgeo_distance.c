@@ -2909,19 +2909,7 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
     bool native = geom->type != POINTTYPE && geom_meos_coverage(geom) == 1;
     lwgeom_free(geom);
     if (native)
-    {
-      /* The kernel compares the squares of the coordinate differences in
-       * doubles (#point_edge_dist2), which leave the doubles where a
-       * coordinate reaches 2^510 */
-      if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >= 0x1p510)
-      {
-        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-          "The temporal distance of a temporal point to a geometry with a "
-          "coordinate of magnitude 2^510 or more is not supported");
-        return NULL;
-      }
       return tpoint_linear_distance_geom(temp, gs);
-    }
   }
 
   /* A temporal geometry point with linear interpolation and a point */

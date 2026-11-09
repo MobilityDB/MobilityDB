@@ -4368,45 +4368,190 @@ wide_segment_meet(const WidePoint *a, const WidePoint *b, const WidePoint *c,
 }
 
 /**
- * @brief Return the double nearest the distance of the point @p p to the
- * closed segment from @p a to @p b
+ * @brief Set the exact squared distance of the point @p p to the closed
+ * segment from @p a to @p b as the quotient @p n over @p d
  * @details With `w = p - a` and `u = b - a`, the nearest point is the end
  * `a` where `w . u <= 0` or `u` is zero, the end `b` where `w . u >= u . u`,
  * and otherwise the foot of the perpendicular, at the squared distance
  * `(w x u)^2 / (u . u)`. Each is a rational of degree at most four in the
- * exact coordinates, answered as the double nearest its root
- * (#wide_dyadic_nearest_root), as #point_segment_shortestline_exact reads it
+ * exact coordinates
  */
-static double
-wide_point_segment_distance(const WidePoint *p, const WidePoint *a,
-  const WidePoint *b)
+static void
+wide_point_segment_square(const WidePoint *p, const WidePoint *a,
+  const WidePoint *b, WideDyadic *n, WideDyadic *d)
 {
-  WideDyadic ux, uy, wx, wy, t1, t2, n, d, one;
-  wide_dyadic_set_double(&one, 1.0);
+  WideDyadic ux, uy, wx, wy, t1, t2, dot, len2;
   wide_dyadic_sub(&b->x, &a->x, &ux); wide_dyadic_sub(&b->y, &a->y, &uy);
   wide_dyadic_sub(&p->x, &a->x, &wx); wide_dyadic_sub(&p->y, &a->y, &wy);
   wide_dyadic_mul(&wx, &ux, &t1); wide_dyadic_mul(&wy, &uy, &t2);
-  wide_dyadic_add(&t1, &t2, &n);
+  wide_dyadic_add(&t1, &t2, &dot);
   wide_dyadic_mul(&ux, &ux, &t1); wide_dyadic_mul(&uy, &uy, &t2);
-  wide_dyadic_add(&t1, &t2, &d);
-  if (d.sign != 0 && n.sign > 0 && wide_dyadic_cmp(&n, &d) >= 0)
+  wide_dyadic_add(&t1, &t2, &len2);
+  if (len2.sign != 0 && dot.sign > 0 && wide_dyadic_cmp(&dot, &len2) >= 0)
   {
     /* The nearest point is the end b */
     wide_dyadic_sub(&p->x, &b->x, &wx); wide_dyadic_sub(&p->y, &b->y, &wy);
   }
-  else if (d.sign != 0 && n.sign > 0)
+  else if (len2.sign != 0 && dot.sign > 0)
   {
     /* The nearest point is the foot of the perpendicular */
     WideDyadic x;
     wide_dyadic_mul(&wx, &uy, &t1); wide_dyadic_mul(&wy, &ux, &t2);
     wide_dyadic_sub(&t1, &t2, &x);
-    wide_dyadic_mul(&x, &x, &n);
-    return wide_dyadic_nearest_root(&n, &d);
+    wide_dyadic_mul(&x, &x, n);
+    *d = len2;
+    return;
   }
   /* The nearest point is an end, at the offset (wx, wy) */
   wide_dyadic_mul(&wx, &wx, &t1); wide_dyadic_mul(&wy, &wy, &t2);
-  wide_dyadic_add(&t1, &t2, &n);
-  return wide_dyadic_nearest_root(&n, &one);
+  wide_dyadic_add(&t1, &t2, n);
+  wide_dyadic_set_double(d, 1.0);
+  return;
+}
+
+/**
+ * @brief Return the double nearest the distance of the point @p p to the
+ * closed segment from @p a to @p b
+ * @details The exact square of #wide_point_segment_square, answered as the
+ * double nearest its root (#wide_dyadic_nearest_root), as
+ * #point_segment_shortestline_exact reads it
+ */
+static double
+wide_point_segment_distance(const WidePoint *p, const WidePoint *a,
+  const WidePoint *b)
+{
+  WideDyadic n, d;
+  wide_point_segment_square(p, a, b, &n, &d);
+  return wide_dyadic_nearest_root(&n, &d);
+}
+
+/**
+ * @brief Set @p r to the point (@p x, @p y) times @p k, exactly, as
+ * #wide_point_sum sets a sum
+ */
+static void
+wide_point_scaled(WidePoint *r, double x, double y, const WideDyadic *k)
+{
+  WideDyadic v;
+  wide_dyadic_set_double(&v, x);
+  wide_dyadic_mul(&v, k, &r->x);
+  wide_dyadic_set_double(&v, y);
+  wide_dyadic_mul(&v, k, &r->y);
+  return;
+}
+
+/**
+ * @brief Set @p q to the point at the integer timestamp @p t of the point
+ * moving linearly from @p p0 at @p s0 to @p p1 at @p s1, times `D = s1 - s0`,
+ * and @p D to that integer
+ * @details `Q = (s1 - t) p0 + (t - s0) p1`, a sum of products of integers and
+ * input doubles held exactly, as #point_motion_squares holds a position, so
+ * none is formed between the instants
+ */
+static void
+point_motion_at_scaled(const double *p0, const double *p1, int64 s0,
+  int64 s1, int64 t, WidePoint *q, WideDyadic *D)
+{
+  WideDyadic K0, K1;
+  WidePoint q0, q1;
+  wide_dyadic_set_int(D, s1 - s0);
+  wide_dyadic_set_int(&K0, s1 - t);
+  wide_dyadic_set_int(&K1, t - s0);
+  wide_point_scaled(&q0, p0[0], p0[1], &K0);
+  wide_point_scaled(&q1, p1[0], p1[1], &K1);
+  wide_dyadic_add(&q0.x, &q1.x, &q->x);
+  wide_dyadic_add(&q0.y, &q1.y, &q->y);
+  return;
+}
+
+/**
+ * @brief Return the double nearest the least distance, at the integer
+ * timestamp @p t, of a point moving linearly from @p p0 at @p s0 to @p p1 at
+ * @p s1 to the edges of a geometry of segments
+ * @details The point at @p t is `Q / D` (#point_motion_at_scaled), and its
+ * distance to a segment `[a, b]` that of `Q` to `[D a, D b]` over `D`: the
+ * exact square `n / d` of #wide_point_segment_square divided by `D^2`,
+ * answered as the double nearest its root (#wide_dyadic_nearest_root).
+ * Rounding to the nearest is monotone, so the least of those doubles is the
+ * double nearest the least distance. The interior of a polygon is not read
+ * here (#point_motion_in_polygon_at)
+ * @param[in] p0,p1,s0,s1 Segment of the point and its timestamps
+ * @param[in] t Timestamp, within the segment
+ * @param[in] edges,nedges Edges, each a point, a segment of a line or a
+ * segment of a polygon ring whose ends are its doubles
+ * @pre `s0 < s1`, `s0 <= t <= s1`, `nedges > 0`
+ */
+double
+point_motion_edges_distance_at(const double *p0, const double *p1, int64 s0,
+  int64 s1, int64 t, Edge **edges, int nedges)
+{
+  assert(p0); assert(p1); assert(edges); assert(nedges > 0);
+  assert(s0 < s1); assert(s0 <= t); assert(t <= s1);
+  WideDyadic D, D2, n, d, dd;
+  WidePoint q, a, b;
+  point_motion_at_scaled(p0, p1, s0, s1, t, &q, &D);
+  wide_dyadic_mul(&D, &D, &D2);
+  double best = DBL_MAX;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    assert(e->etype == EDGE_POINT || e->etype == EDGE_LINESEG ||
+      e->etype == EDGE_POLYSEG);
+    wide_point_scaled(&a, e->x1, e->y1, &D);
+    if (e->etype == EDGE_POINT)
+      b = a;
+    else
+      wide_point_scaled(&b, e->x2, e->y2, &D);
+    wide_point_segment_square(&q, &a, &b, &n, &d);
+    if (n.sign == 0)
+      return 0.0;
+    wide_dyadic_mul(&d, &D2, &dd);
+    double v = wide_dyadic_nearest_root(&n, &dd);
+    if (v < best)
+      best = v;
+  }
+  return best;
+}
+
+/**
+ * @brief Return true if the point at the integer timestamp @p t of the point
+ * moving linearly from @p p0 at @p s0 to @p p1 at @p s1 is inside a polygon
+ * of the edges, the point on none of them
+ * @details The point is `Q / D` (#point_motion_at_scaled), and the horizontal
+ * ray from it crosses the rings an odd number of times, each crossing read as
+ * #point_in_polygon_vertex reads one, by exact signs (#wide_point_orient) on
+ * `Q` and the ends of the edges times `D`
+ * @param[in] p0,p1,s0,s1 Segment of the point and its timestamps
+ * @param[in] t Timestamp, within the segment
+ * @param[in] edges,nedges Edges, the segments of polygon rings among them
+ * whose ends are their doubles
+ * @pre `s0 < s1`, `s0 <= t <= s1`
+ */
+bool
+point_motion_in_polygon_at(const double *p0, const double *p1, int64 s0,
+  int64 s1, int64 t, Edge **edges, int nedges)
+{
+  assert(p0); assert(p1); assert(edges);
+  assert(s0 < s1); assert(s0 <= t); assert(t <= s1);
+  WideDyadic D;
+  WidePoint q, a, b;
+  point_motion_at_scaled(p0, p1, s0, s1, t, &q, &D);
+  bool inside = false;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->etype != EDGE_POLYSEG)
+      continue;
+    wide_point_scaled(&a, e->x1, e->y1, &D);
+    wide_point_scaled(&b, e->x2, e->y2, &D);
+    bool above1 = wide_dyadic_cmp(&a.y, &q.y) > 0;
+    bool above2 = wide_dyadic_cmp(&b.y, &q.y) > 0;
+    if (above1 == above2)
+      continue;
+    int s = wide_point_orient(&a, &b, &q);
+    inside ^= (e->y2 > e->y1) ? (s > 0) : (s < 0);
+  }
+  return inside;
 }
 
 /**
