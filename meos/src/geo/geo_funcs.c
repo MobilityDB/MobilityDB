@@ -19390,8 +19390,11 @@ geo_force2d_intl(const GSERIALIZED *gs)
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWGEOM *flat = lwgeom_force_2d(geom);
-  /* The function builds the result from the dimensions alone */
-  lwgeom_set_geodetic(flat, FLAGS_GET_GEODETIC(geom->flags));
+  /* The function builds the result from the dimensions alone, so a geodetic
+   * value is flagged again; a planar one, which can be of a type such as a
+   * polyhedral surface that #lwgeom_set_geodetic does not walk, needs no flag */
+  if (FLAGS_GET_GEODETIC(geom->flags))
+    lwgeom_set_geodetic(flat, true);
   lwgeom_free(geom);
   GSERIALIZED *result = geo_serialize(flat);
   lwgeom_free(flat);
@@ -19410,8 +19413,11 @@ geo_force3d_intl(const GSERIALIZED *gs, double zvalue)
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWGEOM *lifted = lwgeom_force_3dz(geom, zvalue);
-  /* The function builds the result from the dimensions alone */
-  lwgeom_set_geodetic(lifted, FLAGS_GET_GEODETIC(geom->flags));
+  /* The function builds the result from the dimensions alone, so a geodetic
+   * value is flagged again; a planar one, which can be of a type such as a
+   * polyhedral surface that #lwgeom_set_geodetic does not walk, needs no flag */
+  if (FLAGS_GET_GEODETIC(geom->flags))
+    lwgeom_set_geodetic(lifted, true);
   lwgeom_free(geom);
   GSERIALIZED *result = geo_serialize(lifted);
   lwgeom_free(lifted);
