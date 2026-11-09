@@ -2503,6 +2503,15 @@ buffer_node_byx_cmp(const BufferNodeByX *n1, const BufferNodeByX *n2)
 #define ST_DEFINE
 #include "port/sort_template.h"
 
+/* Sort the candidates of a box read into ascending node order */
+#define ST_SORT buffer_node_id_sort
+#define ST_ELEMENT_TYPE uint32_t
+#define ST_COMPARE(a, b) ((*(a) > *(b)) - (*(a) < *(b)))
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
+
 /**
  * @brief The ends of a ring's boundary pieces, read by the node they sit at
  * @details Chaining a ring asks, once per step, which unused piece continues
@@ -2803,6 +2812,8 @@ buffer_intersections_add_all(const MeosArray *points, MeosArray *nodes)
 /**
  * @brief Gather one node of an index into the candidates of a box read,
  * where it stands in the box and has not been gathered yet
+ * @details The candidates are appended; #buffer_node_index_box sorts them
+ * once they are all gathered
  */
 static inline void
 buffer_node_index_gather(BufferNodeIndex *ix, uint32_t at, double xmin,
@@ -2814,14 +2825,7 @@ buffer_node_index_gather(BufferNodeIndex *ix, uint32_t at, double xmin,
   if (ix->stamp[node->id] == ix->gen)
     return;
   ix->stamp[node->id] = ix->gen;
-  /* Ascending order, by insertion */
-  uint32_t k = (*n)++;
-  while (k > 0 && ix->cand[k - 1] > node->id)
-  {
-    ix->cand[k] = ix->cand[k - 1];
-    k--;
-  }
-  ix->cand[k] = node->id;
+  ix->cand[(*n)++] = node->id;
   return;
 }
 
@@ -2832,7 +2836,9 @@ buffer_node_index_gather(BufferNodeIndex *ix, uint32_t at, double xmin,
  * to cover whatever a node may stand off it by. The cells it spans are read
  * whole, so the answer holds every node of the box and some beyond it, which
  * the caller's own test then decides, and it is reported in ASCENDING NODE
- * ORDER, the order the nodes themselves stand in.
+ * ORDER, the order the nodes themselves stand in. A long piece gathers
+ * many nodes, so they are appended as found and sorted once, never shifted
+ * into place one at a time as #buffer_node_index_at places its handful.
  * @param[in,out] ix Index to read
  * @param[in] xmin,ymin,xmax,ymax Box to read it over
  * @param[out] ncand Nodes gathered
@@ -2889,6 +2895,7 @@ buffer_node_index_box(BufferNodeIndex *ix, double xmin, double ymin,
       buffer_node_index_gather(ix, ix->byx[k].at, xmin, ymin, xmax, ymax, &n);
     for (uint32_t k = 0; k < ix->nnanx; k++)
       buffer_node_index_gather(ix, ix->nanx[k], xmin, ymin, xmax, ymax, &n);
+    buffer_node_id_sort(ix->cand, n);
     *ncand = n;
     return ix->cand;
   }
@@ -2902,14 +2909,9 @@ buffer_node_index_box(BufferNodeIndex *ix, double xmin, double ymin,
       if (ix->stamp[node->id] == ix->gen)
         continue;
       ix->stamp[node->id] = ix->gen;
-      uint32_t k = n++;
-      while (k > 0 && ix->cand[k - 1] > node->id)
-      {
-        ix->cand[k] = ix->cand[k - 1];
-        k--;
-      }
-      ix->cand[k] = node->id;
+      ix->cand[n++] = node->id;
     }
+    buffer_node_id_sort(ix->cand, n);
     *ncand = n;
     return ix->cand;
   }
@@ -2928,16 +2930,11 @@ buffer_node_index_box(BufferNodeIndex *ix, double xmin, double ymin,
         if (node->x < xmin || node->x > xmax || node->y < ymin || node->y > ymax)
           continue;
         ix->stamp[node->id] = ix->gen;
-        uint32_t k = n++;
-        while (k > 0 && ix->cand[k - 1] > node->id)
-        {
-          ix->cand[k] = ix->cand[k - 1];
-          k--;
-        }
-        ix->cand[k] = node->id;
+        ix->cand[n++] = node->id;
       }
     }
   }
+  buffer_node_id_sort(ix->cand, n);
   *ncand = n;
   return ix->cand;
 }
