@@ -160,6 +160,13 @@ FROM (SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 40, 2 ^ 40), ST_Point(1, 0),
 -- declined
 SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 60, 2 ^ 60), ST_Point(1, 0),
   ST_Point(1, 1), ST_Point(0, 1)]), sqrt(0.5));
+-- A vessel moored in place: written in doubles, two neighbouring arcs of its
+-- buffer cross again beside the vertex they share, so no ring written in
+-- doubles keeps the shape of the buffer, and it is declined
+SELECT buffer(geometry 'Linestring(12.272387 57.059013,12.272383 57.059013,
+  12.272383 57.059020,12.272385 57.059018,12.272387 57.059015,
+  12.272387 57.059007,12.272385 57.059010,12.272385 57.059012)',
+  4.9999999873762135e-07);
 
 -- The outer side of a turn is filled by the join the style names
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
