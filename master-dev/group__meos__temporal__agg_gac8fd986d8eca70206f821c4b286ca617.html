@@ -176,7 +176,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Transition function of the reachability filter: walk a report. </p>
-<p >The reports arrive in the order of their times. A report is kept when the last kept report could reach it at the maximum speed. The first <a class="el" href="meos_2src_2temporal_2temporal__analytics_8c_a5d0222e10e0a49d0fd83f1886d2e2254.html#a5d0222e10e0a49d0fd83f1886d2e2254" title="Number of the first reports among which the seed of the walk is chosen.">REACH_HEAD</a> reports are held until the seed of the walk is chosen among them; every later report is decided when it arrives. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The reports arrive in the order of their times, and a report at the time of the report before is the same report, which is walked once: it is neither counted nor decided again. A report is kept when the last kept report could reach it at the maximum speed. The first <a class="el" href="meos_2src_2temporal_2temporal__analytics_8c_a5d0222e10e0a49d0fd83f1886d2e2254.html#a5d0222e10e0a49d0fd83f1886d2e2254" title="Number of the first reports among which the seed of the walk is chosen.">REACH_HEAD</a> reports are held until the seed of the walk is chosen among them; every later report is decided when it arrives. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>State, NULL for the first report (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">inst</td><td>Report </td></tr>

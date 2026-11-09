@@ -93,6 +93,7 @@ $(function() {
 <code>#include &lt;utils/float.h&gt;</code><br />
 <code>#include &lt;utils/memutils.h&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
+<code>#include &lt;port/pg_bitutils.h&gt;</code><br />
 <code>#include &quot;liblwgeom.h&quot;</code><br />
 <code>#include &quot;liblwgeom_internal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos_8h_source.html">meos.h</a>&quot;</code><br />
@@ -784,6 +785,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ae26821b51e6a9aa0fda1e201979d01d0"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_ae26821b51e6a9aa0fda1e201979d01d0.html#ae26821b51e6a9aa0fda1e201979d01d0">double_lowest_bit</a> (double a)</td></tr>
 <tr class="memdesc:ae26821b51e6a9aa0fda1e201979d01d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the exponent of the lowest bit a finite double can carry: its unit in the last place, which is 2^-1074 for a subnormal.  <a href="meos_2src_2geo_2geo__funcs_8c_ae26821b51e6a9aa0fda1e201979d01d0.html#ae26821b51e6a9aa0fda1e201979d01d0">More...</a><br /></td></tr>
 <tr class="separator:ae26821b51e6a9aa0fda1e201979d01d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e3ad210b0f228aa45a8ff979610a86c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a6e3ad210b0f228aa45a8ff979610a86c.html#a6e3ad210b0f228aa45a8ff979610a86c">double_lowest_set_bit</a> (double a)</td></tr>
+<tr class="memdesc:a6e3ad210b0f228aa45a8ff979610a86c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the exponent of the lowest set bit of a nonzero finite double, the largest power of two it is a multiple of.  <a href="meos_2src_2geo_2geo__funcs_8c_a6e3ad210b0f228aa45a8ff979610a86c.html#a6e3ad210b0f228aa45a8ff979610a86c">More...</a><br /></td></tr>
+<tr class="separator:a6e3ad210b0f228aa45a8ff979610a86c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae05139d5352f70e02e173ab535f2c277"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_ae05139d5352f70e02e173ab535f2c277.html#ae05139d5352f70e02e173ab535f2c277">double_pow2_exponent</a> (double f)</td></tr>
 <tr class="memdesc:ae05139d5352f70e02e173ab535f2c277"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the exponent of a power of two, the multiplier of a product.  <a href="meos_2src_2geo_2geo__funcs_8c_ae05139d5352f70e02e173ab535f2c277.html#ae05139d5352f70e02e173ab535f2c277">More...</a><br /></td></tr>
 <tr class="separator:ae05139d5352f70e02e173ab535f2c277"><td class="memSeparator" colspan="2">&#160;</td></tr>
