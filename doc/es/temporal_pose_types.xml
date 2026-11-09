@@ -1187,6 +1187,19 @@ SELECT asEWKT(shiftTime(tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01'
 -- PoseChain(Pose(POINT(1 1),0.5))@2001-01-02
 </programlisting>
 			</listitem>
+			<listitem xml:id="tpose_stops">
+				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
+				<para>Extrae las subsecuencias en las que la pose temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stops(tpose,maxdist float=0.0,minduration interval='0 minutes') &#8594; tpose
+</programlisting>
+				<para>El tamaño del área es la mayor distancia entre dos posiciones de la subsecuencia, de modo que una pose que gira en el sitio permanece dentro de ella, y la distancia y los límites de una parada son los que se indican para un punto temporal en <link linkend="tgeo_stops"><varname>stops</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(stops(tpose '[Pose(Point(1 1),0)@2001-01-01,
+  Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
+-- {[Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(1 1),0.5)@2001-01-02]}
+</programlisting>
+			</listitem>
 			<listitem xml:id="tpose_translate">
 				<indexterm significance="normal"><primary><varname>translate</varname></primary></indexterm>
 				<para>Devuelve un valor temporal trasladado por los desplazamientos dados &Z_support;</para>

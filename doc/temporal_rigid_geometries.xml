@@ -488,6 +488,21 @@ SELECT asText(round( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="trgeometry_stops">
+				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
+				<para>Extract the subsequences where the temporal rigid geometry stays within an area with a specified maximum size for at least the given duration</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stops(trgeometry,maxdist float=0.0,minduration interval='0 minutes') &#8594; trgeometry
+</programlisting>
+				<para>The size of the area is the greatest distance between two positions of the pose of the subsequence, so a body that turns in place stays within it, and the distance and the bounds of a stop are as stated for a temporal point in <link linkend="tgeo_stops"><varname>stops</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01,
+  Pose(Point(1 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03, Pose(Point(5 5),0)@2001-01-04]'));
+-- POLYGON((0 0,1 0,1 1,0 0));{[Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(1 1),0)@2001-01-02],
+--   [Pose(POINT(5 5),0)@2001-01-03, Pose(POINT(5 5),0)@2001-01-04]}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="trgeometry_setInterp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Convert between linear and step interpolations</para>

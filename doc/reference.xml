@@ -1634,6 +1634,9 @@
 						<para><link linkend="tpose_round"><varname>round</varname></link>: Round the points and the orientations of the temporal pose to the number of decimal places</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpose_stops"><varname>stops</varname></link>: Extract the subsequences where the temporal pose stays within an area with a specified maximum size for at least the given duration</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpose_translate"><varname>translate</varname></link>: Return a temporal value translated by given offsets &Z_support;</para>
 					</listitem>
 					<listitem>
@@ -2591,6 +2594,9 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trgeometry_round"><varname>round</varname></link>: Round all numeric components to a given number of decimal places</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_stops"><varname>stops</varname></link>: Extract the subsequences where the temporal rigid geometry stays within an area with a specified maximum size for at least the given duration</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_setInterp"><varname>setInterp</varname></link>: Convert between linear and step interpolations</para>
