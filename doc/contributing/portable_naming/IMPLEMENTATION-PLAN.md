@@ -82,6 +82,15 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   empty. Head `707f4121fe` on master `95013f9609` holds its seven receipts (strict, Windows,
   cppcheck, valgrind, smoke, speed, and the CGAL oracle 1111 of 1111). MERGED as MobilityDB #3526
   (`be21561763`).
+- **A temporal point instant made from the coordinates of a point writes its point in place**,
+  outside the plan, as the owner decided on 2026-11-09 ("go ahead with the shared point-instant
+  constructor"): the internal `tpointinst_make_coords` in `meos/src/geo/tgeo.c`, declared in
+  `meos/include/geo/tgeo_spatialfuncs.h`, which no installed header carries, makes the instants of
+  `tpointseq_make_coords` and of the conversion of a temporal network point, so
+  branch `perf/point-instant-constructor` rewrites `be21561763` and rewrites `dd6c9ed0ef` there,
+  the body of `route_point_tinstant` of `meos/src/npoint/tnpoint.c`, which calls it. Head
+  `c5ad53e9d3` on master `ce031c35b9` holds its seven receipts (strict, Windows, cppcheck,
+  valgrind, smoke, speed, and the CGAL oracles npoint-conv and npoint-disc 1111 of 1111).
 - **Each enumeration a host passes to MEOS names its values as text through one pair,
   `<enum lowercased>_name` and `<enum lowercased>_from_string`**, outside the plan, as the owner
   decided on 2026-11-08 ("approve the rewrite"): the pair of `MeosPixType` takes that name, so
