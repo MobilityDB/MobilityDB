@@ -398,12 +398,27 @@ SELECT tpcboxFromHexEWKB(replace(asHexEWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000'
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(tpcbox,maxdecimaldigits integer=15) → text
 </programlisting>
-					<para>The <varname>maxdecimaldigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
+					<para>The <varname>maxdecimaldigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15). As for every spatial type, the text of a <varname>tpcbox</varname> does not write its SRID, which <varname>asEWKT</varname> writes.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpcbox 'TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)');
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
 SELECT asText(tpcbox 'TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)', 1);
 -- TPCBOX(X((0.1,1.2),(2.4,3.5)), 1)
+SELECT asText(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+-- TPCBOX(X((0,0),(10,10)), 5)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_asEWKT">
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Return the Extended Well-Known Text (EWKT) representation of a point cloud box</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asEWKT(tpcbox,maxdecimaldigits integer=15) → text
+</programlisting>
+					<para>The result is the text <varname>asText</varname> writes prefixed with the SRID of the box, as every spatial type writes its SRID in its extended representation.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+-- SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
 </programlisting>
 				</listitem>
 
@@ -417,6 +432,19 @@ tpcboxFromText(text) → tpcbox
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcboxFromText('TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]), 1)');
 -- TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]), 1)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcboxFromEWKT">
+					<indexterm significance="normal"><primary><varname>tpcboxFromEWKT</varname></primary></indexterm>
+					<para>Input of a point cloud box from the Extended Well-Known Text (EWKT) representation</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcboxFromEWKT(text) → tpcbox
+</programlisting>
+					<para>The function is the inverse of <varname>asEWKT</varname>, reading the SRID the text states.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcboxFromEWKT('SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+-- SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
 </programlisting>
 				</listitem>
 			</itemizedlist>

@@ -397,12 +397,27 @@ SELECT tpcboxFromHexEWKB(replace(asHexEWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000'
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(tpcbox,maxdecimaldigits integer=15) → text
 </programlisting>
-					<para>El argumento <varname>maxdecimaldigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
+					<para>El argumento <varname>maxdecimaldigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15). Como para todo tipo espacial, el texto de un <varname>tpcbox</varname> no escribe su SRID, que escribe <varname>asEWKT</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpcbox 'TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)');
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
 SELECT asText(tpcbox 'TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)', 1);
 -- TPCBOX(X((0.1,1.2),(2.4,3.5)), 1)
+SELECT asText(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+-- TPCBOX(X((0,0),(10,10)), 5)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_asEWKT">
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Devuelve la representación de texto conocido extendido (EWKT) de un cuadro de nube de puntos</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asEWKT(tpcbox,maxdecimaldigits integer=15) → text
+</programlisting>
+					<para>El resultado es el texto que escribe <varname>asText</varname> precedido del SRID del cuadro, como todo tipo espacial escribe su SRID en su representación extendida.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+-- SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
 </programlisting>
 				</listitem>
 
@@ -416,6 +431,19 @@ tpcboxFromText(text) → tpcbox
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcboxFromText('TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]), 1)');
 -- TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]), 1)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcboxFromEWKT">
+					<indexterm significance="normal"><primary><varname>tpcboxFromEWKT</varname></primary></indexterm>
+					<para>Entrada de un cuadro de nube de puntos desde la representación de texto conocido extendido (EWKT)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcboxFromEWKT(text) → tpcbox
+</programlisting>
+					<para>La función es la inversa de <varname>asEWKT</varname> y lee el SRID que indica el texto.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcboxFromEWKT('SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+-- SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
 </programlisting>
 				</listitem>
 			</itemizedlist>

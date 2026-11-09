@@ -77,12 +77,17 @@ CREATE TYPE tpcbox (
 /******************************************************************************
  * Text and Well-Known Binary representations
  *
- * A tpcbox writes its SRID in its text form, as an stbox does, so it takes no
- * EWKT form; its binary forms are those of every spatial type, the plain WKB
- * without the SRID and the EWKB with it.
+ * A tpcbox writes its text without its SRID and its EWKT with it, as every
+ * spatial type does; its binary forms are those of every spatial type, the
+ * plain WKB without the SRID and the EWKB with it.
  ******************************************************************************/
 
 CREATE FUNCTION tpcboxFromText(text)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpcbox_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpcboxFromEWKT(text)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_from_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -110,6 +115,11 @@ CREATE FUNCTION tpcboxFromHexEWKB(text)
 CREATE FUNCTION asText(tpcbox, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tpcbox_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKT(tpcbox, maxdecimaldigits integer DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tpcbox_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(tpcbox, endian text DEFAULT '')
