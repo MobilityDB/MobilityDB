@@ -49,6 +49,7 @@
 #include "temporal/tcellindex.h"
 #include "temporal/tbox.h"
 #include "temporal/temporal.h"
+#include "temporal/type_inout.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
@@ -3422,6 +3423,23 @@ type_from_wkb_read(const uint8_t *wkb, size_t size, MeosType type)
   /* After consuming the endian flag, set the component flag a true so when
    * reading the base types there is no endian flag */
 
+  /* A value whose body does not state its type carries it in its header,
+   * which must be the type asked for, as #span_from_wkb_state refuses a
+   * foreign span type */
+  if (wkb_header_states_type(type))
+  {
+    int16_t wkb_type = int16_from_wkb_state(&s);
+    if (s.error)
+      return 0;
+    if (wkb_type != (int16_t) type)
+    {
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "Invalid type code in WKB string: %d, the WKB of a %s states %d",
+        wkb_type, meostype_name(type), (int) type);
+      return 0;
+    }
+  }
+
   /* Call the type-specific function */
   s.type = type;
   if (set_type(type))
@@ -3541,11 +3559,10 @@ type_from_hexwkb(const char *hexwkb, size_t size, MeosType type)
  * @ingroup meos_internal_setspan_inout
  * @brief Return the MEOS type tag encoded in the header of a hex-encoded
  * Well-Known Binary (WKB) string, without parsing the whole value
- * @details Sets, spans, span sets, and temporal values write their concrete
- * @p MeosType as a 16-bit tag immediately after the endian flag; this function
+ * @details Every value of MEOS writes its concrete @p MeosType as a 16-bit
+ * tag immediately after the endian flag, the point cloud values and the
+ * Raquet tiles excepted, whose WKB is that of their own format; this function
  * peeks that tag so a caller can dispatch on the concrete type at runtime.
- * Temporal boxes (@p tbox, @p stbox) carry no in-band type tag in their WKB
- * header, so they are not supported by this function.
  * @param[in] hexwkb HexWKB string
  * @return The concrete @p MeosType, or @p T_UNKNOWN when @p hexwkb is null,
  * shorter than a header, not a string of hexadecimal digit pairs, has an
