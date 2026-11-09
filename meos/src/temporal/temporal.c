@@ -4706,6 +4706,28 @@ temporal_stops(const Temporal *temp, double maxdist,
     return result;
   }
 #endif
+#if RGEO
+  /* A temporal rigid geometry stays where its pose stays, and a subsequence of
+   * it keeps its reference geometry: its stops are those of its temporal
+   * pose, restricted to the temporal rigid geometry */
+  if (temp->temptype == T_TRGEOMETRY)
+  {
+    Temporal *tpose = trgeometry_to_tpose(temp);
+    if (! tpose)
+      return NULL;
+    TSequenceSet *stops = temporal_stops(tpose, maxdist, minduration);
+    pfree(tpose);
+    if (! stops)
+      return NULL;
+    SpanSet *times = temporal_time((Temporal *) stops);
+    pfree(stops);
+    /* The restriction of a continuous value to a span set is a sequence set */
+    TSequenceSet *result = (TSequenceSet *) temporal_restrict_tstzspanset(temp,
+      times, REST_AT);
+    pfree(times);
+    return result;
+  }
+#endif
   if (temp->subtype == TSEQUENCE)
     return tsequence_stops((TSequence *) temp, maxdist, mintunits);
   else /* temp->subtype == TSEQUENCESET */

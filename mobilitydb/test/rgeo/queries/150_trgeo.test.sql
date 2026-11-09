@@ -729,3 +729,14 @@ FROM (SELECT unnest(merge(
 SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeogpoint);
 SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeography);
 SELECT trgeometry 'SRID=3857;Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeography;
+
+-------------------------------------------------------------------------------
+-- stops: the size of the area is the greatest distance between two positions
+-------------------------------------------------------------------------------
+
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03, Pose(Point(5 5),0)@2001-01-04]'));
+-- A body that turns in place stays at its position
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1.5 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03]', 1.0, '1 day'));
+/* Errors */
+SELECT stops(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(5 5),0)@2001-01-02]');
