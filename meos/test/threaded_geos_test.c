@@ -83,6 +83,9 @@ worker(void *arg)
   worker_arg *w = (worker_arg *) arg;
 
   meos_initialize();
+  /* A failing call answers NULL and is counted, rather than ending the
+   * process, as in every host binding MEOS */
+  meos_initialize_noexit_error_handler();
   meos_initialize_timezone("UTC");
 
   /* A unique polygon per thread; a point that is always inside it. */
