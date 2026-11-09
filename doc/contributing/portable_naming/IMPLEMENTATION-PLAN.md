@@ -154,8 +154,15 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `feat/mvtgeom-answers-the-geometry`, MobilityDB #3525, MERGED as `941963ce46` (2026-11-09),
   rewrites `2ed568d922`, the declaration of
   `tpoint_as_mvtgeom` in `meos_geo.h` that answered a bool and wrote the geometry through
-  `GSERIALIZED **gsarr`. Snapping to integers and keeping a point on the tile origin follow in
-  their own pull request.
+  `GSERIALIZED **gsarr`.
+- **The tile coordinates of a temporal point are the ones PostGIS `ST_AsMVTGeom` computes**, as
+  the owner ruled on 2026-11-08 ("snap to integers as PostGIS does", "fix it in the snapping PR",
+  "keep it as a point") and on 2026-11-09 ("include the border in the same PR"): branch
+  `fix/mvtgeom-snaps-to-integers` gives `tpoint_mvt` a grid of cell size 1, so the coordinates
+  are integers; keeps a point snapped to the tile origin after the second instant, which
+  `tpointseq_grid` compared against a zeroed previous point; keeps a sequence left with one
+  instant as that point at its time, rather than dropping it; and clips with the border
+  included, so a point on the right or bottom edge of the tile is kept.
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
