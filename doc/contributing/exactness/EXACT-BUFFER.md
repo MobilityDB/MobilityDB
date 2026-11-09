@@ -165,6 +165,15 @@ items).
   reads 0.636, 0.284 and 0.451 on lines at distances 1, 50 and 500, and every one of the ten buffer cells
   stands at parity, 0.996 at its closest. That witness samples points, so the rings as written stay for
   the certificate above, whose earlier runs refuse those of 51 guard rows and 4 AIS rows.
+  By the owner's decision of 2026-11-09, step 17 carries the certificate for the buffers of lines,
+  which it adds. Where the certificate fails, that buffer is declined. With the certificate on, on
+  the head of #3532, the line cells read 0.728, 0.274 and 0.437. Its certificate is earned by three
+  things: the case of neighbours with an arc closed in the lemma, CGAL refusing none of the written
+  rings on the guard, straight and AIS line corpora, and speed on all ten buffer cells.
+- **The certificate of polygon buffers** is a future task. The buffers of polygons are on master and
+  write their rings with no certificate. Applied to them as it stands, the certificate reads 1.313
+  and 1.120 on natural areas at distances 1 and 50, 1.004 on the joints and 1.017 on the jittered
+  holes. Its restructure into the arrangement's own passes, stated above, comes first.
 - **Step 20** is branch `geo/buffer-exact-mitre-bevel` at `07a8b90b61`, blocked on speed as its
   row states. **Step 16** is branch `fix/relate-areas-on-the-noded-arrangement` at `236793af75`,
   one commit on master `d043de2e04`. Neither is on GitHub.
