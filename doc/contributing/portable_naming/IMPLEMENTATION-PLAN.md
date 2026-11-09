@@ -90,7 +90,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   branch `perf/point-instant-constructor` rewrites `be21561763` and rewrites `dd6c9ed0ef` there,
   the body of `route_point_tinstant` of `meos/src/npoint/tnpoint.c`, which calls it. Head
   `c5ad53e9d3` on master `ce031c35b9` holds its seven receipts (strict, Windows, cppcheck,
-  valgrind, smoke, speed, and the CGAL oracles npoint-conv and npoint-disc 1111 of 1111).
+  valgrind, smoke, speed, and the CGAL oracles npoint-conv and npoint-disc 1111 of 1111). MERGED
+  as MobilityDB #3534 (`292c30ef2c`).
 - **Each enumeration a host passes to MEOS names its values as text through one pair,
   `<enum lowercased>_name` and `<enum lowercased>_from_string`**, outside the plan, as the owner
   decided on 2026-11-08 ("approve the rewrite"): the pair of `MeosPixType` takes that name, so
