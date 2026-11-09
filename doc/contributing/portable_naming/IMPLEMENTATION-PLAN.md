@@ -140,7 +140,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   their count, as the owner ruled on 2026-11-08 ("reshape"), so the object layers generated from
   the catalog read it as they read every value answered beside an array (row B24 of
   `BINDINGS-PLAN.md`, and MEOS.NET's `TPoint.asMVTGeom`): branch
-  `feat/mvtgeom-answers-the-geometry` rewrites `2ed568d922`, the declaration of
+  `feat/mvtgeom-answers-the-geometry`, MobilityDB #3525 (`591b846a42` on master `95013f9609`,
+  strict-ci, cppcheck, Windows, valgrind and smoke receipts), rewrites `2ed568d922`, the declaration of
   `tpoint_as_mvtgeom` in `meos_geo.h` that answered a bool and wrote the geometry through
   `GSERIALIZED **gsarr`. Snapping to integers and keeping a point on the tile origin follow in
   their own pull request.
