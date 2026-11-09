@@ -2590,6 +2590,9 @@
 					<para><link linkend="trgeometry_stops"><varname>stops</varname></link>: Extrae las subsecuencias en las que la geometría rígida temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="trgeometry_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transforma a un identificador de referencia espacial</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="trgeometry_setInterp"><varname>setInterp</varname></link>: Convierte entre interpolaciones lineal y escalonada</para>
 				</listitem>
 				<listitem>

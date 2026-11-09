@@ -502,6 +502,23 @@ SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="trgeometry_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
+				<para>Transforma a un identificador de referencia espacial</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform(trgeometry,integer) &#8594; trgeometry
+transformPipeline(trgeometry,pipeline text,srid integer,
+  is_forward boolean=true) &#8594; trgeometry
+</programlisting>
+				<para>La geometría de referencia es la forma del cuerpo en su propio marco, que un cambio del sistema de referencia de las poses deja como está. Las poses se transforman como las de una <link linkend="tpose_transform"><varname>tpose</varname></link>, y cada orientación gira el ángulo entre los dos sistemas en su posición, de modo que el cuerpo conserva su forma y mira en la misma dirección sobre el terreno. El cuerpo se sitúa en el plano del sistema de referencia de sus poses, por lo que el sistema de destino no es geográfico.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(round(transform(trgeometry 'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));
+  Pose(Point(4.35 50.85), 0.5)@2001-01-01', 32631), 3));
+-- SRID=32631;POLYGON((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(POINT(595032.295 5634012.833),0.518)@2001-01-01
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="trgeometry_setInterp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Convierte entre interpolaciones lineal y escalonada</para>

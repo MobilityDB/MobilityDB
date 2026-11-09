@@ -5,14 +5,55 @@ SELECT SRID(trgeometry
  4326
 (1 row)
 
+SELECT asEWKT(round(transform(trgeometry
+  'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));[Pose(Point(4.35 50.85), 0.5)@2001-01-01, Pose(Point(4.36 50.86), 0.6)@2001-01-02]',
+  3812), 3));
+                                                                                            asewkt                                                                                             
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;POLYGON((-10 -5,50 -5,50 5,-10 5,-10 -5));[Pose(POINT(648679.018 671067.056),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(649383.21 672179.417),0.6)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(degrees(valueAtTimestamp(yaw(transform(trgeometry
+  'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(12 45), 0)@2001-01-01',
+  32632)), '2001-01-01')), 4),
+  round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(12 45),0)', 32632))), 4);
+ round  | round  
+--------+--------
+ 2.1223 | 2.1223
+(1 row)
+
+SELECT round(ST_Area(valueAtTimestamp(transform(trgeometry
+  'SRID=25832;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(600000 6200000), 0.5)@2001-01-01',
+  3812), '2001-01-01'))::numeric, 6);
+   round    
+------------
+ 600.000000
+(1 row)
+
+SELECT asEWKT(round(transform(trgeometry 'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));
+  Pose(Point(4.35 50.85), 0.5)@2001-01-01', 32631), 3));
+                                                           asewkt                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ SRID=32631;POLYGON((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(POINT(595032.295 5634012.833),0.518)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(round(transformPipeline(trgeometry
+  'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(4.35 50.85), 0.5)@2001-01-01',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3));
+                                                           asewkt                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ SRID=32631;POLYGON((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(POINT(595032.295 5634012.833),0.518)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+/* Errors */
 SELECT transform(trgeometry
-  'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01',
-  3812);
-ERROR:  Transformation to another SRID is not supported for type trgeometry
+  'SRID=3812;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(648679 671067), 0.5)@2001-01-01',
+  4326);
+ERROR:  A temporal rigid geometry is placed in the plane of the reference system of its poses, which the geographic system 4326 does not have
 SELECT transformPipeline(trgeometry
   'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01',
   'urn:ogc:def:coordinateOperation:EPSG::16031', 4326);
-ERROR:  Transformation to another SRID is not supported for type trgeometry
+ERROR:  A temporal rigid geometry is placed in the plane of the reference system of its poses, which the geographic system 4326 does not have
 SELECT asText(atGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(2 0), 0.0)@2001-01-01',
   geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));

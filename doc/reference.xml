@@ -2599,6 +2599,9 @@
 					<para><link linkend="trgeometry_stops"><varname>stops</varname></link>: Extract the subsequences where the temporal rigid geometry stays within an area with a specified maximum size for at least the given duration</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="trgeometry_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="trgeometry_setInterp"><varname>setInterp</varname></link>: Convert between linear and step interpolations</para>
 				</listitem>
 				<listitem>
