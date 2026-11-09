@@ -87,14 +87,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gaee120b6bd81de781fd73229af0f5aea4.html#gaee120b6bd81de781fd73229af0f5aea4">geo_mem_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga719bdb53ab1e28e258d90946417bd615.html#ga719bdb53ab1e28e258d90946417bd615">geo_perimeter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gadae62576fac32cf2a1ab666dd5792e8f.html#gadae62576fac32cf2a1ab666dd5792e8f">geo_typename</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga523b91b48ef9af6cd35a8dd81b361673.html#ga523b91b48ef9af6cd35a8dd81b361673">geog_area</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga645b98114810eca294dac46f7b7b2c9e.html#ga645b98114810eca294dac46f7b7b2c9e">geog_centroid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gaad3e0b48756848a3b2780b449e4e9ccf.html#gaad3e0b48756848a3b2780b449e4e9ccf">geog_length</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga5ef380ee1aa9b1d68a96e250484a29a0.html#ga5ef380ee1aa9b1d68a96e250484a29a0">geog_perimeter</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gafb9cf6bf0ce902ea68bfa14523e43158.html#gafb9cf6bf0ce902ea68bfa14523e43158">geom_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga28dca3f4d5f757de8c4d247ce8f25b82.html#ga28dca3f4d5f757de8c4d247ce8f25b82">geom_azimuth</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga01cd2560611df2fa68834096f589cf9a.html#ga01cd2560611df2fa68834096f589cf9a">geom_length</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga35cd617a271bf5569039434a60e41318.html#ga35cd617a271bf5569039434a60e41318">geom_perimeter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga595406b9557d51442086687837683870.html#ga595406b9557d51442086687837683870">line_numpoints</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga6f193cef0f531708df55a8c27a71e224.html#ga6f193cef0f531708df55a8c27a71e224">line_point_n</a></td></tr>
         </table>
@@ -128,7 +121,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the length of a geometry or a geography, the one of a geography in meters. </p>
-<p >A geometry is measured as <a class="el" href="group__meos__geo__base__accessor_ga01cd2560611df2fa68834096f589cf9a.html#ga01cd2560611df2fa68834096f589cf9a" title="Return the length of a geometry.">geom_length</a> measures it and a geography as <a class="el" href="group__meos__geo__base__accessor_gaad3e0b48756848a3b2780b449e4e9ccf.html#gaad3e0b48756848a3b2780b449e4e9ccf" title="Return double length in meters.">geog_length</a> measures it, on the spheroid or on the sphere as the PostGIS function <code>ST_Length</code> over a geography chooses, the earth model being an argument as in <a class="el" href="group__meos__geo__box__accessor_ga08df075179ba2b3f9a538209096f3048.html#ga08df075179ba2b3f9a538209096f3048" title="Return the area of a spatiotemporal box.">stbox_area</a> </p><dl class="params"><dt>Parameters</dt><dd>
+<p >A geometry is measured as <a class="el" href="group__meos__internal__geo__base__accessor_ga01cd2560611df2fa68834096f589cf9a.html#ga01cd2560611df2fa68834096f589cf9a" title="Return the length of a geometry.">geom_length</a> measures it and a geography as <a class="el" href="group__meos__internal__geo__base__accessor_gaad3e0b48756848a3b2780b449e4e9ccf.html#gaad3e0b48756848a3b2780b449e4e9ccf" title="Return double length in meters.">geog_length</a> measures it, on the spheroid or on the sphere as the PostGIS function <code>ST_Length</code> over a geography chooses, the earth model being an argument as in <a class="el" href="group__meos__geo__box__accessor_ga08df075179ba2b3f9a538209096f3048.html#ga08df075179ba2b3f9a538209096f3048" title="Return the area of a spatiotemporal box.">stbox_area</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry or geography </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">spheroid</td><td>True when measuring on the spheroid, false on the sphere; read for geographies only </td></tr>
