@@ -88,7 +88,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga1a16b4d22ba933a7509d990923942881.html#ga1a16b4d22ba933a7509d990923942881">tgeometry_to_tgeompoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7.html#ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7">tgeompoint_to_tgeogpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga4c5de7e9786e2ab3f22a47b231f80174.html#ga4c5de7e9786e2ab3f22a47b231f80174">tgeompoint_to_tgeometry</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__conversion_ga4bda0631ec82da656d118d8364ba7cf5.html#ga4bda0631ec82da656d118d8364ba7cf5">tpoint_as_mvtgeom</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__conversion_gac2fb6bd10603768015b0eb8040efaa12.html#gac2fb6bd10603768015b0eb8040efaa12">tpoint_as_mvtgeom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga182c0342e5b02878bb8c3ffe37f5a65f.html#ga182c0342e5b02878bb8c3ffe37f5a65f">tpoint_tfloat_to_geomeas</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_gada6ad0e028126f34bc98efc2eab1e40e.html#gada6ad0e028126f34bc98efc2eab1e40e">tpoint_to_geomeas</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga6f6436f659a5108edf7c1f34c2f4a2a8.html#ga6f6436f659a5108edf7c1f34c2f4a2a8">tspatial_to_stbox</a></td></tr>
@@ -96,14 +96,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga4bda0631ec82da656d118d8364ba7cf5" name="ga4bda0631ec82da656d118d8364ba7cf5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga4bda0631ec82da656d118d8364ba7cf5">&#9670;&#160;</a></span>tpoint_as_mvtgeom()</h2>
+<a id="gac2fb6bd10603768015b0eb8040efaa12" name="gac2fb6bd10603768015b0eb8040efaa12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac2fb6bd10603768015b0eb8040efaa12">&#9670;&#160;</a></span>tpoint_as_mvtgeom()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool tpoint_as_mvtgeom </td>
+          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * tpoint_as_mvtgeom </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -135,12 +135,6 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
-          <td class="paramname"><em>gsarr</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">int64 **&#160;</td>
           <td class="paramname"><em>timesarr</em>, </td>
         </tr>
@@ -166,13 +160,12 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">extent</td><td>Extent </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">buffer</td><td>Buffer </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">clip_geom</td><td>True when the geometry is clipped </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">gsarr</td><td>Geometry encoding the temporal point </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">timesarr</td><td>Array of timestamps in Unix time, one per point of the geometry </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True when the temporal point has a representation in the tile @csqlfn <a class="el" href="group__mobilitydb__geo__transf_ga80d3112e644213a2b1faf744c368aeac.html#ga80d3112e644213a2b1faf744c368aeac" title="Return a temporal point transformed to the Mapbox Vector Tile representation @sqlfn asMVTGeom()">Tpoint_as_mvtgeom()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The geometry encoding the temporal point in the tile, or <code>NULL</code> when the temporal point has no representation in the tile @csqlfn <a class="el" href="group__mobilitydb__geo__transf_ga80d3112e644213a2b1faf744c368aeac.html#ga80d3112e644213a2b1faf744c368aeac" title="Return a temporal point transformed to the Mapbox Vector Tile representation @sqlfn asMVTGeom()">Tpoint_as_mvtgeom()</a> </dd></dl>
 
 </div>
 </div>

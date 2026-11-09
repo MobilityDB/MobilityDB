@@ -89,7 +89,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_ab22ba536dffb591c803cbc3c66257c2e.html#ab22ba536dffb591c803cbc3c66257c2e">ensure_valid_tnpoint_tnpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__set__accessor_gacac2cd1c73502ff07c70f9696bdc8ac8.html#gacac2cd1c73502ff07c70f9696bdc8ac8">npointset_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a1faf65b2e334f936298b36265836f9de.html#a1faf65b2e334f936298b36265836f9de">route_point_at</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a36265edeb72c5fdb209fdc11cd3f2011.html#a36265edeb72c5fdb209fdc11cd3f2011">route_point_tinstant</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_afecdda167604016f32501ccac5cfe6de.html#afecdda167604016f32501ccac5cfe6de">route_point_tinstant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f">route_vertex_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__conversion_ga18e87096b5f9556a9fe9d4f70f9eefe5.html#ga18e87096b5f9556a9fe9d4f70f9eefe5">tgeompoint_to_tnpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">tgeompointinst_tnpointinst</a></td></tr>
@@ -144,8 +144,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a36265edeb72c5fdb209fdc11cd3f2011" name="a36265edeb72c5fdb209fdc11cd3f2011"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a36265edeb72c5fdb209fdc11cd3f2011">&#9670;&#160;</a></span>route_point_tinstant()</h2>
+<a id="afecdda167604016f32501ccac5cfe6de" name="afecdda167604016f32501ccac5cfe6de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afecdda167604016f32501ccac5cfe6de">&#9670;&#160;</a></span>route_point_tinstant()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -158,12 +158,6 @@ $(function() {
           <td>(</td>
           <td class="paramtype">int32_t&#160;</td>
           <td class="paramname"><em>srid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgis__ext__defs_8in_8h_a4f088265c50fb586dd2f7e9d6e6a7784.html#a4f088265c50fb586dd2f7e9d6e6a7784">lwflags_t</a>&#160;</td>
-          <td class="paramname"><em>flags</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -191,10 +185,9 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return a temporal geometry point instant located at a point of a route. </p>
-<p >The instant a point of a route makes, as <a class="el" href="meos_2src_2npoint_2tnpoint_8c_abda8d6a60233ff78a9f73757aa59f1ba.html#abda8d6a60233ff78a9f73757aa59f1ba" title="Convert a temporal network point into a temporal geometry point.">tnpointinst_tgeompointinst</a> makes it for a network point. The point, its point array and its coordinates are in the stack, as <a class="el" href="geo__funcs_8h_ac97cd2d4e9f389366d8e9454b96ff9ed.html#ac97cd2d4e9f389366d8e9454b96ff9ed" title="Return a point created from the arguments.">geopoint_make</a> keeps them, since only the serialized point outlives the function </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The instant a point of a route makes, as <a class="el" href="meos_2src_2npoint_2tnpoint_8c_abda8d6a60233ff78a9f73757aa59f1ba.html#abda8d6a60233ff78a9f73757aa59f1ba" title="Convert a temporal network point into a temporal geometry point.">tnpointinst_tgeompointinst</a> makes it for a network point. The point, its point array and its coordinates are in the stack, as <a class="el" href="geo__funcs_8h_ac97cd2d4e9f389366d8e9454b96ff9ed.html#ac97cd2d4e9f389366d8e9454b96ff9ed" title="Return a point created from the arguments.">geopoint_make</a> keeps them, since only the serialized point outlives the function. A route is a planar line, as <a class="el" href="tnpoint_8h_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc" title="Ensure that the geometry of a route read from the ways network is a planar line without Z or M dimens...">ensure_valid_route</a> tests when the network is read, so the point has two dimensions </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID of the route </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>Dimensions of the point, Z and M </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pt</td><td>Point </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp </td></tr>
   </table>
