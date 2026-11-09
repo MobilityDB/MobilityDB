@@ -416,11 +416,10 @@ tnpointinst_tgeompointinst(const TInstant *inst)
  * @brief Return a temporal geometry point instant located at a point of a
  * route
  * @details The instant a point of a route makes, as
- * #tnpointinst_tgeompointinst makes it for a network point. The point, its
- * point array and its coordinates are in the stack, as #geopoint_make keeps
- * them, since only the serialized point outlives the function. A route is a
- * planar line, as #ensure_valid_route tests when the network is read, so the
- * point has two dimensions
+ * #tnpointinst_tgeompointinst makes it for a network point, made from its
+ * coordinates by #tpointinst_make_coords. A route is a planar line with
+ * finite coordinates, as #ensure_valid_route tests when the network is read,
+ * and a point of it at a fraction of its length has two finite coordinates
  * @param[in] srid SRID of the route
  * @param[in] pt Point
  * @param[in] t Timestamp
@@ -428,19 +427,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 static TInstant *
 route_point_tinstant(int32_t srid, const POINT4D *pt, TimestampTz t)
 {
-  double coords[2] = {pt->x, pt->y};
-  POINTARRAY pa;
-  pa.npoints = pa.maxpoints = 1;
-  pa.flags = 0;
-  pa.serialized_pointlist = (uint8_t *) coords;
-  LWPOINT point;
-  point.bbox = NULL;
-  point.point = &pa;
-  point.srid = srid;
-  point.flags = 0;
-  point.type = POINTTYPE;
-  Datum value = PointerGetDatum(geo_serialize((LWGEOM *) &point));
-  return tinstant_make_free(value, T_TGEOMPOINT, t);
+  return tpointinst_make_coords(pt->x, pt->y, 0.0, false, false, srid, t);
 }
 
 /**
