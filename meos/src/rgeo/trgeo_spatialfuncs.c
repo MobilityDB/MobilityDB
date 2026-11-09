@@ -732,34 +732,33 @@ Temporal *
 trgeometry_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   bool atfunc)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_stbox(temp, box))
-    return NULL;
-
+  /* Ensure the validity of the arguments. A box of time alone restricts
+   * the time domain, as #tgeo_restrict_stbox does */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
+  if (! hasx)
+    return temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  if (! ensure_valid_trgeometry_stbox(temp, box))
+    return NULL;
   /* The box period already carries its temporal-border inclusivity. On the
    * spatial side the box is closed where the upper border is asked for, and
    * half-open where it is not, so that the tiles either side of a grid line
    * claim a body lying on that line exactly once */
   const STBox *excl = border_inc ? NULL : box;
 
-  /* Spatial overlap spans (whole time domain if the box has no X bounds). */
-  SpanSet *spatial = NULL;
-  if (hasx)
-  {
-    GSERIALIZED *geo = stbox_geo(box);
-    LWGEOM *lwgeo = lwgeom_from_gserialized(geo);
-    bool err;
-    spatial = trgeometry_overlap_spanset(temp, geo, lwgeo, excl, &err);
-    lwgeom_free(lwgeo);
-    pfree(geo);
-    if (err)
-      return NULL;
-    if (! spatial)
-      /* No spatial overlap. */
-      return atfunc ? NULL : temporal_copy(temp);
-  }
+  /* Spatial overlap spans */
+  GSERIALIZED *geo = stbox_geo(box);
+  LWGEOM *lwgeo = lwgeom_from_gserialized(geo);
+  bool err;
+  SpanSet *spatial = trgeometry_overlap_spanset(temp, geo, lwgeo, excl, &err);
+  lwgeom_free(lwgeo);
+  pfree(geo);
+  if (err)
+    return NULL;
+  if (! spatial)
+    /* No spatial overlap. */
+    return atfunc ? NULL : temporal_copy(temp);
 
   /* Intersect the spatial overlap with the box time span. */
   SpanSet *atspans;
@@ -767,23 +766,17 @@ trgeometry_restrict_stbox(const Temporal *temp, const STBox *box, bool border_in
   {
     Span *period = span_copy(&box->period);
     SpanSet *periodset = spanset_make_free(period, 1, NORMALIZE_NO, ORDER_NO);
-    if (spatial)
-    {
-      atspans = intersection_spanset_spanset(spatial, periodset);
-      pfree(periodset);
-      pfree(spatial);
-      if (! atspans)
-        return atfunc ? NULL : temporal_copy(temp);
-    }
-    else
-      atspans = periodset;
+    atspans = intersection_spanset_spanset(spatial, periodset);
+    pfree(periodset);
+    pfree(spatial);
+    if (! atspans)
+      return atfunc ? NULL : temporal_copy(temp);
   }
   else
     atspans = spatial;
 
   Temporal *result = trgeometry_restrict_overlap(temp, atspans, atfunc);
-  if (atspans)
-    pfree(atspans);
+  pfree(atspans);
   return result;
 }
 

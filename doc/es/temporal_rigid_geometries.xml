@@ -767,7 +767,7 @@ SELECT getTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   stbox 'STBOX X((1, -1), (3, 1))'));
 -- {[2001-01-01, 2001-01-04]}
 </programlisting>
-				<para>Una caja con solo un componente temporal aún no se admite, y <varname>atTime</varname> responde esa pregunta; si la caja solo tiene un componente espacial, se conserva el dominio temporal.</para>
+				<para>Una caja con solo un componente temporal restringe el dominio temporal, como lo hace <varname>atTime</varname>; si la caja solo tiene un componente espacial, se conserva el dominio temporal.</para>
 			</listitem>
 
 		</itemizedlist>
