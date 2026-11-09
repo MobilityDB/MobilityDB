@@ -156,8 +156,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   restrictions; declares in `meos_internal_geo.h` the sixteen geom_/geog_ and 2d/3d halves that
   `geo_area`, `geo_centroid`, `geo_length`, `geo_perimeter`, `geo_shortestline`,
   `geom_dwithin`, `geom_intersects` and `geom_max_distance` choose between; and gives
-  `trgeometry_as_tsequence` and `trgeometry_as_tsequenceset` an `interpType interp`. It
-  rewrites `6e22d6c736`, the `@nullable` notes of their `interp_str` parameter in `trgeo.c`.
+  `trgeometry_as_tsequence` and `trgeometry_as_tsequenceset` an `interpType interp`.
+  Branch `clean/cell-instant-shorthands` rewrites `6e22d6c736`, the `@nullable` notes of their `interp_str` parameter in `trgeo.c`.
   Strict-ci, cppcheck, Windows, valgrind and smoke receipts on master `0b4cb5b029`.
 - **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes), #3287 (the exactness
   plan), #3259 (a step of that plan) and #3200 (the box of a temporal point cloud instant, by its
