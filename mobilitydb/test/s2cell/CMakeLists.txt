@@ -25,6 +25,19 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
+add_test(
+  NAME load_s2cell_tables
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
+    -D TEST_NAME=load_s2cell_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_s2cell.sql.xz
+    -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
+)
+
+set_tests_properties(load_s2cell_tables PROPERTIES
+  DEPENDS test_setup
+  FIXTURES_SETUP DBS2CELL
+  FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
+
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
 
@@ -37,6 +50,13 @@ foreach(file ${testfiles})
       -D TEST_NAME=${TESTNAME} -D TEST_FILE=${file}
       -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
     )
-  # The S2 tests state literal cells, so the base extension is all they need.
-  set_tests_properties(${TESTNAME} PROPERTIES FIXTURES_REQUIRED "DB")
+  # The table-based tests load the frozen tbl_* fixtures (DBS2CELL), as those of
+  # the quadbin family load DBQUADBIN; the rest state literal cells and only
+  # need the base extension (DB).
+  if(${TESTNAME} MATCHES "_tbl$")
+    set_tests_properties(${TESTNAME} PROPERTIES
+      FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBS2CELL")
+  else()
+    set_tests_properties(${TESTNAME} PROPERTIES FIXTURES_REQUIRED "DB")
+  endif()
 endforeach()

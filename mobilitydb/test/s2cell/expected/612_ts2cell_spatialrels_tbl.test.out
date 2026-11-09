@@ -1,0 +1,48 @@
+SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE eDisjoint(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE aDisjoint(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE tDisjoint(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE eIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE aIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE tIntersects(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE eDwithin(t1.temp, t2.temp, 5000.0);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE aDwithin(t1.temp, t2.temp, 5000.0);
+ count 
+-------
+   100
+(1 row)
+

@@ -65,6 +65,9 @@ endif()
 if(RGEO)
   list(APPEND DATAGEN_FILES rgeo/random_trgeo.sql)
 endif()
+if(S2CELL)
+  list(APPEND DATAGEN_FILES s2cell/random_ts2cell.sql)
+endif()
 
 list(TRANSFORM DATAGEN_FILES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
 
