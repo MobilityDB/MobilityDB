@@ -1855,7 +1855,8 @@ static ArrangeStatus
 arr_meet_arcs_exact(Arr *a, uint32_t i, uint32_t j)
 {
   int meet, within[2][2];
-  arcarc_meet_exact(&a->e[i], &a->e[j], &meet, within);
+  if (! arcarc_meet_exact(&a->e[i], &a->e[j], &meet, within))
+    return ARR_MEETING;
   if (meet < 0)
     return ARR_ANSWERED;
   Ival dx = ival_sub(a->ccx[j], a->ccx[i]), dy = ival_sub(a->ccy[j],
@@ -2014,7 +2015,8 @@ arr_meet_arcs(Arr *a, uint32_t i, uint32_t j)
     if (! endp || ! endq)
       return arr_meet_arcs_exact(a, i, j);
     int s1, sp, sq;
-    arcarc_shared_point_signs(p, q, jx, jy, &s1, &sp, &sq);
+    if (! arcarc_shared_point_signs(p, q, jx, jy, &s1, &sp, &sq))
+      return ARR_MEETING;
     if (s1 == 0)
       return ARR_ANSWERED;
     int wantp = p->diameter ? (a->ccw[i] ? -1 : 1) :
@@ -2418,7 +2420,8 @@ arr_support_meets(const Arr *a, uint32_t i, uint32_t j, ArrMeet m[2],
      * winding number the other gives is the same all along it, so the
      * touching is no node of the arrangement, as two circles apart */
     int meet, within[2][2];
-    arcarc_meet_exact(p, q, &meet, within);
+    if (! arcarc_meet_exact(p, q, &meet, within))
+      return ARR_MEETING;
     if (meet <= 0)
       return ARR_ANSWERED;
     int c12 = (a->ccw[i] ? 1 : -1) * (a->ccw[j] ? 1 : -1);
