@@ -59,6 +59,11 @@
 
 /*****************************************************************************/
 
+/* Constructor functions */
+
+extern TInstant *tpointinst_make_coords(double x, double y, double z,
+  bool hasz, bool geodetic, int32_t srid, TimestampTz t);
+
 /* Utility functions */
 
 extern GSERIALIZED *geo_values_collect(const Temporal *temp, bool unary_union);

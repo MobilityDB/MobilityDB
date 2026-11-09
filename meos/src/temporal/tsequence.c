@@ -1293,16 +1293,16 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
         (zcoords && ! ensure_finite(zcoords[i])))
       return NULL;
   bool hasz = (zcoords != NULL);
-  MeosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
   /* A geodetic sequence stating no SRID is in WGS84, as every geography is */
   srid = srid_geodetic_default(srid, geodetic);
+  if (geodetic && srid != SRID_UNKNOWN && ! ensure_srid_is_latlong(srid))
+    return NULL;
+  /* The coordinates are finite and the SRID of a geography is geodetic, so
+   * the instants are made from the coordinates without testing them again */
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i ++)
-  {
-    Datum point = PointerGetDatum(geopoint_make(xcoords[i], ycoords[i],
-      hasz ? zcoords[i] : 0.0, hasz, geodetic, srid));
-    instants[i] = tinstant_make_free(point, temptype, times[i]);
-  }
+    instants[i] = tpointinst_make_coords(xcoords[i], ycoords[i],
+      hasz ? zcoords[i] : 0.0, hasz, geodetic, srid, times[i]);
   return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
     normalize);
 }

@@ -36,6 +36,10 @@
 
 /* C */
 #include <assert.h>
+#include <math.h>
+/* PostGIS */
+#include <liblwgeom.h>
+#include <gserialized2.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -541,6 +545,61 @@ tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
   MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
   return tinstant_make(PointerGetDatum(gs), temptype, t);
+}
+
+/**
+ * @brief Return a temporal point instant from the coordinates of a point and
+ * a timestamptz
+ * @details The instant #tinstant_make makes from the point #geopoint_make
+ * serializes, byte for byte, the point written in the instant as
+ * `gserialized2_from_lwgeom` writes it instead of being serialized apart,
+ * copied into the instant and freed. A point has no bounding box and no
+ * extended flags, so it is its header, its type, its number of points and its
+ * coordinates
+ * @param[in] x,y,z Coordinates, @p z read only when @p hasz is true
+ * @param[in] hasz True when the point has a Z
+ * @param[in] geodetic True for a temporal geography point
+ * @param[in] srid SRID
+ * @param[in] t Timestamp
+ * @pre The coordinates are finite and the SRID of a geography is geodetic,
+ * which the caller tests at its external entry
+ */
+TInstant *
+tpointinst_make_coords(double x, double y, double z, bool hasz, bool geodetic,
+  int32_t srid, TimestampTz t)
+{
+  assert(isfinite(x)); assert(isfinite(y)); assert(! hasz || isfinite(z));
+  /* Header (size, SRID and flags), type, number of points, coordinates */
+  size_t ncoords = hasz ? 3 : 2;
+  size_t gssize = 16 + sizeof(double) * ncoords;
+  size_t value_offset = offsetof(TInstant, value);
+  size_t size = value_offset + DOUBLE_PAD(gssize);
+  TInstant *result = palloc0(size);
+  GSERIALIZED *gs = (GSERIALIZED *) (((char *) result) + value_offset);
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, hasz);
+  FLAGS_SET_GEODETIC(flags, geodetic);
+  /* The flags carry the version the SRID is written for */
+  gs->gflags = lwflags_get_g2flags(flags);
+  gserialized_set_srid(gs, srid);
+  SET_VARSIZE(gs, gssize);
+  uint32_t type_npoints[2] = {POINTTYPE, 1};
+  memcpy(gs->data, type_npoints, sizeof(type_npoints));
+  const double coords[3] = {x, y, z};
+  memcpy(gs->data + sizeof(type_npoints), coords, sizeof(double) * ncoords);
+  /* The fixed-size values #tinstant_make sets */
+  MeosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  result->temptype = temptype;
+  result->subtype = TINSTANT;
+  result->t = t;
+  SET_VARSIZE(result, size);
+  MEOS_FLAGS_SET_BYVAL(result->flags, false);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, temptype_supports_linear(temptype));
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_Z(result->flags, hasz);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
+  return result;
 }
 
 /**
