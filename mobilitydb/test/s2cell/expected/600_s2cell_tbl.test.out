@@ -1,0 +1,65 @@
+COPY  tbl_s2cell TO STDOUT (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_s2cell_tmp;
+NOTICE:  table "tbl_s2cell_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_s2cell_tmp AS TABLE tbl_s2cell WITH NO DATA;
+CREATE TABLE AS
+COPY  tbl_s2cell_tmp FROM STDIN (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell_tmp t2 WHERE t1.k = t2.k AND t1.cell <> t2.cell;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_s2cell_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_s2cell WHERE NOT isValidCell(cell);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cell WHERE (cell::bigint)::s2cell <> cell;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell t2 WHERE t1.cell = t2.cell;
+ count 
+-------
+   108
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell t2 WHERE t1.cell <> t2.cell;
+ count 
+-------
+  9892
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell t2 WHERE t1.cell < t2.cell;
+ count 
+-------
+  4946
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell t2 WHERE t1.cell <= t2.cell;
+ count 
+-------
+  5054
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell t2 WHERE t1.cell > t2.cell;
+ count 
+-------
+  4946
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell t2 WHERE t1.cell >= t2.cell;
+ count 
+-------
+  5054
+(1 row)
+

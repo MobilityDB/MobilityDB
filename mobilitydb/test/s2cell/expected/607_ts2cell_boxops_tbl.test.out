@@ -1,0 +1,1087 @@
+DROP INDEX IF EXISTS tbl_ts2cell_rtree_idx;
+NOTICE:  index "tbl_ts2cell_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_ts2cell_quadtree_idx;
+NOTICE:  index "tbl_ts2cell_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_ts2cell_kdtree_idx;
+NOTICE:  index "tbl_ts2cell_kdtree_idx" does not exist, skipping
+DROP INDEX
+DROP TABLE IF EXISTS test_ts2cell_ops;
+NOTICE:  table "test_ts2cell_ops" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_ts2cell_ops(
+  op char(3),
+  leftarg text,
+  rightarg text,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
+);
+CREATE TABLE
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t && temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp && t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b && temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp && b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp && t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t @> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp @> t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b @> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp @> b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp @> t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t <@ temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp <@ t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <@ temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <@ b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <@ t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t ~= temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp ~= t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b ~= temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp ~= b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp ~= t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t -|- temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp -|- t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b -|- temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp -|- b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp -|- t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t <<# temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t &<# temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t #>> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tstzspan', 'ts2cell', COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t #&> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp <<# t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp &<# t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp #>> t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'ts2cell', 'tstzspan', COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp #&> t;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <<# temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &<# temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b #>> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b #&> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <<# b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &<# b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp #>> b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp #&> b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <<# t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &<# t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp #>> t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp #&> t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b << temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &< temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b >> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<|', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <<| temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<|', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &<| temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '|>>', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b |>> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '|&>', 'stbox', 'ts2cell', COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b |&> temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp << b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &< b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp >> b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &> b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<|', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <<| b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<|', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &<| b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '|>>', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp |>> b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '|&>', 'ts2cell', 'stbox', COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp |&> b;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp << t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &< t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp >> t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &> t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '<<|', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <<| t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '&<|', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &<| t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '|>>', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp |>> t2.temp;
+INSERT 0 1
+INSERT INTO test_ts2cell_ops(op, leftarg, rightarg, no_idx)
+SELECT '|&>', 'ts2cell', 'ts2cell', COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp |&> t2.temp;
+INSERT 0 1
+CREATE INDEX tbl_ts2cell_rtree_idx ON tbl_ts2cell USING GIST(temp);
+CREATE INDEX
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &<# temp )
+WHERE op = '&<#' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b #&> temp )
+WHERE op = '#&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <<# b )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &<# b )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp #>> b )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp #&> b )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &< temp )
+WHERE op = '&<' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &> temp )
+WHERE op = '&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <<| temp )
+WHERE op = '<<|' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &<| temp )
+WHERE op = '&<|' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b |>> temp )
+WHERE op = '|>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b |&> temp )
+WHERE op = '|&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp << b )
+WHERE op = '<<' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &< b )
+WHERE op = '&<' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp >> b )
+WHERE op = '>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &> b )
+WHERE op = '&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <<| b )
+WHERE op = '<<|' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &<| b )
+WHERE op = '&<|' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp |>> b )
+WHERE op = '|>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp |&> b )
+WHERE op = '|&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+DROP INDEX tbl_ts2cell_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_ts2cell_quadtree_idx ON tbl_ts2cell USING SPGIST(temp);
+CREATE INDEX
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &<# temp )
+WHERE op = '&<#' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b #&> temp )
+WHERE op = '#&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <<# b )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &<# b )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp #>> b )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp #&> b )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &< temp )
+WHERE op = '&<' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &> temp )
+WHERE op = '&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <<| temp )
+WHERE op = '<<|' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &<| temp )
+WHERE op = '&<|' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b |>> temp )
+WHERE op = '|>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b |&> temp )
+WHERE op = '|&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp << b )
+WHERE op = '<<' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &< b )
+WHERE op = '&<' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp >> b )
+WHERE op = '>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &> b )
+WHERE op = '&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <<| b )
+WHERE op = '<<|' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &<| b )
+WHERE op = '&<|' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp |>> b )
+WHERE op = '|>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp |&> b )
+WHERE op = '|&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+DROP INDEX tbl_ts2cell_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_ts2cell_kdtree_idx ON tbl_ts2cell USING SPGIST(temp ts2cell_kdtree_ops);
+CREATE INDEX
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_ts2cell WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &<# temp )
+WHERE op = '&<#' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b #&> temp )
+WHERE op = '#&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <<# b )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &<# b )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp #>> b )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp #&> b )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &< temp )
+WHERE op = '&<' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &> temp )
+WHERE op = '&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b <<| temp )
+WHERE op = '<<|' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b &<| temp )
+WHERE op = '&<|' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b |>> temp )
+WHERE op = '|>>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox_s2cell, tbl_ts2cell WHERE b |&> temp )
+WHERE op = '|&>' AND leftarg = 'stbox' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp << b )
+WHERE op = '<<' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &< b )
+WHERE op = '&<' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp >> b )
+WHERE op = '>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &> b )
+WHERE op = '&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp <<| b )
+WHERE op = '<<|' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp &<| b )
+WHERE op = '&<|' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp |>> b )
+WHERE op = '|>>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell, tbl_geodstbox_s2cell WHERE temp |&> b )
+WHERE op = '|&>' AND leftarg = 'ts2cell' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_ops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' AND leftarg = 'ts2cell' AND rightarg = 'ts2cell';
+UPDATE 1
+DROP INDEX tbl_ts2cell_kdtree_idx;
+DROP INDEX
+SELECT * FROM test_ts2cell_ops
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR
+  no_idx <> kdtree_idx OR no_idx IS NULL OR rtree_idx IS NULL OR
+  quadtree_idx IS NULL OR kdtree_idx IS NULL
+ORDER BY op, leftarg, rightarg;
+ op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+----+---------+----------+--------+-----------+--------------+------------
+(0 rows)
+
+SELECT COUNT(*) AS ops, COUNT(*) FILTER (WHERE no_idx > 0) AS ops_reaching_rows
+FROM test_ts2cell_ops;
+ ops | ops_reaching_rows 
+-----+-------------------
+  69 |                55
+(1 row)
+
+DROP TABLE test_ts2cell_ops;
+DROP TABLE
