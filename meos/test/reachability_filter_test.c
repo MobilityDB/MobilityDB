@@ -36,9 +36,12 @@
  * before with #reachabilitystate_instants and checks how many there are, it
  * checks the counts of the state, and it checks that a state written by
  * #reachabilitystate_serialize and read back by
- * #reachabilitystate_deserialize walks on as the one written. It then checks
- * the errors of the transition function and of the reading of the bytes
- * under the noexit error handler.
+ * #reachabilitystate_deserialize walks on as the one written. It closes a
+ * session of five reports, more than half of them unreachable, with
+ * #reachabilitystate_close, which hands back the kept reports of its head,
+ * while the final function drops them. It then checks the errors of the
+ * transition function, of the close and of the reading of the bytes under
+ * the noexit error handler.
  *
  * The program can be built as follows
  * @code
@@ -153,7 +156,63 @@ main(void)
     check_int("kept reports", counts[2], 11);
   }
 
+  /* A session closed before its head is full, more than half of its reports
+   * unreachable from the report before: the stream has emitted nothing, and
+   * its close hands back the kept reports of the head, as a stream emits them
+   * before stating that the reports are dropped whole; the final function
+   * drops them */
+  const char *short_points[5] = {"0 0", "1000 0", "10 0", "2000 0", "20 0"};
+  Temporal *short_reports[5];
+  for (int i = 0; i < 5; i++)
+  {
+    char str[64];
+    snprintf(str, sizeof(str), "Point(%s)@2001-01-01 00:00:%02d",
+      short_points[i], i);
+    short_reports[i] = tgeompoint_in(str);
+  }
+  ReachabilityState *walked = NULL, *finished = NULL;
+  for (int i = 0; i < 5; i++)
+  {
+    walked = temporal_reachability_filter_transfn(walked,
+      (TInstant *) short_reports[i], 100);
+    finished = temporal_reachability_filter_transfn(finished,
+      (TInstant *) short_reports[i], 100);
+    int count;
+    TInstant **insts = reachabilitystate_instants(walked, &count);
+    free(insts);
+    check_int("reports decided before the head is full", count, 0);
+  }
+  int nclosed;
+  TInstant **closed = reachabilitystate_close(walked, &nclosed);
+  /* The seed is the first report, which reaches the third and the fifth */
+  check_int("reports handed back by the close", nclosed, 3);
+  TimestampTz first = nclosed > 0 ? closed[0]->t : 0;
+  for (int i = 0; i < nclosed; i++)
+  {
+    check_int("time of a report handed back by the close",
+      (int) ((closed[i]->t - first) / 1000000), 2 * i);
+    free(closed[i]);
+  }
+  free(closed);
+  check_int("reports of the closed session",
+    reachabilitystate_reports(walked), 5);
+  check_int("unreachable reports of the closed session",
+    reachabilitystate_unreachable(walked), 4);
+  check_int("kept reports of the closed session",
+    reachabilitystate_kept(walked), 3);
+  reachabilitystate_free(walked);
+  Temporal *dropped = temporal_reachability_filter_finalfn(finished);
+  check_int("reports the final function keeps of the session",
+    dropped ? 1 : 0, 0);
+  free(dropped);
+  reachabilitystate_free(NULL);
+  for (int i = 0; i < 5; i++)
+    free(short_reports[i]);
+
   /* Errors */
+  int nnull;
+  check_error("the close of no state",
+    reachabilitystate_close(NULL, &nnull) == NULL, MEOS_ERR_INVALID_ARG);
   ReachabilityState *state = temporal_reachability_filter_transfn(NULL,
     (TInstant *) reports[5], 100);
   check_error("a report before the last one",

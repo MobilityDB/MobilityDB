@@ -2209,6 +2209,8 @@ extern Temporal *temporal_reachability_filter(const Temporal *temp, double maxsp
 extern ReachabilityState *temporal_reachability_filter_transfn(ReachabilityState *state, const TInstant *inst, double maxspeed);
 extern Temporal *temporal_reachability_filter_finalfn(ReachabilityState *state);
 extern TInstant **reachabilitystate_instants(ReachabilityState *state, int *count);
+extern TInstant **reachabilitystate_close(ReachabilityState *state, int *count);
+extern void reachabilitystate_free(ReachabilityState *state);
 extern int reachabilitystate_kept(const ReachabilityState *state);
 extern int reachabilitystate_reports(const ReachabilityState *state);
 extern int reachabilitystate_unreachable(const ReachabilityState *state);
