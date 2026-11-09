@@ -35,10 +35,13 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 		<para>La geometría de referencia puede ser cualquier polígono o superficie poliédrica, con la dimensión de la pose: una pose con un cuaternión necesita una geometría de referencia en tres dimensiones, y <varname>ST_Force3D</varname> da una plana, en el plano z = 0 del cuerpo. Otros valores dan un error. La interpolación de la pose es lineal en la traslación y de camino angular más corto en la rotación. Los SRID se heredan de la geometría de referencia y de la pose; deben coincidir.</para>
 
-		<para>Se puede especificar un SRID para una trgeometry al comienzo del literal, como se muestra a continuación.</para>
+		<para>Se puede especificar un SRID para una trgeometry al comienzo del literal, como se muestra a continuación, o antes de su primera pose, y es entonces el SRID de la geometría de referencia y de cada pose.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0), 0.5)@2001-01-01';
+SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  SRID=25832;Pose(Point(0 0), 0.5)@2001-01-01');
+-- SRID=25832;POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(0 0),0.5)@2001-01-01
 </programlisting>
 
 		<para>La interpolación escalonada también se puede especificar de la misma manera que para otros tipos temporales:</para>

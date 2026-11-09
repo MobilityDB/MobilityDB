@@ -67,6 +67,20 @@ SELECT asEWKT(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),
 SELECT asEWKT(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.123456789)@2001-01-01, Pose(Point(1 1), 0.523456789)@2001-01-02, Pose(Point(1 1), 0.123456789)@2001-01-03],[Pose(Point(2 2), 0.723456789)@2001-01-04, Pose(Point(2 2), 0.723456789)@2001-01-05]}', 6);
 SELECT asEWKT(trgeometry 'SRID=5676,Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.123456789)@2001-01-01, Pose(Point(1 1), 0.523456789)@2001-01-02, Pose(Point(1 1), 0.123456789)@2001-01-03]', 6);
 SELECT asEWKT(trgeometry 'SRID=5676,Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.123456789)@2001-01-01, Pose(Point(1 1), 0.523456789)@2001-01-02, Pose(Point(1 1), 0.123456789)@2001-01-03],[Pose(Point(2 2), 0.723456789)@2001-01-04, Pose(Point(2 2), 0.723456789)@2001-01-05]}', 6);
+-- An SRID stated before the pose is the SRID of the value and of its
+-- reference geometry
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01');
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01, Pose(Point(2 2), 0.5)@2001-01-02]');
+SELECT srid(trgeometry 'Polygon((1 1,2 2,3 1,1 1));SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01'),
+  ST_SRID(geometry(trgeometry 'Polygon((1 1,2 2,3 1,1 1));SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01'));
+-- A line break may follow the SRID of a pose
+SELECT asEWKT(trgeometry E'Polygon((1 1,2 2,3 1,1 1));SRID=5676;\n  Pose(Point(1 1), 0.5)@2001-01-01');
+SELECT asEWKT(pose E'SRID=5676;\n  Pose(Point(1 1), 0.5)');
+-- An SRID stated on a later pose only, as a temporal point reads it
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.5)@2001-01-01, SRID=5676;Pose(Point(2 2), 0.5)@2001-01-02]');
+SELECT asEWKT(tgeompoint '[Point(1 1)@2001-01-01, SRID=5676;Point(2 2)@2001-01-02]');
+/* Errors */
+SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));SRID=3812;Pose(Point(1 1), 0.5)@2001-01-01';
 
 -------------------------------------------------------------------------------
 
