@@ -97,6 +97,20 @@ plan of MobilityDB #3287 (`doc/contributing/exactness/`).
    dialect never names; the portable functions are ordinary functions beside it.
 4. **The catalog names each reader and writer through the wrapper that reaches it**, and the
    bindings register one function per `sqlSignatures` entry.
+5. **One MEOS function per template, where the format states the type, and no redundant one**
+   (DECIDED BY THE OWNER 2026-11-09, "yes, apply the per-template rule", "yes remove
+   redundancies"). A value always carries its type, so every writer is one function per
+   template, set, span, span set and temporal: `set_out`, `span_out`, `spanset_out` and
+   `temporal_out` are public and back both the output of each type and `asText`, as `tbox_out`
+   does, and as `set_as_wkb` and `temporal_as_wkb` back `asBinary`; a separate `*_as_text`
+   exists only where `asText` writes another text than the output of the type, as
+   `tspatial_as_text` writes WKT where `tspatial_out` writes hex WKB. The per-type writers that
+   repeat the template writer (`intset_out`, `tint_out`, ...) are not part of the API. A reader
+   is one function per template where the format states the type, as WKB does
+   (`set_from_wkb`, `temporal_from_wkb`), and one per type where it does not, as text does:
+   `{1, 2}` is an `intset` or a `bigintset` and `1@2001-01-01` a `tint` or a `tfloat`, so
+   `intset_in` and `tint_in` read them. A box has no template, `tbox`, `stbox` and `tpcbox`
+   being three structures, so its functions are per type.
 
 ## The bindings
 
