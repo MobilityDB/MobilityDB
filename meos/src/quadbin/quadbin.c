@@ -146,7 +146,7 @@ quadbin_out(Quadbin cell, size_t *size_out)
  * @brief Return a QUADBIN index from a 64-bit integer, raising an error when
  * the integer encodes no well-formed index
  * @param[in] i Integer
- * @csqlfn #Bigint_to_quadbin(), #Quadbin_recv()
+ * @csqlfn #Bigint_to_quadbin()
  */
 Quadbin
 bigint_to_quadbin(int64 i)
@@ -173,7 +173,7 @@ bigint_to_quadbin(int64 i)
  * @brief Return a quadbin from its Well-Known Binary (WKB) representation
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
- * @csqlfn #Quadbin_from_wkb()
+ * @csqlfn #Quadbin_from_wkb(), #Quadbin_recv()
  */
 Quadbin
 quadbin_from_wkb(const uint8_t *wkb, size_t size)
@@ -205,7 +205,7 @@ quadbin_from_hexwkb(const char *hexwkb)
  * @param[in] cell Cell
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Quadbin_as_wkb()
+ * @csqlfn #Quadbin_as_wkb(), #Quadbin_send()
  */
 uint8_t *
 quadbin_as_wkb(Quadbin cell, uint8_t variant, size_t *size_out)
