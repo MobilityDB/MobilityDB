@@ -3,7 +3,7 @@ SELECT intspan '[1,5)' &amp;&amp; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02]
 -- true
 SELECT tstzspan '[2001-01-01,2001-01-03]' @&gt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
 -- true
-</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_overlap"></a><a class="indexterm" name="id3370"></a><p>¿Se superponen los cuadros delimitadores?</p><pre class="programlisting">
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_overlap"></a><a class="indexterm" name="id3390"></a><p>¿Se superponen los cuadros delimitadores?</p><pre class="programlisting">
 box &amp;&amp; box → boolean
 </pre><pre class="programlisting">
 SELECT tbox 'TBOXFLOAT XT((1,3),[2001-01-01,2001-01-03])' &amp;&amp;
@@ -12,7 +12,7 @@ SELECT tbox 'TBOXFLOAT XT((1,3),[2001-01-01,2001-01-03])' &amp;&amp;
 SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &amp;&amp;
   stbox 'STBOX T([2001-01-02,2001-01-02])';
 -- true
-</pre></li><li class="listitem"><a name="box_contains"></a><a class="indexterm" name="id3377"></a><p>¿Contiene el primer cuadro delimitador el segundo?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_contains"></a><a class="indexterm" name="id3397"></a><p>¿Contiene el primer cuadro delimitador el segundo?</p><pre class="programlisting">
 box @&gt; box → boolean
 </pre><pre class="programlisting">
 SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' @&gt;
@@ -21,7 +21,7 @@ SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' @&gt;
 SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' @&gt;
   stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])';
 -- true
-</pre></li><li class="listitem"><a name="box_containedby"></a><a class="indexterm" name="id3384"></a><p>¿Está el primer cuadro delimitador contenido en el segundo?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_containedby"></a><a class="indexterm" name="id3404"></a><p>¿Está el primer cuadro delimitador contenido en el segundo?</p><pre class="programlisting">
 box &lt;@ box → boolean
 </pre><pre class="programlisting">
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;@ tbox 'TBOXFLOAT XT((1,2),
@@ -30,7 +30,7 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;@ tbox 'TBOXFLOAT 
 SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &lt;@
   stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])';
 -- true
-</pre></li><li class="listitem"><a name="box_same"></a><a class="indexterm" name="id3391"></a><p>¿Son los cuadros delimitadores iguales en sus dimensiónes comunes?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_same"></a><a class="indexterm" name="id3411"></a><p>¿Son los cuadros delimitadores iguales en sus dimensiónes comunes?</p><pre class="programlisting">
 box ~= box → boolean
 </pre><pre class="programlisting">
 SELECT tbox 'TBOXFLOAT XT((1,2),
@@ -39,7 +39,7 @@ SELECT tbox 'TBOXFLOAT XT((1,2),
 SELECT stbox 'STBOX XT(((1,1),(3,3)),
   [2001-01-01,2001-01-03])' ~= stbox 'STBOX Z((1,1,1),(3,3,3))';
 -- true
-</pre></li><li class="listitem"><a name="box_adjacent"></a><a class="indexterm" name="id3398"></a><p>¿Son los cuadros delimitadores adyacentes?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_adjacent"></a><a class="indexterm" name="id3418"></a><p>¿Son los cuadros delimitadores adyacentes?</p><pre class="programlisting">
 box -|- box → boolean
 </pre><p>Dos cuadros delimitadores son adyacentes si sus extensiones se encuentran en todas las dimensiones que los cuadros comparten y se tocan en un solo valor en al menos una de ellas. Una dimensión en la que los cuadros están separados los separa sea cual sea el comportamiento de las demás dimensiones.</p><pre class="programlisting">
 SELECT tbox 'TBOXINT XT([1,2),[2001-01-01,2001-01-02])' -|- tbox 'TBOXINT XT([2,3),
@@ -56,7 +56,7 @@ SELECT intspan '[1,5)' &amp;&lt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])
 -- true
 SELECT tstzspan '[2001-01-05,2001-01-06]' #&gt;&gt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
 -- true
-</pre><p>Los operadores para la dimensión numérica del tipo <code class="varname">tbox</code> se dan a continuación.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_left"></a><a class="indexterm" name="id3438"></a><a class="indexterm" name="id3441"></a><a class="indexterm" name="id3444"></a><a class="indexterm" name="id3447"></a><p>¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente menores que los del segundo?</p><pre class="programlisting">
+</pre><p>Los operadores para la dimensión numérica del tipo <code class="varname">tbox</code> se dan a continuación.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_left"></a><a class="indexterm" name="id3458"></a><a class="indexterm" name="id3461"></a><a class="indexterm" name="id3464"></a><a class="indexterm" name="id3467"></a><p>¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente menores que los del segundo?</p><pre class="programlisting">
 tbox {&lt;&lt;, &lt;&lt;#} tbox → boolean
 stbox {&lt;&lt;, &lt;&lt;|, &lt;&lt;/, &lt;&lt;#} stbox → boolean
 </pre><pre class="programlisting">
@@ -73,7 +73,7 @@ SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4)
 SELECT tbox 'TBOXFLOAT XT((1,2),
   [2001-01-01,2001-01-02])' &lt;&lt;# tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
 -- true
-</pre></li><li class="listitem"><a name="tbox_right"></a><a class="indexterm" name="id3454"></a><a class="indexterm" name="id3457"></a><a class="indexterm" name="id3460"></a><a class="indexterm" name="id3463"></a><p>¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_right"></a><a class="indexterm" name="id3474"></a><a class="indexterm" name="id3477"></a><a class="indexterm" name="id3480"></a><a class="indexterm" name="id3483"></a><p>¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</p><pre class="programlisting">
 tbox {&gt;&gt;, #&gt;&gt;} tbox → boolean
 stbox {&gt;&gt;, |&gt;&gt;, /&gt;&gt;, #&gt;&gt;} stbox → boolean
 </pre><pre class="programlisting">
@@ -87,7 +87,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2)
 SELECT stbox 'STBOX XT(((3,3),(4,4)),[2001-01-03,2001-01-04])' #&gt;&gt;
   stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])';
 -- true
-</pre></li><li class="listitem"><a name="tbox_overleft"></a><a class="indexterm" name="id3470"></a><a class="indexterm" name="id3473"></a><a class="indexterm" name="id3476"></a><a class="indexterm" name="id3479"></a><p>¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_overleft"></a><a class="indexterm" name="id3490"></a><a class="indexterm" name="id3493"></a><a class="indexterm" name="id3496"></a><a class="indexterm" name="id3499"></a><p>¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</p><pre class="programlisting">
 tbox {&amp;&lt;, &amp;&lt;#} box → boolean
 stbox {&amp;&lt;, &amp;&lt;|, &amp;&lt;/, &amp;&lt;#} stbox → boolean
 </pre><pre class="programlisting">
@@ -101,7 +101,7 @@ SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4
 SELECT tbox 'TBOXFLOAT XT((1,4),
   [2001-01-01,2001-01-04])' &amp;&lt;# tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
 -- true
-</pre></li><li class="listitem"><a name="tbox_overright"></a><a class="indexterm" name="id3486"></a><a class="indexterm" name="id3489"></a><a class="indexterm" name="id3492"></a><a class="indexterm" name="id3495"></a><p>¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_overright"></a><a class="indexterm" name="id3506"></a><a class="indexterm" name="id3509"></a><a class="indexterm" name="id3512"></a><a class="indexterm" name="id3515"></a><p>¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</p><pre class="programlisting">
 tbox {&amp;&gt;, #&amp;&gt;} tbox → boolean
 stbox {&amp;&gt;, |&amp;&gt;, /&amp;&gt;, #&amp;&gt;} stbox} → boolean
 </pre><pre class="programlisting">

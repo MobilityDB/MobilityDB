@@ -3,7 +3,7 @@ SELECT intspan '[1,5)' &amp;&amp; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02]
 -- true
 SELECT tstzspan '[2001-01-01,2001-01-03]' @&gt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
 -- true
-</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_overlap"></a><a class="indexterm" name="id3930"></a><p>Do the bounding boxes overlap?</p><pre class="programlisting">
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_overlap"></a><a class="indexterm" name="id3950"></a><p>Do the bounding boxes overlap?</p><pre class="programlisting">
 box &amp;&amp; box → boolean
 </pre><pre class="programlisting">
 SELECT tbox 'TBOXFLOAT XT((1,3),[2001-01-01,2001-01-03])' &amp;&amp;
@@ -12,7 +12,7 @@ SELECT tbox 'TBOXFLOAT XT((1,3),[2001-01-01,2001-01-03])' &amp;&amp;
 SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &amp;&amp;
   stbox 'STBOX T([2001-01-02,2001-01-02])';
 -- true
-</pre></li><li class="listitem"><a name="box_contains"></a><a class="indexterm" name="id3937"></a><p>Does the first bounding box contain the second one?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_contains"></a><a class="indexterm" name="id3957"></a><p>Does the first bounding box contain the second one?</p><pre class="programlisting">
 box @&gt; box → boolean
 </pre><pre class="programlisting">
 SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' @&gt;
@@ -21,7 +21,7 @@ SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' @&gt;
 SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' @&gt;
   stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])';
 -- true
-</pre></li><li class="listitem"><a name="box_containedby"></a><a class="indexterm" name="id3944"></a><p>Is the first bounding box contained in the second one?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_containedby"></a><a class="indexterm" name="id3964"></a><p>Is the first bounding box contained in the second one?</p><pre class="programlisting">
 box &lt;@ box → boolean
 </pre><pre class="programlisting">
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;@ tbox 'TBOXFLOAT XT((1,2),
@@ -30,7 +30,7 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;@ tbox 'TBOXFLOAT 
 SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &lt;@
   stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])';
 -- true
-</pre></li><li class="listitem"><a name="box_same"></a><a class="indexterm" name="id3951"></a><p>Are the bounding boxes equal in their common dimensions?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_same"></a><a class="indexterm" name="id3971"></a><p>Are the bounding boxes equal in their common dimensions?</p><pre class="programlisting">
 box ~= box → boolean
 </pre><pre class="programlisting">
 SELECT tbox 'TBOXFLOAT XT((1,2),
@@ -39,7 +39,7 @@ SELECT tbox 'TBOXFLOAT XT((1,2),
 SELECT stbox 'STBOX XT(((1,1),(3,3)),
   [2001-01-01,2001-01-03])' ~= stbox 'STBOX Z((1,1,1),(3,3,3))';
 -- true
-</pre></li><li class="listitem"><a name="box_adjacent"></a><a class="indexterm" name="id3958"></a><p>Are the bounding boxes adjacent?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_adjacent"></a><a class="indexterm" name="id3978"></a><p>Are the bounding boxes adjacent?</p><pre class="programlisting">
 box -|- box → boolean
 </pre><p>Two boxes are adjacent if their extents meet in every dimension the boxes share and touch at a single value in at least one of them. A dimension in which the boxes are apart separates them whatever the remaining dimensions do.</p><pre class="programlisting">
 SELECT tbox 'TBOXINT XT([1,2),[2001-01-01,2001-01-02])' -|- tbox 'TBOXINT XT([2,3),
@@ -56,7 +56,7 @@ SELECT intspan '[1,5)' &amp;&lt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])
 -- true
 SELECT tstzspan '[2001-01-05,2001-01-06]' #&gt;&gt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
 -- true
-</pre><p>The operators for the numeric dimension of the <code class="varname">tbox</code> type are given next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_left"></a><a class="indexterm" name="id3998"></a><a class="indexterm" name="id4001"></a><a class="indexterm" name="id4004"></a><a class="indexterm" name="id4007"></a><p>Are the X/Y/Z/T values of the first bounding box strictly less than those of the second one?</p><pre class="programlisting">
+</pre><p>The operators for the numeric dimension of the <code class="varname">tbox</code> type are given next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_left"></a><a class="indexterm" name="id4018"></a><a class="indexterm" name="id4021"></a><a class="indexterm" name="id4024"></a><a class="indexterm" name="id4027"></a><p>Are the X/Y/Z/T values of the first bounding box strictly less than those of the second one?</p><pre class="programlisting">
 tbox {&lt;&lt;, &lt;&lt;#} tbox → boolean
 stbox {&lt;&lt;, &lt;&lt;|, &lt;&lt;/, &lt;&lt;#} stbox → boolean
 </pre><pre class="programlisting">
@@ -73,7 +73,7 @@ SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4)
 SELECT tbox 'TBOXFLOAT XT((1,2),
   [2001-01-01,2001-01-02])' &lt;&lt;# tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
 -- true
-</pre></li><li class="listitem"><a name="tbox_right"></a><a class="indexterm" name="id4014"></a><a class="indexterm" name="id4017"></a><a class="indexterm" name="id4020"></a><a class="indexterm" name="id4023"></a><p>Are the X/Y/Z/T values of the first bounding box strictly greater than those of the second one?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_right"></a><a class="indexterm" name="id4034"></a><a class="indexterm" name="id4037"></a><a class="indexterm" name="id4040"></a><a class="indexterm" name="id4043"></a><p>Are the X/Y/Z/T values of the first bounding box strictly greater than those of the second one?</p><pre class="programlisting">
 tbox {&gt;&gt;, #&gt;&gt;} tbox → boolean
 stbox {&gt;&gt;, |&gt;&gt;, /&gt;&gt;, #&gt;&gt;} stbox → boolean
 </pre><pre class="programlisting">
@@ -87,7 +87,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2)
 SELECT stbox 'STBOX XT(((3,3),(4,4)),[2001-01-03,2001-01-04])' #&gt;&gt;
   stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])';
 -- true
-</pre></li><li class="listitem"><a name="tbox_overleft"></a><a class="indexterm" name="id4030"></a><a class="indexterm" name="id4033"></a><a class="indexterm" name="id4036"></a><a class="indexterm" name="id4039"></a><p>Are the X/Y/Z/T values of the first bounding box not greater than those of the second one?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_overleft"></a><a class="indexterm" name="id4050"></a><a class="indexterm" name="id4053"></a><a class="indexterm" name="id4056"></a><a class="indexterm" name="id4059"></a><p>Are the X/Y/Z/T values of the first bounding box not greater than those of the second one?</p><pre class="programlisting">
 tbox {&amp;&lt;, &amp;&lt;#} box → boolean
 stbox {&amp;&lt;, &amp;&lt;|, &amp;&lt;/, &amp;&lt;#} stbox → boolean
 </pre><pre class="programlisting">
@@ -101,7 +101,7 @@ SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4
 SELECT tbox 'TBOXFLOAT XT((1,4),
   [2001-01-01,2001-01-04])' &amp;&lt;# tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
 -- true
-</pre></li><li class="listitem"><a name="tbox_overright"></a><a class="indexterm" name="id4046"></a><a class="indexterm" name="id4049"></a><a class="indexterm" name="id4052"></a><a class="indexterm" name="id4055"></a><p>Are the X/Y/Z/T values of the first bounding box not less than those of the second one?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_overright"></a><a class="indexterm" name="id4066"></a><a class="indexterm" name="id4069"></a><a class="indexterm" name="id4072"></a><a class="indexterm" name="id4075"></a><p>Are the X/Y/Z/T values of the first bounding box not less than those of the second one?</p><pre class="programlisting">
 tbox {&amp;&gt;, #&amp;&gt;} tbox → boolean
 stbox {&amp;&gt;, |&amp;&gt;, /&amp;&gt;, #&amp;&gt;} stbox} → boolean
 </pre><pre class="programlisting">
