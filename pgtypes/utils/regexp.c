@@ -43,6 +43,7 @@
 #include "utils/formatting.h"
 #include "catalog/pg_collation_d.h"
 #include <pgtypes.h>
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
 /* all the options of interest for regex functions */
 typedef struct pg_re_flags
@@ -108,8 +109,28 @@ typedef struct cached_re_str
   regex_t  cre_re;         /* the compiled regular expression */
 } cached_re_str;
 
-static int  num_res = 0;    /* # of cached re's */
-static cached_re_str re_array[MAX_CACHED_RES];  /* cached re's */
+/* MEOS: per thread (MEOS_TLS), freed by #regexp_destroy_cache */
+static MEOS_TLS int  num_res = 0;    /* # of cached re's */
+static MEOS_TLS cached_re_str re_array[MAX_CACHED_RES];  /* cached re's */
+
+#if MEOS
+/*
+ * MEOS: Free the regular expressions the cache of this thread holds, and
+ * the character classes compiled for them, which #meos_finalize calls as
+ * it frees the other caches
+ */
+void
+regexp_destroy_cache(void)
+{
+  for (int i = 0; i < num_res; i++)
+  {
+    pg_regfree(&re_array[i].cre_re);
+    pfree(re_array[i].cre_pat);
+  }
+  num_res = 0;
+  pg_ctype_destroy_cache();
+}
+#endif /* MEOS */
 
 
 /* Local functions */
@@ -207,6 +228,10 @@ RE_compile_and_cache(text *text_re, int cflags, Oid collation)
   {
     --num_res;
     Assert(num_res < MAX_CACHED_RES);
+    /* MEOS: an entry holds no memory context, so the compiled expression
+     * and the pattern of the entry dropped from the cache are freed here */
+    pg_regfree(&re_array[num_res].cre_re);
+    pfree(re_array[num_res].cre_pat);
   }
 
   if (num_res > 0)

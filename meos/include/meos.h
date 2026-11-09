@@ -345,6 +345,11 @@ typedef struct
  */
 typedef struct SkipList SkipList;
 
+/**
+ * Structure for the state of the reachability filter of a stream of reports
+ */
+typedef struct ReachabilityState ReachabilityState;
+
 /*****************************************************************************/
 
 /**
@@ -658,9 +663,11 @@ extern Set *text_to_set(const text *txt);
 extern Set *timestamptz_to_set(TimestampTz t);
 extern Span *timestamptz_to_span(TimestampTz t);
 extern SpanSet *timestamptz_to_spanset(TimestampTz t);
+extern int64 timestamptz_to_unix_us(TimestampTz t);
 extern Set *tstzset_to_dateset(const Set *s);
 extern Span *tstzspan_to_datespan(const Span *s);
 extern SpanSet *tstzspanset_to_datespanset(const SpanSet *ss);
+extern TimestampTz unix_us_to_timestamptz(int64 us);
 
 /*****************************************************************************
  * Accessor functions for set and span types
@@ -2195,6 +2202,18 @@ extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp
 
 extern Temporal *temporal_ext_kalman_filter(const Temporal *temp, double gate,
   double q, double variance, bool to_drop);
+
+/* Reachability filter */
+
+extern Temporal *temporal_reachability_filter(const Temporal *temp, double maxspeed);
+extern ReachabilityState *temporal_reachability_filter_transfn(ReachabilityState *state, const TInstant *inst, double maxspeed);
+extern Temporal *temporal_reachability_filter_finalfn(ReachabilityState *state);
+extern TInstant **reachabilitystate_instants(ReachabilityState *state, int *count);
+extern int reachabilitystate_kept(const ReachabilityState *state);
+extern int reachabilitystate_reports(const ReachabilityState *state);
+extern int reachabilitystate_unreachable(const ReachabilityState *state);
+extern ReachabilityState *reachabilitystate_deserialize(const uint8_t *bytes, size_t size);
+extern uint8_t *reachabilitystate_serialize(const ReachabilityState *state, size_t *size_out);
 
 /*****************************************************************************/
 

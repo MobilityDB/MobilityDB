@@ -675,3 +675,5 @@ SELECT tgeompoint(tjsonb '"{\"pos\":1}"@2001-01-01', text 'pos');
 ERROR:  The value of key "pos" is not a string
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\"}"@2001-01-01', text 'xxx');
 ERROR:  The lifted operation returned NULL
+SELECT tjsonb '[{"a": [1]}@2001-01-01]' @? 'strict $.a.keyvalue()';
+ERROR:  XX000

@@ -94,6 +94,14 @@ SELECT getTime(minusStbox(
 SELECT getTime(atStbox(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   stbox 'STBOX T([2001-01-02, 2001-01-04])'));
+-- minusStbox with a temporal-only box keeps the rest of the time domain
+SELECT getTime(minusStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  stbox 'STBOX T([2001-01-02, 2001-01-04])'));
+-- A temporal-only box disjoint from the value
+SELECT atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  stbox 'STBOX T([2002-01-01, 2002-01-02])') IS NULL;
 
 -------------------------------------------------------------------------------
 -- Rigid motions: the geometry a rigid geometry places moves as the temporal geometry does

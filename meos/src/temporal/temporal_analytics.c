@@ -393,6 +393,727 @@ temporal_ext_kalman_filter(const Temporal *temp, double gate, double q, double v
 }
 
 /*****************************************************************************
+ * Reachability filter
+ *****************************************************************************/
+
+/** Number of the first reports among which the seed of the walk is chosen */
+#define REACH_HEAD 11
+
+/**
+ * @brief State of the reachability filter of a stream of reports
+ * @details The reports are walked in the order of their times: a report is
+ * kept when the last kept report could reach it at the maximum speed. The
+ * walk trusts its first report, so its seed is chosen among the first
+ * #REACH_HEAD reports, which the state holds until they have arrived, and
+ * the reports before the seed are walked backwards from it. The state counts
+ * the reports, those unreachable from the report before, and the kept ones,
+ * and holds the kept reports not yet handed back by
+ * #reachabilitystate_instants.
+ */
+struct ReachabilityState
+{
+  MeosType temptype;      /**< Temporal type of the reports */
+  int16 flags;            /**< Flags of the first report */
+  int32_t srid;           /**< SRID of the reports, 0 for a temporal float */
+  double maxspeed;        /**< Maximum speed, in units per second */
+  bool seeded;            /**< True when the seed has been chosen */
+  int reports;            /**< Number of reports */
+  int unreachable;        /**< Number of reports unreachable from the one before */
+  int kept;               /**< Number of kept reports */
+  TInstant *previous;     /**< Last report */
+  TInstant *anchor;       /**< Last kept report, once the seed is chosen */
+  int nhead;              /**< Number of reports held until the seed is chosen */
+  TInstant *head[REACH_HEAD]; /**< Reports held until the seed is chosen */
+  int npending;           /**< Number of kept reports not yet handed back */
+  int maxpending;         /**< Room for kept reports not yet handed back */
+  TInstant **pending;     /**< Kept reports not yet handed back */
+};
+
+/**
+ * @brief Ensure that the reports of a temporal type can be walked: a
+ * temporal float, whose distance is the difference of its values, or a
+ * temporal point, whose distance is the planar or the geodetic one
+ * @details The types are those of #temporal_ext_kalman_filter and the
+ * temporal geography point
+ */
+static bool
+ensure_reachability_type(MeosType temptype)
+{
+  if (temptype == T_TFLOAT || temptype == T_TGEOMPOINT ||
+      temptype == T_TGEOGPOINT)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The reachability filter applies to temporal floats and temporal points, not to %s",
+    meostype_name(temptype));
+  return false;
+}
+
+/**
+ * @brief Return the distance between the values of two reports: the
+ * difference of two floats, the planar distance of two geometry points, the
+ * distance on the spheroid of two geography points, as PostGIS computes it
+ * for two geographies
+ * @details The point distances are those #pt_distance_fn selects
+ */
+static double
+reach_distance(const ReachabilityState *state, const TInstant *inst1,
+  const TInstant *inst2)
+{
+  Datum value1 = tinstant_value_p(inst1);
+  Datum value2 = tinstant_value_p(inst2);
+  switch (state->temptype)
+  {
+    case T_TFLOAT:
+      return fabs(DatumGetFloat8(value1) - DatumGetFloat8(value2));
+    case T_TGEOMPOINT:
+      return DatumGetFloat8(MEOS_FLAGS_GET_Z(state->flags) ?
+        datum_pt_distance3d(value1, value2) :
+        datum_pt_distance2d(value1, value2));
+    case T_TGEOGPOINT:
+      return geog_distance(DatumGetGserializedP(value1),
+        DatumGetGserializedP(value2), true);
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown type for the reachability filter: %s",
+        meostype_name(state->temptype));
+      return DBL_MAX;
+  }
+}
+
+/**
+ * @brief Return true when the second report can be reached from the first
+ * one at the maximum speed of the state, whatever their order in time
+ */
+static bool
+reach(const ReachabilityState *state, const TInstant *inst1,
+  const TInstant *inst2)
+{
+  TimestampTz dt = inst2->t > inst1->t ? inst2->t - inst1->t :
+    inst1->t - inst2->t;
+  return reach_distance(state, inst1, inst2) <=
+    state->maxspeed * ((double) dt / USECS_PER_SEC);
+}
+
+/**
+ * @brief Append a kept report to the reports of a state not yet handed back,
+ * which take the ownership of the report
+ */
+static void
+reachabilitystate_keep(ReachabilityState *state, TInstant *inst)
+{
+  if (state->npending == state->maxpending)
+  {
+    state->maxpending = state->maxpending ? state->maxpending * 2 : 16;
+    state->pending = state->pending ?
+      repalloc(state->pending, sizeof(TInstant *) * state->maxpending) :
+      palloc(sizeof(TInstant *) * state->maxpending);
+  }
+  state->pending[state->npending++] = inst;
+  state->kept++;
+}
+
+/**
+ * @brief Choose the seed among the reports held by a state, the earliest one
+ * that a majority of the others can reach, walk the reports before it
+ * backwards and those after it forwards, and keep the last kept one as the
+ * anchor of the walk
+ */
+static void
+reachabilitystate_seed(ReachabilityState *state)
+{
+  int n = state->nhead;
+  TInstant **head = state->head;
+  int seed = 0;
+  for (int i = 0; i < n; i++)
+  {
+    int ok = 0;
+    for (int j = 0; j < n; j++)
+      if (j != i && head[j]->t != head[i]->t && reach(state, head[i], head[j]))
+        ok++;
+    if (ok * 2 >= n - 1)
+    {
+      seed = i;
+      break;
+    }
+  }
+  bool kept[REACH_HEAD] = {false};
+  kept[seed] = true;
+  int anchor = seed;
+  for (int i = seed - 1; i >= 0; i--)
+  {
+    if (reach(state, head[anchor], head[i]))
+    {
+      kept[i] = true;
+      anchor = i;
+    }
+  }
+  anchor = seed;
+  for (int i = seed + 1; i < n; i++)
+  {
+    if (head[i]->t > head[anchor]->t && reach(state, head[anchor], head[i]))
+    {
+      kept[i] = true;
+      anchor = i;
+    }
+  }
+  state->anchor = tinstant_copy(head[anchor]);
+  for (int i = 0; i < n; i++)
+  {
+    if (kept[i])
+      reachabilitystate_keep(state, head[i]);
+    else
+      pfree(head[i]);
+    head[i] = NULL;
+  }
+  state->nhead = 0;
+  state->seeded = true;
+}
+
+/**
+ * @brief Release a reachability state and every report it holds
+ */
+static void
+reachabilitystate_free(ReachabilityState *state)
+{
+  if (state->previous)
+    pfree(state->previous);
+  if (state->anchor)
+    pfree(state->anchor);
+  for (int i = 0; i < state->nhead; i++)
+    pfree(state->head[i]);
+  for (int i = 0; i < state->npending; i++)
+    pfree(state->pending[i]);
+  if (state->pending)
+    pfree(state->pending);
+  pfree(state);
+}
+
+/**
+ * @brief Close the walk of a state: choose the seed if fewer reports than the
+ * head arrived, and return the kept reports not yet handed back, whose
+ * ownership passes to the caller, or NULL when the reports are dropped whole,
+ * because more than half of them are unreachable from the report before
+ * @param[in] state State, which keeps its counts and releases its reports
+ * @param[out] count Number of reports returned
+ */
+static TInstant **
+reachabilitystate_close(ReachabilityState *state, int *count)
+{
+  if (! state->seeded && state->nhead > 0)
+    reachabilitystate_seed(state);
+  TInstant **result = state->pending;
+  *count = state->npending;
+  state->pending = NULL;
+  state->npending = state->maxpending = 0;
+  if (state->unreachable * 2 > state->reports)
+  {
+    for (int i = 0; i < *count; i++)
+      pfree(result[i]);
+    if (result)
+      pfree(result);
+    *count = 0;
+    return NULL;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function of the reachability filter: walk a report
+ * @details The reports arrive in the order of their times. A report is kept
+ * when the last kept report could reach it at the maximum speed. The first
+ * #REACH_HEAD reports are held until the seed of the walk is chosen among
+ * them; every later report is decided when it arrives.
+ * @param[in,out] state State, NULL for the first report @nullable
+ * @param[in] inst Report
+ * @param[in] maxspeed Maximum speed, in units of the values per second
+ * @return The state
+ * @errval NULL
+ * @csqlfn #Temporal_reachability_filter_transfn()
+ */
+ReachabilityState *
+temporal_reachability_filter_transfn(ReachabilityState *state,
+  const TInstant *inst, double maxspeed)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(inst, NULL);
+  if (! ensure_temporal_isof_subtype((const Temporal *) inst, TINSTANT))
+    return NULL;
+  if (! state)
+  {
+    if (! ensure_finite(maxspeed) ||
+        ! ensure_positive_datum(Float8GetDatum(maxspeed), T_FLOAT8) ||
+        ! ensure_reachability_type(inst->temptype))
+      return NULL;
+    state = palloc0(sizeof(ReachabilityState));
+    state->temptype = inst->temptype;
+    state->flags = inst->flags;
+    state->srid = tpoint_type(inst->temptype) ?
+      tspatial_srid((const Temporal *) inst) : 0;
+    state->maxspeed = maxspeed;
+  }
+  else
+  {
+    if (maxspeed != state->maxspeed)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The maximum speed of a reachability filter cannot change");
+      return NULL;
+    }
+    if (inst->temptype != state->temptype)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "The reports of a reachability filter must be of the same type");
+      return NULL;
+    }
+    if (tpoint_type(inst->temptype) &&
+        (! ensure_same_srid(state->srid, tspatial_srid((const Temporal *) inst)) ||
+         ! ensure_same_spatial_dimensionality(state->flags, inst->flags)))
+      return NULL;
+    if (inst->t <= state->previous->t)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The reports of a reachability filter must arrive in increasing time");
+      return NULL;
+    }
+  }
+
+  /* Count the reports unreachable from the report before */
+  state->reports++;
+  if (state->previous)
+  {
+    if (! reach(state, state->previous, inst))
+      state->unreachable++;
+    pfree(state->previous);
+  }
+  state->previous = tinstant_copy(inst);
+
+  /* Hold the report until the seed is chosen, or decide it */
+  if (! state->seeded)
+  {
+    state->head[state->nhead++] = tinstant_copy(inst);
+    if (state->nhead == REACH_HEAD)
+      reachabilitystate_seed(state);
+  }
+  else if (reach(state, state->anchor, inst))
+  {
+    pfree(state->anchor);
+    state->anchor = tinstant_copy(inst);
+    reachabilitystate_keep(state, tinstant_copy(inst));
+  }
+  return state;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Final function of the reachability filter: close the walk and
+ * return the kept reports not yet handed back by #reachabilitystate_instants
+ * @details The reports are dropped whole when more than half of them are
+ * unreachable from the report before. The state is released.
+ * @param[in] state State
+ * @return A temporal sequence with the default interpolation of the type,
+ * NULL when no report is left or the reports are dropped whole
+ * @csqlfn #Temporal_reachability_filter_finalfn()
+ */
+Temporal *
+temporal_reachability_filter_finalfn(ReachabilityState *state)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, NULL);
+  int count;
+  TInstant **instants = reachabilitystate_close(state, &count);
+  interpType interp = temptype_supports_linear(state->temptype) ?
+    LINEAR : STEP;
+  reachabilitystate_free(state);
+  if (count == 0)
+  {
+    if (instants)
+      pfree(instants);
+    return NULL;
+  }
+  return (Temporal *) tsequence_make_free(instants, count, true, true,
+    interp, NORMALIZE_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return the kept reports of a reachability filter not yet handed
+ * back, and hand them back
+ * @details A stream emits these reports after each call of
+ * #temporal_reachability_filter_transfn, and the reports still held when the
+ * stream closes are those that #temporal_reachability_filter_finalfn returns
+ * @param[in,out] state State
+ * @param[out] count Number of elements in the array
+ * @return Array of the reports, empty when no report has been decided since
+ * the last call
+ * @errval NULL
+ */
+TInstant **
+reachabilitystate_instants(ReachabilityState *state, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(count, NULL);
+  TInstant **result = state->pending ? state->pending :
+    palloc(sizeof(TInstant *));
+  *count = state->npending;
+  state->pending = NULL;
+  state->npending = state->maxpending = 0;
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return the number of reports a reachability filter has read
+ * @param[in] state State
+ * @return The number of reports
+ * @errval -1
+ */
+int
+reachabilitystate_reports(const ReachabilityState *state)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, -1);
+  return state->reports;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return the number of reports of a reachability filter unreachable
+ * from the report before
+ * @param[in] state State
+ * @return The number of reports
+ * @errval -1
+ */
+int
+reachabilitystate_unreachable(const ReachabilityState *state)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, -1);
+  return state->unreachable;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return the number of reports a reachability filter has kept
+ * @param[in] state State
+ * @return The number of reports
+ * @errval -1
+ */
+int
+reachabilitystate_kept(const ReachabilityState *state)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, -1);
+  return state->kept;
+}
+
+/** Number of the integers that open the bytes of a reachability state */
+#define REACH_HEADER 9
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return the bytes of a reachability state, read back by
+ * #reachabilitystate_deserialize
+ * @details The bytes hold the type, flags, SRID, counts and maximum speed of
+ * the state, whether it holds a last report and an anchor, the number of its
+ * held and of its pending reports, and each report as its size followed by
+ * its extended Well-Known Binary in little endian. The numbers and sizes are
+ * written in the byte order of the machine, as #taggstate_serialize writes
+ * them, so that the state moves between the workers of one engine.
+ * @param[in] state State
+ * @param[out] size_out Size of the result in bytes
+ * @return The bytes
+ * @errval NULL
+ */
+uint8_t *
+reachabilitystate_serialize(const ReachabilityState *state, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+
+  int count = state->nhead + state->npending + (state->previous ? 1 : 0) +
+    (state->anchor ? 1 : 0);
+  const TInstant **insts = palloc(sizeof(TInstant *) * Max(count, 1));
+  int k = 0;
+  if (state->previous)
+    insts[k++] = state->previous;
+  if (state->anchor)
+    insts[k++] = state->anchor;
+  for (int i = 0; i < state->nhead; i++)
+    insts[k++] = state->head[i];
+  for (int i = 0; i < state->npending; i++)
+    insts[k++] = state->pending[i];
+  int32 header[REACH_HEADER] = {state->temptype, state->flags, state->srid,
+    state->seeded ? 1 : 0, state->reports, state->unreachable, state->kept,
+    (state->previous ? 1 : 0) | (state->anchor ? 2 : 0), state->nhead};
+  int32 npending = state->npending;
+  uint8_t **wkbs = palloc(sizeof(uint8_t *) * Max(count, 1));
+  size_t *sizes = palloc(sizeof(size_t) * Max(count, 1));
+  size_t size = sizeof(header) + sizeof(double) + sizeof(int32) +
+    sizeof(size_t) * count;
+  for (int i = 0; i < count; i++)
+  {
+    wkbs[i] = temporal_as_wkb((const Temporal *) insts[i],
+      WKB_EXTENDED | WKB_NDR, &sizes[i]);
+    size += sizes[i];
+  }
+  uint8_t *result = palloc(size);
+  uint8_t *pos = result;
+  memcpy(pos, header, sizeof(header));
+  pos += sizeof(header);
+  memcpy(pos, &state->maxspeed, sizeof(double));
+  pos += sizeof(double);
+  memcpy(pos, &npending, sizeof(int32));
+  pos += sizeof(int32);
+  for (int i = 0; i < count; i++)
+  {
+    memcpy(pos, &sizes[i], sizeof(size_t));
+    pos += sizeof(size_t);
+    memcpy(pos, wkbs[i], sizes[i]);
+    pos += sizes[i];
+  }
+  pfree_array((void **) wkbs, count);
+  pfree(sizes); pfree(insts);
+  *size_out = size;
+  return result;
+}
+
+/**
+ * @brief Read a report of a reachability state from its bytes, advancing the
+ * position, or return NULL when the bytes are not those of a report
+ */
+static TInstant *
+reachabilitystate_read_inst(const uint8_t **pos, const uint8_t *end)
+{
+  size_t vsize;
+  if ((size_t) (end - *pos) < sizeof(size_t))
+    return NULL;
+  memcpy(&vsize, *pos, sizeof(size_t));
+  *pos += sizeof(size_t);
+  if ((size_t) (end - *pos) < vsize)
+    return NULL;
+  Temporal *temp = temporal_from_wkb(*pos, vsize);
+  *pos += vsize;
+  if (! temp || temp->subtype != TINSTANT)
+  {
+    if (temp)
+      pfree(temp);
+    return NULL;
+  }
+  return (TInstant *) temp;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return a reachability state from its bytes, written by
+ * #reachabilitystate_serialize
+ * @param[in] bytes Bytes
+ * @param[in] size Size of the bytes
+ * @return The state
+ * @errval NULL
+ */
+ReachabilityState *
+reachabilitystate_deserialize(const uint8_t *bytes, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(bytes, NULL);
+  int32 header[REACH_HEADER];
+  int32 npending;
+  if (size < sizeof(header) + sizeof(double) + sizeof(int32))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes are not those of a reachability state");
+    return NULL;
+  }
+  const uint8_t *pos = bytes, *end = bytes + size;
+  memcpy(header, pos, sizeof(header));
+  pos += sizeof(header);
+  ReachabilityState *state = palloc0(sizeof(ReachabilityState));
+  memcpy(&state->maxspeed, pos, sizeof(double));
+  pos += sizeof(double);
+  memcpy(&npending, pos, sizeof(int32));
+  pos += sizeof(int32);
+  state->temptype = (MeosType) header[0];
+  state->flags = (int16) header[1];
+  state->srid = header[2];
+  state->seeded = header[3] != 0;
+  state->reports = header[4];
+  state->unreachable = header[5];
+  state->kept = header[6];
+  int nhead = header[8];
+  bool ok = (state->temptype == T_TFLOAT || state->temptype == T_TGEOMPOINT ||
+    state->temptype == T_TGEOGPOINT) && nhead >= 0 && nhead < REACH_HEAD &&
+    npending >= 0;
+  if (ok && (header[7] & 1))
+    ok = (state->previous = reachabilitystate_read_inst(&pos, end)) != NULL;
+  if (ok && (header[7] & 2))
+    ok = (state->anchor = reachabilitystate_read_inst(&pos, end)) != NULL;
+  for (int i = 0; ok && i < nhead; i++)
+  {
+    ok = (state->head[i] = reachabilitystate_read_inst(&pos, end)) != NULL;
+    if (ok)
+      state->nhead++;
+  }
+  if (ok && npending > 0)
+  {
+    state->maxpending = npending;
+    state->pending = palloc(sizeof(TInstant *) * npending);
+  }
+  for (int i = 0; ok && i < npending; i++)
+  {
+    ok = (state->pending[i] = reachabilitystate_read_inst(&pos, end)) != NULL;
+    if (ok)
+      state->npending++;
+  }
+  if (! ok || pos != end)
+  {
+    reachabilitystate_free(state);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes are not those of a reachability state");
+    return NULL;
+  }
+  return state;
+}
+
+/**
+ * @brief Return a temporal sequence of the kept reports of a sequence, with
+ * its interpolation, a bound of the sequence kept when its report is kept
+ * @param[in] seq Sequence
+ * @param[in] insts Kept reports of the sequence, whose ownership passes to
+ * the result
+ * @param[in] count Number of elements in the array
+ */
+static TSequence *
+tsequence_reachability_rebuild(const TSequence *seq, TInstant **insts,
+  int count)
+{
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  bool lower_inc = true, upper_inc = true;
+  if (interp != DISCRETE && count > 1)
+  {
+    if (insts[0]->t == TSEQUENCE_INST_N(seq, 0)->t)
+      lower_inc = seq->period.lower_inc;
+    /* With step interpolation an exclusive upper bound needs the last two
+     * values of the sequence, so it is kept only when both are kept */
+    if (insts[count - 1]->t == TSEQUENCE_INST_N(seq, seq->count - 1)->t &&
+        (interp != STEP ||
+         insts[count - 2]->t == TSEQUENCE_INST_N(seq, seq->count - 2)->t))
+      upper_inc = seq->period.upper_inc;
+  }
+  return tsequence_make_free(insts, count, lower_inc, upper_inc, interp,
+    NORMALIZE_NO);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_simplify
+ * @brief Return a temporal value with the instants a reachability walk keeps
+ * @details The instants of the value are walked in the order of their times:
+ * an instant is kept when the last kept instant could reach it at the
+ * maximum speed, the distance being the difference of two floats, the planar
+ * distance of two geometry points, or the distance on the spheroid of two
+ * geography points. The walk trusts its first instant, so its seed is the
+ * earliest of the first #REACH_HEAD instants that a majority of them can
+ * reach, and the instants before the seed are walked backwards from it. The
+ * value is dropped whole when more than half of its instants are unreachable
+ * from the instant before. The kept instants keep their sequences and the
+ * interpolation of the value, as #temporal_ext_kalman_filter keeps them.
+ * @param[in] temp Temporal value
+ * @param[in] maxspeed Maximum speed, in units of the values per second
+ * @return The kept instants, NULL when the value is dropped whole
+ * @errval NULL
+ * @csqlfn #Temporal_reachability_filter()
+ */
+Temporal *
+temporal_reachability_filter(const Temporal *temp, double maxspeed)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_finite(maxspeed) ||
+      ! ensure_positive_datum(Float8GetDatum(maxspeed), T_FLOAT8) ||
+      ! ensure_reachability_type(temp->temptype))
+    return NULL;
+
+  /* Walk the instants, an instant at the time of the one before, which ends
+   * a sequence at an exclusive bound, being the same report */
+  int count;
+  const TInstant **insts = temporal_insts_p(temp, &count);
+  ReachabilityState *state = NULL;
+  for (int i = 0; i < count; i++)
+  {
+    if (i > 0 && insts[i]->t == insts[i - 1]->t)
+      continue;
+    state = temporal_reachability_filter_transfn(state, insts[i], maxspeed);
+    if (! state)
+    {
+      pfree(insts);
+      return NULL;
+    }
+  }
+  pfree(insts);
+  /* A temporal value has at least one instant, so the walk has a state */
+  if (! state)
+    return NULL;
+  int nkept;
+  TInstant **kept = reachabilitystate_close(state, &nkept);
+  reachabilitystate_free(state);
+  if (nkept == 0)
+  {
+    if (kept)
+      pfree(kept);
+    return NULL;
+  }
+
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      Temporal *result = (Temporal *) kept[0];
+      pfree(kept);
+      return result;
+    }
+    case TSEQUENCE:
+      return (Temporal *) tsequence_reachability_rebuild(
+        (const TSequence *) temp, kept, nkept);
+    default: /* TSEQUENCESET */
+    {
+      /* Give each sequence the kept instants of its period, an instant at a
+       * bound two sequences share going to both */
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+      int nseqs = 0, k = 0;
+      for (int i = 0; i < ss->count; i++)
+      {
+        const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+        TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
+        TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
+        while (k < nkept && kept[k]->t < lower)
+          k++;
+        int j = k;
+        while (j < nkept && kept[j]->t <= upper)
+          j++;
+        int n = j - k;
+        if (n > 0)
+        {
+          /* The sequence takes the ownership of its copies of the instants */
+          TInstant **seqinsts = palloc(sizeof(TInstant *) * n);
+          for (int l = 0; l < n; l++)
+            seqinsts[l] = tinstant_copy(kept[k + l]);
+          seqs[nseqs++] = tsequence_reachability_rebuild(seq, seqinsts, n);
+        }
+        k = (n > 0 && kept[j - 1]->t == upper) ? j - 1 : j;
+      }
+      pfree_array((void **) kept, nkept);
+      if (nseqs == 0)
+      {
+        pfree(seqs);
+        return NULL;
+      }
+      return (Temporal *) tsequenceset_make_free(seqs, nseqs, NORMALIZE_NO);
+    }
+  }
+}
+
+/*****************************************************************************
  * Time precision functions for time values
  *****************************************************************************/
 

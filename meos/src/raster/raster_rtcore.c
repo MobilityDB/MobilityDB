@@ -195,7 +195,7 @@ raster_serialize_destroy(rt_raster raster)
   raster_destroy(raster);
   if (! serialized)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Could not serialize raster");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Could not serialize raster");
     return NULL;
   }
   /* rt_core allocates through its own allocator, which is not the one MEOS

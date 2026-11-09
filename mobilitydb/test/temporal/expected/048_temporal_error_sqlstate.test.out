@@ -23,8 +23,18 @@ SELECT int4 'abc';
 ERROR:  22P02
 SELECT tint 'abc';
 ERROR:  22P02
+SELECT json '{"type":';
+ERROR:  22P02
+SELECT tintFromMFJSON('{"type":"MovingInteger"}');
+ERROR:  22P02
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]]}');
+ERROR:  22P02
+SELECT tintFromBinary('\x00');
+ERROR:  22P03
+SELECT intspanFromBinary('\x0102');
+ERROR:  22P03
+SELECT tintFromHexWKB('0001');
+ERROR:  22P03
 SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <->
   geometry 'Linestring(1e200 -1,1e200 1)';
 ERROR:  0A000
-SELECT tintFromMFJSON('{"type":"MovingInteger"}');
-ERROR:  XX000

@@ -91,3 +91,16 @@ SELECT tDistance(
   tgeompoint '{[Point(10 0)@2001-01-01, Point(10 0)@2001-01-04]}');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A temporal rigid geometry in three dimensions has no distance yet, whatever
+-- the dimensions of the temporal point
+-------------------------------------------------------------------------------
+
+/* Errors */ SELECT tDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1 1)@2001-01-01,Point(1 1 1)@2001-01-02]');
+/* Errors */ SELECT tDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1)@2001-01-01,Point(1 1)@2001-01-02]');
+/* Errors */ SELECT nearestApproachDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1 1)@2001-01-01,Point(1 1 1)@2001-01-02]');
+/* Errors */ SELECT nearestApproachInstant(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1 1)@2001-01-01,Point(1 1 1)@2001-01-02]');
+/* Errors */ SELECT shortestLine(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1 1)@2001-01-01,Point(1 1 1)@2001-01-02]');
+
+-------------------------------------------------------------------------------

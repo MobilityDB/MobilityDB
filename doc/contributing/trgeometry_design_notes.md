@@ -77,14 +77,31 @@ pair belongs to neither. The constructor and every cross-type operator route
 through `ensure_same_srid`, which raises an error naming both SRIDs. The error
 path is loud and explicit; there is no implicit transform.
 
-**`traversedArea` sampling.** `traversedArea` samples at the input instants and
-connects them with the convex hull of the two endpoint polygons. Pure-translation
-segments are exact, while an inter-instant rotation is approximated: for a 90°
-rotation between two instants, the swept ribbon is wider than the convex hull
-captures. `traversedArea` itself does not sub-sample between the input instants,
-so a workload needing tight swept-area bounds up-samples the input `tpose` before
-constructing the `trgeometry`, through the `setInterp` plus sub-instant insertion
-pattern.
+**`traversedArea` sampling.** The merged form of a convex body reads it at
+placements no more than `TRGEO_TRAVERSED_AREA_ANGLE_TOL` (0.05 rad) of turn
+apart, as chapter 4 of the second volume of the book densifies, and covers
+what the body sweeps between each consecutive pair. Where the body translates
+that is the hull of the pair, exactly. Where it turns, the chapter's walk of the
+outer boundary of the two placements and the vertex paths answers the hull too,
+and the hull covers ground the body never reaches wherever an edge pivots about
+a point near it: on the turning rows of the corpus of the exact rigid distance
+it reaches geometries the body stays 0.042 and 0.045 from. The code therefore
+reads such a pair by the chapter's definition, the set of points the body
+traverses, rather than by its walk: the two placements and the quadrilateral
+each edge sweeps. An edge whose two positions cross pivots about their
+crossing, a point no double holds, and sweeps the two triangles meeting
+there; they are read as the triangles from the paths of its ends to a point
+checked to lie strictly inside both placements, which together with the two
+placements hold the same ground and put no point near an edge it is not on.
+The positions of a pivoting edge, and of any edge of a body that travels far
+while it turns, bulge past their straight sweep, so such an interval is read
+in halves and the placements are taken nearer where the travel is large.
+Every piece is the body's own ground. Over the 400 turning rows, read against
+the body at 2048 placements a segment, the area claims no point the body
+never reaches and leaves out at most 5.8e-4 of the diameter of the body, the
+hull leaving out as much while claiming ground the body never reaches on 164
+of them, up to 1.2e-2 of the diameter; the measure and its ledger are in
+MobilityDB #3441, TG26.
 
 **Adaptive sub-sampling tolerance in materialised distance.** The
 continuous-distance kernels (`tDistance`, `nearestApproachDistance`) materialise

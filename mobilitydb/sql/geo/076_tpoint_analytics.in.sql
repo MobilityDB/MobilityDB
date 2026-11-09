@@ -300,6 +300,49 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_ext_kalman_filter'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION reachabilityFilter(tgeompoint, maxspeed float)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION reachabilityFilter(tgeogpoint, maxspeed float)
+RETURNS tgeogpoint
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- The functions are not strict
+CREATE FUNCTION reachabilityFilterAggTransition(internal, tgeompoint, float)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter_transfn'
+LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION reachabilityFilterAggTransition(internal, tgeogpoint, float)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter_transfn'
+LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION reachabilityFilterAggFinal(internal, tgeompoint, float)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter_finalfn'
+LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION reachabilityFilterAggFinal(internal, tgeogpoint, float)
+RETURNS tgeogpoint
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter_finalfn'
+LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE reachabilityFilterAgg(tgeompoint, maxspeed float) (
+  SFUNC = reachabilityFilterAggTransition,
+  STYPE = internal,
+  FINALFUNC = reachabilityFilterAggFinal,
+  FINALFUNC_EXTRA,
+  FINALFUNC_MODIFY = READ_WRITE,
+  PARALLEL = SAFE
+);
+CREATE AGGREGATE reachabilityFilterAgg(tgeogpoint, maxspeed float) (
+  SFUNC = reachabilityFilterAggTransition,
+  STYPE = internal,
+  FINALFUNC = reachabilityFilterAggFinal,
+  FINALFUNC_EXTRA,
+  FINALFUNC_MODIFY = READ_WRITE,
+  PARALLEL = SAFE
+);
+
 CREATE TYPE geom_times AS (
   geom geometry,
   times bigint[]

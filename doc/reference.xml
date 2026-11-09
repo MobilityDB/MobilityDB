@@ -1297,6 +1297,17 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
+			<title>Reachability Filter</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="ttype_reachabilityFilter"><varname>reachabilityFilter</varname></link>: Return a temporal float or temporal point with the instants the reachability filter keeps &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_reachabilityFilterAgg"><varname>reachabilityFilterAgg</varname></link>: Return a temporal float or temporal point with the instants the reachability filter keeps among the instants of a group &Z_support; &geography_support;</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
 			<title>Splitting Operations</title>
 			<itemizedlist>
 				<listitem>

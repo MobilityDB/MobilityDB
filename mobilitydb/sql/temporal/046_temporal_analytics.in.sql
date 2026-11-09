@@ -59,4 +59,27 @@ RETURNS tfloat
 AS 'MODULE_PATHNAME', 'Temporal_ext_kalman_filter'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION reachabilityFilter(tfloat, maxspeed float)
+RETURNS tfloat
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- The functions are not strict
+CREATE FUNCTION reachabilityFilterAggTransition(internal, tfloat, float)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter_transfn'
+LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION reachabilityFilterAggFinal(internal, tfloat, float)
+RETURNS tfloat
+AS 'MODULE_PATHNAME', 'Temporal_reachability_filter_finalfn'
+LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE reachabilityFilterAgg(tfloat, maxspeed float) (
+  SFUNC = reachabilityFilterAggTransition,
+  STYPE = internal,
+  FINALFUNC = reachabilityFilterAggFinal,
+  FINALFUNC_EXTRA,
+  FINALFUNC_MODIFY = READ_WRITE,
+  PARALLEL = SAFE
+);
+
 /*****************************************************************************/

@@ -746,6 +746,8 @@ pose_parse(const char **str, bool end)
   /* Determine whether the pose has an SRID */
   int32_t srid;
   srid_parse(str, &srid);
+  /* White space may follow the SRID, as it may at the start of a value */
+  p_whitespace(str);
 
   /* Determine whether the pose is geodetic from its GeodPose / Pose prefix */
   bool geodetic = (pg_strncasecmp(*str, "GEODPOSE", 8) == 0);
@@ -2142,6 +2144,8 @@ pose_normalize(const Pose *pose)
  * @ingroup meos_pose_base_transf
  * @brief Return a pose with the precision of the values set to a number of
  * decimal places
+ * @details The rotation of a 3D pose is normalized to unit length after its
+ * components are rounded
  * @param[in] pose Poses
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Pose_round()
@@ -2165,6 +2169,14 @@ pose_round(const Pose *pose, int maxdd)
     double X = float8_round(pose->data[4], maxdd);
     double Y = float8_round(pose->data[5], maxdd);
     double Z = float8_round(pose->data[6], maxdd);
+    /* Each component is rounded alone, so the rotation is normalized back
+     * to unit length, as #pose_normalize does; a zero quaternion is left to
+     * the refusal of #pose_make_3d */
+    double norm = sqrt(W * W + X * X + Y * Y + Z * Z);
+    if (norm > 0.0)
+    {
+      W /= norm; X /= norm; Y /= norm; Z /= norm;
+    }
     result = pose_make_3d(x, y, z, W, X, Y, Z,
       MEOS_FLAGS_GET_GEODETIC(pose->flags), pose_srid(pose));
   }

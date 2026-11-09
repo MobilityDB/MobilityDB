@@ -132,9 +132,10 @@ static const char *
 pg_TZDIR(void)
 {
 #ifndef SYSTEMTZDIR
-  /* normal case: timezone stuff is under our share dir */
-  static bool done_tzdir = false;
-  static char tzdir[MAXPGPATH];
+  /* normal case: timezone stuff is under our share dir
+   * MEOS: per thread (MEOS_TLS), as the other caches of this file */
+  static MEOS_TLS bool done_tzdir = false;
+  static MEOS_TLS char tzdir[MAXPGPATH];
 
   if (done_tzdir)
     return tzdir;
@@ -575,6 +576,8 @@ meos_finalize_timezone(void)
     timezone_cache = NULL;
   }
 #if MEOS
+  /* The GMT timezone state this thread loaded */
+  localtime_destroy_gmt();
   /* The abbreviations this thread holds, the last thread freeing them */
   pg_tznames_release_default();
 #endif

@@ -1297,6 +1297,17 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
+			<title>Filtro de alcanzabilidad</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="ttype_reachabilityFilter"><varname>reachabilityFilter</varname></link>: Devuelve un flotante temporal o un punto temporal con los instantes que conserva el filtro de alcanzabilidad &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_reachabilityFilterAgg"><varname>reachabilityFilterAgg</varname></link>: Devuelve un flotante temporal o un punto temporal con los instantes que conserva el filtro de alcanzabilidad entre los instantes de un grupo &Z_support; &geography_support;</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
 			<title>Operaciones de división</title>
 			<itemizedlist>
 				<listitem>

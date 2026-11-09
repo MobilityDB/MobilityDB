@@ -169,7 +169,9 @@ int main(void)
   fclose(input_file);
 
   /* Compute the clusters */
-  int *cluster = geo_cluster_kmeans((const GSERIALIZED **) geom, count, 10);
+  int ncluster;
+  int *cluster = geo_cluster_kmeans((const GSERIALIZED **) geom, count, 10,
+    &ncluster);
 
   /* Open the output file */
   FILE *output_file = fopen("data/popplaces_new.csv", "w+");

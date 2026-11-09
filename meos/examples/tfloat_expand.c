@@ -54,6 +54,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <pg_timestamp.h>
 /* The expandable functions are in the internal MEOS API */
 #include <meos_internal.h>
 

@@ -279,6 +279,10 @@ extern void freeJsonPathParseItem(JsonPathParseItem *item);
 extern bool jspConvertRegexFlags(uint32 xflags, int *result,
   struct Node *escontext UNUSED);
 
+#if MEOS
+extern void jsonpath_destroy_datetime_formats(void);
+#endif /* MEOS */
+
 /*
  * Struct for details about external variables passed into jsonpath executor
  */

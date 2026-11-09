@@ -3313,7 +3313,7 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
       if (meos_pc_parse_xml_fn == NULL)
       {
         pfree(xml);
-        meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "WKB blob carries an embedded pgPointCloud schema for pcid=%u "
           "but no XML-parse hook is installed (call mobilitydb_init)",
           (uint32_t) pcid_in);

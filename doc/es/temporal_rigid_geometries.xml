@@ -35,10 +35,13 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 		<para>La geometría de referencia puede ser cualquier polígono o superficie poliédrica, con la dimensión de la pose: una pose con un cuaternión necesita una geometría de referencia en tres dimensiones, y <varname>ST_Force3D</varname> da una plana, en el plano z = 0 del cuerpo. Otros valores dan un error. La interpolación de la pose es lineal en la traslación y de camino angular más corto en la rotación. Los SRID se heredan de la geometría de referencia y de la pose; deben coincidir.</para>
 
-		<para>Se puede especificar un SRID para una trgeometry al comienzo del literal, como se muestra a continuación.</para>
+		<para>Se puede especificar un SRID para una trgeometry al comienzo del literal, como se muestra a continuación, o antes de su primera pose, y es entonces el SRID de la geometría de referencia y de cada pose.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0), 0.5)@2001-01-01';
+SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  SRID=25832;Pose(Point(0 0), 0.5)@2001-01-01');
+-- SRID=25832;POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(0 0),0.5)@2001-01-01
 </programlisting>
 
 		<para>La interpolación escalonada también se puede especificar de la misma manera que para otros tipos temporales:</para>
@@ -335,7 +338,7 @@ SELECT ST_AsText(geometry(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 traversedArea(trgeometry,unary_union boolean=false) → geometry
 </programlisting>
-				<para>El argumento es falso salvo que se indique, y la función responde entonces las colocaciones mismas reunidas en una geometría, un multipolígono para un cuerpo que es un polígono, que es lo que quiere quien llama y hace su propio posprocesamiento. Con <varname>unary_union = true</varname> se disuelven en la región que cubren. <emphasis>Advertencia de muestreo:</emphasis> la implementación muestrea en los instantes de entrada, de modo que los segmentos de traslación pura son exactos, pero la cinta barrida entre dos instantes donde ocurre una rotación se aproxima mediante la envolvente convexa de los dos polígonos extremos. Sobremuestrear la <varname>tpose</varname> antes de construir la <varname>trgeometry</varname> ajusta la aproximación.</para>
+				<para>El argumento es falso salvo que se indique, y la función responde entonces las colocaciones mismas reunidas en una geometría, un multipolígono para un cuerpo que es un polígono, que es lo que quiere quien llama y hace su propio posprocesamiento. Con <varname>unary_union = true</varname> se disuelven en la región que cubren. <emphasis>Nota de muestreo:</emphasis> la forma disuelta de un cuerpo convexo que se traslada es exacta. Donde el cuerpo gira, se lee en colocaciones separadas por no más de 0,05 radianes de giro, y más cercanas donde recorre mucho mientras gira, cada vértice moviéndose a lo largo de la cuerda de su arco entre dos de ellas. La región contiene entonces solo terreno que el cuerpo cubre y deja fuera el abombamiento de los arcos más allá de sus cuerdas: sobre un corpus de cuerpos que giran, a lo sumo 5,8e-4 del diámetro del cuerpo.</para>
 				<para>La forma disuelta de un valor en tres dimensiones es la región sobre el suelo, sin Z. Donde el cuerpo gira, su área aún no es la que tiene el mismo valor en dos dimensiones.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -468,7 +471,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_transformations">
 		<title>Transformaciones</title>
 
-		<para>Se aplican las funciones estándar de modificación de secuencias: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> aún no admite una superficie poliédrica, ni pocos dígitos para una rotación en tres dimensiones, y la transformación a otro SRID, <varname>transform</varname> y <varname>transformPipeline</varname>, aún no se admite para una geometría rígida temporal.</para>
+		<para>Se aplican las funciones estándar de modificación de secuencias: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> aún no admite una superficie poliédrica, y la transformación a otro SRID, <varname>transform</varname> y <varname>transformPipeline</varname>, aún no se admite para una geometría rígida temporal.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_round">
@@ -764,7 +767,7 @@ SELECT getTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   stbox 'STBOX X((1, -1), (3, 1))'));
 -- {[2001-01-01, 2001-01-04]}
 </programlisting>
-				<para>Una caja con solo un componente temporal aún no se admite, y <varname>atTime</varname> responde esa pregunta; si la caja solo tiene un componente espacial, se conserva el dominio temporal.</para>
+				<para>Una caja con solo un componente temporal restringe el dominio temporal, como lo hace <varname>atTime</varname>; si la caja solo tiene un componente espacial, se conserva el dominio temporal.</para>
 			</listitem>
 
 		</itemizedlist>

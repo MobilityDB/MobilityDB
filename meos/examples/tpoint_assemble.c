@@ -48,6 +48,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <pg_timestamp.h>
 #include <meos_geo.h>
 
 /*

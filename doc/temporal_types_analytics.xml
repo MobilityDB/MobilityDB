@@ -347,6 +347,49 @@ SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01,
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="ttype_reachability">
+		<title>Reachability Filter</title>
+		<para>The reachability filter removes the reports of a moving object that it could not have reached: a report is kept when the last kept report could reach it at a maximum speed, given in units of the values per second, which are meters per second for a geography. The distance is the difference of two floats, the planar distance of two geometry points, or the distance of two geography points on the spheroid. The filter trusts its first report, so the walk starts from a seed, the earliest of the first eleven reports that a majority of them can reach, and walks the reports before the seed backwards from it. A value whose share of reports unreachable from the report before exceeds one half is dropped whole.</para>
+		<itemizedlist>
+			<listitem xml:id="ttype_reachabilityFilter">
+				<indexterm significance="normal"><primary><varname>reachabilityFilter</varname></primary></indexterm>
+				<para>Return a temporal float or temporal point with the instants the reachability filter keeps &Z_support; &geography_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+reachabilityFilter({tfloat,tgeompoint,tgeogpoint},maxspeed float)
+  → {tfloat,tgeompoint,tgeogpoint}
+</programlisting>
+				<para>The kept instants keep their sequences and the interpolation of the value. The function returns NULL when the value is dropped whole.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00,
+  Point(10 0)@2001-01-01 00:00:01, Point(5000 0)@2001-01-01 00:00:02,
+  Point(30 0)@2001-01-01 00:00:03]', 100));
+-- [POINT(0 0)@2001-01-01 00:00:00, POINT(10 0)@2001-01-01 00:00:01,
+   POINT(30 0)@2001-01-01 00:00:03]
+SELECT reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00,
+  Point(5000 0)@2001-01-01 00:00:01, Point(0 0)@2001-01-01 00:00:02,
+  Point(5000 0)@2001-01-01 00:00:03]', 100) IS NULL;
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="ttype_reachabilityFilterAgg">
+				<indexterm significance="normal"><primary><varname>reachabilityFilterAgg</varname></primary></indexterm>
+				<para>Return a temporal float or temporal point with the instants the reachability filter keeps among the instants of a group &Z_support; &geography_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+reachabilityFilterAgg({tfloat,tgeompoint,tgeogpoint},maxspeed float)
+  → {tfloat,tgeompoint,tgeogpoint}
+</programlisting>
+				<para>The aggregate takes the instants in the order of their times, which the query states with <varname>ORDER BY</varname>, and decides each one as it arrives, as a stream does. It returns a sequence with the default interpolation of the type, and NULL when the instants are dropped whole. Its name differs from that of the function, since PostgreSQL does not hold a function and an aggregate of the same name and arguments.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(reachabilityFilterAgg(inst, 5 ORDER BY getTimestamp(inst)))
+FROM unnest(instants(tfloat '{1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01,
+  1000@2001-01-01 00:00:02, 3@2001-01-01 00:00:03}')) AS inst;
+-- [1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01, 3@2001-01-01 00:00:03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="ttype_splitting">
 		<title>Splitting Operations</title>
 

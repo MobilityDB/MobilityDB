@@ -72,10 +72,16 @@ typedef struct schema_entry {
 } schema_entry;
 
 /* Small dynamic array; linear scan.  Workloads rarely exceed a handful
- * of pcids loaded at once, so a hash table is over-engineering. */
-static schema_entry *cache_buf = NULL;
-static int cache_count = 0;
-static int cache_cap = 0;
+ * of pcids loaded at once, so a hash table is over-engineering.  Each thread
+ * holds its own cache, as it holds its own timezone, PROJ and ways caches,
+ * and #meos_finalize frees it */
+static MEOS_TLS schema_entry *cache_buf = NULL;
+static MEOS_TLS int cache_count = 0;
+static MEOS_TLS int cache_cap = 0;
+/* True once the point cloud schemas document has been read into the cache of
+ * this thread, so a miss on a pcid it does not state does not re-read it on
+ * every lookup */
+static MEOS_TLS bool schemas_xml_read = false;
 
 meos_pc_schema_fn_t meos_pc_schema_fn = NULL;
 meos_pc_schema_expired_fn_t meos_pc_schema_expired_fn = NULL;
@@ -533,6 +539,9 @@ meos_pc_schema_clear(void)
   }
   cache_count = 0;
   cache_cap = 0;
+  /* The schemas the document states left with the cache, so a later miss
+   * reads it again */
+  schemas_xml_read = false;
 }
 
 /**
@@ -649,10 +658,6 @@ meos_pc_schema_ndims(uint32_t pcid)
  * reporting that no schema is registered. The document beside this file is a
  * starting point to copy, and a host names it like any other. */
 char *POINTCLOUD_SCHEMAS_XML = NULL;
-
-/* True once the document has been read, so a miss on a pcid it does not state
- * does not re-read it on every lookup */
-static bool schemas_xml_read = false;
 
 /**
  * @ingroup meos_pointcloud_schema_cache

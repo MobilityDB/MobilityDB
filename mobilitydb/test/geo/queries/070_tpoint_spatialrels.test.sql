@@ -690,6 +690,10 @@ SELECT aDwithin(tgeogpoint 'Point(0.5 2.5)@2001-01-01', geography 'Polygon((0 0,
 SELECT aDwithin(tgeogpoint '[Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02]', geography 'Point(1.5 0.5)', 50000);
 SELECT aDwithin(tgeogpoint '[Point(1.5 0.4)@2001-01-01, Point(1.5 0.6)@2001-01-02]', geography 'Point(1.5 0.5)', 50000);
 SELECT aDwithin(tgeogpoint '[Point(1.5 0.4)@2001-01-01, Point(1.5 0.6)@2001-01-02]', geography 'Point(1.5 0.5)', 50000, false);
-/* A linear temporal geography point against a polygon is refused, as no kernel finds where a great circle crosses a geodesic edge */
+/* A linear temporal geography point against a line or a polygon, on the sphere */
+SELECT aDwithin(tgeogpoint '[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000, false);
+SELECT aDwithin(tgeogpoint '[Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 0, false);
+SELECT aDwithin(geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', tgeogpoint '[Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02]', 0);
+-- On the spheroid, the default
 SELECT aDwithin(tgeogpoint '[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000);
 

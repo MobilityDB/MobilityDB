@@ -39,7 +39,12 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <common/pg_prng.h>
+#include <utils/formatting.h>
 #include <utils/jsonb.h>
+#if JSON
+  #include <regex/regex.h>
+  #include <utils/jsonpath.h>
+#endif
 /* Proj */
 #include <proj.h>
 /* PostGIS */
@@ -722,13 +727,23 @@ meos_finalize(void)
   meos_finalize_relate();
   /* Finalize collation */
   meos_finalize_collation();
+  /* Free the date/time and number format picture caches */
+  formatting_destroy_cache();
 #if JSON
   /* Finalize the list keeping the items to be freed after a JSON parsing */
   json_destroy_tofree();
+  /* Free the format texts the .datetime() method of a JSON path reads */
+  jsonpath_destroy_datetime_formats();
+  /* Free the regular expressions a like_regex of a JSON path compiles */
+  regexp_destroy_cache();
 #endif
 #if NPOINT
   /* Finalize Ways cache */
   meos_finalize_ways();
+#endif
+#if POINTCLOUD
+  /* Free the schemas the pointcloud schema cache of this thread holds */
+  meos_pc_schema_clear();
 #endif
   /* Finalize PROJ */
   proj_finalize();

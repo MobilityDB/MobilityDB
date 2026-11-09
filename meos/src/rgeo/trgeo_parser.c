@@ -54,16 +54,22 @@
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the sequence
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
- * @param[in] geom Reference geometry
+ * @param[in,out] geom Reference geometry, which takes the SRID of the
+ * first pose stating one when it states none
  */
 TInstant *
 trgeoinst_parse(const char **str, MeosType temptype, bool end,
-  int *temp_srid, const GSERIALIZED *geom)
+  int *temp_srid, GSERIALIZED *geom)
 {
   Datum base;
   if (! spatial_parse_elem(str, temptype, '@', temp_srid, &base))
     return NULL;
   Pose *pose = DatumGetPoseP(base);
+  /* An SRID stated before the pose is the SRID of the value, so the
+   * reference geometry takes it when it states none */
+  if (geom && gserialized_get_srid(geom) == SRID_UNKNOWN &&
+      *temp_srid != SRID_UNKNOWN)
+    gserialized_set_srid(geom, *temp_srid);
 
   p_delimchar(str, '@');
 
@@ -86,11 +92,12 @@ trgeoinst_parse(const char **str, MeosType temptype, bool end,
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
- * @param[in] geom Reference geometry
+ * @param[in,out] geom Reference geometry, which takes the SRID of the
+ * first pose stating one when it states none
  */
 TSequence *
 trgeoseq_disc_parse(const char **str, MeosType temptype, int *temp_srid,
-  const GSERIALIZED *geom)
+  GSERIALIZED *geom)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
@@ -137,13 +144,14 @@ error:
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
- * @param[in] geom Reference geometry
+ * @param[in,out] geom Reference geometry, which takes the SRID of the
+ * first pose stating one when it states none
  * @return New sequence
  * @errval NULL
  */
 TSequence *
 trgeoseq_cont_parse(const char **str, MeosType temptype, interpType interp,
-  bool end, int *temp_srid, const GSERIALIZED *geom)
+  bool end, int *temp_srid, GSERIALIZED *geom)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
@@ -206,11 +214,12 @@ error:
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
- * @param[in] geom Reference geometry
+ * @param[in,out] geom Reference geometry, which takes the SRID of the
+ * first pose stating one when it states none
  */
 TSequenceSet *
 trgeoseqset_parse(const char **str, MeosType temptype, interpType interp,
-  int *temp_srid, const GSERIALIZED *geom)
+  int *temp_srid, GSERIALIZED *geom)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);

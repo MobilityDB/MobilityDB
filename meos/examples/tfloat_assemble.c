@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <pg_timestamp.h>
 
 #define MAX_NUM_INSTS 1000000
 

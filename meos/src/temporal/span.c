@@ -42,6 +42,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <common/hashfn.h>
+#include <common/int.h>
 #include "port/pg_bitutils.h"
 #include <utils/float.h>
 #include <utils/timestamp.h>
@@ -2161,6 +2162,58 @@ timestamptz_shift(TimestampTz t, const Interval *interv)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(interv, DT_NOEND);
   return add_timestamptz_interval(t, (Interval *) interv);
+}
+
+/**
+ * @ingroup meos_base_timestamp
+ * @brief Return the microseconds from the Unix epoch of a timestamptz
+ * @details A binding converts a timestamptz to the timestamp of its host
+ * through this function and back through #unix_us_to_timestamptz, so that
+ * every binding answers the same count for the same timestamptz. The count is
+ * exact where the Unix seconds #float8_to_timestamptz reads are a double.
+ * @param[in] t Timestamp
+ * @errval INT64_MAX
+ */
+int64
+timestamptz_to_unix_us(TimestampTz t)
+{
+  int64 result;
+  /* Ensure the validity of the arguments: an infinite timestamp is outside
+   * the range of timestamps and has no count, and the count of a timestamp
+   * near the end of the range exceeds the range of a 64-bit integer */
+  if (! IS_VALID_TIMESTAMP(t) || unlikely(pg_add_s64_overflow(t,
+        DELTA_UNIX_POSTGRES_EPOCH * USECS_PER_SEC, &result)))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return INT64_MAX;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_timestamp
+ * @brief Return the timestamptz of a count of microseconds from the Unix epoch
+ * @details The exact counterpart of #float8_to_timestamptz, which reads the
+ * Unix seconds as a double
+ * @param[in] us Microseconds from the Unix epoch
+ * @errval DT_NOEND
+ * @see #timestamptz_to_unix_us
+ */
+TimestampTz
+unix_us_to_timestamptz(int64 us)
+{
+  TimestampTz result;
+  /* Ensure the validity of the arguments, as the addition of an offset to a
+   * timestamp refuses a result outside the range of timestamps */
+  if (unlikely(pg_sub_s64_overflow(us, DELTA_UNIX_POSTGRES_EPOCH *
+        USECS_PER_SEC, &result)) || ! IS_VALID_TIMESTAMP(result))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return DT_NOEND;
+  }
+  return result;
 }
 
 /**

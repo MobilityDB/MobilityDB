@@ -94,3 +94,13 @@ SELECT tDistance(
  {[9@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST], [4@Wed Jan 03 00:00:00 2001 PST, 3@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+/* Errors */ SELECT tDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1 1)@2001-01-01,Point(1 1 1)@2001-01-02]');
+ERROR:  The trgeometry cannot have Z dimension
+/* Errors */ SELECT tDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1)@2001-01-01,Point(1 1)@2001-01-02]');
+ERROR:  The trgeometry cannot have Z dimension
+/* Errors */ SELECT nearestApproachDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1 1)@2001-01-01,Point(1 1 1)@2001-01-02]');
+ERROR:  The trgeometry cannot have Z dimension
+/* Errors */ SELECT nearestApproachInstant(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1 1)@2001-01-01,Point(1 1 1)@2001-01-02]');
+ERROR:  The trgeometry cannot have Z dimension
+/* Errors */ SELECT shortestLine(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', tgeompoint '[Point(1 1 1)@2001-01-01,Point(1 1 1)@2001-01-02]');
+ERROR:  The trgeometry cannot have Z dimension

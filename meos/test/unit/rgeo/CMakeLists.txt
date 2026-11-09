@@ -25,7 +25,7 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-# Unit tests of the temporal distance of rigid geometries
+# Unit tests of the temporal distance and the geometry clip of rigid geometries
 #
 # These programs test internal functions of meos/src/rgeo.  The programs in
 # meos/test are different: they test the installed public API, and CI builds
@@ -66,3 +66,9 @@ add_test(NAME trgeo_distsolve_unit COMMAND trgeo_distsolve_unit 300)
 add_trgeo_dist_test(trgeo_distwalk_unit)
 add_trgeo_dist_test(trgeo_distwalk_rand_unit 1000)
 add_trgeo_dist_test(trgeo_distwalk_degen_unit)
+
+# The clip of a moving edge by a polygon, which libmeos exports, compared at
+# placements of the edge with the 2D distance of liblwgeom to the polygon
+add_executable(trgeo_geom_clip_unit trgeo_geom_clip_unit.c)
+target_link_libraries(trgeo_geom_clip_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME trgeo_geom_clip_unit COMMAND trgeo_geom_clip_unit)
