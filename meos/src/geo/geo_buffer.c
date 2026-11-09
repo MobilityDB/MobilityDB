@@ -9420,6 +9420,738 @@ buffer_ring_serialize(const MeosArray *pieces, const bool *arc, uint8_t *loc)
   return loc;
 }
 
+/* The rounding certificate of the rings of the buffer of a line as written
+ * in doubles (#buffer_line_rings_certified), whose bounds the arrangement
+ * reads (#arrange_wound_tangent_surfaces) */
+
+static inline int certa_sum2_sign(double a1, double a0, double b1,
+  double b0, double c1, double c0, double d1, double d0);
+
+/* Whether P, on the line of AB, lies within AB: strictly where @p strict,
+ * the signs of (P - A).(B - A) and (P - B).(A - B) decided exactly */
+static bool
+certa_within(double px, double py, double ax, double ay, double bx,
+  double by, int strict)
+{
+  int s1 = certa_sum2_sign(px, ax, bx, ax, py, ay, by, ay);
+  int s2 = certa_sum2_sign(px, bx, ax, bx, py, by, ay, by);
+  return strict ? (s1 > 0 && s2 > 0) : (s1 >= 0 && s2 >= 0);
+}
+
+/* Whether two written segments meet other than at an end both share,
+ * decided by exact orientations (#cross_product_sign) */
+static bool
+cert_segs_meet(const ArrangePiece *p, const ArrangePiece *q)
+{
+  double ax = p->x1, ay = p->y1, bx = p->x2, by = p->y2;
+  double cx = q->x1, cy = q->y1, dx = q->x2, dy = q->y2;
+  int o1 = cross_product_sign(ax, ay, bx, by, ax, ay, cx, cy);
+  int o2 = cross_product_sign(ax, ay, bx, by, ax, ay, dx, dy);
+  int o3 = cross_product_sign(cx, cy, dx, dy, cx, cy, ax, ay);
+  int o4 = cross_product_sign(cx, cy, dx, dy, cx, cy, bx, by);
+  bool shared = (ax == cx && ay == cy) || (ax == dx && ay == dy) ||
+    (bx == cx && by == cy) || (bx == dx && by == dy);
+  if (o1 == 0 && o2 == 0)
+  {
+    /* Collinear: beyond a shared end they meet where an end of one lies
+     * strictly within the other, and with no shared end where an end of
+     * one lies on the other, each decided by the exact signs of two dot
+     * products (#certa_within) */
+    /* the same two ends: the one segment twice */
+    if ((ax == cx && ay == cy && bx == dx && by == dy) ||
+        (ax == dx && ay == dy && bx == cx && by == cy))
+      return true;
+    int strict = shared ? 1 : 0;
+    return certa_within(cx, cy, ax, ay, bx, by, strict) ||
+      certa_within(dx, dy, ax, ay, bx, by, strict) ||
+      certa_within(ax, ay, cx, cy, dx, dy, strict) ||
+      certa_within(bx, by, cx, cy, dx, dy, strict);
+  }
+  if (shared)
+    return false;
+  return o1 * o2 <= 0 && o3 * o4 <= 0;
+}
+
+/* The edges of a written piece, as #geom_extract_edges reads them: a
+ * segment, or an arc by its three written points (two segments where they
+ * are collinear) */
+static MeosArray *
+cert_piece_edges(const ArrangePiece *p)
+{
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  POINT2D a = {p->x1, p->y1}, m = {p->mx, p->my}, b = {p->x2, p->y2};
+  if (p->arc)
+    edges_add_arc(edges, &a, &m, &b);
+  else
+    edges_add_segment(edges, &a, &b);
+  return edges;
+}
+
+/* Whether the written forms of two neighbouring pieces meet other than at
+ * the vertex w they share: 1 they do, 0 they do not, -1 not decided */
+static int
+cert_neighbours_meet(const ArrangePiece *p, const ArrangePiece *q, double wx,
+  double wy)
+{
+  MeosArray *ep = cert_piece_edges(p), *eq = cert_piece_edges(q);
+  int res = 0;
+  for (uint32_t i = 0; i < ep->count && res == 0; i++)
+    for (uint32_t j = 0; j < eq->count && res == 0; j++)
+    {
+      const Edge *a = &((const Edge *) ep->elems)[i];
+      const Edge *b = &((const Edge *) eq->elems)[j];
+      bool aarc = a->etype == EDGE_LINEARC || a->etype == EDGE_POLYARC;
+      bool barc = b->etype == EDGE_LINEARC || b->etype == EDGE_POLYARC;
+      if (! aarc && ! barc)
+      {
+        ArrangePiece sa = {a->x1, a->y1, a->x2, a->y2, 0, 0, false};
+        ArrangePiece sb = {b->x1, b->y1, b->x2, b->y2, 0, 0, false};
+        res = cert_segs_meet(&sa, &sb) ? 1 : 0;
+      }
+      else if (aarc != barc)
+      {
+        const Edge *sg = aarc ? b : a, *ar = aarc ? a : b;
+        ArcsegMeet out[2];
+        int nm = arcsegm_meet_exact(sg->x1, sg->y1, sg->x2, sg->y2, ar, out);
+        if (nm < 0)
+          res = -1;
+        for (int k = 0; k < nm && res == 0; k++)
+        {
+          double px, py;
+          if (out[k].kind == ARCSEG_AT_SEGMENT_START)
+          { px = sg->x1; py = sg->y1; }
+          else if (out[k].kind == ARCSEG_AT_SEGMENT_END)
+          { px = sg->x2; py = sg->y2; }
+          else if (out[k].kind == ARCSEG_AT_ARC_START)
+          { px = ar->x1; py = ar->y1; }
+          else if (out[k].kind == ARCSEG_AT_ARC_END)
+          { px = ar->x2; py = ar->y2; }
+          else
+          { res = 1; break; }
+          if (px != wx || py != wy)
+            res = 1;
+        }
+      }
+      else
+      {
+        if (a->cx == b->cx && a->cy == b->cy)
+        {
+          res = -1;
+          break;
+        }
+        int meet, within[2][2];
+        if (! arcarc_meet_exact(a, b, &meet, within))
+        {
+          res = -1;
+          break;
+        }
+        /* w is one of the crossings, an end of both arcs, so on the chord of
+         * each, which #arcarc_meet_exact never counts within an arc: any
+         * crossing it finds within both arcs is another one, and they meet */
+        if (meet > 0 && ((within[0][0] && within[0][1]) ||
+            (within[1][0] && within[1][1])))
+          res = 1;
+      }
+    }
+  meos_array_destroy(ep);
+  meos_array_destroy(eq);
+  return res;
+}
+
+/* Whether a written ring turns in the sense @p sgn (1 counterclockwise for a
+ * shell, -1 clockwise for a hole), as the exact ring does: where
+ * sgn A_c > B, A_c the shoelace sum of its chords (twice their area,
+ * decided exactly as the sign of one polynomial, #polynomial_sign_exact) and
+ * B twice an upper bound of the area between its arcs and their chords, the
+ * area of the ring has the sign of A_c. The bulge of an arc through a, m, b
+ * is at most c s with s <= c |(b - a) x (m - a)| / (2 |m - a| |m - b|) where
+ * the arc is minor ((a - m).(b - m) < 0, exact), the area of its disc
+ * otherwise; B is computed in doubles and rounded up. False where it cannot
+ * tell, a whole circle among its pieces included */
+/* whether a written ring turns in the sense @p sgn
+ * where every arc it writes bulges in that sense, (m - a) x (b - a) of the
+ * sign sgn, exactly: the triangle a, m, b lies within the region between
+ * the chord and the arc, so twice the area of the ring is the shoelace sum
+ * S of its vertices with the middles of its arcs, plus what the arcs add
+ * beyond their triangles, of the sign sgn; the ring turns in the sense sgn
+ * where sgn S > 0, the sign of one polynomial (#polynomial_sign_exact) */
+static bool
+cert_ring_keeps_sense_mids(const MeosArray *ring, int sgn)
+{
+  const ArrangePiece *e = (const ArrangePiece *) ring->elems;
+  uint32_t n = ring->count, np = 0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    bool arc = buffer_piece_writes_arc(&e[i]);
+    if (arc && (e[i].x1 == e[i].x2 && e[i].y1 == e[i].y2))
+      return false;
+    if (arc && - cross_product_sign(e[i].x1, e[i].y1, e[i].x2, e[i].y2,
+          e[i].x1, e[i].y1, e[i].mx, e[i].my) != sgn)
+      return false;
+    np += arc ? 2 : 1;
+  }
+  double *px = palloc(sizeof(double) * np), *py = palloc(sizeof(double) * np);
+  np = 0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    px[np] = e[i].x1; py[np++] = e[i].y1;
+    if (buffer_piece_writes_arc(&e[i]))
+    {
+      px[np] = e[i].mx; py[np++] = e[i].my;
+    }
+  }
+  ExactSum *sm = palloc(sizeof(ExactSum) * 2 * np);
+  PolyTerm *f = palloc(sizeof(PolyTerm) * 2 * np);
+  for (uint32_t i = 0; i < np; i++)
+  {
+    exact_sum_set(&sm[2 * i], &px[i], 1);
+    exact_sum_set(&sm[2 * i + 1], &py[i], 1);
+  }
+  for (uint32_t i = 0; i < np; i++)
+  {
+    uint32_t j = (i + 1 == np) ? 0 : i + 1;
+    f[2 * i] = (PolyTerm) {(double) sgn, 2, {(int) (2 * i), (int) (2 * j + 1)}};
+    f[2 * i + 1] = (PolyTerm) {(double) -sgn, 2,
+      {(int) (2 * j), (int) (2 * i + 1)}};
+  }
+  int sign = polynomial_sign_exact(sm, f, (int) (2 * np));
+  pfree(sm); pfree(f); pfree(px); pfree(py);
+  return sign > 0;
+}
+
+static bool
+cert_ring_keeps_sense(const MeosArray *ring, int sgn)
+{
+  const ArrangePiece *e = (const ArrangePiece *) ring->elems;
+  uint32_t n = ring->count;
+  double bulge = 0.0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    if (! e[i].arc)
+      continue;
+    double ax = e[i].x1, ay = e[i].y1, bx = e[i].x2, by = e[i].y2;
+    double mx = e[i].mx, my = e[i].my;
+    if (ax == bx && ay == by)
+      return false;
+    double c = hypot(bx - ax, by - ay);
+    double cr = fabs((bx - ax) * (my - ay) - (by - ay) * (mx - ax));
+    double la = hypot(mx - ax, my - ay), lb = hypot(mx - bx, my - by);
+    if (! (la > 0.0) || ! (lb > 0.0) || ! (cr > 0.0))
+      return false;
+    int minor = certa_sum2_sign(ax, mx, bx, mx, ay, my, by, my) < 0;
+    double bi;
+    if (minor)
+      bi = c * c * cr / (2.0 * la * lb);
+    else
+    {
+      double rr = c * la * lb / (2.0 * cr);
+      bi = M_PI * rr * rr;
+    }
+    bulge += bi;
+  }
+  /* twice the bulge, with room for the rounding of each operation */
+  double bb = nextafter(2.0 * bulge * (1.0 + 1e-10), INFINITY);
+  /* First in doubles: each product is off by eps/2 of itself and the sum
+   * by (2n) eps of the sum of the magnitudes, a bound taken twice over */
+  {
+    double v = 0.0, mag = 0.0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+      uint32_t j = (i + 1 == n) ? 0 : i + 1;
+      double t1 = e[i].x1 * e[j].y1, t2 = e[j].x1 * e[i].y1;
+      v += t1 - t2;
+      mag += fabs(t1) + fabs(t2);
+    }
+    double err = 4.0 * (double) (2 * n + 2) * DBL_EPSILON * mag + DBL_MIN;
+    double w = (double) sgn * v;
+    if (w - err > bb * (1.0 + 4.0 * DBL_EPSILON))
+      return true;
+    if (w + err < bb * (1.0 - 4.0 * DBL_EPSILON) && w + err < 0.0)
+      return false;
+  }
+  ExactSum *sm = palloc(sizeof(ExactSum) * 2 * n);
+  PolyTerm *f = palloc(sizeof(PolyTerm) * (2 * n + 1));
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const double x[1] = {e[i].x1}, y[1] = {e[i].y1};
+    exact_sum_set(&sm[2 * i], x, 1);
+    exact_sum_set(&sm[2 * i + 1], y, 1);
+  }
+  for (uint32_t i = 0; i < n; i++)
+  {
+    uint32_t j = (i + 1 == n) ? 0 : i + 1;
+    f[2 * i] = (PolyTerm) {(double) sgn, 2, {(int) (2 * i), (int) (2 * j + 1)}};
+    f[2 * i + 1] = (PolyTerm) {(double) -sgn, 2,
+      {(int) (2 * j), (int) (2 * i + 1)}};
+  }
+  f[2 * n] = (PolyTerm) {-bb, 0, {0}};
+  int sign = polynomial_sign_exact(sm, f, (int) (2 * n + 1));
+  pfree(sm);
+  pfree(f);
+  return sign > 0 || cert_ring_keeps_sense_mids(ring, sgn);
+}
+
+/* Append a ring and an index to an array of pairs, its room doubling as
+ * #arr_cert_place doubles the places */
+static void
+buffer_cert_pair_add(uint32_t (**arr)[2], uint32_t *n, uint32_t *cap,
+  uint32_t r, uint32_t i)
+{
+  if (*n == *cap)
+  {
+    *cap = *cap ? 2 * *cap : 16;
+    *arr = *arr ? repalloc(*arr, sizeof(uint32_t[2]) * *cap) :
+      palloc(sizeof(uint32_t[2]) * *cap);
+  }
+  (*arr)[*n][0] = r;
+  (*arr)[(*n)++][1] = i;
+}
+
+/* Whether a written vertex of a place the arrangement's bounds leave against
+ * two rings, or a vertex next to one, is the vertex (vx, vy) of a ring */
+static bool
+buffer_cert_vertex_flagged(const double *f, const ArrangePiece *e, uint32_t i,
+  double vx, double vy)
+{
+  for (int q = 0; q < 3; q++)
+    if (f[2 * q] == vx && f[2 * q + 1] == vy)
+      return true;
+  if (i > 0 && e[i - 1].x1 == f[0] && e[i - 1].y1 == f[1])
+    return true;
+  return e[i].x2 == f[0] && e[i].y2 == f[1];
+}
+
+/* Whether every place the certificate leaves is cleared by the exact checks
+ * of the written rings: the written pieces at a vertex the
+ * arrangement's bounds leave meet the other piece at their shared end alone
+ * (#cert_neighbours_meet, #cert_segs_meet), and so do the neighbours at a
+ * vertex the test of #buffer_cert_a leaves; and where a place lies on two
+ * rings, each ring has a vertex in no such place against the other, whose
+ * side of it never changes along the homotopy */
+static bool
+buffer_cert_places_clear(MeosArray **rings, uint32_t nrings,
+  const ArrangeCert *cert, const uint32_t (*aflags)[2], uint32_t naflags)
+{
+  /* The two rings and the place of each place against two rings */
+  uint32_t (*two)[2] = NULL, ntwo = 0, captwo = 0;
+  uint32_t *twok = NULL;
+  bool ok = true;
+  for (uint32_t k = 0; k < cert->nplaces && ok; k++)
+  {
+    const double *f = cert->places[k];
+    int rq = -1, iq = -1, rv = -1, iv = -1;
+    for (uint32_t r = 0; r < nrings && (rq < 0 || rv < 0); r++)
+    {
+      const ArrangePiece *e = (const ArrangePiece *) rings[r]->elems;
+      for (uint32_t i = 0; i < rings[r]->count; i++)
+      {
+        if (rq < 0 && ((e[i].x1 == f[2] && e[i].y1 == f[3] && e[i].x2 == f[4] &&
+            e[i].y2 == f[5]) || (e[i].x1 == f[4] && e[i].y1 == f[5] &&
+            e[i].x2 == f[2] && e[i].y2 == f[3])))
+        {
+          rq = (int) r; iq = (int) i;
+        }
+        if (rv < 0 && e[i].x2 == f[0] && e[i].y2 == f[1])
+        {
+          rv = (int) r; iv = (int) i;
+        }
+      }
+    }
+    /* A place written nowhere is not cleared */
+    if (rq < 0 || rv < 0)
+    {
+      ok = false;
+      break;
+    }
+    if (rq != rv)
+    {
+      uint32_t n0 = ntwo;
+      buffer_cert_pair_add(&two, &ntwo, &captwo, (uint32_t) rv, (uint32_t) rq);
+      twok = twok ? repalloc(twok, sizeof(uint32_t) * captwo) :
+        palloc(sizeof(uint32_t) * captwo);
+      twok[n0] = k;
+    }
+    const ArrangePiece *ev = (const ArrangePiece *) rings[rv]->elems;
+    uint32_t nv = rings[rv]->count;
+    const ArrangePiece *p1 = &ev[iv], *p2 = &ev[((uint32_t) iv + 1) % nv];
+    const ArrangePiece *q = &((const ArrangePiece *) rings[rq]->elems)[iq];
+    if (p1->arc || p2->arc || q->arc)
+    {
+      /* Decided by the exact meeting tests, a shared end the one point
+       * allowed; a meeting not decided is not cleared */
+      for (int l = 0; l < 2 && ok; l++)
+      {
+        const ArrangePiece *pp = l ? p2 : p1;
+        if (pp == q)
+          continue;
+        double wx = NAN, wy = NAN;
+        if ((pp->x1 == q->x1 && pp->y1 == q->y1) ||
+            (pp->x1 == q->x2 && pp->y1 == q->y2))
+        { wx = pp->x1; wy = pp->y1; }
+        else if ((pp->x2 == q->x1 && pp->y2 == q->y1) ||
+            (pp->x2 == q->x2 && pp->y2 == q->y2))
+        { wx = pp->x2; wy = pp->y2; }
+        ok = cert_neighbours_meet(pp, q, wx, wy) == 0;
+      }
+      continue;
+    }
+    ok = ! ((p1 != q && cert_segs_meet(p1, q)) ||
+      (p2 != q && cert_segs_meet(p2, q)));
+  }
+  for (uint32_t k = 0; k < naflags && ok; k++)
+  {
+    uint32_t r = aflags[k][0], i = aflags[k][1];
+    const ArrangePiece *e = (const ArrangePiece *) rings[r]->elems;
+    uint32_t n = rings[r]->count;
+    const ArrangePiece *p = &e[(i == 0) ? n - 1 : i - 1], *q = &e[i];
+    ok = cert_neighbours_meet(p, q, q->x1, q->y1) == 0;
+  }
+  /* Nesting: each ring of a place against two rings has a vertex in no such
+   * place against the other */
+  for (uint32_t k = 0; k < ntwo && ok; k++)
+    for (int dir = 0; dir < 2 && ok; dir++)
+    {
+      uint32_t ra = two[k][dir], rb = two[k][1 - dir];
+      const ArrangePiece *ea = (const ArrangePiece *) rings[ra]->elems;
+      bool found = false;
+      for (uint32_t i = 0; i < rings[ra]->count && ! found; i++)
+      {
+        bool flagged = false;
+        for (uint32_t l = 0; l < ntwo && ! flagged; l++)
+          if ((two[l][0] == ra && two[l][1] == rb) ||
+              (two[l][0] == rb && two[l][1] == ra))
+            flagged = buffer_cert_vertex_flagged(cert->places[twok[l]], ea,
+              i, ea[i].x1, ea[i].y1);
+        found = ! flagged;
+      }
+      ok = found;
+    }
+  if (two)
+  {
+    pfree(two);
+    pfree(twok);
+  }
+  return ok;
+}
+
+/* exact signs of the (A) test. The sign of
+ * a x b + c x d where a..d are differences of doubles, filtered by
+ * Shewchuk's bound, exactly otherwise (#polynomial_sign_exact) */
+static inline int
+certa_sum2_sign(double a1, double a0, double b1, double b0, double c1,
+  double c0, double d1, double d0)
+{
+  double a = a1 - a0, b = b1 - b0, c = c1 - c0, d = d1 - d0;
+  double ab = a * b, cd = c * d, v = ab + cd;
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
+    (fabs(ab) + fabs(cd));
+  if (v > bound)
+    return 1;
+  if (-v > bound)
+    return -1;
+  double t[4][2] = {{a1, -a0}, {b1, -b0}, {c1, -c0}, {d1, -d0}};
+  ExactSum sm[4];
+  for (int k = 0; k < 4; k++)
+    exact_sum_set(&sm[k], t[k], 2);
+  PolyTerm f[2] = {{1.0, 2, {0, 1}}, {1.0, 2, {2, 3}}};
+  return polynomial_sign_exact(sm, f, 2);
+}
+
+/* Whether |B - A|^2 > D^2, exactly */
+static pg_attribute_always_inline bool
+certa_longer(double ax, double ay, double bx, double by, double d)
+{
+  double ux = bx - ax, uy = by - ay;
+  double l = ux * ux + uy * uy, dd = d * d;
+  double bound = 2.0 * (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON * (l + dd) +
+    4.0 * DBL_MIN;
+  if (l - dd > bound)
+    return true;
+  if (dd - l > bound)
+    return false;
+  double t[3][2] = {{bx, -ax}, {by, -ay}, {d, 0.0}};
+  ExactSum sm[3];
+  for (int k = 0; k < 3; k++)
+    exact_sum_set(&sm[k], t[k], (k == 2) ? 1 : 2);
+  PolyTerm f[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
+  return polynomial_sign_exact(sm, f, 3) > 0;
+}
+
+/* the sign of
+ * F = |e1|^2 (e2 . d) - |e2|^2 (e1 . d), e1 = m - v, e2 = o - v, d = s - v,
+ * filtered by the bound of its ten roundings, 8 eps M with M the sum of
+ * the magnitudes of its terms, where no intermediate leaves
+ * [2^-500, 2^500], exactly otherwise (#polynomial_sign_exact) */
+static int
+certrj_f_sign(double vx, double vy, double mx, double my, double ox,
+  double oy, double sx, double sy)
+{
+  double e1x = mx - vx, e1y = my - vy, e2x = ox - vx, e2y = oy - vy;
+  double dx = sx - vx, dy = sy - vy;
+  double a = e1x * e1x + e1y * e1y, c = e2x * e2x + e2y * e2y;
+  double b = e2x * dx + e2y * dy, e = e1x * dx + e1y * dy;
+  double bp = fabs(e2x * dx) + fabs(e2y * dy);
+  double ep = fabs(e1x * dx) + fabs(e1y * dy);
+  if (a > 0x1p-500 && a < 0x1p500 && c > 0x1p-500 && c < 0x1p500 &&
+      bp > 0x1p-500 && bp < 0x1p500 && ep > 0x1p-500 && ep < 0x1p500)
+  {
+    double f = a * b - c * e;
+    double bound = 8.0 * DBL_EPSILON * (a * bp + c * ep);
+    if (f > bound)
+      return 1;
+    if (-f > bound)
+      return -1;
+  }
+  double t[6][2] = {{mx, -vx}, {my, -vy}, {ox, -vx}, {oy, -vy}, {sx, -vx},
+    {sy, -vy}};
+  ExactSum sm[6];
+  for (int k = 0; k < 6; k++)
+    exact_sum_set(&sm[k], t[k], 2);
+  /* e1x 0, e1y 1, e2x 2, e2y 3, dx 4, dy 5 */
+  PolyTerm p[8] = {
+    {1.0, 4, {0, 0, 2, 4}}, {1.0, 4, {0, 0, 3, 5}},
+    {1.0, 4, {1, 1, 2, 4}}, {1.0, 4, {1, 1, 3, 5}},
+    {-1.0, 4, {2, 2, 0, 4}}, {-1.0, 4, {2, 2, 1, 5}},
+    {-1.0, 4, {3, 3, 0, 4}}, {-1.0, 4, {3, 3, 1, 5}}};
+  return polynomial_sign_exact(sm, p, 8);
+}
+
+/* whether a written segment from v to s and a written
+ * arc from v through m to o meet at v alone. The line of the segment meets
+ * the circle of the arc at v and at one more point X = v + t d, d = s - v,
+ * which lies on the segment only where t > 0. An arc of at most a half turn
+ * ((v - m).(o - m) <= 0, exact) holds no point P with (P - v).T < 0, T its
+ * direction leaving v, so X lies off it where d . T < 0. With N/D the
+ * centre less v, T is sigma rot(N), sigma the sign of rot(N).e1, and
+ * rot(N).w = F(w) = |e1|^2 (e2 . w) - |e2|^2 (e1 . w); F(e1) is
+ * -|e1|^2 G with G = e2 . (e2 - e1), so d . T < 0 where F(d) G > 0, the
+ * signs of D cancelling. Each sign is exact */
+static bool
+certrj_meet_alone(double vx, double vy, double mx, double my, double ox,
+  double oy, double sx, double sy)
+{
+  if (certa_sum2_sign(vx, mx, ox, mx, vy, my, oy, my) > 0)
+    return false;
+  int g = certa_sum2_sign(ox, vx, ox, mx, oy, vy, oy, my);
+  if (g == 0)
+    return false;
+  int f = certrj_f_sign(vx, vy, mx, my, ox, oy, sx, sy);
+  return f * g > 0;
+}
+
+/* the sign of N1 . N2, N = (e2y |e1|^2 - e1y |e2|^2,
+ * e1x |e2|^2 - e2x |e1|^2) the centre of the circle through v, v + e1 and
+ * v + e2 less v times its denominator, for the arcs v, m1, o1 and v, m2, o2:
+ * filtered by the bound of its fourteen roundings, 10 eps M with M the sum
+ * of the magnitudes of its terms, where no intermediate leaves
+ * [2^-500, 2^500], exactly otherwise (#polynomial_sign_exact) */
+static int
+certrj_nn_sign(double vx, double vy, double m1x, double m1y, double o1x,
+  double o1y, double m2x, double m2y, double o2x, double o2y)
+{
+  const double e[4][2] = {{m1x - vx, m1y - vy}, {o1x - vx, o1y - vy},
+    {m2x - vx, m2y - vy}, {o2x - vx, o2y - vy}};
+  double n[2][2], np[2][2];
+  bool ranged = true;
+  for (int k = 0; k < 2; k++)
+  {
+    const double *a = e[2 * k], *b = e[2 * k + 1];
+    double la = a[0] * a[0] + a[1] * a[1], lb = b[0] * b[0] + b[1] * b[1];
+    n[k][0] = b[1] * la - a[1] * lb;
+    n[k][1] = a[0] * lb - b[0] * la;
+    np[k][0] = fabs(b[1]) * la + fabs(a[1]) * lb;
+    np[k][1] = fabs(a[0]) * lb + fabs(b[0]) * la;
+    for (int l = 0; l < 2; l++)
+      ranged &= np[k][l] > 0x1p-500 && np[k][l] < 0x1p500;
+  }
+  if (ranged)
+  {
+    double f = n[0][0] * n[1][0] + n[0][1] * n[1][1];
+    double bound = 10.0 * DBL_EPSILON *
+      (np[0][0] * np[1][0] + np[0][1] * np[1][1]);
+    if (f > bound)
+      return 1;
+    if (-f > bound)
+      return -1;
+  }
+  /* e1x 0, e1y 1, e2x 2, e2y 3 of the first arc, 4 to 7 of the second */
+  double t[8][2] = {{m1x, -vx}, {m1y, -vy}, {o1x, -vx}, {o1y, -vy},
+    {m2x, -vx}, {m2y, -vy}, {o2x, -vx}, {o2y, -vy}};
+  ExactSum sm[8];
+  for (int k = 0; k < 8; k++)
+    exact_sum_set(&sm[k], t[k], 2);
+  /* The four terms of each component, N_x = e2y e1x e1x + e2y e1y e1y -
+   * e1y e2x e2x - e1y e2y e2y and N_y = e1x e2x e2x + e1x e2y e2y -
+   * e2x e1x e1x - e2x e1y e1y, as (coefficient, factor, square) */
+  static const int cx[4][3] = {{1, 3, 0}, {1, 3, 1}, {-1, 1, 2}, {-1, 1, 3}};
+  static const int cy[4][3] = {{1, 0, 2}, {1, 0, 3}, {-1, 2, 0}, {-1, 2, 1}};
+  PolyTerm p[32];
+  int np2 = 0;
+  for (int c = 0; c < 2; c++)
+  {
+    const int (*tm)[3] = c ? cy : cx;
+    for (int i = 0; i < 4; i++)
+      for (int j = 0; j < 4; j++)
+      {
+        p[np2].coef = (double) (tm[i][0] * tm[j][0]);
+        p[np2].deg = 6;
+        p[np2].sum[0] = tm[i][1];
+        p[np2].sum[1] = tm[i][2];
+        p[np2].sum[2] = tm[i][2];
+        p[np2].sum[3] = 4 + tm[j][1];
+        p[np2].sum[4] = 4 + tm[j][2];
+        p[np2].sum[5] = 4 + tm[j][2];
+        np2++;
+      }
+  }
+  return polynomial_sign_exact(sm, p, np2);
+}
+
+/* whether two written arcs from v, through m1 to o1
+ * and through m2 to o2, meet at v alone. With T1 and T2 their directions
+ * leaving v, the first, of at most a half turn, lies where
+ * (P - v).T1 >= 0, at v and its antipode alone on the line. Along the
+ * second, (P - v).T1 = 2 rho sin(t/2) (beta cos(t/2) - alpha sin(t/2)) at
+ * the angle t from v, beta = T1.T2, which changes sign once at most on
+ * (0, 2 pi): where beta < 0 and its end has (o2 - v).T1 < 0
+ * (#certrj_meet_alone with o2 for the segment's end) it lies where
+ * (P - v).T1 < 0 but at v. T1.T2 has the sign of
+ * sigma1 sigma2 N1.N2, sigma the sign of -G (#certrj_meet_alone). Each
+ * sign is exact */
+static bool
+certrj_arcs_meet_alone(double vx, double vy, double m1x, double m1y,
+  double o1x, double o1y, double m2x, double m2y, double o2x, double o2y)
+{
+  if (! certrj_meet_alone(vx, vy, m1x, m1y, o1x, o1y, o2x, o2y))
+    return false;
+  int g1 = certa_sum2_sign(o1x, vx, o1x, m1x, o1y, vy, o1y, m1y);
+  int g2 = certa_sum2_sign(o2x, vx, o2x, m2x, o2y, vy, o2y, m2y);
+  if (g1 == 0 || g2 == 0)
+    return false;
+  int nn = certrj_nn_sign(vx, vy, m1x, m1y, o1x, o1y, m2x, m2y, o2x, o2y);
+  return g1 * g2 * nn < 0;
+}
+
+
+static void
+buffer_cert_a(MeosArray **rings, uint32_t nrings, double scale,
+  uint32_t (**flags)[2], uint32_t *nflags)
+{
+  uint32_t cap = 0;
+  double d = 16.0 * DBL_EPSILON * scale + 16.0 * DBL_MIN;
+  for (uint32_t r = 0; r < nrings; r++)
+  {
+    uint32_t n = rings[r]->count;
+    const ArrangePiece *e = (const ArrangePiece *) rings[r]->elems;
+    /* The last piece, then each in turn, its vector and whether it is
+     * longer than D (exactly, once a piece) carried to the next vertex */
+    const double k = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON;
+    double ux = e[n - 1].x2 - e[n - 1].x1, uy = e[n - 1].y2 - e[n - 1].y1;
+    bool ulong = certa_longer(e[n - 1].x1, e[n - 1].y1, e[n - 1].x2,
+      e[n - 1].y2, d);
+    for (uint32_t i = 0; i < n; i++)
+    {
+      double vx = e[i].x2 - e[i].x1, vy = e[i].y2 - e[i].y1;
+      bool vlong = certa_longer(e[i].x1, e[i].y1, e[i].x2, e[i].y2, d);
+      bool fail;
+      const ArrangePiece *p = &e[(i == 0) ? n - 1 : i - 1], *q = &e[i];
+      bool parc = buffer_piece_writes_arc(p), qarc = buffer_piece_writes_arc(q);
+      if (parc || qarc)
+      {
+        /* A written arc beside a written segment or arc meets it at the
+         * vertex they share alone (#certrj_meet_alone,
+         * #certrj_arcs_meet_alone); where neither order tells, the place is
+         * flagged, to be decided by the exact meeting tests
+         * (#cert_neighbours_meet) */
+        if (p->x2 != q->x1 || p->y2 != q->y1)
+          fail = true;
+        else if (parc && qarc)
+        {
+          fail = ! certrj_arcs_meet_alone(q->x1, q->y1, q->mx, q->my, q->x2,
+              q->y2, p->mx, p->my, p->x1, p->y1) &&
+            ! certrj_arcs_meet_alone(q->x1, q->y1, p->mx, p->my, p->x1,
+              p->y1, q->mx, q->my, q->x2, q->y2);
+        }
+        else if (qarc)
+          fail = ! certrj_meet_alone(q->x1, q->y1, q->mx, q->my, q->x2,
+            q->y2, p->x1, p->y1);
+        else
+          fail = ! certrj_meet_alone(p->x2, p->y2, p->mx, p->my, p->x1,
+            p->y1, q->x2, q->y2);
+      }
+      else
+      {
+      /* The turn at the shared vertex is a right angle or more where
+       * (P1 - W).(Q2 - W) = -(u . v) <= 0: filtered by Shewchuk's bound,
+       * exactly where it cannot tell */
+      double t1 = ux * vx, t2 = uy * vy, dot = t1 + t2;
+      double eb = k * (fabs(t1) + fabs(t2));
+      int turn = (dot > eb) ? -1 : (-dot > eb) ? 1 :
+        certa_sum2_sign(p->x1, p->x2, q->x2, q->x1, p->y1, p->y2, q->y2,
+          q->y1);
+      if (turn <= 0)
+        fail = ! ulong || ! vlong;
+      else
+      {
+        fail = ! point_segment_far_exact(q->x2, q->y2, p->x1, p->y1,
+            p->x2, p->y2, d) ||
+          ! point_segment_far_exact(p->x1, p->y1, q->x1, q->y1, q->x2,
+            q->y2, d);
+      }
+      }
+      if (fail)
+        buffer_cert_pair_add(flags, nflags, &cap, r, i);
+      ux = vx; uy = vy; ulong = vlong;
+    }
+  }
+}
+
+/**
+ * @brief Return whether the rings of the buffer of a line, written in
+ * doubles, keep the shape of the exact rings the arrangement answers: simple,
+ * apart from one another and nested as they are, turning as they do, with
+ * the line strictly inside
+ * @details The rounding certificate. Each written vertex lies within delta of
+ * its exact point, half the sum of the spacings of the doubles about its
+ * coordinates, and each written piece within its bound H of its exact piece
+ * (a segment delta, an arc the least of the chord bound H1, the bound H2 of
+ * its written circle and the interpolation bound H3, #cert_arc_h). Move every
+ * exact piece to its written form: two pieces of different rings, or a
+ * ring's piece and the line's, that lie apart by more than the sum of their
+ * bounds never meet on the way, so the winding number of each ring about a
+ * point of another ring or of the line never changes, and where every H is
+ * below the distance the line stays strictly inside. A ring touching itself
+ * on the way changes no winding number about a point off it, so of one ring
+ * it is enough that its written form is simple, decided exactly, and turns
+ * as the exact ring does: the written rings are then simple, disjoint and
+ * nested as the exact ones, with the line strictly inside.
+ * Each written ring turns in the sense of its exact ring
+ * (#cert_ring_keeps_sense); every bound the arrangement reads holds or leaves
+ * a place that the exact checks of the written rings clear
+ * (#buffer_cert_places_clear), and so does the test of the neighbours at
+ * every written vertex (#buffer_cert_a)
+ * @param[in] rings,nrings The rings as written
+ * @param[in] owner The shell owning each ring, -1 for a shell
+ * @param[in] cert The certificate the arrangement filled
+ */
+static bool
+buffer_line_rings_certified(MeosArray **rings, uint32_t nrings,
+  const int32_t *owner, const ArrangeCert *cert)
+{
+  if (cert->failed)
+    return false;
+  for (uint32_t r = 0; r < nrings; r++)
+    if (! cert_ring_keeps_sense(rings[r], (owner[r] < 0) ? 1 : -1))
+      return false;
+  uint32_t (*aflags)[2] = NULL, naflags = 0;
+  buffer_cert_a(rings, nrings, cert->scale, &aflags, &naflags);
+  bool ok = buffer_cert_places_clear(rings, nrings, cert,
+    (const uint32_t (*)[2]) aflags, naflags);
+  if (aflags)
+    pfree(aflags);
+  return ok;
+}
+
 /**
  * @brief Return the region rings an arrangement answers bound, serialized
  * as #geo_serialize serializes the surfaces #buffer_surfaces_from_rings
@@ -9742,8 +10474,9 @@ buffer_round_rings(const LWGEOM *geom, double radius, MeosArray ***rings,
   }
   pfree(pts);
   bool found = false;
-  if (edges->count > 0 && arrange_wound_tangent_surfaces(edges, rings,
-        nrings, owner) == ARR_ANSWERED)
+  bool arranged = edges->count > 0 && arrange_wound_tangent_surfaces(edges,
+    rings, nrings, owner, NULL) == ARR_ANSWERED;
+  if (arranged)
   {
     found = *nrings > 0;
     if (! found)
@@ -9838,11 +10571,26 @@ buffer_round_line_rings(const LWGEOM *geom, double radius, MeosArray ***rings,
   for (uint32_t i = 0; i < nparts && found; i++)
     found = buffer_round_line_offsets(((const LWLINE *) parts[i])->points,
       radius, tps, &ntp, edges);
-  if (found && buffer_offsets_keep_their_side(edges) &&
-      arrange_wound_tangent_surfaces(edges, rings, nrings,
-        owner) == ARR_ANSWERED)
+  /* The rounding certificate of the rings as written, its margin read off
+   * the largest coordinate they can be written at, the line's plus the
+   * distance */
+  GBOX gb;
+  if (geom->bbox)
+    gb = *geom->bbox;
+  else
+    lwgeom_calculate_gbox(geom, &gb);
+  ArrangeCert cert;
+  memset(&cert, 0, sizeof(ArrangeCert));
+  cert.scale = Max(Max(fabs(gb.xmin), fabs(gb.xmax)),
+    Max(fabs(gb.ymin), fabs(gb.ymax))) + radius;
+  cert.radius = radius;
+  bool arranged = found && buffer_offsets_keep_their_side(edges) &&
+    arrange_wound_tangent_surfaces(edges, rings, nrings, owner,
+      &cert) == ARR_ANSWERED;
+  if (arranged)
   {
-    *answered = *nrings > 0;
+    *answered = *nrings > 0 &&
+      buffer_line_rings_certified(*rings, *nrings, *owner, &cert);
     if (! *answered)
     {
       arrange_rings_free(*rings, *nrings);
@@ -9850,6 +10598,8 @@ buffer_round_line_rings(const LWGEOM *geom, double radius, MeosArray ***rings,
         pfree(*owner);
     }
   }
+  if (cert.places)
+    pfree(cert.places);
   meos_array_destroy(edges);
   pfree(tps);
   return found;
