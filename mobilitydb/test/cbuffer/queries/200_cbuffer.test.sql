@@ -90,6 +90,24 @@ SELECT radius(cbuffer 'Cbuffer(Point(1 1),0.5)');
 SELECT srid(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 
 -------------------------------------------------------------------------------
+-- Transformations
+-- A circular buffer is planar: the radius is kept in the units of the target
+-- system, so a geographic target, given by its SRID or by a pipeline that
+-- answers angles, is refused
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(round(transform(cbuffer 'Cbuffer(SRID=25832;Point(651337 6058377),10)', 32632), 3));
+SELECT asEWKT(transformPipeline(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+/* Errors */
+SELECT transform(cbuffer 'Cbuffer(SRID=25832;Point(651337 6058377),10)', 4326);
+SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, false);
+SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 0, false);
+SELECT transform(cbufferset '{"Cbuffer(SRID=25832;Point(651337 6058377),10)"}', 4326);
+
+-------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------
 

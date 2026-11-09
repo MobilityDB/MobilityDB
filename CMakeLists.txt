@@ -539,10 +539,12 @@ include_directories(BEFORE SYSTEM ${CMAKE_SOURCE_DIR}/meos/include/geos-none)
 find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
 math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
-if(POSTGIS_PROJ_VERSION LESS 61)
-  message(FATAL_ERROR "PROJ 6.1 or later is required, ${PROJ_VERSION} found. The "
+if(POSTGIS_PROJ_VERSION LESS 71)
+  message(FATAL_ERROR "PROJ 7.1 or later is required, ${PROJ_VERSION} found. The "
     "transform path applies the axis order a visualisation expects through "
-    "proj_normalize_for_visualization(), which PROJ publishes from 6.1.0 on.")
+    "proj_normalize_for_visualization(), which PROJ publishes from 6.1.0 on, and "
+    "tells a pipeline whose output are degrees through proj_degree_output(), "
+    "which PROJ publishes from 7.1.0 on.")
 endif()
 message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
 
