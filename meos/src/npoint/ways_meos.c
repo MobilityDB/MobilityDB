@@ -315,6 +315,10 @@ get_ways_record(int64 rid, bool any_gid, ways_record *rec)
         continue;
       rec->gid = rid;
       rec->the_geom = geom_in(geo_buffer, -1);
+      /* A line whose geometry #geom_in refuses, raising its error, ends the
+       * reading */
+      if (! rec->the_geom)
+        break;
       if (! geo_is_empty(rec->the_geom))
       {
         rec->length = geom_length(rec->the_geom);
@@ -339,14 +343,17 @@ get_ways_record(int64 rid, bool any_gid, ways_record *rec)
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Error reading the ways CSV file");
-      return false;
+      break;
     }
 
     /* Ignore the records with NULL values or empty geometries */
     if (read == 2)
     {
-      /* Transform the geometry string into a geometry value */
+      /* Transform the geometry string into a geometry value; a line whose
+       * geometry #geom_in refuses, raising its error, ends the reading */
       rec->the_geom = geom_in(geo_buffer, -1);
+      if (! rec->the_geom)
+        break;
       if (! geo_is_empty(rec->the_geom))
       {
         rec->length = geom_length(rec->the_geom);
@@ -508,6 +515,12 @@ geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
     {
       /* Transform the geometry string into a geometry value */
       rec.the_geom = geom_in(geo_buffer, -1);
+      /* A line whose geometry #geom_in refuses has raised its error */
+      if (! rec.the_geom)
+      {
+        fclose(file);
+        return NULL;
+      }
       if (! ensure_valid_route(rec.the_geom, srid_ways))
       {
         pfree(rec.the_geom);
