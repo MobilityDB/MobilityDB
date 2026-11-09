@@ -1072,9 +1072,9 @@ SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2
 SELECT ST_AsText(round((mvt).geom, 6))
 FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2001-01-01, Point(100 100 100)@2001-04-10}',
   stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
-                  st_astext                   
-----------------------------------------------
- MULTIPOINT Z ((0 4096 0),(409.6 3686.4 100))
+                st_astext                 
+------------------------------------------
+ MULTIPOINT Z ((0 4096 0),(410 3686 100))
 (1 row)
 
 SELECT ST_AsText(round((mvt).geom, 6))
@@ -1104,9 +1104,9 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2001-01-01, Point(100 100 100)@
 SELECT ST_AsText(round((mvt).geom, 6))
 FROM (SELECT asMVTGeom(tgeompoint '{[Point(0 0)@2001-01-01], [Point(100 100)@2001-04-10]}',
   stbox 'STBOX X((0,0),(60,60))') AS mvt ) AS t;
- st_astext 
------------
- 
+   st_astext   
+---------------
+ POINT(0 4096)
 (1 row)
 
 SELECT ST_AsText(round((mvt).geom, 6))
@@ -1123,6 +1123,46 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-0
           st_astext           
 ------------------------------
  LINESTRING(0 4096,4352 -256)
+(1 row)
+
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '{Point(5 5)@2001-01-01, Point(9 9)@2001-01-02, Point(0 1000)@2001-01-03}',
+  stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
+               st_astext               |              times              
+---------------------------------------+---------------------------------
+ MULTIPOINT((20 4076),(37 4059),(0 0)) | {978336000,978422400,978508800}
+(1 row)
+
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '[Point(1 1)@2001-01-01, Point(1.05 1.05)@2001-01-02]',
+  stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
+   st_astext   |    times    
+---------------+-------------
+ POINT(4 4092) | {978336000}
+(1 row)
+
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '{[Point(1 1)@2001-01-01, Point(1.05 1.05)@2001-01-02], [Point(500 500)@2001-01-03, Point(600 600)@2001-01-04]}',
+  stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
+                             st_astext                             |              times              
+-------------------------------------------------------------------+---------------------------------
+ GEOMETRYCOLLECTION(POINT(4 4092),LINESTRING(2048 2048,2458 1638)) | {978336000,978508800,978595200}
+(1 row)
+
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(1.02 1.02)@2001-01-02, Point(1.04 1.04)@2001-01-03]',
+  stbox 'STBOX X((0,0),(1000,1000))', 256, 0) AS mvt ) AS t;
+  st_astext   |    times    
+--------------+-------------
+ POINT(0 256) | {978336000}
+(1 row)
+
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0)@2001-01-01, Point(1000 1000)@2001-01-02}',
+  stbox 'STBOX X((0,0),(1000,1000))', 256, 0) AS mvt ) AS t;
+          st_astext          |         times         
+-----------------------------+-----------------------
+ MULTIPOINT((0 256),(256 0)) | {978336000,978422400}
 (1 row)
 
 /* Errors */

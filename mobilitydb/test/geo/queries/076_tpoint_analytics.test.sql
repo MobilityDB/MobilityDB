@@ -423,6 +423,24 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-02-10
 SELECT ST_AsText(round((mvt).geom, 6))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-02-10, Point(100 100)@2001-04-10]',
   stbox 'STBOX X((0,0),(60,60))') AS mvt ) AS t;
+-- A point on the tile origin after the second instant
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '{Point(5 5)@2001-01-01, Point(9 9)@2001-01-02, Point(0 1000)@2001-01-03}',
+  stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
+-- A sequence snapped to one point, alone and beside another sequence
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '[Point(1 1)@2001-01-01, Point(1.05 1.05)@2001-01-02]',
+  stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '{[Point(1 1)@2001-01-01, Point(1.05 1.05)@2001-01-02], [Point(500 500)@2001-01-03, Point(600 600)@2001-01-04]}',
+  stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
+-- Points on the border of the tile without buffer
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(1.02 1.02)@2001-01-02, Point(1.04 1.04)@2001-01-03]',
+  stbox 'STBOX X((0,0),(1000,1000))', 256, 0) AS mvt ) AS t;
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0)@2001-01-01, Point(1000 1000)@2001-01-02}',
+  stbox 'STBOX X((0,0),(1000,1000))', 256, 0) AS mvt ) AS t;
 
 /* Errors */
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-04-10]',
