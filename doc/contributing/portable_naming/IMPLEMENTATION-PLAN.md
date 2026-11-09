@@ -73,6 +73,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   It rests on the route validation the owner asked for first ("validate the routes at the ways
   readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
   each route as a planar line in the SRID of the network when the ways readers read it.
+- **The conversion of a temporal network point sequence to a temporal geometry point builds the
+  points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
+  ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
+  branch `clean/tnpoint-drop-zm-flags` rewrites `842c640e83` and `dd6c9ed0ef` there, the
+  `route_point_tinstant` of `meos/src/npoint/tnpoint.c`, which takes no flags, and the Z and M
+  flags `tnpointseq_tgeompointseq_cont` copies from the route, which `ensure_valid_route` keeps
+  empty.
 - **Each enumeration a host passes to MEOS names its values as text through one pair,
   `<enum lowercased>_name` and `<enum lowercased>_from_string`**, outside the plan, as the owner
   decided on 2026-11-08 ("approve the rewrite"): the pair of `MeosPixType` takes that name, so
