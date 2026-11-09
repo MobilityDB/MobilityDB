@@ -159,6 +159,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `trgeometry_as_tsequence` and `trgeometry_as_tsequenceset` an `interpType interp`.
   Branch `clean/cell-instant-shorthands` rewrites `6e22d6c736`, the `@nullable` notes of their `interp_str` parameter in `trgeo.c`.
   MobilityDB #3527, MERGED as `6975f3c3bf`..`4fcdbc3754` (2026-11-09).
+- **A conversion to a temporal sequence answers a sequence or refuses**, so an object layer
+  generated from the catalog reads the `TSequence *` that `temporal_as_tsequence` declares as one
+  (row B24 of `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("go": the `as_<subtype>`
+  conversions answer the subtype asked for or refuse; restriction, `setInterp`, append and merge
+  keep answering a `Temporal *`): branch `fix/as-tsequence-answers-a-sequence` transforms the
+  single sequence of a sequence set as it transforms a sequence, answers a set of one sequence as
+  that sequence and refuses a set of several.
 - **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes), #3287 (the exactness
   plan), #3259 (a step of that plan) and #3200 (the box of a temporal point cloud instant, by its
   author); #785, #777 and #677 touch none of these names or functions; MEOS-API has none.
