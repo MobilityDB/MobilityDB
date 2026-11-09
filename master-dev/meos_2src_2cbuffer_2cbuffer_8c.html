@@ -87,6 +87,7 @@ $(function() {
 <code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;limits.h&gt;</code><br />
 <code>#include &lt;math.h&gt;</code><br />
+<code>#include &lt;proj.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &lt;varatt.h&gt;</code><br />
@@ -343,6 +344,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa65ef1a77072461ec195c039fc3a4de6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__cbuffer__base__rel_gaa65ef1a77072461ec195c039fc3a4de6.html#gaa65ef1a77072461ec195c039fc3a4de6">dwithin_cbuffer_cbuffer</a> (const <a class="el" href="structCbuffer.html">Cbuffer</a> *cb1, const <a class="el" href="structCbuffer.html">Cbuffer</a> *cb2, double dist)</td></tr>
 <tr class="memdesc:gaa65ef1a77072461ec195c039fc3a4de6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two 2D circular buffers are within a distance.  <a href="group__meos__cbuffer__base__rel_gaa65ef1a77072461ec195c039fc3a4de6.html#gaa65ef1a77072461ec195c039fc3a4de6">More...</a><br /></td></tr>
 <tr class="separator:gaa65ef1a77072461ec195c039fc3a4de6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4af47b4e050372bbc39005f927e20b7d"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2cbuffer_2cbuffer_8c_a4af47b4e050372bbc39005f927e20b7d.html#a4af47b4e050372bbc39005f927e20b7d">ensure_cbuffer_transf_planar</a> (int32_t srid_to, const <a class="el" href="structLWPROJ.html">LWPROJ</a> *pj)</td></tr>
+<tr class="memdesc:a4af47b4e050372bbc39005f927e20b7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a transformation leaves a circular buffer in a planar reference system, otherwise raise an error and return false.  <a href="meos_2src_2cbuffer_2cbuffer_8c_a4af47b4e050372bbc39005f927e20b7d.html#a4af47b4e050372bbc39005f927e20b7d">More...</a><br /></td></tr>
+<tr class="separator:a4af47b4e050372bbc39005f927e20b7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fccd18e09ee0ecee4d1ba2b0eb3699c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2cbuffer_2cbuffer_8c_a0fccd18e09ee0ecee4d1ba2b0eb3699c.html#a0fccd18e09ee0ecee4d1ba2b0eb3699c">ensure_valid_cbuffer_cbuffer</a> (const <a class="el" href="structCbuffer.html">Cbuffer</a> *cb1, const <a class="el" href="structCbuffer.html">Cbuffer</a> *cb2)</td></tr>
 <tr class="memdesc:a0fccd18e09ee0ecee4d1ba2b0eb3699c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure the validity of two circular buffers.  <a href="meos_2src_2cbuffer_2cbuffer_8c_a0fccd18e09ee0ecee4d1ba2b0eb3699c.html#a0fccd18e09ee0ecee4d1ba2b0eb3699c">More...</a><br /></td></tr>
 <tr class="separator:a0fccd18e09ee0ecee4d1ba2b0eb3699c"><td class="memSeparator" colspan="2">&#160;</td></tr>
