@@ -69,7 +69,7 @@ SELECT tintFromHexWKB('0001');
 
 -- A feature not supported
 SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <->
-  geometry 'Linestring(1e200 -1,1e200 1)';
+  geometry 'Polygon((1e200 -1,2e200 -1,2e200 1,1e200 1,1e200 -1))';
 
 \set VERBOSITY default
 
