@@ -85,9 +85,10 @@ $(function() {
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;libpq/pqformat.h&gt;</code><br />
-<code>#include &lt;utils/builtins.h&gt;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__s2cell_8h_source.html">meos_s2cell.h</a>&gt;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="s2cell_8h_source.html">s2cell/s2cell.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 </div><table class="memberdecls">
@@ -151,10 +152,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaf5c87741d67a743b3d4cfc96607b79d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an S2 cell as its canonical hexadecimal string @sqlfn <a class="el" href="group__meos__s2cell__base__inout_gae3b9766cff5bb4f86a618261dcca88e2.html#gae3b9766cff5bb4f86a618261dcca88e2" title="Return the string representation of an S2 cell.">s2cell_out()</a>  <a href="group__mobilitydb__s2cell__base__inout_gaf5c87741d67a743b3d4cfc96607b79d6.html#gaf5c87741d67a743b3d4cfc96607b79d6">More...</a><br /></td></tr>
 <tr class="separator:gaf5c87741d67a743b3d4cfc96607b79d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga00ba7014001def5067f3c12694fbbfed"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__s2cell__base__inout_ga00ba7014001def5067f3c12694fbbfed.html#ga00ba7014001def5067f3c12694fbbfed">S2cell_recv</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:ga00ba7014001def5067f3c12694fbbfed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an S2 cell received over the binary wire protocol.  <a href="group__mobilitydb__s2cell__base__inout_ga00ba7014001def5067f3c12694fbbfed.html#ga00ba7014001def5067f3c12694fbbfed">More...</a><br /></td></tr>
+<tr class="memdesc:ga00ba7014001def5067f3c12694fbbfed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an S2 cell from its Well-Known Binary (WKB) representation, as <a class="el" href="group__mobilitydb__setspan__inout_gaf2517d28bfacf165c4fa54f01e1f8bf5.html#gaf2517d28bfacf165c4fa54f01e1f8bf5" title="Return a span from its Well-Known Binary (WKB) representation @sqlfn intspan_recv(),...">Span_recv</a> reads a span @sqlfn s2cell_recv()  <a href="group__mobilitydb__s2cell__base__inout_ga00ba7014001def5067f3c12694fbbfed.html#ga00ba7014001def5067f3c12694fbbfed">More...</a><br /></td></tr>
 <tr class="separator:ga00ba7014001def5067f3c12694fbbfed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga15e9188cad41e404906c58dff45d9792"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__s2cell__base__inout_ga15e9188cad41e404906c58dff45d9792.html#ga15e9188cad41e404906c58dff45d9792">S2cell_send</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:ga15e9188cad41e404906c58dff45d9792"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send an S2 cell over the binary wire protocol.  <a href="group__mobilitydb__s2cell__base__inout_ga15e9188cad41e404906c58dff45d9792.html#ga15e9188cad41e404906c58dff45d9792">More...</a><br /></td></tr>
+<tr class="memdesc:ga15e9188cad41e404906c58dff45d9792"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the Well-Known Binary (WKB) representation of an S2 cell, as <a class="el" href="group__mobilitydb__box__inout_gafe60da561e5bb374743e3eb7b9515a58.html#gafe60da561e5bb374743e3eb7b9515a58" title="Return the Well-Known Binary (WKB) representation of a temporal box @sqlfn tbox_send()">Tbox_send</a> writes a box carrying no SRID @sqlfn s2cell_send()  <a href="group__mobilitydb__s2cell__base__inout_ga15e9188cad41e404906c58dff45d9792.html#ga15e9188cad41e404906c58dff45d9792">More...</a><br /></td></tr>
 <tr class="separator:ga15e9188cad41e404906c58dff45d9792"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
