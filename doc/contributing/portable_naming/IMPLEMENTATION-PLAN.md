@@ -177,9 +177,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   chapter of the manual (`tools/codegen/portable_aliases/generate.py`) names `#@>` and `<@#`
   `tjsonbContains` and `tjsonbContained`, where SQL binds them to `spanContains` and
   `spanContained`, and follows SQL: MobilityDB #3551, MERGED as `4155f992a1` (2026-11-10). The rule is MEOS-API branch
-  `feat/colliding-operator-takes-sql-name` (`7c5d8df`, pushed on MEOS-API #267), which renames exactly
-  `contains_tjsonb_jsonb` and `contains_tjsonb_tjsonb` over the catalog of MobilityDB `781b7cd6b9`;
-  it follows MEOS-API #267, which reads the template text writers in the catalog tests.
+  `feat/colliding-operator-takes-sql-name`, MEOS-API #268 (`a86d822`), which renames exactly
+  `contains_tjsonb_jsonb` and `contains_tjsonb_tjsonb` over the catalog of MobilityDB `4155f992a1`;
+  MEOS-API #267, MERGED (2026-11-10), brought the catalog tests and the error codes to MobilityDB
+  master first.
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
