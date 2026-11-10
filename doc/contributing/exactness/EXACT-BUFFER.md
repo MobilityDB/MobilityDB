@@ -169,7 +169,22 @@ items).
   which it adds. Where the certificate fails, that buffer is declined. With the certificate on, on
   the head of #3532, the line cells read 0.728, 0.274 and 0.437. Its certificate is earned by three
   things: the case of neighbours with an arc closed in the lemma, CGAL refusing none of the written
-  rings on the guard, straight and AIS line corpora, and speed on all ten buffer cells.
+  rings on the guard, straight and AIS line corpora, and speed on all ten buffer cells. #3442's head
+  `1615bee8a4`, on master `9bed2dd9e3`, carries it as "Certify the rings of the buffer of a line as
+  written in doubles" (`ArrangeCert`, passed by the buffer of a line alone), with its test, a moored
+  line whose written arcs cross beside their shared vertex. The lemma states it in the doc comment of
+  `buffer_line_rings_certified`: of one ring, a written form that is simple, decided exactly, and
+  turns as the exact ring does; the bounds H are read between rings and against the line. Two
+  neighbouring written arcs meet where any crossing `arcarc_meet_exact` finds lies within both, the
+  shared end lying on both chords and so within neither; AIS row 191 is a ring of such arcs CGAL
+  finds not simple, and the certificate declines it. On the head, CGAL's circle-segment
+  traits refuse the written rings of no buffer it answers: guard 167 answered and 135 declined,
+  straight 1600 answered, AIS 1474 answered and 54 declined, every buffer whose rings CGAL refuses
+  among those declined; CGAL finds the rings of 2 guard and 50 AIS declined buffers valid. As an exact
+  distance set it agrees with 185 of 185 guard, 36 960 of 36 960 straight and 1 474 of 1 474 AIS
+  queries answered. Speed: lines 0.727, 0.274 and 0.437, natural areas 0.944, 0.904 and 0.565, every
+  buffer cell at parity; `distance_geo` 0.157 under the 320 limbs, `distance_curves` arcs on every row
+  and so information only.
 - **The certificate of polygon buffers** is a future task. The buffers of polygons are on master and
   write their rings with no certificate. Applied to them as it stands, the certificate reads 1.313
   and 1.120 on natural areas at distances 1 and 50, 1.004 on the joints and 1.017 on the jittered
