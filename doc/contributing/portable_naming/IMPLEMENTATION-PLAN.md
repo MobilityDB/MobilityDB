@@ -176,7 +176,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   The rule belongs to the operator naming of MEOS-API `parser/object_model.py`; the portable
   chapter of the manual (`tools/codegen/portable_aliases/generate.py`) names `#@>` and `<@#`
   `tjsonbContains` and `tjsonbContained`, where SQL binds them to `spanContains` and
-  `spanContained`, and follows SQL.
+  `spanContained`, and follows SQL: MobilityDB #3551 (branch
+  `doc/tjsonb-time-containment-is-span`). The rule is MEOS-API branch
+  `feat/colliding-operator-takes-sql-name` (`1f28c1a`), which renames exactly
+  `contains_tjsonb_jsonb` and `contains_tjsonb_tjsonb` over the catalog of MobilityDB `781b7cd6b9`;
+  it follows MEOS-API #267, which reads the template text writers in the catalog tests.
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
