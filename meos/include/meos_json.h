@@ -237,7 +237,8 @@ extern Jsonb **jsonbset_values(const Set *s, int *count);
 
 /* JSON operations */
 
-extern Set *concat_jsonbset_jsonb(const Set *s, const Jsonb *jb, bool invert);
+extern Set *concat_jsonb_jsonbset(const Jsonb *jb, const Set *s);
+extern Set *concat_jsonbset_jsonb(const Set *s, const Jsonb *jb);
 extern Set *jsonbset_array_length(const Set *set);
 extern Set *jsonbset_object_field(const Set *set, const text *key, nullHandleType null_handle);
 extern Set *jsonbset_object_field_text(const Set *set, const text *key, nullHandleType null_handle);
@@ -344,7 +345,8 @@ extern SpanSet **tjsonb_unnest(const Temporal *temp, Jsonb ***values, int *count
  * Temporal JSON functions
  *****************************************************************************/
 
-extern Temporal *concat_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert);
+extern Temporal *concat_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp);
+extern Temporal *concat_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb);
 extern Temporal *concat_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *contained_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp);
 extern Temporal *contained_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb);
