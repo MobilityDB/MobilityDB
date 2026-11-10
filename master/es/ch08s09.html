@@ -1,4 +1,4 @@
-<html><head><meta charset="UTF-8"><title>Relaciones espaciotemporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch08.html" title="Capítulo 8. Tipos temporales geométricos (Parte 2)"><link rel="prev" href="ch08s08.html" title="Relaciones siempre y alguna vez"><link rel="next" href="ch09.html" title="Capítulo 9. Tipos temporales: Operaciones de análisis"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones espaciotemporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s08.html">Anterior</a> </td><th width="60%" align="center">Capítulo 8. Tipos temporales geométricos (Parte 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_spatiotemp_rel"></a>Relaciones espaciotemporales</h2></div></div></div><p>Cada relación de esta sección también tiene una forma de arreglo, cuyo nombre termina en <code class="varname">Pairs</code>, como las relaciones siempre y alguna vez de <a class="xref" href="ch08s08.html" title="Relaciones siempre y alguna vez">“Relaciones siempre y alguna vez”</a>. Compara cada elemento de un arreglo de geometrías temporales con cada elemento de otro y devuelve, una fila por par cuya relación temporal es verdadera alguna vez, los índices basados en uno <code class="varname">i</code> y <code class="varname">j</code> del par y los períodos <code class="varname">periods</code> durante los cuales la relación es verdadera.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tContains"></a><a class="indexterm" name="id6888"></a><a class="indexterm" name="id6891"></a><p>Contiene temporal</p><pre class="programlisting">
+<html><head><meta charset="UTF-8"><title>Relaciones espaciotemporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch08.html" title="Capítulo 8. Tipos temporales geométricos (Parte 2)"><link rel="prev" href="ch08s08.html" title="Relaciones siempre y alguna vez"><link rel="next" href="ch09.html" title="Capítulo 9. Tipos temporales: Operaciones de análisis"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones espaciotemporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s08.html">Anterior</a> </td><th width="60%" align="center">Capítulo 8. Tipos temporales geométricos (Parte 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_spatiotemp_rel"></a>Relaciones espaciotemporales</h2></div></div></div><p>Cada relación de esta sección también tiene una forma de arreglo, cuyo nombre termina en <code class="varname">Pairs</code>, como las relaciones siempre y alguna vez de <a class="xref" href="ch08s08.html" title="Relaciones siempre y alguna vez">“Relaciones siempre y alguna vez”</a>. Compara cada elemento de un arreglo de geometrías temporales con cada elemento de otro y devuelve, una fila por par cuya relación temporal es verdadera alguna vez, los índices basados en uno <code class="varname">i</code> y <code class="varname">j</code> del par y los períodos <code class="varname">periods</code> durante los cuales la relación es verdadera.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tContains"></a><a class="indexterm" name="id6886"></a><a class="indexterm" name="id6889"></a><p>Contiene temporal</p><pre class="programlisting">
 tContains(geometry,tgeom) → tbool
 tContains(tgeometry,{geometry,tgeometry}) → tbool
 tContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
@@ -23,7 +23,7 @@ SELECT i, j, periods FROM tContainsPairs(
     Point(5 5)@2001-01-03]',
     tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
 -- 1 | 1 | {[2001-01-01, 2001-01-02)}
-</pre></li><li class="listitem"><a name="tgeo_tCovers"></a><a class="indexterm" name="id6900"></a><a class="indexterm" name="id6903"></a><p>Cubre temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_tCovers"></a><a class="indexterm" name="id6898"></a><a class="indexterm" name="id6901"></a><p>Cubre temporal</p><pre class="programlisting">
 tCovers(geometry,tgeom) → tbool
 tCovers(tgeometry,{geometry,tgeometry}) → tbool
 tCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
@@ -41,7 +41,7 @@ SELECT i, j, periods FROM tCoversPairs(
   ARRAY[tgeometry '[Point(5 2)@2001-01-01, Point(4 2)@2001-01-02,
     Point(4 2)@2001-01-03]']);
 -- 1 | 1 | {[2001-01-02, 2001-01-03]}
-</pre></li><li class="listitem"><a name="tgeo_tDisjoint"></a><a class="indexterm" name="id6914"></a><a class="indexterm" name="id6917"></a><p>Disjunto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_tDisjoint"></a><a class="indexterm" name="id6912"></a><a class="indexterm" name="id6915"></a><p>Disjunto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 tDisjoint({geo,tgeo},{geo,tgeo}) → tbool
@@ -58,7 +58,7 @@ SELECT i, j, periods FROM tDisjointPairs(
   ARRAY[tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)'],
   ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)']);
 -- 1 | 1 | {[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}
-</pre></li><li class="listitem"><a name="tgeo_tDwithin"></a><a class="indexterm" name="id6943"></a><a class="indexterm" name="id6946"></a><p>Está a distancia de temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_tDwithin"></a><a class="indexterm" name="id6941"></a><a class="indexterm" name="id6944"></a><p>Está a distancia de temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 tDwithin({geo,tgeo},{geo,tgeo},float) → tbool
@@ -91,7 +91,7 @@ SELECT i, j, periods FROM tDwithinPairs(
     tgeompoint '[Point(4 0)@2001-01-01, Point(0 10)@2001-01-03]'], 2);
 -- 1 | 1 | {[2001-01-01, 2001-01-03]}
 -- 1 | 2 | {[2001-01-02, 2001-01-03]}
-</pre></li><li class="listitem"><a name="tgeo_tIntersects"></a><a class="indexterm" name="id6971"></a><a class="indexterm" name="id6974"></a><p>Intersección temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_tIntersects"></a><a class="indexterm" name="id6969"></a><a class="indexterm" name="id6972"></a><p>Intersección temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 tIntersects({geo,tgeo},{geo,tgeo}) → tbool
@@ -118,7 +118,7 @@ SELECT i, j, periods FROM tIntersectsPairs(
     tgeompoint '[Point(0 1)@2001-01-01, Point(3 4)@2001-01-05)']);
 -- 1 | 1 | {[2001-01-03, 2001-01-03]}
 -- 1 | 2 | {[2001-01-02 08:00:00, 2001-01-02 08:00:00]}
-</pre></li><li class="listitem"><a name="tgeo_tTouches"></a><a class="indexterm" name="id6999"></a><a class="indexterm" name="id7002"></a><p>Toca temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_tTouches"></a><a class="indexterm" name="id6997"></a><a class="indexterm" name="id7000"></a><p>Toca temporal</p><pre class="programlisting">
 tTouches({geometry,tgeom},{geometry,tgeom}) → tbool
 tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
 </pre><pre class="programlisting">

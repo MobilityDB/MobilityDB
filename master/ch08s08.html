@@ -12,7 +12,7 @@ SELECT ids[i] AS ship1, ids[j] AS ship2
 FROM fleet, eDwithinPairs(trips, trips, 2)
 WHERE i &lt; j;
 -- A | C
-</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id7295"></a><a class="indexterm" name="id7298"></a><a class="indexterm" name="id7301"></a><a class="indexterm" name="id7304"></a><p>Ever or always contains</p><pre class="programlisting">
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id7293"></a><a class="indexterm" name="id7296"></a><a class="indexterm" name="id7299"></a><a class="indexterm" name="id7302"></a><p>Ever or always contains</p><pre class="programlisting">
 eContains({geometry,tgeom},{geometry,tgeom}) → boolean
 aContains({geometry,tgeom},{geometry,tgeom}) → boolean
 eContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
@@ -48,7 +48,7 @@ SELECT i, j FROM aContainsPairs(
     tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
     tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
 -- 1 | 2
-</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id7315"></a><a class="indexterm" name="id7318"></a><a class="indexterm" name="id7321"></a><a class="indexterm" name="id7324"></a><p>Ever or always covers</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id7313"></a><a class="indexterm" name="id7316"></a><a class="indexterm" name="id7319"></a><a class="indexterm" name="id7322"></a><p>Ever or always covers</p><pre class="programlisting">
 eCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 eCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
@@ -82,7 +82,7 @@ SELECT i, j FROM aCoversPairs(
     tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
     Point(2 2)@2001-01-03]']);
 -- 1 | 1
-</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id7336"></a><a class="indexterm" name="id7339"></a><a class="indexterm" name="id7342"></a><a class="indexterm" name="id7345"></a><p>Is ever or always disjoint <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id7334"></a><a class="indexterm" name="id7337"></a><a class="indexterm" name="id7340"></a><a class="indexterm" name="id7343"></a><p>Is ever or always disjoint <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eDisjoint({geo,tgeo},{geo,tgeo}) → boolean
@@ -107,7 +107,7 @@ SELECT i, j FROM aDisjointPairs(
   ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(-5 10)@2001-01-02]',
     tgeompoint '[Point(5 0)@2001-01-01, Point(5 10)@2001-01-02]']);
 -- 1 | 2
-</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id7368"></a><a class="indexterm" name="id7371"></a><a class="indexterm" name="id7374"></a><a class="indexterm" name="id7377"></a><p>Is ever or always at distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id7366"></a><a class="indexterm" name="id7369"></a><a class="indexterm" name="id7372"></a><a class="indexterm" name="id7375"></a><p>Is ever or always at distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
@@ -148,7 +148,7 @@ SELECT count(*) FROM eDwithinPairs(
   ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
   ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800, false);
 -- 0
-</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id7402"></a><a class="indexterm" name="id7405"></a><a class="indexterm" name="id7408"></a><a class="indexterm" name="id7411"></a><p>Ever or always intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id7400"></a><a class="indexterm" name="id7403"></a><a class="indexterm" name="id7406"></a><a class="indexterm" name="id7409"></a><p>Ever or always intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eIntersects({geo,tgeo},{geo,tgeo}) → boolean
@@ -176,7 +176,7 @@ SELECT i, j FROM aIntersectsPairs(
     tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-03]',
     tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03]']);
 -- 1 | 1
-</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id7434"></a><a class="indexterm" name="id7437"></a><a class="indexterm" name="id7440"></a><a class="indexterm" name="id7443"></a><p>Ever or always touches</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id7432"></a><a class="indexterm" name="id7435"></a><a class="indexterm" name="id7438"></a><a class="indexterm" name="id7441"></a><p>Ever or always touches</p><pre class="programlisting">
 eTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 aTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
