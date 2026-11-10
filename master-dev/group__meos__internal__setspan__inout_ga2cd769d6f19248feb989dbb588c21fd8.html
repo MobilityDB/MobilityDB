@@ -107,7 +107,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the MEOS type tag encoded in the header of a hex-encoded Well-Known Binary (WKB) string, without parsing the whole value. </p>
-<p >Sets, spans, span sets, and temporal values write their concrete <code>MeosType</code> as a 16-bit tag immediately after the endian flag; this function peeks that tag so a caller can dispatch on the concrete type at runtime. <a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> boxes (<code>tbox</code>, <code>stbox</code>) carry no in-band type tag in their WKB header, so they are not supported by this function. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Every value of MEOS writes its concrete <code>MeosType</code> as a 16-bit tag immediately after the endian flag, the point cloud values and the <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tiles excepted, whose WKB is that of their own format; this function peeks that tag so a caller can dispatch on the concrete type at runtime. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">hexwkb</td><td>HexWKB string </td></tr>
   </table>
