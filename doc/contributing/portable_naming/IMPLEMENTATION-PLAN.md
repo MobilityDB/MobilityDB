@@ -181,6 +181,18 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `contains_tjsonb_jsonb` and `contains_tjsonb_tjsonb` over the catalog of MobilityDB `4155f992a1`;
   MEOS-API #267, MERGED (2026-11-10), brought the catalog tests and the error codes to MobilityDB
   master first.
+- **A public MEOS function states the order of its operands in its name, never through a flag**,
+  as the owner ruled on 2026-11-10 ("fix as you suggested but confirm first this is the best North
+  Star policy when comparing with siblings"): over the 4096 public functions of MobilityDB
+  `4155f992a1`, 524 pairs `<op>_<a>_<b>` / `<op>_<b>_<a>` state it by name, 53 of them
+  `contains_<a>_<b>` / `contained_<b>_<a>` and 9 in the JSONB family, against 4 functions taking a
+  `bool invert`; the siblings keep the flag internal (`add_float_tfloat` calls
+  `arithop_tnumber_number(..., INVERT)`). Branch `fix/tjsonb-containment-per-operand-order` makes
+  `contains_tjsonb_jsonb(temp, jb)` take no flag and adds `contains_jsonb_tjsonb`,
+  `contained_tjsonb_jsonb`, `contained_jsonb_tjsonb` and `contained_tjsonb_tjsonb`, each the MEOS twin
+  of the SQL wrapper of its name, over a static `contains_tjsonb_jsonb_intl`, so the object layers
+  generate `tjsonbContains` and `tjsonbContained` with no flag. The other three, `concat_tjsonb_jsonb`,
+  `concat_jsonbset_jsonb` and `bearing_tpoint_point`, take the same shape once approved.
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
