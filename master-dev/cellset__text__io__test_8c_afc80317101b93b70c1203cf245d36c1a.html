@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: s2cellset_out</title>
+<title>MobilityDB: check</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__s2cell__set__inout.html">Input and output functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_b0e6555625305bf6f77beb749e7698be.html">test</a></li><li class="navelem"><a class="el" href="cellset__text__io__test_8c.html">cellset_text_io_test.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,29 +79,39 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__s2cell__set__inout_ga6d3824f157810a42942206635a0f07fd.html#ga6d3824f157810a42942206635a0f07fd">s2cellset_in</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__s2cell__set__inout_gaa310b973bd5ad9a96a24ed535210e28b.html#gaa310b973bd5ad9a96a24ed535210e28b">s2cellset_out</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="cellset__text__io__test_8c_afc80317101b93b70c1203cf245d36c1a.html#afc80317101b93b70c1203cf245d36c1a">check</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="cellset__text__io__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="cellset__text__io__test_8c_ac369b9d05bb66fb5a9b05d210386cbe5.html#ac369b9d05bb66fb5a9b05d210386cbe5">text_in_fn</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaa310b973bd5ad9a96a24ed535210e28b" name="gaa310b973bd5ad9a96a24ed535210e28b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaa310b973bd5ad9a96a24ed535210e28b">&#9670;&#160;</a></span>s2cellset_out()</h2>
+<a id="afc80317101b93b70c1203cf245d36c1a" name="afc80317101b93b70c1203cf245d36c1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc80317101b93b70c1203cf245d36c1a">&#9670;&#160;</a></span>check()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">char * s2cellset_out </td>
+          <td class="memname">static void check </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t *&#160;</td>
-          <td class="paramname"><em>size_out</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="cellset__text__io__test_8c_ac369b9d05bb66fb5a9b05d210386cbe5.html#ac369b9d05bb66fb5a9b05d210386cbe5">text_in_fn</a>&#160;</td>
+          <td class="paramname"><em>in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>text</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -109,16 +119,12 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-
-<p>Return the string representation of an S2 cell set. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">size_out</td><td>Size of the result, the terminating null character included @csqlfn <a class="el" href="group__mobilitydb__setspan__inout_gaadaf3b4faf09411aa69d7b082fde23d1.html#gaadaf3b4faf09411aa69d7b082fde23d1" title="Return the Well-Known Text (WKT) representation of a set @sqlfn intset_out(), floatset_out(),...">Set_out()</a>, <a class="el" href="group__mobilitydb__setspan__inout_ga4e5f64dfa6bbf5b02c9948a82ae0ef85.html#ga4e5f64dfa6bbf5b02c9948a82ae0ef85" title="Return the Well-Known Text (WKT) representation of a set @sqlfn asText()">Set_as_text()</a> </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
