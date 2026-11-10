@@ -165,8 +165,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `tpointseq_grid` compared against a zeroed previous point; keeps a sequence left with one
   instant as that point at its time, rather than dropping it; and clips with the border
   included, so a point on the right or bottom edge of the tile is kept.
-  MobilityDB #3537 (`0d8c933999` on master `690ce7e169`), strict-ci, cppcheck, Windows,
-  valgrind and smoke receipts.
+  MobilityDB #3537, MERGED as `9bed2dd9e3` (2026-11-10).
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
