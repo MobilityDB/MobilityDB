@@ -126,7 +126,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the temporal geometry point instant equivalent to a temporal pointcloud instant. </p>
+<p>Return the temporal geometry point instant equivalent to a temporal pointcloud instant, or NULL when a coordinate leaves the doubles. </p>
+<p >A coordinate is the stored value of its dimension scaled and offset by the schema, so it is computed and tested as every computed result is (<a class="el" href="meos_2include_2temporal_2temporal_8h_a403fb1a56e6690df0ca161ee1ad135af.html#a403fb1a56e6690df0ca161ee1ad135af" title="Ensure that the result of an operation is finite.">ensure_finite_result</a>), and the point is made from the coordinates by <a class="el" href="tgeo__spatialfuncs_8h_a6ae54d8c8f5a6de2fe2a14020aa51009.html#a6ae54d8c8f5a6de2fe2a14020aa51009" title="Return a temporal point instant from the coordinates of a point and a timestamptz.">tpointinst_make_coords</a> without testing them again </p>
 
 </div>
 </div>
