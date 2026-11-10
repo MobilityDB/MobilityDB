@@ -892,6 +892,25 @@ int main(void)
   }
   printf("1 temporal distance of a point resting far from the origin\n");
 
+  /* A point moving from (0, 0) to (2, 0) over three microseconds passes
+   * nearest the end (1, 0) of a segment at 1.5 microseconds, an instant the
+   * temporal distance dates as the crossings of the temporal types are, at
+   * the microsecond below it */
+  {
+    Temporal *temp = tgeompoint_in("[POINT(0 0)@2001-01-01 00:00:00, "
+      "POINT(2 0)@2001-01-01 00:00:00.000003]");
+    GSERIALIZED *gs = geom_in("LINESTRING(1 0,1 -1)", -1);
+    assert(temp != NULL && gs != NULL);
+    Temporal *dist = tdistance_tgeo_geo(temp, gs, true);
+    assert(dist != NULL);
+    int count;
+    TimestampTz *times = temporal_timestamps(dist, &count);
+    assert(count == 3);
+    assert(times[1] == timestamptz_in("2001-01-01 00:00:00.000001", -1));
+    free(times); free(dist); free(gs); free(temp);
+  }
+  printf("1 turning instant of a temporal distance dated as a crossing\n");
+
   /* A coordinate that is infinite lies outside the domain of exact
    * computation, and the geometry holding one is refused when read */
   const char *nonfinite[] = {"LINESTRING Z(0 0 0,1e400 1 1,2 2 2)",
