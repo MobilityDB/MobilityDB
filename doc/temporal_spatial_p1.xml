@@ -1355,6 +1355,7 @@ asMVTGeom(tpoint,bounds stbox,extent integer=4096,buffer integer=256,
 					<listitem><para><varname>buffer</varname> is the buffer distance in tile coordinate space</para></listitem>
 					<listitem><para><varname>clip</varname> is a Boolean that determines if the resulting geometries and timestamps should be clipped or not</para></listitem>
 				</itemizedlist>
+				<para>As in PostGIS <varname>ST_AsMVTGeom</varname>, the coordinates of the result are snapped to integers, consecutive points snapped to the same position are kept once with the timestamp of the first one, and a point on the border of the clipping box is kept.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText((mvt).geom),
   (mvt).times FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01,

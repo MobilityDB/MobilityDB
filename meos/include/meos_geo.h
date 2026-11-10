@@ -475,7 +475,6 @@ extern bool geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 
 extern Set *geogset_in(const char *str);
 extern Set *geomset_in(const char *str);
-extern char *spatialset_out(const Set *s, int maxdd, size_t *size_out);
 extern char *spatialset_as_text(const Set *set, int maxdd, size_t *size_out);
 extern uint8_t *spatialset_as_ewkb(const Set *s, uint8_t variant, size_t *size_out);
 extern char *spatialset_as_ewkt(const Set *set, int maxdd, size_t *size_out);
@@ -651,7 +650,6 @@ extern uint8_t *stbox_sortkey(const STBox *box, size_t *size);
 
 /* Input and output functions */
 
-extern char *tspatial_out(const Temporal *temp, int maxdd, size_t *size_out);
 extern Temporal *tgeogpoint_from_mfjson(const char *str);
 extern Temporal *tgeogpoint_in(const char *str);
 extern Temporal *tgeography_from_mfjson(const char *mfjson);
@@ -932,11 +930,17 @@ extern int *eintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const
 extern int *aintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *etouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *atouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *econtains_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *acontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *ecovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *acovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *edisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, bool spheroid, int *count, SpanSet ***periods);
 extern int *tintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 extern int *ttouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
+extern int *tcontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
+extern int *tcovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 extern int *tdisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 
 /* Distance */

@@ -1354,6 +1354,7 @@ asMVTGeom(tpoint,bounds stbox,extent integer=4096,buffer integer=256,
 					<listitem><para><varname>buffer</varname> es la distancia del búfer en el espacio de coordenadas de mosaico</para></listitem>
 					<listitem><para><varname>clip</varname> es un booleano que determina si las geometrías resultantes y las marcas de tiempo deben recortarse o no</para></listitem>
 				</itemizedlist>
+				<para>Como en PostGIS <varname>ST_AsMVTGeom</varname>, las coordenadas del resultado se redondean a enteros, los puntos consecutivos redondeados a la misma posición se conservan una sola vez con la marca de tiempo del primero, y un punto en el borde de la caja de recorte se conserva.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText((mvt).geom),
   (mvt).times FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01,

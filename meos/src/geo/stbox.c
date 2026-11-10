@@ -194,6 +194,7 @@ stbox_in(const char *str)
 static char *
 stbox_wkt_out(const STBox *box, bool extended, int maxdd, size_t *size_out)
 {
+  size_t str_size;
   size_t part_size;
   static size_t size = MAXSTBOXLEN + 1;
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
@@ -215,7 +216,7 @@ stbox_wkt_out(const STBox *box, bool extended, int maxdd, size_t *size_out)
   if (hast)
   {
     /* The second argument is not used for periods */
-    period = span_out(&box->period, maxdd, NULL);
+    period = span_out(&box->period, maxdd, &str_size);
     if (! period)
     {
       pfree(str);

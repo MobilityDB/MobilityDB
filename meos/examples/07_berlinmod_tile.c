@@ -245,8 +245,8 @@ int main(void)
   k = 0;
   for (i = 0; i < num_speed_tiles; i++)
   {
-    char *span_str = floatspan_out(&speed_tiles[k].span, 0, &size_out);
-    char *tstzspan_str = tstzspan_out(&speed_tiles[k].period, &size_out);
+    char *span_str = span_out(&speed_tiles[k].span, 0, &size_out);
+    char *tstzspan_str = span_out(&speed_tiles[k].period, 0, &size_out);
     char *interval_str = interval_out(&speed_splits[k].duration, &size_out);
     printf("Tile: %d, Span: %s, Period: %s, Count: %d, Duration: %s\n",
       i, span_str, tstzspan_str, speed_splits[k].count, interval_str);

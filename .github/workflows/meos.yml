@@ -285,7 +285,7 @@ jobs:
             Temporal *temp = tint_in("[1@2000-01-01, 3@2000-01-03]");
             if (! temp) { printf("parse failed\n"); return 1; }
             size_t size;
-            char *str = tint_out(temp, &size);
+            char *str = temporal_out(temp, 0, &size);
             printf("%s\n", str);
             free(str); free(temp);
             meos_finalize();

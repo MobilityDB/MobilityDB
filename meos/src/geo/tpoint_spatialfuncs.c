@@ -1824,21 +1824,25 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 
 /**
  * @brief Return a temporal point sequence snapped to a grid specification
+ * @details An instant snapped to the point of the instant kept before it is
+ * dropped, as #tpointseq_remove_repeated_points drops a repeated point, so a
+ * sequence whose instants all snap to one point is that point at the time of
+ * its first instant
  */
 static TSequence *
-tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
+tpointseq_grid(const TSequence *seq, const gridspec *grid)
 {
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   int32_t srid = tspatial_srid((Temporal *) seq);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int ninsts = 0;
+  POINT4D p, prev_p = { 0 }; /* make compiler quiet */
   for (int i = 0; i < seq->count; i++)
   {
-    POINT4D p, prev_p = { 0 }; /* make compiler quiet */
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     point_grid(tinstant_value_p(inst), hasz, grid, &p);
     /* Skip duplicates */
-    if (i > 1 && prev_p.x == p.x && prev_p.y == p.y &&
+    if (i > 0 && prev_p.x == p.x && prev_p.y == p.y &&
       (hasz ? prev_p.z == p.z : 1))
       continue;
 
@@ -1851,12 +1855,6 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
       inst->t);
     memcpy(&prev_p, &p, sizeof(POINT4D));
   }
-  /* We are sure that ninsts > 0 */
-  if (filter_pts && ninsts == 1)
-  {
-    pfree_array((void **) instants, 1);
-    return NULL;
-  }
 
   /* Construct the result */
   return tsequence_make_free(instants, ninsts, ninsts > 1 ?
@@ -1866,29 +1864,26 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 
 /**
  * @brief Return a temporal point sequence set snapped to a grid specification
+ * @details Every sequence is kept, as in #tpointseqset_remove_repeated_points
  */
 static TSequenceSet *
-tpointseqset_grid(const TSequenceSet *ss, const gridspec *grid, bool filter_pts)
+tpointseqset_grid(const TSequenceSet *ss, const gridspec *grid)
 {
-  int nseqs = 0;
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    TSequence *seq = tpointseq_grid(TSEQUENCESET_SEQ_N(ss, i), grid, filter_pts);
-    if (seq)
-      sequences[nseqs++] = seq;
-  }
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+    sequences[i] = tpointseq_grid(TSEQUENCESET_SEQ_N(ss, i), grid);
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
  * @brief Return a temporal point snapped to a grid specification
  * @details Only the X, Y, and possible Z dimensions are gridded, the timestamp
  * is kept unmodified. Two consecutive instants falling on the same grid cell
- * are collapsed into one single instant.
+ * are collapsed into one single instant. The subtypes dispatch as in
+ * #tpoint_remove_repeated_points.
  */
 static Temporal *
-tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
+tpoint_grid(const Temporal *temp, const gridspec *grid)
 {
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1896,10 +1891,9 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
     case TINSTANT:
       return (Temporal *) tpointinst_grid((TInstant *) temp, grid);
     case TSEQUENCE:
-      return (Temporal *) tpointseq_grid((TSequence *) temp, grid, filter_pts);
+      return (Temporal *) tpointseq_grid((TSequence *) temp, grid);
     default: /* TSEQUENCESET */
-      return (Temporal *) tpointseqset_grid((TSequenceSet *) temp, grid,
-        filter_pts);
+      return (Temporal *) tpointseqset_grid((TSequenceSet *) temp, grid);
   }
 }
 
@@ -1918,8 +1912,10 @@ static Temporal *
 tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   uint32_t buffer, bool clip_geom)
 {
+  /* The tile coordinate space is integer, as in PostGIS ST_AsMVTGeom */
   gridspec grid;
   memset(&grid, 0, sizeof(gridspec));
+  grid.xsize = grid.ysize = 1;
   double width = box->xmax - box->xmin;
   double height = box->ymax - box->ymin;
   double resx, resy, res, fx, fy;
@@ -1942,26 +1938,27 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
     -box->xmin * fx, -box->ymax * fy, 0);
   pfree(tpoint2);
 
-  /* Snap to integer precision, removing duplicate and single points */
-  Temporal *tpoint4 = tpoint_grid(tpoint3, &grid, true);
+  /* Snap to integer precision, removing consecutive duplicate points */
+  Temporal *tpoint4 = tpoint_grid(tpoint3, &grid);
   pfree(tpoint3);
-  if (tpoint4 == NULL || ! clip_geom)
+  if (! clip_geom)
     return tpoint4;
 
-  /* Clip temporal point taking into account the buffer */
+  /* Clip temporal point taking into account the buffer, keeping a point on
+   * the border as PostGIS ST_AsMVTGeom does */
   double max = (double) extent + (double) buffer;
   double min = -(double) buffer;
   int32_t srid = tspatial_srid(tpoint);
   STBox clip_box;
   stbox_set(true, false, false, srid, min, max, min, max, 0, 0, NULL,
     &clip_box);
-  Temporal *tpoint5 = tgeo_restrict_stbox(tpoint4, &clip_box, false,
+  Temporal *tpoint5 = tgeo_restrict_stbox(tpoint4, &clip_box, BORDER_INC,
     REST_AT);
   pfree(tpoint4);
   if (tpoint5 == NULL)
     return NULL;
   /* We need to grid again the result of the clipping */
-  Temporal *result = tpoint_grid(tpoint5, &grid, true);
+  Temporal *result = tpoint_grid(tpoint5, &grid);
   pfree(tpoint5);
   return result;
 }

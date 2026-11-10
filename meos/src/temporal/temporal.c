@@ -914,19 +914,21 @@ temporal_in(const char *str, MeosType temptype)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal value
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal value,
+ * the output of every temporal type, as #temporal_as_wkb writes its
+ * Well-Known Binary
  * @param[in] temp Temporal value
  * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out If not NULL, the size of the result, the terminating
- * null character included
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
 temporal_out(const Temporal *temp, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL);
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -956,6 +958,7 @@ temporal_out(const Temporal *temp, int maxdd, size_t *size_out)
 char **
 temparr_out(const Temporal **temparr, int count, int maxdd)
 {
+  size_t str_size;
   assert(temparr); assert(count > 0);
   /* Ensure the validity of the arguments */
   if (! ensure_not_negative(maxdd))
@@ -963,7 +966,7 @@ temparr_out(const Temporal **temparr, int count, int maxdd)
 
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
-    result[i] = temporal_out(temparr[i], maxdd, NULL);
+    result[i] = temporal_out(temparr[i], maxdd, &str_size);
   return result;
 }
 
@@ -1041,95 +1044,6 @@ ttext_in(const char *str)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal boolean
- * @param[in] temp Temporal boolean
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Temporal_out(), #Temporal_as_text()
- */
-char *
-tbool_out(const Temporal *temp, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TBOOL(temp, NULL); 
-  return temporal_out(temp, 0, size_out);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal integer
- * @param[in] temp Temporal integer
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Temporal_out(), #Temporal_as_text()
- */
-char *
-tint_out(const Temporal *temp, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TINT(temp, NULL); 
-  return temporal_out(temp, 0, size_out);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal big
- * integer
- * @param[in] temp Temporal big integer
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Temporal_out(), #Temporal_as_text()
- */
-char *
-tbigint_out(const Temporal *temp, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TBIGINT(temp, NULL);
-  return temporal_out(temp, 0, size_out);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal float
- * @param[in] temp Temporal float
- * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Temporal_out(), #Temporal_as_text()
- */
-char *
-tfloat_out(const Temporal *temp, int maxdd, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  return temporal_out(temp, maxdd, size_out);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal text
- * @param[in] temp Temporal text
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Temporal_out(), #Temporal_as_text()
- */
-char *
-ttext_out(const Temporal *temp, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TTEXT(temp, NULL); 
-  return temporal_out(temp, 0, size_out);
-}
 
 /*****************************************************************************
  * Constructor functions

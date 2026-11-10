@@ -55,11 +55,11 @@ int main()
     agg = int_union_transfn(agg, i * 2);
     agg = int_union_transfn(agg, i * 2);
   }
-  char *agg_out = intset_out(agg, &size_out);
+  char *agg_out = set_out(agg, 0, &size_out);
   printf("Result of the transition function: %s\n", agg_out);
 
   Set *result = set_union_finalfn(agg);
-  char *result_out = intset_out(result, &size_out);
+  char *result_out = set_out(result, 0, &size_out);
   printf("Result of the set union aggregation: %s\n", result_out);
 
   /* Clean up allocated objects */

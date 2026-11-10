@@ -76,10 +76,10 @@ SELECT quadbinFromHexWKB(asHexWKB(quadbin '48427fffffffffff'))
        = quadbin '48427fffffffffff';
 SELECT quadbinFromHexWKB(asHexWKB(quadbin '480fffffffffffff', 'XDR'))
        = quadbin '480fffffffffffff';
-SELECT quadbinFromHexWKB('0140E6100000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('01470040E6100000FFFFFFFFFF7F4248');
 /* Errors */
-SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
-SELECT quadbinFromHexWKB('01003930000000000000');
+SELECT quadbinFromHexWKB('01470040110F0000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('014700003930000000000000');
 
 -------------------------------------------------------------------------------
 -- Text round trip

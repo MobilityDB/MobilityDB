@@ -223,7 +223,6 @@ extern Set *s2cellset_cover_cells(const Set *cells, int resolution);
 /* Input and output functions of `s2cellset` */
 
 extern Set *s2cellset_in(const char *str);
-extern char *s2cellset_out(const Set *s, size_t *size_out);
 
 /* Constructor functions of `s2cellset` */
 
@@ -261,7 +260,6 @@ extern Temporal *ts2cell_in(const char *str);
 extern TInstant *ts2cellinst_in(const char *str);
 extern TSequence *ts2cellseq_in(const char *str, interpType interp);
 extern TSequenceSet *ts2cellseqset_in(const char *str);
-extern char *ts2cell_out(const Temporal *temp, size_t *size_out);
 extern Temporal *ts2cell_from_mfjson(const char *mfjson);
 
 /* Constructors */

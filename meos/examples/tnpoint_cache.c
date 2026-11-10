@@ -91,8 +91,7 @@ int main(void)
   }
 
   /* Print information about the instants */
-  char *str = tnpoint_out((Temporal *) instants[MAX_NUM_INSTS - 1], 0,
-    &size_out);
+  char *str = temporal_out((Temporal *) instants[MAX_NUM_INSTS - 1], 0, &size_out);
   printf("\nNumber of instants: %d, Last value : %s\n",
     MAX_NUM_INSTS, str);
 

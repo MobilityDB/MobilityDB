@@ -105,7 +105,7 @@ int main(void)
   Temporal *tpcpoint = temporal_in(TPCPOINT_IN, T_TPCPOINT);
   assert(tpcpoint != NULL);
   assert(meos_errno() == 0);
-  char *tpcpoint_out = temporal_out(tpcpoint, 15, NULL);
+  char *tpcpoint_out = temporal_out(tpcpoint, 15, &size_out);
   printf("tpcpoint: %s\n", tpcpoint_out);
   Temporal *tpcpoint2 = temporal_in(tpcpoint_out, T_TPCPOINT);
   assert(tpcpoint2 != NULL && temporal_eq(tpcpoint, tpcpoint2));
@@ -114,7 +114,7 @@ int main(void)
   Temporal *tpcpatch = temporal_in(TPCPATCH_IN, T_TPCPATCH);
   assert(tpcpatch != NULL);
   assert(meos_errno() == 0);
-  char *tpcpatch_out = temporal_out(tpcpatch, 15, NULL);
+  char *tpcpatch_out = temporal_out(tpcpatch, 15, &size_out);
   printf("tpcpatch: %s\n", tpcpatch_out);
   Temporal *tpcpatch2 = temporal_in(tpcpatch_out, T_TPCPATCH);
   assert(tpcpatch2 != NULL && temporal_eq(tpcpatch, tpcpatch2));
@@ -402,12 +402,12 @@ int main(void)
   npstate = tpcpatch_tnpoints_transfn(npstate, tpcpatch2);
   Temporal *np = temporal_tagg_finalfn(npstate);
   assert(np != NULL);
-  char *np_out = temporal_out(np, 6, NULL);
+  char *np_out = temporal_out(np, 6, &size_out);
   printf("tpcpatch_tnpoints_transfn: %s\n", np_out);
   SkipList *dstate = tpcpatch_tdensity_transfn(NULL, tpcpatch);
   Temporal *dens = temporal_tagg_finalfn(dstate);
   assert(dens != NULL);
-  char *dens_out = temporal_out(dens, 6, NULL);
+  char *dens_out = temporal_out(dens, 6, &size_out);
   printf("tpcpatch_tdensity_transfn: %s\n", dens_out);
   assert(meos_errno() == 0);
   free(np); free(np_out); free(dens); free(dens_out);

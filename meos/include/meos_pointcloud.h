@@ -284,7 +284,6 @@ extern bool pcpatch_ge(const Pcpatch *pa1, const Pcpatch *pa2);
 /* Input and output */
 
 extern Set *pcpointset_in(const char *str);
-extern char *pcpointset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor */
 
@@ -323,7 +322,6 @@ extern Set *pcpoint_union_transfn(Set *state, const Pcpoint *pt);
 /* Input and output */
 
 extern Set *pcpatchset_in(const char *str);
-extern char *pcpatchset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor */
 
@@ -498,10 +496,8 @@ extern bool overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 /* Input and output */
 
 extern Temporal *tpcpoint_in(const char *str);
-extern char *tpcpoint_out(const Temporal *temp, size_t *size_out);
 extern Temporal *tpcpoint_from_mfjson(const char *mfjson);
 extern Temporal *tpcpatch_in(const char *str);
-extern char *tpcpatch_out(const Temporal *temp, size_t *size_out);
 extern Temporal *tpcpatch_from_mfjson(const char *mfjson);
 
 // Internal

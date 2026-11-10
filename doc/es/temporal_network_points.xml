@@ -131,13 +131,13 @@ asHexEWKB(npoint,endian text='') → text
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Un punto de red toma su SRID de la red de rutas subyacente: <varname>asEWKB</varname> y <varname>asHexEWKB</varname> lo incluyen, mientras que las formas simples <varname>asBinary</varname> y <varname>asHexWKB</varname> lo omiten.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(npoint 'SRID=5676;Npoint(1,0.5)');
--- \x01010100000000000000000000000000e03f
+-- \x013000010100000000000000000000000000e03f
 SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
--- \x01412c1600000100000000000000000000000000e03f
+-- \x013000412c1600000100000000000000000000000000e03f
 SELECT asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)');
--- 01010100000000000000000000000000E03F
+-- 013000010100000000000000000000000000E03F
 SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
--- 01412C1600000100000000000000000000000000E03F
+-- 013000412C1600000100000000000000000000000000E03F
 </programlisting>
 				</listitem>
 
@@ -181,9 +181,9 @@ npointFromHexWKB(text) → npoint
 npointFromHexEWKB(text) → npoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(npointFromEWKB('\x01412c1600000100000000000000000000000000e03f'));
+SELECT asEWKT(npointFromEWKB('\x013000412c1600000100000000000000000000000000e03f'));
 -- SRID=5676;NPoint(1,0.5)
-SELECT asEWKT(npointFromHexEWKB('01412C1600000100000000000000000000000000E03F'));
+SELECT asEWKT(npointFromHexEWKB('013000412C1600000100000000000000000000000000E03F'));
 -- SRID=5676;NPoint(1,0.5)
 </programlisting>
 				</listitem>
@@ -203,13 +203,13 @@ asHexEWKB(nsegment,endian text='') → text
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Un segmento de red toma su SRID de la red de rutas subyacente, como un punto de red: <varname>asEWKB</varname> y <varname>asHexEWKB</varname> lo incluyen, mientras que las formas simples <varname>asBinary</varname> y <varname>asHexWKB</varname> lo omiten.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(nsegment 'NSegment(1,0.5,0.7)');
--- \x01010100000000000000000000000000e03f666666666666e63f
+-- \x013200010100000000000000000000000000e03f666666666666e63f
 SELECT asEWKB(nsegment 'NSegment(1,0.5,0.7)');
--- \x01412c1600000100000000000000000000000000e03f666666666666e63f
+-- \x013200412c1600000100000000000000000000000000e03f666666666666e63f
 SELECT asHexWKB(nsegment 'NSegment(1,0.5,0.7)');
--- 01010100000000000000000000000000E03F666666666666E63F
+-- 013200010100000000000000000000000000E03F666666666666E63F
 SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR');
--- 00410000162C00000000000000013FE00000000000003FE6666666666666
+-- 000032410000162C00000000000000013FE00000000000003FE6666666666666
 </programlisting>
 				</listitem>
 

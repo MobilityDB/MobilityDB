@@ -117,7 +117,7 @@ int main(void)
    * collation) under the default allocator, so that they do not leave residual
    * live bytes once the counting allocator is installed. */
   Temporal *warm = tint_in(tint_str);
-  char *warm_out = tint_out(warm, &size_out);
+  char *warm_out = temporal_out(warm, 0, &size_out);
   pfree(warm_out);
   pfree(warm);
 
@@ -138,7 +138,7 @@ int main(void)
   size_t peak = live_bytes;
 
   /* Exercise more of the allocation path */
-  char *temp_out = tint_out(temp, &size_out);
+  char *temp_out = temporal_out(temp, 0, &size_out);
   assert(temp_out != NULL);
 
   printf("custom malloc calls: %ld\n", n_malloc);

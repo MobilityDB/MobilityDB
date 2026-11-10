@@ -5810,9 +5810,9 @@ SELECT quadbinFromHexWKB(asHexWKB(quadbin '48427fffffffffff'))
        = quadbin '48427fffffffffff';
 SELECT quadbinFromHexWKB(asHexWKB(quadbin '480fffffffffffff', 'XDR'))
        = quadbin '480fffffffffffff';
-SELECT quadbinFromHexWKB('0140E6100000FFFFFFFFFF7F4248');
-SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
-SELECT quadbinFromHexWKB('01003930000000000000');
+SELECT quadbinFromHexWKB('01470040E6100000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('01470040110F0000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('014700003930000000000000');
 SELECT asText(quadbin '48427fffffffffff');
 SELECT quadbinFromText(asText(quadbin '48427fffffffffff'))
        = quadbin '48427fffffffffff';
@@ -7194,16 +7194,16 @@ SELECT asText(atGeometry(
 SELECT asText(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2), 6);
 SELECT asText(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
 SELECT asText(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1), 6);
-SELECT asText(tgeometry(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2)), 6) =
-  asText(translate(tgeometry(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 1, 2), 6);
-SELECT asText(tgeometry(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1)), 6) =
-  asText(rotate(tgeometry(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7, 1, 1), 6);
-SELECT asText(tgeometry(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
-  asText(rotateX(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
-SELECT asText(tgeometry(rotateY(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
-  asText(rotateY(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
-SELECT asText(tgeometry(rotateZ(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
-  asText(rotateZ(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(translate(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2)), 6) =
+  asText(translate(tgeometry(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 1, 2), 6);
+SELECT asText(tgeometry(rotate(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tgeometry(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7, 1, 1), 6);
+SELECT asText(tgeometry(rotateX(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateX(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(rotateY(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateY(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(rotateZ(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
+  asText(rotateZ(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
 SELECT asText(force2D(trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(10 0 0),0.7071067811865476,0,0,0.7071067811865476)@2001-01-02]'), 6);
 SELECT asText(force2D(trgeometry 'Polygon((-2 -1 3,2 -1 3,2 1 3,-2 1 3,-2 -1 3));Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
 SELECT asText(force2D(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 6);
@@ -7400,9 +7400,9 @@ SELECT s2cellFromBinary(asBinary(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromBinary(asBinary(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
 SELECT s2cellFromHexWKB(asHexWKB(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromHexWKB(asHexWKB(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
-SELECT s2cellFromHexWKB('0140E61000000000000000C9B554');
-SELECT s2cellFromHexWKB('0140110F00000000000000C9B554');
-SELECT s2cellFromHexWKB('01000000000000000000');
+SELECT s2cellFromHexWKB('01550040E61000000000000000C9B554');
+SELECT s2cellFromHexWKB('01550040110F00000000000000C9B554');
+SELECT s2cellFromHexWKB('015500000000000000000000');
 SELECT asText(s2cell '47c3c444c');
 SELECT s2cellFromText(asText(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromText('54b5c9') = s2cell '54b5c9';

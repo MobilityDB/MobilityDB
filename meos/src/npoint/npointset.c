@@ -68,26 +68,6 @@ npointset_in(const char *str)
   return set_parse(&str, T_NPOINTSET);
 }
 
-/**
- * @ingroup meos_npoint_set_inout
- * @brief Return the string representation of a network point set
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Set_out()
- */
-char *
-npointset_out(const Set *s, int maxdd, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_NPOINTSET(s, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  return set_out(s, maxdd, size_out);
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/

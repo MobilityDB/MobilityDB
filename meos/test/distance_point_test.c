@@ -330,6 +330,38 @@ far_pass_entry(double x)
 }
 
 /**
+ * @brief Assert that the temporal distance of a point resting at `(0, gap)` to
+ * the segment from `(-1, 0)` to `(1, 0)` is `gap` throughout
+ * @details Read as #every_entry reads the temporal distance of a resting point
+ * to a point geometry, here to a segment, which the temporal distance of a
+ * temporal point with linear interpolation reads edge by edge: the foot of the
+ * perpendicular is the origin, so the distance is `gap` exactly, however small
+ */
+static void
+near_edge_entry(double gap)
+{
+  Temporal *temp = still(0.0, gap);
+  GSERIALIZED *gs = geom_in("LINESTRING(-1 0,1 0)", -1);
+  assert(temp != NULL && gs != NULL);
+  Temporal *dist = tdistance_tgeo_geo(temp, gs, true);
+  assert(dist != NULL);
+  int count;
+  double *values = tfloat_values(dist, &count);
+  for (int i = 0; i < count; i++)
+  {
+    if (values[i] != gap)
+    {
+      printf("FAIL near_edge_entry(%.17g): distance %.17g\n", gap, values[i]);
+      exit(EXIT_FAILURE);
+    }
+  }
+  free(values);
+  free(dist);
+  free(gs);
+  free(temp);
+}
+
+/**
  * @brief Assert that the nearest approach of a point, or of a circular buffer
  * of the given radius, resting at a centre to a segment is the expected
  * distance less the radius
@@ -834,6 +866,31 @@ int main(void)
     far_pass_entry(far_pass[i]);
   printf("%d nearest approaches of a point passing a far point at noon\n",
     passes);
+
+  /* A point resting near a segment, at gaps whose squares fall below 1e-12,
+   * below the smallest normal double and to zero */
+  const double near_edge[] = {1.0, 1e-3, 1e-6, 1e-7, 1e-100, 1e-160, 1e-200,
+    0x1p-1074};
+  int nears = (int) (sizeof(near_edge) / sizeof(near_edge[0]));
+  for (int i = 0; i < nears; i++)
+    near_edge_entry(near_edge[i]);
+  printf("%d temporal distances of a point resting near a segment\n", nears);
+
+  /* A point resting far from the origin beside a segment far from it, whose
+   * squared coordinates leave the doubles */
+  {
+    Temporal *temp = still(0.0, 3e300);
+    GSERIALIZED *gs = geom_in("LINESTRING(-1e300 0,1e300 0)", -1);
+    assert(temp != NULL && gs != NULL);
+    Temporal *dist = tdistance_tgeo_geo(temp, gs, true);
+    assert(dist != NULL);
+    int count;
+    double *values = tfloat_values(dist, &count);
+    for (int i = 0; i < count; i++)
+      assert(values[i] == 3e300);
+    free(values); free(dist); free(gs); free(temp);
+  }
+  printf("1 temporal distance of a point resting far from the origin\n");
 
   /* A coordinate that is infinite lies outside the domain of exact
    * computation, and the geometry holding one is refused when read */

@@ -2044,11 +2044,70 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 /*****************************************************************************/
 
 /**
+ * @brief Return true if the header of the WKB representation of a value of
+ * the type carries the type, which #type_header_to_wkb_buf writes, the body
+ * of the value not stating it as the body of a set, a span, a span set or a
+ * temporal value does
+ */
+bool
+wkb_header_states_type(MeosType type)
+{
+  switch (type)
+  {
+    case T_TBOX:
+    case T_STBOX:
+#if POINTCLOUD
+    case T_TPCBOX:
+#endif /* POINTCLOUD */
+#if CBUFFER
+    case T_CBUFFER:
+#endif /* CBUFFER */
+#if H3
+    case T_H3INDEX:
+#endif /* H3 */
+#if NPOINT
+    case T_NPOINT:
+    case T_NSEGMENT:
+#endif /* NPOINT */
+#if POSE
+    case T_POSE:
+    case T_POSECHAIN:
+#endif /* POSE */
+#if QUADBIN
+    case T_QUADBIN:
+#endif /* QUADBIN */
+#if S2CELL
+    case T_S2CELL:
+#endif /* S2CELL */
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
+ * @brief Return the size of the WKB representation of a value without the
+ * type #type_header_to_wkb_buf writes in its header
+ * @errval SIZE_MAX
+ */
+static size_t
+datum_to_wkb_body_size(Datum value, MeosType type, uint8_t variant);
+
+/**
  * @brief Return the size of the WKB representation of a value
  * @errval SIZE_MAX
  */
 static size_t
 datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
+{
+  size_t size = datum_to_wkb_body_size(value, type, variant);
+  if (size == SIZE_MAX || ! wkb_header_states_type(type))
+    return size;
+  return size + MEOS_WKB_INT2_SIZE;
+}
+
+static size_t
+datum_to_wkb_body_size(Datum value, MeosType type, uint8_t variant)
 {
   if (set_type(type))
     return set_to_wkb_size(DatumGetSetP(value), variant);
@@ -2269,6 +2328,19 @@ int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 }
 
 /**
+ * @brief Write into the buffer the header of the Well-Known Binary (WKB)
+ * representation of a value whose body does not state its type: the endian
+ * flag and the type, as #set_to_wkb_buf writes them, so that a reader tells
+ * the type of the value from its bytes
+ */
+static uint8_t *
+type_header_to_wkb_buf(MeosType type, uint8_t *buf, uint8_t variant)
+{
+  buf = endian_to_wkb_buf(buf, variant);
+  return int16_to_wkb_buf((int16) type, buf, variant);
+}
+
+/**
  * @brief Write into the buffer the int4 in the Well-Known Binary (WKB)
  * representation
  */
@@ -2372,7 +2444,9 @@ geo_to_wkb_buf(const GSERIALIZED *gs, uint8_t *buf, uint8_t variant)
 /**
  * @brief Write into the buffer a component circular buffer in the Well-Known 
  * Binary (WKB) representation
- * @details SRID (int32), coordinates of a 2D point and radius (3 doubles)
+ * @details Endian flag and type (@p int16) unless a component, as
+ * #type_header_to_wkb_buf writes them, then SRID (@p int32), coordinates of a
+ * 2D point and radius (3 doubles)
  */
 static uint8_t *
 cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
@@ -2380,8 +2454,8 @@ cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
 {
   if (! component)
   {
-    /* Write the endian flag (byte) */
-    buf = endian_to_wkb_buf(buf, variant);
+    /* Write the endian flag (byte) and the type, as #set_to_wkb_buf does */
+    buf = type_header_to_wkb_buf(T_CBUFFER, buf, variant);
     /* Write the SRID flag, set only when the SRID will follow (matching the
      * npoint/pose/h3index readers, which trust the flag bit to decide
      * whether to consume the SRID bytes) */
@@ -2404,15 +2478,16 @@ cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
 /**
  * @brief Write into the buffer a cell (an h3index, a quadbin or an S2 cell)
  * in the Well-Known Binary (WKB) representation
- * @details endian flag, SRID flag, optional SRID (WGS84, extended variant
- * only), then the cell id (int8). The SRID flag bit is set only when the SRID
- * is actually written — matching the npoint/pose/cbuffer readers.
+ * @details endian flag, type (int16), SRID flag, optional SRID (WGS84,
+ * extended variant only), then the cell id (int8). The SRID flag bit is set
+ * only when the SRID is actually written — matching the npoint/pose/cbuffer readers.
  */
 static uint8_t *
-cell_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)
+cell_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag (byte) */
-  buf = endian_to_wkb_buf(buf, variant);
+  /* Write the endian flag (byte) and the type, as #set_to_wkb_buf does, which
+   * tells apart the three cell families sharing this layout */
+  buf = type_header_to_wkb_buf(type, buf, variant);
   /* Write the SRID flag, set only when the SRID will follow */
   int32_t srid = SRID_DEFAULT;
   uint8_t wkb_flags = spatial_wkb_needs_srid(srid, variant) ?
@@ -2477,6 +2552,9 @@ npoint_flags_to_wkb_buf(uint8_t *buf, uint8_t variant, bool srid)
 /**
  * @brief Write into the buffer a network point in the Well-Known Binary
  * (WKB) representation
+ * @details Endian flag and type (int16) unless a component, as
+ * #type_header_to_wkb_buf writes them, then flags (byte), SRID (int32, if
+ * any), route identifier (int8) and position (double)
  * @note A component leaves the SRID to its container, as #cbuffer_to_wkb_buf
  */
 static uint8_t *
@@ -2484,8 +2562,8 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
   bool component)
 {
   if (! component)
-    /* Write the endian flag (byte) */
-    buf = endian_to_wkb_buf(buf, variant);
+    /* Write the endian flag (byte) and the type, as #set_to_wkb_buf does */
+    buf = type_header_to_wkb_buf(T_NPOINT, buf, variant);
   int32_t srid = npoint_srid(np);
   bool with_srid = ! component && spatial_wkb_needs_srid(srid, variant);
   /* Write the flags (byte) */
@@ -2502,15 +2580,15 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
 /**
  * @brief Write into the buffer a network segment in the Well-Known Binary
  * (WKB) representation
- * @details endian flag, the flags of a network point (X, and S when the SRID
- * follows), the optional SRID, then the route identifier (int8) and the two
- * positions (double)
+ * @details endian flag, type (int16), the flags of a network point (X, and S
+ * when the SRID follows), the optional SRID, then the route identifier (int8)
+ * and the two positions (double)
  */
 static uint8_t *
 nsegment_to_wkb_buf(const Nsegment *ns, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag (byte) */
-  buf = endian_to_wkb_buf(buf, variant);
+  /* Write the endian flag (byte) and the type, as #set_to_wkb_buf does */
+  buf = type_header_to_wkb_buf(T_NSEGMENT, buf, variant);
   /* Write the flags (byte) */
   int32_t srid = nsegment_srid(ns);
   uint8_t wkb_flags = MEOS_WKB_XFLAG;
@@ -2563,7 +2641,9 @@ pose_flags_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
 /**
  * @brief Write into the buffer a component pose in the Well-Known Binary (WKB)
  * representation
- * @details SRID (int32, if any), 2D: 3 doubles, 3D: 7 doubles
+ * @details Endian flag and type (int16) unless a component, as
+ * #type_header_to_wkb_buf writes them, then flags (byte), SRID (int32, if
+ * any), 2D: 3 doubles, 3D: 7 doubles
  * @note A component leaves the SRID to its container, as #npoint_to_wkb_buf
  */
 static uint8_t *
@@ -2571,8 +2651,8 @@ pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
   bool component)
 {
   if (! component)
-    /* Write the endian flag (byte) */
-    buf = endian_to_wkb_buf(buf, variant);
+    /* Write the endian flag (byte) and the type, as #set_to_wkb_buf does */
+    buf = type_header_to_wkb_buf(T_POSE, buf, variant);
   int32_t srid = pose_srid(pose);
   bool with_srid = ! component && spatial_wkb_needs_srid(srid, variant);
   /* Write the flags (byte) */
@@ -2622,16 +2702,18 @@ posechain_flags_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant,
 /**
  * @brief Write into the buffer a pose chain in the Well-Known Binary (WKB)
  * representation
- * @details Flags (byte), SRID (int32, if any), number of links (int32), then
- * 3 doubles per link in two dimensions and 7 in three
+ * @details Endian flag and type (@p int16) unless a component, as
+ * #type_header_to_wkb_buf writes them, then flags (byte), SRID (@p int32, if
+ * any), number of links (@p int32), then 3 doubles per link in two dimensions
+ * and 7 in three
  */
 static uint8_t *
 posechain_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant,
   bool component)
 {
   if (! component)
-    /* Write the endian flag (byte) */
-    buf = endian_to_wkb_buf(buf, variant);
+    /* Write the endian flag (byte) and the type, as #set_to_wkb_buf does */
+    buf = type_header_to_wkb_buf(T_POSECHAIN, buf, variant);
   /* A component leaves the SRID to its container, as #pose_to_wkb_buf */
   int32_t srid = posechain_srid(pc);
   bool with_srid = ! component && spatial_wkb_needs_srid(srid, variant);
@@ -3101,6 +3183,7 @@ tbox_to_wkb_flags_buf(const TBox *box, uint8_t *buf, uint8_t variant)
  * representation
  * @details The output is as follows
  * - Endian byte
+ * - Type @p int16
  * - Flag byte stating whether the are a value and/or a time dimensions
  * - Output the 2 doubles for the value dimension (if there is one) and the
  *   2 timestamps for the time dimension (if there is one)
@@ -3108,8 +3191,8 @@ tbox_to_wkb_flags_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tbox_to_wkb_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag (byte) */
-  buf = endian_to_wkb_buf(buf, variant);
+  /* Write the endian flag (byte) and the type, as #set_to_wkb_buf does */
+  buf = type_header_to_wkb_buf(T_TBOX, buf, variant);
   /* Write the temporal flags */
   buf = tbox_to_wkb_flags_buf(box, buf, variant);
   /* Write the temporal dimension if any */
@@ -3155,6 +3238,7 @@ stbox_flags_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
  * (WKB) representation
  * @details The ouput is as follows
  * - Endian byte
+ * - Type @p int16, which is that of a temporal point cloud box for one
  * - Flag byte stating whether the X, Z, and time dimensions are present,
  *   whether the box is geodetic and whether an SRID is needed
  * - Output the SRID (@p int32) if there is an X dimension and if the SRID
@@ -3163,10 +3247,13 @@ stbox_flags_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
  *   time dimension.
  */
 static uint8_t *
-stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
+stbox_to_wkb_buf(const STBox *box, MeosType type, uint8_t *buf,
+  uint8_t variant)
 {
-  /* Write the endian flag (byte) */
-  buf = endian_to_wkb_buf(buf, variant);
+  /* Write the endian flag (byte) and the type, as #set_to_wkb_buf does, the
+   * type being that of the TPCBox whose spatiotemporal box this is when
+   * #tpcbox_to_wkb_buf calls it */
+  buf = type_header_to_wkb_buf(type, buf, variant);
   /* Write the temporal flags */
   buf = stbox_flags_to_wkb_buf(box, buf, variant);
   /* Write the optional SRID for extended variant */
@@ -3202,7 +3289,7 @@ stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tpcbox_to_wkb_buf(const TPCBox *box, uint8_t *buf, uint8_t variant)
 {
-  buf = stbox_to_wkb_buf((const STBox *) box, buf, variant);
+  buf = stbox_to_wkb_buf((const STBox *) box, T_TPCBOX, buf, variant);
   return int32_to_wkb_buf((int32) box->pcid, buf, variant);
 }
 #endif /* POINTCLOUD */
@@ -3500,7 +3587,7 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
   else if (type == T_TBOX)
     buf = tbox_to_wkb_buf(DatumGetTboxP(value), buf, variant);
   else if (type == T_STBOX)
-    buf = stbox_to_wkb_buf(DatumGetSTboxP(value), buf, variant);
+    buf = stbox_to_wkb_buf(DatumGetSTboxP(value), T_STBOX, buf, variant);
 #if POINTCLOUD
   else if (type == T_TPCBOX)
     buf = tpcbox_to_wkb_buf((TPCBox *) DatumGetPointer(value), buf, variant);
@@ -3511,7 +3598,7 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
 #endif /* CBUFFER */
 #if H3
   else if (type == T_H3INDEX)
-    buf = cell_to_wkb_buf(value, buf, variant);
+    buf = cell_to_wkb_buf(value, T_H3INDEX, buf, variant);
 #endif /* H3 */
 #if JSON
   else if (type == T_JSONB)
@@ -3532,7 +3619,7 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
 #endif /* POSE */
 #if QUADBIN
   else if (type == T_QUADBIN)
-    buf = cell_to_wkb_buf(value, buf, variant);
+    buf = cell_to_wkb_buf(value, T_QUADBIN, buf, variant);
 #endif /* QUADBIN */
 #if RASTER
   else if (type == T_RAQUET)
@@ -3540,7 +3627,7 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
 #endif /* RASTER */
 #if S2CELL
   else if (type == T_S2CELL)
-    buf = cell_to_wkb_buf(value, buf, variant);
+    buf = cell_to_wkb_buf(value, T_S2CELL, buf, variant);
 #endif /* S2CELL */
   else if (temporal_type(type))
     buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,

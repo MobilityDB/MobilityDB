@@ -46,27 +46,27 @@ SELECT asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 (1 row)
 
 SELECT asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
-                        asbinary                        
---------------------------------------------------------
- \x0100000000000000f03f000000000000f03f000000000000e03f
+                          asbinary                          
+------------------------------------------------------------
+ \x01390000000000000000f03f000000000000f03f000000000000e03f
 (1 row)
 
 SELECT asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
-                             asewkb                             
-----------------------------------------------------------------
- \x01402c160000000000000000f03f000000000000f03f000000000000e03f
+                               asewkb                               
+--------------------------------------------------------------------
+ \x013900402c160000000000000000f03f000000000000f03f000000000000e03f
 (1 row)
 
 SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
-                       ashexwkb                       
-------------------------------------------------------
- 0100000000000000F03F000000000000F03F000000000000E03F
+                         ashexwkb                         
+----------------------------------------------------------
+ 01390000000000000000F03F000000000000F03F000000000000E03F
 (1 row)
 
 SELECT asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
-                          ashexewkb                           
---------------------------------------------------------------
- 01402C160000000000000000F03F000000000000F03F000000000000E03F
+                            ashexewkb                             
+------------------------------------------------------------------
+ 013900402C160000000000000000F03F000000000000F03F000000000000E03F
 (1 row)
 
 SELECT asText(cbufferFromText(asText(cbuffer 'Cbuffer(Point(1 1),0.5)')));
@@ -18447,27 +18447,27 @@ SELECT asEWKT(npoint 'SRID=5676;Npoint(1,0.5)');
 (1 row)
 
 SELECT asBinary(npoint 'SRID=5676;Npoint(1,0.5)');
-                asbinary                
-----------------------------------------
- \x01010100000000000000000000000000e03f
+                  asbinary                  
+--------------------------------------------
+ \x013000010100000000000000000000000000e03f
 (1 row)
 
 SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
-                     asewkb                     
-------------------------------------------------
- \x01412c1600000100000000000000000000000000e03f
+                       asewkb                       
+----------------------------------------------------
+ \x013000412c1600000100000000000000000000000000e03f
 (1 row)
 
 SELECT asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)');
-               ashexwkb               
---------------------------------------
- 01010100000000000000000000000000E03F
+                 ashexwkb                 
+------------------------------------------
+ 013000010100000000000000000000000000E03F
 (1 row)
 
 SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
-                  ashexewkb                   
-----------------------------------------------
- 01412C1600000100000000000000000000000000E03F
+                    ashexewkb                     
+--------------------------------------------------
+ 013000412C1600000100000000000000000000000000E03F
 (1 row)
 
 SELECT npointFromText(asText(npoint 'SRID=5676;Npoint(1,0.5)'));
@@ -18515,33 +18515,33 @@ SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
 SELECT npointFromHexEWKB(replace(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)', 'XDR'), '0000162C', '000010E6'));
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT asBinary(nsegment 'NSegment(1,0.5,0.7)');
-                        asbinary                        
---------------------------------------------------------
- \x01010100000000000000000000000000e03f666666666666e63f
+                          asbinary                          
+------------------------------------------------------------
+ \x013200010100000000000000000000000000e03f666666666666e63f
 (1 row)
 
 SELECT asEWKB(nsegment 'NSegment(1,0.5,0.7)');
-                             asewkb                             
-----------------------------------------------------------------
- \x01412c1600000100000000000000000000000000e03f666666666666e63f
+                               asewkb                               
+--------------------------------------------------------------------
+ \x013200412c1600000100000000000000000000000000e03f666666666666e63f
 (1 row)
 
 SELECT asHexWKB(nsegment 'NSegment(1,0.5,0.7)');
-                       ashexwkb                       
-------------------------------------------------------
- 01010100000000000000000000000000E03F666666666666E63F
+                         ashexwkb                         
+----------------------------------------------------------
+ 013200010100000000000000000000000000E03F666666666666E63F
 (1 row)
 
 SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)');
-                          ashexewkb                           
---------------------------------------------------------------
- 01412C1600000100000000000000000000000000E03F666666666666E63F
+                            ashexewkb                             
+------------------------------------------------------------------
+ 013200412C1600000100000000000000000000000000E03F666666666666E63F
 (1 row)
 
 SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR');
-                          ashexewkb                           
---------------------------------------------------------------
- 00410000162C00000000000000013FE00000000000003FE6666666666666
+                            ashexewkb                             
+------------------------------------------------------------------
+ 000032410000162C00000000000000013FE00000000000003FE6666666666666
 (1 row)
 
 SELECT nsegmentFromBinary(asBinary(nsegment 'NSegment(1,0.5,0.7)'));
@@ -19398,27 +19398,27 @@ INSERT INTO pointcloud_formats (pcid, srid, schema)
 SELECT 5, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
 INSERT 0 1
 SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 1));
-                                   ashexwkb                                   
-------------------------------------------------------------------------------
- 0101000000000000000000000000000024400000000000000000000000000000244001000000
+                                     ashexwkb                                     
+----------------------------------------------------------------------------------
+ 01500001000000000000000000000000000024400000000000000000000000000000244001000000
 (1 row)
 
 SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
-                                   ashexwkb                                   
-------------------------------------------------------------------------------
- 0001000000000000000040240000000000000000000000000000402400000000000000000005
+                                     ashexwkb                                     
+----------------------------------------------------------------------------------
+ 00005001000000000000000040240000000000000000000000000000402400000000000000000005
 (1 row)
 
 SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 1));
-                                  ashexewkb                                   
-------------------------------------------------------------------------------
- 0101000000000000000000000000000024400000000000000000000000000000244001000000
+                                    ashexewkb                                     
+----------------------------------------------------------------------------------
+ 01500001000000000000000000000000000024400000000000000000000000000000244001000000
 (1 row)
 
 SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
-                                      ashexewkb                                       
---------------------------------------------------------------------------------------
- 0041000010E6000000000000000040240000000000000000000000000000402400000000000000000005
+                                        ashexewkb                                         
+------------------------------------------------------------------------------------------
+ 00005041000010E6000000000000000040240000000000000000000000000000402400000000000000000005
 (1 row)
 
 SELECT asText(tpcboxFromBinary(asBinary(tpcboxX(0, 0, 10, 10, 5))));
@@ -23835,27 +23835,27 @@ ERROR:  quadbin value "12345" does not encode a valid quadbin index
 LINE 1: SELECT quadbin '12345';
                        ^
 SELECT asBinary(quadbin '48427fffffffffff');
-        asbinary        
-------------------------
- \x0100ffffffffff7f4248
+          asbinary          
+----------------------------
+ \x01470000ffffffffff7f4248
 (1 row)
 
 SELECT asBinary(quadbin '48427fffffffffff', 'XDR');
-        asbinary        
-------------------------
- \x000048427fffffffffff
+          asbinary          
+----------------------------
+ \x0000470048427fffffffffff
 (1 row)
 
 SELECT asHexWKB(quadbin '48427fffffffffff');
-       ashexwkb       
-----------------------
- 0100FFFFFFFFFF7F4248
+         ashexwkb         
+--------------------------
+ 01470000FFFFFFFFFF7F4248
 (1 row)
 
 SELECT asHexWKB(quadbin '48427fffffffffff', 'XDR');
-       ashexwkb       
-----------------------
- 000048427FFFFFFFFFFF
+         ashexwkb         
+--------------------------
+ 0000470048427FFFFFFFFFFF
 (1 row)
 
 SELECT quadbinFromBinary(asBinary(quadbin '48427fffffffffff'))
@@ -23886,15 +23886,15 @@ SELECT quadbinFromHexWKB(asHexWKB(quadbin '480fffffffffffff', 'XDR'))
  t
 (1 row)
 
-SELECT quadbinFromHexWKB('0140E6100000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('01470040E6100000FFFFFFFFFF7F4248');
  quadbinfromhexwkb 
 -------------------
  48427fffffffffff
 (1 row)
 
-SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('01470040110F0000FFFFFFFFFF7F4248');
 ERROR:  Only SRID 4326 (WGS84) is accepted for the type quadbin, received 3857
-SELECT quadbinFromHexWKB('01003930000000000000');
+SELECT quadbinFromHexWKB('014700003930000000000000');
 ERROR:  The value 12345 does not encode a valid quadbin index
 SELECT asText(quadbin '48427fffffffffff');
       astext      
@@ -27676,36 +27676,36 @@ SELECT asText(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1)
  POLYGON((0 0,2 0,2 1,0 1,0 0));[Pose(POINT(1 1),1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1.885467 3.053278),1.8)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(tgeometry(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2)), 6) =
-  asText(translate(tgeometry(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 1, 2), 6);
+SELECT asText(tgeometry(translate(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2)), 6) =
+  asText(translate(tgeometry(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 1, 2), 6);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT asText(tgeometry(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1)), 6) =
-  asText(rotate(tgeometry(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7, 1, 1), 6);
+SELECT asText(tgeometry(rotate(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tgeometry(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7, 1, 1), 6);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT asText(tgeometry(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
-  asText(rotateX(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(rotateX(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateX(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT asText(tgeometry(rotateY(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
-  asText(rotateY(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(rotateY(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateY(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT asText(tgeometry(rotateZ(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
-  asText(rotateZ(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(rotateZ(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
+  asText(rotateZ(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
  ?column? 
 ----------
  t
@@ -28125,27 +28125,27 @@ ERROR:  The S2 token "zzz" holds the non-hexadecimal character 'z'
 LINE 1: SELECT s2cell 'zzz';
                       ^
 SELECT asBinary(s2cell '47c3c444c');
-        asbinary        
-------------------------
- \x0100000000c044c4c347
+          asbinary          
+----------------------------
+ \x01550000000000c044c4c347
 (1 row)
 
 SELECT asBinary(s2cell '47c3c444c', 'XDR');
-        asbinary        
-------------------------
- \x000047c3c444c0000000
+          asbinary          
+----------------------------
+ \x0000550047c3c444c0000000
 (1 row)
 
 SELECT asHexWKB(s2cell '47c3c444c');
-       ashexwkb       
-----------------------
- 0100000000C044C4C347
+         ashexwkb         
+--------------------------
+ 01550000000000C044C4C347
 (1 row)
 
 SELECT asHexWKB(s2cell '47c3c444c', 'XDR');
-       ashexwkb       
-----------------------
- 000047C3C444C0000000
+         ashexwkb         
+--------------------------
+ 0000550047C3C444C0000000
 (1 row)
 
 SELECT s2cellFromBinary(asBinary(s2cell '47c3c444c')) = s2cell '47c3c444c';
@@ -28172,15 +28172,15 @@ SELECT s2cellFromHexWKB(asHexWKB(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
  t
 (1 row)
 
-SELECT s2cellFromHexWKB('0140E61000000000000000C9B554');
+SELECT s2cellFromHexWKB('01550040E61000000000000000C9B554');
  s2cellfromhexwkb 
 ------------------
  54b5c9
 (1 row)
 
-SELECT s2cellFromHexWKB('0140110F00000000000000C9B554');
+SELECT s2cellFromHexWKB('01550040110F00000000000000C9B554');
 ERROR:  Only SRID 4326 (WGS84) is accepted for the type s2cell, received 3857
-SELECT s2cellFromHexWKB('01000000000000000000');
+SELECT s2cellFromHexWKB('015500000000000000000000');
 ERROR:  The value 0 does not encode a valid s2cell
 SELECT asText(s2cell '47c3c444c');
   astext   
@@ -30427,30 +30427,30 @@ WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER B
 (4 rows)
 
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_pose2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asEWKB(v, endian => 'NDR'), poseFromEWKB(asEWKB(v)) = v AS roundtrip FROM r ORDER BY k;
- k  |                             asewkb                             | roundtrip 
-----+----------------------------------------------------------------+-----------
-  1 | \x0141e40e00008836bf83634f56405855ca527bbf484041092ec6f3a150bf | t
- 26 | \x0141e40e000049ff0975782856c070f4356acc4733c0cce41774496f973f | t
- 51 | \x0141e40e0000d243b980f0a653c06681632897f855c09d88bdcdc356863f | t
- 76 | \x0141e40e000020b07ce3eb282cc088aadeb3bb2d3cc0eaa53556933c823f | t
+ k  |                               asewkb                               | roundtrip 
+----+--------------------------------------------------------------------+-----------
+  1 | \x01360041e40e00008836bf83634f56405855ca527bbf484041092ec6f3a150bf | t
+ 26 | \x01360041e40e000049ff0975782856c070f4356acc4733c0cce41774496f973f | t
+ 51 | \x01360041e40e0000d243b980f0a653c06681632897f855c09d88bdcdc356863f | t
+ 76 | \x01360041e40e000020b07ce3eb282cc088aadeb3bb2d3cc0eaa53556933c823f | t
 (4 rows)
 
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_pose2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asHexEWKB(v, endian => 'NDR'), poseFromHexEWKB(asHexEWKB(v)) = v AS roundtrip FROM r ORDER BY k;
- k  |                          ashexewkb                           | roundtrip 
-----+--------------------------------------------------------------+-----------
-  1 | 0141E40E00008836BF83634F56405855CA527BBF484041092EC6F3A150BF | t
- 26 | 0141E40E000049FF0975782856C070F4356ACC4733C0CCE41774496F973F | t
- 51 | 0141E40E0000D243B980F0A653C06681632897F855C09D88BDCDC356863F | t
- 76 | 0141E40E000020B07CE3EB282CC088AADEB3BB2D3CC0EAA53556933C823F | t
+ k  |                            ashexewkb                             | roundtrip 
+----+------------------------------------------------------------------+-----------
+  1 | 01360041E40E00008836BF83634F56405855CA527BBF484041092EC6F3A150BF | t
+ 26 | 01360041E40E000049FF0975782856C070F4356ACC4733C0CCE41774496F973F | t
+ 51 | 01360041E40E0000D243B980F0A653C06681632897F855C09D88BDCDC356863F | t
+ 76 | 01360041E40E000020B07CE3EB282CC088AADEB3BB2D3CC0EAA53556933C823F | t
 (4 rows)
 
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_posechain t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asEWKB(v, endian => 'NDR'), posechainFromEWKB(asEWKB(v)) = v AS roundtrip FROM r ORDER BY k;
-  k  |                                                                                                                                                                                 asewkb                                                                                                                                                                                 | roundtrip 
------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------
-   2 | \x0141e40e0000050000003824d47f04454940d0ef9611def21ec0d8f290db476ca3bf30af449178c8274057ff2094873951c04a40bef67782553fb4d5f317ec5155409cb8bd4b243458c0faad64eca9aba7bf98d6eace990b4a40d076c05be33c3140b23ff269107c8d3f28dbb367fced21c0642b91446eb356c0ae9e8231dfe7a8bf                                                                                                 | t
-  52 | \x0141e40e00000500000061ad88d8301456c0a226ef0703b95240f563dced7698a73f1cd1f735e4e13340e8dc0e4062cf48404cc19c8d2b4ca33f72d9e9f471ab52c078f1fb29671a43402b4019db083f98bf2dd03860e5c355c0ea1bbe410a7755c0bc7c20cb980da5bfe0a0e35206922240647aa4f827fb35c0f56cd459e20f7b3f                                                                                                 | t
- 102 | \x0151e40e0000030000009b436d1414d548408ee4081a4ea642408ee4081a4ea64240c6a236cdeef5b33fc60887841c5fe03f6fb5bf9f66c4e13f6582b4da9ed5e43f2f81931341cd5540aece38cf624c5840aece38cf624c584049246329ba0ecb3f7ae35081e29899bfad6a468d9493eebfa8ad8550ed21ca3fc70f15fef2904a407dc0fea8262546407dc0fea8262546401cae2934cc67d63f58bf003462ade8bf42c3f5dbb7f6e0bf9b70d4bf403da5bf | t
- 152 | \x0151e40e000003000000cc10ed4a5e784ac0b8e1ff78faec50c0b8e1ff78faec50c0d65b5c9a3581da3f6aa06cf42296e53f3ff2a4cd1f4ee3bf9109f84f93edb8bfab8d8e98002146c05410f6972cf43bc05410f6972cf43bc06a74695a1fcfe33f0c2e6437a912c9bf3dd1f58ad34ee03f710e94f3c310e2bf9e0c5d932dd34ec0c396240938ee47c0c396240938ee47c0951691183539e73f93bdbff001bfd83fb37c67c10c35b8bfa6e14694c3f4e1bf | t
+  k  |                                                                                                                                                                                   asewkb                                                                                                                                                                                   | roundtrip 
+-----+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------
+   2 | \x01520041e40e0000050000003824d47f04454940d0ef9611def21ec0d8f290db476ca3bf30af449178c8274057ff2094873951c04a40bef67782553fb4d5f317ec5155409cb8bd4b243458c0faad64eca9aba7bf98d6eace990b4a40d076c05be33c3140b23ff269107c8d3f28dbb367fced21c0642b91446eb356c0ae9e8231dfe7a8bf                                                                                                 | t
+  52 | \x01520041e40e00000500000061ad88d8301456c0a226ef0703b95240f563dced7698a73f1cd1f735e4e13340e8dc0e4062cf48404cc19c8d2b4ca33f72d9e9f471ab52c078f1fb29671a43402b4019db083f98bf2dd03860e5c355c0ea1bbe410a7755c0bc7c20cb980da5bfe0a0e35206922240647aa4f827fb35c0f56cd459e20f7b3f                                                                                                 | t
+ 102 | \x01520051e40e0000030000009b436d1414d548408ee4081a4ea642408ee4081a4ea64240c6a236cdeef5b33fc60887841c5fe03f6fb5bf9f66c4e13f6582b4da9ed5e43f2f81931341cd5540aece38cf624c5840aece38cf624c584049246329ba0ecb3f7ae35081e29899bfad6a468d9493eebfa8ad8550ed21ca3fc70f15fef2904a407dc0fea8262546407dc0fea8262546401cae2934cc67d63f58bf003462ade8bf42c3f5dbb7f6e0bf9b70d4bf403da5bf | t
+ 152 | \x01520051e40e000003000000cc10ed4a5e784ac0b8e1ff78faec50c0b8e1ff78faec50c0d65b5c9a3581da3f6aa06cf42296e53f3ff2a4cd1f4ee3bf9109f84f93edb8bfab8d8e98002146c05410f6972cf43bc05410f6972cf43bc06a74695a1fcfe33f0c2e6437a912c9bf3dd1f58ad34ee03f710e94f3c310e2bf9e0c5d932dd34ec0c396240938ee47c0c396240938ee47c0951691183539e73f93bdbff001bfd83fb37c67c10c35b8bfa6e14694c3f4e1bf | t
 (4 rows)
 
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_poseset2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asText(v, maxdecimaldigits => 6), posesetFromText(asText(v)) = v AS roundtrip FROM r ORDER BY k;
@@ -30557,12 +30557,12 @@ WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER B
 (4 rows)
 
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tpcbox t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asHexWKB(v, endian => 'NDR'), tpcboxFromHexWKB(asHexWKB(v)) = v AS roundtrip FROM r ORDER BY k;
- k  |                                                                      ashexwkb                                                                      | roundtrip 
-----+----------------------------------------------------------------------------------------------------------------------------------------------------+-----------
-  1 | 01132700000058C33988220000005DB67D8822000098B1CF8D487333C060D36FDA7DD12B406EE46F32488353C0207C43A0478105C00F47FBB4BB943D40293FEBDD94A4414001000000 | t
- 26 | 0113270003007915507128000000A87DA9712800009807004D7FF02CC091625A0E95725740D80B998A652453408DC18B8E91315540AF5328B67EFA45400A3E5E96EF39494001000000 | t
- 51 | 011327000200AAB619C02E000000853448C02E00007E56A2DB63045240F04D1CCC577557404277D42F326848C080BEC0D0EE252E40DAB266DA41AE5540EEAB9DE6F07E584001000000 | t
- 76 | 0113270000001615CA0F2800000061CB3110280000F49BFD973DC144400196B9C1FE524E405845A76E633D474056CF4CDB77DD54404520524991883640D99007AFF704544001000000 | t
+ k  |                                                                        ashexwkb                                                                        | roundtrip 
+----+--------------------------------------------------------------------------------------------------------------------------------------------------------+-----------
+  1 | 015000132700000058C33988220000005DB67D8822000098B1CF8D487333C060D36FDA7DD12B406EE46F32488353C0207C43A0478105C00F47FBB4BB943D40293FEBDD94A4414001000000 | t
+ 26 | 01500013270003007915507128000000A87DA9712800009807004D7FF02CC091625A0E95725740D80B998A652453408DC18B8E91315540AF5328B67EFA45400A3E5E96EF39494001000000 | t
+ 51 | 0150001327000200AAB619C02E000000853448C02E00007E56A2DB63045240F04D1CCC577557404277D42F326848C080BEC0D0EE252E40DAB266DA41AE5540EEAB9DE6F07E584001000000 | t
+ 76 | 01500013270000001615CA0F2800000061CB3110280000F49BFD973DC144400196B9C1FE524E405845A76E633D474056CF4CDB77DD54404520524991883640D99007AFF704544001000000 | t
 (4 rows)
 
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tpose2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asEWKT(v, maxdecimaldigits => 6), tposeFromEWKT(asEWKT(v)) = v AS roundtrip FROM r ORDER BY k;

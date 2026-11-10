@@ -118,6 +118,7 @@ tbox_in(const char *str)
 char *
 tbox_out(const TBox *box, int maxdd, size_t *size_out)
 {
+  size_t str_size;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(box, NULL);
@@ -133,10 +134,10 @@ tbox_out(const TBox *box, int maxdd, size_t *size_out)
 
   /* Generate the strings for the span and/or the period */
   if (hasx)
-    span = span_out(&box->span, maxdd, NULL);
+    span = span_out(&box->span, maxdd, &str_size);
   if (hast)
     /* The second argument is not used for periods */
-    period = span_out(&box->period, maxdd, NULL);
+    period = span_out(&box->period, maxdd, &str_size);
   if ((hasx && ! span) || (hast && ! period))
   {
     if (span)

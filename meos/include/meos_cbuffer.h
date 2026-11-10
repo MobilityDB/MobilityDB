@@ -190,7 +190,6 @@ extern bool cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2);
 /* Input and output functions */
 
 extern Set *cbufferset_in(const char *str);
-extern char *cbufferset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 
