@@ -76,10 +76,11 @@ TOPOLOGY = {"&&": "overlaps", "@>": "contains", "<@": "contained",
 
 # Operators whose backing PROCEDURE is a callable named function that is already
 # portable under its own name -- documented, not a gap. #@>/<@# are the tjsonb
-# time-containment operators.
+# time-containment operators, backed by spanContains/spanContained; @>/<@ on
+# tjsonb are the containment of its JSONB values, tjsonbContains/tjsonbContained.
 ALREADY_NAMED = {
     "@=": "sameRid", "?@": "containedRid", "@?": "containsRid",
-    "@@": "overlapsRid", "#@>": "tjsonbContains", "<@#": "tjsonbContained",
+    "@@": "overlapsRid", "#@>": "spanContains", "<@#": "spanContained",
     "&": "tAnd", "|": "tOr", "~": "tNot", "||": "setConcat / tConcat",
 }
 
