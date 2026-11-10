@@ -49,7 +49,9 @@
 #include <meos_internal_geo.h>
 #include "temporal/temporal.h"
 #include "temporal/temporal_tile.h"
+#include "geo/geo_funcs.h"
 #include "geo/stbox.h"
+#include "geo/tgeo_restrict.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
@@ -262,126 +264,6 @@ bitmatrix_print(const BitMatrix *bm)
   return;
 }
 #endif /* DEBUG_BUILD */
-
-/*****************************************************************************
- * N-dimensional version of the fast voxel traversal algorithm
- * setting in the bit array all the tiles connecting the two given tiles.
- *
- * Amanatides, John, and Andrew Woo.
- * "A fast voxel traversal algorithm for ray tracing."
- * Eurographics. Vol. 87. No. 3. 1987.
- *****************************************************************************/
-
-/**
- * @brief Set in the bit matrix the bits of the tiles connecting with a line
- * two input tiles
- * @param[in] coords1, coords2 Coordinates of the input tiles
- * @param[in] eps1, eps2 Fractional position of the points in the input tiles
- * @param[in] ndims Number of dimensions of the grid. It is either 2 (for 2D),
- * 3 (for 3D or 2D+T) or 4 (3D+T)
- * @param[out] bm Bit matrix
- * @return Number of tiles set
- */
-static int
-fastvoxel_bm(const int *coords1, const double *eps1, const int *coords2,
-  const double *eps2,
-  int ndims, BitMatrix *bm)
-{
-  int i, k, coords[MAXDIMS], next[MAXDIMS], result = 0;
-  double length, tMax[MAXDIMS], tDelta[MAXDIMS];
-  /* Compute Manhattan distance */
-  k = 0;
-  for (i = 0; i < ndims; ++i)
-    k += abs(coords2[i] - coords1[i]);
-  /* Shortcut function if the segment covers only 1 or 2 cells */
-  if (k == 0)
-  {
-    bitmatrix_set_cell(bm, coords1, true);
-    result++;
-    return result;
-  }
-  else if (k == 1)
-  {
-    bitmatrix_set_cell(bm, coords1, true);
-    bitmatrix_set_cell(bm, coords2, true);
-    result += 2;
-    return result;
-  }
-  /* Compute length of translation for normalization */
-  length = 0;
-  for (i = 0; i < ndims; ++i)
-    length +=
-      ((double) coords2[i] + eps2[i] - (double) coords1[i] - eps1[i]) *
-      ((double) coords2[i] + eps2[i] - (double) coords1[i] - eps1[i]);
-  length = sqrt(length);
-  /* Initialize all vectors */
-  for (i = 0; i < ndims; ++i)
-  {
-    /* Compute the (normalized) tDelta */
-    tDelta[i] = length / fabs((double) coords2[i] + eps2[i]
-                           - (double) coords1[i] - eps1[i]);
-    /* Compute the direction of movement and tMax */
-    if (coords2[i] > coords1[i])
-    {
-      next[i] = 1;
-      tMax[i] = (1 - eps1[i]) * tDelta[i];
-    }
-    else if (coords2[i] < coords1[i])
-    {
-      next[i] = -1;
-      tMax[i] = eps1[i] * tDelta[i];
-    }
-    else
-    {
-      next[i] = 0;
-      tMax[i] = DBL_MAX;
-    }
-  }
-  /* Set the starting bitmap cell */
-  memcpy(coords, coords1, sizeof(int) * ndims);
-  bitmatrix_set_cell(bm, coords, true);
-  result++;
-  for (i = 0; i < k; ++i)
-  {
-    /* Find dimension with smallest tMax */
-    int idx = 0;
-    for (int j = 1; j < ndims; ++j)
-    {
-      if (tMax[j] < tMax[idx])
-        idx = j;
-    }
-    /* A line crossing the boundaries of two dimensions at one parameter
-     * passes through the corner where they meet, and the tile holding that
-     * corner, the one whose lower bounds meet there, is the tile the line
-     * leaves, the one past both boundaries, or the one past either of them
-     * alone. The parameters of the two
-     * crossings carry the rounding of the fractional positions they are read
-     * from, so they compare either way at such a corner, and the tile past the
-     * other boundary alone is set as well wherever the two lie within that
-     * rounding. The matrix states the tiles the split restricts the value to,
-     * so a tile it sets that the line does not reach answers nothing there,
-     * while a tile holding the corner that it leaves out loses the instant
-     * the value passes through it */
-    for (int j = 0; j < ndims; ++j)
-    {
-      if (j == idx || next[j] == 0 ||
-          tMax[j] - tMax[idx] > (tMax[j] + tMax[idx]) * 32 * DBL_EPSILON)
-        continue;
-      coords[j] += next[j];
-      bitmatrix_set_cell(bm, coords, true);
-      result++;
-      coords[j] -= next[j];
-    }
-    /* Progress to the next cell in that dimension */
-    tMax[idx] += tDelta[idx];
-    coords[idx] += next[idx];
-    /* Set the bitmap cell */
-    bitmatrix_set_cell(bm, coords, true);
-    result++;
-  }
-  assert(memcmp(coords, coords2, sizeof(int) * ndims) == 0);
-  return result;
-}
 
 /*****************************************************************************
  * Grid functions
@@ -1466,103 +1348,256 @@ tgeo_time_boxes(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @brief Transform the minimum values of a tile into matrix coordinates
- * @param[in] x,y,z,t Minimum values of the tile
- * @param[in] state Grid information
- * @param[out] coords Matrix coordinates
+ * @brief Bounds of the tiles of a grid along each dimension, as the grid
+ * lays its tiles
+ * @details Along a spatial dimension, the lower bound of a tile is the one of
+ * the tile before it plus the size, as #stbox_tile_state_next advances, and
+ * its upper bound is its lower bound plus the size, as
+ * #stbox_tile_state_set builds it: the upper bound of a tile is the lower
+ * bound of the next one, bit for bit. The bounds of the time dimension are
+ * integers, exact
+ */
+typedef struct
+{
+  int ndims;                /**< Number of dimensions of the matrix */
+  int nspace;               /**< Number of spatial dimensions, 2 or 3 */
+  bool hast;                /**< True when the grid has a time dimension */
+  int count[MAXDIMS];       /**< Number of tiles along each dimension */
+  double *bounds[3];        /**< Bounds of the spatial dimensions, count + 1 */
+  TimestampTz tlower;       /**< Lower bound of the time dimension */
+  int64 tunits;             /**< Size of the time dimension */
+} TileBounds;
+
+/**
+ * @brief Set the bounds of the tiles of a grid
  */
 static void
-tile_get_coords(double x, double y, double z, TimestampTz t,
-  const STboxGridState *state, int *coords)
+tile_bounds_set(const STboxGridState *state, bool hasz, bool hast,
+  TileBounds *tb)
 {
-  /* Transform the minimum values of the tile into matrix coordinates */
-  int ncoords = 0;
-  coords[ncoords++] = (int) ((x - state->box.xmin) / state->xsize);
-  coords[ncoords++] = (int) ((y - state->box.ymin) / state->ysize);
-  if (MEOS_FLAGS_GET_Z(state->box.flags))
-    coords[ncoords++] = (int) ((z - state->box.zmin) / state->zsize);
-  if (MEOS_FLAGS_GET_T(state->box.flags))
-    coords[ncoords++] = (int) ((t - DatumGetTimestampTz(state->box.period.lower)) /
-      state->tunits);
+  const double min[3] = {state->box.xmin, state->box.ymin, state->box.zmin};
+  const double size[3] = {state->xsize, state->ysize, state->zsize};
+  tb->nspace = hasz ? 3 : 2;
+  tb->hast = hast;
+  tb->ndims = tb->nspace + (hast ? 1 : 0);
+  for (int k = 0; k < tb->ndims; k++)
+    tb->count[k] = state->max_coords[k];
+  for (int k = 0; k < tb->nspace; k++)
+  {
+    tb->bounds[k] = palloc(sizeof(double) * (tb->count[k] + 1));
+    tb->bounds[k][0] = min[k];
+    for (int i = 0; i < tb->count[k]; i++)
+      tb->bounds[k][i + 1] = tb->bounds[k][i] + size[k];
+  }
+  tb->tlower = hast ? DatumGetTimestampTz(state->box.period.lower) : 0;
+  tb->tunits = state->tunits;
   return;
 }
 
 /**
- * @brief Transform the values in a tile into relative positions in matrix cells
- * @param[in] dx,dy,dz,dt Values in a tile
- * @param[in] state Grid information
- * @param[out] fpos Fractional position of values in their matrix cells (between
- * 0 and 1)
+ * @brief Free the bounds of the tiles of a grid
  */
 static void
-tile_get_fpos(double dx, double dy, double dz, TimestampTz dt,
-  const STboxGridState *state, double *fpos)
+tile_bounds_free(TileBounds *tb)
 {
-  /* Transform the values in a tile into relative positions in matrix cells */
-  int k = 0;
-  fpos[k++] = dx / state->xsize;
-  fpos[k++] = dy / state->ysize;
-  if (MEOS_FLAGS_GET_Z(state->box.flags))
-    fpos[k++] = dz / state->zsize;
-  if (MEOS_FLAGS_GET_T(state->box.flags))
-    fpos[k++] = (double) dt / state->tunits;
+  for (int k = 0; k < tb->nspace; k++)
+    pfree(tb->bounds[k]);
   return;
 }
 
 /**
- * @brief Get the coordinates of the tile corresponding the temporal point
+ * @brief Return the tile of a grid holding a coordinate along a spatial
+ * dimension: the last one whose lower bound is not above it, decided by
+ * comparing the coordinate with the bounds the grid lays
+ */
+static int
+tile_bounds_index(const TileBounds *tb, int k, double v)
+{
+  int lo = 0, hi = tb->count[k] - 1;
+  while (lo < hi)
+  {
+    int mid = (lo + hi + 1) / 2;
+    if (tb->bounds[k][mid] <= v)
+      lo = mid;
+    else
+      hi = mid - 1;
+  }
+  return lo;
+}
+
+/**
+ * @brief Return the tile of a grid holding a timestamp
+ */
+static int
+tile_bounds_tindex(const TileBounds *tb, TimestampTz t)
+{
+  int i = (int) ((t - tb->tlower) / tb->tunits);
+  return Min(Max(i, 0), tb->count[tb->nspace] - 1);
+}
+
+/**
+ * @brief Set the matrix coordinates of the tile holding a temporal point
  * instant
- * @param[in] inst Temporal point
- * @param[in] hasz Whether the tile has Z dimension
- * @param[in] hast Whether the tile has T dimension
- * @param[in] state Grid definition
- * @param[out] coords Tile coordinates
- * @param[out] fpos Fractional position inside the tile
  */
 static void
-tpointinst_get_coords_fpos(const TInstant *inst, bool hasz, bool hast,
-  const STboxGridState *state, int *coords, double *fpos)
+tpointinst_tile_coords(const TInstant *inst, const TileBounds *tb,
+  int *coords)
 {
-  /* Read the point and compute the minimum values of the tile */
   POINT4D p;
   datum_point4d(tinstant_value_p(inst), &p);
-  double x = float_get_bin(p.x, state->xsize, state->box.xmin);
-  double y = float_get_bin(p.y, state->ysize, state->box.ymin);
-  double z = 0;
-  TimestampTz t = 0;
-  if (hasz)
-    z = float_get_bin(p.z, state->zsize, state->box.zmin);
-  if (hast)
-    t = timestamptz_bin_start(inst->t, state->tunits,
-      DatumGetTimestampTz(state->box.period.lower));
-  /* Transform the minimum values of the tile into matrix coordinates */
-  tile_get_coords(x, y, z, t, state, coords);
-  /* Transform the values in a tile into relative positions in matrix cells */
-  if (fpos) /* Some methods do not need this information */
-    tile_get_fpos(p.x - x, p.y - y, p.z - z, inst->t - t, state, fpos);
+  const double c[3] = {p.x, p.y, p.z};
+  for (int k = 0; k < tb->nspace; k++)
+    coords[k] = tile_bounds_index(tb, k, c[k]);
+  if (tb->hast)
+    coords[tb->nspace] = tile_bounds_tindex(tb, inst->t);
   return;
+}
+
+/**
+ * @brief A plane of the grid a segment reaches: the bound `bound` of the
+ * spatial dimension `axis`, or the time bound `toff` microseconds after the
+ * start of the segment where `axis` is the time dimension
+ */
+typedef struct
+{
+  int axis;
+  double bound;
+  TimestampTz toff;
+} TilePlane;
+
+/**
+ * @brief Return the sign of the comparison of the parameters at which a
+ * segment reaches two planes of the grid
+ * @details Two spatial planes compare by #clip_plane_param_cmp. A spatial
+ * plane `axis = h` and the time bound reached at `k` microseconds compare as
+ * `(h - c1) / (c2 - c1)` and `k / duration`, whose difference, times
+ * `(c2 - c1) * duration`, is the cross product of `(h, k) - (c1, 0)` and
+ * `(c2, duration) - (c1, 0)` (#cross_product_sign) on the input
+ */
+static int
+tile_plane_cmp(const double *c1, const double *c2, TimestampTz duration,
+  int nspace, TilePlane a, TilePlane b)
+{
+  bool ta = (a.axis == nspace), tbt = (b.axis == nspace);
+  if (ta && tbt)
+    return (a.toff > b.toff) - (a.toff < b.toff);
+  if (ta)
+    return - tile_plane_cmp(c1, c2, duration, nspace, b, a);
+  if (! tbt)
+  {
+    ClipPlane pa = {a.axis, a.bound}, pb = {b.axis, b.bound};
+    return clip_plane_param_cmp(c1, c2, pa, pb);
+  }
+  int sd = (c2[a.axis] > c1[a.axis]) ? 1 : -1;
+  return sd * cross_product_sign(c1[a.axis], 0.0, a.bound, (double) b.toff,
+    c1[a.axis], 0.0, c2[a.axis], (double) duration);
+}
+
+/**
+ * @brief Set in the bit matrix the tiles a segment of a temporal point
+ * passes through
+ * @details The walk starts in the tile of the first instant and crosses, one
+ * after the other, the planes of the grid the segment reaches up to its end:
+ * moving up along a dimension it enters the next tile at its lower bound,
+ * which that tile holds; moving down it leaves its tile past the lower bound
+ * of the tile, which the tile holds. Which plane comes first is decided by
+ * exact signs on the input (#tile_plane_cmp); planes reached at one
+ * parameter are crossed together, and every tile meeting that corner is set,
+ * so the matrix holds every tile the segment touches. The restriction to
+ * each tile then states what the segment does there
+ * @return Number of tiles set
+ */
+static int
+tpointsegm_set_tiles(const TInstant *inst1, const TInstant *inst2,
+  const TileBounds *tb, BitMatrix *bm)
+{
+  POINT4D p1, p2;
+  datum_point4d(tinstant_value_p(inst1), &p1);
+  datum_point4d(tinstant_value_p(inst2), &p2);
+  const double c1[3] = {p1.x, p1.y, p1.z}, c2[3] = {p2.x, p2.y, p2.z};
+  TimestampTz duration = inst2->t - inst1->t;
+  int coords[MAXDIMS], result = 0;
+  tpointinst_tile_coords(inst1, tb, coords);
+  bitmatrix_set_cell(bm, coords, true);
+  result++;
+  ClipPlane endplane = {-1, 1.0};
+  while (true)
+  {
+    /* The next plane along each dimension the segment moves along */
+    TilePlane next[MAXDIMS];
+    int step[MAXDIMS], nnext = 0;
+    for (int k = 0; k < tb->nspace; k++)
+    {
+      if (c1[k] == c2[k])
+        continue;
+      bool up = c2[k] > c1[k];
+      int to = coords[k] + (up ? 1 : -1);
+      if (to < 0 || to >= tb->count[k])
+        continue;
+      TilePlane pl = {k, tb->bounds[k][up ? to : coords[k]], 0};
+      ClipPlane cp = {k, pl.bound};
+      if (clip_plane_param_cmp(c1, c2, cp, endplane) > 0)
+        continue;
+      next[nnext] = pl;
+      step[nnext++] = up ? 1 : -1;
+    }
+    if (tb->hast && coords[tb->nspace] + 1 < tb->count[tb->nspace])
+    {
+      TimestampTz toff = tb->tlower +
+        (TimestampTz) (coords[tb->nspace] + 1) * tb->tunits - inst1->t;
+      if (toff <= duration)
+      {
+        TilePlane pl = {tb->nspace, 0.0, toff};
+        next[nnext] = pl;
+        step[nnext++] = 1;
+      }
+    }
+    if (nnext == 0)
+      break;
+    /* The planes reached first */
+    int first = 0;
+    for (int j = 1; j < nnext; j++)
+      if (tile_plane_cmp(c1, c2, duration, tb->nspace, next[j],
+            next[first]) < 0)
+        first = j;
+    int tied[MAXDIMS], ntied = 0;
+    for (int j = 0; j < nnext; j++)
+      if (j == first || tile_plane_cmp(c1, c2, duration, tb->nspace, next[j],
+            next[first]) == 0)
+        tied[ntied++] = j;
+    /* Every tile meeting the corner where they cross */
+    for (int mask = 1; mask < (1 << ntied); mask++)
+    {
+      int cell[MAXDIMS];
+      memcpy(cell, coords, sizeof(int) * tb->ndims);
+      for (int j = 0; j < ntied; j++)
+        if (mask & (1 << j))
+          cell[next[tied[j]].axis] += step[tied[j]];
+      bitmatrix_set_cell(bm, cell, true);
+      result++;
+    }
+    for (int j = 0; j < ntied; j++)
+      coords[next[tied[j]].axis] += step[tied[j]];
+  }
+  return result;
 }
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting a temporal point
- * sequence
+ * sequence with discrete or step interpolation, which lies at its instants
  * @param[in] seq Temporal point
- * @param[in] hasz Whether the tile has Z dimension
- * @param[in] hast Whether the tile has T dimension
- * @param[in] state Grid definition
+ * @param[in] tb Bounds of the tiles of the grid
  * @param[out] bm Bit matrix
  */
 static int
-tpointseq_disc_set_tiles(const TSequence *seq, bool hasz, bool hast,
-  const STboxGridState *state, BitMatrix *bm)
+tpointseq_disc_set_tiles(const TSequence *seq, const TileBounds *tb,
+  BitMatrix *bm)
 {
-  /* Transform the point into tile coordinates */
   int coords[MAXDIMS], result = 0;
   memset(coords, 0, sizeof(coords));
   for (int i = 0; i < seq->count; i++)
   {
-    tpointinst_get_coords_fpos(TSEQUENCE_INST_N(seq, i), hasz, hast, state,
-      coords, NULL);
+    tpointinst_tile_coords(TSEQUENCE_INST_N(seq, i), tb, coords);
     bitmatrix_set_cell(bm, coords, true);
     result++;
   }
@@ -1570,36 +1605,22 @@ tpointseq_disc_set_tiles(const TSequence *seq, bool hasz, bool hast,
 }
 
 /**
- * @brief Set the bit corresponding to the tiles intersecting the temporal
- * point sequence
+ * @brief Set the bit corresponding to the tiles intersecting a temporal point
+ * sequence with linear interpolation
  * @param[in] seq Temporal point
- * @param[in] hasz Whether the tile has Z dimension
- * @param[in] hast Whether the tile has T dimension
- * @param[in] state Grid definition
+ * @param[in] tb Bounds of the tiles of the grid
  * @param[out] bm Bit matrix
  */
 static int
-tpointseq_cont_set_tiles(const TSequence *seq, bool hasz, bool hast,
-  const STboxGridState *state, BitMatrix *bm)
+tpointseq_cont_set_tiles(const TSequence *seq, const TileBounds *tb,
+  BitMatrix *bm)
 {
-  assert(seq); assert(state);
+  assert(seq); assert(tb);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
-
-  int ndims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
-  int coords1[MAXDIMS], coords2[MAXDIMS], result = 0;
-  double fpos1[MAXDIMS], fpos2[MAXDIMS];
-  memset(coords1, 0, sizeof(coords1));
-  memset(coords2, 0, sizeof(coords2));
-  tpointinst_get_coords_fpos(TSEQUENCE_INST_N(seq, 0), hasz, hast, state,
-    coords1, fpos1);
+  int result = 0;
   for (int i = 1; i < seq->count; i++)
-  {
-    tpointinst_get_coords_fpos(TSEQUENCE_INST_N(seq, i), hasz, hast, state,
-      coords2, fpos2);
-    result += fastvoxel_bm(coords1, fpos1, coords2, fpos2, ndims, bm);
-    memcpy(coords1, coords2, sizeof(coords1));
-    memcpy(fpos1, fpos2, sizeof(fpos1));
-  }
+    result += tpointsegm_set_tiles(TSEQUENCE_INST_N(seq, i - 1),
+      TSEQUENCE_INST_N(seq, i), tb, bm);
   return result;
 }
 
@@ -1607,38 +1628,15 @@ tpointseq_cont_set_tiles(const TSequence *seq, bool hasz, bool hast,
  * @brief Set the bit corresponding to the tiles intersecting the temporal
  * point sequence
  * @param[in] seq Temporal point
- * @param[in] hasz Whether the tile has Z dimension
- * @param[in] hast Whether the tile has T dimension
- * @param[in] state Grid definition
+ * @param[in] tb Bounds of the tiles of the grid
  * @param[out] bm Bit matrix
  */
 static inline int
-tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
-  const STboxGridState *state, BitMatrix *bm)
+tpointseq_set_tiles(const TSequence *seq, const TileBounds *tb, BitMatrix *bm)
 {
   return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
-    tpointseq_cont_set_tiles((TSequence *) seq, hasz, hast, state, bm) :
-    tpointseq_disc_set_tiles((TSequence *) seq, hasz, hast, state, bm);
-}
-
-/**
- * @brief Set the bit corresponding to the tiles intersecting a temporal point
- * sequence set
- * @param[in] ss Temporal point
- * @param[in] hasz Whether the tile has Z dimension
- * @param[in] hast Whether the tile has T dimension
- * @param[in] state Grid definition
- * @param[out] bm Bit matrix
- */
-static int
-tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
-  const STboxGridState *state, BitMatrix *bm)
-{
-  int result = 0;
-  for (int i = 0; i < ss->count; i++)
-    result += tpointseq_set_tiles(TSEQUENCESET_SEQ_N(ss, i), hasz, hast, state,
-      bm);
-  return result;
+    tpointseq_cont_set_tiles(seq, tb, bm) :
+    tpointseq_disc_set_tiles(seq, tb, bm);
 }
 
 /**
@@ -1654,13 +1652,21 @@ tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
 {
   /* The usage of bitmatrix is disallowed for instantaneous temporal values */
   assert(temporal_num_instants(temp) > 1);
-  bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
-  bool hast = (state->tunits > 0);
   assert(temp->subtype == TSEQUENCE || temp->subtype == TSEQUENCESET);
+  TileBounds tb;
+  tile_bounds_set(state, MEOS_FLAGS_GET_Z(state->box.flags),
+    state->tunits > 0, &tb);
+  int result = 0;
   if (temp->subtype == TSEQUENCE)
-    return tpointseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
+    result = tpointseq_set_tiles((TSequence *) temp, &tb, bm);
   else
-    return tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
+  {
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    for (int i = 0; i < ss->count; i++)
+      result += tpointseq_set_tiles(TSEQUENCESET_SEQ_N(ss, i), &tb, bm);
+  }
+  tile_bounds_free(&tb);
+  return result;
 }
 
 /*****************************************************************************/

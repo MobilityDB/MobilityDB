@@ -44,6 +44,20 @@
 
 /*****************************************************************************/
 
+/**
+ * @brief A constraint of the clip of a segment: the parameter at which the
+ * segment reaches the plane `axis = bound`, or the parameter `bound` itself
+ * where `axis` is negative
+ */
+typedef struct
+{
+  int axis;
+  double bound;
+} ClipPlane;
+
+extern int clip_plane_param_cmp(const double *c1, const double *c2,
+  ClipPlane a, ClipPlane b);
+
 /* Restriction functions */
 
 extern TSequence **tpointseq_at_geom(const TSequence *seq,
