@@ -88,7 +88,9 @@
  * The eighth asks a moving point against a geometry, whose nearest approach
  * is the distance of its path to the geometry: parallel segments one or two
  * units in the last place apart, the points of a multipoint, and a line its
- * path crosses, where the distance is 0. The ninth asks a segment whose
+ * path crosses, where the distance is 0, and a moving point inside a square at
+ * 1e154 and at 1e-210, whose shoelace products leave the doubles, where the
+ * square bounds a region and the distance is 0. The ninth asks a segment whose
  * differences pass the largest double beside a point, in 2D, and beside the
  * end of a segment, in 3D, at a distance below four times the smallest normal
  * double. The last but one asks the nearest
@@ -672,6 +674,18 @@ int main(void)
     0.0);
   printf("%d moving points against a geometry answered as the nearest "
     "double\n", moving);
+
+  /* A moving point inside a square whose shoelace products leave the
+   * doubles, above and below, which bounds a region and not its boundary */
+  int regions = 2;
+  moving_entry("[POINT(0 0)@2001-01-01, POINT(1 0)@2001-01-02]",
+    "POLYGON((-1e154 -1e154,1e154 -1e154,1e154 1e154,-1e154 1e154,"
+    "-1e154 -1e154))", 0.0);
+  moving_entry("[POINT(0 0)@2001-01-01, POINT(1e-211 0)@2001-01-02]",
+    "POLYGON((-1e-210 -1e-210,1e-210 -1e-210,1e-210 1e-210,-1e-210 1e-210,"
+    "-1e-210 -1e-210))", 0.0);
+  printf("%d moving points inside a polygon far from the unit answered as "
+    "inside\n", regions);
 
   /* Ties that only a component far below the largest difference breaks: a
    * third coordinate 2^-866 of the others, the rounding error of a
