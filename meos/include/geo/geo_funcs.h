@@ -326,6 +326,8 @@ extern double point_arc_dist2(double px, double py, const Edge *e);
 extern double point_edge_dist2(double px, double py, const Edge *e);
 extern int segment_distance_square(const double *a, const double *b,
   const double *c, const double *d, int ndims);
+extern double linesegm_param_wide(const double *a, const double *b,
+  const double *p);
 extern int linesegm_param_cmp(const double *a, const double *b,
   const double *p, const double *q);
 extern bool segment_distance_range(const double *p0, const double *u,

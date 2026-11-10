@@ -499,12 +499,21 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
   const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
   const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
   const double *pt[4][3] = {{c1, a, b}, {c2, a, b}, {a, c1, c2}, {b, c1, c2}};
+  /* The path moves where its ends differ, whatever its squared length rounds
+   * to, and the position of an edge end along it is read on that squared
+   * length where it is a normal double, exactly otherwise */
+  const bool moves = (cx1 != cx2 || cy1 != cy2);
   double dcx = cx2 - cx1, dcy = cy2 - cy1, l2 = dcx * dcx + dcy * dcy;
+  const bool normal = l2 >= DBL_MIN && l2 <= DBL_MAX;
   double cand[4], t[4];
   t[0] = 0.0;
   t[1] = 1.0;
-  t[2] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, a[0], a[1]) : 0.0;
-  t[3] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, b[0], b[1]) : 0.0;
+  t[2] = ! moves ? 0.0 : (normal ?
+    linesegm_param(cx1, cy1, cx2, cy2, l2, a[0], a[1]) :
+    linesegm_param_wide(c1, c2, a));
+  t[3] = ! moves ? 0.0 : (normal ?
+    linesegm_param(cx1, cy1, cx2, cy2, l2, b[0], b[1]) :
+    linesegm_param_wide(c1, c2, b));
   int mask = segment_distance_square(c1, c2, a, b, 2);
   if (mask > 0)
   {
@@ -518,7 +527,7 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
     {
       if (! (mask & (1 << i)))
         continue;
-      if (w < 0 || (l2 > 0.0 ? linesegm_param_cmp(c1, c2, at[i], at[w]) < 0 :
+      if (w < 0 || (moves ? linesegm_param_cmp(c1, c2, at[i], at[w]) < 0 :
           t[i] < t[w]))
         w = i;
     }
@@ -535,7 +544,7 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
   for (int i = 1; i < 4; i++)
   {
     if (cand[i] < cand[w] || (cand[i] == cand[w] &&
-        (l2 > 0.0 ? linesegm_param_cmp(c1, c2, at[i], at[w]) < 0 :
+        (moves ? linesegm_param_cmp(c1, c2, at[i], at[w]) < 0 :
           t[i] < t[w])))
       w = i;
   }

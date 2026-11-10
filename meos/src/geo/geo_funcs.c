@@ -6635,6 +6635,42 @@ linesegm_param_cmp(const double *a, const double *b, const double *p,
 }
 
 /**
+ * @brief Return the position along the segment AB of a point, 0 at A and 1 at
+ * B, as #linesegm_param reads it, at any finite coordinates
+ * @details Where the position is an end, its sign decides it exactly
+ * (#linesegm_param_side). Inside, it is the quotient of `(p - a) . (b - a)`
+ * by `(b - a) . (b - a)`, both held exactly as #WideDyadic and divided on
+ * their leading limbs (#wide_dyadic_frexp), within a relative 2^-62 of it,
+ * where the squared length leaves the doubles #linesegm_param divides by
+ * @param[in] a,b The two ends of the segment, distinct
+ * @param[in] p The point
+ */
+double
+linesegm_param_wide(const double *a, const double *b, const double *p)
+{
+  int side = linesegm_param_side(a, b, p);
+  if (side != 0)
+    return (side < 0) ? 0.0 : 1.0;
+  WideDyadic u[2], w[2], v1, v2, t1, t2, dot, len2;
+  for (int i = 0; i < 2; i++)
+  {
+    wide_dyadic_set_double(&v1, b[i]);
+    wide_dyadic_set_double(&v2, a[i]);
+    wide_dyadic_sub(&v1, &v2, &u[i]);
+    wide_dyadic_set_double(&v1, p[i]);
+    wide_dyadic_sub(&v1, &v2, &w[i]);
+  }
+  wide_dyadic_mul(&w[0], &u[0], &t1); wide_dyadic_mul(&w[1], &u[1], &t2);
+  wide_dyadic_add(&t1, &t2, &dot);
+  wide_dyadic_mul(&u[0], &u[0], &t1); wide_dyadic_mul(&u[1], &u[1], &t2);
+  wide_dyadic_add(&t1, &t2, &len2);
+  int en, ed;
+  double mn = wide_dyadic_frexp(&dot, &en), md = wide_dyadic_frexp(&len2, &ed);
+  double t = ldexp(mn / md, en - ed);
+  return (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+}
+
+/**
  * @brief Return the distance between a point and a segment less a radius, not
  * below zero, as the double nearest it, every sign read on the input
  * coordinates
