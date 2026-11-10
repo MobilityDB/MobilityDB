@@ -233,13 +233,16 @@ SELECT tquadbin(tgeompoint
 -- degrees of latitude the QUADBIN tiles of zoom 2 are the tiles of 90 degrees
 -- from the origin flipped in latitude, since a QUADBIN tile holds its north
 -- boundary where a tile of the space grid holds its south one, so the space
--- split of the trajectory mirrored in latitude states that tiling. Every
--- instant the cover gives a cell lies in the fragment of that cell's tile, and
--- the cover and the split hold the same time: the two differ only where two
--- tiles hold one instant, the truncated instant of a crossing, which a
--- temporal cell gives to one of them. Without the upper border of the extent
--- of the trajectory, the tiles holding nothing of it but that border are no
--- part of either
+-- split of the trajectory mirrored in latitude states that tiling. The cover
+-- and the split hold the same time, and the split gives each instant to the
+-- tile holding the position of the trajectory at that instant. A crossing
+-- falling between two microseconds is dated at the earlier one, where the
+-- trajectory is still in the tile it leaves: the split gives that instant to
+-- the tile left and the cover to the tile entered, so the two cells of the
+-- trajectory from Point(-170 -60) starting at such an instant lie outside
+-- their tile, and every other cell lies in it. Without the upper border of
+-- the extent of the trajectory, the tiles holding nothing of it but that
+-- border are no part of either
 WITH trips(tp) AS (VALUES
   (tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'),
   (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]'),
