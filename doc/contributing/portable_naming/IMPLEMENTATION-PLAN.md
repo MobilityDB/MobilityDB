@@ -212,7 +212,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   reading `point` as the `geo` token where a whole type token follows it: branch
   `fix/point-token-names-a-geometry-operand`, MEOS-API #270, MERGED as `c9a22d1` (2026-11-10),
   makes them `Geo.bearing` (catalog diff: these two members alone). MEOS.js branch
-  `gen/geo-bearing`, MEOS.js #57, MERGED as `d66aa54` (2026-11-10; main's Build green on it),
+  `gen/geo-bearing`, MEOS.js #57, MERGED as `d66aa54` (2026-11-10),
   regenerates on it: `Geo.bearing(Geo | TPoint)`, 4373 methods, 2 ledger rows, 1214 of 1214
   tests. MEOS.NET branch `gen/operand-order-and-bearing`, MEOS.NET #63 (OPEN), regenerates from
   MobilityDB 6f329a98d0 to `78ebe3b7fe` (the containments, the operand orders, `Geo.Bearing`, the
