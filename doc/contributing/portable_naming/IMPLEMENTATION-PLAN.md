@@ -82,6 +82,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   empty. Head `707f4121fe` on master `95013f9609` holds its seven receipts (strict, Windows,
   cppcheck, valgrind, smoke, speed, and the CGAL oracle 1111 of 1111). MERGED as MobilityDB #3526
   (`be21561763`).
+- **The restriction of a temporal point to a box holds exactly the instants whose position lies
+  in it**, step CW1 of the cell-walk plan MobilityDB #3544, as the owner decided on 2026-11-10
+  ("agree ! continue"): branch `fix/box-upper-border-exact` rewrites `842c640e83` there, six
+  lines of `mobilitydb/test/npoint/expected/306_tnpoint_spatialfuncs.test.out`, where a network
+  point entering a box between two microseconds starts `atStbox` exclusively and ends
+  `minusStbox` inclusively at the microsecond dating the crossing, the trip being outside the box
+  there.
 - **A temporal point instant made from the coordinates of a point writes its point in place**,
   outside the plan, as the owner decided on 2026-11-09 ("go ahead with the shared point-instant
   constructor"): the internal `tpointinst_make_coords` in `meos/src/geo/tgeo.c`, declared in
