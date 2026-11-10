@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpointseq_distance_geom</title>
+<title>MobilityDB: tpoint_distance_geom_at</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -130,6 +130,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a1641bd3a1bc3520a3b1c82ca53d32952.html#a1641bd3a1bc3520a3b1c82ca53d32952">rtree_results</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ac6081bf7caa5bd5060681b1cae13ba32.html#ac6081bf7caa5bd5060681b1cae13ba32">segment_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aed195d063358fd239b0e1a224471688f.html#aed195d063358fd239b0e1a224471688f">segment_within_closure</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a3118ef32a9923c081ab78d4bfdb2e258.html#a3118ef32a9923c081ab78d4bfdb2e258">tpoint_distance_geom_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo_ga6d0b7c1d80351fa7f166f2d7025454d2.html#ga6d0b7c1d80351fa7f166f2d7025454d2">tpoint_linear_distance_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo_ga28c9d7e1b6cb5456e301b5630d65814a.html#ga28c9d7e1b6cb5456e301b5630d65814a">tpoint_linear_dwithin_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo_ga994483a673e894f7045a02d09a86fb2f.html#ga994483a673e894f7045a02d09a86fb2f">tpoint_linear_dwithin_geom_ctx</a></td></tr>
@@ -139,15 +140,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a12a15f46c11be3526a9800168bce8404.html#a12a15f46c11be3526a9800168bce8404">tpointinst_clip_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a80214bedf03b709d5505989c8f3b9740.html#a80214bedf03b709d5505989c8f3b9740">tpointinst_dwithin_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ad3c060dc438204e00fb5bea766ccc131.html#ad3c060dc438204e00fb5bea766ccc131">tpointseq_clip_edges</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_acfec6fbdd91ec11d37563805d030d36e.html#acfec6fbdd91ec11d37563805d030d36e">tpointseq_distance_geom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a384a058639d8e07de7ff8b97516a468a.html#a384a058639d8e07de7ff8b97516a468a">tpointseq_distance_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a5e67f13e9d30477301027857f473834f.html#a5e67f13e9d30477301027857f473834f">tpointseq_dwithin_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a40a534201d675d1f2f30be3b38b90959.html#a40a534201d675d1f2f30be3b38b90959">within_roots_from_edge</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="acfec6fbdd91ec11d37563805d030d36e" name="acfec6fbdd91ec11d37563805d030d36e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acfec6fbdd91ec11d37563805d030d36e">&#9670;&#160;</a></span>tpointseq_distance_geom()</h2>
+<a id="a3118ef32a9923c081ab78d4bfdb2e258" name="a3118ef32a9923c081ab78d4bfdb2e258"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3118ef32a9923c081ab78d4bfdb2e258">&#9670;&#160;</a></span>tpoint_distance_geom_at()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -156,22 +157,40 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structTSequence.html">TSequence</a> * tpointseq_distance_geom </td>
+          <td class="memname">static double tpoint_distance_geom_at </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
-          <td class="paramname"><em>edges</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nedges</em>&#160;</td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>s0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>s1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structDistGeomCtx.html">DistGeomCtx</a> *&#160;</td>
+          <td class="paramname"><em>ctx</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -186,7 +205,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the temporal float distance of one temporal sequence point with linear interpolation to a geometry given as an edge array. </p>
+<p>Return the distance at the timestamp <code>t</code> of the point moving from <code>a</code> at <code>s0</code> to <code>b</code> at <code>s1</code> to a geometry given as an edge array. </p>
+<p >For a geometry of points and segments the double nearest the exact distance of the point at that exact microsecond, read in two layers. First the point and its distance to each edge in doubles, on the coordinates scaled by 2^k, with a bound on their error: the edges whose distance may be the least are those whose lower bound does not exceed the least upper bound, and the exact distance is computed of those alone (<a class="el" href="geo__funcs_8h_afca0ca3661cb5993b457ca2e36cb9e6d.html#afca0ca3661cb5993b457ca2e36cb9e6d" title="Return the double nearest the least distance, at the integer timestamp t, of a point moving linearly ...">point_motion_edges_distance_at</a>). The point is then inside a polygon as the point of doubles is (<a class="el" href="tpoint__geom__clip_8c_a57fdfe5ada50d7d5ba5b1585540ca98d.html#a57fdfe5ada50d7d5ba5b1585540ca98d" title="Return true if an input vertex is located in a polygon, scanning every edge.">point_in_polygon_vertex</a>) where its exact distance to the edges exceeds the error of that point, and otherwise as the exact crossings of its rings say (<a class="el" href="geo__funcs_8h_ac3c3891d66ffe394b815ef306b8e2e50.html#ac3c3891d66ffe394b815ef306b8e2e50" title="Return true if the point at the integer timestamp t of the point moving linearly from p0 at s0 to p1 ...">point_motion_in_polygon_at</a>). For a geometry with an arc the distance of the point at the parameter of <code>t</code> on the segment (<a class="el" href="tpoint__geom__clip_8c_a04527486496c6e6a7ac440dd770d054b.html#a04527486496c6e6a7ac440dd770d054b" title="Return the exact distance from a point to the whole geometry.">point_geom_dist</a>) </p>
 
 </div>
 </div>
