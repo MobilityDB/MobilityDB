@@ -198,7 +198,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `<op>_<x>_<y>_intl(..., bool invert)` that asserts; the same branch adds
   `bearing_point_tpoint`, `concat_jsonb_tjsonb` and `concat_jsonb_jsonbset` and drops the flag of
   `bearing_tpoint_point`, `concat_tjsonb_jsonb` and `concat_jsonbset_jsonb`, so no public function
-  of MEOS takes one. Branch `fix/operand-order-by-name` (`d11badbf7c` on master `b1e26fdb03`), five
+  of MEOS takes one. Branch `fix/operand-order-by-name` rewrites `89ec3ab98d` and `ddae903f80` (`d11badbf7c` on master `b1e26fdb03`), five
   receipts; two probes print master's answers byte for byte (152 and 134 lines).
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
