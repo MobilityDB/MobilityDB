@@ -147,15 +147,22 @@ SELECT area(stbox 'STBOX X((-1e308,0),(1e308,1e-10))');
 The length and the perimeter of a geometry are answered whatever the
 magnitudes of its coordinates, from the subnormal doubles to `±DBL_MAX`, and
 raise `value out of range` only where they exceed `DBL_MAX`. The area of a
-geometry is read scaled by a power of two where its coordinates lie outside
-`2^-500` to `2^500`; `geom_area` raises `MEOS_ERR_FEATURE_NOT_SUPPORTED` where
-that scaling is not exact, as for a geometry mixing coordinates near
-`DBL_MAX`, scaled by `2^-523`, with coordinates so small that this scaling
-rounds them:
+geometry of straight edges is the double nearest its exact value, a tie going
+to the even one, whatever the magnitudes of its coordinates, and raises
+`value out of range` only where it exceeds `DBL_MAX`: a triangle reaching from
+subnormal coordinates to `1e307` encloses `3.3118017121875465e-17`. The area
+of a geometry holding a circular arc, whose circular segments are not
+rationals of its coordinates, is read scaled by a power of two where its
+coordinates lie outside `2^-500` to `2^500`, and `geom_area` raises
+`MEOS_ERR_FEATURE_NOT_SUPPORTED` where that scaling is not exact:
 
 ```sql
 SELECT perimeter(stbox 'STBOX X((0,0),(5e-324,1e-323))') = 3e-323;
 -- t
+SELECT area(geometry 'Polygon((-2.4194e-319 -2.4194e-319,
+  1.584721628692562e+307 9.264240401570348e+307,
+  -2.41944e-319 -2.41964e-319,-2.4194e-319 -2.4194e-319))');
+-- 3.3118017121875465e-17
 ```
 
 ### 4.3 A division by zero

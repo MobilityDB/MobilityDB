@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.2.0 |
-| Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates and relationships |
-| Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/test/distance_point_test.c` (the witnesses quoted below) |
+| Version | v0.3.0 |
+| Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates, relationships and areas |
+| Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/test/distance_point_test.c` and `meos/test/geo_test.c` (the witnesses quoted below) |
 
 ## 1. Scope and intent
 
@@ -88,7 +88,7 @@ closest point on an arc (`dist_geom_closest_on_arc`) and the turning points of
 the distance of a moving point (`tpoint_geo_distance_turnpt`). The exactness
 plan of the project, MobilityDB #3287, lists them and the changes that decide
 each one exactly. The answers this document states are the ones the CGAL
-judges check (section 8).
+judges check (section 9).
 
 ## 4. How the engine reaches an exact answer
 
@@ -270,7 +270,91 @@ of two areal operands off that arrangement.
 The temporal relationships inherit this: at an instant they read the same
 engine.
 
-## 7. What lies outside
+## 7. Areas
+
+### 7.1 The answer
+
+The area of a geometry of straight edges is half the sum of the shoelace sums
+of its rings, the exterior counted positive and each hole negative. It is a
+rational of the coordinates, and `geom_area` (`area` in SQL) answers the double
+nearest it, a tie going to the even one, whatever the magnitudes of the
+coordinates, from the subnormal doubles to `±DBL_MAX`. An area beyond
+`DBL_MAX` raises `value out of range`. A geometry holding a circular arc keeps
+its area in doubles, since its circular segments are not rationals of its
+coordinates (see [Finite Values](meos-finite-values.md)).
+
+A sum of the shoelace terms in doubles rounds at every term, and the terms of
+a ring cancel: a thin hole, a sliver or a vertex far from the others leaves an
+area much smaller than the terms that make it. The witnesses below, tests of
+the tree (`meos/test/geo_test.c`), set the answer of the engine beside that of
+a sum in doubles, as GEOS 3.14's `GEOSArea` computes it:
+
+| geometry | `geom_area` (the nearest double) | a sum in doubles |
+|---|---|---|
+| a square of side about 100 at projected coordinates, less a hole within `1e-9` of its edges | `3.927212674136797e-07` | `3.9272163121495396e-07` |
+| a triangle reaching from subnormal coordinates to `1e307` | `3.3118017121875465e-17` | `3.3118017121875471e-17` |
+| a rectangle of `1e154` by `1.7e154` | `1.7e308` | infinity |
+| a unit square and a triangle of legs `2^-26`, an area of `1 + 2^-53` | `1`, the tie to the even double | `1` |
+| a square of side `1.5e154`, an area beyond `DBL_MAX` | raises `value out of range` | infinity |
+
+How often a sum in doubles differs from the nearest double, judged by CGAL
+(section 9) on three sets of geometries; `geom_area` answers the nearest double
+on every one of their rows:
+
+| geometries | a sum in doubles differs on | by |
+|---|---|---|
+| 192 multipolygons of real data at projected coordinates | 145 of 192 | at most 29 ulps, 1 ulp on 53 rows |
+| 2000 shapes built to cancel (thin holes, slivers, degenerate rings) | 978 of 2000 | 1 ulp on 462 rows, more than `1e9` ulps on 76 |
+| 1000 geometries from the subnormal doubles to `±DBL_MAX` | 236 of 1000 | more than `1e9` ulps on 48, infinity on some finite areas |
+
+On data at ordinary magnitudes the two agree to about 14 significant digits,
+and differ in the last ones: two systems, or two orders of the same rings, may
+not give the same double. Where the terms cancel or the magnitudes are
+extreme, the sum in doubles may differ from the first digits on.
+
+### 7.2 How the engine reaches it
+
+Each ring is read once, in the layers of section 4, the first that applies
+answering:
+
+1. **Integers.** Where the binary exponents of all the coordinates of a ring
+   lie within 4 of each other, read once per ring from the bitwise AND and OR
+   of their bit patterns, every coordinate is an integer multiple of one
+   power of two. The ring is summed in 128-bit integers, one product per
+   vertex in the form `(x_i - x_0)(y_(i-1) - y_(i+1))`, the form GEOS uses,
+   which is exact. This is the path of the geometries data holds.
+2. **A compensated sum in doubles.** Elsewhere, each product is split into its
+   rounded value and its exact error (Dekker's product), the rounded values
+   are summed exactly, and the errors are summed with a bound on their
+   rounding. Where the bound shows which double is nearest, that is the answer.
+3. **Wide integers.** Where the bound cannot decide, or a product leaves the
+   doubles, the shoelace sums are computed exactly in wide integers and
+   rounded once.
+
+### 7.3 Its cost
+
+The speed of a MEOS operation is stated against two references, each as the
+cost of the reference divided by the cost of MEOS, counted in instructions, so
+that above `1` MEOS is faster and below `1` slower:
+
+- the **kernel speed**, against GEOS called directly on geometries already
+  converted to it;
+- the **route speed**, against GEOS called on a MEOS geometry, the conversion
+  to GEOS and back included.
+
+| geometries | kernel speed | route speed |
+|---|---|---|
+| 192 multipolygons of real data | 0.37 | 4.0 |
+| the 1871 polygons and multipolygons among the 2000 shapes | 0.33 | |
+
+The area is the one measure of this engine whose exact layer runs on nearly
+every call: a sum that cancels has no bound in doubles that decides its nearest
+double cheaply, so the integers are the first layer, not a filter in front of
+them. The answer is the nearest double on every call; the cost is about 2.7
+times that of a sum in doubles, and a quarter of that of calling GEOS on a MEOS
+geometry.
+
+## 8. What lies outside
 
 - **Geodetic distances.** A distance on the spheroid is not a rational of the
   coordinates; MEOS computes it by iteration, accurate to the iteration and
@@ -286,7 +370,7 @@ engine.
   (see [Finite Values](meos-finite-values.md)); the exact answer is defined
   for finite doubles.
 
-## 8. How the answers are checked
+## 9. How the answers are checked
 
 The reference for every exact answer of the engine is CGAL, an independent
 library of exact geometry, computing on the same doubles in exact rational
