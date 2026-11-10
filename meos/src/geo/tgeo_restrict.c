@@ -55,6 +55,7 @@
 #include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
+#include "geo/tgeo_restrict.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 
@@ -366,17 +367,6 @@ computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
 }
 
 /**
- * @brief A constraint of the clip of a segment: the parameter at which the
- * segment reaches the plane `axis = bound`, or the parameter `bound` itself
- * where `axis` is negative
- */
-typedef struct
-{
-  int axis;
-  double bound;
-} ClipPlane;
-
-/**
  * @brief Return the sign of the comparison of the parameters at which a
  * segment reaches two clip constraints
  * @details The parameter of the plane `axis = h` is `(h - c1) / (c2 - c1)`
@@ -391,7 +381,7 @@ typedef struct
  * @return -1, 0 or 1 as the parameter of @p a is less than, equal to or
  * greater than that of @p b
  */
-static int
+int
 clip_plane_param_cmp(const double *c1, const double *c2, ClipPlane a,
   ClipPlane b)
 {
