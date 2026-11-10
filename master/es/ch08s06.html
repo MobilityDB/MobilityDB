@@ -74,36 +74,7 @@ SELECT round(minDistance(
   ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
   ARRAY[tgeogpoint 'Point(0 0)@2001-01-01'], false)::numeric, 3);
 -- 111195.080
-</pre></li><li class="listitem"><a name="tgeo_setset_join"></a><a class="indexterm" name="id6630"></a><a class="indexterm" name="id6633"></a><a class="indexterm" name="id6636"></a><a class="indexterm" name="id6639"></a><a class="indexterm" name="id6642"></a><a class="indexterm" name="id6645"></a><a class="indexterm" name="id6648"></a><a class="indexterm" name="id6651"></a><a class="indexterm" name="id6654"></a><a class="indexterm" name="id6657"></a><a class="indexterm" name="id6660"></a><a class="indexterm" name="id6663"></a><p>Devuelve los pares de índices que cumplen la relación entre dos arreglos de geometrías temporales, generalizando las relaciones espaciales escalares a una unión espacial conjunto-conjunto</p><pre class="programlisting">
-eDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer)
-aDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer)
-eIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-aIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-eDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-aDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
-aTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
-tDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer,periods tstzspanset)
-tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
-tDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
-tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
-eDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
-aDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
-</pre><p>Cada función resuelve el producto cruzado podado de los dos arreglos de entrada en una sola llamada y devuelve los índices basados en uno <code class="varname">i</code> y <code class="varname">j</code> de los pares que cumplen la relación. Las funciones con prefijo <code class="varname">e</code> devuelven los pares para los que la relación se cumple alguna vez, las funciones con prefijo <code class="varname">a</code> los pares para los que se cumple siempre, y las funciones con prefijo <code class="varname">t</code> devuelven además los períodos durante los cuales se cumple. La caja espaciotemporal de cada entrada se usa como prefiltro de caja envolvente, de modo que la relación exacta se calcula solo sobre los pares candidatos que sobreviven, y los pares cuyas extensiones temporales no se solapan se excluyen, igual que en las relaciones escalares. Las funciones están definidas para puntos temporales y geometrías temporales tanto en el caso planar como en el geodésico, excepto la relación de toca, que está definida solo para geometrías planares. Los índices se relacionan con las identidades originales mediante un <code class="varname">array_agg(identidad ORDER BY ...)</code> paralelo. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</p><pre class="programlisting">
-SELECT i, j FROM eDwithinPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
-        tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'], 2.0);
--- 1 | 1
-SELECT i, j, periods FROM tDwithinPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'], 2.0);
--- one pair, with the period during which it is within the distance
-SELECT i, j FROM aDisjointPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(5 10)@2001-01-02]']);
--- 1 | 1
-</pre></li><li class="listitem"><a name="tgeo_shortestLine"></a><a class="indexterm" name="id6677"></a><p>Devuelve la línea que conecta el punto de aproximación más cercano <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_shortestLine"></a><a class="indexterm" name="id6630"></a><p>Devuelve la línea que conecta el punto de aproximación más cercano <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 shortestLine({geo,tgeo},{geo,tgeo}) → geo
@@ -136,7 +107,7 @@ SELECT ST_CPAWithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-0
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
   Point(2 2 2)@2001-01-06)'::geometry, 0.5);
 -- true
-</pre></li></ul></div><p>El operador de distancia temporal, denotado <code class="varname">&lt;-&gt;</code>, calcula la distancia en cada instante de la intersección de las extensiones temporales de sus argumentos y da como resultado un número flotante temporal. Calcular la distancia temporal es útil en muchas aplicaciones de movilidad. Por ejemplo, un grupo en movimiento (también conocido como convoy o bandada) se define como un conjunto de objetos que se mueven cerca unos de otros durante un intervalo de tiempo prolongado. Esto requiere calcular la distancia temporal entre dos objetos en movimiento.</p><p>Un punto temporal con interpolación lineal toma como otro argumento un punto temporal, un punto o, cuando es plano y 2D, una geometría de cualquier otro tipo. Un punto temporal de cualquier otra interpolación, un instante incluido, tiene un valor sólo en sus instantes y toma cualquier geometría o geografía, siendo su distancia en cada instante la distancia del punto a ella. Observe que los tipos temporales sólo consideran la interpolación lineal entre valores, mientras que la distancia es una raíz de una función cuadrática. Por lo tanto, el operador de distancia temporal proporciona una aproximación lineal del valor de distancia real para los puntos de secuencia temporal. En este caso, los argumentos se sincronizan en la dimensión de tiempo y para cada uno de los segmentos de línea que componen los argumentos, se calcula la distancia espacial entre el punto inicial, el punto final y el punto de aproximación más cercano, como se muestra en los ejemplos a continuación.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tdistance"></a><a class="indexterm" name="id6707"></a><p>Devuelve la distancia temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li></ul></div><p>El operador de distancia temporal, denotado <code class="varname">&lt;-&gt;</code>, calcula la distancia en cada instante de la intersección de las extensiones temporales de sus argumentos y da como resultado un número flotante temporal. Calcular la distancia temporal es útil en muchas aplicaciones de movilidad. Por ejemplo, un grupo en movimiento (también conocido como convoy o bandada) se define como un conjunto de objetos que se mueven cerca unos de otros durante un intervalo de tiempo prolongado. Esto requiere calcular la distancia temporal entre dos objetos en movimiento.</p><p>Un punto temporal con interpolación lineal toma como otro argumento un punto temporal, un punto o, cuando es plano y 2D, una geometría de cualquier otro tipo. Un punto temporal de cualquier otra interpolación, un instante incluido, tiene un valor sólo en sus instantes y toma cualquier geometría o geografía, siendo su distancia en cada instante la distancia del punto a ella. Observe que los tipos temporales sólo consideran la interpolación lineal entre valores, mientras que la distancia es una raíz de una función cuadrática. Por lo tanto, el operador de distancia temporal proporciona una aproximación lineal del valor de distancia real para los puntos de secuencia temporal. En este caso, los argumentos se sincronizan en la dimensión de tiempo y para cada uno de los segmentos de línea que componen los argumentos, se calcula la distancia espacial entre el punto inicial, el punto final y el punto de aproximación más cercano, como se muestra en los ejemplos a continuación.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tdistance"></a><a class="indexterm" name="id6660"></a><p>Devuelve la distancia temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 {geo,tgeo} &lt;-&gt; {geo,tgeo} → tfloat

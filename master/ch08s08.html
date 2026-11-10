@@ -1,7 +1,23 @@
-<html><head><meta charset="UTF-8"><title>Ever and Always Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch08.html" title="Chapter 8. Temporal Geometry Types (Part 2)"><link rel="prev" href="ch08s07.html" title="Planar and Geodetic Computations"><link rel="next" href="ch08s09.html" title="Spatiotemporal Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Ever and Always Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s07.html">Prev</a> </td><th width="60%" align="center">Chapter 8. Temporal Geometry Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch08s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_everalways_rels"></a>Ever and Always Relationships</h2></div></div></div><p>Operands of different dimensions read the dimensions both of them have, see <a class="xref" href="ch08s03.html" title="Operands of Different Dimensions">the section called “Operands of Different Dimensions”</a>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id7331"></a><a class="indexterm" name="id7334"></a><p>Ever or always contains</p><pre class="programlisting">
+<html><head><meta charset="UTF-8"><title>Ever and Always Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch08.html" title="Chapter 8. Temporal Geometry Types (Part 2)"><link rel="prev" href="ch08s07.html" title="Planar and Geodetic Computations"><link rel="next" href="ch08s09.html" title="Spatiotemporal Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Ever and Always Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s07.html">Prev</a> </td><th width="60%" align="center">Chapter 8. Temporal Geometry Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch08s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_everalways_rels"></a>Ever and Always Relationships</h2></div></div></div><p>Operands of different dimensions read the dimensions both of them have, see <a class="xref" href="ch08s03.html" title="Operands of Different Dimensions">the section called “Operands of Different Dimensions”</a>.</p><p>Each relationship of this section has two forms. The scalar form compares two values, a geometry or a temporal geometry on each side, and returns whether the relationship holds at some instant (prefix <code class="varname">e</code>, ever) or at every instant (prefix <code class="varname">a</code>, always) of the time they share. The array form, whose name ends in <code class="varname">Pairs</code>, compares every element of an array of temporal geometries with every element of another and returns, one row per pair, the one-based indexes <code class="varname">i</code> and <code class="varname">j</code> of the pairs for which the scalar form returns true. A pair sharing no instant, for which the scalar form returns null, is not returned. The array form states in a single call the spatial join of two sets of moving objects, which the scalar form states by comparing every pair of their cross product: the spatiotemporal box of each element settles the pairs whose boxes alone decide the relationship, and the relationship is computed exactly on the others. The indexes are positions in the arrays, and an <code class="varname">array_agg</code> of the identifiers in the order of the array of values maps them back to the objects. The array form is defined for temporal points and temporal geometries, planar and geodetic, where the scalar form is, except touches, contains and covers, whose array forms take temporal geometries. In the array form of contains and covers, the element of the first array is the one that contains or covers the element of the second.</p><p>The following example returns, for each pair of ships, whether they ever come within a distance of 2 of each other, first with the scalar form on two of them, then with the array form on all of them, mapping the indexes back to the identifiers.</p><pre class="programlisting">
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
+  tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]', 2);
+-- true
+WITH ships(id, trip) AS (VALUES
+  ('A', tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'),
+  ('B', tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'),
+  ('C', tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]')),
+fleet AS (SELECT array_agg(id ORDER BY id) AS ids,
+  array_agg(trip ORDER BY id) AS trips FROM ships)
+SELECT ids[i] AS ship1, ids[j] AS ship2
+FROM fleet, eDwithinPairs(trips, trips, 2)
+WHERE i &lt; j;
+-- A | C
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id7293"></a><a class="indexterm" name="id7296"></a><a class="indexterm" name="id7299"></a><a class="indexterm" name="id7302"></a><p>Ever or always contains</p><pre class="programlisting">
 eContains({geometry,tgeom},{geometry,tgeom}) → boolean
 aContains({geometry,tgeom},{geometry,tgeom}) → boolean
-</pre><p>This function returns true if the temporal geometry and the geometry ever or always intersect at their interior. Recall that a geometry does not contain things in its boundary and thus, polygons and lines do not contain lines and points lying in their boundary. Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> function in PostGIS.</p><pre class="programlisting">
+eContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+</pre><p>This function returns true if the first argument contains the second at some instant (ever) or at every instant (always) of the time they share, reading the value each argument takes at that instant. A temporal point moves continuously, so a geometry contains it at some instant if its trajectory meets the interior of the geometry, and at every instant if its trajectory lies in that interior; a point contains a geometry only where the geometry is that point. Recall that a geometry does not contain things in its boundary and thus, polygons and lines do not contain lines and points lying in their boundary. Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> function in PostGIS.</p><pre class="programlisting">
 SELECT eContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
 -- false
@@ -14,10 +30,30 @@ SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id7343"></a><a class="indexterm" name="id7346"></a><p>Ever or always covers</p><pre class="programlisting">
+</pre><p>The array form returns the pairs whose first element ever or always contains the second. In the following examples, the first point of the second array leaves the square on 2001-01-02, and the third one is never inside it.</p><pre class="programlisting">
+SELECT i, j FROM eContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 2
+</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id7313"></a><a class="indexterm" name="id7316"></a><a class="indexterm" name="id7319"></a><a class="indexterm" name="id7322"></a><p>Ever or always covers</p><pre class="programlisting">
 eCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
-</pre><p>Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> and the <a class="ulink" href="https://postgis.net/docs/ST_Covers.html" target="_top">ST_Covers</a> function in PostGIS for detailed explanations about the difference between the two functions.</p><pre class="programlisting">
+eCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+</pre><p>This function returns true if the first argument covers the second at some instant (ever) or at every instant (always) of the time they share, reading the value each argument takes at that instant. A temporal point moves continuously, so a geometry covers it at every instant if it covers its trajectory. Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> and the <a class="ulink" href="https://postgis.net/docs/ST_Covers.html" target="_top">ST_Covers</a> function in PostGIS for detailed explanations about the difference between the two functions.</p><pre class="programlisting">
 SELECT eCovers(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
 -- false
@@ -30,11 +66,29 @@ SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id7356"></a><a class="indexterm" name="id7359"></a><p>Is ever or always disjoint <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre><p>The array form returns the pairs whose first element ever or always covers the second. In the following examples, the first point of the second array lies on the boundary of the square, which covers it without containing it.</p><pre class="programlisting">
+SELECT i, j FROM eCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']);
+-- 1 | 1
+</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id7334"></a><a class="indexterm" name="id7337"></a><a class="indexterm" name="id7340"></a><a class="indexterm" name="id7343"></a><p>Is ever or always disjoint <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eDisjoint({geo,tgeo},{geo,tgeo}) → boolean
 aDisjoint({geo,tgeo},{geo,tgeo}) → boolean
+eDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+aDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
 </pre><pre class="programlisting">
 SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)');
@@ -42,13 +96,28 @@ SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeometry '[Linestring(1 1 1,2 2 2)@2001-01-01, Point(2 2 2)@2001-01-03]');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id7380"></a><a class="indexterm" name="id7383"></a><p>Is ever or always at distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre><p>The array form returns the pairs that are ever or always disjoint. In the following examples, the first trip of the second array crosses the trip of the first array, which is ever but not always disjoint from it.</p><pre class="programlisting">
+SELECT i, j FROM eDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(-5 10)@2001-01-02]',
+    tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]']);
+-- 1 | 1
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(-5 10)@2001-01-02]',
+    tgeompoint '[Point(5 0)@2001-01-01, Point(5 10)@2001-01-02]']);
+-- 1 | 2
+</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id7366"></a><a class="indexterm" name="id7369"></a><a class="indexterm" name="id7372"></a><a class="indexterm" name="id7375"></a><p>Is ever or always at distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
 aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
 eDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
 aDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
+eDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer)
+aDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer)
+eDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
+aDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
 </pre><p>For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used. Geographies are supported as stated in <a class="xref" href="ch08s07.html" title="Planar and Geodetic Computations">the section called “Planar and Geodetic Computations”</a>.</p><pre class="programlisting">
 SELECT eDwithin(geometry 'Point(1 1 1)',
   tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 0)@2001-01-02]', 1);
@@ -65,11 +134,27 @@ SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
 SELECT aDwithin(tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]',
   geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000);
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id7406"></a><a class="indexterm" name="id7409"></a><p>Ever or always intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre><p>The array form returns the pairs that are ever or always within the distance. For geographies, as for the scalar form, the distance is measured on the WGS 84 spheroid by default and on the sphere if the last argument is false.</p><pre class="programlisting">
+SELECT i, j FROM aDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]',
+    tgeompoint '[Point(1 0)@2001-01-01, Point(5 10)@2001-01-02]'], 2);
+-- 1 | 1
+SELECT i, j FROM eDwithinPairs(
+  ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
+  ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800);
+-- 1 | 1
+SELECT count(*) FROM eDwithinPairs(
+  ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
+  ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800, false);
+-- 0
+</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id7400"></a><a class="indexterm" name="id7403"></a><a class="indexterm" name="id7406"></a><a class="indexterm" name="id7409"></a><p>Ever or always intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eIntersects({geo,tgeo},{geo,tgeo}) → boolean
 aIntersects({geometry,tgeom},{geometry,tgeom}) → boolean
+eIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+aIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
 </pre><pre class="programlisting">
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
@@ -77,11 +162,44 @@ SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id7430"></a><a class="indexterm" name="id7433"></a><p>Ever or always touches</p><pre class="programlisting">
+</pre><p>The array form returns the pairs that ever or always intersect. Two temporal points always intersect when they are equal at every instant they share.</p><pre class="programlisting">
+SELECT i, j FROM eIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-03]',
+    tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-03]',
+    tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id7432"></a><a class="indexterm" name="id7435"></a><a class="indexterm" name="id7438"></a><a class="indexterm" name="id7441"></a><p>Ever or always touches</p><pre class="programlisting">
 eTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 aTouches({geometry,tgeom},{geometry,tgeom}) → boolean
+eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </pre><pre class="programlisting">
 SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
 -- true
+</pre><p>The array form returns the pairs of temporal geometries that ever or always touch. In the following examples, the first geometry of the second array touches the geometry of the first array until it moves away on 2001-01-02.</p><pre class="programlisting">
+SELECT i, j FROM eTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]',
+    tgeometry '[Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1
+SELECT i, j FROM aTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-03]',
+    tgeometry '[Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch08s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Planar and Geodetic Computations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Spatiotemporal Relationships</td></tr></table></div></body></html>

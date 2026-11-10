@@ -1,5 +1,7 @@
-<html><head><meta charset="UTF-8"><title>Spatiotemporal Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch08.html" title="Chapter 8. Temporal Geometry Types (Part 2)"><link rel="prev" href="ch08s08.html" title="Ever and Always Relationships"><link rel="next" href="ch09.html" title="Chapter 9. Temporal Types: Analytics Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatiotemporal Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s08.html">Prev</a> </td><th width="60%" align="center">Chapter 8. Temporal Geometry Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_spatiotemp_rel"></a>Spatiotemporal Relationships</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tContains"></a><a class="indexterm" name="id7443"></a><p>Temporal contains</p><pre class="programlisting">
+<html><head><meta charset="UTF-8"><title>Spatiotemporal Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch08.html" title="Chapter 8. Temporal Geometry Types (Part 2)"><link rel="prev" href="ch08s08.html" title="Ever and Always Relationships"><link rel="next" href="ch09.html" title="Chapter 9. Temporal Types: Analytics Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatiotemporal Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s08.html">Prev</a> </td><th width="60%" align="center">Chapter 8. Temporal Geometry Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_spatiotemp_rel"></a>Spatiotemporal Relationships</h2></div></div></div><p>Each relationship of this section also has an array form, whose name ends in <code class="varname">Pairs</code>, as the ever and always relationships of <a class="xref" href="ch08s08.html" title="Ever and Always Relationships">the section called “Ever and Always Relationships”</a> do. It compares every element of an array of temporal geometries with every element of another and returns, one row per pair whose temporal relationship is ever true, the one-based indexes <code class="varname">i</code> and <code class="varname">j</code> of the pair and the periods <code class="varname">periods</code> during which the relationship is true.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tContains"></a><a class="indexterm" name="id7459"></a><a class="indexterm" name="id7462"></a><p>Temporal contains</p><pre class="programlisting">
 tContains(geometry,tgeom) → tbool
+tContains(tgeometry,{geometry,tgeometry}) → tbool
+tContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
 </pre><pre class="programlisting">
 SELECT tContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
@@ -13,10 +15,37 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-04]');
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, f@2001-01-03, f@2001-01-04]}
-</pre></li><li class="listitem"><a name="tgeo_tDisjoint"></a><a class="indexterm" name="id7450"></a><p>Temporal disjoint <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre><p>The array form returns the pairs whose first element contains the second at some instant, with the periods during which it contains it.</p><pre class="programlisting">
+SELECT i, j, periods FROM tContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1 | {[2001-01-01, 2001-01-02)}
+</pre></li><li class="listitem"><a name="tgeo_tCovers"></a><a class="indexterm" name="id7471"></a><a class="indexterm" name="id7474"></a><p>Temporal covers</p><pre class="programlisting">
+tCovers(geometry,tgeom) → tbool
+tCovers(tgeometry,{geometry,tgeometry}) → tbool
+tCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
+</pre><p>A geometry covers a moving point when the point lies in the geometry or on its boundary, which is the temporal intersects of the two. Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Covers.html" target="_top">ST_Covers</a> function in PostGIS for the difference between covers and contains.</p><pre class="programlisting">
+SELECT tCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-05]');
+-- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, f@2001-01-05]}
+SELECT tCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeometry '[Linestring(1 1,2 2)@2001-01-01, Linestring(2 2,4 4)@2001-01-03]');
+-- [t@2001-01-01, f@2001-01-03]
+</pre><p>The array form returns the pairs whose first element covers the second at some instant, with the periods during which it covers it.</p><pre class="programlisting">
+SELECT i, j, periods FROM tCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(5 2)@2001-01-01, Point(4 2)@2001-01-02,
+    Point(4 2)@2001-01-03]']);
+-- 1 | 1 | {[2001-01-02, 2001-01-03]}
+</pre></li><li class="listitem"><a name="tgeo_tDisjoint"></a><a class="indexterm" name="id7485"></a><a class="indexterm" name="id7488"></a><p>Temporal disjoint <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 tDisjoint({geo,tgeo},{geo,tgeo}) → tbool
+tDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
 </pre><p>The function is the negation of <code class="varname">tIntersects</code>. Geographies are supported as stated in <a class="xref" href="ch08s07.html" title="Planar and Geodetic Computations">the section called “Planar and Geodetic Computations”</a>.</p><pre class="programlisting">
 SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
@@ -24,11 +53,17 @@ SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
-</pre></li><li class="listitem"><a name="tgeo_tDwithin"></a><a class="indexterm" name="id7474"></a><p>Temporal distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre><p>The array form returns the pairs that are disjoint at some instant, with the periods during which they are disjoint.</p><pre class="programlisting">
+SELECT i, j, periods FROM tDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)']);
+-- 1 | 1 | {[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}
+</pre></li><li class="listitem"><a name="tgeo_tDwithin"></a><a class="indexterm" name="id7514"></a><a class="indexterm" name="id7517"></a><p>Temporal distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 tDwithin({geo,tgeo},{geo,tgeo},float) → tbool
 tDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → tbool
+tDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer,periods tstzspanset)
 </pre><p>Geographies are supported as stated in <a class="xref" href="ch08s07.html" title="Planar and Geodetic Computations">the section called “Planar and Geodetic Computations”</a>. The distance is measured on the WGS 84 spheroid by default. If the last argument is false, it is measured on the sphere. A segment of a temporal geography point moves along a great circle, and the result changes its value at every instant at which the geodetic distance crosses the given distance, which a segment may cross several times.</p><pre class="programlisting">
 SELECT tDwithin(geometry 'Point(1 1)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
@@ -48,10 +83,19 @@ SELECT tDwithin(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
   Point(3 3)@2001-01-02, Polygon((2 2,4 2,4 4,2 4,2 2))@2001-01-03]',
   geography 'Point(1 1)', 200000);
 -- [t@2001-01-01, f@2001-01-02, t@2001-01-03]
-</pre></li><li class="listitem"><a name="tgeo_tIntersects"></a><a class="indexterm" name="id7497"></a><p>Temporal intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre><p>The array form returns the pairs that are within the distance at some instant, with the periods during which they are within it.</p><pre class="programlisting">
+SELECT i, j, periods FROM tDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-03]',
+    tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-03]',
+    tgeompoint '[Point(4 0)@2001-01-01, Point(0 10)@2001-01-03]'], 2);
+-- 1 | 1 | {[2001-01-01, 2001-01-03]}
+-- 1 | 2 | {[2001-01-02, 2001-01-03]}
+</pre></li><li class="listitem"><a name="tgeo_tIntersects"></a><a class="indexterm" name="id7542"></a><a class="indexterm" name="id7545"></a><p>Temporal intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 tIntersects({geo,tgeo},{geo,tgeo}) → tbool
+tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
 </pre><p>Two temporal points intersect at the instants at which they are equal. Two temporal geometries or geographies, whose values are constant between their instants, intersect at the instants at which their values intersect, and two geographies intersect where their distance is zero. Geographies are supported as stated in <a class="xref" href="ch08s07.html" title="Planar and Geodetic Computations">the section called “Planar and Geodetic Computations”</a>.</p><pre class="programlisting">
 SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
@@ -67,10 +111,25 @@ SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
   Point(3 3)@2001-01-02, Polygon((2 2,4 2,4 4,2 4,2 2))@2001-01-03]',
   geography 'Point(1 1)');
 -- [t@2001-01-01, f@2001-01-02, f@2001-01-03]
-</pre></li><li class="listitem"><a name="tgeo_tTouches"></a><a class="indexterm" name="id7520"></a><p>Temporal touches</p><pre class="programlisting">
+</pre><p>The array form returns the pairs that intersect at some instant, with the periods during which they intersect.</p><pre class="programlisting">
+SELECT i, j, periods FROM tIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)',
+    tgeompoint '[Point(0 1)@2001-01-01, Point(3 4)@2001-01-05)']);
+-- 1 | 1 | {[2001-01-03, 2001-01-03]}
+-- 1 | 2 | {[2001-01-02 08:00:00, 2001-01-02 08:00:00]}
+</pre></li><li class="listitem"><a name="tgeo_tTouches"></a><a class="indexterm" name="id7570"></a><a class="indexterm" name="id7573"></a><p>Temporal touches</p><pre class="programlisting">
 tTouches({geometry,tgeom},{geometry,tgeom}) → tbool
+tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
 </pre><pre class="programlisting">
 SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
+</pre><p>The array form returns the pairs of temporal geometries that touch at some instant, with the periods during which they touch.</p><pre class="programlisting">
+SELECT i, j, periods FROM tTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1 | {[2001-01-01, 2001-01-02)}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s08.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Ever and Always Relationships </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 9. Temporal Types: Analytics Operations</td></tr></table></div></body></html>
