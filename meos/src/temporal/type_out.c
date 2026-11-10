@@ -2044,48 +2044,6 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * @brief Return true if the header of the WKB representation of a value of
- * the type carries the type, which #type_header_to_wkb_buf writes, the body
- * of the value not stating it as the body of a set, a span, a span set or a
- * temporal value does
- */
-bool
-wkb_header_states_type(MeosType type)
-{
-  switch (type)
-  {
-    case T_TBOX:
-    case T_STBOX:
-#if POINTCLOUD
-    case T_TPCBOX:
-#endif /* POINTCLOUD */
-#if CBUFFER
-    case T_CBUFFER:
-#endif /* CBUFFER */
-#if H3
-    case T_H3INDEX:
-#endif /* H3 */
-#if NPOINT
-    case T_NPOINT:
-    case T_NSEGMENT:
-#endif /* NPOINT */
-#if POSE
-    case T_POSE:
-    case T_POSECHAIN:
-#endif /* POSE */
-#if QUADBIN
-    case T_QUADBIN:
-#endif /* QUADBIN */
-#if S2CELL
-    case T_S2CELL:
-#endif /* S2CELL */
-      return true;
-    default:
-      return false;
-  }
-}
-
-/**
  * @brief Return the size of the WKB representation of a value without the
  * type #type_header_to_wkb_buf writes in its header
  * @errval SIZE_MAX
