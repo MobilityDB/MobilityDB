@@ -346,7 +346,11 @@ extern SpanSet **tjsonb_unnest(const Temporal *temp, Jsonb ***values, int *count
 
 extern Temporal *concat_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert);
 extern Temporal *concat_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert);
+extern Temporal *contained_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp);
+extern Temporal *contained_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb);
+extern Temporal *contained_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *contains_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp);
+extern Temporal *contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb);
 extern Temporal *contains_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2);
 extern const char *nullhandletype_name(nullHandleType type);
 extern nullHandleType nullhandletype_from_string(const char *str);
