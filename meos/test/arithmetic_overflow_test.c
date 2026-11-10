@@ -56,6 +56,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
+#include <meos_geo.h>
 #include <pg_date.h>
 #include <pg_float.h>
 #include <pg_int.h>
@@ -119,6 +120,22 @@ int main(void)
   r = tfloat_to_tbigint(fbig); check("tfloat 1e300 to tbigint", NUM); free(r);
   r = tfloat_to_tbigint(fout); check("tfloat 3e9 to tbigint", 0); free(r);
   free(fout); free(fin);
+
+  /* Extended Kalman filter, whose state the filter computes from finite
+   * observations */
+  Temporal *kfar = tgeompoint_in("[Point(1.7e308 0)@2001-01-01 00:00:00, "
+    "Point(-1.7e308 0)@2001-01-01 00:00:10, Point(1.7e308 0)@2001-01-01 00:00:20]");
+  Temporal *knear = tgeompoint_in("[Point(1e300 1e300)@2001-01-01 00:00:00, "
+    "Point(-1e300 -1e300)@2001-01-01 00:00:10, Point(1e300 1e300)@2001-01-01 00:00:20]");
+  Temporal *kffar = tfloat_in("[1.7e308@2001-01-01 00:00:00, "
+    "-1.7e308@2001-01-01 00:00:10, 1.7e308@2001-01-01 00:00:20]");
+  r = temporal_ext_kalman_filter(kfar, 0.5, 1.0, 1.0, false);
+  check("Kalman filter of tgeompoint at +-1.7e308", NUM); free(r);
+  r = temporal_ext_kalman_filter(knear, 0.5, 1.0, 1.0, false);
+  check("Kalman filter of tgeompoint at +-1e300", 0); free(r);
+  r = temporal_ext_kalman_filter(kffar, 0.5, 1.0, 1.0, false);
+  check("Kalman filter of tfloat at +-1.7e308", NUM); free(r);
+  free(kfar); free(knear); free(kffar);
 
   /* Shift of spans */
   Span *ispan = intspan_make(1, INT_MAX - 1000, true, false);
