@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: bearing_tpoint_point</title>
+<title>MobilityDB: bearing_point_tpoint</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,8 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga5b1f7cf8d1ad9270beb92405c3bf46bb.html#ga5b1f7cf8d1ad9270beb92405c3bf46bb">bearing_point_point</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__accessor_gacf49c2520d5b1ec28fab55a788624e5c.html#gacf49c2520d5b1ec28fab55a788624e5c">bearing_tpoint_point</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__accessor_ga0c2533e1d72ff50b1af92bef012e5a7b.html#ga0c2533e1d72ff50b1af92bef012e5a7b">bearing_point_tpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gaf089e454fcf4cc0b21688c34700412de.html#gaf089e454fcf4cc0b21688c34700412de">bearing_tpoint_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gabd53191c6640fc8609d30cccfd23dcbd.html#gabd53191c6640fc8609d30cccfd23dcbd">bearing_tpoint_tpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gaaed5de68e18e8861e4dd25560d18cc8f.html#gaaed5de68e18e8861e4dd25560d18cc8f">tgeo_centroid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga15d8c6fb7a7d79273085a5fd5a012c35.html#ga15d8c6fb7a7d79273085a5fd5a012c35">tgeo_convex_hull</a></td></tr>
@@ -107,29 +108,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gacf49c2520d5b1ec28fab55a788624e5c" name="gacf49c2520d5b1ec28fab55a788624e5c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gacf49c2520d5b1ec28fab55a788624e5c">&#9670;&#160;</a></span>bearing_tpoint_point()</h2>
+<a id="ga0c2533e1d72ff50b1af92bef012e5a7b" name="ga0c2533e1d72ff50b1af92bef012e5a7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0c2533e1d72ff50b1af92bef012e5a7b">&#9670;&#160;</a></span>bearing_point_tpoint()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * bearing_tpoint_point </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * bearing_point_tpoint </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
           <td class="paramname"><em>gs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>invert</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -139,17 +134,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the temporal bearing between a temporal point and a point. </p>
+<p>Return the temporal bearing between a point and a temporal point. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">invert</td><td>True when the result should be inverted </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>An empty geometry has no bearing, so the answer is NULL </dd></dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__geo__accessor_ga3ba7d66a5c8b31ba6efdf633a3259f1b.html#ga3ba7d66a5c8b31ba6efdf633a3259f1b" title="Return the temporal bearing between a temporal point and a geometry/geography point @sqlfn bearing()">Bearing_tpoint_point()</a> <a class="el" href="group__mobilitydb__geo__accessor_ga454818d42732b96b3b53c4a414c8a0fb.html#ga454818d42732b96b3b53c4a414c8a0fb" title="Return the temporal bearing between a geometry/geography point and a temporal point @sqlfn bearing()">Bearing_point_tpoint()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__geo__accessor_ga454818d42732b96b3b53c4a414c8a0fb.html#ga454818d42732b96b3b53c4a414c8a0fb" title="Return the temporal bearing between a geometry/geography point and a temporal point @sqlfn bearing()">Bearing_point_tpoint()</a> </dd></dl>
 
 </div>
 </div>
