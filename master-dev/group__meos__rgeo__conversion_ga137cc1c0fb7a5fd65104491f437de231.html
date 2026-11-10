@@ -106,13 +106,15 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Materialise the moving polygon of a temporal rigid geometry as a temporal geometry (one rotated/translated polygon per instant) </p>
-<p >For each instant, applies the instant's pose to the trgeo's reference geometry and emits the resulting polygon. The returned <code>tgeometry</code> has the same temporal structure as the input and the same SRID as the reference geometry. </p><dl class="section note"><dt>Note</dt><dd>Unlike <code>trgeometry_to_tgeompoint</code> (which gives the antenna point trajectory), this preserves the body's footprint at each instant — the natural input for compositional spatial-rel queries against <code>tgeometry</code>'s full surface. </dd></dl>
+<p >For each instant, applies the instant's pose to the trgeo's reference geometry and emits the resulting polygon. The returned <code>tgeometry</code> has the same temporal structure as the input and the same SRID as the reference geometry.</p>
+<p >A temporal geometry keeps its value from one instant to the next, so it states a rigid geometry with step or discrete interpolation. A rigid geometry with linear interpolation moves and turns between its instants, which no temporal geometry states, and the function returns an error for it. </p><dl class="section note"><dt>Note</dt><dd>Unlike <code>trgeometry_to_tgeompoint</code> (which gives the antenna point trajectory), this preserves the body's footprint at each instant — the natural input for compositional spatial-rel queries against <code>tgeometry</code>'s full surface. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry @csqlfn <a class="el" href="group__mobilitydb__rgeo__conversion_gafa4b17de12e039a850d91c325e8ddd8f.html#gafa4b17de12e039a850d91c325e8ddd8f" title="Materialise the moving polygon of a temporal rigid geometry as a temporal geometry (one polygon per i...">Trgeometry_to_tgeometry()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__rgeo__conversion_gafa4b17de12e039a850d91c325e8ddd8f.html#gafa4b17de12e039a850d91c325e8ddd8f" title="Materialise the moving polygon of a temporal rigid geometry as a temporal geometry (one polygon per i...">Trgeometry_to_tgeometry()</a> </dd></dl>
 
 </div>
 </div>

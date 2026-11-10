@@ -117,9 +117,9 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return 1 if a temporal point ever/always touches a geometry, 0 if not, and -1 on error. </p>
-<ul>
-<li>A temporal point <em>ever</em> touches a geometry if (a) the trajectory of the temporal point intersects the boundary of the geometry when the latter is not empty, or (b) the boundary of the trajectory of the temporal point intersects the geometry when the former is not empty</li>
-<li>A temporal point <em>always</em> touches a geometry if the restriction of the temporal point to the complement of the boundary of the geometry (that is, MINUS) is empty. Note that when the two boundaries are empty, the trajectory of the point and the geometry are both (multi)points and the result is false. <dl class="params"><dt>Parameters</dt><dd>
+<p >A point touches a geometry where it lies on the boundary of the geometry.</p><ul>
+<li>A temporal point <em>ever</em> touches a geometry if its trajectory intersects the boundary of the geometry</li>
+<li>A temporal point <em>always</em> touches a geometry if the restriction of the temporal point to the complement of the boundary of the geometry (that is, MINUS) is empty. Note that a geometry whose boundary is empty, such as a point or a multipoint, is touched by no point, and the result is false. <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>

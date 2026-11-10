@@ -92,7 +92,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_ga96b912d27200c60427734b18882cb2b4.html#ga96b912d27200c60427734b18882cb2b4">ea_intersects_geo_tgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_ga901e177d47eaa48290a822f29037767e.html#ga901e177d47eaa48290a822f29037767e">ea_intersects_tgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_ga3359a3f4b7b4da445f4efadb1fa309e5.html#ga3359a3f4b7b4da445f4efadb1fa309e5">ea_intersects_tgeo_tgeo</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_ga802295797d1995b5cdd1fbe06718ab08.html#ga802295797d1995b5cdd1fbe06718ab08">ea_spatialrel_tgeo_tgeo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_gaa6aaa2526a12247d5edb4074e11cf0bc.html#gaa6aaa2526a12247d5edb4074e11cf0bc">ea_spatialrel_tgeo_tgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_gac9bcdfabe93c83c5c2ae97153b80d99e.html#gac9bcdfabe93c83c5c2ae97153b80d99e">ea_touches_tgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_gaed3e92f076c8f78a09a0a733ee9205fa.html#gaed3e92f076c8f78a09a0a733ee9205fa">ea_touches_tgeo_tgeo</a></td></tr>
         </table>
@@ -134,7 +134,7 @@ $(function() {
 <p>Return 1 if a temporal geometry ever contains another temporal geometry, 0 if not, and -1 on error. </p>
 <ul>
 <li>A temporal geometry <em>ever</em> contains another one if there is an instant in which the two temporal geometries satisfy the relationship.</li>
-<li>A temporal geometry <em>always</em> contains another one if the traversed area of the first temporal geometry contains the traversed area of the second one <dl class="params"><dt>Parameters</dt><dd>
+<li>A temporal geometry <em>always</em> contains another one if the two temporal geometries satisfy the relationship at every instant they share. <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ever</td><td>True for the ever semantics, false for the always semantics </td></tr>

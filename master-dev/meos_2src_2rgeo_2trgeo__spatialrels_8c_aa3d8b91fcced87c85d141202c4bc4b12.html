@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ea_spatialrel_trgeometry_poses_geo</title>
+<title>MobilityDB: ea_spatialrel_trgeometry_trgeometry</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -104,7 +104,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_ab55f23da15bd2eb29c031ca4abd62b59.html#ab55f23da15bd2eb29c031ca4abd62b59">ea_intersects_geo_trgeometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a74e98863354f4093468da7d3cb6343a8.html#a74e98863354f4093468da7d3cb6343a8">ea_intersects_trgeometry_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a750d12d60097a4888226e663546eb78e.html#a750d12d60097a4888226e663546eb78e">ea_intersects_trgeometry_trgeometry</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_ab6c444ec356a1f66e6bdfc147f81e5e8.html#ab6c444ec356a1f66e6bdfc147f81e5e8">ea_spatialrel_trgeometry_poses_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_ad0665a2062ab2f7a34cf6c1628dfe0e8.html#ad0665a2062ab2f7a34cf6c1628dfe0e8">ea_spatialrel_geo_trgeometry</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_ac2d80f03e23a20ffb99b923519b4167d.html#ac2d80f03e23a20ffb99b923519b4167d">ea_spatialrel_trgeometry_geo</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_aa3d8b91fcced87c85d141202c4bc4b12.html#aa3d8b91fcced87c85d141202c4bc4b12">ea_spatialrel_trgeometry_trgeometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a19078c7af9a7f6c03ca3f39d34d5589a.html#a19078c7af9a7f6c03ca3f39d34d5589a">ea_touches_geo_trgeometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a09887998154cacd4da8ba864592098a1.html#a09887998154cacd4da8ba864592098a1">ea_touches_trgeometry_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a6b70060fd39e9303b115f625b7f6d10a.html#a6b70060fd39e9303b115f625b7f6d10a">ea_touches_trgeometry_trgeometry</a></td></tr>
@@ -130,8 +132,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab6c444ec356a1f66e6bdfc147f81e5e8" name="ab6c444ec356a1f66e6bdfc147f81e5e8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab6c444ec356a1f66e6bdfc147f81e5e8">&#9670;&#160;</a></span>ea_spatialrel_trgeometry_poses_geo()</h2>
+<a id="aa3d8b91fcced87c85d141202c4bc4b12" name="aa3d8b91fcced87c85d141202c4bc4b12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3d8b91fcced87c85d141202c4bc4b12">&#9670;&#160;</a></span>ea_spatialrel_trgeometry_trgeometry()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -140,21 +142,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int ea_spatialrel_trgeometry_poses_geo </td>
+          <td class="memname">static int ea_spatialrel_trgeometry_trgeometry </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
+          <td class="paramname"><em>temp1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a>&#160;</td>
+          <td class="paramtype">int(*)(const <a class="el" href="structTemporal.html">Temporal</a> *, const <a class="el" href="structTemporal.html">Temporal</a> *, bool)&#160;</td>
           <td class="paramname"><em>func</em>, </td>
         </tr>
         <tr>
@@ -176,17 +178,15 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return 1 if the poses of a temporal rigid geometry and a geometry ever/always satisfy a spatial relationship, 0 if not, and -1 on error. </p>
-<p >The placements are the reference geometry at each of the poses the value takes, so the relationship is asked of each of them: the ever semantics hold where one pose satisfies it, the always semantics where every pose does. Asking it of the placements as a whole answers for the union of the poses, which is a region the body occupies at no single instant </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 if two temporal rigid geometries ever/always satisfy a spatial relationship, 0 if not, and -1 on error or if they share no instant. </p>
+<p >The relationship is that of the temporal geometries the rigid geometries trace (<a class="el" href="group__meos__rgeo__conversion_ga137cc1c0fb7a5fd65104491f437de231.html#ga137cc1c0fb7a5fd65104491f437de231" title="Materialise the moving polygon of a temporal rigid geometry as a temporal geometry (one rotated/trans...">trgeometry_to_tgeometry</a>) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Spatial relationship function to be called </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Ever/always relationship of two temporal geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ever</td><td>True for the ever semantics, false for the always semantics </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return -1 </dd></dl>
 
 </div>
 </div>
