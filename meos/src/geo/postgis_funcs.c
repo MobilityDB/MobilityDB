@@ -3817,20 +3817,22 @@ geom_faces_add_array(GeomFaces *gf, const POINTARRAY *pa)
 }
 
 /**
- * @brief Return true if the rings of a polygon or a triangle lie exactly in
- * one plane, appending them as a face where three of their vertices span it
+ * @brief Return 1 if the rings of a face lie exactly in one plane, which three
+ * of their vertices span, setting the plane of the face, 0 where they all lie
+ * on one line, and -1 where a vertex lies off the plane
  * @details The first vertex, the first one differing from it, and the first
  * one off the line of these two span the plane: a vertex lies off that line
  * exactly where a component of the cross product is not zero
  * (#vector_cross_signs). Every other vertex then lies in the plane exactly
  * where its orientation with the three is zero (#vector_triple_sign). Rings
- * whose vertices all lie on one line
- * bound no region and add no face; their segments are read as segments
- * @return False where a vertex lies off the plane
+ * whose vertices all lie on one line bound no region and form no face; their
+ * segments are read as segments
  */
-static bool
-geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
+static int
+geom_face_plane(GeomFace *face)
 {
+  POINTARRAY *const *rings = face->rings;
+  uint32_t nrings = face->nrings;
   const double *a = NULL, *b = NULL, *c = NULL;
   int sn[3] = {0, 0, 0};
   for (uint32_t r = 0; r < nrings && ! c; r++)
@@ -3852,16 +3854,13 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
       }
     }
   if (! c)
-    return true;
+    return 0;
 
-  GeomFace face;
-  face.rings = rings;
-  face.nrings = nrings;
-  face.a = a; face.b = b; face.c = c;
+  face->a = a; face->b = b; face->c = c;
   for (int k = 0; k < 3; k++)
   {
-    face.lo[k] = INFINITY;
-    face.hi[k] = -INFINITY;
+    face->lo[k] = INFINITY;
+    face->hi[k] = -INFINITY;
   }
   /* The normal formed once, at the first vertex not spanning the plane, where
    * it is held exactly (#plane_normal_exact), each such vertex then read
@@ -3890,7 +3889,7 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
       if (! span && naxis >= 0)
       {
         if (v[naxis] != a[naxis])
-          return false;
+          return -1;
       }
       else if (! span)
       {
@@ -3900,34 +3899,55 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
         if (s == 2)
           s = vector_triple_sign(a, b, a, c, a, v);
         if (s != 0)
-          return false;
+          return -1;
       }
       for (int k = 0; k < 3; k++)
       {
-        if (v[k] < face.lo[k])
-          face.lo[k] = v[k];
-        if (v[k] > face.hi[k])
-          face.hi[k] = v[k];
+        if (v[k] < face->lo[k])
+          face->lo[k] = v[k];
+        if (v[k] > face->hi[k])
+          face->hi[k] = v[k];
       }
     }
   /* The normal has a component that is not zero; an axis other than its own
    * is one the normal is not parallel to */
   int k = (sn[2] != 0) ? 2 : ((sn[1] != 0) ? 1 : 0);
-  face.axis = (k + 1) % 3;
-  face.naxis = naxis;
-  if (gf->nfaces == gf->capfaces)
+  face->axis = (k + 1) % 3;
+  face->naxis = naxis;
+  return 1;
+}
+
+/**
+ * @brief Append a face of a geometry in 3D, its plane read once its segments
+ * do not answer (#geom_faces_planes)
+ */
+static void
+geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
+{
+  GeomFace *face = &gf->faces[gf->nfaces++];
+  face->rings = rings;
+  face->nrings = nrings;
+  return;
+}
+
+/**
+ * @brief Return true if the faces of a geometry in 3D lie each exactly in a
+ * plane, setting their planes and dropping those whose rings lie on one line
+ * (#geom_face_plane)
+ */
+static bool
+geom_faces_planes(GeomFaces *gf)
+{
+  uint32_t n = 0;
+  for (uint32_t i = 0; i < gf->nfaces; i++)
   {
-    gf->capfaces *= 2;
-    if (gf->faces == gf->facestack)
-    {
-      GeomFace *faces = palloc(sizeof(GeomFace) * gf->capfaces);
-      memcpy(faces, gf->facestack, sizeof(GeomFace) * gf->nfaces);
-      gf->faces = faces;
-    }
-    else
-      gf->faces = repalloc(gf->faces, sizeof(GeomFace) * gf->capfaces);
+    int s = geom_face_plane(&gf->faces[i]);
+    if (s < 0)
+      return false;
+    if (s > 0)
+      gf->faces[n++] = gf->faces[i];
   }
-  gf->faces[gf->nfaces++] = face;
+  gf->nfaces = n;
   return true;
 }
 
@@ -4064,8 +4084,8 @@ geom_faces_gs_array(GeomFaces *gf, const uint8_t *pts, uint32_t npoints,
  * its faces, read in place, and setting in @p size the bytes it takes
  * @details A point, a line, a polygon, a triangle, and the collections of
  * these, a TIN and a polyhedral surface among them, as #geom_faces_gs_count
- * counts them; a polygon whose vertices do not lie exactly in one plane is
- * not (#geom_faces_add_face)
+ * counts them, their faces appended and their planes read later
+ * (#geom_faces_planes)
  */
 static bool
 geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
@@ -4086,7 +4106,8 @@ geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
         return true;
       POINTARRAY **ring = &gf->rings[gf->nrings++];
       *ring = pa;
-      return geom_faces_add_face(gf, ring, 1);
+      geom_faces_add_face(gf, ring, 1);
+      return true;
     }
     case POLYGONTYPE:
     {
@@ -4101,7 +4122,8 @@ geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
         pts += (size_t) npoints * ptsize;
       }
       *size = (size_t) (pts - p);
-      return geom_faces_add_face(gf, &gf->rings[first], num);
+      geom_faces_add_face(gf, &gf->rings[first], num);
+      return true;
     }
     default:
     {
@@ -4122,14 +4144,15 @@ geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
 
 /**
  * @brief Return true if a serialized geometry in 3D is one of points, segments
- * and faces lying exactly in a plane, reading its point arrays and its faces in
- * place (#geom_faces_gs_read)
+ * and faces, reading its point arrays and its faces in place
+ * (#geom_faces_gs_read)
  * @details The point arrays and the faces are counted first
  * (#geom_faces_gs_count), so that the arrays holding them, and the rings a face
  * references, are sized once. The faces of a solid are those of its surface,
  * and its inside is read apart (#geom_faces_solid_contains). A solid inside a
- * collection, a geometry carrying an arc and a polygon whose vertices do not
- * lie exactly in one plane are not read
+ * collection and a geometry carrying an arc are not read. Whether the
+ * vertices of a face lie exactly in one plane is read later, only where the
+ * segments do not answer (#geom_faces_planes)
  */
 static bool
 geom_faces_init(GeomFaces *gf, const GSERIALIZED *gs)
@@ -4554,7 +4577,9 @@ geom_point_intersects3d_faces(const GSERIALIZED *point, const GSERIALIZED *gs,
  * the distance with the distance as its cut (#geom_distance_walk), as
  * #geom_dwithin3d_exact reads them, and the faces by exact signs
  * (#geom_faces_meet), both read in place on the serialized form
- * (#geom_faces_init)
+ * (#geom_faces_init). Segments within the distance answer before the planes
+ * of the faces are read (#geom_faces_planes): their points belong to the
+ * geometries whatever the faces are
  * @param[in] gs1,gs2 Geometries with Z, not empty
  * @param[in] dist Distance, finite and not negative
  * @param[out] result Answer
@@ -4576,15 +4601,29 @@ geom_dwithin3d_faces(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
       *result = nearest < dist;
     else
       *result = within;
+    /* Segments within the distance answer whatever the faces are; the planes
+     * of the faces are read only past them */
+    bool planes = false;
     if (! *result && nearest != DBL_MAX)
-      *result = geom_faces_meet(&g1, &g2, dist) ||
-        geom_faces_meet(&g2, &g1, dist);
-    /* A solid also holds what lies inside it */
+    {
+      ok = geom_faces_planes(&g1) && geom_faces_planes(&g2);
+      planes = true;
+      if (ok)
+        *result = geom_faces_meet(&g1, &g2, dist) ||
+          geom_faces_meet(&g2, &g1, dist);
+    }
+    /* A solid also holds what lies inside it, read on the planes of its
+     * faces, which the segments may have left unread */
     int in = 0;
-    if (! *result && geom_is_solid(gs1))
-      in = geom_faces_solid_contains(&g1, &g2);
-    if (! *result && in == 0 && geom_is_solid(gs2))
-      in = geom_faces_solid_contains(&g2, &g1);
+    if (ok && ! *result && (geom_is_solid(gs1) || geom_is_solid(gs2)))
+    {
+      if (! planes)
+        ok = geom_faces_planes(&g1) && geom_faces_planes(&g2);
+      if (ok && geom_is_solid(gs1))
+        in = geom_faces_solid_contains(&g1, &g2);
+      if (ok && in == 0 && geom_is_solid(gs2))
+        in = geom_faces_solid_contains(&g2, &g1);
+    }
     if (in < 0)
     {
       geom_faces_free(&g1);
