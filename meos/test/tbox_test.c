@@ -76,13 +76,13 @@ int main(void)
   Set *fset1 = floatset_in(fset1_in);
   Span *fspan1 = floatspan_in(fspan1_in);
   SpanSet *fspanset1 = floatspanset_in(fspanset1_in);
-  char *fset1_out = floatset_out(fset1, 6, &size_out);
-  char *fspan1_out = floatspan_out(fspan1, 6, &size_out);
-  char *fspanset1_out = floatspanset_out(fspanset1, 6, &size_out);
+  char *fset1_out = set_out(fset1, 6, &size_out);
+  char *fspan1_out = span_out(fspan1, 6, &size_out);
+  char *fspanset1_out = spanset_out(fspanset1, 6, &size_out);
 
   char *tstzspan1_in = "[2001-01-01, 2001-01-03]";
   Span *tstzspan1 = tstzspan_in(tstzspan1_in);
-  char *tstzspan1_out = tstzspan_out(tstzspan1, &size_out);
+  char *tstzspan1_out = span_out(tstzspan1, 0, &size_out);
 
   char *tbox1_in = "TBOXFLOAT XT([1, 3],[2001-01-01, 2001-01-03])";
   char *tbox2_in = "TBOXFLOAT XT([2, 4],[2001-01-02, 2001-01-04])";
@@ -244,19 +244,19 @@ int main(void)
 
   /* Span *tbox_to_intspan(const TBox *box); */
   ispan_result = tbox_to_intspan(tbox1);
-  char_result = intspan_out(ispan_result, &size_out);
+  char_result = span_out(ispan_result, 0, &size_out);
   printf("tbox_to_intspan(%s): %s\n", tbox1_out, char_result);
   free(ispan_result); free(char_result);
 
   /* Span *tbox_to_floatspan(const TBox *box); */
   fspan_result = tbox_to_floatspan(tbox1);
-  char_result = floatspan_out(fspan_result, 6, &size_out);
+  char_result = span_out(fspan_result, 6, &size_out);
   printf("tbox_to_floatspan(%s): %s\n", tbox1_out, char_result);
   free(fspan_result); free(char_result);
 
   /* Span *tbox_to_tstzspan(const TBox *box); */
   tstzspan_result = tbox_to_tstzspan(tbox1);
-  char_result = tstzspan_out(tstzspan_result, &size_out);
+  char_result = span_out(tstzspan_result, 0, &size_out);
   printf("tbox_to_tstzspan(%s): %s\n", tbox1_out, char_result);
   free(tstzspan_result); free(char_result);
 

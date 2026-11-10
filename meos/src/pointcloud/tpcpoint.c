@@ -146,24 +146,6 @@ tpcpointseqset_in(const char *str)
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_pointcloud_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal
- * pgpointcloud point
- * @param[in] temp Temporal pgpointcloud point
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Temporal_out(), #Temporal_as_text()
- */
-char *
-tpcpoint_out(const Temporal *temp, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TPCPOINT(temp, NULL);
-  return temporal_out(temp, 0, size_out);
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/

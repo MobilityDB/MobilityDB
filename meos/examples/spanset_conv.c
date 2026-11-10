@@ -55,16 +55,16 @@ int main()
   /* Read WKT into temporal point object */
   SpanSet *iss = intspanset_in(iss_in);
   SpanSet *fss = floatspanset_in(fss_in);
-  char *iss_out = intspanset_out(iss, &size_out);
-  char *fss_out = floatspanset_out(fss, 3, &size_out);
+  char *iss_out = spanset_out(iss, 0, &size_out);
+  char *fss_out = spanset_out(fss, 3, &size_out);
   printf("Input integer span set: %s\n", iss_out);
   printf("Input float span set: %s\n", fss_out);
 
   /* Convert from int <-> float*/
   SpanSet *iss_conv = intspanset_to_floatspanset(iss);
   SpanSet *fss_conv = floatspanset_to_intspanset(fss);
-  char *iss_conv_out = floatspanset_out(iss_conv, 3, &size_out);
-  char *fss_conv_out = intspanset_out(fss_conv, &size_out);
+  char *iss_conv_out = spanset_out(iss_conv, 3, &size_out);
+  char *fss_conv_out = spanset_out(fss_conv, 0, &size_out);
   printf("Integer span set converted to float span set: %s\n", iss_conv_out);
   printf("Float span set converted to integer span: %s\n", fss_conv_out);
 

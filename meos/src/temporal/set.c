@@ -209,19 +209,20 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out, size_t *size_out)
 }
 
 /**
- * @ingroup meos_internal_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a set
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a set, the output
+ * of every set type, as #set_as_wkb writes its Well-Known Binary
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out If not NULL, the size of the result, the terminating
- * null character included
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 set_out(const Set *s, int maxdd, size_t *size_out)
 {
-  assert(s);
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
   return set_out_fn(s, maxdd, &basetype_out, size_out);
@@ -312,111 +313,6 @@ tstzset_in(const char *str)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the string representation of an integer set
- * @param[in] s Set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Set_out(), #Set_as_text()
- */
-char *
-intset_out(const Set *s, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_INTSET(s, NULL);
-  return set_out(s, 0, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the string representation of a big integer set
- * @param[in] s Set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Set_out(), #Set_as_text()
- */
-char *
-bigintset_out(const Set *s, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_BIGINTSET(s, NULL);
-  return set_out(s, 0, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the string representation of a float set
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Set_out(), #Set_as_text()
- */
-char *
-floatset_out(const Set *s, int maxdd, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_FLOATSET(s, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  return set_out(s, maxdd, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the string representation of a text set
- * @param[in] s Set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Set_out(), #Set_as_text()
- */
-char *
-textset_out(const Set *s, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TEXTSET(s, NULL);
-  return set_out(s, 0, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the string representation of a date set
- * @param[in] s Set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Set_out(), #Set_as_text()
- */
-char *
-dateset_out(const Set *s, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_DATESET(s, NULL);
-  return set_out(s, 0, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the string representation of a timestamptz set
- * @param[in] s Set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Set_out(), #Set_as_text()
- */
-char *
-tstzset_out(const Set *s, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TSTZSET(s, NULL);
-  return set_out(s, 0, size_out);
-}
 
 /*****************************************************************************
  * Constructor functions

@@ -180,13 +180,14 @@ trgeometry_from_mfjson(const char *mfjson)
 char *
 trgeometry_out(const Temporal *temp, size_t *size_out)
 {
+  size_t str_size;
   size_t part_size;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   char *geom = geo_out(trgeometry_geom_p(temp), &part_size);
-  char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, NULL);
+  char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, &str_size);
   /* Write the representations with the ';' delimiter and the end '\0' */
   size_t len = strlen(geom) + strlen(pose) + 2;
   char *result = palloc(len);

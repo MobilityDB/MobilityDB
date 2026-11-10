@@ -175,7 +175,7 @@ int main(void)
   Temporal **tcount_seqs = (Temporal **) temporal_sequences(tcount, &seqcount);
   for (i = 0; i < seqcount; i++)
   {
-    out_str = tint_out(tcount_seqs[i], &size_out);
+    out_str = temporal_out(tcount_seqs[i], 0, &size_out);
     printf("\%s\n", out_str);
     free(out_str);
   }

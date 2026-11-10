@@ -112,9 +112,9 @@ int main(void)
     state = span_union_transfn(state, rec.span);
 
     /* Output the input span */
-    char *span_out = intspan_out(rec.span, &size_out);
-    printf("k: %d, span: %s\n", rec.k, span_out);
-    free(span_out);
+    char *span_str = span_out(rec.span, 0, &size_out);
+    printf("k: %d, span: %s\n", rec.k, span_str);
+    free(span_str);
     free(rec.span);
   } while (!feof(file));
 
@@ -128,9 +128,9 @@ int main(void)
   SpanSet *final = spanset_union_finalfn(state);
 
   /* Print the accumulated span set */
-  char *spanset_out = intspanset_out(final, &size_out);
-  printf("spanset: %s\n", spanset_out);
-  free(spanset_out);
+  char *spanset_str = spanset_out(final, 0, &size_out);
+  printf("spanset: %s\n", spanset_str);
+  free(spanset_str);
   free(final);
 
   /* Calculate the elapsed time */

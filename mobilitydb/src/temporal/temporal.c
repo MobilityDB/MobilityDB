@@ -363,8 +363,9 @@ PG_FUNCTION_INFO_V1(Temporal_out);
 Datum
 Temporal_out(PG_FUNCTION_ARGS)
 {
+  size_t str_size;
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *result = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, NULL);
+  char *result = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, &str_size);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
 }

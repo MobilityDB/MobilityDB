@@ -563,7 +563,7 @@ int main(void)
   Temporal *values = raster_value(traj_values, rast_values, 1, true, "nearest");
   assert(values != NULL);
   assert(meos_errno() == 0);
-  char *values_str = tfloat_out(values, 0, &size_out);
+  char *values_str = temporal_out(values, 0, &size_out);
   printf("raster_value(traj, raster, 1): %s\n", values_str);
   assert(temporal_num_instants(values) == 2);
   assert(tfloat_start_value(values) == 10.0);
@@ -582,7 +582,7 @@ int main(void)
   Temporal *along = raster_value(traj_linear, rast_values, 1, true, "nearest");
   assert(along != NULL);
   assert(meos_errno() == 0);
-  char *along_str = tfloat_out(along, 0, &size_out);
+  char *along_str = temporal_out(along, 0, &size_out);
   printf("raster_value(linear trip, raster, 1): %s\n", along_str);
   assert(strcmp(temporal_interp(along), "Step") == 0);
   assert(temporal_num_instants(along) == 4);
@@ -601,7 +601,7 @@ int main(void)
   assert(traj_gap != NULL);
   Temporal *visits = raster_value(traj_gap, rast_values, 1, true, "nearest");
   assert(visits != NULL);
-  char *visits_str = tfloat_out(visits, 0, &size_out);
+  char *visits_str = temporal_out(visits, 0, &size_out);
   printf("raster_value(trip across nodata): %s\n", visits_str);
   assert(temporal_num_sequences(visits) == 2);
   free(visits_str); free(visits); free(traj_gap);
@@ -762,7 +762,7 @@ int main(void)
   Temporal *masked = raster_value(traj_values, whole, 1, true, "nearest");
   assert(masked != NULL);
   assert(meos_errno() == 0);
-  char *masked_str = tfloat_out(masked, 0, &size_out);
+  char *masked_str = temporal_out(masked, 0, &size_out);
   printf("raster_clip(raster, region, false) sampled: %s\n", masked_str);
   /* The unclipped raster answers this trajectory at two instants, 10 and 70;
    * the clip removes the second, so a single instant remains */
@@ -872,7 +872,7 @@ int main(void)
   Temporal *merc_val = raster_value(traj_merc, merc, 1, true, "nearest");
   assert(merc_val != NULL);
   assert(meos_errno() == 0);
-  char *merc_val_str = tfloat_out(merc_val, 0, &size_out);
+  char *merc_val_str = temporal_out(merc_val, 0, &size_out);
   printf("raster_transform(raster, 3857) sampled at the centre of its upper "
     "left pixel: %s\n", merc_val_str);
   assert(temporal_num_instants(merc_val) == 1);
@@ -997,7 +997,7 @@ int main(void)
   Temporal *finer_val = raster_value(traj_finer, finer, 1, true, "nearest");
   assert(finer_val != NULL);
   assert(meos_errno() == 0);
-  char *finer_str = tfloat_out(finer_val, 0, &size_out);
+  char *finer_str = temporal_out(finer_val, 0, &size_out);
   printf("raster_rescale(raster, 0.5, -0.5) sampled over the quarters of the "
     "pixel holding 10: %s\n", finer_str);
   assert(temporal_num_instants(finer_val) == 4);
@@ -1205,7 +1205,7 @@ int main(void)
   assert(traj_rc != NULL);
   Temporal *rc_val = raster_value(traj_rc, rc, 1, true, "nearest");
   assert(rc_val != NULL);
-  char *rc_str = tfloat_out(rc_val, 0, &size_out);
+  char *rc_str = temporal_out(rc_val, 0, &size_out);
   printf("raster_reclass sampled at the 10 pixel and the 90 pixel: %s\n",
     rc_str);
   assert(tfloat_start_value(rc_val) == 1.0);

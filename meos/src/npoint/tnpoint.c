@@ -227,27 +227,6 @@ tnpoint_in(const char *str)
 
 /**
  * @ingroup meos_npoint_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal
- * network point
- * @param[in] temp Temporal network point
- * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Temporal_out()
- */
-char *
-tnpoint_out(const Temporal *temp, int maxdd, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TNPOINT(temp, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  return temporal_out(temp, maxdd, size_out);
-}
-
-/**
- * @ingroup meos_npoint_inout
  * @brief Return a temporal network point from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL

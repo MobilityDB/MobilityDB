@@ -93,7 +93,7 @@ jobs:
             Temporal *t = tfloat_in("[1.5@2001-01-01]");
             if (!t) { fprintf(stderr, "FAIL: tfloat_in NULL\n"); return 1; }
             size_t size;
-            char *out = tfloat_out(t, 6, &size);
+            char *out = temporal_out(t, 6, &size);
             printf("parsed: %s\n", out);
             int ok = strstr(out, "1.5") != NULL;
             free(out); free(t); meos_finalize();

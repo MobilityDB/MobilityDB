@@ -101,7 +101,7 @@ int main(void)
   /* A succeeding call leaves the status clear */
   Temporal *good = tfloat_in("{77@2001-01-01}");
   assert(good != NULL);
-  char *good_out = tfloat_out(good, 6, &size_out);
+  char *good_out = temporal_out(good, 6, &size_out);
   printf("tfloat_in(\"{77@2001-01-01}\"): %s, errno %d\n", good_out,
     meos_errno());
   assert(meos_errno() == 0);
@@ -337,7 +337,7 @@ int main(void)
   assert(fset != NULL);
   Set *frounded = set_round(fset, 2);
   assert(frounded != NULL && meos_errno() == 0);
-  char *ftext = floatset_out(frounded, 6, &size_out);
+  char *ftext = set_out(frounded, 6, &size_out);
   printf("set_round(floatset): answered %s\n", ftext);
   assert(strcmp(ftext, "{1.23, 2.35}") == 0);
   free(ftext); free(frounded); free(fset);

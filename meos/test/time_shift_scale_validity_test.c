@@ -103,17 +103,17 @@ int main(void)
 
   /* The intervals answer the shifted and scaled set */
   res = tstzset_shift(s, shift);
-  char *out = tstzset_out(res, &size_out);
+  char *out = set_out(res, 0, &size_out);
   printf("tstzset_shift(1 day): %s, errno %d\n", out, meos_errno());
   assert(res && meos_errno() == 0);
   free(out); free(res);
   res = tstzset_scale(s, duration);
-  out = tstzset_out(res, &size_out);
+  out = set_out(res, 0, &size_out);
   printf("tstzset_scale(4 days): %s, errno %d\n", out, meos_errno());
   assert(res && meos_errno() == 0);
   free(out); free(res);
   res = tstzset_shift_scale(s, shift, duration);
-  out = tstzset_out(res, &size_out);
+  out = set_out(res, 0, &size_out);
   printf("tstzset_shift_scale(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(res && meos_errno() == 0);
@@ -149,17 +149,17 @@ int main(void)
 
   /* The intervals answer the shifted and scaled span */
   spres = tstzspan_shift(sp, shift);
-  out = tstzspan_out(spres, &size_out);
+  out = span_out(spres, 0, &size_out);
   printf("tstzspan_shift(1 day): %s, errno %d\n", out, meos_errno());
   assert(spres && meos_errno() == 0);
   free(out); free(spres);
   spres = tstzspan_scale(sp, duration);
-  out = tstzspan_out(spres, &size_out);
+  out = span_out(spres, 0, &size_out);
   printf("tstzspan_scale(4 days): %s, errno %d\n", out, meos_errno());
   assert(spres && meos_errno() == 0);
   free(out); free(spres);
   spres = tstzspan_shift_scale(sp, shift, duration);
-  out = tstzspan_out(spres, &size_out);
+  out = span_out(spres, 0, &size_out);
   printf("tstzspan_shift_scale(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(spres && meos_errno() == 0);
@@ -196,17 +196,17 @@ int main(void)
 
   /* The intervals answer the shifted and scaled span set */
   ssres = tstzspanset_shift(ss, shift);
-  out = tstzspanset_out(ssres, &size_out);
+  out = spanset_out(ssres, 0, &size_out);
   printf("tstzspanset_shift(1 day): %s, errno %d\n", out, meos_errno());
   assert(ssres && meos_errno() == 0);
   free(out); free(ssres);
   ssres = tstzspanset_scale(ss, duration);
-  out = tstzspanset_out(ssres, &size_out);
+  out = spanset_out(ssres, 0, &size_out);
   printf("tstzspanset_scale(4 days): %s, errno %d\n", out, meos_errno());
   assert(ssres && meos_errno() == 0);
   free(out); free(ssres);
   ssres = tstzspanset_shift_scale(ss, shift, duration);
-  out = tstzspanset_out(ssres, &size_out);
+  out = spanset_out(ssres, 0, &size_out);
   printf("tstzspanset_shift_scale(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(ssres && meos_errno() == 0);

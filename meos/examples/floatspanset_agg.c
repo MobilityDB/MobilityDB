@@ -114,9 +114,9 @@ int main(void)
       spanset_union_transfn(state[rec.k%NUM_GROUPS], rec.ss);
 
     /* Output the float spanset value read */
-    char *spanset_out = floatspanset_out(rec.ss, 3, &size_out);
-    printf("k: %d, spanset: %s\n", rec.k, spanset_out);
-    free(spanset_out);
+    char *spanset_str = spanset_out(rec.ss, 3, &size_out);
+    printf("k: %d, spanset: %s\n", rec.k, spanset_str);
+    free(spanset_str);
     free(rec.ss);
   } while (!feof(file));
 
@@ -134,9 +134,9 @@ int main(void)
     printf("----------\n");
     printf("Group: %d\n", i + 1);
     printf("----------\n");
-    char *spanset_out = floatspanset_out(final, 3, &size_out);
-    printf("spanset: %s\n", spanset_out);
-    free(spanset_out);
+    char *spanset_str = spanset_out(final, 3, &size_out);
+    printf("spanset: %s\n", spanset_str);
+    free(spanset_str);
     free(final);
   }
 

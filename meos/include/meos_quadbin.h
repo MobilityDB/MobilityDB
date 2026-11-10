@@ -214,7 +214,6 @@ extern Set *quadbinset_cover_cells(const Set *cells, int resolution);
 /* Input and output functions of `quadbinset` */
 
 extern Set *quadbinset_in(const char *str);
-extern char *quadbinset_out(const Set *s, size_t *size_out);
 
 /* Constructor functions of `quadbinset` */
 
@@ -259,7 +258,6 @@ extern Temporal *tquadbin_in(const char *str);
 extern TInstant *tquadbininst_in(const char *str);
 extern TSequence *tquadbinseq_in(const char *str, interpType interp);
 extern TSequenceSet *tquadbinseqset_in(const char *str);
-extern char *tquadbin_out(const Temporal *temp, size_t *size_out);
 extern Temporal *tquadbin_from_mfjson(const char *mfjson);
 
 /* Constructors */

@@ -210,7 +210,6 @@ extern bool nsegment_ne(const Nsegment *ns1, const Nsegment *ns2);
 /* Input and output functions */
 
 extern Set *npointset_in(const char *str);
-extern char *npointset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 
@@ -254,7 +253,6 @@ extern double distance_npointset_npointset(const Set *s1, const Set *s2);
 
 extern Temporal *tnpoint_in(const char *str);
 extern Temporal *tnpoint_from_mfjson(const char *mfjson);
-extern char *tnpoint_out(const Temporal *temp, int maxdd, size_t *size_out);
 
 /*****************************************************************************
  * Constructor functions

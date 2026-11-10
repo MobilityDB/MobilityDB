@@ -73,10 +73,10 @@ int main(void)
 
   // char *tjsonb1_in = "[{\"a\":1, \"b\":[1,2]}@2001-01-01, {\"a\":5, \"b\":[\"c\",3]}@2001-01-03]";
   // Temporal *tjsonb1 = tjsonb_in(tjsonb1_in);
-  // char *tjsonb1_out = tjsonb_out(tjsonb1);
+  // char *tjsonb1_out = temporal_out(tjsonb1, 0, &size);
   // char *tjsonb2_in = "[{\"a\":1, \"b\":[1,2]}@2001-01-01, {\"a\":5, \"b\":[\"c\",3]}@2001-01-03]";
   // Temporal *tjsonb2 = tjsonb_in(tjsonb2_in);
-  // char *tjsonb2_out = tjsonb_out(tjsonb2);
+  // char *tjsonb2_out = temporal_out(tjsonb2, 0, &size);
 
   /* Create result types for the functions of the API */
   bool bool_result;

@@ -29,17 +29,15 @@
 
 /**
  * @file
- * @brief A program that tests the typed text input and output of the temporal
- * cell index and point cloud types
- * @details Each temporal type gives its text form through a typed public
- * function
- * that tests its argument, as tint_out does for a temporal integer. The
- * program verifies that th3index_out, tquadbin_out, ts2cell_out,
- * tpcpoint_out and tpcpatch_out answer the text their input reads back with
- * no error left behind, that each reports a null value with
- * MEOS_ERR_INVALID_ARG and a temporal integer with MEOS_ERR_INVALID_ARG_TYPE,
- * and that tpcpoint_in and tpcpatch_in report a null string with
- * MEOS_ERR_INVALID_ARG.
+ * @brief A program that tests the text input and output of the temporal cell
+ * index and point cloud types
+ * @details Each temporal type reads its text through a typed function, which
+ * the text needs since it does not state its type, and writes it through
+ * temporal_out, the writer of every temporal type. The program verifies that
+ * temporal_out writes the text th3index_in, tquadbin_in, ts2cell_in,
+ * tpcpoint_in and tpcpatch_in read back with no error left behind, that it
+ * reports a null value with MEOS_ERR_INVALID_ARG, and that tpcpoint_in and
+ * tpcpatch_in report a null string with MEOS_ERR_INVALID_ARG.
  *
  * The program can be build as follows
  * @code
@@ -66,37 +64,30 @@
   "C8000000@2024-01-01"
 
 typedef Temporal *(*text_in_fn)(const char *);
-typedef char *(*text_out_fn)(const Temporal *, size_t *);
 
 /* Read a value, write it out, read the output back and write it again: the
  * two outputs agree, the first reading back what the input reads. Then the
- * output reports a null value and a value of another type. */
+ * output reports a null value. The sets' version is #check of
+ * cellset_text_io_test */
 static void
-check(const char *name, text_in_fn in, text_out_fn out, const char *text,
-  const Temporal *other)
+check(const char *name, text_in_fn in, const char *text)
 {
   Temporal *temp = in(text);
   assert(temp && meos_errno() == 0);
   size_t size;
-  char *str1 = out(temp, &size);
+  char *str1 = temporal_out(temp, 0, &size);
   Temporal *back = str1 ? in(str1) : NULL;
-  char *str2 = back ? out(back, &size) : NULL;
+  char *str2 = back ? temporal_out(back, 0, &size) : NULL;
   printf("%s: %s, errno %d\n", name, str1 ? str1 : "NULL", meos_errno());
   assert(str1 && str2 && strcmp(str1, str2) == 0);
   assert(size == strlen(str2) + 1);
   assert(meos_errno() == 0);
   free(temp); free(back); free(str1); free(str2);
 
-  char *res = out(NULL, &size);
-  printf("%s(NULL): %s, errno %d\n", name, res ? "a value" : "NULL",
+  char *res = temporal_out(NULL, 0, &size);
+  printf("temporal_out(NULL): %s, errno %d\n", res ? "a value" : "NULL",
     meos_errno());
   assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
-  meos_errno_reset();
-
-  res = out(other, &size);
-  printf("%s(tint): %s, errno %d\n", name, res ? "a value" : "NULL",
-    meos_errno());
-  assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
   meos_errno_reset();
 }
 
@@ -118,17 +109,13 @@ int main(void)
   };
   assert(meos_pc_schema_register_dims(1, 0, "none", dims, 3));
 
-  Temporal *tint = tint_in("{1@2001-01-01}");
-  assert(tint);
-
-  check("th3index_out", th3index_in, th3index_out,
-    "{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}", tint);
-  check("tquadbin_out", tquadbin_in, tquadbin_out,
-    "{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}", tint);
-  check("ts2cell_out", ts2cell_in, ts2cell_out,
-    "{47c3c3@2001-01-01, 54b5c9@2001-01-02}", tint);
-  check("tpcpoint_out", tpcpoint_in, tpcpoint_out, TPCPOINT_IN, tint);
-  check("tpcpatch_out", tpcpatch_in, tpcpatch_out, TPCPATCH_IN, tint);
+  check("th3index", th3index_in,
+    "{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}");
+  check("tquadbin", tquadbin_in,
+    "{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}");
+  check("ts2cell", ts2cell_in, "{47c3c3@2001-01-01, 54b5c9@2001-01-02}");
+  check("tpcpoint", tpcpoint_in, TPCPOINT_IN);
+  check("tpcpatch", tpcpatch_in, TPCPATCH_IN);
 
   /* A null string is reported rather than parsed */
   Temporal *res = tpcpoint_in(NULL);
@@ -141,8 +128,6 @@ int main(void)
     meos_errno());
   assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
-
-  free(tint);
 
   /* Finalize MEOS */
   meos_finalize();

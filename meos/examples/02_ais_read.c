@@ -125,7 +125,7 @@ int main(void)
       char *inst1_out = tspatial_as_text((Temporal *) inst1, 2, &size_out);
 
       TInstant *inst2 = tfloatinst_make(rec.SOG, rec.T);
-      char *inst2_out = tfloat_out((Temporal *) inst2, 2, &size_out);
+      char *inst2_out = temporal_out((Temporal *) inst2, 2, &size_out);
       printf("MMSI: %ld, Location: %s SOG : %s\n",
         rec.MMSI, inst1_out, inst2_out);
 
