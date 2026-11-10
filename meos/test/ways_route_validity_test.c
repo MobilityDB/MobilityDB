@@ -31,17 +31,22 @@
  * @file
  * @brief Test that the MEOS build refuses a route of the ways CSV file that
  * is not a planar line in the spatial reference system of the network
- * @details A program that writes two network files in the current directory
- * and removes them at the end, as ways_index_test.c writes its files. The
- * first holds a planar line of length 5 in SRID 5676, then a line with a Z
- * dimension, a line with an M dimension, a multiline, a line in SRID 4326 and
- * a point; the second holds the planar line alone.
+ * @details A program that writes three network files in the current
+ * directory and removes them at the end, as ways_index_test.c writes its
+ * files. The first holds a planar line of length 5 in SRID 5676, then a line
+ * with a Z dimension, a line with an M dimension, a multiline, a line in SRID
+ * 4326, a point, a line with an infinite coordinate and a line with a NaN
+ * coordinate; the second holds the planar line alone; the third holds the
+ * line with an infinite coordinate, then the planar line.
  *
  * The program verifies that #route_exists and #route_length answer the
  * planar line, that #route_exists refuses each other route with
  * MEOS_ERR_INVALID_ARG_VALUE, that #geompoint_to_npoint refuses the first
  * network, whose scan reaches the line with a Z dimension, and that it
- * answers the second.
+ * answers the second, and that #get_srid_ways and #geompoint_to_npoint
+ * refuse the third, whose first line holds a coordinate no geometry holds.
+ * The error handler does not exit, so a reader that went on with the line it
+ * refused would be seen.
  *
  * The program can be build as follows
  * @code
@@ -56,13 +61,15 @@
 #include <meos_geo.h>
 #include <meos_npoint.h>
 
-/* The two network files the program writes */
+/* The three network files the program writes */
 static const char *WAYS_A = "ways_route_validity_test_a.csv";
 static const char *WAYS_B = "ways_route_validity_test_b.csv";
+static const char *WAYS_C = "ways_route_validity_test_c.csv";
 
 /* The routes, as hex EWKB: LINESTRING(0 0,3 4) in SRID 5676, the same line
  * with a Z and with an M dimension, the MULTILINESTRING holding it, the line
- * in SRID 4326 and POINT(1 1) in SRID 5676 */
+ * in SRID 4326, POINT(1 1) in SRID 5676, and the line in SRID 5676 with its
+ * second x infinite and with its second y NaN */
 static const char *ROUTES_A =
   "1,01020000202C160000020000000000000000000000000000000000000000000000"
   "000008400000000000001040\n"
@@ -74,8 +81,17 @@ static const char *ROUTES_A =
   "0000000000000000000008400000000000001040\n"
   "5,0102000020E6100000020000000000000000000000000000000000000000000000"
   "000008400000000000001040\n"
-  "6,01010000202C160000000000000000F03F000000000000F03F\n";
+  "6,01010000202C160000000000000000F03F000000000000F03F\n"
+  "7,01020000202C160000020000000000000000000000000000000000000000000000"
+  "0000F07F0000000000001040\n"
+  "8,01020000202C160000020000000000000000000000000000000000000000000000"
+  "00000840000000000000F87F\n";
 static const char *ROUTES_B =
+  "1,01020000202C160000020000000000000000000000000000000000000000000000"
+  "000008400000000000001040\n";
+static const char *ROUTES_C =
+  "7,01020000202C160000020000000000000000000000000000000000000000000000"
+  "0000F07F0000000000001040\n"
   "1,01020000202C160000020000000000000000000000000000000000000000000000"
   "000008400000000000001040\n";
 
@@ -115,6 +131,21 @@ check_nearest(const char *what, bool want_npoint)
   free(gs);
 }
 
+/* Check that #get_srid_ways refuses the network, as #check_route checks that
+ * #route_exists refuses a route */
+static void
+check_srid(const char *what)
+{
+  meos_errno_reset();
+  int32_t srid = get_srid_ways();
+  int err = meos_errno();
+  bool ok = (srid != 5676 && err == MEOS_ERR_INVALID_ARG_VALUE);
+  if (! ok)
+    failures++;
+  printf("%s %s: SRID %d, errno %d\n", ok ? "ok  " : "FAIL", what, srid,
+    err);
+}
+
 static bool
 write_file(const char *path, const char *text)
 {
@@ -129,7 +160,8 @@ write_file(const char *path, const char *text)
 int
 main(void)
 {
-  if (! write_file(WAYS_A, ROUTES_A) || ! write_file(WAYS_B, ROUTES_B))
+  if (! write_file(WAYS_A, ROUTES_A) || ! write_file(WAYS_B, ROUTES_B) ||
+      ! write_file(WAYS_C, ROUTES_C))
     return 1;
 
   meos_initialize();
@@ -141,14 +173,21 @@ main(void)
   check_route("route 4, a multiline", 4, false);
   check_route("route 5, a line in another SRID", 5, false);
   check_route("route 6, a point", 6, false);
+  check_route("route 7, a line with an infinite coordinate", 7, false);
+  check_route("route 8, a line with a NaN coordinate", 8, false);
   check_nearest("nearest route on the first network", false);
   meos_finalize_ways();
   meos_set_ways_csv(WAYS_B);
   check_nearest("nearest route on the second network", true);
+  meos_finalize_ways();
+  meos_set_ways_csv(WAYS_C);
+  check_srid("SRID of the third network");
+  check_nearest("nearest route on the third network", false);
   meos_finalize();
 
   remove(WAYS_A);
   remove(WAYS_B);
+  remove(WAYS_C);
   printf("%d failure(s)\n", failures);
   return failures ? 1 : 0;
 }

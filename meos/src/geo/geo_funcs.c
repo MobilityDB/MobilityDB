@@ -3292,11 +3292,13 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
   return;
 }
 
-/** Number of 64-bit limbs of a #WideDyadic. The quantities
- * #point_motion_squares forms are products of up to six differences of
- * timestamps and four doubles, whose terms the exponents of the doubles spread
- * over at most about 9100 bits */
-#define WIDE_DYADIC_LIMBS 160
+/** Number of 64-bit limbs of a #WideDyadic. The widest quantities are the
+ * terms #polynomial_sign_wide forms for #segment_square_least: a coefficient
+ * times six exact sums of two doubles, a sum spanning the bits from the lowest
+ * of a double to past the largest and so at most 34 limbs, the coefficient
+ * times five of them at most 166, so the sixth product is formed in 200 limbs,
+ * which hold the sum of the 54 terms too */
+#define WIDE_DYADIC_LIMBS 200
 
 /**
  * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
@@ -5049,6 +5051,36 @@ wide_dyadic_accumulate_double(WideDyadic *acc, double x, int sign)
   t.sign *= sign;
   wide_dyadic_accumulate(acc, &t);
   return;
+}
+
+/**
+ * @brief Return the sign of a polynomial in exact sums held as #WideDyadic,
+ * computed exactly
+ * @details The counterpart of #polynomial_sign_exact for sums whose products
+ * leave the doubles: every term, its coefficient times its sums
+ * (#wide_dyadic_mul), is added to the total (#wide_dyadic_accumulate), whose
+ * sign is the exact one at any magnitude the doubles of the sums take
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] terms,nterms Terms of the polynomial and their number
+ * @return -1, 0, or 1
+ */
+static int
+polynomial_sign_wide(const WideDyadic *sums, const PolyTerm *terms,
+  int nterms)
+{
+  WideDyadic acc, prod, next;
+  wide_dyadic_set_double(&acc, 0.0);
+  for (int i = 0; i < nterms; i++)
+  {
+    wide_dyadic_set_double(&prod, terms[i].coef);
+    for (int k = 0; k < terms[i].deg; k++)
+    {
+      wide_dyadic_mul(&prod, &sums[terms[i].sum[k]], &next);
+      prod = next;
+    }
+    wide_dyadic_accumulate(&acc, &prod);
+  }
+  return acc.sign;
 }
 
 /**
@@ -7704,10 +7736,12 @@ typedef struct
  * @brief Return the sign of `x / y - u / v` for two squares of
  * #segment_distance_square, the sign of `x v - u y` since both denominators
  * are positive
+ * @details Read on the exact sums @p sums (#polynomial_sign_exact), or on
+ * @p wsums where it is not NULL (#polynomial_sign_wide)
  */
 static int
-segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
-  const SegmentSquare *s2)
+segment_square_cmp(const ExactSum *sums, const WideDyadic *wsums,
+  const SegmentSquare *s1, const SegmentSquare *s2)
 {
   PolyTerm terms[54];
   int n = 0;
@@ -7725,6 +7759,8 @@ segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
           sizeof(int) * y->den[j].deg);
       }
   }
+  if (wsums)
+    return polynomial_sign_wide(wsums, terms, n);
   return polynomial_sign_exact(sums, terms, n);
 }
 
@@ -7743,7 +7779,9 @@ segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
  * that brings the largest into [1, 2), which changes no sign, as
  * #point_segment_distance_offset_exact scales them; a product of six scaled
  * values is exact where each has its lowest bit at or above 2^-179, and below
- * 2^6, so none overflows
+ * 2^6, so none overflows. Where a scaled value has its lowest bit below
+ * 2^-179, the sums are held unscaled as #WideDyadic and the polynomials read
+ * on them (#polynomial_sign_wide), exact at any magnitude
  * @param[in] pt The point, the start and the end of the other segment, of
  * each of the four distances
  * @param[in] near Where the nearest point of each lies: 0 the start, 1 the
@@ -7751,7 +7789,7 @@ segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
  * @param[in] want The mask of the distances to compare
  * @param[in] ndims Number of coordinates, 2 or 3
  * @return The mask of those that reach the least, or -1 where a difference is
- * not finite, or where the scaling leaves a product of six outside the doubles
+ * not finite
  */
 static int
 segment_square_least(const double *pt[4][3], const int *near, int want,
@@ -7779,10 +7817,9 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
   int k;
   double f1, f2, g1, g2;
   point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
-  /* The exact sums, sum (3 i + j) * ndims + c for coordinate c of difference
-   * j of distance i */
-  ExactSum sums[36];
-  for (int i = 0; i < 4; i++)
+  /* Whether a scaled value has its lowest bit below 2^-179 */
+  bool wide = false;
+  for (int i = 0; i < 4 && ! wide; i++)
   {
     if (! (want & (1 << i)))
       continue;
@@ -7792,9 +7829,34 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
         double v = dv[i][j][cc], e = ev[i][j][cc];
         if ((v != 0.0 && double_lowest_set_bit(v) + k < -179) ||
             (e != 0.0 && double_lowest_set_bit(e) + k < -179))
-          return -1;
-        const double t[2] = {v * f1 * f2, e * f1 * f2};
-        exact_sum_set(&sums[(3 * i + j) * ndims + cc], t, 2);
+          wide = true;
+      }
+  }
+  /* The exact sums, sum (3 i + j) * ndims + c for coordinate c of difference
+   * j of distance i, scaled in expansions, else unscaled in #WideDyadic */
+  ExactSum sums[36];
+  WideDyadic *wsums = wide ? palloc(sizeof(WideDyadic) * 36) : NULL;
+  for (int i = 0; i < 4; i++)
+  {
+    if (! (want & (1 << i)))
+      continue;
+    for (int j = 0; j < 3; j++)
+      for (int cc = 0; cc < ndims; cc++)
+      {
+        double v = dv[i][j][cc], e = ev[i][j][cc];
+        int idx = (3 * i + j) * ndims + cc;
+        if (wide)
+        {
+          WideDyadic wv, we;
+          wide_dyadic_set_double(&wv, v);
+          wide_dyadic_set_double(&we, e);
+          wide_dyadic_add(&wv, &we, &wsums[idx]);
+        }
+        else
+        {
+          const double t[2] = {v * f1 * f2, e * f1 * f2};
+          exact_sum_set(&sums[idx], t, 2);
+        }
       }
   }
   /* The square of each distance */
@@ -7839,7 +7901,8 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
   {
     if (! (want & (1 << i)))
       continue;
-    int cmp = (best < 0) ? -1 : segment_square_cmp(sums, &sq[i], &sq[best]);
+    int cmp = (best < 0) ? -1 :
+      segment_square_cmp(sums, wsums, &sq[i], &sq[best]);
     if (cmp < 0)
     {
       best = i;
@@ -7848,6 +7911,8 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
     else if (cmp == 0)
       mask |= 1 << i;
   }
+  if (wsums)
+    pfree(wsums);
   return mask;
 }
 
@@ -19325,8 +19390,11 @@ geo_force2d_intl(const GSERIALIZED *gs)
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWGEOM *flat = lwgeom_force_2d(geom);
-  /* The function builds the result from the dimensions alone */
-  lwgeom_set_geodetic(flat, FLAGS_GET_GEODETIC(geom->flags));
+  /* The function builds the result from the dimensions alone, so a geodetic
+   * value is flagged again; a planar one, which can be of a type such as a
+   * polyhedral surface that #lwgeom_set_geodetic does not walk, needs no flag */
+  if (FLAGS_GET_GEODETIC(geom->flags))
+    lwgeom_set_geodetic(flat, true);
   lwgeom_free(geom);
   GSERIALIZED *result = geo_serialize(flat);
   lwgeom_free(flat);
@@ -19345,8 +19413,11 @@ geo_force3d_intl(const GSERIALIZED *gs, double zvalue)
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWGEOM *lifted = lwgeom_force_3dz(geom, zvalue);
-  /* The function builds the result from the dimensions alone */
-  lwgeom_set_geodetic(lifted, FLAGS_GET_GEODETIC(geom->flags));
+  /* The function builds the result from the dimensions alone, so a geodetic
+   * value is flagged again; a planar one, which can be of a type such as a
+   * polyhedral surface that #lwgeom_set_geodetic does not walk, needs no flag */
+  if (FLAGS_GET_GEODETIC(geom->flags))
+    lwgeom_set_geodetic(lifted, true);
   lwgeom_free(geom);
   GSERIALIZED *result = geo_serialize(lifted);
   lwgeom_free(lifted);

@@ -39,6 +39,8 @@
 #include <float.h>
 #include <limits.h>
 #include <math.h>
+/* PROJ */
+#include <proj.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <pgtypes.h>
@@ -1025,6 +1027,39 @@ cbuffer_set_srid(const Cbuffer *cb, int32_t srid)
 /*****************************************************************************/
 
 /**
+ * @brief Return true if a transformation leaves a circular buffer in a
+ * planar reference system, otherwise raise an error and return false
+ * @details A circular buffer is planar: its radius is a length in the units
+ * of the coordinates of its centre. In a geographic system those units are
+ * degrees, so a radius in metres would be read as a radius in degrees. The
+ * target is geographic when its SRID is a geographic one or, for a pipeline
+ * without a target SRID, when the pipeline answers angles
+ * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN` for a pipeline
+ * @param[in] pj Information about the transformation
+ */
+static bool
+ensure_cbuffer_transf_planar(int32_t srid_to, const LWPROJ *pj)
+{
+  bool latlong;
+  if (srid_to != SRID_UNKNOWN)
+    latlong = srid_is_latlong(srid_to);
+  else
+  {
+    PJ_DIRECTION direction = pj->pipeline_is_forward ? PJ_FWD : PJ_INV;
+    latlong = proj_angular_output(pj->pj, direction) ||
+      proj_degree_output(pj->pj, direction);
+  }
+  if (latlong)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A circular buffer is planar and cannot be transformed to a geographic "
+      "reference system");
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief Return a circular buffer transformed to another SRID using a
  * pipeline
  * @param[in] cb Circular buffer
@@ -1036,6 +1071,8 @@ Cbuffer *
 cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPROJ *pj)
 {
   VALIDATE_NOT_NULL(cb, NULL); assert(pj);
+  if (! ensure_cbuffer_transf_planar(srid_to, pj))
+    return NULL;
   /* Reproject the centre point through a temporary geometry */
   GSERIALIZED *gs = cbuffer_point(cb);
   if (! point_transf_pj(gs, srid_to, pj))

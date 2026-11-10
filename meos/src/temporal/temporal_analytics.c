@@ -624,7 +624,9 @@ reachabilitystate_finish(ReachabilityState *state, int *count)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function of the reachability filter: walk a report
- * @details The reports arrive in the order of their times. A report is kept
+ * @details The reports arrive in the order of their times, and a report at
+ * the time of the report before is the same report, which is walked once:
+ * it is neither counted nor decided again. A report is kept
  * when the last kept report could reach it at the maximum speed. The first
  * #REACH_HEAD reports are held until the seed of the walk is chosen among
  * them; every later report is decided when it arrives.
@@ -674,12 +676,16 @@ temporal_reachability_filter_transfn(ReachabilityState *state,
         (! ensure_same_srid(state->srid, tspatial_srid((const Temporal *) inst)) ||
          ! ensure_same_spatial_dimensionality(state->flags, inst->flags)))
       return NULL;
-    if (inst->t <= state->previous->t)
+    if (inst->t < state->previous->t)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "The reports of a reachability filter must arrive in increasing time");
       return NULL;
     }
+    /* A report at the time of the report before is the same report, which
+     * is walked once, as temporal_reachability_filter walks it */
+    if (inst->t == state->previous->t)
+      return state;
   }
 
   /* Count the reports unreachable from the report before */

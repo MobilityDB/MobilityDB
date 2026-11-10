@@ -33,11 +33,28 @@
 SELECT SRID(trgeometry
   'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01');
 
--- A reference geometry accompanies the poses and shares their frame, so a
--- transformation to another SRID is not supported
+-- The poses are transformed as those of a temporal pose and the body is kept
+SELECT asEWKT(round(transform(trgeometry
+  'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));[Pose(Point(4.35 50.85), 0.5)@2001-01-01, Pose(Point(4.36 50.86), 0.6)@2001-01-02]',
+  3812), 3));
+-- The heading turns by the convergence of the meridians, as for a pose
+SELECT round(degrees(valueAtTimestamp(yaw(transform(trgeometry
+  'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(12 45), 0)@2001-01-01',
+  32632)), '2001-01-01')), 4),
+  round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(12 45),0)', 32632))), 4);
+-- The body keeps its shape: the area of its placement does not change
+SELECT round(ST_Area(valueAtTimestamp(transform(trgeometry
+  'SRID=25832;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(600000 6200000), 0.5)@2001-01-01',
+  3812), '2001-01-01'))::numeric, 6);
+SELECT asEWKT(round(transform(trgeometry 'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));
+  Pose(Point(4.35 50.85), 0.5)@2001-01-01', 32631), 3));
+SELECT asEWKT(round(transformPipeline(trgeometry
+  'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(4.35 50.85), 0.5)@2001-01-01',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3));
+/* Errors */
 SELECT transform(trgeometry
-  'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01',
-  3812);
+  'SRID=3812;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(648679 671067), 0.5)@2001-01-01',
+  4326);
 SELECT transformPipeline(trgeometry
   'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01',
   'urn:ogc:def:coordinateOperation:EPSG::16031', 4326);

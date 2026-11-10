@@ -490,6 +490,9 @@ SELECT asText(reachabilityFilterAgg(inst, 5 ORDER BY getTimestamp(inst)))
 FROM unnest(instants(tfloat '{1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01, 1000@2001-01-01 00:00:02, 3@2001-01-01 00:00:03}')) AS inst;
 SELECT reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst)) IS NULL
 FROM unnest(instants(tgeompoint '{Point(0 0)@2001-01-01 00:00:00, Point(5000 0)@2001-01-01 00:00:01, Point(0 0)@2001-01-01 00:00:02, Point(5000 0)@2001-01-01 00:00:03}')) AS inst;
+-- A report at the time of the report before is the same report, walked once
+SELECT asText(reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst)))
+FROM unnest(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 00:00:00', tgeompoint 'Point(0 0)@2001-01-01 00:00:00', tgeompoint 'Point(10 0)@2001-01-01 00:00:01', tgeompoint 'Point(10 0)@2001-01-01 00:00:01']) AS inst;
 
 /* Errors */
 SELECT reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst) DESC)

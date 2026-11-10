@@ -825,8 +825,10 @@ int main(void)
     "as the nearest double\n", below_normal);
 
   /* A point passing a point far from the origin, whose differences of
-   * coordinates span from 2 to twice the magnitude */
-  const double far_pass[] = {1e17, 1e40, 1e50};
+   * coordinates span from 2 to twice the magnitude: from 1e60 on, a product
+   * of six of them scaled into [1, 2) has bits below 2^-179 */
+  const double far_pass[] = {1e17, 1e40, 1e50, 1e60, 1e100, 1e200, 1e300,
+    1e307};
   int passes = (int) (sizeof(far_pass) / sizeof(far_pass[0]));
   for (int i = 0; i < passes; i++)
     far_pass_entry(far_pass[i]);

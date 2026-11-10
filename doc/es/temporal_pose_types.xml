@@ -1187,6 +1187,19 @@ SELECT asEWKT(shiftTime(tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01'
 -- PoseChain(Pose(POINT(1 1),0.5))@2001-01-02
 </programlisting>
 			</listitem>
+			<listitem xml:id="tpose_stops">
+				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
+				<para>Extrae las subsecuencias en las que la pose temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stops(tpose,maxdist float=0.0,minduration interval='0 minutes') &#8594; tpose
+</programlisting>
+				<para>El tamaño del área es la mayor distancia entre dos posiciones de la subsecuencia, de modo que una pose que gira en el sitio permanece dentro de ella, y la distancia y los límites de una parada son los que se indican para un punto temporal en <link linkend="tgeo_stops"><varname>stops</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(stops(tpose '[Pose(Point(1 1),0)@2001-01-01,
+  Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
+-- {[Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(1 1),0.5)@2001-01-02]}
+</programlisting>
+			</listitem>
 			<listitem xml:id="tpose_translate">
 				<indexterm significance="normal"><primary><varname>translate</varname></primary></indexterm>
 				<para>Devuelve un valor temporal trasladado por los desplazamientos dados &Z_support;</para>
@@ -1488,7 +1501,7 @@ transformPipeline({tpose,tposechain},pipeline text,srid integer,
   is_forward boolean=true) &#8594; {tpose,tposechain}
 </programlisting>
 				<para>La cadena de cada instante se transforma como se transforma la cadena estática correspondiente, es decir, solo se transforma el eslabón exterior, tal como se describe para <link linkend="pose_transform"><varname>transform</varname></link>.</para>
-				<para>La pose de cada instante se transforma igual que la pose estática correspondiente, con la corrección de orientación incluida, como se describe para <link linkend="pose_transform"><varname>transform</varname></link>. Lo mismo ocurre con un <varname>poseset</varname>. Una <varname>trgeometry</varname> asocia sus poses con una geometría de referencia que comparte su marco, y la transformación a otro SRID no está admitida para ese tipo.</para>
+				<para>La pose de cada instante se transforma igual que la pose estática correspondiente, con la corrección de orientación incluida, como se describe para <link linkend="pose_transform"><varname>transform</varname></link>. Lo mismo ocurre con un <varname>poseset</varname>. Una <varname>trgeometry</varname> transforma sus poses de este modo y conserva su geometría de referencia, como se indica para <link linkend="trgeometry_transform"><varname>transform</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tpose 'SRID=4326;Pose(Point(4.35 50.85),1)@2001-01-01', 3812));
 -- SRID=3812;Pose(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01

@@ -64,6 +64,9 @@
   #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
+#if POSE
+  #include "pose/pose.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -3241,6 +3244,8 @@ point_any_beyond(const POINT2D *points, uint32_t npoints, const POINT2D *p,
 /**
  * @brief Return the points a temporal sequence with a spatial point base type
  * takes, in the order of its instants
+ * @details The point of a circular buffer is its centre and that of a pose
+ * its position
  * @param[in] seq Temporal sequence
  * @errval NULL
  */
@@ -3269,6 +3274,14 @@ tspatialseq_points(const TSequence *seq)
       }
       result[i] = *GSERIALIZED_POINT2D_P(gs);
       pfree(gs);
+    }
+#endif
+#if POSE
+    else if (seq->temptype == T_TPOSE)
+    {
+      const Pose *pose = DatumGetPoseP(value);
+      result[i].x = pose->data[0];
+      result[i].y = pose->data[1];
     }
 #endif
     else
@@ -3425,6 +3438,9 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   assert(tpoint_type(seq->temptype) || seq->temptype == T_TNPOINT
 #if CBUFFER
     || seq->temptype == T_TCBUFFER
+#endif
+#if POSE
+    || seq->temptype == T_TPOSE
 #endif
     );
 

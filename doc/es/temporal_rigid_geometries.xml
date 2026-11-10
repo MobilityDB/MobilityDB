@@ -487,6 +487,38 @@ SELECT asText(round( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="trgeometry_stops">
+				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
+				<para>Extrae las subsecuencias en las que la geometría rígida temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stops(trgeometry,maxdist float=0.0,minduration interval='0 minutes') &#8594; trgeometry
+</programlisting>
+				<para>El tamaño del área es la mayor distancia entre dos posiciones de la pose de la subsecuencia, de modo que un cuerpo que gira en el sitio permanece dentro de ella, y la distancia y los límites de una parada son los que se indican para un punto temporal en <link linkend="tgeo_stops"><varname>stops</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01,
+  Pose(Point(1 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03, Pose(Point(5 5),0)@2001-01-04]'));
+-- POLYGON((0 0,1 0,1 1,0 0));{[Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(1 1),0)@2001-01-02],
+--   [Pose(POINT(5 5),0)@2001-01-03, Pose(POINT(5 5),0)@2001-01-04]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
+				<para>Transforma a un identificador de referencia espacial</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform(trgeometry,integer) &#8594; trgeometry
+transformPipeline(trgeometry,pipeline text,srid integer,
+  is_forward boolean=true) &#8594; trgeometry
+</programlisting>
+				<para>La geometría de referencia es la forma del cuerpo en su propio marco, que un cambio del sistema de referencia de las poses deja como está. Las poses se transforman como las de una <link linkend="tpose_transform"><varname>tpose</varname></link>, y cada orientación gira el ángulo entre los dos sistemas en su posición, de modo que el cuerpo conserva su forma y mira en la misma dirección sobre el terreno. El cuerpo se sitúa en el plano del sistema de referencia de sus poses, por lo que el sistema de destino no es geográfico.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(round(transform(trgeometry 'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));
+  Pose(Point(4.35 50.85), 0.5)@2001-01-01', 32631), 3));
+-- SRID=32631;POLYGON((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(POINT(595032.295 5634012.833),0.518)@2001-01-01
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="trgeometry_setInterp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Convierte entre interpolaciones lineal y escalonada</para>

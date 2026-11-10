@@ -1632,6 +1632,9 @@
 					<para><link linkend="tpose_round"><varname>round</varname></link>: Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tpose_stops"><varname>stops</varname></link>: Extrae las subsecuencias en las que la pose temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tpose_translate"><varname>translate</varname></link>: Devuelve un valor temporal trasladado por los desplazamientos dados &Z_support;</para>
 				</listitem>
 				<listitem>
@@ -2582,6 +2585,12 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trgeometry_round"><varname>round</varname></link>: Redondea todos los componentes numéricos a un número dado de posiciones decimales</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_stops"><varname>stops</varname></link>: Extrae las subsecuencias en las que la geometría rígida temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transforma a un identificador de referencia espacial</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_setInterp"><varname>setInterp</varname></link>: Convierte entre interpolaciones lineal y escalonada</para>

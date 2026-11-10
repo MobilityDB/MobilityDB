@@ -182,3 +182,23 @@ SELECT tfloat(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Poin
  t
 (1 row)
 
+SELECT asEWKT(round(transform(tcbuffer 'SRID=25832;[Cbuffer(Point(651337 6058377),10)@2001-01-01, Cbuffer(Point(651437 6058377),10)@2001-01-02]', 32632), 3));
+                                                                   asewkt                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=32632;[Cbuffer(POINT(651337 6058377),10)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(651437 6058377),10)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(transformPipeline(tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
+  Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+                                                                          asewkt                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=32631;{Cbuffer(POINT(595215.059 5633645.441),1)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(282970.182 5710870.493),2)@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+/* Errors */
+SELECT transform(tcbuffer 'SRID=25832;[Cbuffer(Point(651337 6058377),10)@2001-01-01, Cbuffer(Point(651437 6058377),10)@2001-01-02]', 4326);
+ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
+SELECT transformPipeline(tcbuffer 'SRID=32631;Cbuffer(Point(595032 5634013),10)@2001-01-01',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, false);
+ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
