@@ -698,7 +698,8 @@ extern STBox *tspatial_to_stbox(const Temporal *temp);
 /* Accessor functions */
 
 extern bool bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
-extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
+extern Temporal *bearing_point_tpoint(const GSERIALIZED *gs, const Temporal *temp);
+extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tgeo_centroid(const Temporal *temp, bool spheroid);
 extern GSERIALIZED *tgeo_convex_hull(const Temporal *temp);

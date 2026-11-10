@@ -1176,7 +1176,7 @@ Bearing_point_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = bearing_tpoint_point(temp, gs, INVERT);
+  Temporal *result = bearing_point_tpoint(gs, temp);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -1197,7 +1197,7 @@ Bearing_tpoint_point(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = bearing_tpoint_point(temp, gs, INVERT_NO);
+  Temporal *result = bearing_tpoint_point(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)

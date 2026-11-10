@@ -187,7 +187,7 @@ Concat_jsonb_jsonbset(PG_FUNCTION_ARGS)
   Jsonb *jb = PG_GETARG_JSONB_P(0);
   Set *set = PG_GETARG_SET_P(1);
   /* Compute the result */
-  Set *result = concat_jsonbset_jsonb(set, jb, INVERT);
+  Set *result = concat_jsonb_jsonbset(jb, set);
   /* Clean up and return */
   PG_FREE_IF_COPY(jb, 0);
   PG_FREE_IF_COPY(set, 1);
@@ -209,7 +209,7 @@ Concat_jsonbset_jsonb(PG_FUNCTION_ARGS)
   Set *set = PG_GETARG_SET_P(0);
   Jsonb *jb = PG_GETARG_JSONB_P(1);
   /* Compute the result */
-  Set *result = concat_jsonbset_jsonb(set, jb, INVERT_NO);
+  Set *result = concat_jsonbset_jsonb(set, jb);
   /* Clean up and return */
   PG_FREE_IF_COPY(set, 0);
   PG_FREE_IF_COPY(jb, 1);
