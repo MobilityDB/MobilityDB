@@ -4554,6 +4554,49 @@ geom_point_meets_faces(const double *p, const GeomFaces *g)
 }
 
 /**
+ * @brief Return true if the boxes of the points of two geometries in 3D lie
+ * farther apart along an axis than a distance, exactly
+ * @details Every point of a face lies in the box of its vertices, so two
+ * geometries whose boxes lie farther apart are not within the distance,
+ * whatever their faces are. A gap above the distance in doubles, moved up
+ * past its rounding, lies above it exactly, as #geom_face_point_within reads it
+ */
+static bool
+geom_faces_boxes_beyond(const GeomFaces *g1, const GeomFaces *g2, double dist)
+{
+  double lo[2][3], hi[2][3];
+  for (int g = 0; g < 2; g++)
+  {
+    const GeomFaces *gf = g ? g2 : g1;
+    for (int k = 0; k < 3; k++)
+    {
+      lo[g][k] = INFINITY;
+      hi[g][k] = -INFINITY;
+    }
+    for (uint32_t i = 0; i < gf->narrs; i++)
+    {
+      const POINTARRAY *pa = gf->arrs[i];
+      for (uint32_t v = 0; v < pa->npoints; v++)
+      {
+        const double *p = (const double *) getPoint2d_cp(pa, v);
+        for (int k = 0; k < 3; k++)
+        {
+          if (p[k] < lo[g][k])
+            lo[g][k] = p[k];
+          if (p[k] > hi[g][k])
+            hi[g][k] = p[k];
+        }
+      }
+    }
+  }
+  double bound = dist * (1.0 + 0x1p-50) + 0x1p-1060;
+  for (int k = 0; k < 3; k++)
+    if (lo[1][k] - hi[0][k] > bound || lo[0][k] - hi[1][k] > bound)
+      return true;
+  return false;
+}
+
+/**
  * @brief Return true if a point and a geometry with Z of points, segments and
  * faces lying exactly in a plane intersect, exactly, setting the answer in the
  * last argument, and false where the geometry is not of these
@@ -4569,7 +4612,9 @@ geom_point_intersects3d_faces(const GSERIALIZED *point, const GSERIALIZED *gs,
   bool *result)
 {
   GeomFaces g;
-  bool ok = geom_faces_init(&g, gs);
+  /* The planes of the faces, which the point is read against, are read
+   * once the faces are (#geom_faces_planes) */
+  bool ok = geom_faces_init(&g, gs) && geom_faces_planes(&g);
   if (ok)
     *result = geom_point_meets_faces(
       (const double *) GSERIALIZED_POINT3DZ_P(point), &g);
@@ -4592,7 +4637,8 @@ geom_point_intersects3d_faces(const GSERIALIZED *point, const GSERIALIZED *gs,
  * (#geom_faces_meet), both read in place on the serialized form
  * (#geom_faces_init). Segments within the distance answer before the planes
  * of the faces are read (#geom_faces_planes): their points belong to the
- * geometries whatever the faces are
+ * geometries whatever the faces are; so do boxes farther apart than the
+ * distance (#geom_faces_boxes_beyond)
  * @param[in] gs1,gs2 Geometries with Z, not empty
  * @param[in] dist Distance, finite and not negative
  * @param[out] result Answer
@@ -4616,8 +4662,12 @@ geom_dwithin3d_faces(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
       *result = within;
     /* Segments within the distance answer whatever the faces are; the planes
      * of the faces are read only past them */
+    /* Boxes farther apart than the distance hold no meeting of faces, and
+     * neither geometry inside the other */
     bool planes = false;
-    if (! *result && nearest != DBL_MAX)
+    bool beyond = ! *result && nearest != DBL_MAX &&
+      geom_faces_boxes_beyond(&g1, &g2, dist);
+    if (! *result && nearest != DBL_MAX && ! beyond)
     {
       ok = geom_faces_planes(&g1) && geom_faces_planes(&g2);
       planes = true;
@@ -4628,7 +4678,8 @@ geom_dwithin3d_faces(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     /* A solid also holds what lies inside it, read on the planes of its
      * faces, which the segments may have left unread */
     int in = 0;
-    if (ok && ! *result && (geom_is_solid(gs1) || geom_is_solid(gs2)))
+    if (ok && ! *result && ! beyond &&
+        (geom_is_solid(gs1) || geom_is_solid(gs2)))
     {
       if (! planes)
         ok = geom_faces_planes(&g1) && geom_faces_planes(&g2);
