@@ -3918,28 +3918,33 @@ geom_face_plane(GeomFace *face)
     for (uint32_t i = 0; i < rings[r]->npoints; i++)
     {
       const double *v = geom_pa_point(rings[r], st, i);
-      /* The three vertices spanning the plane, and a vertex equal to one of
-       * them as the last of a ring is to its first, lie in it */
-      bool span = false;
-      for (int k = 0; k < 3 && ! span; k++)
-      {
-        const double *s = (k == 0) ? a : ((k == 1) ? b : c);
-        span = v[0] == s[0] && v[1] == s[1] && v[2] == s[2];
-      }
-      if (! span && naxis >= 0)
+      /* Across an axis, one coordinate tells, the spanning vertices
+       * included */
+      if (naxis >= 0)
       {
         if (v[naxis] != a[naxis])
           return -1;
       }
-      else if (! span)
+      else
       {
-        if (nexact < 0)
-          nexact = plane_normal_exact(a, b, c, nrm) ? 1 : 0;
-        int s = nexact ? plane_normal_offset_sign(nrm, a, v) : 2;
-        if (s == 2)
-          s = vector_triple_sign(a, b, a, c, a, v);
-        if (s != 0)
-          return -1;
+        /* The three vertices spanning the plane, and a vertex equal to one
+         * of them as the last of a ring is to its first, lie in it */
+        bool span = false;
+        for (int k = 0; k < 3 && ! span; k++)
+        {
+          const double *s = (k == 0) ? a : ((k == 1) ? b : c);
+          span = v[0] == s[0] && v[1] == s[1] && v[2] == s[2];
+        }
+        if (! span)
+        {
+          if (nexact < 0)
+            nexact = plane_normal_exact(a, b, c, nrm) ? 1 : 0;
+          int s = nexact ? plane_normal_offset_sign(nrm, a, v) : 2;
+          if (s == 2)
+            s = vector_triple_sign(a, b, a, c, a, v);
+          if (s != 0)
+            return -1;
+        }
       }
       for (int k = 0; k < 3; k++)
       {
