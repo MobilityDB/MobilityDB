@@ -4658,6 +4658,70 @@ geom_point_intersects3d_faces(const GSERIALIZED *point, const GSERIALIZED *gs,
 }
 
 /**
+ * @brief Return true if the boxes two serialized geometries in 3D carry lie
+ * farther apart along an axis than a distance, exactly
+ * @details A box is read in place where the serialized form holds one, its
+ * bounds rounded outward, or from a point; a geometry carrying neither, or of
+ * a type that may hold an arc, answers false, as does a box holding a NaN
+ * or a bound at the largest float, which a coordinate beyond it rounds to.
+ * The gap of boxes rounded outward is at most the gap of the geometries, so a
+ * gap above the distance in doubles, moved up past its rounding, lies above
+ * it exactly
+ */
+static bool
+geom_faces_gs_beyond(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  double dist)
+{
+  double lo[2][3], hi[2][3];
+  for (int g = 0; g < 2; g++)
+  {
+    const GSERIALIZED *gs = g ? gs2 : gs1;
+    const uint8_t *p = gs_geometry_ptr(gs);
+    uint32_t type;
+    memcpy(&type, p, 4);
+    /* Only types that hold no arc: a geometry carrying one is not answered
+     * here (#geom_faces_gs_count) */
+    if (type == POINTTYPE)
+    {
+      /* The coordinates follow the type and the number of points, read as
+       * the type is */
+      double pt[3];
+      memcpy(pt, p + 8, sizeof(pt));
+      for (int k = 0; k < 3; k++)
+        lo[g][k] = hi[g][k] = pt[k];
+    }
+    else if ((type == LINETYPE || type == POLYGONTYPE ||
+        type == TRIANGLETYPE || type == MULTIPOINTTYPE ||
+        type == MULTILINETYPE || type == MULTIPOLYGONTYPE ||
+        type == TINTYPE || type == POLYHEDRALSURFACETYPE) &&
+        G2FLAGS_GET_BBOX(gs->gflags))
+    {
+      /* The box precedes the geometry, after the extended flags, as
+       * #gs_geometry_ptr reads it: least then greatest x, y and z */
+      float box[6];
+      memcpy(box, (const uint8_t *) gs->data +
+        (G2FLAGS_GET_EXTENDED(gs->gflags) ? 8 : 0), sizeof(box));
+      for (int k = 0; k < 3; k++)
+      {
+        /* A bound at the largest float may stand for a coordinate beyond it,
+         * where the box tells nothing */
+        if (! (fabsf(box[2 * k]) < FLT_MAX && fabsf(box[2 * k + 1]) < FLT_MAX))
+          return false;
+        lo[g][k] = (double) box[2 * k];
+        hi[g][k] = (double) box[2 * k + 1];
+      }
+    }
+    else
+      return false;
+  }
+  double bound = dist * (1.0 + 0x1p-50) + 0x1p-1060;
+  for (int k = 0; k < 3; k++)
+    if (lo[1][k] - hi[0][k] > bound || lo[0][k] - hi[1][k] > bound)
+      return true;
+  return false;
+}
+
+/**
  * @brief Return true if two geometries with Z of points, segments and faces
  * lying exactly in a plane are within a distance, exactly, setting the answer
  * in the last argument, and false where a geometry is not of these
@@ -4682,6 +4746,13 @@ static bool
 geom_dwithin3d_faces(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double dist, bool *result)
 {
+  /* Boxes the geometries carry farther apart than the distance answer before
+   * any of their points is read, a solid lying in its box too */
+  if (geom_faces_gs_beyond(gs1, gs2, dist))
+  {
+    *result = false;
+    return true;
+  }
   GeomFaces g1, g2;
   bool ok = geom_faces_init(&g1, gs1);
   ok = geom_faces_init(&g2, gs2) && ok;
