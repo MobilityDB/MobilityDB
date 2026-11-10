@@ -113,19 +113,20 @@ jsonbset_object_field_common(const Set *set, const text *key, bool astext,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_json_set_json
- * @brief Return the concatenation of a JSONB set and a JSONB
+ * @brief Return the concatenation of the values of a JSONB set and a JSONB,
+ * the JSONB first when `invert` is true
+ * @details The public functions #concat_jsonbset_jsonb and
+ * #concat_jsonb_jsonbset validate their arguments and call it, one per order
+ * of the operands, as #add_float_tfloat and #add_tfloat_float call
+ * #arithop_tnumber_number
  * @param[in] set JSONB set
  * @param[in] jb JSONB
- * @param[in] invert True if the arguments must be inverted
- * @csqlfn #Concat_jsonb_jsonbset(), #Concat_jsonbset_jsonb()
+ * @param[in] invert True when the JSONB value is the first operand
  */
-Set *
-concat_jsonbset_jsonb(const Set *set, const Jsonb *jb, bool invert)
+static Set *
+concat_jsonbset_jsonb_intl(const Set *set, const Jsonb *jb, bool invert)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jb, NULL);
-
+  assert(set); assert(jb); assert(set->settype == T_JSONBSET);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_jsonb_concat;
@@ -135,6 +136,36 @@ concat_jsonbset_jsonb(const Set *set, const Jsonb *jb, bool invert)
   lfinfo.restype = T_JSONBSET;
   lfinfo.invert = invert;
   return lfunc_set(set, &lfinfo);
+}
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Return the concatenation of a JSONB set and a JSONB
+ * @param[in] set JSONB set
+ * @param[in] jb JSONB
+ * @csqlfn #Concat_jsonbset_jsonb()
+ */
+Set *
+concat_jsonbset_jsonb(const Set *set, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jb, NULL);
+  return concat_jsonbset_jsonb_intl(set, jb, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Return the concatenation of a JSONB and a JSONB set
+ * @param[in] jb JSONB
+ * @param[in] set JSONB set
+ * @csqlfn #Concat_jsonb_jsonbset()
+ */
+Set *
+concat_jsonb_jsonbset(const Jsonb *jb, const Set *set)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jb, NULL); VALIDATE_JSONBSET(set, NULL);
+  return concat_jsonbset_jsonb_intl(set, jb, INVERT);
 }
 
 /*****************************************************************************/
