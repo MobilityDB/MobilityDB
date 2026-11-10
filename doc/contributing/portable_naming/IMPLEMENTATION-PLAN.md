@@ -166,6 +166,17 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   instant as that point at its time, rather than dropping it; and clips with the border
   included, so a point on the right or bottom edge of the tile is kept.
   MobilityDB #3537, MERGED as `9bed2dd9e3` (2026-11-10).
+- **An operator whose name its class or an ancestor already carries takes the name of its SQL
+  function** in the object layers generated from the catalog, as the owner ruled on 2026-11-10
+  ("go with your recommendation"): on `tjsonb`, `@>` / `<@` are `tjsonbContains` /
+  `tjsonbContained`, the containment of JSONB values answering a `tbool`, and `#@>` / `<@#` are
+  `spanContains` / `spanContained`, the containment of times answering a `boolean`. The time
+  containment stays `contains` / `contained`, which every temporal class inherits, and the value
+  containment is `TJsonb.tjsonbContains` / `tjsonbContained`, as SQL and MobilityDuck name it.
+  The rule belongs to the operator naming of MEOS-API `parser/object_model.py`; the portable
+  chapter of the manual (`tools/codegen/portable_aliases/generate.py`) names `#@>` and `<@#`
+  `tjsonbContains` and `tjsonbContained`, where SQL binds them to `spanContains` and
+  `spanContained`, and follows SQL.
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
