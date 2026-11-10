@@ -322,6 +322,7 @@ extern int point_segment_offset_sign(const double *p, const double *a,
   const double *b, int ndims, double r);
 extern int segment_interior_offset_sign(const double *a, const double *b,
   const double *c, const double *d, double r);
+extern int axis_offset_sign(double p, double a, double d);
 extern bool plane_normal_exact(const double *a, const double *b,
   const double *c, double *n);
 extern int plane_normal_offset_sign(const double *n, const double *a,

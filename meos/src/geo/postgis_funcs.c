@@ -3757,6 +3757,7 @@ typedef struct
   uint32_t nrings;           /**< Number of rings */
   const double *a, *b, *c;   /**< Three vertices spanning the plane */
   int axis;                  /**< An axis the normal is not parallel to */
+  int naxis;                 /**< The axis the normal lies along, or -1 */
   double lo[3], hi[3];       /**< Box of the vertices */
 } GeomFace;
 
@@ -3913,6 +3914,7 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
    * is one the normal is not parallel to */
   int k = (sn[2] != 0) ? 2 : ((sn[1] != 0) ? 1 : 0);
   face.axis = (k + 1) % 3;
+  face.naxis = naxis;
   if (gf->nfaces == gf->capfaces)
   {
     gf->capfaces *= 2;
@@ -4271,8 +4273,11 @@ geom_face_point_within(const GeomFace *f, const double *p, double dist)
     if (gap > dist * (1.0 + 0x1p-50) + 0x1p-1060)
       return false;
   }
-  return plane_point_offset_sign(f->a, f->b, f->c, p, dist) <= 0 &&
-    geom_face_inside(f, p, NULL);
+  /* A plane across an axis reads the gap on that axis (#axis_offset_sign) */
+  int s = (f->naxis >= 0) ?
+    axis_offset_sign(p[f->naxis], f->a[f->naxis], dist) :
+    plane_point_offset_sign(f->a, f->b, f->c, p, dist);
+  return s <= 0 && geom_face_inside(f, p, NULL);
 }
 
 /**
