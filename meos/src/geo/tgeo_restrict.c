@@ -426,6 +426,44 @@ clip_plane_param(const double *c1, const double *c2, ClipPlane a)
 }
 
 /**
+ * @brief Return the instant at which a segment reaches a clip constraint, as
+ * the offset in microseconds from the start of the segment, truncated
+ * @details The offset is the floor of `duration * (h - c1) / (c2 - c1)`. A
+ * candidate read from the doubles is moved to it by the sign of
+ * `duration * (h - c1) - k * (c2 - c1)`, the cross product of
+ * `(h, k) - (c1, 0)` and `(c2, duration) - (c1, 0)` decided on the input
+ * (#cross_product_sign), so the truncation is that of the exact parameter.
+ * An offset and a duration below 2^53 microseconds, 285 years, are exact
+ * doubles.
+ * @param[in] c1,c2 Coordinates of the start and end points of the segment
+ * @param[in] a Constraint
+ * @param[in] duration Duration of the segment
+ */
+static TimestampTz
+clip_plane_offset(const double *c1, const double *c2, ClipPlane a,
+  TimestampTz duration)
+{
+  if (a.axis < 0)
+    return (a.bound == 0.0) ? 0 : duration;
+  double s = c1[a.axis], e = c2[a.axis];
+  int sd = (e > s) ? 1 : -1;
+  double dur = (double) duration;
+  TimestampTz k = (TimestampTz) (dur * clip_plane_param(c1, c2, a));
+  if (k < 0)
+    k = 0;
+  if (k > duration)
+    k = duration;
+  /* The sign of duration * r - k */
+  while (k < duration && sd * cross_product_sign(s, 0.0, a.bound,
+      (double) (k + 1), s, 0.0, e, dur) >= 0)
+    k++;
+  while (k > 0 && sd * cross_product_sign(s, 0.0, a.bound, (double) k, s,
+      0.0, e, dur) < 0)
+    k--;
+  return k;
+}
+
+/**
  * @brief Compute the max border code of an end of the clip of a segment
  * @details The end lies on the plane `axis = hi` exactly where the parameter
  * of that plane is that of the end; a segment not moving along the axis lies
@@ -458,20 +496,20 @@ clipMaxBorderCode(const double *c1, const double *c2, const double *hi,
  * those of the planes it leaves it through. Each comparison of two of them
  * is the sign of a determinant on the input coordinates
  * (#clip_plane_param_cmp), so whether the segment meets the box, and which
- * planes hold the ends of the clip, are decided exactly; the parameters of
- * the two constraints holding the ends are computed only to date them
+ * planes hold the ends of the clip, are decided exactly, and each end is
+ * dated by the truncation of its exact parameter (#clip_plane_offset)
  * @param[in] point1,point2 Input points
  * @param[in] box Bounding box
  * @param[in] hasz Has Z dimension?
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @param[out] point3,point4 Output points
- * @param[out] p3_inc,p4_inc Are the points included or not in the box?
- * These are only written/returned when @p border_inc is false
- * @param[out] param3,param4 Parameters in [0,1] at which the segment takes
- * @p point3 and @p point4. The clip solves the border in this parameter, so it
- * states the crossing to digits the coordinates of the clipped point no longer
- * carry
+ * @param[in] duration Duration of the segment
+ * @param[out] p3_inc,p4_inc Are the ends of the clip included or not in the
+ * box? These are only written/returned when @p border_inc is false
+ * @param[out] off3,off4 Offsets in microseconds from the start of the segment
+ * at which the clip starts and ends, truncated, in [0, @p duration]; an end
+ * offset equal to @p duration states that the clip ends at the end of the
+ * segment
  * @return True if the line segment defined by p1,p2 intersects the bounding
  * box, false otherwise.
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
@@ -481,18 +519,15 @@ clipMaxBorderCode(const double *c1, const double *c2, const double *hi,
  */
 static bool
 liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2,
-  const STBox *box, bool hasz, bool border_inc, GSERIALIZED **point3,
-  GSERIALIZED **point4, bool *p3_inc, bool *p4_inc, double *param3,
-  double *param4)
+  const STBox *box, bool hasz, bool border_inc, TimestampTz duration,
+  bool *p3_inc, bool *p4_inc, TimestampTz *off3, TimestampTz *off4)
 {
   assert(MEOS_FLAGS_GET_X(box->flags));
   assert(! geopoint_eq(point1, point2));
   assert(! hasz || (MEOS_FLAGS_GET_Z(box->flags) &&
     (bool) FLAGS_GET_Z(point1->gflags) && (bool) FLAGS_GET_Z(point2->gflags)));
-
-  int32_t srid = box->srid;
-  assert(srid == gserialized_get_srid(point1) &&
-    srid == gserialized_get_srid(point2));
+  assert(box->srid == gserialized_get_srid(point1) &&
+    box->srid == gserialized_get_srid(point2));
 
   /* Get the input points */
   double c1[3] = {0.0, 0.0, 0.0}, c2[3] = {0.0, 0.0, 0.0};
@@ -556,29 +591,12 @@ liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2,
     }
   }
 
-  /* The ends of a clip reduced to a point take one parameter, and the end of
-   * the clip is not dated before its start: the exact order states they do
-   * not invert, which their rounded parameters may */
-  double t0 = clip_plane_param(c1, c2, start);
-  double t1 = clip_plane_param(c1, c2, end);
-  if (order == 0 || t1 < t0)
-    t1 = t0;
-  if (point3 && point4)
+  /* The truncation is monotone, so the end of the clip is not dated before
+   * its start, and a clip reduced to a point takes one instant */
+  if (off3 && off4)
   {
-    double v1[3], v2[3];
-    for (int k = 0; k < 3; k++)
-    {
-      double d = c2[k] - c1[k];
-      v1[k] = (t0 > 0) ? c1[k] + t0 * d : c1[k];
-      v2[k] = (t1 < 1) ? c1[k] + t1 * d : c2[k];
-    }
-    *point3 = geopoint_make(v1[0], v1[1], v1[2], hasz, false, srid);
-    *point4 = geopoint_make(v2[0], v2[1], v2[2], hasz, false, srid);
-  }
-  if (param3 && param4)
-  {
-    *param3 = t0;
-    *param4 = t1;
+    *off3 = clip_plane_offset(c1, c2, start, duration);
+    *off4 = (order == 0) ? *off3 : clip_plane_offset(c1, c2, end, duration);
   }
   return true;
 }
@@ -1053,7 +1071,6 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     const GSERIALIZED *p2 = DatumGetGserializedP(tinstant_value_p(inst2));
-    GSERIALIZED *p3, *p4;
     bool makeseq = false;
     if (geopoint_eq(p1, p2))
     {
@@ -1072,50 +1089,18 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     {
       /* Clip the segment */
       bool p3_inc = true, p4_inc = true;
-      double param3, param4;
-      bool found = liangBarskyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
-        &p3_inc, &p4_inc, &param3, &param4);
+      TimestampTz duration = inst2->t - inst1->t, off3, off4;
+      bool found = liangBarskyClip(p1, p2, box, hasz, border_inc, duration,
+        &p3_inc, &p4_inc, &off3, &off4);
       if (found)
       {
-        TInstant *inst1_2d, *inst2_2d;
-        /* If p2 != p4 or p4_inc is false, we exit the box,
-         * so end the previous sequence and start a new one */
-        if (! geopoint_eq(p2, p4) || ! p4_inc)
+        /* The clip dates each crossing by the truncation of the exact
+         * parameter at which the segment reaches the border, as the cell
+         * walks date theirs. The clip ends before the end of the segment
+         * exactly where it leaves the box, so the sequence ends there */
+        TimestampTz t1 = inst1->t + off3, t2 = inst1->t + off4;
+        if (off4 < duration || ! p4_inc)
           makeseq = true;
-        /* The clip states each crossing as the parameter at which the segment
-         * reaches the border, which dates it as the cell walks date theirs.
-         * Reading the parameter back out of the clipped point instead loses
-         * the border's low digits to the coordinates that carry it, and the
-         * crossing then falls a microsecond before the instant it happens */
-        TimestampTz t1, t2;
-        TimestampTz duration = inst2->t - inst1->t;
-        if (hasz_seq && ! hasz)
-        {
-          /* Force the computation at 2D */
-          inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
-          inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
-          p1 = DatumGetGserializedP(tinstant_value_p(inst1_2d));
-          p2 = DatumGetGserializedP(tinstant_value_p(inst2_2d));
-        }
-        /* Compute timestamp t1 of point p3 */
-        if (geopoint_eq(p1, p3))
-          t1 = inst1->t;
-        else if (geopoint_eq(p2, p3))
-          t1 = inst2->t;
-        else /* inst1->t < t1(p3) < inst2->t */
-          t1 = inst1->t + (TimestampTz) ((double) duration * param3);
-        /* Compute timestamp t2 of point p4  */
-        if (geopoint_eq(p2, p4))
-          t2 = inst2->t;
-        else if (geopoint_eq(p3, p4))
-          t2 = t1;
-        else /* inst1->t < t2(p4) < inst2->t */
-          t2 = inst1->t + (TimestampTz) ((double) duration * param4);
-        if (hasz_seq && ! hasz)
-        {
-          pfree(inst1_2d); pfree(inst2_2d);
-        }
-        pfree(p3); pfree(p4);
         /* A chord of the box shorter than a microsecond dates both its
          * crossings at one instant, which may be the instant the segment
          * starts at though the chord starts inside it. Entered through a
@@ -1603,8 +1588,8 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
     {
       /* Keep the segment if intersects the bounding box in the spatial
        * dimension */
-      if (liangBarskyClip(p1, p2, box, hasz, border_inc, NULL, NULL, NULL,
-          NULL, NULL, NULL))
+      if (liangBarskyClip(p1, p2, box, hasz, border_inc, 0, NULL, NULL, NULL,
+          NULL))
         inter = true;
     }
     if (inter)
