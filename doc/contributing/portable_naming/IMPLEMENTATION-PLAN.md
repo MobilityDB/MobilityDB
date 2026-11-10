@@ -202,11 +202,16 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   receipts; two probes print master's answers byte for byte (152 and 134 lines). The JSONB-first
   orders land on `Jsonb` beside its methods `concat`, `contains` and `contained` of two JSONB
   values, which answer another type, so the owner's ruling on colliding operators names them after
-  their SQL functions: branch `fix/operator-name-taken-on-its-class`, MEOS-API #269 (OPEN), makes
-  `#_sql_named_operators` compare an operator with the methods of its own class as well as its
-  ancestors' members; at MobilityDB `78ebe3b7fe` the catalog changes in four names alone
-  (`tConcat`, `setConcat`, `tjsonbContains`, `tjsonbContained`). MEOS.js branch
-  `gen/operand-order-by-name` regenerates on it (4370 methods, 2 ledger rows) and waits for #269.
+  their SQL functions: branch `fix/operator-name-taken-on-its-class`, MEOS-API #269, MERGED as
+  `6d1e006` (2026-11-10), makes `#_sql_named_operators` compare an operator with the methods of its
+  own class as well as its ancestors' members; at MobilityDB `78ebe3b7fe` the catalog changes in
+  four names alone (`tConcat`, `setConcat`, `tjsonbContains`, `tjsonbContained`). MEOS.js branch
+  `gen/operand-order-by-name`, MEOS.js #56 (OPEN), regenerates on it (4370 methods, 2 ledger rows,
+  1212 of 1212 tests). The bearings from a point, `bearing_point_tpoint` and `bearing_point_point`,
+  landed on no class, since no class has the prefix `point`; the owner approved on 2026-11-10
+  reading `point` as the `geo` token where a whole type token follows it: branch
+  `fix/point-token-names-a-geometry-operand`, MEOS-API #270 (OPEN), makes them `Geo.bearing`
+  (catalog diff: these two members alone; MEOS.js then emits 4373 methods, 2 ledger rows).
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
