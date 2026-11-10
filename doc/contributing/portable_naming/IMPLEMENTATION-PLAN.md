@@ -187,12 +187,19 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `4155f992a1`, 524 pairs `<op>_<a>_<b>` / `<op>_<b>_<a>` state it by name, 53 of them
   `contains_<a>_<b>` / `contained_<b>_<a>` and 9 in the JSONB family, against 4 functions taking a
   `bool invert`; the siblings keep the flag internal (`add_float_tfloat` calls
-  `arithop_tnumber_number(..., INVERT)`). Branch `fix/tjsonb-containment-per-operand-order` makes
+  `arithop_tnumber_number(..., INVERT)`). Its first commit makes
   `contains_tjsonb_jsonb(temp, jb)` take no flag and adds `contains_jsonb_tjsonb`,
   `contained_tjsonb_jsonb`, `contained_jsonb_tjsonb` and `contained_tjsonb_tjsonb`, each the MEOS twin
   of the SQL wrapper of its name, over a static `contains_tjsonb_jsonb_intl`, so the object layers
-  generate `tjsonbContains` and `tjsonbContained` with no flag. The other three, `concat_tjsonb_jsonb`,
-  `concat_jsonbset_jsonb` and `bearing_tpoint_point`, take the same shape once approved.
+  generate `tjsonbContains` and `tjsonbContained` with no flag. The owner asked on 2026-11-10 for one
+  template for the four functions taking the flag ("a North Star solution for all of them so we have
+  a single template to apply to all of them"): for each SQL wrapper `<Op>_<a>_<b>`, MEOS exports
+  `<op>_<a>_<b>`, taking its operands in that order and validating them, over a static
+  `<op>_<x>_<y>_intl(..., bool invert)` that asserts; the same branch adds
+  `bearing_point_tpoint`, `concat_jsonb_tjsonb` and `concat_jsonb_jsonbset` and drops the flag of
+  `bearing_tpoint_point`, `concat_tjsonb_jsonb` and `concat_jsonbset_jsonb`, so no public function
+  of MEOS takes one. Branch `fix/operand-order-by-name` (`d11badbf7c` on master `b1e26fdb03`), five
+  receipts; two probes print master's answers byte for byte (152 and 134 lines).
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
