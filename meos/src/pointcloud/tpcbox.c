@@ -370,9 +370,13 @@ tpcbox_in(const char *str)
   return tpcbox_parse(&str);
 }
 
+static char *tpcbox_wkt_out(const TPCBox *box, bool extended, int maxdd,
+  size_t *size_out);
+
 /**
  * @ingroup meos_pointcloud_box_inout
- * @brief Return the text representation of a TPCBox
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * TPCBox, its text prefixed with its SRID
  * @param[out] size_out Size of the result, the terminating null character
  * included
  * @details Examples (commas optional inside the parenthesised groups):
@@ -383,18 +387,54 @@ tpcbox_in(const char *str)
  * TPCBOX(T([2024-01-01, 2024-01-02]), 1)
  * GEODTPCBOX(ZT(((10, 20, 30), (40, 50, 60)), [2024-01-01, 2024-01-02]), 1)
  * @endcode
- * @csqlfn #Tpcbox_out(), #Tpcbox_as_text()
+ * @csqlfn #Tpcbox_out(), #Tpcbox_as_ewkt()
  */
 char *
 tpcbox_out(const TPCBox *box, int maxdd, size_t *size_out)
 {
-  size_t part_size;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TPCBOX(box, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
+  return tpcbox_wkt_out(box, true, maxdd, size_out);
+}
 
+/**
+ * @ingroup meos_pointcloud_box_inout
+ * @brief Return the Well-Known Text (WKT) representation of a TPCBox, its text
+ * without its SRID, as #stbox_as_text writes a spatiotemporal box
+ * @param[in] box TPCBox
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
+ * @csqlfn #Tpcbox_as_text()
+ */
+char *
+tpcbox_as_text(const TPCBox *box, int maxdd, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  VALIDATE_TPCBOX(box, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+  return tpcbox_wkt_out(box, false, maxdd, size_out);
+}
+
+/**
+ * @brief Return the text representation of a TPCBox, prefixed with its SRID
+ * when `extended` is true and the box has a spatial dimension whose SRID is
+ * known, as the static writer of #stbox_as_text writes a spatiotemporal box
+ * @param[in] box TPCBox
+ * @param[in] extended True for the Extended Well-Known Text (EWKT)
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
+ */
+static char *
+tpcbox_wkt_out(const TPCBox *box, bool extended, int maxdd, size_t *size_out)
+{
+  size_t part_size;
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
     *zmax = NULL, *period = NULL;
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
@@ -403,9 +443,9 @@ tpcbox_out(const TPCBox *box, int maxdd, size_t *size_out)
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
 
   char *str = palloc(TPCBOX_MAXLEN);
-  /* SRID is emitted as a prefix, matching the sibling (GEOD)STBOX text form */
+  /* The EWKT prefixes the SRID, as the (GEOD)STBOX text form does */
   char srid[18];
-  if (hasx && box->srid > 0)
+  if (extended && hasx && box->srid > 0)
     snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
   else
     srid[0] = '\0';

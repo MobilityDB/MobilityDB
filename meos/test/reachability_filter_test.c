@@ -39,7 +39,9 @@
  * #reachabilitystate_deserialize walks on as the one written. It closes a
  * session of five reports, more than half of them unreachable, with
  * #reachabilitystate_close, which hands back the kept reports of its head,
- * while the final function drops them. It then checks the errors of the
+ * while the final function drops them. It walks each report twice, a report
+ * at the time of the report before being walked once, and the walk answers
+ * as without the repeats. It then checks the errors of the
  * transition function, of the close and of the reading of the bytes under
  * the noexit error handler.
  *
@@ -209,6 +211,33 @@ main(void)
   for (int i = 0; i < 5; i++)
     free(short_reports[i]);
 
+  /* Each report given twice: a report at the time of the report before is the
+   * same report, walked once, so the walk answers as without the repeats */
+  ReachabilityState *repeated = NULL;
+  int nrepeated = 0;
+  for (int i = 0; i < NREPORTS; i++)
+  {
+    for (int copy = 0; copy < 2; copy++)
+    {
+      repeated = temporal_reachability_filter_transfn(repeated,
+        (TInstant *) reports[i], 100);
+      int count;
+      TInstant **insts = reachabilitystate_instants(repeated, &count);
+      for (int j = 0; j < count; j++)
+        free(insts[j]);
+      free(insts);
+      nrepeated += count;
+    }
+  }
+  check_int("reports of the repeated walk", reachabilitystate_reports(repeated),
+    13);
+  check_int("unreachable reports of the repeated walk",
+    reachabilitystate_unreachable(repeated), 3);
+  check_int("kept reports of the repeated walk",
+    reachabilitystate_kept(repeated), 11);
+  check_int("reports handed back by the repeated walk", nrepeated, 11);
+  reachabilitystate_free(repeated);
+
   /* Errors */
   int nnull;
   check_error("the close of no state",
@@ -218,6 +247,13 @@ main(void)
   check_error("a report before the last one",
     temporal_reachability_filter_transfn(state, (TInstant *) reports[4],
       100) == NULL, MEOS_ERR_INVALID_ARG_VALUE);
+  check_int("a report at the time of the last one keeps the state",
+    temporal_reachability_filter_transfn(state, (TInstant *) reports[5],
+      100) == state, 1);
+  check_int("errno after a report at the time of the last one",
+    meos_errno(), 0);
+  check_int("reports after a report at the time of the last one",
+    reachabilitystate_reports(state), 1);
   check_error("another maximum speed",
     temporal_reachability_filter_transfn(state, (TInstant *) reports[6],
       200) == NULL, MEOS_ERR_INVALID_ARG_VALUE);

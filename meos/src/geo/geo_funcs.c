@@ -45,6 +45,7 @@
 #include <utils/float.h>
 #include <utils/memutils.h>  /* TopMemoryContext */
 #include <pgtypes.h>
+#include <port/pg_bitutils.h>
 /* PostGIS */
 #include "liblwgeom.h"
 #include "liblwgeom_internal.h"
@@ -916,6 +917,7 @@ grow_expansion(int elen, const double *e, double b, double *h)
 static int cross_product_sign_wide(double ax, double ay, double bx,
   double by, double cx, double cy, double dx, double dy);
 static inline int double_lowest_bit(double a);
+static inline int double_lowest_set_bit(double a);
 
 /**
  * @brief Add the cross product of the vectors B - A and D - C, exactly, into
@@ -1023,9 +1025,9 @@ cross_product_sign_exact(double ax, double ay, double bx, double by,
   {
     low[i] = INT_MAX;
     if (d[i] != 0.0)
-      low[i] = double_lowest_bit(d[i]);
+      low[i] = double_lowest_set_bit(d[i]);
     if (t[i] != 0.0)
-      low[i] = Min(low[i], double_lowest_bit(t[i]));
+      low[i] = Min(low[i], double_lowest_set_bit(t[i]));
   }
   if ((low[0] != INT_MAX && low[1] != INT_MAX && low[0] + low[1] < -1074) ||
       (low[2] != INT_MAX && low[3] != INT_MAX && low[2] + low[3] < -1074))
@@ -1673,6 +1675,28 @@ double_lowest_bit(double a)
 }
 
 /**
+ * @brief Return the exponent of the lowest set bit of a nonzero finite
+ * double, the largest power of two it is a multiple of
+ * @details A product, a sum or a scaling by a power of two is exact where the
+ * lowest set bit of the exact result is not below 2^-1074, which the lowest
+ * set bits of the operands bound. The unit in the last place
+ * (#double_lowest_bit) bounds it too, but up to 52 bits lower: 2 has its unit
+ * in the last place at 2^-51, so beside a value of 2^134 the scaling that
+ * brings the largest into [1, 2) moves it below a bound that its lowest set
+ * bit, 2^1, stays above
+ */
+static inline int
+double_lowest_set_bit(double a)
+{
+  uint64_t bits;
+  memcpy(&bits, &a, sizeof(bits));
+  uint64_t mant = bits & 0xFFFFFFFFFFFFFULL;
+  if ((bits >> 52) & 0x7FF)
+    mant |= 1ULL << 52;
+  return double_lowest_bit(a) + pg_rightmost_one_pos64(mant);
+}
+
+/**
  * @brief Return the exponent of a power of two, the multiplier of a product
  */
 static inline int
@@ -1702,10 +1726,11 @@ square_products_exact(const double *left, const double *right,
     if (left[j] == 0.0 || right[j] == 0.0)
       continue;
     int ef = double_pow2_exponent(factor[j]);
-    int la = double_lowest_bit(left[j]), lb = double_lowest_bit(right[j]);
-    if (la + lb + ef < -1074)
+    if (double_lowest_set_bit(left[j]) + double_lowest_set_bit(right[j]) +
+        ef < -1074)
       return false;
-    /* A double is below 2^53 times its lowest bit */
+    /* A double is below 2^53 times its unit in the last place */
+    int la = double_lowest_bit(left[j]), lb = double_lowest_bit(right[j]);
     if (la + lb + ef + 106 > 1016)
       return false;
   }
@@ -1950,9 +1975,9 @@ lowest_bits_range(const double *v, int n, int *low, int *high)
   {
     if (v[i] == 0.0)
       continue;
-    int lb = double_lowest_bit(v[i]);
+    int lb = double_lowest_set_bit(v[i]), ub = double_lowest_bit(v[i]);
     *low = (lb < *low) ? lb : *low;
-    *high = (lb > *high) ? lb : *high;
+    *high = (ub > *high) ? ub : *high;
   }
 }
 
@@ -2136,12 +2161,12 @@ point_distance_scale_exact(const double *d, const double *e, int ndims, int k,
 {
   for (int i = 0; i < ndims; i++)
   {
-    if (d[i] != 0.0 && double_lowest_bit(d[i]) + k < -1074)
+    if (d[i] != 0.0 && double_lowest_set_bit(d[i]) + k < -1074)
       return false;
-    if (e[i] != 0.0 && double_lowest_bit(e[i]) + k < -1074)
+    if (e[i] != 0.0 && double_lowest_set_bit(e[i]) + k < -1074)
       return false;
   }
-  return r == 0.0 || double_lowest_bit(r) + k >= -1074;
+  return r == 0.0 || double_lowest_set_bit(r) + k >= -1074;
 }
 
 static double point_distance_offset_inputs(const double *p, const double *q,
@@ -2483,18 +2508,22 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
   }
   /* Scaling by 2^k, and halving, is exact where the lowest bit of the
    * result is not below 2^-1074, the scaled values below 2 */
-  int lc = (c == 0.0) ? INT_MAX : double_lowest_bit(c) + k;
-  int lg = double_lowest_bit(g) + k - 1;
+  int lc = (c == 0.0) ? INT_MAX : double_lowest_set_bit(c) + k;
+  int lg = double_lowest_set_bit(g) + k - 1;
   if (scaled && lc >= -1074 && lg >= -1074)
   {
     const double t[4] = {rs, c * f1 * f2, g * f1 * f2 / 2.0, rlos};
+    /* The range takes the lowest set bits below and the units in the last
+     * place above, as #lowest_bits_range takes them */
     if (lc != INT_MAX)
     {
+      int uc = double_lowest_bit(c) + k;
       low = (lc < low) ? lc : low;
-      high = (lc > high) ? lc : high;
+      high = (uc > high) ? uc : high;
     }
+    int ug = double_lowest_bit(g) + k - 1;
     low = (lg < low) ? lg : low;
-    high = (lg > high) ? lg : high;
+    high = (ug > high) ? ug : high;
     return point_distance_square_sign_given(d, e, ndims, t, nt,
       lowest_bits_exact(low, high));
   }
@@ -2913,7 +2942,7 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
      * double of the radius, every side is read on the input coordinates; the
      * first double of the radius is read below */
     if (! point_distance_scale_exact(d, e, ndims, k, 0.0) ||
-        (rlo != 0.0 && double_lowest_bit(rlo) + k < -1074))
+        (rlo != 0.0 && double_lowest_set_bit(rlo) + k < -1074))
       return point_distance_offset_inputs(p, q, ndims, r, rlo);
     /* Every scaled value is below 4, so its lowest bit is at most 2^-50 and
      * only the lowest one is tracked */
@@ -2925,20 +2954,20 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
       e[i] = e[i] * f1 * f2;
       sum += d[i] * d[i];
       if (d[i] != 0.0)
-        low = Min(low, double_lowest_bit(d[i]));
+        low = Min(low, double_lowest_set_bit(d[i]));
       if (e[i] != 0.0)
-        low = Min(low, double_lowest_bit(e[i]));
+        low = Min(low, double_lowest_set_bit(e[i]));
     }
     /* The radius scales exactly where its lowest bit stays above 2^-1074, and
      * otherwise lies far below the distance */
     rs = r * f1 * f2;
-    int lr = double_lowest_bit(r) + k;
+    int lr = double_lowest_set_bit(r) + k;
     scaled = (lr >= -1074);
     low = Min(low, lr);
     if (rlo != 0.0)
     {
       rlos = rlo * f1 * f2;
-      low = Min(low, double_lowest_bit(rlo) + k);
+      low = Min(low, double_lowest_set_bit(rlo) + k);
     }
 
     /* No farther apart than the radius: S - r^2 is not positive. The radius
@@ -3263,11 +3292,13 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
   return;
 }
 
-/** Number of 64-bit limbs of a #WideDyadic. The quantities
- * #point_motion_squares forms are products of up to six differences of
- * timestamps and four doubles, whose terms the exponents of the doubles spread
- * over at most about 9100 bits */
-#define WIDE_DYADIC_LIMBS 160
+/** Number of 64-bit limbs of a #WideDyadic. The widest quantities are the
+ * terms #polynomial_sign_wide forms for #segment_square_least: a coefficient
+ * times six exact sums of two doubles, a sum spanning the bits from the lowest
+ * of a double to past the largest and so at most 34 limbs, the coefficient
+ * times five of them at most 166, so the sixth product is formed in 200 limbs,
+ * which hold the sum of the 54 terms too */
+#define WIDE_DYADIC_LIMBS 200
 
 /**
  * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
@@ -5023,6 +5054,36 @@ wide_dyadic_accumulate_double(WideDyadic *acc, double x, int sign)
 }
 
 /**
+ * @brief Return the sign of a polynomial in exact sums held as #WideDyadic,
+ * computed exactly
+ * @details The counterpart of #polynomial_sign_exact for sums whose products
+ * leave the doubles: every term, its coefficient times its sums
+ * (#wide_dyadic_mul), is added to the total (#wide_dyadic_accumulate), whose
+ * sign is the exact one at any magnitude the doubles of the sums take
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] terms,nterms Terms of the polynomial and their number
+ * @return -1, 0, or 1
+ */
+static int
+polynomial_sign_wide(const WideDyadic *sums, const PolyTerm *terms,
+  int nterms)
+{
+  WideDyadic acc, prod, next;
+  wide_dyadic_set_double(&acc, 0.0);
+  for (int i = 0; i < nterms; i++)
+  {
+    wide_dyadic_set_double(&prod, terms[i].coef);
+    for (int k = 0; k < terms[i].deg; k++)
+    {
+      wide_dyadic_mul(&prod, &sums[terms[i].sum[k]], &next);
+      prod = next;
+    }
+    wide_dyadic_accumulate(&acc, &prod);
+  }
+  return acc.sign;
+}
+
+/**
  * @brief Return the value of a #WideDyadic, rounded, or an infinity or zero
  * outside the doubles
  */
@@ -6430,7 +6491,8 @@ linesegm_param_cmp(const double *a, const double *b, const double *p,
  * @details The path of #point_segment_distance_offset_exact where scaling the
  * coordinates would round a value or leave a product of four of them outside
  * the doubles, or where a difference overflows and a quarter of a coordinate
- * would round. Whether the nearest point is an end is the sign
+ * would round or the answer on the quarters falls below the normal doubles.
+ * Whether the nearest point is an end is the sign
  * #point_segment_dot_sign_inputs reads, an end is a pair of points
  * (#point_distance_offset_exact), and for the foot the answer is the smallest
  * double whose upper midpoint the distance less the radius does not pass
@@ -6567,7 +6629,7 @@ point_segment_scale_exact(const double *v, int n, int k)
 {
   for (int i = 0; i < n; i++)
   {
-    if (v[i] != 0.0 && double_lowest_bit(v[i]) + k < -268)
+    if (v[i] != 0.0 && double_lowest_set_bit(v[i]) + k < -268)
       return false;
   }
   return true;
@@ -6592,7 +6654,7 @@ point_segment_quarter_rounds(const double *p, const double *a,
   v[n++] = r;
   for (int i = 0; i < n; i++)
   {
-    if (v[i] != 0.0 && double_lowest_bit(v[i]) - 2 < -1074)
+    if (v[i] != 0.0 && double_lowest_set_bit(v[i]) - 2 < -1074)
       return true;
   }
   return false;
@@ -7323,7 +7385,10 @@ point_segment_distance_offset_exact(const double *p, const double *a,
   if ((sw == 2 || su == 2) && point_segment_quarter_rounds(p, a, b, ndims, r))
     return point_segment_distance_offset_inputs(p, a, b, ndims, r);
   /* A difference beyond the largest double: a quarter of every value is
-   * exact and its differences are doubles, so solve there and scale back */
+   * exact and its differences are doubles, so solve there and scale back,
+   * which keeps the nearest double where the answer on the quarters is a
+   * normal double; below the normal doubles it rounded to fewer bits than
+   * four times it has, and every sign is read on the input coordinates */
   if (sw == 2 || su == 2)
   {
     double p4[3] = {0.0}, a4[3] = {0.0}, b4[3] = {0.0};
@@ -7333,8 +7398,11 @@ point_segment_distance_offset_exact(const double *p, const double *a,
       a4[i] = a[i] / 4.0;
       b4[i] = b[i] / 4.0;
     }
-    return point_segment_distance_offset_exact(p4, a4, b4, ndims, r / 4.0) *
-      4.0;
+    double result = point_segment_distance_offset_exact(p4, a4, b4, ndims,
+      r / 4.0);
+    if (isnan(result) || result >= DBL_MIN)
+      return result * 4.0;
+    return point_segment_distance_offset_inputs(p, a, b, ndims, r);
   }
   double maxd = (maxw > maxu) ? maxw : maxu;
   int k;
@@ -7447,8 +7515,8 @@ point_segment_distance_offset_exact(const double *p, const double *a,
     memcpy(&cc, &b1, sizeof(cc)); \
     memcpy(&nn, &b2, sizeof(nn)); \
     /* A candidate or a half gap scaled below 2^-268: the input coordinates */ \
-    if ((cc != 0.0 && double_lowest_bit(cc) + k < -268) || \
-        (! isinf(nn) && double_lowest_bit(nn - cc) - 1 + k < -268)) \
+    if ((cc != 0.0 && double_lowest_set_bit(cc) + k < -268) || \
+        (! isinf(nn) && double_lowest_set_bit(nn - cc) - 1 + k < -268)) \
     { \
       (res) = point_segment_beyond_inputs(p, a, b, ndims, r, cc, nn, \
         (b1 & 1) != 0); \
@@ -7599,7 +7667,8 @@ edge_disk_circle(const double *p, double r, Edge *c)
  * @param[in] e Arc of three input points or half circle on a diameter
  * @param[in] r Radius, not negative
  * @return -1, 0 or 1, or 2 for an arc this function does not decide: a
- * centred arc, whose circle no input point fixes, or a radius of 0
+ * centred arc, whose circle no input point fixes, a radius of 0, or a
+ * meeting the exact numbers cannot tell (#arcarc_meet_exact)
  */
 int
 point_arc_offset_sign(const double *p, const Edge *e, double r)
@@ -7622,7 +7691,8 @@ point_arc_offset_sign(const double *p, const Edge *e, double r)
       Edge c;
       edge_disk_circle(p, r, &c);
       int meet, within[2][2];
-      arcarc_meet_exact(e, &c, &meet, within);
+      if (! arcarc_meet_exact(e, &c, &meet, within))
+        return 2;
       return (meet > 0) ? -1 : ((meet == 0) ? 0 : 1);
     }
     return (sa == 0 || sb == 0) ? 0 : 1;
@@ -7639,7 +7709,8 @@ point_arc_offset_sign(const double *p, const Edge *e, double r)
   Edge c;
   edge_disk_circle(p, r, &c);
   int meet, within[2][2];
-  arcarc_meet_exact(e, &c, &meet, within);
+  if (! arcarc_meet_exact(e, &c, &meet, within))
+    return 2;
   /* A meeting within the arc lies strictly between its ends */
   bool between = within[0][0] || within[1][0];
   if (meet > 0 && between)
@@ -7665,10 +7736,12 @@ typedef struct
  * @brief Return the sign of `x / y - u / v` for two squares of
  * #segment_distance_square, the sign of `x v - u y` since both denominators
  * are positive
+ * @details Read on the exact sums @p sums (#polynomial_sign_exact), or on
+ * @p wsums where it is not NULL (#polynomial_sign_wide)
  */
 static int
-segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
-  const SegmentSquare *s2)
+segment_square_cmp(const ExactSum *sums, const WideDyadic *wsums,
+  const SegmentSquare *s1, const SegmentSquare *s2)
 {
   PolyTerm terms[54];
   int n = 0;
@@ -7686,6 +7759,8 @@ segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
           sizeof(int) * y->den[j].deg);
       }
   }
+  if (wsums)
+    return polynomial_sign_wide(wsums, terms, n);
   return polynomial_sign_exact(sums, terms, n);
 }
 
@@ -7704,7 +7779,9 @@ segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
  * that brings the largest into [1, 2), which changes no sign, as
  * #point_segment_distance_offset_exact scales them; a product of six scaled
  * values is exact where each has its lowest bit at or above 2^-179, and below
- * 2^6, so none overflows
+ * 2^6, so none overflows. Where a scaled value has its lowest bit below
+ * 2^-179, the sums are held unscaled as #WideDyadic and the polynomials read
+ * on them (#polynomial_sign_wide), exact at any magnitude
  * @param[in] pt The point, the start and the end of the other segment, of
  * each of the four distances
  * @param[in] near Where the nearest point of each lies: 0 the start, 1 the
@@ -7712,7 +7789,7 @@ segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
  * @param[in] want The mask of the distances to compare
  * @param[in] ndims Number of coordinates, 2 or 3
  * @return The mask of those that reach the least, or -1 where a difference is
- * not finite, or where the scaling leaves a product of six outside the doubles
+ * not finite
  */
 static int
 segment_square_least(const double *pt[4][3], const int *near, int want,
@@ -7740,9 +7817,25 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
   int k;
   double f1, f2, g1, g2;
   point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  /* Whether a scaled value has its lowest bit below 2^-179 */
+  bool wide = false;
+  for (int i = 0; i < 4 && ! wide; i++)
+  {
+    if (! (want & (1 << i)))
+      continue;
+    for (int j = 0; j < 3; j++)
+      for (int cc = 0; cc < ndims; cc++)
+      {
+        double v = dv[i][j][cc], e = ev[i][j][cc];
+        if ((v != 0.0 && double_lowest_set_bit(v) + k < -179) ||
+            (e != 0.0 && double_lowest_set_bit(e) + k < -179))
+          wide = true;
+      }
+  }
   /* The exact sums, sum (3 i + j) * ndims + c for coordinate c of difference
-   * j of distance i */
+   * j of distance i, scaled in expansions, else unscaled in #WideDyadic */
   ExactSum sums[36];
+  WideDyadic *wsums = wide ? palloc(sizeof(WideDyadic) * 36) : NULL;
   for (int i = 0; i < 4; i++)
   {
     if (! (want & (1 << i)))
@@ -7751,11 +7844,19 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
       for (int cc = 0; cc < ndims; cc++)
       {
         double v = dv[i][j][cc], e = ev[i][j][cc];
-        if ((v != 0.0 && double_lowest_bit(v) + k < -179) ||
-            (e != 0.0 && double_lowest_bit(e) + k < -179))
-          return -1;
-        const double t[2] = {v * f1 * f2, e * f1 * f2};
-        exact_sum_set(&sums[(3 * i + j) * ndims + cc], t, 2);
+        int idx = (3 * i + j) * ndims + cc;
+        if (wide)
+        {
+          WideDyadic wv, we;
+          wide_dyadic_set_double(&wv, v);
+          wide_dyadic_set_double(&we, e);
+          wide_dyadic_add(&wv, &we, &wsums[idx]);
+        }
+        else
+        {
+          const double t[2] = {v * f1 * f2, e * f1 * f2};
+          exact_sum_set(&sums[idx], t, 2);
+        }
       }
   }
   /* The square of each distance */
@@ -7800,7 +7901,8 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
   {
     if (! (want & (1 << i)))
       continue;
-    int cmp = (best < 0) ? -1 : segment_square_cmp(sums, &sq[i], &sq[best]);
+    int cmp = (best < 0) ? -1 :
+      segment_square_cmp(sums, wsums, &sq[i], &sq[best]);
     if (cmp < 0)
     {
       best = i;
@@ -7809,6 +7911,8 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
     else if (cmp == 0)
       mask |= 1 << i;
   }
+  if (wsums)
+    pfree(wsums);
   return mask;
 }
 
@@ -9248,8 +9352,8 @@ segment_interior_distance(const double *a, const double *b, const double *c,
     for (int i = 0; i < 3; i++)
     {
       double x = dv[j][i], y = ev[j][i];
-      if ((x != 0.0 && double_lowest_bit(x) + k < -179) ||
-          (y != 0.0 && double_lowest_bit(y) + k < -179))
+      if ((x != 0.0 && double_lowest_set_bit(x) + k < -179) ||
+          (y != 0.0 && double_lowest_set_bit(y) + k < -179))
         return segment_interior_wide(a, b, c, d, result);
       const double t[2] = {x * f1 * f2, y * f1 * f2};
       exact_sum_set(&sums[3 * j + i], t, 2);
@@ -9376,8 +9480,8 @@ segment_interior_distance(const double *a, const double *b, const double *c,
     uint64_t b1 = (bb), b2 = (bb) + 1; \
     memcpy(&cc, &b1, sizeof(cc)); \
     memcpy(&nx, &b2, sizeof(nx)); \
-    if ((cc != 0.0 && double_lowest_bit(cc) + k < -179) || \
-        (! isinf(nx) && double_lowest_bit(nx - cc) - 1 + k < -179)) \
+    if ((cc != 0.0 && double_lowest_set_bit(cc) + k < -179) || \
+        (! isinf(nx) && double_lowest_set_bit(nx - cc) - 1 + k < -179)) \
     { \
       wide = true; \
       (res) = false; \
@@ -10089,16 +10193,18 @@ typedef struct
   int cap;
   bool unsafe;      /**< A product may have left the range where the
                          arithmetic of expansions is exact */
+  bool wide;        /**< Values are #WideDyadic rather than expansions */
 } ArcsegArena;
 
 /* An exact value: an expansion whose last component carries its sign, and a
  * bound on how far it may lie from the value, 0 unless a product's error
- * term underflowed */
+ * term underflowed; in a wide arena, a #WideDyadic instead */
 typedef struct
 {
   int n;
   double *e;
   double err;
+  WideDyadic *w;    /**< The value in a wide arena, NULL otherwise */
 } ArcsegExact;
 
 static double *
@@ -10133,6 +10239,17 @@ arcseg_arena_free(ArcsegArena *arena)
   arena->blocks = NULL;
   arena->n = arena->cap = arena->used = 0;
   arena->unsafe = false;
+  return;
+}
+
+/* An empty arena, of expansions or, where @p wide is set, of #WideDyadic */
+static void
+arcseg_arena_init(ArcsegArena *arena, bool wide)
+{
+  arena->used = arena->n = arena->cap = 0;
+  arena->unsafe = false;
+  arena->wide = wide;
+  arena->blocks = NULL;
   return;
 }
 
@@ -10195,13 +10312,77 @@ arcseg_f_sign(ArcsegFilter a)
   return (a.v > 0.0) ? 1 : -1;
 }
 
+/* The value an arena that left its exact range hands for every sum and
+ * product after: none of them is computed, as every answer of an unsafe
+ * arena is discarded, and an expansion holding a component that overflowed
+ * keeps every component of the values it is added to or multiplied by,
+ * compression merging none of them, so that each later sum or product
+ * would cost more than the last (#tx_spent) */
+static ArcsegExact
+arcseg_x_spent(ArcsegArena *arena)
+{
+  ArcsegExact r;
+  r.e = arcseg_arena_alloc(arena, 1);
+  r.e[0] = 0.0;
+  r.n = 1;
+  r.err = 0.0;
+  r.w = NULL;
+  return r;
+}
+
+/* A value of a wide arena, its #WideDyadic taken from the arena */
+static ArcsegExact
+arcseg_w_new(ArcsegArena *arena)
+{
+  ArcsegExact r;
+  r.e = NULL;
+  r.n = 0;
+  r.err = 0.0;
+  r.w = (WideDyadic *) arcseg_arena_alloc(arena,
+    (int) ((sizeof(WideDyadic) + sizeof(double) - 1) / sizeof(double)));
+  return r;
+}
+
+/* Whether the sum of two #WideDyadic fits in one, read before it is formed:
+ * #wide_dyadic_add aligns both to the lower of their lowest bits and answers
+ * zero, raising an error, where they do not fit (#wide_dyadic_aligned) */
+static bool
+arcseg_w_sum_fits(const WideDyadic *a, const WideDyadic *b)
+{
+  if (a->sign == 0 || b->sign == 0)
+    return true;
+  int e = Min(a->exp, b->exp);
+  int na = a->len + (a->exp - e) / 64 + 1;
+  int nb = b->len + (b->exp - e) / 64 + 1;
+  return Max(na, nb) + 1 <= WIDE_DYADIC_LIMBS;
+}
+
 static ArcsegExact
 arcseg_x_diff(ArcsegArena *arena, double a, double b)
 {
+  if (arena->wide)
+  {
+    /* A double that is not finite has no exact value */
+    if (arena->unsafe || ! isfinite(a) || ! isfinite(b))
+    {
+      arena->unsafe = true;
+      return arcseg_x_spent(arena);
+    }
+    WideDyadic wa, wb;
+    wide_dyadic_set_double(&wa, a);
+    wide_dyadic_set_double(&wb, b);
+    ArcsegExact r = arcseg_w_new(arena);
+    wide_dyadic_sub(&wa, &wb, r.w);
+    return r;
+  }
   ArcsegExact r;
+  r.w = NULL;
   r.e = arcseg_arena_alloc(arena, 2);
   double x, y;
   two_sum(a, - b, &x, &y);
+  /* A difference of two doubles past the largest double */
+  if (! isfinite(x))
+    arena->unsafe = true;
   r.err = 0.0;
   r.n = 0;
   if (y != 0.0)
@@ -10213,9 +10394,23 @@ arcseg_x_diff(ArcsegArena *arena, double a, double b)
 static ArcsegExact
 arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
 {
+  if (arena->unsafe)
+    return arcseg_x_spent(arena);
+  if (arena->wide)
+  {
+    if (! arcseg_w_sum_fits(a.w, b.w))
+    {
+      arena->unsafe = true;
+      return arcseg_x_spent(arena);
+    }
+    ArcsegExact r = arcseg_w_new(arena);
+    wide_dyadic_add(a.w, b.w, r.w);
+    return r;
+  }
   int cap = a.n + b.n;
   double *h = arcseg_arena_alloc(arena, cap);
   ArcsegExact r;
+  r.w = NULL;
   r.e = arcseg_arena_alloc(arena, cap);
   int hlen = expansion_sum(a.n, a.e, b.n, b.e, h, r.e);
   r.n = compress_expansion(hlen, h, r.e);
@@ -10226,8 +10421,24 @@ arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
 static ArcsegExact
 arcseg_x_scale(ArcsegArena *arena, ArcsegExact a, double k)
 {
+  if (arena->unsafe)
+    return arcseg_x_spent(arena);
+  if (arena->wide)
+  {
+    WideDyadic wk;
+    wide_dyadic_set_double(&wk, k);
+    if (a.w->len + wk.len > WIDE_DYADIC_LIMBS)
+    {
+      arena->unsafe = true;
+      return arcseg_x_spent(arena);
+    }
+    ArcsegExact r = arcseg_w_new(arena);
+    wide_dyadic_mul(a.w, &wk, r.w);
+    return r;
+  }
   /* A power of two scales every component exactly */
   ArcsegExact r;
+  r.w = NULL;
   r.e = arcseg_arena_alloc(arena, a.n);
   for (int i = 0; i < a.n; i++)
     r.e[i] = a.e[i] * k;
@@ -10262,13 +10473,29 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
    * 2^-968. Below it each of the products of two components may lose up to
    * 2^-1074, which the bound of the result carries; above the largest double
    * nothing is kept. The components grow in magnitude */
+  if (arena->unsafe)
+    return arcseg_x_spent(arena);
+  if (arena->wide)
+  {
+    if (a.w->len + b.w->len > WIDE_DYADIC_LIMBS)
+    {
+      arena->unsafe = true;
+      return arcseg_x_spent(arena);
+    }
+    ArcsegExact r = arcseg_w_new(arena);
+    wide_dyadic_mul(a.w, b.w, r.w);
+    return r;
+  }
   double under = 0.0;
   if (a.n > 0 && b.n > 0)
   {
     double lo = fabs(a.e[0]) * fabs(b.e[0]);
     double hi = fabs(a.e[a.n - 1]) * fabs(b.e[b.n - 1]);
     if (hi > 0x1p+1000)
+    {
       arena->unsafe = true;
+      return arcseg_x_spent(arena);
+    }
     /* A product of two components that are not zero may itself round to
      * zero, which is underflow and not a zero component */
     if (a.e[0] != 0.0 && b.e[0] != 0.0 && lo < 0x1p-968)
@@ -10279,6 +10506,7 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
   double *part = arcseg_arena_alloc(arena, 2 * a.n);
   ArcsegExact r;
   r.e = arcseg_arena_alloc(arena, cap);
+  r.w = NULL;
   int hlen = expansion_product(a.n, a.e, b.n, b.e, h, r.e, part);
   r.n = compress_expansion(hlen, h, r.e);
   r.err = 0.0;
@@ -10295,6 +10523,8 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
 static inline int
 arcseg_x_sign(ArcsegExact a)
 {
+  if (a.w)
+    return a.w->sign;
   double last = a.n > 0 ? a.e[a.n - 1] : 0.0;
   return (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
 }
@@ -10406,11 +10636,7 @@ arcseg_polynomials_exact(ArcsegArena *arena, double ax, double ay, double bx,
 #define XSUB(a, b) arcseg_x_sub(arena, a, b)
 #define XMUL(a, b) arcseg_x_mul(arena, a, b)
 #define XSCALE(a, k) arcseg_x_scale(arena, a, k)
-  ArcsegExact zero;
-  zero.e = arcseg_arena_alloc(arena, 1);
-  zero.e[0] = 0.0;
-  zero.n = 1;
-  zero.err = 0.0;
+  ArcsegExact zero = arcseg_x_diff(arena, 0.0, 0.0);
   ARCSEG_POLYNOMIALS(ArcsegExact, XDIFF, XADD, XSUB, XMUL, XSCALE, zero)
 #undef XDIFF
 #undef XADD
@@ -10488,15 +10714,11 @@ arcseg_signs_filter(double ax, double ay, double bx, double by,
     sg->q1 != 2 && sg->qh != 2 && sg->order != 2;
 }
 
-/* The same signs computed exactly */
-static void
-arcseg_signs_exact(double ax, double ay, double bx, double by,
-  const Edge *arc, ArcsegSigns *sg)
+/* #arcseg_signs_exact in the arithmetic of @p arena */
+static bool
+arcseg_signs_exact_ctx(ArcsegArena *arena, double ax, double ay, double bx,
+  double by, const Edge *arc, ArcsegSigns *sg)
 {
-  ArcsegArena arena_, *arena = &arena_;
-  arena_.used = arena_.n = arena_.cap = 0;
-  arena_.unsafe = false;
-  arena_.blocks = NULL;
   ArcsegExact qa, qb, qc, h1, h0, side;
   arcseg_polynomials_exact(arena, ax, ay, bx, by, arc, &qa, &qb, &qc, &h1,
     &h0, &side);
@@ -10505,14 +10727,34 @@ arcseg_signs_exact(double ax, double ay, double bx, double by,
 #define XSUB(a, b) arcseg_x_sub(arena, a, b)
 #define XMUL(a, b) arcseg_x_mul(arena, a, b)
 #define XSCALE(a, k) arcseg_x_scale(arena, a, k)
-  ARCSEG_SIGNS(ArcsegExact, arcseg_x_sign, XADD, XSUB, XMUL, XSCALE, XDIFF)
+#define XSIGN(a) arcseg_x_sign_checked(arena, a)
+  ARCSEG_SIGNS(ArcsegExact, XSIGN, XADD, XSUB, XMUL, XSCALE, XDIFF)
+#undef XSIGN
 #undef XDIFF
 #undef XADD
 #undef XSUB
 #undef XMUL
 #undef XSCALE
-  arcseg_arena_free(arena);
-  return;
+  return ! arena->unsafe;
+}
+
+/* The same signs computed exactly, false where neither expansions nor
+ * #WideDyadic hold them exactly (#arcseg_x_sign_checked) */
+static bool
+arcseg_signs_exact(double ax, double ay, double bx, double by,
+  const Edge *arc, ArcsegSigns *sg)
+{
+  /* In expansions, and once more in #WideDyadic where those cannot tell a
+   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  bool told = false;
+  for (int wide = 0; wide < 2 && ! told; wide++)
+  {
+    ArcsegArena arena;
+    arcseg_arena_init(&arena, wide == 1);
+    told = arcseg_signs_exact_ctx(&arena, ax, ay, bx, by, arc, sg);
+    arcseg_arena_free(&arena);
+  }
+  return told;
 }
 
 /* The sign of U + W sqrt(D) for D > 0, from the signs of U and W and of
@@ -10580,18 +10822,10 @@ arcseg_root_sign(int su, int sw, int sq)
   disc = SUB(MUL(qb, qb), SCALE(MUL(qa, qc), 4.0));                          \
 }
 
-/**
- * @brief Return the sign of the discriminant of the quadratic where the line
- * through A and B meets the circle of an arc, decided exactly: negative where
- * the line misses the circle, zero where it touches it, positive where it
- * crosses it
- * @details The discriminant (#ARCSEG_LINE_DISC) is read in doubles with a
- * bound on its error and formed again as expansions where the bound cannot
- * tell, as #arcseg_signs_exact forms its own
- */
+/* #arcseg_line_disc_sign in the arithmetic of @p arena */
 static int
-arcseg_line_disc_sign(double ax, double ay, double bx, double by,
-  const Edge *arc)
+arcseg_line_disc_sign_ctx(ArcsegArena *arena, double ax, double ay,
+  double bx, double by, const Edge *arc)
 {
   const ArcsegFilter one = {1.0, 0.0};
   int result;
@@ -10603,15 +10837,7 @@ arcseg_line_disc_sign(double ax, double ay, double bx, double by,
   }
   if (result != 2)
     return result;
-  ArcsegArena arena_, *arena = &arena_;
-  arena_.used = arena_.n = arena_.cap = 0;
-  arena_.unsafe = false;
-  arena_.blocks = NULL;
-  ArcsegExact xdisc, xone;
-  xone.e = arcseg_arena_alloc(arena, 1);
-  xone.e[0] = 1.0;
-  xone.n = 1;
-  xone.err = 0.0;
+  ArcsegExact xdisc, xone = arcseg_x_diff(arena, 1.0, 0.0);
 #define XDIFF(a, b) arcseg_x_diff(arena, a, b)
 #define XADD(a, b) arcseg_x_add(arena, a, b)
 #define XSUB(a, b) arcseg_x_sub(arena, a, b)
@@ -10627,9 +10853,35 @@ arcseg_line_disc_sign(double ax, double ay, double bx, double by,
 #undef XSUB
 #undef XMUL
 #undef XSCALE
-  result = arcseg_x_sign(xdisc);
-  arcseg_arena_free(arena);
-  return result;
+  return arcseg_x_sign_checked(arena, xdisc);
+}
+
+/**
+ * @brief Return the sign of the discriminant of the quadratic where the line
+ * through A and B meets the circle of an arc, decided exactly: negative where
+ * the line misses the circle, zero where it touches it, positive where it
+ * crosses it, and 2 where it is not told
+ * @details The discriminant (#ARCSEG_LINE_DISC) is read in doubles with a
+ * bound on its error and formed again as expansions where the bound cannot
+ * tell, as #arcseg_signs_exact forms its own
+ */
+static int
+arcseg_line_disc_sign(double ax, double ay, double bx, double by,
+  const Edge *arc)
+{
+  /* In expansions, and once more in #WideDyadic where those cannot tell a
+   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  for (int wide = 0; wide < 2; wide++)
+  {
+    ArcsegArena arena;
+    arcseg_arena_init(&arena, wide == 1);
+    int result = arcseg_line_disc_sign_ctx(&arena, ax, ay, bx, by, arc);
+    bool told = ! arena.unsafe;
+    arcseg_arena_free(&arena);
+    if (told)
+      return result;
+  }
+  return 2;
 }
 
 /*
@@ -10653,10 +10905,11 @@ static void arcarc_centre_exact(ArcsegArena *arena, const Edge *e,
   *sside = arc->diameter ? (arc->ccw ? -1 : 1) : SIGN(side);                 \
 }
 
-static void
-arcseg_shared_signs(double ax, double ay, double bx, double by,
-  const Edge *arc, bool exact, int *sqa, int *sqb, int *sab, int *s2ab,
-  int *sh1, int *sside)
+/* #arcseg_shared_signs in the arithmetic of @p arena */
+static bool
+arcseg_shared_signs_ctx(ArcsegArena *arena, double ax, double ay, double bx,
+  double by, const Edge *arc, bool exact, int *sqa, int *sqb, int *sab,
+  int *s2ab, int *sh1, int *sside)
 {
   ArcsegFilter qa, qb, qc, h1, h0, side;
   arcseg_polynomials_filter(ax, ay, bx, by, arc, &qa, &qb, &qc, &h1, &h0,
@@ -10665,11 +10918,7 @@ arcseg_shared_signs(double ax, double ay, double bx, double by,
     arcseg_f_sub, arcseg_f_mul, arcseg_f_scale)
   if (! exact || (*sqa != 2 && *sqb != 2 && *sab != 2 && *s2ab != 2 &&
       *sh1 != 2 && *sside != 2))
-    return;
-  ArcsegArena arena_, *arena = &arena_;
-  arena_.used = arena_.n = arena_.cap = 0;
-  arena_.unsafe = false;
-  arena_.blocks = NULL;
+    return true;
   /* The quadratic is k (|P(t) - C|^2 - r^2) with k of the sign of the
    * side of the arc's middle, 1 for a half circle on a diameter, so with
    * R = B - A: qa = k |R|^2, qb = 2 k (A - C).R, qa + qb = k R.(A + B - 2C)
@@ -10681,8 +10930,8 @@ arcseg_shared_signs(double ax, double ay, double bx, double by,
   ArcsegExact ry = arcseg_x_diff(arena, by, ay);
   ArcsegExact cx = arcseg_x_diff(arena, arc->ex, arc->sx);
   ArcsegExact cy = arcseg_x_diff(arena, arc->ey, arc->sy);
-  *sh1 = arcseg_x_sign(arcseg_x_sub(arena, arcseg_x_mul(arena, cx, ry),
-    arcseg_x_mul(arena, cy, rx)));
+  *sh1 = arcseg_x_sign_checked(arena, arcseg_x_sub(arena,
+    arcseg_x_mul(arena, cx, ry), arcseg_x_mul(arena, cy, rx)));
   int k;
   if (arc->diameter)
   {
@@ -10691,14 +10940,14 @@ arcseg_shared_signs(double ax, double ay, double bx, double by,
   }
   else
   {
-    *sside = arcseg_x_sign(arcseg_x_sub(arena, arcseg_x_mul(arena, cx,
-      arcseg_x_diff(arena, arc->my, arc->sy)), arcseg_x_mul(arena, cy,
-      arcseg_x_diff(arena, arc->mx, arc->sx))));
+    *sside = arcseg_x_sign_checked(arena, arcseg_x_sub(arena,
+      arcseg_x_mul(arena, cx, arcseg_x_diff(arena, arc->my, arc->sy)),
+      arcseg_x_mul(arena, cy, arcseg_x_diff(arena, arc->mx, arc->sx))));
     k = *sside;
   }
   ArcsegExact mx, my, nx, ny, d;
   arcarc_centre_exact(arena, arc, &mx, &my, &nx, &ny, &d);
-  int sd = arcseg_x_sign(d);
+  int sd = arcseg_x_sign_checked(arena, d);
   /* ((V - M) D - N).R for V = A and V = B */
   ArcsegExact va[2];
   const double vx[2] = {ax, bx}, vy[2] = {ay, by};
@@ -10712,11 +10961,32 @@ arcseg_shared_signs(double ax, double ay, double bx, double by,
       arcseg_x_mul(arena, wy, ry));
   }
   *sqa = k;
-  *sqb = k * sd * arcseg_x_sign(va[0]);
-  *sab = k * sd * arcseg_x_sign(arcseg_x_add(arena, va[0], va[1]));
-  *s2ab = k * sd * arcseg_x_sign(va[1]);
-  arcseg_arena_free(arena);
-  return;
+  *sqb = k * sd * arcseg_x_sign_checked(arena, va[0]);
+  *sab = k * sd * arcseg_x_sign_checked(arena,
+    arcseg_x_add(arena, va[0], va[1]));
+  *s2ab = k * sd * arcseg_x_sign_checked(arena, va[1]);
+  return ! arena->unsafe;
+}
+
+/* The signs in doubles, and exactly where @p exact and the doubles cannot
+ * tell one: false where #WideDyadic cannot hold them either */
+static bool
+arcseg_shared_signs(double ax, double ay, double bx, double by,
+  const Edge *arc, bool exact, int *sqa, int *sqb, int *sab, int *s2ab,
+  int *sh1, int *sside)
+{
+  /* In expansions, and once more in #WideDyadic where those cannot tell a
+   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  bool told = false;
+  for (int wide = 0; wide < 2 && ! told; wide++)
+  {
+    ArcsegArena arena;
+    arcseg_arena_init(&arena, wide == 1);
+    told = arcseg_shared_signs_ctx(&arena, ax, ay, bx, by, arc, exact, sqa,
+      sqb, sab, s2ab, sh1, sside);
+    arcseg_arena_free(&arena);
+  }
+  return told;
 }
 
 /*
@@ -10779,10 +11049,10 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
     out[0].smaller = false;
     return 1;
   }
-  if (sqa == 2 || sqb == 2 || sab == 2 || s2ab == 2 || sh1 == 2 ||
-      sside == 2)
-    arcseg_shared_signs(ax, ay, bx, by, arc, true, &sqa, &sqb, &sab, &s2ab,
-      &sh1, &sside);
+  if ((sqa == 2 || sqb == 2 || sab == 2 || s2ab == 2 || sh1 == 2 ||
+      sside == 2) && ! arcseg_shared_signs(ax, ay, bx, by, arc, true, &sqa,
+      &sqb, &sab, &s2ab, &sh1, &sside))
+    return -2;
   if (sqa == 0 || sside == 0)
     return -2;
   /* Each meeting is classified as #arcsegm_meet_exact classifies a root; the
@@ -10900,8 +11170,9 @@ arcsegm_meet_exact(double ax, double ay, double bx, double by,
     return nshared;
   ArcsegSigns sg;
   double roots[2];
-  if (! arcseg_signs_filter(ax, ay, bx, by, arc, &sg, roots))
-    arcseg_signs_exact(ax, ay, bx, by, arc, &sg);
+  if (! arcseg_signs_filter(ax, ay, bx, by, arc, &sg, roots) &&
+      ! arcseg_signs_exact(ax, ay, bx, by, arc, &sg))
+    return -1;
   /* No circle, or an arc of three points on one line */
   if (sg.qa == 0 || sg.side == 0)
     return -1;
@@ -11054,36 +11325,12 @@ arcarc_radius2_exact(ArcsegArena *arena, const Edge *e, ArcsegExact mx,
     arcseg_x_mul(arena, sy, sy));
 }
 
-/**
- * @brief Return the signs that place the second meeting of the circles of
- * two arcs sharing a point, decided exactly
- * @details Two distinct circles through a point J meet again at the
- * reflection Q of J across the line of their centres C1 and C2, and at J
- * alone where they touch there. With d = C2 - C1:
- * - @p s1, the sign of d x (J - C1), is 0 exactly where the circles touch at
- *   J, and gives the sense the two cross in: their tangents at J cross with
- *   that sign, at Q with the other one, each turned by the sense its arc
- *   turns;
- * - @p sp and @p sq, the signs of (E - S) . d for the chord S -> E of each
- *   arc, place Q on a side of the chord of an arc ending at J: Q - J is
- *   -2 (d x (J - C1)) / |d|^2 rot(d), and the chord crossed with rot(d) is
- *   the chord dotted with d, so the side is -s1 sp.
- * The centres are rational in the input coordinates (#arcarc_centre_exact),
- * so each sign is that of a polynomial in them once the denominators are
- * cleared, and each is computed exactly as expansions
- * @param[in] p,q Arcs, of two distinct circles, both holding J
- * @param[in] jx,jy The point they share, an input vertex
- * @param[out] s1,sp,sq The signs
- */
-void
-arcarc_shared_point_signs(const Edge *p, const Edge *q, double jx, double jy,
-  int *s1, int *sp, int *sq)
+/* #arcarc_shared_point_signs in the arithmetic of @p arena */
+static bool
+arcarc_shared_point_signs_ctx(ArcsegArena *arena, const Edge *p,
+  const Edge *q, double jx, double jy, int *s1, int *sp, int *sq)
 {
   assert(p); assert(q); assert(s1); assert(sp); assert(sq);
-  ArcsegArena arena_, *arena = &arena_;
-  arena_.used = arena_.n = arena_.cap = 0;
-  arena_.unsafe = false;
-  arena_.blocks = NULL;
   ArcsegExact m1x, m1y, n1x, n1y, d1, m2x, m2y, n2x, n2y, d2;
   arcarc_centre_exact(arena, p, &m1x, &m1y, &n1x, &n1y, &d1);
   arcarc_centre_exact(arena, q, &m2x, &m2y, &n2x, &n2y, &d2);
@@ -11105,20 +11352,60 @@ arcarc_shared_point_signs(const Edge *p, const Edge *q, double jx, double jy,
   ArcsegExact gx = arcseg_x_sub(arena, arcseg_x_mul(arena, d1, jx1), n1x);
   ArcsegExact gy = arcseg_x_sub(arena, arcseg_x_mul(arena, d1, jy1), n1y);
   /* (D1 D2 d) x (D1 (J - C1)) = D1^2 D2 (d x (J - C1)) */
-  int sd2 = arcseg_x_sign(d2), sd12 = arcseg_x_sign(d12);
-  *s1 = arcseg_x_sign(arcseg_x_sub(arena, arcseg_x_mul(arena, dx, gy),
-    arcseg_x_mul(arena, dy, gx))) * sd2;
+  int sd2 = arcseg_x_sign_checked(arena, d2);
+  int sd12 = arcseg_x_sign_checked(arena, d12);
+  *s1 = arcseg_x_sign_checked(arena, arcseg_x_sub(arena,
+    arcseg_x_mul(arena, dx, gy), arcseg_x_mul(arena, dy, gx))) * sd2;
   const Edge *arcs[2] = {p, q};
   int *out[2] = {sp, sq};
   for (int k = 0; k < 2; k++)
   {
     ArcsegExact cx = arcseg_x_diff(arena, arcs[k]->ex, arcs[k]->sx);
     ArcsegExact cy = arcseg_x_diff(arena, arcs[k]->ey, arcs[k]->sy);
-    *out[k] = arcseg_x_sign(arcseg_x_add(arena, arcseg_x_mul(arena, cx, dx),
-      arcseg_x_mul(arena, cy, dy))) * sd12;
+    *out[k] = arcseg_x_sign_checked(arena, arcseg_x_add(arena,
+      arcseg_x_mul(arena, cx, dx), arcseg_x_mul(arena, cy, dy))) * sd12;
   }
-  arcseg_arena_free(arena);
-  return;
+  return ! arena->unsafe;
+}
+
+/**
+ * @brief Return the signs that place the second meeting of the circles of
+ * two arcs sharing a point, decided exactly
+ * @details Two distinct circles through a point J meet again at the
+ * reflection Q of J across the line of their centres C1 and C2, and at J
+ * alone where they touch there. With d = C2 - C1:
+ * - @p s1, the sign of d x (J - C1), is 0 exactly where the circles touch at
+ *   J, and gives the sense the two cross in: their tangents at J cross with
+ *   that sign, at Q with the other one, each turned by the sense its arc
+ *   turns;
+ * - @p sp and @p sq, the signs of (E - S) . d for the chord S -> E of each
+ *   arc, place Q on a side of the chord of an arc ending at J: Q - J is
+ *   -2 (d x (J - C1)) / |d|^2 rot(d), and the chord crossed with rot(d) is
+ *   the chord dotted with d, so the side is -s1 sp.
+ * The centres are rational in the input coordinates (#arcarc_centre_exact),
+ * so each sign is that of a polynomial in them once the denominators are
+ * cleared, and each is computed exactly as expansions
+ * @param[in] p,q Arcs, of two distinct circles, both holding J
+ * @param[in] jx,jy The point they share, an input vertex
+ * @param[out] s1,sp,sq The signs
+ * @return False where neither expansions nor #WideDyadic hold them
+ * exactly (#arcseg_x_sign_checked)
+ */
+bool
+arcarc_shared_point_signs(const Edge *p, const Edge *q, double jx, double jy,
+  int *s1, int *sp, int *sq)
+{
+  /* In expansions, and once more in #WideDyadic where those cannot tell a
+   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  bool told = false;
+  for (int wide = 0; wide < 2 && ! told; wide++)
+  {
+    ArcsegArena arena;
+    arcseg_arena_init(&arena, wide == 1);
+    told = arcarc_shared_point_signs_ctx(&arena, p, q, jx, jy, s1, sp, sq);
+    arcseg_arena_free(&arena);
+  }
+  return told;
 }
 
 /* The two circles of a pair of arcs, exactly, in the terms of
@@ -11171,6 +11458,7 @@ arcarc_circles_exact(ArcsegArena *arena, const Edge *p, const Edge *q,
 static bool
 arcseg_x_bounds(ArcsegExact a, double out[2])
 {
+  assert(! a.w);
   double sum = 0.0, mag = 0.0;
   for (int i = 0; i < a.n; i++)
   {
@@ -11204,9 +11492,7 @@ arcarc_crossing_terms(const Edge *p, const Edge *q,
 {
   assert(p); assert(q); assert(terms);
   ArcsegArena arena_, *arena = &arena_;
-  arena_.used = arena_.n = arena_.cap = 0;
-  arena_.unsafe = false;
-  arena_.blocks = NULL;
+  arcseg_arena_init(arena, false);
   ArcarcCircles c;
   arcarc_circles_exact(arena, p, q, &c);
   const ArcsegExact *x[ARCARC_NTERMS] = {&c.m1x, &c.m1y, &c.n1x, &c.n1y,
@@ -11218,41 +11504,19 @@ arcarc_crossing_terms(const Edge *p, const Edge *q,
   return ok;
 }
 
-/**
- * @brief Return where the circles of two arcs meet and whether each meeting
- * lies within both arcs, decided exactly
- * @details With the centres C = M + N / D of #arcarc_centre_exact and
- * L = D1 D2, the vector d = C2 - C1 times L is d' = L (M2 - M1) + D1 N2 -
- * D2 N1, Q = |d'|^2, and the squared radii times L^2 are R1' = |s1|^2 D2^2
- * and R2' = |s2|^2 D1^2, sk = Dk (Sk - Mk) - Nk. The circles meet where
- * H = 4 R1' Q - (Q + R1' - R2')^2 is not negative, at
- * P = B + sigma f rot(d), B on the line of the centres. A point of the circle
- * of an arc lies within it where it stands on the arc's side of its chord
- * c = E - S; for P that is the sign of U'' + sigma W'' sqrt(H) times the sign
- * of L, with U'' = 2 Q D2 (c x e') + (Q + R1' - R2') (c x d'),
- * e' = D1 (M1 - S) + N1, and W'' = c . d', which #arcseg_root_sign reads from
- * the signs of U'', W'' and U''^2 - W''^2 H; every point of the circle of a
- * centred arc lies within it. The tangents of the two circles
- * at P cross with the sign sigma times the senses the arcs turn
- * @param[in] p,q Arcs of two distinct circles
- * @param[out] meet The sign of H; for each sigma = -1, 1 in turn, whether P
- * lies within @p p and within @p q (1 or 0)
- */
-void
-arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
+/* #arcarc_meet_exact in the arithmetic of @p arena */
+static bool
+arcarc_meet_exact_ctx(ArcsegArena *arena, const Edge *p, const Edge *q,
+  int *meet, int within[2][2])
 {
   assert(p); assert(q); assert(meet); assert(within);
-  ArcsegArena arena_, *arena = &arena_;
-  arena_.used = arena_.n = arena_.cap = 0;
-  arena_.unsafe = false;
-  arena_.blocks = NULL;
   ArcarcCircles cc;
   arcarc_circles_exact(arena, p, q, &cc);
   ArcsegExact m1x = cc.m1x, m1y = cc.m1y, n1x = cc.n1x, n1y = cc.n1y,
     d1 = cc.d1, d2 = cc.d2, dx = cc.dx, dy = cc.dy, qq = cc.qq, g = cc.g,
     h = cc.h;
-  int sl = arcseg_x_sign(cc.l);
-  *meet = arcseg_x_sign(h);
+  int sl = arcseg_x_sign_checked(arena, cc.l);
+  *meet = arcseg_x_sign_checked(arena, h);
   const Edge *arcs[2] = {p, q};
   for (int k = 0; k < 2; k++)
   {
@@ -11279,8 +11543,10 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
       arcseg_x_mul(arena, g, cd));
     ArcsegExact w = arcseg_x_add(arena, arcseg_x_mul(arena, cx, dx),
       arcseg_x_mul(arena, cy, dy));
-    int su = arcseg_x_sign(u), sw = arcseg_x_sign(w);
-    int sq = arcseg_x_sign(arcseg_x_sub(arena, arcseg_x_mul(arena, u, u),
+    int su = arcseg_x_sign_checked(arena, u);
+    int sw = arcseg_x_sign_checked(arena, w);
+    int sq = arcseg_x_sign_checked(arena, arcseg_x_sub(arena,
+      arcseg_x_mul(arena, u, u),
       arcseg_x_mul(arena, arcseg_x_mul(arena, w, w), h)));
     int want = e->diameter ? (e->ccw ? -1 : 1) :
       cross_product_sign(e->sx, e->sy, e->ex, e->ey, e->sx, e->sy, e->mx,
@@ -11292,8 +11558,45 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
       within[r][k] = (side * sl == want) ? 1 : 0;
     }
   }
-  arcseg_arena_free(arena);
-  return;
+  return ! arena->unsafe;
+}
+
+/**
+ * @brief Return where the circles of two arcs meet and whether each meeting
+ * lies within both arcs, decided exactly
+ * @details With the centres C = M + N / D of #arcarc_centre_exact and
+ * L = D1 D2, the vector d = C2 - C1 times L is d' = L (M2 - M1) + D1 N2 -
+ * D2 N1, Q = |d'|^2, and the squared radii times L^2 are R1' = |s1|^2 D2^2
+ * and R2' = |s2|^2 D1^2, sk = Dk (Sk - Mk) - Nk. The circles meet where
+ * H = 4 R1' Q - (Q + R1' - R2')^2 is not negative, at
+ * P = B + sigma f rot(d), B on the line of the centres. A point of the circle
+ * of an arc lies within it where it stands on the arc's side of its chord
+ * c = E - S; for P that is the sign of U'' + sigma W'' sqrt(H) times the sign
+ * of L, with U'' = 2 Q D2 (c x e') + (Q + R1' - R2') (c x d'),
+ * e' = D1 (M1 - S) + N1, and W'' = c . d', which #arcseg_root_sign reads from
+ * the signs of U'', W'' and U''^2 - W''^2 H; every point of the circle of a
+ * centred arc lies within it. The tangents of the two circles
+ * at P cross with the sign sigma times the senses the arcs turn
+ * @param[in] p,q Arcs of two distinct circles
+ * @param[out] meet The sign of H; for each sigma = -1, 1 in turn, whether P
+ * lies within @p p and within @p q (1 or 0)
+ * @return False where neither expansions nor #WideDyadic hold these
+ * signs exactly (#arcseg_x_sign_checked)
+ */
+bool
+arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
+{
+  /* In expansions, and once more in #WideDyadic where those cannot tell a
+   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  bool told = false;
+  for (int wide = 0; wide < 2 && ! told; wide++)
+  {
+    ArcsegArena arena;
+    arcseg_arena_init(&arena, wide == 1);
+    told = arcarc_meet_exact_ctx(&arena, p, q, meet, within);
+    arcseg_arena_free(&arena);
+  }
+  return told;
 }
 /* The direction an edge leaves a point of it in, scaled by a positive
  * factor, exactly: the segment itself, or the radius of an arc to the point
@@ -11317,7 +11620,7 @@ edge_direction_exact(ArcsegArena *arena, const Edge *e, bool ccw, bool out,
       arcseg_x_sub(arena, arcseg_x_diff(arena, vx, 0.0), mx), d), nx);
     ArcsegExact wy = arcseg_x_sub(arena, arcseg_x_mul(arena,
       arcseg_x_sub(arena, arcseg_x_diff(arena, vy, 0.0), my), d), ny);
-    if (arcseg_x_sign(d) < 0)
+    if (arcseg_x_sign_checked(arena, d) < 0)
     {
       wx = arcseg_x_scale(arena, wx, -1.0);
       wy = arcseg_x_scale(arena, wy, -1.0);
@@ -11344,6 +11647,10 @@ edge_direction_half_plane(int sx, int sy)
   return sx > 0 ? 0 : (sx < 0 ? 1 : 2);
 }
 
+static int edges_turn_cmp_exact_ctx(ArcsegArena *arena, const Edge *e1,
+  bool ccw1, bool out1, const Edge *e2, bool ccw2, bool out2, double vx,
+  double vy);
+
 /**
  * @brief Return how two edges leaving a point of both are ordered
  * counterclockwise from the positive x axis, decided exactly
@@ -11360,16 +11667,34 @@ edge_direction_half_plane(int sx, int sy)
  * arrives at it
  * @param[in] vx,vy The point, an end of each edge or a vertex on it
  * @return -1 where the first comes before the second, 1 where after, 2 where
- * the two leave alike: two segments, two arcs or an edge along the axis
+ * the two leave alike, two segments, two arcs or an edge along the axis, or
+ * where it is not told (#arcseg_x_sign_checked)
  */
 int
 edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
   bool ccw2, bool out2, double vx, double vy)
 {
-  ArcsegArena arena_, *arena = &arena_;
-  arena_.used = arena_.n = arena_.cap = 0;
-  arena_.unsafe = false;
-  arena_.blocks = NULL;
+  /* In expansions, and once more in #WideDyadic where those cannot tell a
+   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  for (int wide = 0; wide < 2; wide++)
+  {
+    ArcsegArena arena;
+    arcseg_arena_init(&arena, wide == 1);
+    int result = edges_turn_cmp_exact_ctx(&arena, e1, ccw1, out1, e2, ccw2,
+      out2, vx, vy);
+    bool told = ! arena.unsafe;
+    arcseg_arena_free(&arena);
+    if (told)
+      return result;
+  }
+  return 2;
+}
+
+/* #edges_turn_cmp_exact in the arithmetic of @p arena */
+static int
+edges_turn_cmp_exact_ctx(ArcsegArena *arena, const Edge *e1, bool ccw1,
+  bool out1, const Edge *e2, bool ccw2, bool out2, double vx, double vy)
+{
   ArcsegExact ax, ay, bx, by;
   if (e1)
     edge_direction_exact(arena, e1, ccw1, out1, vx, vy, &ax, &ay);
@@ -11385,8 +11710,10 @@ edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
     bx = arcseg_x_diff(arena, 1.0, 0.0);
     by = arcseg_x_diff(arena, 0.0, 0.0);
   }
-  int ha = edge_direction_half_plane(arcseg_x_sign(ax), arcseg_x_sign(ay));
-  int hb = edge_direction_half_plane(arcseg_x_sign(bx), arcseg_x_sign(by));
+  int ha = edge_direction_half_plane(arcseg_x_sign_checked(arena, ax),
+    arcseg_x_sign_checked(arena, ay));
+  int hb = edge_direction_half_plane(arcseg_x_sign_checked(arena, bx),
+    arcseg_x_sign_checked(arena, by));
   int result = 2;
   if (ha != 2 && hb != 2)
   {
@@ -11394,8 +11721,8 @@ edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
       result = ha < hb ? -1 : 1;
     else
     {
-      int s = arcseg_x_sign(arcseg_x_sub(arena, arcseg_x_mul(arena, ax, by),
-        arcseg_x_mul(arena, ay, bx)));
+      int s = arcseg_x_sign_checked(arena, arcseg_x_sub(arena,
+        arcseg_x_mul(arena, ax, by), arcseg_x_mul(arena, ay, bx)));
       if (s != 0)
         result = s > 0 ? -1 : 1;
       else if (e1 && e2)
@@ -11421,7 +11748,6 @@ edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
       }
     }
   }
-  arcseg_arena_free(arena);
   return result;
 }
 
@@ -11570,9 +11896,7 @@ typedef struct
 static void
 tower_ctx_init(TowerCtx *ctx, bool wide)
 {
-  ctx->arena.used = ctx->arena.n = ctx->arena.cap = 0;
-  ctx->arena.unsafe = false;
-  ctx->arena.blocks = NULL;
+  arcseg_arena_init(&ctx->arena, false);
   ctx->wide = wide;
   ctx->filter = false;
   ctx->dd = false;
@@ -15078,9 +15402,7 @@ meets_order_scaled(const Edge *e, bool ccw, const MeetPoint *a,
   const MeetPoint *b)
 {
   ArcsegArena arena_, *arena = &arena_;
-  arena_.used = arena_.n = arena_.cap = 0;
-  arena_.unsafe = false;
-  arena_.blocks = NULL;
+  arcseg_arena_init(arena, false);
   MeetExact pa, pb;
   double ox = e->x1, oy = e->y1;
   meet_point_exact(arena, a, ox, oy, &pa);
@@ -19068,8 +19390,11 @@ geo_force2d_intl(const GSERIALIZED *gs)
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWGEOM *flat = lwgeom_force_2d(geom);
-  /* The function builds the result from the dimensions alone */
-  lwgeom_set_geodetic(flat, FLAGS_GET_GEODETIC(geom->flags));
+  /* The function builds the result from the dimensions alone, so a geodetic
+   * value is flagged again; a planar one, which can be of a type such as a
+   * polyhedral surface that #lwgeom_set_geodetic does not walk, needs no flag */
+  if (FLAGS_GET_GEODETIC(geom->flags))
+    lwgeom_set_geodetic(flat, true);
   lwgeom_free(geom);
   GSERIALIZED *result = geo_serialize(flat);
   lwgeom_free(flat);
@@ -19088,8 +19413,11 @@ geo_force3d_intl(const GSERIALIZED *gs, double zvalue)
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWGEOM *lifted = lwgeom_force_3dz(geom, zvalue);
-  /* The function builds the result from the dimensions alone */
-  lwgeom_set_geodetic(lifted, FLAGS_GET_GEODETIC(geom->flags));
+  /* The function builds the result from the dimensions alone, so a geodetic
+   * value is flagged again; a planar one, which can be of a type such as a
+   * polyhedral surface that #lwgeom_set_geodetic does not walk, needs no flag */
+  if (FLAGS_GET_GEODETIC(geom->flags))
+    lwgeom_set_geodetic(lifted, true);
   lwgeom_free(geom);
   GSERIALIZED *result = geo_serialize(lifted);
   lwgeom_free(lifted);

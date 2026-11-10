@@ -2781,3 +2781,24 @@ SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-
 
 SELECT trgeometry 'SRID=3857;Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeography;
 ERROR:  Only lon/lat coordinate systems are supported
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03, Pose(Point(5 5),0)@2001-01-04]'));
+                                                                                                               astext                                                                                                                
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 0));{[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(5 5),0)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(5 5),0)@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 0));{[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1.5 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03]', 1.0, '1 day'));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 0));{[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1.5 1),0)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+/* Errors */
+SELECT stops(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(5 5),0)@2001-01-02]');
+ERROR:  Input must be a temporal sequence (set) with linear interpolation

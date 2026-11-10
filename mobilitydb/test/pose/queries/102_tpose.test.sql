@@ -781,3 +781,16 @@ SELECT tContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'Geo
 SELECT eDisjoint(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01', geometry 'SRID=4326;Point(1 2)');
 SELECT eDisjoint(tpose 'SRID=4326;Pose(Point(1 2),0.5)@2001-01-01', geography 'SRID=4326;Point(1 2)');
 SELECT convexHull(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
+
+-------------------------------------------------------------------------------
+-- stops: the size of the area is the greatest distance between two positions
+-------------------------------------------------------------------------------
+
+SELECT asText(stops(tpose '[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0)@2001-01-02, Pose(Point(2 2),0)@2001-01-03, Pose(Point(2 2),0)@2001-01-04]'));
+-- A pose that turns in place stays at its position
+SELECT asText(stops(tpose '[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
+SELECT asText(stops(tpose '{[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1.5 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03], [Pose(Point(9 9),0)@2001-01-05, Pose(Point(9 9),0)@2001-01-07]}', 1.0, '36 hours'));
+SELECT asText(stops(tpose '[Pose(Point(1 1 1),1,0,0,0)@2001-01-01, Pose(Point(1 1 9),1,0,0,0)@2001-01-02, Pose(Point(5 5 9),1,0,0,0)@2001-01-03]'));
+SELECT asText(stops(tpose '[GeodPose(Point(4.35 50.85),0)@2001-01-01, GeodPose(Point(4.3501 50.85),0)@2001-01-02, GeodPose(Point(4.40 50.85),0)@2001-01-03]', 10.0));
+/* Errors */
+SELECT stops(tpose 'Pose(Point(1 1),0)@2001-01-01');

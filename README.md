@@ -114,7 +114,7 @@ Requirements
 *   CMake >= 3.12
 *   PostgreSQL 16 to 19 (the build stops with an explicit error outside that range)
 *   PostGIS >= 3.0
-*   PROJ4 >= 6.1
+*   PROJ >= 7.1
 *   JSON-C
 *   Development files for PostgreSQL, PostGIS, PROJ4, JSON-C
 

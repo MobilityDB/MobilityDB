@@ -450,6 +450,9 @@
 					<para><link linkend="box_asText"><varname>asText</varname></link>: Devuelve la representación de texto conocido (WKT)</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="stbox_asEWKT"><varname>asEWKT</varname></link>: Devuelve la representación de texto conocido extendido (EWKT) de un cuadro espaciotemporal</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 				<listitem>
@@ -457,6 +460,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="boxFromText"><varname>boxFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="stboxFromEWKT"><varname>stboxFromEWKT</varname></link>: Entrada de un cuadro espaciotemporal desde la representación de texto conocido extendido (EWKT)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="boxFromBinary"><varname>boxFromBinary</varname>, <varname>boxFromHexWKB</varname></link>: Entrada desde la representación binaria conocida (WKB) o desde la representación hexadecimal binaria conocida (HexWKB)</para>
@@ -1626,6 +1632,9 @@
 					<para><link linkend="tpose_round"><varname>round</varname></link>: Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tpose_stops"><varname>stops</varname></link>: Extrae las subsecuencias en las que la pose temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tpose_translate"><varname>translate</varname></link>: Devuelve un valor temporal trasladado por los desplazamientos dados &Z_support;</para>
 				</listitem>
 				<listitem>
@@ -2576,6 +2585,12 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trgeometry_round"><varname>round</varname></link>: Redondea todos los componentes numéricos a un número dado de posiciones decimales</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_stops"><varname>stops</varname></link>: Extrae las subsecuencias en las que la geometría rígida temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transforma a un identificador de referencia espacial</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_setInterp"><varname>setInterp</varname></link>: Convierte entre interpolaciones lineal y escalonada</para>
@@ -3655,7 +3670,13 @@
 						<para><link linkend="tpcbox_asText"><varname>asText</varname></link>: Devuelve la representación de texto conocido (WKT)</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcbox_asEWKT"><varname>asEWKT</varname></link>: Devuelve la representación de texto conocido extendido (EWKT) de un cuadro de nube de puntos</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcboxFromText"><varname>tpcboxFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcboxFromEWKT"><varname>tpcboxFromEWKT</varname></link>: Entrada de un cuadro de nube de puntos desde la representación de texto conocido extendido (EWKT)</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

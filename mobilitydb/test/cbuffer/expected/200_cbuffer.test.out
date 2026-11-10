@@ -162,6 +162,30 @@ SELECT srid(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
  5676
 (1 row)
 
+SELECT asEWKT(round(transform(cbuffer 'Cbuffer(SRID=25832;Point(651337 6058377),10)', 32632), 3));
+                    asewkt                    
+----------------------------------------------
+ SRID=32632;Cbuffer(POINT(651337 6058377),10)
+(1 row)
+
+SELECT asEWKT(transformPipeline(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+                       asewkt                        
+-----------------------------------------------------
+ SRID=32631;Cbuffer(POINT(595032.295 5634012.833),1)
+(1 row)
+
+/* Errors */
+SELECT transform(cbuffer 'Cbuffer(SRID=25832;Point(651337 6058377),10)', 4326);
+ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
+SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, false);
+ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
+SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 0, false);
+ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
+SELECT transform(cbufferset '{"Cbuffer(SRID=25832;Point(651337 6058377),10)"}', 4326);
+ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
 SELECT asText(round(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)', 6));
                    astext                   
 --------------------------------------------

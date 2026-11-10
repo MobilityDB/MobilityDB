@@ -379,7 +379,7 @@ SELECT reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00,
 reachabilityFilterAgg({tfloat,tgeompoint,tgeogpoint},maxspeed float)
   → {tfloat,tgeompoint,tgeogpoint}
 </programlisting>
-				<para>The aggregate takes the instants in the order of their times, which the query states with <varname>ORDER BY</varname>, and decides each one as it arrives, as a stream does. It returns a sequence with the default interpolation of the type, and NULL when the instants are dropped whole. Its name differs from that of the function, since PostgreSQL does not hold a function and an aggregate of the same name and arguments.</para>
+				<para>The aggregate takes the instants in the order of their times, which the query states with <varname>ORDER BY</varname>, and decides each one as it arrives, as a stream does. An instant at the time of the instant before is the same report, which the aggregate takes once, as the function does. It returns a sequence with the default interpolation of the type, and NULL when the instants are dropped whole. Its name differs from that of the function, since PostgreSQL does not hold a function and an aggregate of the same name and arguments.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(reachabilityFilterAgg(inst, 5 ORDER BY getTimestamp(inst)))
 FROM unnest(instants(tfloat '{1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01,

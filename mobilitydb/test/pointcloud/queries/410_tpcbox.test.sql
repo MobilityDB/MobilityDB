@@ -82,6 +82,13 @@ SELECT asText(tpcboxXT(0.12, 1.23, 2.35, 3.46,
 SELECT tpcboxFromText(asText(tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-02]', 1)))
   = tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1);
+-- The SRID is written by asEWKT, never by asText
+SELECT asText(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+SELECT asEWKT(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+SELECT asEWKT(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)', 1);
+SELECT tpcboxFromEWKT(asEWKT(tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-02]', 5)))
+  = tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 5);
 /* Errors */
 SELECT tpcboxFromText('TPCBOX(X((0,0),(10,10)))');
 

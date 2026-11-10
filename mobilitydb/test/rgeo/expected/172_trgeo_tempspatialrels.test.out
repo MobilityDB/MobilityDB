@@ -162,3 +162,31 @@ SELECT tIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(
  t
 (1 row)
 
+SELECT tIntersects(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(10 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(5 0.1 0.1)');
+ERROR:  The trgeometry cannot have Z dimension
+SELECT tIntersects(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(10 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(5 0.1 5)');
+ERROR:  The trgeometry cannot have Z dimension
+SELECT tDisjoint(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(10 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(5 0.1 0.1)');
+ERROR:  The trgeometry cannot have Z dimension
+SELECT tIntersects(trgeometry 'Interp=Step;PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(10 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(0.1 0.1 0.1)');
+                           tintersects                            
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDisjoint(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01', geometry 'Point(0.1 0.1 0.1)');
+           tdisjoint            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tIntersects(trgeometry 'SRID=5676;PolyhedralSurface(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)),((2 0 1,4 0 1,4 2 1,2 2 1,2 0 1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(0 0 0),1,0,0,0)@2001-01-02]', geometry 'SRID=5676;Point(3 1 1)');
+ERROR:  The trgeometry cannot have Z dimension
+SELECT tDisjoint(trgeometry 'SRID=5676;PolyhedralSurface(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)),((2 0 1,4 0 1,4 2 1,2 2 1,2 0 1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(0 0 0),1,0,0,0)@2001-01-02]', geometry 'SRID=5676;Point(3 1 5)');
+ERROR:  The trgeometry cannot have Z dimension
+SELECT tIntersects(trgeometry 'Interp=Step;PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(10 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(0.2 0.2 0)');
+                           tintersects                            
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
