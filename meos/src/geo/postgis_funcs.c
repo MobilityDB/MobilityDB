@@ -1764,6 +1764,26 @@ geom_distance_nsegs(const POINTARRAY *pa)
 }
 
 /**
+ * @brief Return the bytes a point of a point array takes, read once ahead of
+ * a loop over its points in place of #getPoint2d_cp at each
+ */
+static pg_attribute_always_inline size_t
+geom_pa_stride(const POINTARRAY *pa)
+{
+  return sizeof(double) * (size_t) FLAGS_NDIMS(pa->flags);
+}
+
+/**
+ * @brief Return the coordinates of a point of a point array, given its stride
+ * (#geom_pa_stride)
+ */
+static pg_attribute_always_inline const double *
+geom_pa_point(const POINTARRAY *pa, size_t stride, uint32_t i)
+{
+  return (const double *) (pa->serialized_pointlist + stride * i);
+}
+
+/**
  * @brief Return the ends of the segment of rank @p k of a point array, each
  * the coordinates of a point, its x first
  */
@@ -2280,9 +2300,11 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
     const POINTARRAY *const *arr = g ? arr2 : arr1;
     uint32_t n = g ? n2 : n1;
     for (uint32_t k = 0; k < n; k++)
+    {
+      size_t st = geom_pa_stride(arr[k]);
       for (uint32_t v = 0; v < arr[k]->npoints; v++)
       {
-        const double *p = (const double *) getPoint2d_cp(arr[k], v);
+        const double *p = geom_pa_point(arr[k], st, v);
         for (int dim = 0; dim < ndims; dim++)
         {
           double m = fabs(p[dim]);
@@ -2295,6 +2317,7 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
           z += p[dim] - p[dim];
         }
       }
+    }
   }
   bool finite = (z == 0.0);
   /* The extent of the two geometries along their coordinates, moved up past
@@ -2337,9 +2360,10 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
           box[dim] = INFINITY;
           box[3 + dim] = -INFINITY;
         }
+        size_t st = geom_pa_stride(arr[k]);
         for (uint32_t v = 0; v < arr[k]->npoints; v++)
         {
-          const double *p = (const double *) getPoint2d_cp(arr[k], v);
+          const double *p = geom_pa_point(arr[k], st, v);
           for (int dim = 0; dim < ndims; dim++)
           {
             if (p[dim] < box[dim])
@@ -3850,10 +3874,11 @@ geom_face_plane(GeomFace *face)
   uint32_t nrings = face->nrings;
   const double *a = NULL, *b = NULL, *c = NULL;
   int sn[3] = {0, 0, 0};
+  size_t st = geom_pa_stride(rings[0]);
   for (uint32_t r = 0; r < nrings && ! c; r++)
     for (uint32_t i = 0; i < rings[r]->npoints && ! c; i++)
     {
-      const double *v = (const double *) getPoint2d_cp(rings[r], i);
+      const double *v = geom_pa_point(rings[r], st, i);
       if (! a)
         a = v;
       else if (! b)
@@ -3892,7 +3917,7 @@ geom_face_plane(GeomFace *face)
   for (uint32_t r = 0; r < nrings; r++)
     for (uint32_t i = 0; i < rings[r]->npoints; i++)
     {
-      const double *v = (const double *) getPoint2d_cp(rings[r], i);
+      const double *v = geom_pa_point(rings[r], st, i);
       /* The three vertices spanning the plane, and a vertex equal to one of
        * them as the last of a ring is to its first, lie in it */
       bool span = false;
@@ -4269,12 +4294,13 @@ geom_face_inside(const GeomFace *f, const double *p, const double *q)
     const POINTARRAY *pa = f->rings[r];
     if (pa->npoints < 2)
       continue;
-    const double *u = (const double *) getPoint2d_cp(pa, 0);
+    size_t st = geom_pa_stride(pa);
+    const double *u = geom_pa_point(pa, st, 0);
     int su = q ? vector_triple_sign(p, q, GEOM_FACE_ORIGIN, e, p, u) :
       plane_cross_dot_sign(f->a, f->b, f->c, GEOM_FACE_ORIGIN, e, p, u);
     for (uint32_t i = 1; i < pa->npoints; i++)
     {
-      const double *v = (const double *) getPoint2d_cp(pa, i);
+      const double *v = geom_pa_point(pa, st, i);
       int sv = q ? vector_triple_sign(p, q, GEOM_FACE_ORIGIN, e, p, v) :
         plane_cross_dot_sign(f->a, f->b, f->c, GEOM_FACE_ORIGIN, e, p, v);
       bool up = (su <= 0 && sv > 0), down = (sv <= 0 && su > 0);
@@ -4350,14 +4376,15 @@ geom_faces_meet(const GeomFaces *g1, const GeomFaces *g2, double dist)
     for (uint32_t k = 0; k < g2->narrs; k++)
     {
       const POINTARRAY *pa = g2->arrs[k];
+      size_t st = geom_pa_stride(pa);
       for (uint32_t v = 0; v < pa->npoints; v++)
       {
-        const double *p = (const double *) getPoint2d_cp(pa, v);
+        const double *p = geom_pa_point(pa, st, v);
         if (geom_face_point_within(f, p, dist))
           return true;
         if (v > 0)
         {
-          const double *o = (const double *) getPoint2d_cp(pa, v - 1);
+          const double *o = geom_pa_point(pa, st, v - 1);
           if (geom_face_segment_cross(f, o, p))
             return true;
         }
@@ -4578,9 +4605,10 @@ geom_faces_boxes_beyond(const GeomFaces *g1, const GeomFaces *g2, double dist)
     for (uint32_t i = 0; i < gf->narrs; i++)
     {
       const POINTARRAY *pa = gf->arrs[i];
+      size_t st = geom_pa_stride(pa);
       for (uint32_t v = 0; v < pa->npoints; v++)
       {
-        const double *p = (const double *) getPoint2d_cp(pa, v);
+        const double *p = geom_pa_point(pa, st, v);
         for (int k = 0; k < 3; k++)
         {
           if (p[k] < lo[g][k])
