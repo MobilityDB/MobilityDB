@@ -212,8 +212,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   reading `point` as the `geo` token where a whole type token follows it: branch
   `fix/point-token-names-a-geometry-operand`, MEOS-API #270, MERGED as `c9a22d1` (2026-11-10),
   makes them `Geo.bearing` (catalog diff: these two members alone). MEOS.js branch
-  `gen/geo-bearing`, MEOS.js #57 (OPEN), regenerates on it: `Geo.bearing(Geo | TPoint)`, 4373
-  methods, 2 ledger rows, 1214 of 1214 tests.
+  `gen/geo-bearing`, MEOS.js #57, MERGED as `d66aa54` (2026-11-10; main's Build green on it),
+  regenerates on it: `Geo.bearing(Geo | TPoint)`, 4373 methods, 2 ledger rows, 1214 of 1214
+  tests. MEOS.NET branch `gen/operand-order-and-bearing`, MEOS.NET #63 (OPEN), regenerates from
+  MobilityDB 6f329a98d0 to `78ebe3b7fe` (the containments, the operand orders, `Geo.Bearing`, the
+  SQL/JSON exceptions) and reads a value answered beside output arrays (`codegen.py`
+  `#_emit_outputs_wrapper`, `objectgen.py` `#map_tuple_return`), so `TPoint.AsMVTGeom` answers
+  `(Geo?, long[])?`; 0 deferred, 99 of 99 tests.
 - **One public name per answer, and every interpolation an `interpType`**, so the object layers
   generated from the catalog carry no name collision and no text interpolation (row B24 of
   `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
