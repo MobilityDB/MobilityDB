@@ -10411,6 +10411,110 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
 }
 
 /**
+ * @brief Set the normal of the plane of three points in 3D,
+ * `(b - a) x (c - a)`, and return true where every difference, every product
+ * and every component is a double held exactly; return false otherwise
+ * @details Each difference and each component is exact where #two_diff
+ * leaves no error, and each product where #two_product leaves none and it
+ * lies within the normal doubles, not below #DDB_EXACT_PRODUCT, under which
+ * the error of the product is not exact
+ * @param[in] a,b,c Points, three coordinates each
+ * @param[out] n The normal, three coordinates
+ */
+bool
+plane_normal_exact(const double *a, const double *b, const double *c,
+  double *n)
+{
+  double u[3], w[3], e;
+  for (int k = 0; k < 3; k++)
+  {
+    two_diff(b[k], a[k], &u[k], &e);
+    if (e != 0.0)
+      return false;
+    two_diff(c[k], a[k], &w[k], &e);
+    if (e != 0.0)
+      return false;
+  }
+  for (int k = 0; k < 3; k++)
+  {
+    int i = (k + 1) % 3, j = (k + 2) % 3;
+    double p, pe, q, qe;
+    two_product(u[i], w[j], &p, &pe);
+    two_product(u[j], w[i], &q, &qe);
+    if (pe != 0.0 || qe != 0.0 || ! isfinite(p) || ! isfinite(q) ||
+        (p != 0.0 && fabs(p) < DDB_EXACT_PRODUCT) ||
+        (q != 0.0 && fabs(q) < DDB_EXACT_PRODUCT))
+      return false;
+    two_diff(p, q, &n[k], &e);
+    if (e != 0.0 || ! isfinite(n[k]))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the sign of the offset of a point from the plane through a
+ * point with a normal held exactly (#plane_normal_exact), `n . (v - a)`, or 2
+ * where it cannot be read exactly from those doubles
+ * @details The sign of `vector_triple_sign(a, b, a, c, a, v)` for the normal
+ * `n` of `a`, `b` and `c`, as `u . (w x x) = (u x w) . x`, with the cross
+ * product formed once for every vertex of a face. The differences `v - a`
+ * are exact where #two_diff leaves no error, and the three products then split
+ * exactly into six doubles (#two_product) where each lies within the normal
+ * doubles. Their sum is read first in doubles: rounded three times and each
+ * product once, it lies within `4 * 2^-53` of the sum of the magnitudes of the
+ * products, read within 2^-50 of it where that sum lies inside 2^-900 and
+ * 2^900; otherwise exactly, as an expansion of the six doubles
+ * (#grow_expansion), whose last component carries its sign. A point lying in
+ * the plane is the exact zero no bound tells
+ * @param[in] n Normal of the plane, three coordinates
+ * @param[in] a,v Points, three coordinates each
+ * @return -1, 0 or 1, or 2 where a difference or a product is not held
+ * exactly
+ */
+int
+plane_normal_offset_sign(const double *n, const double *a, const double *v)
+{
+  /* A normal along an axis, as a face lying level or holding two axes has,
+   * reads the one coordinate it does not cancel by comparing two doubles,
+   * as #vector_cross_signs reads a component of exact terms with no product */
+  int nz = (n[0] != 0.0) + (n[1] != 0.0) + (n[2] != 0.0);
+  if (nz == 1)
+  {
+    int k = (n[0] != 0.0) ? 0 : ((n[1] != 0.0) ? 1 : 2);
+    int side = (v[k] > a[k]) ? 1 : ((v[k] < a[k]) ? -1 : 0);
+    return (n[k] > 0.0) ? side : - side;
+  }
+  double x[6], e;
+  for (int k = 0; k < 3; k++)
+  {
+    double d;
+    two_diff(v[k], a[k], &d, &e);
+    if (e != 0.0)
+      return 2;
+    two_product(n[k], d, &x[2 * k], &x[2 * k + 1]);
+    if (! isfinite(x[2 * k]) ||
+        (x[2 * k] != 0.0 && fabs(x[2 * k]) < DDB_EXACT_PRODUCT))
+      return 2;
+  }
+  double s = x[0] + x[2] + x[4];
+  double perm = fabs(x[0]) + fabs(x[2]) + fabs(x[4]);
+  if (perm >= 0x1p-900 && perm <= 0x1p900 && fabs(s) > 0x1p-50 * perm)
+    return (s > 0.0) ? 1 : -1;
+  double h0[6], h1[6];
+  double *h = h0, *g = h1;
+  h[0] = x[0];
+  int len = 1;
+  for (int i = 1; i < 6; i++)
+  {
+    len = grow_expansion(len, h, x[i], g);
+    double *t = h; h = g; g = t;
+  }
+  double last = h[len - 1];
+  return (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
+}
+
+/**
  * @brief Set the signs of the three components of the cross product of two
  * vectors in 3D, each the difference of two points, computed exactly for any
  * finite doubles
