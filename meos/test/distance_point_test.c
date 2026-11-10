@@ -867,6 +867,37 @@ int main(void)
   printf("%d nearest approaches of a point passing a far point at noon\n",
     passes);
 
+  /* A point passing a point along a path whose squared length leaves the
+   * doubles below, read as #far_pass_entry reads a passage: the path runs
+   * from (0, 0) to (0, len) and the point stands at (1, len / 2), nearest at
+   * noon */
+  const double short_path[] = {1e-150, 1e-160, 1e-170, 1e-200, 1e-300,
+    0x1p-1060};
+  int shorts = (int) (sizeof(short_path) / sizeof(short_path[0]));
+  for (int i = 0; i < shorts; i++)
+  {
+    char path[256], point[128];
+    snprintf(path, sizeof(path), "[POINT(0 0)@2001-01-01, "
+      "POINT(0 %.17g)@2001-01-02]", short_path[i]);
+    snprintf(point, sizeof(point), "POINT(1 %.17g)", short_path[i] / 2);
+    Temporal *temp = tgeompoint_in(path);
+    GSERIALIZED *gs = geom_in(point, -1);
+    assert(temp != NULL && gs != NULL);
+    TInstant *nai = nai_tgeo_geo(temp, gs, false);
+    assert(nai != NULL);
+    if (temporal_start_timestamptz((Temporal *) nai) !=
+        timestamptz_in("2001-01-01 12:00:00+00", -1))
+    {
+      printf("FAIL short path %.17g: nearest approach at %lld us\n",
+        short_path[i],
+        (long long) temporal_start_timestamptz((Temporal *) nai));
+      exit(EXIT_FAILURE);
+    }
+    free(nai); free(gs); free(temp);
+  }
+  printf("%d nearest approaches of a point passing along a short path at "
+    "noon\n", shorts);
+
   /* A point resting near a segment, at gaps whose squares fall below 1e-12,
    * below the smallest normal double and to zero */
   const double near_edge[] = {1.0, 1e-3, 1e-6, 1e-7, 1e-100, 1e-160, 1e-200,
