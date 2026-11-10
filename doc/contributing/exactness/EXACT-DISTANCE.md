@@ -82,6 +82,7 @@ computed in five steps.
 | a circular buffer against a segment | the disc and the foot of the perpendicular | the parameter of the foot on the input segment | `point_segment_distance_offset_exact`, ED4 |
 | two circular buffers | `r1 + r2` rounded | the exact pair of the sum | `point_distance_offset_sum_exact`, ED17 |
 | a moving point against an edge | the point at a microsecond | the path, a segment | `dist_moving_segment`, ED3 |
+| the temporal distance of a moving point to a geometry of segments, at each instant | the point at a microsecond built in doubles, its square rounded | the point at the integer timestamp as `(s1 - t) p0 + (t - s0) p1` over `s1 - s0`, each edge the filter in doubles keeps, the interior by exact signs, each turning instant dated to the nearest microsecond | `point_motion_edges_distance_at`, `point_motion_in_polygon_at`, MobilityDB #3548 |
 | two moving points | the interpolated points | the relative path over continuous time | `point_motion_nad_exact`, ED5 |
 | a moving disc whose radius changes | the disc at a microsecond | the centres, the radii and the timestamps | `point_motion_point_offset_exact`, ED10 |
 | a rigid body that does not turn | the body placed at the pose | the reference geometry and the position | `convex_motion_nad_exact`, ED19 |
