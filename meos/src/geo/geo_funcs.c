@@ -10411,6 +10411,41 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
 }
 
 /**
+ * @brief Return the sign of the distance of a point to a plane less a
+ * distance, `|p - a| - d`, for a plane across an axis on which the point
+ * reads @p p and the plane @p a, computed exactly for any finite doubles
+ * @details The sign #plane_point_offset_sign answers for a normal along that
+ * axis, `n^2 ((p - a)^2 - d^2)`, with no product: the difference splits
+ * exactly into its rounded value `x` and the error `y` of that rounding
+ * (#two_diff), and as `|y|` lies within half a unit of `x`, `|p - a|` is
+ * `|x| + y` where `x` is positive and `|x| - y` otherwise, whose difference
+ * with @p d is the sum of three doubles read exactly as an expansion
+ * (#grow_expansion)
+ * @param[in] p,a Coordinates of the point and of the plane on the axis
+ * @param[in] d Distance, not negative
+ * @return -1, 0 or 1
+ */
+int
+axis_offset_sign(double p, double a, double d)
+{
+  assert(d >= 0.0);
+  double x, y;
+  two_diff(p, a, &x, &y);
+  if (x == 0.0)
+  {
+    double ay = fabs(y);
+    return (ay > d) ? 1 : ((ay < d) ? -1 : 0);
+  }
+  double ax = fabs(x), sy = (x > 0.0) ? y : - y;
+  double h0[3], h1[3];
+  h0[0] = ax;
+  int len = grow_expansion(1, h0, sy, h1);
+  len = grow_expansion(len, h1, - d, h0);
+  double last = h0[len - 1];
+  return (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
+}
+
+/**
  * @brief Set the normal of the plane of three points in 3D,
  * `(b - a) x (c - a)`, and return true where every difference, every product
  * and every component is a double held exactly; return false otherwise
