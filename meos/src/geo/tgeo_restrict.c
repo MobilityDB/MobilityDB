@@ -1223,17 +1223,13 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
             inter2 = tsegment_value_at_timestamptz(tinstant_value_p(inst1),
               tinstant_value_p(inst2), inst1->temptype, inst1->t, inst2->t, t2);
             free2 = true;
-            /* Add the instant only if it is different from the previous one
-             * Otherwise, assume that t1 == t2 and skip t2 */
-            if (! free1 || ! geopoint_eq(DatumGetGserializedP(inter1),
-                  DatumGetGserializedP(inter2)))
-            {
-              instants[ninsts] = tinstant_make(inter2, inst1->temptype, t2);
-              tofree[nfree++] = instants[ninsts++];
-              upper_inc = p4_inc;
-            }
-            else
-              upper_inc = lower_inc;
+            /* The clip ends at an instant after the one it starts at, which
+             * it holds whatever value the segment takes there: two equal
+             * values at two instants state where the motion falls below the
+             * doubles */
+            instants[ninsts] = tinstant_make(inter2, inst1->temptype, t2);
+            tofree[nfree++] = instants[ninsts++];
+            upper_inc = p4_inc;
           }
           else
           {
