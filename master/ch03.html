@@ -58,25 +58,25 @@ asBinary(box,endian text='') → bytea
 asHexWKB(box,endian text='') → text
 </pre><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used. As for every spatial type, the representation of an <code class="varname">stbox</code> does not write its SRID, which <code class="varname">asEWKB</code> and <code class="varname">asHexEWKB</code> write.</p><pre class="programlisting">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
--- \x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040
+-- \x011b0003270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))', 'XDR');
--- \x000300270100001cc1d3579c0000001cd5f12efc00000d013ff00000000000004000000000000000
+-- \x00001b0300270100001cc1d3579c0000001cd5f12efc00000d013ff00000000000004000000000000000
 SELECT asBinary(stbox 'STBOX X((1,1),(2,2))');
--- \x0101000000000000f03f0000000000000040000000000000f03f0000000000000040
+-- \x01190001000000000000f03f0000000000000040000000000000f03f0000000000000040
 SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
--- 0103270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040
+-- 011B0003270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040
 SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2)[2001-01-01,2001-01-02))', 'XDR');
--- 000300270100001CC1D3579C0000001CD5F12EFC00000D013FF00000000000004000000000000000
+-- 00001B0300270100001CC1D3579C0000001CD5F12EFC00000D013FF00000000000004000000000000000
 SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
--- 0101000000000000F03F0000000000000040000000000000F03F0000000000000040
+-- 01190001000000000000F03F0000000000000040000000000000F03F0000000000000040
 </pre></li><li class="listitem"><a name="stbox_asEWKB"></a><a class="indexterm" name="id3508"></a><a class="indexterm" name="id3511"></a><p>Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatiotemporal box</p><pre class="programlisting">
 asEWKB(stbox,endian text='') → bytea
 asHexEWKB(stbox,endian text='') → text
 </pre><p>The result is the representation <code class="varname">asBinary</code> and <code class="varname">asHexWKB</code> write with the SRID of the box, as every spatial type writes its SRID in its extended representation.</p><pre class="programlisting">
 SELECT asEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))');
--- \x0141e40e0000000000000000f03f0000000000000040000000000000f03f0000000000000040
+-- \x01190041e40e0000000000000000f03f0000000000000040000000000000f03f0000000000000040
 SELECT asHexEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))', 'XDR');
--- 004100000EE43FF000000000000040000000000000003FF00000000000004000000000000000
+-- 0000194100000EE43FF000000000000040000000000000003FF00000000000004000000000000000
 </pre></li><li class="listitem"><a name="boxFromText"></a><a class="indexterm" name="id3521"></a><p>Input from the Well-Known Text (WKT) representation</p><pre class="programlisting">
 boxFromText(text) → box
 </pre><p>In the signature above, <code class="varname">box</code> replaces any box type, that is, <code class="varname">tbox</code> or <code class="varname">stbox</code>. The function is the inverse of <code class="varname">asText</code>: it reads the text a literal of the type is written in, from a constant or from a <code class="varname">text</code> column alike, including the SRID of a spatiotemporal box.</p><pre class="programlisting">
@@ -94,16 +94,16 @@ boxFromBinary(bytea) → box
 boxFromHexWKB(text) → box
 </pre><p>In the signatures above, <code class="varname">box</code> replaces any box type, that is, <code class="varname">tbox</code> or <code class="varname">stbox</code>.</p><pre class="programlisting">
 SELECT tboxFromBinary(
-  '\x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040');
+  '\x011b0003270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040');
 -- TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))
 SELECT stboxFromBinary(
-  '\x0101000000000000f03f0000000000000040000000000000f03f0000000000000040');
+  '\x01190001000000000000f03f0000000000000040000000000000f03f0000000000000040');
 --  STBOX X((1,1),(2,2))
 SELECT tboxFromHexWKB(
-  '0103270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040');
+  '011B0003270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040');
 -- TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02)))
 SELECT stboxFromHexWKB(
-  '0101000000000000F03F0000000000000040000000000000F03F0000000000000040');
+  '01190001000000000000F03F0000000000000040000000000000F03F0000000000000040');
 -- STBOX X((1,1),(2,2))
 </pre></li><li class="listitem"><a name="stboxFromEWKB"></a><a class="indexterm" name="id3557"></a><a class="indexterm" name="id3560"></a><p>Input of a spatiotemporal box from the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><pre class="programlisting">
 stboxFromEWKB(bytea) → stbox
@@ -112,6 +112,6 @@ stboxFromHexEWKB(text) → stbox
 SELECT stboxFromEWKB(asEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))'));
 -- SRID=3812;STBOX X((1,1),(2,2))
 SELECT stboxFromHexEWKB(
-  '0141E40E0000000000000000F03F0000000000000040000000000000F03F0000000000000040');
+  '01190041E40E0000000000000000F03F0000000000000040000000000000F03F0000000000000040');
 -- SRID=3812;STBOX X((1,1),(2,2))
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s12.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch03s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Indexing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>
