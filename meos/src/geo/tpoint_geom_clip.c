@@ -3181,7 +3181,7 @@ distance_cands_from_edge(double ax, double ay, double rx, double ry,
 {
   const double A = rx * rx + ry * ry;
   /* Constant (zero-length) trajectory segment: no interior turning point */
-  if (A < MEOS_GEOM_TOLERANCE)
+  if (A == 0.0)
     return;
   switch (e->etype)
   {
@@ -3201,15 +3201,15 @@ distance_cands_from_edge(double ax, double ay, double rx, double ry,
       add_within_root(-(w1x * rx + w1y * ry) / A, ev);
       const double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
       const double l2 = ux * ux + uy * uy;
-      if (l2 > MEOS_GEOM_TOLERANCE)
+      if (l2 > 0.0)
       {
         /* Perpendicular-foot time (moving point on the supporting line) */
         const double k1 = rx * uy - ry * ux;
-        if (fabs(k1) > MEOS_GEOM_TOLERANCE)
+        if (k1 != 0.0)
           add_within_root(-(w0x * uy - w0y * ux) / k1, ev);
         /* Foot-parameter region boundaries (s = 0 and s = 1) */
         const double ru = rx * ux + ry * uy;
-        if (fabs(ru) > MEOS_GEOM_TOLERANCE)
+        if (ru != 0.0)
         {
           const double w0u = w0x * ux + w0y * uy;
           add_within_root(-w0u / ru, ev);
@@ -3251,14 +3251,113 @@ distance_cands_from_edge(double ax, double ay, double rx, double ry,
   }
 }
 
+/** The edges of a geometry the temporal distance of a point reads */
+typedef struct
+{
+  Edge **edges;     /**< Edges of the geometry */
+  Edge **cedges;    /**< The same edges scaled by 2^@p k */
+  Edge **cand;      /**< Room for @p nedges edges, the candidates of an instant */
+  double *lower;    /**< Room for @p nedges lower bounds of their distances */
+  int nedges;       /**< Number of edges */
+  int k;            /**< Power of two of the scaling */
+  bool straight;    /**< True for a geometry of points and segments */
+  bool polygon;     /**< True where an edge bounds a polygon */
+} DistGeomCtx;
+
+/**
+ * @brief Return the distance at the timestamp @p t of the point moving from
+ * @p a at @p s0 to @p b at @p s1 to a geometry given as an edge array
+ * @details For a geometry of points and segments the double nearest the exact
+ * distance of the point at that exact microsecond, read in two layers. First
+ * the point and its distance to each edge in doubles, on the coordinates
+ * scaled by 2^k, with a bound on their error: the edges whose distance may be
+ * the least are those whose lower bound does not exceed the least upper bound,
+ * and the exact distance is computed of those alone
+ * (#point_motion_edges_distance_at). The point is then inside a polygon as
+ * the point of doubles is (#point_in_polygon_vertex) where its exact distance
+ * to the edges exceeds the error of that point, and otherwise as the exact
+ * crossings of its rings say (#point_motion_in_polygon_at). For a geometry
+ * with an arc the distance of the point at the parameter of @p t on the
+ * segment (#point_geom_dist)
+ */
+static double
+tpoint_distance_geom_at(const POINT2D *a, const POINT2D *b, TimestampTz s0,
+  TimestampTz s1, TimestampTz t, const DistGeomCtx *ctx)
+{
+  if (! ctx->straight)
+  {
+    if (t <= s0)
+      return point_geom_dist(a->x, a->y, ctx->edges, ctx->nedges);
+    if (t >= s1)
+      return point_geom_dist(b->x, b->y, ctx->edges, ctx->nedges);
+    const double p = (double) (t - s0) / (double) (s1 - s0);
+    return point_geom_dist(a->x + p * (b->x - a->x),
+      a->y + p * (b->y - a->y), ctx->edges, ctx->nedges);
+  }
+  const double p0[2] = {a->x, a->y}, p1[2] = {b->x, b->y};
+  /* A point at rest at a single instant is read over one microsecond */
+  if (s1 <= s0)
+    s1 = s0 + 1;
+  /* The point in doubles, scaled: each coordinate within 8 units in the last
+   * place of the largest coordinate of the ends, so the point within 12 of
+   * them, the floor bounding an underflow */
+  const int k = ctx->k;
+  const double ax = ldexp(a->x, k), ay = ldexp(a->y, k);
+  const double bx = ldexp(b->x, k), by = ldexp(b->y, k);
+  const double f = (double) (t - s0) / (double) (s1 - s0);
+  const double px = ax + f * (bx - ax), py = ay + f * (by - ay);
+  const double mp = Max(Max(fabs(ax), fabs(bx)), Max(fabs(ay), fabs(by)));
+  const double ep = 12.0 * DBL_EPSILON * mp + 0x1p-1060;
+  /* The distance to each edge in doubles is within 32 units in the last
+   * place of the largest coordinate it reads of the distance of that point */
+  double hi = DBL_MAX;
+  for (int i = 0; i < ctx->nedges; i++)
+  {
+    const Edge *e = ctx->cedges[i];
+    const double m = Max(Max(Max(fabs(px), fabs(py)),
+      Max(fabs(e->x1), fabs(e->y1))), Max(fabs(e->x2), fabs(e->y2)));
+    const double d = sqrt(point_edge_dist2(px, py, e));
+    const double err = ep + 32.0 * DBL_EPSILON * m + 0x1p-1060;
+    ctx->lower[i] = d - err;
+    if (d + err < hi)
+      hi = d + err;
+  }
+  int ncand = 0;
+  for (int i = 0; i < ctx->nedges; i++)
+  {
+    if (ctx->lower[i] <= hi)
+      ctx->cand[ncand++] = ctx->edges[i];
+  }
+  double best = point_motion_edges_distance_at(p0, p1, s0, s1, t, ctx->cand,
+    ncand);
+  if (best == 0.0 || ! ctx->polygon)
+    return best;
+  /* The exact point and the point of doubles lie on the same side of every
+   * ring where the exact distance exceeds the error of the second */
+  bool inside = (best * (1.0 - 2.0 * DBL_EPSILON) > ldexp(ep, -k)) ?
+    point_in_polygon_vertex(ldexp(px, -k), ldexp(py, -k), ctx->edges,
+      ctx->nedges) :
+    point_motion_in_polygon_at(p0, p1, s0, s1, t, ctx->edges, ctx->nedges);
+  return inside ? 0.0 : best;
+}
+
 /**
  * @brief Return the temporal float distance of one temporal sequence point
  * with linear interpolation to a geometry given as an edge array
+ * @details The value at each instant is the distance at that instant
+ * (#tpoint_distance_geom_at). The instants are those of the sequence and its
+ * interior turning points (#distance_cands_from_edge), each dated to the
+ * nearest microsecond. The turning points are parameters along a segment,
+ * which a scaling by a power of two leaves as they are, so they are read on
+ * the edges and the points scaled by 2^k of @p ctx, which keep the squares of
+ * their coordinates within the doubles
  */
 static TSequence *
-tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
+tpointseq_distance_geom(const TSequence *seq, const DistGeomCtx *ctx)
 {
-  assert(seq); assert(edges); assert(nedges > 0);
+  assert(seq); assert(ctx); assert(ctx->nedges > 0);
+  Edge **cedges = ctx->cedges;
+  const int nedges = ctx->nedges, scale = ctx->k;
   assert(seq->temptype == T_TGEOMPOINT);
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
@@ -3267,7 +3366,7 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
     const POINT2D *p = DATUM_POINT2D_P(tinstant_value_p(inst));
-    double d = point_geom_dist(p->x, p->y, edges, nedges);
+    double d = tpoint_distance_geom_at(p, p, inst->t, inst->t, inst->t, ctx);
     TInstant *resinst = tinstant_make(Float8GetDatum(d), T_TFLOAT, inst->t);
     TSequence *res = tsequence_make(&resinst, 1, true, true, LINEAR, NORMALIZE);
     pfree(resinst);
@@ -3290,20 +3389,24 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
   int ninsts = 0;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst1));
-  instants[ninsts++] = tinstant_make(
-    Float8GetDatum(point_geom_dist(a->x, a->y, edges, nedges)), T_TFLOAT,
-    inst1->t);
+  {
+    const TInstant *instb = TSEQUENCE_INST_N(seq, 1);
+    instants[ninsts++] = tinstant_make(Float8GetDatum(tpoint_distance_geom_at(
+      a, DATUM_POINT2D_P(tinstant_value_p(instb)), inst1->t, instb->t,
+      inst1->t, ctx)), T_TFLOAT, inst1->t);
+  }
   /* Loop for each segment */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     const POINT2D *b = DATUM_POINT2D_P(tinstant_value_p(inst2));
-    const double ax = a->x, ay = a->y, rx = b->x - ax, ry = b->y - ay;
+    const double ax = ldexp(a->x, scale), ay = ldexp(a->y, scale),
+      rx = ldexp(b->x, scale) - ax, ry = ldexp(b->y, scale) - ay;
 
     /* Gather the interior turning points of the distance to every edge */
     events->count = 0;
     for (int j = 0; j < nedges; j++)
-      distance_cands_from_edge(ax, ay, rx, ry, edges[j], events);
+      distance_cands_from_edge(ax, ay, rx, ry, cedges[j], events);
 
     /* Sort the candidate parameters and emit an instant for each interior one
      * with the exact distance to the whole geometry */
@@ -3323,23 +3426,22 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
     for (int k = 0; k < (int) events->count; k++)
     {
       const double p = ev[k];
-      if (p <= MEOS_GEOM_TOLERANCE || p >= 1.0 - MEOS_GEOM_TOLERANCE)
+      if (! (p > 0.0 && p < 1.0))
         continue;
-      if (k > 0 && fabs(p - ev[k - 1]) < MEOS_GEOM_TOLERANCE)
-        continue;
-      TimestampTz t = inst1->t + (TimestampTz) (duration * p);
+      /* The instant is dated to the nearest microsecond */
+      TimestampTz t = inst1->t + (TimestampTz) llround(duration * p);
       /* Keep the instants strictly increasing and off the segment endpoints */
       if (t <= prevt || t >= inst2->t)
         continue;
-      const double x = ax + p * rx, y = ay + p * ry;
-      instants[ninsts++] = tinstant_make(
-        Float8GetDatum(point_geom_dist(x, y, edges, nedges)), T_TFLOAT, t);
+      instants[ninsts++] = tinstant_make(Float8GetDatum(
+        tpoint_distance_geom_at(a, b, inst1->t, inst2->t, t, ctx)), T_TFLOAT,
+        t);
       prevt = t;
     }
     /* End instant of the segment */
-    instants[ninsts++] = tinstant_make(
-      Float8GetDatum(point_geom_dist(b->x, b->y, edges, nedges)), T_TFLOAT,
-      inst2->t);
+    instants[ninsts++] = tinstant_make(Float8GetDatum(
+      tpoint_distance_geom_at(a, b, inst1->t, inst2->t, inst2->t, ctx)),
+      T_TFLOAT, inst2->t);
     inst1 = inst2;
     a = b;
   }
@@ -3374,6 +3476,7 @@ tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs)
   /* Extract the edges */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   MeosArray *edges = geom_extract_edges(geom);
+  const bool areal = lwgeom_dimension(geom) == 2;
   lwgeom_free(geom);
   Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
   for (int i = 0; i < (int) edges->count; i++)
@@ -3382,24 +3485,84 @@ tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs)
   /* Static array accumulating the per-segment candidate turning times */
   events = meos_array_create(sizeof(double));
 
+  /* A geometry of points and segments is read exactly at every instant */
+  bool straight = true;
+  for (int i = 0; i < (int) edges->count && straight; i++)
+    straight = edge_ptrs[i]->etype == EDGE_POINT ||
+      edge_ptrs[i]->etype == EDGE_LINESEG ||
+      edge_ptrs[i]->etype == EDGE_POLYSEG;
+
+  /* The turning points are read in doubles, on coordinates scaled by a power
+   * of two that brings the largest near 1 where its square would leave the
+   * doubles. A geometry with an arc reads its distances in doubles too
+   * (#point_edge_dist2), and the edges of an areal geometry are its rings
+   * where the sign of their area is read in doubles (#ring_area_sign), both
+   * of which leave the doubles from 2^510 */
+  const double mag = Max(tspatial_magnitude(temp), geo_magnitude(gs));
+  if ((! straight || areal) && mag >= 0x1p510)
+  {
+    meos_array_destroy(events);
+    meos_array_destroy(edges); pfree(edge_ptrs);
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The temporal distance of a temporal point to a geometry with an arc "
+      "or an area and a coordinate of magnitude 2^510 or more is not "
+      "supported");
+    return NULL;
+  }
+  int k = 0;
+  Edge **cedge_ptrs = edge_ptrs;
+  Edge *cedges = NULL;
+  if (straight && mag > 0.0 && (mag > 0x1p500 || mag < 0x1p-500))
+  {
+    k = - ilogb(mag);
+    cedges = palloc(sizeof(Edge) * edges->count);
+    cedge_ptrs = palloc(sizeof(Edge *) * edges->count);
+    for (int i = 0; i < (int) edges->count; i++)
+    {
+      cedges[i] = *edge_ptrs[i];
+      cedges[i].x1 = ldexp(cedges[i].x1, k);
+      cedges[i].y1 = ldexp(cedges[i].y1, k);
+      cedges[i].x2 = ldexp(cedges[i].x2, k);
+      cedges[i].y2 = ldexp(cedges[i].y2, k);
+      cedge_ptrs[i] = &cedges[i];
+    }
+  }
+
+  DistGeomCtx ctx;
+  ctx.edges = edge_ptrs;
+  ctx.cedges = cedge_ptrs;
+  ctx.cand = palloc(sizeof(Edge *) * edges->count);
+  ctx.lower = palloc(sizeof(double) * edges->count);
+  ctx.nedges = (int) edges->count;
+  ctx.k = k;
+  ctx.straight = straight;
+  ctx.polygon = false;
+  for (int i = 0; i < (int) edges->count; i++)
+    ctx.polygon |= (edge_ptrs[i]->etype == EDGE_POLYSEG);
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_distance_geom((TSequence *) temp,
-      edge_ptrs, edges->count);
+      &ctx);
   else /* TSEQUENCESET */
   {
     const TSequenceSet *ss = (TSequenceSet *) temp;
     TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
     for (int i = 0; i < ss->count; i++)
       sequences[i] = tpointseq_distance_geom(TSEQUENCESET_SEQ_N(ss, i),
-        edge_ptrs, edges->count);
+        &ctx);
     result = (Temporal *) tsequenceset_make_free(sequences, ss->count,
       NORMALIZE);
   }
 
   /* Clean up and return */
   meos_array_destroy(events);
+  pfree(ctx.cand); pfree(ctx.lower);
+  if (cedges)
+  {
+    pfree(cedges); pfree(cedge_ptrs);
+  }
   meos_array_destroy(edges); pfree(edge_ptrs);
   return result;
 }

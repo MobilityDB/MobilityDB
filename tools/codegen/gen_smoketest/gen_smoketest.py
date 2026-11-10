@@ -693,6 +693,28 @@ TRGEO_CONFIG = dict(
         # The values of a trgeometry are poses, so the set it is restricted to
         # is a poseset; the default tstzset1 is refused ("The set must be of
         # type poseset").
+        # The relationships answer a rigid geometry at its instants and refuse
+        # linear interpolation, so they read the step sequence of the same two
+        # instants. So do the temporal geometry and the temporal geography of a
+        # rigid geometry, which state step and discrete interpolation only.
+        "trgeometry_to_tgeometry": {0: "trgeo_stepseq1"},
+        "trgeometry_to_tgeography": {0: "trgeo_stepseq1"},
+        "econtains_geo_trgeometry": {1: "trgeo_stepseq1"},
+        "ecovers_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "ecovers_geo_trgeometry": {1: "trgeo_stepseq1"},
+        "edisjoint_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "edisjoint_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
+        "eintersects_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "eintersects_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
+        "etouches_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "acontains_geo_trgeometry": {1: "trgeo_stepseq1"},
+        "acovers_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "acovers_geo_trgeometry": {1: "trgeo_stepseq1"},
+        "adisjoint_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "adisjoint_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
+        "aintersects_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "aintersects_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
+        "atouches_trgeometry_geo": {0: "trgeo_stepseq1"},
         "trgeometry_restrict_values":       {1: "poseset1"},
         # ... and so are the two entries that spell the same restriction as a
         # pair, which the line above did not reach.
@@ -754,6 +776,10 @@ TRGEO_CONFIG = dict(
     LINEAR, 0.0, NULL, false);
   TSequence    *trgeo_tseq1    = (TSequence *) trgeo_seq1;
   TSequenceSet *trgeo_tseqset1 = NULL;
+  /* The relationships answer a rigid geometry at its instants, so they take
+   * step interpolation and refuse the linear sequence above. */
+  Temporal *trgeo_stepseq1 = trgeometry_append_tinstant(
+    (Temporal *) trgeo_inst1, trgeo_inst2, STEP, 0.0, NULL, false);
   /* A later instant and a later sequence, so that the append surface performs
    * a real append instead of tripping the increasing-timestamps check. */
   TInstant *trgeo_inst3 = trgeometryinst_make(geom1, pose1,
@@ -798,6 +824,7 @@ TRGEO_CONFIG = dict(
   free(trgeo_inst4);
   if (trgeo_tseq2) free(trgeo_tseq2);
   if (trgeo_seq1) free(trgeo_seq1);
+  if (trgeo_stepseq1) free(trgeo_stepseq1);
   if (tpoint1) free(tpoint1);
   if (tpose1) free(tpose1);
   free(stbox1);
@@ -1035,7 +1062,7 @@ TPOSE_CONFIG = dict(
     "[Pose(Point(0 0), 0.0)@2001-01-02, Pose(Point(1 0), 0.5)@2001-01-03]";
   char *poseset_wkt1 = "{\\"Pose(Point(0 0), 0.0)\\", \\"Pose(Point(1 1), 0.5)\\"}";
   char *pose_hexwkb1 =
-    "0101000000000000000000000000000000000000000000000000";
+    "01360001000000000000000000000000000000000000000000000000";
   /* pose_as_geopose() on SRID=4326;GEODPose(Point(2 49), 0.5) -- GeoPose
    * requires a geodetic pose, so the planar pose1 cannot be used. */
   char *pose_geopose1 =
@@ -1075,8 +1102,8 @@ TPOSE_CONFIG = dict(
     " PoseChain(Pose(Point(1 1), 0.5), Pose(Point(2 1), 0.5))@2001-01-03]";
   /* posechain_as_hexwkb() on posechain1. */
   char *posechain_hexwkb1 =
-    "0101020000000000000000000000000000000000000000000000000000000000"
-    "00000000F03F00000000000000000000000000000000";
+    "0152000102000000000000000000000000000000000000000000000000000000"
+    "000000000000F03F00000000000000000000000000000000";
   /* temporal_as_mfjson() on the tposechain1 sequence built below. */
   char *tposechain_mfjson1 =
     "{\\"type\\":\\"MovingPoseChain\\",\\"values\\":[[{\\"position\\":"
@@ -1299,7 +1326,7 @@ TCBUFFER_CONFIG = dict(
   char *tcbuffer_wkt1 =
     "[Cbuffer(Point(0 0), 0.5)@2001-01-02, Cbuffer(Point(1 0), 0.5)@2001-01-03]";
   char *cbuffer_hexwkb1 =
-    "0100000000000000F03F000000000000F03F000000000000E03F";
+    "01390000000000000000F03F000000000000F03F000000000000E03F";
   /* temporal_as_mfjson() on tcbuffer_wkt1's parsed value. */
   char *tcbuffer_mfjson1 =
     "{ \\"type\\": \\"MovingCircularBuffer\\", \\"values\\": [ "
@@ -1496,7 +1523,7 @@ TNPOINT_CONFIG = dict(
   char *npointset_wkt1 = "{\\"NPoint(1, 0.5)\\"}";
   char *tnpoint_wkt1 =
     "[NPoint(1, 0.0)@2001-01-02, NPoint(1, 0.5)@2001-01-03]";
-  char *npoint_hexwkb1 = "01010100000000000000000000000000E03F";
+  char *npoint_hexwkb1 = "013000010100000000000000000000000000E03F";
   /* temporal_as_mfjson() on tnpoint_wkt1's parsed value. */
   char *tnpoint_mfjson1 =
     "{ \\"type\\": \\"MovingNetworkPoint\\", \\"values\\": [ "
@@ -1924,7 +1951,8 @@ TGEOMETRY_CONFIG = dict(
    * literal; only geo_transform_pipeline needs its own writable copy. */
   char *pipeline1 = "+proj=pipeline +step +proj=noop";
   char *stbox_hexwkb1 =
-    "01010000000000000000000000000000244000000000000000000000000000002440";
+    "0119000100000000000000000000000000002440000000000000000000000000"
+    "00002440";
   char *stbox_wkt1 = "SRID=5676;STBOX X((0, 0), (10, 10))";
   char *tgeogpoint_wkt1 =
     "[SRID=4326;Point(2 49)@2001-01-02, SRID=4326;Point(3 49)@2001-01-03]";

@@ -41,6 +41,9 @@ spatial relationships:
     (tgeometry, tgeography);
   - the touches predicate is defined for temporal geometries only (the GEOS
     DE-9IM relate matrix is planar-only, so geodetic touches is undefined);
+  - the contains and covers predicates are defined for temporal geometries
+    only, as their scalar forms on two temporal values are: they are planar,
+    and for two temporal points they read as intersects;
   - the temporal within-distance predicate is defined for the planar types
     only (tgeompoint, tgeometry).
 
@@ -84,12 +87,22 @@ EA_TOUCHES = [
     ("eTouchesPairs", "Etouches_tgeoarr_tgeoarr", False),
     ("aTouchesPairs", "Atouches_tgeoarr_tgeoarr", False),
 ]
+EA_CONTAINS_COVERS = [
+    ("eContainsPairs", "Econtains_tgeoarr_tgeoarr", False),
+    ("aContainsPairs", "Acontains_tgeoarr_tgeoarr", False),
+    ("eCoversPairs", "Ecovers_tgeoarr_tgeoarr", False),
+    ("aCoversPairs", "Acovers_tgeoarr_tgeoarr", False),
+]
 T_DWITHIN = ("tDwithinPairs", "Tdwithin_tgeoarr_tgeoarr", True)
 T_BOTH = [
     ("tIntersectsPairs", "Tintersects_tgeoarr_tgeoarr", False),
     ("tDisjointPairs", "Tdisjoint_tgeoarr_tgeoarr", False),
 ]
 T_TOUCHES = ("tTouchesPairs", "Ttouches_tgeoarr_tgeoarr", False)
+T_CONTAINS_COVERS = [
+    ("tContainsPairs", "Tcontains_tgeoarr_tgeoarr", False),
+    ("tCoversPairs", "Tcovers_tgeoarr_tgeoarr", False),
+]
 
 
 def emit(name, T, wrapper, dist, periods):
@@ -156,13 +169,18 @@ def geo_functions():
     # touches: geometry only
     for n, w, d in EA_TOUCHES:
         fns.append(emit(n, "tgeometry", w, d, False))
+    # contains and covers: geometry only
+    for n, w, d in EA_CONTAINS_COVERS:
+        fns.append(emit(n, "tgeometry", w, d, False))
     # temporal: dwithin (planar geometry only), intersects and disjoint (both),
-    # touches (geometry only)
+    # touches, contains and covers (geometry only)
     fns.append(emit(T_DWITHIN[0], "tgeometry", T_DWITHIN[1], True, True))
     for T in ("tgeometry", "tgeography"):
         for n, w, d in T_BOTH:
             fns.append(emit(n, T, w, d, True))
     fns.append(emit(T_TOUCHES[0], "tgeometry", T_TOUCHES[1], False, True))
+    for n, w, d in T_CONTAINS_COVERS:
+        fns.append(emit(n, "tgeometry", w, d, True))
     return fns
 
 
