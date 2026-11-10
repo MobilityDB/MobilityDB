@@ -2235,9 +2235,12 @@ geom_distance_visit(const double *a, const double *b, const double *c,
  * it: the answer is then the double nearest the distance where that double is
  * at most @p cut with no upper bound below it, and otherwise a value on the same
  * side of @p cut as the distance
- * @param[in,out] within Where not NULL, with @p cut, set to true where the answer
- * equals @p cut and two segments are within it exactly (#geom_dwithin_segs); a
- * pair kept is the only one whose distance can reach @p cut, so no other is read
+ * @param[in,out] within Where not NULL, with @p cut, set to true where two
+ * segments are within @p cut exactly (#geom_dwithin_segs), the answer then
+ * being @p cut; each pair kept is then answered by that exact sign alone, not
+ * by its distance, and the answer is above @p cut where none is within it. A
+ * pair kept is the only one whose distance can reach @p cut, so no other is
+ * read
  * @return DBL_MAX where a list holds no point, an infinity where the distance
  * exceeds the largest double
  */
@@ -2254,10 +2257,13 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   {
     geom_distance_seg(arr1[0], 0, &a, &b);
     geom_distance_seg(arr2[0], 0, &c, &d);
-    double v = segment_distance_exact(a, b, c, d, ndims);
-    if (within && v == *cut)
+    /* Asked only whether they are within the cut, the exact sign answers */
+    if (within)
+    {
       *within = geom_dwithin_segs(a, b, c, d, ndims, *cut);
-    return v;
+      return *within ? *cut : INFINITY;
+    }
+    return segment_distance_exact(a, b, c, d, ndims);
   }
 
   /* The largest magnitude of a coordinate, which sizes the margin of the
@@ -2416,17 +2422,24 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
     {
       if (cand[i].lo > geom_distance_fmin(minhi, best))
         break;
+      /* Asked only whether a pair is within the cut, its exact sign answers,
+       * the answer being the cut where one is and above it otherwise */
+      if (within)
+      {
+        if (geom_dwithin_segs(cand[i].a, cand[i].b, cand[i].c, cand[i].d,
+            ndims, *cut))
+        {
+          *within = true;
+          best = *cut;
+          break;
+        }
+        continue;
+      }
       double v = segment_distance_exact_bounded(cand[i].a, cand[i].b, cand[i].c,
         cand[i].d, ndims, big);
       best = geom_distance_fmin(best, v);
       if (cut && best < *cut)
         break;
-      if (within && v == *cut && geom_dwithin_segs(cand[i].a, cand[i].b,
-          cand[i].c, cand[i].d, ndims, *cut))
-      {
-        *within = true;
-        break;
-      }
     }
   }
   if (cand != candstack)
