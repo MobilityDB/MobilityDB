@@ -63,7 +63,6 @@
 
 /*****************************************************************************/
 
-extern bool wkb_header_states_type(MeosType type);
 extern uint8_t *datum_as_wkb(Datum value, MeosType type, uint8_t variant,
   size_t *size_out);
 extern char *datum_as_hexwkb(Datum value, MeosType type, uint8_t variant,
