@@ -3862,6 +3862,18 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
     face.lo[k] = INFINITY;
     face.hi[k] = -INFINITY;
   }
+  /* The normal formed once, at the first vertex not spanning the plane, where
+   * it is held exactly (#plane_normal_exact), each such vertex then read
+   * against it (#plane_normal_offset_sign); a triangle forms none */
+  double nrm[3];
+  int nexact = -1;
+  /* A normal along an axis, the exact signs of its components having one not
+   * zero (#vector_cross_signs), lies across that axis: a vertex is in the
+   * plane exactly where its coordinate on the axis is that of the first,
+   * which the normal held exactly or not reads alike */
+  int naxis = -1;
+  if ((sn[0] != 0) + (sn[1] != 0) + (sn[2] != 0) == 1)
+    naxis = (sn[0] != 0) ? 0 : ((sn[1] != 0) ? 1 : 2);
   for (uint32_t r = 0; r < nrings; r++)
     for (uint32_t i = 0; i < rings[r]->npoints; i++)
     {
@@ -3874,8 +3886,21 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
         const double *s = (k == 0) ? a : ((k == 1) ? b : c);
         span = v[0] == s[0] && v[1] == s[1] && v[2] == s[2];
       }
-      if (! span && vector_triple_sign(a, b, a, c, a, v) != 0)
-        return false;
+      if (! span && naxis >= 0)
+      {
+        if (v[naxis] != a[naxis])
+          return false;
+      }
+      else if (! span)
+      {
+        if (nexact < 0)
+          nexact = plane_normal_exact(a, b, c, nrm) ? 1 : 0;
+        int s = nexact ? plane_normal_offset_sign(nrm, a, v) : 2;
+        if (s == 2)
+          s = vector_triple_sign(a, b, a, c, a, v);
+        if (s != 0)
+          return false;
+      }
       for (int k = 0; k < 3; k++)
       {
         if (v[k] < face.lo[k])
