@@ -3475,7 +3475,6 @@ tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs)
   /* Extract the edges */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   MeosArray *edges = geom_extract_edges(geom);
-  const bool areal = lwgeom_dimension(geom) == 2;
   lwgeom_free(geom);
   Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
   for (int i = 0; i < (int) edges->count; i++)
@@ -3494,18 +3493,17 @@ tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs)
   /* The turning points are read in doubles, on coordinates scaled by a power
    * of two that brings the largest near 1 where its square would leave the
    * doubles. A geometry with an arc reads its distances in doubles too
-   * (#point_edge_dist2), and the edges of an areal geometry are its rings
-   * where the sign of their area is read in doubles (#ring_area_sign), both
-   * of which leave the doubles from 2^510 */
+   * (#point_edge_dist2), which leave the doubles from 2^510; the rings of an
+   * areal geometry are told from its linework exactly at every magnitude
+   * (#ring_area_sign) */
   const double mag = Max(tspatial_magnitude(temp), geo_magnitude(gs));
-  if ((! straight || areal) && mag >= 0x1p510)
+  if (! straight && mag >= 0x1p510)
   {
     meos_array_destroy(events);
     meos_array_destroy(edges); pfree(edge_ptrs);
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "The temporal distance of a temporal point to a geometry with an arc "
-      "or an area and a coordinate of magnitude 2^510 or more is not "
-      "supported");
+      "and a coordinate of magnitude 2^510 or more is not supported");
     return NULL;
   }
   int k = 0;

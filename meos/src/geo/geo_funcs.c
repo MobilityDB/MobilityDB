@@ -218,6 +218,19 @@ extract_mline(const LWMLINE *ml, MeosArray *edges)
 static inline void two_product(double a, double b, double *x, double *y);
 static inline int grow_expansion(int elen, const double *e, double b,
   double *h);
+static inline int double_lowest_set_bit(double a);
+static int ring_area_sign_wide(const POINTARRAY *pa);
+
+/**
+ * @brief Return true if the product of two doubles splits exactly into two
+ * doubles (#two_product), its lowest set bit not below 2^-1074
+ */
+static inline bool
+two_product_exact(double a, double b)
+{
+  return a == 0.0 || b == 0.0 ||
+    double_lowest_set_bit(a) + double_lowest_set_bit(b) >= -1074;
+}
 
 /**
  * @brief Return the sign of the area a ring encloses, decided exactly
@@ -225,10 +238,13 @@ static inline int grow_expansion(int elen, const double *e, double b,
  * ring is twice the signed area it encloses. The sum taken in floating point
  * answers wherever it stands clear of the bound its rounding reaches: the
  * rounding of each product and of each addition is at most a unit in the last
- * place of the running magnitude, and twice n + 1 of them bound it generously.
- * Within that bound every product is split into the two doubles that hold it
- * exactly (#two_product) and the parts are summed into an expansion
- * (#grow_expansion), whose largest component carries the exact sign.
+ * place of the running magnitude, and twice n + 1 of them bound it generously,
+ * with 2^-1074 for each product that underflows. Within that bound every
+ * product is split into the two doubles that hold it exactly (#two_product)
+ * and the parts are summed into an expansion (#grow_expansion), whose largest
+ * component carries the exact sign, wherever no product overflows or leaves
+ * part of itself below 2^-1074 and no sum overflows; elsewhere the sum is
+ * taken on #WideDyadic (#ring_area_sign_wide).
  */
 int
 ring_area_sign(const POINTARRAY *pa)
@@ -243,11 +259,24 @@ ring_area_sign(const POINTARRAY *pa)
     sum += l - r;
     mag += fabs(l) + fabs(r);
   }
-  double bound = 2.0 * ((double) n + 1.0) * DBL_EPSILON * mag;
+  double bound = 2.0 * ((double) n + 1.0) *
+    (DBL_EPSILON * mag + DBL_MIN * DBL_EPSILON);
   if (sum > bound)
     return 1;
   if (sum < - bound)
     return -1;
+  /* An expansion holds the sum exactly where every product splits exactly
+   * and no component reaches past the largest double; the products are read
+   * again only here, past the filter */
+  if (! isfinite(mag) || mag > DBL_MAX / 4.0)
+    return ring_area_sign_wide(pa);
+  for (uint32_t i = 0; i + 1 < n; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    if (! two_product_exact(a->x, b->y) || ! two_product_exact(b->x, a->y))
+      return ring_area_sign_wide(pa);
+  }
   size_t cap = 4 * (size_t) n + 2;
   double *e = palloc(sizeof(double) * cap);
   double *h = palloc(sizeof(double) * cap);
@@ -5201,6 +5230,38 @@ wide_dyadic_accumulate_double(WideDyadic *acc, double x, int sign)
   t.sign *= sign;
   wide_dyadic_accumulate(acc, &t);
   return;
+}
+
+/**
+ * @brief Return the sign of the shoelace sum of a ring, summed exactly on
+ * #WideDyadic
+ * @details The path of #ring_area_sign where a product leaves the doubles or
+ * part of it falls below 2^-1074: each product of two doubles is formed
+ * exactly (#wide_dyadic_mul) and added with its sign
+ * (#wide_dyadic_accumulate), as #wide_dyadic_accumulate_double adds a double;
+ * a product spans at most 34 limbs and the sum of every product of doubles
+ * at most 67, within #WIDE_DYADIC_LIMBS
+ */
+static int
+ring_area_sign_wide(const POINTARRAY *pa)
+{
+  WideDyadic acc, u, v, p;
+  acc.sign = 0; acc.len = 0; acc.exp = 0;
+  for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    wide_dyadic_set_double(&u, a->x);
+    wide_dyadic_set_double(&v, b->y);
+    wide_dyadic_mul(&u, &v, &p);
+    wide_dyadic_accumulate(&acc, &p);
+    wide_dyadic_set_double(&u, b->x);
+    wide_dyadic_set_double(&v, a->y);
+    wide_dyadic_mul(&u, &v, &p);
+    p.sign = - p.sign;
+    wide_dyadic_accumulate(&acc, &p);
+  }
+  return acc.sign;
 }
 
 /**
