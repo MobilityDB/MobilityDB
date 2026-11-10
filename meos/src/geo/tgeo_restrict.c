@@ -347,70 +347,119 @@ computeRegionCode(double x, double y, double z, bool hasz, const STBox *box)
 }
 
 /**
- * @brief Compute max border code for a point(x, y, z)
+ * @brief Compute max border code for a point(x, y, z) inside a box
+ * @details The coordinates are those of an input point, so the point is on
+ * an upper border exactly where a coordinate equals the upper bound
  */
 static int
 computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
 {
   /* Initialized as being inside */
   int code = INSIDE;
-  /* Check if we are on a max border
-   * Note: After clipping, we don't need to apply fabs() */
-  if (box->xmax - x < MEOS_EPSILON) /* on xmax border */
+  if (x >= box->xmax) /* on xmax border */
     code |= XMAX;
-  if (box->ymax - y < MEOS_EPSILON) /* on ymax border */
+  if (y >= box->ymax) /* on ymax border */
     code |= YMAX;
-  if (hasz && box->zmax - z < MEOS_EPSILON) /* on zmax border */
+  if (hasz && z >= box->zmax) /* on zmax border */
     code |= ZMAX;
   return code;
 }
 
 /**
- * @brief Clip the paramaters t0 and t1 for the Liang-Barsky clipping algorithm
+ * @brief A constraint of the clip of a segment: the parameter at which the
+ * segment reaches the plane `axis = bound`, or the parameter `bound` itself
+ * where `axis` is negative
  */
-bool
-clipt(double p, double q, double *t0, double *t1)
+typedef struct
 {
-  double r;
-  if (p < 0)
+  int axis;
+  double bound;
+} ClipPlane;
+
+/**
+ * @brief Return the sign of the comparison of the parameters at which a
+ * segment reaches two clip constraints
+ * @details The parameter of the plane `axis = h` is `(h - c1) / (c2 - c1)`
+ * on that axis. The difference of two of them on axes a and b, times
+ * `(c2_a - c1_a) (c2_b - c1_b)`, is the cross product of the vectors
+ * `(h_a, h_b) - (c1_a, c1_b)` and `(c2_a, c2_b) - (c1_a, c1_b)`, whose sign is
+ * decided on the input doubles (#cross_product_sign). The parameters 0 and 1
+ * compare with that of a plane as the bound compares with `c1` and `c2`.
+ * No parameter is computed.
+ * @param[in] c1,c2 Coordinates of the start and end points of the segment
+ * @param[in] a,b Constraints, a plane on an axis along which the segment moves
+ * @return -1, 0 or 1 as the parameter of @p a is less than, equal to or
+ * greater than that of @p b
+ */
+static int
+clip_plane_param_cmp(const double *c1, const double *c2, ClipPlane a,
+  ClipPlane b)
+{
+  if (a.axis < 0 && b.axis < 0)
+    return (a.bound > b.bound) - (a.bound < b.bound);
+  if (a.axis < 0)
+    return - clip_plane_param_cmp(c1, c2, b, a);
+  int sa = (c2[a.axis] > c1[a.axis]) ? 1 : -1;
+  if (b.axis < 0)
   {
-    /* entering visible region, so compute t0 */
-    if (q < 0)
-    {
-      /* t0 will be nonnegative, so continue */
-      r = q / p;
-      if (r > *t1)
-        /* t0 will exceed t1, so reject */
-        return false;
-      if (r > *t0)
-        *t0 = r; /* t0 is max of r's */
-    }
+    double c = (b.bound == 0.0) ? c1[a.axis] : c2[a.axis];
+    return sa * ((a.bound > c) - (a.bound < c));
   }
-  else if (p > 0)
+  if (a.axis == b.axis)
+    return sa * ((a.bound > b.bound) - (a.bound < b.bound));
+  int sb = (c2[b.axis] > c1[b.axis]) ? 1 : -1;
+  return sa * sb * cross_product_sign(c1[a.axis], c1[b.axis], a.bound,
+    b.bound, c1[a.axis], c1[b.axis], c2[a.axis], c2[b.axis]);
+}
+
+/**
+ * @brief Return the parameter at which a segment reaches a clip constraint
+ * @details The parameter only dates the crossing: which constraint holds an
+ * end of the clip is decided by #clip_plane_param_cmp
+ */
+static double
+clip_plane_param(const double *c1, const double *c2, ClipPlane a)
+{
+  if (a.axis < 0)
+    return a.bound;
+  return (a.bound - c1[a.axis]) / (c2[a.axis] - c1[a.axis]);
+}
+
+/**
+ * @brief Compute the max border code of an end of the clip of a segment
+ * @details The end lies on the plane `axis = hi` exactly where the parameter
+ * of that plane is that of the end; a segment not moving along the axis lies
+ * on the plane where its coordinate is the bound
+ * @param[in] c1,c2 Coordinates of the start and end points of the segment
+ * @param[in] hi Upper bounds of the box
+ * @param[in] hasz True if the Z dimension is considered
+ * @param[in] end Constraint holding the end of the clip
+ */
+static int
+clipMaxBorderCode(const double *c1, const double *c2, const double *hi,
+  bool hasz, ClipPlane end)
+{
+  static const int codes[3] = {XMAX, YMAX, ZMAX};
+  int code = INSIDE;
+  for (int k = 0; k < (hasz ? 3 : 2); k++)
   {
-    /* exiting visible region, so compute t1 */
-    if (q < p)
-    {
-      /* t1 will be <= 1, so continue */
-      r = q / p;
-      if (r < *t0)
-        /* t1 will be <= t0, so reject */
-        return false;
-      if (r < *t1)
-        *t1 = r; /* t1 is min of r's */
-    }
+    ClipPlane upper = {k, hi[k]};
+    if ((c1[k] == c2[k]) ? c1[k] >= hi[k] :
+        clip_plane_param_cmp(c1, c2, end, upper) == 0)
+      code |= codes[k];
   }
-  else /* p == 0 */
-  {
-    if (q < 0)
-      /* line parallel and outside */
-      return false;
-  }
-  return true;
+  return code;
 }
 
 /**
  * @brief Clip a line segment using the Liang-Barsky algorithm
+ * @details The clip starts at the greatest of 0 and the parameters of the
+ * planes the segment enters the box through, and ends at the least of 1 and
+ * those of the planes it leaves it through. Each comparison of two of them
+ * is the sign of a determinant on the input coordinates
+ * (#clip_plane_param_cmp), so whether the segment meets the box, and which
+ * planes hold the ends of the clip, are decided exactly; the parameters of
+ * the two constraints holding the ends are computed only to date them
  * @param[in] point1,point2 Input points
  * @param[in] box Bounding box
  * @param[in] hasz Has Z dimension?
@@ -431,7 +480,7 @@ clipt(double p, double q, double *t0, double *t1)
  * https://www.researchgate.net/publication/255657434_Some_Improvements_to_a_Parametric_Line_Clipping_Algorithm
  */
 static bool
-liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2, 
+liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2,
   const STBox *box, bool hasz, bool border_inc, GSERIALIZED **point3,
   GSERIALIZED **point4, bool *p3_inc, bool *p4_inc, double *param3,
   double *param4)
@@ -446,99 +495,92 @@ liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2,
     srid == gserialized_get_srid(point2));
 
   /* Get the input points */
-  double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0;
+  double c1[3] = {0.0, 0.0, 0.0}, c2[3] = {0.0, 0.0, 0.0};
   if (hasz)
   {
     const POINT3DZ *pt1 = GSERIALIZED_POINT3DZ_P(point1);
     const POINT3DZ *pt2 = GSERIALIZED_POINT3DZ_P(point2);
-    x1 = pt1->x; x2 = pt2->x;
-    y1 = pt1->y; y2 = pt2->y;
-    z1 = pt1->z; z2 = pt2->z;
+    c1[0] = pt1->x; c1[1] = pt1->y; c1[2] = pt1->z;
+    c2[0] = pt2->x; c2[1] = pt2->y; c2[2] = pt2->z;
   }
   else
   {
     const POINT2D *pt1 = GSERIALIZED_POINT2D_P(point1);
     const POINT2D *pt2 = GSERIALIZED_POINT2D_P(point2);
-    x1 = pt1->x; x2 = pt2->x;
-    y1 = pt1->y; y2 = pt2->y;
+    c1[0] = pt1->x; c1[1] = pt1->y;
+    c2[0] = pt2->x; c2[1] = pt2->y;
   }
+  double lo[3] = {box->xmin, box->ymin, hasz ? box->zmin : 0.0};
+  double hi[3] = {box->xmax, box->ymax, hasz ? box->zmax : 0.0};
 
-  if ((x1 < box->xmin && x2 < box->xmin) || (x1 > box->xmax && x2 > box->xmax) ||
-      (y1 < box->ymin && y2 < box->ymin) || (y1 > box->ymax && y2 > box->ymax) ||
-      (hasz && z1 < box->zmin && z2 < box->zmin) ||
-      (hasz && z1 > box->zmax && z2 > box->zmax))
-    /* trivial reject */
+  /* The constraints holding the start and the end of the clip */
+  ClipPlane start = {-1, 0.0}, end = {-1, 1.0};
+  for (int k = 0; k < (hasz ? 3 : 2); k++)
+  {
+    if (c1[k] == c2[k])
+    {
+      /* A segment not moving along the axis lies between its planes or
+       * misses the box */
+      if (c1[k] < lo[k] || c1[k] > hi[k])
+        return false;
+      continue;
+    }
+    /* A segment moving up enters through the lower plane and leaves through
+     * the upper one, a segment moving down the other way around */
+    bool up = c2[k] > c1[k];
+    ClipPlane enter = {k, up ? lo[k] : hi[k]};
+    ClipPlane leave = {k, up ? hi[k] : lo[k]};
+    if (clip_plane_param_cmp(c1, c2, enter, start) > 0)
+      start = enter;
+    if (clip_plane_param_cmp(c1, c2, leave, end) < 0)
+      end = leave;
+  }
+  int order = clip_plane_param_cmp(c1, c2, start, end);
+  if (order > 0)
     return false;
 
-  /* not trivial reject */
-  double t0 = 0, t1 = 1;
-  double dx = x2 - x1;
-  if (clipt(-dx, x1 - box->xmin, &t0, &t1) && /* left */
-      clipt(dx, box->xmax - x1, &t0, &t1)) /* right */
+  /* Remove the max border */
+  if (! border_inc)
   {
-    double dy = y2 - y1;
-    if (clipt(-dy, y1 - box->ymin, &t0, &t1) && /* bottom */
-        clipt(dy, box->ymax - y1, &t0, &t1)) /* top */
+    /* Compute max border codes for the ends of the clip */
+    int max_code1 = clipMaxBorderCode(c1, c2, hi, hasz, start);
+    int max_code2 = clipMaxBorderCode(c1, c2, hi, hasz, end);
+    /* If the whole segment is on a max border, remove it */
+    if (max_code1 & max_code2)
+      return false;
+    /* Point is included if its max_code is 0 */
+    if (p3_inc && p4_inc)
     {
-      bool found = true;
-      double dz = 0;
-      if (hasz)
-      {
-        dz = z2 - z1;
-        if (! clipt(-dz, z1 - box->zmin, &t0, &t1) || /* front */
-            ! clipt(dz, box->zmax - z1, &t0, &t1)) /* back */
-          found = false;
-      }
-      if (found)
-      {
-        /* compute coordinates */
-        if (t1 < 1)
-        {
-          /* compute V1' */
-          x2 = x1 + t1 * dx;
-          y2 = y1 + t1 * dy;
-          if (hasz)
-            z2 = z1 + t1 * dz;
-        }
-        if (t0 > 0)
-        {
-          /* compute V0' */
-          x1 = x1 + t0 * dx;
-          y1 = y1 + t0 * dy;
-          if (hasz)
-            z1 = z1 + t0 * dz;
-        }
-        /* Remove the max border */
-        if (! border_inc)
-        {
-          /* Compute max border codes for the input points */
-          int max_code1 = computeMaxBorderCode(x1, y1, z1, hasz, box);
-          int max_code2 = computeMaxBorderCode(x2, y2, z2, hasz, box);
-          /* If the whole segment is on a max border, remove it */
-          if (max_code1 & max_code2)
-            return false;
-          /* Point is included if its max_code is 0 */
-          if (p3_inc && p4_inc)
-          {
-            *p3_inc = (max_code1 == 0);
-            *p4_inc = (max_code2 == 0);
-          }
-        }
-        if (point3 && point4)
-        {
-          *point3 = geopoint_make(x1, y1, z1, hasz, false, srid);
-          *point4 = geopoint_make(x2, y2, z2, hasz, false, srid);
-        }
-        if (param3 && param4)
-        {
-          *param3 = t0;
-          *param4 = t1;
-        }
-        return true;
-      }
+      *p3_inc = (max_code1 == 0);
+      *p4_inc = (max_code2 == 0);
     }
   }
-  return false;
+
+  /* The ends of a clip reduced to a point take one parameter, and the end of
+   * the clip is not dated before its start: the exact order states they do
+   * not invert, which their rounded parameters may */
+  double t0 = clip_plane_param(c1, c2, start);
+  double t1 = clip_plane_param(c1, c2, end);
+  if (order == 0 || t1 < t0)
+    t1 = t0;
+  if (point3 && point4)
+  {
+    double v1[3], v2[3];
+    for (int k = 0; k < 3; k++)
+    {
+      double d = c2[k] - c1[k];
+      v1[k] = (t0 > 0) ? c1[k] + t0 * d : c1[k];
+      v2[k] = (t1 < 1) ? c1[k] + t1 * d : c2[k];
+    }
+    *point3 = geopoint_make(v1[0], v1[1], v1[2], hasz, false, srid);
+    *point4 = geopoint_make(v2[0], v2[1], v2[2], hasz, false, srid);
+  }
+  if (param3 && param4)
+  {
+    *param3 = t0;
+    *param4 = t1;
+  }
+  return true;
 }
 
 /*****************************************************************************/
@@ -1087,6 +1129,27 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           assert(ninsts == 0);
           inst1 = inst2;
           p1 = DatumGetGserializedP(tinstant_value_p(inst2));
+          continue;
+        }
+        /* Left through a border the box leaves out, such a chord dates its
+         * exit at the instant it starts, which the box entered there holds.
+         * The chord holds no instant, and a sequence it continues, whose last
+         * instant is the start of the segment, ends there with an exclusive
+         * bound: one instant alone with it holds nothing */
+        if (t1 == t2 && ! p4_inc)
+        {
+          upper_inc = false;
+          if (ninsts == 1)
+            ninsts = 0;
+          inst1 = inst2;
+          p1 = DatumGetGserializedP(tinstant_value_p(inst2));
+          if (ninsts > 0)
+          {
+            sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+              upper_inc, LINEAR, NORMALIZE);
+            ninsts = 0;
+          }
+          lower_inc = true;
           continue;
         }
         /* Project the segment to the timestamps if necessary and add the
