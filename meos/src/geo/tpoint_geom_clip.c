@@ -3346,11 +3346,11 @@ tpoint_distance_geom_at(const POINT2D *a, const POINT2D *b, TimestampTz s0,
  * with linear interpolation to a geometry given as an edge array
  * @details The value at each instant is the distance at that instant
  * (#tpoint_distance_geom_at). The instants are those of the sequence and its
- * interior turning points (#distance_cands_from_edge), each dated to the
- * nearest microsecond. The turning points are parameters along a segment,
- * which a scaling by a power of two leaves as they are, so they are read on
- * the edges and the points scaled by 2^k of @p ctx, which keep the squares of
- * their coordinates within the doubles
+ * interior turning points (#distance_cands_from_edge), each dated as the
+ * crossings of the temporal types are. The turning points are parameters along
+ * a segment, which a scaling by a power of two leaves as they are, so they are
+ * read on the edges and the points scaled by 2^k of @p ctx, which keep the
+ * squares of their coordinates within the doubles
  */
 static TSequence *
 tpointseq_distance_geom(const TSequence *seq, const DistGeomCtx *ctx)
@@ -3428,8 +3428,7 @@ tpointseq_distance_geom(const TSequence *seq, const DistGeomCtx *ctx)
       const double p = ev[k];
       if (! (p > 0.0 && p < 1.0))
         continue;
-      /* The instant is dated to the nearest microsecond */
-      TimestampTz t = inst1->t + (TimestampTz) llround(duration * p);
+      TimestampTz t = inst1->t + (TimestampTz) (duration * p);
       /* Keep the instants strictly increasing and off the segment endpoints */
       if (t <= prevt || t >= inst2->t)
         continue;
