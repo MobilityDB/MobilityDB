@@ -833,6 +833,40 @@ meostype_length(MeosType type)
 }
 
 /**
+ * @brief Return true if the header of the WKB representation of a value of
+ * the type carries the type, which #type_header_to_wkb_buf writes, the body
+ * of the value not stating it as the body of a set, a span, a span set or a
+ * temporal value does
+ */
+bool
+wkb_header_states_type(MeosType type)
+{
+  return (type == T_TBOX || type == T_STBOX
+#if POINTCLOUD
+    || type == T_TPCBOX
+#endif /* POINTCLOUD */
+#if CBUFFER
+    || type == T_CBUFFER
+#endif /* CBUFFER */
+#if H3
+    || type == T_H3INDEX
+#endif /* H3 */
+#if NPOINT
+    || type == T_NPOINT || type == T_NSEGMENT
+#endif /* NPOINT */
+#if POSE
+    || type == T_POSE || type == T_POSECHAIN
+#endif /* POSE */
+#if QUADBIN
+    || type == T_QUADBIN
+#endif /* QUADBIN */
+#if S2CELL
+    || type == T_S2CELL
+#endif /* S2CELL */
+    );
+}
+
+/**
  * @brief Return true if the type is an alphanumeric base type
  */
 bool
