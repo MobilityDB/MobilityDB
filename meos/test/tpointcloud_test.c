@@ -308,6 +308,40 @@ int main(void)
   free(pinstbox);
   free(pinst); free(proj_exp); free(proj); free(proj_out);
 
+  /* A coordinate is the stored value of its dimension scaled by the schema,
+   * so a finite value a schema scales beyond the doubles reads back as no
+   * number: the projection refuses it as a result out of range, and refuses
+   * the whole sequence holding it rather than answering the other instants */
+  PCDimensionSpec wide[2] = {
+    { "X", NULL, 1, "int32_t", 1e308, 0, true },
+    { "Y", NULL, 2, "int32_t", 1e308, 0, true }
+  };
+  assert(meos_pc_schema_register_dims(3, 4326, "none", wide, 2));
+  double vin[2] = {1e308, 1e308}, vout[2] = {1e308, 1.7e308};
+  Pcpoint *pin = pcpoint_make(3, vin, 2);
+  Pcpoint *pout = pcpoint_make(3, vout, 2);
+  assert(pin != NULL && pout != NULL && meos_errno() == 0);
+  TInstant *wide_insts[2] = {
+    tpcpointinst_make(pin, timestamptz_in("2024-01-01", -1)),
+    tpcpointinst_make(pout, timestamptz_in("2024-01-02", -1)) };
+  assert(wide_insts[0] != NULL && wide_insts[1] != NULL);
+  Temporal *wide_in = tpcpoint_to_tgeompoint((Temporal *) wide_insts[0]);
+  assert(wide_in != NULL && meos_errno() == 0);
+  Temporal *wide_out = tpcpoint_to_tgeompoint((Temporal *) wide_insts[1]);
+  printf("errno projecting a coordinate scaled beyond the doubles: %d\n",
+    meos_errno());
+  assert(wide_out == NULL && meos_errno() == MEOS_ERR_VALUE_OUT_OF_RANGE);
+  meos_errno_reset();
+  TSequence *wide_seq = tsequence_make(wide_insts, 2, true, true, STEP,
+    false);
+  assert(wide_seq != NULL);
+  Temporal *wide_seq_out = tpcpoint_to_tgeompoint((Temporal *) wide_seq);
+  printf("errno projecting a sequence holding it: %d\n", meos_errno());
+  assert(wide_seq_out == NULL && meos_errno() == MEOS_ERR_VALUE_OUT_OF_RANGE);
+  meos_errno_reset();
+  free(wide_in); free(wide_seq);
+  free(wide_insts[0]); free(wide_insts[1]); free(pin); free(pout);
+
   /* The nearest approach distance of two boxes of a schema is the one of
    * their spatial extents over the time they share, two boxes sharing no time
    * have none, and a point is measured to a box and to another point at the

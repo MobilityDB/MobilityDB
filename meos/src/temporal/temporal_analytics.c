@@ -158,7 +158,35 @@ innovation_distance(const _float_t v[EKF_M], const _float_t Sinv[EKF_M*EKF_M])
 }
 
 /**
+ * @brief Return the instant of a value the filter computes at a timestamp,
+ * or NULL when the value leaves the doubles
+ * @details The value is computed by the filter, so it is tested as every
+ * computed result is (#ensure_finite_result), and a point is made from its
+ * coordinates by #tpointinst_make_coords without testing them again
+ * @param[in] point True for a temporal geometry point, false for a temporal
+ * float
+ * @param[in] x,y,z Value or coordinates, @p y and @p z read for a point and
+ * @p z only when @p hasz is true
+ * @param[in] hasz True when the point has a Z
+ * @param[in] srid SRID of the point
+ * @param[in] t Timestamp
+ */
+static TInstant *
+ekf_tinstant(bool point, double x, double y, double z, bool hasz,
+  int32_t srid, TimestampTz t)
+{
+  if (! ensure_finite_result(x))
+    return NULL;
+  if (! point)
+    return tinstant_make(Float8GetDatum(x), T_TFLOAT, t);
+  if (! ensure_finite_result(y) || (hasz && ! ensure_finite_result(z)))
+    return NULL;
+  return tpointinst_make_coords(x, y, z, hasz, false, srid, t);
+}
+
+/**
  * @brief Filter a TSequence
+ * @return NULL when a value the filter computes leaves the doubles
  */
 static TSequence *
 tsequence_ext_kalman_filter(const TSequence *seq,
@@ -232,14 +260,13 @@ tsequence_ext_kalman_filter(const TSequence *seq,
   int outcount = 0;
 
   /* First output instant is the initial observation */
-  if (point)
+  TInstant *out = ekf_tinstant(point, x0, y0, z0, hasz, srid, inst0->t);
+  if (! out)
   {
-    GSERIALIZED *gsp = geopoint_make(x0, y0, z0, hasz, false, srid);
-    outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gsp),
-      T_TGEOMPOINT, inst0->t);
+    pfree(outinsts);
+    return NULL;
   }
-  else
-    outinsts[outcount++] = tinstant_make(Float8GetDatum(x0), T_TFLOAT, inst0->t);
+  outinsts[outcount++] = out;
 
   TimestampTz prev_t = inst0->t;
 
@@ -308,18 +335,13 @@ tsequence_ext_kalman_filter(const TSequence *seq,
       if (!to_drop)
       {
         /* Keep predicted value without updating the state */
-        if (point)
+        out = ekf_tinstant(point, fx[0], fx[2], fx[4], hasz, srid, inst->t);
+        if (! out)
         {
-          double x = fx[0];
-          double y = fx[2];
-          double zpos = fx[4];
-          GSERIALIZED *gs = geopoint_make(x, y, zpos, hasz, false, srid);
-          outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gs),
-            T_TGEOMPOINT, inst->t);
+          pfree_array((void **) outinsts, outcount);
+          return NULL;
         }
-        else
-          outinsts[outcount++] = tinstant_make(
-            Float8GetDatum((double) fx[0]), T_TFLOAT, inst->t);
+        outinsts[outcount++] = out;
       }
       /* Skip update to avoid contaminating state */
       prev_t = inst->t;
@@ -329,24 +351,19 @@ tsequence_ext_kalman_filter(const TSequence *seq,
     /* Inlier: update and emit filtered value */
     (void) ekf_update(&ekf, z, hx, H, Rm);
 
-    if (point)
+    out = ekf_tinstant(point, ekf.x[0], ekf.x[2], ekf.x[4], hasz, srid,
+      inst->t);
+    if (! out)
     {
-      double x = ekf.x[0], y = ekf.x[2], zpos = ekf.x[4];
-      GSERIALIZED *gs = geopoint_make(x, y, zpos, hasz, false, srid);
-      outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gs),
-        T_TGEOMPOINT, inst->t);
+      pfree_array((void **) outinsts, outcount);
+      return NULL;
     }
-    else
-      outinsts[outcount++] = tinstant_make(
-        Float8GetDatum((double) ekf.x[0]), T_TFLOAT, inst->t);
+    outinsts[outcount++] = out;
     prev_t = inst->t;
   }
 
-  TSequence *result = tsequence_make((TInstant **) outinsts, outcount,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
-  pfree(outinsts);
-  return result;
+  return tsequence_make_free(outinsts, outcount, seq->period.lower_inc,
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -386,6 +403,12 @@ temporal_ext_kalman_filter(const Temporal *temp, double gate, double q, double v
         const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
         seqs[i] = tsequence_ext_kalman_filter(seq, temp->temptype,
           gate, q, variance, to_drop);
+        /* A value the filter computes left the doubles */
+        if (! seqs[i])
+        {
+          pfree_array((void **) seqs, i);
+          return NULL;
+        }
       }
       return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE_NO);
     }

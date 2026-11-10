@@ -36,5 +36,5 @@ ERROR:  22P03
 SELECT tintFromHexWKB('0001');
 ERROR:  22P03
 SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <->
-  geometry 'Polygon((1e200 -1,2e200 -1,2e200 1,1e200 1,1e200 -1))';
+  geometry 'CircularString(1e200 -1,2e200 0,1e200 1)';
 ERROR:  0A000
