@@ -88,7 +88,9 @@
  * The eighth asks a moving point against a geometry, whose nearest approach
  * is the distance of its path to the geometry: parallel segments one or two
  * units in the last place apart, the points of a multipoint, and a line its
- * path crosses, where the distance is 0. The ninth asks a segment whose
+ * path crosses, where the distance is 0, and a moving point inside a square at
+ * 1e154 and at 1e-210, whose shoelace products leave the doubles, where the
+ * square bounds a region and the distance is 0. The ninth asks a segment whose
  * differences pass the largest double beside a point, in 2D, and beside the
  * end of a segment, in 3D, at a distance below four times the smallest normal
  * double. The last but one asks the nearest
@@ -673,6 +675,18 @@ int main(void)
   printf("%d moving points against a geometry answered as the nearest "
     "double\n", moving);
 
+  /* A moving point inside a square whose shoelace products leave the
+   * doubles, above and below, which bounds a region and not its boundary */
+  int regions = 2;
+  moving_entry("[POINT(0 0)@2001-01-01, POINT(1 0)@2001-01-02]",
+    "POLYGON((-1e154 -1e154,1e154 -1e154,1e154 1e154,-1e154 1e154,"
+    "-1e154 -1e154))", 0.0);
+  moving_entry("[POINT(0 0)@2001-01-01, POINT(1e-211 0)@2001-01-02]",
+    "POLYGON((-1e-210 -1e-210,1e-210 -1e-210,1e-210 1e-210,-1e-210 1e-210,"
+    "-1e-210 -1e-210))", 0.0);
+  printf("%d moving points inside a polygon far from the unit answered as "
+    "inside\n", regions);
+
   /* Ties that only a component far below the largest difference breaks: a
    * third coordinate 2^-866 of the others, the rounding error of a
    * difference below the least subnormal once scaled, the same with a
@@ -867,6 +881,37 @@ int main(void)
   printf("%d nearest approaches of a point passing a far point at noon\n",
     passes);
 
+  /* A point passing a point along a path whose squared length leaves the
+   * doubles below, read as #far_pass_entry reads a passage: the path runs
+   * from (0, 0) to (0, len) and the point stands at (1, len / 2), nearest at
+   * noon */
+  const double short_path[] = {1e-150, 1e-160, 1e-170, 1e-200, 1e-300,
+    0x1p-1060};
+  int shorts = (int) (sizeof(short_path) / sizeof(short_path[0]));
+  for (int i = 0; i < shorts; i++)
+  {
+    char path[256], point[128];
+    snprintf(path, sizeof(path), "[POINT(0 0)@2001-01-01, "
+      "POINT(0 %.17g)@2001-01-02]", short_path[i]);
+    snprintf(point, sizeof(point), "POINT(1 %.17g)", short_path[i] / 2);
+    Temporal *temp = tgeompoint_in(path);
+    GSERIALIZED *gs = geom_in(point, -1);
+    assert(temp != NULL && gs != NULL);
+    TInstant *nai = nai_tgeo_geo(temp, gs, false);
+    assert(nai != NULL);
+    if (temporal_start_timestamptz((Temporal *) nai) !=
+        timestamptz_in("2001-01-01 12:00:00+00", -1))
+    {
+      printf("FAIL short path %.17g: nearest approach at %lld us\n",
+        short_path[i],
+        (long long) temporal_start_timestamptz((Temporal *) nai));
+      exit(EXIT_FAILURE);
+    }
+    free(nai); free(gs); free(temp);
+  }
+  printf("%d nearest approaches of a point passing along a short path at "
+    "noon\n", shorts);
+
   /* A point resting near a segment, at gaps whose squares fall below 1e-12,
    * below the smallest normal double and to zero */
   const double near_edge[] = {1.0, 1e-3, 1e-6, 1e-7, 1e-100, 1e-160, 1e-200,
@@ -891,6 +936,25 @@ int main(void)
     free(values); free(dist); free(gs); free(temp);
   }
   printf("1 temporal distance of a point resting far from the origin\n");
+
+  /* A point moving from (0, 0) to (2, 0) over three microseconds passes
+   * nearest the end (1, 0) of a segment at 1.5 microseconds, an instant the
+   * temporal distance dates as the crossings of the temporal types are, at
+   * the microsecond below it */
+  {
+    Temporal *temp = tgeompoint_in("[POINT(0 0)@2001-01-01 00:00:00, "
+      "POINT(2 0)@2001-01-01 00:00:00.000003]");
+    GSERIALIZED *gs = geom_in("LINESTRING(1 0,1 -1)", -1);
+    assert(temp != NULL && gs != NULL);
+    Temporal *dist = tdistance_tgeo_geo(temp, gs, true);
+    assert(dist != NULL);
+    int count;
+    TimestampTz *times = temporal_timestamps(dist, &count);
+    assert(count == 3);
+    assert(times[1] == timestamptz_in("2001-01-01 00:00:00.000001", -1));
+    free(times); free(dist); free(gs); free(temp);
+  }
+  printf("1 turning instant of a temporal distance dated as a crossing\n");
 
   /* A coordinate that is infinite lies outside the domain of exact
    * computation, and the geometry holding one is refused when read */

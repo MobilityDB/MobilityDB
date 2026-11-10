@@ -53,7 +53,8 @@
 #include <meos_internal_geo.h>
 #include "temporal/temporal.h"  /* Temporal, TInstant */
 #include "temporal/meos_catalog.h"  /* T_TPCPOINT */
-#include "geo/tgeo_spatialfuncs.h"  /* geopoint_make */
+#include "temporal/type_util.h"  /* pfree_array */
+#include "geo/tgeo_spatialfuncs.h"  /* tpointinst_make_coords */
 #include "pointcloud/pcpoint.h" /* struct Pcpoint body (.pcid field) */
 
 /*****************************************************************************
@@ -99,7 +100,11 @@ tpointcloudinst_pcpoint(const Temporal *temp)
 
 /**
  * @brief Return the temporal geometry point instant equivalent to a
- * temporal pointcloud instant
+ * temporal pointcloud instant, or NULL when a coordinate leaves the doubles
+ * @details A coordinate is the stored value of its dimension scaled and
+ * offset by the schema, so it is computed and tested as every computed
+ * result is (#ensure_finite_result), and the point is made from the
+ * coordinates by #tpointinst_make_coords without testing them again
  */
 static TInstant *
 tpcpointinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
@@ -112,11 +117,11 @@ tpcpointinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
   bool hasz = (schema->zdim != NULL);
   if (hasz && ! pcpoint_schema_get_z(pt, schema, &z))
     return NULL;
-  GSERIALIZED *gs = geopoint_make(x, y, z, hasz, /* geodetic */ false,
-    (int32_t) schema->srid);
-  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
-  pfree(gs);
-  return result;
+  if (! ensure_finite_result(x) || ! ensure_finite_result(y) ||
+      (hasz && ! ensure_finite_result(z)))
+    return NULL;
+  return tpointinst_make_coords(x, y, z, hasz, /* geodetic */ false,
+    (int32_t) schema->srid, inst->t);
 }
 
 /**
@@ -132,7 +137,12 @@ tpcpointseq_to_tgeompointseq(const TSequence *seq, PCSCHEMA *schema)
   {
     TInstant *out = tpcpointinst_to_tgeompointinst(
       TSEQUENCE_INST_N(seq, i), schema);
-    if (! out) continue;
+    /* An instant that is not converted fails the conversion */
+    if (! out)
+    {
+      pfree_array((void **) insts, n);
+      return NULL;
+    }
     insts[n++] = out;
   }
   /* Step-interpolated in; linear is semantically meaningful for the
@@ -156,7 +166,12 @@ tpcpointseqset_to_tgeompointseqset(const TSequenceSet *ss, PCSCHEMA *schema)
   {
     TSequence *out = tpcpointseq_to_tgeompointseq(
       TSEQUENCESET_SEQ_N(ss, i), schema);
-    if (! out) continue;
+    /* A sequence that is not converted fails the conversion */
+    if (! out)
+    {
+      pfree_array((void **) seqs, n);
+      return NULL;
+    }
     seqs[n++] = out;
   }
   return tsequenceset_make_free(seqs, n, NORMALIZE);

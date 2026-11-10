@@ -348,6 +348,17 @@ arr_arc_ccw(const Edge *arc)
     arc->sy, arc->ex, arc->ey) > 0;
 }
 
+/* A pseudo-angle of quadrant k, k + n / d with n / d in [0, 1], kept there
+ * where the quotient of intervals holding zero leaves it unbounded */
+static inline Ival
+arr_quadrant_clamp(Ival p, double k)
+{
+  Ival r;
+  r.lo = (p.lo >= k) ? p.lo : k;
+  r.hi = (p.hi <= k + 1.0) ? p.hi : k + 1.0;
+  return r;
+}
+
 /**
  * @brief Return how far along an arc a point of its circle stands, as an
  * interval of a pseudo-angle that grows with the angle turned from its start
@@ -413,14 +424,14 @@ arr_arc_position(const Edge *arc, Ival cx, Ival cy, Ival px, Ival py)
   {
     Ival vv = {arr_fmax(v.lo, 0.0), v.hi}, uu = {arr_fmax(u.lo, 0.0), u.hi};
     Ival p = ival_div(vv, ival_add(uu, vv));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 0.0)); any = true;
   }
   /* v >= 0, u <= 0: 1 + (-u) / (v - u) in [1, 2] */
   if (v.hi >= 0.0 && u.lo <= 0.0)
   {
     Ival vv = {arr_fmax(v.lo, 0.0), v.hi}, uu = {u.lo, arr_fmin(u.hi, 0.0)};
     Ival p = ival_add(ival(1.0), ival_div(ival_neg(uu), ival_sub(vv, uu)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 1.0)); any = true;
   }
   /* v <= 0, u <= 0: 2 + (-v) / (-u - v) in [2, 3] */
   if (v.lo <= 0.0 && u.lo <= 0.0 && v.lo < 0.0)
@@ -428,14 +439,14 @@ arr_arc_position(const Edge *arc, Ival cx, Ival cy, Ival px, Ival py)
     Ival vv = {v.lo, arr_fmin(v.hi, 0.0)}, uu = {u.lo, arr_fmin(u.hi, 0.0)};
     Ival p = ival_add(ival(2.0), ival_div(ival_neg(vv),
       ival_sub(ival_neg(uu), vv)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 2.0)); any = true;
   }
   /* v <= 0, u >= 0: 3 + u / (u - v) in [3, 4), unless it is the start */
   if (v.lo < 0.0 && u.hi >= 0.0 && v.hi < 0.0)
   {
     Ival vv = {v.lo, arr_fmin(v.hi, 0.0)}, uu = {arr_fmax(u.lo, 0.0), u.hi};
     Ival p = ival_add(ival(3.0), ival_div(uu, ival_sub(uu, vv)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 3.0)); any = true;
   }
   if (! any)
   {
@@ -643,6 +654,11 @@ typedef struct
   const ArrCurves *cv;    /**< The curves the stretches lie on, or NULL */
   bool *alone;            /**< Whether each stretch meets no stretch but its
                                neighbours along its curve */
+  ArrangeCert *cert;      /**< The rounding certificate, NULL where it is
+                               not asked for */
+  double certd;           /**< The margin D, 0 where the certificate is off */
+  uint32_t *pfirst;       /**< First piece of each edge, one past the last */
+  bool *ekept;            /**< Whether each edge keeps a piece */
 } Arr;
 
 /* Whether stretches i and j lie on one edge or on edges following each
@@ -743,9 +759,37 @@ arr_vertex(Arr *a, double x, double y)
   return id;
 }
 
+/* The position along a whole circle of a meeting on it that the intervals
+ * read where the circle starts: #arr_arc_position reads a point it cannot
+ * place on either side of the start just after it, while one across the
+ * radius (-r, 0) from the points after the start, decided exactly
+ * (#meet_point_y_side), stands just before the end. Its interval there is
+ * wide, the cuts it overlaps ordered exactly (#arr_cut_order) */
+static Ival
+arr_circle_start_side_exact(const Edge *e, Ival t, const ArrMeet *m)
+{
+  MeetPoint mp = arr_meet_point(m);
+  mp.p = m->p; mp.q = m->q;
+  int sy = meet_point_y_side(&mp, e->cy);
+  /* After the start a counterclockwise circle turns below its centre */
+  if (sy == 2 || sy == 0 || (sy > 0) != arr_arc_ccw(e))
+    return t;
+  return ival_out(4.0 - 4.0 * Max(t.hi, DBL_MIN), 4.0);
+}
+
+static inline Ival
+arr_circle_start_side(const Edge *e, Ival t, const ArrMeet *m)
+{
+  if (! e->centred || ! (t.lo <= 0.0) || isinf(t.hi) ||
+      m->kind == MEET_ORIGIN)
+    return t;
+  return arr_circle_start_side_exact(e, t, m);
+}
+
 static void
 arr_cut(Arr *a, uint32_t edge, uint32_t node, Ival pos, ArrMeet meet)
 {
+  pos = arr_circle_start_side(&a->e[edge], pos, &meet);
   if (a->ncuts == a->capcuts)
   {
     a->capcuts = a->capcuts ? 2 * a->capcuts : 64;
@@ -1164,6 +1208,8 @@ arr_offsets_cross_order(const Arr *a, uint32_t i, const ArrMeet *x,
   return (t->tp == e->from) ? 1 : -1;
 }
 
+static int arr_meet_circle_start(const Edge *e, const ArrMeet *m);
+
 /* Return how two points of the line of an edge are ordered along it, by
  * their positions and, where the intervals overlap, by
  * #arr_offsets_cross_order or #meets_order_exact: -1, 1, 0 for one point, 2
@@ -1179,6 +1225,23 @@ arr_line_order(const Arr *a, uint32_t i, Ival t1, const ArrMeet *m1, Ival t2,
   {
     if (m1->kind == m2->kind && m1->sigma == m2->sigma)
       return 0;
+    /* Another meeting at that point, read where the circle starts or, as
+     * the end of a stretch reaching it (#arr_end_position), where it ends,
+     * is that end, asked exactly (#arr_meet_circle_start) */
+    if (m1->kind != m2->kind && a->e[i].centred)
+    {
+      const ArrMeet *o = (m1->kind == MEET_ORIGIN) ? m1 : m2;
+      const ArrMeet *x = (o == m1) ? m2 : m1;
+      Ival tx = (o == m1) ? t2 : t1;
+      if (o->sigma ? isinf(tx.lo) : (tx.lo <= 0.0 && ! isinf(tx.hi)))
+      {
+        int at = arr_meet_circle_start(&a->e[i], x);
+        if (at == 2)
+          return 2;
+        if (at == 1)
+          return 0;
+      }
+    }
     if (m1->kind == MEET_ORIGIN)
       return m1->sigma ? 1 : -1;
     return m2->sigma ? -1 : 1;
@@ -1340,6 +1403,12 @@ arr_stretch_where(const Arr *a, uint32_t i, Ival t, const ArrMeet *m)
       if (at == 2)
         return ARR_UNTOLD;
     }
+    else if (t.lo <= 0.0 || t.hi >= 4.0)
+    {
+      at = arr_meet_circle_start(e, m);
+      if (at == 2)
+        return ARR_UNTOLD;
+    }
   }
   if (at)
   {
@@ -1364,6 +1433,7 @@ arr_stretch_where(const Arr *a, uint32_t i, Ival t, const ArrMeet *m)
     if (same == 1)
       return ARR_AT_TO;
   }
+  t = arr_circle_start_side(e, t, m);
   int c = arr_line_order(a, i, t, m, a->tfrom[i], &a->mfrom[i]);
   if (c == 2)
     return ARR_UNTOLD;
@@ -2533,7 +2603,10 @@ arr_segment_circle_off(const Arr *a, uint32_t s, uint32_t c)
     Ival px = ival_add(na->bx, ival_mul(t, vx));
     Ival py = ival_add(na->by, ival_mul(t, vy));
     Ival pc = arr_box_position(a, c, px, py);
-    if (pc.hi < a->tfrom[c].lo || pc.lo > a->tto[c].hi)
+    /* A point read where the circle starts may stand just before its end
+     * (#arr_circle_start_side) */
+    if (! (pc.lo <= 0.0) &&
+        (pc.hi < a->tfrom[c].lo || pc.lo > a->tto[c].hi))
       continue;
     return false;
   }
@@ -2611,6 +2684,10 @@ arr_crossing_off(const Arr *a, uint32_t i, uint32_t j, int sigma)
   for (int k = 0; k < 2; k++)
   {
     Ival t = arr_box_position(a, e[k], px, py);
+    /* A point read where a circle starts may stand just before its end
+     * (#arr_circle_start_side) */
+    if (a->e[e[k]].centred && t.lo <= 0.0)
+      continue;
     if (t.hi < a->tfrom[e[k]].lo || t.lo > a->tto[e[k]].hi)
       return true;
   }
@@ -2623,6 +2700,10 @@ arr_crossing_off(const Arr *a, uint32_t i, uint32_t j, int sigma)
 static inline int
 arr_ival_where(const Arr *a, uint32_t i, Ival t)
 {
+  /* A point of a whole circle read where it starts may stand just before
+   * its end (#arr_circle_start_side), which the intervals cannot tell */
+  if (a->e[i].centred && t.lo <= 0.0)
+    return 2;
   if (t.hi < a->tfrom[i].lo || t.lo > a->tto[i].hi)
     return 0;
   if (t.lo > a->tfrom[i].hi && t.hi < a->tto[i].lo)
@@ -3068,6 +3149,8 @@ typedef struct
 static ArrPair *
 arr_box_pairs(const double (*box)[4], uint32_t n, uint32_t *npairs)
 {
+
+
   ArrSweep *sw = palloc(sizeof(ArrSweep) * Max(n, 1u));
   for (uint32_t i = 0; i < n; i++)
   {
@@ -3103,6 +3186,7 @@ arr_box_pairs(const double (*box)[4], uint32_t n, uint32_t *npairs)
   }
   pfree(sb);
   pfree(sw);
+
   *npairs = count;
   return pairs;
 }
@@ -3416,14 +3500,22 @@ arr_pieces(Arr *a)
   }
   a->pieces = palloc(sizeof(ArrPiece) * Max(n + a->ncuts, 1u));
   a->npieces = 0;
+  if (a->certd > 0.0)
+    a->pfirst = palloc(sizeof(uint32_t) * (n + 1));
   for (uint32_t i = 0; i < n; i++)
   {
+    if (a->pfirst)
+      a->pfirst[i] = a->npieces;
     /* A run of stretches walked as one piece */
     if (a->chains && a->alone[i])
     {
       uint32_t j = arr_chain(a, i);
       if (j > i)
       {
+        /* The edges the chain passes over start where the next one does */
+        if (a->pfirst)
+          for (uint32_t k = i + 1; k <= j; k++)
+            a->pfirst[k] = a->npieces;
         i = j;
         continue;
       }
@@ -3469,6 +3561,8 @@ arr_pieces(Arr *a)
     p->result = p->flip = p->used = false;
     p->chain = UINT32_MAX;
   }
+  if (a->pfirst)
+    a->pfirst[n] = a->npieces;
   return ARR_ANSWERED;
 }
 
@@ -5248,7 +5342,7 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
 
 /* The piece of an edge between two nodes, in the direction it is walked:
  * its ends and, for an arc, a middle (#ArrangePiece) */
-static void
+static pg_attribute_always_inline void
 arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
 {
   const Edge *e = &a->e[p->edge];
@@ -5509,12 +5603,16 @@ static ArrangeStatus
 arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
   uint32_t *nrings, uint32_t **ring_pieces, uint32_t **ring_off)
 {
+  if (a->pfirst)
+    a->ekept = palloc0(sizeof(bool) * Max(a->n, 1u));
   for (uint32_t k = 0; k < a->npieces; k++)
   {
     ArrPiece *p = &a->pieces[k];
     bool inl = sgn * p->left >= 1, inr = sgn * p->right >= 1;
     p->result = inl != inr;
     p->flip = inr;
+    if (a->ekept && p->result && p->chain == UINT32_MAX)
+      a->ekept[p->edge] = true;
   }
   /* The outermost piece bounds the region, unless it is linework, which
    * bounds nothing (#arr_weight) */
@@ -6317,6 +6415,974 @@ arr_lines_points(Arr *a, int sgn)
   return ARR_ANSWERED;
 }
 
+/* A place the bounds of the certificate leave to the exact checks of the
+ * written rings: a written vertex and the written ends of a piece it may lie
+ * too near, kept in the certificate of the arrangement, its array doubling as
+ * #arr_cut doubles the cuts */
+static void
+arr_cert_place(const Arr *a, double vx, double vy, double ax, double ay,
+  double bx, double by)
+{
+  ArrangeCert *c = a->cert;
+  if (c->nplaces == c->capplaces)
+  {
+    c->capplaces = c->capplaces ? 2 * c->capplaces : 16;
+    c->places = c->places ?
+      repalloc(c->places, sizeof(double[6]) * c->capplaces) :
+      palloc(sizeof(double[6]) * c->capplaces);
+  }
+  double *f = c->places[c->nplaces++];
+  f[0] = vx; f[1] = vy; f[2] = ax; f[3] = ay; f[4] = bx; f[5] = by;
+}
+
+/* Whether the point P lies farther than D from the
+ * segment AB, decided exactly: the signs of (P - A).(B - A) and
+ * (P - B).(A - B) tell whether the nearest point is an end or interior, then
+ * |P - E|^2 - D^2 or (B - A) x (P - A))^2 - D^2 |B - A|^2, each the sign of a
+ * polynomial in the doubles (#polynomial_sign_exact) */
+static bool cert_point_seg_far_slow(double px, double py, double ax,
+  double ay, double bx, double by, double d);
+
+/* The filter of #cert_point_seg_far_slow: each product of two rounded
+ * differences is off by (3 + 16 eps) eps of the sum of the magnitudes it
+ * adds (Shewchuk's bound for a sum of two products), and the comparisons
+ * of squares carry that bound twice with a margin; where a bound cannot
+ * decide, the exact test does */
+static inline bool
+cert_point_seg_far_exact(double px, double py, double ax, double ay,
+  double bx, double by, double d)
+{
+  const double k = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON;
+  double A = bx - ax, B = by - ay, U = px - ax, V = py - ay;
+  double t1 = U * A, t2 = V * B, dot1 = t1 + t2;
+  double e1 = k * (fabs(t1) + fabs(t2));
+  double dd = d * d;
+  if (dot1 <= -e1)
+  {
+    double l = U * U + V * V, el = 2.0 * k * (l + dd) + 4.0 * DBL_MIN;
+    if (l - dd > el)
+      return true;
+    if (dd - l > el)
+      return false;
+  }
+  else if (dot1 > e1)
+  {
+    double P = px - bx, Q = py - by;
+    double t3 = P * A, t4 = Q * B, dot2 = t3 + t4;
+    double e2 = k * (fabs(t3) + fabs(t4));
+    if (dot2 >= e2)
+    {
+      double l = P * P + Q * Q, el = 2.0 * k * (l + dd) + 4.0 * DBL_MIN;
+      if (l - dd > el)
+        return true;
+      if (dd - l > el)
+        return false;
+    }
+    else if (dot2 < -e2)
+    {
+      double c1 = A * V, c2 = B * U, c = fabs(c1 - c2);
+      double ce = k * (fabs(c1) + fabs(c2));
+      double L = A * A + B * B, le = 2.0 * k * L;
+      double lo = c - ce, rhs_hi = dd * (L + le) * (1.0 + 8.0 * DBL_EPSILON);
+      double rhs_lo = dd * (L - le) * (1.0 - 8.0 * DBL_EPSILON);
+      if (lo > 0.0 && lo * lo * (1.0 - 8.0 * DBL_EPSILON) > rhs_hi +
+          4.0 * DBL_MIN)
+        return true;
+      double hi = c + ce;
+      if (hi * hi * (1.0 + 8.0 * DBL_EPSILON) + 4.0 * DBL_MIN < rhs_lo)
+        return false;
+    }
+  }
+  return cert_point_seg_far_slow(px, py, ax, ay, bx, by, d);
+}
+
+static bool
+cert_point_seg_far_slow(double px, double py, double ax, double ay,
+  double bx, double by, double d)
+{
+  double t[7][2] = {{bx, -ax}, {by, -ay}, {px, -ax}, {py, -ay}, {px, -bx},
+    {py, -by}, {d, 0.0}};
+  ExactSum sm[7];
+  for (int k = 0; k < 7; k++)
+    exact_sum_set(&sm[k], t[k], (k == 6) ? 1 : 2);
+  /* (P - A).(B - A) */
+  PolyTerm dot1[2] = {{1.0, 2, {2, 0}}, {1.0, 2, {3, 1}}};
+  if (polynomial_sign_exact(sm, dot1, 2) <= 0)
+  {
+    PolyTerm f[3] = {{1.0, 2, {2, 2}}, {1.0, 2, {3, 3}}, {-1.0, 2, {6, 6}}};
+    return polynomial_sign_exact(sm, f, 3) > 0;
+  }
+  /* (P - B).(B - A) >= 0: the end B is nearest */
+  PolyTerm dot2[2] = {{1.0, 2, {4, 0}}, {1.0, 2, {5, 1}}};
+  if (polynomial_sign_exact(sm, dot2, 2) >= 0)
+  {
+    PolyTerm f[3] = {{1.0, 2, {4, 4}}, {1.0, 2, {5, 5}}, {-1.0, 2, {6, 6}}};
+    return polynomial_sign_exact(sm, f, 3) > 0;
+  }
+  /* Cross = A' V - B' U with A' = bx - ax, B' = by - ay, U = px - ax,
+   * V = py - ay: cross^2 - D^2 (A'^2 + B'^2) */
+  PolyTerm f[5] = {{1.0, 4, {0, 0, 3, 3}}, {-2.0, 4, {0, 1, 2, 3}},
+    {1.0, 4, {1, 1, 2, 2}}, {-1.0, 4, {6, 6, 0, 0}}, {-1.0, 4, {6, 6, 1, 1}}};
+  return polynomial_sign_exact(sm, f, 5) > 0;
+}
+
+static pg_attribute_always_inline void arr_piece_write(const Arr *a,
+  const ArrPiece *p, ArrangePiece *out);
+
+/* The displacement of a written vertex, half the sum of the spacing
+ * of the doubles on the larger side of each coordinate */
+static inline double
+cert_ulp_up(double x)
+{
+  /* The spacing above |x|: 2^(e - 52) for a normal x of exponent e, the
+   * smallest subnormal below the normal range */
+  uint64_t u;
+  memcpy(&u, &x, sizeof(u));
+  int e = (int) ((u >> 52) & 0x7ff);
+  if (e == 0)
+    return 0x1p-1074;
+  if (e == 0x7ff)
+    return INFINITY;
+  uint64_t r = (uint64_t) (e > 52 ? e - 52 : 0) << 52;
+  double d;
+  if (e <= 52)
+    return ldexp(1.0, e - 1075);
+  memcpy(&d, &r, sizeof(d));
+  return d;
+}
+
+static inline double
+cert_delta(double x, double y)
+{
+  return 0.5 * (cert_ulp_up(x) + cert_ulp_up(y));
+}
+
+/* Whether the written arc through a, m and b is minor, its angle at m
+ * obtuse, (a - m).(b - m) < 0: the two products filtered as
+ * #cross_product_sign filters its two, decided exactly where the filter
+ * cannot tell */
+static bool
+cert_arc_minor(const ArrangePiece *w)
+{
+  double l1 = w->x1 - w->mx, l2 = w->x2 - w->mx;
+  double r1 = w->y1 - w->my, r2 = w->y2 - w->my;
+  double left = l1 * l2, right = r1 * r2;
+  double mag = fabs(left) + fabs(right);
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON * mag;
+  if (mag >= 0x1p-969)
+  {
+    double dot = left + right;
+    if (dot < - bound)
+      return true;
+    if (dot > bound)
+      return false;
+  }
+  double t[4][2] = {{w->x1, -w->mx}, {w->x2, -w->mx}, {w->y1, -w->my},
+    {w->y2, -w->my}};
+  ExactSum sm[4];
+  for (int k = 0; k < 4; k++)
+    exact_sum_set(&sm[k], t[k], 2);
+  PolyTerm f[2] = {{1.0, 2, {0, 1}}, {1.0, 2, {2, 3}}};
+  return polynomial_sign_exact(sm, f, 2) < 0;
+}
+
+/* The bound H of the written form of an arc piece against its exact
+ * arc (H2): with (c', r') the circle through the three
+ * written points, in intervals, and (c, r) the exact circle of the edge,
+ * H = |c - c'| + |r - r'| + r' (pi/2)(|c - c'| / r' + delta / (r - delta)),
+ * INFINITY where a bound does not hold (a flat arc, a whole circle). Its
+ * delta @p dl is the larger of its ends', which #cert_unit_fill reads once
+ * for the piece */
+static double
+cert_arc_h(const Arr *a, const ArrPiece *p, double dl)
+{
+  const Edge *e = &a->e[p->edge];
+  if (! e->centred)
+  {
+    return INFINITY;
+  }
+  if (p->from == p->to)
+  {
+    return INFINITY;
+  }
+  ArrangePiece w;
+  arr_piece_write(a, p, &w);
+  /* An arc of next to no sweep is written as its chord (#arr_piece_write):
+   * its bound is delta and the exact arc's sagitta over the chord grown by
+   * 2 delta, rounded up */
+  if (! w.arc)
+  {
+    double c = hypot(w.x2 - w.x1, w.y2 - w.y1) * (1.0 + 4.0 * DBL_EPSILON);
+    double cg = (c + 2.0 * dl) * (1.0 + 4.0 * DBL_EPSILON);
+    double q = cg * cg / 4.0, r = e->radius;
+    if (! (q < r * r * (1.0 - 1e-9)))
+      return INFINITY;
+    double sex = q / (r + sqrt(r * r - q) * (1.0 - 4.0 * DBL_EPSILON));
+    return (dl + sex) * (1.0 + 1e-10) + 4.0 * DBL_MIN;
+  }
+  Ival bx = ival_sub(ival(w.x2), ival(w.x1)),
+    by = ival_sub(ival(w.y2), ival(w.y1));
+  Ival mx = ival_sub(ival(w.mx), ival(w.x1)),
+    my = ival_sub(ival(w.my), ival(w.y1));
+  Ival d = ival_mul(ival(2.0), ival_cross(bx, by, mx, my));
+  Ival b2 = ival_dot(bx, by, bx, by), m2 = ival_dot(mx, my, mx, my);
+  Ival ux = ival_div(ival_sub(ival_mul(my, b2), ival_mul(by, m2)), d);
+  Ival uy = ival_div(ival_sub(ival_mul(bx, m2), ival_mul(mx, b2)), d);
+  bool circle_ok = isfinite(ux.lo) && isfinite(ux.hi) && isfinite(uy.lo) &&
+    isfinite(uy.hi);
+  if (! circle_ok)
+  {
+    ux = ival(0.0); uy = ival(0.0);
+  }
+  Ival dcx = ival_sub(ival_add(ival(w.x1), ux), ival(e->cx));
+  Ival dcy = ival_sub(ival_add(ival(w.y1), uy), ival(e->cy));
+  Ival dc2 = ival_dot(dcx, dcy, dcx, dcy), r2 = ival_dot(ux, uy, ux, uy);
+  /* Each square root, correctly rounded, moved outward a step (#ival_out) */
+  double dc = ival_out(0.0, sqrt(arr_fmax(dc2.hi, 0.0))).hi;
+  Ival rs = ival_out(sqrt(arr_fmax(r2.lo, 0.0)), sqrt(arr_fmax(r2.hi, 0.0)));
+  double rlo = arr_fmax(rs.lo, 0.0), rhi = rs.hi;
+  double r = e->radius;
+  double dr = Max(rhi - r, r - rlo);
+  double h2 = INFINITY;
+  if (circle_ok && rlo > 0.0 && r > dl)
+  {
+    double s1 = dc / rlo, s2 = dl / (r - dl);
+    if (s1 <= 1.0 && s2 <= 1.0)
+      h2 = (dc + dr + rhi * (M_PI / 2.0) * (s1 + s2)) * (1.0 + 1e-12) +
+        4.0 * DBL_MIN;
+  }
+  /* H3, of a minor written arc turning as its exact piece
+   * turns. Along the written circle (c', r') the signed distance to the
+   * exact one, |P - c| - r, is (r' - r) + (c' - c).u, a sum of 1, cos and
+   * sin, within rho = 3.5 |c' - c|^2 / r' where |c' - c| <= r' / 2. At the
+   * three written points it is their distance to the exact circle, at most
+   * e, so on the written arc it is at most L (e + rho) + rho, with
+   * L = C / la + C / lb + C^2 / (la lb) bounding the three interpolating
+   * functions by the chords: on a minor arc |sin| of half an angle within
+   * it is at most C / 2r'. Matching the two arcs by the angle about c,
+   * linear between the ends, adds (pi / 2) delta, as in H2; a chord past
+   * 6 delta keeps the two sweeps from differing by a turn. Each term is
+   * rounded up */
+  double h3 = INFINITY;
+  if (circle_ok && rlo > 0.0 && dc <= 0.5 * rlo && r > 2.0 * dl)
+  {
+    /* The chords by the square root of their squares, within 1.5 epsilon
+     * where no square overflows and their sum is normal, so moved 4
+     * epsilon; elsewhere H3 is not read */
+    double ax = w.x2 - w.x1, ay = w.y2 - w.y1;
+    double ux1 = w.mx - w.x1, uy1 = w.my - w.y1;
+    double ux2 = w.mx - w.x2, uy2 = w.my - w.y2;
+    double cn2 = ax * ax + ay * ay, la2 = ux1 * ux1 + uy1 * uy1,
+      lb2 = ux2 * ux2 + uy2 * uy2;
+    bool ok = cn2 >= 0x1p-968 && la2 >= 0x1p-968 && lb2 >= 0x1p-968 &&
+      cn2 <= DBL_MAX && la2 <= DBL_MAX && lb2 <= DBL_MAX;
+    double cn = ok ? sqrt(cn2) : 0.0;
+    double cl = cn * (1.0 + 4.0 * DBL_EPSILON);
+    double clo = cn * (1.0 - 4.0 * DBL_EPSILON);
+    double la = ok ? sqrt(la2) * (1.0 - 4.0 * DBL_EPSILON) : 0.0;
+    double lb = ok ? sqrt(lb2) * (1.0 - 4.0 * DBL_EPSILON) : 0.0;
+    bool ccw = p->flip ? ! a->ccw[p->edge] : a->ccw[p->edge];
+    if (ok && la > 0.0 && lb > 0.0 &&
+        clo > 6.0 * dl * (1.0 + 1e-10) && cert_arc_minor(&w) &&
+        (cross_product_sign(w.x1, w.y1, w.mx, w.my, w.x1, w.y1, w.x2,
+          w.y2) > 0) == ccw)
+    {
+      /* Each written end lies within delta of its exact end, on the exact
+       * circle, so within delta of that circle: only the middle is read */
+      Ival qx = ival_sub(ival(w.mx), ival(e->cx));
+      Ival qy = ival_sub(ival(w.my), ival(e->cy));
+      Ival q2 = ival_dot(qx, qy, qx, qy);
+      Ival qs = ival_out(sqrt(arr_fmax(q2.lo, 0.0)),
+        sqrt(arr_fmax(q2.hi, 0.0)));
+      double em = arr_fmax(dl, Max(qs.hi - r, r - qs.lo));
+      double rho = 3.5 * dc * dc / rlo;
+      double lam = cl / la + cl / lb + cl * cl / (la * lb);
+      h3 = (lam * (em + rho) + rho + (M_PI / 2.0) * dl) * (1.0 + 1e-10) +
+        4.0 * DBL_MIN;
+    }
+  }
+  double h23 = Min(h2, h3);
+  /* H1, the chord bound of a minor arc: delta, the exact
+   * arc's sagitta for the chord grown by 2 delta and the radius r, and the
+   * written one, s <= c |(b - a) x (m - a)| / (2 |m - a| |m - b|), each
+   * rounded up; minor where (a - m).(b - m) < 0, exactly. Its first two
+   * terms, read first, bound it from below, the written sagitta never
+   * negative and every operation after monotone: where they reach the
+   * smaller of H2 and H3 the rest is not read */
+  double h1 = INFINITY;
+  double c = hypot(w.x2 - w.x1, w.y2 - w.y1) * (1.0 + 4.0 * DBL_EPSILON);
+  double cg = (c + 2.0 * dl) * (1.0 + 4.0 * DBL_EPSILON);
+  double q = cg * cg / 4.0;
+  if (q < r * r * (1.0 - 1e-9))
+  {
+    double sex = q / (r + sqrt(r * r - q) * (1.0 - 4.0 * DBL_EPSILON));
+    double h1lo = (dl + sex) * (1.0 + 1e-10) + 4.0 * DBL_MIN;
+    if (h1lo < h23)
+    {
+      /* A middle rounded onto an end: the written piece is the chord */
+      bool onend = (w.mx == w.x1 && w.my == w.y1) ||
+        (w.mx == w.x2 && w.my == w.y2);
+      if (onend)
+        h1 = h1lo;
+      else if (cert_arc_minor(&w))
+      {
+        double cr = fabs((w.x2 - w.x1) * (w.my - w.y1) -
+          (w.y2 - w.y1) * (w.mx - w.x1));
+        double la = hypot(w.mx - w.x1, w.my - w.y1);
+        double lb = hypot(w.mx - w.x2, w.my - w.y2);
+        if (la > 0.0 && lb > 0.0)
+        {
+          double swr = c * cr / (2.0 * la * lb);
+          h1 = (dl + sex + swr) * (1.0 + 1e-10) + 4.0 * DBL_MIN;
+        }
+      }
+    }
+  }
+  double h = Min(h1, h23);
+  return isfinite(h) ? h : INFINITY;
+}
+
+/* Whether a point lies farther than D from the written arc piece of
+ * the centred edge e from node s to node t: from the exact
+ * circle (c, r), whose distance never exceeds the arc's, by the exact signs
+ * of |P - C|^2 - (r +- D)^2; near the circle, only where the point's
+ * direction lies outside the span (exact orientations against the rounded
+ * ends) and both ends lie farther than D + 4 delta */
+static bool
+cert_arc_far_exact(double px, double py, const Edge *e, bool ccw,
+  const ArrNode *ns, const ArrNode *nt, double d)
+{
+  double t[4][2] = {{px, -e->cx}, {py, -e->cy}, {e->radius, d},
+    {e->radius, -d}};
+  ExactSum sm[4];
+  for (int k = 0; k < 4; k++)
+    exact_sum_set(&sm[k], t[k], 2);
+  PolyTerm out[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
+  if (polynomial_sign_exact(sm, out, 3) > 0)
+    return true;
+  if (e->radius > d)
+  {
+    PolyTerm in[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {3, 3}}};
+    if (polynomial_sign_exact(sm, in, 3) < 0)
+      return true;
+  }
+  /* Near the circle: the span from s to t in the sense the piece turns */
+  double sx = ns->x, sy = ns->y, tx = nt->x, ty = nt->y;
+  if (! ccw)
+  {
+    double u = sx; sx = tx; tx = u;
+    u = sy; sy = ty; ty = u;
+  }
+  int st = cross_product_sign(e->cx, e->cy, sx, sy, e->cx, e->cy, tx, ty);
+  int sp = cross_product_sign(e->cx, e->cy, sx, sy, e->cx, e->cy, px, py);
+  int pt = cross_product_sign(e->cx, e->cy, px, py, e->cx, e->cy, tx, ty);
+  bool inside = (st >= 0) ? (sp >= 0 && pt >= 0) : ! (sp < 0 && pt < 0);
+  if (inside)
+    return false;
+  double de = nextafter(d + 4.0 * Max(cert_delta(ns->x, ns->y),
+    cert_delta(nt->x, nt->y)), INFINITY);
+  for (int l = 0; l < 2; l++)
+  {
+    double ex = l ? nt->x : ns->x, ey = l ? nt->y : ns->y;
+    double u[3][2] = {{px, -ex}, {py, -ey}, {de, 0.0}};
+    ExactSum su[3];
+    for (int k = 0; k < 3; k++)
+      exact_sum_set(&su[k], u[k], (k == 2) ? 1 : 2);
+    PolyTerm f[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
+    if (polynomial_sign_exact(su, f, 3) <= 0)
+      return false;
+  }
+  return true;
+}
+
+/* Whether the direction (ux, uy) from the centre of a centred edge
+ * lies within the span from node s to node t in the sense @p ccw, its
+ * boundary included, by exact orientations */
+static bool
+cert_dir_in_span(const Edge *e, bool ccw, const ArrNode *ns, const ArrNode *nt,
+  double ux, double uy)
+{
+  double sx = ns->x - e->cx, sy = ns->y - e->cy;
+  double tx = nt->x - e->cx, ty = nt->y - e->cy;
+  if (! ccw)
+  {
+    double w = sx; sx = tx; tx = w;
+    w = sy; sy = ty; ty = w;
+  }
+  int st = cross_product_sign(0.0, 0.0, sx, sy, 0.0, 0.0, tx, ty);
+  int su = cross_product_sign(0.0, 0.0, sx, sy, 0.0, 0.0, ux, uy);
+  int ut = cross_product_sign(0.0, 0.0, ux, uy, 0.0, 0.0, tx, ty);
+  return (st >= 0) ? (su >= 0 && ut >= 0) : ! (su < 0 && ut < 0);
+}
+
+/* Whether the point (X, Y), held in intervals, lies outside the span
+ * of the centred edge e from node s to node t in the sense @p ccw, as the
+ * intervals decide it; false where they cannot tell */
+static bool
+cert_ipoint_outside_span(const Edge *e, bool ccw, const ArrNode *ns,
+  const ArrNode *nt, Ival x, Ival y)
+{
+  double sx = ns->x, sy = ns->y, tx = nt->x, ty = nt->y;
+  if (! ccw)
+  {
+    double w = sx; sx = tx; tx = w;
+    w = sy; sy = ty; ty = w;
+  }
+  int st = cross_product_sign(e->cx, e->cy, sx, sy, e->cx, e->cy, tx, ty);
+  Ival ux = ival_sub(x, ival(e->cx)), uy = ival_sub(y, ival(e->cy));
+  Ival vsx = ival_sub(ival(sx), ival(e->cx)),
+    vsy = ival_sub(ival(sy), ival(e->cy));
+  Ival vtx = ival_sub(ival(tx), ival(e->cx)),
+    vty = ival_sub(ival(ty), ival(e->cy));
+  int su = ival_sign(ival_cross(vsx, vsy, ux, uy));
+  int ut = ival_sign(ival_cross(ux, uy, vtx, vty));
+  if (st >= 0)
+    return su == -1 || ut == -1;
+  return su == -1 && ut == -1;
+}
+
+/* Whether every point where the segment A B meets the circle of the
+ * centred edge e is decided, in intervals, to lie off the arc piece s t
+ * (outside its span) or off the segment */
+static bool
+cert_seg_circle_off_arc(double ax, double ay, double bx, double by,
+  const Edge *e, bool ccw, const ArrNode *ns, const ArrNode *nt)
+{
+  Ival dx = ival_sub(ival(bx), ival(ax)), dy = ival_sub(ival(by), ival(ay));
+  Ival fx = ival_sub(ival(ax), ival(e->cx)),
+    fy = ival_sub(ival(ay), ival(e->cy));
+  Ival qa = ival_dot(dx, dy, dx, dy);
+  Ival qb = ival_mul(ival(2.0), ival_dot(fx, fy, dx, dy));
+  Ival qc = ival_sub(ival_dot(fx, fy, fx, fy),
+    ival_mul(ival(e->radius), ival(e->radius)));
+  Ival disc = ival_sub(ival_mul(qb, qb), ival_mul(ival(4.0), ival_mul(qa, qc)));
+  if (disc.hi < 0.0)
+    return true;
+  Ival sq = ival_sqrt(disc), two_a = ival_mul(ival(2.0), qa);
+  for (int sg = -1; sg <= 1; sg += 2)
+  {
+    Ival num = (sg < 0) ? ival_sub(ival_neg(qb), sq) :
+      ival_add(ival_neg(qb), sq);
+    Ival t = ival_div(num, two_a);
+    if (! isfinite(t.lo) || ! isfinite(t.hi))
+      return false;
+    if (t.hi < 0.0 || t.lo > 1.0)
+      continue;
+    Ival x = ival_add(ival(ax), ival_mul(t, dx));
+    Ival y = ival_add(ival(ay), ival_mul(t, dy));
+    if (! cert_ipoint_outside_span(e, ccw, ns, nt, x, y))
+      return false;
+  }
+  return true;
+}
+
+/* Whether the points where the circles of two centred edges meet are
+ * each decided, in intervals, to lie outside the span of one of the arcs */
+static bool
+cert_circles_off_arcs(const Edge *e1, bool ccw1, const ArrNode *s1,
+  const ArrNode *t1, const Edge *e2, bool ccw2, const ArrNode *s2,
+  const ArrNode *t2)
+{
+  Ival dx = ival_sub(ival(e2->cx), ival(e1->cx));
+  Ival dy = ival_sub(ival(e2->cy), ival(e1->cy));
+  Ival d2 = ival_dot(dx, dy, dx, dy);
+  Ival r1 = ival_mul(ival(e1->radius), ival(e1->radius));
+  Ival r2 = ival_mul(ival(e2->radius), ival(e2->radius));
+  Ival al = ival_div(ival_add(ival_sub(r1, r2), d2), ival_mul(ival(2.0), d2));
+  Ival h2 = ival_sub(ival_div(r1, d2), ival_mul(al, al));
+  if (! isfinite(al.lo) || ! isfinite(h2.hi))
+    return false;
+  Ival h = ival_sqrt(h2);
+  for (int sg = -1; sg <= 1; sg += 2)
+  {
+    Ival hh = (sg < 0) ? ival_neg(h) : h;
+    Ival x = ival_add(ival_add(ival(e1->cx), ival_mul(al, dx)),
+      ival_mul(hh, ival_neg(dy)));
+    Ival y = ival_add(ival_add(ival(e1->cy), ival_mul(al, dy)),
+      ival_mul(hh, dx));
+    if (! cert_ipoint_outside_span(e1, ccw1, s1, t1, x, y) &&
+        ! cert_ipoint_outside_span(e2, ccw2, s2, t2, x, y))
+      return false;
+  }
+  return true;
+}
+
+/* The sign of X - K sqrt(Q), X and K given by one-term polynomials of
+ * @p sm (indices x and k), Q by @p q (non-negative): by their signs, then of
+ * X^2 - K^2 Q */
+static int
+cert_x_minus_ksqrt(const ExactSum *sm, int x, int k, const PolyTerm *q, int nq)
+{
+  PolyTerm px[1] = {{1.0, 1, {x}}}, pk[1] = {{1.0, 1, {k}}};
+  int xs = polynomial_sign_exact(sm, px, 1);
+  int ks = polynomial_sign_exact(sm, pk, 1);
+  int qs = polynomial_sign_exact(sm, q, nq);
+  int kq = (qs == 0) ? 0 : ks;
+  if (xs != kq)
+    return (xs > kq) ? 1 : -1;
+  if (xs == 0)
+    return 0;
+  PolyTerm f[8];
+  int n = 0;
+  f[n++] = (PolyTerm) {1.0, 2, {x, x}};
+  for (int j = 0; j < nq; j++)
+  {
+    PolyTerm t = q[j];
+    t.coef = -t.coef;
+    t.sum[t.deg++] = k;
+    t.sum[t.deg++] = k;
+    f[n++] = t;
+  }
+  return xs * polynomial_sign_exact(sm, f, n);
+}
+
+/* A segment A B against an arc piece of the circle (c, r): apart by
+ * more than D where it keeps out of the circle grown by D or within it
+ * shrunk by D; otherwise, where it meets the circle at all (its ends on
+ * either side, or both outside with the foot of c within it and the line
+ * within r of c) it is left to the exact fallback; where it does not, the
+ * points of the arc nearest it are its ends (tested apart) or the points of
+ * the circle on the segment's normal through c within the span, at the
+ * signed distance h + sg r from its line, h = C / L,
+ * C = (B - A) x (c - A), L = |B - A|, each tested against D exactly */
+static bool
+cert_seg_arc_interior_far(double ax, double ay, double bx, double by,
+  const Edge *e, bool ccw, const ArrNode *ns, const ArrNode *nt, double d)
+{
+  double rd = nextafter(e->radius + d, INFINITY);
+  if (cert_point_seg_far_exact(e->cx, e->cy, ax, ay, bx, by, rd))
+    return true;
+  /* Sums: 0 A' = bx - ax, 1 B' = by - ay, 2 cx - ax, 3 cy - ay,
+   * 4 cx - bx, 5 cy - by, 6 r, 7 scratch */
+  double t[8][2] = {{bx, -ax}, {by, -ay}, {e->cx, -ax}, {e->cy, -ay},
+    {e->cx, -bx}, {e->cy, -by}, {e->radius, 0.0}, {0.0, 0.0}};
+  ExactSum sm[8];
+  for (int k = 0; k < 7; k++)
+    exact_sum_set(&sm[k], t[k], (k == 6) ? 1 : 2);
+  PolyTerm fa[3] = {{1.0, 2, {2, 2}}, {1.0, 2, {3, 3}}, {-1.0, 2, {6, 6}}};
+  PolyTerm fb[3] = {{1.0, 2, {4, 4}}, {1.0, 2, {5, 5}}, {-1.0, 2, {6, 6}}};
+  int sa = polynomial_sign_exact(sm, fa, 3),
+    sb = polynomial_sign_exact(sm, fb, 3);
+  if (sa <= 0 || sb <= 0)
+  {
+    if (sa < 0 && sb < 0 && e->radius > d)
+    {
+      /* Both ends within: inside the circle shrunk by D where both ends are */
+      const double r2[2] = {e->radius, -d};
+      exact_sum_set(&sm[7], r2, 2);
+      PolyTerm ga[3] = {{1.0, 2, {2, 2}}, {1.0, 2, {3, 3}}, {-1.0, 2, {7, 7}}};
+      PolyTerm gb[3] = {{1.0, 2, {4, 4}}, {1.0, 2, {5, 5}}, {-1.0, 2, {7, 7}}};
+      if (polynomial_sign_exact(sm, ga, 3) < 0 &&
+          polynomial_sign_exact(sm, gb, 3) < 0)
+        return true;
+    }
+    /* An end on or within the circle: it crosses the circle, which the
+     * intervals may place off the arc */
+    if (! cert_seg_circle_off_arc(ax, ay, bx, by, e, ccw, ns, nt))
+      return false;
+  }
+  /* Both ends outside: the segment dips within where the foot of c lies
+   * within it and C^2 < r^2 L^2 */
+  PolyTerm dot1[2] = {{-1.0, 2, {2, 0}}, {-1.0, 2, {3, 1}}};
+  PolyTerm dot2[2] = {{1.0, 2, {4, 0}}, {1.0, 2, {5, 1}}};
+  bool footin = polynomial_sign_exact(sm, dot1, 2) < 0 &&
+    polynomial_sign_exact(sm, dot2, 2) < 0;
+  if (! footin)
+    return true;      /* the nearest points are ends, tested apart */
+  PolyTerm dip[5] = {{1.0, 4, {0, 0, 3, 3}}, {-2.0, 4, {0, 1, 2, 3}},
+    {1.0, 4, {1, 1, 2, 2}}, {-1.0, 4, {6, 6, 0, 0}}, {-1.0, 4, {6, 6, 1, 1}}};
+  if (polynomial_sign_exact(sm, dip, 5) <= 0 &&
+      ! cert_seg_circle_off_arc(ax, ay, bx, by, e, ccw, ns, nt))
+    return false;     /* the line may meet the arc within the segment */
+  /* No crossing: the normal points within the span, against D */
+  double nx = -(by - ay), ny = bx - ax;
+  PolyTerm ll[2] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}};
+  for (int sg = -1; sg <= 1; sg += 2)
+  {
+    if (! cert_dir_in_span(e, ccw, ns, nt, sg * nx, sg * ny))
+      continue;
+    /* |h + sg r| > D: C - (D - sg r) L > 0 or C - (-D - sg r) L < 0, the
+     * sign of C - K L read from C^2 - K^2 L^2 and the signs */
+    PolyTerm cterm[2] = {{1.0, 2, {0, 3}}, {-1.0, 2, {1, 2}}};
+    int cs = polynomial_sign_exact(sm, cterm, 2);
+    bool apart = false;
+    for (int side = 0; side < 2 && ! apart; side++)
+    {
+      const double kk[2] = {side ? -d : d, -sg * e->radius};
+      exact_sum_set(&sm[7], kk, 2);
+      PolyTerm pk[1] = {{1.0, 1, {7}}};
+      int ks = polynomial_sign_exact(sm, pk, 1);
+      int diff;
+      if (cs != ks)
+        diff = (cs > ks) ? 1 : -1;
+      else if (cs == 0)
+        diff = 0;
+      else
+      {
+        PolyTerm f[5] = {{1.0, 4, {0, 0, 3, 3}}, {-2.0, 4, {0, 1, 2, 3}},
+          {1.0, 4, {1, 1, 2, 2}}, {-1.0, 4, {7, 7, 0, 0}},
+          {-1.0, 4, {7, 7, 1, 1}}};
+        diff = cs * polynomial_sign_exact(sm, f, 5);
+      }
+      apart = side ? diff < 0 : diff > 0;
+    }
+    (void) ll;
+    if (! apart)
+      return false;
+  }
+  return true;
+}
+
+/* Two arc pieces of distinct circles: apart by more than D where the
+ * circles grown and shrunk by D stay apart; where the circles meet, left to
+ * the exact fallback; otherwise the nearest points are ends (tested apart)
+ * or the points on the line of centres within both spans, at
+ * |sqrt(U) + a2 r2 - a1 r1|, U = |c2 - c1|^2, tested against D exactly */
+static bool
+cert_arc_arc_interior_far(const Edge *e1, bool ccw1, const ArrNode *s1n,
+  const ArrNode *t1n, const Edge *e2, bool ccw2, const ArrNode *s2n,
+  const ArrNode *t2n, double d)
+{
+  if (e1->cx == e2->cx && e1->cy == e2->cy)
+    return true;    /* concentric: the ends decide */
+  double t[3][2] = {{e2->cx, -e1->cx}, {e2->cy, -e1->cy}, {0.0, 0.0}};
+  ExactSum sm[4];
+  for (int k = 0; k < 2; k++)
+    exact_sum_set(&sm[k], t[k], 2);
+  PolyTerm qu[2] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}};
+  /* The circles meet where (r1 - r2)^2 <= U <= (r1 + r2)^2 */
+  const double ka[3] = {e1->radius, e2->radius, 0.0},
+    kb[3] = {e1->radius, -e2->radius, 0.0};
+  exact_sum_set(&sm[2], ka, 2);
+  exact_sum_set(&sm[3], kb, 2);
+  PolyTerm fo[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
+  PolyTerm fi[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {3, 3}}};
+  if (polynomial_sign_exact(sm, fo, 3) <= 0 &&
+      polynomial_sign_exact(sm, fi, 3) >= 0 &&
+      ! cert_circles_off_arcs(e1, ccw1, s1n, t1n, e2, ccw2, s2n, t2n))
+    return false;   /* the circles may meet on both arcs: the fallback */
+  double ux = e2->cx - e1->cx, uy = e2->cy - e1->cy;
+  for (int a1 = -1; a1 <= 1; a1 += 2)
+  {
+    if (! cert_dir_in_span(e1, ccw1, s1n, t1n, a1 * ux, a1 * uy))
+      continue;
+    for (int a2 = -1; a2 <= 1; a2 += 2)
+    {
+      if (! cert_dir_in_span(e2, ccw2, s2n, t2n, a2 * ux, a2 * uy))
+        continue;
+      /* |sqrt(U) - K| > D, K = a1 r1 - a2 r2: sqrt(U) > K + D or
+       * sqrt(U) < K - D, i.e.
+       * (K + D) - 1 sqrt(U) < 0 or (K - D) - sqrt(U) > 0 */
+      const double k1[3] = {a1 * e1->radius, -a2 * e2->radius, d};
+      const double one[1] = {1.0};
+      exact_sum_set(&sm[2], k1, 3);
+      exact_sum_set(&sm[3], one, 1);
+      bool apart = cert_x_minus_ksqrt(sm, 2, 3, qu, 2) < 0;
+      if (! apart)
+      {
+        const double k2[3] = {a1 * e1->radius, -a2 * e2->radius, -d};
+        exact_sum_set(&sm[2], k2, 3);
+        apart = cert_x_minus_ksqrt(sm, 2, 3, qu, 2) > 0;
+      }
+      if (! apart)
+        return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Return whether the point P lies farther than @p d from the segment
+ * A B, decided exactly (#cert_point_seg_far_exact)
+ */
+bool
+point_segment_far_exact(double px, double py, double ax, double ay,
+  double bx, double by, double d)
+{
+  return cert_point_seg_far_exact(px, py, ax, ay, bx, by, d);
+}
+
+/* Whether two segments cross or touch other than at an end both
+ * share, by exact orientations (#cross_product_sign) */
+static bool
+cert_segs_cross_exact(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  bool shared = (ax == cx && ay == cy) || (ax == dx && ay == dy) ||
+    (bx == cx && by == cy) || (bx == dx && by == dy);
+  int o1 = cross_product_sign(ax, ay, bx, by, ax, ay, cx, cy);
+  int o2 = cross_product_sign(ax, ay, bx, by, ax, ay, dx, dy);
+  int o3 = cross_product_sign(cx, cy, dx, dy, cx, cy, ax, ay);
+  int o4 = cross_product_sign(cx, cy, dx, dy, cx, cy, bx, by);
+  if (o1 == 0 && o2 == 0)
+    return true;   /* collinear: left to the fallback, which decides it */
+  if (shared)
+    return false;
+  return o1 * o2 <= 0 && o3 * o4 <= 0;
+}
+
+/* Whether a point lies more than @p d from the piece of edge i between nodes
+ * s and t, by squared distances in doubles */
+static inline bool
+cert_far(const Arr *a, uint32_t i, uint32_t s, uint32_t t, double px,
+  double py, double d)
+{
+  const ArrNode *ns = &a->nodes[s], *nt = &a->nodes[t];
+  const Edge *e = &a->e[i];
+  double d2 = d * d;
+  if (! arr_is_arc(e))
+  {
+    return cert_point_seg_far_exact(px, py, ns->x, ns->y, nt->x, nt->y, d);
+  }
+  double vx = px - e->cx, vy = py - e->cy;
+  bool in = true;
+  if (s != t)
+  {
+    double sx = ns->x - e->cx, sy = ns->y - e->cy;
+    double tx = nt->x - e->cx, ty = nt->y - e->cy;
+    if (! a->ccw[i])
+    {
+      double ux = sx, uy = sy;
+      sx = tx; sy = ty; tx = ux; ty = uy;
+    }
+    double st = sx * ty - sy * tx, sv = sx * vy - sy * vx,
+      vt = vx * ty - vy * tx;
+    in = (st >= 0.0) ? (sv >= 0.0 && vt >= 0.0) : ! (sv < 0.0 && vt < 0.0);
+  }
+  if (in)
+  {
+    double r2 = vx * vx + vy * vy, lo = e->radius - d, hi = e->radius + d;
+    return r2 > hi * hi || (lo > 0.0 && r2 < lo * lo);
+  }
+  double ax = px - ns->x, ay = py - ns->y, bx = px - nt->x, by = py - nt->y;
+  return Min(ax * ax + ay * ay, bx * bx + by * by) > d2;
+}
+
+/* A written piece the certificate reads, a kept piece or a member
+ * of a kept chain (#arr_piece_member): its box, its edge's (grown by the
+ * margin, #arr_cert_pad) for an arc, its bound H (#cert_arc_h for an arc,
+ * the larger delta of its ends for a segment) and the larger delta of its
+ * ends */
+typedef struct
+{
+  ArrPiece p;
+  double box[4];
+  double h, dl;
+} CertUnit;
+
+static void
+cert_unit_fill(const Arr *a, const ArrPiece *p, CertUnit *u)
+{
+  const ArrNode *f = &a->nodes[p->from], *t = &a->nodes[p->to];
+  u->p = *p;
+  u->dl = Max(cert_delta(f->x, f->y), cert_delta(t->x, t->y));
+  if (arr_is_arc(&a->e[p->edge]))
+  {
+    memcpy(u->box, a->box[p->edge], sizeof(double[4]));
+    u->h = cert_arc_h(a, p, u->dl);
+    return;
+  }
+  u->box[0] = Min(f->x, t->x); u->box[1] = Max(f->x, t->x);
+  u->box[2] = Min(f->y, t->y); u->box[3] = Max(f->y, t->y);
+  u->h = u->dl;
+}
+
+/* The ends of the written piece @p up against the written piece @p uq:
+ * each end but one they share lies apart from it, by D from a segment
+ * (#cert_far) and by 5 delta + 2 H of the arc from an arc
+ * (#cert_arc_far_exact), where it lies in the box of @p uq grown by that
+ * margin */
+static void
+cert_unit_ends(const Arr *a, const CertUnit *up, const CertUnit *uq,
+  double gap, double d)
+{
+  const ArrPiece *p = &up->p, *q = &uq->p;
+  uint32_t j = q->edge;
+  const Edge *ej = &a->e[j];
+  bool jarc = arr_is_arc(ej);
+  const double *qb = uq->box;
+  double hq = uq->h, dp = up->dl;
+  double pend = jarc ? (isfinite(hq) ?
+    (5.0 * dp + 2.0 * hq) * (1.0 + 4.0 * DBL_EPSILON) + 4.0 * DBL_MIN :
+    INFINITY) : d;
+  if (! (gap <= pend))
+    return;
+  const ArrNode *qf = &a->nodes[q->from], *qt = &a->nodes[q->to];
+  for (int l = 0; l < 2; l++)
+  {
+    uint32_t v = l ? p->to : p->from;
+    if (v == q->from || v == q->to)
+      continue;
+    double px = a->nodes[v].x, py = a->nodes[v].y;
+    if (px < qb[0] - pend || px > qb[1] + pend || py < qb[2] - pend ||
+        py > qb[3] + pend)
+      continue;
+    bool apart;
+    if (jarc)
+    {
+      if (! isfinite(hq) || ! ej->centred)
+      {
+        apart = false;
+      }
+      else
+      {
+        double dq = (5.0 * cert_delta(px, py) + 2.0 * hq) *
+          (1.0 + 4.0 * DBL_EPSILON) + 4.0 * DBL_MIN;
+        apart = cert_arc_far_exact(px, py, ej, a->ccw[j], qf, qt, dq);
+      }
+    }
+    else
+      apart = cert_far(a, j, q->from, q->to, px, py, d);
+    if (! apart)
+    {
+      arr_cert_place(a, px, py, qf->x, qf->y, qt->x, qt->y);
+    }
+  }
+}
+
+/* Two written pieces whose boxes, each grown by its margin, meet: where
+ * they share no end, two segments cross nowhere and a pair with an arc
+ * keeps apart in its interior, by 2 (H_p + H_q); and the ends of each lie
+ * apart from the other (#cert_unit_ends). Each test reads its own margin
+ * against the gap of the two boxes */
+static void
+cert_unit_pair(const Arr *a, const CertUnit *up, const CertUnit *uq,
+  double d)
+{
+  const ArrPiece *p = &up->p, *q = &uq->p;
+  uint32_t i = p->edge, j = q->edge;
+  const Edge *ei = &a->e[i], *ej = &a->e[j];
+  bool iarc = arr_is_arc(ei), jarc = arr_is_arc(ej);
+  const double *pb = up->box, *qb = uq->box;
+  double hp = up->h, hq = uq->h;
+  double gap = Max(Max(pb[0] - qb[1], qb[0] - pb[1]),
+    Max(pb[2] - qb[3], qb[2] - pb[3]));
+  double pint = (isfinite(hp) && isfinite(hq)) ?
+    2.0 * (hp + hq) * (1.0 + 4.0 * DBL_EPSILON) + 4.0 * DBL_MIN : INFINITY;
+  bool shared = p->from == q->from || p->from == q->to ||
+    p->to == q->from || p->to == q->to;
+  if (! shared && gap <= pint)
+  {
+    const ArrNode *pf = &a->nodes[p->from], *pt = &a->nodes[p->to];
+    const ArrNode *qf = &a->nodes[q->from], *qt = &a->nodes[q->to];
+    if (! iarc && ! jarc)
+    {
+      if (cert_segs_cross_exact(pf->x, pf->y, pt->x, pt->y, qf->x, qf->y,
+          qt->x, qt->y))
+      {
+        arr_cert_place(a, pf->x, pf->y, qf->x, qf->y, qt->x, qt->y);
+      }
+    }
+    else if ((! iarc || ei->centred) && (! jarc || ej->centred))
+    {
+      bool ok = isfinite(hp) && isfinite(hq);
+      if (ok)
+      {
+        if (iarc && jarc)
+          ok = (ei->cx == ej->cx && ei->cy == ej->cy &&
+              ei->radius == ej->radius) ||
+            cert_arc_arc_interior_far(ei, a->ccw[i], pf, pt, ej,
+              a->ccw[j], qf, qt, pint);
+        else if (jarc)
+          ok = cert_seg_arc_interior_far(pf->x, pf->y, pt->x, pt->y, ej,
+            a->ccw[j], qf, qt, pint);
+        else
+          ok = cert_seg_arc_interior_far(qf->x, qf->y, qt->x, qt->y, ei,
+            a->ccw[i], pf, pt, pint);
+      }
+      if (! ok)
+      {
+        arr_cert_place(a, pf->x, pf->y, qf->x, qf->y, qt->x, qt->y);
+      }
+    }
+    else
+    {
+      /* An arc of an edge not centred has no exact circle to read */
+      arr_cert_place(a, pf->x, pf->y, qf->x, qf->y, qt->x, qt->y);
+    }
+  }
+  cert_unit_ends(a, up, uq, gap, d);
+  cert_unit_ends(a, uq, up, gap, d);
+}
+
+/* The bounds of the rounding certificate over every written piece, kept
+ * pieces and the members of kept chains alike: each written piece lies
+ * within its bound H of its exact piece, and two written pieces apart by
+ * more than their bounds' sum never meet as the exact ones move to them.
+ * The written pieces themselves are paired, by one sweep of their boxes
+ * each grown by the largest margin a test of it reads, D, 5 delta or 2 H
+ * (#cert_unit_pair), so every pair a test could reach is read, the pieces
+ * of one edge read against one another where it holds three or more; a
+ * pair no bound keeps apart is a place left to the exact checks of the
+ * written rings (#arr_cert_place). And the input lies inside: every kept
+ * exact piece lies at the distance r of the input and its written form
+ * within H of it, so where every H < r no point of the input changes its
+ * winding number about a ring */
+static pg_noinline void
+cert_pairs_run(const Arr *a)
+{
+  /* The written pieces, in the order of the pieces, and their number on
+   * each edge */
+  uint32_t nu = 0;
+  for (uint32_t k = 0; k < a->npieces; k++)
+  {
+    const ArrPiece *p = &a->pieces[k];
+    if (p->result)
+      nu += arr_piece_nmembers(a, p);
+  }
+  CertUnit *u = palloc(sizeof(CertUnit) * Max(nu, 1u));
+  uint32_t *ecount = palloc0(sizeof(uint32_t) * Max(a->n, 1u));
+  nu = 0;
+  for (uint32_t k = 0; k < a->npieces; k++)
+  {
+    const ArrPiece *p = &a->pieces[k];
+    if (! p->result)
+      continue;
+    uint32_t nm = arr_piece_nmembers(a, p);
+    for (uint32_t l = 0; l < nm; l++)
+    {
+      ArrPiece q = arr_piece_member(a, p, l);
+      cert_unit_fill(a, &q, &u[nu]);
+      ecount[q.edge]++;
+      nu++;
+    }
+  }
+  /* The input inside, and the box of each written piece grown by the
+   * largest margin a test of it reads, D, 5 delta of its ends or 2 H,
+   * rounded outward by 4 eps of the largest coordinate: two pieces whose
+   * grown boxes do not meet lie farther apart than every margin a test of
+   * the two reads (#cert_unit_pair) */
+  double (*ubox)[4] = palloc(sizeof(double[4]) * Max(nu, 1u));
+  const double up = 1.0 + 8.0 * DBL_EPSILON;
+  for (uint32_t k = 0; k < nu; k++)
+  {
+    if (! (u[k].h < a->cert->radius))
+      a->cert->failed = true;
+    double m = Max(5.0 * u[k].dl, 2.0 * u[k].h) * up + 4.0 * DBL_MIN;
+    double g = isfinite(m) ? arr_fmax(a->certd, m) : INFINITY;
+    g = (g + 4.0 * DBL_EPSILON * a->cert->scale) * up;
+    ubox[k][0] = u[k].box[0] - g; ubox[k][1] = u[k].box[1] + g;
+    ubox[k][2] = u[k].box[2] - g; ubox[k][3] = u[k].box[3] + g;
+  }
+  uint32_t np;
+  ArrPair *pr = arr_box_pairs((const double (*)[4]) ubox, nu, &np);
+  /* Two pieces of one edge are read where it holds three or more */
+  for (uint32_t k = 0; k < np; k++)
+  {
+    const CertUnit *ui = &u[pr[k].i], *uj = &u[pr[k].j];
+    if (ui->p.edge == uj->p.edge)
+    {
+      if (ecount[ui->p.edge] < 3)
+        continue;
+    }
+    cert_unit_pair(a, ui, uj, a->certd);
+  }
+  pfree(pr);
+  pfree(ubox);
+  pfree(ecount);
+  pfree(u);
+}
+
 /**
  * @brief Node, cut and label the edges of an arrangement set up by its
  * caller, and answer the region they wind around
@@ -6374,7 +7440,9 @@ arr_finish(Arr *a, ArrPair *pairs, uint32_t npairs, MeosArray ***rings,
 
   if (st == ARR_ANSWERED)
     st = arr_node_all(a, pairs, npairs);
-  pfree(pairs);
+  bool cert = a->certd > 0.0;
+  if (! cert)
+    pfree(pairs);
   if (st == ARR_ANSWERED)
     st = arr_pieces(a);
   if (st == ARR_ANSWERED)
@@ -6401,6 +7469,8 @@ arr_finish(Arr *a, ArrPair *pairs, uint32_t npairs, MeosArray ***rings,
       arr_nodes_narrow(a);
       st = arr_rings(a, sgn, outer, rings, nrings, owner ? &rp : NULL,
         owner ? &roff : NULL);
+      if (st == ARR_ANSWERED && cert && a->ekept)
+        cert_pairs_run(a);
     }
     if (st == ARR_ANSWERED && ! sout && (a->lout || a->npts > 0))
       st = arr_lines_points(a, sgn);
@@ -6459,6 +7529,12 @@ arr_finish(Arr *a, ArrPair *pairs, uint32_t npairs, MeosArray ***rings,
   }
   if (a->alone)
     pfree(a->alone);
+  if (cert)
+    pfree(pairs);
+  if (a->pfirst)
+    pfree(a->pfirst);
+  if (a->ekept)
+    pfree(a->ekept);
   return st;
 }
 
@@ -6923,6 +7999,17 @@ arr_stretch_box(Arr *a, uint32_t i)
     a->box[i][lo + 1] = arr_fmax(a->box[i][lo + 1], v.hi);
   }
   return;
+}
+
+/* The box of stretch i grown by the margin D */
+static inline void
+arr_cert_pad(Arr *a, uint32_t i)
+{
+  if (a->certd > 0.0)
+  {
+    a->box[i][0] -= a->certd; a->box[i][1] += a->certd;
+    a->box[i][2] -= a->certd; a->box[i][3] += a->certd;
+  }
 }
 
 static uint32_t
@@ -7490,7 +8577,7 @@ arr_end_position(const Arr *a, uint32_t i, uint32_t node, const ArrMeet *m)
     return ival(m->sigma ? INFINITY : 0.0);
   const Edge *e = &a->e[i];
   if (e->centred || e->from)
-    return arr_tower_position(a, i, node);
+    return arr_circle_start_side(e, arr_tower_position(a, i, node), m);
   return arr_node_position(e, &a->nodes[node]);
 }
 
@@ -7522,7 +8609,8 @@ static ArrangeStatus
 arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
   const ArrLinework *lw, const int32_t *weight, const ArrCurves *cv,
   MeosArray ***rings,
-  uint32_t *nrings, int32_t **owner, ArrStretch **sout, uint32_t *nsout)
+  uint32_t *nrings, int32_t **owner, ArrStretch **sout, uint32_t *nsout,
+  ArrangeCert *cert)
 {
   if (n == 0)
     return ARR_NOT_CLOSED;
@@ -7533,6 +8621,13 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
       return ARR_OVERLAP;
   Arr a;
   memset(&a, 0, sizeof(Arr));
+  /* The margin D of the certificate, 16 eps of the largest coordinate the
+   * rings can be written at */
+  if (cert)
+  {
+    a.cert = cert;
+    a.certd = 16.0 * DBL_EPSILON * cert->scale + 16.0 * DBL_MIN;
+  }
   Edge *ecopy = palloc(sizeof(Edge) * n);
   a.sup = palloc(sizeof(const Edge *) * n);
   a.erev = palloc(sizeof(bool) * n);
@@ -7665,6 +8760,7 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
         a.tto[i] = ival(INFINITY);
     }
     arr_stretch_box(&a, i);
+    arr_cert_pad(&a, i);
   }
   /* Two tangent points of one value are one node (#arr_arrange); along
    * curves, the ends of two stretches whose boxes meet, which are not
@@ -7747,7 +8843,10 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
     pfree(a.box);
     a.box = palloc(sizeof(double[4]) * Max(a.n, 1u));
     for (uint32_t i = 0; i < a.n; i++)
+    {
       arr_stretch_box(&a, i);
+      arr_cert_pad(&a, i);
+    }
     uint32_t nmapped;
     ArrPair *mapped = arr_mapped_pairs((const double (*)[4]) a.box, pairs,
       npairs, n, &mg, &nmapped);
@@ -7924,7 +9023,7 @@ arrange_union_surfaces_lines(const MeosArray *edges, const uint32_t *soff,
       ArrStretch *out = NULL;
       uint32_t nout = 0;
       st = arr_arrange_stretches(both, nboth, count[g], NULL, NULL, NULL,
-        NULL, NULL, NULL, &out, &nout);
+        NULL, NULL, NULL, &out, &nout, NULL);
       pfree(both);
       part[k] = out;
       count[k++] = (st == ARR_ANSWERED) ? nout : 0;
@@ -7955,7 +9054,7 @@ arrange_union_surfaces_lines(const MeosArray *edges, const uint32_t *soff,
     ArrLinework lw = {lines, nlines, lout, pts, npts, pkeep};
     st = arr_arrange_stretches(all, total, (m == 2) ? count[0] : 0,
       (nlines || npts) ? &lw : NULL, NULL, NULL, rings, nrings, owner, NULL,
-      NULL);
+      NULL, NULL);
     pfree(all);
   }
   for (uint32_t g = 0; g < m; g++)
@@ -8049,11 +9148,14 @@ arr_stretch_make(const Edge *s, ArrMeet from, ArrMeet to)
  * @param[out] rings,nrings The rings, released by #arrange_rings_free
  * @param[out] owner For every ring, the index of the shell owning it where it
  * is a hole, -1 where it is a shell; released by the caller
+ * @param[in,out] cert The rounding certificate of the rings as written, which
+ * receives the places its bounds leave to the exact checks of the written
+ * rings and whether a bound fails; NULL where it is not asked for
  * @return #ARR_ANSWERED, or the question left unanswered
  */
 ArrangeStatus
 arrange_wound_tangent_surfaces(const MeosArray *edges, MeosArray ***rings,
-  uint32_t *nrings, int32_t **owner)
+  uint32_t *nrings, int32_t **owner, ArrangeCert *cert)
 {
   assert(edges); assert(rings); assert(nrings); assert(owner);
   *rings = NULL;
@@ -8217,7 +9319,7 @@ arrange_wound_tangent_surfaces(const MeosArray *edges, MeosArray ***rings,
   {
     ArrCurves cv = {src, next};
     status = arr_arrange_stretches(st, m, 0, NULL, w, &cv, rings, nrings,
-      owner, NULL, NULL);
+      owner, NULL, NULL, cert);
   }
   pfree(next); pfree(src);
   pfree(w); pfree(ctab);

@@ -3089,22 +3089,21 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
- * @ingroup meos_geo_accessor
- * @brief Return the temporal bearing between a temporal point and a point
+ * @brief Return the temporal bearing between a temporal point and a point,
+ * the point first when `invert` is true
+ * @details The public functions #bearing_tpoint_point and
+ * #bearing_point_tpoint validate their arguments and call it, one per order
+ * of the operands, as #add_float_tfloat and #add_tfloat_float call
+ * #arithop_tnumber_number
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[in] invert True when the result should be inverted
- * @note An empty geometry has no bearing, so the answer is NULL
- * @errval NULL
- * @csqlfn #Bearing_tpoint_point() #Bearing_point_tpoint()
+ * @param[in] invert True when the point is the first operand
  */
-Temporal *
-bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
+static Temporal *
+bearing_tpoint_point_intl(const Temporal *temp, const GSERIALIZED *gs,
+  bool invert)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
-    return NULL;
-
+  assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) geo_bearing_fn(temp->flags);
@@ -3116,6 +3115,42 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfn_base = &tpoint_geo_bearing_turnpt;
   return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
+}
+
+/**
+ * @ingroup meos_geo_accessor
+ * @brief Return the temporal bearing between a temporal point and a point
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @note An empty geometry has no bearing, so the answer is NULL
+ * @errval NULL
+ * @csqlfn #Bearing_tpoint_point()
+ */
+Temporal *
+bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
+    return NULL;
+  return bearing_tpoint_point_intl(temp, gs, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_geo_accessor
+ * @brief Return the temporal bearing between a point and a temporal point
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal point
+ * @note An empty geometry has no bearing, so the answer is NULL
+ * @errval NULL
+ * @csqlfn #Bearing_point_tpoint()
+ */
+Temporal *
+bearing_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
+    return NULL;
+  return bearing_tpoint_point_intl(temp, gs, INVERT);
 }
 
 /**

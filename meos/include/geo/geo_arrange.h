@@ -83,8 +83,27 @@ extern ArrangeStatus arrange_union_surfaces_lines(const MeosArray *edges,
   const uint32_t *soff, uint32_t nsurf, const Edge *lines, uint32_t nlines,
   const POINT2D *pts, uint32_t npts, MeosArray ***rings, uint32_t *nrings,
   int32_t **owner, MeosArray **lout, bool *pkeep);
+/**
+ * @brief The rounding certificate of the rings an arrangement writes in
+ * doubles, as the buffer of a line asks for it: the places its bounds leave
+ * to the exact checks of the written rings, and whether a bound fails
+ */
+typedef struct
+{
+  double scale;        /**< Largest coordinate the rings can be written at */
+  double radius;       /**< Distance of the buffer */
+  double (*places)[6]; /**< A written vertex and the two written ends of a
+                            piece it may lie too near */
+  uint32_t nplaces;    /**< Number of places */
+  uint32_t capplaces;  /**< Room for places */
+  bool failed;         /**< A bound no exact check of the written rings
+                            replaces fails */
+} ArrangeCert;
+
 extern ArrangeStatus arrange_wound_tangent_surfaces(const MeosArray *edges,
-  MeosArray ***rings, uint32_t *nrings, int32_t **owner);
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner, ArrangeCert *cert);
+extern bool point_segment_far_exact(double px, double py, double ax,
+  double ay, double bx, double by, double d);
 extern void arrange_rings_free(MeosArray **rings, uint32_t nrings);
 
 #endif /* __GEO_ARRANGE_H__ */

@@ -218,6 +218,19 @@ extract_mline(const LWMLINE *ml, MeosArray *edges)
 static inline void two_product(double a, double b, double *x, double *y);
 static inline int grow_expansion(int elen, const double *e, double b,
   double *h);
+static inline int double_lowest_set_bit(double a);
+static int ring_area_sign_wide(const POINTARRAY *pa);
+
+/**
+ * @brief Return true if the product of two doubles splits exactly into two
+ * doubles (#two_product), its lowest set bit not below 2^-1074
+ */
+static inline bool
+two_product_exact(double a, double b)
+{
+  return a == 0.0 || b == 0.0 ||
+    double_lowest_set_bit(a) + double_lowest_set_bit(b) >= -1074;
+}
 
 /**
  * @brief Return the sign of the area a ring encloses, decided exactly
@@ -225,10 +238,13 @@ static inline int grow_expansion(int elen, const double *e, double b,
  * ring is twice the signed area it encloses. The sum taken in floating point
  * answers wherever it stands clear of the bound its rounding reaches: the
  * rounding of each product and of each addition is at most a unit in the last
- * place of the running magnitude, and twice n + 1 of them bound it generously.
- * Within that bound every product is split into the two doubles that hold it
- * exactly (#two_product) and the parts are summed into an expansion
- * (#grow_expansion), whose largest component carries the exact sign.
+ * place of the running magnitude, and twice n + 1 of them bound it generously,
+ * with 2^-1074 for each product that underflows. Within that bound every
+ * product is split into the two doubles that hold it exactly (#two_product)
+ * and the parts are summed into an expansion (#grow_expansion), whose largest
+ * component carries the exact sign, wherever no product overflows or leaves
+ * part of itself below 2^-1074 and no sum overflows; elsewhere the sum is
+ * taken on #WideDyadic (#ring_area_sign_wide).
  */
 int
 ring_area_sign(const POINTARRAY *pa)
@@ -243,11 +259,24 @@ ring_area_sign(const POINTARRAY *pa)
     sum += l - r;
     mag += fabs(l) + fabs(r);
   }
-  double bound = 2.0 * ((double) n + 1.0) * DBL_EPSILON * mag;
+  double bound = 2.0 * ((double) n + 1.0) *
+    (DBL_EPSILON * mag + DBL_MIN * DBL_EPSILON);
   if (sum > bound)
     return 1;
   if (sum < - bound)
     return -1;
+  /* An expansion holds the sum exactly where every product splits exactly
+   * and no component reaches past the largest double; the products are read
+   * again only here, past the filter */
+  if (! isfinite(mag) || mag > DBL_MAX / 4.0)
+    return ring_area_sign_wide(pa);
+  for (uint32_t i = 0; i + 1 < n; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    if (! two_product_exact(a->x, b->y) || ! two_product_exact(b->x, a->y))
+      return ring_area_sign_wide(pa);
+  }
   size_t cap = 4 * (size_t) n + 2;
   double *e = palloc(sizeof(double) * cap);
   double *h = palloc(sizeof(double) * cap);
@@ -3292,13 +3321,18 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
   return;
 }
 
-/** Number of 64-bit limbs of a #WideDyadic. The widest quantities are the
- * terms #polynomial_sign_wide forms for #segment_square_least: a coefficient
- * times six exact sums of two doubles, a sum spanning the bits from the lowest
- * of a double to past the largest and so at most 34 limbs, the coefficient
- * times five of them at most 166, so the sixth product is formed in 200 limbs,
- * which hold the sum of the 54 terms too */
-#define WIDE_DYADIC_LIMBS 200
+/** Number of 64-bit limbs of a #WideDyadic, which holds the widest quantity
+ * of each of its callers. The terms #polynomial_sign_wide forms for
+ * #segment_square_least are a coefficient times six exact sums of two
+ * doubles, a sum spanning at most 34 limbs, so the sixth product is formed in
+ * 200 limbs, which hold the sum of the 54 terms too. The quantities
+ * #point_motion_squares forms are products of up to six differences of
+ * timestamps and four doubles, whose terms the exponents of the doubles spread
+ * over at most about 9100 bits. The signs of a tower of four square roots
+ * (#tower_sign_k), as where two segments between tangent points meet one
+ * circle, square their numbers once a root, to about 15400 bits on the line
+ * buffers of the AIS corpus, the widest of the three */
+#define WIDE_DYADIC_LIMBS 320
 
 /**
  * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
@@ -5199,6 +5233,38 @@ wide_dyadic_accumulate_double(WideDyadic *acc, double x, int sign)
 }
 
 /**
+ * @brief Return the sign of the shoelace sum of a ring, summed exactly on
+ * #WideDyadic
+ * @details The path of #ring_area_sign where a product leaves the doubles or
+ * part of it falls below 2^-1074: each product of two doubles is formed
+ * exactly (#wide_dyadic_mul) and added with its sign
+ * (#wide_dyadic_accumulate), as #wide_dyadic_accumulate_double adds a double;
+ * a product spans at most 34 limbs and the sum of every product of doubles
+ * at most 67, within #WIDE_DYADIC_LIMBS
+ */
+static int
+ring_area_sign_wide(const POINTARRAY *pa)
+{
+  WideDyadic acc, u, v, p;
+  acc.sign = 0; acc.len = 0; acc.exp = 0;
+  for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    wide_dyadic_set_double(&u, a->x);
+    wide_dyadic_set_double(&v, b->y);
+    wide_dyadic_mul(&u, &v, &p);
+    wide_dyadic_accumulate(&acc, &p);
+    wide_dyadic_set_double(&u, b->x);
+    wide_dyadic_set_double(&v, a->y);
+    wide_dyadic_mul(&u, &v, &p);
+    p.sign = - p.sign;
+    wide_dyadic_accumulate(&acc, &p);
+  }
+  return acc.sign;
+}
+
+/**
  * @brief Return the sign of a polynomial in exact sums held as #WideDyadic,
  * computed exactly
  * @details The counterpart of #polynomial_sign_exact for sums whose products
@@ -6627,6 +6693,42 @@ linesegm_param_cmp(const double *a, const double *b, const double *p,
   if (sp != 0 || sq != 0)
     return (sp > sq) ? 1 : ((sp < sq) ? -1 : 0);
   return point_segment_dot_sign_inputs(p, q, a, b, 2);
+}
+
+/**
+ * @brief Return the position along the segment AB of a point, 0 at A and 1 at
+ * B, as #linesegm_param reads it, at any finite coordinates
+ * @details Where the position is an end, its sign decides it exactly
+ * (#linesegm_param_side). Inside, it is the quotient of `(p - a) . (b - a)`
+ * by `(b - a) . (b - a)`, both held exactly as #WideDyadic and divided on
+ * their leading limbs (#wide_dyadic_frexp), within a relative 2^-62 of it,
+ * where the squared length leaves the doubles #linesegm_param divides by
+ * @param[in] a,b The two ends of the segment, distinct
+ * @param[in] p The point
+ */
+double
+linesegm_param_wide(const double *a, const double *b, const double *p)
+{
+  int side = linesegm_param_side(a, b, p);
+  if (side != 0)
+    return (side < 0) ? 0.0 : 1.0;
+  WideDyadic u[2], w[2], v1, v2, t1, t2, dot, len2;
+  for (int i = 0; i < 2; i++)
+  {
+    wide_dyadic_set_double(&v1, b[i]);
+    wide_dyadic_set_double(&v2, a[i]);
+    wide_dyadic_sub(&v1, &v2, &u[i]);
+    wide_dyadic_set_double(&v1, p[i]);
+    wide_dyadic_sub(&v1, &v2, &w[i]);
+  }
+  wide_dyadic_mul(&w[0], &u[0], &t1); wide_dyadic_mul(&w[1], &u[1], &t2);
+  wide_dyadic_add(&t1, &t2, &dot);
+  wide_dyadic_mul(&u[0], &u[0], &t1); wide_dyadic_mul(&u[1], &u[1], &t2);
+  wide_dyadic_add(&t1, &t2, &len2);
+  int en, ed;
+  double mn = wide_dyadic_frexp(&dot, &en), md = wide_dyadic_frexp(&len2, &ed);
+  double t = ldexp(mn / md, en - ed);
+  return (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
 }
 
 /**
@@ -10432,6 +10534,13 @@ arcseg_f_mul(ArcsegFilter a, ArcsegFilter b)
   r.v = a.v * b.v;
   r.e = fabs(a.v) * b.e + fabs(b.v) * a.e + a.e * b.e +
     DBL_EPSILON * fabs(r.v);
+  /* A product below the range of normal doubles, and the terms of its
+   * bound, lose less than DBL_MIN each to their rounding, which the bound
+   * then carries, unless a factor is exactly zero: an underflow to zero is
+   * no exact zero. A normal product carries its rounding already */
+  if (fabs(r.v) < DBL_MIN &&
+      ! ((a.v == 0.0 && a.e == 0.0) || (b.v == 0.0 && b.e == 0.0)))
+    r.e += 4.0 * DBL_MIN;
   return r;
 }
 
@@ -14060,7 +14169,22 @@ meets_order_tower_pred(TowerCtx *ctx, const void *arg)
   if (! e->centred)
   {
     TowerPoint e0, e1;
-    towerseg_ends(ctx, e, ox, oy, &e0, &e1);
+    const TangentPoint *f = e->from, *t = e->to;
+    /* The ends of a segment along one tangent of two circles of one radius
+     * are its centres moved by one vector, so the segment runs as they do,
+     * which no root holds: the question then stays in the roots of the two
+     * meetings */
+    if (f && t && f->r1 == f->r2 && f->side == t->side &&
+        f->c1x == t->c1x && f->c1y == t->c1y && f->r1 == t->r1 &&
+        f->c2x == t->c2x && f->c2y == t->c2y && f->r2 == t->r2)
+    {
+      tower_point_xy(ctx, f->k ? f->c2x : f->c1x, f->k ? f->c2y : f->c1y,
+        ox, oy, &e0);
+      tower_point_xy(ctx, t->k ? t->c2x : t->c1x, t->k ? t->c2y : t->c1y,
+        ox, oy, &e1);
+    }
+    else
+      towerseg_ends(ctx, e, ox, oy, &e0, &e1);
     int s = tower_dot(ctx, &pa, &pb, &e0, &e1);
     return (s == 2) ? 2 : -s;
   }
