@@ -434,15 +434,19 @@ clip_plane_param(const double *c1, const double *c2, ClipPlane a)
  * `(h, k) - (c1, 0)` and `(c2, duration) - (c1, 0)` decided on the input
  * (#cross_product_sign), so the truncation is that of the exact parameter.
  * An offset and a duration below 2^53 microseconds, 285 years, are exact
- * doubles.
+ * doubles. It dates the parameters #clip_plane_param_cmp orders, with the
+ * same sign.
  * @param[in] c1,c2 Coordinates of the start and end points of the segment
  * @param[in] a Constraint
  * @param[in] duration Duration of the segment
+ * @param[out] whole True when the segment reaches the constraint exactly at
+ * the microsecond returned, false when strictly after it
  */
 static TimestampTz
 clip_plane_offset(const double *c1, const double *c2, ClipPlane a,
-  TimestampTz duration)
+  TimestampTz duration, bool *whole)
 {
+  *whole = true;
   if (a.axis < 0)
     return (a.bound == 0.0) ? 0 : duration;
   double s = c1[a.axis], e = c2[a.axis];
@@ -460,6 +464,8 @@ clip_plane_offset(const double *c1, const double *c2, ClipPlane a,
   while (k > 0 && sd * cross_product_sign(s, 0.0, a.bound, (double) k, s,
       0.0, e, dur) < 0)
     k--;
+  *whole = (cross_product_sign(s, 0.0, a.bound, (double) k, s, 0.0, e,
+    dur) == 0);
   return k;
 }
 
@@ -497,15 +503,19 @@ clipMaxBorderCode(const double *c1, const double *c2, const double *hi,
  * is the sign of a determinant on the input coordinates
  * (#clip_plane_param_cmp), so whether the segment meets the box, and which
  * planes hold the ends of the clip, are decided exactly, and each end is
- * dated by the truncation of its exact parameter (#clip_plane_offset)
+ * dated by the truncation of its exact parameter (#clip_plane_offset).
+ * The box holds exactly the microseconds whose exact position lies in it: an
+ * end dated at a microsecond before its exact instant states that
+ * microsecond as an exclusive start, the trip not being in the box yet, or
+ * as an inclusive end, the trip being in the box still
  * @param[in] point1,point2 Input points
  * @param[in] box Bounding box
  * @param[in] hasz Has Z dimension?
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
  * @param[in] duration Duration of the segment
- * @param[out] p3_inc,p4_inc Are the ends of the clip included or not in the
- * box? These are only written/returned when @p border_inc is false
+ * @param[out] p3_inc,p4_inc Does the box hold the microseconds at @p off3
+ * and @p off4?
  * @param[out] off3,off4 Offsets in microseconds from the start of the segment
  * at which the clip starts and ends, truncated, in [0, @p duration]; an end
  * offset equal to @p duration states that the clip ends at the end of the
@@ -575,6 +585,7 @@ liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2,
     return false;
 
   /* Remove the max border */
+  bool in3 = true, in4 = true;
   if (! border_inc)
   {
     /* Compute max border codes for the ends of the clip */
@@ -583,20 +594,37 @@ liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2,
     /* If the whole segment is on a max border, remove it */
     if (max_code1 & max_code2)
       return false;
-    /* Point is included if its max_code is 0 */
-    if (p3_inc && p4_inc)
-    {
-      *p3_inc = (max_code1 == 0);
-      *p4_inc = (max_code2 == 0);
-    }
+    /* An end of the clip lies in the box if its max_code is 0 */
+    in3 = (max_code1 == 0);
+    in4 = (max_code2 == 0);
   }
 
   /* The truncation is monotone, so the end of the clip is not dated before
-   * its start, and a clip reduced to a point takes one instant */
+   * its start, and a clip reduced to a point takes one instant. The
+   * microsecond dating an end lies in the box where the end falls on it and
+   * lies in the box; the microsecond before the start of the clip lies
+   * outside it, the one before its end inside it */
   if (off3 && off4)
   {
-    *off3 = clip_plane_offset(c1, c2, start, duration);
-    *off4 = (order == 0) ? *off3 : clip_plane_offset(c1, c2, end, duration);
+    bool whole3, whole4;
+    *off3 = clip_plane_offset(c1, c2, start, duration, &whole3);
+    if (order == 0)
+    {
+      *off4 = *off3;
+      whole4 = whole3;
+    }
+    else
+      *off4 = clip_plane_offset(c1, c2, end, duration, &whole4);
+    if (p3_inc && p4_inc)
+    {
+      *p3_inc = whole3 && in3;
+      *p4_inc = whole4 ? in4 : true;
+    }
+  }
+  else if (p3_inc && p4_inc)
+  {
+    *p3_inc = in3;
+    *p4_inc = in4;
   }
   return true;
 }
