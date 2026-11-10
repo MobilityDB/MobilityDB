@@ -157,9 +157,8 @@ items).
   directly reads 0.944, 0.893 and 0.562 at distances 1, 50 and 500 and 0.756 on the joints, CGAL
   agreeing on 1 313 of 1 313 natural areas, whose 11 998 crossings of two circles all take the
   plain doubles. Its margin at distance 1 is what the certificate spends.
-- **Step 17** is MobilityDB #3442, a draft held by the owner's decision until the certificate is earned on
-  it: a check known to be needed is not cleared by stating the gap. The order is #3259, which buys the
-  margin, then the certificate on #3259 and this branch, then step 17 with it. CGAL, as an exact distance set, agrees with every answer of the
+- **Step 17** is MobilityDB #3442, merged as `781b7cd6b9` with the certificate of the rings of a
+  line buffer earned on it. CGAL, as an exact distance set, agrees with every answer of the
   head: 36 960 of 36 960 straight queries, 274 of the 336 far-vertex lines with 62 declined, and of the
   1 576 AIS line queries 1 530 agree, 11 decline and 35 run past 60 s. Native over GEOS called directly
   reads 0.636, 0.284 and 0.451 on lines at distances 1, 50 and 500, and every one of the ten buffer cells
@@ -169,8 +168,8 @@ items).
   which it adds. Where the certificate fails, that buffer is declined. With the certificate on, on
   the head of #3532, the line cells read 0.728, 0.274 and 0.437. Its certificate is earned by three
   things: the case of neighbours with an arc closed in the lemma, CGAL refusing none of the written
-  rings on the guard, straight and AIS line corpora, and speed on all ten buffer cells. #3442's head
-  `1615bee8a4`, on master `9bed2dd9e3`, carries it as "Certify the rings of the buffer of a line as
+  rings on the guard, straight and AIS line corpora, and speed on all ten buffer cells. #3442
+  carries it as "Certify the rings of the buffer of a line as
   written in doubles" (`ArrangeCert`, passed by the buffer of a line alone), with its test, a moored
   line whose written arcs cross beside their shared vertex. The lemma states it in the doc comment of
   `buffer_line_rings_certified`: of one ring, a written form that is simple, decided exactly, and
