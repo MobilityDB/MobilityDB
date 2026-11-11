@@ -120,11 +120,11 @@ int main(void)
 
   /* int32_t cmp_timestamp_timestamptz(Timestamp ts, TimestampTz tstz); */
   int32_result = cmp_timestamp_timestamptz(ts1, tstz1);
-  printf("cmp_timestamp_timestamptz(%s, %s): %c\n", ts1_out, tstz1_out, int32_result);
+  printf("cmp_timestamp_timestamptz(%s, %s): %d\n", ts1_out, tstz1_out, int32_result);
 
   /* int32_t cmp_timestamptz_timestamp(TimestampTz tstz, Timestamp ts); */
   int32_result = cmp_timestamptz_timestamp(tstz1, ts1);
-  printf("cmp_timestamptz_timestamp(%s, %s): %c\n", tstz1_out, ts1_out, int32_result);
+  printf("cmp_timestamptz_timestamp(%s, %s): %d\n", tstz1_out, ts1_out, int32_result);
 
   /* bool eq_timestamp_date(Timestamp ts, DateADT date); */
   bool_result = eq_timestamp_date(ts1, date1);
