@@ -44,11 +44,10 @@ plan of MobilityDB #3287 (`doc/contributing/exactness/`).
 - **PyMEOS, JMEOS, the Spark UDF layer and MobilityDuck follow the binding rules** (IO-B3,
   IO-B9, IO-B10, IO-B11), and MEOS.js reads and writes every format (IO-B8, MEOS.js #29 and
   #30).
-- **Open**: the EWKB of a container stating its SRID once (IO-M1); PyMEOS-CFFI, GoMEOS,
-  MEOS.NET, meos-rs, MobilityKafka and MobilityAPI (IO-B4 to IO-B7, IO-B12, IO-B14); the
-  MEOS.js classes of the extended families; the catalog marking the type support functions
-  (IO-B11b); the bindings' table rebuilt by `io_matrix.py` (IO-B15b). MobilityNebula (IO-B13) is
-  paused by the owner.
+- **Open**: meos-rs (IO-B7, and its string sizes IO-S8), whose FFI design the owner and David
+  García Morillo choose first; the rows of MobilitySpark, MobilityFlink and MobilityKafka in the
+  bindings' table, whose surface only their build generates (IO-B15b). Every other row of the
+  implementation plan is merged, MobilityNebula (IO-B13) included.
 - **Every string MEOS returns states its size** (IO-S1 to IO-S10, decided by the owner
   2026-11-02): the 118 public text outputs take `size_t *size_out` as the hex WKB writers do, and
   every binding reads the string with that size rather than scanning for its terminator, but
