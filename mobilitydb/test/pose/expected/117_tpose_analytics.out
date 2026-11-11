@@ -1,3 +1,11 @@
+-------------------------------------------------------------------------------
+-- Simplification functions
+--
+-- A temporal pose simplifies the trajectory of its points and keeps its
+-- instants at the timestamps that simplification keeps. Each block checks the
+-- result against that composition written out by hand.
+-------------------------------------------------------------------------------
+\set seq 'tpose ''[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]'''
 SELECT minDistSimplify(NULL::tpose, 1.0);
  mindistsimplify 
 -----------------
@@ -22,76 +30,80 @@ SELECT asText(minDistSimplify(tpose '{Pose(Point(1 1), 0.1)@2001-01-01, Pose(Poi
  {Pose(POINT(1 1),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.2)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.3)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(minDistSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', 2.0));
+SELECT asText(minDistSimplify(:seq, 2.0));
                                                  astext                                                 
 --------------------------------------------------------------------------------------------------------
  [Pose(POINT(1 1),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(4 4),0.4)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(minTimeDeltaSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', interval '2 days'));
+SELECT asText(minTimeDeltaSimplify(:seq, interval '2 days'));
                                                  astext                                                 
 --------------------------------------------------------------------------------------------------------
  [Pose(POINT(1 1),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(4 4),0.4)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(maxDistSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', 1.0));
+SELECT asText(maxDistSimplify(:seq, 1.0));
                                                                           astext                                                                           
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  [Pose(POINT(1 1),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 1),0.3)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(4 4),0.4)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(maxDistSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', 1.0, false));
+SELECT asText(maxDistSimplify(:seq, 1.0, false));
                                                                           astext                                                                           
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  [Pose(POINT(1 1),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 1),0.3)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(4 4),0.4)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(douglasPeuckerSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', 1.0));
+SELECT asText(douglasPeuckerSimplify(:seq, 1.0));
                                                                           astext                                                                           
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  [Pose(POINT(1 1),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 1),0.3)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(4 4),0.4)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(douglasPeuckerSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', 1.0, false));
+SELECT asText(douglasPeuckerSimplify(:seq, 1.0, false));
                                                                           astext                                                                           
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  [Pose(POINT(1 1),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 1),0.3)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(4 4),0.4)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT minDistSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', 2.0) = deleteTime(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]',
-  set(timestamps(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]')) - set(timestamps(minDistSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]'::tgeompoint, 2.0))),
+SELECT minDistSimplify(:seq, 2.0) = deleteTime(:seq,
+  set(timestamps(:seq)) - set(timestamps(minDistSimplify(:seq::tgeompoint, 2.0))),
   true) AS agrees_mindist;
  agrees_mindist 
 ----------------
  t
 (1 row)
 
-SELECT minTimeDeltaSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', interval '2 days') = deleteTime(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]',
-  set(timestamps(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]')) -
-  set(timestamps(minTimeDeltaSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]'::tgeompoint, interval '2 days'))),
+SELECT minTimeDeltaSimplify(:seq, interval '2 days') = deleteTime(:seq,
+  set(timestamps(:seq)) -
+  set(timestamps(minTimeDeltaSimplify(:seq::tgeompoint, interval '2 days'))),
   true) AS agrees_mintdelta;
  agrees_mintdelta 
 ------------------
  t
 (1 row)
 
-SELECT maxDistSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', 1.0) = deleteTime(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]',
-  set(timestamps(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]')) - set(timestamps(maxDistSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]'::tgeompoint, 1.0))),
+SELECT maxDistSimplify(:seq, 1.0) = deleteTime(:seq,
+  set(timestamps(:seq)) - set(timestamps(maxDistSimplify(:seq::tgeompoint, 1.0))),
   true) AS agrees_maxdist;
  agrees_maxdist 
 ----------------
  t
 (1 row)
 
-SELECT douglasPeuckerSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]', 1.0, false) = deleteTime(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]',
-  set(timestamps(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]')) -
-  set(timestamps(douglasPeuckerSimplify(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]'::tgeompoint, 1.0, false))),
+SELECT douglasPeuckerSimplify(:seq, 1.0, false) = deleteTime(:seq,
+  set(timestamps(:seq)) -
+  set(timestamps(douglasPeuckerSimplify(:seq::tgeompoint, 1.0, false))),
   true) AS agrees_dp;
  agrees_dp 
 -----------
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Simplification keeps the interpolation and the sequence segmentation of the
+-- value it simplifies
+-------------------------------------------------------------------------------
 SELECT interp(minDistSimplify(tpose '[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(1 0), 0.2)@2001-01-02, Pose(Point(4 0), 0.3)@2001-01-03]', 2.0));
  interp 
 --------
@@ -116,18 +128,21 @@ SELECT interp(douglasPeuckerSimplify(tpose '[Pose(Point(0 0), 0.1)@2001-01-01, P
  Linear
 (1 row)
 
+-- A step value stays step and comes back unchanged
 SELECT asText(minDistSimplify(tpose 'Interp=Step;[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(1 0), 0.2)@2001-01-02, Pose(Point(4 0), 0.3)@2001-01-03]', 2.0));
                                                                                 astext                                                                                 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;[Pose(POINT(0 0),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 0),0.2)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(4 0),0.3)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- When nothing is dropped the value comes back unchanged
 SELECT minDistSimplify(tpose '[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(1 0), 0.2)@2001-01-02, Pose(Point(4 0), 0.3)@2001-01-03]', 0.5) = tpose '[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(1 0), 0.2)@2001-01-02, Pose(Point(4 0), 0.3)@2001-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
+-- The gap of a sequence set survives
 SELECT numSequences(minDistSimplify(tpose '{[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(1 0), 0.2)@2001-01-02, Pose(Point(4 0), 0.3)@2001-01-03], [Pose(Point(9 0), 0.4)@2001-01-05, Pose(Point(20 0), 0.5)@2001-01-06]}', 2.0));
  numsequences 
 --------------
@@ -140,5 +155,8 @@ SELECT asText(minDistSimplify(tpose '{[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Po
  {[Pose(POINT(0 0),0.1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(4 0),0.3)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(9 0),0.4)@Fri Jan 05 00:00:00 2001 PST, Pose(POINT(20 0),0.5)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-- The trajectory of a pose is simplified in the plane, so a geodetic pose
+-- raises an error
 SELECT minDistSimplify(tpose '[GeodPose(Point(1 1),0.1)@2001-01-01, GeodPose(Point(2 2),0.2)@2001-01-02]', 1.0);
 ERROR:  Only planar coordinates supported
+-------------------------------------------------------------------------------

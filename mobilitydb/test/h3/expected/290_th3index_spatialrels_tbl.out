@@ -1,3 +1,12 @@
+-----------------------------------------------------------------------------
+-- Bulk spatial-relationship tests over temporal H3 cells (th3index/th3index),
+-- answered on the sphere over the temporal geography of the cell boundaries.
+-- The geography-operand overloads are covered by the scalar test
+-- 290_th3index_spatialrels.
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-- Disjoint
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eDisjoint(t1.temp, t2.temp);
  count 
 -------
@@ -16,6 +25,9 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tDisjoint(t1.temp, t
    102
 (1 row)
 
+-----------------------------------------------------------------------------
+-- Intersects
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eIntersects(t1.temp, t2.temp);
  count 
 -------
@@ -34,6 +46,9 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tIntersects(t1.temp,
    102
 (1 row)
 
+-----------------------------------------------------------------------------
+-- Dwithin, in metres
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eDwithin(t1.temp, t2.temp, 5000.0);
  count 
 -------
@@ -46,3 +61,4 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aDwithin(t1.temp, t2
    100
 (1 row)
 
+-----------------------------------------------------------------------------

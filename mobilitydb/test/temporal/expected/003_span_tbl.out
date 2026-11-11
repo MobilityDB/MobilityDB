@@ -1,12 +1,13 @@
-COPY  tbl_intspan TO STDOUT (FORMAT BINARY);
-COPY 100
+-------------------------------------------------------------------------------
+-- Tests for span data type.
+-- File span.c
+-------------------------------------------------------------------------------
+-- Send/receive functions
+\copy tbl_intspan TO 'tbl_intspan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_intspan_tmp;
 NOTICE:  table "tbl_intspan_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_intspan_tmp AS TABLE tbl_intspan WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_intspan_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_intspan_tmp FROM 'tbl_intspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
  count 
 -------
@@ -14,16 +15,11 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1
 (1 row)
 
 DROP TABLE tbl_intspan_tmp;
-DROP TABLE
-COPY  tbl_bigintspan TO STDOUT (FORMAT BINARY);
-COPY 100
+\copy tbl_bigintspan TO 'tbl_bigintspan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_bigintspan_tmp;
 NOTICE:  table "tbl_bigintspan_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_bigintspan_tmp AS TABLE tbl_bigintspan WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_bigintspan_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_bigintspan_tmp FROM 'tbl_bigintspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
  count 
 -------
@@ -31,16 +27,11 @@ SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k 
 (1 row)
 
 DROP TABLE tbl_bigintspan_tmp;
-DROP TABLE
-COPY  tbl_floatspan TO STDOUT (FORMAT BINARY);
-COPY 100
+\copy tbl_floatspan TO 'tbl_floatspan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_floatspan_tmp;
 NOTICE:  table "tbl_floatspan_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_floatspan_tmp AS TABLE tbl_floatspan WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_floatspan_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_floatspan_tmp FROM 'tbl_floatspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
  count 
 -------
@@ -48,16 +39,11 @@ SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AN
 (1 row)
 
 DROP TABLE tbl_floatspan_tmp;
-DROP TABLE
-COPY  tbl_datespan TO STDOUT (FORMAT BINARY);
-COPY 100
+\copy tbl_datespan TO 'tbl_datespan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_datespan_tmp;
 NOTICE:  table "tbl_datespan_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_datespan_tmp AS TABLE tbl_datespan WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_datespan_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_datespan_tmp FROM 'tbl_datespan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan_tmp t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
  count 
 -------
@@ -65,16 +51,11 @@ SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan_tmp t2 WHERE t1.k = t2.k AND 
 (1 row)
 
 DROP TABLE tbl_datespan_tmp;
-DROP TABLE
-COPY  tbl_tstzspan TO STDOUT (FORMAT BINARY);
-COPY 100
+\copy tbl_tstzspan TO 'tbl_tstzspan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tstzspan_tmp;
 NOTICE:  table "tbl_tstzspan_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tstzspan_tmp AS TABLE tbl_tstzspan WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_tstzspan_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_tstzspan_tmp FROM 'tbl_tstzspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
  count 
 -------
@@ -82,7 +63,7 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND 
 (1 row)
 
 DROP TABLE tbl_tstzspan_tmp;
-DROP TABLE
+-- Input/output from/to WKB and HexWKB
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromBinary(asBinary(i)) <> i;
  count 
 -------
@@ -167,6 +148,9 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromText(asText(t)) <> asText(t)
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversions
+-------------------------------------------------------------------------------
 SELECT MAX(lower(d::tstzspanset)) FROM tbl_datespanset ORDER BY 1;
              max              
 ------------------------------
@@ -275,6 +259,9 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE t <> (t::tstzrange)::tstzspan;
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessor Functions
+-------------------------------------------------------------------------------
 SELECT MAX(lower(i)) FROM tbl_intspan;
  max 
 -----
@@ -368,47 +355,50 @@ SELECT round(SUM(width(f)), 6) FROM tbl_floatspan;
 (1 row)
 
 SELECT MAX(duration(d)) FROM tbl_datespan;
-   max   
----------
- 10 days
+    max    
+-----------
+ @ 10 days
 (1 row)
 
 SELECT MAX(duration(t)) FROM tbl_tstzspan;
    max    
 ----------
- 00:09:00
+ @ 9 mins
 (1 row)
 
 SELECT MAX(duration(span(t, t + i))) FROM tbl_timestamptz, tbl_interval;
-   max    
-----------
- 01:39:00
+       max        
+------------------
+ @ 1 hour 39 mins
 (1 row)
 
 SELECT MAX(duration(span(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
-   max    
-----------
- 01:39:00
+       max        
+------------------
+ @ 1 hour 39 mins
 (1 row)
 
 SELECT MAX(duration(span(t, t + i, true, false))) FROM tbl_timestamptz, tbl_interval;
-   max    
-----------
- 01:39:00
+       max        
+------------------
+ @ 1 hour 39 mins
 (1 row)
 
 SELECT MAX(duration(span(t, t + i, false, true))) FROM tbl_timestamptz, tbl_interval;
-   max    
-----------
- 01:39:00
+       max        
+------------------
+ @ 1 hour 39 mins
 (1 row)
 
 SELECT MAX(duration(span(t, t + i, false, false))) FROM tbl_timestamptz, tbl_interval;
-   max    
-----------
- 01:39:00
+       max        
+------------------
+ @ 1 hour 39 mins
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT MAX(shift(t, '5 min')) FROM tbl_timestamptz;
              max              
 ------------------------------
@@ -535,6 +525,9 @@ SELECT MAX(lower(radians(f))) FROM tbl_floatspan;
  1.7345644223388226
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison Functions
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE cmp(t1.t, t2.t) = -1;
  count 
 -------
@@ -577,3 +570,7 @@ SELECT MAX(hashExtended(t, 1)) != 0 FROM tbl_tstzspan;
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Aggregation functions
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------

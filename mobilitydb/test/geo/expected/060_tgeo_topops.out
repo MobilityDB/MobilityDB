@@ -46,6 +46,7 @@ SELECT round(tgeography '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1
  SRID=4326;GEODSTBOX XT(((1,1),(3,3)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT stboxes(tgeometry '[Point(1 1)@2001-01-01]');
                                          stboxes                                          
 ------------------------------------------------------------------------------------------
@@ -76,6 +77,8 @@ SELECT stboxes(tgeometry '{Point(1 1)@2001-01-01}');
  {"STBOX XT(((1,1),(1,1)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Sequence
 SELECT splitNStboxes(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05]', 1);
                                       splitnstboxes                                       
 ------------------------------------------------------------------------------------------
@@ -112,6 +115,7 @@ SELECT splitNStboxes(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, P
  {"STBOX XT(((1,1),(2,2)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])","STBOX XT(((2,1),(3,2)),[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])","STBOX XT(((3,1),(4,2)),[Wed Jan 03 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])","STBOX XT(((4,1),(5,2)),[Thu Jan 04 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])"}
 (1 row)
 
+-- Sequence set
 SELECT splitNStboxes(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03,
 Point(4 2)@2001-01-04, Point(5 1)@2001-01-05, Point(6 2)@2001-01-06, Point(7 1)@2001-01-07,
 Point(8 2)@2001-01-08, Point(9 1)@2001-01-09,Point(10 2)@2001-01-10]}', 1);
@@ -349,6 +353,8 @@ SELECT splitNStboxes(tgeometry 'Point(1 1)@2001-01-01', -1);
 ERROR:  The value must be strictly positive: -1
 SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,1 1)', -1);
 ERROR:  The value must be strictly positive: -1
+-------------------------------------------------------------------------------
+-- Instant and instantaneous sequence and sequence set
 SELECT splitEachNStboxes(tgeometry 'Point(1 1)@2001-01-01', 1);
                                     spliteachnstboxes                                     
 ------------------------------------------------------------------------------------------
@@ -373,6 +379,7 @@ SELECT splitEachNStboxes(tgeometry '{[Point(1 1)@2001-01-01]}', 1);
  {"STBOX XT(((1,1),(1,1)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])"}
 (1 row)
 
+-- Discrete Sequence
 SELECT splitEachNStboxes(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05}', 1);
                                                                                                                                                                                                                   spliteachnstboxes                                                                                                                                                                                                                   
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -409,6 +416,7 @@ SELECT splitEachNStboxes(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-0
  {"STBOX XT(((1,1),(5,2)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])"}
 (1 row)
 
+-- Sequence
 SELECT splitEachNStboxes(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05]', 1);
                                                                                                                                                                        spliteachnstboxes                                                                                                                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -445,6 +453,7 @@ SELECT splitEachNStboxes(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-0
  {"STBOX XT(((1,1),(5,2)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])"}
 (1 row)
 
+-- Sequence set
 SELECT splitEachNStboxes(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03,
 Point(4 2)@2001-01-04, Point(5 1)@2001-01-05, Point(6 2)@2001-01-06, Point(7 1)@2001-01-07,
 Point(8 2)@2001-01-08, Point(9 1)@2001-01-09,Point(10 2)@2001-01-10]}', 1);
@@ -680,6 +689,7 @@ Point(8 2)@2001-01-08, Point(9 1)@2001-01-09, Point(10 2)@2001-01-10]}', 6);
 /* Errors */
 SELECT splitEachNStboxes(tgeometry 'Point(1 1)@2001-01-01', -1);
 ERROR:  The value must be strictly positive: -1
+-------------------------------------------------------------------------------
 SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)');
                                             stboxes                                            
 -----------------------------------------------------------------------------------------------
@@ -692,12 +702,14 @@ SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10
  {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))","STBOX X((5,1),(6,2))","STBOX X((6,1),(7,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
 (1 row)
 
+-- 3D
 SELECT stboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))');
                                                                                                                         stboxes                                                                                                                        
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
 (1 row)
 
+-- An empty geometry has no point, so it has no box
 SELECT stboxes(geometry 'Linestring empty');
  stboxes 
 ---------
@@ -707,6 +719,8 @@ SELECT stboxes(geometry 'Linestring empty');
 /* Errors */
 SELECT stboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))');
 ERROR:  Only (multi)line geometries accepted
+-------------------------------------------------------------------------------
+-- Linestring
 SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
       splitnstboxes       
 --------------------------
@@ -743,6 +757,7 @@ SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
  {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
 (1 row)
 
+--3D
 SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
         splitnstboxes         
 ------------------------------
@@ -779,6 +794,7 @@ SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
  {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
 (1 row)
 
+--4D
 SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
         splitnstboxes         
 ------------------------------
@@ -815,6 +831,7 @@ SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 
  {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
 (1 row)
 
+-- Multilinestring
 SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
        splitnstboxes       
 ---------------------------
@@ -965,6 +982,7 @@ SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 
  {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
 (1 row)
 
+-- 3D
 SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
          splitnstboxes         
 -------------------------------
@@ -1007,6 +1025,7 @@ SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 
  {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
 (1 row)
 
+-- An empty geometry has no point, so it has no box
 SELECT splitNStboxes(geometry 'Linestring empty', 1);
  splitnstboxes 
 ---------------
@@ -1018,6 +1037,8 @@ SELECT splitNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
 ERROR:  Only (multi)line geometries accepted
 SELECT splitNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
 ERROR:  The value must be strictly positive: -1
+-------------------------------------------------------------------------------
+-- Linestring
 SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
                                        spliteachnstboxes                                       
 -----------------------------------------------------------------------------------------------
@@ -1054,6 +1075,7 @@ SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
  {"STBOX X((1,1),(5,2))"}
 (1 row)
 
+--3D
 SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
                                                spliteachnstboxes                                               
 ---------------------------------------------------------------------------------------------------------------
@@ -1090,6 +1112,7 @@ SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6
  {"STBOX Z((1,1,1),(5,2,1))"}
 (1 row)
 
+--4D
 SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
                                                spliteachnstboxes                                               
 ---------------------------------------------------------------------------------------------------------------
@@ -1126,6 +1149,7 @@ SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 
  {"STBOX Z((1,1,1),(5,2,1))"}
 (1 row)
 
+-- Multilinestring
 SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
                                                                                                  spliteachnstboxes                                                                                                 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1276,6 +1300,7 @@ SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2)
  {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
 (1 row)
 
+-- 3D
 SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
                                                                                                                    spliteachnstboxes                                                                                                                   
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1318,6 +1343,7 @@ SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 
  {"STBOX Z((1,1,1),(10,2,1))"}
 (1 row)
 
+-- An empty geometry has no point, so it has no box
 SELECT splitEachNStboxes(geometry 'Linestring empty', 1);
  spliteachnstboxes 
 -------------------
@@ -1329,6 +1355,7 @@ SELECT splitEachNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
 ERROR:  Only (multi)line geometries accepted
 SELECT splitEachNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
 ERROR:  The value must be strictly positive: -1
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeometry WHERE temp::stbox IS NOT NULL;
  count 
 -------
@@ -1371,6 +1398,7 @@ SELECT COUNT(*) FROM tbl_tgeometry WHERE splitNStboxes(temp, 5) IS NOT NULL;
    100
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' && tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1950,6 +1978,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  t
 (1 row)
 
+-- Mixed 2D/3D
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' && tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1965,6 +1994,7 @@ SELECT stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2002-01-01,2002-01-02])' && stbox 
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' && stbox 'STBOX XT(((1,1),(2,2)),[2002-01-01,2002-01-02])';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' @> tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -2541,6 +2571,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  t
 (1 row)
 
+-- Mixed 2D/3D
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' @> tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -2550,6 +2581,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' @> tgeometry 'Point(1 1)@2001-01-01';
 /* Errors */
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' @> tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' <@ tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -3126,6 +3158,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  t
 (1 row)
 
+-- Mixed 2D/3D
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' <@ tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -3135,6 +3168,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' <@ tgeometry 'Point(1 1)@2001-01-01';
 /* Errors */
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' <@ tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' -|- tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -3711,6 +3745,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  f
 (1 row)
 
+-- Mixed 2D/3D
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' -|- tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -3720,6 +3755,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' -|- tgeometry 'Point(1 1)@2001-01-01'
 /* Errors */
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' -|- tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' ~= tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -4296,6 +4332,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  t
 (1 row)
 
+-- Mixed 2D/3D
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' ~= tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -4305,3 +4342,4 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' ~= tgeometry 'Point(1 1)@2001-01-01';
 /* Errors */
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' ~= tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------

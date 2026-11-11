@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Temporal JSON functions
+-------------------------------------------------------------------------------
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' - 'geom';
              ?column?              
 -----------------------------------
@@ -127,6 +130,7 @@ SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-
  {["{}"@Mon Jan 01 00:00:00 2001 PST, "{}"@Wed Jan 03 00:00:00 2001 PST], ["{}"@Thu Jan 04 00:00:00 2001 PST, "{}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tjsonbSet(tjsonb '"{\"speed\": 10}"@2001-01-01', ARRAY['units'], '"km/h"'::jsonb);
                               tjsonbset                              
 ---------------------------------------------------------------------
@@ -175,6 +179,10 @@ SELECT tjsonbInsert(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02
  {["{\"speed\": 10, \"units\": \"km/h\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"speed\": 20, \"units\": \"km/h\"}"@Tue Jan 02 00:00:00 2001 PST, "{\"speed\": 30, \"units\": \"km/h\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": 30, \"units\": \"km/h\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"speed\": 30, \"units\": \"km/h\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- The cases above add a key the object does not carry, where inserting and setting answer
+-- alike, so they cannot see which of the two runs. Inserting INTO AN ARRAY at an occupied
+-- index is the discriminating shape: setting overwrites the element there, inserting shifts
+-- it, and the `after` flag chooses the side.
 SELECT tjsonbInsert(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb);
                       tjsonbinsert                       
 ---------------------------------------------------------
@@ -193,6 +201,7 @@ SELECT tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '
  {"{\"gears\": [1, 2]}"@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+-- A value that is not NULL is set, as tjsonbSet sets it
 SELECT tjsonbSetLax(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb);
                      tjsonbsetlax                     
 ------------------------------------------------------
@@ -219,6 +228,7 @@ SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
  ["{\"speed\": 10}"@Mon Jan 01 00:00:00 2001 PST, "{\"speed\": 20}"@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- A NULL path element is an error where the path reaches it, as for jsonbSet
 SELECT tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', NULL], '2'::jsonb);
 ERROR:  path element at position 2 is null
 SELECT tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['x', NULL], '2'::jsonb);
@@ -227,6 +237,7 @@ SELECT tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['x', NULL], '2':
  {"{\"gears\": [1, 3]}"@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tjsonbExtractPath(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01', ARRAY['speed']);
          tjsonbextractpath         
 -----------------------------------
@@ -251,6 +262,7 @@ SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "unit
  {["10"@Mon Jan 01 00:00:00 2001 PST, "20"@Tue Jan 02 00:00:00 2001 PST, "10"@Wed Jan 03 00:00:00 2001 PST], ["null"@Thu Jan 04 00:00:00 2001 PST, "30"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- The text extraction answers a temporal text
 SELECT pg_typeof(tjsonbExtractPathText(tjsonb '{{"speed": 10}@2001-01-01}', ARRAY['speed'])),
   pg_typeof(tjsonb '{{"speed": 10}@2001-01-01}' #>> ARRAY['speed']);
  pg_typeof | pg_typeof 
@@ -258,6 +270,7 @@ SELECT pg_typeof(tjsonbExtractPathText(tjsonb '{{"speed": 10}@2001-01-01}', ARRA
  ttext     | ttext
 (1 row)
 
+-- A path holding a NULL element extracts no value, as jsonbExtractPath answers NULL
 SELECT tjsonbExtractPath(tjsonb '{{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02}', ARRAY['speed', NULL]);
  tjsonbextractpath 
 -------------------
@@ -385,6 +398,7 @@ SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-0
  {["10"@Mon Jan 01 00:00:00 2001 PST, "20"@Tue Jan 02 00:00:00 2001 PST, "10"@Wed Jan 03 00:00:00 2001 PST], ["null"@Thu Jan 04 00:00:00 2001 PST, "30"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01' -> 'speed';
              ?column?              
 -----------------------------------
@@ -433,6 +447,7 @@ SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-0
  {["10"@Mon Jan 01 00:00:00 2001 PST, "20"@Tue Jan 02 00:00:00 2001 PST, "10"@Wed Jan 03 00:00:00 2001 PST], ["null"@Thu Jan 04 00:00:00 2001 PST, "30"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- An element read as text is a temporal text, whether the operator or the function reads it
 SELECT pg_typeof(tjsonb '"[\"Grand Place\", \"La Bourse\"]"@2001-01-01' ->> 1);
  pg_typeof 
 -----------
@@ -451,6 +466,7 @@ SELECT startValue(tjsonbArrayElementText(tjsonb '"[\"Grand Place\", \"La Bourse\
  La Bourse
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tint(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
               tint              
 --------------------------------
@@ -517,6 +533,7 @@ SELECT tfloat(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
  2.5@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- The interpolation of a temporal float is the one asked, linear by default
 SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-03]', text 'b');
                               tfloat                              
 ------------------------------------------------------------------
@@ -535,6 +552,7 @@ SELECT tfloat(tjsonb '{[{"b":1}@2001-01-01, {"b":3}@2001-01-03], [{"b":5}@2001-0
  {[1@Mon Jan 01 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST], [5@Fri Jan 05 00:00:00 2001 PST, 4@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-- A key missing at an instant ends a linear sequence at the previous instant
 SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-02, {"c":0}@2001-01-03, {"b":5}@2001-01-04, {"b":4}@2001-01-05]', text 'b', 'linear', 'delete_key');
                                                                 tfloat                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -547,6 +565,7 @@ SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-02, {"c":0}@2001-01-0
  Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST), [5@Thu Jan 04 00:00:00 2001 PST, 4@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- A boolean is false or true whatever the JSON value it is read from
 SELECT tbool(tjsonb '"{\"a\":false, \"b\":2.5}"@2001-01-01', text 'a');
              tbool              
 --------------------------------
@@ -583,6 +602,7 @@ SELECT tbool(tjsonb '"{\"a\":\"false\", \"b\":2.5}"@2001-01-01', text 'a');
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Text is read from a number, a string and a boolean
 SELECT ttext(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
               ttext               
 ----------------------------------
@@ -607,6 +627,8 @@ SELECT ttext(tjsonb '"{\"a\":false, \"b\":2.5}"@2001-01-01', text 'a');
  "false"@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- A geo value is read from a string in a text format of its base type, and a
+-- temporal point is interpolated linearly by default
 SELECT asText(tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\", \"b\":2.5}"@2001-01-01', text 'pos'));
                  astext                  
 -----------------------------------------
@@ -675,6 +697,11 @@ SELECT tgeompoint(tjsonb '"{\"pos\":1}"@2001-01-01', text 'pos');
 ERROR:  The value of key "pos" is not a string
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\"}"@2001-01-01', text 'xxx');
 ERROR:  The lifted operation returned NULL
+-- A jsonpath error raises the SQL/JSON class PostgreSQL gives it, each beside
+-- the same path on a jsonb, so only the state of the error is shown: an
+-- object not found (2203C), a non-numeric item (22036) and a member not found
+-- (2203A)
+\set VERBOSITY sqlstate
 SELECT tjsonbPathExists(tjsonb '[{"a": [1]}@2001-01-01]', 'strict $.a.keyvalue()');
 ERROR:  2203C
 SELECT jsonb_path_exists(jsonb '{"a": [1]}', 'strict $.a.keyvalue()');
@@ -687,6 +714,10 @@ SELECT tjsonbPathExists(tjsonb '[{"a": 1}@2001-01-01]', 'strict $.b');
 ERROR:  2203A
 SELECT jsonb_path_exists(jsonb '{"a": 1}', 'strict $.b');
 ERROR:  2203A
+\set VERBOSITY default
+-- The operator and the silent form suppress these errors, as they do on a
+-- jsonb, so an instant whose answer is missing is left out, as in
+-- tjsonbPathQueryFirst, and a value with no instant left is NULL
 SELECT tjsonb '[{"a": [1]}@2001-01-01]' @? 'strict $.a.keyvalue()';
  ?column? 
 ----------
@@ -741,6 +772,8 @@ SELECT tjsonb '[{"a": 1}@2001-01-01, {"b": 1}@2001-01-02]' @? 'strict $.b';
  {[t@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-- A predicate whose answer is unknown answers no value, as on a jsonb, and a
+-- comparison suppresses the errors of its operands
 SELECT tjsonb '[{"d": "x"}@2001-01-01]' @@ '$.d.datetime() > "2002-06-01".datetime()';
  ?column? 
 ----------
@@ -783,3 +816,4 @@ SELECT tjsonb '[{"a": 1}@2001-01-01, {"a": 2}@2001-01-02]' @@ '$.a == 1';
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------

@@ -1,12 +1,11 @@
-COPY  tbl_pose2d TO STDOUT (FORMAT BINARY);
-COPY 100
+-------------------------------------------------------------------------------
+-- Send/receive functions
+-------------------------------------------------------------------------------
+\copy tbl_pose2d TO 'tbl_pose2d' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_pose2d_tmp;
 NOTICE:  table "tbl_pose2d_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_pose2d_tmp AS TABLE tbl_pose2d WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_pose2d_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_pose2d_tmp FROM 'tbl_pose2d' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d_tmp t2 WHERE t1.k = t2.k AND t1.pose <> t2.pose;
  count 
 -------
@@ -14,7 +13,9 @@ SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d_tmp t2 WHERE t1.k = t2.k AND t1.p
 (1 row)
 
 DROP TABLE tbl_pose2d_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Accessing values
+-------------------------------------------------------------------------------
 SELECT MAX(ST_X(point(pose))) FROM tbl_pose2d;
         max        
 -------------------
@@ -27,12 +28,18 @@ SELECT MAX(yaw(pose)) FROM tbl_pose2d;
  0.05378614038812
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Cast functions
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_pose2d WHERE pose::geometry IS NOT NULL;
  count 
 -------
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d t2 WHERE t1.pose = t2.pose;
  count 
 -------
@@ -69,3 +76,4 @@ SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d t2 WHERE t1.pose >= t2.pose;
   5050
 (1 row)
 
+-------------------------------------------------------------------------------/

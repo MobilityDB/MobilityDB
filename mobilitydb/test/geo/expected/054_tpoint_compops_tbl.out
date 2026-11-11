@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE g #= temp IS NOT NULL;
  count 
 -------
@@ -46,6 +47,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp #= t
    150
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE g #<> temp IS NOT NULL;
  count 
 -------
@@ -94,6 +96,11 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp #<> 
    150
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Ever and always overlaps: a temporal point lies in a box when its
+-- restriction to the box is not empty, and always lies in it when its
+-- restriction to the complement of the box is empty; the boxes are drawn from
+-- the values of the table so that every answer occurs
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp ?&& stbox(t2.temp) <> (atStbox(t1.temp, stbox(t2.temp)) IS NOT NULL);
  count 
@@ -149,6 +156,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp %&& stbo
    119
 (1 row)
 
+-- Two temporal points overlap at an instant where they are equal
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp ?&& t2.temp <> t1.temp ?= t2.temp;
  count 
@@ -163,3 +171,4 @@ WHERE t1.temp %&& t2.temp <> t1.temp %= t2.temp;
      0
 (1 row)
 
+-------------------------------------------------------------------------------

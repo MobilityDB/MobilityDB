@@ -1,3 +1,9 @@
+-------------------------------------------------------------------------------
+-- The R-tree GiST, quad-tree and k-d tree SP-GiST indexes of a tquadbin, keyed
+-- by the stbox of the value. Under each index every operator of the class, with
+-- each right argument it declares, answers the rows a sequential scan gives,
+-- from a plan that probes the index.
+-------------------------------------------------------------------------------
 CREATE FUNCTION test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
@@ -11,36 +17,31 @@ BEGIN
   RETURN false;
 END;
 $$;
-CREATE FUNCTION
 DROP TABLE IF EXISTS tbl_tquadbin_idx;
 NOTICE:  table "tbl_tquadbin_idx" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_idx AS SELECT k, temp FROM tbl_tquadbin_big;
-SELECT 10100
 ANALYZE tbl_tquadbin_idx;
-ANALYZE
+-- The values, boxes and periods the operators are given. Those of the fixture
+-- are random, so they meet few values exactly: the others come from the rows of
+-- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_tquadbin_src;
 NOTICE:  table "tbl_tquadbin_src" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_tquadbin_idx WHERE k % 1000 = 0;
-SELECT 10
 DROP TABLE IF EXISTS tbl_tquadbin_val;
 NOTICE:  table "tbl_tquadbin_val" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_val AS
 SELECT temp FROM tbl_tquadbin WHERE k % 20 = 0
 UNION ALL
 SELECT temp FROM tbl_tquadbin_src
 UNION ALL
 SELECT shiftTime(temp, lower(t) - upper(t)) FROM tbl_tquadbin_src;
-SELECT 25
 ANALYZE tbl_tquadbin_val;
-ANALYZE
+-- A box of the fixture, the box of a value, one around it, one inside it, and
+-- one whose period meets it
 DROP TABLE IF EXISTS tbl_tquadbin_box;
 NOTICE:  table "tbl_tquadbin_box" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_box AS
 SELECT b FROM tbl_stbox_quadbin WHERE k % 20 = 0
 UNION ALL
@@ -56,12 +57,11 @@ SELECT stbox(format('SRID=4326;STBOX XT(((%s,%s),(%s,%s)),[%s,%s%s)',
     xmin(b), ymin(b), xmax(b), ymax(b), lower(t) - interval '1 hour', lower(t),
     CASE WHEN lowerInc(t) THEN ')' ELSE ']' END))
 FROM tbl_tquadbin_src;
-SELECT 45
 ANALYZE tbl_tquadbin_box;
-ANALYZE
+-- A box of space alone, which the operators on time refuse: one around a value,
+-- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_tquadbin_xbox;
 NOTICE:  table "tbl_tquadbin_xbox" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_xbox AS
 SELECT stbox(format('SRID=4326;STBOX X((%s,%s),(%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1)) AS b
@@ -78,12 +78,11 @@ UNION ALL
 SELECT stbox(format('SRID=4326;STBOX X((%s,%s),(%s,%s))',
     xmax(b), ymin(b), xmax(b) + 0.1, ymax(b)))
 FROM tbl_tquadbin_src;
-SELECT 40
 ANALYZE tbl_tquadbin_xbox;
-ANALYZE
+-- A period of the fixture, the period of a value, one around it, one inside it,
+-- and one that meets it
 DROP TABLE IF EXISTS tbl_tquadbin_span;
 NOTICE:  table "tbl_tquadbin_span" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
@@ -98,158 +97,84 @@ UNION ALL
 SELECT tstzspan(format('[%s, %s%s', lower(t) - interval '1 hour', lower(t),
     CASE WHEN lowerInc(t) THEN ')' ELSE ']' END))
 FROM tbl_tquadbin_src;
-SELECT 45
 ANALYZE tbl_tquadbin_span;
-ANALYZE
 DROP TABLE IF EXISTS test_tquadbin_idx;
 NOTICE:  table "test_tquadbin_idx" does not exist, skipping
-DROP TABLE
 CREATE TABLE test_tquadbin_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
-CREATE TABLE
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<< tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp << t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&< tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &< t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&& tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp && t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('>> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp >> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('~= tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp ~= t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('@> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp @> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<@ tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <@ t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&<| tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<| t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<<| tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<| t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('|>> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |>> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('|&> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |&> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('-|- tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp -|- t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&<# tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<# t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<<# tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<# t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('#>> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #>> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('#&> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #&> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<< stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp << t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&< stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &< t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&& stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp && t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&> stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('>> stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp >> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('~= stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp ~= t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('@> stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp @> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<@ stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <@ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&<| stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<<| stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('|>> stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('|&> stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('-|- stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp -|- t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&<# stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<# t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<<# stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<# t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('#>> stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('#&> stbox', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&& tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp && t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('~= tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp ~= t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('@> tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp @> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <@ t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('-|- tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp -|- t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp &<# t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<<# tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <<# t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('#>> tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #>> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #&> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<< stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp << t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&< stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &< t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&& stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp && t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&> stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('>> stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp >> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('~= stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp ~= t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('@> stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp @> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<@ stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <@ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('&<| stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('<<| stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('|>> stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('|&> stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('-|- stbox x', (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp -|- t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox && tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b && t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox @> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b @> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox <@ tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <@ t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox ~= tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b ~= t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('tstzspan && tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t && t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('tstzspan <@ tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <@ t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox << tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b << t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox >> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b >> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox <<| tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<| t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox |>> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b |>> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('tstzspan <<# tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <<# t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('tstzspan #>> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t #>> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox <<# tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<# t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tquadbin_idx(op, no_idx) VALUES ('stbox #>> tquadbin', (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b #>> t1.temp)::text);
-INSERT 0 1
+-- With no index a plan cannot probe one, whatever the planner settings
 SET enable_seqscan = off;
-SET
 SELECT test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp && t2.b') AS no_index_probe;
  no_index_probe 
 ----------------
@@ -257,907 +182,672 @@ SELECT test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin
 (1 row)
 
 RESET enable_seqscan;
-RESET
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tquadbin_idx_rtree ON tbl_tquadbin_idx USING gist(temp);
-CREATE INDEX
 SET enable_seqscan = off;
-SET
 SET enable_hashjoin = off;
-SET
 SET enable_mergejoin = off;
-SET
 SET enable_sort = off;
-SET
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp << t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '<< tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp && t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '&& tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp ~= t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '~= tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp @> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '@> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<| t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '&<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<| t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '<<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |>> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '|>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |&> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp -|- t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '-|- tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<# t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '&<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<# t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '<<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #>> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '#>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #&> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp << t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp << t2.b')
 WHERE op = '<< stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &< t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '&< stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp && t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp >> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp ~= t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '~= stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp @> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '@> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <@ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '<@ stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '&<| stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '<<| stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '|>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '|&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp -|- t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '-|- stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<# t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '&<# stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<# t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '<<# stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '#>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '#&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp && t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp && t2.t')
 WHERE op = '&& tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp ~= t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '~= tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp @> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '@> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp -|- t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '-|- tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <<# t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '<<# tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #>> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '#>> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #&> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '#&> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp << t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '<< stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &< t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '&< stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp && t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp >> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '>> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp ~= t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '~= stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp @> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '@> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <@ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '<@ stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '&<| stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '<<| stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '|>> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '|&> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp -|- t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '-|- stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b && t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b && t1.temp')
 WHERE op = 'stbox && tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <@ t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = 'stbox <@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b ~= t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = 'stbox ~= tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t && t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t && t1.temp')
 WHERE op = 'tstzspan && tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <@ t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = 'tstzspan <@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<| t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b |>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = 'stbox |>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <<# t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = 'tstzspan <<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<# t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = 'stbox <<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b #>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = 'stbox #>> tquadbin';
-UPDATE 1
 RESET enable_seqscan;
-RESET
 RESET enable_hashjoin;
-RESET
 RESET enable_mergejoin;
-RESET
 RESET enable_sort;
-RESET
 DROP INDEX tbl_tquadbin_idx_rtree;
-DROP INDEX
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tquadbin_idx_quadtree ON tbl_tquadbin_idx USING spgist(temp);
-CREATE INDEX
 SET enable_seqscan = off;
-SET
 SET enable_hashjoin = off;
-SET
 SET enable_mergejoin = off;
-SET
 SET enable_sort = off;
-SET
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp << t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '<< tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp && t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '&& tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp ~= t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '~= tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp @> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '@> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<| t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '&<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<| t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '<<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |>> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '|>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |&> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp -|- t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '-|- tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<# t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '&<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<# t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '<<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #>> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '#>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #&> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp << t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp << t2.b')
 WHERE op = '<< stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &< t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '&< stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp && t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp >> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp ~= t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '~= stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp @> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '@> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <@ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '<@ stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '&<| stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '<<| stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '|>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '|&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp -|- t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '-|- stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<# t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '&<# stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<# t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '<<# stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '#>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '#&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp && t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp && t2.t')
 WHERE op = '&& tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp ~= t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '~= tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp @> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '@> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp -|- t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '-|- tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <<# t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '<<# tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #>> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '#>> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #&> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '#&> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp << t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '<< stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &< t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '&< stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp && t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp >> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '>> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp ~= t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '~= stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp @> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '@> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <@ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '<@ stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '&<| stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '<<| stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '|>> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '|&> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp -|- t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '-|- stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b && t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b && t1.temp')
 WHERE op = 'stbox && tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <@ t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = 'stbox <@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b ~= t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = 'stbox ~= tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t && t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t && t1.temp')
 WHERE op = 'tstzspan && tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <@ t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = 'tstzspan <@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<| t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b |>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = 'stbox |>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <<# t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = 'tstzspan <<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<# t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = 'stbox <<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b #>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = 'stbox #>> tquadbin';
-UPDATE 1
 RESET enable_seqscan;
-RESET
 RESET enable_hashjoin;
-RESET
 RESET enable_mergejoin;
-RESET
 RESET enable_sort;
-RESET
 DROP INDEX tbl_tquadbin_idx_quadtree;
-DROP INDEX
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tquadbin_idx_kdtree ON tbl_tquadbin_idx USING spgist(temp tquadbin_kdtree_ops);
-CREATE INDEX
 SET enable_seqscan = off;
-SET
 SET enable_hashjoin = off;
-SET
 SET enable_mergejoin = off;
-SET
 SET enable_sort = off;
-SET
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp << t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '<< tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp && t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '&& tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp ~= t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '~= tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp @> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '@> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<| t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '&<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<| t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '<<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |>> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '|>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |&> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp -|- t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '-|- tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<# t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '&<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<# t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '<<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #>> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '#>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #&> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp << t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp << t2.b')
 WHERE op = '<< stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &< t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '&< stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp && t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp >> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp ~= t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '~= stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp @> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '@> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <@ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '<@ stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '&<| stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '<<| stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '|>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '|&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp -|- t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '-|- stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<# t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '&<# stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<# t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '<<# stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '#>> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '#&> stbox';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp && t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp && t2.t')
 WHERE op = '&& tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp ~= t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '~= tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp @> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '@> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp -|- t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '-|- tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <<# t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '<<# tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #>> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '#>> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #&> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '#&> tstzspan';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp << t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '<< stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &< t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '&< stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp && t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp >> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '>> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp ~= t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '~= stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp @> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '@> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <@ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '<@ stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '&<| stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '<<| stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '|>> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '|&> stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp -|- t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_idx t1, tbl_tquadbin_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '-|- stbox x';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b && t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b && t1.temp')
 WHERE op = 'stbox && tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <@ t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = 'stbox <@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b ~= t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = 'stbox ~= tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t && t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t && t1.temp')
 WHERE op = 'tstzspan && tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <@ t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = 'tstzspan <@ tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<| t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b |>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = 'stbox |>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <<# t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = 'tstzspan <<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_span t2, tbl_tquadbin_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<# t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = 'stbox <<# tquadbin';
-UPDATE 1
 UPDATE test_tquadbin_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b #>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_box t2, tbl_tquadbin_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = 'stbox #>> tquadbin';
-UPDATE 1
 RESET enable_seqscan;
-RESET
 RESET enable_hashjoin;
-RESET
 RESET enable_mergejoin;
-RESET
 RESET enable_sort;
-RESET
 DROP INDEX tbl_tquadbin_idx_kdtree;
-DROP INDEX
+-------------------------------------------------------------------------------
+-- Every operator has rows to answer. The counts themselves are not stated: two
+-- cells can share a box edge that each mathematical library rounds its own way.
 SELECT COUNT(*) FROM test_tquadbin_idx;
  count 
 -------
@@ -1179,27 +869,22 @@ ORDER BY op;
 (0 rows)
 
 DROP TABLE test_tquadbin_idx;
-DROP TABLE
 DROP TABLE tbl_tquadbin_span;
-DROP TABLE
 DROP TABLE tbl_tquadbin_xbox;
-DROP TABLE
 DROP TABLE tbl_tquadbin_box;
-DROP TABLE
 DROP TABLE tbl_tquadbin_val;
-DROP TABLE
 DROP TABLE tbl_tquadbin_src;
-DROP TABLE
 DROP TABLE tbl_tquadbin_idx;
-DROP TABLE
 DROP FUNCTION test_probes_index(text);
-DROP FUNCTION
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A column of stbox values indexed by GiST, quad-tree and k-d tree answers the
+-- queries of a tquadbin as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>
+-------------------------------------------------------------------------------
 CREATE TABLE tbl_stbox_tquadbin AS
 SELECT k, temp::stbox AS b FROM tbl_tquadbin WHERE temp IS NOT NULL;
-SELECT 100
 CREATE TABLE tbl_tquadbin_q AS
 SELECT temp AS q FROM tbl_tquadbin WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
-SELECT 3
 CREATE FUNCTION stbox_tquadbin_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
     SELECT 1, (SELECT count(*) FROM tbl_stbox_tquadbin WHERE b << q) FROM tbl_tquadbin_q
@@ -1236,7 +921,6 @@ CREATE FUNCTION stbox_tquadbin_answers() RETURNS text AS $$
     UNION ALL
     SELECT 17, (SELECT count(*) FROM tbl_stbox_tquadbin WHERE b #&> q) FROM tbl_tquadbin_q) t(o, c);
 $$ LANGUAGE SQL;
-CREATE FUNCTION
 CREATE FUNCTION stbox_tquadbin_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
@@ -1250,7 +934,6 @@ BEGIN
   RETURN false;
 END;
 $$;
-CREATE FUNCTION
 CREATE FUNCTION stbox_tquadbin_indexed() RETURNS text AS $$
   SELECT string_agg(CASE WHEN stbox_tquadbin_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
   FROM (VALUES
@@ -1272,9 +955,7 @@ CREATE FUNCTION stbox_tquadbin_indexed() RETURNS text AS $$
     (16, 'SELECT count(*) FROM tbl_stbox_tquadbin WHERE b #>> (SELECT q FROM tbl_tquadbin_q LIMIT 1)'),
     (17, 'SELECT count(*) FROM tbl_stbox_tquadbin WHERE b #&> (SELECT q FROM tbl_tquadbin_q LIMIT 1)')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE FUNCTION
 CREATE TABLE tbl_stbox_tquadbin_seq AS SELECT stbox_tquadbin_answers() AS a;
-SELECT 1
 SELECT a FROM tbl_stbox_tquadbin_seq;
                                                                a                                                               
 -------------------------------------------------------------------------------------------------------------------------------
@@ -1282,9 +963,7 @@ SELECT a FROM tbl_stbox_tquadbin_seq;
 (1 row)
 
 SET enable_seqscan = off;
-SET
 CREATE INDEX tbl_stbox_tquadbin_gist_idx ON tbl_stbox_tquadbin USING gist(b);
-CREATE INDEX
 SELECT stbox_tquadbin_indexed(), stbox_tquadbin_answers() = a
 FROM tbl_stbox_tquadbin_seq;
  stbox_tquadbin_indexed | ?column? 
@@ -1293,9 +972,7 @@ FROM tbl_stbox_tquadbin_seq;
 (1 row)
 
 DROP INDEX tbl_stbox_tquadbin_gist_idx;
-DROP INDEX
 CREATE INDEX tbl_stbox_tquadbin_quad_idx ON tbl_stbox_tquadbin USING spgist(b);
-CREATE INDEX
 SELECT stbox_tquadbin_indexed(), stbox_tquadbin_answers() = a
 FROM tbl_stbox_tquadbin_seq;
  stbox_tquadbin_indexed | ?column? 
@@ -1304,10 +981,8 @@ FROM tbl_stbox_tquadbin_seq;
 (1 row)
 
 DROP INDEX tbl_stbox_tquadbin_quad_idx;
-DROP INDEX
 CREATE INDEX tbl_stbox_tquadbin_kd_idx ON tbl_stbox_tquadbin
   USING spgist(b stbox_kdtree_ops);
-CREATE INDEX
 SELECT stbox_tquadbin_indexed(), stbox_tquadbin_answers() = a
 FROM tbl_stbox_tquadbin_seq;
  stbox_tquadbin_indexed | ?column? 
@@ -1316,8 +991,5 @@ FROM tbl_stbox_tquadbin_seq;
 (1 row)
 
 RESET enable_seqscan;
-RESET
 DROP TABLE tbl_stbox_tquadbin, tbl_tquadbin_q, tbl_stbox_tquadbin_seq;
-DROP TABLE
 DROP FUNCTION stbox_tquadbin_indexed(), stbox_tquadbin_answers(), stbox_tquadbin_probes_index(text);
-DROP FUNCTION

@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Input
+-------------------------------------------------------------------------------
 SELECT asText(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01');
                         astext                        
 ------------------------------------------------------
@@ -58,6 +61,7 @@ SELECT asText(tcbuffer '  {  [  Cbuffer(Point(1 1), 0.2)@2001-01-01 ,  Cbuffer  
  {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Normalization
 SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]');
                                                                                astext                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -70,6 +74,9 @@ SELECT asText(tcbuffer'{[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1)
  {[Cbuffer(POINT(1 1),0.3)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Input/output in WKT, WKB and HexWKB formats
+-------------------------------------------------------------------------------
 SELECT asText(tcbuffer 'Cbuffer(Point(1 1), 0.123456789)@2001-01-01', 6);
                           astext                           
 -----------------------------------------------------------
@@ -106,6 +113,8 @@ SELECT asText(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.123456789)@2001-01-0
  Interp=Step;{[Cbuffer(POINT(1 1),0.123457)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.523457)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.123457)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.723457)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.723457)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Maximum decimal digits
 SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01')));
                         astext                        
 ------------------------------------------------------
@@ -214,6 +223,7 @@ SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Interp=Step;{[Cbuffer(Point(
  Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01')));
                         astext                        
 ------------------------------------------------------
@@ -376,6 +386,9 @@ SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@20
  Cbuffer(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Input/output in MF-JSON format
+-------------------------------------------------------------------------------
 SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01');
                                                                  asmfjson                                                                 
 ------------------------------------------------------------------------------------------------------------------------------------------
@@ -492,6 +505,7 @@ SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer 'SRID=5676;[Cbuffer(Point(1 2
  SRID=5676;[Cbuffer(POINT(1 2),1)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(3 4),2)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- Errors
 SELECT tcbufferFromMFJSON('ABC');
 ERROR:  Error while processing MFJSON string unexpected character (at offset 0)
 SELECT tcbufferFromMFJSON('{"type":"XXX","values":[{"point":[1,1],"radius":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"}');
@@ -508,6 +522,9 @@ SELECT tcbufferFromMFJSON('{"type":"MovingCircularBuffer","values":[{"point":[1,
 ERROR:  invalid input syntax for type timestamp with time zone: "XXXX"
 SELECT tcbufferFromMFJSON('{"type":"MovingCircularBuffer","values":[{"point":[1,1],"radius":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"XXX"}');
 ERROR:  Invalid 'interpolation' value in MFJSON string
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT asText(tcbuffer('Cbuffer(Point(1 1),0)'::cbuffer, '2012-01-01'::timestamp));
                        astext                       
 ----------------------------------------------------
@@ -532,6 +549,9 @@ SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer '[Cbuffer(Point(1 1),0)@2012-01-01, 
  {[Cbuffer(POINT(1 1),0)@Sun Jan 01 00:00:00 2012 PST, Cbuffer(POINT(1 1),1)@Wed Feb 01 00:00:00 2012 PST], [Cbuffer(POINT(2 2),0)@Thu Mar 01 00:00:00 2012 PST, Cbuffer(POINT(2 2),1)@Sun Apr 01 00:00:00 2012 PDT]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT asText(tcbufferInst(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'));
                         astext                        
 ------------------------------------------------------
@@ -646,6 +666,9 @@ SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1), 0.123456789)@2012-01-01, Cbu
  {[Cbuffer(POINT(1 1),0.123457)@Sun Jan 01 00:00:00 2012 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 02 00:00:00 2012 PST)}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Append functions
+-------------------------------------------------------------------------------
 SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', tcbuffer 'Cbuffer(Point(1 1), 0.7)@2001-01-02'));
                                                     astext                                                    
 --------------------------------------------------------------------------------------------------------------
@@ -670,6 +693,9 @@ SELECT asText(appendInstant(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbu
  {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.7)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-- The aggregate starts a sequence where consecutive circular buffers lie
+-- farther apart than the maximum distance; a buffer growing in place meets
+-- the previous one
 SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
   (tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01'), (tcbuffer 'Cbuffer(Point(3 4), 1)@2001-01-02'),
   (tcbuffer 'Cbuffer(Point(30 40), 1)@2001-01-03')) t(inst);
@@ -685,6 +711,7 @@ SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALU
  [Cbuffer(POINT(0 0),1)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(0 0),20)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asText(appendSequence(tcbuffer '{Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(2 2), 0.4)@2001-01-02}', tcbuffer '{Cbuffer(Point(3 3), 0.6)@2001-01-03}'));
                                                                                astext                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -697,6 +724,9 @@ SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbu
  {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST], [Cbuffer(POINT(1 1),0.6)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Cast functions
+-------------------------------------------------------------------------------
 SELECT asText(round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
                  astext                  
 -----------------------------------------
@@ -745,6 +775,18 @@ SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1)
  {[0.2@Mon Jan 01 00:00:00 2001 PST, 0.4@Tue Jan 02 00:00:00 2001 PST, 0.5@Wed Jan 03 00:00:00 2001 PST], [0.6@Thu Jan 04 00:00:00 2001 PST, 0.6@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- SELECT asText(round((tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'::tgeompoint)::tcbuffer, 6));
+-- SELECT asText(round((tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}'::tgeompoint)::tcbuffer, 6));
+-- SELECT asText(round((tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]'::tgeompoint)::tcbuffer, 6));
+-- SELECT asText(round((tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint)::tcbuffer, 6));
+-- NULL
+-- SELECT asText(tgeompoint 'SRID=5676;Point(-1 -1)@2001-01-01'::tcbuffer;
+-- SELECT asText(tgeompoint 'SRID=5676;{POINT(48.7186629128278 77.7640705101509)@2001-01-01, POINT(48.71 77.76)@2001-01-02}'::tcbuffer;
+-- SELECT asText(tgeompoint 'SRID=5676;[POINT(48.7186629128278 77.7640705101509)@2001-01-01, POINT(48.71 77.76)@2001-01-02]'::tcbuffer;
+-- SELECT asText(tgeompoint 'SRID=5676;{[POINT(62.7866330839742 80.1435561997142)@2001-01-01, POINT(62.7866330839742 80.1435561997142)@2001-01-02],[POINT(48.7186629128278 77.7640705101509)@2001-01-03, POINT(48.71 77.76)@2001-01-04]}'::tcbuffer;
+-------------------------------------------------------------------------------
+-- Accessor Functions
+-------------------------------------------------------------------------------
 SELECT tempSubtype(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01');
  tempsubtype 
 -------------
@@ -880,49 +922,49 @@ SELECT timeSpan(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1
 SELECT duration(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT getTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01');
@@ -931,6 +973,7 @@ SELECT getTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01');
  Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asEWKT(points(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}'));
                  asewkt                 
 ----------------------------------------
@@ -943,6 +986,9 @@ SELECT radius(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(
  {0.3, 0.5}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shift and scale functions
+-------------------------------------------------------------------------------
 SELECT asText(shiftTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', '5 min'));
                         astext                        
 ------------------------------------------------------
@@ -991,6 +1037,9 @@ SELECT asText(scaleTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer
  {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Mon Jan 01 06:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 01 12:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Mon Jan 01 18:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' ?= cbuffer 'Cbuffer(Point(1 1), 0.5)';
  ?column? 
 ----------
@@ -1584,6 +1633,9 @@ SELECT timestamps(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point
  {"Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST","Wed Jan 03 00:00:00 2001 PST","Thu Jan 04 00:00:00 2001 PST","Fri Jan 05 00:00:00 2001 PST"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restriction Functions
+-------------------------------------------------------------------------------
 SELECT asText(atValue(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
                         astext                        
 ------------------------------------------------------
@@ -1632,6 +1684,7 @@ SELECT asText(minusValue(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffe
  {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST), [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Singular atValue / minusValue (declared in 155_tcbuffer_spatialfuncs.in.sql)
 SELECT asText(atValue(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
                         astext                        
 ------------------------------------------------------
@@ -1740,6 +1793,7 @@ SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Po
  {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-- The disk reaches the box while its centre stays outside it
 SELECT asText(atStbox(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2001-01-01', 'STBOX XT(((0,0),(2,2)),[2001-01-01,2001-01-02])'));
                         astext                        
 ------------------------------------------------------
@@ -1752,12 +1806,14 @@ SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(3 1), 1.5)@2001-01-01, Cbuffer(Po
  {[Cbuffer(POINT(3 1),1.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(3 1),1.5)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-- The same disk against the geometry of that box, which must agree
 SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2001-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
                         astext                        
 ------------------------------------------------------
  Cbuffer(POINT(3 1),1.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- A disk that reaches neither the box nor its geometry
 SELECT asText(atStbox(tcbuffer 'Cbuffer(Point(9 9), 0.5)@2001-01-01', 'STBOX XT(((0,0),(2,2)),[2001-01-01,2001-01-02])'));
  astext 
 --------
@@ -1800,6 +1856,7 @@ SELECT asText(minusStbox(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer
  {(Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- The disk reaches the box while its centre stays outside it
 SELECT asText(minusStbox(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2001-01-01', 'STBOX XT(((0,0),(2,2)),[2001-01-01,2001-01-02])'));
  astext 
 --------
@@ -2028,6 +2085,7 @@ SELECT asText(minusTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer
  {(Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asText(beforeTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', timestamptz '2001-01-01'));
  astext 
 --------
@@ -2124,6 +2182,9 @@ SELECT asText(afterTimestamp(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cb
  {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 SELECT asText(insert(
   tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02], [Cbuffer(Point(1 1), 0.5)@2001-01-03, Cbuffer(Point(1 1), 0.6)@2001-01-04]}',
   tcbuffer '{[Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]}'));
@@ -2233,6 +2294,9 @@ SELECT asText(deleteTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffe
  {(Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+-------------------------------------------------------------------------------
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
  ?column? 
 ----------
@@ -2809,6 +2873,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)
  t
 (1 row)
 
+-------------------------------------------------------------------------------/
 SELECT numSequences(tcbufferSeqSetGaps(ARRAY[
   tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01',
   tcbuffer 'Cbuffer(Point(2 2), 0.5)@2001-01-02',
@@ -2819,18 +2884,33 @@ SELECT numSequences(tcbufferSeqSetGaps(ARRAY[
             3
 (1 row)
 
+-------------------------------------------------------------------------------/
+-- tprecision
 SELECT asText(tprecision(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),3)@2001-01-01 00:00:04]', interval '2 secs'));
                                                                               astext                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
  [Cbuffer(POINT(1 0),1.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(3 0),2.5)@Mon Jan 01 00:00:02 2001 PST, Cbuffer(POINT(4 0),3)@Mon Jan 01 00:00:04 2001 PST]
 (1 row)
 
+-- The end-of-bin instant a step sequence generates carries a base value passed
+-- by reference, so it is read through the instant accessor. Reading the field
+-- directly gave the first eight bytes of the buffer as if they were a pointer,
+-- which faulted as soon as a second bin existed.
 SELECT asText(tprecision(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(5 5),0.6)@2001-01-05]', interval '1 day', '2001-01-01'));
                                                           astext                                                          
 --------------------------------------------------------------------------------------------------------------------------
  Interp=Step;[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(5 5),0.6)@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- MF-JSON output of the temporal circular buffers built from real AIS data,
+-- that is, the recorded vessel positions with a radius accounting for the
+-- position uncertainty. The AIS table keeps the full precision of the source
+-- data, which is what exposes the output corruption reported at
+-- https://github.com/MobilityDB/MobilityDB/issues/850
+-- Every query below reports the rows whose output is not valid JSON, and must
+-- thus report zero
+-------------------------------------------------------------------------------
 WITH ais(mmsi, temp) AS (
   SELECT mmsi,
     tcbufferSeq(array_agg(tcbuffer(cbuffer(geom, 10 + sog), t) ORDER BY t))
@@ -2852,6 +2932,10 @@ SELECT count(*) FROM ais, generate_series(0, 15) AS d
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
 SELECT spans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]');
                                                               spans                                                              
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -2870,6 +2954,7 @@ SELECT splitEachNSpans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(P
  {"[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]"}
 (1 row)
 
+-- A NULL operand of merge returns the other one
 SELECT merge(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', NULL::tcbuffer) = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
  ?column? 
 ----------
@@ -2882,6 +2967,8 @@ SELECT merge(NULL::tcbuffer, tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01') = t
  t
 (1 row)
 
+-- The extent aggregate answers the bounding box of all the values, the one
+-- extent answers over their boxes
 SELECT extent(temp) FROM (VALUES
   (tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'),
   (tcbuffer '[Cbuffer(Point(2 2), 0.2)@2001-01-02, Cbuffer(Point(3 3), 0.4)@2001-01-03]'),
@@ -2899,6 +2986,9 @@ SELECT extent(temp) = extent(temp::stbox) FROM (VALUES
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT asEWKT(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01'::tgeogpoint);
                       asewkt                       
 ---------------------------------------------------

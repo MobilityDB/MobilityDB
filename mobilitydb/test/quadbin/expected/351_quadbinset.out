@@ -1,15 +1,21 @@
+-- quadbinset type: parser/output, WKB helpers, constructors, accessors,
+-- comparison operators, btree/hash opclasses, unnest, setUnion aggregate.
+-------------------------------------------------------------------------------
+-- Input/output
+-------------------------------------------------------------------------------
 SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}';
                 quadbinset                
 ------------------------------------------
  {"480fffffffffffff", "48427fffffffffff"}
 (1 row)
 
-SELECT quadbinset '{48427fffffffffff, 480fffffffffffff}';
+SELECT quadbinset '{48427fffffffffff, 480fffffffffffff}';  -- normalized + sorted
                 quadbinset                
 ------------------------------------------
  {"480fffffffffffff", "48427fffffffffff"}
 (1 row)
 
+-- Singleton
 SELECT quadbinset '{480fffffffffffff}';
       quadbinset      
 ----------------------
@@ -25,6 +31,9 @@ SELECT quadbinset '{480fffffffffffff';
 ERROR:  Could not parse quadbinset value: Missing closing brace
 LINE 1: SELECT quadbinset '{480fffffffffffff';
                           ^
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT set(ARRAY[quadbin '480fffffffffffff', quadbin '48427fffffffffff']);
                    set                    
 ------------------------------------------
@@ -43,6 +52,9 @@ SELECT (quadbin '480fffffffffffff')::quadbinset;
  {"480fffffffffffff"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT numValues(quadbinset '{480fffffffffffff, 48427fffffffffff, 48a6227affffffff}');
  numvalues 
 -----------
@@ -85,6 +97,9 @@ SELECT memSize(quadbinset '{480fffffffffffff, 48427fffffffffff}') > 0;
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- WKB / HexWKB round-trip
+-------------------------------------------------------------------------------
 SELECT quadbinsetFromBinary(asBinary(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
   = quadbinset '{480fffffffffffff, 48427fffffffffff}';
  ?column? 
@@ -105,6 +120,7 @@ SELECT asText(quadbinset '{480fffffffffffff, 48427fffffffffff}');
  {"480fffffffffffff", "48427fffffffffff"}
 (1 row)
 
+-- EWKT, EWKB and HexEWKB state the SRID 4326 of a cell, and every form reads back
 SELECT asEWKT(quadbinset '{480fffffffffffff, 48427fffffffffff}');
                        asewkt                       
 ----------------------------------------------------
@@ -145,11 +161,15 @@ SELECT quadbinsetFromHexEWKB(asHexEWKB(quadbinset '{480fffffffffffff, 48427fffff
  t
 (1 row)
 
+-- A cell states SRID 4326, so another SRID is refused in every input form
 SELECT quadbinsetFromEWKT('SRID=3857;{480fffffffffffff}');
 ERROR:  The SRID 3857 cannot be stated for the quadbin
 SELECT quadbinsetFromHexEWKB(replace(asHexEWKB(quadbinset '{480fffffffffffff}', 'XDR'),
   '000010E6', '00000F11'));
 ERROR:  The SRID of the WKB (3857) does not match the SRID of the quadbinset (4326)
+-------------------------------------------------------------------------------
+-- Comparison operators + opclasses
+-------------------------------------------------------------------------------
 SELECT quadbinset '{480fffffffffffff}' = quadbinset '{480fffffffffffff}';
  ?column? 
 ----------
@@ -170,14 +190,11 @@ SELECT quadbinset '{480fffffffffffff}' < quadbinset '{48427fffffffffff}';
 
 DROP TABLE IF EXISTS tbl_quadbinset_test;
 NOTICE:  table "tbl_quadbinset_test" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_quadbinset_test(k int, s quadbinset);
-CREATE TABLE
 INSERT INTO tbl_quadbinset_test VALUES
   (1, quadbinset '{480fffffffffffff}'),
   (2, quadbinset '{48427fffffffffff}'),
   (3, quadbinset '{480fffffffffffff}');
-INSERT 0 3
 SELECT COUNT(DISTINCT s) FROM tbl_quadbinset_test;
  count 
 -------
@@ -185,7 +202,9 @@ SELECT COUNT(DISTINCT s) FROM tbl_quadbinset_test;
 (1 row)
 
 DROP TABLE tbl_quadbinset_test;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- unnest
+-------------------------------------------------------------------------------
 SELECT unnest(quadbinset '{480fffffffffffff, 48427fffffffffff}') ORDER BY 1;
       unnest      
 ------------------
@@ -193,6 +212,9 @@ SELECT unnest(quadbinset '{480fffffffffffff, 48427fffffffffff}') ORDER BY 1;
  48427fffffffffff
 (2 rows)
 
+-------------------------------------------------------------------------------
+-- setUnion aggregate (scalar -> set, set -> set)
+-------------------------------------------------------------------------------
 SELECT setUnion(c) FROM (VALUES
   (quadbin '480fffffffffffff'),
   (quadbin '48427fffffffffff'),
@@ -210,6 +232,10 @@ SELECT setUnion(s) FROM (VALUES
  {"480fffffffffffff", "48427fffffffffff", "48a6227affffffff"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Set operations: union (+), difference (-), intersection (*)
+-------------------------------------------------------------------------------
 SELECT setUnion(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
                            setunion                           
 --------------------------------------------------------------
@@ -270,6 +296,9 @@ SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' * quadbinset '{48427fff
  {"48427fffffffffff"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Set topological operators: contains (@>), contained (<@), overlaps (&&)
+-------------------------------------------------------------------------------
 SELECT setContains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '480fffffffffffff');
  setcontains 
 -------------

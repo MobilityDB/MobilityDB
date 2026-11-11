@@ -1,12 +1,12 @@
-COPY  tbl_tposechain TO STDOUT (FORMAT BINARY);
-COPY 400
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Send and receive
+-------------------------------------------------------------------------------
+\copy tbl_tposechain TO 'tbl_tposechain' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tposechain_tmp;
 NOTICE:  table "tbl_tposechain_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tposechain_tmp AS TABLE tbl_tposechain WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_tposechain_tmp FROM STDIN (FORMAT BINARY);
-COPY 400
+\copy tbl_tposechain_tmp FROM 'tbl_tposechain' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 
 -------
@@ -14,7 +14,9 @@ SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain_tmp t2 WHERE t1.k = t2.k 
 (1 row)
 
 DROP TABLE tbl_tposechain_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Representation round trips
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
  count 
 -------
@@ -34,6 +36,9 @@ SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM
  t
 (2 rows)
 
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT MIN(numPoses(temp)), MAX(numPoses(temp)) FROM tbl_tposechain;
  min | max 
 -----+-----
@@ -62,12 +67,16 @@ SELECT MIN(numInstants(temp)), MAX(numInstants(temp)) FROM tbl_tposechain;
    1 |  76
 (1 row)
 
+-- Every instant of a value holds the same number of links
 SELECT COUNT(*) FROM tbl_tposechain WHERE numPoses(startValue(temp)) <> numPoses(endValue(temp));
  count 
 -------
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversions
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tposechain WHERE stbox(temp) IS NOT NULL;
  count 
 -------
@@ -80,6 +89,9 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE tpose(temp) IS NOT NULL;
    399
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restrictions and transformations
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tposechain WHERE atTime(temp, timeSpan(temp)) <> temp;
  count 
 -------
@@ -98,9 +110,13 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE shiftTime(temp, interval '1 day') <> t
    399
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Spatial reference system: only the outer link names a frame
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tposechain WHERE SRID(setSRID(temp, 3812)) <> 3812;
  count 
 -------
      0
 (1 row)
 
+-------------------------------------------------------------------------------

@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- STbox
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))';
         stbox         
 ----------------------
@@ -46,6 +49,7 @@ SELECT stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-01, 2001-01-02
  SRID=4326;GEODSTBOX ZT(((1,2,3),(1,2,3)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+-- Inverted spatial coordinates
 SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-01, 2001-01-02])';
                                           stbox                                           
 ------------------------------------------------------------------------------------------
@@ -161,15 +165,12 @@ SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01-08])xxxx';
 ERROR:  Could not parse stbox value: Extraneous characters at the end
 LINE 1: SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01...
                      ^
-COPY  tbl_stbox3d TO STDOUT (FORMAT BINARY);
-COPY 100
+-- Send/receive functions
+\copy tbl_stbox3d TO 'tbl_stbox3d' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_stbox3d_tmp;
 NOTICE:  table "tbl_stbox3d_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_stbox3d_tmp AS TABLE tbl_stbox3d WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_stbox3d_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_stbox3d_tmp FROM 'tbl_stbox3d' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
  count 
 -------
@@ -177,7 +178,10 @@ SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1
 (1 row)
 
 DROP TABLE tbl_stbox3d_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Input/output from WKT, WKB and HexWKB
+-------------------------------------------------------------------------------
+-- Maximum decimal digits
 SELECT asText(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)),[2001-01-01,2001-01-02])', 6);
                                                       astext                                                      
 ------------------------------------------------------------------------------------------------------------------
@@ -190,6 +194,7 @@ SELECT asEWKT(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)
  STBOX XT(((1.123457,1.234568),(2.123457,2.123457)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+-- The SRID is written by asEWKT, never by asText
 SELECT asText(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
                                         astext                                        
 --------------------------------------------------------------------------------------
@@ -280,6 +285,9 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromEWKT(asEWKT(b)) <> b;
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT stboxT(timestamptz '2001-01-03');
                                 stboxt                                 
 -----------------------------------------------------------------------
@@ -346,6 +354,7 @@ SELECT geodstboxZT(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
  SRID=4326;GEODSTBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST])
 (1 row)
 
+-- Ordering the coordinates
 SELECT stboxXT(4,3,2,1,tstzspan '[2001-01-01,2001-01-04]');
                                        stboxxt                                        
 --------------------------------------------------------------------------------------
@@ -364,6 +373,9 @@ SELECT geodstboxZT(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
  SRID=4326;GEODSTBOX ZT(((3,2,1),(6,5,4)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversions
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])'::tstzspan;
                            tstzspan                           
 --------------------------------------------------------------
@@ -495,6 +507,7 @@ SELECT box3d 'BOX3D(1 1 1,5 5 5)'::stbox;
  STBOX Z((1,1,1),(5,5,5))
 (1 row)
 
+-- The box of an arc with Z or M holds the arc, and its Z range is that of its vertices
 SELECT round(geometry 'CircularString(5 0 2,3 4 9,0 5 2)'::stbox, 6);
           round           
 --------------------------
@@ -519,12 +532,16 @@ SELECT round(geometry 'CurvePolygon(CircularString(5 0 2,0 5 9,-5 0 2,0 -5 2,5 0
  STBOX Z((-5,-5,2),(5,5,9))
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT MAX(duration(b::tstzspan)) FROM tbl_stbox;
-   max    
-----------
- 00:10:00
+    max    
+-----------
+ @ 10 mins
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessor functions
+-------------------------------------------------------------------------------
 SELECT hasx(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
  hasx 
 ------
@@ -941,6 +958,7 @@ SELECT round(stbox 'STBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The stbox must have X dimension
 SELECT round(stbox 'GEODSTBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The stbox must have X dimension
+-------------------------------------------------------------------------------
 SELECT MIN(xmin(b)) FROM tbl_stbox;
    min    
 ----------
@@ -989,6 +1007,9 @@ SELECT MAX(tmax(b)) FROM tbl_stbox;
  Sat Dec 22 15:29:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation function
+-------------------------------------------------------------------------------
 SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 day');
                                       shifttime                                       
 --------------------------------------------------------------------------------------
@@ -1058,6 +1079,7 @@ SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-02])
  STBOX XT(((1,2),(1,2)),[Mon Jan 01 12:00:00 2001 PST, Mon Jan 01 12:00:00 2001 PST])
 (1 row)
 
+-- NULL
 SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(1.0,1.0)),[2001-01-01,2001-01-01])', -0.5);
  expandspace 
 -------------
@@ -1081,6 +1103,9 @@ SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-01])', 2.0);
 ERROR:  The stbox must have X dimension
 SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
 ERROR:  The stbox must have T dimension
+-------------------------------------------------------------------------------
+-- Topological operators
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
  ?column? 
 ----------
@@ -1117,6 +1142,7 @@ SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' ~= stbox 'STBOX Z((1.0,1.0,1
  f
 (1 row)
 
+-- The portable spelling of each operator above answers the same
 SELECT stboxOverlaps(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
  stboxoverlaps 
 ---------------
@@ -1159,6 +1185,9 @@ SELECT tstzspan '[2001-01-01, 2001-01-02]'::stbox -|- tstzspan '[2001-01-02, 200
  t
 (1 row)
 
+-- Adjacency reads every dimension the boxes share and asks one of them to
+-- touch: periods meeting at an excluded bound are adjacent as their spans are,
+-- while a box lying inside another only meets it
 SELECT stbox 'STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05))' -|- stbox 'STBOX XT(((1,1),(5,5)),[2001-01-05,2001-01-09])';
  ?column? 
 ----------
@@ -1210,6 +1239,7 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX T([2001-01-01, 2001
 ERROR:  The temporal values must have at least one common dimension
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX T([2001-01-01, 2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
  count 
 -------
@@ -1240,6 +1270,9 @@ SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b -|- t2.b;
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Position operators
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' << stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
  ?column? 
 ----------
@@ -1417,6 +1450,7 @@ SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' />> stbox 'GEODSTBOX Z((1.0,
 ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' /&> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b << t2.b;
  count 
 -------
@@ -1489,6 +1523,7 @@ SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #&> t2.b;
   5050
 (1 row)
 
+-- Errors
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <</ t2.b;
 ERROR:  The stbox must have Z dimension
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &</ t2.b;
@@ -1497,6 +1532,9 @@ SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b />> t2.b;
 ERROR:  The stbox must have Z dimension
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
 ERROR:  The stbox must have Z dimension
+-------------------------------------------------------------------------------
+-- Set operators
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' + stbox 'STBOX X((1.0,2.0),(3.0,4.0))';
        ?column?       
 ----------------------
@@ -1611,6 +1649,7 @@ SELECT stbox 'GEODSTBOX T([2001-01-03,2001-01-03])' + stbox 'GEODSTBOX ZT(((1.0,
 ERROR:  The arguments must be of the same dimensionality
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' + stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' * stbox 'STBOX X((1.0,2.0),(3.0,4.0))';
        ?column?       
 ----------------------
@@ -1842,6 +1881,7 @@ SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])' *
 /* Errors */
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' * stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
     max     
 ------------
@@ -1854,6 +1894,9 @@ SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_stbox t1, tbl_stbox t2;
  105.675734
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Extent aggregation
+-------------------------------------------------------------------------------
 WITH test(box) AS (
   SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(2,2))[2001-01-01,2001-01-02])' UNION ALL
   SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(3,3))[2001-01-01,2001-01-03])' )
@@ -1863,6 +1906,9 @@ SELECT extent(box) FROM test;
  STBOX XT(((1,1),(3,3)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Split function
+-------------------------------------------------------------------------------
 SELECT quadSplit(stbox 'STBOX X((0,0),(4,4))');
                                            quadsplit                                           
 -----------------------------------------------------------------------------------------------
@@ -1875,6 +1921,9 @@ SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
  {"STBOX Z((0,0,0),(2,2,2))","STBOX Z((2,0,0),(4,2,2))","STBOX Z((0,2,0),(2,4,2))","STBOX Z((2,2,0),(4,4,2))","STBOX Z((0,0,2),(2,2,4))","STBOX Z((2,0,2),(4,2,4))","STBOX Z((0,2,2),(2,4,4))","STBOX Z((2,2,2),(4,4,4))"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions
+-------------------------------------------------------------------------------
 SELECT cmp(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])', stbox 'STBOX ZT(((2,2,3),(2,2,3)),[2001-01-04,2001-01-04])');
  cmp 
 -----
@@ -2001,6 +2050,7 @@ SELECT cmp(stbox 'STBOX Z((1,2,3),(1,2,3))', stbox 'STBOX ZT(((1,2,3),(1,2,3)),[
   -1
 (1 row)
 
+-- Boxes of different dimensions are ordered by their dimensions first
 SELECT cmp(stbox 'STBOX XT(((0,0),(0,0)),[2001-01-02,2001-01-02])', stbox 'STBOX X((1,0),(1,0))');
  cmp 
 -----
@@ -2039,6 +2089,7 @@ ORDER BY b;
  SRID=4326;GEODSTBOX X((0,0),(0,0))
 (7 rows)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b = t2.b;
  count 
 -------
@@ -2075,6 +2126,7 @@ SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >= t2.b;
   5050
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT hash(stbox 'SRID=5676;STBOX X((1,1),(2,2))');
    hash    
 -----------
@@ -2123,16 +2175,21 @@ SELECT hashExtended(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])',
  4942726506971401033
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Regression: stbox_level_cmp must not call the time comparators when the
+-- centroid has no time dimension. Before the hast guard, an SP-GiST
+-- traversal at level mod 4 (for hasz=false) or mod 6/7 (for hasz=true)
+-- would call stbox_tmin_cmp / stbox_tmax_cmp on uninitialized period
+-- fields. The 200-row table makes the SP-GiST tree deep enough (>= 4
+-- levels) to exercise the bug-prone dispatch branches.
+-------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_stbox_notime;
 NOTICE:  table "tbl_stbox_notime" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_stbox_notime AS
 SELECT k, stbox(ST_MakeEnvelope(k::float, k::float,
                                 (k+1)::float, (k+1)::float)) AS b
 FROM generate_series(1, 200) k;
-SELECT 200
 CREATE INDEX tbl_stbox_notime_quadtree_idx ON tbl_stbox_notime USING SPGIST(b);
-CREATE INDEX
 SELECT COUNT(*) FROM tbl_stbox_notime
   WHERE b && stbox 'STBOX X((50,50),(60,60))';
  count 
@@ -2148,10 +2205,8 @@ SELECT COUNT(*) FROM tbl_stbox_notime
 (1 row)
 
 DROP INDEX tbl_stbox_notime_quadtree_idx;
-DROP INDEX
 CREATE INDEX tbl_stbox_notime_kdtree_idx ON tbl_stbox_notime
   USING SPGIST(b stbox_kdtree_ops);
-CREATE INDEX
 SELECT COUNT(*) FROM tbl_stbox_notime
   WHERE b && stbox 'STBOX X((50,50),(60,60))';
  count 
@@ -2167,14 +2222,13 @@ SELECT COUNT(*) FROM tbl_stbox_notime
 (1 row)
 
 DROP INDEX tbl_stbox_notime_kdtree_idx;
-DROP INDEX
 DROP TABLE tbl_stbox_notime;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Nearest approach ordering answered by the space-partitioning indexes
+-------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_stbox3d_rtree_idx;
 NOTICE:  index "tbl_stbox3d_rtree_idx" does not exist, skipping
-DROP INDEX
 CREATE INDEX tbl_stbox3d_rtree_idx ON tbl_stbox3d USING GIST(b);
-CREATE INDEX
 WITH test AS (
   SELECT b |=| stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-06-01, 2001-07-01])' AS distance
   FROM tbl_stbox3d ORDER BY 1 LIMIT 3 )
@@ -2187,12 +2241,9 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 DROP INDEX tbl_stbox3d_rtree_idx;
-DROP INDEX
 DROP INDEX IF EXISTS tbl_stbox3d_quadtree_idx;
 NOTICE:  index "tbl_stbox3d_quadtree_idx" does not exist, skipping
-DROP INDEX
 CREATE INDEX tbl_stbox3d_quadtree_idx ON tbl_stbox3d USING SPGIST(b);
-CREATE INDEX
 WITH test AS (
   SELECT b |=| stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-06-01, 2001-07-01])' AS distance
   FROM tbl_stbox3d ORDER BY 1 LIMIT 3 )
@@ -2205,12 +2256,9 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 DROP INDEX tbl_stbox3d_quadtree_idx;
-DROP INDEX
 DROP INDEX IF EXISTS tbl_stbox3d_kdtree_idx;
 NOTICE:  index "tbl_stbox3d_kdtree_idx" does not exist, skipping
-DROP INDEX
 CREATE INDEX tbl_stbox3d_kdtree_idx ON tbl_stbox3d USING SPGIST(b stbox_kdtree_ops);
-CREATE INDEX
 WITH test AS (
   SELECT b |=| stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-06-01, 2001-07-01])' AS distance
   FROM tbl_stbox3d ORDER BY 1 LIMIT 3 )
@@ -2223,7 +2271,15 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 DROP INDEX tbl_stbox3d_kdtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The combine function answers what the aggregate answers
+--
+-- A COMBINEFUNC is reached only by a parallel plan, and which rows a worker
+-- receives is not controllable, so a parallel query cannot state a
+-- deterministic expected output. The function is therefore called directly,
+-- which is what makes these the first cases to reach it at all.
+-------------------------------------------------------------------------------
 SELECT extentCombine(stbox 'SRID=4326;STBOX X((0,0),(1,1))',
   stbox 'SRID=4326;STBOX X((5,5),(6,6))');
          extentcombine          
@@ -2238,12 +2294,15 @@ SELECT extentCombine(stbox 'STBOX T([2001-01-01,2001-01-02])',
  STBOX T([Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
 (1 row)
 
+-- Two reference systems have no common extent, so the combine refuses
 SELECT extentCombine(stbox 'SRID=4326;STBOX X((0,0),(1,1))',
   stbox 'SRID=3857;STBOX X((5,5),(6,6))');
 ERROR:  Operation on mixed SRID
+-- And boxes holding different dimensions are the second refusal
 SELECT extentCombine(stbox 'STBOX X((0,0),(1,1))',
   stbox 'STBOX XT(((5,5),(6,6)),[2001-01-01,2001-01-02])');
 ERROR:  The arguments must be of the same dimensionality
+-- A null state on either side leaves the other untouched
 SELECT extentCombine(NULL::stbox, stbox 'STBOX X((5,5),(6,6))');
     extentcombine     
 ----------------------
@@ -2262,6 +2321,8 @@ SELECT extentCombine(NULL::stbox, NULL::stbox);
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- An extent beyond the largest double whose area or volume is within it
 SELECT round((area(stbox 'STBOX X((-1e308,0),(1e308,1e-10))') / 1e298)::numeric, 6);
   round   
 ----------
@@ -2294,12 +2355,17 @@ SELECT perimeter(stbox 'STBOX X((1e-150,1e-150),(1.0000000000000002e-150,1.00000
  t
 (1 row)
 
+-- An area, a volume or a perimeter beyond the largest double raises an error
 SELECT area(stbox 'STBOX X((-1e308,-1e308),(1e308,1e308))');
 ERROR:  value out of range: overflow
 SELECT volume(stbox 'STBOX Z((-1e308,-1e308,0),(1e308,1e308,1))');
 ERROR:  value out of range: overflow
 SELECT perimeter(stbox 'STBOX X((-1e308,0),(1e308,1))');
 ERROR:  value out of range: overflow
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT ST_AsEWKT(stbox 'STBOX X((1,2),(1,2))'::geometry);
  st_asewkt  
 ------------
@@ -2332,6 +2398,7 @@ SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geography);
  SRID=4326;POINT(1 2)
 (1 row)
 
+-- The polygon of a geodetic box has the corners of the box
 SELECT ST_Covers(stbox 'GEODSTBOX X((4.3088501085795237,50.84583267322806),(4.4214185584898926,50.932522756328005))'::geometry,
   ST_Point(4.4214185584898926, 50.84583267322806, 4326));
  st_covers 

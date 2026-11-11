@@ -1,3 +1,9 @@
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Restriction to a box, and ever and always overlaps with a box: a chain lies
+-- in a box at a time when any of its joints lies in it
+-------------------------------------------------------------------------------
+-- The elbow in the box, the hand out
 SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((-1,-1),(1,1))'));
                                      astext                                     
 --------------------------------------------------------------------------------
@@ -10,12 +16,14 @@ SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-
  t
 (1 row)
 
+-- The hand in the box, the elbow out
 SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01' ?&& stbox 'STBOX X((9,-1),(11,1))';
  ?column? 
 ----------
  t
 (1 row)
 
+-- No joint in the box
 SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((4,-1),(6,1))'));
  astext 
 --------
@@ -34,6 +42,7 @@ SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-
  f
 (1 row)
 
+-- The elbow, the first link, crosses the box between two instants
 SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01, PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]', stbox 'STBOX X((-1,-1),(1,1))'));
                                                                                astext                                                                                
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -52,6 +61,7 @@ SELECT tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-0
  f
 (1 row)
 
+-- The hand, composed of two links, held in the box until the next instant
 SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01, PoseChain(Pose(Point(0 5), 0), Pose(Point(10 0), 0))@2001-01-02]', stbox 'STBOX X((9,-1),(11,1))'));
                                                                                astext                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -64,6 +74,7 @@ SELECT tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01
  f
 (1 row)
 
+-- The box first, a box with a period, and a box with only a period
 SELECT stbox 'STBOX X((-1,-1),(1,1))' ?&& tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
  ?column? 
 ----------
@@ -99,3 +110,4 @@ SELECT atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01', stbox 'ST
 ERROR:  The stbox must have X dimension
 SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01' ?&& stbox 'SRID=4326;STBOX X((0,0),(1,1))';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------

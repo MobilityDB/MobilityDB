@@ -1,3 +1,12 @@
+-------------------------------------------------------------------------------
+-- File span_spgist.c
+-- Tests of the SP-GiST indexes of span types on spans sharing their bounds:
+-- the lower bounds take 23 values and the upper bounds 5 widths above them,
+-- each bound inclusive or exclusive, so most spans tie on a bound value with
+-- another span that differs from it only by the inclusivity of that bound.
+-- For each table size and query span, the count of each operator through the
+-- quad tree and the k-d tree must equal the count without an index.
+-------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_floatspan_ties, tbl_floatspan_ties_q,
   tbl_tstzspan_ties, tbl_tstzspan_ties_q, ties_noidx, ties_idx, ties_plan;
 NOTICE:  table "tbl_floatspan_ties" does not exist, skipping
@@ -7,22 +16,18 @@ NOTICE:  table "tbl_tstzspan_ties_q" does not exist, skipping
 NOTICE:  table "ties_noidx" does not exist, skipping
 NOTICE:  table "ties_idx" does not exist, skipping
 NOTICE:  table "ties_plan" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_floatspan_ties(k int, f floatspan);
-CREATE TABLE
 CREATE TABLE tbl_tstzspan_ties(k int, f tstzspan);
-CREATE TABLE
 CREATE TABLE tbl_floatspan_ties_q AS
 SELECT k, (CASE WHEN k % 3 = 0 THEN '[' ELSE '(' END || (k % 23) || ', ' ||
   (k % 23 + 1 + (k * 3) % 5) || CASE WHEN k % 5 < 2 THEN ']' ELSE ')' END)::floatspan AS f
 FROM generate_series(1, 120) k;
-SELECT 120
 CREATE TABLE tbl_tstzspan_ties_q AS
 SELECT k, span(timestamptz 'epoch' + (11323 + k % 23) * interval '1 day',
   timestamptz 'epoch' + (11323 + k % 23 + 1 + (k * 3) % 5) * interval '1 day',
   k % 3 = 0, k % 5 < 2) AS f
 FROM generate_series(1, 120) k;
-SELECT 120
+-- The count of the rows answering each query span through an operator
 CREATE OR REPLACE FUNCTION ties_counts(tbl text, op text)
 RETURNS TABLE(k int, c bigint) AS $$
 BEGIN
@@ -30,7 +35,7 @@ BEGIN
     'SELECT q.k, (SELECT COUNT(*) FROM %I s WHERE s.f %s q.f) FROM %I q',
     tbl, op, tbl || '_q');
 END $$ LANGUAGE plpgsql;
-CREATE FUNCTION
+-- Whether the plan of the first query span reads the index
 CREATE OR REPLACE FUNCTION ties_uses_index(tbl text, op text)
 RETURNS bool AS $$
 DECLARE
@@ -45,22 +50,17 @@ BEGIN
   END LOOP;
   RETURN found;
 END $$ LANGUAGE plpgsql;
-CREATE FUNCTION
 CREATE TABLE ties_noidx(n int, tbl text, op text, k int, c bigint);
-CREATE TABLE
 CREATE TABLE ties_idx(n int, idx text, tbl text, op text, k int, c bigint);
-CREATE TABLE
 CREATE TABLE ties_plan(n int, idx text, tbl text, op text, uses_index bool);
-CREATE TABLE
 CREATE TEMP TABLE ties_ops(tbl text, op text);
-CREATE TABLE
 INSERT INTO ties_ops
 SELECT 'tbl_floatspan_ties', op
 FROM unnest(ARRAY['&&', '@>', '<@', '-|-', '<<', '&<', '>>', '&>', '=']) op
 UNION ALL
 SELECT 'tbl_tstzspan_ties', op
 FROM unnest(ARRAY['&&', '@>', '<@', '-|-', '<<#', '&<#', '#>>', '#&>', '=']) op;
-INSERT 0 18
+-- The counts for one table size, without an index and through each index
 CREATE OR REPLACE FUNCTION ties_run(n int)
 RETURNS void AS $$
 BEGIN
@@ -103,7 +103,6 @@ BEGIN
   DROP INDEX tbl_floatspan_ties_kdtree_idx;
   DROP INDEX tbl_tstzspan_ties_kdtree_idx;
 END $$ LANGUAGE plpgsql;
-CREATE FUNCTION
 SELECT ties_run(n) FROM unnest(ARRAY[300, 1200, 2400, 5000]) n;
  ties_run 
 ----------
@@ -113,6 +112,7 @@ SELECT ties_run(n) FROM unnest(ARRAY[300, 1200, 2400, 5000]) n;
  
 (4 rows)
 
+-- Every plan reads its index
 SELECT COUNT(*) AS plans, COUNT(*) FILTER (WHERE uses_index) AS plans_with_index
 FROM ties_plan;
  plans | plans_with_index 
@@ -120,6 +120,9 @@ FROM ties_plan;
    144 |              144
 (1 row)
 
+-- Per index, table and operator, over every table size: the query spans, the
+-- rows they answer without an index, and the query spans whose count through
+-- the index differs
 SELECT i.idx, i.tbl, i.op, COUNT(*) AS queries, SUM(n.c) AS rows_noidx,
   COUNT(*) FILTER (WHERE i.c <> n.c) AS queries_differ,
   SUM(n.c - i.c) AS rows_missing
@@ -167,11 +170,7 @@ ORDER BY i.idx, i.tbl, i.op;
 (36 rows)
 
 DROP FUNCTION ties_run(int);
-DROP FUNCTION
 DROP FUNCTION ties_uses_index(text, text);
-DROP FUNCTION
 DROP FUNCTION ties_counts(text, text);
-DROP FUNCTION
 DROP TABLE tbl_floatspan_ties, tbl_floatspan_ties_q, tbl_tstzspan_ties,
   tbl_tstzspan_ties_q, ties_noidx, ties_idx, ties_plan;
-DROP TABLE

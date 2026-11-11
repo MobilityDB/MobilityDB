@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT srid(tnpoint 'Npoint(1, 0.5)@2001-01-01');
  srid 
 ------
@@ -40,6 +41,8 @@ SELECT ST_AsText(round(trajectory(tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
  POINT(48.718663 77.764071)
 (1 row)
 
+-- PostGIS 3.3 changed the output of MULTIPOINT
+-- SELECT ST_AsText(round(trajectory(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6))) AS t(dp);
                           array_agg                          
 -------------------------------------------------------------
@@ -58,18 +61,23 @@ SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1
  GEOMETRYCOLLECTION(POINT(27.252917 77.656661),LINESTRING(69.790369 81.452098,69.080715 81.20815,48.718663 77.764071))
 (1 row)
 
+-- Two sequences sharing one stretch of a route
 SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02], [Npoint(1, 0.3)@2001-01-03, Npoint(1, 0.6)@2001-01-04]}'), 6));
                                st_astext                                
 ------------------------------------------------------------------------
  LINESTRING(69.790369 81.452098,69.080715 81.20815,41.684678 76.574328)
 (1 row)
 
+-- PostGIS 3.3 changed the output of MULTIPOINT
+-- SELECT ST_AsText(round(trajectory(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03]'), 6));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03]'), 6))) AS t(dp);
                           array_agg                          
 -------------------------------------------------------------
  {"POINT(48.718663 77.764071)","POINT(69.790369 81.452098)"}
 (1 row)
 
+-- PostGIS 3.3 changed the output of MULTIPOINT
+-- SELECT ST_AsText(round(trajectory(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6))) AS t(dp);
                                         array_agg                                         
 ------------------------------------------------------------------------------------------
@@ -382,6 +390,10 @@ SELECT round(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint
  Interp=Step;{[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.2)@Tue Jan 02 00:00:00 2001 PST), (NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- atStbox/minusStbox for a linear tnpoint whose route (gid 1) bends between
+-- the two instants, so the box boundary is crossed at a point that is NOT on
+-- the straight chord between the instants' route-projected positions
 SELECT round(atStbox(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.5)@2001-01-02]', 'SRID=5676;STBOX X((55,75),(75,85))'), 6);
                                                       round                                                       
 ------------------------------------------------------------------------------------------------------------------
@@ -394,6 +406,7 @@ SELECT round(minusStbox(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.5)@2001
  {[NPoint(1,0.1)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.122779)@Mon Jan 01 01:22:00.324138 2001 PST], (NPoint(1,0.4107)@Mon Jan 01 18:38:31.235603 2001 PST, NPoint(1,0.5)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-- Partition property: atStbox and minusStbox partition the original value
 WITH temp(temp, box) AS (
   SELECT tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.5)@2001-01-02]',
     stbox 'SRID=5676;STBOX X((55,75),(75,85))' )
@@ -404,6 +417,9 @@ FROM temp;
  t
 (1 row)
 
+-- Two network points on different routes denote one location where the
+-- routes cross: the comparison operators tell the two network points apart,
+-- and their geometries answer whether they are one location
 WITH inter(geom) AS (
   SELECT ST_Intersection(t1.the_geom, t2.the_geom)
   FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2 ),
@@ -525,6 +541,7 @@ SELECT ST_AsText(round(twCentroid(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-
  POINT(62.771508 80.202955)
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))');
            nearestapproachinstant           
 --------------------------------------------
@@ -885,6 +902,7 @@ SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.
  NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
   round   
 ----------
@@ -1245,6 +1263,7 @@ SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoin
      0
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
                   st_astext                   
 ----------------------------------------------
@@ -1605,3 +1624,4 @@ SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint
  LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
+-------------------------------------------------------------------------------

@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- Input/output functions
+-------------------------------------------------------------------------------
+-- Temporal instant
 SELECT asText(tgeompoint 'Point(1 1)@2012-01-01 08:00:00');
                  astext                  
 -----------------------------------------
@@ -53,6 +57,8 @@ SELECT tgeogpoint 'Point M(1 1 1)@2001-01-01 00:00:00+01';
 ERROR:  The geometry cannot have M dimension
 LINE 1: SELECT tgeogpoint 'Point M(1 1 1)@2001-01-01 00:00:00+01';
                           ^
+-------------------------------------------------------------------------------
+-- Temporal instant set
 SELECT asText(tgeompoint ' { Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 } ');
                                                            astext                                                            
 -----------------------------------------------------------------------------------------------------------------------------
@@ -110,6 +116,8 @@ SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:0
 ERROR:  Could not parse tgeogpoint value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
+-------------------------------------------------------------------------------
+-- Temporal sequence
 SELECT asText(tgeompoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ] ');
                                                            astext                                                            
 -----------------------------------------------------------------------------------------------------------------------------
@@ -173,6 +181,8 @@ SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:0
 ERROR:  Could not parse tgeogpoint value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
+-------------------------------------------------------------------------------
+-- Temporal sequence set
 SELECT asText(tgeompoint '  { [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ],
  [ Point(1 1)@2001-01-01 09:00:00 , Point(2 2)@2001-01-01 09:05:00 , Point(1 1)@2001-01-01 09:06:00 ] } ');
                                                                                                                            astext                                                                                                                           
@@ -236,6 +246,9 @@ SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:0
 ERROR:  Could not parse tgeogpoint value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
+-------------------------------------------------------------------------------
+-- SRID
+-------------------------------------------------------------------------------
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]');
                                             asewkt                                            
 ----------------------------------------------------------------------------------------------
@@ -329,6 +342,9 @@ SELECT tgeogpoint 'SRID=7844;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4269;Point(
 ERROR:  The SRID of the geography (4269) does not match the SRID of the tgeogpoint (7844)
 LINE 1: SELECT tgeogpoint 'SRID=7844;{[Point(1 1)@2001-01-01 08:00:0...
                           ^
+-------------------------------------------------------------------------------
+-- typmod
+-------------------------------------------------------------------------------
 SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
  format_type 
 -------------
@@ -768,6 +784,7 @@ ERROR:  SRID of the tgeompoint value (0) does not match column SRID (4326)
 SELECT asEWKT(tgeompoint(SequenceSet, PointZ, 4326) 'SRID=5434;{[Point(0 1 0)@2001-01-01, Point(1 1 1)@2001-01-02],
   [Point(0 1 0)@2001-01-03, Point(1 1 1)@2001-01-04]}');
 ERROR:  SRID of the tgeompoint value (5434) does not match column SRID (4326)
+-------------------------------------------------------------------------------/
 SELECT asEWKT(tgeogpoint(Instant, Point) 'Point(0 1)@2001-01-01');
                       asewkt                       
 ---------------------------------------------------
@@ -937,6 +954,9 @@ ERROR:  Temporal subtype of the tgeogpoint value (SequenceSet) does not match co
 SELECT asEWKT(tgeogpoint(SequenceSet, Point) '{[Point(0 1 0)@2001-01-01, Point(1 1 1)@2001-01-02],
   [Point(0 1 0)@2001-01-03, Point(1 1 1)@2001-01-04]}');
 ERROR:  The tgeogpoint value has Z dimension but column does not
+-------------------------------------------------------------------------------
+-- Constructor functions
+-------------------------------------------------------------------------------
 SELECT asEWKT(tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'));
                  asewkt                  
 -----------------------------------------
@@ -949,6 +969,7 @@ SELECT asEWKT(tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'));
  SRID=4326;POINT(1 1)@Sun Jan 01 08:00:00 2012 PST
 (1 row)
 
+-- NULL
 SELECT asEWKT(tgeompoint(NULL, timestamptz '2012-01-01 08:00:00'));
  asewkt 
 --------
@@ -978,6 +999,7 @@ SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzset '{2012-01-01, 2012-01-02, 2012-0
  SRID=4326;{POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Mon Jan 02 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST}
 (1 row)
 
+-- NULL
 SELECT asEWKT(tgeompoint(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
  asewkt 
 --------
@@ -1014,6 +1036,7 @@ SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'st
  SRID=4326,Interp=Step;[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]
 (1 row)
 
+-- NULL
 SELECT asEWKT(tgeompoint(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
  asewkt 
 --------
@@ -1050,6 +1073,7 @@ SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'
  SRID=4326,Interp=Step;{[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]}
 (1 row)
 
+-- NULL
 SELECT asEWKT(tgeompoint(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
  asewkt 
 --------
@@ -1062,11 +1086,10 @@ SELECT asEWKT(tgeompoint(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
  
 (1 row)
 
+-------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_tgeompointinst_test;
 NOTICE:  table "tbl_tgeompointinst_test" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tgeompointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeompoint_seq;
-SELECT 521
 WITH temp AS (
   SELECT numSequences(tgeompointSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tgeompointinst_test GROUP BY k )
@@ -1077,12 +1100,9 @@ SELECT MAX(numSequences) FROM temp;
 (1 row)
 
 DROP TABLE tbl_tgeompointinst_test;
-DROP TABLE
 DROP TABLE IF EXISTS tbl_tgeogpointinst_test;
 NOTICE:  table "tbl_tgeogpointinst_test" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tgeogpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeogpoint_seq;
-SELECT 532
 WITH temp AS (
   SELECT numSequences(tgeogpointSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tgeogpointinst_test GROUP BY k )
@@ -1093,7 +1113,7 @@ SELECT MAX(numSequences) FROM temp;
 (1 row)
 
 DROP TABLE tbl_tgeogpointinst_test;
-DROP TABLE
+-------------------------------------------------------------------------------
 SELECT asEWKT(tgeompointSeq(ARRAY[
 tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
 tgeompoint(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
@@ -1119,6 +1139,7 @@ SELECT tgeompointSeq(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4
 ERROR:  Operation on mixed SRID
 SELECT tgeompointSeq(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02'], 'discrete');
 ERROR:  The arguments must be of the same dimensionality
+-------------------------------------------------------------------------------
 SELECT asEWKT(tgeompointSeq(ARRAY[
 tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
 tgeompoint(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
@@ -1144,6 +1165,7 @@ SELECT tgeompointSeq(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4
 ERROR:  Operation on mixed SRID
 SELECT tgeompointSeq(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
 ERROR:  The arguments must be of the same dimensionality
+-------------------------------------------------------------------------------
 SELECT asEWKT(tgeompointSeqSet(ARRAY[
 tgeompointSeq(ARRAY[
 tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
@@ -1181,6 +1203,9 @@ SELECT tgeompointSeqSet(ARRAY[tgeompoint '[SRID=5676;Point(1 1)@2001-01-01]', '[
 ERROR:  Operation on mixed SRID
 SELECT tgeompointSeqSet(ARRAY[tgeompoint '[Point(1 1)@2001-01-01]', '[Point(2 2 2)@2001-01-02]']);
 ERROR:  The arguments must be of the same dimensionality
+-------------------------------------------------------------------------------
+-- Cast functions
+-------------------------------------------------------------------------------
 SELECT asEWKT(tgeogpoint(tgeompoint 'Point(1 1)@2001-01-01'));
                       asewkt                       
 ---------------------------------------------------
@@ -1205,6 +1230,9 @@ SELECT asEWKT(tgeogpoint(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01
  SRID=4326;{[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST], [POINT(2 2)@Wed Jan 03 00:00:00 2001 PST, POINT(2 2)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT asEWKT(tgeompointInst(tgeompoint 'Point(1 1)@2001-01-01'));
                  asewkt                  
 -----------------------------------------
@@ -1339,6 +1367,7 @@ SELECT asEWKT(setInterp(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeogpointSeq(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence
+-------------------------------------------------------------------------------
 SELECT asText(setInterp(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01]', 'linear'));
                    astext                    
 ---------------------------------------------
@@ -1357,6 +1386,9 @@ SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST), [POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(2 2)@Wed Jan 03 00:00:00 2001 PST), [POINT(1 1)@Wed Jan 03 00:00:00 2001 PST, POINT(1 1)@Thu Jan 04 00:00:00 2001 PST), [POINT(2 2)@Thu Jan 04 00:00:00 2001 PST], [POINT(3 3)@Fri Jan 05 00:00:00 2001 PST, POINT(3 3)@Sat Jan 06 00:00:00 2001 PST), [POINT(4 4)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 SELECT asText(appendInstant(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint 'Point(1 1)@2001-01-02'));
                                        astext                                       
 ------------------------------------------------------------------------------------
@@ -1405,6 +1437,7 @@ SELECT asText(appendInstant(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2
  {[POINT(1.5 1.5)@Mon Jan 01 00:00:00 2001 PST, POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST, POINT(1.5 1.5)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-- The box of the appended sequence holds the geodesic of its last edge
 SELECT stbox(appendInstant(tgeogpoint '[Point(0 50)@2001-01-01]', tgeogpoint 'Point(100 50)@2001-01-02')) = stbox(tgeogpoint '[Point(0 50)@2001-01-01, Point(100 50)@2001-01-02]');
  ?column? 
 ----------
@@ -1496,6 +1529,7 @@ SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-
 ERROR:  The arguments must be of the same dimensionality
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2001-01-03'));
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT asText(merge(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint 'Point(1 1)@2001-01-02'));
                                        astext                                       
 ------------------------------------------------------------------------------------
@@ -1604,6 +1638,10 @@ SELECT asText(merge(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint 'Point(1 1)@2
  POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Merging step sequences that meet at a shared timestamp keeps the
+-- inclusive side's value at the seam: splitting a step sequence with
+-- atTime/minusTime at an interior timestamp and merging the pieces back
+-- together must return the original value
 SELECT tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03]' =
   merge(atTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03]', tstzspan '[2001-01-01,2001-01-02]'),
     minusTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03]', tstzspan '[2001-01-01,2001-01-02]'));
@@ -1648,6 +1686,7 @@ SELECT merge(tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-0
 ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(1 1)@2001-01-04, Point(1 1)@2001-01-05]}', tgeompoint '{[Point(1 1 1)@2001-01-05, Point(1 1 1)@2001-01-06],[Point(1 1 1)@2001-01-08, Point(1 1 1)@2001-01-09]}');
 ERROR:  The arguments must be of the same dimensionality
+-------------------------------------------------------------------------------
 SELECT asText(merge(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(1 1)@2001-01-02']));
                                        astext                                       
 ------------------------------------------------------------------------------------
@@ -1738,6 +1777,9 @@ SELECT merge(ARRAY [tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01, Point(2 2)@20
 ERROR:  Operation on mixed SRID
 SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(1 1)@2001-01-04, Point(1 1)@2001-01-05]}', '{[Point(1 1 1)@2001-01-05, Point(1 1 1)@2001-01-06],[Point(1 1 1)@2001-01-08, Point(1 1 1)@2001-01-09]}']);
 ERROR:  The arguments must be of the same dimensionality
+-------------------------------------------------------------------------------
+-- Accessor functions
+-------------------------------------------------------------------------------
 SELECT tempSubtype(tgeompoint 'Point(1 1)@2001-01-01');
  tempsubtype 
 -------------
@@ -1852,6 +1894,10 @@ SELECT round(stbox(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 13);
  SRID=4326;GEODSTBOX XT(((1.5,1.5),(1.5,1.5)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
+-- The box of a geodetic temporal point holds the great circles it travels: a
+-- trip from Point(10 60) to Point(50 60) reaches latitude 61.518762, which
+-- neither of its positions states, and one whose positions lie more than half
+-- the globe apart in longitude crosses the antimeridian and spans them all
 SELECT stbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
                                                      stbox                                                     
 ---------------------------------------------------------------------------------------------------------------
@@ -1871,6 +1917,9 @@ SELECT stbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]')
  t
 (1 row)
 
+-- A step interpolation holds each position until the next, and a planar point
+-- travels the straight line in longitude and latitude, so each keeps the box
+-- of its positions
 SELECT stbox(tgeogpoint 'Interp=Step;[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
                                                  stbox                                                  
 --------------------------------------------------------------------------------------------------------
@@ -2236,97 +2285,97 @@ SELECT timeSpan(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-
 SELECT duration(tgeompoint 'Point(1 1)@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tgeogpoint 'Point(1.5 1.5)@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tgeompoint 'Point(1 1)@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tgeogpoint 'Point(1.5 1.5)@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT numSequences(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
@@ -2974,6 +3023,9 @@ SELECT timestamps(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-0
  {"Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST","Wed Jan 03 00:00:00 2001 PST","Thu Jan 04 00:00:00 2001 PST","Fri Jan 05 00:00:00 2001 PST"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shift and scale functions
+-------------------------------------------------------------------------------
 SELECT asEWKT(shiftTime(tgeompoint 'Point(1 1)@2001-01-01', '5 min'));
                  asewkt                  
 -----------------------------------------
@@ -3120,9 +3172,12 @@ SELECT asEWKT(shiftScaleTime(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 
 
 /* Errors */
 SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2001-01-01', '0'));
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
 SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2001-01-01', '-1 day'));
-ERROR:  The interval must be positive: -1 days
+ERROR:  The interval must be positive: @ 1 day ago
+-------------------------------------------------------------------------------
+-- Stops function
+-------------------------------------------------------------------------------
 SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]')));
  max 
 -----
@@ -3183,6 +3238,12 @@ SELECT MAX(numInstants(stops(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@200
    4
 (1 row)
 
+-- The size of the region is the greatest distance between two of its points.
+-- The three fixes below are the corners of an equilateral triangle of side 10,
+-- so every pair is 10 apart and the region they occupy is 10 across. A
+-- rectangle drawn around them is larger than that -- the one on any side
+-- measures 10 by 8.660254, a diagonal of 13.228757 -- which is the figure and
+-- not the points.
 SELECT numInstants(stops(tgeompoint '[Point(0 0)@2001-01-01,
   Point(10 0)@2001-01-02, Point(5 8.660254)@2001-01-03]', 11.0, '1 day'));
  numinstants 
@@ -3190,6 +3251,7 @@ SELECT numInstants(stops(tgeompoint '[Point(0 0)@2001-01-01,
            3
 (1 row)
 
+-- No pair is within 9, so no stretch of it stays within 9
 SELECT stops(tgeompoint '[Point(0 0)@2001-01-01,
   Point(10 0)@2001-01-02, Point(5 8.660254)@2001-01-03]', 9.0, '1 day');
  stops 
@@ -3197,6 +3259,10 @@ SELECT stops(tgeompoint '[Point(0 0)@2001-01-01,
  
 (1 row)
 
+-- The same triangle in a geography, with sides of about 1000 m at latitude 60,
+-- where a degree of longitude is half a degree of latitude: the region is
+-- about 1000 m across whatever the shape of the axes, and the distance is
+-- read on the spheroid
 SELECT numInstants(stops(tgeogpoint '[Point(0 60)@2001-01-01,
   Point(0.0179664 60)@2001-01-02, Point(0.0089832 60.0077795)@2001-01-03]',
   1100.0, '1 day'));
@@ -3213,6 +3279,10 @@ SELECT stops(tgeogpoint '[Point(0 60)@2001-01-01,
  
 (1 row)
 
+-- A stop that begins at the first instant takes the lower bound of the
+-- sequence, and one that ends at the last instant its upper bound. The first
+-- stay reaches the 2 days only by counting from its excluded first instant,
+-- since the span (t1, t3] lasts t3 - t1.
 SELECT asText(stops(tgeompoint '(Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
   Point(8 0)@2001-01-03, Point(900 0)@2001-01-04]', 154.0, '2 days'));
                                                             astext                                                             
@@ -3234,6 +3304,7 @@ SELECT asText(stops(tgeompoint '(Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
  {(POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(5 0)@Tue Jan 02 00:00:00 2001 PST, POINT(8 0)@Wed Jan 03 00:00:00 2001 PST)}
 (1 row)
 
+-- A stop inside the sequence keeps both of its bounds
 SELECT asText(stops(tgeompoint '(Point(900 0)@2001-01-01, Point(0 0)@2001-01-02,
   Point(5 0)@2001-01-03, Point(8 0)@2001-01-04, Point(900 0)@2001-01-05)',
   154.0, '2 days'));
@@ -3242,6 +3313,7 @@ SELECT asText(stops(tgeompoint '(Point(900 0)@2001-01-01, Point(0 0)@2001-01-02,
  {[POINT(0 0)@Tue Jan 02 00:00:00 2001 PST, POINT(5 0)@Wed Jan 03 00:00:00 2001 PST, POINT(8 0)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- Each sequence of a sequence set gives its own bounds to its stops
 SELECT asText(stops(tgeompoint '{(Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
   Point(8 0)@2001-01-03), [Point(900 0)@2001-01-05, Point(0 0)@2001-01-06,
   Point(5 0)@2001-01-07, Point(8 0)@2001-01-08)}', 154.0, '2 days'));
@@ -3250,6 +3322,7 @@ SELECT asText(stops(tgeompoint '{(Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
  {(POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(5 0)@Tue Jan 02 00:00:00 2001 PST, POINT(8 0)@Wed Jan 03 00:00:00 2001 PST), [POINT(0 0)@Sat Jan 06 00:00:00 2001 PST, POINT(5 0)@Sun Jan 07 00:00:00 2001 PST, POINT(8 0)@Mon Jan 08 00:00:00 2001 PST)}
 (1 row)
 
+-- Two sequences meeting at one timestamp keep their stops apart there
 SELECT asText(stops(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02),
   [Point(100 0)@2001-01-02, Point(100 0)@2001-01-03]}', 1.0, '12 hours'));
                                                                                     astext                                                                                    
@@ -3257,6 +3330,9 @@ SELECT asText(stops(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02),
  {[POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(0 0)@Tue Jan 02 00:00:00 2001 PST), [POINT(100 0)@Tue Jan 02 00:00:00 2001 PST, POINT(100 0)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A stay beginning after the value leaves the area of an earlier instant is
+-- found from its first instant, alone, followed by more of the stay, and
+-- after a stay too short to be a stop
 SELECT asText(stops(tgeompoint '[Point(900 0)@2001-01-01, Point(0 0)@2001-01-02,
   Point(5 0)@2001-01-05, Point(8 0)@2001-01-09]', 154.0, '5 days'));
                                                             astext                                                             
@@ -3280,6 +3356,9 @@ SELECT asText(stops(tgeompoint '[Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
  {[POINT(500 0)@Wed Jan 03 00:00:00 2001 PST, POINT(505 0)@Thu Jan 04 00:00:00 2001 PST, POINT(508 0)@Tue Jan 09 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= ST_Point(1,1);
  ?column? 
 ----------
@@ -3592,6 +3671,9 @@ SELECT tgeogpoint 'Point(1 1)@2001-01-01' %= geography 'SRID=4283;Point(1 1)';
 ERROR:  Operation on mixed SRID
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' %= geography 'Point(1 1 1)';
 ERROR:  Operation on mixed 2D/3D dimensions
+-------------------------------------------------------------------------------
+-- Restriction functions
+-------------------------------------------------------------------------------
 SELECT asText(atValue(tgeompoint 'Point(1 1)@2001-01-01', ST_Point(1,1)));
                  astext                  
 -----------------------------------------
@@ -3888,6 +3970,8 @@ SELECT asText(atValues(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-0
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST], [POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A set element outside the extent of the temporal point must not discard the
+-- elements inside it: a restriction to a larger set answers at least as much
 SELECT asText(atValues(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geomset '{"Point(1 1)", "Point(9 9)"}'));
                    astext                    
 ---------------------------------------------
@@ -4116,18 +4200,24 @@ SELECT st_astext(valueAtTimestamp(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point
  POINT(1.5 1.5)
 (1 row)
 
+-- A geodetic trajectory along a meridian passes over the pole and runs down the opposite meridian
 SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 88)@2001-01-01, Point(180 88)@2001-01-03]', timestamptz '2001-01-02 12:00'), 6);
    st_astext   
 ---------------
  POINT(180 89)
 (1 row)
 
+-- A geodetic trajectory a few centimetres from the pole keeps its distance to the pole
 SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 89.999999)@2001-01-01, Point(0 89.9999999)@2001-01-03]', timestamptz '2001-01-02'), 8);
       st_astext       
 ----------------------
  POINT(0 89.99999945)
 (1 row)
 
+-- A geodetic trajectory leaving the pole runs along the meridian of its end,
+-- whichever longitude states the pole; one between two positions of a
+-- meridian keeps that longitude, one between two positions of the equator
+-- keeps its latitude, and one between two equal positions keeps that position
 SELECT ST_X(valueAtTimestamp(tgeogpoint
     '[Point(0 90)@2001-01-01, Point(-60 30)@2001-01-02]',
     timestamptz '2001-01-01 12:00')::geometry) = -60 AS leaves_the_pole_on_its_meridian,
@@ -4482,6 +4572,7 @@ SELECT asText(minusTime(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@
  {(POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asText(beforeTimestamp(tgeompoint 'Point(1 1)@2001-01-01', timestamptz '2001-01-01'));
  astext 
 --------
@@ -4674,6 +4765,9 @@ SELECT asText(afterTimestamp(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 
  {[POINT(1.5 1.5)@Mon Jan 01 00:00:00 2001 PST, POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 SELECT asText(insert(
   tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03, Point(4 4)@2001-01-04]}',
   tgeompoint '{[Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]}'));
@@ -4891,6 +4985,7 @@ SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)
  {(POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Delete a span/spanset covering an entire composing sequence of a sequence set
 SELECT asText(deleteTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-04, Point(4 4)@2001-01-05]}', tstzspan '[2001-01-01, 2001-01-02]'));
                                         astext                                        
 --------------------------------------------------------------------------------------
@@ -4915,6 +5010,7 @@ SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)
  {[POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(4.5 4.5)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Delete a whole MIDDLE composing sequence: the surviving outer sequences stay disjoint (no bridge across the pre-existing gaps)
 SELECT asText(deleteTime(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02],[Point(3 3)@2001-01-04, Point(4 4)@2001-01-05],[Point(6 6)@2001-01-07, Point(7 7)@2001-01-08]}', tstzspan '[2001-01-04, 2001-01-05]'));
                                                                                   astext                                                                                  
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4927,6 +5023,9 @@ SELECT asText(deleteTime(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01
  {[POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST], [POINT(6 6)@Sun Jan 07 00:00:00 2001 PST, POINT(7 7)@Mon Jan 08 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+-------------------------------------------------------------------------------
 SELECT tgeompoint 'Point(1 1)@2001-01-01' = tgeompoint 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -5695,6 +5794,7 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point
  f
 (1 row)
 
+-- PostGIS changed the function of the function lwgeom_hash from version 3
 SELECT 1 WHERE tgeogpoint 'Point(1.5 1.5)@2001-01-01' < tgeogpoint 'Point(1.5 1.5)@2001-01-01' IS NOT NULL;
  ?column? 
 ----------
@@ -6079,6 +6179,7 @@ SELECT 1 WHERE tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-0
         1
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT hash(tgeompoint 'Point(1 1)@2001-01-01');
     hash    
 ------------
@@ -6127,6 +6228,13 @@ SELECT hash(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, 
  -591522621
 (1 row)
 
+------------------------------------------------------------------------------
+-- A restriction returns its result in normal form, so the value read back
+-- from its binary form is the value the restriction returns. A geodetic point
+-- whose middle position lies within the rounding of the great circle through
+-- the position interpolated one second before it and the last position, and
+-- a planar point whose position interpolated where it enters the box rounds
+-- onto the line of the instants after it
 WITH s(temp) AS (
   SELECT atTime(tgeogpoint '[POINT(4 50)@2001-01-01,
     POINT(4.98941239 50.50428283)@2001-01-02, POINT(6 51)@2001-01-03]',
@@ -6171,3 +6279,4 @@ FROM s;
            2 | t
 (1 row)
 
+-------------------------------------------------------------------------------

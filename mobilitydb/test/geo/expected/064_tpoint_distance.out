@@ -1,3 +1,5 @@
+-------------------------------------------------------------------------------
+-- NULL
 SELECT round(tgeompoint '[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03)' <-> tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04}', 6);
  round 
 -------
@@ -744,6 +746,8 @@ SELECT round(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-
  Interp=Step;[1.414214@Mon Jan 01 00:00:00 2001 PST, 1.414214@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- A linear and a step operand: the distance is least where the linear point
+-- passes the step point, as it is against a linear operand
 SELECT round(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]' <-> tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', 6);
                                                      round                                                      
 ----------------------------------------------------------------------------------------------------------------
@@ -954,6 +958,7 @@ SELECT round(tgeogpoint '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-0
  {[20003931.458625@Mon Jan 01 00:00:00 2001 PST, 2003750.834279@Mon Jan 01 14:24:00 2001 PST, 10018754.171395@Tue Jan 02 00:00:00 2001 PST, 2003750.834279@Tue Jan 02 09:36:00 2001 PST, 20003931.458625@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
                  astext                  
 -----------------------------------------
@@ -1104,6 +1109,7 @@ SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;{[Point(-90 0)@2001
  
 (1 row)
 
+-- 1 degree north and 0.998 degree east of the end of the line: the spheroid ranks north nearer, the sphere east
 SELECT asText(NearestApproachInstant(tgeogpoint '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'));
                  astext                  
 -----------------------------------------
@@ -1669,6 +1675,7 @@ SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint 'Po
  0101000000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+--------------------------------------------------------
 SELECT round(NearestApproachDistance(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'), 6);
  round 
 -------
@@ -2503,6 +2510,7 @@ SELECT round((stbox 'GEODSTBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' |=| stbox 'GEODST
      0
 (1 row)
 
+-- 3D
 SELECT round((stbox 'STBOX ZT(((0,0,0),(1,1,1)),[2001-01-01,2001-01-02])' |=| stbox 'STBOX ZT(((2,2,2),(3,3,3)),[2001-01-01,2001-01-02])'), 6);
   round   
 ----------
@@ -2578,24 +2586,28 @@ SELECT round((tgeompoint 'Point(1 1)@2001-01-01' |=| stbox 'STBOX XT(((2,2),(2,2
       
 (1 row)
 
+-- A box with no period measures the whole temporal point
 SELECT round((tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]' |=| stbox 'STBOX X((5,5),(6,6))'), 6);
   round   
 ----------
  4.242641
 (1 row)
 
+-- A box with a period measures the part of the temporal point inside it
 SELECT round((tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]' |=| stbox 'STBOX XT(((5,5),(6,6)),[2001-01-01, 2001-01-01 12:00])'), 6);
   round   
 ----------
  4.949747
 (1 row)
 
+-- No part of the temporal point is inside the period
 SELECT round((tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]' |=| stbox 'STBOX XT(((5,5),(6,6)),[2001-02-01, 2001-02-02])'), 6);
  round 
 -------
       
 (1 row)
 
+-- The two periods meet while no value of a discrete temporal point is inside
 SELECT round((tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-03}' |=| stbox 'STBOX XT(((5,5),(6,6)),[2001-01-02, 2001-01-02 12:00])'), 6);
  round 
 -------
@@ -3420,6 +3432,7 @@ SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint 'P
                        0
 (1 row)
 
+--------------------------------------------------------
 SELECT ST_AsTexT(shortestLine(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
       st_astext      
 ---------------------
@@ -4134,6 +4147,7 @@ SELECT ST_AsText(shortestLine(tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@200
  LINESTRING(1 1,2 1)
 (1 row)
 
+-- NULL
 SELECT shortestline(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02),[Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}', tgeompoint '[Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)');
  shortestline 
 --------------
@@ -4175,6 +4189,10 @@ SELECT shortestLine(geography 'Linestring(90 0 0,0 90 100)', tgeogpoint 'Point(-
 ERROR:  The geometry cannot have Z dimension
 SELECT shortestLine(tgeogpoint 'Point(-90 0 100)@2001-01-01', geography 'Linestring(90 0 0,0 90 100)');
 ERROR:  The geometry cannot have Z dimension
+--------------------------------------------------------
+-- minDistance(tgeompoint[], tgeompoint[]) — exact set-set spatial min distance
+--------------------------------------------------------
+-- Two singleton sets, segments crossing each other: distance is 0
 SELECT minDistance(
   ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]'],
   ARRAY[tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-02]']);
@@ -4183,6 +4201,7 @@ SELECT minDistance(
            0
 (1 row)
 
+-- Two singleton sets, parallel disjoint: exact distance is 1
 SELECT round(minDistance(
   ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]'],
   ARRAY[tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]']), 6);
@@ -4191,6 +4210,7 @@ SELECT round(minDistance(
      1
 (1 row)
 
+-- Multi-element sets: closest pair determines the answer, bbox prefilter prunes the rest
 SELECT round(minDistance(
   ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]',
         tgeompoint '[Point(100 100)@2001-01-01, Point(101 100)@2001-01-02]'],
@@ -4201,6 +4221,7 @@ SELECT round(minDistance(
      5
 (1 row)
 
+-- Equivalence vs ST_Distance(ST_Collect, ST_Collect): same answer
 WITH A AS (SELECT ARRAY[
   tgeompoint '[Point(0 0)@2001-01-01, Point(5 0)@2001-01-02]',
   tgeompoint '[Point(0 10)@2001-01-01, Point(5 10)@2001-01-02]'] AS a),
@@ -4216,6 +4237,7 @@ FROM A, B;
  t
 (1 row)
 
+-- Errors / NULL handling
 SELECT minDistance(ARRAY[]::tgeompoint[], ARRAY[tgeompoint 'Point(0 0)@2001-01-01']);
  mindistance 
 -------------
@@ -4225,6 +4247,8 @@ SELECT minDistance(ARRAY[]::tgeompoint[], ARRAY[tgeompoint 'Point(0 0)@2001-01-0
 SELECT minDistance(ARRAY[tgeompoint 'Point(0 0)@2001-01-01'],
                    ARRAY[tgeompoint 'SRID=4326;Point(0 0)@2001-01-01']);
 ERROR:  Operation on mixed SRID
+--------------------------------------------------------
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
 SELECT round(tDistance(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', geography 'Point(0 0)'), 3);
                                        round                                        
 ------------------------------------------------------------------------------------
@@ -4429,6 +4453,7 @@ SELECT round(nearestApproachDistance(geography 'Point(0 0)', stbox 'SRID=4326;GE
  111195.080
 (1 row)
 
+-- 1 degree north and 0.998 degree east of the end of the line: the spheroid ranks north nearer, the sphere east
 SELECT ST_AsText(shortestLine(tgeogpoint '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'), 6);
       st_astext      
 ---------------------
@@ -4453,8 +4478,12 @@ SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeogpoint '{P
  LINESTRING(0.998 0,0 0)
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Coordinates near the largest double
+-- A distance beyond the largest double raises an error
 SELECT tgeompoint '[Point(-1e308 0)@2001-01-01, Point(-1e308 4)@2001-01-02]' |=| geometry 'Linestring(1e308 -1,1e308 1)';
 ERROR:  value out of range: overflow
+-- The difference of two coordinates beyond the doubles, a distance within them
 SELECT round(((tgeompoint '[Point(1.6e308 0.25)@2001-01-01, Point(1.6e308 0.75)@2001-01-02]' |=| geometry 'Linestring(1.7e308 0,1.7e308 1)') / 1e306)::numeric, 6);
    round   
 -----------
@@ -4467,6 +4496,7 @@ SELECT ST_AsText(shortestLine(tgeompoint '[Point(1.6e308 0.25)@2001-01-01, Point
  LINESTRING(1.6e+308 0.25,1.7e+308 0.25)
 (1 row)
 
+-- A path 2e200 from an edge of length 2
 SELECT ST_AsText(shortestLine(tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]', geometry 'Linestring(1e200 -1,1e200 1)'));
            st_astext            
 --------------------------------
@@ -4491,12 +4521,16 @@ SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <->
  [2e+200@Mon Jan 01 00:00:00 2001 PST, 2e+200@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- Coordinates beyond 2^1021 and below 2^-1021 in one pair of segments in 3D
 SELECT round((tgeompoint '[Point(1e308 0 1e-310)@2001-01-01, Point(-1e308 1 2e-310)@2001-01-02]' |=| geometry 'Point(0 3e-310 5)')::numeric, 6);
   round   
 ----------
  5.024938
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Operands of different dimensions read the dimensions both have: the examples
+-- of the manual, the answers in both orders, and an operation building a value
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]' |=| tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
  ?column? 
 ----------
@@ -4531,6 +4565,7 @@ SELECT asText(shortestLine(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@20
  LINESTRING(1 0,1 1)
 (1 row)
 
+-- A 3D polyhedral surface is read in 2D as any 3D operand of a 2D value
 SELECT tDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-02]', geometry 'PolyhedralSurface Z(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)))');
                                             tdistance                                             
 --------------------------------------------------------------------------------------------------
@@ -4549,3 +4584,4 @@ SELECT round(geometry 'PolyhedralSurface Z(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)))' |
  1.414214
 (1 row)
 
+-------------------------------------------------------------------------------

@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Position operators
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp << t2.temp;
  count 
 -------
@@ -46,6 +50,7 @@ SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp #>> t2.t
  79385
 (1 row)
 
+-- Strictly before excludes overlapping
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2
 WHERE t1.temp << t2.temp AND t1.temp && t2.temp;
  count 
@@ -53,3 +58,4 @@ WHERE t1.temp << t2.temp AND t1.temp && t2.temp;
      0
 (1 row)
 
+-------------------------------------------------------------------------------

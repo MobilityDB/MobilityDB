@@ -1,3 +1,11 @@
+-------------------------------------------------------------------------------
+-- The R-tree GiST, quad-tree and k-d tree SP-GiST indexes of a tpose, keyed by the
+-- stbox of the value, in two and in three dimensions. Under each index every
+-- operator of the class, with each right argument it declares, answers the rows a
+-- sequential scan gives, from a plan that probes the index, and the search for the
+-- nearest values answers the distances a sort gives. The operators on Z take a
+-- value in three dimensions alone.
+-------------------------------------------------------------------------------
 CREATE FUNCTION test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
@@ -11,10 +19,8 @@ BEGIN
   RETURN false;
 END;
 $$;
-CREATE FUNCTION
 DROP TABLE IF EXISTS tbl_tpose2d_idx;
 NOTICE:  table "tbl_tpose2d_idx" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose2d_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tpose2d
@@ -28,31 +34,31 @@ WITH base(k, temp) AS (
   SELECT k + 400, ss FROM tbl_tpose2d_seqset )
 SELECT k + n * 500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 9) AS n;
-SELECT 5000
 ANALYZE tbl_tpose2d_idx;
-ANALYZE
+-- The values, boxes and periods the operators are given. Those of the fixture
+-- are random, so they meet few values exactly: the others come from the rows of
+-- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_tpose2d_src;
 NOTICE:  table "tbl_tpose2d_src" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose2d_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_tpose2d_idx WHERE k % 470 = 0;
-SELECT 10
+-- A value of the fixture, a value of the table, and one whose period ends where
+-- that of the value starts. The search for the nearest values, whose distance
+-- costs more than a box, is given the second alone.
 DROP TABLE IF EXISTS tbl_tpose2d_val;
 NOTICE:  table "tbl_tpose2d_val" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose2d_val AS
 SELECT temp, false AS knn FROM tbl_tpose2d WHERE k % 20 = 0
 UNION ALL
 SELECT temp, true FROM tbl_tpose2d_src
 UNION ALL
 SELECT shiftTime(temp, lower(t) - upper(t)), false FROM tbl_tpose2d_src;
-SELECT 25
 ANALYZE tbl_tpose2d_val;
-ANALYZE
+-- The box of a value of the fixture, the box of a value, one around it, one
+-- inside it, and one whose period meets it
 DROP TABLE IF EXISTS tbl_tpose2d_box;
 NOTICE:  table "tbl_tpose2d_box" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose2d_box AS
 SELECT temp::stbox AS b, false AS knn FROM tbl_tpose2d WHERE k % 20 = 0
 UNION ALL
@@ -69,12 +75,11 @@ SELECT stbox(format('SRID=3812;STBOX XT(((%s,%s),(%s,%s)),[%s,%s%s)',
     xmin(b), ymin(b), xmax(b), ymax(b), lower(t) - interval '1 hour', lower(t),
     CASE WHEN lowerInc(t) THEN ')' ELSE ']' END)), false
 FROM tbl_tpose2d_src;
-SELECT 45
 ANALYZE tbl_tpose2d_box;
-ANALYZE
+-- A box of space alone, which the operators on time refuse: one around a value,
+-- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_tpose2d_xbox;
 NOTICE:  table "tbl_tpose2d_xbox" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose2d_xbox AS
 SELECT stbox(format('SRID=3812;STBOX X((%s,%s),(%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1)) AS b
@@ -91,12 +96,11 @@ UNION ALL
 SELECT stbox(format('SRID=3812;STBOX X((%s,%s),(%s,%s))',
     xmax(b), ymin(b), xmax(b) + 0.1, ymax(b))) AS b
 FROM tbl_tpose2d_src;
-SELECT 40
 ANALYZE tbl_tpose2d_xbox;
-ANALYZE
+-- A period of the fixture, the period of a value, one around it, one inside it,
+-- and one that meets it
 DROP TABLE IF EXISTS tbl_tpose2d_span;
 NOTICE:  table "tbl_tpose2d_span" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose2d_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
@@ -111,20 +115,15 @@ UNION ALL
 SELECT tstzspan(format('[%s, %s%s', lower(t) - interval '1 hour', lower(t),
     CASE WHEN lowerInc(t) THEN ')' ELSE ']' END))
 FROM tbl_tpose2d_src;
-SELECT 45
 ANALYZE tbl_tpose2d_span;
-ANALYZE
+-- A point at a corner of the box of a value
 DROP TABLE IF EXISTS tbl_tpose2d_geo;
 NOTICE:  table "tbl_tpose2d_geo" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose2d_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b)), 3812) AS g, true AS knn FROM tbl_tpose2d_src;
-SELECT 10
 ANALYZE tbl_tpose2d_geo;
-ANALYZE
 DROP TABLE IF EXISTS tbl_tpose3d_idx;
 NOTICE:  table "tbl_tpose3d_idx" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose3d_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tpose3d
@@ -138,31 +137,31 @@ WITH base(k, temp) AS (
   SELECT k + 400, ss FROM tbl_tpose3d_seqset )
 SELECT k + n * 500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 9) AS n;
-SELECT 5010
 ANALYZE tbl_tpose3d_idx;
-ANALYZE
+-- The values, boxes and periods the operators are given. Those of the fixture
+-- are random, so they meet few values exactly: the others come from the rows of
+-- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_tpose3d_src;
 NOTICE:  table "tbl_tpose3d_src" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose3d_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_tpose3d_idx WHERE k % 470 = 0;
-SELECT 10
+-- A value of the fixture, a value of the table, and one whose period ends where
+-- that of the value starts. The search for the nearest values, whose distance
+-- costs more than a box, is given the second alone.
 DROP TABLE IF EXISTS tbl_tpose3d_val;
 NOTICE:  table "tbl_tpose3d_val" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose3d_val AS
 SELECT temp, false AS knn FROM tbl_tpose3d WHERE k % 20 = 0
 UNION ALL
 SELECT temp, true FROM tbl_tpose3d_src
 UNION ALL
 SELECT shiftTime(temp, lower(t) - upper(t)), false FROM tbl_tpose3d_src;
-SELECT 25
 ANALYZE tbl_tpose3d_val;
-ANALYZE
+-- The box of a value of the fixture, the box of a value, one around it, one
+-- inside it, and one whose period meets it
 DROP TABLE IF EXISTS tbl_tpose3d_box;
 NOTICE:  table "tbl_tpose3d_box" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose3d_box AS
 SELECT temp::stbox AS b, false AS knn FROM tbl_tpose3d WHERE k % 20 = 0
 UNION ALL
@@ -179,12 +178,11 @@ SELECT stbox(format('SRID=3812;STBOX ZT(((%s,%s,%s),(%s,%s,%s)),[%s,%s%s)',
     xmin(b), ymin(b), zmin(b), xmax(b), ymax(b), zmax(b), lower(t) - interval '1 hour', lower(t),
     CASE WHEN lowerInc(t) THEN ')' ELSE ']' END)), false
 FROM tbl_tpose3d_src;
-SELECT 45
 ANALYZE tbl_tpose3d_box;
-ANALYZE
+-- A box of space alone, which the operators on time refuse: one around a value,
+-- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_tpose3d_xbox;
 NOTICE:  table "tbl_tpose3d_xbox" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose3d_xbox AS
 SELECT stbox(format('SRID=3812;STBOX Z((%s,%s,%s),(%s,%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, zmin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1, zmax(b) + 0.1)) AS b
@@ -201,12 +199,11 @@ UNION ALL
 SELECT stbox(format('SRID=3812;STBOX Z((%s,%s,%s),(%s,%s,%s))',
     xmax(b), ymin(b), zmin(b), xmax(b) + 0.1, ymax(b), zmax(b))) AS b
 FROM tbl_tpose3d_src;
-SELECT 40
 ANALYZE tbl_tpose3d_xbox;
-ANALYZE
+-- A period of the fixture, the period of a value, one around it, one inside it,
+-- and one that meets it
 DROP TABLE IF EXISTS tbl_tpose3d_span;
 NOTICE:  table "tbl_tpose3d_span" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose3d_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
@@ -221,362 +218,188 @@ UNION ALL
 SELECT tstzspan(format('[%s, %s%s', lower(t) - interval '1 hour', lower(t),
     CASE WHEN lowerInc(t) THEN ')' ELSE ']' END))
 FROM tbl_tpose3d_src;
-SELECT 45
 ANALYZE tbl_tpose3d_span;
-ANALYZE
+-- A point at a corner of the box of a value
 DROP TABLE IF EXISTS tbl_tpose3d_geo;
 NOTICE:  table "tbl_tpose3d_geo" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tpose3d_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b), zmin(b)), 3812) AS g, true AS knn FROM tbl_tpose3d_src;
-SELECT 10
 ANALYZE tbl_tpose3d_geo;
-ANALYZE
 DROP TABLE IF EXISTS test_tpose_idx;
 NOTICE:  table "test_tpose_idx" does not exist, skipping
-DROP TABLE
 CREATE TABLE test_tpose_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
-CREATE TABLE
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d << stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp << t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d << stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp << t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d << tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp << t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &< stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &< t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &< stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &< t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &< tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &< t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d && tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp && t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d && stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp && t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d && stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp && t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d && tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp && t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &> stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &> stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d >> stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp >> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d >> stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp >> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d >> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp >> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d ~= tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp ~= t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d ~= stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp ~= t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d ~= stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp ~= t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d ~= tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp ~= t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d @> tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp @> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d @> stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp @> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d @> stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp @> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d @> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp @> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <@ tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <@ t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <@ stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <@ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <@ stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <@ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <@ tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <@ t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &<| stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &<| stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &<| tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<| t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <<| stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <<| stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <<| tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<| t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |>> stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |>> stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |>> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |>> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |&> stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |&> stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |&> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |&> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d -|- tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp -|- t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d -|- stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp -|- t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d -|- stbox x', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp -|- t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d -|- tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp -|- t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &<# tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp &<# t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &<# stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<# t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d &<# tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<# t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <<# tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <<# t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <<# stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<# t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d <<# tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<# t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d #>> tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #>> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d #>> stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d #>> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #>> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d #&> tstzspan', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #&> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d #&> stbox', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d #&> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #&> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox >> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b >> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d tstzspan && tpose', (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t && t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox && tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b && t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox << tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b << t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d tstzspan ~= tpose', (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t ~= t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox ~= tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b ~= t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d tstzspan <@ tpose', (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <@ t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox <@ tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <@ t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d tstzspan @> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t @> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox @> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b @> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox |>> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b |>> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox <<| tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<| t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d tstzspan -|- tpose', (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t -|- t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox -|- tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b -|- t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d tstzspan #>> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t #>> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox #>> tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b #>> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d tstzspan <<# tpose', (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <<# t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d stbox <<# tpose', (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<# t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |=| stbox', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn));
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |=| tpose', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn));
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('2d |=| geometry', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn));
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d << stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp << t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d << stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp << t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d << tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp << t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &< stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &< t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &< stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &< t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &< tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &< t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d && tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp && t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d && stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp && t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d && stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp && t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d && tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp && t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &> stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d >> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp >> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d >> stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp >> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d >> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp >> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d ~= tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp ~= t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d ~= stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp ~= t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d ~= stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp ~= t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d ~= tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp ~= t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d @> tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp @> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d @> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp @> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d @> stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp @> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d @> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp @> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <@ tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <@ t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <@ stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <@ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <@ stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <@ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <@ tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <@ t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &<| stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &<| stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &<| tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<| t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <<| stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <<| stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <<| t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <<| tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<| t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |>> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |>> stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |>> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |>> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |&> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |&> stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |&> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |&> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d -|- tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp -|- t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d -|- stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp -|- t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d -|- stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp -|- t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d -|- tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp -|- t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &<# tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp &<# t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &<# stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<# t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &<# tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<# t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <<# tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <<# t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <<# stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<# t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <<# tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<# t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d #>> tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #>> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d #>> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #>> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d #>> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #>> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d #&> tstzspan', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #&> t2.t)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d #&> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d #&> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #&> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &</ stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &</ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &</ stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &</ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d &</ tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &</ t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <</ stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <</ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <</ stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <</ t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d <</ tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <</ t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d />> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp />> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d />> stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp />> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d />> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp />> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d /&> stbox', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp /&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d /&> stbox x', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp /&> t2.b)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d /&> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp /&> t2.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox >> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b >> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d tstzspan && tpose', (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t && t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox && tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b && t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox << tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b << t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d tstzspan ~= tpose', (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t ~= t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox ~= tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b ~= t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d tstzspan <@ tpose', (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <@ t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox <@ tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <@ t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d tstzspan @> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t @> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox @> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b @> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox |>> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b |>> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox <<| tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<| t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d tstzspan -|- tpose', (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t -|- t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox -|- tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b -|- t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d tstzspan #>> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t #>> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox #>> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b #>> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d tstzspan <<# tpose', (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <<# t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox <<# tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<# t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox />> tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b />> t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d stbox <</ tpose', (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <</ t1.temp)::text);
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |=| stbox', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn));
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |=| tpose', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn));
-INSERT 0 1
 INSERT INTO test_tpose_idx(op, no_idx) VALUES ('3d |=| geometry', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn));
-INSERT 0 1
+-- With no index a plan cannot probe one, whatever the planner settings
 SET enable_seqscan = off;
-SET
 SELECT test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp << t2.b') AS no_index_probe;
  no_index_probe 
 ----------------
@@ -584,2095 +407,1558 @@ SELECT test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_b
 (1 row)
 
 RESET enable_seqscan;
-RESET
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tpose2d_idx_rtree ON tbl_tpose2d_idx USING gist(temp);
-CREATE INDEX
 CREATE INDEX tbl_tpose3d_idx_rtree ON tbl_tpose3d_idx USING gist(temp);
-CREATE INDEX
 SET enable_seqscan = off;
-SET
 SET enable_hashjoin = off;
-SET
 SET enable_mergejoin = off;
-SET
 SET enable_sort = off;
-SET
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp << t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp << t2.b')
 WHERE op = '2d << stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp << t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '2d << stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp << t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '2d << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &< t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '2d &< stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &< t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '2d &< stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '2d &< tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp && t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp && t2.t')
 WHERE op = '2d && tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp && t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp && t2.b')
 WHERE op = '2d && stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp && t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '2d && stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp && t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '2d && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '2d &> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '2d &> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '2d &> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp >> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '2d >> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp >> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '2d >> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '2d >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp ~= t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '2d ~= tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp ~= t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '2d ~= stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '2d ~= stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp ~= t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '2d ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp @> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '2d @> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp @> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '2d @> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp @> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '2d @> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp @> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '2d @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '2d <@ tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <@ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '2d <@ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <@ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '2d <@ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '2d <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '2d &<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '2d &<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<| t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '2d &<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '2d <<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '2d <<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<| t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '2d <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '2d |>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '2d |>> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |>> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '2d |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '2d |&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '2d |&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '2d |&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp -|- t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '2d -|- tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp -|- t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '2d -|- stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '2d -|- stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp -|- t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '2d -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '2d &<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<# t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '2d &<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<# t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '2d &<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <<# t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '2d <<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<# t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '2d <<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<# t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '2d <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #>> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '2d #>> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '2d #>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #>> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '2d #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #&> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '2d #&> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '2d #&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #&> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '2d #&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = '2d stbox >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t && t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t && t1.temp')
 WHERE op = '2d tstzspan && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b && t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b && t1.temp')
 WHERE op = '2d stbox && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = '2d stbox << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t ~= t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t ~= t1.temp')
 WHERE op = '2d tstzspan ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b ~= t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = '2d stbox ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <@ t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = '2d tstzspan <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <@ t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = '2d stbox <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = '2d tstzspan @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = '2d stbox @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b |>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = '2d stbox |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = '2d stbox <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t -|- t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t -|- t1.temp')
 WHERE op = '2d tstzspan -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b -|- t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b -|- t1.temp')
 WHERE op = '2d stbox -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = '2d tstzspan #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b #>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = '2d stbox #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <<# t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = '2d tstzspan <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<# t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = '2d stbox <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
   rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
   rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
   rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| geometry';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp << t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp << t2.b')
 WHERE op = '3d << stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp << t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '3d << stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp << t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '3d << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &< t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '3d &< stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &< t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '3d &< stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '3d &< tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp && t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp && t2.t')
 WHERE op = '3d && tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp && t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp && t2.b')
 WHERE op = '3d && stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp && t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '3d && stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp && t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '3d && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '3d &> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '3d &> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '3d &> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp >> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '3d >> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp >> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '3d >> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '3d >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp ~= t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '3d ~= tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp ~= t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '3d ~= stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp ~= t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '3d ~= stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp ~= t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '3d ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp @> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '3d @> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp @> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '3d @> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp @> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '3d @> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp @> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '3d @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '3d <@ tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <@ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '3d <@ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <@ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '3d <@ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '3d <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '3d &<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '3d &<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<| t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '3d &<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '3d <<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <<| t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '3d <<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<| t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '3d <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '3d |>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '3d |>> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |>> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '3d |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '3d |&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '3d |&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |&> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '3d |&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp -|- t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '3d -|- tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp -|- t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '3d -|- stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp -|- t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '3d -|- stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp -|- t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '3d -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '3d &<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<# t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '3d &<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<# t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '3d &<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <<# t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '3d <<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<# t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '3d <<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<# t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '3d <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #>> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '3d #>> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #>> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '3d #>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #>> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '3d #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #&> t2.t)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '3d #&> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '3d #&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #&> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '3d #&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &</ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &</ t2.b')
 WHERE op = '3d &</ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &</ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &</ t2.b')
 WHERE op = '3d &</ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &</ t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &</ t2.temp')
 WHERE op = '3d &</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <</ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <</ t2.b')
 WHERE op = '3d <</ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <</ t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <</ t2.b')
 WHERE op = '3d <</ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <</ t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <</ t2.temp')
 WHERE op = '3d <</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp />> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp />> t2.b')
 WHERE op = '3d />> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp />> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp />> t2.b')
 WHERE op = '3d />> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp />> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp />> t2.temp')
 WHERE op = '3d />> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp /&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp /&> t2.b')
 WHERE op = '3d /&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp /&> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp /&> t2.b')
 WHERE op = '3d /&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp /&> t2.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp /&> t2.temp')
 WHERE op = '3d /&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = '3d stbox >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t && t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t && t1.temp')
 WHERE op = '3d tstzspan && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b && t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b && t1.temp')
 WHERE op = '3d stbox && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = '3d stbox << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t ~= t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t ~= t1.temp')
 WHERE op = '3d tstzspan ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b ~= t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = '3d stbox ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <@ t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = '3d tstzspan <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <@ t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = '3d stbox <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = '3d tstzspan @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = '3d stbox @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b |>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = '3d stbox |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<| t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = '3d stbox <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t -|- t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t -|- t1.temp')
 WHERE op = '3d tstzspan -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b -|- t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b -|- t1.temp')
 WHERE op = '3d stbox -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = '3d tstzspan #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b #>> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = '3d stbox #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <<# t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = '3d tstzspan <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<# t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = '3d stbox <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b />> t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b />> t1.temp')
 WHERE op = '3d stbox />> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <</ t1.temp)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <</ t1.temp')
 WHERE op = '3d stbox <</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
   rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
   rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
   rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| geometry';
-UPDATE 1
 RESET enable_seqscan;
-RESET
 RESET enable_hashjoin;
-RESET
 RESET enable_mergejoin;
-RESET
 RESET enable_sort;
-RESET
 DROP INDEX tbl_tpose2d_idx_rtree;
-DROP INDEX
 DROP INDEX tbl_tpose3d_idx_rtree;
-DROP INDEX
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tpose2d_idx_quadtree ON tbl_tpose2d_idx USING spgist(temp);
-CREATE INDEX
 CREATE INDEX tbl_tpose3d_idx_quadtree ON tbl_tpose3d_idx USING spgist(temp);
-CREATE INDEX
 SET enable_seqscan = off;
-SET
 SET enable_hashjoin = off;
-SET
 SET enable_mergejoin = off;
-SET
 SET enable_sort = off;
-SET
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp << t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp << t2.b')
 WHERE op = '2d << stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp << t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '2d << stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp << t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '2d << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &< t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '2d &< stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &< t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '2d &< stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '2d &< tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp && t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp && t2.t')
 WHERE op = '2d && tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp && t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp && t2.b')
 WHERE op = '2d && stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp && t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '2d && stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp && t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '2d && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '2d &> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '2d &> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '2d &> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp >> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '2d >> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp >> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '2d >> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '2d >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp ~= t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '2d ~= tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp ~= t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '2d ~= stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '2d ~= stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp ~= t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '2d ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp @> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '2d @> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp @> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '2d @> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp @> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '2d @> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp @> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '2d @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '2d <@ tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <@ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '2d <@ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <@ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '2d <@ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '2d <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '2d &<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '2d &<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<| t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '2d &<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '2d <<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '2d <<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<| t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '2d <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '2d |>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '2d |>> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |>> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '2d |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '2d |&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '2d |&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '2d |&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp -|- t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '2d -|- tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp -|- t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '2d -|- stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '2d -|- stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp -|- t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '2d -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '2d &<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<# t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '2d &<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<# t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '2d &<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <<# t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '2d <<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<# t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '2d <<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<# t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '2d <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #>> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '2d #>> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '2d #>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #>> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '2d #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #&> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '2d #&> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '2d #&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #&> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '2d #&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = '2d stbox >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t && t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t && t1.temp')
 WHERE op = '2d tstzspan && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b && t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b && t1.temp')
 WHERE op = '2d stbox && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = '2d stbox << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t ~= t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t ~= t1.temp')
 WHERE op = '2d tstzspan ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b ~= t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = '2d stbox ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <@ t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = '2d tstzspan <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <@ t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = '2d stbox <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = '2d tstzspan @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = '2d stbox @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b |>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = '2d stbox |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = '2d stbox <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t -|- t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t -|- t1.temp')
 WHERE op = '2d tstzspan -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b -|- t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b -|- t1.temp')
 WHERE op = '2d stbox -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = '2d tstzspan #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b #>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = '2d stbox #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <<# t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = '2d tstzspan <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<# t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = '2d stbox <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
   quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
   quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
   quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| geometry';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp << t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp << t2.b')
 WHERE op = '3d << stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp << t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '3d << stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp << t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '3d << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &< t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '3d &< stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &< t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '3d &< stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '3d &< tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp && t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp && t2.t')
 WHERE op = '3d && tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp && t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp && t2.b')
 WHERE op = '3d && stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp && t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '3d && stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp && t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '3d && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '3d &> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '3d &> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '3d &> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp >> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '3d >> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp >> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '3d >> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '3d >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp ~= t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '3d ~= tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp ~= t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '3d ~= stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp ~= t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '3d ~= stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp ~= t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '3d ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp @> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '3d @> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp @> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '3d @> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp @> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '3d @> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp @> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '3d @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '3d <@ tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <@ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '3d <@ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <@ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '3d <@ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '3d <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '3d &<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '3d &<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<| t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '3d &<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '3d <<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <<| t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '3d <<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<| t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '3d <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '3d |>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '3d |>> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |>> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '3d |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '3d |&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '3d |&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |&> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '3d |&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp -|- t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '3d -|- tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp -|- t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '3d -|- stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp -|- t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '3d -|- stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp -|- t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '3d -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '3d &<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<# t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '3d &<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<# t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '3d &<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <<# t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '3d <<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<# t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '3d <<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<# t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '3d <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #>> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '3d #>> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #>> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '3d #>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #>> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '3d #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #&> t2.t)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '3d #&> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '3d #&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #&> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '3d #&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &</ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &</ t2.b')
 WHERE op = '3d &</ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &</ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &</ t2.b')
 WHERE op = '3d &</ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &</ t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &</ t2.temp')
 WHERE op = '3d &</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <</ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <</ t2.b')
 WHERE op = '3d <</ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <</ t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <</ t2.b')
 WHERE op = '3d <</ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <</ t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <</ t2.temp')
 WHERE op = '3d <</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp />> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp />> t2.b')
 WHERE op = '3d />> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp />> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp />> t2.b')
 WHERE op = '3d />> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp />> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp />> t2.temp')
 WHERE op = '3d />> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp /&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp /&> t2.b')
 WHERE op = '3d /&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp /&> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp /&> t2.b')
 WHERE op = '3d /&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp /&> t2.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp /&> t2.temp')
 WHERE op = '3d /&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = '3d stbox >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t && t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t && t1.temp')
 WHERE op = '3d tstzspan && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b && t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b && t1.temp')
 WHERE op = '3d stbox && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = '3d stbox << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t ~= t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t ~= t1.temp')
 WHERE op = '3d tstzspan ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b ~= t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = '3d stbox ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <@ t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = '3d tstzspan <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <@ t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = '3d stbox <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = '3d tstzspan @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = '3d stbox @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b |>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = '3d stbox |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<| t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = '3d stbox <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t -|- t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t -|- t1.temp')
 WHERE op = '3d tstzspan -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b -|- t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b -|- t1.temp')
 WHERE op = '3d stbox -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = '3d tstzspan #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b #>> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = '3d stbox #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <<# t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = '3d tstzspan <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<# t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = '3d stbox <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b />> t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b />> t1.temp')
 WHERE op = '3d stbox />> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <</ t1.temp)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <</ t1.temp')
 WHERE op = '3d stbox <</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
   quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
   quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
   quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| geometry';
-UPDATE 1
 RESET enable_seqscan;
-RESET
 RESET enable_hashjoin;
-RESET
 RESET enable_mergejoin;
-RESET
 RESET enable_sort;
-RESET
 DROP INDEX tbl_tpose2d_idx_quadtree;
-DROP INDEX
 DROP INDEX tbl_tpose3d_idx_quadtree;
-DROP INDEX
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tpose2d_idx_kdtree ON tbl_tpose2d_idx USING spgist(temp tpose_kdtree_ops);
-CREATE INDEX
 CREATE INDEX tbl_tpose3d_idx_kdtree ON tbl_tpose3d_idx USING spgist(temp tpose_kdtree_ops);
-CREATE INDEX
 SET enable_seqscan = off;
-SET
 SET enable_hashjoin = off;
-SET
 SET enable_mergejoin = off;
-SET
 SET enable_sort = off;
-SET
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp << t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp << t2.b')
 WHERE op = '2d << stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp << t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '2d << stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp << t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '2d << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &< t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '2d &< stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &< t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '2d &< stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '2d &< tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp && t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp && t2.t')
 WHERE op = '2d && tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp && t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp && t2.b')
 WHERE op = '2d && stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp && t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '2d && stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp && t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '2d && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '2d &> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '2d &> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '2d &> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp >> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '2d >> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp >> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '2d >> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '2d >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp ~= t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '2d ~= tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp ~= t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '2d ~= stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '2d ~= stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp ~= t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '2d ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp @> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '2d @> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp @> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '2d @> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp @> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '2d @> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp @> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '2d @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '2d <@ tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <@ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '2d <@ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <@ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '2d <@ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '2d <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '2d &<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '2d &<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<| t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '2d &<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '2d <<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '2d <<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<| t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '2d <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '2d |>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '2d |>> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |>> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '2d |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '2d |&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '2d |&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '2d |&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp -|- t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '2d -|- tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp -|- t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '2d -|- stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '2d -|- stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp -|- t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '2d -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '2d &<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<# t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '2d &<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<# t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '2d &<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <<# t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '2d <<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<# t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '2d <<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<# t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '2d <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #>> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '2d #>> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '2d #>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #>> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '2d #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #&> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '2d #&> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '2d #&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #&> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_idx t1, tbl_tpose2d_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '2d #&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = '2d stbox >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t && t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t && t1.temp')
 WHERE op = '2d tstzspan && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b && t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b && t1.temp')
 WHERE op = '2d stbox && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = '2d stbox << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t ~= t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t ~= t1.temp')
 WHERE op = '2d tstzspan ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b ~= t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = '2d stbox ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <@ t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = '2d tstzspan <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <@ t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = '2d stbox <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = '2d tstzspan @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = '2d stbox @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b |>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = '2d stbox |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = '2d stbox <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t -|- t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t -|- t1.temp')
 WHERE op = '2d tstzspan -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b -|- t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b -|- t1.temp')
 WHERE op = '2d stbox -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = '2d tstzspan #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b #>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = '2d stbox #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <<# t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_span t2, tbl_tpose2d_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = '2d tstzspan <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<# t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose2d_box t2, tbl_tpose2d_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = '2d stbox <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
   kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
   kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose2d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
   kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose2d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose2d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
 WHERE op = '2d |=| geometry';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp << t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp << t2.b')
 WHERE op = '3d << stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp << t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp << t2.b')
 WHERE op = '3d << stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp << t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp << t2.temp')
 WHERE op = '3d << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &< t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &< t2.b')
 WHERE op = '3d &< stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &< t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &< t2.b')
 WHERE op = '3d &< stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '3d &< tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp && t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp && t2.t')
 WHERE op = '3d && tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp && t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp && t2.b')
 WHERE op = '3d && stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp && t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp && t2.b')
 WHERE op = '3d && stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp && t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp && t2.temp')
 WHERE op = '3d && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '3d &> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &> t2.b')
 WHERE op = '3d &> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &> t2.temp')
 WHERE op = '3d &> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp >> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp >> t2.b')
 WHERE op = '3d >> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp >> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp >> t2.b')
 WHERE op = '3d >> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '3d >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp ~= t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp ~= t2.t')
 WHERE op = '3d ~= tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp ~= t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp ~= t2.b')
 WHERE op = '3d ~= stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp ~= t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp ~= t2.b')
 WHERE op = '3d ~= stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp ~= t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp ~= t2.temp')
 WHERE op = '3d ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp @> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp @> t2.t')
 WHERE op = '3d @> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp @> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp @> t2.b')
 WHERE op = '3d @> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp @> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp @> t2.b')
 WHERE op = '3d @> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp @> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp @> t2.temp')
 WHERE op = '3d @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '3d <@ tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <@ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <@ t2.b')
 WHERE op = '3d <@ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <@ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <@ t2.b')
 WHERE op = '3d <@ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '3d <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<| t2.b')
 WHERE op = '3d &<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &<| t2.b')
 WHERE op = '3d &<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<| t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<| t2.temp')
 WHERE op = '3d &<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<| t2.b')
 WHERE op = '3d <<| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <<| t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <<| t2.b')
 WHERE op = '3d <<| stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<| t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<| t2.temp')
 WHERE op = '3d <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |>> t2.b')
 WHERE op = '3d |>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |>> t2.b')
 WHERE op = '3d |>> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |>> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |>> t2.temp')
 WHERE op = '3d |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp |&> t2.b')
 WHERE op = '3d |&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp |&> t2.b')
 WHERE op = '3d |&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |&> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '3d |&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp -|- t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp -|- t2.t')
 WHERE op = '3d -|- tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp -|- t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp -|- t2.b')
 WHERE op = '3d -|- stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp -|- t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp -|- t2.b')
 WHERE op = '3d -|- stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp -|- t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp -|- t2.temp')
 WHERE op = '3d -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '3d &<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<# t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &<# t2.b')
 WHERE op = '3d &<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<# t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &<# t2.temp')
 WHERE op = '3d &<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <<# t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp <<# t2.t')
 WHERE op = '3d <<# tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<# t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <<# t2.b')
 WHERE op = '3d <<# stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<# t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <<# t2.temp')
 WHERE op = '3d <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #>> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #>> t2.t')
 WHERE op = '3d #>> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #>> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #>> t2.b')
 WHERE op = '3d #>> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #>> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #>> t2.temp')
 WHERE op = '3d #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #&> t2.t)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_span t2 WHERE t1.temp #&> t2.t')
 WHERE op = '3d #&> tstzspan';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp #&> t2.b')
 WHERE op = '3d #&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #&> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '3d #&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &</ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp &</ t2.b')
 WHERE op = '3d &</ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &</ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp &</ t2.b')
 WHERE op = '3d &</ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &</ t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp &</ t2.temp')
 WHERE op = '3d &</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <</ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp <</ t2.b')
 WHERE op = '3d <</ stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <</ t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp <</ t2.b')
 WHERE op = '3d <</ stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <</ t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp <</ t2.temp')
 WHERE op = '3d <</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp />> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp />> t2.b')
 WHERE op = '3d />> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp />> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp />> t2.b')
 WHERE op = '3d />> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp />> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp />> t2.temp')
 WHERE op = '3d />> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp /&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_box t2 WHERE t1.temp /&> t2.b')
 WHERE op = '3d /&> stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp /&> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_xbox t2 WHERE t1.temp /&> t2.b')
 WHERE op = '3d /&> stbox x';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp /&> t2.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_idx t1, tbl_tpose3d_val t2 WHERE t1.temp /&> t2.temp')
 WHERE op = '3d /&> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = '3d stbox >> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t && t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t && t1.temp')
 WHERE op = '3d tstzspan && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b && t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b && t1.temp')
 WHERE op = '3d stbox && tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = '3d stbox << tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t ~= t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t ~= t1.temp')
 WHERE op = '3d tstzspan ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b ~= t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b ~= t1.temp')
 WHERE op = '3d stbox ~= tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <@ t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <@ t1.temp')
 WHERE op = '3d tstzspan <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <@ t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <@ t1.temp')
 WHERE op = '3d stbox <@ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = '3d tstzspan @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = '3d stbox @> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b |>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b |>> t1.temp')
 WHERE op = '3d stbox |>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<| t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = '3d stbox <<| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t -|- t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t -|- t1.temp')
 WHERE op = '3d tstzspan -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b -|- t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b -|- t1.temp')
 WHERE op = '3d stbox -|- tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = '3d tstzspan #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b #>> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b #>> t1.temp')
 WHERE op = '3d stbox #>> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <<# t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_span t2, tbl_tpose3d_idx t1 WHERE t2.t <<# t1.temp')
 WHERE op = '3d tstzspan <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<# t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <<# t1.temp')
 WHERE op = '3d stbox <<# tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b />> t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b />> t1.temp')
 WHERE op = '3d stbox />> tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <</ t1.temp)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tpose3d_box t2, tbl_tpose3d_idx t1 WHERE t2.b <</ t1.temp')
 WHERE op = '3d stbox <</ tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
   kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| stbox';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
   kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| tpose';
-UPDATE 1
 UPDATE test_tpose_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tpose3d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
   kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tpose3d_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tpose3d_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
 WHERE op = '3d |=| geometry';
-UPDATE 1
 RESET enable_seqscan;
-RESET
 RESET enable_hashjoin;
-RESET
 RESET enable_mergejoin;
-RESET
 RESET enable_sort;
-RESET
 DROP INDEX tbl_tpose2d_idx_kdtree;
-DROP INDEX
 DROP INDEX tbl_tpose3d_idx_kdtree;
-DROP INDEX
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tpose2d_idx;
  count 
 -------
@@ -2858,6 +2144,7 @@ SELECT op, no_idx FROM test_tpose_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
  3d ~= tstzspan        | 14
 (162 rows)
 
+-- The distances of the nearest values are compared, not stated
 SELECT op FROM test_tpose_idx WHERE op LIKE '%|=|%' AND no_idx IS NULL ORDER BY op;
  op 
 ----
@@ -2873,43 +2160,30 @@ ORDER BY op;
 (0 rows)
 
 DROP TABLE test_tpose_idx;
-DROP TABLE
 DROP TABLE tbl_tpose2d_geo;
-DROP TABLE
 DROP TABLE tbl_tpose2d_span;
-DROP TABLE
 DROP TABLE tbl_tpose2d_xbox;
-DROP TABLE
 DROP TABLE tbl_tpose2d_box;
-DROP TABLE
 DROP TABLE tbl_tpose2d_val;
-DROP TABLE
 DROP TABLE tbl_tpose2d_src;
-DROP TABLE
 DROP TABLE tbl_tpose2d_idx;
-DROP TABLE
 DROP TABLE tbl_tpose3d_geo;
-DROP TABLE
 DROP TABLE tbl_tpose3d_span;
-DROP TABLE
 DROP TABLE tbl_tpose3d_xbox;
-DROP TABLE
 DROP TABLE tbl_tpose3d_box;
-DROP TABLE
 DROP TABLE tbl_tpose3d_val;
-DROP TABLE
 DROP TABLE tbl_tpose3d_src;
-DROP TABLE
 DROP TABLE tbl_tpose3d_idx;
-DROP TABLE
 DROP FUNCTION test_probes_index(text);
-DROP FUNCTION
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A column of stbox values indexed by GiST, quad-tree and k-d tree answers the
+-- queries of a tpose as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
+-------------------------------------------------------------------------------
 CREATE TABLE tbl_stbox_tpose AS
 SELECT k, temp::stbox AS b FROM tbl_tpose3d WHERE temp IS NOT NULL;
-SELECT 100
 CREATE TABLE tbl_tpose_q AS
 SELECT temp AS q FROM tbl_tpose3d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
-SELECT 3
 CREATE FUNCTION stbox_tpose_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
     SELECT 1, (SELECT count(*) FROM tbl_stbox_tpose WHERE b << q) FROM tbl_tpose_q
@@ -2957,7 +2231,6 @@ CREATE FUNCTION stbox_tpose_answers() RETURNS text AS $$
     SELECT 22, (SELECT sum(k) FROM (SELECT k FROM tbl_stbox_tpose
       ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_tpose_q) t(o, c);
 $$ LANGUAGE SQL;
-CREATE FUNCTION
 CREATE FUNCTION stbox_tpose_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
@@ -2971,7 +2244,6 @@ BEGIN
   RETURN false;
 END;
 $$;
-CREATE FUNCTION
 CREATE FUNCTION stbox_tpose_indexed() RETURNS text AS $$
   SELECT string_agg(CASE WHEN stbox_tpose_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
   FROM (VALUES
@@ -2998,9 +2270,7 @@ CREATE FUNCTION stbox_tpose_indexed() RETURNS text AS $$
     (21, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b /&> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
     (22, 'SELECT k FROM tbl_stbox_tpose ORDER BY b |=| (SELECT q FROM tbl_tpose_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE FUNCTION
 CREATE TABLE tbl_stbox_tpose_seq AS SELECT stbox_tpose_answers() AS a;
-SELECT 1
 SELECT a FROM tbl_stbox_tpose_seq;
                                                                                      a                                                                                      
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -3008,9 +2278,7 @@ SELECT a FROM tbl_stbox_tpose_seq;
 (1 row)
 
 SET enable_seqscan = off;
-SET
 CREATE INDEX tbl_stbox_tpose_gist_idx ON tbl_stbox_tpose USING gist(b);
-CREATE INDEX
 SELECT stbox_tpose_indexed(), stbox_tpose_answers() = a
 FROM tbl_stbox_tpose_seq;
   stbox_tpose_indexed   | ?column? 
@@ -3019,9 +2287,7 @@ FROM tbl_stbox_tpose_seq;
 (1 row)
 
 DROP INDEX tbl_stbox_tpose_gist_idx;
-DROP INDEX
 CREATE INDEX tbl_stbox_tpose_quad_idx ON tbl_stbox_tpose USING spgist(b);
-CREATE INDEX
 SELECT stbox_tpose_indexed(), stbox_tpose_answers() = a
 FROM tbl_stbox_tpose_seq;
   stbox_tpose_indexed   | ?column? 
@@ -3030,10 +2296,8 @@ FROM tbl_stbox_tpose_seq;
 (1 row)
 
 DROP INDEX tbl_stbox_tpose_quad_idx;
-DROP INDEX
 CREATE INDEX tbl_stbox_tpose_kd_idx ON tbl_stbox_tpose
   USING spgist(b stbox_kdtree_ops);
-CREATE INDEX
 SELECT stbox_tpose_indexed(), stbox_tpose_answers() = a
 FROM tbl_stbox_tpose_seq;
   stbox_tpose_indexed   | ?column? 
@@ -3042,8 +2306,5 @@ FROM tbl_stbox_tpose_seq;
 (1 row)
 
 RESET enable_seqscan;
-RESET
 DROP TABLE tbl_stbox_tpose, tbl_tpose_q, tbl_stbox_tpose_seq;
-DROP TABLE
 DROP FUNCTION stbox_tpose_indexed(), stbox_tpose_answers(), stbox_tpose_probes_index(text);
-DROP FUNCTION

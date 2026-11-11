@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geometry t1, tbl_tgeometry t2
 WHERE g <-> temp IS NOT NULL;
    round    
@@ -40,6 +41,7 @@ WHERE t1.temp <-> t2.temp IS NOT NULL;
  18356064.883226
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geometry3D t1, tbl_tgeometry3D t2
 WHERE g <-> temp IS NOT NULL ORDER BY 1 LIMIT 10;
    round    
@@ -82,6 +84,7 @@ WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
      0
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry t
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
  count 
@@ -292,6 +295,9 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
    104
 (1 row)
 
+-- SELECT COUNT(*) FROM tbl_tgeography3D,
+-- ( SELECT * FROM tbl_geography3D LIMIT 10 ) t
+-- WHERE shortestLine(g, temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
  count 
@@ -299,3 +305,4 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
    100
 (1 row)
 
+-------------------------------------------------------------------------------

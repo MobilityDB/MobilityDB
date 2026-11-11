@@ -1,3 +1,12 @@
+-------------------------------------------------------------------------------
+-- Tests for the static pose chain type
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Input/output
+-- The outer link carries the frame of the chain: its SRID and, where the outer
+-- frame is geographic, its GeodPose marker. Every later link is a rigid
+-- transform read in the axes of the link before it and names no frame.
+-------------------------------------------------------------------------------
 SELECT asEWKT(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))');
                       asewkt                       
 ---------------------------------------------------
@@ -22,12 +31,14 @@ SELECT asEWKT(posechain 'PoseChain(Pose(Point(4 5 6), 1, 0, 0, 0))');
  PoseChain(Pose(POINT Z (4 5 6),1,0,0,0))
 (1 row)
 
+-- A chain of one link is a pose written the long way
 SELECT asEWKT(posechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 0, 0))');
                          asewkt                          
 ---------------------------------------------------------
  SRID=4326;PoseChain(GeodPose(POINT Z (8 47 0),1,0,0,0))
 (1 row)
 
+-- Text and binary representations round trip
 SELECT asEWKT(posechainFromText(asText(posechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 0), 0.25))')));
                         asewkt                         
 -------------------------------------------------------
@@ -48,6 +59,7 @@ SELECT posechainFromHexEWKB(asHexEWKB(posechain 'SRID=3812;PoseChain(Pose(Point(
  t
 (1 row)
 
+-- The plain form carries no SRID, so the value it reads states none
 SELECT posechainFromHexWKB(asHexWKB(posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))')) =
   posechain 'PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))';
  ?column? 
@@ -55,6 +67,8 @@ SELECT posechainFromHexWKB(asHexWKB(posechain 'SRID=3812;PoseChain(Pose(Point(1 
  t
 (1 row)
 
+-- The reader rebuilds every link, so a chain whose links carry quaternions
+-- that move when scaled a second time is what shows the binary form lossless
 SELECT posechainFromBinary(asBinary(c)) = c AS wkb_roundtrip_identity
 FROM (SELECT posechain(ARRAY[
     pose(ST_MakePoint(1, 2, 3), 1 / n, 1 / n, 1 / n, 2 / n),
@@ -65,6 +79,12 @@ FROM (SELECT posechain(ARRAY[
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Errors
+-- Clause 4.2.8 of OGC GeoPose forbids an inner frame from being topocentric,
+-- so only the outer link may be geodetic or carry an SRID, and a chain has one
+-- dimension throughout.
+-------------------------------------------------------------------------------
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0), GeodPose(Point(1 1), 0))';
 ERROR:  Only the first link of a pose chain may be geodetic: link 2 is expressed in the frame the link before it defines
 LINE 1: SELECT posechain 'PoseChain(Pose(Point(0 0), 0), GeodPose(Po...
@@ -81,6 +101,9 @@ SELECT posechain 'PoseChain()';
 ERROR:  Could not parse posechain value: A pose chain requires at least one link
 LINE 1: SELECT posechain 'PoseChain()';
                          ^
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT asEWKT(posechain(ARRAY[pose 'Pose(Point(0 0), 0)', pose 'Pose(Point(1 0), 0)']));
                       asewkt                      
 --------------------------------------------------
@@ -93,6 +116,11 @@ SELECT asEWKT(appendPose(posechain 'PoseChain(Pose(Point(0 0), 0))', pose 'Pose(
  PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversions
+-- Composing the whole chain is what gives it the surface of a pose. Composing
+-- a prefix answers where an intermediate joint is.
+-------------------------------------------------------------------------------
 SELECT asEWKT(posechain(pose 'Pose(Point(1 2), 0.5)'));
              asewkt              
 ---------------------------------
@@ -105,6 +133,9 @@ SELECT asEWKT(pose 'Pose(Point(1 2), 0.5)'::posechain);
  PoseChain(Pose(POINT(1 2),0.5))
 (1 row)
 
+-- A two-link arm turned a quarter turn at the shoulder: the hand is North of it.
+-- The turn is written as pi()/2 rather than as a literal, which keeps the
+-- quarter turn exact without spelling seventeen digits into the test.
 SELECT asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(0,0), pi()/2),
   pose(ST_Point(10,0), 0)])), 6));
            asewkt           
@@ -112,6 +143,7 @@ SELECT asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(0,0), pi()/2),
  Pose(POINT(0 10),1.570796)
 (1 row)
 
+-- Each prefix of a three-link arm, one link turned a quarter turn from its parent
 SELECT asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(0,0), 0),
   pose(ST_Point(1,0), pi()/2), pose(ST_Point(1,0), 0)]), n), 6))
   FROM generate_series(1, 3) AS n;
@@ -129,6 +161,7 @@ SELECT ST_AsText(round(point(posechain(ARRAY[pose(ST_Point(0,0), 0),
  POINT(1 1)
 (1 row)
 
+-- The box spans every joint, not only the innermost one
 SELECT round(stbox(posechain(ARRAY[pose(ST_Point(0,0), 0),
   pose(ST_Point(1,0), pi()/2), pose(ST_Point(1,0), 0)])), 6);
         round         
@@ -136,6 +169,11 @@ SELECT round(stbox(posechain(ARRAY[pose(ST_Point(0,0), 0),
  STBOX X((0,0),(1,1))
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessors
+-- poseN returns the link as it is stored, in the frame the link before it
+-- defines; pose(chain, n) returns where that frame is in the outer frame.
+-------------------------------------------------------------------------------
 SELECT numPoses(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0), Pose(Point(2 0), 0))');
  numposes 
 ----------
@@ -172,12 +210,20 @@ SELECT asEWKT(poses(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0
  {"Pose(POINT(0 0),0)","Pose(POINT(1 0),0)"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformations
+-------------------------------------------------------------------------------
 SELECT asEWKT(round(posechain 'PoseChain(Pose(Point(1.123456789 2.123456789), 0.123456789), Pose(Point(3.123456789 0), 0))', 6));
                                     asewkt                                    
 ------------------------------------------------------------------------------
  PoseChain(Pose(POINT(1.123457 2.123457),0.123457),Pose(POINT(3.123457 0),0))
 (1 row)
 
+-------------------------------------------------------------------------------
+-- SRID
+-- Only the outer link names a frame, so a change of frame moves that link and
+-- leaves every rigid transform below it as it was.
+-------------------------------------------------------------------------------
 SELECT SRID(posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))');
  srid 
 ------
@@ -202,6 +248,9 @@ SELECT asEWKT(round(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 
  SRID=4978;PoseChain(GeodPose(POINT Z (6378137 0 0),0.5,0.5,0.5,0.5),Pose(POINT Z (0 0 1),1,0,0,0))
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' = posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
  ?column? 
 ----------
@@ -214,6 +263,7 @@ SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' < posechain 'PoseChain(Pose(Po
  t
 (1 row)
 
+-- A planar and a geodetic chain of one SRID differ, the planar one first
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' = posechain 'PoseChain(GeodPose(Point(0 0), 0))';
  ?column? 
 ----------
@@ -238,6 +288,9 @@ SELECT cmp(posechain 'PoseChain(Pose(Point(0 0), 0))', posechain 'PoseChain(Pose
   -1
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Hash
+-------------------------------------------------------------------------------
 SELECT hash(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))') =
   hash(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))');
  ?column? 
@@ -252,6 +305,10 @@ SELECT hashExtended(posechain 'PoseChain(Pose(Point(0 0), 0))', 1) =
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT ST_AsEWKT(posechain 'PoseChain(Pose(Point(1 2),0.5))'::geometry);
  st_asewkt  
 ------------

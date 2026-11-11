@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Ever comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb ?= t2.temp IS NOT NULL;
  count 
 -------
@@ -34,6 +37,9 @@ SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp ?<> t2.temp IS N
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Always comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb %= t2.temp IS NOT NULL;
  count 
 -------
@@ -70,6 +76,9 @@ SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp %<> t2.temp IS N
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb #= t2.temp IS NOT NULL;
  count 
 -------
@@ -106,3 +115,4 @@ SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp #<> t2.temp IS N
    100
 (1 row)
 
+-------------------------------------------------------------------------------

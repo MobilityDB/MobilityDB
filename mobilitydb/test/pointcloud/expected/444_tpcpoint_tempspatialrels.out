@@ -1,76 +1,105 @@
-SELECT asText(tIntersects(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-- Temporal spatial relationships for tpcpoint. Every one of them converts its
+-- operands to the temporal geometry point the schema-aware projection gives
+-- and re-delegates, the three predicates its Z-carrying values can answer.
+-- That projection promotes step to linear, so tgeompoint — which carries
+-- linear interpolation, unlike tgeometry — is what a sequence can reach.
+\set square 'geometry ''SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'''
+\set inside 'tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), ''2001-01-01''::timestamptz)'
+\set corner 'tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), ''2001-01-01''::timestamptz)'
+\set far 'tpcpoint(PC_MakePoint(1, ARRAY[9.0, 9.0, 0.0]::float[]), ''2001-01-02''::timestamptz)'
+-------------------------------------------------------------------------------
+-- tIntersects and tDisjoint are negations of each other
+-------------------------------------------------------------------------------
+SELECT asText(tIntersects(:inside, :square));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz)));
+SELECT asText(tIntersects(:square, :inside));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDisjoint(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(:inside, :square));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDisjoint(tpcpoint(PC_MakePoint(1, ARRAY[9.0, 9.0, 0.0]::float[]), '2001-01-02'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(:far, :square));
              astext             
 --------------------------------
  t@Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', 0.0));
+-------------------------------------------------------------------------------
+-- tDwithin
+-------------------------------------------------------------------------------
+SELECT asText(tDwithin(:inside, :square, 0.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), geometry 'SRID=0;Point(1 5)', 2.0));
+SELECT asText(tDwithin(:inside, geometry 'SRID=0;Point(1 5)', 2.0));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), 0.0));
+SELECT asText(tDwithin(:inside, :inside, 0.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A sequence, whose projection carries linear interpolation
+-------------------------------------------------------------------------------
+\set seq 'tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), ''2001-01-01''::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), ''2001-01-02''::timestamptz)])'
+SELECT asText(tIntersects(:seq, :square));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(tIntersects(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)])));
+SELECT asText(tIntersects(:square, :seq));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(tDisjoint(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(:seq, :square));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 12:00:00 2001 PST], (t@Mon Jan 01 12:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(tDwithin(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Point(1 1)', 1.0));
+SELECT asText(tDwithin(:seq, geometry 'SRID=0;Point(1 1)', 1.0));
                                                                        astext                                                                       
 ----------------------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(tIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))')) =
-  asText(tIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)])::tgeompoint, geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))')) AS ti_agrees;
+-- The answer is the one the projection itself gives
+SELECT asText(tIntersects(:seq, :square)) =
+  asText(tIntersects(:seq::tgeompoint, :square)) AS ti_agrees;
  ti_agrees 
 -----------
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The matrix of the cast target
+--
+-- Z is one dimension a schema may state by name, not a property of the type,
+-- so a schema declaring X and Y alone answers every planar relationship while
+-- one carrying Z meets the engine's refusal, as a temporal geometry point does.
+-------------------------------------------------------------------------------
 INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (7, 0,
 '<?xml version="1.0" encoding="UTF-8"?>
 <pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"
@@ -96,40 +125,43 @@ INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (7, 0,
   </pc:metadata>
 </pc:PointCloudSchema>')
   ON CONFLICT (pcid) DO NOTHING;
-INSERT 0 0
-SELECT asText(tContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+\set flat 'tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), ''2024-01-01''::timestamptz)'
+\set flatsquare 'geometry ''SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))'''
+SELECT asText(tContains(:flatsquare, :flat));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2024 PST
 (1 row)
 
-SELECT asText(tCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+SELECT asText(tCovers(:flatsquare, :flat));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2024 PST
 (1 row)
 
-SELECT asText(tTouches(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+SELECT asText(tTouches(:flatsquare, :flat));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2024 PST
 (1 row)
 
-SELECT asText(tTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))'));
+SELECT asText(tTouches(:flat, :flatsquare));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2024 PST
 (1 row)
 
-SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = tContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS tc_agrees,
-       tCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = tCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS tcv_agrees,
-       tTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') = tTouches((tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint, geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') AS ttc_agrees;
+-- Every new cell agrees with the cast written out by hand
+SELECT tContains(:flatsquare, :flat) = tContains(:flatsquare, (:flat)::tgeompoint) AS tc_agrees,
+       tCovers(:flatsquare, :flat) = tCovers(:flatsquare, (:flat)::tgeompoint) AS tcv_agrees,
+       tTouches(:flat, :flatsquare) = tTouches((:flat)::tgeompoint, :flatsquare) AS ttc_agrees;
  tc_agrees | tcv_agrees | ttc_agrees 
 -----------+------------+------------
  t         | t          | t
 (1 row)
 
 /* Errors: a schema carrying Z in a planar relationship */
-SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz));
+SELECT tContains(:flatsquare, :inside);
 ERROR:  The tgeompoint cannot have Z dimension
 CONTEXT:  SQL function "tcontains" statement 1
+-------------------------------------------------------------------------------

@@ -1,12 +1,12 @@
-COPY  tbl_tquadbin TO STDOUT (FORMAT BINARY);
-COPY 100
+-- Table-based tests for the tquadbin type, exercised over tbl_tquadbin.
+-------------------------------------------------------------------------------
+-- Send / receive
+-------------------------------------------------------------------------------
+\copy tbl_tquadbin TO 'tbl_tquadbin' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tquadbin_tmp;
 NOTICE:  table "tbl_tquadbin_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_tmp AS TABLE tbl_tquadbin WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_tquadbin_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_tquadbin_tmp FROM 'tbl_tquadbin' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 
 -------
@@ -14,7 +14,9 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin_tmp t2 WHERE t1.k = t2.k AND 
 (1 row)
 
 DROP TABLE tbl_tquadbin_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT SUM(numInstants(temp)) FROM tbl_tquadbin;
  sum  
 ------
@@ -69,6 +71,9 @@ SELECT COUNT(*) FROM tbl_tquadbin WHERE memSize(temp) > 0;
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restrictions
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin WHERE atTime(temp, getTime(temp)) IS NOT NULL;
  count 
 -------
@@ -81,6 +86,9 @@ SELECT COUNT(*) FROM tbl_tquadbin WHERE minusTime(temp, getTime(temp)) IS NULL;
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE t1.temp = t2.temp;
  count 
 -------
@@ -93,3 +101,4 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE t1.temp <> t2.temp;
   9900
 (1 row)
 
+-------------------------------------------------------------------------------

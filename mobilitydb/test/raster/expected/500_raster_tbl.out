@@ -1,7 +1,12 @@
+-- Table-based tests for the raquet raster tile type, exercised over
+-- tbl_raquet. The fixture holds 100 rows, 10 of them NULL, with tiles spread
+-- over zoom levels 1 to 8, so tiles of one zoom partition the plane while
+-- tiles of different zooms overlap.
 SET timezone = 'UTC';
-SET
 SET datestyle = 'ISO, MDY';
-SET
+-------------------------------------------------------------------------------
+-- Fixture shape
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_raquet;
  count 
 -------
@@ -26,21 +31,21 @@ SELECT COUNT(DISTINCT bandPixelType(tile)) FROM tbl_raquet;
      1
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Input/output round-trip
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_raquet WHERE tile::text::raquet <> tile;
  count 
 -------
      0
 (1 row)
 
-COPY  tbl_raquet TO STDOUT (FORMAT BINARY);
-COPY 100
+-- Binary round-trip through COPY, exercising the type's send and receive pair
+\copy tbl_raquet TO 'tbl_raquet' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_raquet_tmp;
 NOTICE:  table "tbl_raquet_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_raquet_tmp AS TABLE tbl_raquet WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_raquet_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_raquet_tmp FROM 'tbl_raquet' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet_tmp t2
 WHERE t1.k = t2.k AND t1.tile <> t2.tile;
  count 
@@ -49,7 +54,9 @@ WHERE t1.k = t2.k AND t1.tile <> t2.tile;
 (1 row)
 
 DROP TABLE tbl_raquet_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2 WHERE t1.tile = t2.tile;
  count 
 -------
@@ -86,6 +93,7 @@ SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2 WHERE t1.tile >= t2.tile;
   4095
 (1 row)
 
+-- The comparison function agrees with the operators it backs
 SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2
 WHERE (cmp(t1.tile, t2.tile) < 0) <> (t1.tile < t2.tile);
  count 
@@ -100,6 +108,7 @@ WHERE (cmp(t1.tile, t2.tile) = 0) <> (t1.tile = t2.tile);
      0
 (1 row)
 
+-- Equal tiles hash equally, which is what the hash operator class requires
 SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2
 WHERE t1.tile = t2.tile AND hash(t1.tile) <> hash(t2.tile);
  count 
@@ -115,6 +124,10 @@ WHERE t1.tile = t2.tile
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Tile footprint
+-------------------------------------------------------------------------------
+-- Every tile has a footprint, and it stays inside the Web-Mercator world
 SELECT COUNT(*) FROM tbl_raquet WHERE tile IS NOT NULL AND stbox(tile) IS NULL;
  count 
 -------
@@ -128,12 +141,15 @@ WHERE NOT (stbox(tile) && stbox 'SRID=4326;STBOX X((-180,-86),(180,86))');
      0
 (1 row)
 
+-- The cast and the function agree
 SELECT COUNT(*) FROM tbl_raquet WHERE tile::stbox <> stbox(tile);
  count 
 -------
      0
 (1 row)
 
+-- A tile of higher zoom covers less ground, so the footprint widths of the
+-- fixture span the zoom levels it holds
 SELECT round(MIN(ST_XMax(b::geometry) - ST_XMin(b::geometry))::numeric, 6),
        round(MAX(ST_XMax(b::geometry) - ST_XMin(b::geometry))::numeric, 6)
 FROM (SELECT stbox(tile) AS b FROM tbl_raquet WHERE tile IS NOT NULL) t;
@@ -142,12 +158,18 @@ FROM (SELECT stbox(tile) AS b FROM tbl_raquet WHERE tile IS NOT NULL) t;
  1.406250 | 180.000000
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Indexing over the footprint
+-------------------------------------------------------------------------------
+-- The extent aggregate composes over the cast
 SELECT extent(stbox(tile)) IS NOT NULL FROM tbl_raquet;
  ?column? 
 ----------
  t
 (1 row)
 
+-- A functional index over the footprint answers the overlap filter, and gives
+-- what a sequential scan gives
 SELECT COUNT(*) FROM tbl_raquet
 WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
  count 
@@ -156,9 +178,7 @@ WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
 (1 row)
 
 CREATE INDEX tbl_raquet_rtree_idx ON tbl_raquet USING gist (stbox(tile));
-CREATE INDEX
 SET enable_seqscan = off;
-SET
 SELECT COUNT(*) FROM tbl_raquet
 WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
  count 
@@ -167,13 +187,9 @@ WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
 (1 row)
 
 SET enable_seqscan = on;
-SET
 DROP INDEX tbl_raquet_rtree_idx;
-DROP INDEX
 CREATE INDEX tbl_raquet_quadtree_idx ON tbl_raquet USING spgist (stbox(tile));
-CREATE INDEX
 SET enable_seqscan = off;
-SET
 SELECT COUNT(*) FROM tbl_raquet
 WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
  count 
@@ -182,9 +198,12 @@ WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
 (1 row)
 
 SET enable_seqscan = on;
-SET
 DROP INDEX tbl_raquet_quadtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
+-- Sampling a trajectory across the tiles that cover it
+-------------------------------------------------------------------------------
+-- The array form samples the trajectory from every tile at once, so it covers
+-- at least as many instants as any single tile does
 WITH traj AS (
   SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01,
     Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
@@ -199,6 +218,7 @@ GROUP BY traj.t;
  t
 (1 row)
 
+-- The result never holds more instants than the trajectory has
 WITH traj AS (
   SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01,
     Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
@@ -212,6 +232,8 @@ GROUP BY traj.t;
  t
 (1 row)
 
+-- Restricting the array to the tiles whose footprint meets the trajectory
+-- gives the same result as passing every tile
 WITH traj AS (
   SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01,
     Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
@@ -228,3 +250,4 @@ FROM traj;
  t
 (1 row)
 
+-------------------------------------------------------------------------------

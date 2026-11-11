@@ -1,3 +1,6 @@
+-- Equality of two lines with the same points, the second with one more vertex,
+-- in the base values, the temporal values, the sets, the hash, the B-tree order
+-- and the normalization of a sequence
 SELECT geometry 'Linestring(0 0,2 0)' = geometry 'Linestring(0 0,1 0,2 0)';
  ?column? 
 ----------
@@ -83,32 +86,21 @@ SELECT ST_AsText(valueAtTimestamp(tgeometry 'Interp=Step;[Linestring(0 0,2 0)@20
 (1 row)
 
 CREATE TEMP TABLE tbl_geo_eq(t tgeometry);
-CREATE TABLE
 INSERT INTO tbl_geo_eq VALUES (tgeometry '[Linestring(0 0,2 0)@2001-01-01]'), (tgeometry '[Linestring(0 0,1 0,2 0)@2001-01-01]');
-INSERT 0 2
-SET enable_hashagg = on;
-SET
-SET enable_sort = off;
-SET
+SET enable_hashagg = on; SET enable_sort = off;
 SELECT COUNT(*) FROM (SELECT DISTINCT t FROM tbl_geo_eq) s;
  count 
 -------
      2
 (1 row)
 
-SET enable_hashagg = off;
-SET
-SET enable_sort = on;
-SET
+SET enable_hashagg = off; SET enable_sort = on;
 SELECT COUNT(*) FROM (SELECT DISTINCT t FROM tbl_geo_eq) s;
  count 
 -------
      2
 (1 row)
 
-RESET enable_hashagg;
-RESET
-RESET enable_sort;
-RESET
+RESET enable_hashagg; RESET enable_sort;
 DROP TABLE tbl_geo_eq;
-DROP TABLE
+-------------------------------------------------------------------------------

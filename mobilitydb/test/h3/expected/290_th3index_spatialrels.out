@@ -1,3 +1,14 @@
+-------------------------------------------------------------------------------
+-- Ever and always spatial relationships between a th3index and a geography,
+-- or two th3index values.
+--
+-- An H3 cell is a region of the sphere bounded by great-circle arcs, so each
+-- relationship is the one of the temporal geography of the cell boundary,
+-- answered on the sphere; the operands are geographies and a distance is in
+-- metres.
+-------------------------------------------------------------------------------
+-- A res-7 cell over Brussels (centre ~ 4.297, 50.804) and a region that
+-- strictly contains it.
 WITH t AS (
   SELECT th3index '871fa44a8ffffff@2001-01-01' AS cell_inst,
          geography 'POLYGON((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90, 4.20 50.70))' AS big_region,
@@ -18,6 +29,9 @@ FROM t;
  t         | t         | t             | t           | t          | t          | f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- An empty geography is ever reached by nothing, in either order
+-------------------------------------------------------------------------------
 SELECT eIntersects(geography 'Point EMPTY', th3index '871fa44a8ffffff@2001-01-01');
  eintersects 
 -------------
@@ -42,6 +56,10 @@ SELECT eDwithin(th3index '871fa44a8ffffff@2001-01-01', geography 'Point EMPTY', 
  f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Always variants: at every instant the cell lies in the big region and away
+-- from the far one.
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT th3index '[871fa44a8ffffff@2001-01-01, 871fa44b1ffffff@2001-01-02]' AS cell_seq,
          geography 'POLYGON((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90, 4.20 50.70))' AS big_region,
@@ -57,6 +75,14 @@ FROM t;
  t      | t       | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A geodetic cell is the region H3 assigns its points to, which eIntersects
+-- of a geography reads; the cell of a geometry point is the planar cell, the
+-- polygon joining its vertices with straight lines in longitude and latitude,
+-- which latLngToCell of a geometry reads. The first point lies in the
+-- resolution-0 cell of the queries below and 91 km outside that polygon; the
+-- second lies 53 km inside the polygon and outside the cell.
+-------------------------------------------------------------------------------
 SELECT latLngToCell(geometry 'SRID=4326;POINT(16.6328 71.9281)', 0) = h3index '8009fffffffffff',
   eIntersects(th3index '8009fffffffffff@2001-01-01', geography 'POINT(16.6328 71.9281)'),
   eDisjoint(th3index '8009fffffffffff@2001-01-01', geography 'POINT(16.6328 71.9281)');
@@ -73,6 +99,10 @@ SELECT latLngToCell(geometry 'SRID=4326;POINT(-0.8367 59.2711)', 0) = h3index '8
  t        | f           | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A temporal geography declares no contains relationship, and neither does
+-- a th3index; a geometry operand is read as the geography it converts to.
+-------------------------------------------------------------------------------
 SELECT eContains(geography 'POINT(4.297 50.804)', th3index '871fa44a8ffffff@2001-01-01');
 ERROR:  function econtains(geography, th3index) does not exist
 LINE 1: SELECT eContains(geography 'POINT(4.297 50.804)', th3index '...
@@ -84,6 +114,9 @@ SELECT eIntersects(th3index '871fa44a8ffffff@2001-01-01', geometry 'SRID=4326;PO
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Symmetry: the relationship of two cells does not depend on their order.
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT th3index '[871fa44a8ffffff@2001-01-01, 871fa44b1ffffff@2001-01-02]' AS seq1,
          th3index '[871fa44b1ffffff@2001-01-01, 871fa44a8ffffff@2001-01-02]' AS seq2
@@ -95,3 +128,4 @@ FROM t;
  t
 (1 row)
 
+-------------------------------------------------------------------------------

@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- File span_ops.c
+-- Tests of operators that do not involve indexes for span types.
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
@@ -148,6 +152,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t + t2.t IS
   9801
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
@@ -298,6 +303,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t - t2.t IS
   9702
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
@@ -448,6 +454,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t * t2.t IS
     99
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intspanset t2;
  min 
 -----
@@ -569,35 +576,36 @@ SELECT MIN(t1.d <-> t2.d) FROM tbl_datespanset t1, tbl_datespanset t2;
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzspanset t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+ @ 0
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_tstzspanset t2;
-   min    
-----------
- 00:35:00
+    min    
+-----------
+ @ 35 mins
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspanset t1, tbl_timestamptz t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+ @ 0
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspanset t1, tbl_tstzspan t2;
-   min    
-----------
- 00:35:00
+    min    
+-----------
+ @ 35 mins
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspanset t1, tbl_tstzspanset t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+ @ 0
 (1 row)
 
+-- The named portable form of the <-> operator tested above
 SELECT spansetDistance(1, intspanset '{[3, 7]}');
  spansetdistance 
 -----------------
@@ -640,3 +648,4 @@ SELECT spansetDistance(date '2001-01-01', datespanset '{[2001-01-05, 2001-01-10]
                4
 (1 row)
 
+-------------------------------------------------------------------------------
