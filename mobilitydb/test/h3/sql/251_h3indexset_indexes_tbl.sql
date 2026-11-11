@@ -21,7 +21,7 @@ $$;
 DROP TABLE IF EXISTS tbl_h3indexset_idx;
 -- The sets and the union of every two consecutive ones, so that sets of
 -- distinct rows overlap and contain one another
-CREATE TABLE tbl_h3indexset_idx AS
+CREATE TEMP TABLE tbl_h3indexset_idx AS
 WITH src AS (
 SELECT k, s FROM tbl_h3indexset)
 SELECT k, s FROM src
@@ -30,7 +30,7 @@ SELECT t1.k + 100000, t1.s + t2.s FROM src t1, src t2 WHERE t2.k = t1.k + 1;
 ANALYZE tbl_h3indexset_idx;
 
 DROP TABLE IF EXISTS test_h3indexset_idx;
-CREATE TABLE test_h3indexset_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_h3indexset_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 

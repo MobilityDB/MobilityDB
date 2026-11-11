@@ -8,8 +8,8 @@
 DROP TABLE IF EXISTS tbl_tgeompoint_tmp;
 DROP TABLE IF EXISTS tbl_tgeogpoint_tmp;
 
-CREATE TABLE tbl_tgeompoint_tmp AS TABLE tbl_tgeompoint WITH NO DATA;
-CREATE TABLE tbl_tgeogpoint_tmp AS TABLE tbl_tgeogpoint WITH NO DATA;
+CREATE TEMP TABLE tbl_tgeompoint_tmp AS TABLE tbl_tgeompoint WITH NO DATA;
+CREATE TEMP TABLE tbl_tgeogpoint_tmp AS TABLE tbl_tgeogpoint WITH NO DATA;
 
 \copy tbl_tgeompoint_tmp FROM 'tbl_tgeompoint' (FORMAT BINARY);
 \copy tbl_tgeogpoint_tmp FROM 'tbl_tgeogpoint' (FORMAT BINARY);

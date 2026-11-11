@@ -199,7 +199,7 @@ END;
 $$;
 DROP TABLE IF EXISTS tbl_tposechain_rel;
 NOTICE:  table "tbl_tposechain_rel" does not exist, skipping
-CREATE TABLE tbl_tposechain_rel AS
+CREATE TEMP TABLE tbl_tposechain_rel AS
 SELECT k, tposechain(posechain(ARRAY[pose(ST_Point(k % 10, k / 10), 0),
   pose(ST_Point(1, 0), 0)]), timestamptz '2001-01-01') AS temp
 FROM generate_series(0, 99) AS k;

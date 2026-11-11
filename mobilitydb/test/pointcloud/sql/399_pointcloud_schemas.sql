@@ -168,7 +168,7 @@ INSERT INTO pointcloud_formats (pcid, srid, schema)
 SELECT srid, schema LIKE '%Easting%' FROM pointcloud_formats WHERE pcid = 93;
 
 -- A value given as its text is decoded alike
-CREATE TABLE tbl_pcformats_point AS
+CREATE TEMP TABLE tbl_pcformats_point AS
   SELECT PC_MakePoint(93, ARRAY[1.23, 104.56, 7.5])::text AS hex;
 SELECT PC_Get(hex::pcpoint, 'X') FROM tbl_pcformats_point;
 

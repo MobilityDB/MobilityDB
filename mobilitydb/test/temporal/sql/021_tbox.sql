@@ -31,14 +31,14 @@ SELECT tbox 'TBOXFLOAT X((2,2001-01-02),(1,2001-01-01))XXXX';
 
 \copy tbl_tboxfloat TO 'tbl_tboxfloat' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tboxfloat_tmp;
-CREATE TABLE tbl_tboxfloat_tmp AS TABLE tbl_tboxfloat WITH NO DATA;
+CREATE TEMP TABLE tbl_tboxfloat_tmp AS TABLE tbl_tboxfloat WITH NO DATA;
 \copy tbl_tboxfloat_tmp FROM 'tbl_tboxfloat' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_tboxfloat_tmp;
 
 \copy tbl_tboxint TO 'tbl_tboxint' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tboxint_tmp;
-CREATE TABLE tbl_tboxint_tmp AS TABLE tbl_tboxint WITH NO DATA;
+CREATE TEMP TABLE tbl_tboxint_tmp AS TABLE tbl_tboxint WITH NO DATA;
 \copy tbl_tboxint_tmp FROM 'tbl_tboxint' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_tboxint_tmp;

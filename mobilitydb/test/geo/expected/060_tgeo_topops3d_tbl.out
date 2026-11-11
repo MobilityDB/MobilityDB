@@ -14,7 +14,7 @@ NOTICE:  index "tbl_tgeography3d_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_topops3d;
 NOTICE:  table "test_topops3d" does not exist, skipping
-CREATE TABLE test_topops3d(
+CREATE TEMP TABLE test_topops3d(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

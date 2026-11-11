@@ -4,7 +4,7 @@
 \copy tbl_npoint TO 'tbl_npoint' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_npoint_tmp;
 NOTICE:  table "tbl_npoint_tmp" does not exist, skipping
-CREATE TABLE tbl_npoint_tmp AS TABLE tbl_npoint WITH NO DATA;
+CREATE TEMP TABLE tbl_npoint_tmp AS TABLE tbl_npoint WITH NO DATA;
 \copy tbl_npoint_tmp FROM 'tbl_npoint' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint_tmp t2 WHERE t1.k = t2.k AND t1.np <> t2.np;
  count 
@@ -16,7 +16,7 @@ DROP TABLE tbl_npoint_tmp;
 \copy tbl_nsegment TO 'tbl_nsegment' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_nsegment_tmp;
 NOTICE:  table "tbl_nsegment_tmp" does not exist, skipping
-CREATE TABLE tbl_nsegment_tmp AS TABLE tbl_nsegment WITH NO DATA;
+CREATE TEMP TABLE tbl_nsegment_tmp AS TABLE tbl_nsegment WITH NO DATA;
 \copy tbl_nsegment_tmp FROM 'tbl_nsegment' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment_tmp t2 WHERE t1.k = t2.k AND t1.ns <> t2.ns;
  count 

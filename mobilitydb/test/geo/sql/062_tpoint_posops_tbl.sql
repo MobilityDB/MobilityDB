@@ -12,7 +12,7 @@ DROP INDEX IF EXISTS tbl_tgeogpoint_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_posops;
-CREATE TABLE test_posops(
+CREATE TEMP TABLE test_posops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,
@@ -500,7 +500,7 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tgeompoint_possel;
-CREATE TABLE tbl_tgeompoint_possel AS
+CREATE TEMP TABLE tbl_tgeompoint_possel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.temp
 FROM tbl_tgeompoint t1, generate_series(1, 100) t2(k);
 ANALYZE tbl_tgeompoint_possel;

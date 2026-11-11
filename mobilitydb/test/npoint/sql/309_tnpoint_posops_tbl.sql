@@ -7,7 +7,7 @@ DROP INDEX IF EXISTS tbl_tnpoint_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_tnpoint_posops;
-CREATE TABLE test_tnpoint_posops(
+CREATE TEMP TABLE test_tnpoint_posops(
   op char(3),
   leftarg text,
   rightarg text,

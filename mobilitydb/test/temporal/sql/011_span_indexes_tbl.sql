@@ -20,7 +20,7 @@ DROP INDEX IF EXISTS tbl_tstzspan_big_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_idxops;
-CREATE TABLE test_idxops(
+CREATE TEMP TABLE test_idxops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,
@@ -805,7 +805,7 @@ DROP TABLE test_idxops;
 -- values is what builds such a node.
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tstzspan_allthesame AS
+CREATE TEMP TABLE tbl_tstzspan_allthesame AS
   SELECT k, tstzspan '[2001-01-01, 2001-01-02]' AS t FROM generate_series(1, 1000) k;
 CREATE INDEX tbl_tstzspan_allthesame_quadtree_idx ON tbl_tstzspan_allthesame
   USING SPGIST(t);

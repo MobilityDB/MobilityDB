@@ -4,7 +4,7 @@
 
 \copy tbl_pose2d TO 'tbl_pose2d' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_pose2d_tmp;
-CREATE TABLE tbl_pose2d_tmp AS TABLE tbl_pose2d WITH NO DATA;
+CREATE TEMP TABLE tbl_pose2d_tmp AS TABLE tbl_pose2d WITH NO DATA;
 \copy tbl_pose2d_tmp FROM 'tbl_pose2d' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d_tmp t2 WHERE t1.k = t2.k AND t1.pose <> t2.pose;
 DROP TABLE tbl_pose2d_tmp;

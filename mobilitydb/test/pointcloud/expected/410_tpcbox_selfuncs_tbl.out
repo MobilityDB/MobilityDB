@@ -16,7 +16,7 @@ END;
 $$;
 DROP TABLE IF EXISTS tbl_tpcbox_sel;
 NOTICE:  table "tbl_tpcbox_sel" does not exist, skipping
-CREATE TABLE tbl_tpcbox_sel AS
+CREATE TEMP TABLE tbl_tpcbox_sel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.b
 FROM tbl_tpcbox t1, generate_series(1, 100) t2(k);
 ANALYZE tbl_tpcbox_sel;

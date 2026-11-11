@@ -6,7 +6,7 @@
 \copy tbl_jsonbset TO 'tbl_jsonbset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_jsonbset_tmp;
 NOTICE:  table "tbl_jsonbset_tmp" does not exist, skipping
-CREATE TABLE tbl_jsonbset_tmp AS TABLE tbl_jsonbset WITH NO DATA;
+CREATE TEMP TABLE tbl_jsonbset_tmp AS TABLE tbl_jsonbset WITH NO DATA;
 \copy tbl_jsonbset_tmp FROM 'tbl_jsonbset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
  count 

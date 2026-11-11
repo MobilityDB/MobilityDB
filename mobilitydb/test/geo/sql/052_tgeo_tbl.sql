@@ -8,8 +8,8 @@
 DROP TABLE IF EXISTS tbl_tgeometry_tmp;
 DROP TABLE IF EXISTS tbl_tgeography_tmp;
 
-CREATE TABLE tbl_tgeometry_tmp AS TABLE tbl_tgeometry WITH NO DATA;
-CREATE TABLE tbl_tgeography_tmp AS TABLE tbl_tgeography WITH NO DATA;
+CREATE TEMP TABLE tbl_tgeometry_tmp AS TABLE tbl_tgeometry WITH NO DATA;
+CREATE TEMP TABLE tbl_tgeography_tmp AS TABLE tbl_tgeography WITH NO DATA;
 
 \copy tbl_tgeometry_tmp FROM 'tbl_tgeometry' (FORMAT BINARY);
 \copy tbl_tgeography_tmp FROM 'tbl_tgeography' (FORMAT BINARY);

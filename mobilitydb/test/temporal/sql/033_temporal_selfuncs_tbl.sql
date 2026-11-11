@@ -55,7 +55,7 @@ DECLARE
   k INT;
 BEGIN
 DROP TABLE IF EXISTS execution_stats;
-CREATE TABLE IF NOT EXISTS execution_stats
+CREATE TEMP TABLE IF NOT EXISTS execution_stats
 (Query CHAR(5),
 StartTime TIMESTAMP,
 QFilter XML,

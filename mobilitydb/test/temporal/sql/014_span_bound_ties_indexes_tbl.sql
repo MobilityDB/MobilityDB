@@ -11,13 +11,13 @@
 DROP TABLE IF EXISTS tbl_floatspan_ties, tbl_floatspan_ties_q,
   tbl_tstzspan_ties, tbl_tstzspan_ties_q, ties_noidx, ties_idx, ties_plan;
 
-CREATE TABLE tbl_floatspan_ties(k int, f floatspan);
-CREATE TABLE tbl_tstzspan_ties(k int, f tstzspan);
-CREATE TABLE tbl_floatspan_ties_q AS
+CREATE TEMP TABLE tbl_floatspan_ties(k int, f floatspan);
+CREATE TEMP TABLE tbl_tstzspan_ties(k int, f tstzspan);
+CREATE TEMP TABLE tbl_floatspan_ties_q AS
 SELECT k, (CASE WHEN k % 3 = 0 THEN '[' ELSE '(' END || (k % 23) || ', ' ||
   (k % 23 + 1 + (k * 3) % 5) || CASE WHEN k % 5 < 2 THEN ']' ELSE ')' END)::floatspan AS f
 FROM generate_series(1, 120) k;
-CREATE TABLE tbl_tstzspan_ties_q AS
+CREATE TEMP TABLE tbl_tstzspan_ties_q AS
 SELECT k, span(timestamptz 'epoch' + (11323 + k % 23) * interval '1 day',
   timestamptz 'epoch' + (11323 + k % 23 + 1 + (k * 3) % 5) * interval '1 day',
   k % 3 = 0, k % 5 < 2) AS f
@@ -48,9 +48,9 @@ BEGIN
   RETURN found;
 END $$ LANGUAGE plpgsql;
 
-CREATE TABLE ties_noidx(n int, tbl text, op text, k int, c bigint);
-CREATE TABLE ties_idx(n int, idx text, tbl text, op text, k int, c bigint);
-CREATE TABLE ties_plan(n int, idx text, tbl text, op text, uses_index bool);
+CREATE TEMP TABLE ties_noidx(n int, tbl text, op text, k int, c bigint);
+CREATE TEMP TABLE ties_idx(n int, idx text, tbl text, op text, k int, c bigint);
+CREATE TEMP TABLE ties_plan(n int, idx text, tbl text, op text, uses_index bool);
 CREATE TEMP TABLE ties_ops(tbl text, op text);
 INSERT INTO ties_ops
 SELECT 'tbl_floatspan_ties', op

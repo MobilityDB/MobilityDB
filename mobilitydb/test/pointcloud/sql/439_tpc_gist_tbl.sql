@@ -290,7 +290,7 @@ CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
   SELECT timestamptz '2001-01-01' + d * interval '1 day'
 $$ LANGUAGE sql IMMUTABLE;
 
-CREATE TABLE tbl_index_structures AS
+CREATE TEMP TABLE tbl_index_structures AS
   SELECT k, CASE k % 4
     WHEN 0 THEN tpcboxXT(k % 50, k % 47, k % 50 + 2, k % 47 + 2,
       span(day_of(k % 40), day_of(k % 40 + 2)), 1)
@@ -321,7 +321,7 @@ DROP FUNCTION index_structures(text, text, text[], text[], text[]);
 -- entry stays under the one |=| computes on the trajectories of the values,
 -- so the nearest values of points at large coordinates come out of the index
 -- as out of a scan
-CREATE TABLE tbl_tpcpoint_far AS
+CREATE TEMP TABLE tbl_tpcpoint_far AS
 SELECT k, tpcpoint(pcpoint(1, 19000000 + (k * 37 % 101) * 0.37,
   19000000 + (k * 53 % 97) * 0.29, 19000000 + (k * 71 % 89) * 0.31),
   timestamptz '2001-01-01') AS temp
@@ -351,9 +351,9 @@ DROP TABLE tbl_tpcpoint_far;
 -- queries of a tpcpoint as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tpcbox_tpcpoint AS
+CREATE TEMP TABLE tbl_tpcbox_tpcpoint AS
 SELECT k, temp::tpcbox AS b FROM tbl_tpcpoint WHERE temp IS NOT NULL;
-CREATE TABLE tbl_tpcpoint_q AS
+CREATE TEMP TABLE tbl_tpcpoint_q AS
 SELECT temp AS q FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION tpcbox_tpcpoint_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -441,7 +441,7 @@ CREATE FUNCTION tpcbox_tpcpoint_indexed() RETURNS text AS $$
     (21, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b /&> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
     (22, 'SELECT k FROM tbl_tpcbox_tpcpoint ORDER BY b |=| (SELECT q FROM tbl_tpcpoint_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_tpcbox_tpcpoint_seq AS SELECT tpcbox_tpcpoint_answers() AS a;
+CREATE TEMP TABLE tbl_tpcbox_tpcpoint_seq AS SELECT tpcbox_tpcpoint_answers() AS a;
 SELECT a FROM tbl_tpcbox_tpcpoint_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_tpcbox_tpcpoint_gist_idx ON tbl_tpcbox_tpcpoint USING gist(b);
@@ -465,9 +465,9 @@ DROP FUNCTION tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers(), tpcbox_tpcpo
 -- queries of a tpcpatch as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tpcbox_tpcpatch AS
+CREATE TEMP TABLE tbl_tpcbox_tpcpatch AS
 SELECT k, temp::tpcbox AS b FROM tbl_tpcpatch WHERE temp IS NOT NULL;
-CREATE TABLE tbl_tpcpatch_q AS
+CREATE TEMP TABLE tbl_tpcpatch_q AS
 SELECT temp AS q FROM tbl_tpcpatch WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION tpcbox_tpcpatch_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -555,7 +555,7 @@ CREATE FUNCTION tpcbox_tpcpatch_indexed() RETURNS text AS $$
     (21, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b /&> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
     (22, 'SELECT k FROM tbl_tpcbox_tpcpatch ORDER BY b |=| (SELECT q FROM tbl_tpcpatch_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_tpcbox_tpcpatch_seq AS SELECT tpcbox_tpcpatch_answers() AS a;
+CREATE TEMP TABLE tbl_tpcbox_tpcpatch_seq AS SELECT tpcbox_tpcpatch_answers() AS a;
 SELECT a FROM tbl_tpcbox_tpcpatch_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_tpcbox_tpcpatch_gist_idx ON tbl_tpcbox_tpcpatch USING gist(b);

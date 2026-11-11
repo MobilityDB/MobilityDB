@@ -17,7 +17,7 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tbox_sel;
-CREATE TABLE tbl_tbox_sel AS
+CREATE TEMP TABLE tbl_tbox_sel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.b
 FROM tbl_tboxfloat t1, generate_series(1, 100) t2(k);
 ANALYZE tbl_tbox_sel;
@@ -40,7 +40,7 @@ SELECT test_estimated_rows(
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_stbox_sel;
-CREATE TABLE tbl_stbox_sel AS
+CREATE TEMP TABLE tbl_stbox_sel AS
 SELECT k, stboxXT(xmin(b), xmin(b), xmax(b), xmax(b), b::tstzspan) AS b
 FROM tbl_tbox_sel;
 ANALYZE tbl_stbox_sel;

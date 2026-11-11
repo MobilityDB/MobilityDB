@@ -1,4 +1,4 @@
-CREATE TABLE test AS
+CREATE TEMP TABLE test AS
 SELECT NULL::tgeompoint FROM generate_series(1, 10);
 ANALYZE test;
 DROP TABLE test;
@@ -1306,7 +1306,7 @@ DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeompoint3D_quadtree_idx;
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
-CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tgeompoint3D_big_allthesame_quadtree_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tgeompoint3D_big_allthesame;
 -- EXPLAIN ANALYZE
@@ -1317,7 +1317,7 @@ DROP TABLE tbl_tgeompoint3D_big_allthesame;
 -- distance per ordering key from the parent node box. A table of identical
 -- values is what builds such a node.
 -------------------------------------------------------------------------------
-CREATE TABLE tbl_tgeompoint_allthesame AS
+CREATE TEMP TABLE tbl_tgeompoint_allthesame AS
   SELECT k, tgeompoint 'Point(5 5)@2001-01-01' AS temp
   FROM generate_series(1, 1000) k;
 CREATE INDEX tbl_tgeompoint_allthesame_quadtree_idx ON tbl_tgeompoint_allthesame
@@ -1350,7 +1350,7 @@ DECLARE n int; s bigint; i bigint; bad bigint := 0;
 BEGIN
   FOREACH n IN ARRAY ARRAY[200, 300, 400, 800, 1200] LOOP
     DROP TABLE IF EXISTS tbl_gist_bound_inc;
-    EXECUTE format($f$CREATE TABLE tbl_gist_bound_inc AS
+    EXECUTE format($f$CREATE TEMP TABLE tbl_gist_bound_inc AS
       SELECT i AS k, tgeompoint(format('[Point(%%s %%s)@%%s, Point(%%s %%s)@%%s)',
         i %% 97, (i * 7) %% 89,
         timestamptz '2001-01-01' + (i || ' minutes')::interval,
@@ -1402,7 +1402,7 @@ DECLARE scan int; s bigint; i bigint; bad bigint := 0;
   t timestamptz := timestamptz '2001-01-01';
 BEGIN
   DROP TABLE IF EXISTS tbl_spgist_shared_bound;
-  CREATE TABLE tbl_spgist_shared_bound AS
+  CREATE TEMP TABLE tbl_spgist_shared_bound AS
     SELECT k, CASE WHEN k % 10 = 0
       THEN tgeompoint(format('Point(%s %s)@%s', k % 89, k % 83,
         t + interval '100 s'))
@@ -1516,7 +1516,7 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
   SELECT timestamptz '2001-01-01' + d * interval '1 day'
 $$ LANGUAGE sql IMMUTABLE;
-CREATE TABLE tbl_index_structures AS
+CREATE TEMP TABLE tbl_index_structures AS
   SELECT k, CASE k % 7
     WHEN 0 THEN stbox(format('SRID=3857;STBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
       k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
