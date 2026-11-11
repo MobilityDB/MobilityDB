@@ -26,9 +26,12 @@ This note states that arithmetic as one layer of the engine, and the rule that k
   (Section 2). The exact arithmetic is spread today over `meos/src/geo/geo_funcs.c` and
   `meos/include/geo/geo_funcs.h`, interleaved with the algorithms that use it.
 - **B. One machinery per need.** The engine holds three tier ladders, two pair-of-doubles
-  types, three wide-number types and four searches for the nearest double (Section 4). Nothing
-  stops a new exact question from adding its own; the rule of Section 5 does, and the plan of
-  Section 7 merges what exists.
+  types, three wide-number types and nine searches for the nearest double, and of the 32
+  geometric questions its 589 exact functions answer, 22 are answered by two or more functions
+  built apart, which disagree on domain, on what "undecided" is, on sign conventions and on
+  degenerate input; six of them keep a tolerance beside an exact sign for the same question
+  (Section 4). Nothing stops a new exact question from adding its own; the rule of Section 5
+  does, and the plan of Section 7 merges what exists, the defects first.
 - **C. A seam at the user entries.** An entry checks its arguments and calls the engine once
   (Section 6). That seam keeps another geometry library possible behind the same entries; no
   such library is planned, and GEOS stays a test witness.
@@ -160,7 +163,7 @@ limbs is one whose lowest bit has a fixed weight (`WIDE_LOWEST_BIT`).
 
 | Sign | Degree | Tier 0 | Tier 1 | Tier 2 | Tier 3 | Calls |
 |---|---|---|---|---|---|---|
-| `cross_product_sign` (orientation in the plane) | 2 | inline in `geo_funcs.h` | | `cross_product_sign_exact`, scaled | `cross_product_sign_wide` | 102 |
+| `cross_product_sign` (orientation in the plane) | 2 | inline in `geo_funcs.h` | | `cross_product_sign_exact`, scaled | `cross_product_sign_wide` | 109 |
 | `dot_product_sign` | 2 | inline | | `dot_product_sign_exact` | none | 1 |
 | `triple_product_sign` | 3 | inline | | `triple_product_sign_exact` | none | 6 |
 | `incircle_sign` | 4 | in doubles | `incircle_sign_filter` | `incircle_sign_exact` | none | 3 |
@@ -186,13 +189,81 @@ Two gaps follow from the table:
   stages state they are exact where no product overflows or underflows, and their bodies call
   no stage of wide numbers after their expansions.
 
-### 4.5 Four searches for the nearest double
+### 4.5 Nine searches for the nearest double
 
 `nearest_double_exact` (any exact side), `wide_dyadic_nearest_root` (the root of a quotient of
-`WideDyadic`), `ddb_nearest_root` (a root placed by `DDBound` residuals) and the candidate moves
-of `point_distance_offset_filter` all find the double nearest an exact value by moving a
-candidate across the midpoints. `wide_dyadic_nearest_root` and `nearest_double_exact` state the
-same gallop and halving.
+`WideDyadic`), `ddb_nearest_root` (a root placed by `DDBound` residuals), `point_distance_nearest`,
+the candidate moves of `point_distance_offset_filter`, the searches inside
+`point_distance_offset_pair` and `point_distance_offset_inputs`, inside
+`point_segment_distance_offset_exact` and its `_inputs` twin, and `mec_nearest` all find the
+double nearest an exact value by moving a candidate across the midpoints to its neighbours.
+`wide_dyadic_nearest_root`, `mec_nearest` and `nearest_double_exact` state the same gallop and
+halving.
+
+### 4.6 The same question answered more than once
+
+Every function of the engine files that decides or computes exactly (589 on `a4ac8e7b92`, read by
+its contract and, where the contract is silent, its body) is placed by the question it answers.
+32 geometric questions come out, besides the arithmetic of Section 3; 22 of them are answered by
+two or more functions built apart. The table keeps the questions with more than one
+implementation; "survivor" is the one covering every finite double with the most callers.
+
+| Question | Implementations | Survivor | What the others are |
+|---|---|---|---|
+| Orientation of three points in the plane | `cross_product_sign`, `cross_product_exact`, `relate_orientation`, `seg2d_side`, `certa_sum2_sign`, the inline sign of `cert_arc_minor`, `sum_point_orient`, `arr_cross_ival` | `cross_product_sign` (109 calls) | `cross_product_exact` has no caller; `certa_sum2_sign` is the same sign on the polynomial ladder, exact only in its range; `relate_orientation` stops at its filter, so its 0 is collinear or undecided; `seg2d_side` decides with `MEOS_EPSILON` and the opposite sign |
+| Orientation of four points in 3D | `vector_triple_sign`, `triple_product_sign` and its `_exact` | `vector_triple_sign` | `triple_product_sign` is exact only where no product overflows or underflows |
+| Sign of a dot product | `point_segment_dot_sign_inputs`, `dot_product_sign` and its `_exact` | `point_segment_dot_sign_inputs` | `dot_product_sign` is exact only in its range |
+| Do two segments meet | `linesegm_intersect`, `wide_segment_meet`, `relate_edges_cross`, `cert_segs_cross_exact`, `cert_segs_meet` | `linesegm_intersect` | each calls a different set of contacts a meeting (Section 4.7) |
+| Two points within a distance, a point against a centred circle | `point_within_distance_sign`, `point_distance_square_sum_sign`, `point_distance_square_sign_exact`, `point_distance_offset_pair_side_sign`, `certa_longer`, `centred_circle_side` | one sign of `\|p - q\|^2 - (t1 + ... + tn)^2` on `square_products_sign` | the first four differ only in signature; `certa_longer` and `centred_circle_side` read it on the polynomial ladder, in its range |
+| A point against the circle through three points | `incircle_sign`, `arc_circle_side`, `point_arc_circle_side_pred` | none yet | `incircle_sign` has no tier 3; the two arc forms answer the opposite sense |
+| A point within a distance of a segment | `point_segment_offset_sign`, `point_segm_within`, `geom_dwithin_end`, `cert_point_seg_far_exact` and `_slow`, `point_segment_beyond` and `_inputs` | `point_segment_offset_sign` | `point_segm_within` and `geom_dwithin_end` are one filter and one call; the certificates read it on the polynomial ladder |
+| The double nearest the distance of a point to a segment | `point_segment_distance_offset_exact`, `point_segment_distance_offset_inputs` | the first, with the second as its wide route | |
+| The double nearest an exact value | the nine searches of Section 4.5 | `nearest_double_exact` | each other one is a side function it reads |
+| Ring orientation | `ring_area_sign`, `buffer_ring_signed_area`, `cert_ring_keeps_sense` | `ring_area_sign` | `buffer_ring_signed_area` is in doubles |
+| Point in polygon | `point_in_rings_exact`, `point_arc_ray_parity`, `dist_poly_seg_raycross`, `dist_geom_point_inside`, `pip_point_in_ring` | `point_in_rings_exact` and, for arcs, `point_arc_ray_parity` | the other three decide in doubles, with `MEOS_GEOM_TOLERANCE` and `atan2` |
+| The circle of an arc | `arcarc_centre_exact` and `arcarc_radius2_exact`, `arr_arc_centre_y_side`, `mec_exact_set` and `mec_beyond`, `exact_arc_bound`, `tower_arc_read`, `hull_exact` | `arcarc_centre_exact` | six arc models form the same circumcentre (Section 4.7) |
+| A segment against an arc | the `arcseg_*` meetings, `tower_point_line_circle`, `arcsegm_cross` | the `arcseg_*` meetings on input segments, the tower on tower points | `arcsegm_cross`, which relate reads, decides with a `1e-14` band, `MEOS_GEOM_TOLERANCE` and `atan2` |
+| Two arcs | `arcarc_meet_exact`, `tower_point_circles`, `arcarc_cross` | `arcarc_meet_exact` | `arcarc_cross` compares a half-chord with a rounding band |
+| Within a distance of an arc | `point_arc_offset_sign` and its segment and arc siblings, the `*_within_pred` family on the expression ladder, the far certificates of the buffer | none yet | one family per arc model |
+| The order of edges leaving a point | `edges_turn_cmp_exact`, `edges_turn_cmp_meet`, `arr_turn_cmp` | none yet | they differ in how the point is held: doubles, a tower meeting, intervals |
+| The order of meetings along an edge | `meets_order_tower`, `meets_order_scaled` | the expression ladder | `meets_order_scaled` is the arena twin |
+| A meeting point held exactly | `meet_tower_build`, `meet_point_exact` | the expression ladder | `meet_point_exact` is the arena twin |
+| Nearest approach of two motions | `point_motion_nad_exact`, `point_motion_point_offset_exact`, `convex_motion_nad_exact` | none yet | two time models (Section 4.7) |
+| Within a distance over time | `point_motion_dwithin_exact`, `point_motion_dwithin_period_exact`, `tcbuffer_region_within_roots` | `point_motion_dwithin_period_exact`, which states a point as a disc of radius 0 | `tcbuffer_region_within_roots` decides in doubles with a `1e-18` tolerance |
+
+### 4.7 What the duplicates disagree on
+
+Built apart, the implementations of one question drift apart in contract:
+
+- **Domain.** The polynomial ladder (54 calls from 25 functions) is exact only where no product
+  overflows or underflows, and only `segment_square_cmp` goes on to `polynomial_sign_wide`; the
+  twins it duplicates (`cross_product_sign`, `point_segment_offset_sign`,
+  `point_within_distance_sign`) are exact for every finite double. EA1 measures the consequence: 50
+  of 228 calls answered 0 for -1.
+- **A tolerance beside an exact sign for the same question**: `arcsegm_cross` and `arcarc_cross`
+  in relate against the exact arc meetings; `dist_poly_seg_raycross` and `pip_point_in_ring`
+  against `point_in_rings_exact`; `buffer_ring_signed_area` against `ring_area_sign`;
+  `tcbuffer_region_within_roots` against `point_motion_dwithin_period_exact`; and
+  `tcbuffer_disc_boundary_sign`, whose sign is exact while the `inside` it sets comes from a ray
+  cast in doubles.
+- **What "undecided" is.** Seven spellings: 0, 2, 3, -1, -2, false, and "no crossing".
+- **Opposite senses.** `seg2d_side` answers -1 where `cross_product_sign` answers 1;
+  `arc_circle_side` and `point_arc_circle_side_pred` answer -1 inside where `incircle_sign`
+  answers 1.
+- **The same digits, different meanings.** `point_motion_dwithin_period_exact` returns 2 for
+  within over a period and 1 for one instant; its filter returns 1 for the whole segment and 2 for
+  some instant.
+- **Degenerate input.** `linesegm_intersect` lets a first segment of no length meet nothing;
+  `wide_segment_meet` reads it as a point. On collinear segments `cert_segs_cross_exact` answers
+  true, `relate_edges_cross` false.
+- **Bounds.** One expression, the sum of two products of differences, is filtered under five
+  different bounds (`cross_product_sign`, `relate_orientation`, `arr_cross_ival`,
+  `point_segment_dot_sign_inputs`, `sum_point_orient`).
+- **Models.** Six arc models (`Edge`, `ExactArc`, `ArcsegExact`, `TowerArc`, `MecExact`, the hull
+  feature), two angular origins (+x for the turn of edges, (0, -1) for the hull), two time models
+  (integer timestamps for two points in 2D, a fraction of a segment of microseconds for discs in
+  2D and 3D), five carriers of tiers 0 and 1 (`DDBound`, the caller-bounded pairs,
+  `ArcsegFilter`, the intervals of `geo_arrange.c`, `SumPoint`).
 
 ## 5. The rule
 
@@ -236,6 +307,44 @@ entry or any caller.
 Each step is one pull request, judged as every pull request of these notes is: CGAL on the
 head's answers, and the speed cells of every operation it touches, measured against GEOS called
 directly.
+
+### Order of the work
+
+The consolidation comes before any new speed: a mechanism added for one question waits until the
+layer holds it for every question. The phases, each a series of pull requests:
+
+1. **The tolerances beside exact signs (C1 to C6).** Each question of Section 4.7 that keeps a
+   tolerant route beside an exact one is answered by the exact one: relate's segment-arc and
+   arc-arc crossings (`arcsegm_cross`, `arcarc_cross`) by the exact arc meetings, the ray casts in
+   doubles (`dist_poly_seg_raycross`, `pip_point_in_ring`, the `inside` of
+   `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity`, the ring
+   area in doubles of the buffer by `ring_area_sign`, the within-times of a moving disc in
+   `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact`, and `seg2d_side` by
+   `cross_product_sign`. These change answers, where the tolerance answers wrongly, so each comes
+   with a witness CGAL judges.
+2. **The duplicates of one contract (C7 onwards).** The functions Section 4.6 shows answering the
+   survivor's contract become calls to it, one question per pull request, each proven by a
+   differential: `cross_product_exact` (no caller), `certa_sum2_sign` and the sign of
+   `cert_arc_minor` (to `cross_product_sign`), `triple_product_sign` and `dot_product_sign` (to
+   `vector_triple_sign` and `point_segment_dot_sign_inputs`), `certa_longer` and
+   `centred_circle_side` (to the one sign of `|p - q|^2 - (t1 + ... + tn)^2`),
+   `cert_point_seg_far_slow`, `point_segm_within` and its filter (to `point_segment_offset_sign`).
+   Where the duplicate is exact in a narrower range than its survivor, the merge changes answers
+   outside that range only, as EA1 finds for the polynomial ladder.
+3. **One convention.** One meaning of "undecided" inside the layer (2) and one answer outside it
+   (-1, 0, 1); one sense per question (`arc_circle_side` and `point_arc_circle_side_pred` take the
+   sense of `incircle_sign`); one rule for a segment of no length (a point, as
+   `wide_segment_meet` reads it); one angular origin. Each is a pull request touching every caller
+   of what it changes.
+4. **One arithmetic (EA1, EA4 to EA7).** One ladder, one pair type, one wide number, one search,
+   every sign with every tier; then one arc model and one time model, each merge after a
+   differential.
+5. **The arithmetic in its own file (EA3)**, moved in the shape the merges give it, so that each
+   function moves once.
+
+MobilityDB #3484 and EA2, its tier for the signs of degree six, come after: EA1 shows that no tier
+of the engine brings a tie of degree six near the cost of lwgeom's answer to a row, so its speed
+gate rests on the route it takes, not on a tier.
 
 ### EA1. Which ladder is the one ladder
 
@@ -310,9 +419,24 @@ What it shows:
 
 The condition of the proposal is not met as it stands: the expression ladder is the one way to
 write a question (results 1 and 2), and its tiers past the first cost more than the polynomial
-ladder's (result 3). The step that follows, before EA2, rebuilds the expansions of the expression
-ladder on the stack arena of `polynomial_sign_stack` and measures again, so that one ladder
-carries the cheaper evaluation of each tier.
+ladder's (result 3).
+
+**The expansions of the expression ladder, rebuilt.** Branch `perf/expansions-kept-compressed`
+forms each sum and product of `arcseg_x_add` and `arcseg_x_mul` in the room past the arena's live
+values and keeps only its compressed result (`arcseg_arena_room`, `arcseg_arena_keep`), as
+`polynomial_sign_stack` lays out a term. On the same recorded calls every pass that reaches the
+expansions costs 0.90 to 0.98 of master's, every other pass is unchanged, and every form agrees.
+What remains between the two ladders on the ties is the work of `arcseg_x_mul` around each
+product, about 112 instructions of its own (the operands and result copied by value, the checks of
+an unsafe or wide arena, the range of the components), which a tie of about 168 products turns
+into the whole gap. Handing the operands by address through an inline form and reading the range in
+one comparison saves 0.6 to 2% more, the copy moving to the caller: not kept. The range checks are
+what makes the expression ladder exact unaided, so the gap is their price.
+
+**The proposal for the committers (Section 8):** the expression ladder is the one ladder, with
+each question's own first tier ahead of it, which costs as the polynomial ladder where the first
+tiers decide; a tie costs about 1.5 times the polynomial ladder's, and is exact for every finite
+double.
 
 ### EA2. Tier 2 for the signs of degree six
 
@@ -376,11 +500,17 @@ range of its expansions.
 
 ## 8. Decisions asked of the committers
 
-1. The one ladder: the expression ladder, provided EA1 measures it at the cost of the polynomial
-   ladder or less.
-2. The names of the arithmetic's file and header (EA3), and of the ladder (EA1), as the layer
+1. The one ladder: the expression ladder with each question's own first tier ahead of it, at
+   about 1.5 times the polynomial ladder's cost on a tie (EA1), the price of being exact for
+   every finite double without its caller keeping a range.
+2. The order of Section 7: the tolerances beside exact signs first, the duplicates of one contract
+   next, one convention, then one arithmetic, the speed of MobilityDB #3484 after.
+3. The conventions of phase 3: "undecided" is 2 inside the layer, an answer outside it is -1, 0
+   or 1, the sense of a circle question is that of `incircle_sign`, a segment of no length is a
+   point.
+4. The names of the arithmetic's file and header (EA3), and of the ladder (EA1), as the layer
    names them rather than the first question each served.
-3. The window of EA3: one in which no pull request on these files is open, MobilityDB #3484
+5. The window of EA3: one in which no pull request on these files is open, MobilityDB #3484
    and #3557 being two such pull requests, and step 18 of [Exact buffer](EXACT-BUFFER.md) not
    started.
-4. The seam of Section 6 as the rule of the user entries, with no other library planned.
+6. The seam of Section 6 as the rule of the user entries, with no other library planned.
