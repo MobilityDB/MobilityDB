@@ -1,3 +1,14 @@
+-- Accessors: startValue / endValue / valueN / getValues /
+-- valueAtTimestamp on th3index. All route to the generic
+-- `Temporal_*` C symbols — no h3_adapter.c dependency, so these
+-- tests run today against any build that has H3=ON.
+-- Test cells (h3-pg fixture):
+--   590464338553208831 = res 3 hexagon
+--   590464201114255359 = res 3 pentagon
+--   612544986753269759 = res 8 hexagon
+-------------------------------------------------------------------------------
+-- startValue
+-------------------------------------------------------------------------------
 SELECT startValue(th3index '831c02fffffffff@2001-01-01');
    startvalue    
 -----------------
@@ -18,6 +29,9 @@ SELECT startValue(th3index
  831c02fffffffff
 (1 row)
 
+-------------------------------------------------------------------------------
+-- endValue
+-------------------------------------------------------------------------------
 SELECT endValue(th3index '831c02fffffffff@2001-01-01');
     endvalue     
 -----------------
@@ -31,6 +45,7 @@ SELECT endValue(th3index
  831c00fffffffff
 (1 row)
 
+-- On a constant single-value sequence, start = end
 SELECT startValue(th3index '831c02fffffffff@2001-01-01')
   = endValue(th3index '831c02fffffffff@2001-01-01');
  ?column? 
@@ -38,6 +53,10 @@ SELECT startValue(th3index '831c02fffffffff@2001-01-01')
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- valueN
+-------------------------------------------------------------------------------
+-- 1-indexed
 SELECT valueN(th3index
   '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 1);
      valuen      
@@ -52,18 +71,24 @@ SELECT valueN(th3index
  831c00fffffffff
 (1 row)
 
+-- Out-of-range returns NULL (not an error)
 SELECT valueN(th3index '831c02fffffffff@2001-01-01', 99);
  valuen 
 --------
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- getValues
+-------------------------------------------------------------------------------
+-- Single-instant: a 1-element h3indexset
 SELECT getValues(th3index '831c02fffffffff@2001-01-01');
       getvalues      
 ---------------------
  {"831c02fffffffff"}
 (1 row)
 
+-- Duplicates collapse (same value at two instants)
 SELECT getValues(th3index
   '{831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-02}');
       getvalues      
@@ -71,6 +96,7 @@ SELECT getValues(th3index
  {"831c02fffffffff"}
 (1 row)
 
+-- Three distinct values
 SELECT getValues(th3index
   '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02,
     880326b885fffff@2001-01-03]');
@@ -79,6 +105,9 @@ SELECT getValues(th3index
  {"831c00fffffffff", "831c02fffffffff", "880326b885fffff"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- valueAtTimestamp
+-------------------------------------------------------------------------------
 SELECT valueAtTimestamp(th3index '831c02fffffffff@2001-01-01',
   '2001-01-01');
  valueattimestamp 
@@ -86,6 +115,7 @@ SELECT valueAtTimestamp(th3index '831c02fffffffff@2001-01-01',
  831c02fffffffff
 (1 row)
 
+-- At a time inside a step-interp sequence — returns the prior instant's value
 SELECT valueAtTimestamp(th3index
   '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]',
   '2001-01-03');
@@ -94,6 +124,7 @@ SELECT valueAtTimestamp(th3index
  831c02fffffffff
 (1 row)
 
+-- Before the start of a sequence — returns NULL
 SELECT valueAtTimestamp(th3index
   '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]',
   '2001-12-31');
@@ -102,3 +133,4 @@ SELECT valueAtTimestamp(th3index
  
 (1 row)
 
+-------------------------------------------------------------------------------

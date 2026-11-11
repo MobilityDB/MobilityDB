@@ -25,21 +25,6 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-# The input and output test of every type reads the fixtures of every family,
-# so it runs after every family has loaded its tables.
-file(GLOB testfiles "sql/[0-9]*.sql")
-list(SORT testfiles)
-
-foreach(file ${testfiles})
-  get_filename_component(TESTNAME ${file} NAME_WE)
-  add_test(
-    NAME ${TESTNAME}
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_compare
-      -D TEST_NAME=${TESTNAME} -D TEST_FILE=${file}
-      -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
-    )
-  set_tests_properties(${TESTNAME} PROPERTIES
-    FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBAIS;DBCBUFFER;DBH3;DBJSONB;DBNPOINT;DBPOINTCLOUD;DBPOSE;DBPOSECHAIN;DBQUADBIN;DBRASTER;DBRAQUET;DBRGEO;DBAISRGEO;DBS2CELL"
-    RESOURCE_LOCK DBLOCK)
-endforeach()
+# The input and output test of every type reads the tables of every module,
+# whose setup scripts all run before the tests.
+mobilitydb_add_tests()

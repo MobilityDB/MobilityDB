@@ -1,117 +1,148 @@
-SELECT (pcpoint(1, 1.0, 1.0, 1.0)) ?= (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz));
+-- Ever/always and temporal comparison operators for tpcpoint. Values are built
+-- with the ergonomic pcpoint constructor because pgPointCloud's pcpoint_in
+-- accepts hex-WKB only, so a literal is not readable here. Equality on a
+-- pcpoint is byte equality of the serialized point, so the result is
+-- deterministic. Points: A = (1,1,1), B = (2,2,2).
+\set pA 'pcpoint(1, 1.0, 1.0, 1.0)'
+\set pB 'pcpoint(1, 2.0, 2.0, 2.0)'
+\set iA 'tpcpoint(:pA, ''2001-01-01''::timestamptz)'
+\set iB 'tpcpoint(:pB, ''2001-01-02''::timestamptz)'
+\set seqAB 'tpcpointSeq(ARRAY[:iA, :iB])'
+\set seqAA 'tpcpointSeq(ARRAY[:iA, tpcpoint(:pA, ''2001-01-02''::timestamptz)])'
+-------------------------------------------------------------------------------
+-- eEqual / ?=
+-------------------------------------------------------------------------------
+SELECT (:pA) ?= (:iA);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) ?= (pcpoint(1, 1.0, 1.0, 1.0));
+SELECT (:iA) ?= (:pA);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) ?= (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz));
+SELECT (:iA) ?= (:iA);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) ?= (pcpoint(1, 2.0, 2.0, 2.0));
+-- mid-trajectory match (ever equal)
+SELECT (:seqAB) ?= (:pB);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) ?= (pcpoint(1, 2.0, 2.0, 2.0));
+-- no match
+SELECT (:iA) ?= (:pB);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) %= (pcpoint(1, 1.0, 1.0, 1.0));
+-------------------------------------------------------------------------------
+-- aEqual / %=
+-------------------------------------------------------------------------------
+SELECT (:iA) %= (:pA);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) %= (pcpoint(1, 1.0, 1.0, 1.0));
+-- mixed trajectory, not always equal
+SELECT (:seqAB) %= (:pA);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)])) %= (pcpoint(1, 1.0, 1.0, 1.0));
+-- constant trajectory, always equal
+SELECT (:seqAA) %= (:pA);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)])) %= (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)]));
+SELECT (:seqAA) %= (:seqAA);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (pcpoint(1, 1.0, 1.0, 1.0)) ?<> (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)]));
+-------------------------------------------------------------------------------
+-- eNotEqual / ?<> and aNotEqual / %<>
+-------------------------------------------------------------------------------
+SELECT (:pA) ?<> (:seqAB);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) ?<> (pcpoint(1, 1.0, 1.0, 1.0));
+SELECT (:seqAB) ?<> (:pA);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) %<> (pcpoint(1, 2.0, 2.0, 2.0));
+SELECT (:iA) %<> (:pB);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) ?<> (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)]));
+SELECT (:seqAB) ?<> (:seqAA);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT NOT ((tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) ?= (pcpoint(1, 1.0, 1.0, 1.0)) AND (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) %<> (pcpoint(1, 1.0, 1.0, 1.0)));
+-- a value cannot be both ever equal and always different
+SELECT NOT ((:iA) ?= (:pA) AND (:iA) %<> (:pA));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT asText((pcpoint(1, 1.0, 1.0, 1.0)) #= (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)));
+-------------------------------------------------------------------------------
+-- tEqual / #= and tNotEqual / #<>
+-------------------------------------------------------------------------------
+SELECT asText((:pA) #= (:iA));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText((tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) #= (pcpoint(1, 1.0, 1.0, 1.0)));
+SELECT asText((:iA) #= (:pA));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText((tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) #= (pcpoint(1, 1.0, 1.0, 1.0)));
+SELECT asText((:seqAB) #= (:pA));
                               astext                              
 ------------------------------------------------------------------
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText((tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) #<> (pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT asText((:iA) #<> (:pB));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText((tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) #<> (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)])));
+SELECT asText((:seqAB) #<> (:seqAA));
                               astext                              
 ------------------------------------------------------------------
  [f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Ever and always overlaps: a value and a point cloud box
 SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
  ?column? 
 ----------

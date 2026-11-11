@@ -19,6 +19,7 @@ WHERE t1.temp <-> t2.temp IS NOT NULL;
  121.675467
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tcbuffer,
 ( SELECT * FROM tbl_geom ORDER BY k LIMIT 10 ) t
 WHERE NearestApproachInstant(temp, ST_SetSRID(g, 3812)) IS NOT NULL;
@@ -83,6 +84,10 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
     10
 (1 row)
 
+--------------------------------------------------------
+-- Set-set minimum distance
+-- The set-set form equals the minimum over the pairs of the table of the
+-- distance between their traversed areas
 SELECT round(minDistance((SELECT array_agg(temp) FROM (SELECT temp FROM tbl_tcbuffer WHERE k < 10) t),
   (SELECT array_agg(temp) FROM (SELECT temp FROM tbl_tcbuffer WHERE k BETWEEN 50 AND 59) t))::numeric, 6) =
   (SELECT round(MIN(ST_Distance(traversedArea(t1.temp), traversedArea(t2.temp)))::numeric, 6)
@@ -92,3 +97,4 @@ SELECT round(minDistance((SELECT array_agg(temp) FROM (SELECT temp FROM tbl_tcbu
  t
 (1 row)
 
+-------------------------------------------------------------------------------

@@ -1,3 +1,16 @@
+-------------------------------------------------------------------------------
+-- Regression tests for the tpose tile surface (119_tpose_tile.in.sql).
+--
+-- Every function converts its pose operand to the temporal geometry point
+-- its position resolves to (tpose::tgeompoint) and delegates to the
+-- temporal geometry point tile function, so a value keeps the
+-- interpolation it carries: a sequence with the default linear
+-- interpolation is tiled along its trajectory, and the split functions
+-- rebuild the tpose fragment by restricting the original value to the time
+-- extent of each tile.
+--
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the functions are STRICT
 SELECT spaceBoxes(NULL::tpose, 2.0);
  spaceboxes 
 ------------
@@ -10,6 +23,10 @@ SELECT spaceBoxes(tpose 'Pose(Point(1 1), 0.1)@2001-01-01', NULL::float);
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Boxes: a linear sequence is tiled along its trajectory and agrees with the
+-- cast written out by hand
+-------------------------------------------------------------------------------
 SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0);
                                                                                    spaceboxes                                                                                    
@@ -48,6 +65,9 @@ SELECT spaceTimeBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
  {"STBOX XT(((1,1),(2,2)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST))","STBOX XT(((2,2),(3,3)),[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))","STBOX XT(((3,3),(3,3)),[Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Splits: each fragment is a tpose restricted to the time extent of its tile
+-------------------------------------------------------------------------------
 SELECT (spaceSplit(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0)).*;
                    point                    |                                                                                    tpose                                                                                     
@@ -75,3 +95,4 @@ SELECT (timeSplit(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
  Wed Jan 03 00:00:00 2001 PST | [POSE (010100000000000000000008400000000000000840, 0.1)@Wed Jan 03 00:00:00 2001 PST]
 (3 rows)
 
+-------------------------------------------------------------------------------

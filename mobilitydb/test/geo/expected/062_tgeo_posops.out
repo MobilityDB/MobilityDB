@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 /* Errors*/
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2002-01-02,2002-01-02])' << tstzspan '[2001-01-01,2001-01-02]'::stbox;
 ERROR:  The stbox must have X dimension
@@ -23,6 +24,7 @@ SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2002-01-02,2002-01-02])' /
 ERROR:  The stbox must have Z dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2002-01-02,2002-01-02])' /&> tstzspan '[2001-01-01,2001-01-02]'::stbox;
 ERROR:  The stbox must have Z dimension
+-------------------------------------------------------------------------------
 SELECT tgeometry 'Point(1 1)@2001-01-01' << tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -215,6 +217,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  f
 (1 row)
 
+-- Mixed 2D/3D
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' << tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -240,6 +243,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' << stbox 'SRID=5676;STBOX X((1.0,1.0)
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' << tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tgeometry 'Point(1 1)@2001-01-01' >> tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -432,6 +436,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  f
 (1 row)
 
+-- Mixed 2D/3D
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' >> tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -457,6 +462,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' >> stbox 'SRID=5676;STBOX X((1.0,1.0)
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' >> tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tgeometry 'Point(1 1)@2001-01-01' &< tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -649,6 +655,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  t
 (1 row)
 
+-- Mixed 2D/3D
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &< tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -674,6 +681,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' &< stbox 'SRID=5676;STBOX X((1.0,1.0)
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' &< tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tgeometry 'Point(1 1)@2001-01-01' &> tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -866,6 +874,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  t
 (1 row)
 
+-- Mixed 2D/3D
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &> tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -891,6 +900,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' &> stbox 'SRID=5676;STBOX X((1.0,1.0)
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' &> tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tgeometry 'Point(1 1)@2001-01-01' <<| tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1083,6 +1093,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  f
 (1 row)
 
+-- Mixed 2D/3D
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <<| tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1108,6 +1119,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' <<| stbox 'SRID=5676;STBOX X((1.0,1.0
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' <<| tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tgeometry 'Point(1 1)@2001-01-01' |>> tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1300,6 +1312,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  f
 (1 row)
 
+-- Mixed 2D/3D
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' |>> tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1325,6 +1338,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' |>> stbox 'SRID=5676;STBOX X((1.0,1.0
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' |>> tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tgeometry 'Point(1 1)@2001-01-01' &<| tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1517,6 +1531,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  t
 (1 row)
 
+-- Mixed 2D/3D
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &<| tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1542,6 +1557,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' &<| stbox 'SRID=5676;STBOX X((1.0,1.0
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' &<| tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT tgeometry 'Point(1 1)@2001-01-01' |&> tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1734,6 +1750,7 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
  t
 (1 row)
 
+-- Mixed 2D/3D
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' |&> tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1759,6 +1776,7 @@ SELECT tgeometry 'Point(1 1 1)@2001-01-01' |&> stbox 'SRID=5676;STBOX X((1.0,1.0
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' |&> tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' <</ tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1916,6 +1934,7 @@ SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' <</ tgeometry 'Point(1 1)@200
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' <</ tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  The stbox must have Z dimension
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' />> tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -2073,6 +2092,7 @@ SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' />> tgeometry 'Point(1 1)@200
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' />> tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  The stbox must have Z dimension
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' &</ tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -2230,6 +2250,7 @@ SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' &</ tgeometry 'Point(1 1)@200
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' &</ tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  The stbox must have Z dimension
+-------------------------------------------------------------------------------
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' /&> tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -2387,6 +2408,7 @@ SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' /&> tgeometry 'Point(1 1)@200
 ERROR:  Operation on mixed SRID
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' /&> tgeometry 'Point(1 1)@2001-01-01';
 ERROR:  The stbox must have Z dimension
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' <<# tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -2824,6 +2846,7 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <<# tgeometry 'Point(1 1 1)@2001-01-
 ERROR:  The stbox must have T dimension
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' <<# stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have T dimension
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' #>> tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -3261,6 +3284,7 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' #>> tgeometry 'Point(1 1 1)@2001-01-
 ERROR:  The stbox must have T dimension
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' #>> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have T dimension
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' &<# tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -3698,6 +3722,7 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &<# tgeometry 'Point(1 1 1)@2001-01-
 ERROR:  The stbox must have T dimension
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' &<# stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have T dimension
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' #&> tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -4135,3 +4160,4 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' #&> tgeometry 'Point(1 1 1)@2001-01-
 ERROR:  The stbox must have T dimension
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' #&> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have T dimension
+-------------------------------------------------------------------------------

@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Temporal addition
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE i + temp IS NOT NULL;
  count 
 -------
@@ -34,6 +37,9 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp + t2.temp IS NOT
    124
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal subtraction
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE i - temp IS NOT NULL;
  count 
 -------
@@ -70,6 +76,9 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp - t2.temp IS NOT
    124
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal multiplication
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE i * temp IS NOT NULL;
  count 
 -------
@@ -106,6 +115,9 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp * t2.temp IS NOT
    124
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal division
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE i / temp IS NOT NULL;
  count 
 -------
@@ -142,6 +154,9 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp / t2.temp IS NOT
    124
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal round, deltaValue, trend, derivative
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tint WHERE deltaValue(temp) IS NOT NULL;
  count 
 -------
@@ -166,6 +181,9 @@ SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(ss) IS NOT NULL;
     98
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal round, degrees, radians, abs, ln, log10
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tint WHERE abs(temp) IS NOT NULL;
  count 
 -------
@@ -268,3 +286,4 @@ SELECT round(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS N
  {"73.98@Thu Mar 01 03:42:00 2001 PST","70.99@Fri Sep 14 13:31:00 2001 PDT","65.61@Sat Sep 29 14:47:00 2001 PDT","38.27@Wed Apr 18 14:52:00 2001 PDT"}
 (1 row)
 
+-------------------------------------------------------------------------------

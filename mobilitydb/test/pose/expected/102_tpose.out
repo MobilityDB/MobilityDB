@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Input
+-------------------------------------------------------------------------------
 SELECT asText(tpose 'Pose(Point(1 1), 0.5)@2001-01-01');
                       astext                       
 ---------------------------------------------------
@@ -58,6 +61,7 @@ SELECT asText(tpose '  {  [  Pose(Point(1 1), 0.2)@2001-01-01 ,  Pose  (  Point(
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Normalization
 SELECT asText(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]');
                                                  astext                                                 
 --------------------------------------------------------------------------------------------------------
@@ -70,6 +74,9 @@ SELECT asText(tpose '{[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.4)@2
  {[Pose(POINT(1 1),0.3)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Input/output in WKT, WKB and HexWKB representation
+-------------------------------------------------------------------------------
 SELECT asText(tpose 'Pose(Point(1 1), 0.123456789)@2001-01-01', 6);
                          astext                         
 --------------------------------------------------------
@@ -106,6 +113,8 @@ SELECT asText(tpose 'Interp=Step;{[Pose(Point(1 1), 0.123456789)@2001-01-01, Pos
  Interp=Step;{[Pose(POINT(1 1),0.123457)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.523457)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.123457)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.723457)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.723457)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Maximum decimal digits
 SELECT asText(tposeFromBinary(asBinary(tpose 'Pose(Point(1 1), 0.5)@2001-01-01')));
                       astext                       
 ---------------------------------------------------
@@ -214,6 +223,7 @@ SELECT asText(tposeFromBinary(asBinary(tpose 'Interp=Step;{[Pose(Point(1 1), 0.2
  Interp=Step;{[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Pose(Point(1 1), 0.5)@2001-01-01')));
                       astext                       
 ---------------------------------------------------
@@ -250,6 +260,7 @@ SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Interp=Step;[Pose(Point(1 1), 0.
  Interp=Step;[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- The container states the SRID once, for its components too
 SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
                                         asewkb                                        
 --------------------------------------------------------------------------------------
@@ -262,6 +273,7 @@ SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
  01380041E40E000001000000000000F03F0000000000000040000000000000F03F0060885EC91C0000
 (1 row)
 
+-- A component that states the SRID of its container again reads back
 SELECT asEWKT(tposeFromHexEWKB('01380041E40E000041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
                           asewkt                           
 -----------------------------------------------------------
@@ -394,6 +406,9 @@ SELECT asText(tposeFromHexEWKB(asHexWKB(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'
  Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT asText(tpose('Pose(Point(1 1),0)'::pose, '2012-01-01'::timestamp));
                      astext                      
 -------------------------------------------------
@@ -418,6 +433,9 @@ SELECT asText(tposeSeqSet(ARRAY[tpose '[Pose(Point(1 1),0)@2012-01-01, Pose(Poin
  {[Pose(POINT(1 1),0)@Sun Jan 01 00:00:00 2012 PST, Pose(POINT(1 1),1)@Wed Feb 01 00:00:00 2012 PST], [Pose(POINT(2 2),0)@Thu Mar 01 00:00:00 2012 PST, Pose(POINT(2 2),1)@Sun Apr 01 00:00:00 2012 PDT]}
 (1 row)
 
+-- From a temporal point and a temporal float: the result carries the point the
+-- trajectory holds at each instant and the float as the rotation theta, over the
+-- intersection of the two time frames.
 SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
   tfloat '[1@2001-01-01, 2@2001-01-02)'));
                                                astext                                               
@@ -431,6 +449,7 @@ SELECT asText(tpose(tgeompoint 'POINT(1 1)@2001-01-01', tfloat '1@2001-01-01'));
  Pose(POINT(1 1),1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Time frames that do not intersect answer NULL
 SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
   tfloat '[2@2001-01-03, 3@2001-01-04)')) IS NULL;
  ?column? 
@@ -438,6 +457,7 @@ SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
  t
 (1 row)
 
+-- A partial overlap is restricted to the shared frame
 SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]',
   tfloat '[1@2001-01-02, 3@2001-01-04]'));
                                                astext                                               
@@ -445,8 +465,15 @@ SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]',
  [Pose(POINT(2 2),1)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(3 3),2)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- The point must be 2D: a Z point resolves against the one declared overload
+-- and meets the kernel's own guard. A tgeogpoint argument is refused one layer
+-- lower, by PostgreSQL's overload resolution, whose message the suite does not
+-- state anywhere because it moves between server versions.
 SELECT asText(tpose(tgeompoint 'POINT Z(1 1 1)@2001-01-01', tfloat '1@2001-01-01'));
 ERROR:  The tgeompoint cannot have Z dimension
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT asText(tposeInst(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'));
                       astext                       
 ---------------------------------------------------
@@ -561,6 +588,9 @@ SELECT asText(round(tpose '{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Poin
  {[Pose(POINT(1 1),0.123457)@Sun Jan 01 00:00:00 2012 PST, Pose(POINT(1 1),0.5)@Mon Jan 02 00:00:00 2012 PST)}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Append functions
+-------------------------------------------------------------------------------
 SELECT asText(appendInstant(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', tpose 'Pose(Point(1 1), 0.7)@2001-01-02'));
                                                  astext                                                 
 --------------------------------------------------------------------------------------------------------
@@ -585,6 +615,8 @@ SELECT asText(appendInstant(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Poin
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST, Pose(POINT(2 2),0.7)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-- The aggregate starts a sequence where consecutive poses lie farther apart
+-- than the maximum distance; a rotation in place moves no position
 SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
   (tpose 'Pose(Point(0 0), 0)@2001-01-01'), (tpose 'Pose(Point(3 4), 0)@2001-01-02'),
   (tpose 'Pose(Point(30 40), 0)@2001-01-03')) t(inst);
@@ -600,6 +632,7 @@ SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALU
  [Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(0 0),3)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asText(appendSequence(tpose '{Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-02}', tpose '{Pose(Point(3 3), 0.6)@2001-01-03}'));
                                                                           astext                                                                           
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -612,6 +645,9 @@ SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Poin
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(1 1),0.6)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Cast functions
+-------------------------------------------------------------------------------
 SELECT asText(round(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
                  astext                  
 -----------------------------------------
@@ -636,6 +672,8 @@ SELECT asText(round(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(2 2)@Thu Jan 04 00:00:00 2001 PST, POINT(2 2)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- The temporal point a temporal pose is cast to has at every instant the
+-- position of the pose, between its instants included, in 2D and 3D
 SELECT ST_AsText(point(valueAtTimestamp(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', '2001-01-01'))) =
   ST_AsText(valueAtTimestamp(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, '2001-01-01'));
  ?column? 
@@ -673,6 +711,18 @@ SELECT round(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@20
 ERROR:  cannot cast type tpose to tfloat
 LINE 1: ...)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }'::tfloat, ...
                                                              ^
+-- SELECT asText(round((tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint)::tpose, 6));
+-- SELECT asText(round((tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint)::tpose, 6));
+-- SELECT asText(round((tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint)::tpose, 6));
+-- SELECT asText(round((tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint)::tpose, 6));
+-- NULL
+-- SELECT asText(tgeompoint 'SRID=5676;Point(-1 -1)@2001-01-01'::tpose;
+-- SELECT asText(tgeompoint 'SRID=5676;{POINT(48.7186629128278 77.7640705101509)@2001-01-01, POINT(48.71 77.76)@2001-01-02}'::tpose;
+-- SELECT asText(tgeompoint 'SRID=5676;[POINT(48.7186629128278 77.7640705101509)@2001-01-01, POINT(48.71 77.76)@2001-01-02]'::tpose;
+-- SELECT asText(tgeompoint 'SRID=5676;{[POINT(62.7866330839742 80.1435561997142)@2001-01-01, POINT(62.7866330839742 80.1435561997142)@2001-01-02],[POINT(48.7186629128278 77.7640705101509)@2001-01-03, POINT(48.71 77.76)@2001-01-04]}'::tpose;
+-------------------------------------------------------------------------------
+-- Accessor Functions
+-------------------------------------------------------------------------------
 SELECT tempSubtype(tpose 'Pose(Point(1 1), 0.5)@2001-01-01');
  tempsubtype 
 -------------
@@ -727,6 +777,11 @@ SELECT memSize(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@
      608
 (1 row)
 
+-- The orientation channel of a temporal pose. A 2D pose interpolates its
+-- stored angle linearly and that angle is its yaw, so a linear 2D temporal
+-- pose projects to a linear temporal float. A 3D pose interpolates by SLERP,
+-- whose Tait-Bryan decomposition is not linear in time, so it projects to a
+-- step function.
 SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]'));
                                astext                               
 --------------------------------------------------------------------
@@ -832,49 +887,49 @@ SELECT timeSpan(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)
 SELECT duration(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tpose 'Pose(Point(1 1), 0.5)@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT getTimestamp(tpose 'Pose(Point(1 1), 0.5)@2001-01-01');
@@ -883,6 +938,9 @@ SELECT getTimestamp(tpose 'Pose(Point(1 1), 0.5)@2001-01-01');
  Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shift and scale functions
+-------------------------------------------------------------------------------
 SELECT asText(shiftTime(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', '5 min'));
                       astext                       
 ---------------------------------------------------
@@ -931,6 +989,9 @@ SELECT asText(scaleTime(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Mon Jan 01 06:00:00 2001 PST, Pose(POINT(1 1),0.5)@Mon Jan 01 12:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Mon Jan 01 18:00:00 2001 PST, Pose(POINT(2 2),0.6)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
 SELECT tpose 'Pose(Point(1 1), 0.5)@2001-01-01' ?= pose 'Pose(Point(1 1), 0.5)';
  ?column? 
 ----------
@@ -1441,6 +1502,9 @@ SELECT timestamps(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.
  {"Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST","Wed Jan 03 00:00:00 2001 PST","Thu Jan 04 00:00:00 2001 PST","Fri Jan 05 00:00:00 2001 PST"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restriction Functions
+-------------------------------------------------------------------------------
 SELECT asText(atValue(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', pose 'Pose(Point(1 1), 0.5)'));
                       astext                       
 ---------------------------------------------------
@@ -1585,6 +1649,11 @@ SELECT asText(valueAtTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(P
  Pose(POINT(1 1),0.2)
 (1 row)
 
+-- Between two instants the rotation is interpolated along the shorter arc:
+-- in 2D from 3 to -3 radians through pi, in 3D by the spherical linear
+-- interpolation of the quaternions, which keeps two equal rotations unchanged
+-- and turns the quaternions (0.5, 0.866, 0, 0) and (0.5, -0.866, 0, 0), which
+-- are 120 degrees apart, through the rotation of 180 degrees about the X axis
 SELECT asText(valueAtTimestamp(tpose '[Pose(Point(0 0), 3)@2001-01-01, Pose(Point(2 2), -3)@2001-01-03]', '2001-01-02'), 6);
           astext           
 ---------------------------
@@ -1773,6 +1842,7 @@ SELECT asText(minusTime(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 
  {(Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asText(beforeTimestamp(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', timestamptz '2001-01-01'));
  astext 
 --------
@@ -1869,6 +1939,9 @@ SELECT asText(afterTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Poi
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 SELECT asText(insert(
   tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02], [Pose(Point(1 1), 0.5)@2001-01-03, Pose(Point(1 1), 0.6)@2001-01-04]}',
   tpose '{[Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]}'));
@@ -1978,6 +2051,9 @@ SELECT asText(deleteTime(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1
  {(Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+-------------------------------------------------------------------------------
 SELECT tpose 'Pose(Point(1 1), 0.5)@2001-01-01' = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
  ?column? 
 ----------
@@ -2554,6 +2630,7 @@ SELECT tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-
  t
 (1 row)
 
+-------------------------------------------------------------------------------/
 SELECT numSequences(tposeSeqSetGaps(ARRAY[
   tpose 'Pose(Point(1 1), 0.0)@2001-01-01',
   tpose 'Pose(Point(2 2), 0.5)@2001-01-02',
@@ -2564,6 +2641,9 @@ SELECT numSequences(tposeSeqSetGaps(ARRAY[
             3
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Geodetic temporal poses
+-------------------------------------------------------------------------------
 SELECT asText(tpose '[GeodPose(Point(1 1),0.1)@2001-01-01, GeodPose(Point(2 2),0.2)@2001-01-02]');
                                                      astext                                                     
 ----------------------------------------------------------------------------------------------------------------
@@ -2576,12 +2656,17 @@ SELECT tpose '[GeodPose(Point(1 1),0.1)@2001-01-01, GeodPose(Point(2 2),0.2)@200
  [GEODPOSE (0101000020E6100000000000000000F03F000000000000F03F, 0.1)@Mon Jan 01 00:00:00 2001 PST, GEODPOSE (0101000020E610000000000000000000400000000000000040, 0.2)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------/
+-- tprecision
 SELECT asText(tprecision(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-01 00:00:04]', interval '2 secs'));
                                                                        astext                                                                        
 -----------------------------------------------------------------------------------------------------------------------------------------------------
  [Pose(POINT(1 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 0),0)@Mon Jan 01 00:00:02 2001 PST, Pose(POINT(4 0),0)@Mon Jan 01 00:00:04 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversion to a temporal point: geometric for planar, geographic for geodetic
+-------------------------------------------------------------------------------
 SELECT asText(tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(2 2),0.2)@2001-01-02]'));
                                        astext                                       
 ------------------------------------------------------------------------------------
@@ -2606,6 +2691,7 @@ SELECT pg_typeof(tgeogpoint(tpose '[GeodPose(Point(1 1),0.1)@2001-01-01]'));
  tgeogpoint
 (1 row)
 
+-- The frame of the pose must agree with the type asked for
 SELECT asText(tgeogpoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01]'));
                   astext                   
 -------------------------------------------
@@ -2618,6 +2704,17 @@ SELECT asText(tgeompoint(tpose '[GeodPose(Point(1 1),0.1)@2001-01-01]'));
  [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------/
+-------------------------------------------------------------------------------
+-- MF-JSON output of the temporal poses built from real AIS data, that is, the
+-- recorded vessel positions with the course computed from them. The AIS table
+-- keeps the full precision of the source data, which is what exposes the
+-- output corruption reported at
+-- https://github.com/MobilityDB/MobilityDB/issues/850
+-- Every query below reports the rows whose output is not valid JSON, and must
+-- thus report zero
+-------------------------------------------------------------------------------
+-- The MF-JSON angle of a 2D pose is its yaw; a 3D pose carries a quaternion.
 SELECT asMFJSON(tpose 'SRID=4326;Pose(Point(1 2), 0.5)@2001-01-01');
                                                                                               asmfjson                                                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2630,6 +2727,8 @@ SELECT asMFJSON(tpose 'SRID=4326;Pose(Point Z(1 2 3), 1, 0, 0, 0)@2001-01-01');
  {"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],"datetimes":["2001-01-01T00:00:00-08:00"],"interpolation":"None"}
 (1 row)
 
+-- Both names of the 2D angle are read, so a document written by MobilityDB
+-- 1.3 under the name 'rotation' still parses.
 SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}'));
                       astext                       
 ---------------------------------------------------
@@ -2661,6 +2760,10 @@ SELECT count(*) FROM ais, generate_series(0, 15) AS d
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
 SELECT spans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]');
                                                               spans                                                              
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -2679,6 +2782,7 @@ SELECT splitEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1)
  {"[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]"}
 (1 row)
 
+-- A NULL operand of merge returns the other one
 SELECT merge(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', NULL::tpose) = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
  ?column? 
 ----------
@@ -2691,6 +2795,10 @@ SELECT merge(NULL::tpose, tpose 'Pose(Point(1 1), 0.5)@2001-01-01') = tpose 'Pos
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Input forms: the temporal text form, whose values may be quoted, and
+-- GeoPose through tposeFromGeoPose
+-------------------------------------------------------------------------------
 SELECT asText(tpose '"Pose(Point(1 1),0.5)"@2001-01-01');
                       astext                       
 ---------------------------------------------------
@@ -2731,6 +2839,9 @@ SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01
 
 SELECT asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)::tpose;
 ERROR:  Missing delimeter character '@': "position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":1767254400000}
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT asEWKT(tpose 'Pose(Point(1 2),0.5)@2001-01-01'::tgeompoint);
                  asewkt                  
 -----------------------------------------
@@ -2757,6 +2868,7 @@ SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
  SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- A relationship converts a pose of the other kind, as the casts convert it
 SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
  econtains 
 -----------
@@ -2793,12 +2905,16 @@ SELECT convexHull(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
  0101000020E6100000000000000000F03F0000000000000040
 (1 row)
 
+-------------------------------------------------------------------------------
+-- stops: the size of the area is the greatest distance between two positions
+-------------------------------------------------------------------------------
 SELECT asText(stops(tpose '[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0)@2001-01-02, Pose(Point(2 2),0)@2001-01-03, Pose(Point(2 2),0)@2001-01-04]'));
                                                                                                   astext                                                                                                  
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(2 2),0)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(2 2),0)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- A pose that turns in place stays at its position
 SELECT asText(stops(tpose '[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
                                                  astext                                                 
 --------------------------------------------------------------------------------------------------------

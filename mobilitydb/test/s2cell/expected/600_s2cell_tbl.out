@@ -1,12 +1,12 @@
-COPY  tbl_s2cell TO STDOUT (FORMAT BINARY);
-COPY 100
+-- Table-based tests for the static s2cell type, exercised over tbl_s2cell.
+-------------------------------------------------------------------------------
+-- Send / receive
+-------------------------------------------------------------------------------
+\copy tbl_s2cell TO 'tbl_s2cell' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_s2cell_tmp;
 NOTICE:  table "tbl_s2cell_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_s2cell_tmp AS TABLE tbl_s2cell WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_s2cell_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_s2cell_tmp FROM 'tbl_s2cell' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell_tmp t2 WHERE t1.k = t2.k AND t1.cell <> t2.cell;
  count 
 -------
@@ -14,19 +14,27 @@ SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell_tmp t2 WHERE t1.k = t2.k AND t1.c
 (1 row)
 
 DROP TABLE tbl_s2cell_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Validity predicates
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_s2cell WHERE NOT isValidCell(cell);
  count 
 -------
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Casts to / from bigint (assignment)
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_s2cell WHERE (cell::bigint)::s2cell <> cell;
  count 
 -------
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell t2 WHERE t1.cell = t2.cell;
  count 
 -------
@@ -63,3 +71,4 @@ SELECT COUNT(*) FROM tbl_s2cell t1, tbl_s2cell t2 WHERE t1.cell >= t2.cell;
   5054
 (1 row)
 
+-------------------------------------------------------------------------------

@@ -1,3 +1,8 @@
+-------------------------------------------------------------------------------
+-- A position operator with the constant on its left is estimated as its
+-- commutator with the column on its left, so the two estimates of each row
+-- below are equal.
+-------------------------------------------------------------------------------
 CREATE FUNCTION test_estimated_rows(query text)
 RETURNS bigint LANGUAGE plpgsql AS $$
 DECLARE
@@ -7,25 +12,18 @@ BEGIN
   RETURN (plan -> 0 -> 'Plan' ->> 'Plan Rows')::bigint;
 END;
 $$;
-CREATE FUNCTION
 DROP TABLE IF EXISTS tbl_tfloat_possel;
 NOTICE:  table "tbl_tfloat_possel" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tfloat_possel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.temp
 FROM tbl_tfloat t1, generate_series(1, 100) t2(k);
-SELECT 10000
 ANALYZE tbl_tfloat_possel;
-ANALYZE
 DROP TABLE IF EXISTS tbl_tbool_possel;
 NOTICE:  table "tbl_tbool_possel" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tbool_possel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.temp
 FROM tbl_tbool t1, generate_series(1, 100) t2(k);
-SELECT 10000
 ANALYZE tbl_tbool_possel;
-ANALYZE
 SELECT op, comm,
   test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
@@ -59,6 +57,9 @@ ORDER BY n;
  #>> | <<#  |         3669 |           3669
 (2 rows)
 
+-- A position operator is estimated on the dimension it compares, so a box of
+-- both dimensions estimates the rows of the box of that dimension alone, and
+-- a box without it the default selectivity of the operator
 SELECT op,
   test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
@@ -85,8 +86,6 @@ ORDER BY n;
 (8 rows)
 
 DROP TABLE tbl_tbool_possel;
-DROP TABLE
 DROP TABLE tbl_tfloat_possel;
-DROP TABLE
 DROP FUNCTION test_estimated_rows(text);
-DROP FUNCTION
+-------------------------------------------------------------------------------

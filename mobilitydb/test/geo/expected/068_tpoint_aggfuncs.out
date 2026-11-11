@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT asText(tcentroid(temp)) FROM (VALUES
 (NULL::tgeompoint),('Point(1 1)@2001-01-01'::tgeompoint),(NULL::tgeompoint)) t(temp);
                   astext                   
@@ -57,6 +58,7 @@ SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]'),
   ('Point(2 2 2)@2001-01-01')) t(temp);
 ERROR:  Cannot aggregate temporal values of different interpolation
+-------------------------------------------------------------------------------
 SELECT extent(temp) FROM (VALUES
 (NULL::tgeompoint),('Point(1 1)@2001-01-01'::tgeompoint),(NULL::tgeompoint)) t(temp);
                                         extent                                        
@@ -87,6 +89,7 @@ SELECT extent(temp) FROM (VALUES
   (tgeompoint 'Point(1 1 1)@2001-01-01'),
   (tgeompoint 'Point(1 1)@2001-01-01')) t(temp);
 ERROR:  The arguments must be of the same dimensionality
+-------------------------------------------------------------------------------
 WITH temp(inst) AS (
   SELECT tgeompoint 'Point(1 1)@2001-01-01' UNION
   SELECT tgeompoint 'Point(2 2)@2001-01-02' UNION
@@ -134,6 +137,8 @@ SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
        36900
 (1 row)
 
+-- The box of a sequence the aggregate grows holds the geodesic from (0 60) to
+-- (90 60), which passes north of latitude 60
 WITH temp(inst) AS (
   SELECT tgeogpoint 'Point(0 0)@2001-01-01' UNION
   SELECT tgeogpoint 'Point(0 60)@2001-01-02' UNION
@@ -158,6 +163,7 @@ WITH temp(inst) AS (
   SELECT tgeompoint 'Point(5 5)@2001-01-05'  )
 SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
 ERROR:  The temporal values have different value at their common timestamp Mon Jan 01 00:00:00 2001 PST
+-------------------------------------------------------------------------------
 WITH temp(inst) AS (
   SELECT tgeompoint 'Point(1 1)@2001-01-01' UNION
   SELECT tgeompoint 'Point(2 2)@2001-01-02' UNION
@@ -205,6 +211,7 @@ SELECT numInstants(appendInstant(inst ORDER BY inst, 'discrete')) FROM temp;
        36900
 (1 row)
 
+-------------------------------------------------------------------------------
 WITH temp(inst) AS (
   SELECT tgeompoint 'Point(1 1)@2001-01-01' UNION
   SELECT tgeompoint 'Point(2 2)@2001-01-02' UNION
@@ -229,6 +236,7 @@ SELECT asText(appendInstant(inst, NULL, sqrt(3), '1 day' ORDER BY inst)) FROM te
  {[POINT Z (1 1 1)@Mon Jan 01 00:00:00 2001 PST, POINT Z (2 2 2)@Tue Jan 02 00:00:00 2001 PST], [POINT Z (2 2 2)@Thu Jan 04 00:00:00 2001 PST], [POINT Z (5 5 5)@Fri Jan 05 00:00:00 2001 PST], [POINT Z (7 7 7)@Sun Jan 07 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 WITH temp1(k, inst) AS (
   SELECT 1, tgeompoint 'Point(1 1)@2001-01-01' UNION
   SELECT 2, tgeompoint 'Point(2 2)@2001-01-02' UNION
@@ -281,14 +289,13 @@ SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
        36900
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A direct call expands a copy of the box it is given
 DROP TABLE IF EXISTS tbl_extent_state;
 NOTICE:  table "tbl_extent_state" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_extent_state(b stbox, b0 stbox);
-CREATE TABLE
 INSERT INTO tbl_extent_state VALUES (stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])',
   stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])');
-INSERT 0 1
 SELECT extentTransition(b, tgeompoint 'Point(100 100)@2001-02-01'),
   extentTransition(b, stbox 'STBOX XT(((200, 200),(201, 201)),[2001-03-01, 2001-03-02])'),
   extentCombine(b, stbox 'STBOX XT(((300, 300),(301, 301)),[2001-04-01, 2001-04-02])')
@@ -305,4 +312,4 @@ SELECT b = b0 FROM tbl_extent_state;
 (1 row)
 
 DROP TABLE tbl_extent_state;
-DROP TABLE
+-------------------------------------------------------------------------------

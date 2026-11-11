@@ -1,3 +1,8 @@
+-- CREATE FUNCTION testSpatialRelsM() RETURNS void AS $$
+-- BEGIN
+-------------------------------------------------------------------------------
+-- tContains
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
   WHERE tContains(g, temp) IS NOT NULL;
  count 
@@ -5,6 +10,7 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
  16000
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
   WHERE tContains(g, seq) IS NOT NULL;
  count 
@@ -19,6 +25,8 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
  16000
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Robustness test
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
   WHERE tContains(g, temp) ?= true <> eContains(g, temp);
  count 
@@ -26,6 +34,7 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
      0
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
   WHERE tContains(g, seq) ?= true <> eContains(g, seq);
  count 
@@ -40,6 +49,9 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tDisjoint
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tDisjoint(g, temp) IS NOT NULL;
  count 
@@ -54,6 +66,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
  10000
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tDisjoint(g, seq) IS NOT NULL;
  count 
@@ -68,6 +81,8 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
  10000
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Robustness test
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tDisjoint(g, temp) ?= true <> eDisjoint(g, temp);
  count 
@@ -82,6 +97,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
      0
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tDisjoint(g, seq) ?= true <> eDisjoint(g, seq);
  count 
@@ -96,6 +112,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
      0
 (1 row)
 
+-- Temporal points
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tDisjoint(t1.temp, t2.temp) ?= true <> eDisjoint(t1.temp, t2.temp);
  count 
@@ -110,6 +127,9 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tIntersects
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tIntersects(g, temp) IS NOT NULL;
  count 
@@ -124,6 +144,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
  10000
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tIntersects(g, seq) IS NOT NULL;
  count 
@@ -138,6 +159,8 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
  10000
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Robustness test
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tIntersects(g, temp) ?= true <> eIntersects(g, temp);
  count 
@@ -152,6 +175,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
      0
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tIntersects(g, seq) ?= true <> eIntersects(g, seq);
  count 
@@ -166,6 +190,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
      0
 (1 row)
 
+-- Temporal points
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
  count 
@@ -180,6 +205,9 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tTouches
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
   WHERE tTouches(g, temp) IS NOT NULL;
  count 
@@ -194,6 +222,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
  10000
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
   WHERE tTouches(g, seq) IS NOT NULL;
  count 
@@ -208,6 +237,8 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
  16000
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Robustness test
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
   WHERE tTouches(g, temp) ?= true <> eTouches(g, temp);
  count 
@@ -222,6 +253,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom
      0
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
   WHERE tTouches(g, seq) ?= true <> eTouches(g, seq);
  count 
@@ -236,6 +268,9 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tDwithin
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tDwithin(g, temp, 10) IS NOT NULL;
  count 
@@ -257,6 +292,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
    152
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tDwithin(g, seq, 10) IS NOT NULL;
  count 
@@ -271,6 +307,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
  10000
 (1 row)
 
+-- Mixed 2D/3D
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
@@ -285,6 +322,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
      0
 (1 row)
 
+-- Geographies, on the spheroid and on the sphere
 SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint
   WHERE tDwithin(g, temp, 500000) IS NOT NULL;
  count 
@@ -306,6 +344,8 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
    148
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Robustness test
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tDwithin(g, temp, 10) ?= true <> edwithin(g, temp, 10);
  count 
@@ -327,6 +367,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
      0
 (1 row)
 
+-- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tDwithin(g, seq, 10) ?= true <> edwithin(g, seq, 10);
  count 
@@ -341,6 +382,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
      0
 (1 row)
 
+-- Mixed 2D/3D
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
  count 
@@ -355,6 +397,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
      0
 (1 row)
 
+-- Geographies, on the spheroid and on the sphere
 SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint
   WHERE tDwithin(g, temp, 500000) ?= true <> eDwithin(g, temp, 500000);
  count 
@@ -378,3 +421,9 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- END;
+-- $$ LANGUAGE plpgsql;
+-- SELECT pg_backend_pid()
+-- SELECT testTopologicalOps()
+-------------------------------------------------------------------------------

@@ -673,10 +673,10 @@ def report(extracted, added, before, after, all_pairs, types, tables):
 def trim_echo(block):
   """Return the output of a block, the comments psql echoes after it removed.
 
-  psql echoes the comments before a statement with it once its query buffer
-  holds one, so they end the block of the statement before.  No tool of the
-  tree reads a psql output; this one reads comments as #strip_sql_comments
-  of tools/scripts/check_binding_io_ownership.py does.
+  psql echoes the comments and the blank lines before the next statement as
+  it reads them, so they end the block of the statement before.  No tool of
+  the tree reads a psql output; this one reads comments as
+  #strip_sql_comments of tools/scripts/check_binding_io_ownership.py does.
   """
   lines = block.split('\n')
   in_comment = False
@@ -686,81 +686,40 @@ def trim_echo(block):
       in_comment = not line.startswith('/*')
     elif line.rstrip().endswith('*/') and not line.startswith('/*'):
       in_comment = True
-    elif not (line.strip() == '' or line.startswith('/*') or
-        line.startswith('--')):
+    elif not (line.strip() == '' or line.lstrip().startswith('/*') or
+        line.lstrip().startswith('--')):
       break
     lines.pop()
   return '\n'.join(lines)
 
 
-# psql echoes \copy <table> TO|FROM '<file>' <options> as the COPY it runs,
-# reading from its standard input or writing to its standard output
-PSQL_COPY_RE = re.compile(r"\\copy\s+(\S+)\s+(TO|FROM)\s+'[^']*'(.*)$",
-  re.IGNORECASE | re.DOTALL)
-# A psql variable, :name, which psql replaces by its value before it echoes the
-# statement; a cast (::), a time (10:30) and a JSON key ("k":v) are not one
-PSQL_VAR_RE = re.compile(r"((?<![:\w\"']):[A-Za-z_]\w*)")
-
-
-def echo_of(stmt):
-  """Return the text psql echoes for a statement, None for one it does not.
-
-  A \\copy echoes the COPY it runs; any other meta-command echoes nothing.
-  """
-  if not stmt.startswith('\\'):
-    return stmt
-  match = PSQL_COPY_RE.match(stmt)
-  if not match:
-    return None
-  table, direction, rest = match.groups()
-  return 'COPY  %s %s%s' % (table,
-    'TO STDOUT' if direction.upper() == 'TO' else 'FROM STDIN', rest)
-
-
 def out_blocks(path, statements):
-  """Return {index: output} of the statements, in order, in a psql output.
+  """Return {index: output} of the statements, in order, in an expected file.
 
-  No tool of the tree reads a psql output; the statements are split as
-  #strip_sql_comments of tools/scripts/check_binding_io_ownership.py reads
-  them, and each block ends where the echo of the next statement begins, so a
-  \\copy, which psql echoes as the COPY it runs, ends the block before it.
-  A block ends at the trailing comments psql echoes with the next statement,
-  a rule of dashes included, since a table never ends a block with one.
+  pg_regress runs psql with -a, which echoes every line it reads, so a
+  statement is found as it is written, first on its line, and its block
+  is the statement and what follows the line ending it, up to the next
+  statement or meta-command.  The comments and the blank lines before that
+  one, echoed as well, are left out of the block.
   """
   with open(path, encoding='utf-8') as handle:
     text = handle.read()
   positions = []
   pos = 0
   for index, stmt in enumerate(statements):
-    stmt = echo_of(stmt)
-    if stmt is None:
-      continue
-    if PSQL_VAR_RE.search(stmt):
-      # psql echoes the value of a variable, so the statement is found by a
-      # pattern where each variable stands for any text; it ends the block
-      # before it, and its own output is not compared
-      pattern = re.compile(r'(?m)^' + ''.join(
-        '.*?' if PSQL_VAR_RE.fullmatch(part) else re.escape(part)
-        for part in PSQL_VAR_RE.split(stmt)) + r'\n', re.DOTALL)
-      match = pattern.search(text, pos)
-      if not match:
-        continue
-      positions.append((None, match.start()))
-      pos = match.end() - 1
-      continue
-    found = text.find(stmt + '\n', pos)
-    while found > 0 and text[found - 1] != '\n':
-      found = text.find(stmt + '\n', found + 1)
+    found = text.find(stmt, pos)
+    while found > 0 and text[text.rfind('\n', 0, found) + 1:found].strip():
+      found = text.find(stmt, found + 1)
     if found < 0:
       continue
-    positions.append((index, found))
-    pos = found + len(stmt)
+    end = text.find('\n', found + len(stmt))
+    end = len(text) if end < 0 else end
+    positions.append((index, found, end))
+    pos = end
   result = {}
-  for j, (index, found) in enumerate(positions):
-    if index is None:
-      continue
-    end = positions[j + 1][1] if j + 1 < len(positions) else len(text)
-    result[index] = trim_echo(text[found:end])
+  for j, (index, found, end) in enumerate(positions):
+    stop = positions[j + 1][1] if j + 1 < len(positions) else len(text)
+    result[index] = statements[index] + trim_echo(text[end:stop])
   return result
 
 
@@ -799,8 +758,7 @@ def verify(path):
       mismatches += 1
       print('differs, %s/%s: %s' % (family, name, stmt.splitlines()[0][:100]))
   print('%d of %d extracted queries differ from their expected output, '
-    '%d echo a psql variable psql substitutes and are not located' %
-    (mismatches, len(queries), unlocated))
+    '%d are not located' % (mismatches, len(queries), unlocated))
   return mismatches
 
 

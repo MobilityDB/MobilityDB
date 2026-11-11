@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Input
+-------------------------------------------------------------------------------
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
                           tjsonb                           
 -----------------------------------------------------------
@@ -46,6 +49,7 @@ SELECT tjsonb '  {  [  {  "geom":   "Point(1 1)"  }  @2001-01-01, {"geom": "Poin
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Normalization
 SELECT tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]';
                                                          tjsonb                                                         
 ------------------------------------------------------------------------------------------------------------------------
@@ -58,6 +62,9 @@ SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Input/output in WKT, WKB and HexWKB representation
+-------------------------------------------------------------------------------
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
                           tjsonb                           
 -----------------------------------------------------------
@@ -82,6 +89,8 @@ SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Text of a JSONB value
 SELECT asText(jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}');
                   astext                  
 ------------------------------------------
@@ -118,6 +127,7 @@ SELECT asText(NULL::jsonb);
  
 (1 row)
 
+-- The text answered is the one PostgreSQL writes for the value
 SELECT COUNT(*), bool_and(asText(j) = j::text), bool_and(asText(j) = format('%s', j))
 FROM (VALUES (jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}'),
   (jsonb '[1, "two", [3, 4], {"five": 5}]'), (jsonb '"tab\tquote\"backslash\\"'),
@@ -127,6 +137,8 @@ FROM (VALUES (jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}'),
      8 | t        | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Maximum decimal digits
 SELECT tjsonbFromBinary(asBinary(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01'));
                      tjsonbfrombinary                      
 -----------------------------------------------------------
@@ -175,6 +187,11 @@ SELECT tjsonbFromBinary(asBinary(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- SELECT tjsonbFromBinary(asBinary(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', 'XDR'));
+-- SELECT tjsonbFromBinary(asBinary(tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}', 'XDR'));
+-- SELECT tjsonbFromBinary(asBinary(tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]', 'XDR'));
+-- SELECT tjsonbFromBinary(asBinary(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03], [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}', 'XDR'));
+-------------------------------------------------------------------------------
 SELECT tjsonbFromHexWKB(asHexWKB(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01'));
                      tjsonbfromhexwkb                      
 -----------------------------------------------------------
@@ -223,6 +240,13 @@ SELECT tjsonbFromHexWKB(asHexWKB(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- SELECT tjsonbFromHexWKB(asHexWKB(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', 'XDR'));
+-- SELECT tjsonbFromHexWKB(asHexWKB(tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}', 'XDR'));
+-- SELECT tjsonbFromHexWKB(asHexWKB(tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]', 'XDR'));
+-- SELECT tjsonbFromHexWKB(asHexWKB(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03], [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}', 'XDR'));
+-------------------------------------------------------------------------------
+-- Input/output in MF-JSON representation
+-------------------------------------------------------------------------------
 SELECT tjsonbFromMFJSON(asMFJSON(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01'));
                      tjsonbfrommfjson                      
 -----------------------------------------------------------
@@ -247,6 +271,9 @@ SELECT tjsonbFromMFJSON(asMFJSON(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT tjsonb('{"geom": "Point(1 1)"}'::jsonb, '2012-01-01'::timestamp);
                           tjsonb                           
 -----------------------------------------------------------
@@ -271,6 +298,9 @@ SELECT tjsonbSeqSet(ARRAY[tjsonb '[{"geom": "Point(1 1)"}@2012-01-01, {"geom": "
  {["{\"geom\": \"Point(1 1)\"}"@Sun Jan 01 00:00:00 2012 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Feb 01 00:00:00 2012 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Mar 01 00:00:00 2012 PST, "{\"geom\": \"Point(2 2)\"}"@Sun Apr 01 00:00:00 2012 PDT]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT tjsonbInst(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01');
                         tjsonbinst                         
 -----------------------------------------------------------
@@ -367,6 +397,9 @@ SELECT tjsonbSeqSet(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Append functions
+-------------------------------------------------------------------------------
 SELECT appendInstant(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-02');
                                                      appendinstant                                                      
 ------------------------------------------------------------------------------------------------------------------------
@@ -403,6 +436,9 @@ SELECT appendSequence(tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Poin
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Tue Jan 02 00:00:00 2001 PST], ["{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Cast functions
+-------------------------------------------------------------------------------
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01'::text;
                            text                            
 -----------------------------------------------------------
@@ -451,6 +487,9 @@ SELECT (tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessor Functions
+-------------------------------------------------------------------------------
 SELECT tempSubtype(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01');
  tempsubtype 
 -------------
@@ -604,49 +643,49 @@ SELECT timeSpan(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1
 SELECT duration(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03], [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03], [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT getTimestamp(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01');
@@ -655,6 +694,9 @@ SELECT getTimestamp(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01');
  Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shift and scale functions
+-------------------------------------------------------------------------------
 SELECT shiftTime(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', '5 min');
                          shifttime                         
 -----------------------------------------------------------
@@ -703,6 +745,9 @@ SELECT scaleTime(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 12:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Mon Jan 01 18:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' ?= jsonb '{"geom": "Point(1 1)"}';
  ?column? 
 ----------
@@ -1213,6 +1258,9 @@ SELECT timestamps(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1
  {"Mon Jan 01 00:00:00 2001 PST","Wed Jan 03 00:00:00 2001 PST","Thu Jan 04 00:00:00 2001 PST","Fri Jan 05 00:00:00 2001 PST"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restriction Functions
+-------------------------------------------------------------------------------
 SELECT atValue(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', jsonb '{"geom": "Point(1 1)"}');
                           atvalue                          
 -----------------------------------------------------------
@@ -1525,6 +1573,9 @@ SELECT minusTime(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 
  {("{\"geom\": \"Point(1 1)\"}"@Tue Jan 02 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 SELECT deleteTime(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', timestamptz '2001-01-01');
  deletetime 
 ------------
@@ -1621,6 +1672,9 @@ SELECT deleteTime(tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1
  {("{\"geom\": \"Point(1 1)\"}"@Tue Jan 02 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+-------------------------------------------------------------------------------
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' = tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
  ?column? 
 ----------
@@ -2197,6 +2251,8 @@ SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A NULL operand of merge returns the other one
 SELECT merge(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', NULL::tjsonb) = tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
  ?column? 
 ----------

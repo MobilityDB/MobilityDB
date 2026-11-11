@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- extent(tnpoint): mixed temporal subtypes folded together, NULLs filtered
+-- round to 10 decimal places to suppress platform floating-point ULP differences
 SELECT round(extent(temp), 10) FROM ( VALUES
   (NULL::tnpoint),
   ('Npoint(1, 0.5)@2001-01-01'),
@@ -16,6 +19,7 @@ SELECT round(extent(temp), 10) FROM ( VALUES
  SRID=5676;STBOX XT(((48.7186629128,77.7640705102),(62.786633084,80.1435561997)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
+-- extent(tnpoint): linear sequence + step sequenceset over disjoint footprints
 SELECT round(extent(temp), 10) FROM ( VALUES
   (tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'),
   ('{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.1)@2001-01-04, Npoint(2, 0.2)@2001-01-05]}')) t(temp);
@@ -24,6 +28,7 @@ SELECT round(extent(temp), 10) FROM ( VALUES
  SRID=5676;STBOX XT(((15.8969020444,77.7640705102),(69.7903688697,94.2216113741)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
 
+-- extent(tnpoint): single row degenerate cases
 SELECT round(extent(temp), 10) FROM ( VALUES (tnpoint 'Npoint(1, 0.5)@2001-01-01')) t(temp);
                                                                      round                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -36,6 +41,8 @@ SELECT round(extent(temp), 10) FROM ( VALUES (NULL::tnpoint)) t(temp);
  
 (1 row)
 
+-- appendInstant(tnpoint): the box of a sequence the aggregate grows holds the
+-- stretch of route 3 between 0.5 and 0.9, which reaches beyond its end points
 WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(3, 0.1)@2001-01-01' UNION
   SELECT tnpoint 'Npoint(3, 0.5)@2001-01-02' UNION
@@ -49,3 +56,4 @@ FROM temp;
  SRID=5676;STBOX XT(((20.414158,3.697358),(86.64554,95.837916)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]) | t
 (1 row)
 
+-------------------------------------------------------------------------------

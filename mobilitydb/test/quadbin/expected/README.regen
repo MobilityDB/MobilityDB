@@ -1,19 +1,19 @@
 Expected-output regeneration for the quadbin pg_regress suite.
 
-The run_compare harness (mobilitydb/test/scripts/test.cmake) diffs the
-byte-exact psql `-e` transcript of each sql/<name>.sql against
-expected/<name>.out. The harness configures the test cluster with a fixed
-locale so transcripts are reproducible across machines:
+pg_regress runs sql/<name>.sql and compares its output with
+expected/<name>.out. It runs the tests with fixed settings so that the output
+is reproducible across machines:
 
   timezone = 'America/Los_Angeles'
   datestyle = 'Postgres, MDY'
+  intervalstyle = 'postgres_verbose'
 
 so timestamps render as e.g. `@Sun Jan 01 08:00:00 2012 PST`. Regenerate the
-goldens through the harness (not a hand-run psql, whose timezone/datestyle
-differ) and review every diff line before committing:
+goldens through the suite (not a hand-run psql, whose settings differ) and
+review every diff line before committing:
 
-  ctest -R quadbin            # produces build/tmptest/out/<name>.out
-  cp build/tmptest/out/<name>.out mobilitydb/test/quadbin/expected/<name>.out
+  MOBILITYDB_TESTS=quadbin ctest -R regress
+  cp build/mobilitydb/test/regress/results/<name>.out mobilitydb/test/quadbin/expected/<name>.out
 
 355_quadbin_golden.out is the kernel golden-vector file: every statement
 is a single boolean assertion that evaluates to `t` against the CARTO

@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Test all operators without having collected statistics
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tstzset WHERE t = tstzset '{2001-06-01, 2001-07-07}';
  count 
 -------
@@ -544,6 +547,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE t -|- tstzspanset '{[2001-06-01, 2001
      0
 (1 row)
 
+-- Test the commutator
 SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspan '[2001-01-01, 2001-06-01]' <<# t;
  count 
 -------
@@ -556,12 +560,13 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspan '[2001-01-01, 2001-06-01]' &<# 
     55
 (1 row)
 
+-------------------------------------------------------------------------------
 analyze tbl_tstzspan;
-ANALYZE
 analyze tbl_tstzspanset;
-ANALYZE
 analyze tbl_tstzset;
-ANALYZE
+-------------------------------------------------------------------------------
+-- Test all operators after having collected statistics
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tstzset WHERE t = tstzset '{2001-06-01, 2001-07-07}';
  count 
 -------
@@ -1108,6 +1113,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE t -|- tstzspanset '{[2001-06-01, 2001
      0
 (1 row)
 
+-- Test the commutator
 SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspan '[2001-01-01, 2001-06-01]' <<# t;
  count 
 -------
@@ -1120,6 +1126,13 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspan '[2001-01-01, 2001-06-01]' &<# 
     55
 (1 row)
 
+-------------------------------------------------------------------------------
+--SELECT tstzspan_statistics_validate();
+--VACUUM ANALYSE tbl_tstzspan;
+--VACUUM ANALYSE tbl_tstzspanset;
+--VACUUM ANALYSE tbl_tstzset;
+--SELECT COUNT(*) FROM execution_stats WHERE abs(PlanRows-ActualRows) > 10
+-- STATISTICS COLLECTION FUNCTIONS
 CREATE OR REPLACE FUNCTION tstzspan_statistics_validate()
 RETURNS CHAR(10) AS $$
 DECLARE
@@ -2958,4 +2971,4 @@ END LOOP;
 RETURN 'THE END';
 END;
 $$ LANGUAGE 'plpgsql';
-CREATE FUNCTION
+-------------------------------------------------------------------------------

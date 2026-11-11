@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- Input
+-------------------------------------------------------------------------------
+-- Maximum decimal digits
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789),0.5)@2001-01-01', 6);
                                            astext                                           
 --------------------------------------------------------------------------------------------
@@ -34,6 +38,7 @@ SELECT asText(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1.
  Interp=Step;POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2.123457 2.123457),0.5)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1.123457 1.123457),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(3.123457 3.123457),0.5)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(3.123457 3.123457),0.5)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01')));
                                     asewkt                                    
 ------------------------------------------------------------------------------
@@ -88,6 +93,7 @@ SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1
  Interp=Step;POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 2),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 4),0.5)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(1 2),0.5)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(3 4),0.5)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- A polyhedral surface is written as the multipolygon of its faces and read back as the surface
 SELECT asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));Pose(Point(1 1 5),1,0,0,0)@2001-01-01');
                                                                                                                                                      asmfjson                                                                                                                                                      
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -131,6 +137,7 @@ SELECT trgeometryFromMFJSON(asMFJSON(temp)) = temp, ST_GeometryType(geometry(trg
  t        | ST_PolyhedralSurface
 (1 row)
 
+-- Additional attributes
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01',1,0,2)));
                                          asewkt                                         
 ----------------------------------------------------------------------------------------
@@ -184,6 +191,7 @@ SELECT trgeometryFromMFJSON('{"type":"MovingPoint","sequences":{"coordinates":[[
 ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
 SELECT trgeometryFromMFJSON('{"type":"MovingPoint","sequences":[],"interpolation":"Linear"}');
 ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+-----------------------------------------------------------------------
 SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01')));
                                     asewkt                                    
 ------------------------------------------------------------------------------
@@ -265,6 +273,9 @@ SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3
 /* Errors */
 SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01', 'ABC')));
 ERROR:  Invalid value for endian flag
+-------------------------------------------------------------------------------
+-- Output
+-------------------------------------------------------------------------------
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01');
                                     astext                                    
 ------------------------------------------------------------------------------
@@ -411,6 +422,8 @@ SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@201
  {"type":"MovingRigidGeometry","bbox":[[-2.16,-1.16],[6.16,7.16]],"period":{"begin":"2019-01-01T00:00:00-08:00","end":"2019-01-02T00:00:00-08:00","lower_inc":true,"upper_inc":true},"geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5},{"position":{"lat":4,"lon":3},"yaw":0.5}],"datetimes":["2019-01-01T00:00:00-08:00","2019-01-02T00:00:00-08:00"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
 (1 row)
 
+-- Additional pretty-print attribute
+-- Notice that the Linux and Mac versions of json_c produce slightly different versions of the pretty-print JSON
 SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01', 1, 3, 15)));
                                     astext                                    
 ------------------------------------------------------------------------------
@@ -435,6 +448,8 @@ SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1
  POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.5)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(3 3),0.5)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(3 3),0.5)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- asMFJSON produces valid JSON that round-trips through trgeometryFromMFJSON
+-- for geographic-range pose coordinates
 SELECT asText(trgeometryFromMFJSON(asMFJSON(v, 0, 0, 6))) = asText(v) FROM (VALUES (
   trgeometry 'POLYGON((-0.5 -1,-0.5 1,0.5 1,0.5 -1,-0.5 -1));[Pose(POINT(-104.5 41.5),0)@2025-12-24 20:05:06+00, Pose(POINT(-104.5 41.5),-2.5)@2025-12-24 20:05:07+00]'
 )) t(v);
@@ -443,6 +458,8 @@ SELECT asText(trgeometryFromMFJSON(asMFJSON(v, 0, 0, 6))) = asText(v) FROM (VALU
  t
 (1 row)
 
+-- A value in step interpolation reads back from its output and its EWKT, the
+-- interpolation, and the SRID before it, preceding the reference geometry
 SELECT v::text::trgeometry = v, trgeometryFromText(asEWKT(v)) = v FROM (VALUES
   (trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02]'),
   (trgeometry 'SRID=3812,Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02], [Pose(Point(3 3),0.5)@2001-01-03, Pose(Point(4 4),1)@2001-01-04]}')
@@ -456,6 +473,7 @@ SELECT v::text::trgeometry = v, trgeometryFromText(asEWKT(v)) = v FROM (VALUES
 /* Errors */
 SELECT asMFJSON(trgeometry 'SRID=123456;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 2);
 ERROR:  SRID 123456 unknown in spatial_ref_sys table
+-------------------------------------------------------------------------------
 SELECT asBinary(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01');
                                                                                                                 asbinary                                                                                                                
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -519,9 +537,11 @@ SELECT asHexEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1
 /* Errors */
 SELECT asEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01', 'ABCD');
 ERROR:  Invalid value for endian flag
+-------------------------------------------------------------------------------
 SELECT astext('{}'::geometry[]);
  astext 
 --------
  
 (1 row)
 
+----------------------------------------------------------------------

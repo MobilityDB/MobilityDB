@@ -1,12 +1,12 @@
-COPY  tbl_s2cellset TO STDOUT (FORMAT BINARY);
-COPY 100
+-- Table-based tests for the s2cellset type, exercised over tbl_s2cellset.
+-------------------------------------------------------------------------------
+-- Send / receive
+-------------------------------------------------------------------------------
+\copy tbl_s2cellset TO 'tbl_s2cellset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_s2cellset_tmp;
 NOTICE:  table "tbl_s2cellset_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_s2cellset_tmp AS TABLE tbl_s2cellset WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_s2cellset_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_s2cellset_tmp FROM 'tbl_s2cellset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_s2cellset t1, tbl_s2cellset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
  count 
 -------
@@ -14,7 +14,9 @@ SELECT COUNT(*) FROM tbl_s2cellset t1, tbl_s2cellset_tmp t2 WHERE t1.k = t2.k AN
 (1 row)
 
 DROP TABLE tbl_s2cellset_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT SUM(numValues(s)) FROM tbl_s2cellset;
  sum 
 -----
@@ -27,6 +29,9 @@ SELECT COUNT(*) FROM tbl_s2cellset WHERE memSize(s) IS NOT NULL;
     90
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_s2cellset t1, tbl_s2cellset t2 WHERE t1.s = t2.s;
  count 
 -------
@@ -51,3 +56,4 @@ SELECT MAX(hashExtended(s, 1)) FROM tbl_s2cellset;
  8911930631274729521
 (1 row)
 
+-------------------------------------------------------------------------------

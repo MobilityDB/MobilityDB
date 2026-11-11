@@ -1,3 +1,12 @@
+-- tquadbin type: input/output, typmod, ASSIGNMENT casts to/from tbigint,
+-- comparison operators, btree/hash indexing, binary IO round-trip.
+--
+-- The basetype is hex-encoded; quadbin '480fffffffffffff' is the z0 world
+-- cell, '48427fffffffffff' is tile(3,5,4), '48a6227affffffff' is res 10.
+-------------------------------------------------------------------------------
+-- Input/output
+-------------------------------------------------------------------------------
+-- Temporal instant
 SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00';
                    tquadbin                    
 -----------------------------------------------
@@ -13,6 +22,8 @@ SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00,';
 ERROR:  Could not parse tquadbin value: Extraneous characters at the end
 LINE 1: SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00,';
                         ^
+-------------------------------------------------------------------------------
+-- Temporal discrete sequence
 SELECT tquadbin ' { 480fffffffffffff@2001-01-01 08:00:00 , 48427fffffffffff@2001-01-01 08:05:00 , 48a6227affffffff@2001-01-01 08:06:00 } ';
                                                                    tquadbin                                                                    
 -----------------------------------------------------------------------------------------------------------------------------------------------
@@ -30,6 +41,8 @@ SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02';
 ERROR:  Could not parse tquadbin value: Missing closing brace
 LINE 2: SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427ffffffff...
                         ^
+-------------------------------------------------------------------------------
+-- Temporal continuous sequence (step interpolation inherited from int8)
 SELECT tquadbin '[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00]';
                                             tquadbin                                            
 ------------------------------------------------------------------------------------------------
@@ -42,12 +55,18 @@ SELECT tquadbin 'Interp=Step;[480fffffffffffff@2001-01-01 08:00:00,48427ffffffff
  [480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal sequence set
 SELECT tquadbin '{[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00],[48a6227affffffff@2001-01-01 08:10:00]}';
                                                                      tquadbin                                                                      
 ---------------------------------------------------------------------------------------------------------------------------------------------------
  {[480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST], [48a6227affffffff@Mon Jan 01 08:10:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- MF-JSON input/output (quadbin cell ids are serialized as their int8 value,
+-- mirroring the tbigint sibling)
+-------------------------------------------------------------------------------
 SELECT asMFJSON(tquadbin '480fffffffffffff@2012-01-01 08:00:00');
                                                                                     asmfjson                                                                                     
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -72,6 +91,7 @@ SELECT asMFJSON(tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-0
  {"type":"MovingQuadbin","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"sequences":[{"values":["480fffffffffffff","48427fffffffffff"],"datetimes":["2001-01-01T00:00:00-08:00","2001-01-02T00:00:00-08:00"],"lower_inc":true,"upper_inc":true},{"values":["48a6227affffffff","48a6227affffffff"],"datetimes":["2001-01-03T00:00:00-08:00","2001-01-04T00:00:00-08:00"],"lower_inc":true,"upper_inc":true}],"interpolation":"Step"}
 (1 row)
 
+-- Bound the bbox precision so the output is platform-independent
 SELECT asMFJSON(tquadbin '480fffffffffffff@2012-01-01 08:00:00', 1, 3, 6);
                  asmfjson                  
 -------------------------------------------
@@ -109,6 +129,7 @@ SELECT asMFJSON(tquadbin '480fffffffffffff@2012-01-01 08:00:00', 1, 3, 6);
  }
 (1 row)
 
+-- Round-trip: tquadbinFromMFJSON(asMFJSON(...)) preserves the value
 SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '480fffffffffffff@2012-01-01 08:00:00'));
               tquadbinfrommfjson               
 -----------------------------------------------
@@ -133,6 +154,8 @@ SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '{[480fffffffffffff@2001-01-01, 4842
  {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST], [48a6227affffffff@Wed Jan 03 00:00:00 2001 PST, 48a6227affffffff@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- A cell is written as its text form in a JSON string, and an integer is still
+-- read as the cell it encodes; the bounding box is the spatiotemporal box
 SELECT asMFJSON(tquadbin '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]', 1, 3, 6);
                  asmfjson                  
 -------------------------------------------
@@ -181,6 +204,9 @@ SELECT tquadbinFromMFJSON(replace(asMFJSON(tquadbin '48a6227affffffff@2001-01-01
  48a6227affffffff@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Typmod
+-------------------------------------------------------------------------------
 SELECT tquadbin(Instant) '480fffffffffffff@2012-01-01 08:00:00';
                    tquadbin                    
 -----------------------------------------------
@@ -206,6 +232,9 @@ SELECT tquadbin(Garbage) '480fffffffffffff@2012-01-01 08:00:00';
 ERROR:  Invalid temporal type modifier: garbage
 LINE 1: SELECT tquadbin(Garbage) '480fffffffffffff@2012-01-01 08:00:...
                ^
+-------------------------------------------------------------------------------
+-- WKB / HexWKB round-trips
+-------------------------------------------------------------------------------
 SELECT asText(tquadbinFromBinary(asBinary(tquadbin '480fffffffffffff@2001-01-01')));
                     astext                     
 -----------------------------------------------
@@ -230,6 +259,7 @@ SELECT asText(tquadbinFromBinary(asBinary(tquadbin '{[480fffffffffffff@2001-01-0
  {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST], [48a6227affffffff@Wed Jan 03 00:00:00 2001 PST, 48a6227affffffff@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- Little-endian (NDR)
 SELECT asText(tquadbinFromBinary(asBinary(tquadbin '480fffffffffffff@2001-01-01', 'NDR')));
                     astext                     
 -----------------------------------------------
@@ -242,6 +272,11 @@ SELECT asText(tquadbinFromHexWKB(asHexWKB(tquadbin '480fffffffffffff@2001-01-01'
  480fffffffffffff@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Extended forms
+-- A cell states SRID 4326, so the extended forms state it and a stated SRID
+-- is refused unless it is that one
+-------------------------------------------------------------------------------
 SELECT asEWKT(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
                                                   asewkt                                                  
 ----------------------------------------------------------------------------------------------------------
@@ -290,16 +325,21 @@ SELECT asEWKT(tquadbinFromEWKT('SRID=4326;480fffffffffffff@2001-01-01'));
  SRID=4326;480fffffffffffff@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- The extended binary form states SRID 4326
 SELECT asHexEWKB(tquadbin '480fffffffffffff@2001-01-01', 'XDR') LIKE '%000010E6%';
  ?column? 
 ----------
  t
 (1 row)
 
+-- Another SRID is refused, in text and in binary
 SELECT tquadbinFromEWKT('SRID=3857;480fffffffffffff@2001-01-01');
 ERROR:  The SRID of the quadbin (4326) does not match the SRID of the tquadbin (3857)
 SELECT tquadbinFromHexEWKB(replace(asHexEWKB(tquadbin '480fffffffffffff@2001-01-01', 'XDR'), '000010E6', '00000F11'));
 ERROR:  The SRID of the WKB (3857) does not match the SRID of the tquadbin (4326)
+-------------------------------------------------------------------------------
+-- Assignment casts to/from tbigint (explicit AS ASSIGNMENT, bidirectional)
+-------------------------------------------------------------------------------
 SELECT (tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint;
                      tbigint                      
 --------------------------------------------------
@@ -312,6 +352,8 @@ SELECT (tbigint '5192650370358181887@2012-01-01 08:00:00')::tquadbin;
  480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
 (1 row)
 
+-- Not every integer is a cell: an integer encoding no QUADBIN cell is refused
+-- by the cast, and in MF-JSON and WKB input, as in text input
 /* Errors */
 SELECT (tbigint '[5192650370358181887@2001-01-01, 42@2001-01-02]')::tquadbin;
 ERROR:  The value 42 does not encode a valid quadbin index
@@ -327,6 +369,7 @@ ERROR:  The value 42 does not encode a valid quadbin index
 SELECT quadbinsetFromHexWKB(replace(asHexWKB(quadbinset '{480fffffffffffff}',
   'XDR'), '480FFFFFFFFFFFFF', '000000000000002A'));
 ERROR:  The value 42 does not encode a valid quadbin index
+-- Round-trip preserves value
 SELECT ((tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint)::tquadbin
   = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
  ?column? 
@@ -334,13 +377,11 @@ SELECT ((tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint)::tquadbin
  t
 (1 row)
 
+-- Assignment-context: cast accepted in INSERT without ::
 DROP TABLE IF EXISTS tbl_tquadbin_assign;
 NOTICE:  table "tbl_tquadbin_assign" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_assign(k int, temp tquadbin);
-CREATE TABLE
 INSERT INTO tbl_tquadbin_assign VALUES (1, tbigint '5192650370358181887@2012-01-01 08:00:00');
-INSERT 0 1
 SELECT * FROM tbl_tquadbin_assign;
  k |                     temp                      
 ---+-----------------------------------------------
@@ -348,10 +389,15 @@ SELECT * FROM tbl_tquadbin_assign;
 (1 row)
 
 DROP TABLE tbl_tquadbin_assign;
-DROP TABLE
+-- The cast is NOT implicit
 /* Errors */
+\set VERBOSITY terse
 SELECT tbigint '5192650370358181887@2012-01-01 08:00:00' = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
 ERROR:  operator does not exist: tbigint = tquadbin at character 71
+\set VERBOSITY default
+-------------------------------------------------------------------------------
+-- Comparison operators + btree/hash
+-------------------------------------------------------------------------------
 SELECT tquadbin '480fffffffffffff@2012-01-01' = tquadbin '480fffffffffffff@2012-01-01';
  ?column? 
 ----------
@@ -370,25 +416,21 @@ SELECT cmp(tquadbin '480fffffffffffff@2012-01-01', tquadbin '480fffffffffffff@20
    0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Send/receive (binary IO round-trip)
+-------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_tquadbin_binio;
 NOTICE:  table "tbl_tquadbin_binio" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_binio(k int, temp tquadbin);
-CREATE TABLE
 INSERT INTO tbl_tquadbin_binio VALUES
   (1, tquadbin '480fffffffffffff@2012-01-01 08:00:00'),
   (2, tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'),
   (3, tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
-INSERT 0 3
-COPY  tbl_tquadbin_binio TO STDOUT (FORMAT BINARY);
-COPY 3
+\copy tbl_tquadbin_binio TO 'tbl_tquadbin_binio' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tquadbin_binio_tmp;
 NOTICE:  table "tbl_tquadbin_binio_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tquadbin_binio_tmp AS TABLE tbl_tquadbin_binio WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_tquadbin_binio_tmp FROM STDIN (FORMAT BINARY);
-COPY 3
+\copy tbl_tquadbin_binio_tmp FROM 'tbl_tquadbin_binio' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tquadbin_binio t1, tbl_tquadbin_binio_tmp t2
   WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 
@@ -397,9 +439,10 @@ SELECT COUNT(*) FROM tbl_tquadbin_binio t1, tbl_tquadbin_binio_tmp t2
 (1 row)
 
 DROP TABLE tbl_tquadbin_binio;
-DROP TABLE
 DROP TABLE tbl_tquadbin_binio_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Constructors (inherited Temporal<T> surface)
+-------------------------------------------------------------------------------
 SELECT tquadbin(quadbin '480fffffffffffff', timestamptz '2001-01-01 08:00');
                    tquadbin                    
 -----------------------------------------------
@@ -436,6 +479,9 @@ SELECT tquadbinSeqSet(ARRAY[tquadbinSeq(ARRAY[tquadbin '480fffffffffffff@2001-01
  {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversions / transformations
+-------------------------------------------------------------------------------
 SELECT timeSpan(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
                            timespan                           
 --------------------------------------------------------------
@@ -486,6 +532,9 @@ SELECT scaleTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-0
  [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT tempSubtype(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
  tempsubtype 
 -------------
@@ -531,7 +580,7 @@ SELECT getTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-
 SELECT duration(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT numInstants(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 48a6227affffffff@2001-01-03}');
@@ -590,6 +639,9 @@ SELECT (rec).value, (rec).time FROM
  48427fffffffffff | {[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
 (2 rows)
 
+-------------------------------------------------------------------------------
+-- Restrictions
+-------------------------------------------------------------------------------
 SELECT atValue(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
                                                                       atvalue                                                                      
 ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -638,6 +690,9 @@ SELECT afterTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2
  (480fffffffffffff@Wed Jan 03 00:00:00 2001 PST, 480fffffffffffff@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modifications
+-------------------------------------------------------------------------------
 SELECT insert(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', tquadbin '[48a6227affffffff@2001-01-04, 48a6227affffffff@2001-01-05]');
                                                                                             insert                                                                                            
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -682,3 +737,4 @@ SELECT splitEachNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@
  {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
 (1 row)
 
+-------------------------------------------------------------------------------

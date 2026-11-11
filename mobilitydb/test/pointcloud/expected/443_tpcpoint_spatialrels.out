@@ -1,105 +1,136 @@
-SELECT eIntersects(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(0 0)');
+-- Value-level tests for the spatial-relationship functions on
+-- tpcpoint — eIntersects / aIntersects / eDisjoint / aDisjoint /
+-- eDwithin / aDwithin.
+\set p1 'tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), ''2024-01-01''::timestamptz)'
+\set p2 'tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), ''2024-01-02''::timestamptz)'
+\set inst1 ':p1'
+\set seq 'tpcpointSeq(ARRAY[:p1, :p2])'
+-------------------------------------------------------------------------------
+-- eIntersects
+-------------------------------------------------------------------------------
+SELECT eIntersects(:p1, geometry 'SRID=0;POINT(0 0)');
  eintersects 
 -------------
  t
 (1 row)
 
-SELECT eIntersects(geometry 'SRID=0;POINT(0 0)', tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+SELECT eIntersects(geometry 'SRID=0;POINT(0 0)', :p1);
  eintersects 
 -------------
  t
 (1 row)
 
-SELECT eIntersects(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(99 99)');
+SELECT eIntersects(:p1, geometry 'SRID=0;POINT(99 99)');
  eintersects 
 -------------
  f
 (1 row)
 
-SELECT eIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(0 0)');
+SELECT eIntersects(:seq, geometry 'SRID=0;POINT(0 0)');
  eintersects 
 -------------
  t
 (1 row)
 
-SELECT eIntersects(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+SELECT eIntersects(:p1, :p1);
  eintersects 
 -------------
  t
 (1 row)
 
-SELECT aIntersects(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(0 0)');
+-------------------------------------------------------------------------------
+-- aIntersects
+-------------------------------------------------------------------------------
+SELECT aIntersects(:p1, geometry 'SRID=0;POINT(0 0)');
  aintersects 
 -------------
  t
 (1 row)
 
-SELECT aIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(0 0)');
+SELECT aIntersects(:seq, geometry 'SRID=0;POINT(0 0)');
  aintersects 
 -------------
  f
 (1 row)
 
-SELECT eDisjoint(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(99 99)');
+-------------------------------------------------------------------------------
+-- eDisjoint
+-------------------------------------------------------------------------------
+SELECT eDisjoint(:p1, geometry 'SRID=0;POINT(99 99)');
  edisjoint 
 -----------
  t
 (1 row)
 
-SELECT eDisjoint(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(0 0)');
+SELECT eDisjoint(:p1, geometry 'SRID=0;POINT(0 0)');
  edisjoint 
 -----------
  f
 (1 row)
 
-SELECT eDisjoint(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(99 99)');
+SELECT eDisjoint(:seq, geometry 'SRID=0;POINT(99 99)');
  edisjoint 
 -----------
  t
 (1 row)
 
-SELECT aDisjoint(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(99 99)');
+-------------------------------------------------------------------------------
+-- aDisjoint
+-------------------------------------------------------------------------------
+SELECT aDisjoint(:p1, geometry 'SRID=0;POINT(99 99)');
  adisjoint 
 -----------
  t
 (1 row)
 
-SELECT aDisjoint(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(99 99)');
+SELECT aDisjoint(:seq, geometry 'SRID=0;POINT(99 99)');
  adisjoint 
 -----------
  t
 (1 row)
 
-SELECT eDwithin(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(1 1)', 5.0);
+-------------------------------------------------------------------------------
+-- eDwithin / aDwithin
+-------------------------------------------------------------------------------
+SELECT eDwithin(:p1, geometry 'SRID=0;POINT(1 1)', 5.0);
  edwithin 
 ----------
  t
 (1 row)
 
-SELECT eDwithin(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(99 99)', 5.0);
+SELECT eDwithin(:p1, geometry 'SRID=0;POINT(99 99)', 5.0);
  edwithin 
 ----------
  f
 (1 row)
 
-SELECT aDwithin(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(0 0)', 1.0);
+SELECT aDwithin(:p1, geometry 'SRID=0;POINT(0 0)', 1.0);
  adwithin 
 ----------
  t
 (1 row)
 
-SELECT eDwithin(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), 1e-9);
+SELECT eDwithin(:p1, :p1, 1e-9);
  edwithin 
 ----------
  t
 (1 row)
 
-SELECT eDwithin(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(0 0)', 1.0);
+SELECT eDwithin(:seq, geometry 'SRID=0;POINT(0 0)', 1.0);
  edwithin 
 ----------
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The matrix of the cast target
+--
+-- A point cloud schema states its dimensions by name, so Z is one of them and
+-- not a property of the type: a schema declaring X and Y alone answers every
+-- planar relationship, while one carrying Z meets the engine's refusal of a Z
+-- value in a planar relationship, as a temporal geometry point does.
+-------------------------------------------------------------------------------
 INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (7, 0,
 '<?xml version="1.0" encoding="UTF-8"?>
 <pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"
@@ -125,62 +156,65 @@ INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (7, 0,
   </pc:metadata>
 </pc:PointCloudSchema>')
   ON CONFLICT (pcid) DO NOTHING;
-INSERT 0 1
-SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+\set flat 'tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), ''2024-01-01''::timestamptz)'
+\set square 'geometry ''SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))'''
+SELECT eContains(:square, :flat);
  econtains 
 -----------
  t
 (1 row)
 
-SELECT aContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT aContains(:square, :flat);
  acontains 
 -----------
  t
 (1 row)
 
-SELECT eCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT eCovers(:square, :flat);
  ecovers 
 ---------
  t
 (1 row)
 
-SELECT aCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT aCovers(:square, :flat);
  acovers 
 ---------
  t
 (1 row)
 
-SELECT eTouches(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT eTouches(:square, :flat);
  etouches 
 ----------
  f
 (1 row)
 
-SELECT eTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))');
+SELECT eTouches(:flat, :square);
  etouches 
 ----------
  f
 (1 row)
 
-SELECT aTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))');
+SELECT aTouches(:flat, :square);
  atouches 
 ----------
  f
 (1 row)
 
-SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS ec_agrees,
-       eCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = eCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS ecv_agrees,
-       eTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') = eTouches((tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint, geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') AS etc_agrees,
-       aContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = aContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS ac_agrees;
+-- Every new cell agrees with the cast written out by hand
+SELECT eContains(:square, :flat) = eContains(:square, (:flat)::tgeompoint) AS ec_agrees,
+       eCovers(:square, :flat) = eCovers(:square, (:flat)::tgeompoint) AS ecv_agrees,
+       eTouches(:flat, :square) = eTouches((:flat)::tgeompoint, :square) AS etc_agrees,
+       aContains(:square, :flat) = aContains(:square, (:flat)::tgeompoint) AS ac_agrees;
  ec_agrees | ecv_agrees | etc_agrees | ac_agrees 
 -----------+------------+------------+-----------
  t         | t          | t          | t
 (1 row)
 
 /* Errors: a schema carrying Z in a planar relationship */
-SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+SELECT eContains(:square, :p1);
 ERROR:  The tgeompoint cannot have Z dimension
 CONTEXT:  SQL function "econtains" statement 1
-SELECT eTouches(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))');
+SELECT eTouches(:p1, :square);
 ERROR:  The tgeompoint cannot have Z dimension
 CONTEXT:  SQL function "etouches" statement 1
+-------------------------------------------------------------------------------

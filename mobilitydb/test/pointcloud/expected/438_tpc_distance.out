@@ -1,33 +1,43 @@
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+-- Value-level tests for the |=| (nearest-approach distance) operator.
+\set p1 'tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), ''2024-01-01''::timestamptz)'
+\set p2 'tpcpoint(PC_MakePoint(1, ARRAY[3.0, 4.0, 0.0]::float[]), ''2024-01-01''::timestamptz)'
+\set box_at_origin 'tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1)'
+\set box_far       'tpcboxZT(3, 4, 0, 3, 4, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1)'
+-- Self-distance is zero.
+SELECT (:p1) |=| (:p1);
  ?column? 
 ----------
         0
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcpoint(PC_MakePoint(1, ARRAY[3.0, 4.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+-- 3-4-5 right triangle in the xy plane.
+SELECT (:p1) |=| (:p2);
  ?column? 
 ----------
         5
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[3.0, 4.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+SELECT (:p2) |=| (:p1);
  ?column? 
 ----------
         5
 (1 row)
 
-SELECT (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1)) |=| (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1));
+-- Box-to-box at the same coords.
+SELECT (:box_at_origin) |=| (:box_at_origin);
  ?column? 
 ----------
         0
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1));
+-- Distance from a point to a box at the same location is zero.
+SELECT (:p1) |=| (:box_at_origin);
  ?column? 
 ----------
         0
 (1 row)
 
+-- Disjoint time spans yield NULL, as the temporal geo nearest approach does.
 SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
                  '2024-01-01'::timestamptz)) |=|
        (tpcboxZT(0, 0, 0, 0, 0, 0,
@@ -37,50 +47,71 @@ SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcbox
+-- Pcid mismatch is an error: values of two schemas cannot be compared. The
+-- box is written rather than built, 999 naming no registered schema.
+SELECT (:p1) |=| (tpcbox
   'TPCBOX(ZT(((0,0,0),(0,0,0)),[2024-01-01, 2024-01-02]), 999)') > 1e10;
 ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
+-- The same holds between two temporal pointcloud values. A second schema is
+-- registered as a copy of the first one, as the typmod test does.
 INSERT INTO pointcloud_formats (pcid, srid, schema)
 SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
-INSERT 0 1
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| tpcpoint(PC_MakePoint(2, ARRAY[1.0, 1.0, 1.0]::float[]),
+SELECT (:p1) |=| tpcpoint(PC_MakePoint(2, ARRAY[1.0, 1.0, 1.0]::float[]),
   '2024-01-01'::timestamptz);
 ERROR:  Operation on pcpoint values with different schemas: 1 vs 2
 DELETE FROM pointcloud_formats WHERE pcid = 2;
-DELETE 1
-SELECT round((tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-01 00:30:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]) |=| tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[12.0, 12.0, 12.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]))::numeric, 4);
+-------------------------------------------------------------------------------
+-- Temporal-temporal nearest-approach distance is the minimum of the
+-- SYNCHRONIZED distance between the two values, not the distance between
+-- their bounding boxes: the box-corner value is only reachable when the
+-- two values are simultaneously at their extreme positions, which need
+-- not happen.
+-------------------------------------------------------------------------------
+\set d1 '''2024-01-01 00:00:00''::timestamptz'
+\set d2 '''2024-01-01 00:30:00''::timestamptz'
+\set d3 '''2024-01-02 00:00:00''::timestamptz'
+\set s1 'tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), :d1), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), :d2), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), :d3)])'
+\set s2 'tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), :d1), tpcpoint(PC_MakePoint(1, ARRAY[12.0, 12.0, 12.0]::float[]), :d3)])'
+-- Synchronized minimum, symmetric in both argument orders. It is strictly
+-- greater than the bounding-box distance between [1,3] and [10,12] on
+-- each axis (7 * sqrt(3) ~ 12.1244): the values never simultaneously
+-- reach their closest box corners.
+SELECT round((:s1 |=| :s2)::numeric, 4);
   round  
 ---------
  13.9286
 (1 row)
 
-SELECT round((tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[12.0, 12.0, 12.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]) |=| tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-01 00:30:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]))::numeric, 4);
+SELECT round((:s2 |=| :s1)::numeric, 4);
   round  
 ---------
  13.9286
 (1 row)
 
-SELECT (tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-01 00:30:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]) |=| tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[12.0, 12.0, 12.0]::float[]), '2024-01-02 00:00:00'::timestamptz)])) > 12.1244;
+SELECT (:s1 |=| :s2) > 12.1244;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-01 00:30:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02 00:00:00'::timestamptz)])) |=| (tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-01 00:30:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]));
+-- Nearest-approach distance of a value with itself is zero.
+SELECT (:s1) |=| (:s1);
  ?column? 
 ----------
         0
 (1 row)
 
-SELECT eDwithin(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-01 00:30:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[12.0, 12.0, 12.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]), 13);
+-- Consistency with eDwithin on both sides of the synchronized minimum.
+SELECT eDwithin(:s1, :s2, 13);
  edwithin 
 ----------
  f
 (1 row)
 
-SELECT eDwithin(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-01 00:30:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[12.0, 12.0, 12.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]), 14);
+SELECT eDwithin(:s1, :s2, 14);
  edwithin 
 ----------
  t
 (1 row)
 
+-------------------------------------------------------------------------------

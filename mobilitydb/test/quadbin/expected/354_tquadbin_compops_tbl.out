@@ -1,3 +1,7 @@
+-- Table-based tests for the tquadbin comparison operators.
+-------------------------------------------------------------------------------
+-- Ever / always equal and not equal
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_quadbin t1, tbl_tquadbin t2 WHERE eEqual(t1.qb, t2.temp) IS NOT NULL;
  count 
 -------
@@ -34,6 +38,9 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE aNotEqual(t1.temp, t
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal equal and not equal
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_quadbin t1, tbl_tquadbin t2 WHERE tEqual(t1.qb, t2.temp) IS NOT NULL;
  count 
 -------
@@ -58,6 +65,12 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tNotEqual(t1.temp, t
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Ever and always overlaps with a box: a cell ever lies in a box where its
+-- restriction to the box is not empty, and always where its restriction to
+-- the complement is empty
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE t1.k <= 30 AND t2.k <= 30
 AND t1.temp ?&& expandSpace(stbox(t2.temp), 1) <> (atStbox(t1.temp, expandSpace(stbox(t2.temp), 1)) IS NOT NULL);
  count 
@@ -100,3 +113,4 @@ AND t1.temp && expandSpace(stbox(t2.temp), 1);
     30
 (1 row)
 
+-------------------------------------------------------------------------------
