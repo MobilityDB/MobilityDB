@@ -39,6 +39,10 @@ width of that band are 27 km and 664 km at resolution 0, 11 m and 948 m at resol
 43 mm at resolution 9, and 0.1 mm and 6.7 mm at resolution 10. A QUADBIN tile has the same edges in
 both models, since its sides are meridians and parallels.
 
+A cell need not be convex: the extra vertex of an H3 edge crossing a face of the icosahedron can
+make the cell reflex there, as it does on the sphere for `8108bffffffffff`, so a walk decides
+membership and the owner of a vertex without assuming it.
+
 ## Each vertex is stated once
 
 Two neighbouring cells state their shared vertex from one canonical source, so that a vertex of one
