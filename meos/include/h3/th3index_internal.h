@@ -107,6 +107,21 @@ extern int h3_segment_cells(double lon1, double lat1, double lon2,
 extern H3Index h3_latlng_deg_to_cell(double lat_deg, double lng_deg,
   int32 resolution);
 
+/* The canonical outline of a cell: the vertices of the vertex index in
+ * degrees, with the extra vertex of an edge crossing a face of the
+ * icosahedron read from the directed edge leaving the lower of its two
+ * cells, so that two neighbours state every vertex they share with the same
+ * doubles. Body in h3_geo.c. */
+typedef struct
+{
+  int count;                              /**< Number of vertices */
+  double lon[MAX_CELL_BNDRY_VERTS];       /**< Longitudes in degrees */
+  double lat[MAX_CELL_BNDRY_VERTS];       /**< Latitudes in degrees */
+  H3Index across[MAX_CELL_BNDRY_VERTS];   /**< Cell across the edge from
+                                               vertex k to vertex k + 1 */
+} H3Outline;
+extern bool h3_cell_outline(H3Index cell, H3Outline *out);
+
 /* Hierarchy — next-resolution conveniences. Bodies in
  * th3index_hierarchy.c. */
 extern H3Index h3_cell_to_parent_next_meos(H3Index cell);

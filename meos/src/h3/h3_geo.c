@@ -66,6 +66,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "h3/h3index.h"
+#include "h3/th3index_internal.h"  /* H3Outline */
 #include "geo/tgeo_spatialfuncs.h"  /* ensure_srid_is_latlong */
 #include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/tcellindex.h"
@@ -275,6 +276,79 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
   if (latLngToCell(&ll, resolution, &cell) != E_SUCCESS)
     return (H3Index) 0;
   return cell;
+}
+
+/**
+ * @brief Return in the last argument the canonical outline of a cell
+ * @details Two neighbouring cells must state the vertices they share with the
+ * same doubles, so that a boundary point belongs to exactly one of them. The
+ * boundary #h3_cell_planes reads, `cellToBoundary`, does not: neighbours
+ * state a shared vertex with different doubles in 168 of the 360 pairs at
+ * resolution 0 and 16318 of the 6050520 at resolution 5. The outline reads
+ * each vertex once, from the vertex index (`cellToVertexes`,
+ * `vertexToLatLng`), in degrees by `radsToDegs`. An edge crossing a face of
+ * the icosahedron bends at an extra vertex, which the vertex index does not
+ * name; it is read from the directed edge leaving the lower of the two cells
+ * sharing the edge (`directedEdgeToBoundary`), so both cells read it from the
+ * same edge. Each edge of the outline records the cell across it.
+ * @param[in] cell Cell
+ * @param[out] out Outline, its vertices in the order of the vertex index
+ * @return False on an error of the H3 library
+ */
+bool
+h3_cell_outline(H3Index cell, H3Outline *out)
+{
+  H3Index verts[6] = { 0 };
+  H3Index nbrs[7] = { 0 };
+  if (cellToVertexes(cell, verts) != E_SUCCESS ||
+      gridDisk(cell, 1, nbrs) != E_SUCCESS)
+    return false;
+  int n = isPentagon(cell) ? 5 : 6;
+  out->count = 0;
+  for (int k = 0; k < n; k++)
+  {
+    LatLng v;
+    if (vertexToLatLng(verts[k], &v) != E_SUCCESS)
+      return false;
+    /* The neighbour sharing the vertices k and k + 1 */
+    H3Index next = verts[(k + 1) % n], across = 0;
+    for (int j = 0; j < 7 && ! across; j++)
+    {
+      if (nbrs[j] == 0 || nbrs[j] == cell)
+        continue;
+      H3Index nv[6] = { 0 };
+      if (cellToVertexes(nbrs[j], nv) != E_SUCCESS)
+        return false;
+      int shared = 0;
+      for (int m = 0; m < 6; m++)
+        if (nv[m] != 0 && (nv[m] == verts[k] || nv[m] == next))
+          shared++;
+      if (shared == 2)
+        across = nbrs[j];
+    }
+    if (! across)
+      return false;
+    out->lon[out->count] = radsToDegs(v.lng);
+    out->lat[out->count] = radsToDegs(v.lat);
+    out->across[out->count++] = across;
+    /* The extra vertex of the edge, from the directed edge leaving the lower
+     * of the two cells */
+    H3Index edge;
+    CellBoundary eb;
+    if (cellsToDirectedEdge(cell < across ? cell : across,
+          cell < across ? across : cell, &edge) != E_SUCCESS ||
+        directedEdgeToBoundary(edge, &eb) != E_SUCCESS)
+      return false;
+    if (eb.numVerts == 3)
+    {
+      out->lon[out->count] = radsToDegs(eb.verts[1].lng);
+      out->lat[out->count] = radsToDegs(eb.verts[1].lat);
+      out->across[out->count++] = across;
+    }
+    else if (eb.numVerts != 2)
+      return false;
+  }
+  return true;
 }
 
 /**
