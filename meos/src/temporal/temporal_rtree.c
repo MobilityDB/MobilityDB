@@ -2320,7 +2320,7 @@ rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
  * spatiotemporal boxes the distance is spatial and, when both boxes carry a
  * time dimension, infinite if their time extents are disjoint (mirroring
  * #nad_stbox_stbox); for temporal boxes the same holds through
- * #nad_tbox_tbox; for spans it is the one-dimensional gap.
+ * #nad_tbox_tbox_intl; for spans it is the one-dimensional gap.
  * @param[in] rtree The RTree providing the box type
  * @param[in] query,box Bounding boxes of type @p rtree->bboxtype
  */
@@ -2328,7 +2328,7 @@ static double
 rtree_bbox_distance(const RTree *rtree, const void *query, const void *box)
 {
   if (rtree->bboxtype == T_TBOX)
-    return distance_double(nad_tbox_tbox((const TBox *) query,
+    return distance_double(nad_tbox_tbox_intl((const TBox *) query,
       (const TBox *) box), ((const TBox *) query)->span.basetype);
   /* An index orders a box whose distance raises an error last, as it orders
    * a box sharing no time with the query, whose distance is DBL_MAX.

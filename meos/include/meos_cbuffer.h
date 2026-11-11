@@ -43,6 +43,14 @@
 #include <meos.h>
 #include <meos_geo.h>
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 /*****************************************************************************
  * Type definitions
  *****************************************************************************/
@@ -438,5 +446,9 @@ extern Temporal *ttouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *
 extern Temporal *ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif /* __MEOS_CBUFFER_H__ */

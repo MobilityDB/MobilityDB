@@ -45,6 +45,14 @@
 #include <meos_internal.h>
 #include <pgtypes.h>
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 /*****************************************************************************/
 
 /* Input and output functions */
@@ -440,5 +448,9 @@ extern Temporal *tne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp);
 extern Temporal *tne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb);
 
 /*****************************************************************************/
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif /* __MEOS_JSON_H__ */

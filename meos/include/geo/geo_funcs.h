@@ -296,6 +296,7 @@ typedef struct
 } ExactArc;
 
 extern void exact_arc_bound(ExactArc *arc, double box[4]);
+extern void exact_arc_from_edge(const Edge *e, ExactArc *arc);
 
 extern bool point_arc_within_exact(const double *p, const ExactArc *arc,
   double dist);
