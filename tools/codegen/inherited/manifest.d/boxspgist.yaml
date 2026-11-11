@@ -44,7 +44,7 @@ boxspgist:
       datumget:    DatumGetTboxP
       pgetdatum:   TboxPGetDatum
       kdnode:      false
-      leafrecheck: all
+      leafrecheck: strategy
       distance: >-
         distance_double(nad_tbox_tbox(&box, key),
                 key->span.basetype)
