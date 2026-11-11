@@ -1,5 +1,12 @@
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tgeometry AS TABLE tbl_tgeometry;
+CREATE TEMP TABLE tbl_tgeography AS TABLE tbl_tgeography;
+ANALYZE tbl_tgeometry, tbl_tgeography;
+
 DROP INDEX IF EXISTS tbl_tgeometry_rtree_idx;
 DROP INDEX IF EXISTS tbl_tgeography_rtree_idx;
 

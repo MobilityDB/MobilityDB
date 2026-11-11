@@ -2,6 +2,16 @@
 -- Tests of operators for span types.
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_intspan AS TABLE tbl_intspan;
+CREATE TEMP TABLE tbl_bigintspan AS TABLE tbl_bigintspan;
+CREATE TEMP TABLE tbl_floatspan AS TABLE tbl_floatspan;
+CREATE TEMP TABLE tbl_datespan AS TABLE tbl_datespan;
+CREATE TEMP TABLE tbl_tstzspan AS TABLE tbl_tstzspan;
+ANALYZE tbl_intspan, tbl_bigintspan, tbl_floatspan, tbl_datespan, tbl_tstzspan;
+
 DROP INDEX IF EXISTS tbl_intspan_rtree_idx;
 DROP INDEX IF EXISTS tbl_bigintspan_rtree_idx;
 DROP INDEX IF EXISTS tbl_floatspan_rtree_idx;

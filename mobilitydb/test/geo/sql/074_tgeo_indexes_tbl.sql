@@ -1,3 +1,13 @@
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tgeometry3D_big AS TABLE tbl_tgeometry3D_big;
+CREATE TEMP TABLE tbl_tgeography3D_big AS TABLE tbl_tgeography3D_big;
+CREATE TEMP TABLE tbl_tgeometry AS TABLE tbl_tgeometry;
+CREATE TEMP TABLE tbl_tgeometry3D AS TABLE tbl_tgeometry3D;
+ANALYZE tbl_tgeometry3D_big, tbl_tgeography3D_big, tbl_tgeometry,
+  tbl_tgeometry3D;
+
 CREATE TEMP TABLE test AS
 SELECT NULL::tgeometry FROM generate_series(1, 10);
 ANALYZE test;

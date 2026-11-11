@@ -2,6 +2,12 @@
 -- Send/receive functions
 --------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tnpoint AS TABLE tbl_tnpoint;
+ANALYZE tbl_tnpoint;
+
 \copy tbl_tnpoint TO 'tbl_tnpoint' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tnpoint_tmp;
 CREATE TEMP TABLE tbl_tnpoint_tmp AS TABLE tbl_tnpoint WITH NO DATA;

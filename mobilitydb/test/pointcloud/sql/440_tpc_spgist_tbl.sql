@@ -6,6 +6,13 @@
 -- tpcpoint quadtree
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tpcpoint AS TABLE tbl_tpcpoint;
+CREATE TEMP TABLE tbl_tpcpatch AS TABLE tbl_tpcpatch;
+ANALYZE tbl_tpcpoint, tbl_tpcpatch;
+
 CREATE INDEX tbl_tpcpoint_quadtree_idx ON tbl_tpcpoint USING spgist(temp);
 
 SET enable_seqscan = on;
