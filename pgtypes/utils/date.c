@@ -230,7 +230,7 @@ pg_date_out(DateADT date)
 /**
  * @ingroup meos_base_date
  * @brief Return a date from a year, a month, and a day
- * @note Derived from PostgreSQL function @p date_make()
+ * @note Derived from PostgreSQL function @p make_date()
  */
 #if MEOS
 DateADT
@@ -1795,7 +1795,7 @@ pg_time_smaller(TimeADT time1, TimeADT time2)
 
 /**
  * @ingroup meos_base_time
- * @brief Return true if two times overalp
+ * @brief Return true if two times overlap
  * @details Implements the SQL OVERLAPS operator, although in this case none
  * of the inputs is null
  * @note Derived from PostgreSQL function @p overlaps_time()
@@ -1807,6 +1807,21 @@ time_overlaps(TimeADT ts1, TimeADT te1, TimeADT ts2, TimeADT te2)
   (DatumGetTimeADT(t1) > DatumGetTimeADT(t2))
 #define TIMEADT_LT(t1,t2) \
   (DatumGetTimeADT(t1) < DatumGetTimeADT(t2))
+
+  /* Take ts1 and ts2 as the lesser endpoints of their intervals, as
+   * PostgreSQL's overlaps_time does and as #timestamp_overlaps does */
+  if (TIMEADT_GT(ts1, te1))
+  {
+    TimeADT tt = ts1;
+    ts1 = te1;
+    te1 = tt;
+  }
+  if (TIMEADT_GT(ts2, te2))
+  {
+    TimeADT tt = ts2;
+    ts2 = te2;
+    te2 = tt;
+  }
 
   /*
    * We can consider three cases: ts1 > ts2, ts1 < ts2, ts1 = ts2
@@ -2610,7 +2625,7 @@ minus_timetz_interval(const TimeTzADT *timetz, const Interval *interv)
 
 /**
  * @ingroup meos_base_time
- * @brief Return true if two times with time zoneoverlap
+ * @brief Return true if two times with time zone overlap
  * @details Implements the SQL OVERLAPS operator, although in this case none
  * of the inputs is null
  * @note Derived from PostgreSQL function @p overlaps_timetz()
@@ -2619,6 +2634,21 @@ bool
 timetz_overlaps(const TimeTzADT *ts1, const TimeTzADT *te1,
   const TimeTzADT *ts2, const TimeTzADT *te2)
 {
+  /* Take ts1 and ts2 as the lesser endpoints of their intervals, as
+   * PostgreSQL's overlaps_timetz does and as #timestamp_overlaps does */
+  if (pg_timetz_gt(ts1, te1))
+  {
+    const TimeTzADT *tt = ts1;
+    ts1 = te1;
+    te1 = tt;
+  }
+  if (pg_timetz_gt(ts2, te2))
+  {
+    const TimeTzADT *tt = ts2;
+    ts2 = te2;
+    te2 = tt;
+  }
+
   /*
    * We can consider three cases: ts1 > ts2, ts1 < ts2, ts1 = ts2
    */

@@ -138,7 +138,7 @@ int32_to_int16(int32 num)
 /**
  * @ingroup meos_internal_int
  * @brief Convert an int32 number into a boolean value
- * @note Derived from PostgreSQL function @p int4bool()
+ * @note Derived from PostgreSQL function @p int4_bool()
  */
 bool
 int32_to_bool(int32 num)
@@ -152,7 +152,7 @@ int32_to_bool(int32 num)
 /**
  * @ingroup meos_internal_int
  * @brief Convert a boolean value into an int32 number
- * @note Derived from PostgreSQL function @p boolint4()
+ * @note Derived from PostgreSQL function @p bool_int4()
  */
 int32
 bool_to_int32(bool b)
