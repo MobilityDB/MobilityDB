@@ -981,8 +981,8 @@ tsequence_insert(const TSequence *seq1, const TSequence *seq2, bool connect)
  * instant is in the middle, it will be connected to the next and previous
  * instants in the result. If the instant is at the beginning or at the end,
  * the time span of the sequence is reduced. In this case the bounds of the
- * sequence will be adjusted accordingly, inclusive at the beginning and
- * exclusive at the end.
+ * sequence are inclusive at the beginning and at the end, the first and the
+ * last instants of the result being instants the value takes.
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  */
@@ -1013,7 +1013,7 @@ tcontseq_delete_timestamptz(const TSequence *seq, TimestampTz t)
       if (i == 0)
         lower_inc1 = true;
       else if (i == seq->count - 1)
-        upper_inc1 = false;
+        upper_inc1 = true;
     }
   }
   if (ninsts == 0)
@@ -1047,8 +1047,8 @@ tsequence_delete_timestamptz(const TSequence *seq, TimestampTz t, bool connect)
     return (Temporal *) tdiscseq_minus_timestamptz(seq, t);
   else
     return connect ?
-      (Temporal *) tcontseq_minus_timestamptz(seq, t) :
-      (Temporal *) tcontseq_delete_timestamptz(seq, t);
+      (Temporal *) tcontseq_delete_timestamptz(seq, t) :
+      (Temporal *) tcontseq_minus_timestamptz(seq, t);
 }
 
 /**
@@ -1057,8 +1057,8 @@ tsequence_delete_timestamptz(const TSequence *seq, TimestampTz t, bool connect)
  * instant is in the middle, it will be connected to the next and previous
  * instants in the result. If the instant is at the beginning or at the end,
  * the time span of the sequence is reduced. In this case the bounds of the
- * sequence will be adjusted accordingly, inclusive at the beginning and
- * exclusive at the end.
+ * sequence are inclusive at the beginning and at the end, the first and the
+ * last instants of the result being instants the value takes.
  * @param[in] seq Temporal sequence
  * @param[in] s Timestamp set
  */
@@ -1192,7 +1192,7 @@ tcontseq_delete_tstzspan(const TSequence *seq, const Span *s)
       if (i == 0)
         lower_inc1 = true;
       else if (i == seq->count - 1)
-        upper_inc1 = false;
+        upper_inc1 = true;
     }
   }
   if (ninsts == 0)
@@ -1270,7 +1270,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
       if (i == 0)
         lower_inc1 = true;
       else if (i == seq->count - 1)
-        upper_inc1 = false;
+        upper_inc1 = true;
     }
   }
   if (ninsts == 0)
@@ -1784,9 +1784,9 @@ temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
       break;
     default: /* TSEQUENCESET */
       result = connect ?
+        (Temporal *) tsequenceset_delete_timestamptz((TSequenceSet *) work, t) :
         (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) work, t,
-          REST_MINUS) :
-        (Temporal *) tsequenceset_delete_timestamptz((TSequenceSet *) work, t);
+          REST_MINUS);
   }
   if (work != temp)
     pfree(work);
