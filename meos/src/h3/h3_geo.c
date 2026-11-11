@@ -67,6 +67,7 @@
 #include <meos_internal_geo.h>
 #include "h3/h3index.h"
 #include "h3/th3index_internal.h"  /* H3Outline */
+#include "geo/geo_funcs.h"  /* cross_product_sign_offset, ExactSum */
 #include "geo/tgeo_spatialfuncs.h"  /* ensure_srid_is_latlong */
 #include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/tcellindex.h"
@@ -349,6 +350,84 @@ h3_cell_outline(H3Index cell, H3Outline *out)
       return false;
   }
   return true;
+}
+
+/**
+ * @brief Return the offset that reads a longitude in the chart of another
+ * @details The offset, 0 or a multiple of 360, puts the longitude less than
+ * 180 degrees from the reference, so that an edge of an outline crossing the
+ * antimeridian is read along its path. An edge of a cell spans far less than
+ * 180 degrees of longitude, so the rounded difference decides the chart; the
+ * offset is never added to the longitude, whose shifted value would round
+ */
+static double
+h3_lon_offset(double ref, double lon)
+{
+  if (lon - ref > 180.0)
+    return -360.0;
+  if (ref - lon > 180.0)
+    return 360.0;
+  return 0.0;
+}
+
+/**
+ * @brief Return 1 if the cell left of the edge from A to B lies south of it,
+ * or east of it where it runs north-south, and 0 otherwise
+ * @details The sign of the longitude difference, then of the latitude
+ * difference, each exact, B read in the chart of A
+ */
+static int
+h3_edge_south_side(double ax, double ay, double bx, double by)
+{
+  int dx = offset_x_cmp(bx, h3_lon_offset(ax, bx), ax);
+  if (dx != 0)
+    return dx < 0;
+  return by < ay;
+}
+
+/**
+ * @brief Return true if a cell holds the edge of its outline from the vertex
+ * k to the vertex k + 1
+ * @details A cell holds its north and west sides: an edge belongs to the cell
+ * south of it, and to the cell east of it where it runs north-south. The
+ * outline turns counter-clockwise, so the cell lies left of each edge, and
+ * the edge is a north side when it runs west. Each sign is exact on the
+ * doubles of the outline, which two neighbours share, so exactly one of the
+ * two cells holds the edge.
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the first vertex of the edge
+ */
+bool
+h3_outline_edge_held(const H3Outline *o, int k)
+{
+  int k1 = (k + 1) % o->count;
+  return h3_edge_south_side(o->lon[k], o->lat[k], o->lon[k1], o->lat[k1]);
+}
+
+/**
+ * @brief Return true if a cell holds the vertex k of its outline
+ * @details A vertex belongs to the cell whose corner there opens south, or
+ * east where one of its edges runs due south. A convex corner opens south
+ * when the cell lies south of both its edges, a reflex one when it lies
+ * south of either; the turn of the corner is #cross_product_sign_offset on
+ * the neighbouring vertices read in the chart of the vertex, so no shifted
+ * longitude is rounded.
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the vertex
+ */
+bool
+h3_outline_vertex_held(const H3Outline *o, int k)
+{
+  int kp = (k + o->count - 1) % o->count, kn = (k + 1) % o->count;
+  double x = o->lon[k], y = o->lat[k];
+  double px = o->lon[kp], py = o->lat[kp];
+  double nx = o->lon[kn], ny = o->lat[kn];
+  int in = h3_edge_south_side(px, py, x, y);
+  int out = h3_edge_south_side(x, y, nx, ny);
+  /* (here - prev) x (next - here), prev and next read in the chart of here */
+  int turn = cross_product_sign_offset(px, py, x, y, x, y, nx, ny,
+    - h3_lon_offset(x, px), h3_lon_offset(x, nx));
+  return turn > 0 ? (in && out) : (in || out);
 }
 
 /**
