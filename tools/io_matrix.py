@@ -72,7 +72,8 @@ the SQL sources, the public headers and the declared types.
 With `--repo NAME=PATH:ROOT[,ROOT...]`, once per binding, the tool builds the
 table "Every binding, every format" instead: one row per binding, read from
 the files git tracks under each ROOT of the checkout PATH, at the commit that
-checkout holds.  The roots name the binding's object layer; its FFI layer
+checkout holds; a ROOT under which git tracks no file holds a surface the
+binding's build generates, and its files on disk are read instead.  The roots name the binding's object layer; its FFI layer
 names every MEOS function the catalog lists, so it is left out by not naming
 it.  A binding reaches a format through the names of chapter 18 of the
 manual (`portable_sql_porting_io`), the counterparts of the four functions a
@@ -444,15 +445,32 @@ def git(path, *args):
   return result.stdout
 
 
-def binding_names(path, roots):
-  """Return [(file stem, names)] of every file git tracks under the roots.
+def root_files(path, root):
+  """Return the files of the binding's surface under one root of `path`.
 
-  The names are those a file defines (#DEFINITION_RE), normalized by #normal.
+  These are the files git tracks under the root.  A root under which git
+  tracks no file holds a surface the binding's build generates, as those of
+  MobilitySpark, MobilityFlink and MobilityKafka, so its files on disk are
+  read, as the last build of the checkout left them.
+  """
+  tracked = [f for f in git(path, 'ls-files', '--', root).split('\n') if f]
+  if tracked:
+    return tracked
+  generated = []
+  for directory, _, names in os.walk(os.path.join(path, root)):
+    generated += [os.path.relpath(os.path.join(directory, n), path)
+      for n in names]
+  return sorted(generated)
+
+
+def binding_names(path, roots):
+  """Return [(file stem, names)] of every file of the surface under the roots.
+
+  The files are those #root_files returns; the names are those a file defines
+  (#DEFINITION_RE), normalized by #normal.
   """
   result = []
-  for f in git(path, 'ls-files', '--', *roots).split('\n'):
-    if not f:
-      continue
+  for f in (f for root in roots for f in root_files(path, root)):
     try:
       with open(os.path.join(path, f), encoding='utf-8',
           errors='replace') as handle:
