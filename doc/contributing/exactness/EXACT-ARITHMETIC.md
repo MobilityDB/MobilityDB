@@ -336,11 +336,12 @@ layer holds it for every question. The phases, each a series of pull requests:
    sense of `incircle_sign`); one rule for a segment of no length (a point, as
    `wide_segment_meet` reads it); one angular origin. Each is a pull request touching every caller
    of what it changes.
-4. **One arithmetic (EA1, EA4 to EA7).** One ladder, one pair type, one wide number, one search,
+4. **One arithmetic (EA1, EA4 to EA8).** One ladder, one pair type, one wide number, one search,
    every sign with every tier; then one arc model and one time model, each merge after a
-   differential.
+   differential; then the double nearest a transcendental value (EA8), read by the one search.
 5. **The arithmetic in its own file (EA3)**, moved in the shape the merges give it, so that each
-   function moves once.
+   function moves once; then the signs on coordinates shifted by multiples of 360 (EA9), in the
+   file EA3 gives the layer.
 
 MobilityDB #3484 and EA2, its tier for the signs of degree six, come after: EA1 shows that no tier
 of the engine brings a tie of degree six near the cost of lwgeom's answer to a row, so its speed
@@ -497,6 +498,33 @@ the candidate moves of `point_distance_offset_filter` become side functions it r
 The gaps of Section 4.4 close on the one ladder: tier 2 where it is missing (after EA2), tier 3
 for `dot_product_sign`, `triple_product_sign` and `incircle_sign`, each with a witness past the
 range of its expansions.
+
+### EA8. The double nearest a transcendental value
+
+The one search (EA6) rounds a value its exact signs can compare, a polynomial in doubles. The cell
+walks ([MobilityDB #3544](https://github.com/MobilityDB/MobilityDB/pull/3544), decisions D6 and
+D7) need the double nearest a transcendental value: the cosine and sine of input degrees, a
+geodetic position being the vector of the correctly rounded cos(lat)·cos(lon), cos(lat)·sin(lon)
+and sin(lat); the longitude and latitude of an exact S2 corner, the angles of a rational point; and
+the latitude of a QUADBIN row, atan(sinh(...)) of a rational. EA8 adds no second search: a series
+evaluated in the wide tier encloses the value with a certified bound, and the one search reads that
+enclosure as a side function, refining it until it lies clear of the midpoint between two doubles.
+The values that are rational, at multiples of 30 degrees (Niven: the only rational sines and
+cosines at rational degrees), come from a table, so the cosine of 90 and the sine of 180 are 0
+exactly. Its witness is MPFR at 300 to 2400 bits, as the oracles of the cell walks read it
+(`h3_geodetic_oracle.py` of the oracle kit, its `d6`).
+
+### EA9. The signs on coordinates shifted by multiples of 360
+
+A cell straddling the antimeridian is read with vertices shifted by 360 degrees, and the shift is
+not exact in doubles: 21.599649137590685 + 360 rounds, and two cells then no longer state the
+vertex they share with the same number. The orientation sign (`cross_product_sign`) and the
+location of a point in rings (`point_in_rings_exact`) take each coordinate as a double plus an
+exact integer multiple of 360, a sum read exactly through the one ladder of EA1, so the cells read
+no second point-in-ring of their own. It edits the layer's file, so it comes after EA3. Its
+witness is the planar oracle of the cell walks (`cgal_h3_planar.cpp` of the oracle kit, the
+shifts exact in `CGAL::Gmpq`), whose control reading the shift in doubles leaves 158 positions
+of its acceptance set held by no cell or by two.
 
 ## 8. Decisions asked of the committers
 
