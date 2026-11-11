@@ -452,14 +452,20 @@ datum_jsonb_insert(Datum jb, Datum keys, Datum count, Datum newjb, Datum after)
 
 /**
  * @brief Return true if a JSON path expression returns at least one item for a
- * JSONB value
+ * JSONB value, or the error value of a Boolean when the path raises an error
+ * it is asked to suppress
+ * @note The answer of PostgreSQL is then missing (SQL NULL), told apart from
+ * true by the error value of #jsonb_to_alphanum_error, as #datum_jsonb_to_alphanum
+ * tells a missing key
  */
 Datum
 datum_jsonb_path_exists(Datum jb, Datum jp, Datum vars, Datum silent, Datum tz)
 {
-  return Int32GetDatum(pg_jsonb_path_exists(DatumGetJsonbP(jb),
+  int result = pg_jsonb_path_exists(DatumGetJsonbP(jb),
     DatumGetJsonPathP(jp), (vars == (Datum) 0) ? NULL : DatumGetJsonbP(vars),
-    DatumGetBool(silent), DatumGetBool(tz)));
+    DatumGetBool(silent), DatumGetBool(tz));
+  return (result < 0) ? jsonb_to_alphanum_error(T_BOOL) :
+    BoolGetDatum(result == 1);
 }
 
 /*****************************************************************************/
@@ -2087,6 +2093,10 @@ tjsonb_path_exists_intl(const Temporal *temp, const JsonPath *jp,
   lfinfo.param[2] = BoolGetDatum(silent);
   lfinfo.param[3] = BoolGetDatum(tz);
   lfinfo.restype = T_TBOOL;
+  /* An instant whose path raises a suppressed error has no answer and is left
+   * out, as in #tjsonb_path_query_first */
+  lfinfo.reserror = jsonb_to_alphanum_error(T_BOOL);
+  lfinfo.resnull = NULL_DELETE;
   return tfunc_temporal(temp, &lfinfo);
 }
 

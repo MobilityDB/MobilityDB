@@ -533,12 +533,35 @@ lfunc_set_bool(const Set *set, LiftedFunctionInfo *lfinfo, int *count)
   assert(set); assert(lfinfo); assert(count);
   int last_errno = meos_errno_reset();
   bool *result = palloc(sizeof(bool) * set->count);
+  int nvalues = 0;
   for (int i = 0; i < set->count; i++)
-    result[i] = DatumGetBool(lfunc_base(SET_VAL_N(set, i), lfinfo));
+  {
+    Datum value = lfunc_base(SET_VAL_N(set, i), lfinfo);
+    /* A value without an answer is left out with NULL_DELETE and leaves the
+     * result without one otherwise, as in #lfunc_set_dispatch */
+    if (lfinfo->resnull && datum_eq(value, lfinfo->reserror, T_BOOL))
+    {
+#if JSON
+      if (lfinfo->resnull == NULL_DELETE)
+        continue;
+#endif /* JSON */
+      pfree(result);
+      meos_errno_restore(last_errno);
+      return NULL;
+    }
+    result[nvalues++] = DatumGetBool(value);
+  }
+  /* Every value left out leaves no result, as in #lfunc_set_dispatch */
+  if (nvalues == 0)
+  {
+    pfree(result);
+    meos_errno_restore(last_errno);
+    return NULL;
+  }
   result = (bool *) lifting_result(result, last_errno);
   if (! result)
     return NULL;
-  *count = set->count;
+  *count = nvalues;
   return result;
 }
 

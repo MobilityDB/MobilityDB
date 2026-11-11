@@ -831,6 +831,10 @@ jsonbset_path_exists_intl(const Set *set, const JsonPath *jp,
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
   lfinfo.param[3] = BoolGetDatum(tz);
+  /* A value whose path raises a suppressed error has no answer and is left
+   * out, as in #jsonbset_path_query_first */
+  lfinfo.reserror = jsonb_to_alphanum_error(T_BOOL);
+  lfinfo.resnull = NULL_DELETE;
   return lfunc_set_bool(set, &lfinfo, count);
 }
 
