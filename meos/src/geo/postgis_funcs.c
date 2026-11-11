@@ -3173,16 +3173,22 @@ geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 static bool geom_is_solid(const GSERIALIZED *gs);
 static bool geom_dwithin3d_faces(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2, double dist, bool *result);
+static bool geom_point_intersects3d_faces(const GSERIALIZED *point,
+  const GSERIALIZED *gs, bool *result);
 
 /**
  * @ingroup meos_internal_geo_base_rel
  * @brief Return true if the 3D geometries intersect
- * @details A solid holds what lies inside it: a solid and a geometry of points,
- * segments and faces lying exactly in a plane are answered exactly, as
- * #geom_dwithin3d answers them at a distance of 0 (#geom_dwithin3d_faces),
- * since the test of liblwgeom, #lwgeom_solid_contains_lwgeom, clips the solid
- * and reads the first point of the other geometry alone. The others read the
- * distance of liblwgeom at 0
+ * @details Two geometries with Z of points, segments and faces lying exactly
+ * in a plane are answered exactly on their serialized form, as
+ * #geom_dwithin3d answers them at a distance of 0 (#geom_dwithin3d_faces):
+ * the distance of liblwgeom rounds to 0 for a point that misses a face by less
+ * than a unit in the last place. A solid holds what lies inside it, which the
+ * test of liblwgeom, #lwgeom_solid_contains_lwgeom, reads by clipping the
+ * solid at the first point of the other geometry alone. A point and a geometry
+ * that is no solid are read with no walk of the distance
+ * (#geom_point_intersects3d_faces). A polygon not lying in a plane and an arc
+ * read the distance of liblwgeom at 0
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_3DIntersects(PG_FUNCTION_ARGS)
  */
@@ -3197,6 +3203,21 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
 
+  /* Two geometries with Z of points, segments and faces lying exactly in a
+   * plane are answered on their serialized form, with no LWGEOM */
+  if (FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags))
+  {
+    bool within = false, exact;
+    if (gserialized_get_type(gs1) == POINTTYPE && ! geom_is_solid(gs2))
+      exact = geom_point_intersects3d_faces(gs1, gs2, &within);
+    else if (gserialized_get_type(gs2) == POINTTYPE && ! geom_is_solid(gs1))
+      exact = geom_point_intersects3d_faces(gs2, gs1, &within);
+    else
+      exact = geom_dwithin3d_faces(gs1, gs2, 0.0, &within);
+    if (exact)
+      return within;
+  }
+
   void *ent1, *ent2;
   LWGEOM *made1, *made2;
   const LWGEOM *geom1 = relate_ctx_borrow_geom(gs1, &ent1, &made1);
@@ -3207,12 +3228,7 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * it measures and to its parts, and they must live as long as the entry */
   MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
 #endif
-  bool exact = false, within = false;
-  if (geom1 && geom2 && FLAGS_GET_Z(geom1->flags) &&
-      FLAGS_GET_Z(geom2->flags) && (geom_is_solid(gs1) ||
-      geom_is_solid(gs2)))
-    exact = geom_dwithin3d_faces(gs1, gs2, 0.0, &within);
-  double mindist = exact ? (within ? 0.0 : DBL_MAX) : (geom1 && geom2) ?
+  double mindist = (geom1 && geom2) ?
     lwgeom_mindistance3d_tolerance((LWGEOM *) geom1, (LWGEOM *) geom2, 0.0) :
     DBL_MAX;
 #if ! MEOS
@@ -4396,6 +4412,99 @@ geom_faces_solid_contains(const GeomFaces *solid, const GeomFaces *g)
       return in;
   }
   return 0;
+}
+
+/**
+ * @brief Return true if a point lies on a segment of a point array, exactly
+ * @details A box of a segment not holding the point passes over it, a
+ * comparison of coordinates; the distance of the point to the segment is
+ * otherwise zero exactly where #point_segment_offset_sign answers 0
+ */
+static bool
+geom_point_on_array(const double *p, const POINTARRAY *pa)
+{
+  if (pa->npoints == 0)
+    return false;
+  const double *u = (const double *) getPoint2d_cp(pa, 0);
+  if (pa->npoints == 1)
+    return p[0] == u[0] && p[1] == u[1] && p[2] == u[2];
+  for (uint32_t i = 1; i < pa->npoints; i++)
+  {
+    const double *v = (const double *) getPoint2d_cp(pa, i);
+    bool inbox = true;
+    for (int d = 0; d < 3 && inbox; d++)
+      inbox = p[d] >= Min(u[d], v[d]) && p[d] <= Max(u[d], v[d]);
+    if (inbox && point_segment_offset_sign(p, u, v, 3, 0.0) <= 0)
+      return true;
+    u = v;
+  }
+  return false;
+}
+
+/**
+ * @brief Return true if a point meets a geometry of points, segments and faces
+ * lying exactly in a plane, exactly
+ * @details A face and its rings lie in its plane, so a point meets them only
+ * where it lies in that plane (#vector_triple_sign) and in the box of the
+ * face: it then meets the face where it lies inside its rings
+ * (#geom_face_inside) or on one of them, whose boundary the parity may read
+ * either way. A point array that is no ring of a face is read as segments
+ * (#geom_point_on_array)
+ * @param[in] p Point with Z
+ * @param[in] g Points, segments and faces of the other geometry
+ */
+static bool
+geom_point_meets_faces(const double *p, const GeomFaces *g)
+{
+  for (uint32_t i = 0; i < g->nfaces; i++)
+  {
+    const GeomFace *f = &g->faces[i];
+    bool inbox = true;
+    for (int d = 0; d < 3 && inbox; d++)
+      inbox = p[d] >= f->lo[d] && p[d] <= f->hi[d];
+    if (! inbox || vector_triple_sign(f->a, f->b, f->a, f->c, f->a, p) != 0)
+      continue;
+    if (geom_face_inside(f, p, NULL))
+      return true;
+    for (uint32_t r = 0; r < f->nrings; r++)
+      if (geom_point_on_array(p, f->rings[r]))
+        return true;
+  }
+  for (uint32_t k = 0; k < g->narrs; k++)
+  {
+    const POINTARRAY *pa = g->arrs[k];
+    bool ring = false;
+    for (uint32_t i = 0; i < g->nfaces && ! ring; i++)
+      for (uint32_t r = 0; r < g->faces[i].nrings && ! ring; r++)
+        ring = g->faces[i].rings[r] == pa;
+    if (! ring && geom_point_on_array(p, pa))
+      return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Return true if a point and a geometry with Z of points, segments and
+ * faces lying exactly in a plane intersect, exactly, setting the answer in the
+ * last argument, and false where the geometry is not of these
+ * (#geom_faces_init)
+ * @details Both are read in place on their serialized form, the point by its
+ * coordinates (#GSERIALIZED_POINT3DZ_P)
+ * @param[in] point Point with Z, not empty
+ * @param[in] gs Geometry with Z, not empty, no solid
+ * @param[out] result Answer
+ */
+static bool
+geom_point_intersects3d_faces(const GSERIALIZED *point, const GSERIALIZED *gs,
+  bool *result)
+{
+  GeomFaces g;
+  bool ok = geom_faces_init(&g, gs);
+  if (ok)
+    *result = geom_point_meets_faces(
+      (const double *) GSERIALIZED_POINT3DZ_P(point), &g);
+  geom_faces_free(&g);
+  return ok;
 }
 
 /**
