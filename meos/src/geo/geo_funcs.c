@@ -12745,6 +12745,31 @@ arcseg_arena_alloc(ArcsegArena *arena, int ndoubles)
   return block;
 }
 
+/**
+ * @brief Return true where the buffer of an arena holds room for
+ * @p ndoubles past the values it holds
+ * @details A sum or a product is formed in that room, at
+ * `arena->buf + arena->used`, with its scratch, as #polynomial_sign_stack
+ * lays out a term, and its compressed result, written at the start of the
+ * room, is all the arena keeps (#arcseg_arena_keep): the scratch, and the
+ * components compression merges, cost no room after it
+ */
+static inline bool
+arcseg_arena_room(const ArcsegArena *arena, int ndoubles)
+{
+  return arena->used + ndoubles <= ARCSEG_ARENA_SIZE;
+}
+
+/**
+ * @brief Keep the first @p ndoubles of the room #arcseg_arena_room found
+ */
+static inline void
+arcseg_arena_keep(ArcsegArena *arena, int ndoubles)
+{
+  arena->used += Max(ndoubles, 1);
+  return;
+}
+
 static void
 arcseg_arena_free(ArcsegArena *arena)
 {
@@ -12960,12 +12985,25 @@ arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
   if (arena->wide)
     return arcseg_w_value(tower_wide_add(arena->warena, a.w, b.w));
   int cap = a.n + b.n;
-  double *h = arcseg_arena_alloc(arena, cap);
   ArcsegExact r;
   r.w = NULL;
-  r.e = arcseg_arena_alloc(arena, cap);
+  double *room = arcseg_arena_room(arena, 2 * cap) ?
+    arena->buf + arena->used : NULL;
+  double *h;
+  if (room)
+  {
+    r.e = room;
+    h = room + cap;
+  }
+  else
+  {
+    h = arcseg_arena_alloc(arena, cap);
+    r.e = arcseg_arena_alloc(arena, cap);
+  }
   int hlen = expansion_sum(a.n, a.e, b.n, b.e, h, r.e);
   r.n = compress_expansion(hlen, h, r.e);
+  if (room)
+    arcseg_arena_keep(arena, r.n);
   r.err = (a.err + b.err) * (1.0 + 0x1p-50);
   return r;
 }
@@ -13043,13 +13081,27 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
       under = (double) a.n * (double) b.n * 0x1p-1072;
   }
   int cap = 2 * a.n * b.n;
-  double *h = arcseg_arena_alloc(arena, cap);
-  double *part = arcseg_arena_alloc(arena, 2 * a.n);
   ArcsegExact r;
-  r.e = arcseg_arena_alloc(arena, cap);
   r.w = NULL;
+  double *room = arcseg_arena_room(arena, 2 * cap + 2 * a.n) ?
+    arena->buf + arena->used : NULL;
+  double *h, *part;
+  if (room)
+  {
+    r.e = room;
+    h = room + cap;
+    part = h + cap;
+  }
+  else
+  {
+    h = arcseg_arena_alloc(arena, cap);
+    part = arcseg_arena_alloc(arena, 2 * a.n);
+    r.e = arcseg_arena_alloc(arena, cap);
+  }
   int hlen = expansion_product(a.n, a.e, b.n, b.e, h, r.e, part);
   r.n = compress_expansion(hlen, h, r.e);
+  if (room)
+    arcseg_arena_keep(arena, r.n);
   r.err = 0.0;
   /* The bound is computed in doubles, which below the normal range round
    * to the nearest multiple of 2^-1074 and so may round it to zero: each of
