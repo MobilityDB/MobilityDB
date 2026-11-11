@@ -11399,7 +11399,8 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
  * #ArcsegFilter): at the start or the end of the segment, at an end of the
  * arc, or interior to both, where only its position along the segment is
  * computed, rounded once. The arc is one #geom_extract_edges emits, whose
- * ends are its first and last defining points, or a centred one, the whole
+ * ends are its first and last defining points or, for the second half of a
+ * whole circle, those points the other way round, or a centred one, the whole
  * circle (#edges_add_circle); any other is not answered
  * @param[in] ax,ay,bx,by Start and end of the segment, distinct
  * @param[in] arc Arc edge
@@ -11411,6 +11412,18 @@ arcsegm_meet_exact(double ax, double ay, double bx, double by,
   const Edge *arc, ArcsegMeet out[2])
 {
   assert(arc); assert(out);
+  /* The two halves of a whole circle lie on one diameter, and the second
+   * runs from its end back to its start (#emit_arc_edge): it is the half
+   * circle on that diameter read from its other end, turning the same way */
+  Edge half;
+  if (arc->diameter && arc->x1 == arc->ex && arc->y1 == arc->ey &&
+      arc->x2 == arc->sx && arc->y2 == arc->sy)
+  {
+    half = *arc;
+    half.sx = arc->x1; half.sy = arc->y1;
+    half.ex = arc->x2; half.ey = arc->y2;
+    arc = &half;
+  }
   if ((ax == bx && ay == by) || (! arc->centred && (arc->x1 != arc->sx ||
       arc->y1 != arc->sy || arc->x2 != arc->ex || arc->y2 != arc->ey)))
     return -1;
@@ -23615,13 +23628,13 @@ relate_area_edges_cross(const Edge *e1, const Edge *e2)
     if (e2->etype == EDGE_POLYSEG)
       return relate_edges_cross(e1, e2);
     if (e2->etype == EDGE_POLYARC)
-      return arcsegm_cross(e1->x1, e1->y1, e1->dx, e1->dy, e2);
+      return arcsegm_cross(e1->x1, e1->y1, e1->x2, e1->y2, e2);
     return false;
   }
   if (e1->etype == EDGE_POLYARC)
   {
     if (e2->etype == EDGE_POLYSEG)
-      return arcsegm_cross(e2->x1, e2->y1, e2->dx, e2->dy, e1);
+      return arcsegm_cross(e2->x1, e2->y1, e2->x2, e2->y2, e1);
     if (e2->etype == EDGE_POLYARC)
       return arcarc_cross(e1, e2);
   }
