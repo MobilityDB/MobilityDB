@@ -340,3 +340,10 @@ SELECT aDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@
 -- A body that the distance does not read
 /* Errors */ SELECT eIntersects(trgeometry 'Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 2)');
 /* Errors */ SELECT eIntersects(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 1)');
+-- A body in two dimensions reads a geometry in three dimensions in two
+SELECT eIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 1 7)');
+SELECT eIntersects(geometry 'Point(5 1 7)', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+SELECT aDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 5 7)');
+SELECT eDwithin(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 3 7)', 1.5);
+SELECT eContains(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(11 1 7)');
+SELECT eTouches(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 0 7,3 0 7,3 1 7,2 1 7,2 0 7))');
