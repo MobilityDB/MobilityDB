@@ -2746,6 +2746,26 @@ SELECT asText(merge(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
 ERROR:  Operation on different reference geometries
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1.0000000001 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-02'));
+ERROR:  Operation on different reference geometries
+SELECT asText(merge(
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01',
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-02'));
+ERROR:  Operation on different reference geometries
+SELECT asText(merge(
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01',
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-02'));
+ERROR:  Operation on different reference geometries
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  trgeometry 'Polygon((-0 0,1 0,1 1,0 1,-0 0));Pose(Point(0 0), 0.0)@2001-01-02'));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(0 0),0)@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
 SELECT ST_AsText((rec).value), (rec).time FROM (SELECT unnest(trgeometry
   'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01,
   Pose(Point(4 0), 0.0)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}') AS rec) AS t;
