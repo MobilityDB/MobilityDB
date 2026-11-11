@@ -116,9 +116,11 @@ segment_cases(double s)
     {"crosses the circle outside the arc", 0, 0, 0, -10, false},
     {"misses the circle", 10, 10, 1, 0, false},
   };
+  /* The end of each segment is a + r, exact on these values */
   for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++)
     check(cases[i].name, s, arcsegm_cross(s * cases[i].ax, s * cases[i].ay,
-      s * cases[i].rx, s * cases[i].ry, &arc), cases[i].expected);
+      s * (cases[i].ax + cases[i].rx), s * (cases[i].ay + cases[i].ry), &arc),
+      cases[i].expected);
   return;
 }
 
