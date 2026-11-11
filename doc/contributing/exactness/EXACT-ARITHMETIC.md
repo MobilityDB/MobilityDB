@@ -220,7 +220,7 @@ implementation; "survivor" is the one covering every finite double with the most
 | The double nearest the distance of a point to a segment | `point_segment_distance_offset_exact`, `point_segment_distance_offset_inputs` | the first, with the second as its wide route | |
 | The double nearest an exact value | the nine searches of Section 4.5 | `nearest_double_exact` | each other one is a side function it reads |
 | Ring orientation | `ring_area_sign`, `buffer_ring_signed_area`, `cert_ring_keeps_sense` | `ring_area_sign` | `buffer_ring_signed_area` is in doubles |
-| Point in polygon | `point_in_rings_exact`, `point_arc_ray_parity`, `dist_poly_seg_raycross`, `dist_geom_point_inside`, `pip_point_in_ring` | `point_in_rings_exact` and, for arcs, `point_arc_ray_parity` | the other three decide in doubles, with `MEOS_GEOM_TOLERANCE` and `atan2` |
+| Point in polygon | `point_in_rings_exact`, `point_arc_ray_parity`, `dist_poly_seg_raycross`, `dist_geom_point_inside`, `pip_point_in_ring` | `point_in_rings_exact` and, for arcs, `point_arc_ray_parity` | from #3575 (C2) the other three read the exact sign (`pip_point_in_ring`) or the exact parities (`dist_poly_seg_raycross`, through `exact_arc_from_edge`); before it, doubles, `MEOS_GEOM_TOLERANCE` and `atan2` |
 | The circle of an arc | `arcarc_centre_exact` and `arcarc_radius2_exact`, `arr_arc_centre_y_side`, `mec_exact_set` and `mec_beyond`, `exact_arc_bound`, `tower_arc_read`, `hull_exact` | `arcarc_centre_exact` | six arc models form the same circumcentre (Section 4.7) |
 | A segment against an arc | the `arcseg_*` meetings, `tower_point_line_circle`, `arcsegm_cross` | the `arcseg_*` meetings on input segments, the tower on tower points | `arcsegm_cross`, which relate reads, answers by `arcsegm_meet_exact` from #3567 (C1); before it, a `1e-14` band, `MEOS_GEOM_TOLERANCE` and `atan2` read three proper crossings as none |
 | Two arcs | `arcarc_meet_exact`, `tower_point_circles`, `arcarc_cross` | `arcarc_meet_exact` | `arcarc_cross` compares a half-chord with a rounding band |
@@ -241,11 +241,11 @@ Built apart, the implementations of one question drift apart in contract:
   `point_within_distance_sign`) are exact for every finite double. EA1 measures the consequence: 50
   of 228 calls answered 0 for -1.
 - **A tolerance beside an exact sign for the same question**: `arcarc_cross` in relate against
-  the exact arc meetings (its segment-arc sibling `arcsegm_cross` answers by them from #3567); `dist_poly_seg_raycross` and `pip_point_in_ring`
-  against `point_in_rings_exact`; `buffer_ring_signed_area` against `ring_area_sign`;
-  `tcbuffer_region_within_roots` against `point_motion_dwithin_period_exact`; and
-  `tcbuffer_disc_boundary_sign`, whose sign is exact while the `inside` it sets comes from a ray
-  cast in doubles.
+  the exact arc meetings (its segment-arc sibling `arcsegm_cross` answers by them from #3567);
+  `buffer_ring_signed_area` against `ring_area_sign`; and
+  `tcbuffer_region_within_roots` against `point_motion_dwithin_period_exact`. The ray casts
+  `dist_poly_seg_raycross` and `pip_point_in_ring`, and with them the `inside` of
+  `tcbuffer_disc_boundary_sign`, read exact signs from #3575.
 - **What "undecided" is.** Seven spellings: 0, 2, 3, -1, -2, false, and "no crossing".
 - **Opposite senses.** `seg2d_side` answers -1 where `cross_product_sign` answers 1;
   `arc_circle_side` and `point_arc_circle_side_pred` answer -1 inside where `incircle_sign`
@@ -318,7 +318,8 @@ layer holds it for every question. The phases, each a series of pull requests:
    `arcsegm_cross` by the exact arc meetings (C1, #3567) and its arc-arc crossing `arcarc_cross`
    likewise, the ray casts in
    doubles (`dist_poly_seg_raycross`, `pip_point_in_ring`, the `inside` of
-   `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity`, the ring
+   `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity` (C2,
+   #3575), the ring
    area in doubles of the buffer by `ring_area_sign`, the within-times of a moving disc in
    `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact`, and `seg2d_side` by
    `cross_product_sign`. These change answers, where the tolerance answers wrongly, so each comes
