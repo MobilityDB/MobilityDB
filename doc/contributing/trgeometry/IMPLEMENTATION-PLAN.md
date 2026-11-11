@@ -23,7 +23,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | Row | Task | State |
 |---|---|---|
 | TG2 | The ever and always relationships of a 3D value: `eIntersects`, `aDisjoint`, `eDisjoint`, `eContains`, `eCovers`, `eTouches` | #3347 merged (`a5efd7d54e`), by reading its kernel; not yet run on a 3D value |
-| TG3 | The temporal relationships of a 3D value: `tIntersects`, `tDisjoint` | open, reads Z by decision 1 |
+| TG3 | The temporal relationships of a 3D value: `tIntersects`, `tDisjoint`. A body bounded by a closed polyhedral surface is read as its faces: at `3aa3c58046`, a tetrahedron at the origin and `Point(0.1 0.1 0.1)` strictly inside it answer `tIntersects` false and `tDisjoint` true (172_trgeo_tempspatialrels), since a surface parsed from text carries no solid flag and the 3D distance of liblwgeom measures to the faces. A point on a face of a body in step interpolation answers true. Linear interpolation in 3D is TG19 | open, reads Z by decision 1 and the solid by decision 5; branch `fix/trgeometry-3d-relationships-read-z` |
 | TG4 | The restrictions by a box of a 3D value: `atStbox`, `minusStbox` | open, reads Z by decision 1 |
 | TG5 | The merged `traversedArea` of a 3D value answers the ground its 2D projection covers, which it does not in a turn | open |
 | TG26 | The merged `traversedArea` of a 2D body that turns joins placements 0.05 rad apart by their hull, which is the ground it covers only when it does not turn: on rows 1094 and 1153 of the corpus of the exact rigid distance it reaches a geometry the body stays 0.042 and 0.045 from, and `trgeometry_convex_sweep` states the hull as what the body covers. A translating body is exact: a contact through a vertex the union constructs reads as apart in doubles, as any region of rounded vertices does | merged as #3515 (`f3929f747b`); CGAL judges its 400 turning rows of the corpus equal to the exact union of its pieces |
@@ -86,6 +86,15 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
    `trgeo_distance.txt` is built on, so this is a new algorithm and a change to Chapter 4.
    **The recommendation** is to write its algorithm as a note of this plan before any code, and to
    state the limit in the manual meanwhile.
+5. **The body a closed polyhedral surface bounds: the solid.** Decided by the owner. A reference
+   geometry that is a closed polyhedral surface is the solid it encloses, so a point inside
+   it meets the body in the ever, temporal and distance relationships alike, as PostGIS reads a
+   value of `ST_MakeSolid`; `ST_3DIntersects` reads the same text, which carries no solid flag, as
+   its faces alone, and the manual states the difference. An open surface is its faces. The
+   containment is exact: a test of a point in a solid by exact signs, beside `geom_faces_meet`,
+   since the one of liblwgeom, `lwgeom_solid_contains_lwgeom`, clips the solid, which constructs
+   vertices, retries at a boundary after a random skew, and reads the first point of the other
+   geometry alone. TG3.
 
 ## The order
 
