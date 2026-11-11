@@ -471,15 +471,19 @@ datum_jsonb_path_exists(Datum jb, Datum jp, Datum vars, Datum silent, Datum tz)
 /*****************************************************************************/
 
 /**
- * @brief Return true if a JSON path expression returns at least one item for a
- * JSONB value
+ * @brief Return the result of a JSON path predicate check for a JSONB value,
+ * or the error value of a Boolean when the answer is missing
+ * @note As in #datum_jsonb_path_exists, a missing answer is told apart from
+ * true by the error value of #jsonb_to_alphanum_error
  */
 Datum
 datum_jsonb_path_match(Datum jb, Datum jp, Datum vars, Datum silent, Datum tz)
 {
-  return BoolGetDatum(pg_jsonb_path_match(DatumGetJsonbP(jb),
+  int result = pg_jsonb_path_match(DatumGetJsonbP(jb),
     DatumGetJsonPathP(jp), (vars == (Datum) 0) ? NULL : DatumGetJsonbP(vars),
-    DatumGetBool(silent), DatumGetBool(tz)));
+    DatumGetBool(silent), DatumGetBool(tz));
+  return (result < 0) ? jsonb_to_alphanum_error(T_BOOL) :
+    BoolGetDatum(result == 1);
 }
 
 /*****************************************************************************/
@@ -2156,6 +2160,10 @@ tjsonb_path_match_intl(const Temporal *temp, const JsonPath *jp,
   lfinfo.param[2] = BoolGetDatum(silent);
   lfinfo.param[3] = BoolGetDatum(tz);
   lfinfo.restype = T_TBOOL;
+  /* An instant whose predicate has no answer is left out, as in
+   * #tjsonb_path_query_first */
+  lfinfo.reserror = jsonb_to_alphanum_error(T_BOOL);
+  lfinfo.resnull = NULL_DELETE;
   return tfunc_temporal(temp, &lfinfo);
 }
 

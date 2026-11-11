@@ -408,6 +408,9 @@ static void checkTimezoneIsUsedForCast(bool useTz, const char *type1,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @return 1 when the path returns an item, 0 when it returns none, -1 when
+ * the answer is missing, as where the path raises an error @p silent
+ * suppresses, or on error
  * @csqlfn #Jsonb_path_exists() #Jsonb_path_exists_tz()
  * @note Derived from PostgreSQL function @p jsonb_path_exists()
  */
@@ -463,11 +466,14 @@ pg_jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @return 1 when the predicate is true, 0 when it is false, -1 when the
+ * answer is missing, as where the predicate is unknown or where the path
+ * raises an error @p silent suppresses, or on error
  * @csqlfn #Jsonb_path_match() #Jsonb_path_match_tz()
  * @note Derived from PostgreSQL function @p jsonb_path_match()
  */
 #if MEOS
-bool
+int
 jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz)
 {
@@ -475,22 +481,22 @@ jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   if (! jb)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
-    return false;
+    return -1;
   }
   if (! jp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
-    return false;
+    return -1;
   }
   if (! vars)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
-    return false;
+    return -1;
   }
   return pg_jsonb_path_match(jb, jp, vars, silent, tz);
 }
 #endif /* MEOS */
-bool
+int
 pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz)
 {
@@ -503,15 +509,18 @@ pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   if (! silent && jperIsError(res))
   {
     JsonValueListClear(&found); json_reset_tofree();
-    return false;
+    return -1;
   }
-  bool result = false, got = false;
+  /* A JSON null, the unknown of a predicate, answers no value, as the SQL
+   * NULL PostgreSQL answers for it */
+  int result = -1;
+  bool got = false;
   if (JsonValueListLength(&found) == 1)
   {
     JsonbValue *jbv = JsonValueListHead(&found);
     if (jbv->type == jbvBool)
     {
-      result = jbv->val.boolean; got = true;
+      result = jbv->val.boolean ? 1 : 0; got = true;
     }
     else if (jbv->type == jbvNull)
       got = true;
