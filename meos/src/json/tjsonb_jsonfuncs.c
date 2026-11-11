@@ -647,19 +647,19 @@ tjsonb_object_field_common(const Temporal *temp, const text *key, bool astext,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_json_json
- * @brief Return the concatenation of a temporal JSONB and a JSONB
+ * @brief Return the concatenation of the values of a temporal JSONB and a
+ * JSONB, the JSONB first when `invert` is true
+ * @details The public functions #concat_tjsonb_jsonb and #concat_jsonb_tjsonb
+ * validate their arguments and call it, one per order of the operands, as
+ * #add_float_tfloat and #add_tfloat_float call #arithop_tnumber_number
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
- * @param[in] invert True if the arguments must be inverted
- * @csqlfn #Concat_tjsonb_jsonb() #Concat_jsonb_tjsonb()
+ * @param[in] invert True when the JSONB value is the first operand
  */
-Temporal *
-concat_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert)
+static Temporal *
+concat_tjsonb_jsonb_intl(const Temporal *temp, const Jsonb *jb, bool invert)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jb, NULL);
-
+  assert(temp); assert(jb); assert(temp->temptype == T_TJSONB);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_jsonb_concat;
@@ -669,6 +669,36 @@ concat_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert)
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_base(temp, PointerGetDatum(jb), &lfinfo);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return the concatenation of a temporal JSONB and a JSONB
+ * @param[in] temp Temporal JSONB
+ * @param[in] jb JSONB
+ * @csqlfn #Concat_tjsonb_jsonb()
+ */
+Temporal *
+concat_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jb, NULL);
+  return concat_tjsonb_jsonb_intl(temp, jb, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return the concatenation of a JSONB and a temporal JSONB
+ * @param[in] jb JSONB
+ * @param[in] temp Temporal JSONB
+ * @csqlfn #Concat_jsonb_tjsonb()
+ */
+Temporal *
+concat_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jb, NULL); VALIDATE_TJSONB(temp, NULL);
+  return concat_tjsonb_jsonb_intl(temp, jb, INVERT);
 }
 
 /**
@@ -696,20 +726,20 @@ concat_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_json_json
- * @brief Return the temporal contains of a temporal JSONB and a JSONB
+ * @brief Return the temporal contains of the values of a temporal JSONB and a
+ * JSONB, the JSONB being the container when `invert` is true
+ * @details The public functions #contains_tjsonb_jsonb,
+ * #contains_jsonb_tjsonb, #contained_tjsonb_jsonb and #contained_jsonb_tjsonb
+ * validate their arguments and call it, one per order of the operands, as
+ * #add_float_tfloat and #add_tfloat_float call #arithop_tnumber_number
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
- * @param[in] invert True if the arguments must be inverted
- * @csqlfn #Contains_tjsonb_jsonb() #Contains_jsonb_tjsonb()
- *   #Contained_jsonb_tjsonb() #Contained_tjsonb_jsonb()
+ * @param[in] invert True when the JSONB value is the container
  */
-Temporal *
-contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert)
+static Temporal *
+contains_tjsonb_jsonb_intl(const Temporal *temp, const Jsonb *jb, bool invert)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jb, NULL);
-
+  assert(temp); assert(jb); assert(temp->temptype == T_TJSONB);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_jsonb_contains;
@@ -723,9 +753,73 @@ contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert)
 
 /**
  * @ingroup meos_json_json
+ * @brief Return the temporal contains of the values of a temporal JSONB and a
+ * JSONB
+ * @param[in] temp Temporal JSONB
+ * @param[in] jb JSONB
+ * @csqlfn #Contains_tjsonb_jsonb()
+ */
+Temporal *
+contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jb, NULL);
+  return contains_tjsonb_jsonb_intl(temp, jb, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return the temporal contains of a JSONB and the values of a temporal
+ * JSONB
+ * @param[in] jb JSONB
+ * @param[in] temp Temporal JSONB
+ * @csqlfn #Contains_jsonb_tjsonb()
+ */
+Temporal *
+contains_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jb, NULL); VALIDATE_TJSONB(temp, NULL);
+  return contains_tjsonb_jsonb_intl(temp, jb, INVERT);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return the temporal contained of the values of a temporal JSONB and
+ * a JSONB
+ * @param[in] temp Temporal JSONB
+ * @param[in] jb JSONB
+ * @csqlfn #Contained_tjsonb_jsonb()
+ */
+Temporal *
+contained_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jb, NULL);
+  return contains_tjsonb_jsonb_intl(temp, jb, INVERT);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return the temporal contained of a JSONB and the values of a
+ * temporal JSONB
+ * @param[in] jb JSONB
+ * @param[in] temp Temporal JSONB
+ * @csqlfn #Contained_jsonb_tjsonb()
+ */
+Temporal *
+contained_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jb, NULL); VALIDATE_TJSONB(temp, NULL);
+  return contains_tjsonb_jsonb_intl(temp, jb, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_json_json
  * @brief Return the temporal contains of two temporal JSONB
  * @param[in] temp1,temp2 Temporal JSONBs
- * @csqlfn #Contains_tjsonb_tjsonb() #Contained_tjsonb_tjsonb()
+ * @csqlfn #Contains_tjsonb_tjsonb()
  */
 Temporal *
 contains_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
@@ -741,6 +835,18 @@ contains_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return the temporal contained of two temporal JSONB
+ * @param[in] temp1,temp2 Temporal JSONBs
+ * @csqlfn #Contained_tjsonb_tjsonb()
+ */
+Temporal *
+contained_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
+{
+  return contains_tjsonb_tjsonb(temp2, temp1);
 }
 
 /*****************************************************************************/

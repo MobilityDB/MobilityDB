@@ -292,6 +292,7 @@ extern bool temptype_supports_linear(MeosType type);
 extern bool basetype_byvalue(MeosType type);
 extern bool basetype_varlength(MeosType type);
 extern int16 meostype_length(MeosType type);
+extern bool wkb_header_states_type(MeosType type);
 extern bool talphanum_type(MeosType type);
 extern bool talpha_type(MeosType type);
 extern bool tnumber_type(MeosType type);
