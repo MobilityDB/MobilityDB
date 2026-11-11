@@ -2,12 +2,6 @@
 -- File span_ops.c
 -- Tests of operators for span types.
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_intspan_big;
-ANALYZE tbl_floatspan_big;
-ANALYZE tbl_datespan_big;
-ANALYZE tbl_tstzspan_big;
-
 DROP INDEX IF EXISTS tbl_intspan_big_rtree_idx;
 DROP INDEX IF EXISTS tbl_floatspan_big_rtree_idx;
 DROP INDEX IF EXISTS tbl_datespan_big_rtree_idx;

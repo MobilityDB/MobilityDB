@@ -4,10 +4,6 @@ ANALYZE test;
 DROP TABLE test;
 
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tgeompoint3D_big;
-ANALYZE tbl_tgeogpoint3D_big;
-
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_rtree_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_rtree_idx;
 
@@ -260,10 +256,6 @@ DROP INDEX IF EXISTS tbl_tgeompoint3D_big_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_kdtree_idx;
 
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tgeompoint;
-ANALYZE tbl_tgeompoint3D;
-
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeompoint_rtree_idx;

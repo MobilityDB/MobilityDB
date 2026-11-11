@@ -109,11 +109,6 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspan '[2001-01-01, 2001-06-01]' <<# 
 SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspan '[2001-01-01, 2001-06-01]' &<# t;
 
 -------------------------------------------------------------------------------
-
-analyze tbl_tstzspan;
-analyze tbl_tstzspanset;
-analyze tbl_tstzset;
-
 -------------------------------------------------------------------------------
 -- Test all operators after having collected statistics
 -------------------------------------------------------------------------------

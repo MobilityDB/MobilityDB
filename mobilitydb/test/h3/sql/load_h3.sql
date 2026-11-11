@@ -62,3 +62,7 @@ CREATE TABLE tbl_th3index_seqset (
 );
 \set filename :srcdir '/mobilitydb/test/h3/data/tbl_th3index_seqset.data'
 COPY tbl_th3index_seqset (k, ss) FROM :'filename';
+
+ANALYZE tbl_geodstbox, tbl_h3index, tbl_h3indexset, tbl_th3index,
+  tbl_th3index_big, tbl_th3index_discseq, tbl_th3index_inst, tbl_th3index_seq,
+  tbl_th3index_seqset;
