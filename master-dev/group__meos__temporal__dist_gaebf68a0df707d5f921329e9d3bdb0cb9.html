@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: nad_tboxfloat_tboxfloat</title>
+<title>MobilityDB: nad_tbox_tbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -86,9 +86,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__dist_gad1b5b3e25e2c54eac4ece093d5819583.html#gad1b5b3e25e2c54eac4ece093d5819583">nad_tbigint_bigintspan</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__dist_gae50264a7f0cd2f98275afc41f2ac04c1.html#gae50264a7f0cd2f98275afc41f2ac04c1">nad_tbigint_tbigint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__dist_ga6cf323ef20c86d1b8451e46047560aec.html#ga6cf323ef20c86d1b8451e46047560aec">nad_tbigint_tbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__dist_ga7bf36bb6d2982151253f657578ac9443.html#ga7bf36bb6d2982151253f657578ac9443">nad_tboxbigint_tboxbigint</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__temporal__dist_ga9cfdd8e784a80ae715fb5b6e1da076cd.html#ga9cfdd8e784a80ae715fb5b6e1da076cd">nad_tboxfloat_tboxfloat</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__dist_ga0be8c26506524d4294b2b0fd4c6203fa.html#ga0be8c26506524d4294b2b0fd4c6203fa">nad_tboxint_tboxint</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__temporal__dist_gaebf68a0df707d5f921329e9d3bdb0cb9.html#gaebf68a0df707d5f921329e9d3bdb0cb9">nad_tbox_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__dist_ga2c1b591e184bc3f7f9cf7e7eba055682.html#ga2c1b591e184bc3f7f9cf7e7eba055682">nad_tfloat_float</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__dist_gaa5e26fe704ca012e6ef2cc778573e5ad.html#gaa5e26fe704ca012e6ef2cc778573e5ad">nad_tfloat_floatspan</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__dist_ga5f3b2d2c8007f11a46b98f383939fd49.html#ga5f3b2d2c8007f11a46b98f383939fd49">nad_tfloat_tbox</a></td></tr>
@@ -104,14 +102,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga9cfdd8e784a80ae715fb5b6e1da076cd" name="ga9cfdd8e784a80ae715fb5b6e1da076cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga9cfdd8e784a80ae715fb5b6e1da076cd">&#9670;&#160;</a></span>nad_tboxfloat_tboxfloat()</h2>
+<a id="gaebf68a0df707d5f921329e9d3bdb0cb9" name="gaebf68a0df707d5f921329e9d3bdb0cb9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaebf68a0df707d5f921329e9d3bdb0cb9">&#9670;&#160;</a></span>nad_tbox_tbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double nad_tboxfloat_tboxfloat </td>
+          <td class="memname">double nad_tbox_tbox </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTBox.html">TBox</a> *&#160;</td>
           <td class="paramname"><em>box1</em>, </td>
@@ -130,15 +128,17 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the nearest approach distance between the float temporal boxes. </p>
+<p>Return the nearest approach distance between the temporal boxes. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> boxes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> boxes of the same span type </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return -1.0 </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>A distance is never negative, so -1.0 states an error where DBL_MAX states that the boxes share no time @csqlfn <a class="el" href="group__mobilitydb__temporal__dist_ga83ff4bf931c4bd829d66f2ffbdd7e569.html#ga83ff4bf931c4bd829d66f2ffbdd7e569" title="Return the nearest approach distance between two temporal boxes @sqlfn nearestApproachDistance()">NAD_tbox_tbox()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The distance as a double, whatever the value type of the boxes, or DBL_MAX where the boxes share no time </dd>
+<dd>
+On error return -1.0 </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>A distance is never negative, so -1.0 states an error @csqlfn <a class="el" href="group__mobilitydb__temporal__dist_ga83ff4bf931c4bd829d66f2ffbdd7e569.html#ga83ff4bf931c4bd829d66f2ffbdd7e569" title="Return the nearest approach distance between two temporal boxes @sqlfn nearestApproachDistance()">NAD_tbox_tbox()</a> </dd></dl>
 
 </div>
 </div>
