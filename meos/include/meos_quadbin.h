@@ -52,6 +52,14 @@
 #include <meos.h>
 #include <meos_geo.h>
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
@@ -351,5 +359,9 @@ extern Temporal *tquadbin_grid_distance(const Temporal *origin,
 // extern Temporal *tquadbin_cell_area(const Temporal *temp);
 
 /*****************************************************************************/
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif /* __MEOS_QUADBIN_H__ */
