@@ -821,8 +821,8 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   bool result = true;
   int i;
 
-  /* Every strategy is rechecked */
-  out->recheck = true;
+  /* Initialize the value to do not recheck, will be updated below */
+  out->recheck = false;
 
   /* leafDatum is what it is... */
   out->leafValue = in->leafDatum;
