@@ -539,6 +539,8 @@ extern void *temporal_bbox_ptr(const Temporal *temp);
 extern Temporal *temporal_strip_geom(const Temporal *temp,
   const GSERIALIZED **geom);
 extern Temporal *temporal_attach_geom(const GSERIALIZED *geom, Temporal *temp);
+extern void temporal_attach_geom_array(const GSERIALIZED *geom,
+  Temporal **temparr, int count);
 extern bool temporal_geom_combinable(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 
