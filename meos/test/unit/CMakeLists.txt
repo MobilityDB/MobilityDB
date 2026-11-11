@@ -31,6 +31,7 @@
 # The programs include internal headers, and CMake builds them.  The other
 # programs of meos/test test the installed public API.
 
+add_subdirectory(geo)
 if(RGEO)
   add_subdirectory(rgeo)
 endif()
