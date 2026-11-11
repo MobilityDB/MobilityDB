@@ -215,5 +215,17 @@ SELECT tjsonbPathExists(tjsonb '[{"a": 1}@2001-01-01]', 'strict $.b');
 SELECT jsonb_path_exists(jsonb '{"a": 1}', 'strict $.b');
 \set VERBOSITY default
 
+-- The operator and the silent form suppress these errors, as they do on a
+-- jsonb, so the answer is missing, not true
+SELECT tjsonb '[{"a": [1]}@2001-01-01]' @? 'strict $.a.keyvalue()';
+SELECT jsonb '{"a": [1]}' @? 'strict $.a.keyvalue()';
+SELECT tjsonb '[{"a": "x"}@2001-01-01]' @? 'strict $.a.abs()';
+SELECT jsonb '{"a": "x"}' @? 'strict $.a.abs()';
+SELECT tjsonb '[{"a": 1}@2001-01-01]' @? 'strict $.b';
+SELECT jsonb '{"a": 1}' @? 'strict $.b';
+SELECT tjsonbPathExists(tjsonb '[{"a": 1}@2001-01-01]', 'strict $.b', silent => true);
+SELECT jsonb_path_exists(jsonb '{"a": 1}', 'strict $.b', silent => true);
+SELECT tjsonb '[{"a": 1}@2001-01-01, {"b": 1}@2001-01-02]' @? 'strict $.b';
+
 -------------------------------------------------------------------------------
 

@@ -173,6 +173,9 @@ SELECT jsonbset '{"{\"speed\": 10}"}' ?| ARRAY[]::text[];
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.speed ? (@ > 15)';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.xxx';
+/* The operator suppresses the error of a strict path, as it does on a jsonb */
+SELECT jsonbset '{"{\"a\": 1}", "{\"b\": 1}"}' @? 'strict $.b';
+SELECT jsonb '{"a": 1}' @? 'strict $.b';
 
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ > $min)', '{"min": 15}');
