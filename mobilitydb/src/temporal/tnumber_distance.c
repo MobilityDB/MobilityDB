@@ -183,18 +183,10 @@ NAD_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBox *box1 = PG_GETARG_TBOX_P(0);
   TBox *box2 = PG_GETARG_TBOX_P(1);
-  /* Ensure the validity of the arguments: the kernel states these as
-   * assertions, and this wrapper is an external entry that reaches it with no
-   * MEOS function in between */
-  if (! ensure_valid_tbox_tbox(box1, box2) ||
-      ! ensure_has_X(T_TBOX, box1->flags) ||
-      ! ensure_has_X(T_TBOX, box2->flags))
+  double result = nad_tbox_tbox(box1, box2);
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
-  MeosType basetype = box1->span.basetype;
-  Datum result = nad_tbox_tbox(box1, box2);
-  if (datum_eq(result, distance_sentinel(basetype), basetype))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(distance_double(result, basetype));
+  PG_RETURN_FLOAT8(result);
 }
 
 PGDLLEXPORT Datum NAD_tbox_tnumber(PG_FUNCTION_ARGS);

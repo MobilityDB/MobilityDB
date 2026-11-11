@@ -520,7 +520,7 @@ tbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
     PG_RETURN_FLOAT8(-get_float8_infinity());
   }
 
-  double distance = distance_double(nad_tbox_tbox(key, &query),
+  double distance = distance_double(nad_tbox_tbox_intl(key, &query),
     key->span.basetype);
 
   PG_RETURN_FLOAT8(distance);
