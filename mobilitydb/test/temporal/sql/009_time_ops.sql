@@ -359,8 +359,6 @@ SELECT tstzspanset '{[2001-01-03, 2001-01-04],[2001-01-07, 2001-01-08]}' <-> tst
 
 -------------------------------------------------------------------------------
 -- Nearest neighbor search
-ANALYZE tbl_tstzspan_big;
-
 CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING SPGIST(t);
 
 -- EXPLAIN ANALYZE

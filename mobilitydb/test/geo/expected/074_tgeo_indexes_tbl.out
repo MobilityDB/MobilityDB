@@ -3,8 +3,6 @@ SELECT NULL::tgeometry FROM generate_series(1, 10);
 ANALYZE test;
 DROP TABLE test;
 -------------------------------------------------------------------------------
-ANALYZE tbl_tgeometry3D_big;
-ANALYZE tbl_tgeography3D_big;
 DROP INDEX IF EXISTS tbl_tgeometry3D_big_rtree_idx;
 NOTICE:  index "tbl_tgeometry3d_big_rtree_idx" does not exist, skipping
 DROP INDEX IF EXISTS tbl_tgeography3D_big_rtree_idx;
@@ -1108,8 +1106,6 @@ SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tgeography 'SRID=7844;[
 DROP INDEX IF EXISTS tbl_tgeometry3D_big_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tgeography3D_big_kdtree_idx;
 -------------------------------------------------------------------------------
-ANALYZE tbl_tgeometry;
-ANALYZE tbl_tgeometry3D;
 SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
  count 
 -------

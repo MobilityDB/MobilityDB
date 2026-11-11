@@ -354,10 +354,6 @@ DROP INDEX tbl_tpcpatch_gist_idx;
 RESET enable_seqscan;
 RESET enable_indexscan;
 RESET enable_bitmapscan;
--- typanalyze: ANALYZE must succeed on the temporal pointcloud columns; tspatial_analyze
--- projects each TPCBox bounding box to an STBox for the spatial statistics
-ANALYZE tbl_tpcpoint;
-ANALYZE tbl_tpcpatch;
 -------------------------------------------------------------------------------
 -- An index over boxes of several structures answers as the sequential scan:
 -- the same count, or an error where the scan raises one, for every operator

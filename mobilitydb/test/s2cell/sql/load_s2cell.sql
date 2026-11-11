@@ -62,3 +62,7 @@ CREATE TABLE tbl_ts2cell_seqset (
 );
 \set filename :srcdir '/mobilitydb/test/s2cell/data/tbl_ts2cell_seqset.data'
 COPY tbl_ts2cell_seqset (k, ss) FROM :'filename';
+
+ANALYZE tbl_geodstbox_s2cell, tbl_s2cell, tbl_s2cellset, tbl_ts2cell,
+  tbl_ts2cell_big, tbl_ts2cell_discseq, tbl_ts2cell_inst, tbl_ts2cell_seq,
+  tbl_ts2cell_seqset;

@@ -4,3 +4,5 @@ CREATE TABLE tbl_ais_trgeometry(k integer PRIMARY KEY, mmsi integer,
   temp trgeometry);
 \set filename :srcdir '/mobilitydb/test/rgeo/data/tbl_ais_trgeometry.data'
 COPY tbl_ais_trgeometry (k, mmsi, temp) FROM :'filename';
+
+ANALYZE tbl_ais_trgeometry;

@@ -966,8 +966,6 @@ DROP TABLE tbl_tnpoint_src;
 DROP TABLE tbl_tnpoint_idx;
 -- The distances of the nearest values of the fixture to a value on a route, with
 -- the distance read along the route
-ANALYZE tbl_tnpoint;
-
 CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING GIST(temp);
 
 WITH test AS (

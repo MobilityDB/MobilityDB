@@ -4,10 +4,6 @@ ANALYZE test;
 DROP TABLE test;
 
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tgeometry3D_big;
-ANALYZE tbl_tgeography3D_big;
-
 DROP INDEX IF EXISTS tbl_tgeometry3D_big_rtree_idx;
 DROP INDEX IF EXISTS tbl_tgeography3D_big_rtree_idx;
 
@@ -254,10 +250,6 @@ DROP INDEX IF EXISTS tbl_tgeometry3D_big_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tgeography3D_big_kdtree_idx;
 
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tgeometry;
-ANALYZE tbl_tgeometry3D;
-
 SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
 SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' ?&& temp;
 SELECT COUNT(*) FROM tbl_tgeometry WHERE temp %&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';

@@ -3,8 +3,6 @@ SELECT NULL::tgeompoint FROM generate_series(1, 10);
 ANALYZE test;
 DROP TABLE test;
 -------------------------------------------------------------------------------
-ANALYZE tbl_tgeompoint3D_big;
-ANALYZE tbl_tgeogpoint3D_big;
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_rtree_idx;
 NOTICE:  index "tbl_tgeompoint3d_big_rtree_idx" does not exist, skipping
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_rtree_idx;
@@ -1144,8 +1142,6 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tgeogpoint '[Point(1 1 
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_kdtree_idx;
 -------------------------------------------------------------------------------
-ANALYZE tbl_tgeompoint;
-ANALYZE tbl_tgeompoint3D;
 -------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tgeompoint_rtree_idx;
 NOTICE:  index "tbl_tgeompoint_rtree_idx" does not exist, skipping

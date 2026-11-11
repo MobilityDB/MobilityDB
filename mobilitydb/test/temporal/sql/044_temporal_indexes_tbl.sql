@@ -9,12 +9,6 @@ ANALYZE test;
 DROP TABLE test;
 
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tbool_big;
-ANALYZE tbl_tint_big;
-ANALYZE tbl_tfloat_big;
-ANALYZE tbl_ttext_big;
-
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tbool_big_rtree_idx;
@@ -2020,9 +2014,6 @@ DROP TABLE tbl_tfloat_big_allthesame;
 -------------------------------------------------------------------------------
 -- Big integer temporal type SP-GiST (quad-tree and k-d tree) index coverage
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tbigint_big;
-
 CREATE INDEX tbl_tbigint_big_quadtree_idx ON tbl_tbigint_big USING SPGIST(temp);
 
 SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp && bigintspan '[1,3]';
