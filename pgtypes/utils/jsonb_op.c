@@ -75,7 +75,8 @@ pg_jsonb_exists(const Jsonb *jb, const text *key)
  * @brief Return true if the text string exists as a top-level key or array
  * element within the JSONB value
  * @csqlfn #Jsonb_exists_any() #Jsonb_exists_all()
- * @note Derived from PostgreSQL function @p jsonb_exists_array()
+ * @note Derived from PostgreSQL function @p jsonb_exists_any()
+ * @note Derived from PostgreSQL function @p jsonb_exists_all()
  */
 bool
 jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len, bool any)
