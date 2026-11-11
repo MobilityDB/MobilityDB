@@ -963,6 +963,36 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* A closed polyhedral surface bounds a solid: a point inside the body meets
+   * it, through the text of the value as well, while an open surface is its
+   * faces */
+  {
+    const char *closed = "PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),"
+      "((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),"
+      "((1 0 0,0 1 0,0 0 1,1 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01";
+    const char *open = "PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),"
+      "((0 0 0,0 0 1,0 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01";
+    Temporal *solid = trgeometry_in(closed);
+    Temporal *faces = trgeometry_in(open);
+    GSERIALIZED *inside = geom_in("Point(0.1 0.1 0.1)", -1);
+    GSERIALIZED *outside = geom_in("Point(1 1 1)", -1);
+    size_t len;
+    char *text = trgeometry_out(solid, 15, &len);
+    Temporal *back = text ? trgeometry_in(text) : NULL;
+    if (eintersects_trgeometry_geo(solid, inside) != 1 ||
+        eintersects_trgeometry_geo(solid, outside) != 0 ||
+        eintersects_trgeometry_geo(faces, inside) != 0 ||
+        ! back || eintersects_trgeometry_geo(back, inside) != 1 ||
+        meos_errno() != 0)
+    {
+      printf("FAILED: a point inside the solid a closed surface bounds\n");
+      result = 1;
+    }
+    free(solid); free(faces); free(inside); free(outside); free(text);
+    free(back);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
