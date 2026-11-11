@@ -4,7 +4,7 @@
 -- rows a sequential scan gives, from a plan that probes the index.
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION test_probes_index(query text)
+CREATE FUNCTION pg_temp.test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
   line text;
@@ -48,19 +48,19 @@ SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
 UPDATE test_quadbinset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s')
 WHERE op = '&&';
 UPDATE test_quadbinset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s')
 WHERE op = '=';
 UPDATE test_quadbinset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s')
 WHERE op = '@> set';
 UPDATE test_quadbinset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s')
 WHERE op = '<@';
 UPDATE test_quadbinset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v')
 WHERE op = '@> value';
 RESET enable_seqscan;
 RESET enable_hashjoin;
@@ -76,19 +76,19 @@ SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
 UPDATE test_quadbinset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s')
 WHERE op = '&&';
 UPDATE test_quadbinset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s')
 WHERE op = '=';
 UPDATE test_quadbinset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s')
 WHERE op = '@> set';
 UPDATE test_quadbinset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s')
 WHERE op = '<@';
 UPDATE test_quadbinset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v')
 WHERE op = '@> value';
 RESET enable_seqscan;
 RESET enable_hashjoin;
@@ -104,19 +104,19 @@ SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
 UPDATE test_quadbinset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s && t2.s')
 WHERE op = '&&';
 UPDATE test_quadbinset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s = t2.s')
 WHERE op = '=';
 UPDATE test_quadbinset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s @> t2.s')
 WHERE op = '@> set';
 UPDATE test_quadbinset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, tbl_quadbinset_idx t2 WHERE t1.s <@ t2.s')
 WHERE op = '<@';
 UPDATE test_quadbinset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_quadbinset_idx t1, (SELECT startValue(s) AS v FROM tbl_quadbinset_idx) t2 WHERE t1.s @> t2.v')
 WHERE op = '@> value';
 RESET enable_seqscan;
 RESET enable_hashjoin;
@@ -135,6 +135,6 @@ ORDER BY op;
 
 DROP TABLE test_quadbinset_idx;
 DROP TABLE tbl_quadbinset_idx;
-DROP FUNCTION test_probes_index(text);
+DROP FUNCTION pg_temp.test_probes_index(text);
 
 -------------------------------------------------------------------------------

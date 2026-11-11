@@ -1,5 +1,5 @@
 --SELECT st_makepoint(0.0,0.0);
---SELECT bbox_statistics_validate();
+--SELECT pg_temp.bbox_statistics_validate();
 --VACUUM ANALYSE tbl_tintinst;
 --VACUUM ANALYSE tbl_tfloatinst;
 --VACUUM ANALYSE tbl_tgeompointinst;
@@ -18,7 +18,7 @@
 -- 825/2510
 -- STATISTICS COLLECTION FUNCTIONS
 --SELECT * FROM execution_stats WHERE PlanRows::text = '-nan'
-CREATE FUNCTION bbox_statistics_validate()
+CREATE FUNCTION pg_temp.bbox_statistics_validate()
 RETURNS XML AS $$
 DECLARE
   Query CHAR(5);

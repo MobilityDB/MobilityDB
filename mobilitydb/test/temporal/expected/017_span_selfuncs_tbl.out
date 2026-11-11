@@ -1124,13 +1124,13 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspan '[2001-01-01, 2001-06-01]' &<# 
 (1 row)
 
 -------------------------------------------------------------------------------
---SELECT tstzspan_statistics_validate();
+--SELECT pg_temp.tstzspan_statistics_validate();
 --VACUUM ANALYSE tbl_tstzspan;
 --VACUUM ANALYSE tbl_tstzspanset;
 --VACUUM ANALYSE tbl_tstzset;
 --SELECT COUNT(*) FROM execution_stats WHERE abs(PlanRows-ActualRows) > 10
 -- STATISTICS COLLECTION FUNCTIONS
-CREATE OR REPLACE FUNCTION tstzspan_statistics_validate()
+CREATE OR REPLACE FUNCTION pg_temp.tstzspan_statistics_validate()
 RETURNS CHAR(10) AS $$
 DECLARE
   Query CHAR(5);
