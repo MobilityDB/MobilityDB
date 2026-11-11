@@ -651,9 +651,9 @@ SELECT update(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-0
 (1 row)
 
 SELECT deleteTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');
-                                                                                            deletetime                                                                                            
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST), (480fffffffffffff@Tue Jan 02 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+                                           deletetime                                           
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT (rec).time, (rec).temp FROM
