@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_same_rings_lwpoly</title>
+<title>MobilityDB: same_lwpoly</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,16 +80,15 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a847733003cb481e3373ba4bd3be31dbd.html#a847733003cb481e3373ba4bd3be31dbd">ensure_same_geom</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a3c76c7d8b6b405fa5351ee78570dc1f6.html#a3c76c7d8b6b405fa5351ee78570dc1f6">ensure_same_geoms_lwpsurface</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="trgeo__utils_8c_a587776ccc0a421bf335a45e5cef9e3df.html#a587776ccc0a421bf335a45e5cef9e3df">ensure_same_rings_lwpoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a2f203ccb9106dce10ac4651c21ac3813.html#a2f203ccb9106dce10ac4651c21ac3813">geom_radius</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_ad9f0e784b49314ec8d289bbefbe70d1f.html#ad9f0e784b49314ec8d289bbefbe70d1f">same_lwgeom</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="trgeo__utils_8c_a1b5cbeef69da5bc86ffce153feda16a6.html#a1b5cbeef69da5bc86ffce153feda16a6">same_lwpoly</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a508eb967c5209bdef6e9fce0f8152a3a.html#a508eb967c5209bdef6e9fce0f8152a3a">same_ptarray</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a587776ccc0a421bf335a45e5cef9e3df" name="a587776ccc0a421bf335a45e5cef9e3df"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a587776ccc0a421bf335a45e5cef9e3df">&#9670;&#160;</a></span>ensure_same_rings_lwpoly()</h2>
+<a id="a1b5cbeef69da5bc86ffce153feda16a6" name="a1b5cbeef69da5bc86ffce153feda16a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b5cbeef69da5bc86ffce153feda16a6">&#9670;&#160;</a></span>same_lwpoly()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -98,7 +97,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void ensure_same_rings_lwpoly </td>
+          <td class="memname">static bool same_lwpoly </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structLWPOLY.html">LWPOLY</a> *&#160;</td>
           <td class="paramname"><em>poly1</em>, </td>
@@ -122,7 +121,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Ensure that two polygons have the same rings with the same vertex counts. </p>
+<p>Return true if two polygons have the same rings, as <a class="el" href="trgeo__utils_8c_a508eb967c5209bdef6e9fce0f8152a3a.html#a508eb967c5209bdef6e9fce0f8152a3a" title="Return true if two point arrays hold the same points in the same order, coordinate by coordinate.">same_ptarray</a> reads them. </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: same_lwgeom</title>
+<title>MobilityDB: same_ptarray</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,16 +80,15 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a847733003cb481e3373ba4bd3be31dbd.html#a847733003cb481e3373ba4bd3be31dbd">ensure_same_geom</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a3c76c7d8b6b405fa5351ee78570dc1f6.html#a3c76c7d8b6b405fa5351ee78570dc1f6">ensure_same_geoms_lwpsurface</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a587776ccc0a421bf335a45e5cef9e3df.html#a587776ccc0a421bf335a45e5cef9e3df">ensure_same_rings_lwpoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a2f203ccb9106dce10ac4651c21ac3813.html#a2f203ccb9106dce10ac4651c21ac3813">geom_radius</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="trgeo__utils_8c_ad9f0e784b49314ec8d289bbefbe70d1f.html#ad9f0e784b49314ec8d289bbefbe70d1f">same_lwgeom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__utils_8c_a1b5cbeef69da5bc86ffce153feda16a6.html#a1b5cbeef69da5bc86ffce153feda16a6">same_lwpoly</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="trgeo__utils_8c_a508eb967c5209bdef6e9fce0f8152a3a.html#a508eb967c5209bdef6e9fce0f8152a3a">same_ptarray</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad9f0e784b49314ec8d289bbefbe70d1f" name="ad9f0e784b49314ec8d289bbefbe70d1f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad9f0e784b49314ec8d289bbefbe70d1f">&#9670;&#160;</a></span>same_lwgeom()</h2>
+<a id="a508eb967c5209bdef6e9fce0f8152a3a" name="a508eb967c5209bdef6e9fce0f8152a3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a508eb967c5209bdef6e9fce0f8152a3a">&#9670;&#160;</a></span>same_ptarray()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -98,16 +97,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool same_lwgeom </td>
+          <td class="memname">static bool same_ptarray </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPOINTARRAY.html">POINTARRAY</a> *&#160;</td>
+          <td class="paramname"><em>pa1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom2</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structPOINTARRAY.html">POINTARRAY</a> *&#160;</td>
+          <td class="paramname"><em>pa2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -122,7 +121,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return true if two geometries have the same points in the same order. </p>
+<p>Return true if two point arrays hold the same points in the same order, coordinate by coordinate. </p>
+<p >Two coordinates are the same where they are equal as doubles, so 0 and -0 are the same, as in #ptarray_same of liblwgeom, which compares their bytes instead </p>
 
 </div>
 </div>
