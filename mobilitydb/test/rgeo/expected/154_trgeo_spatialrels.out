@@ -682,3 +682,27 @@ SELECT eTouches(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Poi
  t
 (1 row)
 
+SELECT eIntersects(trgeometry 'Interp=Step;PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(10 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(0.1 0.1 0.1)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aDisjoint(trgeometry 'Interp=Step;PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(10 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(0.1 0.1 0.1)');
+ adisjoint 
+-----------
+ f
+(1 row)
+
+SELECT eIntersects(trgeometry 'Interp=Step;Polygon Z((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 5)');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT eIntersects(trgeometry 'Interp=Step;Polygon Z((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 1)');
+ eintersects 
+-------------
+ t
+(1 row)
+
