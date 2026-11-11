@@ -222,7 +222,7 @@ implementation; "survivor" is the one covering every finite double with the most
 | Ring orientation | `ring_area_sign`, `buffer_ring_signed_area`, `cert_ring_keeps_sense` | `ring_area_sign` | `buffer_ring_signed_area` is in doubles |
 | Point in polygon | `point_in_rings_exact`, `point_arc_ray_parity`, `dist_poly_seg_raycross`, `dist_geom_point_inside`, `pip_point_in_ring` | `point_in_rings_exact` and, for arcs, `point_arc_ray_parity` | the other three decide in doubles, with `MEOS_GEOM_TOLERANCE` and `atan2` |
 | The circle of an arc | `arcarc_centre_exact` and `arcarc_radius2_exact`, `arr_arc_centre_y_side`, `mec_exact_set` and `mec_beyond`, `exact_arc_bound`, `tower_arc_read`, `hull_exact` | `arcarc_centre_exact` | six arc models form the same circumcentre (Section 4.7) |
-| A segment against an arc | the `arcseg_*` meetings, `tower_point_line_circle`, `arcsegm_cross` | the `arcseg_*` meetings on input segments, the tower on tower points | `arcsegm_cross`, which relate reads, decides with a `1e-14` band, `MEOS_GEOM_TOLERANCE` and `atan2` |
+| A segment against an arc | the `arcseg_*` meetings, `tower_point_line_circle`, `arcsegm_cross` | the `arcseg_*` meetings on input segments, the tower on tower points | `arcsegm_cross`, which relate reads, answers by `arcsegm_meet_exact` from #3567 (C1); before it, a `1e-14` band, `MEOS_GEOM_TOLERANCE` and `atan2` read three proper crossings as none |
 | Two arcs | `arcarc_meet_exact`, `tower_point_circles`, `arcarc_cross` | `arcarc_meet_exact` | `arcarc_cross` compares a half-chord with a rounding band |
 | Within a distance of an arc | `point_arc_offset_sign` and its segment and arc siblings, the `*_within_pred` family on the expression ladder, the far certificates of the buffer | none yet | one family per arc model |
 | The order of edges leaving a point | `edges_turn_cmp_exact`, `edges_turn_cmp_meet`, `arr_turn_cmp` | none yet | they differ in how the point is held: doubles, a tower meeting, intervals |
@@ -240,8 +240,8 @@ Built apart, the implementations of one question drift apart in contract:
   twins it duplicates (`cross_product_sign`, `point_segment_offset_sign`,
   `point_within_distance_sign`) are exact for every finite double. EA1 measures the consequence: 50
   of 228 calls answered 0 for -1.
-- **A tolerance beside an exact sign for the same question**: `arcsegm_cross` and `arcarc_cross`
-  in relate against the exact arc meetings; `dist_poly_seg_raycross` and `pip_point_in_ring`
+- **A tolerance beside an exact sign for the same question**: `arcarc_cross` in relate against
+  the exact arc meetings (its segment-arc sibling `arcsegm_cross` answers by them from #3567); `dist_poly_seg_raycross` and `pip_point_in_ring`
   against `point_in_rings_exact`; `buffer_ring_signed_area` against `ring_area_sign`;
   `tcbuffer_region_within_roots` against `point_motion_dwithin_period_exact`; and
   `tcbuffer_disc_boundary_sign`, whose sign is exact while the `inside` it sets comes from a ray
@@ -314,8 +314,9 @@ The consolidation comes before any new speed: a mechanism added for one question
 layer holds it for every question. The phases, each a series of pull requests:
 
 1. **The tolerances beside exact signs (C1 to C6).** Each question of Section 4.7 that keeps a
-   tolerant route beside an exact one is answered by the exact one: relate's segment-arc and
-   arc-arc crossings (`arcsegm_cross`, `arcarc_cross`) by the exact arc meetings, the ray casts in
+   tolerant route beside an exact one is answered by the exact one: relate's segment-arc crossing
+   `arcsegm_cross` by the exact arc meetings (C1, #3567) and its arc-arc crossing `arcarc_cross`
+   likewise, the ray casts in
    doubles (`dist_poly_seg_raycross`, `pip_point_in_ring`, the `inside` of
    `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity`, the ring
    area in doubles of the buffer by `ring_area_sign`, the within-times of a moving disc in
