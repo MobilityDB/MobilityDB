@@ -251,9 +251,7 @@ the catalog and the JMEOS jar (`GENERATION.md` of each), and JMEOS generates the
 extended families, so a root under which git tracks no file is read as the refresh chain leaves it
 (MEOS-API `tools/refresh-binding.sh`, MEOS-API `c9a22d1`, JMEOS `343261dbe5`). Each generated
 layer of a JVM consumer is a row of its own: the UDF layer and the typed SQL layer of Spark, the
-typed SQL layer and the `MeosOps*` facades of Flink, the facades of Kafka. The facades keep each
-C-named forwarder beside its portable name (IO-B12), so their last column counts those
-forwarders. MEOS.js generates its 152 classes into one file, `core/objects/objects.generated.ts`,
+typed SQL layer and the `MeosOps*` facades of Flink, the facades of Kafka. MEOS.js generates its 152 classes into one file, `core/objects/objects.generated.ts`,
 and the tool credits a `From<Format>` reader to the type its file is named after, so the MEOS.js
 row counts only the readers of the classes under `core/types`. MobilityAPI sends MobilityDB SQL
 and defines no `as<Format>` name of its own. PyMEOS-CFFI is the FFI layer PyMEOS calls, so its
