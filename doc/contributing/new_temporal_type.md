@@ -367,7 +367,7 @@ set(FIXTURE_TESTS  270_tfoo_tbl  275_tfoo_indexes_tbl)
 
 ### 3.11 Boilerplate & process hygiene
 
-- **License header**: every source file has the canonical 26-line MobilityDB header (Copyright + PostGIS attribution + Permission + IN NO EVENT + DISCLAIMS). For SQL files use `/* */` block style; for `*.sql` files use `--` line style.
+- **License header**: every source file has the canonical 26-line MobilityDB header (Copyright + PostGIS attribution + Permission + IN NO EVENT + DISCLAIMS). For SQL files use `/* */` block style. The test files `mobilitydb/test/*/sql/*.sql` carry none, as in PostgreSQL and PostGIS; `tools/license/banner.py` skips them.
 - **Common typo**: lowercase `documentation for any purpose` (some old files have uppercase `FOR` — don't propagate it).
 - **Comments must not name internal phases or process state.** No "follow-up", "deferred", "next slice", "MVP", "Phase N", "tier 1". Source comments live in the codebase indefinitely; the state of work-in-flight belongs in the PR description and changelog.
 - **Auto-generated files**: don't ship empty placeholder scaffolding. If the generator produces nothing, the file shouldn't be committed.
