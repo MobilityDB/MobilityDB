@@ -321,7 +321,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aab142b3a5f9616ad28ed439a613ac51d.html#aab142b3a5f9616ad28ed439a613ac51d">pip_point_in_mpoly</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a9e0ec1c1932a3e89a66fed8d6c0351bd.html#a9e0ec1c1932a3e89a66fed8d6c0351bd">pip_point_in_ring</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a17f67431c11fcdf87483c598d5ebd896.html#a17f67431c11fcdf87483c598d5ebd896">pip_point_on_segment</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a9185decd0e073a39d9700562757889ee.html#a9185decd0e073a39d9700562757889ee">pip_segment_side</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0b9145b0e3b6e96074cab909f505620b.html#a0b9145b0e3b6e96074cab909f505620b">pip_segment_side</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3a3a774193b9ea45c3b3b2e6dc7fcd50.html#a3a3a774193b9ea45c3b3b2e6dc7fcd50">poly_walk_measure</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_abfcf635143063bd52419c2f80829a83b.html#abfcf635143063bd52419c2f80829a83b">postgis_valid_typmod</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a6b1e0c6251802af8cd00b8686a8f3593.html#a6b1e0c6251802af8cd00b8686a8f3593">pt_linepoly_distance2d</a></td></tr>
@@ -380,7 +380,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the location of a point relative to a ring, as the interval tree of PostGIS locates it. </p>
-<p >The tree tests each segment of nonzero length and finite coordinates whose range of y covers the one of the point, a segment outside that range contributing neither a boundary nor a winding; the segments are tested here in turn with the same arithmetic, so the location is the one of the tree, which a single location does not pay for building </p>
+<p >The tree tests each segment of nonzero length and finite coordinates whose range of y covers the one of the point, a segment outside that range contributing neither a boundary nor a winding; the segments are tested here in turn, which a single location does not pay for building the tree for. The side of the point is read exactly (<a class="el" href="postgis__funcs_8c_a0b9145b0e3b6e96074cab909f505620b.html#a0b9145b0e3b6e96074cab909f505620b" title="Return the side of a point relative to a segment, 1 on its left, -1 on its right and 0 on its line,...">pip_segment_side</a>), where the tree reads it in doubles, so the location is the exact one at every scale </p>
 
 </div>
 </div>

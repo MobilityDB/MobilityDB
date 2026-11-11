@@ -321,7 +321,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aab142b3a5f9616ad28ed439a613ac51d.html#aab142b3a5f9616ad28ed439a613ac51d">pip_point_in_mpoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a9e0ec1c1932a3e89a66fed8d6c0351bd.html#a9e0ec1c1932a3e89a66fed8d6c0351bd">pip_point_in_ring</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a17f67431c11fcdf87483c598d5ebd896.html#a17f67431c11fcdf87483c598d5ebd896">pip_point_on_segment</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a9185decd0e073a39d9700562757889ee.html#a9185decd0e073a39d9700562757889ee">pip_segment_side</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a0b9145b0e3b6e96074cab909f505620b.html#a0b9145b0e3b6e96074cab909f505620b">pip_segment_side</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3a3a774193b9ea45c3b3b2e6dc7fcd50.html#a3a3a774193b9ea45c3b3b2e6dc7fcd50">poly_walk_measure</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_abfcf635143063bd52419c2f80829a83b.html#abfcf635143063bd52419c2f80829a83b">postgis_valid_typmod</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a6b1e0c6251802af8cd00b8686a8f3593.html#a6b1e0c6251802af8cd00b8686a8f3593">pt_linepoly_distance2d</a></td></tr>
@@ -345,8 +345,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9185decd0e073a39d9700562757889ee" name="a9185decd0e073a39d9700562757889ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9185decd0e073a39d9700562757889ee">&#9670;&#160;</a></span>pip_segment_side()</h2>
+<a id="a0b9145b0e3b6e96074cab909f505620b" name="a0b9145b0e3b6e96074cab909f505620b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b9145b0e3b6e96074cab909f505620b">&#9670;&#160;</a></span>pip_segment_side()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -355,7 +355,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static double pip_segment_side </td>
+          <td class="memname">static int pip_segment_side </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
           <td class="paramname"><em>seg1</em>, </td>
@@ -385,7 +385,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the side of a point relative to a segment, as the PostGIS function <code>itree_segment_side</code> computes it. </p>
+<p>Return the side of a point relative to a segment, 1 on its left, -1 on its right and 0 on its line, read exactly (<a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a>) </p>
+<p >The PostGIS function <code>itree_segment_side</code> computes the same cross product in doubles, whose rounding can turn its sign for a point a few units in the last place off the segment </p>
 
 </div>
 </div>

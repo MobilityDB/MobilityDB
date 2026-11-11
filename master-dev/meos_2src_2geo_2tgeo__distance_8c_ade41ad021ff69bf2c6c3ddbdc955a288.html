@@ -244,8 +244,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Apply the rightward-ray crossings of one polygon-boundary segment to the even-odd accumulator <code>inside</code>. </p>
-<p >A straight edge contributes at most one crossing; a circular arc contributes the crossings of the horizontal line y with its supporting circle that fall within the arc's angular span. Point, line, and standalone (1D) arc edges, which bound no region, contribute nothing. </p>
+<p>Apply the rightward-ray crossings of one polygon-boundary edge to the even-odd accumulator <code>inside</code>. </p>
+<p >The parity of the crossings of a segment (<a class="el" href="geo__funcs_8h_a3ca7a47d386324a71d1b16395b17455f.html#a3ca7a47d386324a71d1b16395b17455f" title="Return true if the ray to the right of a point crosses a segment.">point_segm_ray_parity</a>) or an arc (<a class="el" href="geo__funcs_8h_abe95d2feb3760e3285d6e477febce454.html#abe95d2feb3760e3285d6e477febce454" title="Return true if the ray to the right of a point crosses an arc an odd number of times.">point_arc_ray_parity</a>) is read exactly on the input doubles, the point standing as <a class="el" href="meos_2src_2geo_2geo__funcs_8c_aad402828a8b62d4fabd228d6dc1e52e2.html#aad402828a8b62d4fabd228d6dc1e52e2">point_line_side_moved</a> moves it, so that the crossings along a ring tell whether it lies inside at every scale. A point on the ring reads either way, which a caller does not ask: the nearest approach of a point on the boundary is 0 from its edge, and a disk centred on it crosses it. Point, line, and standalone (1D) arc edges, which bound no region, contribute nothing. </p>
 
 </div>
 </div>
