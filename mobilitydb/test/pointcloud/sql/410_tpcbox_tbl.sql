@@ -140,7 +140,7 @@ RESET enable_bitmapscan;
 CREATE TEMP TABLE tbl_tpcbox_knn AS SELECT b FROM tbl_tpcbox;
 CREATE INDEX tbl_tpcbox_knn_rtree_idx ON tbl_tpcbox_knn USING gist(b);
 VACUUM ANALYZE tbl_tpcbox_knn;
-CREATE FUNCTION tpcbox_knn_reads_index_only() RETURNS boolean AS $$
+CREATE FUNCTION pg_temp.tpcbox_knn_reads_index_only() RETURNS boolean AS $$
 DECLARE
   line text;
 BEGIN
@@ -164,7 +164,7 @@ WITH test AS (
 SELECT round(distance, 6) FROM test;
 SET enable_seqscan = off;
 SET enable_indexscan = on;
-SELECT tpcbox_knn_reads_index_only();
+SELECT pg_temp.tpcbox_knn_reads_index_only();
 WITH test AS (
   SELECT b |=| tpcboxZT(200, 200, 200, 210, 210, 210,
   tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
@@ -173,7 +173,7 @@ SELECT round(distance, 6) FROM test;
 RESET enable_seqscan;
 RESET enable_indexscan;
 RESET enable_bitmapscan;
-DROP FUNCTION tpcbox_knn_reads_index_only();
+DROP FUNCTION pg_temp.tpcbox_knn_reads_index_only();
 DROP TABLE tbl_tpcbox_knn;
 
 -- The index key of a box keeps its bounds and drops the schema identifier,

@@ -184,7 +184,7 @@ SELECT eDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01',
 -- Under an R-tree index the ever intersects and dwithin answer the rows a
 -- sequential scan gives, from a plan that probes the index
 -------------------------------------------------------------------------------
-CREATE FUNCTION test_probes_index(query text)
+CREATE FUNCTION pg_temp.test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
   line text;
@@ -238,14 +238,14 @@ WHERE eDwithin(temp, geometry 'Point(5 5)', 1.5);
      9
 (1 row)
 
-SELECT test_probes_index('SELECT k FROM tbl_tposechain_rel '
+SELECT pg_temp.test_probes_index('SELECT k FROM tbl_tposechain_rel '
   'WHERE eIntersects(temp, geometry ''Polygon((0 0,0 3,3 3,3 0,0 0))'')');
  test_probes_index 
 -------------------
  t
 (1 row)
 
-SELECT test_probes_index('SELECT k FROM tbl_tposechain_rel '
+SELECT pg_temp.test_probes_index('SELECT k FROM tbl_tposechain_rel '
   'WHERE eDwithin(temp, geometry ''Point(5 5)'', 1.5)');
  test_probes_index 
 -------------------
@@ -254,5 +254,5 @@ SELECT test_probes_index('SELECT k FROM tbl_tposechain_rel '
 
 RESET enable_seqscan;
 DROP TABLE tbl_tposechain_rel;
-DROP FUNCTION test_probes_index(text);
+DROP FUNCTION pg_temp.test_probes_index(text);
 -------------------------------------------------------------------------------

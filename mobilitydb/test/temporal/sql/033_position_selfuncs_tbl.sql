@@ -4,7 +4,7 @@
 -- below are equal.
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION test_estimated_rows(query text)
+CREATE FUNCTION pg_temp.test_estimated_rows(query text)
 RETURNS bigint LANGUAGE plpgsql AS $$
 DECLARE
   plan json;
@@ -27,10 +27,10 @@ FROM tbl_tbool t1, generate_series(1, 100) t2(k);
 ANALYZE tbl_tbool_possel;
 
 SELECT op, comm,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
     'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])')) AS var_op_const,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE tbox %L %s temp',
     'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])', comm)) AS const_comm_var
 FROM (VALUES (1, '<<', '>>'), (2, '>>', '<<'), (3, '<<#', '#>>'),
@@ -38,10 +38,10 @@ FROM (VALUES (1, '<<', '>>'), (2, '>>', '<<'), (3, '<<#', '#>>'),
 ORDER BY n;
 
 SELECT op, comm,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tbool_possel WHERE temp %s tstzspan %L', op,
     '[2001-04-01, 2001-08-01]')) AS var_op_const,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tbool_possel WHERE tstzspan %L %s temp',
     '[2001-04-01, 2001-08-01]', comm)) AS const_comm_var
 FROM (VALUES (1, '<<#', '#>>'), (2, '#>>', '<<#')) AS t(n, op, comm)
@@ -52,13 +52,13 @@ ORDER BY n;
 -- a box without it the default selectivity of the operator
 
 SELECT op,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
     'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])')) AS box_xt,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
     'TBOXFLOAT X([30, 60])')) AS box_x,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
     'TBOX T([2001-04-01, 2001-08-01])')) AS box_t
 FROM unnest(ARRAY['<<', '&<', '>>', '&>', '<<#', '&<#', '#>>', '#&>'])
@@ -67,6 +67,6 @@ ORDER BY n;
 
 DROP TABLE tbl_tbool_possel;
 DROP TABLE tbl_tfloat_possel;
-DROP FUNCTION test_estimated_rows(text);
+DROP FUNCTION pg_temp.test_estimated_rows(text);
 
 -------------------------------------------------------------------------------

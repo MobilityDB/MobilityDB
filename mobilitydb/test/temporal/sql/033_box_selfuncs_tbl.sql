@@ -6,7 +6,7 @@
 -- and the rows of a join on it with the default join selectivity, 0.001.
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION test_estimated_rows(query text)
+CREATE FUNCTION pg_temp.test_estimated_rows(query text)
 RETURNS bigint LANGUAGE plpgsql AS $$
 DECLARE
   plan json;
@@ -22,19 +22,19 @@ SELECT t1.k * 1000 + t2.k AS k, t1.b
 FROM tbl_tboxfloat t1, generate_series(1, 100) t2(k);
 ANALYZE tbl_tbox_sel;
 
-SELECT op, test_estimated_rows(format(
+SELECT op, pg_temp.test_estimated_rows(format(
   'SELECT * FROM tbl_tbox_sel WHERE b %s tbox %L', op,
   'TBOXFLOAT XT([0, 50],[2001-03-01, 2001-06-01])')) AS rows
 FROM unnest(ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>',
   '<<#', '&<#', '#>>', '#&>']) WITH ORDINALITY AS t(op, n)
 ORDER BY n;
 
-SELECT test_estimated_rows(
+SELECT pg_temp.test_estimated_rows(
   'SELECT * FROM tbl_tbox_sel WHERE b && tbox ''TBOXFLOAT X([0, 50])''') AS rows;
-SELECT test_estimated_rows(
+SELECT pg_temp.test_estimated_rows(
   'SELECT * FROM tbl_tbox_sel WHERE b && tbox ''TBOX T([2001-03-01, 2001-06-01])''')
   AS rows;
-SELECT test_estimated_rows(
+SELECT pg_temp.test_estimated_rows(
   'SELECT * FROM tbl_tbox_sel t1, tbl_tbox_sel t2 WHERE t1.b && t2.b') AS rows;
 
 -------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ SELECT k, stboxXT(xmin(b), xmin(b), xmax(b), xmax(b), b::tstzspan) AS b
 FROM tbl_tbox_sel;
 ANALYZE tbl_stbox_sel;
 
-SELECT op, test_estimated_rows(format(
+SELECT op, pg_temp.test_estimated_rows(format(
   'SELECT * FROM tbl_stbox_sel WHERE b %s stbox %L', op,
   'STBOX XT(((0,0),(50,50)),[2001-03-01, 2001-06-01])')) AS rows
 FROM unnest(ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>',
@@ -53,17 +53,17 @@ FROM unnest(ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>',
   WITH ORDINALITY AS t(op, n)
 ORDER BY n;
 
-SELECT test_estimated_rows(
+SELECT pg_temp.test_estimated_rows(
   'SELECT * FROM tbl_stbox_sel WHERE b && stbox ''STBOX X((0,0),(50,50))''')
   AS rows;
-SELECT test_estimated_rows(
+SELECT pg_temp.test_estimated_rows(
   'SELECT * FROM tbl_stbox_sel WHERE b && stbox ''STBOX T([2001-03-01, 2001-06-01])''')
   AS rows;
-SELECT test_estimated_rows(
+SELECT pg_temp.test_estimated_rows(
   'SELECT * FROM tbl_stbox_sel t1, tbl_stbox_sel t2 WHERE t1.b && t2.b') AS rows;
 
 DROP TABLE tbl_stbox_sel;
 DROP TABLE tbl_tbox_sel;
-DROP FUNCTION test_estimated_rows(text);
+DROP FUNCTION pg_temp.test_estimated_rows(text);
 
 -------------------------------------------------------------------------------

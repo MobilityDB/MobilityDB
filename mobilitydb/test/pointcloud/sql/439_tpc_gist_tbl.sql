@@ -186,7 +186,7 @@ WHERE tpcboxOverbelow(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
 
 -- The plan of a call of a topological or a position function probes the index,
 -- the support function of the call rewriting it into its operator
-CREATE FUNCTION test_probes_index(query text)
+CREATE FUNCTION pg_temp.test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
   line text;
@@ -200,18 +200,18 @@ BEGIN
 END;
 $$;
 
-SELECT test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxOverlaps(temp, '
+SELECT pg_temp.test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxOverlaps(temp, '
   'tpcboxZT(0, 0, 0, 50, 50, 50, tstzspan ''[2001-06-01, 2001-12-31]'', 1))') AS fn_overlaps,
-  test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxLeft(temp, '
+  pg_temp.test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxLeft(temp, '
   'tpcboxZT(0, 0, 0, 50, 50, 50, tstzspan ''[2001-06-01, 2001-12-31]'', 1))') AS fn_left,
-  test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxOverfront(temp, '
+  pg_temp.test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxOverfront(temp, '
   'tpcboxZT(0, 0, 0, 50, 50, 50, tstzspan ''[2001-06-01, 2001-12-31]'', 1))') AS fn_overfront,
-  test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxBefore(temp, '
+  pg_temp.test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxBefore(temp, '
   'tstzspan ''[2001-06-01, 2001-12-31]'')') AS fn_before,
-  test_probes_index('SELECT * FROM tbl_tpcpatch WHERE tpcboxOverbelow(temp, '
+  pg_temp.test_probes_index('SELECT * FROM tbl_tpcpatch WHERE tpcboxOverbelow(temp, '
   'tpcboxZT(0, 0, 0, 50, 50, 50, tstzspan ''[2001-06-01, 2001-12-31]'', 1))') AS fn_patch_overbelow;
 
-DROP FUNCTION test_probes_index(text);
+DROP FUNCTION pg_temp.test_probes_index(text);
 
 DROP INDEX tbl_tpcpoint_gist_idx;
 DROP INDEX tbl_tpcpatch_gist_idx;
@@ -229,7 +229,7 @@ RESET enable_bitmapscan;
 -- from the scan
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION index_structures(tbl text, typ text, opclasses text[],
+CREATE FUNCTION pg_temp.index_structures(tbl text, typ text, opclasses text[],
   queries text[], ops text[])
 RETURNS TABLE(opclass text, uses_index boolean, errors int,
   disagreements int) AS $$
@@ -286,34 +286,34 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
+CREATE FUNCTION pg_temp.day_of(d int) RETURNS timestamptz AS $$
   SELECT timestamptz '2001-01-01' + d * interval '1 day'
 $$ LANGUAGE sql IMMUTABLE;
 
 CREATE TEMP TABLE tbl_index_structures AS
   SELECT k, CASE k % 4
     WHEN 0 THEN tpcboxXT(k % 50, k % 47, k % 50 + 2, k % 47 + 2,
-      span(day_of(k % 40), day_of(k % 40 + 2)), 1)
+      span(pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)), 1)
     WHEN 1 THEN tpcboxX(k % 50, k % 47, k % 50 + 2, k % 47 + 2, 1)
     WHEN 2 THEN tpcboxZT(k % 50, k % 47, k % 43, k % 50 + 2, k % 47 + 2,
-      k % 43 + 2, span(day_of(k % 40), day_of(k % 40 + 2)), 1)
-    ELSE tpcboxT(span(day_of(k % 40), day_of(k % 40 + 2)), 1) END AS b
+      k % 43 + 2, span(pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)), 1)
+    ELSE tpcboxT(span(pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)), 1) END AS b
   FROM generate_series(1, 4000) AS k;
 
-SELECT * FROM index_structures('tbl_index_structures', 'tpcbox',
+SELECT * FROM pg_temp.index_structures('tbl_index_structures', 'tpcbox',
   ARRAY['gist(b tpcbox_rtree_ops)', 'spgist(b tpcbox_quadtree_ops)',
     'spgist(b tpcbox_kdtree_ops)'],
-  ARRAY[tpcboxXT(10, 10, 20, 20, span(day_of(9), day_of(19)), 1)::text,
+  ARRAY[tpcboxXT(10, 10, 20, 20, span(pg_temp.day_of(9), pg_temp.day_of(19)), 1)::text,
     tpcboxX(10, 10, 20, 20, 1)::text,
-    tpcboxZT(10, 10, 10, 20, 20, 20, span(day_of(9), day_of(19)), 1)::text,
-    tpcboxT(span(day_of(9), day_of(19)), 1)::text],
+    tpcboxZT(10, 10, 10, 20, 20, 20, span(pg_temp.day_of(9), pg_temp.day_of(19)), 1)::text,
+    tpcboxT(span(pg_temp.day_of(9), pg_temp.day_of(19)), 1)::text],
   ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>', '<<|', '&<|',
     '|>>', '|&>', '<</', '&</', '/>>', '/&>', '<<#', '&<#', '#>>', '#&>',
     '|=|']);
 
 DROP TABLE tbl_index_structures;
-DROP FUNCTION day_of(int);
-DROP FUNCTION index_structures(text, text, text[], text[], text[]);
+DROP FUNCTION pg_temp.day_of(int);
+DROP FUNCTION pg_temp.index_structures(text, text, text[], text[], text[]);
 
 -------------------------------------------------------------------------------
 
@@ -355,7 +355,7 @@ CREATE TEMP TABLE tbl_tpcbox_tpcpoint AS
 SELECT k, temp::tpcbox AS b FROM tbl_tpcpoint WHERE temp IS NOT NULL;
 CREATE TEMP TABLE tbl_tpcpoint_q AS
 SELECT temp AS q FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
-CREATE FUNCTION tpcbox_tpcpoint_answers() RETURNS text AS $$
+CREATE FUNCTION pg_temp.tpcbox_tpcpoint_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
     SELECT 1, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b << q) FROM tbl_tpcpoint_q
     UNION ALL
@@ -402,7 +402,7 @@ CREATE FUNCTION tpcbox_tpcpoint_answers() RETURNS text AS $$
     SELECT 22, (SELECT sum(k) FROM (SELECT k FROM tbl_tpcbox_tpcpoint
       ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_tpcpoint_q) t(o, c);
 $$ LANGUAGE SQL;
-CREATE FUNCTION tpcbox_tpcpoint_probes_index(query text)
+CREATE FUNCTION pg_temp.tpcbox_tpcpoint_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
   line text;
@@ -415,8 +415,8 @@ BEGIN
   RETURN false;
 END;
 $$;
-CREATE FUNCTION tpcbox_tpcpoint_indexed() RETURNS text AS $$
-  SELECT string_agg(CASE WHEN tpcbox_tpcpoint_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
+CREATE FUNCTION pg_temp.tpcbox_tpcpoint_indexed() RETURNS text AS $$
+  SELECT string_agg(CASE WHEN pg_temp.tpcbox_tpcpoint_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
   FROM (VALUES
     (1, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b << (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
     (2, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &< (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
@@ -441,24 +441,24 @@ CREATE FUNCTION tpcbox_tpcpoint_indexed() RETURNS text AS $$
     (21, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b /&> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
     (22, 'SELECT k FROM tbl_tpcbox_tpcpoint ORDER BY b |=| (SELECT q FROM tbl_tpcpoint_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TEMP TABLE tbl_tpcbox_tpcpoint_seq AS SELECT tpcbox_tpcpoint_answers() AS a;
+CREATE TEMP TABLE tbl_tpcbox_tpcpoint_seq AS SELECT pg_temp.tpcbox_tpcpoint_answers() AS a;
 SELECT a FROM tbl_tpcbox_tpcpoint_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_tpcbox_tpcpoint_gist_idx ON tbl_tpcbox_tpcpoint USING gist(b);
-SELECT tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers() = a
+SELECT pg_temp.tpcbox_tpcpoint_indexed(), pg_temp.tpcbox_tpcpoint_answers() = a
 FROM tbl_tpcbox_tpcpoint_seq;
 DROP INDEX tbl_tpcbox_tpcpoint_gist_idx;
 CREATE INDEX tbl_tpcbox_tpcpoint_quad_idx ON tbl_tpcbox_tpcpoint USING spgist(b);
-SELECT tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers() = a
+SELECT pg_temp.tpcbox_tpcpoint_indexed(), pg_temp.tpcbox_tpcpoint_answers() = a
 FROM tbl_tpcbox_tpcpoint_seq;
 DROP INDEX tbl_tpcbox_tpcpoint_quad_idx;
 CREATE INDEX tbl_tpcbox_tpcpoint_kd_idx ON tbl_tpcbox_tpcpoint
   USING spgist(b tpcbox_kdtree_ops);
-SELECT tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers() = a
+SELECT pg_temp.tpcbox_tpcpoint_indexed(), pg_temp.tpcbox_tpcpoint_answers() = a
 FROM tbl_tpcbox_tpcpoint_seq;
 RESET enable_seqscan;
 DROP TABLE tbl_tpcbox_tpcpoint, tbl_tpcpoint_q, tbl_tpcbox_tpcpoint_seq;
-DROP FUNCTION tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers(), tpcbox_tpcpoint_probes_index(text);
+DROP FUNCTION pg_temp.tpcbox_tpcpoint_indexed(), pg_temp.tpcbox_tpcpoint_answers(), pg_temp.tpcbox_tpcpoint_probes_index(text);
 
 -------------------------------------------------------------------------------
 -- A column of tpcbox values indexed by GiST, quad-tree and k-d tree answers the
@@ -469,7 +469,7 @@ CREATE TEMP TABLE tbl_tpcbox_tpcpatch AS
 SELECT k, temp::tpcbox AS b FROM tbl_tpcpatch WHERE temp IS NOT NULL;
 CREATE TEMP TABLE tbl_tpcpatch_q AS
 SELECT temp AS q FROM tbl_tpcpatch WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
-CREATE FUNCTION tpcbox_tpcpatch_answers() RETURNS text AS $$
+CREATE FUNCTION pg_temp.tpcbox_tpcpatch_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
     SELECT 1, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b << q) FROM tbl_tpcpatch_q
     UNION ALL
@@ -516,7 +516,7 @@ CREATE FUNCTION tpcbox_tpcpatch_answers() RETURNS text AS $$
     SELECT 22, (SELECT sum(k) FROM (SELECT k FROM tbl_tpcbox_tpcpatch
       ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_tpcpatch_q) t(o, c);
 $$ LANGUAGE SQL;
-CREATE FUNCTION tpcbox_tpcpatch_probes_index(query text)
+CREATE FUNCTION pg_temp.tpcbox_tpcpatch_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
   line text;
@@ -529,8 +529,8 @@ BEGIN
   RETURN false;
 END;
 $$;
-CREATE FUNCTION tpcbox_tpcpatch_indexed() RETURNS text AS $$
-  SELECT string_agg(CASE WHEN tpcbox_tpcpatch_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
+CREATE FUNCTION pg_temp.tpcbox_tpcpatch_indexed() RETURNS text AS $$
+  SELECT string_agg(CASE WHEN pg_temp.tpcbox_tpcpatch_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
   FROM (VALUES
     (1, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b << (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
     (2, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &< (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
@@ -555,21 +555,21 @@ CREATE FUNCTION tpcbox_tpcpatch_indexed() RETURNS text AS $$
     (21, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b /&> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
     (22, 'SELECT k FROM tbl_tpcbox_tpcpatch ORDER BY b |=| (SELECT q FROM tbl_tpcpatch_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TEMP TABLE tbl_tpcbox_tpcpatch_seq AS SELECT tpcbox_tpcpatch_answers() AS a;
+CREATE TEMP TABLE tbl_tpcbox_tpcpatch_seq AS SELECT pg_temp.tpcbox_tpcpatch_answers() AS a;
 SELECT a FROM tbl_tpcbox_tpcpatch_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_tpcbox_tpcpatch_gist_idx ON tbl_tpcbox_tpcpatch USING gist(b);
-SELECT tpcbox_tpcpatch_indexed(), tpcbox_tpcpatch_answers() = a
+SELECT pg_temp.tpcbox_tpcpatch_indexed(), pg_temp.tpcbox_tpcpatch_answers() = a
 FROM tbl_tpcbox_tpcpatch_seq;
 DROP INDEX tbl_tpcbox_tpcpatch_gist_idx;
 CREATE INDEX tbl_tpcbox_tpcpatch_quad_idx ON tbl_tpcbox_tpcpatch USING spgist(b);
-SELECT tpcbox_tpcpatch_indexed(), tpcbox_tpcpatch_answers() = a
+SELECT pg_temp.tpcbox_tpcpatch_indexed(), pg_temp.tpcbox_tpcpatch_answers() = a
 FROM tbl_tpcbox_tpcpatch_seq;
 DROP INDEX tbl_tpcbox_tpcpatch_quad_idx;
 CREATE INDEX tbl_tpcbox_tpcpatch_kd_idx ON tbl_tpcbox_tpcpatch
   USING spgist(b tpcbox_kdtree_ops);
-SELECT tpcbox_tpcpatch_indexed(), tpcbox_tpcpatch_answers() = a
+SELECT pg_temp.tpcbox_tpcpatch_indexed(), pg_temp.tpcbox_tpcpatch_answers() = a
 FROM tbl_tpcbox_tpcpatch_seq;
 RESET enable_seqscan;
 DROP TABLE tbl_tpcbox_tpcpatch, tbl_tpcpatch_q, tbl_tpcbox_tpcpatch_seq;
-DROP FUNCTION tpcbox_tpcpatch_indexed(), tpcbox_tpcpatch_answers(), tpcbox_tpcpatch_probes_index(text);
+DROP FUNCTION pg_temp.tpcbox_tpcpatch_indexed(), pg_temp.tpcbox_tpcpatch_answers(), pg_temp.tpcbox_tpcpatch_probes_index(text);
