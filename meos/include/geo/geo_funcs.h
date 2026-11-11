@@ -370,6 +370,12 @@ extern int point_motion_dwithin_period_exact(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
   int64 *n1, int64 *n2);
+extern int motion_edges_dwithin_periods(const double *c0, const double *c1,
+  double r0, double r1, const Edge *const *edges, int nedges, double d,
+  int64 D, int64 *lo, int64 *hi);
+extern int point_motion_segm_dwithin_period_exact(const double *c0,
+  const double *c1, double r0, double r1, const double *a, const double *b,
+  double d, int64 D, int64 *n1, int64 *n2);
 extern bool point_motion_dwithin_at_exact(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
