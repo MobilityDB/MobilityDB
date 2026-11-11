@@ -42,6 +42,7 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 | [The temporal rigid geometries](../trgeometry/00-INDEX.md) | MobilityDB #3441 holds, as one plan of that type, the distance of non-convex and holed geometries with its feasibility, and the relationships of a rigid geometry in linear motion. |
 | [Every MEOS value is a finite number](FINITE-VALUES.md), MobilityDB #3352 | The rule (NaN and ±Infinity refused at every entry point, a result of finite operands beyond the doubles an error, a result within them answered, a division by zero an error, -0 equal to 0), the census of where MEOS does not apply it, and the pull requests that apply it, in order: the NaN work, the finite rule and the double error value |
 | [Exact text output of floating-point values](EXACT-FLOAT-TEXT.md) | Whether the default text of a floating-point value becomes the shortest form that reads back as the same double, and in which notation |
+| [The exact arithmetic of the geometry engine](EXACT-ARITHMETIC.md) | The three layers of the engine (user entries, geometric algorithms, exact arithmetic), the tiers every exact sign is read in, the machinery the engine holds for each, the rule of one machinery per need, the seam at the user entries, and the steps that merge the machinery into one |
 
 ## Where things stand
 
