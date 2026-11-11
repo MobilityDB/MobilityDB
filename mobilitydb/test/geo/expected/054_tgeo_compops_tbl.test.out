@@ -94,3 +94,48 @@ SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE t1.temp #<> 
    100
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
+WHERE t1.temp ?&& stbox(t2.temp) <> (atStbox(t1.temp, stbox(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
+WHERE t1.temp %&& stbox(t2.temp) <> (minusStbox(t1.temp, stbox(t2.temp)) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE t1.temp ?&& stbox(t2.temp);
+ count 
+-------
+   103
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE t1.temp %&& stbox(t2.temp);
+ count 
+-------
+   101
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
+WHERE eIntersects(t1.temp, t2.temp) AND NOT t1.temp ?&& t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE t1.temp ?&& t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE t1.temp %&& t2.temp;
+ count 
+-------
+   100
+(1 row)
+
