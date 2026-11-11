@@ -762,7 +762,7 @@ npoint_as_hexewkb(const Npoint *np, uint8_t variant, size_t *size_out)
  * @details Mirrors #npoint_from_wkb
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
- * @csqlfn #Nsegment_from_wkb()
+ * @csqlfn #Nsegment_recv(), #Nsegment_from_wkb()
  */
 Nsegment *
 nsegment_from_wkb(const uint8_t *wkb, size_t size)
@@ -797,7 +797,7 @@ nsegment_from_hexwkb(const char *hexwkb)
  * @param[in] ns Network segment
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Nsegment_as_wkb()
+ * @csqlfn #Nsegment_send(), #Nsegment_as_wkb()
  */
 uint8_t *
 nsegment_as_wkb(const Nsegment *ns, uint8_t variant, size_t *size_out)

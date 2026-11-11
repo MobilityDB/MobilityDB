@@ -230,7 +230,7 @@ pg_date_out(DateADT date)
 /**
  * @ingroup meos_base_date
  * @brief Return a date from a year, a month, and a day
- * @note Derived from PostgreSQL function @p date_make()
+ * @note Derived from PostgreSQL function @p make_date()
  */
 #if MEOS
 DateADT
