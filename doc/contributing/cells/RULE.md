@@ -47,11 +47,15 @@ membership and the owner of a vertex without assuming it.
 
 Two neighbouring cells state their shared vertex from one canonical source, so that a vertex of one
 cell is a vertex of the other bit for bit. The H3 library does not guarantee it: `cellToBoundary`
-states a shared vertex with different numbers in 73,305 of 237,518 pairs at resolution 0, 9,437 at
-resolution 2, 272 at resolution 5 and 6 at resolution 9.
+states a vertex two neighbours share with different doubles in 168 of the 360 neighbour pairs at
+resolution 0, 2318 of the 123480 at resolution 3 and 16318 of the 6050520 at resolution 5.
 
-- **H3:** the vertex index (`cellToVertex`, `vertexToLatLng`), which names each vertex once; the
-  extra vertex where an edge crosses a face of the icosahedron comes from one chosen directed edge.
+- **H3:** each vertex once, by decision D8: the nearest double of the degrees of the real value H3's
+  formula gives it, from its face and integer IJK coordinates, so that every platform and every
+  build of the library reads the same cell; the extra vertex where an edge crosses a face of the
+  icosahedron is the exact meeting computed in the face of the lower of the two cells, as the
+  directed edge leaving that cell states it. Two builds of the library read with their own
+  trigonometry place 388 of the 6846 cells of the resolutions 0 to 2 differently.
 - **S2:** the corners computed exactly from the face, i and j of the cell.
 - **QUADBIN:** the corners of the tile from its column, row and zoom.
 

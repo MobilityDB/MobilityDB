@@ -163,10 +163,16 @@ changes answers MEOS gives.
 - **D7, the vertices of an S2 cell:** a corner is exact on the cube, its `u` and `v` rational; its
   longitude and latitude are the correctly rounded doubles of the exact corner's angles, and its
   geodetic vector the cube point with `u` and `v` correctly rounded.
-- **A check these raise for H3:** the vertices of an H3 cell come from the library's
-  `vertexToLatLng`, computed with the system's mathematical library; whether those doubles differ
-  across platforms is checked under row CW4, and where they do, the vertex is the correctly rounded
-  value of the vertex H3 defines.
+- **D8, the vertices of an H3 cell:** the nearest doubles of the degrees of the real values H3's
+  formula gives them. The check D6 and D7 raised was run: H3 4.2 and H3 4.4.1 place 388 of the
+  6846 cells of the resolutions 0 to 2 differently, and neither is the exact value (each matches about
+  a third of the 82800 coordinates, at most 6.75e-13 degrees away). For vertex 0 of
+  `8104bffffffffff` (face 1, IJK (2, 10, 0)) the exact longitude 129.3842607622459730893… rounds to
+  `0x1.02c4bdd39df71p+7`, which H3 4.4.1 returns and H3 4.2 misses by one unit in the last place, and
+  the exact latitude 66.9491555537302878166… rounds to `0x1.0bcbef6ef85a8p+6`, which both miss by
+  one. The oracles move onto these vertices (`h3_exact.py`, `h3_recipes.c` of the oracle kit); on
+  the 41220 points the cells of the resolutions 0 to 2 share with a neighbour, D8 states every one
+  with the same doubles from both sides.
 
 ## The expected answers of the named rows
 
