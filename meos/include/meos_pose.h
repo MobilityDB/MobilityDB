@@ -42,6 +42,14 @@
 #include <meos.h>
 #include <meos_internal_geo.h>
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
@@ -637,5 +645,9 @@ extern Temporal *tne_posechain_tposechain(const PoseChain *posechain, const Temp
 extern Temporal *tne_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
 
 /*****************************************************************************/
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif /* __MEOS_POSE_H__ */
