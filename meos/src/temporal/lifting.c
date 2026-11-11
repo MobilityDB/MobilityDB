@@ -3792,10 +3792,18 @@ tfunc_null_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   assert(seq); assert(lfinfo); assert(lfinfo->resnull);
   /* The function may return NULL */
-  return (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE) ?
-    (Temporal *) tfunc_null_tdiscseq(seq, lfinfo) :
-    (Temporal *) tfunc_null_tcontseq(seq, lfinfo);
-  }
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return (Temporal *) tfunc_null_tdiscseq(seq, lfinfo);
+  TSequenceSet *ss = tfunc_null_tcontseq(seq, lfinfo);
+  /* A sequence none of whose instants is left out answers a sequence, as
+   * #tfunc_tsequence does; one with instants left out answers a sequence
+   * set, as a restriction of a sequence does */
+  if (! ss || ss->count > 1 || ! span_eq(&ss->period, &seq->period))
+    return (Temporal *) ss;
+  TSequence *result = tsequence_copy(TSEQUENCESET_SEQ_N(ss, 0));
+  pfree(ss);
+  return (Temporal *) result;
+}
 
 /**
  * @brief Apply a lifted function to a temporal sequence set
