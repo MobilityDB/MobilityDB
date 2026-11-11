@@ -2250,7 +2250,7 @@ float8_atand(float8 num)
 /**
  * @ingroup meos_internal_float
  * @brief Return the arctan of two float8 numbers (degrees)
- * @note Derived from PostgreSQL function @p atan2d()
+ * @note Derived from PostgreSQL function @p datan2d()
  */
 float8
 float8_atan2d(float8 num1, float8 num2)

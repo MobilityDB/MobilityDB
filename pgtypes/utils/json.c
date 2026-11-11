@@ -425,7 +425,7 @@ pg_json_make(text **keys_vals, int count)
  * @param[in] keys Keys
  * @param[in] values Keys
  * @param[in] count Number of elements in the input arrays
- * @note Derived from PostgreSQL function @p json_make_two_arg()
+ * @note Derived from PostgreSQL function @p json_object_two_arg()
  */
 #if MEOS
 text *
