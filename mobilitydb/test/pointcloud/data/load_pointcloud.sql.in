@@ -33,7 +33,7 @@
 -- `create_test_tables_tpcpoint` builder function lives outside the
 -- extension (per-domain test scaffolding) so we \i it from the source
 -- tree at fixture-load time.  setseed is fixed so the generated values
--- are deterministic across runs and the _tbl.test.out files can be
+-- are deterministic across runs and the _tbl.out files can be
 -- checked in.
 
 CREATE EXTENSION IF NOT EXISTS pointcloud;

@@ -32,7 +32,7 @@
 -- editing it.
 
 -------------------------------------------------------------------------------
--- Extracted from cbuffer/queries/200_cbuffer.test.sql
+-- Extracted from cbuffer/sql/200_cbuffer.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(cbuffer 'Cbuffer(Point(1 1),0.5)');
@@ -86,7 +86,7 @@ SELECT asText(round(cbuffer(geometry 'Multilinestring((0 0, 5 0),(5 5, 10 0))'),
 SELECT asText(round(cbuffer(geometry 'GeometryCollection(Point(0 0),Linestring(5 0, 10 0))'), 6));
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from cbuffer/queries/201_cbufferset_tbl.test.sql
+-- Extracted from cbuffer/sql/201_cbufferset_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_cbufferset WHERE setSRID(cbuffersetFromBinary(asBinary(s)), 3812) <> s;
@@ -102,7 +102,7 @@ SELECT asText(setMinus(cbuffer 'Cbuffer(Point(1 1),0.5)', cbufferset '{"Cbuffer(
 SELECT asText(setIntersection(cbuffer 'Cbuffer(Point(1 1),0.5)', cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)"}'));
 SELECT asText(setIntersection(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)"}', cbuffer 'Cbuffer(Point(1 1),0.5)'));
 -------------------------------------------------------------------------------
--- Extracted from cbuffer/queries/202_tcbuffer.test.sql
+-- Extracted from cbuffer/sql/202_tcbuffer.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01');
@@ -411,7 +411,7 @@ SELECT count(*) FROM ais, generate_series(0, 15) AS d
   WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
 SELECT asEWKT(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01'::tgeogpoint);
 -------------------------------------------------------------------------------
--- Extracted from cbuffer/queries/205_tcbuffer_spatialfuncs.test.sql
+-- Extracted from cbuffer/sql/205_tcbuffer_spatialfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01', geometry 'Point(1.5 1)'));
@@ -432,7 +432,7 @@ SELECT asEWKT(transformPipeline(tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846
   Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
   'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
 -------------------------------------------------------------------------------
--- Extracted from cbuffer/queries/210_tcbuffer_distance.test.sql
+-- Extracted from cbuffer/sql/210_tcbuffer_distance.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(nearestApproachInstant(geometry 'Point(2 3)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(4 0), 0.5)@2001-01-05]'));
@@ -448,7 +448,7 @@ SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Poi
 SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]'), 3);
 SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),5)@2001-01-05]', cbuffer 'Cbuffer(Point(5 6),0)'), 6);
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/049_geo_funcs.test.sql
+-- Extracted from geo/sql/049_geo_funcs.sql
 -------------------------------------------------------------------------------
 
 WITH g(id, geom) AS (VALUES
@@ -495,7 +495,7 @@ SELECT asEWKB(transform(geography 'Point(4.35 50.85)', 4269)) =
   ST_AsEWKB(ST_Transform(geometry 'SRID=4326;Point(4.35 50.85)', 4269));
 SELECT asEWKT(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3857), 2);
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/050_set_tbl.test.sql
+-- Extracted from geo/sql/050_set_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT MAX(length(asText(g))) FROM tbl_geomset;
@@ -533,7 +533,7 @@ SELECT asEWKT(geomset '{Point(1 2)}'::geogset);
 SELECT asEWKT(geomset 'SRID=4326;{Point(1 2), Point(3 4)}'::geogset);
 SELECT asEWKT(geogset '{Point(1 2)}'::geomset);
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/051_stbox.test.sql
+-- Extracted from geo/sql/051_stbox.sql
 -------------------------------------------------------------------------------
 
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))';
@@ -589,7 +589,7 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromText(asText(b)) <> asText(b)::stbo
 SELECT stboxFromEWKT('SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])');
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromEWKT(asEWKT(b)) <> b;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/052_tgeo.test.sql
+-- Extracted from geo/sql/052_tgeo.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tgeometry 'Point(1 1)@2012-01-01 08:00:00');
@@ -1348,7 +1348,7 @@ SELECT asText(deleteTime(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@
 SELECT asText(deleteTime(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', tstzspanset '{[2001-01-01,2001-01-02]}'));
 SELECT asText(deleteTime(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', tstzspanset '{[2001-01-01,2001-01-02]}'));
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/052_tpoint.test.sql
+-- Extracted from geo/sql/052_tpoint.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tgeompoint 'Point(1 1)@2012-01-01 08:00:00');
@@ -2138,7 +2138,7 @@ WITH s(temp) AS (
 SELECT numInstants(temp), asBinary(tgeompointFromBinary(asBinary(temp))) = asBinary(temp)
 FROM s;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/053_tgeo_inout.test.sql
+-- Extracted from geo/sql/053_tgeo_inout.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tgeometry 'Point(1.123456789 1.123456789 1.123456789)@2001-01-01', 6);
@@ -2287,7 +2287,7 @@ select asHexEWKB(tgeometry 'SRID=5676;Point(1 1)@2001-01-01', 'XDR');
 select asEWKB(tgeometry 'SRID=5676;Point(1 1)@2001-01-01', 'ABCD');
 SELECT astext('{}'::geometry[]);
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/053_tgeo_inout_tbl.test.sql
+-- Extracted from geo/sql/053_tgeo_inout_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(round(temp, 6)) FROM tbl_tgeometry LIMIT 10;
@@ -2327,7 +2327,7 @@ SELECT count(*) FROM tbl_ais_tgeometry, generate_series(0, 15) AS d
 SELECT count(*) FROM tbl_ais_tgeometry
   WHERE tgeometryFromMFJSON(asMFJSON(temp)) IS NULL;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/053_tpoint_inout.test.sql
+-- Extracted from geo/sql/053_tpoint_inout.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tgeompoint 'Point(1.123456789 1.123456789 1.123456789)@2001-01-01', 6);
@@ -2531,7 +2531,7 @@ SELECT numInstants(temp), numInstants(tgeogpointFromEWKB(asEWKB(temp))),
 FROM s;
 RESET ALL;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/053_tpoint_inout_tbl.test.sql
+-- Extracted from geo/sql/053_tpoint_inout_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(round(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
@@ -2593,7 +2593,7 @@ SELECT count(*) FROM ais WHERE asMFJSON(speed)::jsonb IS NULL OR
 SELECT count(*) FROM tbl_ais_tgeompoint
   WHERE tgeompointFromMFJSON(asMFJSON(temp)) IS NULL;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/056_tgeo_spatialfuncs.test.sql
+-- Extracted from geo/sql/056_tgeo_spatialfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tgeompoint(tgeometry 'Point(1 1)@2001-01-01'));
@@ -2820,7 +2820,7 @@ SELECT asEWKT(force3D(tgeometry 'Linestring(0 0,1 1)@2001-01-01', 50));
 SELECT asEWKT(force2D(tgeography 'Linestring Z(0 0 1,1 1 2)@2001-01-01'));
 SELECT asEWKT(force3D(tgeography 'Linestring(0 0,1 1)@2001-01-01', 50));
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/056_tgeo_spatialfuncs_tbl.test.sql
+-- Extracted from geo/sql/056_tgeo_spatialfuncs_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(round(temp, 2)) FROM tbl_tgeometry LIMIT 10;
@@ -2830,7 +2830,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
 SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/056_tpoint_spatialfuncs.test.sql
+-- Extracted from geo/sql/056_tpoint_spatialfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asEWKT(setSRID(geomset '{"Point(0 0)", "Point(1 1)"}', 5676));
@@ -3129,7 +3129,7 @@ SELECT asEWKT(force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]
 SELECT asEWKT(force3D(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', 50));
 SELECT asEWKT(force3D(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 50));
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/056_tpoint_spatialfuncs_tbl.test.sql
+-- Extracted from geo/sql/056_tpoint_spatialfuncs_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(round(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
@@ -3139,7 +3139,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
 SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/058_tgeo_tile.test.sql
+-- Extracted from geo/sql/058_tgeo_tile.sql
 -------------------------------------------------------------------------------
 
 SELECT ST_AsText((sp).point) AS point, astext((sp).tgeo) AS tgeo
@@ -3177,7 +3177,7 @@ FROM (SELECT spaceTimeSplit(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tgeo) AS tgeo
 FROM (SELECT spaceTimeSplit(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0, interval '2 days', 'Point(0.5 0.5)', '2001-01-15') AS sp) t;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/058_tpoint_tile.test.sql
+-- Extracted from geo/sql/058_tpoint_tile.sql
 -------------------------------------------------------------------------------
 
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
@@ -3290,7 +3290,7 @@ FROM (VALUES (true), (false)) AS m(bitmatrix),
     90.0, bitmatrix := m.bitmatrix) s
 GROUP BY bitmatrix ORDER BY bitmatrix;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/064_tgeo_distance.test.sql
+-- Extracted from geo/sql/064_tgeo_distance.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(NearestApproachInstant(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
@@ -3401,7 +3401,7 @@ SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestr
 SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'));
 SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false));
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/064_tpoint_distance.test.sql
+-- Extracted from geo/sql/064_tpoint_distance.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
@@ -3526,7 +3526,7 @@ SELECT asText(nearestApproachInstant(tgeogpoint '[Point(0 1)@2001-01-01, Point(0
 SELECT asText(NearestApproachInstant(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)'));
 SELECT asText(shortestLine(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)'));
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/068_tgeo_aggfuncs.test.sql
+-- Extracted from geo/sql/068_tgeo_aggfuncs.sql
 -------------------------------------------------------------------------------
 
 WITH temp(inst) AS (
@@ -3627,7 +3627,7 @@ temp2(seq) AS (
   GROUP BY k / 3)
 SELECT astext(appendSequence(seq ORDER BY seq)) FROM temp2;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/068_tpoint_aggfuncs.test.sql
+-- Extracted from geo/sql/068_tpoint_aggfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tcentroid(temp)) FROM (VALUES
@@ -3761,7 +3761,7 @@ temp2(seq) AS (
   GROUP BY k / 3)
 SELECT astext(appendSequence(seq ORDER BY seq)) FROM temp2;
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/076_tgeo_analytics.test.sql
+-- Extracted from geo/sql/076_tgeo_analytics.sql
 -------------------------------------------------------------------------------
 
 SELECT asEWKT(affine(temp, 
@@ -3799,7 +3799,7 @@ SELECT asText(tsample(tgeography '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]
 SELECT asText(tprecision(tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
 SELECT asText(tprecision(tgeography '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/076_tpoint_analytics.test.sql
+-- Extracted from geo/sql/076_tpoint_analytics.sql
 -------------------------------------------------------------------------------
 
 SELECT asText((tgeompoint 'Point(1 1)@2001-01-01'::geometry)::tgeompoint);
@@ -3911,13 +3911,13 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-
 SELECT asText(tprecision(tgeogpoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
 SELECT asText(tprecision(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03, Point(4 4)@2001-01-04, Point(5 5)@2001-01-05]', interval '1 day', '2001-01-01'));
 -------------------------------------------------------------------------------
--- Extracted from geo/queries/076_tpoint_analytics_tbl.test.sql
+-- Extracted from geo/sql/076_tpoint_analytics_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
 -------------------------------------------------------------------------------
--- Extracted from h3/queries/250_h3index.test.sql
+-- Extracted from h3/sql/250_h3index.sql
 -------------------------------------------------------------------------------
 
 \set VERBOSITY sqlstate
@@ -3938,13 +3938,13 @@ SELECT h3indexFromHexWKB(asHexWKB(h3index '880326b885fffff'))
 \set VERBOSITY default
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from h3/queries/250_h3index_tbl.test.sql
+-- Extracted from h3/sql/250_h3index_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_h3index WHERE h3indexFromBinary(asBinary(h3)) <> h3;
 SELECT COUNT(*) FROM tbl_h3index WHERE h3indexFromHexWKB(asHexWKB(h3)) <> h3;
 -------------------------------------------------------------------------------
--- Extracted from h3/queries/251_h3indexset.test.sql
+-- Extracted from h3/sql/251_h3indexset.sql
 -------------------------------------------------------------------------------
 
 SELECT h3indexset '{8a2a1072b59ffff, 831c02fffffffff, 880326b885fffff}';
@@ -3980,7 +3980,7 @@ SELECT h3indexsetFromEWKT('SRID=3857;{8a2a1072b59ffff}');
 SELECT h3indexsetFromHexEWKB(replace(asHexEWKB(h3indexset '{8a2a1072b59ffff}', 'XDR'),
   '000010E6', '00000F11'));
 -------------------------------------------------------------------------------
--- Extracted from h3/queries/261_th3index_aggfuncs.test.sql
+-- Extracted from h3/sql/261_th3index_aggfuncs.sql
 -------------------------------------------------------------------------------
 
 WITH temp(inst) AS (
@@ -4041,7 +4041,7 @@ temp2(k, seq) AS (
   GROUP BY (k - 1) / 2)
 SELECT asText(appendSequence(seq ORDER BY seq)) FROM temp2;
 -------------------------------------------------------------------------------
--- Extracted from h3/queries/264_th3index_tempspatialrels.test.sql
+-- Extracted from h3/sql/264_th3index_tempspatialrels.sql
 -------------------------------------------------------------------------------
 
 WITH t AS (
@@ -4053,7 +4053,7 @@ SELECT
   asText(tIntersects(seq1, seq2)) = asText(tIntersects(cellToBoundary(seq1), cellToBoundary(seq2))) AS ti_c_c
 FROM t;
 -------------------------------------------------------------------------------
--- Extracted from h3/queries/270_th3index.test.sql
+-- Extracted from h3/sql/270_th3index.sql
 -------------------------------------------------------------------------------
 
 SELECT th3index '8a2a100d645ffff@2012-01-01 08:00:00';
@@ -4115,7 +4115,7 @@ SELECT th3indexFromHexWKB(replace(asHexWKB(th3index '880326b885fffff@2012-01-01 
 \set VERBOSITY default
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from h3/queries/270_th3index_tbl.test.sql
+-- Extracted from h3/sql/270_th3index_tbl.sql
 -------------------------------------------------------------------------------
 
 WITH ais(mmsi, temp) AS (
@@ -4124,7 +4124,7 @@ WITH ais(mmsi, temp) AS (
   FROM tbl_ais_instant GROUP BY mmsi )
 SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
 -------------------------------------------------------------------------------
--- Extracted from h3/queries/282_th3index_latlng.test.sql
+-- Extracted from h3/sql/282_th3index_latlng.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(th3index(tgeompoint
@@ -4145,7 +4145,7 @@ SELECT b, asText(th3index(trip, 10, b)),
   (SELECT COUNT(*) FROM h3Split(trip, 10, b)) AS fragments
 FROM t, (VALUES (true), (false)) bb(b);
 -------------------------------------------------------------------------------
--- Extracted from json/queries/450_jsonbset_tbl.test.sql
+-- Extracted from json/sql/450_jsonbset_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromHexWKB(asHexWKB(s)) <> s;
@@ -4154,12 +4154,12 @@ SELECT MIN(length(startValue(s)::text)) FROM tbl_jsonbset;
 SELECT MIN(length(endValue(s)::text)) FROM tbl_jsonbset;
 SELECT MIN(length(valueN(s, 1)::text)) FROM tbl_jsonbset;
 -------------------------------------------------------------------------------
--- Extracted from json/queries/451_jsonbset_jsonfuncs.test.sql
+-- Extracted from json/sql/451_jsonbset_jsonfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT jsonbset '{"{\"speed\": 10}"}' ?| ARRAY[]::text[];
 -------------------------------------------------------------------------------
--- Extracted from json/queries/452_tjsonb.test.sql
+-- Extracted from json/sql/452_tjsonb.sql
 -------------------------------------------------------------------------------
 
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
@@ -4215,7 +4215,7 @@ SELECT (tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-
 SELECT (tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]'::text)::tjsonb;
 SELECT (tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03], [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05] }'::text)::tjsonb;
 -------------------------------------------------------------------------------
--- Extracted from json/queries/452_tjsonb_tbl.test.sql
+-- Extracted from json/sql/452_tjsonb_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT MAX(length(getValue(inst)::text)) FROM tbl_tjsonb_inst;
@@ -4223,7 +4223,7 @@ SELECT MAX(length(startValue(temp)::text)) FROM tbl_tjsonb;
 SELECT MAX(length(endValue(temp)::text)) FROM tbl_tjsonb;
 SELECT MAX(length(valueN(temp, 1)::text)) FROM tbl_tjsonb;
 -------------------------------------------------------------------------------
--- Extracted from json/queries/452_tjsonb_text.test.sql
+-- Extracted from json/sql/452_tjsonb_text.sql
 -------------------------------------------------------------------------------
 
 SELECT ttext '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
@@ -4273,7 +4273,7 @@ SELECT (ttext '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-0
 SELECT (ttext '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]'::text)::ttext;
 SELECT (ttext '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03], [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05] }'::text)::ttext;
 -------------------------------------------------------------------------------
--- Extracted from json/queries/453_jsonb_jsonfuncs.test.sql
+-- Extracted from json/sql/453_jsonb_jsonfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT jsonbFromText(asText(jsonb '{"a": {"b": "x"}}')) = jsonb '{"a": {"b": "x"}}';
@@ -4284,7 +4284,7 @@ SELECT asText(jsonpathFromText('lax $.a.**{1 to last}'));
 \set VERBOSITY default
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from json/queries/454_tjsonb_jsonfuncs.test.sql
+-- Extracted from json/sql/454_tjsonb_jsonfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\", \"b\":2.5}"@2001-01-01', text 'pos'));
@@ -4300,7 +4300,7 @@ SELECT asEWKT(tgeography(tjsonb '[{"area":"Polygon((4 50,5 50,5 51,4 50))"}@2001
 \set VERBOSITY default
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from npoint/queries/300_npoint.test.sql
+-- Extracted from npoint/sql/300_npoint.sql
 -------------------------------------------------------------------------------
 
 SELECT npoint 'npoint(1,0.5)';
@@ -4370,7 +4370,7 @@ INSERT INTO ways(gid, the_geom, length) VALUES
   (9004, 'SRID=4326;LINESTRING(0 0,3 4)', 5);
 DELETE FROM ways WHERE gid > 9000;
 -------------------------------------------------------------------------------
--- Extracted from npoint/queries/301_npointset_tbl.test.sql
+-- Extracted from npoint/sql/301_npointset_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromText(asText(n)) <> n;
@@ -4381,7 +4381,7 @@ SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexEWKB(n)) <> n;
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexEWKB(asHexEWKB(n)) <> n;
 -------------------------------------------------------------------------------
--- Extracted from npoint/queries/302_tnpoint.test.sql
+-- Extracted from npoint/sql/302_tnpoint.sql
 -------------------------------------------------------------------------------
 
 SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01';
@@ -4454,7 +4454,7 @@ SELECT asText(round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-
 SELECT asText(round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'::tgeompoint, 6));
 SELECT asText(round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }'::tgeompoint, 6));
 -------------------------------------------------------------------------------
--- Extracted from npoint/queries/303_tnpoint_boundary.test.sql
+-- Extracted from npoint/sql/303_tnpoint_boundary.sql
 -------------------------------------------------------------------------------
 
 SELECT npoint 'Npoint(1, 0.0)';
@@ -4462,7 +4462,7 @@ SELECT npoint 'Npoint(1, 1.0)';
 SELECT npoint 'Npoint(1, -0.0001)';
 SELECT npoint 'Npoint(1, 1.0001)';
 -------------------------------------------------------------------------------
--- Extracted from npoint/queries/305_tnpoint_mfjson.test.sql
+-- Extracted from npoint/sql/305_tnpoint_mfjson.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint 'Npoint(1, 0.5)@2001-01-01')));
@@ -4482,7 +4482,7 @@ SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":99999,
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"]}');
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"XXX"}');
 -------------------------------------------------------------------------------
--- Extracted from npoint/queries/314_tnpoint_aggfuncs_tbl.test.sql
+-- Extracted from npoint/sql/314_tnpoint_aggfuncs_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
@@ -4511,7 +4511,7 @@ temp2(k, seq) AS (
   GROUP BY k / 3)
 SELECT astext(appendSequence(seq ORDER BY seq)) FROM temp2;
 -------------------------------------------------------------------------------
--- Extracted from npoint/queries/322_tnpoint_tempspatialrels.test.sql
+-- Extracted from npoint/sql/322_tnpoint_tempspatialrels.sql
 -------------------------------------------------------------------------------
 
 WITH t AS (
@@ -4548,7 +4548,7 @@ SELECT
   asText(tDwithin(lin1, region, 1.0)) = asText(tDwithin(lin1::tgeompoint, region, 1.0)) AS tdw_agrees
 FROM t;
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/400_pcpoint_tbl.test.sql
+-- Extracted from pointcloud/sql/400_pcpoint_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_pcpointset
@@ -4606,7 +4606,7 @@ WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0)]) AS s)
 SELECT pcpointsetFromHexEWKB(replace(asHexEWKB(s, 'XDR'), '000010E6', '00000F11')) FROM t;
 DELETE FROM pointcloud_formats WHERE pcid = 3;
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/410_tpcbox.test.sql
+-- Extracted from pointcloud/sql/410_tpcbox.sql
 -------------------------------------------------------------------------------
 
 INSERT INTO pointcloud_formats (pcid, srid, schema)
@@ -4653,7 +4653,7 @@ SELECT tpcbox 'SRID=3857;TPCBOX(X((0,0),(10,10)), 7)';
 SELECT tpcbox 'TPCBOX(X((0,0),(10,10)), 7)';
 DELETE FROM pointcloud_formats WHERE pcid IN (2, 5);
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/420_tpcpoint.test.sql
+-- Extracted from pointcloud/sql/420_tpcpoint.sql
 -------------------------------------------------------------------------------
 
 \set inst1 'tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), ''2024-01-01''::timestamptz)'
@@ -4712,7 +4712,7 @@ SELECT tpcpoint '0163000000000000000000F03F00000000000000400000000000000840@2024
 SELECT asEWKT((:inst1)::tgeompoint, 6);
 SELECT asEWKT((:inst1)::tgeogpoint, 6);
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/420_tpcpoint_tbl.test.sql
+-- Extracted from pointcloud/sql/420_tpcpoint_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tpcpoint
@@ -4720,7 +4720,7 @@ SELECT COUNT(*) FROM tbl_tpcpoint
 SELECT COUNT(*) FROM tbl_tpcpoint
   WHERE tpcpointFromHexWKB(asHexWKB(temp)) <> temp;
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/421_tpcpoint_mfjson.test.sql
+-- Extracted from pointcloud/sql/421_tpcpoint_mfjson.sql
 -------------------------------------------------------------------------------
 
 \set p1 'tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), ''2024-01-01''::timestamptz)'
@@ -4782,7 +4782,7 @@ SELECT tpcpointFromMFJSON('{"type":"MovingPCPoint","coordinates":[[1,2,3]],'
 SELECT tpcpointFromMFJSON('{"type":"MovingPCPoint","values":[{"pcid":1,"pt":[1,2]}],'
   '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/421_tpcpoint_mfjson_tbl.test.sql
+-- Extracted from pointcloud/sql/421_tpcpoint_mfjson_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT bool_and(asMFJSON(temp) LIKE '%"type":"MovingPCPoint"%')
@@ -4805,7 +4805,7 @@ FROM tbl_tpcpoint;
 SELECT COUNT(*), COUNT(*) FILTER (WHERE tpcpatchFromMFJSON(asMFJSON(temp)) = temp)
 FROM tbl_tpcpatch;
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/430_tpcpatch.test.sql
+-- Extracted from pointcloud/sql/430_tpcpatch.sql
 -------------------------------------------------------------------------------
 
 \set patch1 'PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])'
@@ -4857,7 +4857,7 @@ SELECT asHexWKB(:patch1) = (:patch1)::text;
 SELECT pcpatchFromHexWKB(asHexWKB(:patch1)) = :patch1;
 SELECT tpcpatch '01630000000000000002000000000000000000F03F000000000000F03F000000000000F03F000000000000004000000000000000400000000000000040@2024-01-01';
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/430_tpcpatch_tbl.test.sql
+-- Extracted from pointcloud/sql/430_tpcpatch_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tpcpatch
@@ -4865,7 +4865,7 @@ SELECT COUNT(*) FROM tbl_tpcpatch
 SELECT COUNT(*) FROM tbl_tpcpatch
   WHERE tpcpatchFromHexWKB(asHexWKB(temp)) <> temp;
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/432_tpcpatch_mfjson.test.sql
+-- Extracted from pointcloud/sql/432_tpcpatch_mfjson.sql
 -------------------------------------------------------------------------------
 
 \set inst1 'tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), ''2024-01-01''::timestamptz)'
@@ -4925,7 +4925,7 @@ SELECT tpcpatchFromMFJSON('{"type":"MovingPCPatch","values":[{"pcid":1,'
   '"npoints":2,"bounds":[1,4,2,5],"pts":[[1,2,3],[4,5]]}],'
   '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/433_tpcpoint_compops.test.sql
+-- Extracted from pointcloud/sql/433_tpcpoint_compops.sql
 -------------------------------------------------------------------------------
 
 \set pA 'pcpoint(1, 1.0, 1.0, 1.0)'
@@ -4940,7 +4940,7 @@ SELECT asText((:seqAB) #= (:pA));
 SELECT asText((:iA) #<> (:pB));
 SELECT asText((:seqAB) #<> (:seqAA));
 -------------------------------------------------------------------------------
--- Extracted from pointcloud/queries/434_tpcpatch_compops.test.sql
+-- Extracted from pointcloud/sql/434_tpcpatch_compops.sql
 -------------------------------------------------------------------------------
 
 \set pA 'pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))'
@@ -4955,7 +4955,7 @@ SELECT asText((:seqAB) #= (:pA));
 SELECT asText((:iA) #<> (:pB));
 SELECT asText((:seqAB) #<> (:seqAA));
 -------------------------------------------------------------------------------
--- Extracted from pose/queries/100_pose.test.sql
+-- Extracted from pose/sql/100_pose.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(pose 'Pose(Point(1 1),0.5)');
@@ -5067,7 +5067,7 @@ SELECT asText(asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.70710
 SELECT poseFromText(asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6));
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from pose/queries/101_poseset_tbl.test.sql
+-- Extracted from pose/sql/101_poseset_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_poseset2d WHERE setSRID(posesetFromBinary(asBinary(s)), 3812) <> s;
@@ -5080,7 +5080,7 @@ SELECT asText(setMinus(pose 'Pose(Point(1 1),0.5)', poseset '{"Pose(Point(2 2),0
 SELECT asText(setIntersection(pose 'Pose(Point(1 1),0.5)', poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)"}'));
 SELECT asText(setIntersection(poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)"}', pose 'Pose(Point(1 1),0.5)'));
 -------------------------------------------------------------------------------
--- Extracted from pose/queries/102_tpose.test.sql
+-- Extracted from pose/sql/102_tpose.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tpose 'Pose(Point(1 1), 0.5)@2001-01-01');
@@ -5375,7 +5375,7 @@ SELECT asText(stops(tpose '{[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1.5 1),0)
 SELECT asText(stops(tpose '[Pose(Point(1 1 1),1,0,0,0)@2001-01-01, Pose(Point(1 1 9),1,0,0,0)@2001-01-02, Pose(Point(5 5 9),1,0,0,0)@2001-01-03]'));
 SELECT asText(stops(tpose '[GeodPose(Point(4.35 50.85),0)@2001-01-01, GeodPose(Point(4.3501 50.85),0)@2001-01-02, GeodPose(Point(4.40 50.85),0)@2001-01-03]', 10.0));
 -------------------------------------------------------------------------------
--- Extracted from pose/queries/103_pose_geopose.test.sql
+-- Extracted from pose/sql/103_pose_geopose.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)));
@@ -5451,7 +5451,7 @@ SELECT asEWKT(poseFromGeoPose(
 \set VERBOSITY default
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from pose/queries/105_tpose_spatialfuncs.test.sql
+-- Extracted from pose/sql/105_tpose_spatialfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asEWKT(setSRID(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 5676));
@@ -5549,7 +5549,7 @@ SELECT asText(force2D(tpose '{[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point
 SELECT asText(force2D(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 6);
 SELECT asEWKT(force2D(tpose 'SRID=3812;Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
 -------------------------------------------------------------------------------
--- Extracted from pose/queries/113_tpose_distance.test.sql
+-- Extracted from pose/sql/113_tpose_distance.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(nearestApproachInstant(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)'), 3);
@@ -5566,7 +5566,7 @@ SELECT asText(nearestApproachInstant(
   tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   tpose '[Pose(Point(0 2),0)@2001-01-01, Pose(Point(4 2),0)@2001-01-05]'));
 -------------------------------------------------------------------------------
--- Extracted from pose/queries/114_tpose_tempspatialrels.test.sql
+-- Extracted from pose/sql/114_tpose_tempspatialrels.sql
 -------------------------------------------------------------------------------
 
 WITH t AS (
@@ -5613,7 +5613,7 @@ FROM t;
 SELECT asText(tDwithin(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 0)', 1000));
 SELECT asText(tDwithin(geography 'Point(1 0)', tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', 1000));
 -------------------------------------------------------------------------------
--- Extracted from pose/queries/117_tpose_analytics.test.sql
+-- Extracted from pose/sql/117_tpose_analytics.sql
 -------------------------------------------------------------------------------
 
 \set seq 'tpose ''[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(2 2), 0.2)@2001-01-02, Pose(Point(3 1), 0.3)@2001-01-03, Pose(Point(4 4), 0.4)@2001-01-04]'''
@@ -5628,7 +5628,7 @@ SELECT asText(douglasPeuckerSimplify(:seq, 1.0, false));
 SELECT asText(minDistSimplify(tpose 'Interp=Step;[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(1 0), 0.2)@2001-01-02, Pose(Point(4 0), 0.3)@2001-01-03]', 2.0));
 SELECT asText(minDistSimplify(tpose '{[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(1 0), 0.2)@2001-01-02, Pose(Point(4 0), 0.3)@2001-01-03], [Pose(Point(9 0), 0.4)@2001-01-05, Pose(Point(20 0), 0.5)@2001-01-06]}', 2.0));
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/550_posechain.test.sql
+-- Extracted from posechain/sql/550_posechain.sql
 -------------------------------------------------------------------------------
 
 SELECT asEWKT(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))');
@@ -5669,7 +5669,7 @@ SELECT asEWKT(round(posechain 'PoseChain(Pose(Point(1.123456789 2.123456789), 0.
 SELECT asEWKT(round(transform(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 4326), 6));
 SELECT asEWKT(round(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 6));
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/550_posechain_tbl.test.sql
+-- Extracted from posechain/sql/550_posechain_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_posechain WHERE posechainFromEWKT(asEWKT(pc, 17)) <> pc;
@@ -5679,7 +5679,7 @@ SELECT COUNT(*) FROM tbl_posechain WHERE posechainFromHexEWKB(asHexEWKB(pc)) <> 
 SELECT COUNT(*) FROM tbl_posechain WHERE setSRID(posechainFromHexEWKB(asHexWKB(pc)), 3812) <> pc;
 SELECT COUNT(*) FROM tbl_posechain WHERE posechainFromBinary(asEWKB(pc)) <> pc;
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/551_posechainset.test.sql
+-- Extracted from posechain/sql/551_posechainset.sql
 -------------------------------------------------------------------------------
 
 SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))"}');
@@ -5715,7 +5715,7 @@ SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(P
 SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}' * posechainset '{"PoseChain(Pose(Point(1 0), 0))"}');
 SELECT asEWKT(posechain 'PoseChain(Pose(Point(1 0), 0))' * posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}');
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/552_tposechain.test.sql
+-- Extracted from posechain/sql/552_tposechain.sql
 -------------------------------------------------------------------------------
 
 SELECT asEWKT(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01');
@@ -5757,14 +5757,14 @@ SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeogpoin
 SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
 SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/552_tposechain_tbl.test.sql
+-- Extracted from posechain/sql/552_tposechain_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
 SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromHexEWKB(asHexEWKB(temp)) <> temp;
 SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tposechain;
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/555_tposechain_geopose.test.sql
+-- Extracted from posechain/sql/555_tposechain_geopose.sql
 -------------------------------------------------------------------------------
 
 WITH test(doc) AS (
@@ -5774,7 +5774,7 @@ SELECT asEWKT(round(tposechainFromGeoPose(doc), 6)) FROM test;
 SELECT asEWKT(round(tposechainFromGeoPose(
   '{"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=-122.3&latitude=47.7&height=11&crs=EPSG:4979"},"frameChain":[{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[2, 0, 0]&rotation=[1, 0, 0, 0]"}]}'), 6));
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/560_tposechain_distance.test.sql
+-- Extracted from posechain/sql/560_tposechain_distance.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'));
@@ -5799,7 +5799,7 @@ SELECT asText(appendInstant(temp, 'linear', 1.0, interval '2 days')) FROM (VALUE
   (tpose 'Pose(Point(0 0),0)@2001-01-01'),
   (tpose 'Pose(Point(10 0),0)@2001-01-02')) t(temp);
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/561_tposechain_aggfuncs.test.sql
+-- Extracted from posechain/sql/561_tposechain_aggfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(merge(temp)) FROM (VALUES
@@ -5827,7 +5827,7 @@ SELECT asText(appendSequence(seq)) FROM (VALUES
   (tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01]'),
   (tposechain '[PoseChain(Pose(Point(2 2), 0.2))@2001-01-02]')) t(seq);
 -------------------------------------------------------------------------------
--- Extracted from posechain/queries/564_tposechain_tempspatialrels.test.sql
+-- Extracted from posechain/sql/564_tposechain_tempspatialrels.sql
 -------------------------------------------------------------------------------
 
 \set square 'geometry ''Polygon((0 0,0 2,2 2,2 0,0 0))'''
@@ -5857,7 +5857,7 @@ SELECT asText(tDwithin(:lin, geometry 'Point(1 1)', 1.0));
 SELECT asText(tIntersects(:lin, :square)) =
   asText(tIntersects(:lin::tpose::tgeompoint, :square)) AS ti_agrees;
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/350_quadbin.test.sql
+-- Extracted from quadbin/sql/350_quadbin.sql
 -------------------------------------------------------------------------------
 
 SELECT quadbin '480fffffffffffff';
@@ -5890,14 +5890,14 @@ SELECT quadbinFromText('48427xyz');
 \set VERBOSITY default
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/350_quadbin_tbl.test.sql
+-- Extracted from quadbin/sql/350_quadbin_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FILTER (WHERE quadbin_send(qb) = asBinary(qb)) AS same,
   COUNT(*) FILTER (WHERE quadbin_send(qb) <> asBinary(qb)) AS different
 FROM tbl_quadbin;
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/351_quadbinset.test.sql
+-- Extracted from quadbin/sql/351_quadbinset.sql
 -------------------------------------------------------------------------------
 
 SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}';
@@ -5924,7 +5924,7 @@ SELECT quadbinsetFromEWKT('SRID=3857;{480fffffffffffff}');
 SELECT quadbinsetFromHexEWKB(replace(asHexEWKB(quadbinset '{480fffffffffffff}', 'XDR'),
   '000010E6', '00000F11'));
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/352_tquadbin.test.sql
+-- Extracted from quadbin/sql/352_tquadbin.sql
 -------------------------------------------------------------------------------
 
 SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00';
@@ -5977,14 +5977,14 @@ SELECT quadbinsetFromHexWKB(replace(asHexWKB(quadbinset '{480fffffffffffff}',
 \set VERBOSITY default
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/354_tquadbin_compops.test.sql
+-- Extracted from quadbin/sql/354_tquadbin_compops.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(quadbin '480fffffffffffff' #= tquadbin '480fffffffffffff@2001-01-01');
 SELECT asText(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]' #= quadbin '480fffffffffffff');
 SELECT asText(tquadbin '480fffffffffffff@2001-01-01' #<> tquadbin '48427fffffffffff@2001-01-01');
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/357_tquadbin_ops.test.sql
+-- Extracted from quadbin/sql/357_tquadbin_ops.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}'), 6);
@@ -6012,7 +6012,7 @@ SELECT asText(tquadbinGridDistance(
   tquadbin(quadbinTileToCell(1, 1, 3), tstzspan '[2001-01-01, 2001-01-03]'),
   tquadbin(quadbinTileToCell(4, 2, 3), tstzspan '[2001-01-02, 2001-01-04]')));
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/361_tquadbin_aggfuncs.test.sql
+-- Extracted from quadbin/sql/361_tquadbin_aggfuncs.sql
 -------------------------------------------------------------------------------
 
 WITH temp(inst) AS (
@@ -6071,7 +6071,7 @@ temp2(k, seq) AS (
   GROUP BY (k - 1) / 2)
 SELECT asText(appendSequence(seq ORDER BY seq)) FROM temp2;
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/362_tquadbin_spatialrels.test.sql
+-- Extracted from quadbin/sql/362_tquadbin_spatialrels.sql
 -------------------------------------------------------------------------------
 
 WITH t AS (
@@ -6094,7 +6094,7 @@ SELECT
   asText(tContains(big_region, cell_seq))   AS tc_seq
 FROM t;
 -------------------------------------------------------------------------------
--- Extracted from quadbin/queries/364_tquadbin_tempspatialrels.test.sql
+-- Extracted from quadbin/sql/364_tquadbin_tempspatialrels.sql
 -------------------------------------------------------------------------------
 
 WITH t AS (
@@ -6125,7 +6125,7 @@ FROM t;
 SELECT asEWKT(tquadbin '480fffffffffffff@2001-01-01'::tgeogpoint, 6);
 SELECT asEWKT(tquadbin '480fffffffffffff@2001-01-01'::tgeompoint, 6);
 -------------------------------------------------------------------------------
--- Extracted from raster/queries/500_raster.test.sql
+-- Extracted from raster/sql/500_raster.sql
 -------------------------------------------------------------------------------
 
 SET timezone = 'UTC';
@@ -6880,7 +6880,7 @@ SELECT asHexWKB(raster('\x0505'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
   1.0, -1.0, 0.0, 0.0, 3857), '8BUI'::text, 5, 5));
 RESET ALL;
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/150_trgeo.test.sql
+-- Extracted from rgeo/sql/150_trgeo.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01');
@@ -7174,7 +7174,7 @@ SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2
 SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
 SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1.5 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03]', 1.0, '1 day'));
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/151_trgeo_inout.test.sql
+-- Extracted from rgeo/sql/151_trgeo_inout.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789),0.5)@2001-01-01', 6);
@@ -7270,7 +7270,7 @@ SELECT asHexEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1
 SELECT asEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01', 'ABCD');
 SELECT astext('{}'::geometry[]);
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/151_trgeo_inout_tbl.test.sql
+-- Extracted from rgeo/sql/151_trgeo_inout_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
@@ -7288,7 +7288,7 @@ SELECT count(*) FROM tbl_ais_trgeometry, generate_series(0, 15) AS d
 SELECT count(*) FROM tbl_ais_trgeometry
   WHERE trgeometryFromMFJSON(asMFJSON(temp)) IS NULL;
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/153_trgeo_spatialfuncs.test.sql
+-- Extracted from rgeo/sql/153_trgeo_spatialfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asEWKT(round(transform(trgeometry
@@ -7321,7 +7321,7 @@ SELECT asText(force2D(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1
 SELECT asText(force2D(trgeometry 'PolyhedralSurface(((0 0,2 0,2 2,0 2,0 0)));Pose(Point(1 1),0.3)@2001-01-01'), 6);
 SELECT asEWKT(force2D(trgeometry 'SRID=3812;Polygon((0 0 0,2 0 0,2 1 0,0 0 0));Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/164_trgeo_spatialfuncs.test.sql
+-- Extracted from rgeo/sql/164_trgeo_spatialfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(round(centroid(
@@ -7333,7 +7333,7 @@ SELECT asText(round(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pos
 SELECT asText(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]')) =
   asText(angularSpeed(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'));
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/165_trgeo_body_point.test.sql
+-- Extracted from rgeo/sql/165_trgeo_body_point.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(round(bodyPointTrajectory(
@@ -7356,7 +7356,7 @@ SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(5 5),0)@2026-01-01, Pose(Point(5 5),0)@2026-01-01 00:01:00]',
   'Point(2 3)'), 6));
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/167_trgeo_restrict_exact.test.sql
+-- Extracted from rgeo/sql/167_trgeo_restrict_exact.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(atGeometry(
@@ -7405,7 +7405,7 @@ SELECT asText(atGeometry(
   trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),1.5707963)@2001-01-02]',
   geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))')) IS NOT NULL;
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/168_trgeo_aggfuncs.test.sql
+-- Extracted from rgeo/sql/168_trgeo_aggfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(merge(t)) FROM (VALUES
@@ -7458,14 +7458,14 @@ RESET min_parallel_table_scan_size;
 RESET max_parallel_workers_per_gather;
 RESET ALL;
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/169_trgeo_distance_trgeo.test.sql
+-- Extracted from rgeo/sql/169_trgeo_distance_trgeo.sql
 -------------------------------------------------------------------------------
 
 SELECT round((
   trgeometryFromHexEWKB('013E004EE86400000103000020E8640000010000000600000000000000008042C000000000000024C0000000000000E03F00000000000024C00000000000002A4000000000000004C0000000000000E03F000000000000144000000000008042C0000000000000144000000000008042C000000000000024C0020000000341E8640000CB68450025791C41E4DD9A25F3705741A815A15DDEECDBBFC00A61459AB5020041E8640000EBC5FCE324791C4168ACBB24F3705741A815A15DDEECDBBF80E308469AB50200') |=|
   trgeometryFromHexEWKB('013E004EE86400000103000020E864000001000000060000000000000000002EC000000000000010C00000000000E0404000000000000010C00000000000004940000000000000F03F0000000000E0404000000000000018400000000000002EC000000000000018400000000000002EC000000000000010C0020000000341E864000051052C3FD2781C41C34A561BF17057419EAFD4151EC80540C00A61459AB5020041E864000065BAFDF6D0781C41663FE1F7F0705741620A90885FA4054080E308469AB50200'))::numeric, 9);
 -------------------------------------------------------------------------------
--- Extracted from rgeo/queries/172_trgeo_tempspatialrels.test.sql
+-- Extracted from rgeo/sql/172_trgeo_tempspatialrels.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tgeometry(trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]'));
@@ -7496,7 +7496,7 @@ SELECT
   asText(tDwithin(seq1, seq2, 1.0)) = asText(tDwithin(seq1::tgeometry, seq2::tgeometry, 1.0)) AS tdw_rg_rg
 FROM t;
 -------------------------------------------------------------------------------
--- Extracted from s2cell/queries/600_s2cell.test.sql
+-- Extracted from s2cell/sql/600_s2cell.sql
 -------------------------------------------------------------------------------
 
 SELECT s2cell '47c3c444c0000000';
@@ -7523,7 +7523,7 @@ SELECT s2cellFromText(asText(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromText('54b5c9') = s2cell '54b5c9';
 SELECT s2cellFromText('47c3cxyz');
 -------------------------------------------------------------------------------
--- Extracted from s2cell/queries/601_s2cellset.test.sql
+-- Extracted from s2cell/sql/601_s2cellset.sql
 -------------------------------------------------------------------------------
 
 SELECT s2cellset '{47c3c444c000000c, 47c3c444c0000004}';
@@ -7547,7 +7547,7 @@ SELECT s2cellsetFromHexEWKB(replace(asHexEWKB(s2cellset '{47c3c444c000000c}', 'X
   '000010E6', '00000F11'));
 SELECT s2cell '47c3c444c0000008';
 -------------------------------------------------------------------------------
--- Extracted from s2cell/queries/603_ts2cell.test.sql
+-- Extracted from s2cell/sql/603_ts2cell.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(ts2cell '47c3c3@2001-01-01');
@@ -7598,14 +7598,14 @@ SELECT ts2cellFromMFJSON(replace(asMFJSON(ts2cell '47c3c@2001-01-01'),
 SELECT ts2cellFromHexWKB(replace(asHexWKB(ts2cell '47c3c@2001-01-01', 'XDR'),
   '47C3C00000000000', '000000000000002A'));
 -------------------------------------------------------------------------------
--- Extracted from s2cell/queries/604_ts2cell_compops.test.sql
+-- Extracted from s2cell/sql/604_ts2cell_compops.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]' #= s2cell '47c3c3');
 SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]' #<> s2cell '47c3c3');
 SELECT asText(s2cell '47c3c3' #= ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
 -------------------------------------------------------------------------------
--- Extracted from s2cell/queries/605_ts2cell_spatialfuncs.test.sql
+-- Extracted from s2cell/sql/605_ts2cell_spatialfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(getResolution(ts2cell '[47c3c3@2001-01-01, 47c3c38705f@2001-01-02]'));
@@ -7642,7 +7642,7 @@ SELECT asText(ts2GridDistance(
 SELECT asEWKT(ts2cell '47c3c3@2001-01-01'::tgeompoint, 6);
 SELECT asEWKT(ts2cell '47c3c3@2001-01-01'::tgeogpoint, 6);
 -------------------------------------------------------------------------------
--- Extracted from s2cell/queries/611_ts2cell_aggfuncs.test.sql
+-- Extracted from s2cell/sql/611_ts2cell_aggfuncs.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tCount(temp)) FROM (VALUES
@@ -7658,7 +7658,7 @@ SELECT asText(appendInstant(inst ORDER BY inst)) FROM (VALUES
   (ts2cell '47c3c3@2001-01-01'),
   (ts2cell '47c3c4@2001-01-02')) t(inst);
 -------------------------------------------------------------------------------
--- Extracted from s2cell/queries/614_ts2cell_tempspatialrels.test.sql
+-- Extracted from s2cell/sql/614_ts2cell_tempspatialrels.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tIntersects(ts2cell '[47c3c3@2001-01-01, 47c3c5@2001-01-02]',
@@ -7672,7 +7672,7 @@ SELECT asText(tDisjoint(ts2cell '[47c3c3@2001-01-01, 47c3c5@2001-01-02]',
 SELECT asText(tIntersects(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]'));
 SELECT asText(tDisjoint(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]'));
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/001_set.test.sql
+-- Extracted from temporal/sql/001_set.sql
 -------------------------------------------------------------------------------
 
 SELECT intset '{1,2,3}';
@@ -7689,7 +7689,7 @@ SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
 SELECT asText(set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']));
 SELECT asText(set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']));
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/001_set_tbl.test.sql
+-- Extracted from temporal/sql/001_set_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
@@ -7711,7 +7711,7 @@ SELECT COUNT(*) FROM tbl_textset WHERE textsetFromText(asText(t)) <> t;
 SELECT COUNT(*) FROM tbl_dateset WHERE datesetFromText(asText(d)) <> asText(d)::dateset;
 SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromText(asText(t)) <> asText(t)::tstzset;
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/003_span.test.sql
+-- Extracted from temporal/sql/003_span.sql
 -------------------------------------------------------------------------------
 
 SELECT intspan '[1,2] xxx';
@@ -7730,7 +7730,7 @@ SELECT bigintspan '[1, 9223372036854775807)';
 SELECT intspan '[1, 2147483647]';
 SELECT intspan '[1, 2147483648)';
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/003_span_tbl.test.sql
+-- Extracted from temporal/sql/003_span_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromBinary(asBinary(i)) <> i;
@@ -7748,7 +7748,7 @@ SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromText(asText(f)) <> asText(
 SELECT COUNT(*) FROM tbl_datespan WHERE datespanFromText(asText(d)) <> asText(d)::datespan;
 SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromText(asText(t)) <> asText(t)::tstzspan;
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/007_spanset.test.sql
+-- Extracted from temporal/sql/007_spanset.sql
 -------------------------------------------------------------------------------
 
 SELECT intspanset '{[1,2),[3,4),[5,6)}';
@@ -7762,7 +7762,7 @@ SELECT tstzspanset '{[2001-01-01, 2001-01-02]';
 SELECT asText(floatspanset '{[1.12345678, 2.123456789]}', 6);
 SELECT asText(floatspanset '{[1.12345678, 2.123456789]}', -6);
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/007_spanset_tbl.test.sql
+-- Extracted from temporal/sql/007_spanset_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(i)) <> i;
@@ -7781,7 +7781,7 @@ SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromText(asText(f)) <> a
 SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromText(asText(d)) <> asText(d)::datespanset;
 SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromText(asText(t)) <> asText(t)::tstzspanset;
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/021_tbox.test.sql
+-- Extracted from temporal/sql/021_tbox.sql
 -------------------------------------------------------------------------------
 
 SELECT tbox 'TBOXINT XT([1, 1],[2001-01-01,2001-01-02])';
@@ -7812,7 +7812,7 @@ SELECT COUNT(*) FROM tbl_tboxint WHERE tboxFromHexWKB(asHexWKB(b)) <> b;
 SELECT tboxFromText('TBOXINT XT([1,2],[2001-01-01,2001-01-02])');
 SELECT COUNT(*) FROM tbl_tboxint WHERE tboxFromText(asText(b)) <> asText(b)::tbox;
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/022_temporal.test.sql
+-- Extracted from temporal/sql/022_temporal.sql
 -------------------------------------------------------------------------------
 
 SELECT tbool 'TRUE@2012-01-01 08:00:00';
@@ -7958,7 +7958,7 @@ SELECT temp, asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
 FROM s;
 \set VERBOSITY default
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/023_temporal_inout_tbl.test.sql
+-- Extracted from temporal/sql/023_temporal_inout_tbl.sql
 -------------------------------------------------------------------------------
 
 SELECT asText(tfloat '0.123456789@2001-01-01', 6);
@@ -8021,7 +8021,7 @@ SELECT ttextFromHexWKB(left(asHexWKB(ttext 'AAA@2001-01-01', 'NDR'), 28));
 SELECT ttextFromHexWKB(overlay(asHexWKB(ttext '{AAA@2001-01-01}', 'NDR') placing 'FFFFFFFF' from 9 for 8));
 SELECT tintFromText('[1.5@2001-01-01]');
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/040_temporal_aggfuncs.test.sql
+-- Extracted from temporal/sql/040_temporal_aggfuncs.sql
 -------------------------------------------------------------------------------
 
 WITH temp(inst) AS (
@@ -8032,7 +8032,7 @@ agg(seqset) AS (
   SELECT appendInstant(inst, 'linear', NULL, interval '1 day' ORDER BY inst) FROM temp )
 SELECT numInstants(seqset), tfloatFromBinary(asBinary(seqset)) = seqset FROM agg;
 -------------------------------------------------------------------------------
--- Extracted from temporal/queries/048_temporal_error_sqlstate.test.sql
+-- Extracted from temporal/sql/048_temporal_error_sqlstate.sql
 -------------------------------------------------------------------------------
 
 \set VERBOSITY sqlstate
