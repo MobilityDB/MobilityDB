@@ -30,6 +30,7 @@ This plan stands alone. It states every task with its own rows and its own state
 |---|---|
 | [The rule](RULE.md) | What a cell is for each type of moving point, how its ring is mapped to [0, 1), which part of the ring it holds, and the cases where a grid's index frame breaks. |
 | [The enumeration](ENUMERATION.md) | The check that every edge and every vertex of the H3, S2 and QUADBIN grids has exactly one owner under the rule, its result at the coarse resolutions, the local IJ frame of H3 it refutes, and how to run `tools/cell_ownership.py` again. |
+| [The oracle and its acceptance set](ACCEPTANCE.md) | The oracle that judges every walk, independent of them, the refuting classes of its acceptance set and the controls that move each, and the expected answers of the named rows, reviewed before any walk changes. |
 | [Implementation plan](IMPLEMENTATION-PLAN.md) | The tasks in order, grouped into the pull requests that carry them as commits, the decisions taken, and what is already merged. |
 
 ## Everything else about the cells
