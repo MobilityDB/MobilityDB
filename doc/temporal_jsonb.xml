@@ -315,6 +315,7 @@ SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ > $x)', '{"x": 5}'
 jsonbPathMatch(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 jsonbPathMatchTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 </programlisting>
+				<para>The last argument suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors; the result of a suppressed error, of a predicate whose result is unknown, or of a path returning no single Boolean is NULL. The functions ending in <varname>Tz</varname> compare date and time values across time zones.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbPathMatch(jsonb '{"a": [1, 2, 3]}', 'exists($.a[*] ? (@ > 2))');
 -- true
@@ -650,7 +651,7 @@ jsonbset @? jsonpath → boolean[]
 jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 </programlisting>
-				<para>The operator <varname>@?</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set.</para>
+				<para>The operator <varname>@?</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set; a value whose path raises a suppressed error has no result and is left out, and the result is NULL when every value is left out.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
@@ -673,7 +674,7 @@ jsonbset @@ jsonpath → boolean[]
 jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 </programlisting>
-				<para>The operator <varname>@@</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set.</para>
+				<para>The operator <varname>@@</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set; a value whose predicate raises a suppressed error, is unknown, or returns no single Boolean has no result and is left out, and the result is NULL when every value is left out.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
@@ -712,7 +713,7 @@ SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
 			<listitem xml:id="jsonbset_path_query_first">
 				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryFirst</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryFirstTz</varname></primary></indexterm>
-				<para>Return the fist item returned by a JSON path from a JSONB set</para>
+				<para>Return the first item returned by a JSON path from a JSONB set</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbsetPathQueryFirst(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
@@ -1499,7 +1500,7 @@ tjsonb @? jsonpath → tbool
 tjsonbPathExists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
 tjsonbPathExistsTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
 </programlisting>
-				<para>The operator <varname>@?</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</para>
+				<para>The operator <varname>@?</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. An instant whose path raises a suppressed error has no result and is left out, and the result is NULL when every instant is left out.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"speed":10}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]' @? '$.units ? (@ == "km/h")';
@@ -1528,7 +1529,7 @@ tjsonb @@ jsonpath → tbool
 tjsonbPathMatch(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
 tjsonbPathMatchTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
 </programlisting>
-				<para>The operator <varname>@@</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</para>
+				<para>The operator <varname>@@</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. An instant whose predicate raises a suppressed error, is unknown, or returns no single Boolean has no result and is left out, and the result is NULL when every instant is left out.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"speed":10}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]' @@ '$.units == "km/h"';
@@ -1573,7 +1574,7 @@ SELECT tjsonbPathQueryArrayTz(tjsonb '[{"cameraId":25,
 			<listitem xml:id="tjsonb_path_query_first">
 				<indexterm significance="normal"><primary><varname>tjsonbPathQueryFirst</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbPathQueryFirstTz</varname></primary></indexterm>
-				<para>Return the fist item returned by a JSON path from a temporal JSONB value</para>
+				<para>Return the first item returned by a JSON path from a temporal JSONB value</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tjsonbPathQueryFirst(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
 tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
