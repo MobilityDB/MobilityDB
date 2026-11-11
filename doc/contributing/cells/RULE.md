@@ -24,6 +24,16 @@ with edges of its own kind.
   The cell of a planar point (`latLngToCell(geometry)`, `geoToS2Cell(geometry)`) is read from the
   same straight outline, so the walk, the point function and `atGeometry` agree.
 
+Every coordinate a cell or a position is derived to is the correctly rounded double of its exact
+value, so the oracle and MEOS read the same doubles on every platform, and every decision is then an
+exact sign on them:
+
+- **A geodetic position** is the vector of the correctly rounded cos(lat)·cos(lon), cos(lat)·sin(lon)
+  and sin(lat) of its degrees (decision D6). Its length need not be one: a sign of a determinant
+  does not depend on it.
+- **An S2 corner** is exact on the cube; its degrees are the correctly rounded angles of that exact
+  corner, and its geodetic vector the cube point with `u` and `v` correctly rounded (decision D7).
+
 The two differ in the band between a straight edge and its arc. Measured for H3, the mean and largest
 width of that band are 27 km and 664 km at resolution 0, 11 m and 948 m at resolution 4, 0.7 mm and
 43 mm at resolution 9, and 0.1 mm and 6.7 mm at resolution 10. A QUADBIN tile has the same edges in

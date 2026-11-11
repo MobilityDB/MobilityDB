@@ -19,8 +19,8 @@ correct on a row when it states, for each cell, exactly the period the oracle st
 | Part | State |
 |---|---|
 | H3, planar model (`tgeompoint`) | built: the oracle, 454 rows, their answers and the refuting controls below |
-| H3, geodetic model (`tgeogpoint`) | open: it waits for the definition of an exact position on the sphere (below) |
-| S2, both models | open: it waits for the canonical vertices of an S2 cell in degrees (below) |
+| H3, geodetic model (`tgeogpoint`) | to build on decision D6 (below) |
+| S2, both models | to build on decisions D6 and D7 (below) |
 | QUADBIN | through `spaceSplit` of the same trajectory over the Mercator tiles, row CW5 |
 
 ## The oracle of the planar H3 cells
@@ -83,17 +83,21 @@ resolution 4 (`Point(-0.1 51.5)` to `Point(0.1 51.5)`) moves the same way: the s
 crossed at longitude 0.0037797 at `2001-01-01 12:27:12.810291`, where the curved cell is crossed
 at 0.004068.
 
-## What waits for a decision
+## The two decisions the geodetic and S2 parts rest on
 
-- **An exact position on the sphere.** A `tgeogpoint` is given in longitude and latitude, and its
-  point on the sphere has irrational coordinates. Either the position is the unit vector MEOS
-  computes from them in doubles, so the signs are exact on those doubles but the oracle must compute
-  them as MEOS does; or it is the exact point of the sphere, so the oracle decides with certified
-  high precision and MEOS reads a sign in doubles where it is certain and in higher precision where
-  it is not. The geodetic oracle is built once this is decided.
-- **The canonical vertices of an S2 cell in degrees.** A corner is exact on the cube; its longitude
-  and latitude are not, so the straight-edged S2 cell of a `tgeompoint` needs one stated conversion
-  to doubles, the same in the oracle and in MEOS (row CW4).
+- **D6, a geodetic position** is the vector of the correctly rounded cos(lat)·cos(lon),
+  cos(lat)·sin(lon) and sin(lat) of its input degrees, and every decision an exact sign on those
+  doubles. The exact point of the sphere is set aside: its coordinates are transcendental, so a
+  sign that is exactly zero, such as that of three points on one meridian or on the equator, cannot
+  be told from a small one at any precision. The correctly rounded vector is the same on every
+  platform, and the oracle computes it from this statement with MPFR, sharing no code with MEOS.
+- **D7, the vertices of an S2 cell:** a corner is exact on the cube, its `u` and `v` rational; its
+  longitude and latitude are the correctly rounded doubles of the exact corner's angles, and its
+  geodetic vector the cube point with `u` and `v` correctly rounded.
+- **A check these raise for H3:** the vertices of an H3 cell come from the library's
+  `vertexToLatLng`, computed with the system's mathematical library; whether those doubles differ
+  across platforms is checked under row CW4, and where they do, the vertex is the correctly rounded
+  value of the vertex H3 defines.
 
 ## The expected answers of the named rows
 
