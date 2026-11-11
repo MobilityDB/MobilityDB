@@ -509,7 +509,7 @@ TCBUFFER_CONFIG = dict(
         # The geometry-covers/contains-a-tcbuffer direction is intentionally
         # only defined for the ALWAYS semantics (the traversed-area test);
         # the EVER public wrappers assert(! ever). The SQL surface mirrors
-        # this (212_tcbuffer_spatialrels.test.sql never calls the geo,tcbuffer
+        # this (212_tcbuffer_spatialrels.sql never calls the geo,tcbuffer
         # ever direction). Skip the ever wrappers so the smoke suite does not
         # abort on a documented-unsupported path.
         "ecovers_geo_tcbuffer":   "ever geo-covers-tcbuffer intentionally unsupported (assert !ever)",

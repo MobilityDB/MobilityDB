@@ -38,7 +38,7 @@ set_tests_properties(load_npoint_tables PROPERTIES
   FIXTURES_SETUP DBNPOINT
   FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
 
-file(GLOB testfiles "queries/*.sql")
+file(GLOB testfiles "sql/*.sql")
 list(SORT testfiles)
 
 foreach(file ${testfiles})

@@ -89,9 +89,9 @@ SCHEMA_DIR = os.path.join(ROOT, 'mobilitydb', 'test', 'pose', 'schemas')
 # writes a conformance class.
 EXPECTED = [
     os.path.join(ROOT, 'mobilitydb', 'test', 'pose', 'expected',
-        '103_pose_geopose.test.out'),
+        '103_pose_geopose.out'),
     os.path.join(ROOT, 'mobilitydb', 'test', 'posechain', 'expected',
-        '555_tposechain_geopose.test.out'),
+        '555_tposechain_geopose.out'),
 ]
 
 # A document is recognised by the member that only its class carries, tried in

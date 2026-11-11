@@ -47,7 +47,7 @@ set_tests_properties(load_pointcloud_tables PROPERTIES
   FIXTURES_SETUP DBPOINTCLOUD
   FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
 
-file(GLOB testfiles "queries/*.sql")
+file(GLOB testfiles "sql/*.sql")
 list(SORT testfiles)
 
 # Tests whose expected output is stale relative to the current behaviour
