@@ -1473,7 +1473,7 @@ pg_numeric_floor(Numeric num)
  * to the upper bound is assigned to an additional bucket (with number
  * count+1). We don't allow "NaN" for any of the numeric inputs, and we
  * don't allow either of the histogram bounds to be +/- infinity.
- * @note Derived from PostgreSQL function @p width_bucket()
+ * @note Derived from PostgreSQL function @p width_bucket_numeric()
  */
 int32
 numeric_width_bucket(Numeric operand, Numeric bound1, Numeric bound2,
