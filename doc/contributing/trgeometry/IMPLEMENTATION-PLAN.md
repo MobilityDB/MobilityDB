@@ -22,12 +22,12 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 | Row | Task | State |
 |---|---|---|
-| TG2 | The ever and always relationships of a 3D value: `eIntersects`, `aDisjoint`, `eDisjoint`, `eContains`, `eCovers`, `eTouches` | on #3347, by reading its kernel; not yet run on a 3D value |
+| TG2 | The ever and always relationships of a 3D value: `eIntersects`, `aDisjoint`, `eDisjoint`, `eContains`, `eCovers`, `eTouches` | #3347 merged (`a5efd7d54e`), by reading its kernel; not yet run on a 3D value |
 | TG3 | The temporal relationships of a 3D value: `tIntersects`, `tDisjoint` | open, reads Z by decision 1 |
 | TG4 | The restrictions by a box of a 3D value: `atStbox`, `minusStbox` | open, reads Z by decision 1 |
 | TG5 | The merged `traversedArea` of a 3D value answers the ground its 2D projection covers, which it does not in a turn | open |
 | TG26 | The merged `traversedArea` of a 2D body that turns joins placements 0.05 rad apart by their hull, which is the ground it covers only when it does not turn: on rows 1094 and 1153 of the corpus of the exact rigid distance it reaches a geometry the body stays 0.042 and 0.045 from, and `trgeometry_convex_sweep` states the hull as what the body covers. A translating body is exact: a contact through a vertex the union constructs reads as apart in doubles, as any region of rounded vertices does | merged as #3515 (`f3929f747b`); CGAL judges its 400 turning rows of the corpus equal to the exact union of its pieces |
-| TG23 | `eIntersects` and `tIntersects` of two 2D values agree on the car of nuScenes that touches the ego vehicle | on #3347, whose witness shows the lifting compares poses; not yet run on that car |
+| TG23 | `eIntersects` and `tIntersects` of two 2D values agree on the car of nuScenes that touches the ego vehicle | #3347 merged (`a5efd7d54e`), whose witness shows the lifting compares poses; not yet run on that car |
 
 ## Defects
 
@@ -35,7 +35,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 |---|---|---|
 | TG6 | An SRID stated before the pose in a literal is held rather than dropped, and `atStbox`, `minusStbox` take a box of time alone, as `atTime` does | merged as #3521 and #3522 |
 | TG7 | `stops` over a `trgeometry` and a `tpose` answers, or its declaration goes | merged as #3540, by decision 2 |
-| TG8 | `tIntersects`, `tDisjoint` of a 3D surface answer, or refuse in words of the type | #3543: a polyhedral surface, a TIN or a curve is forced to 2D without the geodetic walk, so `tIntersects` and `tDisjoint` answer in step interpolation and are refused in linear as having Z |
+| TG8 | `tIntersects`, `tDisjoint` of a 3D surface answer, or refuse in words of the type | merged as #3543 (`f6eb676881`): a polyhedral surface, a TIN or a curve is forced to 2D without the geodetic walk, so `tIntersects` and `tDisjoint` answer in step interpolation and are refused in linear as having Z |
 | TG9 | `round` of a 3D rotation keeps the quaternion of unit norm | merged as #3520 |
 | TG10 | `tDistance` of a 3D value and a 3D `tgeompoint` names the 3D refusal | merged as #3519 |
 | TG11 | The relationships and `tDwithin`, `eDwithin`, `aDwithin` of a 2D value read a 3D operand in 2D, as `tgeo_different_dimensions` states | open |
@@ -48,7 +48,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG13 | The relationships of a linear rigid geometry | [its note](RIGID-SWEPT-RELATIONSHIPS.md); `intersects` and `disjoint` merged as #3497 (`266f7ed2bb`, `59f3e1305a`), `contains`, `covers` and `touches` open |
 | TG14 | The distance to a collection and to a curve | open; to reconcile with [the note](NON-CONVEX-DISTANCE.md) |
 | TG15 | `atGeometry`, `minusGeometry` over a geometry with holes | open |
-| TG16 | `transform`, `transformPipeline` | #3541, by decision 3 |
+| TG16 | `transform`, `transformPipeline` | merged as #3541 (`67771c197f`), by decision 3 |
 | TG17 | `asMFJSON`, `round` over a surface | open |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1 |
 | TG19 | The distance of a value in 3D | open, decision 4 |
@@ -59,9 +59,10 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 | Row | Task | State |
 |---|---|---|
-| TG20 | The array forms of the relationships, and the relationships at the instants of their inputs | open, on #3347 |
+| TG20 | The array forms of the relationships, and the relationships at the instants of their inputs | merged as #3347 (`a5efd7d54e`): an always relationship of two step values reads every instant, and `contains` and `covers` take their array forms |
 | TG21 | The portable names `geoRound`, `geoTransform`, `geoLength`, `geoTranslate`, `geoRotate` by the geometry a `trgeometry` answers at an instant | open |
 | TG22 | The index test `162_trgeo_indexes_tbl` at the level of every operator of the three classes | merged as #3444 |
+| TG27 | A generic temporal function answers a `trgeometry` as the SQL function of its name does, in every binding: the dispatch to the `trgeometry_*` function lives in MEOS, as `temporal_merge`, `temporal_merge_array` and `temporal_append_tinstant` hold it, not in the PostgreSQL wrapper, and the `trgeometry_*` functions it reaches are internal | open, the fix waits on the owner. At MobilityDB `3a4e3add5f`, 24 PostgreSQL wrappers of `mobilitydb/src/temporal/temporal.c` choose `temp->temptype == T_TRGEOMETRY ? trgeometry_X(...) : temporal_X(...)` (`Temporal_instants`, `Temporal_start_instant`, `Temporal_after_timestamptz`, `Temporal_round`, the restrictions through `trgeometry_restrict_*`, ...), so the SQL answers, while a binding calling the public `temporal_*` function does not dispatch: the typed SQL surface of Spark registers `instants`, `startInstant` and `atTime` of a `trgeometry` through `temporal_instants`, `temporal_start_instant` and `temporal_at_timestamptz`. Over libmeos at that commit and two values (a linear polygon of three poses, a step square of two), `temporal_instants` and `temporal_start_instant` stop with `Cannot access geometry from temporal rigid geometry` and `temporal_after_timestamptz` crashes where the `trgeometry_*` twin answers; `round`, `atTime`, `minusTime`, `deleteTime` and `sequences` answer as the twin on both. The catalog gives the 31 `trgeometry_*` functions the SQL signatures of the generic ones, so a generator registering a signature once takes the generic function |
 
 ## Decisions
 
