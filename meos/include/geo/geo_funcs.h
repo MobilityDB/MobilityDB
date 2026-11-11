@@ -263,6 +263,7 @@ extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
 extern int cross_product_sign_offset(double ax, double ay, double bx,
   double by, double cx, double cy, double dx, double dy, double oab,
   double ocd);
+extern int offset_x_cmp(double x, double o, double p);
 extern int point_in_ring_offset_exact(const double *x, const double *y,
   const double *xoff, int n, double px, double py);
 extern double cross_product_exact(double ax, double ay, double bx, double by,

@@ -121,6 +121,11 @@ typedef struct
                                                vertex k to vertex k + 1 */
 } H3Outline;
 extern bool h3_cell_outline(H3Index cell, H3Outline *out);
+/* The owner of a boundary point: whether a cell holds an edge or a vertex of
+ * its outline, by the exact signs of the rule of the cell walks (it holds its
+ * north and west sides). Bodies in h3_geo.c. */
+extern bool h3_outline_edge_held(const H3Outline *o, int k);
+extern bool h3_outline_vertex_held(const H3Outline *o, int k);
 
 /* Hierarchy — next-resolution conveniences. Bodies in
  * th3index_hierarchy.c. */

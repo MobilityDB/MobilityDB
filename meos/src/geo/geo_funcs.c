@@ -1123,7 +1123,7 @@ cross_product_sign_offset(double ax, double ay, double bx, double by,
  * @brief Return the sign of `x + o - p`, exactly, for doubles x and p and an
  * exact offset o
  */
-static int
+int
 offset_x_cmp(double x, double o, double p)
 {
   if (o == 0.0)
