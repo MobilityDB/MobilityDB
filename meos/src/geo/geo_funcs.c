@@ -44,6 +44,7 @@
 #include "postgres.h"
 #include <utils/float.h>
 #include <utils/memutils.h>  /* TopMemoryContext */
+#include <common/int128.h>
 #include <pgtypes.h>
 #include <port/pg_bitutils.h>
 /* PostGIS */
@@ -915,6 +916,26 @@ two_square(double a, double *x, double *y)
   double al = a - ah;
   *x = a * a;
   *y = ((ah * ah - *x) + 2.0 * ah * al) + al * al;
+}
+
+/**
+ * @brief Split the product of two doubles into its rounded value and the
+ * error of that rounding, which together are the product exactly
+ * @details The product of #two_product computed with no call, as #two_square
+ * computes a square: Dekker's product on the halves of 26 bits that splitting
+ * by 2^27 + 1 gives, each of their products exact. A build without a fused
+ * multiply-add instruction calls a library function for `fma`
+ * @note Exact where the product neither overflows nor underflows and both
+ * values are at most 2^995 in magnitude
+ */
+static inline void
+two_product_split(double a, double b, double *x, double *y)
+{
+  double ta = 134217729.0 * a, tb = 134217729.0 * b;
+  double ah = ta - (ta - a), bh = tb - (tb - b);
+  double al = a - ah, bl = b - bh;
+  *x = a * b;
+  *y = ((ah * bh - *x) + ah * bl + al * bh) + al * bl;
 }
 
 /**
@@ -5233,20 +5254,18 @@ wide_dyadic_accumulate_double(WideDyadic *acc, double x, int sign)
 }
 
 /**
- * @brief Return the sign of the shoelace sum of a ring, summed exactly on
- * #WideDyadic
- * @details The path of #ring_area_sign where a product leaves the doubles or
- * part of it falls below 2^-1074: each product of two doubles is formed
- * exactly (#wide_dyadic_mul) and added with its sign
- * (#wide_dyadic_accumulate), as #wide_dyadic_accumulate_double adds a double;
- * a product spans at most 34 limbs and the sum of every product of doubles
- * at most 67, within #WIDE_DYADIC_LIMBS
+ * @brief Set the shoelace sum of a ring, twice the signed area it encloses,
+ * summed exactly on #WideDyadic
+ * @details Each product of two doubles is formed exactly (#wide_dyadic_mul)
+ * and added with its sign (#wide_dyadic_accumulate); a product spans at most
+ * 34 limbs and the sum of every product of doubles at most 67, within
+ * #WIDE_DYADIC_LIMBS
  */
-static int
-ring_area_sign_wide(const POINTARRAY *pa)
+static void
+ring_shoelace_wide(const POINTARRAY *pa, WideDyadic *acc)
 {
-  WideDyadic acc, u, v, p;
-  acc.sign = 0; acc.len = 0; acc.exp = 0;
+  WideDyadic u, v, p;
+  acc->sign = 0; acc->len = 0; acc->exp = 0;
   for (uint32_t i = 0; i + 1 < pa->npoints; i++)
   {
     const POINT2D *a = getPoint2d_cp(pa, i);
@@ -5254,14 +5273,422 @@ ring_area_sign_wide(const POINTARRAY *pa)
     wide_dyadic_set_double(&u, a->x);
     wide_dyadic_set_double(&v, b->y);
     wide_dyadic_mul(&u, &v, &p);
-    wide_dyadic_accumulate(&acc, &p);
+    wide_dyadic_accumulate(acc, &p);
     wide_dyadic_set_double(&u, b->x);
     wide_dyadic_set_double(&v, a->y);
     wide_dyadic_mul(&u, &v, &p);
     p.sign = - p.sign;
-    wide_dyadic_accumulate(&acc, &p);
+    wide_dyadic_accumulate(acc, &p);
   }
+  return;
+}
+
+/**
+ * @brief Return the sign of the shoelace sum of a ring, summed exactly on
+ * #WideDyadic
+ * @details The path of #ring_area_sign where a product leaves the doubles or
+ * part of it falls below 2^-1074 (#ring_shoelace_wide)
+ */
+static int
+ring_area_sign_wide(const POINTARRAY *pa)
+{
+  WideDyadic acc;
+  ring_shoelace_wide(pa, &acc);
   return acc.sign;
+}
+
+/**
+ * @brief Add the area of a geometry of straight edges to a #WideDyadic,
+ * exactly, as twice its value
+ * @details The area #lwgeom_area measures: a polygon encloses its exterior
+ * ring less its holes, each the magnitude of its shoelace sum
+ * (#ring_shoelace_wide), a triangle its ring, a collection the sum of its
+ * members, and a point or a line nothing; any other type is refused, as
+ * #geo_walk_measure refuses it
+ * @errval false
+ * @pre The geometry holds no curve
+ */
+static bool
+geom_area_wide_add(const LWGEOM *geom, WideDyadic *total)
+{
+  WideDyadic ring;
+  switch (geom->type)
+  {
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+      {
+        if (poly->rings[i]->npoints < 3)
+          continue;
+        ring_shoelace_wide(poly->rings[i], &ring);
+        /* The exterior adds its magnitude and a hole takes its away */
+        if ((ring.sign < 0) == (i == 0))
+          ring.sign = - ring.sign;
+        wide_dyadic_accumulate(total, &ring);
+      }
+      return true;
+    }
+    case TRIANGLETYPE:
+    {
+      const LWTRIANGLE *tri = (const LWTRIANGLE *) geom;
+      if (tri->points->npoints < 3)
+        return true;
+      ring_shoelace_wide(tri->points, &ring);
+      if (ring.sign < 0)
+        ring.sign = 1;
+      wide_dyadic_accumulate(total, &ring);
+      return true;
+    }
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    {
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < col->ngeoms; i++)
+      {
+        if (! geom_area_wide_add(col->geoms[i], total))
+          return false;
+      }
+      return true;
+    }
+    case POINTTYPE:
+    case LINETYPE:
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+      /* A point or a line encloses nothing */
+      return true;
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown geometry type: %d", geom->type);
+      return false;
+  }
+}
+
+/**
+ * @brief Return the double nearest the area of a geometry of straight edges,
+ * computed exactly, or an infinity where it rounds beyond the largest double
+ * @details Twice the area is summed exactly on #WideDyadic
+ * (#geom_area_wide_add) and its half rounded once to the nearest double, a
+ * tie going to the even one (#wide_dyadic_nearest_quotient); an area of at
+ * least DBL_MAX + 2^970, the least value rounding to infinity, is that
+ * infinity, and one between DBL_MAX and it the largest double. The path of
+ * #geom_area_sum_nearest where its filter cannot decide the nearest double
+ * @param[in] geom Geometry holding no curve
+ * @param[out] result Area
+ * @errval false
+ */
+bool
+geom_area_exact(const LWGEOM *geom, double *result)
+{
+  WideDyadic total, bound, diff, two;
+  total.sign = 0; total.len = 0; total.exp = 0;
+  if (! geom_area_wide_add(geom, &total))
+    return false;
+  if (total.sign == 0)
+  {
+    *result = 0.0;
+    return true;
+  }
+  /* Twice the least value rounding to infinity, 2 (DBL_MAX + 2^970) */
+  WideDyadic dmax, half_ulp;
+  wide_dyadic_set_double(&dmax, DBL_MAX);
+  wide_dyadic_set_double(&half_ulp, 0x1p970);
+  wide_dyadic_add(&dmax, &half_ulp, &bound);
+  bound.exp++;
+  WideDyadic mag = total;
+  mag.sign = 1;
+  bound.sign = - bound.sign;
+  wide_dyadic_add(&mag, &bound, &diff);
+  if (diff.sign >= 0)
+  {
+    *result = total.sign * INFINITY;
+    return true;
+  }
+  /* Twice DBL_MAX: an area from DBL_MAX on rounds to it */
+  dmax.exp++;
+  dmax.sign = -1;
+  wide_dyadic_add(&mag, &dmax, &diff);
+  if (diff.sign >= 0)
+  {
+    *result = total.sign * DBL_MAX;
+    return true;
+  }
+  wide_dyadic_set_double(&two, 2.0);
+  *result = wide_dyadic_nearest_quotient(&total, &two);
+  return true;
+}
+
+/**
+ * @brief Add a double to the running sum of the area of a geometry
+ * @details The error of the addition is kept in its compensation (#two_sum)
+ * and the rounding of the compensation in its bound
+ */
+static inline void
+area_sum_add(AreaSum *acc, double x)
+{
+  double t, tl;
+  two_sum(acc->sum, x, &t, &tl);
+  acc->sum = t;
+  acc->err += tl;
+  acc->bound += DBL_EPSILON * fabs(acc->err);
+  return;
+}
+
+/**
+ * @brief Add the area of a ring, as a running sum of its own, to the running
+ * sum of the area of a geometry
+ * @details A ring whose sum stands clear of its bound adds its magnitude, a
+ * hole takes it away, and the bound grows by the ring's; a ring within twice
+ * its bound of 0 adds nothing and the bound grows by its whole possible
+ * magnitude
+ */
+static void
+area_sum_add_ring(AreaSum *acc, const AreaSum *ring, bool hole)
+{
+  double v = ring->sum + ring->err;
+  if (fabs(v) <= 2.0 * ring->bound)
+  {
+    acc->bound += 2.0 * fabs(v) + ring->bound;
+    return;
+  }
+  double sign = ((v < 0.0) != hole) ? -1.0 : 1.0;
+  area_sum_add(acc, sign * ring->sum);
+  area_sum_add(acc, sign * ring->err);
+  acc->bound += ring->bound;
+  return;
+}
+
+/** @brief Vertices of a block of #area_sum_ring_int, whose terms, each below
+ * 2^116, sum within 128 bits */
+#define AREA_INT_BLOCK 1024
+
+/**
+ * @brief Return the exponent of the unit of an axis of a ring that makes
+ * every coordinate an integer from 2^52 to 2^57, or `INT_MIN` where the
+ * exponents of the coordinates spread too far
+ * @details The exponent field of the bitwise AND of the magnitudes of the
+ * coordinates is at most the least of their exponents and that of their OR
+ * at least the largest, reductions that need no comparison, as
+ * #wide_dyadic_set_double reads the exponent field of a double. Where the two
+ * differ by at most 4 and neither is that of 0, a subnormal or an infinity,
+ * the unit 56 bits below the largest exponent makes every magnitude scaled by
+ * it at least 2^52, so an integer, and below 2^57
+ * @param[in] andbits,orbits Bitwise AND and OR of the coordinates of the axis
+ */
+static int
+area_int_unit(uint64 andbits, uint64 orbits)
+{
+  int lo = (int) ((andbits >> 52) & 0x7FF), hi = (int) ((orbits >> 52) & 0x7FF);
+  if (lo == 0 || hi == 0x7FF || hi - lo > 4)
+    return INT_MIN;
+  return hi - 1023 - 56;
+}
+
+/**
+ * @brief Add the exact value of a 128-bit integer times 2^e to a running sum,
+ * in pieces of 32 bits, and return false where a piece is not a double
+ * @details The integer is its signed high half times 2^64 plus its unsigned
+ * low half, and each half two pieces of 32 bits, each a double exactly where
+ * the lowest weight stays at or above 2^-1074 and the value below the largest
+ * double
+ */
+static bool
+area_sum_add_int128(AreaSum *acc, INT128 v, int e)
+{
+  int64 hi;
+  uint64 lo;
+#if USE_NATIVE_INT128
+  hi = v >> 64;
+  lo = v;
+#else
+  hi = v.hi;
+  lo = v.lo;
+#endif
+  /* Pieces of weight 2^96, 2^64, 2^32 and 1, the highest signed */
+  int64 p3 = hi >> 32;
+  uint64 p2 = ((uint64) hi) & 0xFFFFFFFFULL;
+  uint64 p1 = lo >> 32, p0 = lo & 0xFFFFFFFFULL;
+  const double pieces[4] = {ldexp((double) p3, 96 + e), ldexp((double) p2, 64 + e),
+    ldexp((double) p1, 32 + e), ldexp((double) p0, e)};
+  for (int k = 0; k < 4; k++)
+    if (! isfinite(pieces[k]))
+      return false;
+  for (int k = 0; k < 4; k++)
+    if (pieces[k] != 0.0)
+      area_sum_add(acc, pieces[k]);
+  return true;
+}
+
+/**
+ * @brief Add the area of a ring to the running sum exactly on integers, or
+ * return false where its coordinates are not integers of one unit
+ * @details The unit of each axis is read once for the ring
+ * (#area_int_unit), and every coordinate scaled by it is then an integer from
+ * 2^52 to 2^57, converted with no test. The shoelace sum is taken in the form
+ * GEOS's `Area::ofRingSigned` takes it, `(X_i - X_0) (Y_(i-1) - Y_(i+1))`,
+ * one product a vertex, the two end terms vanishing, each product below
+ * 2^116 added exactly in 128 bits by PostgreSQL's
+ * #int128_add_int64_mul_int64, a native product where the compiler has
+ * 128-bit integers, so a block of #AREA_INT_BLOCK vertices sums within 128
+ * bits. The sum of each block times the product of the units is added
+ * exactly to a running sum of the ring (#area_sum_add_int128), whose
+ * magnitude is twice the area of the ring, read as #area_sum_ring reads its
+ * own (#area_sum_add_ring). It costs about 23 operations a vertex, where the
+ * compensated sum of #area_sum_ring costs about ninety
+ */
+static bool
+area_sum_ring_int(AreaSum *acc, const double *c, uint32_t npoints,
+  uint32_t ndims, bool hole)
+{
+  uint64 ax = ~((uint64) 0), ox = 0, ay = ~((uint64) 0), oy = 0;
+  const double *p = c;
+  for (uint32_t i = 0; i < npoints; i++, p += ndims)
+  {
+    uint64 bx, by;
+    memcpy(&bx, &p[0], sizeof(bx));
+    memcpy(&by, &p[1], sizeof(by));
+    ax &= bx; ox |= bx; ay &= by; oy |= by;
+  }
+  int ex = area_int_unit(ax, ox), ey = area_int_unit(ay, oy);
+  /* The scales are normal doubles and the lowest piece of a block is at or
+   * above 2^-1074 */
+  if (ex == INT_MIN || ey == INT_MIN || ex < -1022 || ey < -1022 ||
+      ex + ey < -1074)
+    return false;
+  double sx = ldexp(1.0, - ex), sy = ldexp(1.0, - ey);
+  int64 x0 = c[0] * sx, y0 = c[1] * sy;
+  int64 x1 = c[ndims] * sx, y1 = c[ndims + 1] * sy;
+  x1 -= x0;
+  AreaSum ring = {0.0, 0.0, 0.0, true};
+  p = c + 2 * ndims;
+  uint32_t i = 1;
+  while (i + 1 < npoints)
+  {
+    uint32_t end = (npoints - 1 - i > AREA_INT_BLOCK) ?
+      i + AREA_INT_BLOCK : npoints - 1;
+    INT128 block = int64_to_int128(0);
+    for (; i < end; i++, p += ndims)
+    {
+      int64 x2 = p[0] * sx, y2 = p[1] * sy;
+      int128_add_int64_mul_int64(&block, x1, y0 - y2);
+      y0 = y1;
+      x1 = x2 - x0;
+      y1 = y2;
+    }
+    if (! area_sum_add_int128(&ring, block, ex + ey))
+      return false;
+  }
+  area_sum_add_ring(acc, &ring, hole);
+  return true;
+}
+
+/**
+ * @brief Add the area of a ring of serialized coordinates to the running sum
+ * of the area of a geometry, with a bound on its error
+ * @details A ring whose coordinates are integers of one unit is summed
+ * exactly on them (#area_sum_ring_int). Any other ring is summed in doubles:
+ * its shoelace sum is read about its first vertex, as
+ * PostGIS reads it (#ptarray_signed_area), so its terms do not cancel at
+ * projected coordinates. Each difference to the first vertex is its rounded value and
+ * the error of that rounding (#two_sum), each product of two rounded
+ * differences its rounded value and the error of that rounding
+ * (#two_product_split), and the rounded products are summed exactly into a
+ * running double and the errors of its additions (#two_sum). The sum of the
+ * running double and of every error is the shoelace sum exactly; the errors,
+ * each within a unit in the last place of the magnitude of the terms, are
+ * summed in doubles, so the ring is the running double plus a double within
+ * `16 (m + 2)^2 eps^2` of the sum `mag` of the magnitudes of the rounded
+ * products for m edges, a generous bound on the rounding of a sum of about
+ * `17 m` errors, each within `(2 m + 4) eps / 2` of `mag`, and within
+ * 2^-1074 of every product whose error falls below the doubles, and is added
+ * to the running sum by #area_sum_add_ring. A difference or a product
+ * beyond 2^995, which the split of a product does not keep exact, or a sum
+ * leaving the doubles, marks the sum as unreadable in doubles
+ * @param[in,out] acc Running sum
+ * @param[in] c Coordinates of the ring
+ * @param[in] npoints Number of points of the ring
+ * @param[in] ndims Number of coordinates of a point
+ * @param[in] hole True for a hole, whose area is taken away
+ */
+void
+area_sum_ring(AreaSum *acc, const double *c, uint32_t npoints,
+  uint32_t ndims, bool hole)
+{
+  if (npoints < 3 || ! acc->ok)
+    return;
+  if (area_sum_ring_int(acc, c, npoints, ndims, hole))
+    return;
+  const double x0 = c[0], y0 = c[1];
+  double s = 0.0, e = 0.0, mag = 0.0, big = 0.0;
+  double px = 0.0, pxl = 0.0, py = 0.0, pyl = 0.0;
+  const double *p = c + ndims;
+  for (uint32_t i = 1; i < npoints; i++, p += ndims)
+  {
+    double dx, dxl, dy, dyl, a, al, b, bl, t, tl, tm;
+    two_sum(p[0], - x0, &dx, &dxl);
+    two_sum(p[1], - y0, &dy, &dyl);
+    big = Max(big, Max(fabs(dx), fabs(dy)));
+    /* (px + pxl) (dy + dyl) - (dx + dxl) (py + pyl) */
+    two_product_split(px, dy, &a, &al);
+    two_product_split(dx, py, &b, &bl);
+    two_sum(s, a, &t, &tl);
+    two_sum(t, - b, &s, &tm);
+    e += ((tl + tm) + (al - bl)) +
+      ((px * dyl + pxl * dy + pxl * dyl) - (dx * pyl + dxl * py + dxl * pyl));
+    mag += fabs(a) + fabs(b);
+    px = dx; pxl = dxl; py = dy; pyl = dyl;
+  }
+  double m = (double) npoints + 1.0;
+  double bound = 16.0 * m * m * DBL_EPSILON * DBL_EPSILON * mag +
+    16.0 * m * 0x1p-1074;
+  if (! isfinite(s) || ! isfinite(e) || ! isfinite(bound) || big > 0x1p995)
+  {
+    acc->ok = false;
+    return;
+  }
+  AreaSum ring = {s, e, bound, true};
+  area_sum_add_ring(acc, &ring, hole);
+  return;
+}
+
+/**
+ * @brief Return true and the double nearest the area of a geometry summed by
+ * #area_sum_ring where the bound of the sum decides it, false otherwise
+ * @details The running double and its error add up, exactly (#two_sum), to
+ * a double and a remainder; twice the area lies within the bound of their
+ * sum, so the double is the one nearest it wherever the remainder and the
+ * bound together stay below half the gap to either neighbour. Halving it is
+ * exact from 2^-1021 on. An area of 0 is decided where the sum is 0 with no
+ * error. Every other case is the exact path's (#geom_area_exact)
+ * @param[in] acc Running sum
+ * @param[out] result Area
+ */
+bool
+area_sum_nearest(const AreaSum *acc, double *result)
+{
+  if (! acc->ok)
+    return false;
+  double hi, lo;
+  two_sum(acc->sum, acc->err, &hi, &lo);
+  if (! isfinite(hi) || ! isfinite(lo))
+    return false;
+  if (hi == 0.0)
+  {
+    if (lo != 0.0 || acc->bound != 0.0)
+      return false;
+    *result = 0.0;
+    return true;
+  }
+  double m = fabs(hi);
+  if (m < 0x1p-1021)
+    return false;
+  double gap = Min(nextafter(m, INFINITY) - m, m - nextafter(m, 0.0));
+  if ((fabs(lo) + acc->bound) * (1.0 + 4.0 * DBL_EPSILON) >= 0.5 * gap)
+    return false;
+  *result = hi / 2.0;
+  return true;
 }
 
 /**

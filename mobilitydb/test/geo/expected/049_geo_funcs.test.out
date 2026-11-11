@@ -707,6 +707,13 @@ SELECT length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))'),
       0 |         0
 (1 row)
 
+SELECT area(geometry 'Polygon((500000.1 6000000.3,500100.8 6000000.3,500100.8 6000101.0,500000.1 6000101.0,500000.1 6000000.3),(500000.10000000097 6000000.300000001,500100.79999999894 6000000.300000001,500100.79999999894 6000100.999999999,500000.10000000097 6000100.999999999,500000.10000000097 6000000.300000001))')
+  = 3.927212674136797e-07 AS nearest;
+ nearest 
+---------
+ t
+(1 row)
+
 WITH g(name, geom, exact) AS (VALUES
   ('disc', geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))', pi()),
   ('annulus', geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0),'

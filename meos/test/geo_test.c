@@ -2038,6 +2038,57 @@ int main(void)
   assert(meos_errno() == 0);
   free(apt); free(aln); free(ahole); free(amulti);
   meos_errno_reset();
+
+  /* The area of a geometry of straight edges is the double nearest its exact
+   * value, a tie going to the even one, at every magnitude of its coordinates.
+   * A square at projected coordinates less a hole within 1e-9 of it encloses
+   * 3.927212674136797e-07, which a sum of its terms in doubles reads as
+   * 3.9272163121495396e-07; a triangle reaching from subnormal coordinates to
+   * 1e307 encloses 3.3118017121875465e-17, its products leaving the doubles
+   * at both ends; a unit square and a triangle of legs 2^-26 enclose
+   * 1 + 2^-53, a tie that goes to 1, and with legs 3 2^-26 and 2^-26
+   * 1 + 3 2^-53, a tie that goes to 1 + 2^-51; a rectangle of 1e154 by
+   * 1.7e154 encloses their product, twice of which leaves the doubles, and a
+   * square of side 1.5e154 an area beyond them, which raises */
+  struct { const char *wkt; double area; } exact_areas[] = {
+    {"POLYGON((500000.1 6000000.3,500100.8 6000000.3,500100.8 6000101.0,"
+      "500000.1 6000101.0,500000.1 6000000.3),(500000.10000000097 "
+      "6000000.300000001,500100.79999999894 6000000.300000001,"
+      "500100.79999999894 6000100.999999999,500000.10000000097 "
+      "6000100.999999999,500000.10000000097 6000000.300000001))",
+      0x1.a5ae666656c00p-22},
+    {"POLYGON((-2.4194e-319 -2.4194e-319,1.584721628692562e+307 "
+      "9.264240401570348e+307,-2.41944e-319 -2.41964e-319,"
+      "-2.4194e-319 -2.4194e-319))", 0x1.3175b4ff1d11bp-55},
+    {"MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((0 0,1.4901161193847656e-08 0,"
+      "0 1.4901161193847656e-08,0 0)))", 1.0},
+    {"MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((0 0,4.470348358154297e-08 0,"
+      "0 1.4901161193847656e-08,0 0)))", 0x1.0000000000002p+0},
+    {"POLYGON((0 0,1e154 0,1e154 1.7e154,0 1.7e154,0 0))", 1e154 * 1.7e154},
+  };
+  for (size_t i = 0; i < sizeof(exact_areas) / sizeof(exact_areas[0]); i++)
+  {
+    GSERIALIZED *g = geom_in(exact_areas[i].wkt, -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    double a = geom_area(g);
+    printf("exact area %zu: %a, nearest %a, errno %d\n", i, a,
+      exact_areas[i].area, meos_errno());
+    assert(a == exact_areas[i].area);
+    assert(meos_errno() == 0);
+    free(g);
+  }
+  GSERIALIZED *aover = geom_in(
+    "POLYGON((0 0,1.5e154 0,1.5e154 1.5e154,0 1.5e154,0 0))", -1);
+  assert(aover != NULL);
+  meos_errno_reset();
+  double aov = geom_area(aover);
+  printf("area beyond the doubles: %g, errno %d\n", aov, meos_errno());
+  assert(aov == DBL_MAX);
+  assert(meos_errno() == MEOS_ERR_VALUE_OUT_OF_RANGE);
+  free(aover);
+  meos_errno_reset();
+
   /* A geodetic geometry is refused, as it is by the other planar measures */
   GSERIALIZED *ageog = geog_in("SRID=4326;POLYGON((0 0,1 0,1 1,0 1,0 0))", -1);
   assert(ageog != NULL);

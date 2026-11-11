@@ -413,7 +413,9 @@ SELECT
   (SELECT count(*) FROM pairs WHERE round(ST_Length(shortestLine(a, b))::numeric, 9) IS DISTINCT FROM round(ST_Length(ST_ShortestLine(a, b))::numeric, 9)) AS shortestline;
 
 -- The area, the length and the perimeter are read on the serialized form of
--- every geometry but one holding a curve, and are exactly the PostGIS ones, the
+-- every geometry but one holding a curve, and are exactly the PostGIS ones on
+-- these coordinates, whose shoelace terms sum exactly in doubles, the area
+-- being the double nearest its exact value, the
 -- length of a geometry with Z being in 3D and the one of a surface 0; the
 -- geometry of a 3D box is a solid, whose serialized form carries extended flags
 WITH g(geom) AS (VALUES
@@ -443,6 +445,11 @@ FROM g;
 /* A curve polygon is a surface and has no length, as a polygon */
 SELECT length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))'),
   ST_Length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))');
+-- The area of a geometry of straight edges is the double nearest its exact
+-- value: a square at projected coordinates less a hole within 1e-9 of it, which
+-- a sum of its terms in doubles reads as 3.9272163121495396e-07
+SELECT area(geometry 'Polygon((500000.1 6000000.3,500100.8 6000000.3,500100.8 6000101.0,500000.1 6000101.0,500000.1 6000000.3),(500000.10000000097 6000000.300000001,500100.79999999894 6000000.300000001,500100.79999999894 6000100.999999999,500000.10000000097 6000100.999999999,500000.10000000097 6000000.300000001))')
+  = 3.927212674136797e-07 AS nearest;
 
 -- A surface bounded by circular arcs is measured on its arcs, against the
 -- closed form of each area: a disc, a disc less its concentric half, a half
