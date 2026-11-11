@@ -315,6 +315,7 @@ SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ > $x)', '{"x": 5}'
 jsonbPathMatch(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 jsonbPathMatchTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 </programlisting>
+				<para>El último argumento suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos; el resultado de un error suprimido, de un predicado cuyo resultado es desconocido o de una ruta que no devuelve un único booleano es NULL. Las funciones que terminan en <varname>Tz</varname> comparan valores de fecha y hora entre zonas horarias.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbPathMatch(jsonb '{"a": [1, 2, 3]}', 'exists($.a[*] ? (@ > 2))');
 -- true
@@ -650,7 +651,7 @@ jsonbset @? jsonpath → boolean[]
 jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 </programlisting>
-				<para>El operador <varname>@?</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable. El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</para>
+				<para>El operador <varname>@?</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable. El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto; un valor cuya ruta genera un error suprimido no tiene resultado y se omite, y el resultado es NULL cuando se omiten todos los valores.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
@@ -673,7 +674,7 @@ jsonbset @@ jsonpath → boolean[]
 jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 </programlisting>
-				<para>El operador <varname>@@</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable. El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</para>
+				<para>El operador <varname>@@</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable. El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto; un valor cuyo predicado genera un error suprimido, es desconocido o no devuelve un único booleano no tiene resultado y se omite, y el resultado es NULL cuando se omiten todos los valores.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
@@ -1499,7 +1500,7 @@ tjsonb @? jsonpath → tbool
 tjsonbPathExists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
 tjsonbPathExistsTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
 </programlisting>
-				<para>El operador <varname>@?</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
+				<para>El operador <varname>@?</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable. Un instante cuya ruta genera un error suprimido no tiene resultado y se omite, y el resultado es NULL cuando se omiten todos los instantes.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"speed":10}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]' @? '$.units ? (@ == "km/h")';
@@ -1528,7 +1529,7 @@ tjsonb @@ jsonpath → tbool
 tjsonbPathMatch(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
 tjsonbPathMatchTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
 </programlisting>
-				<para>El operador <varname>@@</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
+				<para>El operador <varname>@@</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable. Un instante cuyo predicado genera un error suprimido, es desconocido o no devuelve un único booleano no tiene resultado y se omite, y el resultado es NULL cuando se omiten todos los instantes.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"speed":10}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]' @@ '$.units == "km/h"';
