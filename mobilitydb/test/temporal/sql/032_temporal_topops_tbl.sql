@@ -1,5 +1,14 @@
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tbool AS TABLE tbl_tbool;
+CREATE TEMP TABLE tbl_tint AS TABLE tbl_tint;
+CREATE TEMP TABLE tbl_tfloat AS TABLE tbl_tfloat;
+CREATE TEMP TABLE tbl_ttext AS TABLE tbl_ttext;
+ANALYZE tbl_tbool, tbl_tint, tbl_tfloat, tbl_ttext;
+
 DROP INDEX IF EXISTS tbl_tbool_rtree_idx;
 DROP INDEX IF EXISTS tbl_tint_rtree_idx;
 DROP INDEX IF EXISTS tbl_tfloat_rtree_idx;
