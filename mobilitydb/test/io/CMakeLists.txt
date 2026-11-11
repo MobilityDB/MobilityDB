@@ -27,7 +27,7 @@
 
 # The input and output test of every type reads the fixtures of every family,
 # so it runs after every family has loaded its tables.
-file(GLOB testfiles "sql/*.sql")
+file(GLOB testfiles "sql/[0-9]*.sql")
 list(SORT testfiles)
 
 foreach(file ${testfiles})

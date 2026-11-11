@@ -82,7 +82,6 @@ Usage:
 
 import argparse
 import glob
-import lzma
 import os
 import re
 import sys
@@ -91,8 +90,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'tools', 'scripts'))
 from check_binding_io_ownership import (  # noqa: E402
   CREATE_TYPE_RE, INPUT_CLAUSE_RE, sql_files, strip_sql_comments)
-sys.path.insert(0, os.path.join(ROOT, 'tools'))
-from gen_test_csv import COPY_RE  # noqa: E402
 
 TEST_DIR = os.path.join(ROOT, 'mobilitydb', 'test')
 TEST_NAME = '700_io_every_type_tbl'
@@ -119,16 +116,14 @@ CREATE_EQ_RE = re.compile(
   r'CREATE\s+OPERATOR\s+=\s*\((?P<body>[^;]*?)\)\s*;', re.IGNORECASE)
 LEFTARG_RE = re.compile(r'\bLEFTARG\s*=\s*(\w+)', re.IGNORECASE)
 RIGHTARG_RE = re.compile(r'\bRIGHTARG\s*=\s*(\w+)', re.IGNORECASE)
-# `CREATE TABLE public.tbl_x (k integer ..., col public.type ...)` of a dump
-# and `CREATE TABLE tbl_x ... AS` of a generating script.
+# `CREATE TABLE tbl_x (k integer ..., col type ...)` of a setup script loading
+# a data file and `CREATE TABLE tbl_x ... AS` of a generating script.
 DUMP_TABLE_RE = re.compile(
   r'CREATE\s+TABLE\s+(?:public\.)?(?P<name>tbl_\w+)\s*\(\s*k\s+integer[^,]*,'
   r'\s*\w+\s+(?:public\.)?(?P<type>\w+)', re.IGNORECASE)
 AS_TABLE_RE = re.compile(
   r'CREATE\s+TABLE\s+(?:public\.)?(?P<name>tbl_\w+)\s*(?:\([^)]*\)\s*)?AS\b',
   re.IGNORECASE)
-COPY_LINE_RE = re.compile(r'^(COPY public\.\w+ \([^)]*\) FROM stdin;)\n(.*)$',
-  re.MULTILINE)
 INCLUDE_RE = re.compile(r'^\\i\s+@CMAKE_SOURCE_DIR@/(?P<path>\S+)',
   re.MULTILINE)
 TABLE_REF_RE = re.compile(r'\b(tbl_\w+)', re.IGNORECASE)
@@ -232,38 +227,31 @@ class Surface:
 # The fixtures
 # --------------------------------------------------------------------------
 
-def read_text(path):
-  """Return the text of a loader, decompressed when it is an archive."""
-  if path.endswith('.xz'):
-    with lzma.open(path, 'rt', encoding='utf-8') as handle:
-      return handle.read()
-  with open(path, encoding='utf-8') as handle:
-    return handle.read()
-
-
 def read_fixtures():
-  """Return ({table: type or None}, empty) of the `tbl_*` tables the loaders
-  create, `empty` being the set of the dumped tables holding no row.
+  """Return ({table: type or None}, empty) of the `tbl_*` tables the setup
+  scripts create, `empty` being the set of the loaded tables holding no row.
 
-  A dump states the type of the value column, and its rows follow the
-  `COPY` line #read_tables of tools/gen_test_csv.py reads; a table a script
-  creates with `CREATE TABLE ... AS` states none and is known by its name.
+  A setup script states the type of the value column of a table it loads,
+  and the rows of the table are those of its data file, which
+  tools/gen_test_csv.py reads; a table a script creates with `CREATE TABLE
+  ... AS` states none and is known by its name.
   """
   tables, empty = {}, set()
-  paths = sorted(glob.glob(os.path.join(TEST_DIR, '*', 'data', 'load*')))
-  pending = list(paths)
+  pending = sorted(glob.glob(os.path.join(TEST_DIR, '*', 'sql', 'load_*.sql')) +
+    glob.glob(os.path.join(TEST_DIR, '*', 'data', 'load*')))
   while pending:
     path = pending.pop(0)
-    text = read_text(path)
-    if path.endswith('.xz'):
-      for match in DUMP_TABLE_RE.finditer(text):
-        tables[match.group('name').lower()] = match.group('type').lower()
-        empty.add(match.group('name').lower())
-      for line, rest in COPY_LINE_RE.findall(text):
-        match = COPY_RE.match(line)
-        if match and not rest.startswith('\\.'):
-          empty.discard(match.group(1).lower())
-      continue
+    with open(path, encoding='utf-8') as handle:
+      text = handle.read()
+    data = os.path.join(os.path.dirname(os.path.dirname(path)), 'data')
+    for match in DUMP_TABLE_RE.finditer(text):
+      name = match.group('name').lower()
+      tables[name] = match.group('type').lower()
+      rows = os.path.join(data, name + '.data')
+      if not os.path.isfile(rows) or not os.path.getsize(rows):
+        empty.add(name)
+      else:
+        empty.discard(name)
     for match in AS_TABLE_RE.finditer(strip_sql_comments(text)):
       tables.setdefault(match.group('name').lower(), None)
     for match in INCLUDE_RE.finditer(text):
