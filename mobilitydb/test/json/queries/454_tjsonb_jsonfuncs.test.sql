@@ -216,7 +216,8 @@ SELECT jsonb_path_exists(jsonb '{"a": 1}', 'strict $.b');
 \set VERBOSITY default
 
 -- The operator and the silent form suppress these errors, as they do on a
--- jsonb, so the answer is missing, not true
+-- jsonb, so an instant whose answer is missing is left out, as in
+-- tjsonbPathQueryFirst, and a value with no instant left is NULL
 SELECT tjsonb '[{"a": [1]}@2001-01-01]' @? 'strict $.a.keyvalue()';
 SELECT jsonb '{"a": [1]}' @? 'strict $.a.keyvalue()';
 SELECT tjsonb '[{"a": "x"}@2001-01-01]' @? 'strict $.a.abs()';
@@ -226,6 +227,16 @@ SELECT jsonb '{"a": 1}' @? 'strict $.b';
 SELECT tjsonbPathExists(tjsonb '[{"a": 1}@2001-01-01]', 'strict $.b', silent => true);
 SELECT jsonb_path_exists(jsonb '{"a": 1}', 'strict $.b', silent => true);
 SELECT tjsonb '[{"a": 1}@2001-01-01, {"b": 1}@2001-01-02]' @? 'strict $.b';
+
+-- A predicate whose answer is unknown answers no value, as on a jsonb, and a
+-- comparison suppresses the errors of its operands
+SELECT tjsonb '[{"d": "x"}@2001-01-01]' @@ '$.d.datetime() > "2002-06-01".datetime()';
+SELECT jsonb '{"d": "x"}' @@ '$.d.datetime() > "2002-06-01".datetime()';
+SELECT tjsonbPathMatch(tjsonb '[{"a": 1}@2001-01-01]', '$.a == "x"');
+SELECT jsonb_path_match(jsonb '{"a": 1}', '$.a == "x"');
+SELECT tjsonb '[{"a": 1}@2001-01-01]' @@ '$.a';
+SELECT jsonb '{"a": 1}' @@ '$.a';
+SELECT tjsonb '[{"a": 1}@2001-01-01, {"a": 2}@2001-01-02]' @@ '$.a == 1';
 
 -------------------------------------------------------------------------------
 
