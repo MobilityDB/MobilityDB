@@ -1658,7 +1658,7 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
   TSequence **normseqs = tseqarr_normalize(sequences, nseqs, &newcount);
   TSequenceSet *result = tsequenceset_make_free(normseqs, newcount,
     NORMALIZE_NO);
-  pfree_array((void **) tofree, nfree); pfree(minus);
+  pfree_array((void **) tofree, nfree); pfree(sequences); pfree(minus);
   return result;
 }
 
