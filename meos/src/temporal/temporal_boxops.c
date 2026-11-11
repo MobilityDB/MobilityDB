@@ -623,7 +623,7 @@ index_distance_apply(MeosType bboxtype, const void *box, const void *query)
     if (! ensure_valid_tbox_tbox(b, q) || ! ensure_has_X(T_TBOX, b->flags) ||
         ! ensure_has_X(T_TBOX, q->flags))
       return DBL_MAX;
-    return distance_double(nad_tbox_tbox(b, q), b->span.basetype);
+    return distance_double(nad_tbox_tbox_intl(b, q), b->span.basetype);
   }
 #if POINTCLOUD
   if (bboxtype == T_TPCBOX)

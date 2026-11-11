@@ -232,7 +232,7 @@ nad_tnumber_number(const Temporal *temp, Datum value)
   TBox box1, box2;
   tnumber_set_tbox(temp, &box1);
   number_set_tbox(value, basetype, &box2);
-  return nad_tbox_tbox(&box1, &box2);
+  return nad_tbox_tbox_intl(&box1, &box2);
 }
 
 /**
@@ -251,7 +251,7 @@ nad_tnumber_number(const Temporal *temp, Datum value)
  * @csqlfn #NAD_tbox_tbox()
  */
 Datum
-nad_tbox_tbox(const TBox *box1, const TBox *box2)
+nad_tbox_tbox_intl(const TBox *box1, const TBox *box2)
 {
   /* The preconditions the external function tests */
   assert(box1); assert(box2);
@@ -307,7 +307,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   }
 
   /* Get the minimum distance between the values of the boxes, on whichever
-   * side of the temporal number the box lies, as #nad_tbox_tbox does */
+   * side of the temporal number the box lies, as #nad_tbox_tbox_intl does */
   Datum res = distance_span_span(&box->span, &box1.span);
 
   if (hast)
@@ -320,7 +320,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
  * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between a number span and a
  * temporal box, the distance of the box of the span to the box, as
- * #nad_tbox_tbox answers for two boxes
+ * #nad_tbox_tbox_intl answers for two boxes
  * @param[in] s Span
  * @param[in] box Temporal box
  * @return The distance in the base type of the span; the box of a span has no
@@ -337,7 +337,7 @@ nad_numspan_tbox(const Span *s, const TBox *box)
   assert(s->spantype == box->span.spantype);
   TBox box1;
   numspan_set_tbox(s, &box1);
-  return nad_tbox_tbox(&box1, box);
+  return nad_tbox_tbox_intl(&box1, box);
 }
 
 /**
@@ -504,71 +504,28 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
 
 /**
  * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between the int temporal boxes
- * @param[in] box1,box2 Temporal boxes
- * @errval -1
- * @note A distance is never negative, so -1 states an error where INT_MAX
- * states that the boxes share no time
- * @csqlfn #NAD_tbox_tbox()
- */
-int
-nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, -1); VALIDATE_NOT_NULL(box2, -1);
-  if (! ensure_span_isof_type(&box1->span, T_INTSPAN) ||
-      ! ensure_span_isof_type(&box2->span, T_INTSPAN) ||
-      ! ensure_has_X(T_TBOX, box1->flags) ||
-      ! ensure_has_X(T_TBOX, box2->flags))
-    return -1;
-
-  return DatumGetInt32(nad_tbox_tbox(box1, box2));
-}
-
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between the big integer temporal
- * boxes
- * @param[in] box1,box2 Temporal boxes
- * @errval -1
- * @note A distance is never negative, so -1 states an error where INT64_MAX
- * states that the boxes share no time
- * @csqlfn #NAD_tbox_tbox()
- */
-int64
-nad_tboxbigint_tboxbigint(const TBox *box1, const TBox *box2)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, -1); VALIDATE_NOT_NULL(box2, -1);
-  if (! ensure_span_isof_type(&box1->span, T_BIGINTSPAN) ||
-      ! ensure_span_isof_type(&box2->span, T_BIGINTSPAN) ||
-      ! ensure_has_X(T_TBOX, box1->flags) ||
-      ! ensure_has_X(T_TBOX, box2->flags))
-    return -1;
-
-  return DatumGetInt64(nad_tbox_tbox(box1, box2));
-}
-
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between the float temporal boxes
- * @param[in] box1,box2 Temporal boxes
+ * @brief Return the nearest approach distance between the temporal boxes
+ * @param[in] box1,box2 Temporal boxes of the same span type
+ * @return The distance as a double, whatever the value type of the boxes, or
+ * DBL_MAX where the boxes share no time
  * @errval -1.0
- * @note A distance is never negative, so -1.0 states an error where DBL_MAX
- * states that the boxes share no time
+ * @note A distance is never negative, so -1.0 states an error
  * @csqlfn #NAD_tbox_tbox()
  */
 double
-nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
+nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, -1.0); VALIDATE_NOT_NULL(box2, -1.0);
-  if (! ensure_span_isof_type(&box1->span, T_FLOATSPAN) ||
-      ! ensure_span_isof_type(&box2->span, T_FLOATSPAN) ||
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
       ! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags))
     return -1.0;
-  return DatumGetFloat8(nad_tbox_tbox(box1, box2));
+
+  MeosType basetype = box1->span.basetype;
+  Datum result = nad_tbox_tbox_intl(box1, box2);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    return DBL_MAX;
+  return distance_double(result, basetype);
 }
 
 /**
@@ -579,7 +536,7 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
  * @param[in] box Temporal box
  * @errval -1
  * @note A distance is never negative, so -1 states an error, as in
- * #nad_tboxint_tboxint
+ * #nad_tbox_tbox
  * @csqlfn #NAD_intspan_tbox(), #NAD_tbox_intspan()
  */
 int
@@ -601,7 +558,7 @@ nad_intspan_tbox(const Span *s, const TBox *box)
  * @param[in] box Temporal box
  * @errval -1
  * @note A distance is never negative, so -1 states an error, as in
- * #nad_tboxbigint_tboxbigint
+ * #nad_tbox_tbox
  * @csqlfn #NAD_bigintspan_tbox(), #NAD_tbox_bigintspan()
  */
 int64
@@ -623,7 +580,7 @@ nad_bigintspan_tbox(const Span *s, const TBox *box)
  * @param[in] box Temporal box
  * @errval -1.0
  * @note A distance is never negative, so -1.0 states an error, as in
- * #nad_tboxfloat_tboxfloat
+ * #nad_tbox_tbox
  * @csqlfn #NAD_floatspan_tbox(), #NAD_tbox_floatspan()
  */
 double
