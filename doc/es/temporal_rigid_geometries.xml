@@ -729,6 +729,7 @@ SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
 </programlisting>
+				<para>Dos geometrías de referencia son la misma cuando tienen los mismos anillos y caras y los mismos puntos en el mismo orden, cada coordenada igual; cualquier otro par da un error.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>

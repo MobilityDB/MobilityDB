@@ -703,6 +703,21 @@ SELECT asText(merge(ARRAY[
 SELECT asText(merge(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
+-- nor do two bodies a vertex of which differs by less than a millionth
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1.0000000001 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-02'));
+-- nor two surfaces of which one has fewer faces, in either order
+SELECT asText(merge(
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01',
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-02'));
+SELECT asText(merge(
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01',
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-02'));
+-- a vertex at 0 and at -0 is the same vertex
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  trgeometry 'Polygon((-0 0,1 0,1 1,0 1,-0 0));Pose(Point(0 0), 0.0)@2001-01-02'));
 
 -------------------------------------------------------------------------------
 -- unnest: one row per distinct pose

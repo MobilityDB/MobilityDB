@@ -634,6 +634,42 @@ int main(void)
     free(body); free(g2); free(g3); free(pt2); free(pt3);
   }
 
+  /* Two bodies are one where every coordinate is equal: merging bodies a
+   * vertex of which differs by 1e-10, or surfaces of which one has fewer
+   * faces, in either order, is refused, and 0 and -0 are one vertex */
+  {
+    const char *pairs[][2] = {
+      {"Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01",
+       "Polygon((0 0,1.0000000001 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-02"},
+      {"PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));"
+         "Pose(Point(0 0 0),1,0,0,0)@2001-01-01",
+       "PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));"
+         "Pose(Point(0 0 0),1,0,0,0)@2001-01-02"},
+      {"PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));"
+         "Pose(Point(0 0 0),1,0,0,0)@2001-01-01",
+       "PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));"
+         "Pose(Point(0 0 0),1,0,0,0)@2001-01-02"},
+      {"Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01",
+       "Polygon((-0 0,1 0,1 1,0 1,-0 0));Pose(Point(0 0),0)@2001-01-02"} };
+    const bool merges[] = {false, false, false, true};
+    for (int i = 0; i < 4; i++)
+    {
+      Temporal *a = trgeometry_in(pairs[i][0]);
+      Temporal *b = trgeometry_in(pairs[i][1]);
+      meos_errno_reset();
+      Temporal *m = temporal_merge(a, b);
+      bool merged = m != NULL && meos_errno() == 0;
+      if (merged != merges[i])
+      {
+        printf("FAILED: merging the bodies of pair %d %s\n", i,
+          merged ? "answers" : "is refused");
+        result = 1;
+      }
+      free(a); free(b); free(m);
+      meos_errno_reset();
+    }
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
