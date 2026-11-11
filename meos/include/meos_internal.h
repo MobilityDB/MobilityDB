@@ -47,6 +47,14 @@
 #include <meos.h>
 #include "temporal/meos_catalog.h" /* For MeosType */
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 /*****************************************************************************
  * Validity macros
  *****************************************************************************/
@@ -1472,7 +1480,7 @@ extern TSequenceSet *tnumberseqset_delta_value(const TSequenceSet *ss);
 /* Distance functions for temporal types */
 
 extern Temporal *tdistance_tnumber_number(const Temporal *temp, Datum value);
-extern Datum nad_tbox_tbox(const TBox *box1, const TBox *box2);
+extern Datum nad_tbox_tbox_intl(const TBox *box1, const TBox *box2);
 extern Datum nad_tnumber_number(const Temporal *temp, Datum value);
 extern Datum nad_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern Datum nad_numspan_tbox(const Span *s, const TBox *box);
@@ -1529,5 +1537,9 @@ extern Temporal **tnumber_value_time_split(const Temporal *temp, Datum vsize, co
 
 
 /*****************************************************************************/
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif /* __MEOS_INTERNAL_H__ */

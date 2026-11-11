@@ -54,98 +54,78 @@
 /*****************************************************************************/
 
 /**
- * @brief Ensure that two polygons have the same rings with the same vertex counts
- */
-static void
-ensure_same_rings_lwpoly(const LWPOLY *poly1, const LWPOLY *poly2)
-{
-  if (poly1->nrings != poly2->nrings)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Operation on different reference geometries");
-  for (int i = 0; i < (int) poly1->nrings; ++i)
-    if (poly1->rings[i]->npoints != poly2->rings[i]->npoints)
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Operation on different reference geometries");
-}
-
-/**
- * @brief Ensure that two polyhedral surfaces have the same component geometries
- */
-static void
-ensure_same_geoms_lwpsurface(const LWPSURFACE *psurface1,
-  const LWPSURFACE *psurface2)
-{
-  if (psurface1->ngeoms != psurface2->ngeoms)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on different reference geometries");
-  for (int i = 0; i < (int) psurface1->ngeoms; ++i)
-    ensure_same_rings_lwpoly(psurface1->geoms[i], psurface2->geoms[i]);
-}
-
-/**
- * @brief Return true if two geometries have the same points in the same order
+ * @brief Return true if two point arrays hold the same points in the same
+ * order, coordinate by coordinate
+ * @details Two coordinates are the same where they are equal as doubles, so 0
+ * and -0 are the same, as in #ptarray_same of liblwgeom, which compares their
+ * bytes instead
  */
 static bool
-same_lwgeom(const LWGEOM *geom1, const LWGEOM *geom2)
+same_ptarray(const POINTARRAY *pa1, const POINTARRAY *pa2)
 {
-  LWPOINTITERATOR *it1 = lwpointiterator_create(geom1);
-  LWPOINTITERATOR *it2 = lwpointiterator_create(geom2);
-  POINT4D p1;
-  POINT4D p2;
-
-  bool result = true;
-  while (lwpointiterator_next(it1, &p1) && lwpointiterator_next(it2, &p2) &&
-    result)
+  if (pa1->npoints != pa2->npoints ||
+      FLAGS_GET_ZM(pa1->flags) != FLAGS_GET_ZM(pa2->flags))
+    return false;
+  int ndims = FLAGS_NDIMS(pa1->flags);
+  for (uint32_t i = 0; i < pa1->npoints; i++)
   {
-    if (FLAGS_GET_Z(geom1->flags))
-    {
-      result = fabs(p1.x - p2.x) < MEOS_EPSILON &&
-        fabs(p1.y - p2.y) < MEOS_EPSILON && fabs(p1.z - p2.z) < MEOS_EPSILON;
-    }
-    else
-    {
-      result = fabs(p1.x - p2.x) < MEOS_EPSILON &&
-        fabs(p1.y - p2.y) < MEOS_EPSILON;
-    }
+    const double *p1 = (const double *) getPoint2d_cp(pa1, i);
+    const double *p2 = (const double *) getPoint2d_cp(pa2, i);
+    for (int k = 0; k < ndims; k++)
+      if (p1[k] != p2[k])
+        return false;
   }
-  lwpointiterator_destroy(it1);
-  lwpointiterator_destroy(it2);
-  return result;
+  return true;
 }
 
 /**
- * @brief Ensure that the temporal rigid geometry instants have the same
- * reference geometry
+ * @brief Return true if two polygons have the same rings, as #same_ptarray
+ * reads them
+ */
+static bool
+same_lwpoly(const LWPOLY *poly1, const LWPOLY *poly2)
+{
+  if (poly1->nrings != poly2->nrings)
+    return false;
+  for (uint32_t i = 0; i < poly1->nrings; i++)
+    if (! same_ptarray(poly1->rings[i], poly2->rings[i]))
+      return false;
+  return true;
+}
+
+/**
+ * @brief Ensure that two reference geometries of temporal rigid geometries are
+ * the same body: of one type, with the same rings and faces, and the same
+ * points in the same order, coordinate by coordinate (#same_ptarray)
  */
 bool
 ensure_same_geom(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   if (gs1 == gs2)
     return true;
-
-  if (gserialized_get_type(gs1) != gserialized_get_type(gs2))
+  bool same = gserialized_get_type(gs1) == gserialized_get_type(gs2);
+  if (same)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on different reference geometries");
-    return false;
-  }
-
-  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-  if (gserialized_get_type(gs1) == POLYGONTYPE)
-    ensure_same_rings_lwpoly((LWPOLY *) geom1, (LWPOLY *) geom2);
-  else
-    ensure_same_geoms_lwpsurface((LWPSURFACE *) geom1, (LWPSURFACE *) geom2);
-
-  if (! same_lwgeom(geom1, geom2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on different reference geometries");
+    LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+    LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+    if (geom1->type == POLYGONTYPE)
+      same = same_lwpoly((LWPOLY *) geom1, (LWPOLY *) geom2);
+    else
+    {
+      const LWPSURFACE *ps1 = (LWPSURFACE *) geom1, *ps2 = (LWPSURFACE *) geom2;
+      same = ps1->ngeoms == ps2->ngeoms;
+      for (uint32_t i = 0; same && i < ps1->ngeoms; i++)
+        same = same_lwpoly(ps1->geoms[i], ps2->geoms[i]);
+    }
     lwgeom_free(geom1);
     lwgeom_free(geom2);
+  }
+  if (! same)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on different reference geometries");
     return false;
   }
-
-  lwgeom_free(geom1);
-  lwgeom_free(geom2);
   return true;
 }
 
