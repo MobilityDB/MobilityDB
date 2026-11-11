@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -130,7 +131,7 @@ int main(void)
 
   /* uint64_t date_hash_extended(DateADT date, uint64_t seed); */
   uint64_result = date_hash_extended(date1, 1);
-  printf("date_hash_extended(%s, 1): %lu\n", date1_out, uint64_result);
+  printf("date_hash_extended(%s, 1): %" PRIu64 "\n", date1_out, uint64_result);
 
   /* DateADT date_in(const char *str); */
   date_result = date_in("2025-03-01");

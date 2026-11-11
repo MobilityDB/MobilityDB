@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -101,7 +102,7 @@ int main(void)
   /* Numeric int64_to_numeric(int64_t num); */
   numeric_result = int64_to_numeric(int64_in);
   char_result = numeric_out(numeric_result, &size_out);
-  printf("int64_to_numeric(%ld): %s\n", int64_in, char_result);
+  printf("int64_to_numeric(%" PRId64 "): %s\n", int64_in, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric(Numeric num, int32_t typmod); */
@@ -163,7 +164,7 @@ int main(void)
   /* Numeric numeric_fac(int64_t num); */
   numeric_result = numeric_fac(int64_in);
   char_result = numeric_out(numeric_result, &size_out);
-  printf("numeric_fac(%ld): %s\n", int64_in, char_result);
+  printf("numeric_fac(%" PRId64 "): %s\n", int64_in, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_floor(Numeric num); */
@@ -192,7 +193,7 @@ int main(void)
 
   /* uint64_t numeric_hash_extended(Numeric num, uint64_t seed); */
   uint64_result = numeric_hash_extended(num1_in, 1);
-  printf("numeric_hash_extended(%s, 1): %lu\n", num1_out, uint64_result);
+  printf("numeric_hash_extended(%s, 1): %" PRIu64 "\n", num1_out, uint64_result);
 
   /* Numeric numeric_inc(Numeric num); */
   numeric_result = numeric_inc(num1_in);
@@ -310,7 +311,7 @@ int main(void)
 
   /* int64_t numeric_to_int64(Numeric num); */
   int64_result = numeric_to_int64(num1_in);
-  printf("numeric_to_int64(%s): %lu\n", num1_out, int64_result);
+  printf("numeric_to_int64(%s): %" PRId64 "\n", num1_out, int64_result);
 
   /* Numeric numeric_trim_scale(Numeric num); */
   numeric_result = numeric_trim_scale(num1_in);
