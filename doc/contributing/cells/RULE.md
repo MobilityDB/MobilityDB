@@ -54,8 +54,11 @@ the neighbour starting there:
 
 For a box, the ring started at its north-west corner holds `(0, 1/2)`: its west and south edges and
 its south-west corner, which is exactly `[xmin, xmax) x [ymin, ymax)`, one corner a tile, as four
-tiles share a corner. For a hexagon it holds three consecutive edges and the two vertices inside
-them, two vertices a cell, as three cells share a vertex.
+tiles share a corner. An H3 cell holds one run of consecutive edges and the vertices inside it: at
+resolution 2, 5552 of 5870 hexagons hold three edges and two vertices, as three cells share a
+vertex, 157 two edges and 157 four; the cell around the south
+pole holds its whole ring and the one around the north pole none, every edge of either lying on one
+side of it.
 
 The index coordinates of each grid:
 
@@ -63,7 +66,7 @@ The index coordinates of each grid:
 |---|---|---|
 | QUADBIN | column and row of the tile, rows counting southward | the west and north edges and the north-west corner, as the manual states |
 | S2 | i and j of the cell on its cube face | the low-i and low-j edges and the corner between them |
-| H3 | the local IJ coordinates the library publishes (`cellToLocalIj`) | the edges shared with the three neighbours whose i and j are both no greater than the cell's, three consecutive edges; row CW2 reads the six neighbour offsets from the library and checks that three of them qualify and lie consecutive on the ring |
+| H3 | none: longitude and latitude, as for QUADBIN (the local IJ coordinates of `cellToLocalIj` are no common frame of two neighbours, [the enumeration](ENUMERATION.md)) | the north and west sides: an edge belongs to the cell south of it, and east of it where it runs north–south, by the exact sign of its normal's z component (geodetic) or of its coordinate differences (planar); a vertex to the cell whose corner there opens south, or east where an edge runs due south |
 
 A position on the boundary belongs to the cell whose lower part of the ring holds it. The walk states
 a crossing in the cell holding its position, so a trajectory leaving a cell through its lower part
@@ -72,22 +75,27 @@ tiling walk states it.
 
 ## Where an index frame breaks
 
-These cases have no common frame for the two cells meeting there, and the rule states each one:
+These cases have no common index frame for the cells meeting there, and the rule states each one:
 
-- **The twelve H3 pentagons,** with five edges and five vertices, where `cellToLocalIj` does not
-  reach across the missing direction.
-- **H3 cells crossing a face of the icosahedron,** whose IJ frame rotates there, and whose outline
-  carries an extra vertex.
-- **S2 cube-face edges and the eight cube corners,** where three cells meet and the i and j axes of
-  the faces point in different directions.
+- **The twelve H3 pentagons,** with five edges and five vertices, and **the H3 cells crossing a face
+  of the icosahedron,** whose IJ frame rotates there: the H3 rule reads no index frame, so neither
+  needs a rule of its own; a pentagon holds its edges and vertices by the same signs as a hexagon.
+- **S2 cube-face edges,** where the i and j axes of the two faces point in different directions:
+  the low-i and low-j sides of each face still give every edge one owner.
+- **The eight S2 cube corners,** where three cells meet: six are the low corner of exactly one
+  cell; the other two, (1, −1, 1) and (−1, 1, −1), are the low corner of none, and each belongs to
+  the cell of the lowest face meeting there (face 0 and face 1), the lowest cell identifier there.
 - **The poles.** The S2 poles are the centres of faces 2 and 5, a vertex of the cells meeting there
-  at every level from 1; the H3 poles lie inside a cell; QUADBIN has no tile beyond the latitude
-  limit of Web Mercator.
-- **The antimeridian.** A planar trajectory is read in the longitudes of its path, a geodetic one on
-  the sphere.
+  at every level from 1, held as the low corner of one cell of the face; no H3 vertex lies on a
+  pole; QUADBIN has no tile beyond the latitude limit of Web Mercator, and decision D5 states what
+  the south side of its last row belongs to.
+- **The antimeridian.** QUADBIN columns wrap there; a planar trajectory is read in the longitudes of
+  its path, and so is the ring of a cell crossing it; a geodetic one is read on the sphere.
 
-The rule for each is stated and checked by enumeration: at the coarse resolutions, where every cell
-can be listed, every edge has exactly one owner and every vertex exactly one.
+[The enumeration](ENUMERATION.md) (`tools/cell_ownership.py`) checks each case at the coarse
+resolutions, where every cell can be listed: at H3 resolutions 0 to 3 in both models, S2 levels 0 to
+4 and QUADBIN zooms 0 to 6, every edge has exactly one owner and every vertex exactly one, but the
+south side of the Mercator limit.
 
 ## How a crossing is dated
 
