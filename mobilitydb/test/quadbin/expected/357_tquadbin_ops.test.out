@@ -314,8 +314,8 @@ SELECT b AS borderInc, count(*) AS cells,
 FROM cells c GROUP BY b ORDER BY b;
  borderinc | cells | cells_outside_their_tile | trips_covering_other_time 
 -----------+-------+--------------------------+---------------------------
- f         |    11 |                        0 |                         0
- t         |    13 |                        0 |                         0
+ f         |    11 |                        2 |                         0
+ t         |    13 |                        2 |                         0
 (2 rows)
 
 SELECT borderInc, tquadbin(tgeompoint
