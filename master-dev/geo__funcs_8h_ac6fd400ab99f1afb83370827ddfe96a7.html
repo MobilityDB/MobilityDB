@@ -100,7 +100,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af97ab5c20d62c66155355e55454b2f5b.html#af97ab5c20d62c66155355e55454b2f5b">arcarc_shared_point_signs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa14ebc99353c20a7edbafc7127f74ae7.html#aa14ebc99353c20a7edbafc7127f74ae7">arcarc_within_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_afdff9c5fe2991305c9d2b4b09d44d860.html#afdff9c5fe2991305c9d2b4b09d44d860">ArcarcTerm</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a680e64fe53b8129dc82befe29b114d24.html#a680e64fe53b8129dc82befe29b114d24">arcsegm_cross</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ac6fd400ab99f1afb83370827ddfe96a7.html#ac6fd400ab99f1afb83370827ddfe96a7">arcsegm_cross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac91b0c958fa197cf011c29ccbabbb875.html#ac91b0c958fa197cf011c29ccbabbb875">arcsegm_end_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8432e7a27960bfe3c706b0e688d3dc8a.html#a8432e7a27960bfe3c706b0e688d3dc8a">arcsegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a07317217fcb491f4ab8f00c6912ffb82.html#a07317217fcb491f4ab8f00c6912ffb82">arcsegm_meet_exact</a></td></tr>
@@ -301,8 +301,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a680e64fe53b8129dc82befe29b114d24" name="a680e64fe53b8129dc82befe29b114d24"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a680e64fe53b8129dc82befe29b114d24">&#9670;&#160;</a></span>arcsegm_cross()</h2>
+<a id="ac6fd400ab99f1afb83370827ddfe96a7" name="ac6fd400ab99f1afb83370827ddfe96a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6fd400ab99f1afb83370827ddfe96a7">&#9670;&#160;</a></span>arcsegm_cross()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -326,13 +326,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>rx</em>, </td>
+          <td class="paramname"><em>bx</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ry</em>, </td>
+          <td class="paramname"><em>by</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -354,10 +354,9 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if a straight segment properly crosses a circular arc. </p>
-<p >Proper means the segment passes from one side of the arc to the other at a point interior to both edges, which is for an arc what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_aeb8c3cccf2549b2054fc66df216f61ae.html#aeb8c3cccf2549b2054fc66df216f61ae" title="Return true if two straight edges properly cross.">relate_edges_cross</a> decides for two straight edges. The quadratic <a class="el" href="geo__funcs_8h_a8432e7a27960bfe3c706b0e688d3dc8a.html#a8432e7a27960bfe3c706b0e688d3dc8a" title="Return the trajectory parameters at which a trajectory segment intersects an arc edge.">arcsegm_intersect</a> solves is what says so, read for its DISCRIMINANT rather than for its roots alone: a line meeting a circle at a double root is a TANGENT, which touches without passing through, and only a discriminant standing clear of the rounding that function already reads it against makes the line a secant. A root strictly inside the segment and strictly inside the arc's angular span is then a crossing point interior to both edges, and the four sectors around it are the four combinations of inside and outside. Nothing is read off the arc's endpoints: the edge carries the centre, the radius and the span, so the curve between them is determined. Whatever these quantities cannot separate reads as NOT crossing, which is the same refusal the straight predicate makes and leaves the pair to the routes that already answer it </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Proper means the segment passes from one side of the arc to the other at a point interior to both edges, which is for an arc what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_aeb8c3cccf2549b2054fc66df216f61ae.html#aeb8c3cccf2549b2054fc66df216f61ae" title="Return true if two straight edges properly cross.">relate_edges_cross</a> decides for two straight edges: a meeting <a class="el" href="geo__funcs_8h_a07317217fcb491f4ab8f00c6912ffb82.html#a07317217fcb491f4ab8f00c6912ffb82" title="Return where a straight segment meets a circular arc, decided exactly.">arcsegm_meet_exact</a> places interior to both, at a simple root of the quadratic that meets the line with the circle. A double root is a tangency, which touches without passing through, and a meeting at an end of either edge is a touch, which the vertex routes answer. Each of these is decided exactly on the input coordinates. That function answers every arc <a class="el" href="geo__funcs_8h_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc" title="Return the edges of a geometry in a dynamic array.">geom_extract_edges</a> emits, the two halves of a whole circle included, and relate reads this answer as complete: a crossing missed here makes two overlapping interiors read as touching </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ax,ay</td><td>Coordinates of the start of the straight segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rx,ry</td><td>Vector of the straight segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ax,ay,bx,by</td><td>Start and end of the straight segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">e</td><td>Arc edge </td></tr>
   </table>
   </dd>
