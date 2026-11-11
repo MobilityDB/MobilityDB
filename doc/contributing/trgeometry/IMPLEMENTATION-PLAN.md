@@ -38,7 +38,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG8 | `tIntersects`, `tDisjoint` of a 3D surface answer, or refuse in words of the type | merged as #3543 (`f6eb676881`): a polyhedral surface, a TIN or a curve is forced to 2D without the geodetic walk, so `tIntersects` and `tDisjoint` answer in step interpolation and are refused in linear as having Z |
 | TG9 | `round` of a 3D rotation keeps the quaternion of unit norm | merged as #3520 |
 | TG10 | `tDistance` of a 3D value and a 3D `tgeompoint` names the 3D refusal | merged as #3519 |
-| TG11 | The relationships and `tDwithin`, `eDwithin`, `aDwithin` of a 2D value read a 3D operand in 2D, as `tgeo_different_dimensions` states | open; branch `fix/trgeometry-temporal-intersects-reads-z`: every entry relating a 2D value and a geometry reads a geometry with Z in 2D through `trgeometry_geo_common_dims`, as the distances do; at `3aa3c58046` each raised "Operation on mixed 2D/3D dimensions" while `\|=\|` of the same operands answered 0 |
+| TG11 | The relationships and `tDwithin`, `eDwithin`, `aDwithin` of a 2D value read a 3D operand in 2D, as `tgeo_different_dimensions` states | #3569 open (`1f6269c7e6`), its receipts held: CGAL on 1107 rows of the exact rigid distance corpus, each geometry given with Z, `distance_geo` 0.174 of GEOS; branch `fix/trgeometry-temporal-intersects-reads-z`: every entry relating a 2D value and a geometry reads a geometry with Z in 2D through `trgeometry_geo_common_dims`, as the distances do; at `3aa3c58046` each raised "Operation on mixed 2D/3D dimensions" while `\|=\|` of the same operands answered 0 |
 
 ## Refusals to lift
 
