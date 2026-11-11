@@ -106,6 +106,26 @@ ensure_valid_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return the copy with no Z of a geometry with Z related to a temporal
+ * rigid geometry without Z, and NULL otherwise, as #tgeo_geo_common_dims
+ * gives it for a temporal geo
+ * @details A temporal rigid geometry in two dimensions reads a geometry in
+ * three dimensions in two, as its distances do. A NULL argument answers NULL,
+ * so the validity function the caller runs next reports it
+ * (#ensure_valid_trgeometry_geo)
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ */
+GSERIALIZED *
+trgeometry_geo_common_dims(const Temporal *temp, const GSERIALIZED *gs)
+{
+  if (! temp || ! gs || MEOS_FLAGS_GET_Z(temp->flags) ||
+      ! FLAGS_GET_Z(gs->gflags))
+    return NULL;
+  return geo_force2d_intl(gs);
+}
+
+/**
  * @brief Ensure the validity of two temporal rigid geometries
  */
 bool
