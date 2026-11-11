@@ -95,6 +95,17 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
    since the one of liblwgeom, `lwgeom_solid_contains_lwgeom`, clips the solid, which constructs
    vertices, retries at a boundary after a random skew, and reads the first point of the other
    geometry alone. TG3.
+   The solid flag and the MEOS flags are separate fields: the MEOS flags are `Temporal->flags`,
+   and PostGIS keeps the solid flag in the serialized geometry, in the 8 bytes of extended flags
+   of its version 2. MEOS reads the Z and geodetic flags of a geometry through the PostGIS macros
+   and writes its own through `MEOS_FLAGS_SET_*`, and reads no geometry at an offset of its header,
+   so the extended flags shift nothing. Four consequences are TG3's to meet: text and WKB do not
+   carry the flag, so the constructor sets it from the closedness of the reference geometry and
+   never takes it from the input, and every input and rebuild agrees; a solid reference geometry
+   is 8 bytes longer than the same geometry without the flag, so the reference geometry a value
+   returns is tested against the geometry of its constructor; `lwgeom_force_2d` and the placement
+   at a pose are tested to keep the flag; and `geom_faces_add` refuses a solid, so the exact test
+   of a point in a solid sits in the face kernel.
 
 ## The order
 
