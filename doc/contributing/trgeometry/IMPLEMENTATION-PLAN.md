@@ -47,7 +47,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG12 | The distance of a concave, holed or surface body and to a concave or holed polygon | [its note](NON-CONVEX-DISTANCE.md) |
 | TG13 | The relationships of a linear rigid geometry | [its note](RIGID-SWEPT-RELATIONSHIPS.md); `intersects` and `disjoint` merged as #3497 (`266f7ed2bb`, `59f3e1305a`), `contains`, `covers` and `touches` open |
 | TG14 | The distance to a collection and to a curve | open; to reconcile with [the note](NON-CONVEX-DISTANCE.md) |
-| TG15 | `atGeometry`, `minusGeometry` over a geometry with holes | open |
+| TG15 | `atGeometry`, `minusGeometry` over a geometry with holes. At `7dc42788bb` `trgeometry_restrict_geom` refuses any geometry with holes before it reads the interpolation ("not implemented"), so a body in step or discrete interpolation, which holds each pose and is answered by a test of each placement, is refused as well. In linear interpolation a body meets a region with holes where it meets its exterior ring and does not lie inside a hole, the containment of TG13 | open: step and discrete answerable by the placements; linear after the containment of TG13 |
 | TG16 | `transform`, `transformPipeline` | merged as #3541 (`67771c197f`), by decision 3 |
 | TG17 | `asMFJSON`, `round` over a surface | open |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1 |
