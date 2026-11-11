@@ -13612,6 +13612,38 @@ exact_arc_bound(ExactArc *arc, double box[4])
   return;
 }
 
+/**
+ * @brief Read an arc edge of a geometry as the points that define it
+ * @details An arc #emit_arc_edge emits from three points of a circular string
+ * is the arc through them; each of the two halves it emits for a whole circle
+ * runs counterclockwise from its start to its end, as a half circle of
+ * #geom_curve_add_points does. The circle in doubles is then set by
+ * #exact_arc_bound
+ * @param[in] e Arc edge, as #geom_extract_edges emits it, never centred
+ * @param[out] arc Arc
+ */
+void
+exact_arc_from_edge(const Edge *e, ExactArc *arc)
+{
+  assert(! e->centred);
+  arc->half = e->diameter;
+  if (e->diameter)
+  {
+    arc->s[0] = e->x1; arc->s[1] = e->y1;
+    arc->e[0] = e->x2; arc->e[1] = e->y2;
+    arc->m[0] = arc->m[1] = 0.0;
+  }
+  else
+  {
+    arc->s[0] = e->sx; arc->s[1] = e->sy;
+    arc->m[0] = e->mx; arc->m[1] = e->my;
+    arc->e[0] = e->ex; arc->e[1] = e->ey;
+  }
+  double box[4];
+  exact_arc_bound(arc, box);
+  return;
+}
+
 /* Whether a gap in doubles with a margin lies past a distance exactly */
 static inline bool
 arc_gap_past(double gap, double margin, double dist)

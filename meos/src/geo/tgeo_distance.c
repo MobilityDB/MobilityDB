@@ -267,66 +267,36 @@ dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g)
 
 
 /**
- * @brief Apply the rightward-ray crossings of one polygon-boundary segment to
- * the even-odd accumulator @p inside
- * @details A straight edge contributes at most one crossing; a circular arc
- * contributes the crossings of the horizontal line y with its supporting circle
- * that fall within the arc's angular span. Point, line, and standalone (1D) arc
- * edges, which bound no region, contribute nothing.
+ * @brief Apply the rightward-ray crossings of one polygon-boundary edge to the
+ * even-odd accumulator @p inside
+ * @details The parity of the crossings of a segment (#point_segm_ray_parity)
+ * or an arc (#point_arc_ray_parity) is read exactly on the input doubles, the
+ * point standing as #point_line_side_moved moves it, so that the crossings
+ * along a ring tell whether it lies inside at every scale. A point on the ring
+ * reads either way, which a caller does not ask: the nearest approach of a
+ * point on the boundary is 0 from its edge, and a disk centred on it crosses
+ * it. Point, line, and standalone (1D) arc edges, which bound no region,
+ * contribute nothing.
  */
 static void
 dist_poly_seg_raycross(const Edge *s, double x, double y,
   bool *inside)
 {
-  if (! (s->etype == EDGE_POLYSEG || s->etype == EDGE_POLYARC))
-    return;
-  if ((s->etype == EDGE_LINEARC || s->etype == EDGE_POLYARC))
+  const double p[2] = {x, y};
+  if (s->etype == EDGE_POLYARC)
   {
-    /* The horizontal line at height y meets the supporting circle at
-     * cx +/- sqrt(radius^2 - (y - cy)^2). Flip the parity for each crossing
-     * strictly to the right of x that lies within the arc's angular span; a
-     * ray that only grazes the circle tangentially does not cross. */
-    const double dyc = y - s->cy;
-    const double h2 = s->radius * s->radius - dyc * dyc;
-    if (h2 <= MEOS_GEOM_TOLERANCE)
-      return;
-    const double h = sqrt(h2);
-    const double xhit[2] = {s->cx - h, s->cx + h};
-    /* Forward traversal direction of the arc in the angle parameter */
-    const double sdir = s->ccw ? 1.0 : -1.0;
-    for (int k = 0; k < 2; k++)
-    {
-      const double xi = xhit[k];
-      if (xi <= x)
-        continue;
-      if (! arc_contains_angle(s, atan2(dyc, xi - s->cx)))
-        continue;
-      /* Half-open ownership, mirroring the straight-edge rule: a crossing at an
-       * arc endpoint (a ring junction on the ray) is owned by this edge only if
-       * the arc interior rises above the ray there; an interior crossing is
-       * always transversal and always counted. */
-      const bool at_ep0 = fabs(xi - s->x1) < MEOS_GEOM_TOLERANCE && 
-        fabs(y - s->y1) < MEOS_GEOM_TOLERANCE;
-      const bool at_ep1 = fabs(xi - s->x2) < MEOS_GEOM_TOLERANCE && 
-        fabs(y - s->y2) < MEOS_GEOM_TOLERANCE;
-      if (at_ep0 || at_ep1)
-      {
-        const double theta_e = at_ep0 ? s->theta0 : s->theta1;
-        const double dtheta_in = at_ep0 ? sdir : -sdir;
-        if (dtheta_in * cos(theta_e) <= 0)
-          continue;
-      }
+    ExactArc arc;
+    exact_arc_from_edge(s, &arc);
+    if (point_arc_ray_parity(p, &arc))
       *inside = ! *inside;
-    }
     return;
   }
-  double y1 = s->y1, y2 = s->y2;
-  if ((y1 > y) != (y2 > y))
-  {
-    double xint = s->x1 + (y - y1) / (y2 - y1) * (s->x2 - s->x1);
-    if (x < xint)
-      *inside = ! *inside;
-  }
+  if (s->etype != EDGE_POLYSEG)
+    return;
+  const double a[2] = {s->x1, s->y1}, b[2] = {s->x2, s->y2};
+  if (point_segm_ray_parity(p, a, b))
+    *inside = ! *inside;
+  return;
 }
 
 /**
