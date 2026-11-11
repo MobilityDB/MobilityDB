@@ -2481,6 +2481,22 @@ pg_interval_hash_extended(const Interval *interv, uint64 seed)
 bool
 timestamp_overlaps(Timestamp ts1, Timestamp te1, Timestamp ts2, Timestamp te2)
 {
+  /* Take ts1 and ts2 as the lesser endpoints of their intervals, as
+   * PostgreSQL's overlaps_timestamp does and as #time_overlaps and
+   * #timetz_overlaps do */
+  if (gt_timestamp_timestamp(ts1, te1))
+  {
+    Timestamp tt = ts1;
+    ts1 = te1;
+    te1 = tt;
+  }
+  if (gt_timestamp_timestamp(ts2, te2))
+  {
+    Timestamp tt = ts2;
+    ts2 = te2;
+    te2 = tt;
+  }
+
   /*
    * We can consider three cases: ts1 > ts2, ts1 < ts2, ts1 = ts2
    */
@@ -2504,7 +2520,7 @@ timestamp_overlaps(Timestamp ts1, Timestamp te1, Timestamp ts2, Timestamp te2)
       return (true);
 
     /*
-     * We had ts2 <= te2 above, and we just found ts2 >= te1,chence te2 >= te1
+     * We had ts2 <= te2 above, and we just found ts2 >= te1, hence te2 >= te1
      */
     return (false);
   }
