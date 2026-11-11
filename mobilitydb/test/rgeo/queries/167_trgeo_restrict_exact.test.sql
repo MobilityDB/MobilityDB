@@ -274,3 +274,8 @@ SELECT asText(atGeometry(
   geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))')) IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- A body with holes in linear motion: its holes are not read, so it is refused
+SELECT getTime(atGeometry(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))'));
+SELECT getTime(atStbox(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', stbox 'STBOX X((2,2),(2.5,2.5))'));
+-- in step interpolation it holds each placement, holes included, which answers
+SELECT getTime(atGeometry(trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))'));
