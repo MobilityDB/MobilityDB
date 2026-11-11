@@ -28,6 +28,8 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG5 | The merged `traversedArea` of a 3D value answers the ground its 2D projection covers, which it does not in a turn | open |
 | TG26 | The merged `traversedArea` of a 2D body that turns joins placements 0.05 rad apart by their hull, which is the ground it covers only when it does not turn: on rows 1094 and 1153 of the corpus of the exact rigid distance it reaches a geometry the body stays 0.042 and 0.045 from, and `trgeometry_convex_sweep` states the hull as what the body covers. A translating body is exact: a contact through a vertex the union constructs reads as apart in doubles, as any region of rounded vertices does | merged as #3515 (`f3929f747b`); CGAL judges its 400 turning rows of the corpus equal to the exact union of its pieces |
 | TG23 | `eIntersects` and `tIntersects` of two 2D values agree on the car of nuScenes that touches the ego vehicle | #3347 merged (`a5efd7d54e`), whose witness shows the lifting compares poses; not yet run on that car |
+| TG29 | `atGeometry`, `minusGeometry` of a body with holes in linear motion read the holes as filled: the clip of `trgeo_geom_clip.c` reads the exterior ring alone, so a square with a hole moving across a small square in its hole answers from the first instant, where the exact answer starts at 02:24 | open: a refusal, then the answer by the rings ([the note](HOLED-REGIONS.md)) |
+| TG30 | `traversedArea(x, true)` of a body with holes answers its two end placements, area 24, where the swept region has area 56; the same body without its hole answers 56 | open: a refusal, then the sweep of the exterior ring minus what no wall crosses ([the note](HOLED-REGIONS.md)) |
 
 ## Defects
 
@@ -47,7 +49,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG12 | The distance of a concave, holed or surface body and to a concave or holed polygon | [its note](NON-CONVEX-DISTANCE.md) |
 | TG13 | The relationships of a linear rigid geometry | [its note](RIGID-SWEPT-RELATIONSHIPS.md); `intersects` and `disjoint` merged as #3497 (`266f7ed2bb`, `59f3e1305a`), `contains`, `covers` and `touches` open |
 | TG14 | The distance to a collection and to a curve | open; to reconcile with [the note](NON-CONVEX-DISTANCE.md) |
-| TG15 | `atGeometry`, `minusGeometry` over a geometry with holes. At `7dc42788bb` `trgeometry_restrict_geom` refuses any geometry with holes before it reads the interpolation ("not implemented"), so a body in step or discrete interpolation, which holds each pose and is answered by a test of each placement, is refused as well. In linear interpolation a body meets a region with holes where it meets its exterior ring and does not lie inside a hole, the containment of TG13 | open: step and discrete answerable by the placements; linear after the containment of TG13 |
+| TG15 | `atGeometry`, `minusGeometry` over a geometry with holes. At `7dc42788bb` `trgeometry_restrict_geom` refuses any geometry with holes before it reads the interpolation ("not implemented"), so a body in step or discrete interpolation, which holds each pose and is answered by a test of each placement, is refused as well. In linear interpolation a body meets a region with holes where it meets its exterior ring and does not lie inside a hole, the containment of TG13 | open: step and discrete answerable by the placements; linear after the containment of TG13 ([the note](HOLED-REGIONS.md)) |
 | TG16 | `transform`, `transformPipeline` | merged as #3541 (`67771c197f`), by decision 3 |
 | TG17 | `asMFJSON`, `round` over a surface | open |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1 |
@@ -107,6 +109,12 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
    returns is tested against the geometry of its constructor; `lwgeom_force_2d` and the placement
    at a pose are tested to keep the flag; and `geom_faces_add` refuses a solid, so the exact test
    of a point in a solid sits in the face kernel.
+6. **Holed regions: supported.** Decided by the owner. A body or a region with holes is answered
+   by every operation as the region it is, a point in a hole lying outside it; until a kernel reads
+   the holes of an operand, the operation refuses it with an error naming the holes, and never
+   answers for the region its exterior ring bounds. [The note](HOLED-REGIONS.md) states what each
+   function answers, refuses or answers wrongly at `7dc42788bb`, and the rows TG12, TG13, TG15, TG29
+   and TG30 that close it.
 
 ## The order
 
