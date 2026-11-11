@@ -27,6 +27,7 @@ family reaches `trgeometry` through a row here.
 | [The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md) | How the distance answers a body or a static polygon that is not convex or has holes. |
 | [Its feasibility](NON-CONVEX-DISTANCE-FEASIBILITY.md) | What master provides for it. |
 | [The relationships in linear motion](RIGID-SWEPT-RELATIONSHIPS.md) | Which relationships are refused for linear motion on #3347, and the algorithm that answers them. |
+| [Holed regions](HOLED-REGIONS.md) | The rule that a body or a region with holes is supported, what each function answers, refuses or answers wrongly for one, and the rows that close it. |
 
 ## Everything else about the type
 
