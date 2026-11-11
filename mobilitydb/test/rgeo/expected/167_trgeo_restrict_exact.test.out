@@ -263,3 +263,27 @@ SELECT getTime(atGeometry(trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),
  
 (1 row)
 
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(2.5 0), 0.0)@2001-01-03, Pose(Point(5 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1.5,2 1.5,2 -1))'));
+                                                           gettime                                                            
+------------------------------------------------------------------------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST), [Fri Jan 05 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(minusGeometry(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(2.5 0), 0.0)@2001-01-03, Pose(Point(5 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1.5,2 1.5,2 -1))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Wed Jan 03 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST)}
+(1 row)
+
+SELECT getTime(atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(2.5 0), 0.0)@2001-01-03}',
+  geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1.5,2 1.5,2 -1))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]}
+(1 row)
+
