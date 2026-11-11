@@ -4892,7 +4892,28 @@ _COMPOPS_PREDICATES = [
     {"key": "ge", "cap": "GreaterEqual", "ordered": True,
      "ever_op": "?>=", "always_op": "%>=", "ever_neg": "%<", "always_neg": "?<",
      "t_op": "#>=", "t_comm": "#<="},
+    # The ever/always overlaps compares a temporal value with the BOX of its
+    # type (_compops_box) rather than with its base type: `temp ?&& box` holds
+    # when the value lies in the box at some instant, `temp1 ?&& temp2` when the
+    # boxes of the two values overlap at an instant they share. No operator
+    # negates it, and it has no temporal-valued form. A family states it with
+    # `overlaps: true` once MEOS answers it for the family's types.
+    {"key": "overlaps", "cap": "Overlaps", "ordered": False, "box": True,
+     "ever_op": "?&&", "always_op": "%&&", "ever_neg": None, "always_neg": None,
+     "t_op": None, "t_comm": None},
 ]
+
+
+def _compops_box(temp: str) -> str | None:
+    """The bounding box type of the temporal type `temp`, read where
+    #render_tempopclass reads it: the box whose index operator classes take
+    `temp` as a partner on the topological axis (manifest.d/boxtypes.yaml), the
+    box the overlaps operator `&&` of `temp` reads; None when no box lists it."""
+    for bt in load_manifest().get("boxtypes", []):
+        for p in (bt.get("opclasses") or {}).get("partners") or []:
+            if p["type"] == temp and "topo" in p.get("axes", []):
+                return bt["box"]
+    return None
 
 _COMPOPS_T_HEADING = {
     "eq": "Temporal equal", "ne": "Temporal not equal",
@@ -4920,11 +4941,15 @@ def _compops_func(sig: str, ret: str, sym: str, support: str | None) -> str:
                 .replace("{SUPPORT}", sup).rstrip("\n"))
 
 
-def _compops_op_ea(op: str, l: str, r: str, proc: str, neg: str, rest: str,
-                    join: str) -> str:
+def _compops_op_ea(op: str, l: str, r: str, proc: str, neg: str | None,
+                    rest: str, join: str) -> str:
+    """An ever/always operator, written as #_compops_op_t writes a temporal
+    one; an operator no other operator negates states no NEGATOR."""
     tmpl = read_template("compops_op_evalways.sql.tmpl")
+    if neg is None:
+        tmpl = tmpl.replace("  NEGATOR = {NEG},\n", "")
     return (tmpl.replace("{OP}", op).replace("{L}", l).replace("{R}", r)
-                .replace("{PROC}", proc).replace("{NEG}", neg)
+                .replace("{PROC}", proc).replace("{NEG}", neg or "")
                 .replace("{REST}", rest).replace("{JOIN}", join).rstrip("\n"))
 
 
@@ -4940,6 +4965,11 @@ def _compops_ea_group(pred: dict, direction: str, pairs: list, basesym: str,
     pair in this family carries the predicate (an orderable-only predicate on a
     family with no orderable pair)."""
     applic = [p for p in pairs if not pred["ordered"] or in_class(p["temp"], "orderable")]
+    if pred.get("box"):
+        # The overlaps compares the temporal value with its box: the box takes
+        # the place of the base type, in the SQL and in the C symbol alike
+        applic = [{**p, "base": p["box"]} for p in applic if p.get("box")]
+        basesym = applic[0]["box"] if applic else basesym
     if not applic:
         return ""
     out = ""
@@ -4962,7 +4992,9 @@ def _compops_ea_group(pred: dict, direction: str, pairs: list, basesym: str,
 def _compops_t_group(pred: dict, pairs: list, basesym: str, tempsym: str) -> str:
     """The temporal-valued (`#=`-family) region for one predicate: one
     base-temp/temp-base/temp-temp triad per applicable pair, pairs separated by a
-    plain section rule."""
+    plain section rule; empty for a predicate with no temporal-valued form."""
+    if pred["t_op"] is None:
+        return ""
     applic = [p for p in pairs if not pred["ordered"] or in_class(p["temp"], "orderable")]
     if not applic:
         return ""
@@ -5068,7 +5100,10 @@ def render_compops(fam: dict) -> str:
                 f"compops_families {fam['family']!r}: temp={p['temp']!r} has "
                 "no temptype_basetype entry in meos_catalog.c's "
                 "MEOS_RELTYPE_CATALOG.")
-        pairs.append({**p, "base": bases[p["temp"]]})
+        pair = {**p, "base": bases[p["temp"]]}
+        if fam.get("overlaps"):
+            pair["box"] = _compops_box(p["temp"])
+        pairs.append(pair)
     spec = {**fam, "pairs": pairs}
     return generated(render_compops_body(spec), "compops.sql.tmpl")
 
