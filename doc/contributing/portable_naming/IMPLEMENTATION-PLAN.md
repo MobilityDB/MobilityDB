@@ -88,7 +88,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   lines of `mobilitydb/test/npoint/expected/306_tnpoint_spatialfuncs.test.out`, where a network
   point entering a box between two microseconds starts `atStbox` exclusively and ends
   `minusStbox` inclusively at the microsecond dating the crossing, the trip being outside the box
-  there.
+  there. Head `5183cc450c` on master `a6547ec34d` holds its six receipts (strict, Windows,
+  cppcheck, valgrind, speed, and the CGAL oracle 8280 of 8280) and is open as MobilityDB #3558.
+  Left: the QUADBIN cover of a trip still gives the microsecond of a crossing to the cell entered,
+  two cells of `357_tquadbin_ops` lying outside their tile, until step CW5.
 - **A temporal point instant made from the coordinates of a point writes its point in place**,
   outside the plan, as the owner decided on 2026-11-09 ("go ahead with the shared point-instant
   constructor"): the internal `tpointinst_make_coords` in `meos/src/geo/tgeo.c`, declared in
