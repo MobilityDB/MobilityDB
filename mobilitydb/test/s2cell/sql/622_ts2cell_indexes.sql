@@ -20,14 +20,14 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_ts2cell_src;
-CREATE TABLE tbl_ts2cell_src AS
+CREATE TEMP TABLE tbl_ts2cell_src AS
 SELECT k, 4.0 + (k % 20) * 0.05 AS x, 50.0 + (k / 20) * 0.05 AS y,
   timestamptz '2001-01-01' + k * interval '1 hour' AS t
 FROM generate_series(1, 240) k;
 
 -- Instants, moving points, and runs of one cell whose periods meet
 DROP TABLE IF EXISTS tbl_ts2cell_idx;
-CREATE TABLE tbl_ts2cell_idx AS
+CREATE TEMP TABLE tbl_ts2cell_idx AS
 SELECT k, ts2cell(geoToS2Cell(geography(ST_SetSRID(ST_MakePoint(x, y), 4326)), 12), t) AS temp
 FROM tbl_ts2cell_src WHERE k <= 100
 UNION ALL
@@ -42,7 +42,7 @@ ANALYZE tbl_ts2cell_idx;
 
 -- The box of a value, a box around it, and a box inside the moving points
 DROP TABLE IF EXISTS tbl_ts2cell_box;
-CREATE TABLE tbl_ts2cell_box AS
+CREATE TEMP TABLE tbl_ts2cell_box AS
 SELECT temp::stbox AS b FROM tbl_ts2cell_idx WHERE k % 4 = 0
 UNION ALL
 SELECT expandTime(expandSpace(temp::stbox, 0.1), interval '1 day')
@@ -57,7 +57,7 @@ ANALYZE tbl_ts2cell_box;
 -- A box of space alone, which the operators on time refuse: one around a
 -- value, one inside a moving point, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_ts2cell_xbox;
-CREATE TABLE tbl_ts2cell_xbox AS
+CREATE TEMP TABLE tbl_ts2cell_xbox AS
 SELECT stbox(format('SRID=4326;GEODSTBOX X((%s,%s),(%s,%s))', x, y, x + 0.1, y + 0.1)) AS b
 FROM tbl_ts2cell_src WHERE k % 4 = 3
 UNION ALL
@@ -76,7 +76,7 @@ ANALYZE tbl_ts2cell_xbox;
 
 -- The period of a value, one around it, one inside it, and one that meets it
 DROP TABLE IF EXISTS tbl_ts2cell_span;
-CREATE TABLE tbl_ts2cell_span AS
+CREATE TEMP TABLE tbl_ts2cell_span AS
 SELECT temp::tstzspan AS t FROM tbl_ts2cell_idx WHERE k % 4 = 0
 UNION ALL
 SELECT tstzspan(format('[%s, %s]', t - interval '1 day', t + interval '1 day'))
@@ -90,7 +90,7 @@ FROM tbl_ts2cell_src WHERE k % 4 = 3;
 ANALYZE tbl_ts2cell_span;
 
 DROP TABLE IF EXISTS test_ts2cell_idx;
-CREATE TABLE test_ts2cell_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_ts2cell_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 
@@ -717,9 +717,9 @@ DROP TABLE tbl_ts2cell_box;
 -- queries of a ts2cell as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_stbox_ts2cell AS
+CREATE TEMP TABLE tbl_stbox_ts2cell AS
 SELECT k, temp::stbox AS b FROM tbl_ts2cell_idx WHERE temp IS NOT NULL;
-CREATE TABLE tbl_ts2cell_q AS
+CREATE TEMP TABLE tbl_ts2cell_q AS
 SELECT temp AS q FROM tbl_ts2cell_idx WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION stbox_ts2cell_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -791,7 +791,7 @@ CREATE FUNCTION stbox_ts2cell_indexed() RETURNS text AS $$
     (16, 'SELECT count(*) FROM tbl_stbox_ts2cell WHERE b #>> (SELECT q FROM tbl_ts2cell_q LIMIT 1)'),
     (17, 'SELECT count(*) FROM tbl_stbox_ts2cell WHERE b #&> (SELECT q FROM tbl_ts2cell_q LIMIT 1)')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_stbox_ts2cell_seq AS SELECT stbox_ts2cell_answers() AS a;
+CREATE TEMP TABLE tbl_stbox_ts2cell_seq AS SELECT stbox_ts2cell_answers() AS a;
 SELECT a FROM tbl_stbox_ts2cell_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_stbox_ts2cell_gist_idx ON tbl_stbox_ts2cell USING gist(b);

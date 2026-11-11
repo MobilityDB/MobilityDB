@@ -34,7 +34,7 @@ NOTICE:  index "tbl_tstzspan_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_spanops;
 NOTICE:  table "test_spanops" does not exist, skipping
-CREATE TABLE test_spanops(
+CREATE TEMP TABLE test_spanops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

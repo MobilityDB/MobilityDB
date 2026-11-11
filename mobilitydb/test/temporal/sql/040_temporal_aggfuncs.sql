@@ -696,7 +696,7 @@ SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
 -------------------------------------------------------------------------------
 -- A direct call expands a copy of the box it is given
 DROP TABLE IF EXISTS tbl_extent_state;
-CREATE TABLE tbl_extent_state(s tstzspan, s0 tstzspan, b tbox, b0 tbox);
+CREATE TEMP TABLE tbl_extent_state(s tstzspan, s0 tstzspan, b tbox, b0 tbox);
 INSERT INTO tbl_extent_state VALUES (tstzspan '[2001-01-01, 2001-01-02]',
   tstzspan '[2001-01-01, 2001-01-02]',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])',

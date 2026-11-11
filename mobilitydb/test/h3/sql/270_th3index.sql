@@ -131,7 +131,7 @@ SELECT h3indexsetFromHexWKB(asHexWKB(h3OriginToDirectedEdges(h3index '8a2a100d64
   = h3OriginToDirectedEdges(h3index '8a2a100d645ffff');
 /* Errors */
 SELECT (tbigint '622236723497533440@2001-01-01')::th3index;
-CREATE TABLE tbl_th3index_assign(temp th3index);
+CREATE TEMP TABLE tbl_th3index_assign(temp th3index);
 INSERT INTO tbl_th3index_assign VALUES (tbigint '42@2001-01-01');
 DROP TABLE tbl_th3index_assign;
 SELECT th3indexFromMFJSON(replace(asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00'),
@@ -151,7 +151,7 @@ SELECT ((th3index '8a2a100d645ffff@2012-01-01 08:00:00')::tbigint)::th3index
 
 -- Assignment-context: casts are accepted in INSERT/UPDATE without ::
 DROP TABLE IF EXISTS tbl_th3index_assign;
-CREATE TABLE tbl_th3index_assign(k int, temp th3index);
+CREATE TEMP TABLE tbl_th3index_assign(k int, temp th3index);
 INSERT INTO tbl_th3index_assign VALUES (1, tbigint '622236723497533439@2012-01-01 08:00:00');
 SELECT * FROM tbl_th3index_assign;
 DROP TABLE tbl_th3index_assign;
@@ -169,7 +169,7 @@ SELECT tbigint '622236723497533439@2012-01-01 08:00:00' = th3index '8a2a100d645f
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_th3index_binio;
-CREATE TABLE tbl_th3index_binio(k int, temp th3index);
+CREATE TEMP TABLE tbl_th3index_binio(k int, temp th3index);
 INSERT INTO tbl_th3index_binio VALUES
   (1, th3index '8a2a100d645ffff@2012-01-01 08:00:00'),
   (2, th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6457fff@2001-01-02}'),
@@ -178,7 +178,7 @@ INSERT INTO tbl_th3index_binio VALUES
 \copy tbl_th3index_binio TO 'tbl_th3index_binio' (FORMAT BINARY);
 
 DROP TABLE IF EXISTS tbl_th3index_binio_tmp;
-CREATE TABLE tbl_th3index_binio_tmp AS TABLE tbl_th3index_binio WITH NO DATA;
+CREATE TEMP TABLE tbl_th3index_binio_tmp AS TABLE tbl_th3index_binio WITH NO DATA;
 \copy tbl_th3index_binio_tmp FROM 'tbl_th3index_binio' (FORMAT BINARY);
 
 SELECT COUNT(*) FROM tbl_th3index_binio t1, tbl_th3index_binio_tmp t2

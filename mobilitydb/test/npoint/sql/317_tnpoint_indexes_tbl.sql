@@ -21,7 +21,7 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tnpoint_idx;
-CREATE TABLE tbl_tnpoint_idx AS
+CREATE TEMP TABLE tbl_tnpoint_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tnpoint_big
   UNION ALL
@@ -40,7 +40,7 @@ ANALYZE tbl_tnpoint_idx;
 -- are random, so they meet few values exactly: the others come from the rows of
 -- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_tnpoint_src;
-CREATE TABLE tbl_tnpoint_src AS
+CREATE TEMP TABLE tbl_tnpoint_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_tnpoint_idx WHERE k % 1000 = 0 AND temp IS NOT NULL;
 
@@ -48,7 +48,7 @@ FROM tbl_tnpoint_idx WHERE k % 1000 = 0 AND temp IS NOT NULL;
 -- that of the value starts. The search for the nearest values, whose distance
 -- costs more than a box, is given the second alone.
 DROP TABLE IF EXISTS tbl_tnpoint_val;
-CREATE TABLE tbl_tnpoint_val AS
+CREATE TEMP TABLE tbl_tnpoint_val AS
 SELECT temp, false AS knn FROM tbl_tnpoint WHERE k % 20 = 0
 UNION ALL
 SELECT temp, true FROM tbl_tnpoint_src
@@ -59,7 +59,7 @@ ANALYZE tbl_tnpoint_val;
 -- The box of a value of the fixture, the box of a value, one around it, one
 -- inside it, and one whose period meets it
 DROP TABLE IF EXISTS tbl_tnpoint_box;
-CREATE TABLE tbl_tnpoint_box AS
+CREATE TEMP TABLE tbl_tnpoint_box AS
 SELECT temp::stbox AS b, false AS knn FROM tbl_tnpoint WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_tnpoint_src
@@ -80,7 +80,7 @@ ANALYZE tbl_tnpoint_box;
 -- A box of space alone, which the operators on time refuse: one around a value,
 -- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_tnpoint_xbox;
-CREATE TABLE tbl_tnpoint_xbox AS
+CREATE TEMP TABLE tbl_tnpoint_xbox AS
 SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1)) AS b
 FROM tbl_tnpoint_src
@@ -101,7 +101,7 @@ ANALYZE tbl_tnpoint_xbox;
 -- A period of the fixture, the period of a value, one around it, one inside it,
 -- and one that meets it
 DROP TABLE IF EXISTS tbl_tnpoint_span;
-CREATE TABLE tbl_tnpoint_span AS
+CREATE TEMP TABLE tbl_tnpoint_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
 SELECT t FROM tbl_tnpoint_src
@@ -119,12 +119,12 @@ ANALYZE tbl_tnpoint_span;
 
 -- A point at a corner of the box of a value
 DROP TABLE IF EXISTS tbl_tnpoint_geo;
-CREATE TABLE tbl_tnpoint_geo AS
+CREATE TEMP TABLE tbl_tnpoint_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b)), 5676) AS g, true AS knn FROM tbl_tnpoint_src;
 ANALYZE tbl_tnpoint_geo;
 
 DROP TABLE IF EXISTS test_tnpoint_idx;
-CREATE TABLE test_tnpoint_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_tnpoint_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 
@@ -1002,7 +1002,7 @@ DROP INDEX tbl_tnpoint_quadtree_idx;
 
 -- Every row carries the same value, so a split of the quad-tree finds keys that
 -- are all equal
-CREATE TABLE tbl_tnpoint_allthesame AS
+CREATE TEMP TABLE tbl_tnpoint_allthesame AS
 SELECT k, tnpoint(npoint 'Npoint(1, 0.5)', t) AS temp
 FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tnpoint_allthesame_quadtree ON tbl_tnpoint_allthesame USING spgist(temp);
@@ -1022,9 +1022,9 @@ DROP FUNCTION test_probes_index(text);
 -- queries of a tnpoint as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_stbox_tnpoint AS
+CREATE TEMP TABLE tbl_stbox_tnpoint AS
 SELECT k, temp::stbox AS b FROM tbl_tnpoint WHERE temp IS NOT NULL;
-CREATE TABLE tbl_tnpoint_q AS
+CREATE TEMP TABLE tbl_tnpoint_q AS
 SELECT temp AS q FROM tbl_tnpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION stbox_tnpoint_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -1100,7 +1100,7 @@ CREATE FUNCTION stbox_tnpoint_indexed() RETURNS text AS $$
     (17, 'SELECT count(*) FROM tbl_stbox_tnpoint WHERE b #&> (SELECT q FROM tbl_tnpoint_q LIMIT 1)'),
     (18, 'SELECT k FROM tbl_stbox_tnpoint ORDER BY b |=| (SELECT q FROM tbl_tnpoint_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_stbox_tnpoint_seq AS SELECT stbox_tnpoint_answers() AS a;
+CREATE TEMP TABLE tbl_stbox_tnpoint_seq AS SELECT stbox_tnpoint_answers() AS a;
 SELECT a FROM tbl_stbox_tnpoint_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_stbox_tnpoint_gist_idx ON tbl_stbox_tnpoint USING gist(b);

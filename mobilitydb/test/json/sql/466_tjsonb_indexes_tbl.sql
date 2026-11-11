@@ -21,7 +21,7 @@ $$;
 
 -- The instants and sequences of the fixture, each repeated a week apart
 DROP TABLE IF EXISTS tbl_tjsonb_idx;
-CREATE TABLE tbl_tjsonb_idx AS
+CREATE TEMP TABLE tbl_tjsonb_idx AS
 WITH base(k, temp) AS (
   SELECT k, inst FROM tbl_tjsonb_inst
   UNION ALL
@@ -38,13 +38,13 @@ ANALYZE tbl_tjsonb_idx;
 -- table so that every operator has rows to answer. This step passes through the
 -- instants and each kind of sequence in turn.
 DROP TABLE IF EXISTS tbl_tjsonb_src;
-CREATE TABLE tbl_tjsonb_src AS
+CREATE TEMP TABLE tbl_tjsonb_src AS
 SELECT k, temp, temp::tstzspan AS t
 FROM tbl_tjsonb_idx WHERE k % 900 = 0;
 
 -- A value of the table, and one whose period ends where that of the value starts
 DROP TABLE IF EXISTS tbl_tjsonb_val;
-CREATE TABLE tbl_tjsonb_val AS
+CREATE TEMP TABLE tbl_tjsonb_val AS
 SELECT temp FROM tbl_tjsonb_src
 UNION ALL
 SELECT shiftTime(temp, lower(t) - upper(t)) FROM tbl_tjsonb_src;
@@ -53,7 +53,7 @@ ANALYZE tbl_tjsonb_val;
 -- A period of the fixture, the period of a value, one around it, one inside it,
 -- and one that meets it
 DROP TABLE IF EXISTS tbl_tjsonb_span;
-CREATE TABLE tbl_tjsonb_span AS
+CREATE TEMP TABLE tbl_tjsonb_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
 SELECT t FROM tbl_tjsonb_src
@@ -70,7 +70,7 @@ FROM tbl_tjsonb_src;
 ANALYZE tbl_tjsonb_span;
 
 DROP TABLE IF EXISTS test_tjsonb_idx;
-CREATE TABLE test_tjsonb_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_tjsonb_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 

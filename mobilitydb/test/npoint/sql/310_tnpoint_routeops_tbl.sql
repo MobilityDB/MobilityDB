@@ -5,7 +5,7 @@ DROP INDEX IF EXISTS test_tnpoint_gin_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE if exists test_tnpoint_routeops;
-CREATE TABLE test_tnpoint_routeops(
+CREATE TEMP TABLE test_tnpoint_routeops(
   op char(3),
   leftarg text,
   rightarg text,

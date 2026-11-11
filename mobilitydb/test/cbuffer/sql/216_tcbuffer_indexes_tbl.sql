@@ -21,7 +21,7 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tcbuffer_idx;
-CREATE TABLE tbl_tcbuffer_idx AS
+CREATE TEMP TABLE tbl_tcbuffer_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tcbuffer_big
   UNION ALL
@@ -40,7 +40,7 @@ ANALYZE tbl_tcbuffer_idx;
 -- are random, so they meet few values exactly: the others come from the rows of
 -- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_tcbuffer_src;
-CREATE TABLE tbl_tcbuffer_src AS
+CREATE TEMP TABLE tbl_tcbuffer_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_tcbuffer_idx WHERE k % 650 = 0;
 
@@ -48,7 +48,7 @@ FROM tbl_tcbuffer_idx WHERE k % 650 = 0;
 -- that of the value starts. The search for the nearest values, whose distance
 -- costs more than a box, is given the second alone.
 DROP TABLE IF EXISTS tbl_tcbuffer_val;
-CREATE TABLE tbl_tcbuffer_val AS
+CREATE TEMP TABLE tbl_tcbuffer_val AS
 SELECT temp, false AS knn FROM tbl_tcbuffer WHERE k % 20 = 0
 UNION ALL
 SELECT temp, true FROM tbl_tcbuffer_src
@@ -59,7 +59,7 @@ ANALYZE tbl_tcbuffer_val;
 -- The box of a value of the fixture, the box of a value, one around it, one
 -- inside it, and one whose period meets it
 DROP TABLE IF EXISTS tbl_tcbuffer_box;
-CREATE TABLE tbl_tcbuffer_box AS
+CREATE TEMP TABLE tbl_tcbuffer_box AS
 SELECT temp::stbox AS b, false AS knn FROM tbl_tcbuffer WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_tcbuffer_src
@@ -80,7 +80,7 @@ ANALYZE tbl_tcbuffer_box;
 -- A box of space alone, which the operators on time refuse: one around a value,
 -- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_tcbuffer_xbox;
-CREATE TABLE tbl_tcbuffer_xbox AS
+CREATE TEMP TABLE tbl_tcbuffer_xbox AS
 SELECT stbox(format('SRID=3812;STBOX X((%s,%s),(%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1)) AS b
 FROM tbl_tcbuffer_src
@@ -101,7 +101,7 @@ ANALYZE tbl_tcbuffer_xbox;
 -- A period of the fixture, the period of a value, one around it, one inside it,
 -- and one that meets it
 DROP TABLE IF EXISTS tbl_tcbuffer_span;
-CREATE TABLE tbl_tcbuffer_span AS
+CREATE TEMP TABLE tbl_tcbuffer_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
 SELECT t FROM tbl_tcbuffer_src
@@ -119,12 +119,12 @@ ANALYZE tbl_tcbuffer_span;
 
 -- A point at a corner of the box of a value
 DROP TABLE IF EXISTS tbl_tcbuffer_geo;
-CREATE TABLE tbl_tcbuffer_geo AS
+CREATE TEMP TABLE tbl_tcbuffer_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b)), 3812) AS g, true AS knn FROM tbl_tcbuffer_src;
 ANALYZE tbl_tcbuffer_geo;
 
 DROP TABLE IF EXISTS test_tcbuffer_idx;
-CREATE TABLE test_tcbuffer_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_tcbuffer_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 
@@ -966,7 +966,7 @@ DROP TABLE tbl_tcbuffer_src;
 DROP TABLE tbl_tcbuffer_idx;
 -- Every row carries the same value, so a split of the quad-tree finds keys that
 -- are all equal
-CREATE TABLE tbl_tcbuffer_allthesame AS
+CREATE TEMP TABLE tbl_tcbuffer_allthesame AS
 SELECT k, tcbuffer(cbuffer 'SRID=3812;Cbuffer(Point(5 5), 1)', t) AS temp
 FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tcbuffer_allthesame_quadtree ON tbl_tcbuffer_allthesame USING spgist(temp);
@@ -986,9 +986,9 @@ DROP FUNCTION test_probes_index(text);
 -- queries of a tcbuffer as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_stbox_tcbuffer AS
+CREATE TEMP TABLE tbl_stbox_tcbuffer AS
 SELECT k, temp::stbox AS b FROM tbl_tcbuffer WHERE temp IS NOT NULL;
-CREATE TABLE tbl_tcbuffer_q AS
+CREATE TEMP TABLE tbl_tcbuffer_q AS
 SELECT temp AS q FROM tbl_tcbuffer WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION stbox_tcbuffer_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -1064,7 +1064,7 @@ CREATE FUNCTION stbox_tcbuffer_indexed() RETURNS text AS $$
     (17, 'SELECT count(*) FROM tbl_stbox_tcbuffer WHERE b #&> (SELECT q FROM tbl_tcbuffer_q LIMIT 1)'),
     (18, 'SELECT k FROM tbl_stbox_tcbuffer ORDER BY b |=| (SELECT q FROM tbl_tcbuffer_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_stbox_tcbuffer_seq AS SELECT stbox_tcbuffer_answers() AS a;
+CREATE TEMP TABLE tbl_stbox_tcbuffer_seq AS SELECT stbox_tcbuffer_answers() AS a;
 SELECT a FROM tbl_stbox_tcbuffer_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_stbox_tcbuffer_gist_idx ON tbl_stbox_tcbuffer USING gist(b);

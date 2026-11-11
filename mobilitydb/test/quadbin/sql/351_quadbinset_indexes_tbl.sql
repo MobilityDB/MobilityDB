@@ -21,7 +21,7 @@ $$;
 DROP TABLE IF EXISTS tbl_quadbinset_idx;
 -- The sets and the union of every two consecutive ones, so that sets of
 -- distinct rows overlap and contain one another
-CREATE TABLE tbl_quadbinset_idx AS
+CREATE TEMP TABLE tbl_quadbinset_idx AS
 WITH src AS (
 SELECT k, s FROM tbl_quadbinset)
 SELECT k, s FROM src
@@ -30,7 +30,7 @@ SELECT t1.k + 100000, t1.s + t2.s FROM src t1, src t2 WHERE t2.k = t1.k + 1;
 ANALYZE tbl_quadbinset_idx;
 
 DROP TABLE IF EXISTS test_quadbinset_idx;
-CREATE TABLE test_quadbinset_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_quadbinset_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 

@@ -245,7 +245,7 @@ DECLARE
   k INT;
 BEGIN
 
-CREATE TABLE IF NOT EXISTS execution_stats
+CREATE TEMP TABLE IF NOT EXISTS execution_stats
 (Query CHAR(5),
 StartTime TIMESTAMP,
 QFilter VARCHAR,

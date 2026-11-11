@@ -9,7 +9,7 @@ DROP INDEX IF EXISTS tbl_tgeompoint3D_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_posops3d;
-create TABLE test_posops3d(
+create TEMP TABLE test_posops3d(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

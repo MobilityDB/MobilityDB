@@ -177,7 +177,7 @@ SELECT rotate(tgeompoint 'SRID=3812;[Point(50 160)@2001-01-01, Point(50 50)@2001
 
 -- A stored value keeps its coordinates after being scaled and moved
 DROP TABLE IF EXISTS tbl_transf_arg;
-CREATE TABLE tbl_transf_arg(temp tgeompoint);
+CREATE TEMP TABLE tbl_transf_arg(temp tgeompoint);
 INSERT INTO tbl_transf_arg VALUES
   (tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
 SELECT asEWKT(scale(temp, geometry 'POINT(2 2)')) FROM tbl_transf_arg;

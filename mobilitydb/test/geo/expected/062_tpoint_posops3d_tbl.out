@@ -8,7 +8,7 @@ NOTICE:  index "tbl_tgeompoint3d_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_posops3d;
 NOTICE:  table "test_posops3d" does not exist, skipping
-create TABLE test_posops3d(
+create TEMP TABLE test_posops3d(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

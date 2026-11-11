@@ -6,35 +6,35 @@
 
 \copy tbl_intspanset TO 'tbl_intspanset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_intspanset_tmp;
-CREATE TABLE tbl_intspanset_tmp AS TABLE tbl_intspanset WITH NO DATA;
+CREATE TEMP TABLE tbl_intspanset_tmp AS TABLE tbl_intspanset WITH NO DATA;
 \copy tbl_intspanset_tmp FROM 'tbl_intspanset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 DROP TABLE tbl_intspanset_tmp;
 
 \copy tbl_bigintspanset TO 'tbl_bigintspanset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_bigintspanset_tmp;
-CREATE TABLE tbl_bigintspanset_tmp AS TABLE tbl_bigintspanset WITH NO DATA;
+CREATE TEMP TABLE tbl_bigintspanset_tmp AS TABLE tbl_bigintspanset WITH NO DATA;
 \copy tbl_bigintspanset_tmp FROM 'tbl_bigintspanset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_bigintspanset_tmp;
 
 \copy tbl_floatspanset TO 'tbl_floatspanset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_floatspanset_tmp;
-CREATE TABLE tbl_floatspanset_tmp AS TABLE tbl_floatspanset WITH NO DATA;
+CREATE TEMP TABLE tbl_floatspanset_tmp AS TABLE tbl_floatspanset WITH NO DATA;
 \copy tbl_floatspanset_tmp FROM 'tbl_floatspanset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
 DROP TABLE tbl_floatspanset_tmp;
 
 \copy tbl_datespanset TO 'tbl_datespanset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_datespanset_tmp;
-CREATE TABLE tbl_datespanset_tmp AS TABLE tbl_datespanset WITH NO DATA;
+CREATE TEMP TABLE tbl_datespanset_tmp AS TABLE tbl_datespanset WITH NO DATA;
 \copy tbl_datespanset_tmp FROM 'tbl_datespanset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_datespanset t1, tbl_datespanset_tmp t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
 DROP TABLE tbl_datespanset_tmp;
 
 \copy tbl_tstzspanset TO 'tbl_tstzspanset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tstzspanset_tmp;
-CREATE TABLE tbl_tstzspanset_tmp AS TABLE tbl_tstzspanset WITH NO DATA;
+CREATE TEMP TABLE tbl_tstzspanset_tmp AS TABLE tbl_tstzspanset WITH NO DATA;
 \copy tbl_tstzspanset_tmp FROM 'tbl_tstzspanset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 DROP TABLE tbl_tstzspanset_tmp;

@@ -22,7 +22,7 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tpose2d_idx;
-CREATE TABLE tbl_tpose2d_idx AS
+CREATE TEMP TABLE tbl_tpose2d_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tpose2d
   UNION ALL
@@ -41,7 +41,7 @@ ANALYZE tbl_tpose2d_idx;
 -- are random, so they meet few values exactly: the others come from the rows of
 -- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_tpose2d_src;
-CREATE TABLE tbl_tpose2d_src AS
+CREATE TEMP TABLE tbl_tpose2d_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_tpose2d_idx WHERE k % 470 = 0;
 
@@ -49,7 +49,7 @@ FROM tbl_tpose2d_idx WHERE k % 470 = 0;
 -- that of the value starts. The search for the nearest values, whose distance
 -- costs more than a box, is given the second alone.
 DROP TABLE IF EXISTS tbl_tpose2d_val;
-CREATE TABLE tbl_tpose2d_val AS
+CREATE TEMP TABLE tbl_tpose2d_val AS
 SELECT temp, false AS knn FROM tbl_tpose2d WHERE k % 20 = 0
 UNION ALL
 SELECT temp, true FROM tbl_tpose2d_src
@@ -60,7 +60,7 @@ ANALYZE tbl_tpose2d_val;
 -- The box of a value of the fixture, the box of a value, one around it, one
 -- inside it, and one whose period meets it
 DROP TABLE IF EXISTS tbl_tpose2d_box;
-CREATE TABLE tbl_tpose2d_box AS
+CREATE TEMP TABLE tbl_tpose2d_box AS
 SELECT temp::stbox AS b, false AS knn FROM tbl_tpose2d WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_tpose2d_src
@@ -81,7 +81,7 @@ ANALYZE tbl_tpose2d_box;
 -- A box of space alone, which the operators on time refuse: one around a value,
 -- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_tpose2d_xbox;
-CREATE TABLE tbl_tpose2d_xbox AS
+CREATE TEMP TABLE tbl_tpose2d_xbox AS
 SELECT stbox(format('SRID=3812;STBOX X((%s,%s),(%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1)) AS b
 FROM tbl_tpose2d_src
@@ -102,7 +102,7 @@ ANALYZE tbl_tpose2d_xbox;
 -- A period of the fixture, the period of a value, one around it, one inside it,
 -- and one that meets it
 DROP TABLE IF EXISTS tbl_tpose2d_span;
-CREATE TABLE tbl_tpose2d_span AS
+CREATE TEMP TABLE tbl_tpose2d_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
 SELECT t FROM tbl_tpose2d_src
@@ -120,12 +120,12 @@ ANALYZE tbl_tpose2d_span;
 
 -- A point at a corner of the box of a value
 DROP TABLE IF EXISTS tbl_tpose2d_geo;
-CREATE TABLE tbl_tpose2d_geo AS
+CREATE TEMP TABLE tbl_tpose2d_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b)), 3812) AS g, true AS knn FROM tbl_tpose2d_src;
 ANALYZE tbl_tpose2d_geo;
 
 DROP TABLE IF EXISTS tbl_tpose3d_idx;
-CREATE TABLE tbl_tpose3d_idx AS
+CREATE TEMP TABLE tbl_tpose3d_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tpose3d
   UNION ALL
@@ -144,7 +144,7 @@ ANALYZE tbl_tpose3d_idx;
 -- are random, so they meet few values exactly: the others come from the rows of
 -- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_tpose3d_src;
-CREATE TABLE tbl_tpose3d_src AS
+CREATE TEMP TABLE tbl_tpose3d_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_tpose3d_idx WHERE k % 470 = 0;
 
@@ -152,7 +152,7 @@ FROM tbl_tpose3d_idx WHERE k % 470 = 0;
 -- that of the value starts. The search for the nearest values, whose distance
 -- costs more than a box, is given the second alone.
 DROP TABLE IF EXISTS tbl_tpose3d_val;
-CREATE TABLE tbl_tpose3d_val AS
+CREATE TEMP TABLE tbl_tpose3d_val AS
 SELECT temp, false AS knn FROM tbl_tpose3d WHERE k % 20 = 0
 UNION ALL
 SELECT temp, true FROM tbl_tpose3d_src
@@ -163,7 +163,7 @@ ANALYZE tbl_tpose3d_val;
 -- The box of a value of the fixture, the box of a value, one around it, one
 -- inside it, and one whose period meets it
 DROP TABLE IF EXISTS tbl_tpose3d_box;
-CREATE TABLE tbl_tpose3d_box AS
+CREATE TEMP TABLE tbl_tpose3d_box AS
 SELECT temp::stbox AS b, false AS knn FROM tbl_tpose3d WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_tpose3d_src
@@ -184,7 +184,7 @@ ANALYZE tbl_tpose3d_box;
 -- A box of space alone, which the operators on time refuse: one around a value,
 -- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_tpose3d_xbox;
-CREATE TABLE tbl_tpose3d_xbox AS
+CREATE TEMP TABLE tbl_tpose3d_xbox AS
 SELECT stbox(format('SRID=3812;STBOX Z((%s,%s,%s),(%s,%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, zmin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1, zmax(b) + 0.1)) AS b
 FROM tbl_tpose3d_src
@@ -205,7 +205,7 @@ ANALYZE tbl_tpose3d_xbox;
 -- A period of the fixture, the period of a value, one around it, one inside it,
 -- and one that meets it
 DROP TABLE IF EXISTS tbl_tpose3d_span;
-CREATE TABLE tbl_tpose3d_span AS
+CREATE TEMP TABLE tbl_tpose3d_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
 SELECT t FROM tbl_tpose3d_src
@@ -223,12 +223,12 @@ ANALYZE tbl_tpose3d_span;
 
 -- A point at a corner of the box of a value
 DROP TABLE IF EXISTS tbl_tpose3d_geo;
-CREATE TABLE tbl_tpose3d_geo AS
+CREATE TEMP TABLE tbl_tpose3d_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b), zmin(b)), 3812) AS g, true AS knn FROM tbl_tpose3d_src;
 ANALYZE tbl_tpose3d_geo;
 
 DROP TABLE IF EXISTS test_tpose_idx;
-CREATE TABLE test_tpose_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_tpose_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 
@@ -2001,9 +2001,9 @@ DROP FUNCTION test_probes_index(text);
 -- queries of a tpose as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_stbox_tpose AS
+CREATE TEMP TABLE tbl_stbox_tpose AS
 SELECT k, temp::stbox AS b FROM tbl_tpose3d WHERE temp IS NOT NULL;
-CREATE TABLE tbl_tpose_q AS
+CREATE TEMP TABLE tbl_tpose_q AS
 SELECT temp AS q FROM tbl_tpose3d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION stbox_tpose_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -2091,7 +2091,7 @@ CREATE FUNCTION stbox_tpose_indexed() RETURNS text AS $$
     (21, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b /&> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
     (22, 'SELECT k FROM tbl_stbox_tpose ORDER BY b |=| (SELECT q FROM tbl_tpose_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_stbox_tpose_seq AS SELECT stbox_tpose_answers() AS a;
+CREATE TEMP TABLE tbl_stbox_tpose_seq AS SELECT stbox_tpose_answers() AS a;
 SELECT a FROM tbl_stbox_tpose_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_stbox_tpose_gist_idx ON tbl_stbox_tpose USING gist(b);

@@ -1,4 +1,4 @@
-CREATE TABLE test AS
+CREATE TEMP TABLE test AS
 SELECT NULL::tgeometry FROM generate_series(1, 10);
 ANALYZE test;
 DROP TABLE test;
@@ -330,7 +330,7 @@ DROP INDEX tbl_tgeometry3D_quadtree_idx;
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
 
-CREATE TABLE tbl_tgeometry3D_big_allthesame AS SELECT k, tgeometry(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tgeometry3D_big_allthesame AS SELECT k, tgeometry(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tgeometry3D_big_allthesame_quadtree_idx ON tbl_tgeometry3D_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tgeometry3D_big_allthesame;
 
@@ -345,9 +345,9 @@ DROP TABLE tbl_tgeometry3D_big_allthesame;
 -- queries of a tgeometry as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_stbox_tgeometry AS
+CREATE TEMP TABLE tbl_stbox_tgeometry AS
 SELECT k, temp::stbox AS b FROM tbl_tgeometry3d WHERE temp IS NOT NULL;
-CREATE TABLE tbl_tgeometry_q AS
+CREATE TEMP TABLE tbl_tgeometry_q AS
 SELECT temp AS q FROM tbl_tgeometry3d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION stbox_tgeometry_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -435,7 +435,7 @@ CREATE FUNCTION stbox_tgeometry_indexed() RETURNS text AS $$
     (21, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b /&> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
     (22, 'SELECT k FROM tbl_stbox_tgeometry ORDER BY b |=| (SELECT q FROM tbl_tgeometry_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_stbox_tgeometry_seq AS SELECT stbox_tgeometry_answers() AS a;
+CREATE TEMP TABLE tbl_stbox_tgeometry_seq AS SELECT stbox_tgeometry_answers() AS a;
 SELECT a FROM tbl_stbox_tgeometry_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_stbox_tgeometry_gist_idx ON tbl_stbox_tgeometry USING gist(b);
@@ -459,9 +459,9 @@ DROP FUNCTION stbox_tgeometry_indexed(), stbox_tgeometry_answers(), stbox_tgeome
 -- queries of a tgeography as the scan does: &&, ~=, @>, <@, -|-, &<#, <<#, #>>, #&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_stbox_tgeography AS
+CREATE TEMP TABLE tbl_stbox_tgeography AS
 SELECT k, temp::stbox AS b FROM tbl_tgeography3d WHERE temp IS NOT NULL;
-CREATE TABLE tbl_tgeography_q AS
+CREATE TEMP TABLE tbl_tgeography_q AS
 SELECT temp AS q FROM tbl_tgeography3d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION stbox_tgeography_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -513,7 +513,7 @@ CREATE FUNCTION stbox_tgeography_indexed() RETURNS text AS $$
     (9, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b #&> (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
     (10, 'SELECT k FROM tbl_stbox_tgeography ORDER BY b |=| (SELECT q FROM tbl_tgeography_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_stbox_tgeography_seq AS SELECT stbox_tgeography_answers() AS a;
+CREATE TEMP TABLE tbl_stbox_tgeography_seq AS SELECT stbox_tgeography_answers() AS a;
 SELECT a FROM tbl_stbox_tgeography_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_stbox_tgeography_gist_idx ON tbl_stbox_tgeography USING gist(b);

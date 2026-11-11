@@ -19,11 +19,11 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tposechain_idx;
-CREATE TABLE tbl_tposechain_idx AS SELECT k, temp FROM tbl_tposechain;
+CREATE TEMP TABLE tbl_tposechain_idx AS SELECT k, temp FROM tbl_tposechain;
 ANALYZE tbl_tposechain_idx;
 
 DROP TABLE IF EXISTS test_tposechain_idx;
-CREATE TABLE test_tposechain_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_tposechain_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 
@@ -267,9 +267,9 @@ DROP FUNCTION test_probes_index(text);
 -- queries of a tposechain as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_stbox_tposechain AS
+CREATE TEMP TABLE tbl_stbox_tposechain AS
 SELECT k, temp::stbox AS b FROM tbl_tposechain WHERE temp IS NOT NULL;
-CREATE TABLE tbl_tposechain_q AS
+CREATE TEMP TABLE tbl_tposechain_q AS
 SELECT temp AS q FROM tbl_tposechain WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION stbox_tposechain_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -345,7 +345,7 @@ CREATE FUNCTION stbox_tposechain_indexed() RETURNS text AS $$
     (17, 'SELECT count(*) FROM tbl_stbox_tposechain WHERE b #&> (SELECT q FROM tbl_tposechain_q LIMIT 1)'),
     (18, 'SELECT k FROM tbl_stbox_tposechain ORDER BY b |=| (SELECT q FROM tbl_tposechain_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_stbox_tposechain_seq AS SELECT stbox_tposechain_answers() AS a;
+CREATE TEMP TABLE tbl_stbox_tposechain_seq AS SELECT stbox_tposechain_answers() AS a;
 SELECT a FROM tbl_stbox_tposechain_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_stbox_tposechain_gist_idx ON tbl_stbox_tposechain USING gist(b);

@@ -8,7 +8,7 @@ NOTICE:  index "tbl_tquadbin_kdtree_idx" does not exist, skipping
 -----------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_tquadbin_ops;
 NOTICE:  table "test_tquadbin_ops" does not exist, skipping
-CREATE TABLE test_tquadbin_ops(
+CREATE TEMP TABLE test_tquadbin_ops(
   op char(3),
   leftarg text,
   rightarg text,

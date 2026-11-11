@@ -23,7 +23,7 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_trgeometry2d_idx;
-CREATE TABLE tbl_trgeometry2d_idx AS
+CREATE TEMP TABLE tbl_trgeometry2d_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_trgeometry2d
   UNION ALL
@@ -42,7 +42,7 @@ ANALYZE tbl_trgeometry2d_idx;
 -- are random, so they meet few values exactly: the others come from the rows of
 -- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_trgeometry2d_src;
-CREATE TABLE tbl_trgeometry2d_src AS
+CREATE TEMP TABLE tbl_trgeometry2d_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_trgeometry2d_idx WHERE k % 235 = 0 AND temp IS NOT NULL;
 
@@ -50,7 +50,7 @@ FROM tbl_trgeometry2d_idx WHERE k % 235 = 0 AND temp IS NOT NULL;
 -- that of the value starts. The search for the nearest values, whose distance
 -- costs more than a box, is given the second alone.
 DROP TABLE IF EXISTS tbl_trgeometry2d_val;
-CREATE TABLE tbl_trgeometry2d_val AS
+CREATE TEMP TABLE tbl_trgeometry2d_val AS
 SELECT temp, false AS knn FROM tbl_trgeometry2d WHERE k % 20 = 0
 UNION ALL
 SELECT temp, true FROM tbl_trgeometry2d_src
@@ -61,7 +61,7 @@ ANALYZE tbl_trgeometry2d_val;
 -- The box of a value of the fixture, the box of a value, one around it, one
 -- inside it, and one whose period meets it
 DROP TABLE IF EXISTS tbl_trgeometry2d_box;
-CREATE TABLE tbl_trgeometry2d_box AS
+CREATE TEMP TABLE tbl_trgeometry2d_box AS
 SELECT temp::stbox AS b, false AS knn FROM tbl_trgeometry2d WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_trgeometry2d_src
@@ -82,7 +82,7 @@ ANALYZE tbl_trgeometry2d_box;
 -- A box of space alone, which the operators on time refuse: one around a value,
 -- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_trgeometry2d_xbox;
-CREATE TABLE tbl_trgeometry2d_xbox AS
+CREATE TEMP TABLE tbl_trgeometry2d_xbox AS
 SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1)) AS b
 FROM tbl_trgeometry2d_src
@@ -103,7 +103,7 @@ ANALYZE tbl_trgeometry2d_xbox;
 -- A period of the fixture, the period of a value, one around it, one inside it,
 -- and one that meets it
 DROP TABLE IF EXISTS tbl_trgeometry2d_span;
-CREATE TABLE tbl_trgeometry2d_span AS
+CREATE TEMP TABLE tbl_trgeometry2d_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
 SELECT t FROM tbl_trgeometry2d_src
@@ -121,12 +121,12 @@ ANALYZE tbl_trgeometry2d_span;
 
 -- A point at a corner of the box of a value
 DROP TABLE IF EXISTS tbl_trgeometry2d_geo;
-CREATE TABLE tbl_trgeometry2d_geo AS
+CREATE TEMP TABLE tbl_trgeometry2d_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b)), 5676) AS g, true AS knn FROM tbl_trgeometry2d_src;
 ANALYZE tbl_trgeometry2d_geo;
 
 DROP TABLE IF EXISTS tbl_trgeometry3d_idx;
-CREATE TABLE tbl_trgeometry3d_idx AS
+CREATE TEMP TABLE tbl_trgeometry3d_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_trgeometry3d
   UNION ALL
@@ -145,7 +145,7 @@ ANALYZE tbl_trgeometry3d_idx;
 -- are random, so they meet few values exactly: the others come from the rows of
 -- the table, so that every operator has rows to answer.
 DROP TABLE IF EXISTS tbl_trgeometry3d_src;
-CREATE TABLE tbl_trgeometry3d_src AS
+CREATE TEMP TABLE tbl_trgeometry3d_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
 FROM tbl_trgeometry3d_idx WHERE k % 235 = 0 AND temp IS NOT NULL;
 
@@ -153,7 +153,7 @@ FROM tbl_trgeometry3d_idx WHERE k % 235 = 0 AND temp IS NOT NULL;
 -- that of the value starts. The search for the nearest values, whose distance
 -- costs more than a box, is given the second alone.
 DROP TABLE IF EXISTS tbl_trgeometry3d_val;
-CREATE TABLE tbl_trgeometry3d_val AS
+CREATE TEMP TABLE tbl_trgeometry3d_val AS
 SELECT temp, false AS knn FROM tbl_trgeometry3d WHERE k % 20 = 0
 UNION ALL
 SELECT temp, true FROM tbl_trgeometry3d_src
@@ -164,7 +164,7 @@ ANALYZE tbl_trgeometry3d_val;
 -- The box of a value of the fixture, the box of a value, one around it, one
 -- inside it, and one whose period meets it
 DROP TABLE IF EXISTS tbl_trgeometry3d_box;
-CREATE TABLE tbl_trgeometry3d_box AS
+CREATE TEMP TABLE tbl_trgeometry3d_box AS
 SELECT temp::stbox AS b, false AS knn FROM tbl_trgeometry3d WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_trgeometry3d_src
@@ -185,7 +185,7 @@ ANALYZE tbl_trgeometry3d_box;
 -- A box of space alone, which the operators on time refuse: one around a value,
 -- one inside it, the space of a value, and one that meets it
 DROP TABLE IF EXISTS tbl_trgeometry3d_xbox;
-CREATE TABLE tbl_trgeometry3d_xbox AS
+CREATE TEMP TABLE tbl_trgeometry3d_xbox AS
 SELECT stbox(format('SRID=5676;STBOX Z((%s,%s,%s),(%s,%s,%s))',
     xmin(b) - 0.1, ymin(b) - 0.1, zmin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1, zmax(b) + 0.1)) AS b
 FROM tbl_trgeometry3d_src
@@ -206,7 +206,7 @@ ANALYZE tbl_trgeometry3d_xbox;
 -- A period of the fixture, the period of a value, one around it, one inside it,
 -- and one that meets it
 DROP TABLE IF EXISTS tbl_trgeometry3d_span;
-CREATE TABLE tbl_trgeometry3d_span AS
+CREATE TEMP TABLE tbl_trgeometry3d_span AS
 SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
 UNION ALL
 SELECT t FROM tbl_trgeometry3d_src
@@ -224,12 +224,12 @@ ANALYZE tbl_trgeometry3d_span;
 
 -- A point at a corner of the box of a value
 DROP TABLE IF EXISTS tbl_trgeometry3d_geo;
-CREATE TABLE tbl_trgeometry3d_geo AS
+CREATE TEMP TABLE tbl_trgeometry3d_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b), zmin(b)), 5676) AS g, true AS knn FROM tbl_trgeometry3d_src;
 ANALYZE tbl_trgeometry3d_geo;
 
 DROP TABLE IF EXISTS test_trgeometry_idx;
-CREATE TABLE test_trgeometry_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_trgeometry_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 
@@ -1965,7 +1965,7 @@ DROP TABLE tbl_trgeometry3d_src;
 DROP TABLE tbl_trgeometry3d_idx;
 -- Every row carries the same value, so a split of the quad-tree finds keys that
 -- are all equal
-CREATE TABLE tbl_trgeometry_allthesame AS
+CREATE TEMP TABLE tbl_trgeometry_allthesame AS
 SELECT k, trgeometry(geometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1))',
   tpose(pose 'SRID=5676;Pose(Point(25 25), 0.3)', t)) AS temp
 FROM tbl_tstzspan_big;
@@ -1986,9 +1986,9 @@ DROP FUNCTION test_probes_index(text);
 -- queries of a trgeometry as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, |=|
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_stbox_trgeometry AS
+CREATE TEMP TABLE tbl_stbox_trgeometry AS
 SELECT k, temp::stbox AS b FROM tbl_trgeometry2d WHERE temp IS NOT NULL;
-CREATE TABLE tbl_trgeometry_q AS
+CREATE TEMP TABLE tbl_trgeometry_q AS
 SELECT temp AS q FROM tbl_trgeometry2d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION stbox_trgeometry_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
@@ -2064,7 +2064,7 @@ CREATE FUNCTION stbox_trgeometry_indexed() RETURNS text AS $$
     (17, 'SELECT count(*) FROM tbl_stbox_trgeometry WHERE b #&> (SELECT q FROM tbl_trgeometry_q LIMIT 1)'),
     (18, 'SELECT k FROM tbl_stbox_trgeometry ORDER BY b |=| (SELECT q FROM tbl_trgeometry_q LIMIT 1) LIMIT 5')) t(o, query);
 $$ LANGUAGE SQL;
-CREATE TABLE tbl_stbox_trgeometry_seq AS SELECT stbox_trgeometry_answers() AS a;
+CREATE TEMP TABLE tbl_stbox_trgeometry_seq AS SELECT stbox_trgeometry_answers() AS a;
 SELECT a FROM tbl_stbox_trgeometry_seq;
 SET enable_seqscan = off;
 CREATE INDEX tbl_stbox_trgeometry_gist_idx ON tbl_stbox_trgeometry USING gist(b);

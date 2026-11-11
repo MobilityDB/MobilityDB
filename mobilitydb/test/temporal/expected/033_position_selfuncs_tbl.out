@@ -14,13 +14,13 @@ END;
 $$;
 DROP TABLE IF EXISTS tbl_tfloat_possel;
 NOTICE:  table "tbl_tfloat_possel" does not exist, skipping
-CREATE TABLE tbl_tfloat_possel AS
+CREATE TEMP TABLE tbl_tfloat_possel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.temp
 FROM tbl_tfloat t1, generate_series(1, 100) t2(k);
 ANALYZE tbl_tfloat_possel;
 DROP TABLE IF EXISTS tbl_tbool_possel;
 NOTICE:  table "tbl_tbool_possel" does not exist, skipping
-CREATE TABLE tbl_tbool_possel AS
+CREATE TEMP TABLE tbl_tbool_possel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.temp
 FROM tbl_tbool t1, generate_series(1, 100) t2(k);
 ANALYZE tbl_tbool_possel;

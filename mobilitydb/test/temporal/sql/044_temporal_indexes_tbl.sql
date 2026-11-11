@@ -1,9 +1,9 @@
-CREATE TABLE test AS
+CREATE TEMP TABLE test AS
 SELECT NULL::ttext FROM generate_series(1, 10);
 ANALYZE test;
 DROP TABLE test;
 
-CREATE TABLE test AS
+CREATE TEMP TABLE test AS
 SELECT NULL::tfloat UNION SELECT tfloat '1@2001-01-01';
 ANALYZE test;
 DROP TABLE test;
@@ -29,7 +29,7 @@ DROP INDEX IF EXISTS tbl_ttext_big_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_idxops;
-CREATE TABLE test_idxops(
+CREATE TEMP TABLE test_idxops(
   op TEXT,
   leftarg TEXT,
   rightarg TEXT,
@@ -1983,7 +1983,7 @@ DROP INDEX tbl_tfloat_big_quadtree_idx;
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
 
-CREATE TABLE tbl_tint_big_allthesame AS SELECT k, tint(5, t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tint_big_allthesame AS SELECT k, tint(5, t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tint_big_allthesame_quadtree_idx ON tbl_tint_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tint_big_allthesame;
 
@@ -1993,7 +1993,7 @@ DROP TABLE tbl_tint_big_allthesame;
 
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tbigint_big_allthesame AS SELECT k, tbigint(5, t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tbigint_big_allthesame AS SELECT k, tbigint(5, t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tbigint_big_allthesame_quadtree_idx ON tbl_tbigint_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tbigint_big_allthesame;
 
@@ -2003,7 +2003,7 @@ DROP TABLE tbl_tbigint_big_allthesame;
 
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat(5.0, t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat(5.0, t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tfloat_big_allthesame_quadtree_idx ON tbl_tfloat_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tfloat_big_allthesame;
 
@@ -2053,7 +2053,7 @@ DROP INDEX tbl_tbigint_big_kdtree_idx;
 -- values is what builds such a node.
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tfloat_allthesame AS
+CREATE TEMP TABLE tbl_tfloat_allthesame AS
   SELECT k, tfloat '5.5@2001-01-01' AS temp FROM generate_series(1, 1000) k;
 CREATE INDEX tbl_tfloat_allthesame_quadtree_idx ON tbl_tfloat_allthesame
   USING SPGIST(temp);
@@ -2083,7 +2083,7 @@ DECLARE scan int; s bigint; i bigint; bad bigint := 0;
   t timestamptz := timestamptz '2001-01-01';
 BEGIN
   DROP TABLE IF EXISTS tbl_spgist_shared_bound;
-  CREATE TABLE tbl_spgist_shared_bound AS
+  CREATE TEMP TABLE tbl_spgist_shared_bound AS
     SELECT k, CASE WHEN k % 10 = 0
       THEN tfloat(format('100@%s', t + interval '100 s'))
       ELSE tfloat(format('[%s@%s, 100@%s]', k % 97, t + (k % 97) * interval '1 s',
@@ -2193,7 +2193,7 @@ CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
   SELECT timestamptz '2001-01-01' + d * interval '1 day'
 $$ LANGUAGE sql IMMUTABLE;
 
-CREATE TABLE tbl_index_structures AS
+CREATE TEMP TABLE tbl_index_structures AS
   SELECT k, CASE k % 5
     WHEN 0 THEN tbox(span((k % 50)::float, (k % 50 + 2)::float),
       span(day_of(k % 40), day_of(k % 40 + 2)))

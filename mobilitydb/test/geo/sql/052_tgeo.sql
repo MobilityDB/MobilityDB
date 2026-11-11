@@ -412,7 +412,7 @@ SELECT asEWKT(tgeometry(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_tgeometryinst_test;
-CREATE TABLE tbl_tgeometryinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeometry_seq;
+CREATE TEMP TABLE tbl_tgeometryinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeometry_seq;
 WITH temp AS (
   SELECT numSequences(tgeometrySeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tgeometryinst_test GROUP BY k )
@@ -420,7 +420,7 @@ SELECT MAX(numSequences) FROM temp;
 DROP TABLE tbl_tgeometryinst_test;
 
 DROP TABLE IF EXISTS tbl_tgeographyinst_test;
-CREATE TABLE tbl_tgeographyinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeography_seq;
+CREATE TEMP TABLE tbl_tgeographyinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeography_seq;
 WITH temp AS (
   SELECT numSequences(tgeographySeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tgeographyinst_test GROUP BY k )

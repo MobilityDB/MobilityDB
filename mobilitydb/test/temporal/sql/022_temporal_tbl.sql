@@ -12,10 +12,10 @@ DROP TABLE IF EXISTS tbl_tint_tmp;
 DROP TABLE IF EXISTS tbl_tfloat_tmp;
 DROP TABLE IF EXISTS tbl_ttext_tmp;
 
-CREATE TABLE tbl_tbool_tmp AS TABLE tbl_tbool WITH NO DATA;
-CREATE TABLE tbl_tint_tmp AS TABLE tbl_tint WITH NO DATA;
-CREATE TABLE tbl_tfloat_tmp AS TABLE tbl_tfloat WITH NO DATA;
-CREATE TABLE tbl_ttext_tmp AS TABLE tbl_ttext WITH NO DATA;
+CREATE TEMP TABLE tbl_tbool_tmp AS TABLE tbl_tbool WITH NO DATA;
+CREATE TEMP TABLE tbl_tint_tmp AS TABLE tbl_tint WITH NO DATA;
+CREATE TEMP TABLE tbl_tfloat_tmp AS TABLE tbl_tfloat WITH NO DATA;
+CREATE TEMP TABLE tbl_ttext_tmp AS TABLE tbl_ttext WITH NO DATA;
 
 \copy tbl_tbool_tmp FROM 'tbl_tbool' (FORMAT BINARY);
 \copy tbl_tint_tmp FROM 'tbl_tint' (FORMAT BINARY);
@@ -59,7 +59,7 @@ SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ss) IS NOT NULL;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_tintinst_test;
-CREATE TABLE tbl_tintinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tint_seq;
+CREATE TEMP TABLE tbl_tintinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tint_seq;
 WITH temp AS (
   SELECT numSequences(tintSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tintinst_test GROUP BY k )
@@ -67,7 +67,7 @@ SELECT MAX(numSequences) FROM temp;
 DROP TABLE tbl_tintinst_test;
 
 DROP TABLE IF EXISTS tbl_tfloatinst_test;
-CREATE TABLE tbl_tfloatinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tfloat_seq;
+CREATE TEMP TABLE tbl_tfloatinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tfloat_seq;
 WITH temp AS (
   SELECT numSequences(tfloatSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0, 'linear'))
   FROM tbl_tfloatinst_test GROUP BY k )
@@ -75,7 +75,7 @@ SELECT MAX(numSequences) FROM temp;
 DROP TABLE tbl_tfloatinst_test;
 
 DROP TABLE IF EXISTS tbl_ttextinst_test;
-CREATE TABLE tbl_ttextinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_ttext_seq;
+CREATE TEMP TABLE tbl_ttextinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_ttext_seq;
 WITH temp AS (
   SELECT numSequences(ttextSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval))
   FROM tbl_ttextinst_test GROUP BY k )

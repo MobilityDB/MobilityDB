@@ -8,7 +8,7 @@ NOTICE:  index "tbl_trgeometry_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_trgeometry_posops;
 NOTICE:  table "test_trgeometry_posops" does not exist, skipping
-CREATE TABLE test_trgeometry_posops(
+CREATE TEMP TABLE test_trgeometry_posops(
   op char(3),
   leftarg text,
   rightarg text,

@@ -5,7 +5,7 @@
 \copy tbl_ts2cell TO 'tbl_ts2cell' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_ts2cell_tmp;
 NOTICE:  table "tbl_ts2cell_tmp" does not exist, skipping
-CREATE TABLE tbl_ts2cell_tmp AS TABLE tbl_ts2cell WITH NO DATA;
+CREATE TEMP TABLE tbl_ts2cell_tmp AS TABLE tbl_ts2cell WITH NO DATA;
 \copy tbl_ts2cell_tmp FROM 'tbl_ts2cell' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_ts2cell t1, tbl_ts2cell_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 

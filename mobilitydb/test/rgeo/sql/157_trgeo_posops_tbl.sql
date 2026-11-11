@@ -7,7 +7,7 @@ DROP INDEX IF EXISTS tbl_trgeometry_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_trgeometry_posops;
-CREATE TABLE test_trgeometry_posops(
+CREATE TEMP TABLE test_trgeometry_posops(
   op char(3),
   leftarg text,
   rightarg text,

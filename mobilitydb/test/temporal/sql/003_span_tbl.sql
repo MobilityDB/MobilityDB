@@ -7,35 +7,35 @@
 
 \copy tbl_intspan TO 'tbl_intspan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_intspan_tmp;
-CREATE TABLE tbl_intspan_tmp AS TABLE tbl_intspan WITH NO DATA;
+CREATE TEMP TABLE tbl_intspan_tmp AS TABLE tbl_intspan WITH NO DATA;
 \copy tbl_intspan_tmp FROM 'tbl_intspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 DROP TABLE tbl_intspan_tmp;
 
 \copy tbl_bigintspan TO 'tbl_bigintspan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_bigintspan_tmp;
-CREATE TABLE tbl_bigintspan_tmp AS TABLE tbl_bigintspan WITH NO DATA;
+CREATE TEMP TABLE tbl_bigintspan_tmp AS TABLE tbl_bigintspan WITH NO DATA;
 \copy tbl_bigintspan_tmp FROM 'tbl_bigintspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_bigintspan_tmp;
 
 \copy tbl_floatspan TO 'tbl_floatspan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_floatspan_tmp;
-CREATE TABLE tbl_floatspan_tmp AS TABLE tbl_floatspan WITH NO DATA;
+CREATE TEMP TABLE tbl_floatspan_tmp AS TABLE tbl_floatspan WITH NO DATA;
 \copy tbl_floatspan_tmp FROM 'tbl_floatspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
 DROP TABLE tbl_floatspan_tmp;
 
 \copy tbl_datespan TO 'tbl_datespan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_datespan_tmp;
-CREATE TABLE tbl_datespan_tmp AS TABLE tbl_datespan WITH NO DATA;
+CREATE TEMP TABLE tbl_datespan_tmp AS TABLE tbl_datespan WITH NO DATA;
 \copy tbl_datespan_tmp FROM 'tbl_datespan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan_tmp t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
 DROP TABLE tbl_datespan_tmp;
 
 \copy tbl_tstzspan TO 'tbl_tstzspan' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tstzspan_tmp;
-CREATE TABLE tbl_tstzspan_tmp AS TABLE tbl_tstzspan WITH NO DATA;
+CREATE TEMP TABLE tbl_tstzspan_tmp AS TABLE tbl_tstzspan WITH NO DATA;
 \copy tbl_tstzspan_tmp FROM 'tbl_tstzspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 DROP TABLE tbl_tstzspan_tmp;

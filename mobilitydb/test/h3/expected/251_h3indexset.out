@@ -234,7 +234,7 @@ SELECT h3indexset '{8a2a1072b59ffff}' <> h3indexset '{831c02fffffffff}';
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_h3indexset_test;
 NOTICE:  table "tbl_h3indexset_test" does not exist, skipping
-CREATE TABLE tbl_h3indexset_test(k int, s h3indexset);
+CREATE TEMP TABLE tbl_h3indexset_test(k int, s h3indexset);
 INSERT INTO tbl_h3indexset_test VALUES
   (1, h3indexset '{8a2a1072b59ffff}'),
   (2, h3indexset '{831c02fffffffff}'),

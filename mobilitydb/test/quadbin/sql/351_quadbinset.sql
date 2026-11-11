@@ -71,7 +71,7 @@ SELECT quadbinset '{480fffffffffffff}' <> quadbinset '{48427fffffffffff}';
 SELECT quadbinset '{480fffffffffffff}' < quadbinset '{48427fffffffffff}';
 
 DROP TABLE IF EXISTS tbl_quadbinset_test;
-CREATE TABLE tbl_quadbinset_test(k int, s quadbinset);
+CREATE TEMP TABLE tbl_quadbinset_test(k int, s quadbinset);
 INSERT INTO tbl_quadbinset_test VALUES
   (1, quadbinset '{480fffffffffffff}'),
   (2, quadbinset '{48427fffffffffff}'),

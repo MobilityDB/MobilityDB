@@ -7,7 +7,7 @@ DROP INDEX IF EXISTS tbl_tpose_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_tpose_posops;
-CREATE TABLE test_tpose_posops(
+CREATE TEMP TABLE test_tpose_posops(
   op char(3),
   leftarg text,
   rightarg text,

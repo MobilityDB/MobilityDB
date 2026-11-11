@@ -8,7 +8,7 @@ NOTICE:  index "tbl_tjsonb_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE if exists test_tjsonb_topops;
 NOTICE:  table "test_tjsonb_topops" does not exist, skipping
-CREATE TABLE test_tjsonb_topops(
+CREATE TEMP TABLE test_tjsonb_topops(
   op char(3),
   leftarg text,
   rightarg text,
