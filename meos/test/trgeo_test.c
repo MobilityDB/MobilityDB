@@ -173,10 +173,10 @@ int main(void)
     /* Restricting to a pose the value takes keeps the instant at which it
      * takes it, with the reference geometry back on the result */
     meos_errno_reset();
-    Temporal *at = trgeometry_at_values(trgeo3, poseset1);
+    Temporal *at = temporal_at_values(trgeo3, poseset1);
     if (! at)
     {
-      printf("FAILED: trgeometry_at_values returned NULL, errno %d\n",
+      printf("FAILED: temporal_at_values returned NULL, errno %d\n",
         meos_errno());
       result = 1;
     }
@@ -185,29 +185,29 @@ int main(void)
       char *at_out = trgeometry_as_text(at, 6, &size_out);
       if (strcmp(at_out, at_expected) != 0)
       {
-        printf("FAILED: trgeometry_at_values: %s != %s\n", at_out,
+        printf("FAILED: temporal_at_values: %s != %s\n", at_out,
           at_expected);
         result = 1;
       }
       else
-        printf("OK: trgeometry_at_values(trgeometry, poseset): %s\n", at_out);
+        printf("OK: temporal_at_values(trgeometry, poseset): %s\n", at_out);
       free(at); free(at_out);
     }
 
     /* The complement keeps everything else, and the two together give back the
      * time of the value */
     meos_errno_reset();
-    Temporal *minus = trgeometry_minus_values(trgeo3, poseset1);
+    Temporal *minus = temporal_minus_values(trgeo3, poseset1);
     if (! minus)
     {
-      printf("FAILED: trgeometry_minus_values returned NULL, errno %d\n",
+      printf("FAILED: temporal_minus_values returned NULL, errno %d\n",
         meos_errno());
       result = 1;
     }
     else
     {
       char *minus_out = trgeometry_as_text(minus, 6, &size_out);
-      printf("OK: trgeometry_minus_values(trgeometry, poseset): %s\n",
+      printf("OK: temporal_minus_values(trgeometry, poseset): %s\n",
         minus_out);
       free(minus); free(minus_out);
     }
@@ -216,14 +216,14 @@ int main(void)
      * restriction and being rejected there */
     Set *geomset1 = geomset_in("{\"Point(0 0)\", \"Point(1 1)\"}");
     meos_errno_reset();
-    Temporal *bad = trgeometry_at_values(trgeo3, geomset1);
+    Temporal *bad = temporal_at_values(trgeo3, geomset1);
     if (bad || meos_errno() == 0)
     {
-      printf("FAILED: trgeometry_at_values accepted a geomset\n");
+      printf("FAILED: temporal_at_values accepted a geomset\n");
       result = 1;
     }
     else
-      printf("OK: trgeometry_at_values(trgeometry, geomset) rejected, "
+      printf("OK: temporal_at_values(trgeometry, geomset) rejected, "
         "errno %d\n", meos_errno());
     free(bad); free(geomset1);
     meos_errno_reset();

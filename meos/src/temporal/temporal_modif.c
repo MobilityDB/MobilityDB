@@ -60,6 +60,7 @@
 #endif
 #if RGEO
   #include "rgeo/trgeo_all.h"
+  #include "rgeo/trgeo_utils.h"
 #endif
 
 #include <utils/jsonb.h>
@@ -730,7 +731,13 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
    * rebuilt from instants does not reproduce, so it merges as the poses it is
    * made of and takes its body back afterwards */
   if (temp1->temptype == T_TRGEOMETRY)
+  {
+    /* The two values are the same body, since the answer carries a single
+     * reference geometry */
+    if (! ensure_same_geom(trgeometry_geom_p(temp1), trgeometry_geom_p(temp2)))
+      return NULL;
     return trgeometry_merge(temp1, temp2);
+  }
 #endif /* RGEO */
 
   /* Convert to the same subtype */
@@ -816,7 +823,20 @@ temporal_merge_array(Temporal **temparr, int count)
   /* A temporal rigid geometry carries a reference geometry that a value
    * rebuilt from instants does not reproduce */
   if (temparr[0]->temptype == T_TRGEOMETRY)
+  {
+    /* Every value is a rigid geometry of the same body, since the answer
+     * carries a single reference geometry */
+    const GSERIALIZED *geom = trgeometry_geom_p(temparr[0]);
+    for (int i = 1; i < count; i++)
+    {
+      VALIDATE_NOT_NULL(temparr[i], NULL);
+      if (! ensure_same_temporal_type(temparr[0], temparr[i]) ||
+          ! ensure_spatial_validity(temparr[0], temparr[i]) ||
+          ! ensure_same_geom(geom, trgeometry_geom_p(temparr[i])))
+        return NULL;
+    }
     return trgeometry_merge_array(temparr, count);
+  }
 #endif /* RGEO */
 
   /* Ensure all values have the same interpolation and, if they are spatial,
@@ -1809,21 +1829,32 @@ temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSET(s, NULL);
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_restrict_tstzset((TInstant *) temp, s,
+      result = (Temporal *) tinstant_restrict_tstzset((TInstant *) work, s,
         REST_MINUS);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_delete_tstzset((TSequence *) temp, s,
+      result = (Temporal *) tsequence_delete_tstzset((TSequence *) work, s,
         connect);
+      break;
     default: /* TSEQUENCESET */
-      return connect ?
-        (Temporal *) tsequenceset_delete_tstzset((TSequenceSet *) temp, s) :
-        (Temporal *) tsequenceset_restrict_tstzset((TSequenceSet *) temp, s,
+      result = connect ?
+        (Temporal *) tsequenceset_delete_tstzset((TSequenceSet *) work, s) :
+        (Temporal *) tsequenceset_restrict_tstzset((TSequenceSet *) work, s,
           REST_MINUS);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /**
@@ -1841,21 +1872,32 @@ temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_restrict_tstzspan((TInstant *) temp, s,
+      result = (Temporal *) tinstant_restrict_tstzspan((TInstant *) work, s,
         REST_MINUS);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_delete_tstzspan((TSequence *) temp, s,
+      result = (Temporal *) tsequence_delete_tstzspan((TSequence *) work, s,
         connect);
+      break;
     default: /* TSEQUENCESET */
-      return connect ?
-        (Temporal *) tsequenceset_delete_tstzspan((TSequenceSet *) temp, s) :
-        (Temporal *) tsequenceset_restrict_tstzspan((TSequenceSet *) temp, s,
+      result = connect ?
+        (Temporal *) tsequenceset_delete_tstzspan((TSequenceSet *) work, s) :
+        (Temporal *) tsequenceset_restrict_tstzspan((TSequenceSet *) work, s,
           REST_MINUS);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /**
@@ -1874,21 +1916,32 @@ temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_restrict_tstzspanset((TInstant *) temp, ss,
+      result = (Temporal *) tinstant_restrict_tstzspanset((TInstant *) work, ss,
         REST_MINUS);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_delete_tstzspanset((TSequence *) temp, ss,
+      result = (Temporal *) tsequence_delete_tstzspanset((TSequence *) work, ss,
         connect);
+      break;
     default: /* TSEQUENCESET */
-      return connect ?
-        (Temporal *) tsequenceset_delete_tstzspanset((TSequenceSet *) temp, ss) :
-        (Temporal *) tsequenceset_restrict_tstzspanset((TSequenceSet *) temp, ss,
+      result = connect ?
+        (Temporal *) tsequenceset_delete_tstzspanset((TSequenceSet *) work, ss) :
+        (Temporal *) tsequenceset_restrict_tstzspanset((TSequenceSet *) work, ss,
           REST_MINUS);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /*****************************************************************************
@@ -2463,8 +2516,15 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
    * entry does; unlike the operations that read their argument, this one
    * consumes it in expandable mode, so the entry owns that contract */
   if (temp->temptype == T_TRGEOMETRY)
+  {
+    /* The instant is the same body, since the answer carries a single
+     * reference geometry */
+    if (! ensure_same_geom(trgeometry_geom_p(temp),
+          trgeometry_geom_p((const Temporal *) inst)))
+      return NULL;
     return trgeometry_append_tinstant(temp, inst, interp, maxdist, maxt,
       expand);
+  }
 #endif /* RGEO */
 
   assert(temptype_subtype(temp->subtype));
@@ -2523,7 +2583,14 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
    * made of and takes its body back afterwards, which the rigid geometry
    * entry does, as #temporal_append_tinstant routes it */
   if (temp->temptype == T_TRGEOMETRY)
+  {
+    /* The sequence is the same body, since the answer carries a single
+     * reference geometry */
+    if (! ensure_same_geom(trgeometry_geom_p(temp),
+          trgeometry_geom_p((const Temporal *) seq)))
+      return NULL;
     return trgeometry_append_tsequence(temp, seq, expand);
+  }
 #endif /* RGEO */
 
   /* The test to ensure the increasing timestamps must be done in the

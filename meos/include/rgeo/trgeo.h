@@ -85,6 +85,13 @@ extern Temporal *geometry_tpose_to_trgeometry_intl(const GSERIALIZED *gs,
 extern bool trgeometry_value_at_timestamptz_intl(const Temporal *temp, TimestampTz t,
   bool strict, Datum *result);
 
+/* Modification functions */
+
+extern Temporal *trgeometry_append_tinstant(const Temporal *temp, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt, bool expand);
+extern Temporal *trgeometry_append_tsequence(const Temporal *temp, const TSequence *seq, bool expand);
+extern Temporal *trgeometry_merge(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *trgeometry_merge_array(Temporal **temparr, int count);
+
 /* Restriction functions */
 
 extern Temporal *trgeometry_restrict_value(const Temporal *temp, Datum value,

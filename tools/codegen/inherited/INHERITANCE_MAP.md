@@ -1594,7 +1594,7 @@ catalog-driven binding, a call to a symbol declared only in a private header —
 `trgeometry_merge` failure exactly. ⇒ If a binding needs the operation, the fix is a
 PUBLIC MEOS entry point, never a re-tag of the internal one.
 
-⭐ **THE ONLY DEFECT THIS CENSUS FINDS IS THE 8 WHERE THE TWO SIGNALS DISAGREE**, and
+⭐ **THE ONLY DEFECT THIS CENSUS FINDS IS THE 3 WHERE THE TWO SIGNALS DISAGREE**, and
 the shape of each says the GROUP is right and the HEADER is wrong — every one carries
 an internal calling convention that no public entry point would expose:
 
@@ -1603,9 +1603,8 @@ an internal calling convention that no public entry point would expose:
 | `acontains_tgeo_tgeo` | `meos_geo.h` | returns `int` 1/0/-1, the three-valued internal convention |
 | `atouches_tcbuffer_tcbuffer` | `meos_cbuffer.h` | same three-valued `int` |
 | `tnumber_avg_value` | `meos.h` | returns a bare `double` |
-| `trgeometry_restrict_timestamptz` `_tstzset` `_tstzspan` `_tstzspanset` `_values` | `meos_rgeo.h` | take an `atfunc` boolean; the public faces are the `*_at_*` / `*_minus_*` pair |
 
-⇒ The alignment is to move those 8 declarations to `meos_internal*.h`, NOT to
+⇒ The alignment is to move those 3 declarations to `meos_internal*.h`, NOT to
 re-group them. ⛔ That is an API-surface change — a consumer including the public
 umbrella today can call them — so it is a user decision, not a sweep. The catalog
 already answers `internal` for all 8, so no rule-following binding emits them.

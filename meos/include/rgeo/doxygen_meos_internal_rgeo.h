@@ -75,4 +75,8 @@
  * @defgroup meos_internal_rgeo_transf Transformation functions
  * @ingroup meos_internal_rgeo
  * @brief Transformation functions for temporal rigid geometries
+ *
+ * @defgroup meos_internal_rgeo_modif Modification functions
+ * @ingroup meos_internal_rgeo
+ * @brief Modification functions for temporal rigid geometries
  */
