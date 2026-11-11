@@ -490,6 +490,23 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
 {
   *err = false;
   const GSERIALIZED *ref = trgeometry_geom_p(temp);
+  /* The clip of a moving body reads its exterior ring alone (#trgeo_geom_clip),
+   * so a body with holes in linear motion is refused rather than answered as
+   * the region its exterior ring bounds */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+  {
+    LWGEOM *body = lwgeom_from_gserialized(ref);
+    bool holes = lwgeom_has_interior_ring(body);
+    lwgeom_free(body);
+    if (holes)
+    {
+      *err = true;
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "The restriction of a temporal rigid geometry with holes in linear "
+        "motion is not implemented");
+      return NULL;
+    }
+  }
   int spancap = 16, nspans = 0;
   Span *spans = palloc((size_t) spancap * sizeof(Span));
 
@@ -1620,6 +1637,21 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
    * spanning two of them answers for ground the body never crosses.
    * Only the united form sweeps; the collection form answers the placements
    * themselves, which #trgeometry_placements() gives a caller directly. */
+  /* A polygon that is not convex, concave or holed, sweeps more than the
+   * hull of two placements and less than their union reports, so its united
+   * form in linear motion is refused rather than answered by its placements */
+  if (unary_union && n_geoms > 1 && MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
+      gserialized_get_type(trgeometry_geom_p(temp)) == POLYGONTYPE &&
+      ! trgeometry_ref_is_convex(trgeometry_geom_p(temp)))
+  {
+    for (int i = 0; i < n_geoms; i++)
+      pfree(geoms[i]);
+    pfree(geoms); pfree(pl.times); pfree(pl.turns);
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The united traversed area of a temporal rigid geometry in linear motion "
+      "whose body is not convex is not implemented");
+    return NULL;
+  }
   if (unary_union && n_geoms > 1 && MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
       trgeometry_ref_is_convex(trgeometry_geom_p(temp)))
   {

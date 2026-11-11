@@ -670,6 +670,37 @@ int main(void)
     }
   }
 
+  /* A body whose shape a function does not read is refused, never answered as
+   * another shape: the restriction of a body with holes in linear motion, and
+   * the united traversed area of a body that is not convex in linear motion;
+   * in step interpolation both answer */
+  {
+    const char *holed = "Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]";
+    const char *holed_step = "Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),"
+      "(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, "
+      "Pose(Point(10 0),0)@2001-01-02]";
+    Temporal *lin = trgeometry_in(holed), *step = trgeometry_in(holed_step);
+    GSERIALIZED *small = geom_in("Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))", -1);
+    meos_errno_reset();
+    Temporal *at = trgeometry_at_geom(lin, small);
+    int err_at = meos_errno();
+    meos_errno_reset();
+    GSERIALIZED *area = trgeometry_traversed_area(lin, true);
+    int err_area = meos_errno();
+    meos_errno_reset();
+    GSERIALIZED *area_step = trgeometry_traversed_area(step, true);
+    if (at || err_at == 0 || area || err_area == 0 || ! area_step ||
+        meos_errno() != 0)
+    {
+      printf("FAILED: a body with holes in linear motion is answered by the "
+        "restriction or the united traversed area\n");
+      result = 1;
+    }
+    free(lin); free(step); free(small); free(at); free(area); free(area_step);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
