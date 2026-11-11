@@ -305,6 +305,14 @@ FROM tbl_geom t1, tbl_tcbuffer t2;
 -- SELECT t1.k, t2.k, intersects(...) FROM ...;
 ```
 
+**Concurrency**: pg_regress runs the tests in groups, the tests of a group at the same time, all in one database. A test therefore leaves the tables of the setup scripts as it found them:
+
+- it creates its own tables with `CREATE TEMP TABLE` and its own functions in `pg_temp` (`CREATE FUNCTION pg_temp.foo_check() ...`, called as `pg_temp.foo_check()`);
+- to create an index on a table of a setup script, it first copies the table, `CREATE TEMP TABLE tbl_tfoo AS TABLE tbl_tfoo; ANALYZE tbl_tfoo;`, which hides that table in its session, and indexes the copy;
+- it analyzes no table of a setup script: the setup scripts analyze them.
+
+A test that must change a table other tests read, such as a catalog table of an extension, is listed after `ALONE` in `mobilitydb_add_tests` and runs by itself.
+
 **Upstream extension**: when `FOO=ON` requires an upstream extension, add it to `MOBILITYDB_REQUIRES` in the top-level `CMakeLists.txt`. That list is the `requires` of `mobilitydb.control`, and pg_regress creates its extensions, in its order, before `mobilitydb` in the test database.
 
 #### 3.9.1 Test data fixture (`load_foo.sql`)
