@@ -91,6 +91,14 @@ a crossing in the cell holding its position, so a trajectory leaving a cell thro
 holds that cell through the crossing instant and the next cell begins with an exclusive bound, as the
 tiling walk states it.
 
+A cell the trajectory touches only at a boundary point it does not own holds no instant: a trip
+through a vertex visits the cell owning the vertex and the cells whose interiors it enters, and
+not the other cells meeting there, as the tiling gives the tiles touched at a corner nothing.
+Whether a trajectory touches a closed cell is a question of the temporal relationships. In the
+planar model a pole is the whole latitude ±90, so a corner of an S2 cell at a pole reads as two
+vertices on that latitude, at the longitudes of the meridian edges meeting there, as the region of
+an H3 cell around a pole is bounded by its ring and that latitude.
+
 ## Where an index frame breaks
 
 These cases have no common index frame for the cells meeting there, and the rule states each one:

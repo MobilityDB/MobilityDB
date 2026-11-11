@@ -159,6 +159,30 @@ changes answers MEOS gives. Read with the library's vertices instead of D8's, th
 moves 33 of the 50 trips through a vertex, the 18 along an edge, 34 of the 36 touching, starting or
 ending on a vertex, 2 pentagon trips and 6 bent-cell trips.
 
+## Settled in review
+
+The expected answers were reviewed on five questions, each answered by the rules already
+decided:
+
+1. **A trip through a vertex.** The vertex instant belongs to the cell whose corner there opens
+   south (`p1155-v0-r9-n-at`: the trip heading north reaches vertex 0 of `891f0470497ffff` at
+   00:01:00, held by `891f0470493ffff`, the cell it comes from; `891f047222fffff` begins with an
+   exclusive bound). The third cell meeting at the vertex, which the trip only touches there, holds
+   no instant: each instant has one cell, and the tiling gives the tiles touched at a corner
+   nothing. A cover that leaves out such a cell, as master's does on the four trips of
+   `POINT(11 55)` at resolution 10, misses no cell, and the walk of row CW7 adds none. Whether a
+   trip touches a closed cell is a question of the temporal relationships, not of the cover.
+2. **A trip ending on a vertex, `borderInc` false** (`end-r7-0-exc`): the cell holding nothing
+   but the last instant is left out, and the cell before ends with an exclusive bound.
+3. **Several cells crossed in one microsecond** (`fast-r9`): a cell crossed between two
+   microseconds holds no instant and has no period.
+4. **A crossing inside a microsecond:** the bound is the crossing truncated, included by the cell
+   holding that microsecond, written `(t, ...` and never `[t + 1, ...`.
+5. **An S2 corner at a pole, in the plane:** the corner reads as two vertices on the pole
+   latitude, at the longitudes of the two meridian edges meeting there, and every position on the
+   pole latitude is the pole, held by the cell whose corner it is, as the planar cell of H3 around a
+   pole reads the region between its ring and the pole.
+
 ## The two decisions the geodetic and S2 parts rest on
 
 - **D6, a geodetic position** is the vector of the correctly rounded cos(lat)·cos(lon),
