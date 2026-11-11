@@ -124,8 +124,6 @@ DUMP_TABLE_RE = re.compile(
 AS_TABLE_RE = re.compile(
   r'CREATE\s+TABLE\s+(?:public\.)?(?P<name>tbl_\w+)\s*(?:\([^)]*\)\s*)?AS\b',
   re.IGNORECASE)
-INCLUDE_RE = re.compile(r'^\\i\s+@CMAKE_SOURCE_DIR@/(?P<path>\S+)',
-  re.MULTILINE)
 TABLE_REF_RE = re.compile(r'\b(tbl_\w+)', re.IGNORECASE)
 CREATED_RE = re.compile(
   r'\bCREATE\s+(?:OR\s+REPLACE\s+)?(?:TEMP(?:ORARY)?\s+|UNLOGGED\s+)?'
@@ -237,10 +235,8 @@ def read_fixtures():
   ... AS` states none and is known by its name.
   """
   tables, empty = {}, set()
-  pending = sorted(glob.glob(os.path.join(TEST_DIR, '*', 'sql', 'load_*.sql')) +
-    glob.glob(os.path.join(TEST_DIR, '*', 'data', 'load*')))
-  while pending:
-    path = pending.pop(0)
+  for path in sorted(glob.glob(os.path.join(TEST_DIR, '*', 'sql',
+      'load_*.sql'))):
     with open(path, encoding='utf-8') as handle:
       text = handle.read()
     data = os.path.join(os.path.dirname(os.path.dirname(path)), 'data')
@@ -254,8 +250,6 @@ def read_fixtures():
         empty.discard(name)
     for match in AS_TABLE_RE.finditer(strip_sql_comments(text)):
       tables.setdefault(match.group('name').lower(), None)
-    for match in INCLUDE_RE.finditer(text):
-      pending.append(os.path.join(ROOT, match.group('path')))
   return tables, empty
 
 
