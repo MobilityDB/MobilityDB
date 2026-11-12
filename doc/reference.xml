@@ -3961,6 +3961,9 @@
 						<para><link linkend="tpcpoint_ever_eq"><varname>?=</varname>, <varname>%=</varname></link>: Ever and always comparisons</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpoint_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpoint_temporal_eq"><varname>#=</varname></link>: Temporal comparisons</para>
 					</listitem>
 				</itemizedlist>
@@ -4145,6 +4148,9 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpcpatch_ever_eq"><varname>?=</varname>, <varname>%=</varname></link>: Ever and always comparisons</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_temporal_eq"><varname>#=</varname></link>: Temporal comparisons</para>

@@ -585,6 +585,10 @@ extern int always_ne_pcpoint_tpcpoint(const Pcpoint *pt, const Temporal *temp);
 extern int always_ne_tpcpoint_pcpoint(const Temporal *temp, const Pcpoint *pt);
 extern int always_ne_tpcpoint_tpcpoint(const Temporal *temp1,
   const Temporal *temp2);
+extern int ever_overlaps_tpcbox_tpcpoint(const TPCBox *box, const Temporal *temp);
+extern int ever_overlaps_tpcpoint_tpcbox(const Temporal *temp, const TPCBox *box);
+extern int always_overlaps_tpcbox_tpcpoint(const TPCBox *box, const Temporal *temp);
+extern int always_overlaps_tpcpoint_tpcbox(const Temporal *temp, const TPCBox *box);
 
 extern int ever_eq_pcpatch_tpcpatch(const Pcpatch *pa, const Temporal *temp);
 extern int ever_eq_tpcpatch_pcpatch(const Temporal *temp, const Pcpatch *pa);
@@ -602,6 +606,10 @@ extern int always_ne_pcpatch_tpcpatch(const Pcpatch *pa, const Temporal *temp);
 extern int always_ne_tpcpatch_pcpatch(const Temporal *temp, const Pcpatch *pa);
 extern int always_ne_tpcpatch_tpcpatch(const Temporal *temp1,
   const Temporal *temp2);
+extern int ever_overlaps_tpcbox_tpcpatch(const TPCBox *box, const Temporal *temp);
+extern int ever_overlaps_tpcpatch_tpcbox(const Temporal *temp, const TPCBox *box);
+extern int always_overlaps_tpcbox_tpcpatch(const TPCBox *box, const Temporal *temp);
+extern int always_overlaps_tpcpatch_tpcbox(const Temporal *temp, const TPCBox *box);
 
 /* Temporal comparison functions */
 

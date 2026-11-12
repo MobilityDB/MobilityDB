@@ -2135,11 +2135,15 @@ tsequence_append_tinstant1(TSequence *seq, const TInstant *inst,
   else
     maxcount = count;
 
-  /* Get the bounding box size */
+  /* The bounding box is the one of the sequence expanded with the one of the
+   * edge from the instant preceding the appended one in the result, as
+   * #tinstarr_set_bbox computes the box of any sequence: the box of the two
+   * instants does not hold an edge that leaves it, such as the geodesic of a
+   * geodetic point or the stretch of route of a network point */
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
   bboxunion bbox, bbox1;
   memcpy(&bbox, TSEQUENCE_BBOX_PTR(seq), bboxsize);
-  tinstant_set_bbox(inst, &bbox1);
+  tinstarr_set_bbox(&instants[count - 2], 2, true, true, interp, &bbox1);
   bbox_expand(&bbox1, &bbox, seq->temptype);
   TSequence *result = tsequence_make_exp1(instants, count, maxcount,
     seq->period.lower_inc, true, interp, NORMALIZE_NO, &bbox);

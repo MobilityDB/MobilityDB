@@ -384,6 +384,11 @@ tspatial_as_text(const Temporal *temp, int maxdd, size_t *size_out)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
+#if RGEO
+  /* A temporal rigid geometry writes its reference geometry before its poses */
+  if (temp->temptype == T_TRGEOMETRY)
+    return trgeometry_wkt_out(temp, maxdd, false, size_out);
+#endif /* RGEO */
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -418,6 +423,12 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd, size_t *size_out)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
+#if RGEO
+  /* A temporal rigid geometry writes its reference geometry before its poses,
+   * the SRID before both */
+  if (temp->temptype == T_TRGEOMETRY)
+    return trgeometry_wkt_out(temp, maxdd, true, size_out);
+#endif /* RGEO */
   int32_t srid = tspatial_srid(temp);
   char str1[18];
   /* Determine whether an interpolation prefix must follow the SRID prefix */

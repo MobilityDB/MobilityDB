@@ -569,6 +569,12 @@ SELECT appendInstant(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-0
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST, NPoint(2,0.7)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+SELECT stbox(appendInstant(tnpoint '[Npoint(57, 0)@2001-01-01]', tnpoint 'Npoint(57, 0.75)@2001-01-02')) = stbox(tnpoint '[Npoint(57, 0)@2001-01-01, Npoint(57, 0.75)@2001-01-02]');
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 SELECT appendInstant(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', tnpoint 'Npoint(2, 0.7)@2001-01-04');
 ERROR:  All network points composing a temporal sequence must have same route identifier

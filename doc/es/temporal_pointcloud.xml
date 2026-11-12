@@ -1596,6 +1596,39 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="tpcpoint_ever_always_overlaps">
+					<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+					<para>Superposición alguna vez y siempre</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcpoint {?&amp;&amp;, %&amp;&amp;} tpcbox → boolean
+tpcbox {?&amp;&amp;, %&amp;&amp;} tpcpoint → boolean
+</programlisting>
+					<para>Si el valor está en un cuadro de nube de puntos en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales, su restricción al cuadro por <varname>atTpcbox</varname> no vacía o su restricción al complemento por <varname>minusTpcbox</varname> vacía. Un cuadro de otro esquema o sistema de referencia provoca un error, como lo hacen los operadores de las cajas.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz),
+  tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&amp;&amp;
+  tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
+-- f
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz),
+  tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) &amp;&amp;
+  tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
+-- t
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz),
+  tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&amp;&amp;
+  tpcbox 'TPCBOX(XT(((4,4),(6,6)),[2024-01-01 04:00, 2024-01-01 06:00]), 1)';
+-- t
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz),
+  tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) %&amp;&amp;
+  tpcbox 'TPCBOX(X((0,0),(9,9)), 1)';
+-- f
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="tpcpoint_temporal_eq">
 					<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
 					<para>Comparaciones temporales</para>
@@ -2401,6 +2434,27 @@ SELECT pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)) ?= tpcpatchSeq(ARRAY[
 SELECT tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)]) %= pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2));
+-- f
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_ever_always_overlaps">
+					<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+					<para>Superposición alguna vez y siempre</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcpatch {?&amp;&amp;, %&amp;&amp;} tpcbox → boolean
+tpcbox {?&amp;&amp;, %&amp;&amp;} tpcpatch → boolean
+</programlisting>
+					<para>Si el parche del valor está en un cuadro de nube de puntos en algún instante, o en todo instante en que está definido, a la granularidad de <varname>atTpcbox</varname>: la extensión de un parche se compara con el cuadro. Un cuadro de otro esquema o sistema de referencia provoca un error, como lo hacen los operadores de las cajas.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
+  PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz) ?&amp;&amp;
+  tpcbox 'TPCBOX(XT(((0,0),(5,5)),[2024-01-01, 2024-01-02]), 1)';
+-- t
+SELECT tpcbox 'TPCBOX(XT(((3,3),(5,5)),[2024-01-01, 2024-01-02]), 1)' ?&amp;&amp;
+  tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
+  PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz);
 -- f
 </programlisting>
 				</listitem>
