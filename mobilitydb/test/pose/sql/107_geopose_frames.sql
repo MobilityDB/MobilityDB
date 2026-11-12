@@ -1,0 +1,65 @@
+-- GeoPose v1.0 frame metadata registry — exercise the seeded rows and the
+-- accessors that answer for the frames MEOS registers.
+-------------------------------------------------------------------------------
+
+-- The registry is seeded with the four well-known frames.
+SELECT count(*) FROM geopose_frames;
+
+-- WGS-84 geographic is frame_id 1; SRID maps to PostGIS 4326.
+SELECT geoPoseFrameSRID(1), geoPoseFrameIsGeographic(1);
+
+-- WGS-84 ECEF (frame_id 2) is Cartesian.
+SELECT geoPoseFrameName(2), geoPoseFrameIsGeographic(2);
+
+-- The parametric frames (LTP, BODY) have no static SRID.
+SELECT geoPoseFrameSRID(3) IS NULL AS ltp_srid_null,
+       geoPoseFrameSRID(4) IS NULL AS body_srid_null;
+
+-- The three accessors answer, for every frame MEOS registers, what its row of
+-- geoPoseFrames() states.
+SELECT frame_id, geoPoseFrameSRID(frame_id), geoPoseFrameName(frame_id),
+  geoPoseFrameIsGeographic(frame_id)
+FROM geoPoseFrames() ORDER BY frame_id;
+SELECT count(*) AS accessors_disagreeing_with_the_registry
+FROM geoPoseFrames() f
+WHERE geoPoseFrameSRID(f.frame_id) IS DISTINCT FROM f.srid
+   OR geoPoseFrameName(f.frame_id) IS DISTINCT FROM f.name
+   OR geoPoseFrameIsGeographic(f.frame_id) IS DISTINCT FROM f.is_geographic;
+
+-- A frame MEOS does not register raises an error.
+SELECT geoPoseFrameSRID(999);
+SELECT geoPoseFrameName(999);
+SELECT geoPoseFrameIsGeographic(999);
+
+-- A user can register a custom frame, which is read from the table.
+INSERT INTO geopose_frames(frame_id, authority, code, name, srid, is_geographic, description)
+VALUES (1000, 'CUSTOM', 'EXAMPLE', 'Example custom outer frame', 3857, false,
+        'Web Mercator projection used for tile-aligned visualisation.');
+SELECT srid, name, is_geographic FROM geopose_frames WHERE frame_id = 1000;
+SELECT geoPoseFrameName(1000);
+
+-- pg_dump writes the rows the filter recorded for the table selects, and
+-- CREATE EXTENSION seeds the frames MEOS registers in the restored database,
+-- so the filter selects the frame the user registered and none that MEOS does.
+SELECT format('SELECT frame_id AS dumped_frame_id FROM geopose_frames %s '
+  'ORDER BY frame_id', c.cond)
+FROM pg_extension e, unnest(e.extconfig, e.extcondition) AS c(tbl, cond)
+WHERE e.extname = 'mobilitydb' AND c.tbl = 'geopose_frames'::regclass \gexec
+
+-- Cleanup the user-added row so the test doesn't leave state behind.
+DELETE FROM geopose_frames WHERE frame_id = 1000;
+SELECT count(*) FROM geopose_frames;
+
+-- Every frame MEOS states is in the table, so a host that materialises the
+-- registry from geoPoseFrames() states what this database states. The reverse
+-- direction is deliberately not asserted: a user registers further frames.
+SELECT count(*) AS meos_frames_absent_from_the_table FROM (
+  SELECT frame_id, authority, code, name, srid, is_geographic
+  FROM geoPoseFrames()
+  EXCEPT
+  SELECT frame_id, authority, code, name, srid, is_geographic
+  FROM geopose_frames) d;
+
+-- A frame is stated from one. (103_pose_geopose asserts that the registry
+-- states every authority and id pair the encoder emits.)
+INSERT INTO geopose_frames(frame_id, authority, name) VALUES (0, 'CUSTOM', 'Zero');

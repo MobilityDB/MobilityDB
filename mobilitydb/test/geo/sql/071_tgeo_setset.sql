@@ -1,0 +1,129 @@
+-------------------------------------------------------------------------------
+-- Set-set minimum distance
+-------------------------------------------------------------------------------
+
+SELECT round(minDistance(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(0 5)@2001-01-01, Point(1 5)@2001-01-02]'])::numeric, 6);
+-- Geodetic array
+SELECT round(minDistance(
+  ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]'],
+  ARRAY[tgeography '[Point(0 2)@2001-01-01, Point(0 3)@2001-01-02]'])::numeric, 0);
+
+-------------------------------------------------------------------------------
+-- Set-set spatial join: ever / always
+-------------------------------------------------------------------------------
+
+SELECT i, j FROM eDwithinPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
+        tgeometry '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]',
+        tgeometry '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  2.0) ORDER BY i, j;
+SELECT i, j FROM aDwithinPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'],
+  2.0) ORDER BY i, j;
+SELECT i, j FROM eIntersectsPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-02]']) ORDER BY i, j;
+SELECT i, j FROM aIntersectsPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]']) ORDER BY i, j;
+SELECT i, j FROM eDisjointPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(5 0)@2001-01-01, Point(5 10)@2001-01-02]']) ORDER BY i, j;
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
+        tgeometry '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]',
+        tgeometry '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]']) ORDER BY i, j;
+-- Touches: geometry only (geodetic touches is undefined)
+SELECT i, j FROM eTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01]']) ORDER BY i, j;
+SELECT i, j FROM aTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01]']) ORDER BY i, j;
+SELECT i, j FROM eContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']) ORDER BY i, j;
+SELECT i, j FROM aContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']) ORDER BY i, j;
+SELECT i, j FROM eCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']) ORDER BY i, j;
+SELECT i, j FROM aCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']) ORDER BY i, j;
+-- Geodetic intersects
+SELECT i, j FROM eIntersectsPairs(
+  ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]'],
+  ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]']) ORDER BY i, j;
+
+-------------------------------------------------------------------------------
+-- Set-set spatial join: temporal
+-------------------------------------------------------------------------------
+
+SELECT i, j FROM tDwithinPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'],
+  2.0) ORDER BY i, j;
+SELECT i, j FROM tIntersectsPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-02]']) ORDER BY i, j;
+SELECT i, j FROM tTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01]']) ORDER BY i, j;
+SELECT i, j, periods FROM tContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']) ORDER BY i, j;
+SELECT i, j, periods FROM tCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(5 2)@2001-01-01, Point(4 2)@2001-01-02,
+    Point(4 2)@2001-01-03]']) ORDER BY i, j;
+SELECT i, j FROM eContainsPairs(
+  ARRAY[tgeometry 'Point(0 0 0)@2001-01-01'],
+  ARRAY[tgeometry 'Point(0 0 0)@2001-01-01']);
+SELECT i, j FROM tDisjointPairs(
+  ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]'],
+  ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]']) ORDER BY i, j;
+
+-------------------------------------------------------------------------------
+-- Edge cases
+-------------------------------------------------------------------------------
+
+SELECT i, j FROM eDwithinPairs(ARRAY[]::tgeometry[],
+  ARRAY[tgeometry 'Point(0 0)@2001-01-01'], 2.0) ORDER BY i, j;
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeometry '[Point(5 5)@2001-03-01, Point(5 10)@2001-03-02]']) ORDER BY i, j;
+
+-------------------------------------------------------------------------------
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT round(minDistance(ARRAY[tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}'], ARRAY[tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'])::numeric, 3);
+SELECT round(minDistance(ARRAY[tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}'], ARRAY[tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'], false)::numeric, 3);
+SELECT i, j FROM eDwithinPairs(ARRAY[tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}'], ARRAY[tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'], 110800) ORDER BY i, j;
+SELECT i, j FROM eDwithinPairs(ARRAY[tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}'], ARRAY[tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'], 110800, false) ORDER BY i, j;
+SELECT i, j FROM aDwithinPairs(ARRAY[tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}'], ARRAY[tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'], 110800) ORDER BY i, j;
+SELECT i, j FROM aDwithinPairs(ARRAY[tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}'], ARRAY[tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'], 110800, false) ORDER BY i, j;

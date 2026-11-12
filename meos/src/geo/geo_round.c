@@ -473,67 +473,149 @@ round_curvepolygon(const GSERIALIZED *gs, int maxdd)
 }
 
 /**
- * @brief Set the precision of the coordinates of a geometry collection to a
+ * @brief Set the precision of the coordinates of a polyhedral surface to a
  * number of decimal places
+ * @note A PolyhedralSurface is a contiguous collection of polygons sharing
+ * common boundary segments.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#PolyhedralSurface
+ */
+static void
+round_lwpsurface(LWPSURFACE *psurf, int maxdd, bool hasz, bool hasm)
+{
+  for (uint32_t i = 0; i < psurf->ngeoms; i++)
+    round_lwpoly(psurf->geoms[i], maxdd, hasz, hasm);
+  return;
+}
+
+/**
+ * @brief Set the precision of the coordinates of a triangulated irregular
+ * network to a number of decimal places
+ * @note A TIN is a contiguous collection of triangles sharing common edges.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#TIN
+ */
+static void
+round_lwtin(LWTIN *tin, int maxdd, bool hasz, bool hasm)
+{
+  for (uint32_t i = 0; i < tin->ngeoms; i++)
+    round_lwtriangle(tin->geoms[i], maxdd, hasz, hasm);
+  return;
+}
+
+/**
+ * @brief Set the precision of the coordinates of a multisurface to a number
+ * of decimal places
+ * @note A MultiSurface is a collection of surfaces, which can be Polygons or
+ * CurvePolygons.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#MultiSurface
+ */
+static void
+round_lwmsurface(LWMSURFACE *msurf, int maxdd, bool hasz, bool hasm)
+{
+  for (uint32_t i = 0; i < msurf->ngeoms; i++)
+  {
+    LWGEOM *geom = msurf->geoms[i];
+    assert(geom->type == POLYGONTYPE || geom->type == CURVEPOLYTYPE);
+    if (geom->type == POLYGONTYPE)
+      round_lwpoly(lwgeom_as_lwpoly(geom), maxdd, hasz, hasm);
+    else /* geom->type == CURVEPOLYTYPE */
+      round_lwcurvepoly(lwgeom_as_lwcurvepoly(geom), maxdd, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * @brief Set the precision of the coordinates of a geometry of any type to a
+ * number of decimal places
+ * @return False for a geometry type without coordinates to round
+ * @note The arms are those of #geo_round, on the geometry read from its
+ * serialization. A geometry collection is read element by element, a
+ * collection among its elements included.
+ */
+static bool
+round_lwgeom(LWGEOM *geom, int maxdd, bool hasz, bool hasm)
+{
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      round_point_n((lwgeom_as_lwpoint(geom))->point, 0, maxdd, hasz, hasm);
+      break;
+    case LINETYPE:
+      round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
+      break;
+    case TRIANGLETYPE:
+      round_lwtriangle(lwgeom_as_lwtriangle(geom), maxdd, hasz, hasm);
+      break;
+    case CIRCSTRINGTYPE:
+      round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
+      break;
+    case COMPOUNDTYPE:
+      round_lwcompound(lwgeom_as_lwcompound(geom), maxdd, hasz, hasm);
+      break;
+    case MULTICURVETYPE:
+      round_lwmcurve((LWMCURVE *) geom, maxdd, hasz, hasm);
+      break;
+    case POLYGONTYPE:
+      round_lwpoly(lwgeom_as_lwpoly(geom), maxdd, hasz, hasm);
+      break;
+    case CURVEPOLYTYPE:
+      round_lwcurvepoly(lwgeom_as_lwcurvepoly(geom), maxdd, hasz, hasm);
+      break;
+    case MULTIPOINTTYPE:
+      round_lwmpoint(lwgeom_as_lwmpoint(geom), maxdd, hasz, hasm);
+      break;
+    case MULTILINETYPE:
+      round_lwmline(lwgeom_as_lwmline(geom), maxdd, hasz, hasm);
+      break;
+    case MULTIPOLYGONTYPE:
+      round_lwmpoly(lwgeom_as_lwmpoly(geom), maxdd, hasz, hasm);
+      break;
+    case MULTISURFACETYPE:
+      round_lwmsurface((LWMSURFACE *) geom, maxdd, hasz, hasm);
+      break;
+    case POLYHEDRALSURFACETYPE:
+      round_lwpsurface((LWPSURFACE *) geom, maxdd, hasz, hasm);
+      break;
+    case TINTYPE:
+      round_lwtin((LWTIN *) geom, maxdd, hasz, hasm);
+      break;
+    case COLLECTIONTYPE:
+    {
+      LWCOLLECTION *coll = lwgeom_as_lwcollection(geom);
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+      {
+        if (! round_lwgeom(coll->geoms[i], maxdd, hasz, hasm))
+          return false;
+      }
+      break;
+    }
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unsupported geometry type in round function: %s",
+        geo_typename(geom->type));
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return a geometry of a collection type with the precision of the
+ * coordinates set to a number of decimal places
+ * @note The collection types are a multisurface, a polyhedral surface, a
+ * triangulated irregular network and a geometry collection
  */
 static GSERIALIZED *
 round_geometrycollection(const GSERIALIZED *gs, int maxdd)
 {
-  assert(gserialized_get_type(gs) == COLLECTIONTYPE);
-  LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
-  int ngeoms = coll->ngeoms;
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  for (int i = 0; i < ngeoms; i++)
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  if (! round_lwgeom(geom, maxdd, hasz, hasm))
   {
-    LWGEOM *geom = coll->geoms[i];
-    switch (geom->type)
-    {
-      case POINTTYPE:
-        round_point_n((lwgeom_as_lwpoint(geom))->point, 0, maxdd, hasz, hasm);
-        break;
-      case LINETYPE:
-        round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
-        break;
-      case TRIANGLETYPE:
-        round_lwtriangle(lwgeom_as_lwtriangle(geom), maxdd, hasz, hasm);
-        break;
-      case CIRCSTRINGTYPE:
-        round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
-        break;
-      case COMPOUNDTYPE:
-        round_lwcompound(lwgeom_as_lwcompound(geom), maxdd, hasz, hasm);
-        break;
-      case MULTICURVETYPE:
-        round_lwmcurve((LWMCURVE *) geom, maxdd, hasz, hasm);
-        break;
-      case POLYGONTYPE:
-        round_lwpoly(lwgeom_as_lwpoly(geom), maxdd, hasz, hasm);
-        break;
-      case CURVEPOLYTYPE:
-        round_lwcurvepoly(lwgeom_as_lwcurvepoly(geom), maxdd, hasz, hasm);
-        break;
-      case MULTIPOINTTYPE:
-        round_lwmpoint(lwgeom_as_lwmpoint(geom), maxdd, hasz, hasm);
-        break;
-      case MULTILINETYPE:
-        round_lwmline(lwgeom_as_lwmline(geom), maxdd, hasz, hasm);
-        break;
-      case MULTIPOLYGONTYPE:
-        round_lwmpoly(lwgeom_as_lwmpoly(geom), maxdd, hasz, hasm);\
-        break;
-      default:
-      {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "Unsupported geometry type in round function: %s",
-          geo_typename(geom->type));
-        lwcollection_free(coll);
-        return NULL;
-      }
-    }    
+    lwgeom_free(geom);
+    return NULL;
   }
-  GSERIALIZED *result = geo_serialize((LWGEOM *) coll);
-  lwcollection_free(coll);
+  GSERIALIZED *result = geo_serialize(geom);
+  lwgeom_free(geom);
   return result;
 }
 
@@ -543,7 +625,6 @@ round_geometrycollection(const GSERIALIZED *gs, int maxdd)
  * number of decimal places
  * @param[in] gs Geometry/geography
  * @param[in] maxdd Maximum number of decimal digits
- * @note Currently not all geometry types are allowed
  * @csqlfn #Geo_round()
  */
 GSERIALIZED *
@@ -583,6 +664,9 @@ geo_round(const GSERIALIZED *gs, int maxdd)
       result = round_multipolygon(copy, maxdd);
       break;
     case COLLECTIONTYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
       result = round_geometrycollection(copy, maxdd);
       break;
     case CIRCSTRINGTYPE:
@@ -612,7 +696,6 @@ geo_round(const GSERIALIZED *gs, int maxdd)
 /**
  * @brief Return a geometry with the precision of the coordinates set to a
  * number of decimal places
- * @note Currently not all geometry types are allowed
  */
 Datum
 datum_geo_round(Datum value, Datum size)

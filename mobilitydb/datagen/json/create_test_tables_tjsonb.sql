@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Build the test tables for the static and temporal JSONB types
- * @details This is the offline job that builds the tables of the frozen pg_dump
- * fixture test/json/data/load_jsonb.sql.xz; it is not part of the
+ * @details This is the offline job that builds the tables of the frozen
+ * fixture test/json/data/*.data; it is not part of the
  * mobilitydb_datagen extension (only the random_* helpers are). Refer to
  * `random_tjsonb.sql` for the meaning of the parameters used in the function
  * calls of this file.

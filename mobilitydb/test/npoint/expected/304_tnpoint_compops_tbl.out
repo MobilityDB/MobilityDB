@@ -1,0 +1,78 @@
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE t1.np #= t2.temp IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp #= t2.np IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE t1.np #<> t2.temp IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp #<> t2.np IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp ?&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year') <> (atStbox(t1.temp, expandTime(expandSpace(stbox(t2.temp), 20), '1 year')) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp %&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year') <> (minusStbox(t1.temp, expandTime(expandSpace(stbox(t2.temp), 20), '1 year')) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND expandTime(expandSpace(stbox(t2.temp), 20), '1 year') ?&& t1.temp <> t1.temp ?&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp ?&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
+ count 
+-------
+   255
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp %&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
+ count 
+-------
+   208
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp && expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
+ count 
+-------
+   270
+(1 row)
+

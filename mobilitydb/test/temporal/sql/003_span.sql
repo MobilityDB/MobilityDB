@@ -1,0 +1,277 @@
+-------------------------------------------------------------------------------
+-- Tests for span data type
+-- File span.c
+-------------------------------------------------------------------------------
+
+/* Errors */
+SELECT intspan '[1,2] xxx';
+SELECT floatspan '[1,2] xxx';
+SELECT tstzspan '[2001-01-01,2001-01-02] xxx';
+SELECT tstzspan '2001-01-01, 2001-01-02';
+SELECT tstzspan '[2001-01-01, 2001-01-02';
+
+-- The UTC designator of RFC 3339, which every OGC Moving Features datetime is
+-- written in, denotes the same instant as the zero offset it abbreviates
+SELECT tstzspan '[2001-01-01T00:00:00Z, 2001-01-02T00:00:00Z]' =
+  tstzspan '[2001-01-01 00:00:00+00, 2001-01-02 00:00:00+00]';
+SELECT tstzspan '[2001-01-01T00:00:00UTC, 2001-01-02T00:00:00UTC]' =
+  tstzspan '[2001-01-01 00:00:00+00, 2001-01-02 00:00:00+00]';
+
+-- Output in WKT format
+
+SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);
+/* Errors */
+SELECT asText(floatspan '[1.12345678, 2.123456789]', -6);
+
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
+
+SELECT span(timestamptz '2001-01-01', '2001-01-02');
+SELECT span(timestamptz '2001-01-01', '2001-01-01', true, true);
+/* Errors */
+SELECT span(timestamptz '2001-01-01', '2001-01-01');
+SELECT span(timestamptz '2001-01-02', '2001-01-01');
+
+-------------------------------------------------------------------------------
+-- Conversion
+-------------------------------------------------------------------------------
+
+SELECT range(datespan '[2001-01-01,2001-01-01]');
+SELECT range(datespan '[2001-01-01,2001-01-02]');
+SELECT range(datespan '(2001-01-01,2001-01-02]');
+SELECT range(datespan '[2001-01-01,2001-01-02)');
+SELECT range(datespan '(2001-01-01,2001-01-03)');
+
+SELECT span(daterange '[2001-01-01,2001-01-01]');
+SELECT span(daterange '[2001-01-01,2001-01-02]');
+SELECT span(daterange '(2001-01-01,2001-01-02]');
+SELECT span(daterange '[2001-01-01,2001-01-02)');
+SELECT span(daterange'(2001-01-01,2001-01-03)');
+
+SELECT span(date '2001-01-01');
+SELECT date '2001-01-01'::datespan;
+
+SELECT range(tstzspan '[2001-01-01,2001-01-01]');
+SELECT range(tstzspan '[2001-01-01,2001-01-02]');
+SELECT range(tstzspan '(2001-01-01,2001-01-02]');
+SELECT range(tstzspan '[2001-01-01,2001-01-02)');
+SELECT range(tstzspan '(2001-01-01,2001-01-02)');
+
+SELECT span(tstzrange '[2001-01-01,2001-01-01]');
+SELECT span(tstzrange '[2001-01-01,2001-01-02]');
+SELECT span(tstzrange '(2001-01-01,2001-01-02]');
+SELECT span(tstzrange '[2001-01-01,2001-01-02)');
+SELECT span(tstzrange'(2001-01-01,2001-01-02)');
+
+SELECT span(timestamptz '2001-01-01');
+SELECT timestamptz '2001-01-01'::tstzspan;
+
+SELECT (date '2001-01-01'::timestamptz)::tstzspan;
+SELECT span(date '2001-01-01'::timestamptz);
+
+/* Errors */
+SELECT tstzrange '[2001-01-01,]'::tstzspan;
+SELECT tstzrange '[,2001-01-01]'::tstzspan;
+SELECT tstzrange 'empty'::tstzspan;
+
+-------------------------------------------------------------------------------
+-- Accessor functions
+-------------------------------------------------------------------------------
+
+SELECT lower(tstzspan '[2001-01-01,2001-01-01]');
+SELECT lower(tstzspan '[2001-01-01,2001-01-02]');
+SELECT lower(tstzspan '(2001-01-01,2001-01-02]');
+SELECT lower(tstzspan '[2001-01-01,2001-01-02)');
+SELECT lower(tstzspan '(2001-01-01,2001-01-02)');
+
+SELECT upper(tstzspan '[2001-01-01,2001-01-01]');
+SELECT upper(tstzspan '[2001-01-01,2001-01-02]');
+SELECT upper(tstzspan '(2001-01-01,2001-01-02]');
+SELECT upper(tstzspan '[2001-01-01,2001-01-02)');
+SELECT upper(tstzspan '(2001-01-01,2001-01-02)');
+
+SELECT lowerInc(tstzspan '[2001-01-01,2001-01-01]');
+SELECT lowerInc(tstzspan '[2001-01-01,2001-01-02]');
+SELECT lowerInc(tstzspan '(2001-01-01,2001-01-02]');
+SELECT lowerInc(tstzspan '[2001-01-01,2001-01-02)');
+SELECT lowerInc(tstzspan '(2001-01-01,2001-01-02)');
+
+SELECT upperInc(tstzspan '[2001-01-01,2001-01-01]');
+SELECT upperInc(tstzspan '[2001-01-01,2001-01-02]');
+SELECT upperInc(tstzspan '(2001-01-01,2001-01-02]');
+SELECT upperInc(tstzspan '[2001-01-01,2001-01-02)');
+SELECT upperInc(tstzspan '(2001-01-01,2001-01-02)');
+
+SELECT duration(tstzspan '[2001-01-01,2001-01-01]');
+SELECT duration(tstzspan '[2001-01-01,2001-01-02]');
+SELECT duration(tstzspan '(2001-01-01,2001-01-02]');
+SELECT duration(tstzspan '[2001-01-01,2001-01-02)');
+SELECT duration(tstzspan '(2001-01-01,2001-01-02)');
+
+SELECT cmp(tstzspan '[2001-01-01,2001-01-01]', '(2001-01-01,2001-01-02)');
+SELECT cmp(tstzspan '[2001-01-01, 2001-01-02]', '[2001-01-01, 2001-01-02)');
+SELECT tstzspan '[2001-01-01,2001-01-01]' = tstzspan '(2001-01-01,2001-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' <> tstzspan '(2001-01-01,2001-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' < tstzspan '(2001-01-01,2001-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' <= tstzspan '(2001-01-01,2001-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' > tstzspan '(2001-01-01,2001-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' >= tstzspan '(2001-01-01,2001-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' = tstzspan '(2001-01-01,2001-01-02)';
+
+SELECT hash(tstzspan '[2001-01-01,2001-01-02]') = hash(tstzspan '[2001-01-01,2001-01-02]');
+SELECT hash(tstzspan '[2001-01-01,2001-01-02]') <> hash(tstzspan '[2001-01-02,2001-01-02]');
+
+SELECT hashExtended(tstzspan '[2001-01-01,2001-01-02]', 1) = hashExtended(tstzspan '[2001-01-01,2001-01-02]', 1);
+SELECT hashExtended(tstzspan '[2001-01-01,2001-01-02]', 1) <> hashExtended(tstzspan '[2001-01-02,2001-01-02]', 1);
+
+-------------------------------------------------------------------------------
+
+-- canonicalize
+SELECT intspan '[1,2]';
+SELECT intspan '(1,2]';
+SELECT datespan '[2001-01-01,2001-01-02]';
+SELECT datespan '(2001-01-01,2001-01-02]';
+SELECT span(1, 2147483646, true, true);
+SELECT span(1, 2147483647, true, false);
+SELECT intspan '[1, 2147483647)';
+SELECT bigintspan '[1, 9223372036854775807)';
+SELECT span(1::bigint, 9223372036854775806, true, true);
+/* Errors */
+SELECT span(1, 2147483647, true, true);
+SELECT span(2147483647, 2147483647, false, true);
+SELECT span(1::bigint, 9223372036854775807, true, true);
+SELECT intspan '[1, 2147483647]';
+SELECT intspan '[1, 2147483648)';
+
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
+
+SELECT expand(intspan '[1,1]', 1);
+SELECT expand(intspan '[1,3]', -1);
+SELECT expand(bigintspan '[1,1]', 1);
+SELECT expand(bigintspan '[1,5]', 1);
+SELECT expand(bigintspan '[1,5]', -1);
+SELECT expand(datespan '[2001-01-01,2001-01-02]', 1);
+
+SELECT expand(floatspan '[1,1]', 1);
+SELECT expand(floatspan '[1,2]', 1);
+SELECT expand(floatspan '(1,4]', -1);
+SELECT expand(floatspan '[1,3]', -1);
+-- NULL
+SELECT expand(floatspan '[1,3)', -1);
+SELECT expand(floatspan '(1,2)', -2);
+
+SELECT expand(tstzspan '[2001-01-01,2001-01-01]', '1 day');
+SELECT expand(tstzspan '[2001-01-01,2001-01-02]', '1 day');
+SELECT expand(tstzspan '(2001-01-01,2001-01-04]', '-1 day');
+SELECT expand(tstzspan '[2001-01-01,2001-01-03]', '-1 day');
+-- NULL
+SELECT expand(tstzspan '[2001-01-01,2001-01-03)', '-1 day');
+SELECT expand(tstzspan '(2001-01-01,2001-01-02)', '-2 days');
+
+SELECT shift(intspan '[1,2)', 2);
+SELECT shift(datespan '[2001-01-01,2001-01-02)', 2);
+/* Errors */
+-- A bound shifted outside the range of the base type is refused, as for the
+-- base type
+SELECT shift(intspan '[1,2147482647)', 2000);
+SELECT shift(datespan '[2001-01-01,2001-01-02)', 2147483000);
+
+SELECT shift(tstzspan '[2001-01-01,2001-01-01]', '5 min');
+SELECT shift(tstzspan '[2001-01-01,2001-01-02]', '5 min');
+SELECT shift(tstzspan '(2001-01-01,2001-01-02]', '5 min');
+SELECT shift(tstzspan '[2001-01-01,2001-01-02)', '5 min');
+SELECT shift(tstzspan '(2001-01-01,2001-01-02)', '5 min');
+
+SELECT scale(intspan '[1,2)', 4);
+SELECT scale(datespan '[2001-01-01,2001-01-02)', 4);
+
+SELECT scale(tstzspan '[2001-01-01,2001-01-01]', '1 hour');
+SELECT scale(tstzspan '[2001-01-01,2001-01-02]', '1 hour');
+SELECT scale(tstzspan '(2001-01-01,2001-01-02]', '1 hour');
+SELECT scale(tstzspan '[2001-01-01,2001-01-02)', '1 hour');
+SELECT scale(tstzspan '(2001-01-01,2001-01-02)', '1 hour');
+
+SELECT shiftScale(intspan '[1,2)', 4, 4);
+SELECT shiftScale(datespan '[2001-01-01,2001-01-02)', 4, 4);
+
+SELECT shiftScale(tstzspan '[2001-01-01,2001-01-01]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2001-01-01,2001-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2001-01-01,2001-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2001-01-01,2001-01-02)', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2001-01-01,2001-01-02)', '5 min', '1 hour');
+
+SELECT floor(floatspan '[1.5,2.5]');
+SELECT ceil(floatspan '[1.5,2.5]');
+SELECT floor(floatspan '(1.5,1.6)');
+SELECT ceil(floatspan '(1.5,1.6)');
+SELECT round(floatspan '[1.123456789,1.123456789]',6);
+SELECT round(floatspan '[1.123456789,2.123456789]',6);
+SELECT round(floatspan '[-inf,2.123456789]',6);
+SELECT round(floatspan '[1.123456789,inf]',6);
+SELECT round(floatspan '[1.5,1.6]');
+
+-------------------------------------------------------------------------------
+-- Position functions
+-------------------------------------------------------------------------------
+
+SELECT intspan '[3,5)' << 5;
+SELECT 5 << intspan '[3,5)';
+
+SELECT intspan '[3,5)' >> 5;
+SELECT 5 >> intspan '[3,5)';
+
+SELECT intspan '[3,5)' &< 5;
+SELECT 5 &< intspan '[3,5)';
+
+SELECT intspan '[3,5)' &> 5;
+SELECT 5 &> intspan '[3,5)';
+
+SELECT intspan '[3,5)' -|- 5;
+SELECT 5 -|- intspan '[3,5)';
+
+-------------------------------------------------------------------------------
+
+SELECT floatspan '[3.5, 5.5]' << 5.5;
+SELECT 5.5 << floatspan '[3.5, 5.5]';
+
+SELECT floatspan '[3.5, 5.5]' >> 5.5;
+SELECT 5.5 >> floatspan '[3.5, 5.5]';
+
+SELECT floatspan '[3.5, 5.5]' &< 5.5;
+SELECT 5.5 &< floatspan '[3.5, 5.5]';
+
+SELECT floatspan '[3.5, 5.5]' &> 5.5;
+SELECT 5.5 &> floatspan '[3.5, 5.5]';
+
+SELECT floatspan '[3.5, 5.5]' -|- 5.5;
+SELECT 5.5 -|- floatspan '[3.5, 5.5]';
+
+-------------------------------------------------------------------------------
+
+SELECT datespan '[2001-01-03,2001-01-05)' <<# date '2001-01-05';
+SELECT date '2001-01-05' <<# datespan '[2001-01-03,2001-01-05)';
+
+SELECT datespan '[2001-01-03,2001-01-05)' #>> date '2001-01-05';
+SELECT date '2001-01-05' #>> datespan '[2001-01-03,2001-01-05)';
+
+SELECT datespan '[2001-01-03,2001-01-05)' &<# date '2001-01-05';
+SELECT date '2001-01-05' &<# datespan '[2001-01-03,2001-01-05)';
+
+SELECT datespan '[2001-01-03,2001-01-05)' #&> date '2001-01-05';
+SELECT date '2001-01-05' #&> datespan '[2001-01-03,2001-01-05)';
+
+SELECT datespan '[2001-01-03,2001-01-05)' -|- date '2001-01-05';
+SELECT date '2001-01-05' -|- datespan '[2001-01-03,2001-01-05)';
+
+-------------------------------------------------------------------------------
+-- Rounding the largest double, whose product with 10^15 exceeds it
+SELECT round(1.7976931348623157e308::float, 15);
+SELECT round(-1.7976931348623157e308::float, 15);
+-- A power of ten beyond the doubles
+SELECT round(1.5::float, 400);
+SELECT round(floatspan '[-1.7e308, 1.7e308]', 15);
+
+-------------------------------------------------------------------------------

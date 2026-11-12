@@ -90,7 +90,7 @@ asMFJSON(trgeometry [, options integer=0 [, flags integer=0
 SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0),0)@2001-01-01');
 </programlisting>
-				<para><varname>asMFJSON</varname> aún no admite una superficie poliédrica.</para>
+				<para>GeoJSON no tiene superficie poliédrica, por lo que una geometría de referencia que es una superficie poliédrica se escribe como el <varname>MultiPolygon</varname> de sus caras, que <varname>trgeometryFromMFJSON</varname> lee de nuevo como la superficie poliédrica.</para>
 			</listitem>
 
 			<listitem xml:id="trgeometry_asEWKB">
@@ -338,8 +338,8 @@ SELECT ST_AsText(geometry(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 traversedArea(trgeometry,unary_union boolean=false) → geometry
 </programlisting>
-				<para>El argumento es falso salvo que se indique, y la función responde entonces las colocaciones mismas reunidas en una geometría, un multipolígono para un cuerpo que es un polígono, que es lo que quiere quien llama y hace su propio posprocesamiento. Con <varname>unary_union = true</varname> se disuelven en la región que cubren. <emphasis>Nota de muestreo:</emphasis> la forma disuelta de un cuerpo convexo que se traslada es exacta. Donde el cuerpo gira, se lee en colocaciones separadas por no más de 0,05 radianes de giro, y más cercanas donde recorre mucho mientras gira, cada vértice moviéndose a lo largo de la cuerda de su arco entre dos de ellas. La región contiene entonces solo terreno que el cuerpo cubre y deja fuera el abombamiento de los arcos más allá de sus cuerdas: sobre un corpus de cuerpos que giran, a lo sumo 5,8e-4 del diámetro del cuerpo.</para>
-				<para>La forma disuelta de un valor en tres dimensiones es la región sobre el suelo, sin Z. Donde el cuerpo gira, su área aún no es la que tiene el mismo valor en dos dimensiones.</para>
+				<para>El argumento es falso salvo que se indique, y la función responde entonces las colocaciones mismas reunidas en una geometría, un multipolígono para un cuerpo que es un polígono, que es lo que quiere quien llama y hace su propio posprocesamiento. Con <varname>unary_union = true</varname> se disuelven en la región que cubren, que un conjunto de secuencias cubre dentro de cada una de sus secuencias y en ningún punto de los huecos entre ellas. <emphasis>Nota de muestreo:</emphasis> la forma disuelta de un cuerpo convexo que se traslada es exacta. Donde el cuerpo gira, se lee en colocaciones separadas por no más de 0,05 radianes de giro, y más cercanas donde recorre mucho mientras gira, cada vértice moviéndose a lo largo de la cuerda de su arco entre dos de ellas. La región contiene entonces solo terreno que el cuerpo cubre y deja fuera el abombamiento de los arcos más allá de sus cuerdas: sobre un corpus de cuerpos que giran, a lo sumo 5,8e-4 del diámetro del cuerpo.</para>
+				<para>La forma disuelta de un valor en tres dimensiones es el suelo que cubre el cuerpo, sin Z: lo que cada cara barre sobre el suelo entre dos colocaciones entre las que el cuerpo se traslada, o lo que cada cara cubre en cada colocación de un valor en interpolación escalonada o discreta. La forma disuelta de tal valor que gira en interpolación lineal aún no se admite.</para>
 				<para>La forma disuelta de un cuerpo que es un polígono no convexo, cóncavo o con agujeros, en interpolación lineal, aún no se admite: tal cuerpo barre más suelo del que cubren sus colocaciones y menos que su envolvente.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -472,7 +472,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_transformations">
 		<title>Transformaciones</title>
 
-		<para>Se aplican las funciones estándar de modificación de secuencias: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> aún no admite una superficie poliédrica, y la transformación a otro SRID, <varname>transform</varname> y <varname>transformPipeline</varname>, aún no se admite para una geometría rígida temporal.</para>
+		<para>Se aplican las funciones estándar de modificación de secuencias: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_round">
@@ -481,6 +481,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 round(trgeometry,integer) → trgeometry
 </programlisting>
+				<para>Las coordenadas de la geometría de referencia, un polígono o una superficie poliédrica, se redondean como las de las poses.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(round( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(1.123456789 1.123456789), 0.123456)@2001-01-01', 3));
@@ -1128,6 +1129,35 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
   Pose(Point(5 0), 0.0)@2001-01-02]' ?= geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))';
 -- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Superposición alguna vez y siempre</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+trgeometry {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} trgeometry → boolean
+</programlisting>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; una geometría rígida está en un cuadro cuando lo interseca, tal como lo lee la restricción de una geometría rígida temporal a un cuadro.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- false
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' &amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- true
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+-- true
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' %&amp;&amp;
+  stbox 'STBOX X((0,0),(9,9))';
+-- false
 </programlisting>
 			</listitem>
 

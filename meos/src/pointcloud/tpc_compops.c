@@ -59,6 +59,7 @@
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
+#include "pointcloud/tpc_boxops.h"
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -452,6 +453,176 @@ int
 always_ne_tpcpatch_tpcpatch(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpcpatch_tpcpatch(temp1, temp2, &datum2_ne, ALWAYS);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal point cloud value and a point cloud box
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if a temporal point cloud value ever (or always) lies in
+ * a point cloud box, 0 if not, and -1 on error, as #eaoverlaps_tgeo_stbox
+ * answers it for a temporal geo
+ * @details The value ever lies in the box when its restriction to the box is
+ * not empty, and always lies in it when its restriction to the complement of
+ * the box is empty; a box of another schema or reference system raises, as
+ * the overlaps of their boxes raises
+ * @param[in] temp Temporal point cloud value
+ * @param[in] box Point cloud box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box,
+  bool ever)
+{
+  /* Ensure the validity of the arguments, so that an empty restriction is
+   * the only reason for a NULL one */
+  if (! ensure_valid_tpointcloud_tpcbox(temp, box))
+    return -1;
+  bool atfunc = ever ? REST_AT : REST_MINUS;
+  Temporal *res = (temp->temptype == T_TPCPOINT) ?
+    tpcpoint_restrict_tpcbox(temp, box, true, atfunc) :
+    tpcpatch_restrict_tpcbox(temp, box, true, atfunc);
+  int result = ever ? (res != NULL) : (res == NULL);
+  if (res)
+    pfree(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_comp_ever
+ * @brief Return 1 if a temporal point cloud point ever lies in a point cloud box, 0 if not,
+ * and -1 on error
+ * @param[in] temp Temporal point cloud point
+ * @param[in] box Point cloud box
+ * @errval -1
+ * @csqlfn #Ever_overlaps_tpcpoint_tpcbox()
+ */
+int
+ever_overlaps_tpcpoint_tpcbox(const Temporal *temp, const TPCBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, -1);
+  return eaoverlaps_tpointcloud_tpcbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_pointcloud_comp_ever
+ * @brief Return 1 if a temporal point cloud point ever lies in a point cloud box, 0 if not,
+ * and -1 on error
+ * @param[in] box Point cloud box
+ * @param[in] temp Temporal point cloud point
+ * @errval -1
+ * @csqlfn #Ever_overlaps_tpcbox_tpcpoint()
+ */
+int
+ever_overlaps_tpcbox_tpcpoint(const TPCBox *box, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, -1);
+  return eaoverlaps_tpointcloud_tpcbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_pointcloud_comp_ever
+ * @brief Return 1 if a temporal point cloud point always lies in a point cloud box, 0 if not,
+ * and -1 on error
+ * @param[in] temp Temporal point cloud point
+ * @param[in] box Point cloud box
+ * @errval -1
+ * @csqlfn #Always_overlaps_tpcpoint_tpcbox()
+ */
+int
+always_overlaps_tpcpoint_tpcbox(const Temporal *temp, const TPCBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, -1);
+  return eaoverlaps_tpointcloud_tpcbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_pointcloud_comp_ever
+ * @brief Return 1 if a temporal point cloud point always lies in a point cloud box, 0 if not,
+ * and -1 on error
+ * @param[in] box Point cloud box
+ * @param[in] temp Temporal point cloud point
+ * @errval -1
+ * @csqlfn #Always_overlaps_tpcbox_tpcpoint()
+ */
+int
+always_overlaps_tpcbox_tpcpoint(const TPCBox *box, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, -1);
+  return eaoverlaps_tpointcloud_tpcbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_pointcloud_comp_ever
+ * @brief Return 1 if a temporal point cloud patch ever lies in a point cloud box, 0 if not,
+ * and -1 on error
+ * @param[in] temp Temporal point cloud patch
+ * @param[in] box Point cloud box
+ * @errval -1
+ * @csqlfn #Ever_overlaps_tpcpatch_tpcbox()
+ */
+int
+ever_overlaps_tpcpatch_tpcbox(const Temporal *temp, const TPCBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, -1);
+  return eaoverlaps_tpointcloud_tpcbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_pointcloud_comp_ever
+ * @brief Return 1 if a temporal point cloud patch ever lies in a point cloud box, 0 if not,
+ * and -1 on error
+ * @param[in] box Point cloud box
+ * @param[in] temp Temporal point cloud patch
+ * @errval -1
+ * @csqlfn #Ever_overlaps_tpcbox_tpcpatch()
+ */
+int
+ever_overlaps_tpcbox_tpcpatch(const TPCBox *box, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, -1);
+  return eaoverlaps_tpointcloud_tpcbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_pointcloud_comp_ever
+ * @brief Return 1 if a temporal point cloud patch always lies in a point cloud box, 0 if not,
+ * and -1 on error
+ * @param[in] temp Temporal point cloud patch
+ * @param[in] box Point cloud box
+ * @errval -1
+ * @csqlfn #Always_overlaps_tpcpatch_tpcbox()
+ */
+int
+always_overlaps_tpcpatch_tpcbox(const Temporal *temp, const TPCBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, -1);
+  return eaoverlaps_tpointcloud_tpcbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_pointcloud_comp_ever
+ * @brief Return 1 if a temporal point cloud patch always lies in a point cloud box, 0 if not,
+ * and -1 on error
+ * @param[in] box Point cloud box
+ * @param[in] temp Temporal point cloud patch
+ * @errval -1
+ * @csqlfn #Always_overlaps_tpcbox_tpcpatch()
+ */
+int
+always_overlaps_tpcbox_tpcpatch(const TPCBox *box, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, -1);
+  return eaoverlaps_tpointcloud_tpcbox(temp, box, ALWAYS);
 }
 
 /*****************************************************************************

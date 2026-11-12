@@ -78,11 +78,11 @@ EPOCH_DATE = re.compile(r"(?<!\d)2000-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01
 
 # WHAT THE GATE READS, AND WHY THE TEST TREES CARRY NO EXTENSION LIST.  A fixture
 # arrives in whatever form its family needs -- the .sql the suite runs, the .out
-# it is compared against, a .c program, a .json schema, and the .sql.xz pg_dump
+# it is compared against, a .c program, a .json schema, and the .data files
 # the _tbl tests load -- so naming extensions names the forms that existed when
-# the list was written, and the next one enters unread.  A date inside the
-# pg_dump is the case that proves it: it reaches every _tbl table in the suite
-# and no ordinary read sees it.  The two test trees are therefore read WHOLE.
+# the list was written, and the next one enters unread.  A date inside a data
+# file is the case that proves it: it reaches every _tbl table in the suite
+# and no list of source extensions names it.  The two test trees are therefore read WHOLE.
 # `doc` names .xml because the manual is one form beside built artifacts.
 AREAS = (
     ("mobilitydb/test", None),
@@ -98,8 +98,8 @@ def tracked_files(area):
     not from the directory.  Reading the directory reads whatever a BUILD has
     left in it, and both test trees are written into: `meos/test/.gitignore`
     ignores `csv/`, the table fixtures tools/gen_test_csv.py exports from the
-    same pg_dumps, and the smoke-test sources gen_smoketest.py writes from the
-    installed headers.  Those carry the archives' own dates, so a directory walk
+    same data files, and the smoke-test sources gen_smoketest.py writes from the
+    installed headers.  Those carry the dates of the data files, so a directory walk
     reports a file that is not in the repository, cannot be migrated, and cannot
     be baselined either -- the check passes on a clean checkout and fails on the
     same commit once its tests have run.

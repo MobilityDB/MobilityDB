@@ -69,6 +69,12 @@ extern bool boxop_tpointcloud_tpointcloud(const Temporal *temp1,
  * filtering is recovered by the operator's recheck. STBox is
  * typedef'd via meos.h above. */
 extern void tpcbox_set_stbox(const TPCBox *src, STBox *dst);
+extern bool ensure_valid_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern Temporal *tpcpoint_restrict_tpcbox(const Temporal *temp,
+  const TPCBox *box, bool border_inc, bool atfunc);
+extern Temporal *tpcpatch_restrict_tpcbox(const Temporal *temp,
+  const TPCBox *box, bool border_inc, bool atfunc);
 
 /*****************************************************************************/
 

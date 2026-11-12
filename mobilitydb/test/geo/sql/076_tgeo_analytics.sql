@@ -1,0 +1,97 @@
+-------------------------------------------------------------------------------
+-- Affine transforms
+
+-- Rotate a 3D temporal point 180 degrees about the z axis.  Note this is long-hand for doing rotate();
+SELECT asEWKT(affine(temp, 
+  cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0)) 
+  AS using_affine, asEWKT(rotate(temp, pi())) AS using_rotate
+FROM (SELECT tgeometry '[POINT(1 2 3)@2001-01-01, POINT(1 4 3)@2001-01-02]' AS temp) AS t;
+
+-- Rotate a 3D temporal point 180 degrees in both the x and z axis
+SELECT asEWKT(affine(temp, 
+  cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))
+FROM (SELECT tgeometry '[Point(1 2 3)@2001-01-01, Point(1 4 3)@2001-01-02]' AS temp) AS t;
+
+-- Rotate a temporal point 180 degrees
+SELECT asEWKT(rotate(tgeometry '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, POINT(100 50)@2001-01-03]', pi()), 6);
+-- Rotate 30 degrees counter-clockwise at x=50, y=160
+SELECT asEWKT(rotate(tgeometry '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, POINT(100 50)@2001-01-03]', pi()/6, 50, 160), 6);
+-- Rotate 60 degrees clockwise from centroid
+SELECT asEWKT(rotate(temp, -pi()/3, ST_Centroid(traversedArea(temp))), 6)
+FROM (SELECT tgeometry '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, POINT(100 50)@2001-01-03]' AS temp) AS t;
+
+SELECT asEWKT(scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', geometry 'POINT(0.5 0.75 0.8)'));
+SELECT asEWKT(scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75, 0.8));
+SELECT asEWKT(scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75));
+SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(2 2)', geometry 'POINT(1 1)'));
+
+-- A rotation about a point geometry is the rotation about its coordinates,
+-- and the forms leaving out a translation or a scale along z are the full
+-- forms with an offset of 0 and a factor of 1
+SELECT rotate(tgeometry '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point(50 160)') =
+  rotate(tgeometry '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, 50, 160) AS same;
+SELECT translate(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 5, 10) =
+  translate(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 5, 10, 0) AS same;
+SELECT scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75) =
+  scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75, 1) AS same;
+
+/* Errors */
+SELECT rotate(tgeometry '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point Empty');
+
+-- An empty factor point or origin and an origin of another SRID are refused,
+-- as the center of a rotation is
+SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT Empty'));
+SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'POINT Empty'));
+SELECT asEWKT(scale(tgeometry 'SRID=3812;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'SRID=5676;Point(1 1)'));
+-- Coverage
+SELECT asEWKT(scale(tgeometry 'Point(1 1)@2001-01-01', geometry 'POINT(1 1)'));
+SELECT asEWKT(scale(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-03]}', geometry 'POINT(1 1)'));
+
+-- A stored value keeps its coordinates after being scaled and moved
+DROP TABLE IF EXISTS tbl_transf_arg;
+CREATE TABLE tbl_transf_arg(temp tgeometry);
+INSERT INTO tbl_transf_arg VALUES
+  (tgeometry '[Linestring(1 1,2 2)@2001-01-01, Linestring(1 1,3 3)@2001-01-02]');
+SELECT asEWKT(scale(temp, geometry 'POINT(2 2)')) FROM tbl_transf_arg;
+SELECT asEWKT(scale(temp, geometry 'POINT(2 2)', geometry 'POINT(1 1)')) FROM tbl_transf_arg;
+SELECT asEWKT(affine(temp, 1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 20, 0)) FROM tbl_transf_arg;
+SELECT asEWKT(temp) FROM tbl_transf_arg;
+DROP TABLE tbl_transf_arg;
+
+/* Errors */
+SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Linestring(1 1,2 2)'));
+SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'Linestring(1 1,2 2)'));
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Simplification
+
+-- A temporal geometry or geography has step interpolation, so each
+-- simplification answers a copy of its argument
+SELECT asText(minDistSimplify(tgeometry '[Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03]', 1));
+SELECT asText(minDistSimplify(tgeography '[Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03]', 1), 6);
+SELECT asText(minTimeDeltaSimplify(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03]}', interval '2 days'));
+SELECT asText(minTimeDeltaSimplify(tgeography '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', interval '2 days'), 6);
+-- A simplified temporal geography is a temporal geography
+SELECT pg_typeof(minDistSimplify(tgeography '[Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03]', 1));
+SELECT pg_typeof(minTimeDeltaSimplify(tgeography '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', interval '2 days'));
+SELECT asText(maxDistSimplify(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03]', 1));
+SELECT asText(douglasPeuckerSimplify(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03]}', 1));
+SELECT asText(minDistSimplify(tgeometry '[Linestring(1 1,2 2)@2001-01-01, Linestring(1 1,2 2.1)@2001-01-02]', 1));
+SELECT asText(minDistSimplify(tgeometry 'Point(1 1)@2001-01-01', 1));
+/* Errors */
+SELECT minDistSimplify(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', -1);
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Granularity modification with tsample and tprecision
+
+SELECT asText(tsample(tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
+SELECT asText(tsample(tgeography '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+
+SELECT asText(tprecision(tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
+SELECT asText(tprecision(tgeography '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+
+-------------------------------------------------------------------------------

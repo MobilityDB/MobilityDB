@@ -90,7 +90,7 @@ asMFJSON(trgeometry [, options integer=0 [, flags integer=0
 SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0),0)@2001-01-01');
 </programlisting>
-				<para><varname>asMFJSON</varname> does not yet support a polyhedral surface.</para>
+				<para>GeoJSON has no polyhedral surface, so a reference geometry that is a polyhedral surface is written as the <varname>MultiPolygon</varname> of its faces, which <varname>trgeometryFromMFJSON</varname> reads back as the polyhedral surface.</para>
 			</listitem>
 
 			<listitem xml:id="trgeometry_asEWKB">
@@ -346,9 +346,9 @@ SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', true));
 -- POLYGON((0 0,0 1,11 1,11 0,0 0))
 </programlisting>
-				<para>The argument is false unless it is given, and the function then answers the placements themselves gathered into one geometry, a multipolygon for a body that is a polygon, which is what a caller that does its own post-processing wants. With <varname>unary_union = true</varname> they are dissolved into the region they cover.</para>
+				<para>The argument is false unless it is given, and the function then answers the placements themselves gathered into one geometry, a multipolygon for a body that is a polygon, which is what a caller that does its own post-processing wants. With <varname>unary_union = true</varname> they are dissolved into the region they cover, which a sequence set covers within each of its sequences and nowhere in the gaps between them.</para>
 				<para><emphasis>Sampling note:</emphasis> the merged form of a convex body that translates is exact. Where the body turns, it is read at placements no more than 0.05 radians of turn apart, and nearer where it travels far while it turns, each vertex moving along the chord of its arc between two of them. The region then holds only ground the body covers and leaves out the bulge of the arcs past their chords: over a corpus of turning bodies, at most 5.8e-4 of the diameter of the body.</para>
-				<para>The merged form of a value in three dimensions is the region on the ground, with no Z. Where the body turns, its area is not yet the one the same value has in two dimensions.</para>
+				<para>The merged form of a value in three dimensions is the ground the body covers, with no Z: what each face sweeps on the ground between two placements the body translates between, or what each face covers at each placement of a value in step or discrete interpolation. The merged form of such a value that turns in linear interpolation is not yet supported.</para>
 				<para>The merged form of a body that is a polygon not convex, concave or with holes, in linear interpolation, is not yet supported: such a body sweeps more ground than its placements cover and less than their hull.</para>
 			</listitem>
 		</itemizedlist>
@@ -473,7 +473,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_transformations">
 		<title>Transformations</title>
 
-		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> does not yet support a polyhedral surface, and the transformation to another SRID, <varname>transform</varname> and <varname>transformPipeline</varname>, is not yet supported for a temporal rigid geometry.</para>
+		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_round">
@@ -482,6 +482,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 round(trgeometry,integer) → trgeometry
 </programlisting>
+				<para>The coordinates of the reference geometry, a polygon or a polyhedral surface, are rounded as those of the poses are.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(round( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(1.123456789 1.123456789), 0.123456)@2001-01-01', 3));
@@ -1127,6 +1128,35 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
   Pose(Point(5 0), 0.0)@2001-01-02]' ?= geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))';
 -- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Ever and always overlaps</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+trgeometry {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} trgeometry → boolean
+</programlisting>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a rigid geometry lies in a box when it intersects it, as the restriction of a temporal rigid geometry to a box reads it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- false
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' &amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- true
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+-- true
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' %&amp;&amp;
+  stbox 'STBOX X((0,0),(9,9))';
+-- false
 </programlisting>
 			</listitem>
 

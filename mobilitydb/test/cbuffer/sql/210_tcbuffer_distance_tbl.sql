@@ -1,0 +1,50 @@
+SELECT round(MAX(maxValue(ST_SetSRID(g, 3812) <-> temp)), 6) FROM tbl_geom_point t1, tbl_tcbuffer t2
+WHERE ST_SetSRID(g, 3812) <-> temp IS NOT NULL;
+SELECT round(MAX(maxValue(temp <-> ST_SetSRID(g, 3812))), 6) FROM tbl_tcbuffer t1, tbl_geom_point t2
+WHERE temp <-> ST_SetSRID(g, 3812) IS NOT NULL;
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp <-> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tcbuffer,
+( SELECT * FROM tbl_geom ORDER BY k LIMIT 10 ) t
+WHERE NearestApproachInstant(temp, ST_SetSRID(g, 3812)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tcbuffer t1,
+( SELECT * FROM tbl_tcbuffer t2 ORDER BY k LIMIT 10 ) t2
+WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tcbuffer,
+( SELECT * FROM tbl_geom ORDER BY k LIMIT 10 ) t
+WHERE NearestApproachDistance(temp, ST_SetSRID(g, 3812)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tcbuffer t1,
+( SELECT * FROM tbl_tcbuffer t2 ORDER BY k LIMIT 10 ) t2
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tcbuffer,
+( SELECT * FROM tbl_geom ORDER BY k LIMIT 10 ) t
+WHERE ST_SetSRID(g, 3812) |=| temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tcbuffer t1,
+( SELECT * FROM tbl_tcbuffer t2 ORDER BY k LIMIT 10 ) t2
+WHERE t1.temp |=| t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tcbuffer,
+( SELECT * FROM tbl_geom ORDER BY k LIMIT 10 ) t
+WHERE shortestLine(ST_SetSRID(g, 3812), temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tcbuffer t1,
+( SELECT * FROM tbl_tcbuffer t2 ORDER BY k LIMIT 10 ) t2
+WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
+
+--------------------------------------------------------
+
+
+-- Set-set minimum distance
+
+-- The set-set form equals the minimum over the pairs of the table of the
+-- distance between their traversed areas
+SELECT round(minDistance((SELECT array_agg(temp) FROM (SELECT temp FROM tbl_tcbuffer WHERE k < 10) t),
+  (SELECT array_agg(temp) FROM (SELECT temp FROM tbl_tcbuffer WHERE k BETWEEN 50 AND 59) t))::numeric, 6) =
+  (SELECT round(MIN(ST_Distance(traversedArea(t1.temp), traversedArea(t2.temp)))::numeric, 6)
+   FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.k < 10 AND t2.k BETWEEN 50 AND 59);
+
+-------------------------------------------------------------------------------

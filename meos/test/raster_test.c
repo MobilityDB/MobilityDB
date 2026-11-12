@@ -40,7 +40,7 @@
  * by the language bindings rather than a PostgreSQL-only operator.
  *
  * The two rasters below are the ASCII hex-encoded WKB of the two rasters the
- * `numBands` case of mobilitydb/test/raster/queries/500_raster.test.sql builds
+ * `numBands` case of mobilitydb/test/raster/sql/500_raster.sql builds
  * with `ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
  * 4326), '32BF', 0.0, NULL)`, so that the two suites read the same values.
  *

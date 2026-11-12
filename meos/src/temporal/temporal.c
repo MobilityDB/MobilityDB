@@ -950,6 +950,11 @@ temporal_out(const Temporal *temp, int maxdd, size_t *size_out)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
+#if RGEO
+  /* A temporal rigid geometry writes its reference geometry before its poses */
+  if (temp->temptype == T_TRGEOMETRY)
+    return trgeometry_out(temp, maxdd, size_out);
+#endif /* RGEO */
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -1688,7 +1693,18 @@ temporal_round(const Temporal *temp, int maxdd)
   Temporal *result = tfunc_temporal(work, &lfinfo);
   if (work != temp)
     pfree(work);
-  return temporal_attach_geom(geom, result);
+  if (! geom || ! result)
+    return result;
+  /* The reference geometry is rounded as the poses are */
+  GSERIALIZED *geom_round = geo_round(geom, maxdd);
+  if (! geom_round)
+  {
+    pfree(result);
+    return NULL;
+  }
+  result = temporal_attach_geom(geom_round, result);
+  pfree(geom_round);
+  return result;
 }
 
 /**

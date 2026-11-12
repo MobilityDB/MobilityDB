@@ -189,29 +189,75 @@ trgeometry_from_mfjson(const char *mfjson)
 }
 
 /**
+ * @brief Return the text of a temporal rigid geometry from the text of its
+ * reference geometry and the one of its poses, in the order
+ * #trgeometry_parse reads it: the SRID, the interpolation, the reference
+ * geometry and the poses
+ * @details The poses start with the interpolation prefix that
+ * #tsequence_to_string and #tsequenceset_to_string write for a value in step
+ * interpolation, which goes before the reference geometry; the SRID, where
+ * one is given, precedes it as #tspatial_as_ewkt writes it, followed by a
+ * comma when the interpolation follows and by a semicolon otherwise
+ * @param[in] srid SRID written as a prefix, SRID_UNKNOWN for none
+ * @param[in] geom Text of the reference geometry
+ * @param[in] poses Text of the poses
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
+ */
+static char *
+trgeometry_text_join(int32_t srid, const char *geom, const char *poses,
+  size_t *size_out)
+{
+  static const char step[] = "Interp=Step;";
+  size_t steplen = sizeof(step) - 1;
+  bool interp = strncmp(poses, step, steplen) == 0;
+  /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+  char srid_str[18];
+  if (srid > 0)
+    snprintf(srid_str, sizeof(srid_str), "SRID=%d%c", srid,
+      interp ? ',' : ';');
+  else
+    srid_str[0] = '\0';
+  const char *rest = interp ? poses + steplen : poses;
+  size_t len = strlen(srid_str) + (interp ? steplen : 0) + strlen(geom) +
+    strlen(rest) + 2;
+  char *result = palloc(len);
+  int n = snprintf(result, len, "%s%s%s;%s", srid_str, interp ? step : "",
+    geom, rest);
+  if (size_out)
+    *size_out = (size_t) n + 1;
+  return result;
+}
+
+/**
  * @ingroup meos_rgeo_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal rigid
  * geometry
  * @param[in] temp Temporal rigid geometry
+ * @param[in] maxdd Maximum number of decimal digits
  * @param[out] size_out Size of the result, the terminating null character
  * included
  * @csqlfn #Trgeometry_out()
  */
 char *
-trgeometry_out(const Temporal *temp, size_t *size_out)
+trgeometry_out(const Temporal *temp, int maxdd, size_t *size_out)
 {
   size_t str_size;
   size_t part_size;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
 
+  /* The hexadecimal EWKB of the reference geometry carries its SRID */
   char *geom = geo_out(trgeometry_geom_p(temp), &part_size);
-  char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, &str_size);
-  /* Write the representations with the ';' delimiter and the end '\0' */
-  size_t len = strlen(geom) + strlen(pose) + 2;
-  char *result = palloc(len);
-  *size_out = (size_t) snprintf(result, len, "%s;%s", geom, pose) + 1;
+  /* The poses are written by the temporal pose, since #temporal_out writes a
+   * temporal rigid geometry through this function */
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  char *pose = temporal_out(tpose, maxdd, &str_size);
+  pfree(tpose);
+  char *result = trgeometry_text_join(SRID_UNKNOWN, geom, pose, size_out);
   pfree(geom); pfree(pose);
   return result;
 }
@@ -233,20 +279,21 @@ trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended,
   size_t part_size;
   assert(temp); assert(temp->temptype == T_TRGEOMETRY); assert(maxdd >= 0);
 
-  /* Write the geometry */
+  /* Write the geometry, its SRID written as the prefix of the value, where
+   * #trgeometry_parse reads it before the interpolation */
   LWGEOM *geom = lwgeom_from_gserialized(trgeometry_geom_p(temp));
+  int32_t srid = extended ? geom->srid : SRID_UNKNOWN;
+  geom->srid = SRID_UNKNOWN;
   char *wkt_geom = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO,
     maxdd, NULL);
   lwgeom_free(geom);
-  /* Write the pose */
-  char *wkt_pose = tspatial_as_text(temp, maxdd, &part_size);
-  /* Write the representations with the ';' delimiter and the end '\0' */
-  size_t len = strlen(wkt_geom) + strlen(wkt_pose) + 2;
-  char *result = palloc(len);
-  int n = snprintf(result, len, "%s;%s", wkt_geom, wkt_pose);
+  /* Write the poses through the temporal pose, since #tspatial_as_text writes
+   * a temporal rigid geometry through this function */
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  char *wkt_pose = tspatial_as_text(tpose, maxdd, &part_size);
+  pfree(tpose);
+  char *result = trgeometry_text_join(srid, wkt_geom, wkt_pose, size_out);
   pfree(wkt_geom); pfree(wkt_pose);
-  if (size_out)
-    *size_out = (size_t) n + 1;
   return result;
 }
 

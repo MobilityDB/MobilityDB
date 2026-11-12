@@ -1,0 +1,24 @@
+-----------------------------------------------------------------------
+-- Boolean functions and operators
+-- N.B. The names and, or, not are reserved words
+-----------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tbool WHERE TRUE & temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp & TRUE IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp & t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tbool WHERE TRUE | temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp | TRUE IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp | t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tbool WHERE ~ temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT MAX(duration(whenTrue(temp #> 5))) FROM tbl_tfloat;
+
+-------------------------------------------------------------------------------

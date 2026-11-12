@@ -122,8 +122,8 @@ int main(void)
   }
   else
   {
-    /* char *trgeometry_out(const Temporal *temp, size_t *size_out); */
-    char *trgeo1_out = trgeometry_out(trgeo1, &size_out);
+    /* char *trgeometry_out(const Temporal *temp, int maxdd, size_t *size_out); */
+    char *trgeo1_out = trgeometry_out(trgeo1, 15, &size_out);
     printf("trgeometry_in(%s): %s\n", trgeo1_in, trgeo1_out);
 
     /* Round-trip: parse the rendered representation again and check that
@@ -137,7 +137,7 @@ int main(void)
     }
     else
     {
-      char *trgeo2_out = trgeometry_out(trgeo2, &size_out);
+      char *trgeo2_out = trgeometry_out(trgeo2, 15, &size_out);
       if (strcmp(trgeo1_out, trgeo2_out) != 0)
       {
         printf("FAILED: round-trip mismatch: %s != %s\n", trgeo1_out,
@@ -701,6 +701,67 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* The united traversed area of a value with Z is the ground it covers: a
+   * cube translating covers the corridor between its placements, a cube in
+   * step interpolation its placements on the ground, with no Z, and a body
+   * turning in linear motion is refused */
+  {
+#define TRGEO_TEST_CUBE "PolyhedralSurface Z(((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))," \
+  "((0 0 1,1 0 1,1 1 1,0 1 1,0 0 1)),((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0))," \
+  "((1 0 0,1 1 0,1 1 1,1 0 1,1 0 0)),((1 1 0,0 1 0,0 1 1,1 1 1,1 1 0))," \
+  "((0 1 0,0 0 0,0 0 1,0 1 1,0 1 0)))"
+#define TRGEO_TEST_POSES "[Pose(Point Z(0 0 0),1,0,0,0)@2001-01-01, " \
+  "Pose(Point Z(4 2 1),1,0,0,0)@2001-01-03]"
+    Temporal *lin = trgeometry_in(TRGEO_TEST_CUBE ";" TRGEO_TEST_POSES);
+    Temporal *step = trgeometry_in("Interp=Step;" TRGEO_TEST_CUBE ";"
+      TRGEO_TEST_POSES);
+    Temporal *turn = trgeometry_in("Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));"
+      "[Pose(Point Z(0 0 0),1,0,0,0)@2001-01-01, "
+      "Pose(Point Z(4 0 0),0,0,0,1)@2001-01-03]");
+#undef TRGEO_TEST_CUBE
+#undef TRGEO_TEST_POSES
+    GSERIALIZED *mid = geom_in("Point(2.5 1.5)", -1);
+    meos_errno_reset();
+    GSERIALIZED *area = trgeometry_traversed_area(lin, true);
+    GSERIALIZED *area_step = trgeometry_traversed_area(step, true);
+    bool corridor = area && geom_covers(area, mid);
+    bool ground = area_step && ! FLAGS_GET_Z(area_step->gflags) &&
+      ! geom_covers(area_step, mid);
+    int err = meos_errno();
+    GSERIALIZED *area_turn = trgeometry_traversed_area(turn, true);
+    if (! corridor || ! ground || err != 0 || area_turn ||
+        meos_errno() == 0)
+    {
+      printf("FAILED: the united traversed area of a value with Z is not the "
+        "ground it covers\n");
+      result = 1;
+    }
+    free(lin); free(step); free(turn); free(mid); free(area); free(area_step);
+    free(area_turn);
+    meos_errno_reset();
+  }
+
+  /* The united traversed area of a sequence set covers what each sequence
+   * sweeps and nothing in the gap between them */
+  {
+    Temporal *set = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-02], "
+      "[Pose(Point(5 0),0)@2001-01-03, Pose(Point(6 0),0)@2001-01-04]}");
+    GSERIALIZED *in1 = geom_in("Point(1.5 0.5)", -1);
+    GSERIALIZED *in2 = geom_in("Point(6.5 0.5)", -1);
+    GSERIALIZED *gap = geom_in("Point(3.5 0.5)", -1);
+    GSERIALIZED *area = trgeometry_traversed_area(set, true);
+    if (! area || ! geom_covers(area, in1) || ! geom_covers(area, in2) ||
+        geom_covers(area, gap))
+    {
+      printf("FAILED: the united traversed area of a sequence set covers a "
+        "gap between its sequences\n");
+      result = 1;
+    }
+    free(set); free(in1); free(in2); free(gap); free(area);
+    meos_errno_reset();
+  }
+
   /* The relationships of a temporal rigid geometry read a 3D geometry in 2D,
    * as its distances do, in linear and in step interpolation */
   {
@@ -835,6 +896,70 @@ int main(void)
       result = 1;
     }
     free(step); free(lin); free(b1); free(b2); free(at1); free(at2);
+    meos_errno_reset();
+  }
+
+  /* A value in step interpolation reads back from what each writer writes,
+   * the interpolation, and the SRID before it, preceding the reference
+   * geometry as the parser reads them; the values are compared, not their
+   * text, whose timestamps the session time zone writes */
+  {
+    static const char *step_in[] = {
+      "Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));"
+        "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0.5)@2001-01-02]",
+      "SRID=3812,Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));"
+        "{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0.5)@2001-01-02], "
+        "[Pose(Point(3 0),1)@2001-01-03, Pose(Point(4 0),1.5)@2001-01-04]}",
+    };
+    for (int i = 0; i < 2; i++)
+    {
+      Temporal *t = trgeometry_in(step_in[i]);
+      char *written[3];
+      written[0] = t ? trgeometry_out(t, 15, &size_out) : NULL;
+      written[1] = t ? trgeometry_as_ewkt(t, 15, &size_out) : NULL;
+      /* The text writes no SRID, so it reads back the value without one */
+      written[2] = (t && i == 0) ? trgeometry_as_text(t, 15, &size_out) : NULL;
+      for (int k = 0; k < 3; k++)
+      {
+        if (k == 2 && i != 0)
+          continue;
+        meos_errno_reset();
+        Temporal *u = written[k] ? trgeometry_in(written[k]) : NULL;
+        if (! u || ! temporal_eq(t, u))
+        {
+          printf("FAILED: a value in step interpolation does not read back "
+            "from %s\n", written[k] ? written[k] : "NULL");
+          result = 1;
+        }
+        free(u); free(written[k]);
+      }
+      free(t);
+    }
+    meos_errno_reset();
+  }
+
+  /* GeoJSON states no polyhedral surface, so the MF-JSON of a body that is a
+   * surface writes it as the multipolygon of its faces, which is read back as
+   * the surface */
+  {
+    Temporal *tsurf = trgeometry_in("PolyhedralSurface Z(((0 0 0,2 0 0,"
+      "2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));[Pose(Point(1 1 5),1,0,0,0)"
+      "@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02]");
+    size_t size;
+    char *mfjson = tsurf ? temporal_as_mfjson(tsurf, 0, 0, 15, NULL, &size) :
+      NULL;
+    Temporal *back = mfjson ? trgeometry_from_mfjson(mfjson) : NULL;
+    if (! back || ! strstr(mfjson, "\"MultiPolygon\"") ||
+        ! temporal_eq(tsurf, back))
+    {
+      printf("FAILED: the MF-JSON of a body that is a polyhedral surface is "
+        "not read back as the value\n");
+      result = 1;
+    }
+    else
+      printf("OK: the MF-JSON of a body that is a polyhedral surface is read "
+        "back as the value\n");
+    free(tsurf); free(mfjson); free(back);
     meos_errno_reset();
   }
 

@@ -175,7 +175,7 @@ int main(void)
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
 
-  /* The bins of the SQL function bins, from 025_temporal_tile.test.sql */
+  /* The bins of the SQL function bins, from 025_temporal_tile.sql */
   int count;
   Span *s = intspan_in("[15, 25]");
   const char *intbins[] = {"[14, 16)", "[16, 18)", "[18, 20)", "[20, 22)",
@@ -251,7 +251,7 @@ int main(void)
   free(ss);
   free(binsize);
 
-  /* The answers of the SQL functions, from 025_temporal_tile.test.sql */
+  /* The answers of the SQL functions, from 025_temporal_tile.sql */
   check_span("intspan_get_bin(3, 2, 0)", intspan_get_bin(3, 2, 0),
     intspan_in("[2, 4)"));
   check_span("intspan_get_bin(3, 2, 1)", intspan_get_bin(3, 2, 1),
@@ -301,7 +301,7 @@ int main(void)
   check("floatspan_get_bin starts at float_get_bin and contains the value",
     ok);
 
-  /* The tiles, from 025_temporal_tile.test.sql */
+  /* The tiles, from 025_temporal_tile.sql */
   TimestampTz t = timestamptz_in("2001-01-15", -1);
   TimestampTz torig = timestamptz_in("2001-01-01", -1);
   check_box("tbox_get_value_tile(15.5, 2.5, 1.5)",
@@ -325,7 +325,7 @@ int main(void)
   free(tile); free(xspan); free(tspan); free(xbin); free(tbin);
 
   /* The time tiles of a box of any number type, the float and time ones
-   * from 025_temporal_tile.test.sql */
+   * from 025_temporal_tile.sql */
   Interval *day = interval_in("1 day", -1);
   TimestampTz sep1 = timestamptz_in("2001-09-01", -1);
   TBox *intbox = tbox_in("TBOXINT XT([1, 5],[2001-09-01, 2001-09-03])");

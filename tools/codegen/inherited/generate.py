@@ -4908,11 +4908,17 @@ def _compops_box(temp: str) -> str | None:
     """The bounding box type of the temporal type `temp`, read where
     #render_tempopclass reads it: the box whose index operator classes take
     `temp` as a partner on the topological axis (manifest.d/boxtypes.yaml), the
-    box the overlaps operator `&&` of `temp` reads; None when no box lists it."""
-    for bt in load_manifest().get("boxtypes", []):
+    box the overlaps operator `&&` of `temp` reads, or the spatiotemporal box
+    for a subtype whose `boxmembers` carry the topological axis, as
+    #render_family_tempopclass reads them; None when no box lists it."""
+    mf = load_manifest()
+    for bt in mf.get("boxtypes", []):
         for p in (bt.get("opclasses") or {}).get("partners") or []:
             if p["type"] == temp and "topo" in p.get("axes", []):
                 return bt["box"]
+    for sub in mf.get("subtypes", []):
+        if sub["temp"] == temp and "topo" in (sub.get("boxmembers") or []):
+            return "stbox"
     return None
 
 def _compops_box_tside(tempsym: str, box: str) -> str:
@@ -4986,6 +4992,10 @@ def _compops_ea_group(pred: dict, direction: str, pairs: list, basesym: str,
         applic = [{**p, "base": p["box"], "basesym": p["box"],
                    "tempsym": _compops_box_tside(tempsym, p["box"])}
                   for p in applic if p.get("box")]
+        # A pair stating `overlaps: box` has the forms with a box alone, MEOS
+        # answering no overlaps of two of its values
+        if direction == "temp_temp":
+            applic = [p for p in applic if p.get("overlaps") != "box"]
     if not applic:
         return ""
     out = ""
@@ -5084,6 +5094,11 @@ def _compops_spec_from_subtype(sub: dict) -> dict:
             "rest": f"{family}_sel", "join": f"{family}_joinsel"}
     if family != "temporal":
         pair["eqsupport"] = f"{family}_supportfn"
+    # The ever and always overlaps, stated by the subtype as `overlaps: true`
+    # for the three forms or `overlaps: box` for the two forms with a box
+    if sub.get("overlaps"):
+        pair["box"] = _compops_box(sub["temp"])
+        pair["overlaps"] = sub["overlaps"]
     return {
         "brief": sub["brief"],
         "basesym": sub.get("basesym", sub["base"]),

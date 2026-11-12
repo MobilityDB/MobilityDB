@@ -123,6 +123,7 @@ subtypes:
     distwith: [geometry]
     base:  cbuffer
     brief: "temporal circular buffers"
+    overlaps: box
     bin:   200
     category: tspatial
     # Its set of base values is indexed beside it, by the box the set stores.
@@ -154,6 +155,7 @@ subtypes:
     distwith: [geometry]
     base:  npoint
     brief: "temporal network points"
+    overlaps: box
     bin:   300
     category: tspatial
     # npoint's scalar base::stbox conversions are npoint-specific (Npoint_to_stbox
@@ -217,6 +219,7 @@ subtypes:
     distwith: [geometry]
     base:  pose
     brief: "temporal poses"
+    overlaps: true
     bin:   100
     category: tspatial
     # A geodetic value answers these with a geography as with a geometry
@@ -294,6 +297,7 @@ subtypes:
     fam:   rgeo
     stem:  trgeo
     brief: "temporal rigid geometries"
+    overlaps: box
     bin:   150
     category: tspatial
     # trgeometry is 3-D-capable, so its position operators include the front/back
@@ -329,6 +333,7 @@ subtypes:
     base:  pcpoint
     fam:   pointcloud
     brief: "temporal pgpointcloud points"
+    overlaps: box
     bin:   400
     category: tspatial
     # A point cloud point holds a POSITION, so the temporal geometry point its
@@ -353,6 +358,7 @@ subtypes:
     base:  pcpatch
     fam:   pointcloud
     brief: "temporal pgpointcloud patches"
+    overlaps: box
     bin:   400
     category: tspatial
     # A patch is a set of points, so its geometry is the multipoint of the

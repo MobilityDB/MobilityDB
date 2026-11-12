@@ -1,0 +1,13 @@
+-------------------------------------------------------------------------------
+-- Bounding box operations for temporal rigid geometries
+-------------------------------------------------------------------------------
+
+SELECT array_length(spans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02], [Pose(Point(0 0),0)@2001-01-04, Pose(Point(2 0),0)@2001-01-05]}'), 1);
+SELECT array_length(stboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02, Pose(Point(10 0),0)@2001-01-03]'), 1);
+
+SELECT array_length(splitNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02, Pose(Point(10 0),0)@2001-01-03]', 2), 1);
+SELECT array_length(splitEachNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02, Pose(Point(10 0),0)@2001-01-03]', 1), 1);
+SELECT array_length(splitNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02, Pose(Point(10 0),0)@2001-01-03]', 2), 1);
+SELECT array_length(splitEachNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02, Pose(Point(10 0),0)@2001-01-03]', 1), 1);
+
+-------------------------------------------------------------------------------

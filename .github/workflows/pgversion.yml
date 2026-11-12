@@ -111,7 +111,6 @@ jobs:
             postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }} \
             postgresql-server-dev-${{ matrix.psql }}
           ls /usr/lib/postgresql/${{ matrix.psql }}/lib/
-          xzcat --version
 
       - name: Install the family and coverage dependencies
         run: |

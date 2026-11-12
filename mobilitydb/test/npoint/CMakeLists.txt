@@ -29,7 +29,7 @@ add_test(
   NAME load_npoint_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_npoint_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_npoint.sql.xz
+    -D TEST_NAME=load_npoint_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_npoint.sql
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
 )
 
@@ -38,7 +38,7 @@ set_tests_properties(load_npoint_tables PROPERTIES
   FIXTURES_SETUP DBNPOINT
   FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
 
-file(GLOB testfiles "queries/*.sql")
+file(GLOB testfiles "sql/[0-9]*.sql")
 list(SORT testfiles)
 
 foreach(file ${testfiles})

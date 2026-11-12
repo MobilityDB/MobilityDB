@@ -246,6 +246,97 @@ always_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
+ * Ever/always overlaps of a temporal network point and a spatiotemporal box
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if a temporal network point ever (or always) lies in a
+ * spatiotemporal box, 0 if not, and -1 on error, as #eaoverlaps_tgeo_stbox
+ * answers it for a temporal geo
+ * @details The value ever lies in the box when its restriction to the box by
+ * #tnpoint_restrict_stbox is not empty, and always lies in it when its
+ * restriction to the complement of the box is empty; a box with only the T
+ * dimension restricts the value to its period
+ * @param[in] temp Temporal network point
+ * @param[in] box Spatiotemporal box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tnpoint_stbox(const Temporal *temp, const STBox *box, bool ever)
+{
+  /* Ensure the validity of the arguments: a box with the X dimension shares
+   * the SRID of the value, as #tnpoint_restrict_stbox reads it */
+  VALIDATE_TNPOINT(temp, -1); VALIDATE_NOT_NULL(box, -1);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  if (hasx && ! ensure_valid_tnpoint_stbox(temp, box))
+    return -1;
+
+  uint8 rest = ever ? REST_AT : REST_MINUS;
+  Temporal *res = hasx ? tnpoint_restrict_stbox(temp, box, true, rest) :
+    temporal_restrict_tstzspan(temp, &box->period, rest);
+  int result = ever ? (res != NULL) : (res == NULL);
+  if (res)
+    pfree(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_comp_ever
+ * @brief Return 1 if a temporal network point ever lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] temp Temporal network point
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Ever_overlaps_tnpoint_stbox()
+ */
+int
+ever_overlaps_tnpoint_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tnpoint_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_npoint_comp_ever
+ * @brief Return 1 if a temporal network point ever lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal network point
+ * @csqlfn #Ever_overlaps_stbox_tnpoint()
+ */
+int
+ever_overlaps_stbox_tnpoint(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tnpoint_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_npoint_comp_ever
+ * @brief Return 1 if a temporal network point always lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] temp Temporal network point
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Always_overlaps_tnpoint_stbox()
+ */
+int
+always_overlaps_tnpoint_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tnpoint_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_npoint_comp_ever
+ * @brief Return 1 if a temporal network point always lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal network point
+ * @csqlfn #Always_overlaps_stbox_tnpoint()
+ */
+int
+always_overlaps_stbox_tnpoint(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tnpoint_stbox(temp, box, ALWAYS);
+}
+
+/*****************************************************************************
  * Temporal comparisons
  *****************************************************************************/
 

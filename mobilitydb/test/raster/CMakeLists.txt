@@ -29,7 +29,7 @@ add_test(
   NAME load_raster_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_raster_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_raster.sql
+    -D TEST_NAME=load_raster_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_raster.sql
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
 )
 
@@ -42,7 +42,7 @@ add_test(
   NAME load_raquet_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_raquet_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_raquet.sql.xz
+    -D TEST_NAME=load_raquet_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_raquet.sql
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
 )
 
@@ -51,7 +51,7 @@ set_tests_properties(load_raquet_tables PROPERTIES
   FIXTURES_SETUP DBRAQUET
   FIXTURES_REQUIRED "DB;DBRASTER")
 
-file(GLOB testfiles "queries/*.sql")
+file(GLOB testfiles "sql/[0-9]*.sql")
 list(SORT testfiles)
 
 set(SKIP_TESTS
@@ -66,8 +66,8 @@ foreach(file ${testfiles})
       set(DOTEST FALSE)
     endif()
   endif()
-  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/expected/${TESTNAME}.test.out")
-    message("Disabling test ${TESTNAME}: missing expected/${TESTNAME}.test.out")
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/expected/${TESTNAME}.out")
+    message("Disabling test ${TESTNAME}: missing expected/${TESTNAME}.out")
     set(DOTEST FALSE)
   endif()
   list(FIND SKIP_TESTS ${TESTNAME} _skip_idx)

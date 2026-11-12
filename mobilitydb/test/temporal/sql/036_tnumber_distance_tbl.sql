@@ -1,0 +1,82 @@
+-------------------------------------------------------------------------------
+-- Temporal distance
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE i <-> temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp <-> i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <-> t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE f <-> temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp <-> f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp <-> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Nearest approach distance
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE i |=| temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp |=| i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_tboxint WHERE b |=| temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp |=| b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp |=| t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE f |=| temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp |=| f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_tboxfloat WHERE b |=| temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_tboxfloat WHERE temp |=| b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp |=| t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b |=| t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tboxint t2 WHERE t1.temp |=| t2.b IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b |=| t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tboxfloat t2 WHERE t1.temp |=| t2.b IS NOT NULL;
+
+-- The distance of a temporal number to a box is the distance of its box at the
+-- period of the box to the box, on whichever side of the number the box lies:
+-- each box as it is, shifted below every number and shifted above it
+SELECT COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) IS DISTINCT FROM
+    (atTime(t1.temp, t2.b::tstzspan)::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.temp) IS DISTINCT FROM (t1.temp |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) > 0)
+FROM tbl_tint t1, (SELECT shiftValue(b, -200) AS b FROM tbl_tboxint UNION ALL
+  SELECT b FROM tbl_tboxint UNION ALL SELECT shiftValue(b, 200) FROM tbl_tboxint) t2;
+SELECT COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) IS DISTINCT FROM
+    (atTime(t1.temp, t2.b::tstzspan)::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.temp) IS DISTINCT FROM (t1.temp |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) > 0)
+FROM tbl_tfloat t1, (SELECT shiftValue(b, -200.0) AS b FROM tbl_tboxfloat UNION ALL
+  SELECT b FROM tbl_tboxfloat UNION ALL SELECT shiftValue(b, 200.0) FROM tbl_tboxfloat) t2;
+-- ... and against a box with no period, the box of the whole number
+SELECT COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) IS DISTINCT FROM (t1.temp::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.temp) IS DISTINCT FROM (t1.temp |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) > 0)
+FROM tbl_tint t1, (SELECT tbox(shiftValue(b, -200)::intspan) AS b FROM tbl_tboxint UNION ALL
+  SELECT tbox(b::intspan) FROM tbl_tboxint UNION ALL
+  SELECT tbox(shiftValue(b, 200)::intspan) FROM tbl_tboxint) t2;
+SELECT COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) IS DISTINCT FROM (t1.temp::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.temp) IS DISTINCT FROM (t1.temp |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) > 0)
+FROM tbl_tfloat t1, (SELECT tbox(shiftValue(b, -200.0)::floatspan) AS b FROM tbl_tboxfloat UNION ALL
+  SELECT tbox(b::floatspan) FROM tbl_tboxfloat UNION ALL
+  SELECT tbox(shiftValue(b, 200.0)::floatspan) FROM tbl_tboxfloat) t2;
+-- A number span is at the distance of its box from a box and from a temporal
+-- number, in either order
+SELECT COUNT(*) FILTER (WHERE (t1.i |=| t2.b) IS DISTINCT FROM (t1.i::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.i) IS DISTINCT FROM (t1.i |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.i |=| t2.b) > 0)
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t2.temp |=| t1.i) IS DISTINCT FROM (t2.temp |=| t1.i::tbox)),
+  COUNT(*) FILTER (WHERE (t1.i |=| t2.temp) IS DISTINCT FROM (t2.temp |=| t1.i)),
+  COUNT(*) FILTER (WHERE (t2.temp |=| t1.i) > 0)
+FROM tbl_intspan t1, tbl_tint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.f |=| t2.b) IS DISTINCT FROM (t1.f::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.f) IS DISTINCT FROM (t1.f |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.f |=| t2.b) > 0)
+FROM tbl_floatspan t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t2.temp |=| t1.f) IS DISTINCT FROM (t2.temp |=| t1.f::tbox)),
+  COUNT(*) FILTER (WHERE (t1.f |=| t2.temp) IS DISTINCT FROM (t2.temp |=| t1.f)),
+  COUNT(*) FILTER (WHERE (t2.temp |=| t1.f) > 0)
+FROM tbl_floatspan t1, tbl_tfloat t2;
+
+-------------------------------------------------------------------------------

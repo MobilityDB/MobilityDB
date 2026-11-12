@@ -652,8 +652,8 @@ example in fn_extra with the reference geometry as the key, is not
 implemented.  A cache is most useful for a point, where the walk costs
 little more than the computation of the constants.
 
-The regression test mobilitydb/test/rgeo/queries/
-173_trgeo_distance_walk.test.sql compares the nearest approach distance
+The regression test mobilitydb/test/rgeo/sql/
+173_trgeo_distance_walk.sql compares the nearest approach distance
 with the minimum of the distance at sampled times, for rotating bodies
 against a point, a polygon and another body.  It also covers overlaps,
 lines, multi geometries, temporal points, step interpolation, and the

@@ -26,17 +26,18 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-"""Export the pg_regress table fixtures to meos/test/csv."""
+"""Export the tables the pg_regress setup scripts load to meos/test/csv."""
 
 from __future__ import annotations
 
 import argparse
-import lzma
 import pathlib
 import re
 import sys
 
-COPY_RE = re.compile(r"^COPY public\.(\w+) \(([^)]*)\) FROM stdin;$")
+# A setup script names the data file of a table, then loads it with COPY
+FILE_RE = re.compile(r"^\\set filename :srcdir '/(mobilitydb/test/\w+/data/\w+\.data)'$")
+COPY_RE = re.compile(r"^COPY (\w+) \(([^)]*)\) FROM :'filename';$")
 
 # PostgreSQL's COPY text format. Any other backslashed character represents
 # itself, which is what carries the quotes a set value writes around its
@@ -71,34 +72,33 @@ def unescape(field: str, where: str) -> str | None:
     return "".join(out)
 
 
-def read_tables(archive: pathlib.Path) -> dict[str, tuple[list[str], list[list[str | None]]]]:
-    """Return, per table the archive loads, its columns and its rows."""
+def read_tables(setup: pathlib.Path, root: pathlib.Path) -> dict[str, tuple[list[str], list[list[str | None]]]]:
+    """Return, per table the setup script loads, its columns and its rows."""
     tables: dict[str, tuple[list[str], list[list[str | None]]]] = {}
-    columns: list[str] = []
-    rows: list[list[str | None]] = []
-    name = None
-    with lzma.open(archive, "rt", encoding="utf-8") as f:
-        for lineno, line in enumerate(f, 1):
-            line = line.rstrip("\n")
-            if name is None:
-                m = COPY_RE.match(line)
-                if m:
-                    name = m.group(1)
-                    columns = [c.strip() for c in m.group(2).split(",")]
-                    rows = []
-                continue
-            if line == "\\.":
-                tables[name] = (columns, rows)
-                name = None
-                continue
-            where = f"{archive.name}:{lineno}"
-            fields = [unescape(v, where) for v in line.split("\t")]
-            if len(fields) != len(columns):
-                raise SystemExit(
-                    f"{where}: {len(fields)} fields for {len(columns)} columns")
-            rows.append(fields)
-    if name is not None:
-        raise SystemExit(f"{archive.name}: a COPY block has no terminator")
+    data = None
+    for line in setup.read_text(encoding="utf-8").splitlines():
+        m = FILE_RE.match(line)
+        if m:
+            data = root / m.group(1)
+            continue
+        m = COPY_RE.match(line)
+        if not m:
+            continue
+        if data is None:
+            raise SystemExit(f"{setup.name}: a COPY names no data file")
+        name = m.group(1)
+        columns = [c.strip() for c in m.group(2).split(",")]
+        rows = []
+        with open(data, encoding="utf-8") as f:
+            for lineno, row in enumerate(f, 1):
+                where = f"{data.name}:{lineno}"
+                fields = [unescape(v, where) for v in row.rstrip("\n").split("\t")]
+                if len(fields) != len(columns):
+                    raise SystemExit(
+                        f"{where}: {len(fields)} fields for {len(columns)} columns")
+                rows.append(fields)
+        tables[name] = (columns, rows)
+        data = None
     return tables
 
 
@@ -132,17 +132,17 @@ def main() -> int:
     # ignored. Create it rather than assume a previous run left it behind.
     out_dir = root / "meos" / "test" / "csv"
     out_dir.mkdir(parents=True, exist_ok=True)
-    archives = sorted((root / "mobilitydb" / "test").glob("*/data/*.sql.xz"))
-    if not archives:
-        raise SystemExit("no fixture archive under mobilitydb/test/*/data")
+    setups = sorted((root / "mobilitydb" / "test").glob("*/sql/load_*.sql"))
+    if not setups:
+        raise SystemExit("no setup script under mobilitydb/test/*/sql")
 
     written: dict[str, str] = {}
-    for archive in archives:
-        for table, (columns, rows) in read_tables(archive).items():
+    for setup in setups:
+        for table, (columns, rows) in read_tables(setup, root).items():
             text = csv_text(columns, rows, table)
             if table in written and written[table] != text:
                 raise SystemExit(
-                    f"{table}: two archives carry different rows for it")
+                    f"{table}: two setup scripts load different rows for it")
             written[table] = text
 
     stale = {p.name for p in out_dir.glob("*.csv")} - {
@@ -159,7 +159,7 @@ def main() -> int:
         for name in stale:
             (out_dir / name).unlink()
 
-    print(f"{len(written)} tables from {len(archives)} archives")
+    print(f"{len(written)} tables from {len(setups)} setup scripts")
     if changed:
         verb = "would change" if args.check else "written"
         print(f"{len(changed)} {verb}: {', '.join(sorted(changed)[:8])}"

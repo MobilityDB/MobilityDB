@@ -32,8 +32,7 @@
  * @brief Build the test tables for the static and temporal QUADBIN cell index
  * types
  * @details This is the OFFLINE regeneration job that produces the frozen
- * pg_dump
- * fixture test/quadbin/data/load_quadbin.sql.xz; it is NOT part of the
+ * fixture test/quadbin/data/*.data; it is NOT part of the
  * mobilitydb_datagen extension (only the random_* helpers are). The geodetic
  * spatiotemporal box operand (tbl_geodstbox) used by the bounding-box operator
  * tests is provided by the shared geo/point fixture, so it is NOT regenerated

@@ -1,0 +1,104 @@
+-------------------------------------------------------------------------------
+-- Tests for the set data type
+-- File set.c
+-------------------------------------------------------------------------------
+
+-- Send/receive functions
+
+\copy tbl_cbufferset TO 'tbl_cbufferset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_cbufferset_tmp;
+CREATE TABLE tbl_cbufferset_tmp AS TABLE tbl_cbufferset WITH NO DATA;
+\copy tbl_cbufferset_tmp FROM 'tbl_cbufferset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+DROP TABLE tbl_cbufferset_tmp;
+
+-- Input/output from/to WKB and HexWKB
+
+-- asBinary emits plain WKB (no SRID); setSRID reapplies it before comparing
+SELECT COUNT(*) FROM tbl_cbufferset WHERE setSRID(cbuffersetFromBinary(asBinary(s)), 3812) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE SRID(cbuffersetFromBinary(asBinary(s))) <> 0;
+
+-- asEWKB preserves the SRID
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asEWKB(s)) <> s;
+
+-- asHexWKB emits plain WKB (no SRID); setSRID reapplies it before comparing
+SELECT COUNT(*) FROM tbl_cbufferset WHERE setSRID(cbuffersetFromHexWKB(asHexWKB(s)), 3812) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexEWKB(s)) <> s;
+
+-- The EWKB and HexEWKB readers keep the SRID the extended forms state
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromEWKB(asEWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexEWKB(asHexEWKB(s)) <> s;
+
+-- The text readers: EWKT states the SRID, WKT does not
+SELECT asEWKT(cbuffersetFromEWKT('SRID=3812;{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),1)"}'));
+SELECT SRID(cbuffersetFromText('{"Cbuffer(Point(1 1),0.5)"}'));
+
+-------------------------------------------------------------------------------
+-- Constructor
+
+SELECT numValues(set(array_agg(DISTINCT cb ORDER BY cb))) FROM tbl_cbuffer WHERE cb IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Cast
+
+SELECT round(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)", "Cbuffer(Point(3 3),0.5)"}'::stbox, 6);
+
+SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::cbufferset IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Transformation functions
+
+SELECT MIN(radius(startValue(round(s, 3)))) FROM tbl_cbufferset;
+
+-------------------------------------------------------------------------------
+-- Accessor functions
+
+SELECT MAX(memSize(s)) FROM tbl_cbufferset;
+
+SELECT MIN(numValues(s)) FROM tbl_cbufferset;
+SELECT round(MIN(radius(startValue(s))), 6) FROM tbl_cbufferset;
+SELECT round(MIN(radius(endValue(s))), 6) FROM tbl_cbufferset;
+SELECT round(MIN(radius(valueN(s, 1))), 6) FROM tbl_cbufferset;
+SELECT MIN(array_length(getValues(s), 1)) FROM tbl_cbufferset;
+
+-------------------------------------------------------------------------------
+-- Set_union and unnest functions
+
+SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
+
+WITH test1(k, s) AS (
+  SELECT k, unnest(s) FROM tbl_cbufferset ),
+test2 (k, s) AS (
+  SELECT k, setUnion(s) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_cbufferset t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+
+-------------------------------------------------------------------------------
+-- Comparison functions
+
+SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE cmp(t1.s, t2.s) = -1;
+SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s = t2.s;
+SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s <> t2.s;
+SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s < t2.s;
+SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s <= t2.s;
+SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s > t2.s;
+SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s >= t2.s;
+
+SELECT MAX(hash(s)) FROM tbl_cbufferset;
+
+SELECT MAX(hashExtended(s, 1)) FROM tbl_cbufferset;
+
+-------------------------------------------------------------------------------
+-- Aggregation functions
+
+SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
+
+-------------------------------------------------------------------------------
+-- The value-and-set directions of the difference and the intersection return
+-- a set, which is what the functions behind them build
+-------------------------------------------------------------------------------
+
+SELECT asText(setMinus(cbuffer 'Cbuffer(Point(1 1),0.5)', cbufferset '{"Cbuffer(Point(2 2),0.5)"}'));
+SELECT asText(setIntersection(cbuffer 'Cbuffer(Point(1 1),0.5)', cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)"}'));
+SELECT asText(setIntersection(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)"}', cbuffer 'Cbuffer(Point(1 1),0.5)'));
+
+-------------------------------------------------------------------------------
