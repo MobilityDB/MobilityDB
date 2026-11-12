@@ -539,6 +539,8 @@ SELECT asText(appendInstant(tgeogpoint 'Point(1.5 1.5)@2001-01-01', tgeogpoint '
 SELECT asText(appendInstant(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', tgeogpoint 'Point(1.5 1.5)@2001-01-04'));
 SELECT asText(appendInstant(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', tgeogpoint 'Point(1.5 1.5)@2001-01-04'));
 SELECT asText(appendInstant(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', tgeogpoint 'Point(1.5 1.5)@2001-01-06'));
+-- The box of the appended sequence holds the geodesic of its last edge
+SELECT stbox(appendInstant(tgeogpoint '[Point(0 50)@2001-01-01]', tgeogpoint 'Point(100 50)@2001-01-02')) = stbox(tgeogpoint '[Point(0 50)@2001-01-01, Point(100 50)@2001-01-02]');
 
 SELECT asText(appendInstant(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint 'Point(1 1 1)@2001-01-02'));
 SELECT asText(appendInstant(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint 'Point(1 1 1)@2001-01-04'));

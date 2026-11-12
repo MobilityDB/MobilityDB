@@ -114,7 +114,7 @@ Trgeometry_out(PG_FUNCTION_ARGS)
 {
   size_t size_out;
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *result = trgeometry_out(temp, &size_out);
+  char *result = trgeometry_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, &size_out);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
 }

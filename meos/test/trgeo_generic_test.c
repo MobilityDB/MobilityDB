@@ -42,7 +42,10 @@
  * reference geometry of their own, and a sequence of one instant, which a
  * discrete interpolation rebuilds from its instant. Where the
  * function refuses the temporal pose it refuses the rigid geometry too, so the
- * error handler returns rather than exits, and both answers are NULL.
+ * error handler returns rather than exits, and both answers are NULL. The
+ * generic writers, temporal_out, tspatial_as_text and tspatial_as_ewkt, write
+ * a rigid geometry as its own writers do, its reference geometry before its
+ * poses, and the output reads back as the value.
  *
  * The program can be built as follows
  * @code
@@ -118,6 +121,25 @@ check(const char *name, int input, const Temporal *trgeo,
     failures++;
   }
   free(expected); free(got); free(poses);
+}
+
+/*
+ * Check that a generic writer writes what the writer of the rigid geometry
+ * writes, as #check compares the poses of two answers, with its counters and
+ * its message; the two strings carry the same timestamps, so that no time
+ * zone moves one without the other, and are freed
+ */
+static void
+check_text(const char *name, int input, char *got, char *expected)
+{
+  checks++;
+  if (! got || ! expected || strcmp(got, expected) != 0)
+  {
+    printf("FAILED: %s on input %d: %s against %s\n", name, input,
+      got ? got : "NULL", expected ? expected : "NULL");
+    failures++;
+  }
+  free(got); free(expected);
 }
 
 /* The same check for each element of two arrays */
@@ -230,6 +252,42 @@ main(void)
     a = temporal_set_interp(t, DISCRETE);
     b = temporal_set_interp(p, DISCRETE);
     check("temporal_set_interp", i, t, a, b); free(a); free(b);
+
+    /* The writers: a generic writer writes the reference geometry before the
+     * poses, as the writer of the rigid geometry does; the output writes the
+     * poses with the number of decimal digits it is given, as the output of
+     * the temporal pose does, and reads back as the value */
+    size_t n;
+    check_text("temporal_out", i, temporal_out(t, 6, &n),
+      trgeometry_out(t, 6, &n));
+    check_text("tspatial_as_text", i, tspatial_as_text(t, 6, &n),
+      trgeometry_as_text(t, 6, &n));
+    check_text("tspatial_as_ewkt", i, tspatial_as_ewkt(t, 6, &n),
+      trgeometry_as_ewkt(t, 6, &n));
+    /* The interpolation of a value in step interpolation precedes its
+     * reference geometry, where the parser reads it, so it is compared apart
+     * from the poses that follow the reference geometry */
+    static const char step[] = "Interp=Step;";
+    size_t steplen = sizeof(step) - 1;
+    char *out1 = trgeometry_out(t, 1, &n);
+    char *poses1 = temporal_out(p, 1, &n);
+    bool step1 = out1 && strncmp(out1, step, steplen) == 0;
+    bool step2 = poses1 && strncmp(poses1, step, steplen) == 0;
+    const char *semi = out1 ? strchr(out1 + (step1 ? steplen : 0), ';') : NULL;
+    check_text("trgeometry_out digits", i,
+      strdup(semi && step1 == step2 ? semi + 1 : "NULL"),
+      strdup(poses1 ? poses1 + (step2 ? steplen : 0) : "NULL"));
+    free(out1); free(poses1);
+    char *out = temporal_out(t, 15, &n);
+    a = out ? trgeometry_in(out) : NULL;
+    checks++;
+    if (! a || ! temporal_eq(t, a))
+    {
+      printf("FAILED: trgeometry_in(temporal_out) on input %d: %s\n", i,
+        out ? out : "NULL");
+      failures++;
+    }
+    free(out); free(a);
 
     free(t); free(p);
   }
