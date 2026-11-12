@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: dot_product_sign_exact</title>
+<title>MobilityDB: point_segment_dot_sign_inputs</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -120,7 +120,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_adcdfd1f436ed2be03f7f365c94438101.html#adcdfd1f436ed2be03f7f365c94438101">cross_product_sign_offset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f">de9im_match</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ad237e8e79bc09d4d72539940bc00c4dd.html#ad237e8e79bc09d4d72539940bc00c4dd">dot_product_sign</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_aca65096078c0850c0376b5b56a9af7d9.html#aca65096078c0850c0376b5b56a9af7d9">dot_product_sign_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a299883bd99a8661bf29df47ece33cfd6.html#a299883bd99a8661bf29df47ece33cfd6">edge_array_reserve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a2f26ce3a8b36a98f2c28f34fbcf4384e.html#a2f26ce3a8b36a98f2c28f34fbcf4384e">edge_index_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa3afd22bae4ee21607ce7d48a28b3bea.html#aa3afd22bae4ee21607ce7d48a28b3bea">edge_index_make</a></td></tr>
@@ -260,6 +259,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a6660bb520eaef21e7dfdcbadf08a15ee.html#a6660bb520eaef21e7dfdcbadf08a15ee">point_seg_dist2</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a3ca7a47d386324a71d1b16395b17455f.html#a3ca7a47d386324a71d1b16395b17455f">point_segm_ray_parity</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a0cba23cd24b48b511a57c440faf4a58d.html#a0cba23cd24b48b511a57c440faf4a58d">point_segment_distance_offset_exact</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ad08ff3f4ec4c3d29ae483483d9860567.html#ad08ff3f4ec4c3d29ae483483d9860567">point_segment_dot_sign_inputs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a2f16d294a406a883e5dfdd9747f30e5a.html#a2f16d294a406a883e5dfdd9747f30e5a">point_segment_nearest_microsecond</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_add2409460881386d15c62aa5ac272f4e.html#add2409460881386d15c62aa5ac272f4e">point_segment_offset_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a3f702fcb0e62bf66dde1c606d645d94d.html#a3f702fcb0e62bf66dde1c606d645d94d">point_segment_shortestline_exact</a></td></tr>
@@ -306,23 +306,41 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aca65096078c0850c0376b5b56a9af7d9" name="aca65096078c0850c0376b5b56a9af7d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aca65096078c0850c0376b5b56a9af7d9">&#9670;&#160;</a></span>dot_product_sign_exact()</h2>
+<a id="ad08ff3f4ec4c3d29ae483483d9860567" name="ad08ff3f4ec4c3d29ae483483d9860567"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad08ff3f4ec4c3d29ae483483d9860567">&#9670;&#160;</a></span>point_segment_dot_sign_inputs()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int dot_product_sign_exact </td>
+          <td class="memname">int point_segment_dot_sign_inputs </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPOINT3D.html">POINT3D</a> *&#160;</td>
+          <td class="paramtype">const double *&#160;</td>
           <td class="paramname"><em>p</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structPOINT3D.html">POINT3D</a> *&#160;</td>
-          <td class="paramname"><em>q</em>&#160;</td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ndims</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -332,9 +350,9 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the sign of the dot product of two vectors, computed exactly. </p>
-<p >Each product of two coordinates is its rounded value plus its error (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a2580af11d3ad91bb92e3652a09d560dd.html#a2580af11d3ad91bb92e3652a09d560dd" title="Split the product of two doubles into its rounded value and the error of that rounding,...">two_product</a>), and the six terms are added into an expansion whose last component carries the sign of the whole. <a class="el" href="geo__funcs_8h_ad237e8e79bc09d4d72539940bc00c4dd.html#ad237e8e79bc09d4d72539940bc00c4dd" title="Return the sign of the dot product of two vectors.">dot_product_sign</a> calls it where its filter cannot tell </p><dl class="section note"><dt>Note</dt><dd>Exact where no product of coordinates overflows or underflows </dd></dl>
-<dl class="section return"><dt>Returns</dt><dd>1 or -1, 0 exactly where the vectors are orthogonal </dd></dl>
+<p>Return the sign of <code>(p - s) . </code></p>
+<p >(b - a), computed exactly for any finite doubles</p>
+<p >A sum of products of two input doubles (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a2aafe96e740fab4592d33cb35b5cb8ba.html#a2aafe96e740fab4592d33cb35b5cb8ba" title="Return the sign of a sum of products of doubles, each times a power of two from 1/4 to 2 or its negat...">square_products_sign</a>): with <code>s = a</code> it is the sign of <code>w . u</code>, with <code>s = b</code> that of <code>w . u - u . u</code>, which decide whether the nearest point of the segment is an end. As <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a7ec1667e1ab822430dcc3c6704d19bd2.html#a7ec1667e1ab822430dcc3c6704d19bd2" title="Return the sign of the area a ring encloses, decided exactly.">ring_area_sign</a>, the product taken in floating point, on the rounded differences, answers wherever it stands clear of the bound its rounding reaches: each difference is within a half unit in its last place, and the products and their sum add as many of the running magnitude, which twice DBL_EPSILON of it bounds generously, and DBL_MIN covers an underflow. A difference rounds to 0 only where it is 0, so a product of one is exactly 0. Within the bound, the sign is that of the exact sum </p>
 
 </div>
 </div>
