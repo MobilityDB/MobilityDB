@@ -48,7 +48,9 @@ SELECT cellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
 -- Area (lifted, tfloat)
 -------------------------------------------------------------------------------
 
-SELECT round(startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
+-- The whole-world z0 cell has the area of the sphere of the authalic radius
+SELECT round((startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}')) /
+  (4 * pi() * 6371007.180918475 ^ 2))::numeric, 6);
 
 -------------------------------------------------------------------------------
 -- Quadkey (lifted, ttext)

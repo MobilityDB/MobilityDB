@@ -77,10 +77,11 @@ SELECT cellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
  t
 (1 row)
 
-SELECT round(startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
-       round       
--------------------
- 508164135963886.0
+SELECT round((startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}')) /
+  (4 * pi() * 6371007.180918475 ^ 2))::numeric, 6);
+  round   
+----------
+ 1.000000
 (1 row)
 
 SELECT tquadbinCellToQuadkey(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');

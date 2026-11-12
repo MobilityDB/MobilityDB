@@ -273,8 +273,10 @@ SELECT ST_Contains(
 -- Area (square metres)
 -------------------------------------------------------------------------------
 
--- The whole-world z0 cell area
-SELECT round(cellArea(quadbin '480fffffffffffff')::numeric, 1);
+-- The whole-world z0 cell area, the area of the sphere of the authalic radius:
+-- the first and the last rows reach the poles
+SELECT round((cellArea(quadbin '480fffffffffffff') /
+  (4 * pi() * 6371007.180918475 ^ 2))::numeric, 6);
 -- A finer cell has strictly smaller area than a coarser one
 SELECT cellArea(quadbin '48a6227affffffff')
   < cellArea(quadbin '48427fffffffffff');

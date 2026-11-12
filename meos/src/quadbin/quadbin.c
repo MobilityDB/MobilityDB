@@ -1272,7 +1272,9 @@ quadbin_cell_point(Quadbin cell, double *longitude, double *latitude)
  * @brief Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell
  * @details Out-parameter kernel shared by the geometry boundary projection
  * cellToBoundary (via quadbin_cell_to_geom in quadbin_geo.c) and the
- * stbox(quadbin) cast (via quadbin_set_stbox).
+ * stbox(quadbin) cast (via quadbin_set_stbox). The first and the last rows
+ * hold every latitude beyond the limit of Web Mercator, so their boxes reach
+ * the poles, and the tiles of a zoom cover the sphere.
  * @param[in] cell Quadbin cell
  * @param[out] xmin Minimum X coordinate
  * @param[out] ymin Minimum Y coordinate
@@ -1290,9 +1292,12 @@ quadbin_cell_bounding_box(Quadbin cell, double *xmin, double *ymin,
   double n = (double) (UINT64_C(1) << z);
   *xmin = quadbin_col_longitude((double) x, n);
   *xmax = quadbin_col_longitude((double) x + 1.0, n);
-  /* y grows southward: tile y -> ymax, tile y+1 -> ymin */
-  *ymax = quadbin_row_latitude((double) y, n);
-  *ymin = quadbin_row_latitude((double) y + 1.0, n);
+  /* y grows southward: tile y -> ymax, tile y+1 -> ymin; the first and the
+   * last rows hold every latitude beyond the limit of the grid, so they
+   * extend to the poles (decision D5 of the cell walks) */
+  *ymax = y == 0 ? 90.0 : quadbin_row_latitude((double) y, n);
+  *ymin = (uint64) y + 1 == (UINT64_C(1) << z) ? -90.0 :
+    quadbin_row_latitude((double) y + 1.0, n);
 }
 
 /**
