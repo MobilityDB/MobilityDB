@@ -201,7 +201,7 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 
 </pre></li><li class="listitem"><a name="tpcpatch_atTpcbox"></a><a class="indexterm" name="id18017"></a><a class="indexterm" name="id18020"></a><p>Restrict a tpcpatch to the instants whose patch extent overlaps the tpcbox, or remove them</p><pre class="programlisting">
 atTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
-</pre><p>Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim. The X and Y extent of a patch is pgPointCloud's 2D <code class="varname">PCBOUNDS</code>; when the box has Z, the Z extent of the patch is the one its points state, and a patch of a schema without Z fails the box. Returns NULL when the tpcbox's pcid does not match.</p><pre class="programlisting">
+</pre><p>Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim. The X and Y extent of a patch is pgPointCloud's 2D <code class="varname">PCBOUNDS</code>; when the box has Z, the Z extent of the patch is the one its points state, and a patch of a schema without Z fails the box. A tpcbox of another schema, reference system or kind of coordinate raises an error, as the operators of the boxes do.</p><pre class="programlisting">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),

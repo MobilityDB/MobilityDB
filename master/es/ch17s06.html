@@ -201,7 +201,7 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 
 </pre></li><li class="listitem"><a name="tpcpatch_atTpcbox"></a><a class="indexterm" name="id17447"></a><a class="indexterm" name="id17450"></a><p>Restringe un tpcpatch a los instantes cuya extensión del parche se superpone al tpcbox, o eliminarlos</p><pre class="programlisting">
 atTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
-</pre><p>La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente. La extensión en X y en Y de un parche es el <code class="varname">PCBOUNDS</code> 2D de pgPointCloud; cuando la caja tiene Z, la extensión en Z del parche es la que indican sus puntos, y un parche de un esquema sin Z no supera la caja. Devuelve NULL cuando el pcid del tpcbox no coincide.</p><pre class="programlisting">
+</pre><p>La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente. La extensión en X y en Y de un parche es el <code class="varname">PCBOUNDS</code> 2D de pgPointCloud; cuando la caja tiene Z, la extensión en Z del parche es la que indican sus puntos, y un parche de un esquema sin Z no supera la caja. Un tpcbox de otro esquema, sistema de referencia o tipo de coordenada provoca un error, como lo hacen los operadores de las cajas.</p><pre class="programlisting">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
