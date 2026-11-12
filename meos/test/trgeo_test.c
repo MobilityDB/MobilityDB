@@ -753,6 +753,37 @@ int main(void)
     }
   }
 
+  /* A region with holes restricts a body in step interpolation by its
+   * placements, the hole read as outside, and is refused for a body in linear
+   * interpolation */
+  {
+    const char *step = "Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2.5 0),0)@2001-01-03, "
+      "Pose(Point(5 0),0)@2001-01-05]";
+    const char *lin = "Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-05]";
+    Temporal *tstep = trgeometry_in(step), *tlin = trgeometry_in(lin);
+    GSERIALIZED *region = geom_in("Polygon((0 -2,6 -2,6 2,0 2,0 -2),"
+      "(2 -1,4 -1,4 1.5,2 1.5,2 -1))", -1);
+    meos_errno_reset();
+    Temporal *at = trgeometry_at_geom(tstep, region);
+    int err_step = meos_errno();
+    meos_errno_reset();
+    Temporal *at_lin = trgeometry_at_geom(tlin, region);
+    int err_lin = meos_errno();
+    SpanSet *ss = at ? temporal_time(at) : NULL;
+    int count = ss ? spanset_num_spans(ss) : -1;
+    if (! at || err_step != 0 || count != 2 || at_lin || err_lin == 0)
+    {
+      printf("FAILED: a region with holes is not read by the restriction of "
+        "a body in step interpolation, or is answered for one in linear "
+        "interpolation\n");
+      result = 1;
+    }
+    free(tstep); free(tlin); free(region); free(at); free(at_lin); free(ss);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 

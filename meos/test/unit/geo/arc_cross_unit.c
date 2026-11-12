@@ -142,7 +142,13 @@ arc_cases(double s)
     {"circles 8 apart cross at (4, +-3)", &right, 8, true},
     {"circles 10 apart touch at (5, 0)", &right, 10, false},
     {"circles 2^-43 nearer than tangent", &right, 10 - 2 * TINY, true},
+    {"circles one unit in the last place nearer than tangent", &right,
+      10 - 0x1p-49, true},
     {"circles 8 apart meet at the ends of the arc", &corner, 8, false},
+    {"circles 2^-43 farther cross inside the ends", &corner, 8 + 2 * TINY,
+      true},
+    {"circles 2^-43 nearer meet outside the ends", &corner, 8 - 2 * TINY,
+      false},
   };
   for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++)
   {
@@ -190,6 +196,28 @@ circle_cases(double s)
   return;
 }
 
+/* The right half of the circle of radius 5 about the origin against each
+ * edge relate reads from the whole circle of radius 5 about (8, 0), as
+ * #circle_cases does for a segment: the circles cross at (4, -3) and (4, 3),
+ * one on each half of the whole circle */
+static void
+circle_arc_cases(double s)
+{
+  Edge right = arc_edge(s, 0, -5, 5, 0, 0, 5);
+  char wkt[256];
+  snprintf(wkt, sizeof(wkt), "CIRCULARSTRING(%.17g 0,%.17g 0,%.17g 0)",
+    3 * s, 13 * s, 3 * s);
+  LWGEOM *geom = lwgeom_from_wkt(wkt, LW_PARSER_CHECK_NONE);
+  MeosArray *edges = geom_extract_edges(geom);
+  for (size_t j = 0; j < edges->count; j++)
+    check(j == 0 ? "half circle from (3, 0) crosses the arc" :
+      "half circle back to (3, 0) crosses the arc", s,
+      arcarc_cross(&right, &((Edge *) edges->elems)[j]), true);
+  meos_array_destroy(edges);
+  lwgeom_free(geom);
+  return;
+}
+
 int
 main(void)
 {
@@ -200,6 +228,7 @@ main(void)
     segment_cases(scales[k]);
     arc_cases(scales[k]);
     circle_cases(scales[k]);
+    circle_arc_cases(scales[k]);
   }
   printf("%d of %d checks pass\n", checks - failures, checks);
   meos_finalize();

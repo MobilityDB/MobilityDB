@@ -775,12 +775,18 @@ extern int always_eq_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int always_ne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int always_ne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int always_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern int always_overlaps_stbox_tgeo(const STBox *box, const Temporal *temp);
+extern int always_overlaps_tgeo_stbox(const Temporal *temp, const STBox *box);
+extern int always_overlaps_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int ever_eq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int ever_eq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int ever_eq_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int ever_ne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int ever_ne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int ever_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern int ever_overlaps_stbox_tgeo(const STBox *box, const Temporal *temp);
+extern int ever_overlaps_tgeo_stbox(const Temporal *temp, const STBox *box);
+extern int ever_overlaps_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 
 /* Temporal comparisons */
 

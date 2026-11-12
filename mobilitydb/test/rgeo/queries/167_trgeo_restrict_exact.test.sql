@@ -279,3 +279,15 @@ SELECT getTime(atGeometry(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3
 SELECT getTime(atStbox(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', stbox 'STBOX X((2,2),(2.5,2.5))'));
 -- in step interpolation it holds each placement, holes included, which answers
 SELECT getTime(atGeometry(trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))'));
+-- A body in step interpolation holds each placement, which meets a region with
+-- holes as the static geometries do: outside the hole at the first and the
+-- last pose, inside it at the second
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(2.5 0), 0.0)@2001-01-03, Pose(Point(5 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1.5,2 1.5,2 -1))'));
+SELECT getTime(minusGeometry(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(2.5 0), 0.0)@2001-01-03, Pose(Point(5 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1.5,2 1.5,2 -1))'));
+SELECT getTime(atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(2.5 0), 0.0)@2001-01-03}',
+  geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1.5,2 1.5,2 -1))'));

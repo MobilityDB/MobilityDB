@@ -432,3 +432,23 @@ SELECT tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02
 SELECT tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}' #<> tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}';
 
 -------------------------------------------------------------------------------
+
+-- Ever and always overlaps: a temporal point and a box, and two temporal points
+
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&& stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&& stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&& stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 08:00, 2001-01-01 10:00])';
+SELECT stbox 'STBOX T([2001-01-01 09:00, 2001-01-01 12:00])' ?&& tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]';
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' %&& stbox 'STBOX X((0,0),(10,10))';
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' %&& stbox 'STBOX XT(((0,0),(10,10)),[2001-01-01 00:00, 2001-01-01 05:00])';
+SELECT stbox 'STBOX X((0,0),(10,10))' %&& tgeompoint '{Point(1 1)@2001-01-01, Point(11 11)@2001-01-02}';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-02]' ?&& stbox 'SRID=4326;GEODSTBOX ZT(((4,4,0),(6,6,0)),[2001-01-01, 2001-01-02])';
+-- Two temporal points crossing between their instants
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&& tgeompoint '[Point(2 0)@2001-01-01, Point(0 2)@2001-01-03]';
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' %&& tgeompoint '[Point(2 0)@2001-01-01, Point(0 2)@2001-01-03]';
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&& tgeompoint '[Point(0 1)@2001-01-01, Point(2 3)@2001-01-03]';
+-- Errors
+SELECT tgeompoint 'SRID=4326;Point(1 1)@2001-01-01' ?&& stbox 'STBOX X((0,0),(2,2))';
+SELECT tgeogpoint 'Point(1 1)@2001-01-01' ?&& stbox 'STBOX X((0,0),(2,2))';
+
+-------------------------------------------------------------------------------

@@ -132,6 +132,46 @@ CREATE OPERATOR %<> (
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
+CREATE FUNCTION eOverlaps(stbox, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_stbox_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_stbox_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = stbox, RIGHTARG = tgeompoint,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION aOverlaps(stbox, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_stbox_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_stbox_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = stbox, RIGHTARG = tgeompoint,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
 /*****************************************************************************/
 
 CREATE FUNCTION eEqual(tgeompoint, geometry)
@@ -226,6 +266,46 @@ CREATE OPERATOR %<> (
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
+CREATE FUNCTION eOverlaps(tgeompoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tgeo_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tgeogpoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tgeo_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = tgeompoint, RIGHTARG = stbox,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tgeogpoint, RIGHTARG = stbox,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION aOverlaps(tgeompoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tgeo_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tgeogpoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tgeo_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = tgeompoint, RIGHTARG = stbox,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tgeogpoint, RIGHTARG = stbox,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
 /*****************************************************************************/
 
 CREATE FUNCTION eEqual(tgeompoint, tgeompoint)
@@ -317,6 +397,46 @@ CREATE OPERATOR %<> (
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
   PROCEDURE = aNotEqual,
   NEGATOR = ?=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION eOverlaps(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION aOverlaps(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+  PROCEDURE = aOverlaps,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
