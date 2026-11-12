@@ -632,10 +632,14 @@ SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 					<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
 					<para>Ever and always overlaps</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tstzspan,tbool,ttext} ?&amp;&amp; {tstzspan,tbool,ttext} → boolean
+{tstzspan,tbool,ttext} %&amp;&amp; {tstzspan,tbool,ttext} → boolean
+{tbox,tnumber} ?&amp;&amp; {tbox,tnumber} → boolean
+{tbox,tnumber} %&amp;&amp; {tbox,tnumber} → boolean
 {stbox,tgeo} ?&amp;&amp; {stbox,tgeo} → boolean
 {stbox,tgeo} %&amp;&amp; {stbox,tgeo} → boolean
 </programlisting>
-					<para>The bounding box operator <varname>&amp;&amp;</varname> (<xref linkend="ttype_bbox"/>) tests whether the bounding box of a temporal value overlaps a box, while <varname>?&amp;&amp;</varname> tests whether the value itself lies in the box at some instant, and <varname>%&amp;&amp;</varname> whether it lies in the box at every instant at which it is defined; the borders of the box belong to it. A value whose bounding box overlaps a box need not lie in it at any instant. In the examples below, a temporal point moves from (0,0) to (10,10) between 0:00 and 10:00, so its bounding box overlaps a box in the corner (8,0)–(10,2), which the point never enters, and a box over its path between 8:00 and 10:00, which the point crosses at 5:00. For two temporal values, the operators test whether the bounding boxes of their values overlap at some instant, or at every instant, that both values share; for two temporal points, whether they are at the same position.</para>
+					<para>The bounding box operator <varname>&amp;&amp;</varname> (<xref linkend="ttype_bbox"/>) tests whether the bounding box of a temporal value overlaps a box, while <varname>?&amp;&amp;</varname> tests whether the value itself lies in the box at some instant, and <varname>%&amp;&amp;</varname> whether it lies in the box at every instant at which it is defined. The box of a temporal Boolean or text is a <varname>tstzspan</varname>, that of a temporal number a <varname>tbox</varname>, and that of a temporal geo an <varname>stbox</varname>; the borders of a spatiotemporal box belong to it, and a span, as the value span of a temporal box, contains its bounds as it states them. A value whose bounding box overlaps a box need not lie in it at any instant. In the examples below, a temporal point moves from (0,0) to (10,10) between 0:00 and 10:00, so its bounding box overlaps a box in the corner (8,0)–(10,2), which the point never enters, and a box over its path between 8:00 and 10:00, which the point crosses at 5:00. Likewise, a temporal text defined on 1 and 2 January and on 4 and 5 January has a bounding period that overlaps the morning of 3 January, at which the text is not defined, and a temporal float from 1 to 5 over four days lies in the box of the values 2.5 to 3.5 and never in the box of the values 4.5 to 5 over its first two days. For two temporal values, the operators test whether the bounding boxes of their values overlap at some instant, or at every instant, that both values share; for two temporal points or numbers, whether they are at the same position or have the same value, and for two temporal Booleans or texts, whether they share an instant. Two values that share no instant answer NULL, as their ever equality does.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&amp;&amp;
   stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
@@ -649,6 +653,22 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]'
 SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' %&amp;&amp;
   stbox 'STBOX X((0,0),(10,10))';
 -- true
+SELECT ttext '{[AA@2001-01-01, AA@2001-01-02], [BB@2001-01-04, BB@2001-01-05]}' &amp;&amp;
+  tstzspan '[2001-01-03, 2001-01-03 12:00]';
+-- true
+SELECT ttext '{[AA@2001-01-01, AA@2001-01-02], [BB@2001-01-04, BB@2001-01-05]}' ?&amp;&amp;
+  tstzspan '[2001-01-03, 2001-01-03 12:00]';
+-- false
+SELECT tfloat '[1@2001-01-01, 5@2001-01-05]' ?&amp;&amp;
+  tbox 'TBOXFLOAT XT([2.5, 3.5],[2001-01-01, 2001-01-05])';
+-- true
+SELECT tfloat '[1@2001-01-01, 5@2001-01-05]' ?&amp;&amp;
+  tbox 'TBOXFLOAT XT([4.5, 5],[2001-01-01, 2001-01-03])';
+-- false
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' ?&amp;&amp; tfloat '[3@2001-01-01, 1@2001-01-03]';
+-- true
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' %&amp;&amp; tfloat '[3@2001-01-01, 1@2001-01-03]';
+-- false
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&amp;&amp;
   tgeompoint '[Point(2 0)@2001-01-01, Point(0 2)@2001-01-03]';
 -- true

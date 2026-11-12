@@ -2435,6 +2435,233 @@ always_ge_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************
+ * Ever/always overlaps of a temporal value and its bounding box type
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if a temporal value is ever (or always) defined in a
+ * timestamptz span, 0 if not, and -1 on error, as #eacomp_temporal_base
+ * answers an ever or always comparison
+ * @details A temporal value is ever defined in the span when its restriction
+ * to the span by #temporal_restrict_tstzspan is not empty, and always when
+ * its restriction to the complement of the span is empty
+ * @param[in] temp Temporal value
+ * @param[in] s Timestamptz span
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_temporal_tstzspan(const Temporal *temp, const Span *s, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, -1); VALIDATE_TSTZSPAN(s, -1);
+  Temporal *rest = temporal_restrict_tstzspan(temp, s,
+    ever ? REST_AT : REST_MINUS);
+  int result = ever ? (rest != NULL) : (rest == NULL);
+  if (rest)
+    pfree(rest);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if a temporal value is ever defined in a timestamptz span,
+ * 0 if not, and -1 on error
+ * @param[in] temp Temporal value
+ * @param[in] s Timestamptz span
+ * @csqlfn #Ever_overlaps_temporal_tstzspan()
+ */
+int
+ever_overlaps_temporal_tstzspan(const Temporal *temp, const Span *s)
+{
+  return eaoverlaps_temporal_tstzspan(temp, s, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if a temporal value is ever defined in a timestamptz span,
+ * 0 if not, and -1 on error
+ * @param[in] s Timestamptz span
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_overlaps_tstzspan_temporal()
+ */
+int
+ever_overlaps_tstzspan_temporal(const Span *s, const Temporal *temp)
+{
+  return eaoverlaps_temporal_tstzspan(temp, s, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if a temporal value is always defined in a timestamptz
+ * span, 0 if not, and -1 on error
+ * @param[in] temp Temporal value
+ * @param[in] s Timestamptz span
+ * @csqlfn #Always_overlaps_temporal_tstzspan()
+ */
+int
+always_overlaps_temporal_tstzspan(const Temporal *temp, const Span *s)
+{
+  return eaoverlaps_temporal_tstzspan(temp, s, ALWAYS);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if a temporal value is always defined in a timestamptz
+ * span, 0 if not, and -1 on error
+ * @param[in] s Timestamptz span
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_overlaps_tstzspan_temporal()
+ */
+int
+always_overlaps_tstzspan_temporal(const Span *s, const Temporal *temp)
+{
+  return eaoverlaps_temporal_tstzspan(temp, s, ALWAYS);
+}
+
+/**
+ * @brief Return 1 if a temporal number ever (or always) lies in a temporal
+ * box, 0 if not, and -1 on error, as #eacomp_temporal_base answers an ever
+ * or always comparison
+ * @details A temporal number ever lies in the box when its restriction to the
+ * box by #tnumber_at_tbox is not empty, and always lies in it when its
+ * restriction to the complement of the box by #tnumber_minus_tbox is empty;
+ * the bounds of the value span of the box belong to it as the span states
+ * them, as the overlaps operator of the bounding boxes reads them
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tnumber_tbox(const Temporal *temp, const TBox *box, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnumber_tbox(temp, box))
+    return -1;
+  Temporal *rest = ever ? tnumber_at_tbox(temp, box) :
+    tnumber_minus_tbox(temp, box);
+  int result = ever ? (rest != NULL) : (rest == NULL);
+  if (rest)
+    pfree(rest);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if a temporal number ever lies in a temporal box, 0 if not,
+ * and -1 on error
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
+ * @csqlfn #Ever_overlaps_tnumber_tbox()
+ */
+int
+ever_overlaps_tnumber_tbox(const Temporal *temp, const TBox *box)
+{
+  return eaoverlaps_tnumber_tbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if a temporal number ever lies in a temporal box, 0 if not,
+ * and -1 on error
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
+ * @csqlfn #Ever_overlaps_tbox_tnumber()
+ */
+int
+ever_overlaps_tbox_tnumber(const TBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tnumber_tbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if a temporal number always lies in a temporal box, 0 if
+ * not, and -1 on error
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
+ * @csqlfn #Always_overlaps_tnumber_tbox()
+ */
+int
+always_overlaps_tnumber_tbox(const Temporal *temp, const TBox *box)
+{
+  return eaoverlaps_tnumber_tbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if a temporal number always lies in a temporal box, 0 if
+ * not, and -1 on error
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
+ * @csqlfn #Always_overlaps_tbox_tnumber()
+ */
+int
+always_overlaps_tbox_tnumber(const TBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tnumber_tbox(temp, box, ALWAYS);
+}
+
+/**
+ * @brief Return true, the overlap of the bounding boxes of two values whose
+ * bounding box is their timestamptz span, at an instant both share
+ */
+static Datum
+datum2_true(Datum value1 UNUSED, Datum value2 UNUSED, MeosType basetype UNUSED)
+{
+  return BoolGetDatum(true);
+}
+
+/**
+ * @brief Return 1 if the values of two temporal values ever (or always) have
+ * overlapping bounding boxes at an instant they share, 0 if not, and -1 on
+ * error, as #eacomp_temporal_temporal answers an ever or always comparison
+ * @details The bounding box of a number is the number, so two temporal
+ * numbers overlap at an instant when they are equal at it, which #datum2_eq
+ * answers across the instants where linear segments cross; the bounding box
+ * of another temporal value is its time span, so two of them overlap at
+ * every instant they share
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
+    return -1;
+  return eacomp_temporal_temporal(temp1, temp2,
+    tnumber_type(temp1->temptype) ? &datum2_eq : &datum2_true, ever);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if the values of two temporal values ever have overlapping
+ * bounding boxes at an instant they share, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Ever_overlaps_temporal_temporal()
+ */
+int
+ever_overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
+{
+  return eaoverlaps_temporal_temporal(temp1, temp2, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return 1 if the values of two temporal values always have
+ * overlapping bounding boxes at the instants they share, 0 if not, and -1 on
+ * error
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Always_overlaps_temporal_temporal()
+ */
+int
+always_overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
+{
+  return eaoverlaps_temporal_temporal(temp1, temp2, ALWAYS);
+}
+
+/*****************************************************************************
  * Generic functions for temporal comparisons
  *****************************************************************************/
 

@@ -4915,6 +4915,20 @@ def _compops_box(temp: str) -> str | None:
                 return bt["box"]
     return None
 
+def _compops_box_tside(tempsym: str, box: str) -> str:
+    """The temporal side of the C symbol of an overlaps with the box `box`, the
+    narrower of the family's `tempsym` and the `tside` the box states in
+    manifest.d/boxtypes.yaml: `temporal`, the root of the temporal types, gives
+    way to the box's side (`tnumber` for `tbox`), and a family narrower than
+    the box's side keeps its own (`tgeo` for `stbox`, whose side is
+    `tspatial`). Two temporal values keep the family's `tempsym`."""
+    if tempsym != "temporal":
+        return tempsym
+    for bt in load_manifest().get("boxtypes", []):
+        if bt["box"] == box:
+            return bt.get("tside", tempsym)
+    return tempsym
+
 _COMPOPS_T_HEADING = {
     "eq": "Temporal equal", "ne": "Temporal not equal",
     "lt": "Temporal less than", "le": "Temporal less than or equal",
@@ -4967,9 +4981,11 @@ def _compops_ea_group(pred: dict, direction: str, pairs: list, basesym: str,
     applic = [p for p in pairs if not pred["ordered"] or in_class(p["temp"], "orderable")]
     if pred.get("box"):
         # The overlaps compares the temporal value with its box: the box takes
-        # the place of the base type, in the SQL and in the C symbol alike
-        applic = [{**p, "base": p["box"]} for p in applic if p.get("box")]
-        basesym = applic[0]["box"] if applic else basesym
+        # the place of the base type, in the SQL and in the C symbol alike, and
+        # the temporal side of a symbol with a box is #_compops_box_tside
+        applic = [{**p, "base": p["box"], "basesym": p["box"],
+                   "tempsym": _compops_box_tside(tempsym, p["box"])}
+                  for p in applic if p.get("box")]
     if not applic:
         return ""
     out = ""
@@ -4978,7 +4994,8 @@ def _compops_ea_group(pred: dict, direction: str, pairs: list, basesym: str,
             ("Always", "a", "always_op", "always_neg")):
         funcs, ops = [], []
         for p in applic:
-            l, r, lsym, rsym = _compops_lr(direction, p, basesym, tempsym)
+            l, r, lsym, rsym = _compops_lr(direction, p, p.get("basesym", basesym),
+                tempsym if direction == "temp_temp" else p.get("tempsym", tempsym))
             sym = f"{qual}_{pred['key']}_{lsym}_{rsym}"
             support = p.get("eqsupport") if pred["key"] == "eq" else None
             funcs.append(_compops_func(f"{prefix}{pred['cap']}({l}, {r})",
