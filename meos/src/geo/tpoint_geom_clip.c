@@ -266,8 +266,8 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
           {
             if (side == 2)
               side = arc_circle_side(e, x, y);
-            if (k == 1 ? (x >= e->cx && side >= 0) :
-                (x >= e->cx || side <= 0))
+            if (k == 1 ? (x >= e->cx && side <= 0) :
+                (x >= e->cx || side >= 0))
               continue;
           }
           else if (xi <= x)

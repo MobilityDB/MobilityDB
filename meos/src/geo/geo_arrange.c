@@ -4189,7 +4189,7 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
    * its circle (cx, py) lies on, decided exactly: a ray touching the circle
    * at its top or bottom crosses nothing */
   if (sh == 2 && e->centred)
-    sh = - arc_circle_side(e, e->cx, py);
+    sh = arc_circle_side(e, e->cx, py);
   if (sh == 0 && e->centred)
   {
     /* The ray touches the circle at its top or bottom, (cx, py). The

@@ -10992,25 +10992,25 @@ point_on_arc_circle(const Edge *e, double qx, double qy)
 
 /**
  * @brief Return the side of the circle of an arc a point lies on, decided
- * exactly: -1 inside it, 0 on it, 1 outside it
+ * exactly: 1 inside it, 0 on it, -1 outside it, the sense of #incircle_sign
  * @details The circle is the one #point_on_arc_circle reads. For a half of a
  * full circle the side is the sign of the dot product of the vectors from the
- * point to the two ends of the diameter, negative where the point sees the
- * diameter at an obtuse angle, which is inside (Thales). For an arc given by
- * three points it is the sign of #incircle_sign, positive inside the circle
- * of three points turning counterclockwise, read against the turn they make.
- * For a centred arc it is the sign of |Q - C|^2 - r^2
+ * point to the two ends of the diameter, negated: negative where the point
+ * sees the diameter at an obtuse angle, which is inside (Thales). For an arc
+ * given by three points it is the sign of #incircle_sign, positive inside the
+ * circle of three points turning counterclockwise, read against the turn they
+ * make. For a centred arc it is the sign of r^2 - |Q - C|^2
  */
 int
 arc_circle_side(const Edge *e, double qx, double qy)
 {
   if (e->centred)
-    return centred_circle_side(e, qx, qy);
+    return - centred_circle_side(e, qx, qy);
   if (e->diameter)
-    return cross_product_sign(e->sx, e->sy, qx, qy, qy, e->ex, e->ey, qx);
+    return - cross_product_sign(e->sx, e->sy, qx, qy, qy, e->ex, e->ey, qx);
   int turn = cross_product_sign(e->sx, e->sy, e->mx, e->my, e->sx, e->sy,
     e->ex, e->ey);
-  return - turn * incircle_sign(e->sx, e->sy, e->mx, e->my, e->ex, e->ey,
+  return turn * incircle_sign(e->sx, e->sy, e->mx, e->my, e->ex, e->ey,
     qx, qy);
 }
 
@@ -14714,24 +14714,25 @@ point_segm_ray_parity(const double *p, const double *a, const double *b)
   return up ? s > 0 : s < 0;
 }
 
-/* The sign of the square of the distance from a point moved as
- * #point_line_side_moved moves it to the centre of an arc, less the square of
- * the radius, times w^2 */
+/* The side of the circle of an arc a point moved as #point_line_side_moved
+ * moves it lies on, in the sense of #arc_circle_side: the sign of the square
+ * of the radius less the square of the distance from the point to the
+ * centre, times w^2, positive inside */
 static int
 point_arc_circle_side_pred(TowerCtx *ctx, const void *varg)
 {
   const ArcWithinArg *o = varg;
   TowerArc arc;
   tower_arc_read(ctx, o->p, o->a[0], o->a[1], &arc);
-  int s = tx_sign(ctx, tx_sub(ctx, tx_add(ctx, tx_mul(ctx, arc.cx, arc.cx),
-    tx_mul(ctx, arc.cy, arc.cy)), arc.r2));
+  int s = tx_sign(ctx, tx_sub(ctx, arc.r2, tx_add(ctx,
+    tx_mul(ctx, arc.cx, arc.cx), tx_mul(ctx, arc.cy, arc.cy))));
   if (s == 0)
   {
     /* Moved along the radius from the centre, whose first coordinates are
-     * those of - c */
-    s = - tx_sign(ctx, arc.cx);
+     * those of - c, so the first of them not zero gives the side */
+    s = tx_sign(ctx, arc.cx);
     if (s == 0)
-      s = - tx_sign(ctx, arc.cy);
+      s = tx_sign(ctx, arc.cy);
   }
   return tower_ctx_unsafe(ctx) ? 2 : s;
 }
@@ -14755,7 +14756,7 @@ point_arc_ray_parity(const double *p, const ExactArc *arc)
   if (point_line_side_moved(p, arc->s, arc->e) != side)
     return parity;
   ArcWithinArg arg = {p, NULL, arc, NULL, 0.0};
-  return (tower_pred_run(point_arc_circle_side_pred, &arg) < 0) ? ! parity :
+  return (tower_pred_run(point_arc_circle_side_pred, &arg) > 0) ? ! parity :
     parity;
 }
 
