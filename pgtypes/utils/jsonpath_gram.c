@@ -1708,10 +1708,18 @@ yyreduce:
         (yyval.value) = makeItemBinary(jpiDecimal, linitial((yyvsp[-1].elems)), lsecond((yyvsp[-1].elems)));
       else
       {
+        /* The elements are kept by no item, so they are freed with their
+         * list, as the destructor of csv_list frees them */
+        for (int i = 0; i < list_length((yyvsp[-1].elems)); i++)
+          freeJsonPathParseItem((JsonPathParseItem *) list_nth((yyvsp[-1].elems), i));
+        list_free((yyvsp[-1].elems));
         meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "invalid input syntax for type jsonpath");
         return false;
       }
+      /* The item keeps the elements, not their list, which is freed as
+       * makeIndexArray() frees the list of its elements */
+      list_free((yyvsp[-1].elems));
     }
     break;
 
@@ -2130,6 +2138,9 @@ makeItemUnary(JsonPathItemType type, JsonPathParseItem *a)
   {
     v = makeItemType(jpiNumeric);
     v->value.numeric = pg_numeric_uminus(a->value.numeric);
+    /* The negated number replaces the item, which no tree keeps, so it is
+     * freed with its number as freeJsonPathParseItem() frees an item */
+    freeJsonPathParseItem(a);
     return v;
   }
   v = makeItemType(type);
