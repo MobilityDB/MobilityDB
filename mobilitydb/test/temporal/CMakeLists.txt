@@ -43,7 +43,7 @@ set_tests_properties(load_tables PROPERTIES
   RESOURCE_LOCK DBLOCK
   FIXTURES_REQUIRED DBSETUP)
 
-file(GLOB testfiles "queries/*.sql")
+file(GLOB testfiles "sql/*.sql")
 list(SORT testfiles)
 
 foreach(file ${testfiles})

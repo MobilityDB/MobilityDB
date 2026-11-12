@@ -38,7 +38,7 @@ set_tests_properties(load_jsonb_tables PROPERTIES
   FIXTURES_SETUP DBJSONB
   FIXTURES_REQUIRED "DB")
 
-file(GLOB testfiles "queries/*.sql")
+file(GLOB testfiles "sql/*.sql")
 list(SORT testfiles)
 
 foreach(file ${testfiles})

@@ -28,7 +28,7 @@
 -------------------------------------------------------------------------------
 
 -- Literal-value MF-JSON shape tests for tpcpatch — companion to
--- 421_tpcpoint_mfjson.test.sql for the tpcpoint side. Every assertion
+-- 421_tpcpoint_mfjson.sql for the tpcpoint side. Every assertion
 -- collapses to a scalar so the diff stays diff-able.
 
 \set inst1 'tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), ''2024-01-01''::timestamptz)'
