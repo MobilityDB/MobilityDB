@@ -11,5 +11,6 @@ var searchData=
   ['jsonb_5fset_5fpath_5ferror_5ftest_2ec_8',['jsonb_set_path_error_test.c',['../jsonb__set__path__error__test_8c.html',1,'']]],
   ['jsonbset_2ec_9',['jsonbset.c',['../meos_2src_2json_2jsonbset_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2json_2jsonbset_8c.html',1,'(Global Namespace)']]],
   ['jsonbset_5fjsonfuncs_2ec_10',['jsonbset_jsonfuncs.c',['../meos_2src_2json_2jsonbset__jsonfuncs_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2json_2jsonbset__jsonfuncs_8c.html',1,'(Global Namespace)']]],
-  ['jsonpath_5ferror_5fpath_5ftest_2ec_11',['jsonpath_error_path_test.c',['../jsonpath__error__path__test_8c.html',1,'']]]
+  ['jsonpath_5fdecimal_5ftest_2ec_11',['jsonpath_decimal_test.c',['../jsonpath__decimal__test_8c.html',1,'']]],
+  ['jsonpath_5ferror_5fpath_5ftest_2ec_12',['jsonpath_error_path_test.c',['../jsonpath__error__path__test_8c.html',1,'']]]
 ];
