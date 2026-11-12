@@ -1,0 +1,114 @@
+-------------------------------------------------------------------------------
+
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint3D;
+
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint3D;
+
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
+
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
+
+--------------------------------------------------------
+
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint3D;
+
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint3D;
+
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
+
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
+
+-------------------------------------------------------------------------------
+
+SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint;
+SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint3D;
+
+-- The reason for the low counts is that the lower/ upper bounds are lost in the translation
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
+
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
+
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
+
+-------------------------------------------------------------------------------
+
+SELECT ST_Extent(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_Extent(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+
+SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint  WHERE interp(temp) = 'Linear';
+SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
+
+-------------------------------------------------------------------------------
+
+--Rotate a 3d line 180 degrees about the z axis.  Note this is long-hand for doing ST_Rotate();
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0))) FROM tbl_tgeompoint;
+--Rotate a 3d line 180 degrees in both the x and z axis
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))) FROM tbl_tgeompoint;
+
+-------------------------------------------------------------------------------
+
+SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tfloat;
+SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeogpoint;
+
+SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tfloat;
+SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeogpoint;
+
+-- As for PostGIS function ST_Simplify, no support for tgeogpoint
+SELECT MAX(numInstants(maxDistSimplify(temp, 4))) FROM tbl_tfloat;
+SELECT MAX(numInstants(maxDistSimplify(temp, 4))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(maxDistSimplify(temp, 4, false))) FROM tbl_tgeompoint;
+
+SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4))) FROM tbl_tfloat;
+SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4, false))) FROM tbl_tgeompoint;
+
+-------------------------------------------------------------------------------
+
+SELECT round(MAX(ST_Length((mvt).geom)), 6), MAX(array_length((mvt).times, 1))
+FROM (SELECT asMVTGeom(temp, stbox 'STBOX X((0,0),(50,50))') AS mvt
+  FROM tbl_tgeompoint ) AS t;
+
+-------------------------------------------------------------------------------
+  -- Extended Kalman Filter (EKF) for tbl_tgeompoint
+
+  -- 1) Maximum number of instants removed by EKF
+  SELECT MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true)))AS max_removed
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3;
+
+  -- 2) Fill mode should preserve the number of instants exception of normalized points
+  SELECT MIN(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS min_diff,
+         MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS max_diff
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3;
+
+  -- 3) EKF drops vs fills outliers
+  -- Only return integer counts, not asEWKT() - the float coordinates
+  -- of the corrected positions differ between x86_64 and ARM64 due to
+  -- FMA / rounding-mode differences, producing churn across platforms.
+  -- The counts are the meaningful invariants the test is checking.
+  SELECT k,
+         numInstants(temp) AS n_before,
+         numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))  AS n_after_drop,
+         numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false)) AS n_after_fill
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3
+    AND numInstants(temp) > numInstants(
+          extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))
+  ORDER BY (numInstants(temp) - numInstants(
+             extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))) DESC,
+           k
+  LIMIT 5;

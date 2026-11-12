@@ -1,0 +1,447 @@
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
+
+SELECT spaceTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0) LIMIT 3;
+SELECT spaceTiles(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3)') LIMIT 3;
+SELECT spaceTiles(tgeompoint '[Point(3 3 3)@2001-01-15, Point(15 15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)') LIMIT 3;
+SELECT spaceTimeTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0, interval '2 days', 'Point(3 3)', '2001-01-15') LIMIT 3;
+SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15, Point(15 15 15)@2001-01-25]'::stbox, 2.0, interval '2 days', 'Point(3 3 3)', '2001-01-15') LIMIT 3;
+/* Errors */
+SELECT spaceTiles(tgeompoint '[Point(3 3 3)@2001-01-15, Point(15 15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
+SELECT spaceTiles(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0, geometry 'SRID=5676;Point(1 1)');
+SELECT spaceTiles(tgeogpoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0);
+
+SELECT getSpaceTile(geometry 'Point(3 3)', 2.0);
+SELECT getSpaceTile(geometry 'Point(3 3 3)', 2.0);
+SELECT getStboxTimeTile(timestamptz '2001-01-15', interval '2 days');
+SELECT getStboxTimeTile(timestamptz '2001-01-15', interval '2 days', '2020-06-15');
+SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2001-01-15', 2.0, interval '2 days');
+SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2001-01-15', 2.0, interval '2 days');
+SELECT getSpaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'Point(1 1 1)', '2020-06-15');
+
+SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'SRID=3812;Point(1 1 1)', '2020-06-15');
+/* Errors */
+SELECT getSpaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'Point(1 1)', '2020-06-15');
+SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
+
+-------------------------------------------------------------------------------
+-- Space boxes
+-------------------------------------------------------------------------------
+
+SELECT round(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0), 6);
+SELECT round(spaceBoxes(tgeompoint 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'Point(1 1)'), 6);
+SELECT round(spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, geometry 'Point(1 1 1)'), 6);
+
+/* Errors */
+SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, geometry 'Point(1 1)');
+SELECT spaceBoxes(tgeompoint 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'SRID=5676;Point(1 1)');
+
+-------------------------------------------------------------------------------
+-- time boxes
+-------------------------------------------------------------------------------
+
+SELECT round(timeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', interval '2 days', '2001-01-01'), 6);
+SELECT round(timeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', interval '2 days', '2001-01-01'));
+
+/* Errors */
+SELECT timeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', interval '2 months', '2001-01-01');
+
+-------------------------------------------------------------------------------
+-- SpaceTime boxes
+-------------------------------------------------------------------------------
+
+SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01'), 6);
+SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1 1)', '2001-01-01'));
+
+/* Errors */
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01');
+SELECT spaceTimeBoxes(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', 2.0, interval '2 days', 'SRID=5676;Point(1 1)', '2001-01-01');
+
+-------------------------------------------------------------------------------
+-- Space split
+-------------------------------------------------------------------------------
+
+-- 2D
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0) AS sp) t;
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, geometry 'Point(0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2.0, geometry 'Point(0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0, geometry 'Point(0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0, geometry 'Point(0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0, geometry 'Point(0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0, geometry 'Point(0.5 0.5)') AS sp) t;
+
+-- 3D
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Point(1 1 1)@2001-01-01', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2.0) AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2.0) AS sp) t;
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Point(1 1 1)@2001-01-01', 2.0, geometry 'Point(0.5 0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2.0, geometry 'Point(0.5 0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2.0, geometry 'Point(0.5 0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2.0, geometry 'Point(0.5 0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2.0, geometry 'Point(0.5 0.5 0.5)') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2.0, geometry 'Point(0.5 0.5 0.5)') AS sp) t;
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03, Point(3 1 3)@2001-01-05]',
+2.0, bitmatrix := false) AS sp) t;
+
+/* Errors */
+SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, geometry 'SRID=3812;Point(0.5 0.5 0.5)');
+
+-------------------------------------------------------------------------------
+-- Space-time split
+-------------------------------------------------------------------------------
+
+-- Without bitmatrix
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, interval '2 days', bitmatrix:=false) AS sp) t;
+
+-- 2D
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0, interval '2 days') AS sp) t;
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, interval '2 days', 'Point(0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2.0, interval '2 days', 'Point(0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0, interval '2 days', 'Point(0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0, interval '2 days', 'Point(0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0, interval '2 days', 'Point(0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0, interval '2 days', 'Point(0.5 0.5)', '2001-01-15') AS sp) t;
+
+-- 3D
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1 1)@2001-01-01', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2.0, interval '2 days') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2.0, interval '2 days') AS sp) t;
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1 1)@2001-01-01', 2.0, interval '2 days', 'Point(0.5 0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2.0, interval '2 days', 'Point(0.5 0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2.0, interval '2 days', 'Point(0.5 0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2.0, interval '2 days', 'Point(0.5 0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2.0, interval '2 days', 'Point(0.5 0.5 0.5)', '2001-01-15') AS sp) t;
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2.0, interval '2 days', 'Point(0.5 0.5 0.5)', '2001-01-15') AS sp) t;
+
+/* Errors */
+SELECT spaceTimeSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, interval '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
+
+-------------------------------------------------------------------------------
+-- Convenience overloads taking a tgeompoint directly. Each invocation should
+-- yield the same set of (index, tile) rows as the explicit
+-- @c spaceTiles(stbox(temp), ...) form.
+-------------------------------------------------------------------------------
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTiles(temp, 2.0);
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTiles(temp, 2.0, 4.0);
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(10 10 10)@2001-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTiles(temp, 2.0, 4.0, 5.0);
+
+-- Equivalence: convenience overload vs explicit stbox cast
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
+), a AS (
+  SELECT * FROM t, spaceTiles(temp, 2.0)
+), b AS (
+  SELECT * FROM t, spaceTiles(stbox(temp), 2.0)
+)
+SELECT bool_and(a.index = b.index AND a.tile ~= b.tile)
+FROM a JOIN b ON a.index = b.index;
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
+)
+SELECT count(*) FROM t, timeTiles(temp, interval '1 day');
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, interval '1 day');
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, 4.0, interval '1 day');
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(10 10 10)@2001-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, 4.0, 5.0, interval '1 day');
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A geodetic point laid on a space grid. A geodetic trip travels the great
+-- circle between its positions, which leaves the straight line in longitude
+-- and latitude, so the tiles it enters are the tiles that circle crosses.
+-------------------------------------------------------------------------------
+
+-- Both ends sit at latitude 61 and the great circle between them reaches
+-- latitude 62.485889, so on a grid of 2 degrees the trip enters the row north
+-- of the one the straight line in longitude and latitude stays in
+SELECT count(DISTINCT ST_Y(s.point::geometry)) AS rows_of_tiles
+FROM spaceSplit(tgeogpoint '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]',
+  2.0) s;
+SELECT count(DISTINCT ST_Y(p.point)) AS rows_of_tiles
+FROM spaceSplit(tgeompoint
+  'SRID=4326;[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]', 2.0) p;
+
+-- Every fragment is the trip restricted to the fragment's own period
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE atTime(t.tp, getTime(s.tpoint)) <> s.tpoint)
+  AS fragments_stating_another_value
+FROM (SELECT tgeogpoint
+  '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]' AS tp) t,
+  LATERAL spaceSplit(t.tp, 2.0) s;
+
+-- An arc across the antimeridian takes its short way, so it stays in the tiles
+-- of the last and the first columns of the grid
+SELECT count(DISTINCT ST_X(s.point::geometry)) AS columns_of_tiles
+FROM spaceSplit(tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]',
+  2.0) s;
+
+-- The space and time grid answers the tile, the time bin and the fragment
+SELECT count(*) AS fragments
+FROM spaceTimeSplit(tgeogpoint
+  '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]', 2.0,
+  interval '1 day') s;
+
+-- The fragments of the split of a geodetic trip partition its period: a trip
+-- holding the north pole, stated there at two longitudes, holds one position,
+-- a trip starting at the southernmost position of its great circle runs
+-- north throughout, and a trip leaving the pole runs along the meridian of
+-- its end
+WITH trips(tp) AS (VALUES
+  (tgeogpoint '[Point(30 60)@2001-01-01, Point(30 90)@2001-01-02,
+    Point(0 90)@2001-01-03, Point(0 60)@2001-01-04]'),
+  (tgeogpoint '[Point(-120 -30)@2001-01-01, Point(150 0)@2001-01-02]'),
+  (tgeogpoint '[Point(0 90)@2001-01-01, Point(-60 30)@2001-01-02]'))
+SELECT count(*) AS trips,
+  count(*) FILTER (WHERE whole <> getTime(tp) OR total <> duration(tp))
+  AS splits_not_partitioning
+FROM (SELECT tp, spansetUnion(getTime(s.tpoint)) AS whole,
+    sum(duration(getTime(s.tpoint))) AS total
+  FROM trips, LATERAL spaceSplit(tp, 30.0) s GROUP BY tp) AS q;
+
+-- The fragments of the space-time split of a geodetic trip partition its
+-- period too: the trip starting at the southernmost position of its great
+-- circle is cut at the bounds of the periods into parts whose arcs carry
+-- extremes of their own, and the trip crossing the antimeridian is cut into a
+-- part ending a rounding away from the plane of the meridian 15
+WITH trips(tp) AS (VALUES
+  (tgeogpoint '[Point(-30 -30)@2001-01-01 17:00:00+00, Point(60 0)@2001-01-02 01:00:00+00]'),
+  (tgeogpoint '[Point(150 15)@2001-01-03 11:00:00+00, Point(-120 15)@2001-01-04 15:00:00+00]'))
+SELECT count(*) AS trips,
+  count(*) FILTER (WHERE whole <> getTime(tp) OR total <> duration(tp))
+  AS splits_not_partitioning
+FROM (SELECT tp, spansetUnion(getTime(s.tpoint)) AS whole,
+    sum(duration(getTime(s.tpoint))) AS total
+  FROM trips, LATERAL spaceTimeSplit(tp, 15.0, interval '5 hours') s
+  GROUP BY tp) AS q;
+
+-- A grid is laid on a value of its own kind, so a geography origin is required
+SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
+  geography 'SRID=4326;Point(0.5 0.5)');
+
+-- Without its upper border a box leaves out only a tile holding nothing of it
+-- but that border: a box reaching into a tile keeps it, and a box ending on a
+-- tile boundary drops the tile starting there
+SELECT borderInc, count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceTiles(stbox 'STBOX X((1,1),(7,3))', 5.0,
+    borderInc := b.borderInc) AS tile
+GROUP BY borderInc ORDER BY borderInc;
+SELECT borderInc, count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceTiles(stbox 'STBOX X((1,1),(10,3))', 5.0,
+    borderInc := b.borderInc) AS tile
+GROUP BY borderInc ORDER BY borderInc;
+
+-- A trajectory split without the upper border of its extent keeps every tile
+-- it passes through, with or without the bit matrix, and loses only the
+-- instant it ends on that border
+SELECT bitmatrix, borderInc, count(*) AS fragments,
+  array_agg(ST_AsText(s.point) ORDER BY ST_AsText(s.point)) AS tiles
+FROM (VALUES (true), (false)) AS m(bitmatrix),
+  (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceSplit(tgeompoint
+    '[Point(1 1)@2001-01-01, Point(7 3)@2001-01-02, Point(10 2)@2001-01-03]',
+    5.0, bitmatrix := m.bitmatrix, borderInc := b.borderInc) s
+GROUP BY bitmatrix, borderInc ORDER BY bitmatrix, borderInc;
+
+-- A trajectory passing through the corner where four tiles meet holds the
+-- tile whose lower bounds meet there at that instant, which the bit matrix
+-- sets as the split without it reads it: the trajectory below crosses the
+-- corner (-90 0) halfway, and the tile from (-90 0) holds it then
+SELECT bitmatrix, count(*) AS fragments,
+  array_agg(ST_AsText(s.point) || ' ' || asText(s.tpoint)
+    ORDER BY ST_AsText(s.point)) AS fragments
+FROM (VALUES (true), (false)) AS m(bitmatrix),
+  LATERAL spaceSplit(tgeompoint
+    '[Point(-135 10)@2001-01-01, Point(-45 -10)@2001-01-03]',
+    90.0, bitmatrix := m.bitmatrix) s
+GROUP BY bitmatrix ORDER BY bitmatrix;
+
+-- Every form of spaceTiles takes the border by the name borderInc, the one
+-- with the three sizes included
+SELECT count(*) AS tiles
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 5.0, 5.0, 5.0,
+  borderInc := false);
+
+-- Grid arguments named by their dimension
+SELECT count(*) AS tiles
+FROM timeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])',
+  duration := '2 days', torigin := '2001-01-01');
+
+-- A time tile keeps the spatial extent of the box, in X, Y and Z
+SELECT index, tile
+FROM timeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])',
+  duration := '2 days', torigin := '2001-01-01');
+SELECT index, tile
+FROM timeTiles(stbox 'STBOX ZT(((0,0,0),(10,10,20)),[2001-01-01, 2001-01-03])',
+  duration := '1 day', torigin := '2001-01-01');
+SELECT count(*) AS tiles
+FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', xsize := 5.0,
+  duration := '2 days', torigin := '2001-01-01');
+SELECT count(*) AS fragments
+FROM spaceSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', xsize := 4.0);
+SELECT count(*) AS fragments
+FROM spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', xsize := 4.0,
+  duration := '2 days', torigin := '2001-01-01');
+SELECT count(*) AS boxes
+FROM unnest(timeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]',
+  duration := '2 days', torigin := '2001-01-01'));
+
+-------------------------------------------------------------------------------
+-- A size left out takes xsize
+-------------------------------------------------------------------------------
+
+-- The one- and two-size forms answer what the form repeating xsize answers
+SELECT array_agg(tile ORDER BY index) = (SELECT array_agg(tile ORDER BY index)
+  FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 2.0, 2.0)) AS same
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0);
+SELECT array_agg(tile ORDER BY index) = (SELECT array_agg(tile ORDER BY index)
+  FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 3.0, 2.0)) AS same
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 3.0);
+SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0) =
+  spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 3.0, interval '2 days') =
+  spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 3.0, 2.0, interval '2 days') AS same;
+SELECT getSpaceTile(geometry 'Point(3 4 5)', 2.0) =
+  getSpaceTile(geometry 'Point(3 4 5)', 2.0, 2.0, 2.0) AS same;
+SELECT getSpaceTimeTile(geometry 'Point(3 4)', timestamptz '2001-01-15', 2.0, 3.0, interval '2 days') =
+  getSpaceTimeTile(geometry 'Point(3 4)', timestamptz '2001-01-15', 2.0, 3.0, 2.0, interval '2 days') AS same;
+SELECT array_agg(tpoint ORDER BY ST_AsText(point)) = (SELECT array_agg(tpoint ORDER BY ST_AsText(point))
+  FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0, 2.0, 2.0)) AS same
+FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0);
+
+-- A size of 0 is a size left out, and a zsize is read only for a value with Z
+SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 0, 0) =
+  spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 2.0, 5.0) =
+  spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+
+-- A size under one
+SELECT array_length(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 0.5), 1) AS boxes;
+
+-- An empty point lies in no tile
+SELECT getSpaceTile(geometry 'Point EMPTY', 2.0) IS NULL AS no_tile;
+
+-- Every fragment of a time split is the trip restricted to its bin, also on a
+-- segment of five hours crossing 32 bins of ten minutes
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE atTime(t.tp, span((s).time,
+    (s).time + interval '10 minutes')) <> (s).temp)
+  AS fragments_stating_another_value
+FROM (SELECT tgeompoint 'SRID=3035;['
+  'Point Z(6616978.472527464 2446349.3560603186 10294.62)@2026-03-01 06:19:48.583+00, '
+  'Point Z(4818620.253322104 2574188.6956469184 10500.36)@2026-03-01 11:26:59.267+00]' AS tp) t,
+  LATERAL timeSplit(t.tp, interval '10 minutes', timestamptz '2026-03-01') s;
+
+/* Errors */
+SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, -1.0, 2.0);
+SELECT count(*) FROM spaceTiles(stbox 'STBOX X((1,1),(10,3))', 'NaN'::float);
+SELECT count(*) FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0, 2.0, 'Infinity'::float);
+-- A space and time grid takes both sizes
+SELECT count(*) FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', 0.0, interval '1 day');
+SELECT count(*) FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', 2.0, interval '0 days');
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 0.0, interval '2 days');
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, interval '0 days');
+SELECT count(*) FROM spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', 0.0, interval '1 day');
+SELECT count(*) FROM spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', 2.0, interval '0 days');
+SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2001-01-15', 0.0, interval '2 days');
+SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2001-01-15', 2.0, interval '0 days');
+
+-------------------------------------------------------------------------------

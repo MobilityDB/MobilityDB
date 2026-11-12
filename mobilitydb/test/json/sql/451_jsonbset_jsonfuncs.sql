@@ -1,0 +1,218 @@
+-------------------------------------------------------------------------------
+-- Temporal JSON functions
+-------------------------------------------------------------------------------
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' - text 'geom';
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' - text 'geom';
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' - text 'xxx';
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' - text 'xxx';
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' - ARRAY[text 'geom'];
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' - ARRAY[text 'geom'];
+
+SELECT jsonbset '{"[\"Point(1 1)\", \"Point(2 2)\"]"}' - 0;
+SELECT jsonbset '{"[\"Point(1 1)\", \"Point(2 2)\"]", "[\"Point(2 2)\", \"Point(3 3)\"]", "[\"Point(1 1)\", \"Point(2 2)\"]"}' - 0;
+/* Errors */
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' - 0;
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' - 0;
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' #- ARRAY[text 'geom'];
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' #- ARRAY[text 'geom'];
+
+-------------------------------------------------------------------------------
+
+SELECT jsonbsetSet(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT jsonbsetSet(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
+
+-- A value that is not NULL is set, as jsonbsetSet sets it
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb);
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb) =
+  jsonbsetSet(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb);
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'], NULL);
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'], NULL, true, 'delete_key');
+SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
+  ARRAY['units'], NULL, true, 'delete_key');
+SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
+  ARRAY['units'], 'null'::jsonb, true, 'delete_key');
+
+SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
+
+-------------------------------------------------------------------------------
+
+SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+-- The text extraction answers a text set
+SELECT pg_typeof(jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'])),
+  pg_typeof(jsonbset '{"{\"speed\": 10}"}' #>> ARRAY['speed']);
+-- A path holding a NULL element extracts no value, as jsonbExtractPath answers NULL
+SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed', NULL]) IS NULL;
+
+/* Null handling */
+SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'raise_exception');
+SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'use_json_null');
+SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'delete_key');
+SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'return_null');
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
+
+/* Null handling */
+SELECT jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
+
+
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed']);
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed']);
+
+/* Null handling */
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'raise_exception');
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'use_json_null');
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'delete_key');
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'return_null');
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
+
+/* Null handling: 'use_json_null' by default */
+SELECT jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
+
+SELECT jsonbsetExtractPathText('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+  ARRAY['speed'], 'raise_exception');
+SELECT jsonbsetExtractPathText('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+  ARRAY['speed'], 'use_json_null');
+SELECT jsonbsetExtractPathText('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+  ARRAY['speed'], 'delete_key');
+SELECT jsonbsetExtractPathText('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+  ARRAY['speed'], 'return_null');
+
+-------------------------------------------------------------------------------
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' -> 'speed';
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' -> 'speed';
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed';
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed';
+-- A field read as text is a text set, whether the operator or the function reads it
+SELECT pg_typeof(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed');
+SELECT pg_typeof(jsonbsetObjectFieldText(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', 'speed'));
+SELECT pg_typeof(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}' ->> 1);
+SELECT pg_typeof(jsonbsetArrayElementText(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}', 1));
+SELECT startValue(jsonbset '{"{\"units\": \"km/h\"}"}' ->> 'units');
+SELECT (jsonbset '{"{\"units\": \"km/h\"}"}' ->> 'units') = textset '{"km/h"}';
+SELECT startValue(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}' ->> 1);
+
+-------------------------------------------------------------------------------
+
+SELECT intset(jsonbset '{"{\"a\":true, \"b\":2.5}"}', text 'a');
+SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'a');
+SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
+SELECT intset(jsonbset '{"{\"a\":\"1\", \"b\":2.5}"}', text 'a');
+SELECT floatset(jsonbset '{"{\"a\":true, \"b\":2.5}"}', text 'a');
+SELECT floatset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'a');
+SELECT floatset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
+-- A key whose value is zero is extracted as zero
+SELECT intset(jsonbset '{"{\"a\":0}", "{\"a\":2}"}', text 'a');
+SELECT bigintset(jsonbset '{"{\"a\":0}", "{\"a\":2}"}', text 'a');
+SELECT floatset(jsonbset '{"{\"a\":0}", "{\"a\":2.5}"}', text 'a');
+/* Errors */
+SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'xxx');
+SELECT intset(jsonbset '{"{\"a\":\"xxx\", \"b\":2.5}"}', text 'a');
+
+-------------------------------------------------------------------------------
+
+
+-- Exists. The result is one Boolean per value of the set, in the order of the
+-- values of the set
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'speed';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'xxx';
+SELECT jsonbsetExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', text 'speed');
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ?| ARRAY[text 'units', text 'lights'];
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ?& ARRAY[text 'speed', text 'units'];
+SELECT jsonbsetExistsAny(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+SELECT jsonbsetExistsAll(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+/* An empty array of keys has no result */
+SELECT jsonbset '{"{\"speed\": 10}"}' ?| ARRAY[]::text[];
+
+-------------------------------------------------------------------------------
+
+-- JSON path functions. The result of a path predicate is one Boolean per
+-- element of the set, in the order of the elements
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.speed ? (@ > 15)';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.xxx';
+/* The operator suppresses the error of a strict path, as it does on a jsonb */
+SELECT jsonbset '{"{\"a\": 1}", "{\"b\": 1}"}' @? 'strict $.b';
+SELECT jsonb '{"a": 1}' @? 'strict $.b';
+
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ > $min)', '{"min": 15}');
+SELECT jsonbsetPathExistsTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
+
+/* .datetime() casts a JSON string to a date/time value for comparison */
+SELECT jsonbsetPathExistsTz(jsonbset '{"{\"d\": \"2003-01-01\"}", "{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed > 15';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed == 10';
+
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > 15');
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > $min', '{"min": 15}');
+SELECT jsonbsetPathMatchTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > 15');
+
+/* .datetime() casts a JSON string to a date/time value for comparison */
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2003-01-01\"}", "{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
+/* Every datetime comparison in a session parses its format afresh */
+SELECT jsonbsetPathMatchTz(jsonbset '{"{\"d\": \"2003-01-01\"}", "{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
+SELECT jsonbsetPathExists(jsonbset '{"{\"d\": \"2003-01-01\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
+/* Each ISO format is tried in turn, so an input any of them describes parses */
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2003-01-01T12:00:00\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"12:30:45\"}"}', '$.d.datetime() > "10:00:00".datetime()');
+
+SELECT jsonbsetPathQueryArray(jsonbset '{"{\"a\": [1, 2, 3]}", "{\"a\": [4]}"}', '$.a[*] ? (@ >= 2)');
+SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"a\": [1, 2, 3]}", "{\"a\": [4]}"}', '$.a[*] ? (@ >= 2)');
+/* A timestamp with a time zone compares with a date only in the Tz form */
+SELECT jsonbsetPathQueryArrayTz(jsonbset '{"[\"2015-08-01 12:00:00-05\"]", "[\"2015-08-03 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+SELECT jsonbsetPathQueryFirstTz(jsonbset '{"[\"2015-08-01 12:00:00-05\"]", "[\"2015-08-03 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+/* Errors */
+SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"d\": \"2003-01-01\"}"}', '$.d.datetime("HH24:MI:SS")');
+SELECT jsonbsetPathQueryArray(jsonbset '{"[\"2015-08-01 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+SELECT jsonbsetPathQueryFirst(jsonbset '{"[\"2015-08-01 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+
+/* A comparison with a path matching nothing is false, as on a jsonb. A
+ * comparison suppresses the errors of its operands, so one with a string that
+ * is no date is unknown. A value whose predicate is unknown or no Boolean has
+ * no answer, as a jsonb has none, and is left out, as in
+ * jsonbsetPathQueryFirst; a set with no value left has no answer */
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);
+SELECT jsonb_path_match(jsonb '{"speed": 10}', '$.xxx > 15', '{}', false);
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
+SELECT jsonb_path_match(jsonb '{"d": "not a date"}', '$.d.datetime() > "2002-06-01".datetime()');
+SELECT jsonbset '{"{\"a\": 1}", "{\"a\": 2}"}' @@ '$.a';
+SELECT jsonb '{"a": 1}' @@ '$.a';
+
+-------------------------------------------------------------------------------
+-- Ordering
+-------------------------------------------------------------------------------
+
+/* The comparison of two JSONB values is a three-way answer, so a set of them
+ * sorts ascending as every other set type does, and each of the assertions
+ * below holds whatever the values are */
+SELECT set(ARRAY[jsonb '1', '2', '3']);
+SELECT startValue(set(ARRAY[jsonb '1', '2', '3'])) <= endValue(set(ARRAY[jsonb '1', '2', '3']));
+SELECT jsonb '{"a": 1}' <= jsonb '{"a": 1}';
+SELECT jsonb '{"a": 1}' < jsonb '{"b": 2}' AND jsonb '{"b": 2}' < jsonb '{"c": 3}';
+
+/* A set contains its own start value and its own end value */
+SELECT set(ARRAY[jsonb '1', '2', '3']) @> startValue(set(ARRAY[jsonb '1', '2', '3']));
+SELECT set(ARRAY[jsonb '1', '2', '3']) @> endValue(set(ARRAY[jsonb '1', '2', '3']));
+
+/* A set minus itself is empty, and a set intersected with itself is itself */
+SELECT setMinus(set(ARRAY[jsonb '1', '2']), set(ARRAY[jsonb '1', '2']));
+SELECT setIntersection(set(ARRAY[jsonb '1', '2']), set(ARRAY[jsonb '1', '2']));
+SELECT setMinus(set(ARRAY[jsonb '1', '2']), set(ARRAY[jsonb '1']));
+SELECT setIntersection(set(ARRAY[jsonb '1', '2']), set(ARRAY[jsonb '2']));
+
+-------------------------------------------------------------------------------

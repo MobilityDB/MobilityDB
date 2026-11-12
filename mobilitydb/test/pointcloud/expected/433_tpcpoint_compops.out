@@ -1,0 +1,185 @@
+SELECT (pcpoint(1, 1.0, 1.0, 1.0)) ?= (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) ?= (pcpoint(1, 1.0, 1.0, 1.0));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) ?= (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) ?= (pcpoint(1, 2.0, 2.0, 2.0));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) ?= (pcpoint(1, 2.0, 2.0, 2.0));
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) %= (pcpoint(1, 1.0, 1.0, 1.0));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) %= (pcpoint(1, 1.0, 1.0, 1.0));
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)])) %= (pcpoint(1, 1.0, 1.0, 1.0));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)])) %= (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)]));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (pcpoint(1, 1.0, 1.0, 1.0)) ?<> (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)]));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) ?<> (pcpoint(1, 1.0, 1.0, 1.0));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) %<> (pcpoint(1, 2.0, 2.0, 2.0));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) ?<> (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)]));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT NOT ((tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) ?= (pcpoint(1, 1.0, 1.0, 1.0)) AND (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) %<> (pcpoint(1, 1.0, 1.0, 1.0)));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText((pcpoint(1, 1.0, 1.0, 1.0)) #= (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText((tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) #= (pcpoint(1, 1.0, 1.0, 1.0)));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText((tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) #= (pcpoint(1, 1.0, 1.0, 1.0)));
+                              astext                              
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText((tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz)) #<> (pcpoint(1, 2.0, 2.0, 2.0)));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText((tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2.0, 2.0, 2.0), '2001-01-02'::timestamptz)])) #<> (tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2001-01-02'::timestamptz)])));
+                              astext                              
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) && tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(XT(((4,4),(6,6)),[2024-01-01 04:00, 2024-01-01 06:00]), 1)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcbox 'TPCBOX(XT(((4,4),(6,6)),[2024-01-01 04:00, 2024-01-01 06:00]), 1)' ?&& tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) %&& tpcbox 'TPCBOX(X((0,0),(10,10)), 1)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) %&& tpcbox 'TPCBOX(X((0,0),(9,9)), 1)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(T([2024-01-02, 2024-01-03]), 1)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2
+WHERE t1.temp ?&& tpcbox(t2.temp) <> (atTpcbox(t1.temp, tpcbox(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2
+WHERE t1.temp %&& tpcbox(t2.temp) <> (minusTpcbox(t1.temp, tpcbox(t2.temp)) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp ?&& tpcbox(t2.temp);
+ count 
+-------
+   677
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp %&& tpcbox(t2.temp);
+ count 
+-------
+   130
+(1 row)
+
+/* Errors */
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(X((0,0),(10,10)), 999)';
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 999

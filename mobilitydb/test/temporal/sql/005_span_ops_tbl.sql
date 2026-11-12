@@ -1,0 +1,100 @@
+-------------------------------------------------------------------------------
+-- File span_ops.c
+-- Tests of operators that do not involve indexes for span types.
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f + t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d + t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d + t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d + t2.d IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t + t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t + t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t + t2.t IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i - t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f - t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d - t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d - t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d - t2.d IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t - t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t - t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t - t2.t IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i * t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f * t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d * t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d * t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d * t2.d IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t * t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t * t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t * t2.t IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intspan t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_int t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_intspan t2;
+
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintspan t2;
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigint t2;
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigintspan t2;
+
+SELECT MIN(t1.f <-> t2.f) FROM tbl_float t1, tbl_floatspan t2;
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_float t2;
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_floatspan t2;
+
+SELECT MIN(t1.d <-> t2.d) FROM tbl_date t1, tbl_datespan t2;
+SELECT MIN(t1.d <-> t2.d) FROM tbl_datespan t1, tbl_date t2;
+SELECT MIN(t1.d <-> t2.d) FROM tbl_datespan t1, tbl_datespan t2;
+
+SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzspan t2;
+SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_timestamptz t2;
+SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_tstzspan t2;
+
+-- The named portable form of the <-> operator tested above
+SELECT spanDistance(1, intspan '[3, 7]');
+SELECT spanDistance(intspan '[3, 7]', 1);
+SELECT spanDistance(intspan '[1, 2]', intspan '[5, 7]');
+SELECT round(spanDistance(1.0, floatspan '[3.5, 7.5]')::numeric, 6);
+SELECT spanDistance(date '2001-01-01', datespan '[2001-01-05, 2001-01-10]');
+
+-------------------------------------------------------------------------------

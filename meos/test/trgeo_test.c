@@ -122,8 +122,8 @@ int main(void)
   }
   else
   {
-    /* char *trgeometry_out(const Temporal *temp, size_t *size_out); */
-    char *trgeo1_out = trgeometry_out(trgeo1, &size_out);
+    /* char *trgeometry_out(const Temporal *temp, int maxdd, size_t *size_out); */
+    char *trgeo1_out = trgeometry_out(trgeo1, 15, &size_out);
     printf("trgeometry_in(%s): %s\n", trgeo1_in, trgeo1_out);
 
     /* Round-trip: parse the rendered representation again and check that
@@ -137,7 +137,7 @@ int main(void)
     }
     else
     {
-      char *trgeo2_out = trgeometry_out(trgeo2, &size_out);
+      char *trgeo2_out = trgeometry_out(trgeo2, 15, &size_out);
       if (strcmp(trgeo1_out, trgeo2_out) != 0)
       {
         printf("FAILED: round-trip mismatch: %s != %s\n", trgeo1_out,
@@ -854,7 +854,7 @@ int main(void)
     {
       Temporal *t = trgeometry_in(step_in[i]);
       char *written[3];
-      written[0] = t ? trgeometry_out(t, &size_out) : NULL;
+      written[0] = t ? trgeometry_out(t, 15, &size_out) : NULL;
       written[1] = t ? trgeometry_as_ewkt(t, 15, &size_out) : NULL;
       /* The text writes no SRID, so it reads back the value without one */
       written[2] = (t && i == 0) ? trgeometry_as_text(t, 15, &size_out) : NULL;
@@ -874,6 +874,31 @@ int main(void)
       }
       free(t);
     }
+    meos_errno_reset();
+  }
+
+  /* GeoJSON states no polyhedral surface, so the MF-JSON of a body that is a
+   * surface writes it as the multipolygon of its faces, which is read back as
+   * the surface */
+  {
+    Temporal *tsurf = trgeometry_in("PolyhedralSurface Z(((0 0 0,2 0 0,"
+      "2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));[Pose(Point(1 1 5),1,0,0,0)"
+      "@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02]");
+    size_t size;
+    char *mfjson = tsurf ? temporal_as_mfjson(tsurf, 0, 0, 15, NULL, &size) :
+      NULL;
+    Temporal *back = mfjson ? trgeometry_from_mfjson(mfjson) : NULL;
+    if (! back || ! strstr(mfjson, "\"MultiPolygon\"") ||
+        ! temporal_eq(tsurf, back))
+    {
+      printf("FAILED: the MF-JSON of a body that is a polyhedral surface is "
+        "not read back as the value\n");
+      result = 1;
+    }
+    else
+      printf("OK: the MF-JSON of a body that is a polyhedral surface is read "
+        "back as the value\n");
+    free(tsurf); free(mfjson); free(back);
     meos_errno_reset();
   }
 

@@ -304,7 +304,7 @@ elseif(TEST_OPER MATCHES "run_compare")
   )
 
   get_filename_component(TEST_FILE_DIR ${TEST_FILE} DIRECTORY)
-  string(REPLACE "/queries" "" TEST_FILE_DIR "${TEST_FILE_DIR}")
+  string(REPLACE "/sql" "" TEST_FILE_DIR "${TEST_FILE_DIR}")
   get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WE)
 
   # Compare the files
@@ -313,7 +313,7 @@ elseif(TEST_OPER MATCHES "run_compare")
     # psql writes its output with the line endings of the platform, and the
     # checkout writes the expected files with those of its configuration
     execute_process(
-      COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol ${TEST_DIR_OUT}/${TEST_NAME}.out ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out
+      COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol ${TEST_DIR_OUT}/${TEST_NAME}.out ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.out
       OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
       RESULT_VARIABLE TEST_RESULT
       )
@@ -321,13 +321,13 @@ elseif(TEST_OPER MATCHES "run_compare")
     find_program(DIFF_EXECUTABLE diff)
     if(TEST_RESULT AND DIFF_EXECUTABLE)
       execute_process(
-        COMMAND ${DIFF_EXECUTABLE} --strip-trailing-cr -urdN ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out ${TEST_DIR_OUT}/${TEST_NAME}.out
+        COMMAND ${DIFF_EXECUTABLE} --strip-trailing-cr -urdN ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.out ${TEST_DIR_OUT}/${TEST_NAME}.out
         OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
         )
     endif()
   else()
     execute_process(
-      COMMAND diff -urdN ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out ${TEST_DIR_OUT}/${TEST_NAME}.out
+      COMMAND diff -urdN ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.out ${TEST_DIR_OUT}/${TEST_NAME}.out
       OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
       RESULT_VARIABLE TEST_RESULT
       )

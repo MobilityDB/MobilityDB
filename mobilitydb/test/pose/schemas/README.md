@@ -39,8 +39,8 @@ are held here unmodified, byte for byte as retrieved, with these digests:
     06d999a2b309…  GeoPose.Basic.Strict_Quaternion.Schema.json
 
 `tools/scripts/check_geopose_conformance.py` validates against them the GeoPose
-documents that `pose/expected/103_pose_geopose.test.out` and
-`posechain/expected/555_tposechain_geopose.test.out` hold. Keeping a copy here
+documents that `pose/expected/103_pose_geopose.out` and
+`posechain/expected/555_tposechain_geopose.out` hold. Keeping a copy here
 rather than fetching at run time makes the check depend on nothing outside the
 repository, so it gives the same verdict in a network-less build as in CI.
 

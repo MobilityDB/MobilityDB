@@ -1,0 +1,6 @@
+--Rotate a 3d line 180 degrees about the z axis.  Note this is long-hand for doing ST_Rotate();
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0))) FROM tbl_tgeometry;
+--Rotate a 3d line 180 degrees in both the x and z axis
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))) FROM tbl_tgeometry;
+
+-------------------------------------------------------------------------------

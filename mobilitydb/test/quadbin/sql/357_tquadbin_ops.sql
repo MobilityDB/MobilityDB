@@ -1,0 +1,503 @@
+-- tquadbin accessors and lifted cell operations: value accessors, resolution,
+-- validity, parent, centroid point, boundary, area, quadkey, and the
+-- tquadbin -> tgeompoint cast. Each lifts its static kernel over the time axis.
+
+-------------------------------------------------------------------------------
+-- Value accessors
+-------------------------------------------------------------------------------
+
+SELECT startValue(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT endValue(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT valueN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}', 2);
+SELECT getValues(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT valueAtTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', '2001-01-01');
+
+-------------------------------------------------------------------------------
+-- Resolution + validity (lifted)
+-------------------------------------------------------------------------------
+
+SELECT getResolution(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT isValidCell(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+
+-------------------------------------------------------------------------------
+-- Hierarchy (lifted parent at a constant resolution)
+-------------------------------------------------------------------------------
+
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0);
+
+-- Every instant's parent at res 0 is the z0 world cell
+SELECT getValues(cellToParent(
+  tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0))
+  = quadbinset '{480fffffffffffff}';
+
+-- A parent is no finer than any value, here the cell of resolution 4 beside
+-- the cell of resolution 10, and lies in the range of the grid
+/* Errors */
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 5);
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', -1);
+
+-------------------------------------------------------------------------------
+-- Centroid point / boundary (lifted)
+-------------------------------------------------------------------------------
+
+SELECT cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
+SELECT asText(cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}'), 6);
+SELECT cellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Area (lifted, tfloat)
+-------------------------------------------------------------------------------
+
+SELECT round(startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
+
+-------------------------------------------------------------------------------
+-- Quadkey (lifted, ttext)
+-------------------------------------------------------------------------------
+
+SELECT tquadbinCellToQuadkey(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+
+-------------------------------------------------------------------------------
+-- Convenience cast: tquadbin :: tgeompoint  (reuses cell_to_point centroid)
+-------------------------------------------------------------------------------
+
+SELECT (tquadbin '{48a6227affffffff@2001-01-01}')::tgeompoint
+  = cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
+SELECT asText((tquadbin '{48a6227affffffff@2001-01-01}')::tgeompoint, 6);
+
+-------------------------------------------------------------------------------
+-- Conversion from a temporal point: tquadbin(tgeompoint, integer)
+--
+-- The cell-entry timestamps are interpolated from floating-point crossings
+-- whose low digits vary across build configurations, so the cases below state
+-- the build-stable invariants and print whole values only where every
+-- timestamp is exact.
+-------------------------------------------------------------------------------
+
+-- An instant yields the cell holding its position
+SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10);
+SELECT startValue(tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10))
+  = geoToQuadbinCell(geometry 'SRID=4326;Point(4.35 50.85)', 10);
+
+-- A trajectory staying inside one cell holds it over its whole period
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(4.3500 50.8500)@2001-01-01, Point(4.3501 50.8501)@2001-01-02]', 10);
+
+-- A trajectory that states nothing between its instants holds the cells of
+-- those instants, whether discrete or stepwise
+SELECT tquadbin(tgeompoint
+  'SRID=4326;{Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02}', 4);
+SELECT tquadbin(setSRID(tgeompoint
+  'Interp=Step;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4326), 4);
+
+-- A linear trajectory holds every cell it crosses. The segment below starts in
+-- the zoom-4 tile of column 8 and row 7 and ends in the tile of column 10 and
+-- row 9, so it enters two more columns and two more rows: five cells, each
+-- entered once, and the closing instant holding the last one to the end.
+SELECT numValues(getValues(t)), numInstants(t),
+  startValue(t) = geoToQuadbinCell(geometry 'SRID=4326;Point(1 1)', 4),
+  endValue(t) = geoToQuadbinCell(geometry 'SRID=4326;Point(60 -40)', 4)
+FROM (SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4) AS t) AS q;
+
+-- At every sampled timestamp the value is the cell holding the position of the
+-- trajectory then
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToQuadbinCell(valueAtTimestamp(p, t), 4)) AS other_cell
+FROM (SELECT p, tquadbin(p, 4) AS c FROM (VALUES
+  (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(-170 70)@2001-01-01, Point(170 -70)@2001-01-03]'))
+  AS v(p)) AS q,
+  generate_series(timestamptz '2001-01-01 00:17', timestamptz '2001-01-02 23:00',
+    interval '37 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+
+-- A geodetic trajectory starting on a cell edge and heading across it leaves
+-- the cell at once. The trajectory below is cut at every instant its temporal
+-- cell states, where it crosses an edge, and the piece starting at each cut
+-- holds the cell of its own position at every sampled timestamp
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToQuadbinCell(valueAtTimestamp(p, t)::geometry, 12)) AS other_cell
+FROM (SELECT p, tquadbin(p, 12) AS c FROM (
+  SELECT atTime(tp, span(s, endTimestamp(tp), true, true)) AS p
+  FROM (SELECT tp, unnest(timestamps(tquadbin(tp, 12))) AS s FROM (VALUES
+    (tgeogpoint '[Point(53.173654593142516 -34.305628987171517)@2001-01-01,
+      Point(52.993753159788319 -34.341760215601774)@2001-01-03]')) AS v(tp))
+    AS cuts
+  WHERE s > startTimestamp(tp) AND s < endTimestamp(tp)) AS pieces) AS q,
+  generate_series(timestamptz '2001-01-01 00:07', '2001-01-02 23:53',
+    interval '17 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+
+-- The last cell holds to the end of the trajectory, so the temporal cell spans
+-- the period of the trajectory under an inclusive and an exclusive upper bound
+SELECT getTime(tquadbin(p, 10)) = getTime(p) FROM (VALUES
+  (tgeompoint 'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02)'))
+  AS v(p);
+SELECT endValue(tquadbin(tgeompoint
+  'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02)', 10))
+  = geoToQuadbinCell(geometry 'SRID=4326;Point(4.40 50.90)', 10);
+
+-- A tile holds its west and north boundaries, so the point where four tiles
+-- meet belongs to the one east of the meridian and south of the parallel
+-- meeting there. A path through that point from the south-west holds that
+-- tile at the instant it passes through the point, and the tile diagonally
+-- across from the instant after, as the space split holds the corner in the
+-- tile whose lower bounds meet there. The path through the same point from
+-- the south-east holds the tile of the corner up to that instant, the tile it
+-- leaves.
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2);
+SELECT valueAtTimestamp(tquadbin(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2),
+  timestamptz '2001-01-02') = geoToQuadbinCell(valueAtTimestamp(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]',
+  timestamptz '2001-01-02' + interval '1 microsecond'), 2) AS states_the_cell_entered;
+SELECT valueAtTimestamp(tquadbin(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2),
+  timestamptz '2001-01-02') = geoToQuadbinCell(geometry 'SRID=4326;Point(-90 0)', 2)
+  AS states_the_corner_owner;
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(-45 -10)@2001-01-01, Point(-135 10)@2001-01-03]', 2);
+
+-- The cover of a trajectory cut at half-open periods merges into the cover of
+-- the whole trajectory, one period ending where the path crosses the corner
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+), periods(period) AS (VALUES
+  (tstzspan '[2001-01-01, 2001-01-02)'),
+  (tstzspan '[2001-01-02, 2001-01-02 12:00:00)'),
+  (tstzspan '[2001-01-02 12:00:00, 2001-01-03]'))
+SELECT merge(array_agg(tquadbin(atTime(tp, period), 2) ORDER BY period))
+  = tquadbin(tp, 2) AS periods_as_whole
+FROM trip, periods GROUP BY tp;
+
+-- Every cell of a cover is held for some time but the tile holding the corner
+-- the trajectory passes through, which it holds for that instant
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
+  count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
+FROM trip, unnest(tquadbin(tp, 2)) u;
+
+-- A trajectory ending exactly where four tiles meet reaches the cell of that
+-- corner at its last instant and holds it there, as the space split gives the
+-- tile of a last corner a fragment of one instant
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]', 2);
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]'
+)
+SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
+  count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
+FROM trip, unnest(tquadbin(tp, 2)) u;
+
+-- A trajectory starting where four tiles meet holds the tile of that corner at
+-- its first instant, and the tile it travels into after it
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2);
+
+-- The cover is the multidimensional tiling of the trajectory. Within 66.5
+-- degrees of latitude the QUADBIN tiles of zoom 2 are the tiles of 90 degrees
+-- from the origin flipped in latitude, since a QUADBIN tile holds its north
+-- boundary where a tile of the space grid holds its south one, so the space
+-- split of the trajectory mirrored in latitude states that tiling. The cover
+-- and the split hold the same time, and the split gives each instant to the
+-- tile holding the position of the trajectory at that instant. A crossing
+-- falling between two microseconds is dated at the earlier one, where the
+-- trajectory is still in the tile it leaves: the split gives that instant to
+-- the tile left and the cover to the tile entered, so the two cells of the
+-- trajectory from Point(-170 -60) starting at such an instant lie outside
+-- their tile, and every other cell lies in it. Without the upper border of
+-- the extent of the trajectory, the tiles holding nothing of it but that
+-- border are no part of either
+WITH trips(tp) AS (VALUES
+  (tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'),
+  (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]'),
+  (tgeompoint 'SRID=4326;[Point(-170 -60)@2001-01-01, Point(170 60)@2001-01-04]'),
+  (tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]'),
+  (tgeompoint 'SRID=4326;(Point(0 30)@2001-01-01, Point(0 15)@2001-01-02,
+    Point(-45 0)@2001-01-03)')
+), mirrors(tp, mp) AS (
+  SELECT tp, (SELECT tgeompointSeq(array_agg(tgeompoint(ST_SetSRID(ST_MakePoint(
+    ST_X(getValue(i)), -ST_Y(getValue(i))), 4326), getTimestamp(i))
+    ORDER BY getTimestamp(i)), 'linear', lowerInc(tp), upperInc(tp))
+    FROM unnest(instants(tp)) i)
+  FROM trips
+), borders(b) AS (VALUES (true), (false)
+), tiles(b, tp, cell, time) AS (
+  SELECT b, tp, geoToQuadbinCell(ST_SetSRID(ST_MakePoint(ST_X((s).point) + 45,
+    CASE WHEN ST_Y((s).point) >= 0 THEN -30 ELSE 30 END), 4326), 2),
+    getTime((s).tpoint)
+  FROM mirrors, borders, spaceSplit(mp, 90.0, borderInc := b) s
+), cells(b, tp, cell, time) AS (
+  SELECT b, tp, (u).value, (u).time
+  FROM trips, borders, unnest(tquadbin(tp, 2, b)) u)
+SELECT b AS borderInc, count(*) AS cells,
+  count(*) FILTER (WHERE NOT EXISTS (SELECT 1 FROM tiles t WHERE t.b = c.b
+    AND t.tp = c.tp AND t.cell = c.cell AND c.time <@ t.time))
+    AS cells_outside_their_tile,
+  (SELECT count(*) FROM trips WHERE
+    (SELECT spansetUnion(time) FROM cells c2
+      WHERE c2.b = c.b AND c2.tp = trips.tp) IS DISTINCT FROM
+    (SELECT spansetUnion(time) FROM tiles t2
+      WHERE t2.b = c.b AND t2.tp = trips.tp)) AS trips_covering_other_time
+FROM cells c GROUP BY b ORDER BY b;
+
+-- A trajectory starting where four tiles meet, on the parallel bounding its
+-- extent to the south, which is the upper border of that extent in the order
+-- of the rows, holds the tile of that corner at its first instant alone. The
+-- tile holds nothing of it but that border, so the cover and the split
+-- without the border leave it out, for a planar and a geodetic trajectory
+SELECT borderInc, tquadbin(tgeompoint
+  'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2, borderInc)
+FROM (VALUES (true), (false)) AS b(borderInc);
+SELECT borderInc, count(*) AS fragments
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL quadbinSplit(tgeompoint
+    'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2,
+    borderInc) s
+GROUP BY borderInc ORDER BY borderInc;
+SELECT borderInc, numValues(getValues(tquadbin(tgeogpoint
+  '[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2, borderInc)))
+FROM (VALUES (true), (false)) AS b(borderInc);
+
+-- The periods of the cells of a cover partition the period of the
+-- trajectory: their union is that period and no two of them share any time,
+-- a crossing belonging to the one cell holding its position
+WITH trips(tp) AS (VALUES
+  (tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'),
+  (tgeompoint 'SRID=4326;[Point(-170 -60)@2001-01-01, Point(170 60)@2001-01-04]'),
+  (tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]')
+), zooms(z) AS (VALUES (2), (4), (6))
+SELECT count(*) AS covers,
+  count(*) FILTER (WHERE whole <> getTime(tp) OR total <> duration(tp))
+  AS covers_not_partitioning
+FROM (SELECT tp, z, spansetUnion((u).time) AS whole,
+    sum(duration((u).time)) AS total
+  FROM trips, zooms, unnest(tquadbin(tp, z)) u GROUP BY tp, z) AS q;
+
+-- A sequence set yields one sequence per sequence
+SELECT numSequences(tquadbin(tgeompoint
+  'SRID=4326;{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
+  [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));
+
+-------------------------------------------------------------------------------
+-- Conversion from a temporal point: tquadbin(tgeogpoint, integer)
+-------------------------------------------------------------------------------
+
+-- An instant yields the cell holding its position, as for a planar point
+SELECT tquadbin(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10) =
+  tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10);
+
+-- A geodetic segment follows its great circle. The arc from longitude -170 to
+-- -100 along latitude 65 rises to latitude 69.1, north of the parallel 66.51
+-- bounding the zoom-2 tiles it starts and ends in, so it leaves its tile for
+-- the one north of it and comes back, where the straight line in longitude
+-- and latitude stays in one tile. The tile it leaves northward holds the
+-- instant of that crossing and the tile it enters southward holds the instant
+-- of the return, so the cover is a sequence set of five instants over two
+-- cells
+SELECT numInstants(t), numValues(getValues(t)), startValue(t) = endValue(t),
+  numValues(getValues(tquadbin(tgeompoint
+    'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2)))
+FROM (SELECT tquadbin(tgeogpoint
+  '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2) AS t) AS q;
+
+-- An arc across the antimeridian takes its short way, through the tiles of
+-- the last and the first columns, where the straight line in longitude and
+-- latitude sweeps every column of the grid and passes through the corner
+-- (0 0), whose tile it holds for that instant
+SELECT numValues(getValues(tquadbin(tgeogpoint
+    '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3))),
+  numValues(getValues(tquadbin(tgeompoint
+    'SRID=4326;[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3)));
+
+-- At every sampled timestamp the value is the cell holding the position of the
+-- geodetic trajectory then, for an arc crossing rows and columns, the arc
+-- bulging north of its tile, an arc across the antimeridian and one over the
+-- pole. The samples lie between the minutes, so none falls on the pole or the
+-- antimeridian, where a position has more than one longitude
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToQuadbinCell(valueAtTimestamp(p, t)::geometry, z)) AS other_cell,
+  count(DISTINCT p::text) FILTER (WHERE c <> tquadbin(p::tgeompoint, z))
+    AS other_than_planar
+FROM (SELECT p, z, tquadbin(p, z) AS c FROM (VALUES
+  (tgeogpoint '[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4),
+  (tgeogpoint '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2),
+  (tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 6),
+  (tgeogpoint '[Point(10 80)@2001-01-01, Point(-170 75)@2001-01-02]', 5))
+  AS v(p, z)) AS q,
+  generate_series(timestamptz '2001-01-01 00:00:30',
+    timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
+
+-- A sequence set yields one sequence per sequence, spanning its period
+SELECT numSequences(t), getTime(t) = getTime(p)
+FROM (SELECT p, tquadbin(p, 4) AS t FROM (VALUES (tgeogpoint
+  '{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
+  [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04)}')) AS v(p))
+  AS q;
+
+-- A reference system other than lon/lat, and a resolution outside 0 to 26
+/* Errors */
+SELECT tquadbin(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 27);
+SELECT tquadbin(tgeompoint 'SRID=3857;Point(4.35 50.85)@2001-01-01', 10);
+SELECT tquadbin(tgeompoint
+  'SRID=3857;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-02]', 10);
+SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 27);
+SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', -1);
+
+-------------------------------------------------------------------------------
+-- eEqual / ?= -- cell set vs tquadbin prefilter
+-------------------------------------------------------------------------------
+
+-- A trip read against the cover of a region it crosses, and of one it never
+-- reaches, in both argument orders
+WITH t(trip) AS (VALUES (tquadbin(tgeompoint
+  'SRID=4326;[Point(4.35 50.85)@2001-01-01, Point(4.40 50.90)@2001-01-02]',
+  10)))
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+    4.45 50.95, 4.30 50.95, 4.30 50.80))', 10) ?= trip,
+  trip ?= geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80,
+    4.45 50.80, 4.45 50.95, 4.30 50.95, 4.30 50.80))', 10),
+  eEqual(geoToQuadbinSet(geometry 'SRID=4326;POLYGON((10.0 50.0, 10.5 50.0,
+    10.5 50.5, 10.0 50.5, 10.0 50.0))', 10), trip),
+  eEqual(trip, geoToQuadbinSet(geometry 'SRID=4326;POLYGON((10.0 50.0,
+    10.5 50.0, 10.5 50.5, 10.0 50.5, 10.0 50.0))', 10))
+FROM t;
+
+-- The prefilter answers from the instants of every subtype, and stops at the
+-- first instant the set contains. Each subtype is asked for a hit and a miss,
+-- and the sequence forms are asked where the hit sits, so a walk that stopped
+-- at the wrong place or skipped a composing sequence is refused.
+
+-- Temporal instant
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '48a6227affffffff@2001-01-01';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '48a6227bffffffff@2001-01-01';
+
+-- Discrete sequence: the hit at the first instant, at the last, and absent
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{48a6227affffffff@2001-01-01, 48a6227bffffffff@2001-01-02}';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{48a6227bffffffff@2001-01-01, 480fffffffffffff@2001-01-02}';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{48a6227bffffffff@2001-01-01, 48a62278ffffffff@2001-01-02}';
+
+-- Step sequence
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '[48a6227bffffffff@2001-01-01, 48a6227affffffff@2001-01-02]';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '[48a6227bffffffff@2001-01-01, 48a62278ffffffff@2001-01-02]';
+
+-- Sequence set: the hit in the first composing sequence, in the last, absent
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{[48a6227affffffff@2001-01-01], [48a6227bffffffff@2001-01-02]}';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{[48a6227bffffffff@2001-01-01], [480fffffffffffff@2001-01-02]}';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{[48a6227bffffffff@2001-01-01], [48a62278ffffffff@2001-01-02]}';
+
+-------------------------------------------------------------------------------
+-- Split by the cells of the grid: quadbinSplit(tgeompoint|tgeogpoint, integer)
+-------------------------------------------------------------------------------
+
+-- The split states the cells of the cover and, beside each, the trajectory
+-- over the periods the cover states for that cell
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE s.tpoint <> atTime(tp, getTime(s.tpoint)))
+  AS fragments_stating_another_value,
+  count(*) FILTER (WHERE getTime(s.tpoint) <>
+    (SELECT u.time FROM unnest(tquadbin(tp, 2)) u WHERE u.value = s.cell))
+  AS fragments_stating_another_period
+FROM trip, LATERAL quadbinSplit(tp, 2) s;
+
+-- Every cell of the split is a cell of the cover
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT set(array_agg(s.cell)) = getValues(tquadbin(tp, 2)) AS same_cells
+FROM trip, LATERAL quadbinSplit(tp, 2) s GROUP BY tp;
+
+-- A trajectory reaching a cell at its last instant holds it there for an
+-- instant, so the cover states that cell and the split states its fragment
+-- over that instant
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]'
+)
+SELECT numValues(getValues(tquadbin(tp, 2))) AS cells_of_the_cover,
+  (SELECT count(*) FROM quadbinSplit(tp, 2)) AS fragments_of_the_split
+FROM trip;
+
+-- The fragments of a split merge into the trajectory
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT merge(array_agg(s.tpoint ORDER BY getTime(s.tpoint))) = tp AS merges_back
+FROM trip, LATERAL quadbinSplit(tp, 2) s GROUP BY tp;
+
+-- A geodetic trajectory is split along its great circles, so it holds a cell
+-- the straight line in longitude and latitude never enters
+SELECT count(*) AS fragments
+FROM quadbinSplit(tgeogpoint '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]',
+  2);
+SELECT count(*) AS fragments
+FROM quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+
+-------------------------------------------------------------------------------
+
+-- The grid distance is the smallest radius whose gridDisk around one cell
+-- holds the other: every pair of cells at zoom 3, the corners and the edges
+-- of the grid among them, against the disks of radius 0 to 7
+WITH cells(c) AS (
+  SELECT quadbinTileToCell(x, y, 3)
+  FROM generate_series(0, 7) x, generate_series(0, 7) y
+),
+pairs(o, d, k) AS (
+  SELECT o.c, d.c, (SELECT min(k) FROM generate_series(0, 7) k
+    WHERE gridDisk(o.c, k) @> d.c)
+  FROM cells o, cells d
+)
+SELECT count(*) AS pairs, max(k) AS max_distance,
+  count(*) FILTER (WHERE startValue(tquadbinGridDistance(
+    tquadbin(o, timestamptz '2001-01-01'),
+    tquadbin(d, timestamptz '2001-01-01'))) <> k) AS mismatches
+FROM pairs;
+
+-- No column wraps at the antimeridian and no row crosses a pole, so the
+-- cells at the two ends of a row or of a column are a whole side apart
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(0, 3, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(7, 3, 3), timestamptz '2001-01-01')));
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(3, 0, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(3, 7, 3), timestamptz '2001-01-01')));
+
+-- The distance is taken over the time the two values share
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(1, 1, 3), tstzspan '[2001-01-01, 2001-01-03]'),
+  tquadbin(quadbinTileToCell(4, 2, 3), tstzspan '[2001-01-02, 2001-01-04]')));
+
+-- The `<->` operator is the function, and the distance is symmetric
+SELECT tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01') <->
+    tquadbin(quadbinTileToCell(4, 2, 3), timestamptz '2001-01-01') =
+  tquadbinGridDistance(
+    tquadbin(quadbinTileToCell(4, 2, 3), timestamptz '2001-01-01'),
+    tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01'));
+
+-- Two cells of different zooms have no grid distance
+/* Errors */
+SELECT tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(1, 1, 4), timestamptz '2001-01-01'));
+
+-------------------------------------------------------------------------------

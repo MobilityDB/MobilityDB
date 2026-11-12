@@ -107,7 +107,7 @@ int main(void)
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
 
-  /* The temporal numbers of 022_temporal.test.sql */
+  /* The temporal numbers of 022_temporal.sql */
   const char *tint_str[] = {
     "1@2001-01-01",
     "{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}",

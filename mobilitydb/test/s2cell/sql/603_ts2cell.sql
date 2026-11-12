@@ -1,0 +1,160 @@
+-- The temporal S2 cell index type: input and output, the constructors, the
+-- accessors, the restrictions, the conversions to and from tbigint, and the
+-- bounding box.
+--
+-- A cell literal here is a token the type accepts; `47c3c3` is the level-10
+-- cell over Brussels and `54b5c9` a level-10 cell over San Francisco, so the
+-- two lie on different cube faces and a value spanning them spans the globe.
+
+-------------------------------------------------------------------------------
+-- Input and output
+-------------------------------------------------------------------------------
+
+SELECT asText(ts2cell '47c3c3@2001-01-01');
+SELECT asText(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}');
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT asText(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}');
+
+-------------------------------------------------------------------------------
+-- WKB / HexWKB round-trips and the extended forms
+-- A cell states SRID 4326, so the extended forms state it and a stated SRID
+-- is refused unless it is that one
+-------------------------------------------------------------------------------
+
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '47c3c3@2001-01-01')));
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}')));
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 'NDR')));
+SELECT asText(ts2cellFromHexWKB(asHexWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}')));
+SELECT asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT asText(ts2cellFromText(asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')));
+SELECT asEWKT(ts2cellFromEWKT(asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')));
+SELECT asEWKT(asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')::ts2cell);
+SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}')));
+SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '47c3c3@2001-01-01', 'NDR')));
+SELECT asEWKT(ts2cellFromHexEWKB(asHexEWKB(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}')));
+SELECT asEWKT(ts2cellFromEWKT('SRID=4326;47c3c3@2001-01-01'));
+-- The extended binary form states SRID 4326
+SELECT asHexEWKB(ts2cell '47c3c3@2001-01-01', 'XDR') LIKE '%000010E6%';
+-- Another SRID is refused, in text and in binary
+SELECT ts2cellFromEWKT('SRID=3857;47c3c3@2001-01-01');
+SELECT ts2cellFromHexEWKB(replace(asHexEWKB(ts2cell '47c3c3@2001-01-01', 'XDR'), '000010E6', '00000F11'));
+
+-------------------------------------------------------------------------------
+-- MF-JSON
+--
+-- An s2cell is a scalar cell id carried with a bounding box, so its MF-JSON
+-- form is the one h3index and quadbin take: the 'values' array holds plain
+-- cell ids (mirroring the tbigint sibling).
+-------------------------------------------------------------------------------
+
+SELECT asMFJSON(ts2cell '47c3c3@2012-01-01 08:00:00');
+SELECT asMFJSON(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}');
+SELECT asMFJSON(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT asMFJSON(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02], [47c3c3@2001-01-03, 47c3c3@2001-01-04]}');
+-- Bound the bbox precision so the output is platform-independent
+SELECT asMFJSON(ts2cell '47c3c3@2012-01-01 08:00:00', 1, 3, 6);
+
+-- Round-trip: ts2cellFromMFJSON(asMFJSON(...)) preserves the value
+SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '47c3c3@2012-01-01 08:00:00'));
+SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}'));
+SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
+SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02], [47c3c3@2001-01-03, 47c3c3@2001-01-04]}'));
+-- A cell is written as its text form in a JSON string, and an integer is still
+-- read as the cell it encodes; the bounding box is the spatiotemporal box
+SELECT asMFJSON(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 1, 3, 6);
+SELECT ts2cellFromMFJSON(replace(asMFJSON(ts2cell '47c3c@2001-01-01'),
+  '"47c3c"', '5171187903383994368'));
+
+-------------------------------------------------------------------------------
+-- Interpolation
+--
+-- A cell index is discrete, so a sequence is step interpolated and asking for
+-- a linear one is refused.
+-------------------------------------------------------------------------------
+
+SELECT interp(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT interp(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}');
+SELECT asText(ts2cell 'Interp=Step;[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
+
+SELECT asText(ts2cell(s2cell '47c3c3', timestamptz '2001-01-01'));
+SELECT asText(ts2cellInst(ts2cell '[47c3c3@2001-01-01]'));
+SELECT asText(ts2cellSeq(ARRAY[ts2cell '47c3c3@2001-01-01', ts2cell '54b5c9@2001-01-02']));
+SELECT asText(ts2cell(s2cell '47c3c3', tstzspan '[2001-01-01, 2001-01-02]'));
+
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
+
+SELECT tempSubtype(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT tempBasetype(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT startValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT endValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT getValues(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT numInstants(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT valueAtTimestamp(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', '2001-01-01 12:00');
+SELECT duration(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+
+-------------------------------------------------------------------------------
+-- Restrictions
+-------------------------------------------------------------------------------
+
+SELECT asText(atValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3'));
+SELECT asText(minusValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3'));
+SELECT asText(atTime(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', tstzspan '[2001-01-01, 2001-01-01 12:00]'));
+
+-------------------------------------------------------------------------------
+-- Conversions
+--
+-- The int64 payload survives the round trip through tbigint, and the cast is
+-- ASSIGNMENT so it must be spelled out.
+-------------------------------------------------------------------------------
+
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint);
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell);
+SELECT ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell
+  = ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]';
+
+-- Not every integer is a cell: an integer encoding no S2 cell is refused by the
+-- cast, and in MF-JSON and WKB input, as in text input
+/* Errors */
+SELECT (tbigint '42@2001-01-01')::ts2cell;
+SELECT ts2cellFromMFJSON(replace(asMFJSON(ts2cell '47c3c@2001-01-01'),
+  '"47c3c"', '42'));
+SELECT ts2cellFromMFJSON(replace(asMFJSON(ts2cell '47c3c@2001-01-01'),
+  '"47c3c"', '"2a"'));
+SELECT ts2cellFromHexWKB(replace(asHexWKB(ts2cell '47c3c@2001-01-01', 'XDR'),
+  '47C3C00000000000', '000000000000002A'));
+
+-------------------------------------------------------------------------------
+-- Time spans
+--
+-- A cell index carries no value dimension to split on, so the spans a ts2cell
+-- answers are those of its time dimension, as th3index and tquadbin answer.
+-------------------------------------------------------------------------------
+
+SELECT spans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]');
+SELECT splitNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
+SELECT splitEachNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
+
+-------------------------------------------------------------------------------
+-- Comparisons
+--
+-- A ts2cell is a spatiotemporal type, so `temporal_cmp` reads the bounding
+-- box before the cell identifier and only falls through to the identifier
+-- where the boxes are equal. Two cells on different cube faces are therefore
+-- ordered by their extents, which need not agree with the order the static
+-- s2cell comparison gives them, and the tquadbin sibling behaves the same
+-- way.
+-------------------------------------------------------------------------------
+
+SELECT ts2cell '[47c3c3@2001-01-01]' = ts2cell '[47c3c3@2001-01-01]';
+SELECT ts2cell '[47c3c3@2001-01-01]' <> ts2cell '[54b5c9@2001-01-01]';
+SELECT cmp(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]');
+SELECT s2cell '47c3c3' < s2cell '54b5c9';
+SELECT cmp(ts2cell '[47c3c3@2001-01-01]', ts2cell '[54b5c9@2001-01-01]');
+
+-------------------------------------------------------------------------------

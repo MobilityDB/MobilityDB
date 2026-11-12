@@ -1,0 +1,47 @@
+-------------------------------------------------------------------------------
+-- An error of MEOS raises the SQLSTATE PostgreSQL raises for an error of its
+-- class. Each MobilityDB statement follows a PostgreSQL statement whose error
+-- is of the same class, and only the state of each error is shown
+-------------------------------------------------------------------------------
+
+\set VERBOSITY sqlstate
+
+-- A number out of range
+SELECT 2000000000 + 2000000000;
+SELECT tsum(temp) FROM (VALUES
+('2000000000@2001-01-01'::tint),('2000000000@2001-01-01'::tint)) t(temp);
+SELECT 1e300::float8 * 1e300::float8;
+SELECT integral(tfloat '[1e308@2001-01-01, 1e308@2001-01-03]');
+
+-- A date or a time out of range
+SELECT timestamptz '294277-01-01 00:00:00+00';
+SELECT tstzspan '[294277-01-01 00:00:00+00, 294277-01-02 00:00:00+00]';
+
+-- A division by zero
+SELECT 1 / 0;
+SELECT tint '[1@2001-01-01, 2@2001-01-02]' / 0;
+
+-- An invalid argument value
+SELECT generate_series(1, 2, 0);
+SELECT span(timestamptz '2001-01-02', '2001-01-01');
+
+-- An input that is not the text of a value of its type
+SELECT int4 'abc';
+SELECT tint 'abc';
+SELECT json '{"type":';
+SELECT tintFromMFJSON('{"type":"MovingInteger"}');
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]]}');
+
+-- An input that is not the binary representation of a value of its type,
+-- which PostgreSQL raises in the receive functions SQL does not call
+SELECT tintFromBinary('\x00');
+SELECT intspanFromBinary('\x0102');
+SELECT tintFromHexWKB('0001');
+
+-- A feature not supported
+SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <->
+  geometry 'CircularString(1e200 -1,2e200 0,1e200 1)';
+
+\set VERBOSITY default
+
+-------------------------------------------------------------------------------

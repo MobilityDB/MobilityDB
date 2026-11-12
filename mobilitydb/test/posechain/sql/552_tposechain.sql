@@ -1,0 +1,155 @@
+-------------------------------------------------------------------------------
+-- Tests for the temporal pose chain type
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Input/output
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01');
+SELECT asEWKT(tposechain '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02}');
+SELECT asEWKT(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
+SELECT asEWKT(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02], [PoseChain(Pose(Point(2 2), 0))@2001-01-03]}');
+
+-- A chain is written as the array of its links, and reads back as itself
+SELECT asMFJSON(tposechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 4), 0.25))@2001-01-01');
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 4), 0.25))@2001-01-01', 3)));
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0.5), Pose(Point(2 1), 0.5))@2001-01-02]', 3)));
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02], [PoseChain(Pose(Point(2 2), 0))@2001-01-03]}', 3)));
+-- The frame travels in the document's own crs member, which asMFJSON writes
+-- whenever the value carries an SRID
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'SRID=4326;PoseChain(Pose(Point(1 2), 0.5), Pose(Point(2 3), 0.25))@2001-01-01', 3)));
+-- A three-dimensional chain states each link as a quaternion
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'PoseChain(Pose(Point Z(1 2 3), 1, 0, 0, 0), Pose(Point Z(1 0 0), 1, 0, 0, 0))@2001-01-01', 3)));
+-- A document naming another type is refused
+SELECT tposechainFromMFJSON('{"type":"MovingPose","values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}');
+-- A chain carrying no link is refused
+SELECT tposechainFromMFJSON('{"type":"MovingPoseChain","values":[[]],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}');
+
+-------------------------------------------------------------------------------
+-- Errors
+-- Every value of a temporal pose chain holds the same number of links: a chain
+-- that gains a joint is a different structure, not a later value of the same
+-- one.
+-------------------------------------------------------------------------------
+
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-02]';
+SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-02}';
+
+-------------------------------------------------------------------------------
+-- Comparison against a chain of another length
+-- A chain that holds another number of links is a different value, so a
+-- comparison against it answers false rather than refusing the question.
+-------------------------------------------------------------------------------
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]' %= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' ?= tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]';
+-- The same chain still compares equal where the lengths agree
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0))';
+
+-------------------------------------------------------------------------------
+-- Interpolation
+-- Every link interpolates as a pose does, linearly in position and along the
+-- shortest arc in rotation.
+-------------------------------------------------------------------------------
+
+-- A two-link arm whose shoulder turns a quarter turn: halfway through, the
+-- shoulder is at an eighth of a turn and the elbow has not moved
+SELECT asEWKT(round(valueAtTimestamp(
+  appendInstant(
+    tposechain(posechain(ARRAY[pose(ST_Point(0,0), 0), pose(ST_Point(10,0), 0)]),
+      timestamptz '2001-01-01'),
+    tposechain(posechain(ARRAY[pose(ST_Point(0,0), pi()/2), pose(ST_Point(10,0), 0)]),
+      timestamptz '2001-01-03')),
+  timestamptz '2001-01-02'), 6));
+
+-------------------------------------------------------------------------------
+-- Conversions
+-- Composing the chain at every instant answers where its innermost frame sits
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(round(tpose(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01'), 6));
+SELECT asEWKT(round((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01')::tpose, 6));
+
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
+
+SELECT numPoses(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01');
+SELECT tempSubtype(tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01');
+SELECT interp(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
+SELECT asEWKT(getValue(tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01'));
+SELECT numInstants(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
+SELECT timeSpan(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
+
+-------------------------------------------------------------------------------
+-- Spatial reference system
+-- Only the outer link names a frame, so only the outer link is transformed
+-------------------------------------------------------------------------------
+
+SELECT SRID(tposechain 'SRID=3812;PoseChain(Pose(Point(1 2), 0))@2001-01-01');
+SELECT asEWKT(setSRID(tposechain 'PoseChain(Pose(Point(1 2), 0))@2001-01-01', 3812));
+SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2001-01-01', 3812), 6));
+SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 6));
+
+-------------------------------------------------------------------------------
+-- Restrictions
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(atTime(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-03]', timestamptz '2001-01-02'));
+SELECT asEWKT(atValue(tposechain '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02}', posechain 'PoseChain(Pose(Point(1 1), 0))'));
+
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01' = tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01';
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01' <> tposechain 'PoseChain(Pose(Point(1 1), 0))@2001-01-01';
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Bounding box
+-- The box of a chain covers the composed position of every prefix, so an
+-- instant carries the reach of the whole chain and not only of its last link
+-------------------------------------------------------------------------------
+
+SELECT stbox(tposechain 'PoseChain(Pose(Point(1 2), 0), Pose(Point(3 4), 0))@2001-01-01');
+SELECT stbox(tposechain '{PoseChain(Pose(Point(1 2), 0))@2001-01-01, PoseChain(Pose(Point(5 6), 0))@2001-01-02}');
+SELECT stbox(tposechain '[PoseChain(Pose(Point(1 2), 0))@2001-01-01, PoseChain(Pose(Point(5 6), 0))@2001-01-02]');
+
+-------------------------------------------------------------------------------
+-- unnest: one row per distinct chain, a repeated chain carrying both
+-- of its times
+-------------------------------------------------------------------------------
+
+SELECT (rec).time FROM (SELECT unnest(tposechain
+  '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 0), 0))@2001-01-02,
+  PoseChain(Pose(Point(0 0), 0))@2001-01-03}') AS rec) AS t;
+
+-- Rigid motions: a pose chain moves as the pose it composes to
+SELECT asText(rotate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 0.7, 1, 1), 6);
+SELECT asText(tpose(rotate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tpose(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]'), 0.7, 1, 1), 6);
+SELECT asText(tpose(rotateX(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 0.7)), 6) =
+  asText(rotateX(tpose(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]'), 0.7), 6);
+SELECT asText(tpose(translate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 1, 2, 3)), 6) =
+  asText(translate(tpose(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]'), 1, 2, 3), 6);
+
+-------------------------------------------------------------------------------
+
+-- A NULL operand of merge returns the other one
+SELECT merge(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', NULL::tposechain) = tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
+SELECT merge(NULL::tposechain, tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01') = tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
+SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
+SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
+SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01');

@@ -1,0 +1,49 @@
+-------------------------------------------------------------------------------
+-- Send/receive functions
+-------------------------------------------------------------------------------
+
+\copy tbl_cbuffer TO 'tbl_cbuffer' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_cbuffer_tmp;
+CREATE TABLE tbl_cbuffer_tmp AS TABLE tbl_cbuffer WITH NO DATA;
+\copy tbl_cbuffer_tmp FROM 'tbl_cbuffer' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer_tmp t2 WHERE t1.k = t2.k AND t1.cb <> t2.cb;
+DROP TABLE tbl_cbuffer_tmp;
+
+-------------------------------------------------------------------------------
+-- Accessing values
+-------------------------------------------------------------------------------
+
+SELECT MAX(ST_X(point(cb))) FROM tbl_cbuffer;
+SELECT MAX(radius(cb)) FROM tbl_cbuffer;
+
+-------------------------------------------------------------------------------
+-- Cast functions
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::geometry IS NOT NULL;
+
+-- The cast to a geometry builds the circle and the cast back recomputes its
+-- center and its radius, so both come back within the rounding of that
+-- construction
+SELECT COUNT(*) FROM tbl_cbuffer WHERE
+  ST_DWithin(point(cb), point((cb::geometry)::cbuffer), 1e-12) AND
+  abs(radius(cb) - radius((cb::geometry)::cbuffer)) <= 1e-12;
+
+-------------------------------------------------------------------------------
+-- Transformations
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tcbuffer WHERE expand(temp, 1) IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb = t2.cb;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb != t2.cb;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb < t2.cb;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb <= t2.cb;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb > t2.cb;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb >= t2.cb;
+
+-------------------------------------------------------------------------------/

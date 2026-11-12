@@ -61,7 +61,7 @@ set_tests_properties(load_point_tables PROPERTIES
   FIXTURES_SETUP DBPOINT
   FIXTURES_REQUIRED "DB")
 
-file(GLOB testfiles "queries/*.sql")
+file(GLOB testfiles "sql/*.sql")
 list(SORT testfiles)
 
 foreach(file ${testfiles})

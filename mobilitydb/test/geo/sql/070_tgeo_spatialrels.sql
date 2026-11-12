@@ -1,0 +1,595 @@
+-------------------------------------------------------------------------------
+-- eContains, aContains
+-------------------------------------------------------------------------------
+
+SELECT eContains(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eContains(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eContains(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eContains(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+SELECT eContains(geometry 'Linestring(1 1,3 3)', tgeometry '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
+SELECT eContains(geometry 'Linestring(1 1,3 3,1 1)', tgeometry '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
+SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
+SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-02]');
+
+-- A temporal geometry holding point values never contains a polygon, whichever
+-- side of the polygon its values are on
+SELECT aContains(tgeometry '[Point(2 2)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+SELECT aContains(tgeometry '[Point(2 2)@2001-01-01, Point(4 4)@2001-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+-- The polygon does contain the points, in the direction that asks it
+SELECT aContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(2 2)@2001-01-01, Point(2.5 2.5)@2001-01-02]');
+SELECT aContains(tgeometry '[Polygon((1 1,1 3,3 3,3 1,1 1))@2001-01-01, Polygon((1 1,1 3,3 3,3 1,1 1))@2001-01-02]', geometry 'Point(2 2)');
+
+SELECT eContains(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eContains(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eContains(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eContains(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+/* Errors */
+SELECT eContains(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eContains(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eContains(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2001-01-01');
+
+-------------------------------------------------------------------------------
+-- eCovers, aCovers
+-------------------------------------------------------------------------------
+
+SELECT eCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+SELECT eCovers(geometry 'Linestring(1 1,3 3)', tgeometry '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
+SELECT eCovers(geometry 'Linestring(1 1,3 3,1 1)', tgeometry '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-02]');
+
+-- A temporal geometry holding point values never covers a polygon, whichever
+-- side of the polygon its values are on
+SELECT eCovers(tgeometry '[Point(2 2)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+SELECT aCovers(tgeometry '[Point(2 2)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+SELECT eCovers(tgeometry '[Point(2 2)@2001-01-01, Point(4 4)@2001-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+-- The polygon does cover the points, in the direction that asks it
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(2 2)@2001-01-01, Point(2.5 2.5)@2001-01-02]');
+SELECT eCovers(tgeometry '[Polygon((1 1,1 3,3 3,3 1,1 1))@2001-01-01, Polygon((1 1,1 3,3 3,3 1,1 1))@2001-01-02]', geometry 'Point(2 2)');
+SELECT aCovers(tgeometry '[Polygon((1 1,1 3,3 3,3 1,1 1))@2001-01-01, Polygon((1 1,1 3,3 3,3 1,1 1))@2001-01-02]', geometry 'Point(2 2)');
+
+SELECT eCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eCovers(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eCovers(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eCovers(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+/* Errors */
+SELECT eCovers(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eCovers(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2001-01-01');
+
+-------------------------------------------------------------------------------
+-- eDisjoint
+-------------------------------------------------------------------------------
+
+SELECT eDisjoint(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eDisjoint(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eDisjoint(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eDisjoint(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+SELECT eDisjoint(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eDisjoint(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eDisjoint(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eDisjoint(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+SELECT eDisjoint(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2001-01-01');
+SELECT eDisjoint(geometry 'Point(1 1 1)', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}');
+SELECT eDisjoint(geometry 'Point(1 1 1)', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]');
+SELECT eDisjoint(geometry 'Point(1 1 1)', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}');
+
+SELECT eDisjoint(geometry 'Point Z empty', tgeometry 'Point(1 1 1)@2001-01-01');
+SELECT eDisjoint(geometry 'Point Z empty', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}');
+SELECT eDisjoint(geometry 'Point Z empty', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]');
+SELECT eDisjoint(geometry 'Point Z empty', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}');
+
+SELECT eDisjoint(tgeometry 'Point(1 1)@2001-01-01',  geometry 'Point(1 1)');
+SELECT eDisjoint(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}',  geometry 'Point(1 1)');
+SELECT eDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Point(1 1)');
+SELECT eDisjoint(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point(1 1)');
+
+SELECT eDisjoint(tgeometry 'Point(1 1)@2001-01-01',  geometry 'Point empty');
+SELECT eDisjoint(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}',  geometry 'Point empty');
+SELECT eDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Point empty');
+SELECT eDisjoint(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point empty');
+
+SELECT eDisjoint(tgeometry 'Point(1 1 1)@2001-01-01',  geometry 'Point(1 1 1)');
+SELECT eDisjoint(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}',  geometry 'Point(1 1 1)');
+SELECT eDisjoint(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]',  geometry 'Point(1 1 1)');
+SELECT eDisjoint(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',  geometry 'Point(1 1 1)');
+
+SELECT eDisjoint(tgeometry 'Point(1 1 1)@2001-01-01',  geometry 'Point Z empty');
+SELECT eDisjoint(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}',  geometry 'Point Z empty');
+SELECT eDisjoint(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]',  geometry 'Point Z empty');
+SELECT eDisjoint(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',  geometry 'Point Z empty');
+
+SELECT eDisjoint(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+SELECT eDisjoint(geometry 'Point(1 1 1)', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}');
+SELECT eDisjoint(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point(1 1)');
+SELECT eDisjoint(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',  geometry 'Point(1 1 1)');
+
+-- Mixed 2D/3D
+SELECT eDisjoint(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eDisjoint(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1)');
+
+-- Coverage
+SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '{Point(0 0)@2001-01-01, Point(0 2)@2001-01-02}');
+
+-- An areal subject against an areal geometry, which is the shape a join over a
+-- geometry column takes, exercised at each place the answer can be decided:
+-- the bounding boxes alone, the first composing value, a later one, the second
+-- sequence of a sequence set, and no value at all
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry 'Polygon((5 5,5 6,6 6,6 5,5 5))@2001-01-01');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry 'Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-01, Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-02]');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-02]');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((2 2,2 3,3 3,3 2,2 2))@2001-01-02]');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '{[Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((2 2,2 3,3 3,3 2,2 2))@2001-01-02],[Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-04, Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-05]}');
+
+-- A value the subject takes twice, which the relationship answers the same
+-- whether the repetition is offered to the predicate once or twice
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '{Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-02, Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-03}');
+SELECT eDisjoint(tgeometry '{Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-02, Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-03}', geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '[Point(0 0)@2001-01-01, Point(0 2)@2001-01-02]');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '{[Point(0 0)@2001-01-01, Point(0 2)@2001-01-02],[Point(0 2)@2001-01-03, Point(0 0)@2001-01-04]}');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '{Point(3 3)@2001-01-01, Point(4 4)@2001-01-02}');
+
+/* Errors */
+SELECT eDisjoint(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eDisjoint(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=3812;Point(1 1)');
+
+-------------------------------------------------------------------------------
+-- eIntersects
+-------------------------------------------------------------------------------
+
+------------------------
+-- Geo x Temporal
+------------------------
+-- 2D
+SELECT eIntersects(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eIntersects(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eIntersects(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eIntersects(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+-- Empty
+SELECT eIntersects(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eIntersects(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eIntersects(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eIntersects(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+-- 3D
+SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2001-01-01');
+SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}');
+SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]');
+SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}');
+-- Empty
+SELECT eIntersects(geometry 'Point Z empty', tgeometry 'Point(1 1 1)@2001-01-01');
+SELECT eIntersects(geometry 'Point Z empty', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}');
+SELECT eIntersects(geometry 'Point Z empty', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]');
+SELECT eIntersects(geometry 'Point Z empty', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}');
+
+-- Geography
+SELECT eIntersects(geography 'Point(1.5 1.5)', tgeography 'Point(1.5 1.5)@2001-01-01');
+SELECT eIntersects(geography 'Point(1.5 1.5)', tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}');
+SELECT eIntersects(geography 'Point(1.5 1.5)', tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]');
+SELECT eIntersects(geography 'Point(1.5 1.5)', tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}');
+-- Empty
+SELECT eIntersects(geography 'Point empty', tgeography 'Point(1.5 1.5)@2001-01-01');
+SELECT eIntersects(geography 'Point empty', tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}');
+SELECT eIntersects(geography 'Point empty', tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]');
+SELECT eIntersects(geography 'Point empty', tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}');
+-- 3D
+SELECT eIntersects(geography 'Point(1.5 1.5 1.5)', tgeography 'Point(1.5 1.5 1.5)@2001-01-01');
+SELECT eIntersects(geography 'Point(1.5 1.5 1.5)', tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}');
+SELECT eIntersects(geography 'Point(1.5 1.5 1.5)', tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]');
+SELECT eIntersects(geography 'Point(1.5 1.5 1.5)', tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}');
+-- Empty
+SELECT eIntersects(geography 'Point Z empty', tgeography 'Point(1.5 1.5 1.5)@2001-01-01');
+SELECT eIntersects(geography 'Point Z empty', tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}');
+SELECT eIntersects(geography 'Point Z empty', tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]');
+SELECT eIntersects(geography 'Point Z empty', tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}');
+
+------------------------
+-- Temporal x Geo
+------------------------
+SELECT eIntersects(tgeometry 'Point(1 1)@2001-01-01',  geometry 'Point(1 1)');
+SELECT eIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}',  geometry 'Point(1 1)');
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Point(1 1)');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point(1 1)');
+-- Empty
+SELECT eIntersects(tgeometry 'Point(1 1)@2001-01-01',  geometry 'Point empty');
+SELECT eIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}',  geometry 'Point empty');
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Point empty');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point empty');
+-- 3D
+SELECT eIntersects(tgeometry 'Point(1 1 1)@2001-01-01',  geometry 'Point(1 1 1)');
+SELECT eIntersects(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}',  geometry 'Point(1 1 1)');
+SELECT eIntersects(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]',  geometry 'Point(1 1 1)');
+SELECT eIntersects(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',  geometry 'Point(1 1 1)');
+-- Empty
+SELECT eIntersects(tgeometry 'Point(1 1 1)@2001-01-01',  geometry 'Point Z empty');
+SELECT eIntersects(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}',  geometry 'Point Z empty');
+SELECT eIntersects(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]',  geometry 'Point Z empty');
+SELECT eIntersects(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',  geometry 'Point Z empty');
+
+-- Geography
+SELECT eIntersects(tgeography 'Point(1.5 1.5)@2001-01-01',  geography 'Point(1.5 1.5)');
+SELECT eIntersects(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}',  geography 'Point(1.5 1.5)');
+SELECT eIntersects(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]',  geography 'Point(1.5 1.5)');
+SELECT eIntersects(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}',  geography 'Point(1.5 1.5)');
+-- Empty
+SELECT eIntersects(tgeography 'Point(1.5 1.5)@2001-01-01',  geography 'Point empty');
+SELECT eIntersects(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}',  geography 'Point empty');
+SELECT eIntersects(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]',  geography 'Point empty');
+SELECT eIntersects(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}',  geography 'Point empty');
+-- 3D
+SELECT eIntersects(tgeography 'Point(1.5 1.5 1.5)@2001-01-01',  geography 'Point(1.5 1.5 1.5)');
+SELECT eIntersects(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}',  geography 'Point(1.5 1.5 1.5)');
+SELECT eIntersects(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]',  geography 'Point(1.5 1.5 1.5)');
+SELECT eIntersects(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}',  geography 'Point(1.5 1.5 1.5)');
+-- Empty
+SELECT eIntersects(tgeography 'Point(1.5 1.5 1.5)@2001-01-01',  geography 'Point Z empty');
+SELECT eIntersects(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}',  geography 'Point Z empty');
+SELECT eIntersects(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]',  geography 'Point Z empty');
+SELECT eIntersects(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}',  geography 'Point Z empty');
+
+------------------------
+-- Temporal x Temporal
+------------------------
+-- Temporal x Instant
+SELECT eIntersects(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry 'Point(1 1)@2001-01-01');
+-- Temporal x Discrete Sequence
+SELECT eIntersects(tgeometry 'Point(1 1)@2001-01-01', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+-- Temporal x Continuous Sequence
+SELECT eIntersects(tgeometry 'Point(1 1)@2001-01-01', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+-- Temporal x SequenceSet
+SELECT eIntersects(tgeometry 'Point(1 1)@2001-01-01', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+SELECT eIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+-- Two temporal geometries sharing no instant are compared nowhere, so every
+-- relationship between them is unknown, whatever their positions are
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT aIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT aDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eContains(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT aContains(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eCovers(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT aCovers(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eTouches(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+SELECT aTouches(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]', 10);
+-- A static operand carries no time of its own, takes the temporal one's, and is answered
+SELECT aContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eTouches(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+-- Two squares that touch at their first instant and part at their second: an always
+-- relationship reads every instant
+SELECT aTouches(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+SELECT aIntersects(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((1 0,4 0,4 2,1 2,1 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+SELECT aDisjoint(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+-- A square that moves away while a point moves to where it was: the square contains
+-- and covers the point at neither instant, ever nor always
+SELECT eContains(a, b), aContains(a, b), eCovers(a, b), aCovers(a, b) FROM (SELECT tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}' AS a, tgeometry '{Point(12 2)@2001-01-01, Point(2 2)@2001-01-02}' AS b) t;
+-- A point inside a square, then on its boundary: contained ever, covered always
+SELECT eContains(a, b), aContains(a, b), eCovers(a, b), aCovers(a, b) FROM (SELECT tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-02]' AS a, tgeometry '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]' AS b) t;
+-- A geometry and a moving point: the point ends on the boundary, so it is covered always but
+-- not contained always; it crosses the gap of a U, so it touches the U
+SELECT aContains(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', tgeompoint '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]'), aCovers(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', tgeompoint '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]');
+SELECT eTouches(geometry 'Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0))', tgeompoint '[Point(0.5 2)@2001-01-01, Point(4.5 2)@2001-01-02]');
+-- A temporal geometry and a point: a square moving away from the point contains it ever, not
+-- always; a point on the shared edge of two placements is contained by neither
+SELECT eContains(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}', geometry 'Point(2 2)'), aContains(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}', geometry 'Point(2 2)');
+SELECT eContains(tgeometry 'Interp=Step;[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((4 0,8 0,8 4,4 4,4 0))@2001-01-02]', geometry 'Point(4 2)'), aCovers(tgeometry 'Interp=Step;[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((4 0,8 0,8 4,4 4,4 0))@2001-01-02]', geometry 'Point(4 2)');
+-- Two placements that overlap: the point in the overlap is intersected ever
+SELECT eIntersects(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((2 0,6 0,6 4,2 4,2 0))@2001-01-02}', geometry 'Point(3 2)');
+
+-- Mixed 2D/3D
+SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eIntersects(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1)');
+
+SELECT eIntersects(geography 'Point(1.5 1.5 1.5)', tgeography 'Point(1 1)@2001-01-01');
+SELECT eIntersects(tgeography 'Point(1 1 1)@2001-01-01', geography 'Point(1.5 1.5)');
+
+-- Coverage
+SELECT eIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(1 1)@2001-01-03}', tgeometry 'Point(1 1)@2001-01-02');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(1 1)@2001-01-04, Point(2 2)@2001-01-05]}', tgeometry 'Point(1 1)@2001-01-03');
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '{Point(2 2)@2001-01-01
+, Point(2 2)@2001-01-03}');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(3 3)@2001-01-02], [Point(1 1)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry '{Point(2 2)@2001-01-01, Point(2 2)@2001-01-02, Point(2 2)@2001-01-04, Point(2 2)@2001-01-06}');
+SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02], [Point(3 3)@2001-01-03, Point(3 3)@2001-01-04)}', tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-04]');
+SELECT eIntersects(tgeometry '[Point(1 1)@2019-09-01, Point(2 2)@2019-09-02]', tgeometry '[Point(2 2)@2019-09-01, Point(1 1)@2019-09-02]');
+
+/* Errors */
+SELECT eIntersects(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eIntersects(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=3812;Point(1 1)');
+SELECT eIntersects(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'SRID=3812;Point(1 1)@2001-01-01');
+
+SELECT eIntersects(geography 'SRID=4283;Point(1 1)', tgeography 'Point(1 1)@2001-01-01');
+SELECT eIntersects(tgeography 'Point(1 1)@2001-01-01', geography 'SRID=4283;Point(1 1)');
+SELECT eIntersects(tgeography 'Point(1 1)@2001-01-01', tgeography 'SRID=4283;Point(1 1)@2001-01-01');
+
+-------------------------------------------------------------------------------
+-- eTouches
+-------------------------------------------------------------------------------
+-- The function does not support 3D or geographies
+
+SELECT eTouches(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eTouches(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eTouches(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+SELECT eTouches(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eTouches(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT eTouches(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT eTouches(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+
+SELECT eTouches(tgeometry 'Point(1 1)@2001-01-01',  geometry 'Point(1 1)');
+SELECT eTouches(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}',  geometry 'Point(1 1)');
+SELECT eTouches(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Point(1 1)');
+SELECT eTouches(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point(1 1)');
+
+SELECT eTouches(tgeometry 'Point(1 1)@2001-01-01',  geometry 'Point empty');
+SELECT eTouches(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}',  geometry 'Point empty');
+SELECT eTouches(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Point empty');
+SELECT eTouches(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point empty');
+
+SELECT eTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+SELECT eTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+SELECT eTouches(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point(1 1)');
+
+-- Coverage: Other geometry types
+SELECT eTouches(tgeometry '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04]', geometry 'Triangle((1 1,1 2,2 1,1 1))');
+SELECT eTouches(tgeometry '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04]', geometry 'CurvePolygon((1 1,2 2,3 1,2 0,1 1))');
+-- Notice that the boundary of a closed line or circular string is empty !
+SELECT eTouches(tgeometry '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', geometry 'CircularString(1 1,2 2,3 1,2 0,1 1)');
+
+/* Errors */
+SELECT eTouches(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
+SELECT eTouches(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=3812;Point(1 1)');
+SELECT eTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2001-01-01');
+
+-------------------------------------------------------------------------------
+-- eDwithin
+-------------------------------------------------------------------------------
+
+SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tgeometry 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2);
+SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2);
+SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2);
+
+SELECT eDwithin(geometry 'Linestring empty', tgeometry 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(geometry 'Linestring empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2);
+SELECT eDwithin(geometry 'Linestring empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2);
+SELECT eDwithin(geometry 'Linestring empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2);
+
+SELECT eDwithin(geometry 'Linestring(1 1 1,2 2 2)', tgeometry 'Point(1 1 1)@2001-01-01', 2);
+SELECT eDwithin(geometry 'Linestring(1 1 1,2 2 2)', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2);
+SELECT eDwithin(geometry 'Linestring(1 1 1,2 2 2)', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2);
+SELECT eDwithin(geometry 'Linestring(1 1 1,2 2 2)', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2);
+
+SELECT eDwithin(geometry 'Linestring Z empty', tgeometry 'Point(1 1 1)@2001-01-01', 2);
+SELECT eDwithin(geometry 'Linestring Z empty', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2);
+SELECT eDwithin(geometry 'Linestring Z empty', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2);
+SELECT eDwithin(geometry 'Linestring Z empty', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2);
+
+SELECT eDwithin(geography 'Linestring(1.5 1.5,2.5 2.5)', tgeography 'Point(1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(geography 'Linestring(1.5 1.5,2.5 2.5)', tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(geography 'Linestring(1.5 1.5,2.5 2.5)', tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(geography 'Linestring(1.5 1.5,2.5 2.5)', tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2);
+
+SELECT eDwithin(geography 'Linestring empty', tgeography 'Point(1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(geography 'Linestring empty', tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(geography 'Linestring empty', tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(geography 'Linestring empty', tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2);
+
+SELECT eDwithin(geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', tgeography 'Point(1.5 1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2);
+
+SELECT eDwithin(geography 'Linestring Z empty', tgeography 'Point(1.5 1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(geography 'Linestring Z empty', tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(geography 'Linestring Z empty', tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(geography 'Linestring Z empty', tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2);
+
+SELECT eDwithin(tgeometry 'Point(1 1)@2001-01-01',  geometry 'Linestring(1 1,2 2)', 2);
+SELECT eDwithin(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}',  geometry 'Linestring(1 1,2 2)', 2);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Linestring(1 1,2 2)', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Point(1 1)', 2);
+
+SELECT eDwithin(tgeometry 'Point(1 1)@2001-01-01',  geometry 'Linestring empty', 2);
+SELECT eDwithin(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}',  geometry 'Linestring empty', 2);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Linestring empty', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Linestring empty', 2);
+
+SELECT eDwithin(tgeometry 'Point(1 1 1)@2001-01-01',  geometry 'Linestring(1 1 1,2 2 2)', 2);
+SELECT eDwithin(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}',  geometry 'Linestring(1 1 1,2 2 2)', 2);
+SELECT eDwithin(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]',  geometry 'Linestring(1 1 1,2 2 2)', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',  geometry 'Linestring(1 1 1,2 2 2)', 2);
+
+SELECT eDwithin(tgeometry 'Point(1 1 1)@2001-01-01',  geometry 'Linestring Z empty', 2);
+SELECT eDwithin(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}',  geometry 'Linestring Z empty', 2);
+SELECT eDwithin(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]',  geometry 'Linestring Z empty', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',  geometry 'Linestring Z empty', 2);
+
+SELECT eDwithin(tgeography 'Point(1.5 1.5)@2001-01-01',  geography 'Linestring(1.5 1.5,2.5 2.5)', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}',  geography 'Linestring(1.5 1.5,2.5 2.5)', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]',  geography 'Linestring(1.5 1.5,2.5 2.5)', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}',  geography 'Linestring(1.5 1.5,2.5 2.5)', 2);
+
+SELECT eDwithin(tgeography 'Point(1.5 1.5)@2001-01-01',  geography 'Linestring empty', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}',  geography 'Linestring empty', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]',  geography 'Linestring empty', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}',  geography 'Linestring empty', 2);
+
+SELECT eDwithin(tgeography 'Point(1.5 1.5 1.5)@2001-01-01',  geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}',  geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]',  geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}',  geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', 2);
+
+SELECT eDwithin(tgeography 'Point(1.5 1.5 1.5)@2001-01-01',  geography 'Linestring Z empty', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}',  geography 'Linestring Z empty', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]',  geography 'Linestring Z empty', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}',  geography 'Linestring Z empty', 2);
+
+-- NULL
+SELECT eDwithin(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-02', 2);
+
+SELECT eDwithin(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry 'Point(1 1)@2001-01-01', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2);
+SELECT eDwithin(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2);
+SELECT eDwithin(tgeometry 'Point(1 1)@2001-01-01', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2);
+SELECT eDwithin(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2);
+SELECT eDwithin(tgeometry 'Point(1 1)@2001-01-01', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2);
+SELECT eDwithin(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2);
+
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-02]', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-03}', 10);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(1 1)@2001-01-05]', tgeometry '{Point(1 1)@2001-01-04, Point(2 2)@2001-01-06}', 10);
+
+-- Box prune keeps the exact three-valued result. Far apart in space but sharing
+-- no time (active periods fall in the other's gap) stays NULL, not a spurious 0.
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]}', tgeometry '[Point(100 100)@2001-01-03, Point(101 101)@2001-01-04]', 10);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]', tgeometry '[Point(100 100)@2001-01-03, Point(101 101)@2001-01-04]', 10);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]', tgeometry '[Point(1 4)@2001-01-03, Point(2 5)@2001-01-04]', 10);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]', tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-02]', 2);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(0 0)@2001-01-02]', tgeometry '[Point(0 2)@2001-01-01, Point(1 1)@2001-01-02]', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(1 1)@2001-01-05]}', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-04}', 10);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(1 1)@2001-01-06]}', tgeometry '[Point(1 1)@2001-01-04, Point(2 2)@2001-01-05]', 10);
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(1 1)@2001-01-06]}', tgeometry '{[Point(1 1)@2001-01-01],[Point(1 1)@2001-01-04, Point(2 2)@2001-01-05]}', 10);
+
+SELECT eDwithin(tgeometry 'Point(1 1 1)@2001-01-01', tgeometry 'Point(1 1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeometry 'Point(1 1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeometry 'Point(1 1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeometry 'Point(1 1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry 'Point(1 1 1)@2001-01-01', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2);
+SELECT eDwithin(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2);
+SELECT eDwithin(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2);
+SELECT eDwithin(tgeometry 'Point(1 1 1)@2001-01-01', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2);
+SELECT eDwithin(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2);
+SELECT eDwithin(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2);
+SELECT eDwithin(tgeometry 'Point(1 1 1)@2001-01-01', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2);
+SELECT eDwithin(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2);
+SELECT eDwithin(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2);
+SELECT eDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2);
+
+SELECT eDwithin(tgeography 'Point(1.5 1.5)@2001-01-01', tgeography 'Point(1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', tgeography 'Point(1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', tgeography 'Point(1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', tgeography 'Point(1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(tgeography 'Point(1.5 1.5)@2001-01-01', tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(tgeography 'Point(1.5 1.5)@2001-01-01', tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(tgeography 'Point(1.5 1.5)@2001-01-01', tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2);
+
+SELECT eDwithin(tgeography 'Point(1.5 1.5 1.5)@2001-01-01', tgeography 'Point(1.5 1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', tgeography 'Point(1.5 1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', tgeography 'Point(1.5 1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', tgeography 'Point(1.5 1.5 1.5)@2001-01-01', 2);
+SELECT eDwithin(tgeography 'Point(1.5 1.5 1.5)@2001-01-01', tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', 2);
+SELECT eDwithin(tgeography 'Point(1.5 1.5 1.5)@2001-01-01', tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', 2);
+SELECT eDwithin(tgeography 'Point(1.5 1.5 1.5)@2001-01-01', tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2);
+SELECT eDwithin(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2);
+SELECT eDwithin(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2);
+SELECT eDwithin(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2);
+
+SELECT eDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]}', tgeometry '{[Point(1 2)@2001-01-01, Point(2 3)@2001-01-02]}', 0.5);
+
+-- Step interpolation
+SELECT eDwithin(tgeometry 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2);
+
+-- Mixed 2D/3D
+SELECT eDwithin(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1)', 2);
+SELECT eDwithin(tgeometry 'Point(1 1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-01', 2);
+
+SELECT eDwithin(geography 'Point(1.5 1.5 1.5)', tgeography 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeography 'Point(1 1 1)@2001-01-01', geography 'Point(1.5 1.5)', 2);
+SELECT eDwithin(tgeography 'Point(1 1 1)@2001-01-01', tgeography 'Point(1 1)@2001-01-01', 2);
+
+-- Coverage
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(4 4)@2001-01-01, Point(2 1)@2001-01-02]', 1);
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(4 4)@2001-01-01, Point(2 3)@2001-01-02]', 1);
+
+/* Errors */
+SELECT eDwithin(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=3812;Point(1 1)', 2);
+SELECT eDwithin(tgeometry 'SRID=3812;Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-01', 2);
+
+SELECT eDwithin(geography 'SRID=4283;Point(1 1)', tgeography 'Point(1 1)@2001-01-01', 2);
+SELECT eDwithin(tgeography 'Point(1 1)@2001-01-01', geography 'SRID=4283;Point(1 1)', 2);
+SELECT eDwithin(tgeography 'SRID=4283;Point(1 1)@2001-01-01', tgeography 'Point(1 1)@2001-01-01', 2);
+
+-------------------------------------------------------------------------------
+-- Set-set spatial join
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', 110800);
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', 110800, false);
+SELECT eDwithin(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', 110800);
+SELECT eDwithin(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', 110800, false);
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800);
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800, false);
+SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800);
+SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800, false);
+
+-- A point at the mean of the vertices of a polygon, which defines its plane, in a plane
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 0 1)');
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 0 1)');
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+-- A line that starts there, and a point off the plane above it
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Linestring(1 1 1,1 1 5)');
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 5)');
+
+-------------------------------------------------------------------------------
+-- aDwithin of a temporal geography and a geography
+-------------------------------------------------------------------------------
+
+SELECT aDwithin(tgeography '{Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-01, Polygon((5 5,6 5,6 6,5 6,5 5))@2001-01-02}', geography 'Polygon((0 0,3 0,3 3,0 3,0 0))', 50000);
+SELECT aDwithin(geography 'Polygon((0 0,3 0,3 3,0 3,0 0))', tgeography '{Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-01, Polygon((1 1,2 1,2 2,1 2,1 1))@2001-01-02}', 0);
+SELECT aDwithin(tgeography 'Interp=Step;[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', geography 'Linestring(0 0,0 3)', 1, false);
+

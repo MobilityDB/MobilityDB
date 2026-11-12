@@ -1,0 +1,127 @@
+-------------------------------------------------------------------------------
+-- File set_ops.c
+-- Tests of operators that do not involve indexes for set types.
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t && t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t @> t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t @> t2.t;
+SELECT COUNT(*) FROM tbl_text t1, tbl_textset t2 WHERE t1.t <@ t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t <@ t2.t;
+
+-- A RESTRICTION reduces the constant it compares against to a span, which the
+-- forms above never reach: a clause between two columns is estimated by the
+-- join estimator instead. A set whose bounding box is not a span -- a text set
+-- here, and equally a geometry, cell or pose set -- has no span to be reduced
+-- to, and the estimate falls back to the default. The ordering operators are
+-- the ones a text set declares this estimator for.
+SELECT COUNT(*) FROM tbl_textset WHERE t < textset '{"AAA", "BBB", "CCC"}';
+SELECT COUNT(*) FROM tbl_textset WHERE t >= textset '{"AAA", "BBB", "CCC"}';
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t << t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t << t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t &< t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t &< t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t >> t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t >> t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t &> t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2  WHERE t1.t &> t2.t;
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t = t2.t;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f + t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_date t2 WHERE t1.d + t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_date t1, tbl_dateset t2 WHERE t1.d + t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_dateset t2 WHERE t1.d + t2.d IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.t + t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t + t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t + t2.t IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i - t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i - t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i - t2.i IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f - t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_date t2 WHERE t1.d - t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_date t1, tbl_dateset t2 WHERE t1.d - t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_dateset t2 WHERE t1.d - t2.d IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.t - t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t - t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t - t2.t IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i * t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i * t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i * t2.i IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f * t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_date t2 WHERE t1.d * t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_date t1, tbl_dateset t2 WHERE t1.d * t2.d IS NOT NULL;
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_dateset t2 WHERE t1.d * t2.d IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.t * t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t * t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t * t2.t IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_int t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_intset t2;
+
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintset t2;
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigint t2;
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigintset t2;
+
+SELECT MIN(t1.f <-> t2.f) FROM tbl_float t1, tbl_floatset t2;
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_float t2;
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_floatset t2;
+
+SELECT MIN(t1.d <-> t2.d) FROM tbl_date t1, tbl_dateset t2;
+SELECT MIN(t1.d <-> t2.d) FROM tbl_dateset t1, tbl_date t2;
+SELECT MIN(t1.d <-> t2.d) FROM tbl_dateset t1, tbl_dateset t2;
+
+SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzset t2;
+SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_timestamptz t2;
+SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_tstzset t2;
+
+-------------------------------------------------------------------------------
+
+-- The named portable form of the <-> operator tested above
+SELECT setDistance(1, intset '{3, 7}');
+SELECT setDistance(intset '{3, 7}', 1);
+SELECT setDistance(intset '{3, 7}', intset '{10, 20}');
+SELECT round(setDistance(1.0, floatset '{3.5, 7.5}')::numeric, 6);
+SELECT setDistance(date '2001-01-01', dateset '{2001-01-05, 2001-01-10}');
+
+-------------------------------------------------------------------------------

@@ -138,13 +138,13 @@ def targets():
             ("mobilitydb/src/json", sub_sqlfn),
             ("doc", sub_doc), ("doc/es", sub_doc)]
     tests = os.path.join(ROOT, "mobilitydb/test")
-    subs += [(os.path.join("mobilitydb/test", fam, "queries"), sub_words)
+    subs += [(os.path.join("mobilitydb/test", fam, "sql"), sub_words)
              for fam in sorted(os.listdir(tests))
-             if os.path.isdir(os.path.join(tests, fam, "queries"))]
+             if os.path.isdir(os.path.join(tests, fam, "sql"))]
     for sub, handler in subs:
         d = os.path.join(ROOT, sub)
         for f in sorted(os.listdir(d)):
-            if f.endswith((".in.sql", ".c", ".test.sql", ".xml")):
+            if f.endswith((".sql", ".c", ".xml")):
                 out.append((os.path.join(d, f), handler))
     return out
 

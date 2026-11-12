@@ -1,0 +1,102 @@
+-- Static h3index cell operations: the six faces every DGGS family publishes
+-- under the bare DggsCellOps slot names — resolution, validity, hierarchy,
+-- cell centroid and boundary, and area. The H3-only surface (directed edges,
+-- vertices, pentagon / base-cell / class-III inspection, grid traversal,
+-- great-circle metrics) is exercised by the 28x files.
+
+-------------------------------------------------------------------------------
+-- Resolution
+-------------------------------------------------------------------------------
+
+SELECT getResolution(h3index '831c02fffffffff');  -- res 3
+SELECT getResolution(h3index '871fa44a8ffffff');  -- res 7
+SELECT getResolution(h3index '8a2a1072b59ffff');  -- res 10
+
+-------------------------------------------------------------------------------
+-- Validity
+-------------------------------------------------------------------------------
+
+SELECT isValidCell(h3index '831c02fffffffff');
+SELECT isValidCell(h3index '0');
+
+-------------------------------------------------------------------------------
+-- Hierarchy: parent
+-------------------------------------------------------------------------------
+
+SELECT getResolution(cellToParent(h3index '8a2a1072b59ffff', 5));
+SELECT cellToParent(h3index '8a2a1072b59ffff', 5);
+
+-- The parent of a cell at its own resolution is the cell itself
+SELECT cellToParent(h3index '871fa44a8ffffff', 7) = h3index '871fa44a8ffffff';
+
+-- A parent resolution finer than the cell's own is an error
+SELECT cellToParent(h3index '831c02fffffffff', 7);
+
+-------------------------------------------------------------------------------
+-- Lat/Lng: centroid and boundary
+-------------------------------------------------------------------------------
+
+SELECT round(ST_X(cellToPoint(h3index '871fa44a8ffffff'))::numeric, 6);
+SELECT round(ST_Y(cellToPoint(h3index '871fa44a8ffffff'))::numeric, 6);
+SELECT ST_SRID(cellToPoint(h3index '871fa44a8ffffff'));
+
+SELECT ST_GeometryType(cellToBoundary(h3index '871fa44a8ffffff'));
+SELECT ST_SRID(cellToBoundary(h3index '871fa44a8ffffff'));
+
+-- A hexagon's ring closes on its first vertex, so it carries seven points
+SELECT ST_NPoints(cellToBoundary(h3index '871fa44a8ffffff'));
+
+-- The centroid lies inside the boundary
+SELECT ST_Contains(
+  cellToBoundary(h3index '871fa44a8ffffff'),
+  cellToPoint(h3index '871fa44a8ffffff'));
+
+-- The boundary and the centroid are planar geometries, so the box of a
+-- geometry around the cell overlaps them
+SELECT cellToBoundary(h3index '871fa44a8ffffff')
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
+SELECT ST_Intersects(cellToBoundary(h3index '871fa44a8ffffff'),
+  ST_MakeEnvelope(4, 50, 5, 51, 4326));
+SELECT cellToPoint(h3index '871fa44a8ffffff')
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
+
+-- The cell containing the centroid is the cell itself
+SELECT latLngToCell(cellToPoint(h3index '871fa44a8ffffff'), 7)
+  = h3index '871fa44a8ffffff';
+
+-------------------------------------------------------------------------------
+-- Metrics: area
+-------------------------------------------------------------------------------
+
+-- The unit is the square metre, the one the DggsCellOps descriptor fixes.
+-- The value is bounded to whole square metres: six fractional digits on a
+-- magnitude of 4.4e6 pins thirteen significant digits, which drifts between
+-- builds.
+SELECT round(cellArea(h3index '871fa44a8ffffff')::numeric, 0);
+
+-- A finer cell covers less ground than a coarser one
+SELECT cellArea(h3index '8a2a1072b59ffff') < cellArea(h3index '831c02fffffffff');
+
+-- The square-metre face and the H3-only square-kilometre one agree
+
+-------------------------------------------------------------------------------
+-- The static face and its temporal lift answer the same value
+-------------------------------------------------------------------------------
+
+SELECT getResolution(h3index '831c02fffffffff')
+  = getValue(getResolution(th3index '831c02fffffffff@2001-01-01'));
+
+SELECT cellArea(h3index '871fa44a8ffffff')
+  = getValue(cellArea(th3index '871fa44a8ffffff@2001-01-01'));
+
+SELECT ST_AsBinary(cellToBoundary(h3index '871fa44a8ffffff'))
+  = ST_AsBinary(getValue(cellToBoundary(th3index '871fa44a8ffffff@2001-01-01'))::geometry);
+
+-- The planar trajectory holds the planar centroid, so the box of a geometry
+-- around the cell overlaps it
+SELECT ST_AsBinary(startValue(tgeompoint(th3index '871fa44a8ffffff@2001-01-01')))
+  = ST_AsBinary(cellToPoint(h3index '871fa44a8ffffff'));
+SELECT startValue(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'))
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
+
+-------------------------------------------------------------------------------

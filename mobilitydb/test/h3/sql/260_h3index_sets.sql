@@ -1,0 +1,180 @@
+-- Static set-returning h3 functions. Each call returns a single
+-- h3indexset (or intset for icosahedron_faces) — the finite-collection
+-- companion of h3index.
+
+-------------------------------------------------------------------------------
+-- gridDisk
+-------------------------------------------------------------------------------
+
+-- k=0 → singleton { origin }
+SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 0)) = 1;
+
+-- k=1 around a hexagon → 7 cells (origin + 6 neighbours)
+SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 1)) = 7;
+
+-- k=2 around a hexagon → up to 19 cells (7 + 12 second-ring)
+SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 2)) = 19;
+
+-- k=3 disk has 37 cells: 1 + 6 + 12 + 18
+SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 3)) = 37;
+
+/* Errors */
+SELECT gridDisk(h3index '8a2a1072b59ffff', -1);
+
+-- The disk of a set is the union of the disks of its cells. Widening the disk
+-- of radius 1 by one step gives the disk of radius 2 around the same origin,
+-- and a step count of 0 gives the set itself
+WITH s(cells) AS (VALUES (gridDisk(h3index '8a2a1072b59ffff', 1)))
+SELECT numValues(gridDisk(cells, 1)),
+  gridDisk(cells, 1) = (SELECT setUnion(d)
+    FROM unnest(cells) AS c, unnest(gridDisk(c, 1)) AS d),
+  gridDisk(cells, 1) = gridDisk(h3index '8a2a1072b59ffff', 2),
+  gridDisk(cells, 0) = cells
+FROM s;
+
+/* Errors */
+SELECT gridDisk(h3indexset '{8a2a1072b59ffff}', -1);
+
+-------------------------------------------------------------------------------
+-- h3GridRing
+-------------------------------------------------------------------------------
+
+-- k=0 → singleton { origin }
+SELECT numValues(h3GridRing(h3index '8a2a1072b59ffff', 0)) = 1;
+
+-- k=1 → 6 neighbours (non-pentagon)
+SELECT numValues(h3GridRing(h3index '8a2a1072b59ffff', 1)) = 6;
+
+-- k=2 → 12 cells at exactly 2 grid-steps (non-pentagon)
+SELECT numValues(h3GridRing(h3index '8a2a1072b59ffff', 2)) = 12;
+
+-- Ring at k=3 has 18 cells (hexagon neighborhood)
+SELECT numValues(h3GridRing(h3index '8a2a1072b59ffff', 3)) = 18;
+
+-------------------------------------------------------------------------------
+-- h3GridPathCells
+-------------------------------------------------------------------------------
+
+-- Path start=end → singleton { start }
+SELECT numValues(h3GridPathCells(
+  h3index '8a2a1072b59ffff', h3index '8a2a1072b59ffff')) = 1;
+
+-------------------------------------------------------------------------------
+-- cellToChildren
+-------------------------------------------------------------------------------
+
+-- Children at childRes = cellRes + 1 → 7 (hex) or 6 (pentagon)
+SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 11)) = 7;
+
+-- Children at childRes = cellRes → singleton { cell }
+SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 10)) = 1;
+
+-- Children at deeper resolution — counts follow 7^k (for hex cells)
+SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 12)) = 49;
+
+/* Errors */
+-- childRes coarser than cellRes
+SELECT cellToChildren(h3index '8a2a1072b59ffff', 5);
+
+-------------------------------------------------------------------------------
+-- cellToCover / coverCells
+-------------------------------------------------------------------------------
+
+-- The cover at the cell's own resolution holds the cell
+SELECT cellToCover(h3index '8a2a1072b59ffff', 10) @> h3index '8a2a1072b59ffff';
+
+-- The cover at a coarser resolution holds the parent, and holds cells of that
+-- resolution alone
+SELECT cellToCover(h3index '8a2a1072b59ffff', 8) @>
+  cellToParent(h3index '8a2a1072b59ffff', 8);
+SELECT bool_and(getResolution(c) = 8)
+  FROM unnest(cellToCover(h3index '8a2a1072b59ffff', 8)) c;
+
+-- A cover holds at least the parent, for a cell whose children do not tile it
+SELECT numValues(cellToCover(h3index '8c1f005018733ff', 10)) >= 1;
+
+-- The cover of a set is the union of the covers of its cells
+SELECT coverCells(cellToChildren(h3index '8a2a1072b59ffff', 11), 10) @>
+  h3index '8a2a1072b59ffff';
+SELECT coverCells(set(ARRAY[h3index '8a2a1072b59ffff']), 8) =
+  cellToCover(h3index '8a2a1072b59ffff', 8);
+
+-- The cover and the geometry state the same cells. Every cell of the cover
+-- reaches the cell, and every cell whose interior the cell reaches belongs to
+-- the cover, read over an envelope wider than any cover, since one
+-- tessellation stated twice drifts unless something reads both
+WITH c(cell) AS (VALUES (h3index '8a2a1072b59ffff')),
+  cov AS (SELECT c.cell, unnest(cellToCover(c.cell, 8)) AS x FROM c),
+  cand AS (SELECT c.cell, unnest(gridDisk(cellToParent(c.cell, 8), 2)) AS x
+    FROM c)
+SELECT
+  (SELECT count(*) FROM cov
+     WHERE NOT ST_Intersects(cellToBoundary(cov.x), cellToBoundary(cov.cell)))
+    AS cover_cells_the_cell_does_not_reach,
+  (SELECT count(*) FROM cand
+     WHERE ST_Relate(cellToBoundary(cand.x), cellToBoundary(cand.cell),
+       'T********')
+       AND NOT (cellToCover(cand.cell, 8) @> cand.x))
+    AS reached_cells_the_cover_lacks;
+
+-- The same agreement over the cells of a set
+WITH s(cells) AS (VALUES (cellToChildren(h3index '8a2a1072b59ffff', 11))),
+  cov AS (SELECT unnest(coverCells(cells, 9)) AS x FROM s)
+SELECT count(*) AS cover_cells_no_cell_of_the_set_reaches
+  FROM cov
+  WHERE NOT EXISTS (SELECT 1 FROM s, unnest(s.cells) AS c
+    WHERE ST_Intersects(cellToBoundary(cov.x), cellToBoundary(c)));
+
+/* Errors */
+-- A resolution outside the grid
+SELECT cellToCover(h3index '8a2a1072b59ffff', 16);
+SELECT coverCells(cellToChildren(h3index '8a2a1072b59ffff', 11), -1);
+
+-------------------------------------------------------------------------------
+-- compactCells / uncompactCells
+-------------------------------------------------------------------------------
+
+-- Round-trip: uncompact(compact(children)) recovers the input
+SELECT uncompactCells(
+         compactCells(cellToChildren(
+           h3index '8a2a1072b59ffff', 11)), 11)
+       = cellToChildren(h3index '8a2a1072b59ffff', 11);
+
+-- Full hexagonal set of siblings compacts to one parent
+SELECT numValues(compactCells(
+         cellToChildren(h3index '8a2a1072b59ffff', 11))) = 1;
+
+-------------------------------------------------------------------------------
+-- h3OriginToDirectedEdges
+-------------------------------------------------------------------------------
+
+-- A hexagon cell has 6 outgoing directed edges
+SELECT numValues(h3OriginToDirectedEdges(h3index '8a2a1072b59ffff')) = 6;
+
+-- The first returned edge is a valid directed edge
+SELECT isValidDirectedEdge(valueN(
+  h3OriginToDirectedEdges(h3index '8a2a1072b59ffff'), 1));
+
+-------------------------------------------------------------------------------
+-- h3CellToVertexes
+-------------------------------------------------------------------------------
+
+-- A hexagon cell has 6 vertexes
+SELECT numValues(h3CellToVertexes(h3index '8a2a1072b59ffff')) = 6;
+
+-- The first returned vertex is a valid vertex
+SELECT isValidVertex(valueN(
+  h3CellToVertexes(h3index '8a2a1072b59ffff'), 1));
+
+-------------------------------------------------------------------------------
+-- h3GetIcosahedronFaces
+-------------------------------------------------------------------------------
+
+-- A generic hex cell intersects exactly one face
+SELECT numValues(h3GetIcosahedronFaces(h3index '8a2a1072b59ffff')) = 1;
+
+-- The face index is in 0..19
+SELECT valueN(h3GetIcosahedronFaces(h3index '8a2a1072b59ffff'), 1)
+  BETWEEN 0 AND 19;
+
+-------------------------------------------------------------------------------

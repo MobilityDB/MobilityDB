@@ -51,7 +51,7 @@ set_tests_properties(load_raquet_tables PROPERTIES
   FIXTURES_SETUP DBRAQUET
   FIXTURES_REQUIRED "DB;DBRASTER")
 
-file(GLOB testfiles "queries/*.sql")
+file(GLOB testfiles "sql/*.sql")
 list(SORT testfiles)
 
 set(SKIP_TESTS
@@ -66,8 +66,8 @@ foreach(file ${testfiles})
       set(DOTEST FALSE)
     endif()
   endif()
-  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/expected/${TESTNAME}.test.out")
-    message("Disabling test ${TESTNAME}: missing expected/${TESTNAME}.test.out")
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/expected/${TESTNAME}.out")
+    message("Disabling test ${TESTNAME}: missing expected/${TESTNAME}.out")
     set(DOTEST FALSE)
   endif()
   list(FIND SKIP_TESTS ${TESTNAME} _skip_idx)
