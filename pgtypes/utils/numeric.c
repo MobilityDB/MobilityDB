@@ -674,12 +674,17 @@ pg_numeric_in(const char *str, int32 typmod)
       cp++;
     }
 
+    /* The digits the parse allocated are freed at each exit, as below */
     if (! apply_typmod(&value, typmod))
+    {
+      free_var(&value);
       return NULL;
+    }
 
     res = make_result_opt_error(&value, &have_error);
     if (have_error)
     {
+      free_var(&value);
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "value overflows numeric format");
       return NULL;
