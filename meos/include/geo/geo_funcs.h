@@ -327,6 +327,9 @@ extern int plane_cross_dot_sign(const double *a, const double *b,
 extern int plane_point_offset_sign(const double *a, const double *b,
   const double *c, const double *p, double d);
 extern int point_arc_offset_sign(const double *p, const Edge *e, double r);
+extern bool sums_nonpositive_exact(const double *t, int n, int k);
+extern bool linear_sums_nonpositive_meet_exact(const double *start,
+  const double *end, int n, int k);
 extern double point_seg_dist2(double px, double py, double x1, double y1,
   double x2, double y2);
 extern double point_arc_dist2(double px, double py, const Edge *e);

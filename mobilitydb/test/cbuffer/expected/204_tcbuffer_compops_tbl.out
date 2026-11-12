@@ -148,3 +148,31 @@ AND t1.temp && expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
    272
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp ?&& t2.temp AND NOT t1.temp && t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp %&& t2.temp AND NOT t1.temp ?&& t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp ?&& t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp %&& t2.temp;
+ count 
+-------
+   100
+(1 row)
+

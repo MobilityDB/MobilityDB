@@ -123,7 +123,7 @@ subtypes:
     distwith: [geometry]
     base:  cbuffer
     brief: "temporal circular buffers"
-    overlaps: box
+    overlaps: true
     bin:   200
     category: tspatial
     # Its set of base values is indexed beside it, by the box the set stores.
