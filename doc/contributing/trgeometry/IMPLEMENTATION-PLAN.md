@@ -54,7 +54,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG14 | The distance to a collection and to a curve | open; to reconcile with [the note](NON-CONVEX-DISTANCE.md) |
 | TG15 | `atGeometry`, `minusGeometry` over a geometry with holes. At `7dc42788bb` `trgeometry_restrict_geom` refuses any geometry with holes before it reads the interpolation ("not implemented"), so a body in step or discrete interpolation, which holds each pose and is answered by a test of each placement, is refused as well. In linear interpolation a body meets a region with holes where it meets its exterior ring and does not lie inside a hole, the containment of TG13 | step and discrete: #3584 merged (`93b3063df7`), its receipts held: CGAL on 400 rows of a plain body at three poses against a region with a hole agrees on 400, 125 of them refusals in linear interpolation; branch `fix/trgeometry-restrict-holed-region-step`: `trgeometry_restrict_geom` refuses a target with holes in linear interpolation alone, and a value in step or discrete interpolation is restricted by its placements, holes read as outside. The manual states the support once, in the paragraph on geometries with holes: #3596 open (`458ee18457`), branch `doc/trgeometry-restrict-holes-sentence`. Left: linear after the containment of TG13 ([the note](HOLED-REGIONS.md)) |
 | TG16 | `transform`, `transformPipeline` | merged as #3541 (`67771c197f`), by decision 3 |
-| TG17 | `asMFJSON`, `round` over a surface | open |
+| TG17 | `asMFJSON`, `round` over a surface | one topic each. `round` merged as #3606 (`c5174b8af1`): `geo_round` rounds every geometry type, a polyhedral surface, a TIN and a multisurface face by face and a collection element by element, a nested collection included, and `temporal_round` of a `trgeometry` rounds its reference geometry as its poses, which #3590 re-attached unrounded; `meos/test/trgeo_generic_test.c` asserts the rounded body of a surface equal to `geo_round` of it. `asMFJSON` open as #3611 (branch `fix/trgeometry-surface-mfjson`, `2840acf48e`, off master `2c5a8bb595`): by decision 7, `asMFJSON` writes a surface as the `MultiPolygon` of its faces and `trgeometryFromMFJSON` reads it back as the surface; the round trip of a 3D surface in linear interpolation equals its input and reads `ST_PolyhedralSurface`, in pg_regress and in `meos/test/trgeo_test.c` |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1 |
 | TG19 | The distance of a value in 3D | open, decision 4 |
 | TG25 | A point at the mean of the vertices of a polygon reads as away from it in 3D, in `eIntersects` and the distance, since `project_point_on_plane` of the vendored liblwgeom returns without setting its output; every temporal type measuring through it, and PostGIS itself | merged as #3450 |
@@ -118,6 +118,13 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
    answers for the region its exterior ring bounds. [The note](HOLED-REGIONS.md) states what each
    function answers, refuses or answers wrongly at `7dc42788bb`, and the rows TG12, TG13, TG15, TG29
    and TG30 that close it.
+7. **A surface in MF-JSON: the multipolygon of its faces.** Decided by the owner (2026-11-12). GeoJSON
+   states no polyhedral surface, GDAL refuses one ("OGR geometry type unsupported as a GeoJSON
+   geometry") and PostGIS refuses one (`lwgeom_to_geojson`), writing a TIN as a geometry collection.
+   The reference geometry of a `trgeometry` is a polygon or a polyhedral surface, so a `MultiPolygon`
+   names the surface alone: `asMFJSON` writes it, any GeoJSON reader draws its faces, and
+   `trgeometryFromMFJSON` reads it back as the surface. A `PolyhedralSurface` type of our own would
+   keep the type but is not GeoJSON (RFC 7946, section 7.1).
 
 ## The order
 
