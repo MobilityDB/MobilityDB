@@ -280,10 +280,80 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
 }
 
 /**
+ * @brief Return true if a boundary of the library holds a vertex, as
+ * #h3_edge_holds_vertex reads it
+ */
+static bool
+h3_boundary_holds(const CellBoundary *bnd, const LatLng *vertex)
+{
+  for (int k = 0; k < bnd->numVerts; k++)
+    if (memcmp(&bnd->verts[k], vertex, sizeof(LatLng)) == 0)
+      return true;
+  return false;
+}
+
+/**
+ * @brief Fill the outline of a cell bent across no face of the icosahedron
+ * and return true, or return false for a bent cell
+ * @details A cell whose boundary in the library (`cellToBoundary`) holds no
+ * more vertices than the cell has edges crosses no face of the icosahedron,
+ * so its edges bend at no extra vertex, and that boundary lists the vertices
+ * of the vertex index in their order (both measured over every cell of the
+ * resolutions 0 to 5). The cell across the edge from the vertex k is then
+ * the destination of the directed edge of the cell whose boundary holds the
+ * k-th and the next vertex of the boundary, which the library computes
+ * alike, as #h3_cell_across_edge reads it, so no vertex of a neighbour is
+ * read
+ * @param[in] cell Cell
+ * @param[in] verts,n Its vertices in the vertex index and their number
+ * @param[out] out Outline, its vertices and the cells across its edges
+ */
+static bool
+h3_cell_outline_straight(H3Index cell, const H3Index *verts, int n,
+  H3Outline *out)
+{
+  CellBoundary bnd;
+  H3Index edges[6] = { 0 };
+  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts != n ||
+      originToDirectedEdges(cell, edges) != E_SUCCESS)
+    return false;
+  CellBoundary eb[6];
+  H3Index dest[6];
+  int ne = 0;
+  for (int j = 0; j < 6; j++)
+  {
+    H3Index ends[2];
+    if (edges[j] == (H3Index) 0)
+      continue;
+    if (directedEdgeToBoundary(edges[j], &eb[ne]) != E_SUCCESS ||
+        directedEdgeToCells(edges[j], ends) != E_SUCCESS)
+      return false;
+    dest[ne++] = ends[1];
+  }
+  for (int k = 0; k < n; k++)
+  {
+    LatLng v;
+    if (vertexToLatLng(verts[k], &v) != E_SUCCESS)
+      return false;
+    out->lon[k] = radsToDegs(v.lng);
+    out->lat[k] = radsToDegs(v.lat);
+    out->across[k] = (H3Index) 0;
+    for (int j = 0; j < ne && ! out->across[k]; j++)
+      if (eb[j].numVerts == 2 && h3_boundary_holds(&eb[j], &bnd.verts[k]) &&
+          h3_boundary_holds(&eb[j], &bnd.verts[(k + 1) % n]))
+        out->across[k] = dest[j];
+    if (! out->across[k])
+      return false;
+  }
+  out->count = n;
+  return true;
+}
+
+/**
  * @brief Return in the last argument the canonical outline of a cell
  * @details Two neighbouring cells must state the vertices they share with the
  * same doubles, so that a boundary point belongs to exactly one of them. The
- * boundary #h3_cell_planes reads, `cellToBoundary`, does not: neighbours
+ * boundary of the library, `cellToBoundary`, does not: neighbours
  * state a shared vertex with different doubles in 168 of the 360 pairs at
  * resolution 0 and 16318 of the 6050520 at resolution 5. The outline reads
  * each vertex once, from the vertex index (`cellToVertexes`,
@@ -291,7 +361,11 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
  * the icosahedron bends at an extra vertex, which the vertex index does not
  * name; it is read from the directed edge leaving the lower of the two cells
  * sharing the edge (`directedEdgeToBoundary`), so both cells read it from the
- * same edge. Each edge of the outline records the cell across it.
+ * same edge. Each edge of the outline records the cell across it, and the
+ * outline records whether the cell lies around a pole, where it is the
+ * region between its ring and the pole. A cell bent across no face reads the
+ * cells across its edges from its own directed edges
+ * (#h3_cell_outline_straight).
  * @param[in] cell Cell
  * @param[out] out Outline, its vertices in the order of the vertex index
  * @return False on an error of the H3 library
@@ -300,10 +374,22 @@ bool
 h3_cell_outline(H3Index cell, H3Outline *out)
 {
   H3Index verts[6] = { 0 };
-  H3Index nbrs[7] = { 0 };
-  if (cellToVertexes(cell, verts) != E_SUCCESS ||
-      gridDisk(cell, 1, nbrs) != E_SUCCESS)
+  if (cellToVertexes(cell, verts) != E_SUCCESS)
     return false;
+  H3Index north, south;
+  h3index_pole_cells(getResolution(cell), &north, &south);
+  out->pole = cell == north ? 1 : (cell == south ? -1 : 0);
+  if (h3_cell_outline_straight(cell, verts, isPentagon(cell) ? 5 : 6, out))
+    return true;
+  H3Index nbrs[7] = { 0 };
+  if (gridDisk(cell, 1, nbrs) != E_SUCCESS)
+    return false;
+  /* The vertices of each neighbour, read once */
+  H3Index nverts[7][6] = { { 0 } };
+  for (int j = 0; j < 7; j++)
+    if (nbrs[j] != 0 && nbrs[j] != cell &&
+        cellToVertexes(nbrs[j], nverts[j]) != E_SUCCESS)
+      return false;
   int n = isPentagon(cell) ? 5 : 6;
   out->count = 0;
   for (int k = 0; k < n; k++)
@@ -317,9 +403,7 @@ h3_cell_outline(H3Index cell, H3Outline *out)
     {
       if (nbrs[j] == 0 || nbrs[j] == cell)
         continue;
-      H3Index nv[6] = { 0 };
-      if (cellToVertexes(nbrs[j], nv) != E_SUCCESS)
-        return false;
+      const H3Index *nv = nverts[j];
       int shared = 0;
       for (int m = 0; m < 6; m++)
         if (nv[m] != 0 && (nv[m] == verts[k] || nv[m] == next))
@@ -534,6 +618,223 @@ h3_outline_edge_offset(const H3Outline *o, int k, double x0, double y0,
   double ob = oa + h3_lon_offset(ax, bx);
   return segment_edge_cross_offset(x0, y0, x1, y1, D, ax, o->lat[k], oa, bx,
     o->lat[k1], ob, whole);
+}
+
+/**
+ * @brief Return in the last arguments the chart in which an outline is read
+ * against a longitude
+ * @details The offset of each vertex from the first along the ring, chained
+ * by #h3_lon_offset, so that no edge of the ring spans the antimeridian, and
+ * the offset of the copy of the ring read against the longitude: the copy
+ * whose middle lies within 180 degrees of it, or around a pole the copy
+ * whose 360 degrees, from the first vertex in the sense of the ring, hold
+ * it. The estimate of the copy is rounded, its correction exact
+ * @param[in] o Outline of the cell
+ * @param[in] x Longitude, in degrees
+ * @param[out] xo Offset of each vertex from the first
+ * @param[out] s Offset of the copy
+ * @param[out] wrap Around a pole, the offset of the ring after one turn,
+ * 360 or -360, and 0 for any other cell
+ */
+static void
+h3_outline_chart(const H3Outline *o, double x, double *xo, double *s,
+  double *wrap)
+{
+  int n = o->count;
+  xo[0] = 0.0;
+  for (int k = 1; k < n; k++)
+    xo[k] = xo[k - 1] + h3_lon_offset(o->lon[k - 1], o->lon[k]);
+  double x0 = o->lon[0];
+  *wrap = 0.0;
+  if (o->pole)
+  {
+    *wrap = xo[n - 1] + h3_lon_offset(o->lon[n - 1], x0);
+    double c = 360.0 * floor((x - x0) / 360.0);
+    if (*wrap > 0.0)
+    {
+      while (offset_x_cmp(x0, c, x) > 0)
+        c -= 360.0;
+      while (offset_x_cmp(x0, c + 360.0, x) <= 0)
+        c += 360.0;
+    }
+    else
+    {
+      c += 360.0;
+      while (offset_x_cmp(x0, c, x) < 0)
+        c += 360.0;
+      while (offset_x_cmp(x0, c - 360.0, x) >= 0)
+        c -= 360.0;
+    }
+    *s = c;
+    return;
+  }
+  double lo = x0, hi = x0;
+  for (int k = 1; k < n; k++)
+  {
+    double v = o->lon[k] + xo[k];
+    lo = fmin(lo, v);
+    hi = fmax(hi, v);
+  }
+  double mid = (lo + hi) / 2.0;
+  double c = 360.0 * round((x - mid) / 360.0);
+  while (mid + c - x > 180.0)
+    c -= 360.0;
+  while (x - (mid + c) > 180.0)
+    c += 360.0;
+  *s = c;
+  return;
+}
+
+/**
+ * @brief Return true if a cell holds a position of the plane of longitude
+ * and latitude
+ * @details A cell is its outline joined by straight edges in longitude and
+ * latitude, the ring read along its path across the antimeridian through
+ * exact offsets of 360 chained from its first vertex, and the cell around a
+ * pole is the region between its ring and the pole. A position strictly
+ * inside or outside is read by #point_in_ring_offset_exact on the copy of
+ * the ring #h3_outline_chart reads against it; a position on the ring belongs to the cell when
+ * it holds the vertex (#h3_outline_vertex_held) or the edge
+ * (#h3_outline_edge_held) the position lies on. A position on a side of the
+ * region around a pole that is no edge of the cell, the meridian where the
+ * ring is closed or the pole, lies inside it. Every sign is exact on the
+ * doubles of the outline, which neighbours share, so exactly one cell holds
+ * each position.
+ * @param[in] o Outline of the cell
+ * @param[in] x,y Longitude and latitude of the position, in degrees
+ */
+bool
+h3_outline_holds_point(const H3Outline *o, double x, double y)
+{
+  if (! isfinite(x) || ! isfinite(y))
+    return false;
+  int n = o->count;
+  double xo[MAX_CELL_BNDRY_VERTS], s, wrap;
+  h3_outline_chart(o, x, xo, &s, &wrap);
+  double x0 = o->lon[0];
+  /* The closed polygon: the ring, and around a pole the vertex closing it
+   * 360 degrees on, then the pole at both ends */
+  double rx[MAX_CELL_BNDRY_VERTS + 3] = { 0 },
+    ry[MAX_CELL_BNDRY_VERTS + 3] = { 0 }, ro[MAX_CELL_BNDRY_VERTS + 3] = { 0 };
+  int m = 0;
+  for (int k = 0; k < n; k++, m++)
+  {
+    rx[m] = o->lon[k];
+    ry[m] = o->lat[k];
+    ro[m] = xo[k] + s;
+  }
+  if (o->pole)
+  {
+    double py = o->pole > 0 ? 90.0 : -90.0;
+    rx[m] = x0; ry[m] = o->lat[0]; ro[m++] = wrap + s;
+    rx[m] = x0; ry[m] = py; ro[m++] = wrap + s;
+    rx[m] = x0; ry[m] = py; ro[m++] = s;
+  }
+  int loc = point_in_ring_offset_exact(rx, ry, ro, m, x, y);
+  if (loc >= 0)
+    return loc == 1;
+  /* On the polygon: the vertex or the edge of the ring the position lies
+   * on decides */
+  for (int k = 0; k < n; k++)
+  {
+    int j = o->pole ? k + 1 : (k + 1) % n;
+    int sa = offset_x_cmp(rx[k], ro[k], x), sb = offset_x_cmp(rx[j], ro[j], x);
+    if (sa == 0 && ry[k] == y)
+      return h3_outline_vertex_held(o, k);
+    if (sb == 0 && ry[j] == y)
+      return h3_outline_vertex_held(o, (k + 1) % n);
+    if (sa * sb <= 0 && fmin(ry[k], ry[j]) <= y && y <= fmax(ry[k], ry[j]) &&
+        cross_product_sign_offset(rx[k], ry[k], rx[j], ry[j], rx[k], ry[k], x,
+          y, ro[j] - ro[k], - ro[k]) == 0)
+      return h3_outline_edge_held(o, k);
+  }
+  /* The meridian closing the ring around a pole, or the pole */
+  return o->pole != 0;
+}
+
+/** @brief Outline of the last cell #h3_cell_outline_last read, per thread */
+static MEOS_TLS H3Outline h3_last_outline;
+/** @brief Cell of #h3_last_outline, or 0 when none */
+static MEOS_TLS H3Index h3_last_outline_cell = 0;
+
+/**
+ * @brief Return the outline of a cell, or NULL on an error of the H3
+ * library
+ * @details The outline is a function of the cell alone, so the one of the
+ * last cell asked for answers again for the same cell: consecutive positions
+ * of a trajectory mostly lie in one cell, and reading an outline costs more
+ * than the rest of the answer for such a position
+ */
+static const H3Outline *
+h3_cell_outline_last(H3Index cell)
+{
+  if (h3_last_outline_cell != cell)
+  {
+    h3_last_outline_cell = 0;
+    if (! h3_cell_outline(cell, &h3_last_outline))
+      return NULL;
+    h3_last_outline_cell = cell;
+  }
+  return &h3_last_outline;
+}
+
+/**
+ * @brief Return true if a cell holds a position, by #h3_outline_holds_point
+ * on the outline #h3_cell_outline_last reads
+ */
+static bool
+h3_cell_holds_point(H3Index cell, double x, double y)
+{
+  const H3Outline *o = h3_cell_outline_last(cell);
+  return o && h3_outline_holds_point(o, x, y);
+}
+
+/** @brief Number of rings around the cell of the library a planar position
+ * is looked for in */
+#define H3_POINT_CELL_RINGS 16
+
+/**
+ * @brief Return the cell of a given resolution holding a position, or 0
+ * when none is found
+ * @details A geodetic position is read by the library
+ * (#h3_latlng_deg_to_cell). A planar cell is its straight-edged outline
+ * (#h3_outline_holds_point), which departs from the cell of the library,
+ * whose edges are not straight in longitude and latitude: the cell of the
+ * library (#h3_latlng_deg_to_cell) is the estimate, and the cells around it,
+ * ring by ring, are asked in turn until one holds the position. Near a pole
+ * a straight-edged cell spans many degrees of longitude, so the owner may
+ * lie rings away from the estimate.
+ * @param[in] lon,lat Longitude and latitude of the position, in degrees
+ * @param[in] geodetic True when the position is geodetic
+ * @param[in] resolution H3 resolution
+ */
+H3Index
+h3_point_cell(double lon, double lat, bool geodetic, int32 resolution)
+{
+  H3Index c0 = h3_latlng_deg_to_cell(lat, lon, resolution);
+  if (geodetic || c0 == (H3Index) 0 || h3_cell_holds_point(c0, lon, lat))
+    return c0;
+  int64_t size;
+  if (maxGridDiskSize(H3_POINT_CELL_RINGS, &size) != E_SUCCESS)
+    return (H3Index) 0;
+  H3Index *cells = palloc(sizeof(H3Index) * (size_t) size);
+  int *dist = palloc(sizeof(int) * (size_t) size);
+  H3Index result = (H3Index) 0;
+  for (int k = 1; k <= H3_POINT_CELL_RINGS && ! result; k++)
+  {
+    int64_t sz;
+    if (maxGridDiskSize(k, &sz) != E_SUCCESS)
+      break;
+    memset(cells, 0, sizeof(H3Index) * (size_t) sz);
+    if (gridDiskDistances(c0, k, cells, dist) != E_SUCCESS)
+      break;
+    for (int64_t i = 0; i < sz && ! result; i++)
+      if (cells[i] != (H3Index) 0 && dist[i] == k &&
+          h3_cell_holds_point(cells[i], lon, lat))
+        result = cells[i];
+  }
+  pfree(cells); pfree(dist);
+  return result;
 }
 
 /**
