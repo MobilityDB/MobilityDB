@@ -58,6 +58,7 @@
  */
 
 #include <assert.h>
+#include <limits.h>
 
 #include "postgres.h"
 
@@ -1464,7 +1465,9 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         }
         else if (jb->type == jbvString)
         {
-          /* cast string as number */
+          /* cast string as number; the string is kept until the precision
+           * and scale of .decimal() are applied to it, as PostgreSQL keeps
+           * it, and freed once at each exit */
           numstr = pnstrdup(jb->val.string.val, jb->val.string.len);
           num = pg_numeric_in(numstr, -1);
           if (! num)
@@ -1476,13 +1479,17 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
             pfree(numstr);
             return jperError;
           }
-          pfree(numstr);
+          /* the number is tracked as executeNumericItemMethod() tracks its
+           * number, so the jsonb_path_* caller reclaims it via
+           * json_reset_tofree() */
+          json_add_tofree(num);
           if (numeric_is_nan(num) || numeric_is_inf(num))
           {
             if (jspThrowErrors(cxt))
               meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
                 "NaN or Infinity is not allowed for jsonpath item method .%s()",
                 jspOperationName(jsp->type));
+            pfree(numstr);
             return jperError;
           }
           res = jperOk;
@@ -1504,7 +1511,8 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
          */
         if (jsp->type == jpiDecimal && jsp->content.args.left)
         {
-          Numeric num;
+          /* The number this computes is the one the method answers: it
+           * replaces the number read above rather than shadowing it */
           int32 precision;
           int32 scale = 0;
           bool have_error;
@@ -1513,6 +1521,7 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
           {
             meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
               "invalid jsonpath item type for .decimal() precision");
+            pfree(numstr);
             return jperError;
           }
 
@@ -1524,6 +1533,7 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
               meos_error(ERROR,MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
                 "precision of jsonpath item method .%s() is out of range for type integer",
                 jspOperationName(jsp->type));
+            pfree(numstr);
             return jperError;
           }
 
@@ -1534,6 +1544,7 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
             {
               meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
                 "invalid jsonpath item type for .decimal() scale");
+              pfree(numstr);
               return jperError;
             }
 
@@ -1545,15 +1556,23 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
                 meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
                   "scale of jsonpath item method .%s() is out of range for type integer",
                   jspOperationName(jsp->type));
+              pfree(numstr);
               return jperError;
             }
           }
 
-          /* pg_numeric_typmodin() takes the precision and scale */
+          /* pg_numeric_typmodin() takes the precision and scale and raises
+           * the error of a precision or a scale it refuses, after which there
+           * is no typmod to apply */
           int32 arrtypmod[2];
           arrtypmod[0] = precision;
           arrtypmod[1] = scale;
           int32 typmod = pg_numeric_typmodin(arrtypmod, 2);
+          if (typmod == INT_MAX)
+          {
+            pfree(numstr);
+            return jperError;
+          }
           /* Convert numstr to Numeric with typmod */
           Assert(numstr != NULL);
           num = pg_numeric_in(numstr, typmod);
@@ -1566,8 +1585,11 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
             pfree(numstr);
             return jperError;
           }
-          pfree(numstr);
+          /* tracked as the number read above is */
+          json_add_tofree(num);
         }
+        if (numstr)
+          pfree(numstr);
 
         jb = &jbv;
         jb->type = jbvNumeric;

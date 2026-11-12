@@ -985,7 +985,7 @@ trgeometry_motion_free(const Temporal *temp, Pose *frame)
  * @brief Return true if a reference geometry is a polygon in a plane of
  * constant z
  */
-static bool
+bool
 trgeometry_ref_is_flat(const GSERIALIZED *gs)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
