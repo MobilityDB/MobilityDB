@@ -229,7 +229,7 @@ implementation; "survivor" is the one covering every finite double with the most
 | The order of meetings along an edge | `meets_order_tower`, `meets_order_scaled` | the expression ladder | `meets_order_scaled` is the arena twin |
 | A meeting point held exactly | `meet_tower_build`, `meet_point_exact` | the expression ladder | `meet_point_exact` is the arena twin |
 | Nearest approach of two motions | `point_motion_nad_exact`, `point_motion_point_offset_exact`, `convex_motion_nad_exact` | none yet | two time models (Section 4.7) |
-| Within a distance over time | `point_motion_dwithin_exact`, `point_motion_dwithin_period_exact`, `tcbuffer_region_within_roots` | `point_motion_dwithin_period_exact`, which states a point as a disc of radius 0 | `tcbuffer_region_within_roots` decides in doubles with a `1e-18` tolerance |
+| Within a distance over time | `point_motion_dwithin_exact`, `point_motion_dwithin_period_exact`, `tcbuffer_region_within_roots` | `point_motion_dwithin_period_exact`, which states a point as a disc of radius 0 | from #3588 (C4) the periods of a point or a disc against a geometry of segments come from one engine, `motion_edges_dwithin_periods`, built on the period logic of `point_motion_dwithin_period_exact`; `tcbuffer_region_within_roots`, in doubles with a `1e-18` tolerance, answers only a geometry carrying an arc |
 
 ### 4.7 What the duplicates disagree on
 
@@ -242,8 +242,9 @@ Built apart, the implementations of one question drift apart in contract:
   of 228 calls answered 0 for -1.
 - **A tolerance beside an exact sign for the same question**: `arcarc_cross` in relate against
   the exact arc meetings (its segment-arc sibling `arcsegm_cross` answers by them from #3567);
-  `buffer_ring_signed_area` against `ring_area_sign`; and
-  `tcbuffer_region_within_roots` against `point_motion_dwithin_period_exact`. The ray casts
+  `buffer_ring_signed_area` against `ring_area_sign`; and, for a geometry carrying an arc,
+  `tcbuffer_region_within_roots` against `point_motion_dwithin_period_exact` (a geometry of
+  segments is answered exactly from #3588). The ray casts
   `dist_poly_seg_raycross` and `pip_point_in_ring`, and with them the `inside` of
   `tcbuffer_disc_boundary_sign`, read exact signs from #3575.
 - **What "undecided" is.** Seven spellings: 0, 2, 3, -1, -2, false, and "no crossing".
@@ -321,7 +322,8 @@ layer holds it for every question. The phases, each a series of pull requests:
    `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity` (C2,
    #3575), the ring
    area in doubles of the buffer by `ring_area_sign`, the within-times of a moving disc in
-   `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact`, and `seg2d_side` by
+   `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact` (C4, #3588, for a
+   geometry of segments; one carrying an arc follows), and `seg2d_side` by
    `cross_product_sign`. These change answers, where the tolerance answers wrongly, so each comes
    with a witness CGAL judges.
 2. **The duplicates of one contract (C7 onwards).** The functions Section 4.6 shows answering the
