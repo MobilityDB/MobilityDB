@@ -39,6 +39,10 @@ add_executable(arc_cross_unit arc_cross_unit.c)
 target_link_libraries(arc_cross_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME arc_cross_unit COMMAND arc_cross_unit)
 
+add_executable(relate_arc_end_unit relate_arc_end_unit.c)
+target_link_libraries(relate_arc_end_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME relate_arc_end_unit COMMAND relate_arc_end_unit)
+
 add_executable(ray_cast_unit ray_cast_unit.c)
 target_link_libraries(ray_cast_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME ray_cast_unit COMMAND ray_cast_unit)
