@@ -51,6 +51,15 @@ SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02],[Pose(Point(1 2),0.5)@2001-01-03, Pose(Point(3 4),0.5)@2001-01-04]}')));
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02]')));
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02],[Pose(Point(1 2),0.5)@2001-01-03, Pose(Point(3 4),0.5)@2001-01-04]}')));
+-- A polyhedral surface is written as the multipolygon of its faces and read back as the surface
+SELECT asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));Pose(Point(1 1 5),1,0,0,0)@2001-01-01');
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));Pose(Point(1 1 5),1,0,0,0)@2001-01-01')));
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));{Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02}')));
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02]')));
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=3812;PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));{[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),1,0,0,0)@2001-01-02],[Pose(Point(3 3 5),1,0,0,0)@2001-01-03]}',1,0,2)));
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'PolyhedralSurface(((0 0,2 0,2 2,0 2,0 0)));Pose(Point(1 1),0.3)@2001-01-01')));
+WITH t(temp) AS (SELECT trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02]')
+SELECT trgeometryFromMFJSON(asMFJSON(temp)) = temp, ST_GeometryType(geometry(trgeometryFromMFJSON(asMFJSON(temp)))) FROM t;
 
 -- Additional attributes
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01',1,0,2)));

@@ -877,6 +877,31 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* GeoJSON states no polyhedral surface, so the MF-JSON of a body that is a
+   * surface writes it as the multipolygon of its faces, which is read back as
+   * the surface */
+  {
+    Temporal *tsurf = trgeometry_in("PolyhedralSurface Z(((0 0 0,2 0 0,"
+      "2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));[Pose(Point(1 1 5),1,0,0,0)"
+      "@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02]");
+    size_t size;
+    char *mfjson = tsurf ? temporal_as_mfjson(tsurf, 0, 0, 15, NULL, &size) :
+      NULL;
+    Temporal *back = mfjson ? trgeometry_from_mfjson(mfjson) : NULL;
+    if (! back || ! strstr(mfjson, "\"MultiPolygon\"") ||
+        ! temporal_eq(tsurf, back))
+    {
+      printf("FAILED: the MF-JSON of a body that is a polyhedral surface is "
+        "not read back as the value\n");
+      result = 1;
+    }
+    else
+      printf("OK: the MF-JSON of a body that is a polyhedral surface is read "
+        "back as the value\n");
+    free(tsurf); free(mfjson); free(back);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 

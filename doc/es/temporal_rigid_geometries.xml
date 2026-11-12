@@ -90,7 +90,7 @@ asMFJSON(trgeometry [, options integer=0 [, flags integer=0
 SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0),0)@2001-01-01');
 </programlisting>
-				<para><varname>asMFJSON</varname> aún no admite una superficie poliédrica.</para>
+				<para>GeoJSON no tiene superficie poliédrica, por lo que una geometría de referencia que es una superficie poliédrica se escribe como el <varname>MultiPolygon</varname> de sus caras, que <varname>trgeometryFromMFJSON</varname> lee de nuevo como la superficie poliédrica.</para>
 			</listitem>
 
 			<listitem xml:id="trgeometry_asEWKB">
