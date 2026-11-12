@@ -342,7 +342,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    every sign with every tier; then one arc model and one time model, each merge after a
    differential; then the double nearest a transcendental value (EA8), read by the one search.
 5. **The arithmetic in its own file (EA3)**, moved in the shape the merges give it, so that each
-   function moves once. The signs on coordinates shifted by multiples of 360 (EA9, #3577) come
+   function moves once. The signs on coordinates shifted by multiples of 360 (EA9, #3577, merged) come
    ahead of it, in `geo_funcs.c`, since the cell walks read them, and EA3 moves them with the rest.
 
 MobilityDB #3484 and EA2, its tier for the signs of degree six, come after: EA1 shows that no tier
@@ -523,7 +523,7 @@ not exact in doubles: 21.599649137590685 + 360 rounds, and two cells then no lon
 vertex they share with the same number. The orientation sign (`cross_product_sign`) and the
 location of a point in rings (`point_in_rings_exact`) take each coordinate as a double plus an
 exact integer multiple of 360, a sum read exactly through the one ladder of EA1, so the cells read
-no second point-in-ring of their own. #3577 carries it in `geo_funcs.c`, ahead of EA3, which
+no second point-in-ring of their own. #3577, merged, carries it in `geo_funcs.c`, ahead of EA3, which
 moves `cross_product_sign_offset` and `point_in_ring_offset_exact` with the rest
 of the layer: the cell walks of MobilityDB #3544 read them first. Its unit test
 (`shift_signs_unit.c`) holds 6 rows on which the sign of the shifted doubles is wrong, and its
