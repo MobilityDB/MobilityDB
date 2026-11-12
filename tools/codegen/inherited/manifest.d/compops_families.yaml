@@ -30,6 +30,7 @@ compops_families:
     3 parameters is enough
   basesym: base
   tempsym: temporal
+  overlaps: true
   support:
     sig: "tnumber_supportfn(internal)"
     ret: internal

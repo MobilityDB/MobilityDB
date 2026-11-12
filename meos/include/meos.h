@@ -1779,6 +1779,11 @@ extern int always_ne_tint_int(const Temporal *temp, int i);
 extern int always_ne_bigint_tbigint(int64 i, const Temporal *temp);
 extern int always_ne_tbigint_bigint(const Temporal *temp, int64 i);
 extern int always_ne_ttext_text(const Temporal *temp, const text *txt);
+extern int always_overlaps_tbox_tnumber(const TBox *box, const Temporal *temp);
+extern int always_overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern int always_overlaps_temporal_tstzspan(const Temporal *temp, const Span *s);
+extern int always_overlaps_tnumber_tbox(const Temporal *temp, const TBox *box);
+extern int always_overlaps_tstzspan_temporal(const Span *s, const Temporal *temp);
 extern int ever_eq_bool_tbool(bool b, const Temporal *temp);
 extern int ever_eq_float_tfloat(double d, const Temporal *temp);
 extern int ever_eq_int_tint(int i, const Temporal *temp);
@@ -1837,6 +1842,11 @@ extern int ever_ne_tint_int(const Temporal *temp, int i);
 extern int ever_ne_bigint_tbigint(int64 i, const Temporal *temp);
 extern int ever_ne_tbigint_bigint(const Temporal *temp, int64 i);
 extern int ever_ne_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_overlaps_tbox_tnumber(const TBox *box, const Temporal *temp);
+extern int ever_overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern int ever_overlaps_temporal_tstzspan(const Temporal *temp, const Span *s);
+extern int ever_overlaps_tnumber_tbox(const Temporal *temp, const TBox *box);
+extern int ever_overlaps_tstzspan_temporal(const Span *s, const Temporal *temp);
 
 /*****************************************************************************/
 
