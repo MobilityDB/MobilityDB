@@ -122,8 +122,8 @@ int main(void)
   }
   else
   {
-    /* char *trgeometry_out(const Temporal *temp, size_t *size_out); */
-    char *trgeo1_out = trgeometry_out(trgeo1, &size_out);
+    /* char *trgeometry_out(const Temporal *temp, int maxdd, size_t *size_out); */
+    char *trgeo1_out = trgeometry_out(trgeo1, 15, &size_out);
     printf("trgeometry_in(%s): %s\n", trgeo1_in, trgeo1_out);
 
     /* Round-trip: parse the rendered representation again and check that
@@ -137,7 +137,7 @@ int main(void)
     }
     else
     {
-      char *trgeo2_out = trgeometry_out(trgeo2, &size_out);
+      char *trgeo2_out = trgeometry_out(trgeo2, 15, &size_out);
       if (strcmp(trgeo1_out, trgeo2_out) != 0)
       {
         printf("FAILED: round-trip mismatch: %s != %s\n", trgeo1_out,
@@ -854,7 +854,7 @@ int main(void)
     {
       Temporal *t = trgeometry_in(step_in[i]);
       char *written[3];
-      written[0] = t ? trgeometry_out(t, &size_out) : NULL;
+      written[0] = t ? trgeometry_out(t, 15, &size_out) : NULL;
       written[1] = t ? trgeometry_as_ewkt(t, 15, &size_out) : NULL;
       /* The text writes no SRID, so it reads back the value without one */
       written[2] = (t && i == 0) ? trgeometry_as_text(t, 15, &size_out) : NULL;

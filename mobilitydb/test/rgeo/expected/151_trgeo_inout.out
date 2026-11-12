@@ -296,9 +296,9 @@ SELECT asText('{}'::trgeometry[]);
 (1 row)
 
 SELECT asText(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01']);
-                        astext                         
--------------------------------------------------------
- {"Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST"}
+                                      astext                                      
+----------------------------------------------------------------------------------
+ {"POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
 SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01');
@@ -332,9 +332,9 @@ SELECT asEWKT('{}'::trgeometry[]);
 (1 row)
 
 SELECT asEWKT(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01']);
-                        asewkt                         
--------------------------------------------------------
- {"Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST"}
+                                      asewkt                                      
+----------------------------------------------------------------------------------
+ {"POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
 SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01');

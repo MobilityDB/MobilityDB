@@ -240,7 +240,7 @@ main(void)
   /* Rigid geometries */
   Temporal *trgeo = keep(trgeometry_in("Polygon((1 1,2 2,3 1,1 1));"
     "[Pose(Point(1 1), 0.5)@2001-01-01, Pose(Point(2 2), 1)@2001-01-02]"));
-  CHECK(trgeometry_out(trgeo, &size));
+  CHECK(trgeometry_out(trgeo, 15, &size));
   CHECK(trgeometry_as_text(trgeo, 6, &size));
   CHECK(trgeometry_as_ewkt(trgeo, 6, &size));
 
