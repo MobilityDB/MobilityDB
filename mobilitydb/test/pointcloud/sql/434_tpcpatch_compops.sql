@@ -86,3 +86,20 @@ SELECT asText((:iA) #<> (:pB));
 SELECT asText((:seqAB) #<> (:seqAA));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+-- Ever and always overlaps: a value and a point cloud box
+
+SELECT tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz) ?&& tpcbox 'TPCBOX(XT(((0,0),(5,5)),[2024-01-01, 2024-01-02]), 1)';
+SELECT tpcbox 'TPCBOX(XT(((3,3),(5,5)),[2024-01-01, 2024-01-02]), 1)' ?&& tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz);
+SELECT tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz) %&& tpcbox 'TPCBOX(X((0,0),(5,5)), 1)';
+SELECT tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz) ?&& tpcbox 'TPCBOX(T([2024-01-02, 2024-01-03]), 1)';
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2
+WHERE t1.temp ?&& tpcbox(t2.temp) <> (atTpcbox(t1.temp, tpcbox(t2.temp)) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2
+WHERE t1.temp %&& tpcbox(t2.temp) <> (minusTpcbox(t1.temp, tpcbox(t2.temp)) IS NULL);
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2 WHERE t1.temp ?&& tpcbox(t2.temp);
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2 WHERE t1.temp %&& tpcbox(t2.temp);
+/* Errors */
+SELECT tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz) ?&& tpcbox 'TPCBOX(X((0,0),(5,5)), 999)';

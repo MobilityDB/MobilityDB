@@ -44,6 +44,7 @@
 #include "temporal/temporal.h"
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
+#include "pointcloud/tpcbox.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -510,6 +511,160 @@ inline Datum
 Always_ne_tpcpatch_tpcpatch(PG_FUNCTION_ARGS)
 {
   return EAcomp_tpc_tpc(fcinfo, &always_ne_tpcpatch_tpcpatch);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal point cloud value and a point cloud box
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for the ever/always overlaps of a point cloud box
+ * and a temporal point cloud value
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always overlaps
+ */
+static Datum
+EAoverlaps_tpcbox_tpointcloud(FunctionCallInfo fcinfo,
+  int (*func)(const TPCBox *, const Temporal *))
+{
+  TPCBox *box = PG_GETARG_TPCBOX_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int result = func(box, temp);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for the ever/always overlaps of a temporal point
+ * cloud value and a point cloud box
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always overlaps
+ */
+static Datum
+EAoverlaps_tpointcloud_tpcbox(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const TPCBox *))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TPCBox *box = PG_GETARG_TPCBOX_P(1);
+  int result = func(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tpcbox_tpcpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tpcbox_tpcpoint);
+/**
+ * @ingroup mobilitydb_pointcloud_comp_ever
+ * @brief Return true if a temporal point cloud point ever lies in a point cloud box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tpcbox_tpcpoint(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tpcbox_tpointcloud(fcinfo, &ever_overlaps_tpcbox_tpcpoint);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tpcpoint_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tpcpoint_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_comp_ever
+ * @brief Return true if a temporal point cloud point ever lies in a point cloud box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tpcpoint_tpcbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tpointcloud_tpcbox(fcinfo, &ever_overlaps_tpcpoint_tpcbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tpcbox_tpcpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tpcbox_tpcpoint);
+/**
+ * @ingroup mobilitydb_pointcloud_comp_ever
+ * @brief Return true if a temporal point cloud point always lies in a point cloud box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tpcbox_tpcpoint(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tpcbox_tpointcloud(fcinfo, &always_overlaps_tpcbox_tpcpoint);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tpcpoint_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tpcpoint_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_comp_ever
+ * @brief Return true if a temporal point cloud point always lies in a point cloud box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tpcpoint_tpcbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tpointcloud_tpcbox(fcinfo, &always_overlaps_tpcpoint_tpcbox);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tpcbox_tpcpatch(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tpcbox_tpcpatch);
+/**
+ * @ingroup mobilitydb_pointcloud_comp_ever
+ * @brief Return true if a temporal point cloud patch ever lies in a point cloud box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tpcbox_tpcpatch(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tpcbox_tpointcloud(fcinfo, &ever_overlaps_tpcbox_tpcpatch);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tpcpatch_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tpcpatch_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_comp_ever
+ * @brief Return true if a temporal point cloud patch ever lies in a point cloud box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tpcpatch_tpcbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tpointcloud_tpcbox(fcinfo, &ever_overlaps_tpcpatch_tpcbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tpcbox_tpcpatch(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tpcbox_tpcpatch);
+/**
+ * @ingroup mobilitydb_pointcloud_comp_ever
+ * @brief Return true if a temporal point cloud patch always lies in a point cloud box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tpcbox_tpcpatch(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tpcbox_tpointcloud(fcinfo, &always_overlaps_tpcbox_tpcpatch);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tpcpatch_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tpcpatch_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_comp_ever
+ * @brief Return true if a temporal point cloud patch always lies in a point cloud box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tpcpatch_tpcbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tpointcloud_tpcbox(fcinfo, &always_overlaps_tpcpatch_tpcbox);
 }
 
 /*****************************************************************************
