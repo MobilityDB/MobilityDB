@@ -1727,42 +1727,6 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
 }
 
 /**
- * @brief Return the sign of the dot product of two vectors, computed exactly
- * @details Each product of two coordinates is its rounded value plus its
- * error (#two_product), and the six terms are added into an expansion whose
- * last component carries the sign of the whole. #dot_product_sign calls it
- * where its filter cannot tell
- * @note Exact where no product of coordinates overflows or underflows
- * @return 1 or -1, 0 exactly where the vectors are orthogonal
- */
-int
-dot_product_sign_exact(const POINT3D *p, const POINT3D *q)
-{
-  const double pc[3] = {p->x, p->y, p->z}, qc[3] = {q->x, q->y, q->z};
-  double buf1[6], buf2[6], *cur = buf1, *nxt = buf2;
-  int len = 0;
-  for (int k = 0; k < 3; k++)
-  {
-    double x, y;
-    two_product(pc[k], qc[k], &x, &y);
-    if (y != 0.0)
-    {
-      len = grow_expansion(len, cur, y, nxt);
-      double *swap = cur; cur = nxt; nxt = swap;
-    }
-    if (x != 0.0)
-    {
-      len = grow_expansion(len, cur, x, nxt);
-      double *swap = cur; cur = nxt; nxt = swap;
-    }
-  }
-  if (len == 0)
-    return 0;
-  double top = cur[len - 1];
-  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
-}
-
-/**
  * @brief Return 2^k, for k from -1022 to 1023, the normal doubles that are
  * powers of two
  * @details Multiplying by it is exact wherever the product neither overflows
@@ -7278,7 +7242,7 @@ point_segment_beyond_inputs(const double *p, const double *a, const double *b,
  * difference rounds to 0 only where it is 0, so a product of one is exactly 0.
  * Within the bound, the sign is that of the exact sum
  */
-static int
+int
 point_segment_dot_sign_inputs(const double *p, const double *s,
   const double *a, const double *b, int ndims)
 {
@@ -10748,8 +10712,9 @@ segment_distance_exact_bounded(const double *a, const double *b,
  * of six products of three coordinates. Each product of two of them is its
  * rounded value plus its error (#two_product), that pair times the third is
  * again an expansion (#scale_expansion), and the six are added into one whose
- * last component carries the sign of the whole. #triple_product_sign calls it
- * where its filter cannot tell
+ * last component carries the sign of the whole. #vector_triple_sign calls it
+ * where every difference is a double held exactly within a range where no
+ * step leaves the normal doubles
  * @note Exact where no product of coordinates overflows or underflows
  * @return 1 where `r` lies on the side of the plane of `p` and `q` that their
  * cross product points to, -1 on the other, 0 exactly where the three vectors

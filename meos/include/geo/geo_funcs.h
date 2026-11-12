@@ -267,7 +267,6 @@ extern int point_in_ring_offset_exact(const double *x, const double *y,
   const double *xoff, int n, double px, double py);
 extern double cross_product_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
-extern int dot_product_sign_exact(const POINT3D *p, const POINT3D *q);
 extern int point_within_distance_sign_exact(double px, double py, double qx,
   double qy, double d);
 extern int point_distance_square_sum_sign(const double *p, const double *q,
@@ -318,6 +317,8 @@ extern int segment_interior_offset_sign(const double *a, const double *b,
   const double *c, const double *d, double r);
 extern int vector_triple_sign(const double *a0, const double *a1,
   const double *b0, const double *b1, const double *c0, const double *c1);
+extern int point_segment_dot_sign_inputs(const double *p, const double *s,
+  const double *a, const double *b, int ndims);
 extern void vector_cross_signs(const double *b0, const double *b1,
   const double *c0, const double *c1, int *sn);
 extern int plane_cross_dot_sign(const double *a, const double *b,
@@ -822,27 +823,18 @@ cross_product_sign(double ax, double ay, double bx, double by, double cx,
 
 /**
  * @brief Return the sign of the dot product of two vectors
- * @details The coordinates are exact rationals, so the sign has one answer. A
- * filter gives it where the double evaluation carries it: the rounding of a
- * sum of three products is bounded by three roundings of the sum of their
- * magnitudes. Where the filter cannot tell, #dot_product_sign_exact decides
- * the same dot product exactly. With `p` the normal of a plane the sign is
+ * @details The coordinates are exact rationals, so the sign has one answer,
+ * that of `(p - 0) . (q - 0)`, which #point_segment_dot_sign_inputs gives
+ * exactly for any finite doubles. With `p` the normal of a plane the sign is
  * the side of that plane `q` lies on
- * @note Exact where no product of coordinates overflows or underflows
  * @return 1 or -1, 0 exactly where the vectors are orthogonal
  */
 static inline int
 dot_product_sign(const POINT3D *p, const POINT3D *q)
 {
-  double xx = p->x * q->x, yy = p->y * q->y, zz = p->z * q->z;
-  double dot = xx + yy + zz;
-  double bound = (2.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
-    (fabs(xx) + fabs(yy) + fabs(zz));
-  if (dot > bound)
-    return 1;
-  if (dot < - bound)
-    return -1;
-  return dot_product_sign_exact(p, q);
+  const double origin[3] = {0.0, 0.0, 0.0};
+  const double pc[3] = {p->x, p->y, p->z}, qc[3] = {q->x, q->y, q->z};
+  return point_segment_dot_sign_inputs(pc, origin, origin, qc, 3);
 }
 
 /**
@@ -889,14 +881,11 @@ point_within_distance_sign(double px, double py, double qx, double qy,
 
 /**
  * @brief Return the sign of the triple product `<p, q x r>` of three vectors
- * @details The coordinates are exact rationals, so the sign has one answer. A
- * filter gives it where the double evaluation carries it: Shewchuk's bound on
- * the rounding of a three-by-three determinant, computed from the magnitudes
- * of its terms. Where the filter cannot tell, #triple_product_sign_exact
- * decides the same determinant exactly. With `p` and `q` two points of a unit
- * sphere the sign is the side of the great circle through them, taken from
- * `p` to `q`, that `r` lies on
- * @note Exact where no product of coordinates overflows or underflows
+ * @details The coordinates are exact rationals, so the sign has one answer,
+ * that of the determinant `(p - 0) . ((q - 0) x (r - 0))`, which
+ * #vector_triple_sign gives exactly for any finite doubles. With `p` and `q`
+ * two points of a unit sphere the sign is the side of the great circle
+ * through them, taken from `p` to `q`, that `r` lies on
  * @return 1 where `r` lies on the side of the plane of `p` and `q` that their
  * cross product points to, -1 on the other, 0 exactly where the three vectors
  * are coplanar
@@ -904,20 +893,10 @@ point_within_distance_sign(double px, double py, double qx, double qy,
 static inline int
 triple_product_sign(const POINT3D *p, const POINT3D *q, const POINT3D *r)
 {
-  double qyrz = q->y * r->z, qzry = q->z * r->y;
-  double qzrx = q->z * r->x, qxrz = q->x * r->z;
-  double qxry = q->x * r->y, qyrx = q->y * r->x;
-  double det = p->x * (qyrz - qzry) + p->y * (qzrx - qxrz) +
-    p->z * (qxry - qyrx);
-  double bound = (3.5 + 28.0 * DBL_EPSILON) * DBL_EPSILON *
-    (fabs(p->x) * (fabs(qyrz) + fabs(qzry)) +
-     fabs(p->y) * (fabs(qzrx) + fabs(qxrz)) +
-     fabs(p->z) * (fabs(qxry) + fabs(qyrx)));
-  if (det > bound)
-    return 1;
-  if (det < - bound)
-    return -1;
-  return triple_product_sign_exact(p, q, r);
+  const double origin[3] = {0.0, 0.0, 0.0};
+  const double pc[3] = {p->x, p->y, p->z}, qc[3] = {q->x, q->y, q->z},
+    rc[3] = {r->x, r->y, r->z};
+  return vector_triple_sign(origin, pc, origin, qc, origin, rc);
 }
 
 /**
