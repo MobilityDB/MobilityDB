@@ -37,7 +37,9 @@
  * sequences; without connect, it answers the merge of the two values. The
  * program reads the answer for one sequence in each value, for sequences of
  * the two values alternating, and for two sequences of the second value in
- * one gap of the first, and that values overlapping on time are refused.
+ * one gap of the first, for a sequence of the second value on the exclusive
+ * lower bound of a sequence of the first, and that values overlapping on time
+ * are refused.
  *
  * The program can be built as follows
  * @code
@@ -86,6 +88,18 @@ static const struct
      "2@2001-01-03 00:00:00+00, 5@2001-01-04 00:00:00+00], "
      "[3@2001-01-05 00:00:00+00, 6@2001-01-06 00:00:00+00, "
      "9@2001-01-09 00:00:00+00, 8@2001-01-10 00:00:00+00]}"},
+  /* A sequence of the second value on the timestamp of the exclusive lower
+   * bound of a sequence of the first starts before it */
+  {"{(1@2001-01-01, 2@2001-01-02], [1@2001-01-03, 1@2001-01-05]}",
+   "{[2@2001-01-01]}", true,
+   "{[2@2001-01-01 00:00:00+00], "
+     "(1@2001-01-01 00:00:00+00, 2@2001-01-02 00:00:00+00], "
+     "[1@2001-01-03 00:00:00+00, 1@2001-01-05 00:00:00+00]}"},
+  {"{(1@2001-01-01, 2@2001-01-02], [1@2001-01-03, 1@2001-01-05]}",
+   "{[2@2001-01-01]}", false,
+   "{[2@2001-01-01 00:00:00+00], "
+     "(1@2001-01-01 00:00:00+00, 2@2001-01-02 00:00:00+00], "
+     "[1@2001-01-03 00:00:00+00, 1@2001-01-05 00:00:00+00]}"},
   /* Values overlapping on time are refused */
   {"{[1@2001-01-01, 2@2001-01-05], [3@2001-01-08, 3@2001-01-09]}",
    "{[5@2001-01-04, 6@2001-01-06]}", true, NULL},
