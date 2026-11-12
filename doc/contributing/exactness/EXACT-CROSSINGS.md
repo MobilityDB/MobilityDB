@@ -487,8 +487,14 @@ Steps 2–5 carry the dating rule of section 7. If the committers keep truncatio
 steps still apply with truncation computed exactly. The #2852 expected output then moves by one
 microsecond, to a result that is equally correct at every microsecond.
 
-**Schedule.** Steps 2–5 start only after the work of [Exact distance](EXACT-DISTANCE.md)
-is finished. They share their readers in `lifting.c` with
+**Schedule.** DECIDED BY THE OWNER 2026-11-12: steps 2–5 proceed beside the open rows of
+[Exact distance](EXACT-DISTANCE.md) (ED24, #3484, is a draft), not after them. The dating rule of
+section 7 enters only through the shared primitive, every lifted form of a crossing at once. A
+geodetic meeting is decided, in a pull request apart, where the two great-circle points at the
+instant of closest approach lie within a distance band sized to the rounding of their construction
+(`tgeogpointsegm_intersection`), and the two crossing walks of `lifting.c` evaluate the function on
+one point there; that pull request keeps master's dating, and step 3 decides the geodetic meeting on
+the parameter of the segments, without constructing the points, and removes the band. Steps 2–5 share their readers in `lifting.c` with
 [Any number of turning points in the lifting](N-TURNING-POINTS.md). The order is: that note's
 first pull request (one turning-point callback per arity, with the same results), then steps 2–5
 here on the merged readers, then that note's intervals of any number and its rigid geometries.
