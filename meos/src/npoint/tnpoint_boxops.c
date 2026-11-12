@@ -93,14 +93,10 @@ tnpointinstarr_step_set_stbox(TInstant **instants, int count, STBox *box)
  * @brief Expand the spatial extent of a box with a point
  */
 static void
-stbox_expand_point4d(const POINT4D *p, bool hasz, STBox *box)
+stbox_expand_point2d(const POINT2D *p, STBox *box)
 {
   box->xmin = Min(box->xmin, p->x); box->xmax = Max(box->xmax, p->x);
   box->ymin = Min(box->ymin, p->y); box->ymax = Max(box->ymax, p->y);
-  if (hasz)
-  {
-    box->zmin = Min(box->zmin, p->z); box->zmax = Max(box->zmax, p->z);
-  }
   return;
 }
 
@@ -109,10 +105,11 @@ stbox_expand_point4d(const POINT4D *p, bool hasz, STBox *box)
  * route between two positions
  * @details The box is the one of the points a temporal network point
  * travelling the stretch passes as #tnpointseq_tgeompointseq_cont states
- * them: the points at the two positions, located as #npoint_to_geompoint
- * locates a position, and the vertices of the route strictly between them,
- * whose positions #route_vertex_positions gives. The points are read as
- * #npointarr_set_stbox reads them
+ * them: the points at the two positions, which #route_point_at locates, and
+ * the vertices of the route strictly between them, whose positions are the
+ * ones #route_vertex_positions gives. The route is a planar line, as
+ * #ensure_valid_route tests it when the network is read, and its points are
+ * read in place up to the first vertex past the stretch
  * @param[in] rid Route identifier
  * @param[in] pos1,pos2 Positions on the route
  * @param[out] box Spatiotemporal box
@@ -125,34 +122,41 @@ route_stretch_set_stbox(int64 rid, double pos1, double pos2, STBox *box)
   if (! gsline)
     return false;
   int32_t srid = gserialized_get_srid(gsline);
-  bool hasz = (bool) FLAGS_GET_Z(gsline->gflags);
-  /* The routes of the table ways are geometries */
+  /* The routes of the table ways are planar geometries */
   assert(! FLAGS_GET_GEODETIC(gsline->gflags));
+  assert(! FLAGS_GET_Z(gsline->gflags));
   LWLINE *line = (LWLINE *) lwgeom_from_gserialized(gsline);
+  const POINTARRAY *pa = line->points;
+  double length = ptarray_length_2d(pa);
   double posmin = Min(pos1, pos2), posmax = Max(pos1, pos2);
 
   POINT4D p;
-  POINTARRAY *opa = lwline_interpolate_points(line, posmin, 0);
-  getPoint4d_p(opa, 0, &p);
-  ptarray_free(opa);
-  stbox_set(true, hasz, false, srid, p.x, p.x, p.y, p.y,
-    hasz ? p.z : 0.0, hasz ? p.z : 0.0, NULL, box);
-  opa = lwline_interpolate_points(line, posmax, 0);
-  getPoint4d_p(opa, 0, &p);
-  ptarray_free(opa);
-  stbox_expand_point4d(&p, hasz, box);
+  route_point_at(pa, length, posmin, &p);
+  stbox_set(true, false, false, srid, p.x, p.x, p.y, p.y, 0.0, 0.0, NULL,
+    box);
+  route_point_at(pa, length, posmax, &p);
+  stbox_expand_point2d((const POINT2D *) &p, box);
 
-  int count;
-  double *positions = route_vertex_positions(line->points, &count);
-  for (int k = 0; k < count; k++)
+  /* The position of a vertex is its distance along the route over the length
+   * of the route, as #route_vertex_positions computes it. The positions do
+   * not decrease along the route, so the walk stops at the first vertex at or
+   * past the stretch */
+  if (pa->npoints > 2 && length > 0.0)
   {
-    if (positions[k] <= posmin || positions[k] >= posmax)
-      continue;
-    getPoint4d_p(line->points, k + 1, &p);
-    stbox_expand_point4d(&p, hasz, box);
+    double cum = 0.0;
+    const POINT2D *p1 = getPoint2d_cp(pa, 0);
+    for (uint32_t k = 1; k < pa->npoints - 1; k++)
+    {
+      const POINT2D *p2 = getPoint2d_cp(pa, k);
+      cum += hypot(p2->x - p1->x, p2->y - p1->y);
+      double pos = cum / length;
+      if (pos >= posmax)
+        break;
+      if (pos > posmin)
+        stbox_expand_point2d(p2, box);
+      p1 = p2;
+    }
   }
-  if (positions)
-    pfree(positions);
   lwline_free(line);
   return true;
 }
