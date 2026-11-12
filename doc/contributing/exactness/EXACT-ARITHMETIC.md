@@ -223,7 +223,7 @@ implementation; "survivor" is the one covering every finite double with the most
 | Point in polygon | `point_in_rings_exact`, `point_arc_ray_parity`, `dist_poly_seg_raycross`, `dist_geom_point_inside`, `pip_point_in_ring` | `point_in_rings_exact` and, for arcs, `point_arc_ray_parity` | from #3575 (C2) the other three read the exact sign (`pip_point_in_ring`) or the exact parities (`dist_poly_seg_raycross`, through `exact_arc_from_edge`); before it, doubles, `MEOS_GEOM_TOLERANCE` and `atan2` |
 | The circle of an arc | `arcarc_centre_exact` and `arcarc_radius2_exact`, `arr_arc_centre_y_side`, `mec_exact_set` and `mec_beyond`, `exact_arc_bound`, `tower_arc_read`, `hull_exact` | `arcarc_centre_exact` | six arc models form the same circumcentre (Section 4.7) |
 | A segment against an arc | the `arcseg_*` meetings, `tower_point_line_circle`, `arcsegm_cross` | the `arcseg_*` meetings on input segments, the tower on tower points | `arcsegm_cross`, which relate reads, answers by `arcsegm_meet_exact` from #3567 (C1); before it, a `1e-14` band, `MEOS_GEOM_TOLERANCE` and `atan2` read three proper crossings as none |
-| Two arcs | `arcarc_meet_exact`, `tower_point_circles`, `arcarc_cross` | `arcarc_meet_exact` | `arcarc_cross` compares a half-chord with a rounding band |
+| Two arcs | `arcarc_meet_exact`, `tower_point_circles`, `arcarc_cross` | `arcarc_meet_exact` | `arcarc_cross`, which relate reads, answers by `arcarc_meet_exact` from C6 (fix/arcarc-cross-exact), which also reads the second half of a whole circle from its other end, as `arcsegm_meet_exact` does; before it, a band on the half-chord and `MEOS_GEOM_TOLERANCE` on the fraction. The meeting points `relate_arc_arc_points` places stay in doubles |
 | Within a distance of an arc | `point_arc_offset_sign` and its segment and arc siblings, the `*_within_pred` family on the expression ladder, the far certificates of the buffer | none yet | one family per arc model |
 | The order of edges leaving a point | `edges_turn_cmp_exact`, `edges_turn_cmp_meet`, `arr_turn_cmp` | none yet | they differ in how the point is held: doubles, a tower meeting, intervals |
 | The order of meetings along an edge | `meets_order_tower`, `meets_order_scaled` | the expression ladder | `meets_order_scaled` is the arena twin |
@@ -240,9 +240,9 @@ Built apart, the implementations of one question drift apart in contract:
   twins it duplicates (`cross_product_sign`, `point_segment_offset_sign`,
   `point_within_distance_sign`) are exact for every finite double. EA1 measures the consequence: 50
   of 228 calls answered 0 for -1.
-- **A tolerance beside an exact sign for the same question**: `arcarc_cross` in relate against
-  the exact arc meetings (its segment-arc sibling `arcsegm_cross` answers by them from #3567);
-  `buffer_ring_signed_area` against `ring_area_sign`; and, for a geometry carrying an arc,
+- **A tolerance beside an exact sign for the same question**: relate's crossings of a segment
+  and an arc (`arcsegm_cross`, #3567) and of two arcs (`arcarc_cross`, C6) answer by the exact
+  arc meetings; `buffer_ring_signed_area` against `ring_area_sign`; and, for a geometry carrying an arc,
   `tcbuffer_region_within_roots` against `point_motion_dwithin_period_exact` (a geometry of
   segments is answered exactly from #3588). The ray casts
   `dist_poly_seg_raycross` and `pip_point_in_ring`, and with them the `inside` of
@@ -317,7 +317,7 @@ layer holds it for every question. The phases, each a series of pull requests:
 1. **The tolerances beside exact signs (C1 to C6).** Each question of Section 4.7 that keeps a
    tolerant route beside an exact one is answered by the exact one: relate's segment-arc crossing
    `arcsegm_cross` by the exact arc meetings (C1, #3567) and its arc-arc crossing `arcarc_cross`
-   likewise, the ray casts in
+   likewise (C6, fix/arcarc-cross-exact), the ray casts in
    doubles (`dist_poly_seg_raycross`, `pip_point_in_ring`, the `inside` of
    `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity` (C2,
    #3575), the ring
