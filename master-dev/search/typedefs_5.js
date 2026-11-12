@@ -12,5 +12,6 @@ var searchData=
   ['geosmessagehandler_5fr_9',['GEOSMessageHandler_r',['../geos__c_8h_a46e651e7c7e163592e75755dfb2a5edd.html#a46e651e7c7e163592e75755dfb2a5edd',1,'geos_c.h']]],
   ['geospreparedgeometry_10',['GEOSPreparedGeometry',['../geos__c_8h_aff9f7bbb2dcdbd813d9055414a18785e.html#aff9f7bbb2dcdbd813d9055414a18785e',1,'geos_c.h']]],
   ['geosquerycallback_11',['GEOSQueryCallback',['../geos__c_8h_a2ab5a825d72dc424872fdc8549ace85d.html#a2ab5a825d72dc424872fdc8549ace85d',1,'geos_c.h']]],
-  ['geosstrtree_12',['GEOSSTRtree',['../geos__c_8h_aee0e622ed8fcc9f5959b27cf4b26c31b.html#aee0e622ed8fcc9f5959b27cf4b26c31b',1,'geos_c.h']]]
+  ['geosstrtree_12',['GEOSSTRtree',['../geos__c_8h_aee0e622ed8fcc9f5959b27cf4b26c31b.html#aee0e622ed8fcc9f5959b27cf4b26c31b',1,'geos_c.h']]],
+  ['gridsignfn_13',['GridSignFn',['../meos_2src_2geo_2geo__funcs_8c_afe477f73b0b84eb78f09201eb361e800.html#afe477f73b0b84eb78f09201eb361e800',1,'geo_funcs.c']]]
 ];
