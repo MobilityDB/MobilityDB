@@ -324,12 +324,16 @@ layer holds it for every question. The phases, each a series of pull requests:
    area in doubles of the buffer by `ring_area_sign` (C3, paused), the within-times of a moving
    disc in `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact` (C4, #3588,
    merged, for a geometry of segments; one carrying an arc follows), and `seg2d_side` by
-   `cross_product_sign` (C5, #3593). These change answers, where the tolerance answers wrongly,
-   so each comes with a witness CGAL judges. Relate on arcs keeps one wrong class the
-   consolidation measured and did not cause: on 396 pairs of curve polygons whose arcs cross or
-   miss 2^-38 to 2^-50 of the radius from an end, 26 intersects and 62 areal answers disagree
-   with CGAL, before C6 and after it, the cause not yet located (`oracle-kit`,
-   `cpwork/c6/arcarc_pairs.txt`).
+   `cross_product_sign` (C5, #3593, merged). These change answers, where the tolerance answers
+   wrongly, so each comes with a witness CGAL judges. Relate on arcs near an end
+   (fix/relate-arc-near-end): whether two boundary edges meet is decided by
+   `arcsegm_meet_exact` and `arcarc_meet_exact`, the latter reading its signs in doubles
+   carrying a bound on their error first, and the start of
+   an uncut edge standing outside the other area is read exactly where the boundary walk skips an
+   interval narrower than its band; on 396 pairs of curve polygons whose arcs cross or miss
+   2^-38 to 2^-50 of the radius from an end, intersects agrees with CGAL on 396 of 396 (370
+   before) and the areal relationships on 1188 of 1188 (1126 before), every relate cell at
+   parity.
 2. **The duplicates of one contract (C7 onwards).** The functions Section 4.6 shows answering the
    survivor's contract become calls to it, one question per pull request, each proven by a
    differential: `cross_product_exact` (no caller), `certa_sum2_sign` and the sign of
