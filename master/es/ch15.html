@@ -154,10 +154,10 @@ SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ &gt; $x)', '{"x": 
 </pre></li><li class="listitem"><a name="jsonb_path_match"></a><a class="indexterm" name="id12444"></a><a class="indexterm" name="id12447"></a><p>Devuelve el resultado de una comprobación de predicado de ruta JSON para un valor JSON</p><pre class="programlisting">
 jsonbPathMatch(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 jsonbPathMatchTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
-</pre><pre class="programlisting">
+</pre><p>El último argumento suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos; el resultado de un error suprimido, de un predicado cuyo resultado es desconocido o de una ruta que no devuelve un único booleano es NULL. Las funciones que terminan en <code class="varname">Tz</code> comparan valores de fecha y hora entre zonas horarias.</p><pre class="programlisting">
 SELECT jsonbPathMatch(jsonb '{"a": [1, 2, 3]}', 'exists($.a[*] ? (@ &gt; 2))');
 -- true
-</pre></li><li class="listitem"><a name="jsonb_path_query"></a><a class="indexterm" name="id12454"></a><a class="indexterm" name="id12457"></a><a class="indexterm" name="id12460"></a><a class="indexterm" name="id12463"></a><a class="indexterm" name="id12466"></a><a class="indexterm" name="id12469"></a><p>Devuelve los elementos que una ruta JSON devuelve para un valor JSON, como filas, como un arreglo JSON, o el primero de ellos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_path_query"></a><a class="indexterm" name="id12456"></a><a class="indexterm" name="id12459"></a><a class="indexterm" name="id12462"></a><a class="indexterm" name="id12465"></a><a class="indexterm" name="id12468"></a><a class="indexterm" name="id12471"></a><p>Devuelve los elementos que una ruta JSON devuelve para un valor JSON, como filas, como un arreglo JSON, o el primero de ellos</p><pre class="programlisting">
 jsonbPathQuery(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → setof jsonb
 jsonbPathQueryTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → setof jsonb
 jsonbPathQueryArray(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → jsonb
@@ -172,7 +172,7 @@ SELECT jsonbPathQueryArray(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ &gt;= 2)');
 -- [2, 3]
 SELECT jsonbPathQueryFirst(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ &gt;= 2)');
 -- 2
-</pre></li><li class="listitem"><a name="jsonb_comp"></a><a class="indexterm" name="id12476"></a><a class="indexterm" name="id12479"></a><a class="indexterm" name="id12482"></a><a class="indexterm" name="id12485"></a><p>Compara dos valores JSON, o devuelve el valor hash de un valor JSON</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_comp"></a><a class="indexterm" name="id12478"></a><a class="indexterm" name="id12481"></a><a class="indexterm" name="id12484"></a><a class="indexterm" name="id12487"></a><p>Compara dos valores JSON, o devuelve el valor hash de un valor JSON</p><pre class="programlisting">
 jsonb {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} jsonb → boolean
 cmp(jsonb,jsonb) → integer
 hash(jsonb) → integer
