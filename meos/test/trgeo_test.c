@@ -784,6 +784,31 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* A body in linear motion meets a box where its distance to it is zero: a
+   * box flat in x from the first instant to a quarter of the day, and a box
+   * touched on its border at the first instant alone */
+  {
+    Temporal *flat = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(3 0),0)@2001-01-01, Pose(Point(7 2),0)@2001-01-02]");
+    Temporal *touch = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(4 1),0)@2001-01-01, Pose(Point(2 -3),0)@2001-01-02]");
+    STBox *b1 = stbox_in("STBOX X((4,0),(4,3))");
+    STBox *b2 = stbox_in("STBOX X((5,1),(8,2))");
+    Temporal *at1 = trgeometry_at_stbox(flat, b1, true);
+    Temporal *at2 = trgeometry_at_stbox(touch, b2, true);
+    /* A quarter of a day in microseconds */
+    TimestampTz quarter = (TimestampTz) 6 * 3600 * 1000000;
+    if (! at1 || temporal_end_timestamptz(at1) -
+          temporal_start_timestamptz(at1) != quarter ||
+        ! at2 || temporal_num_instants(at2) != 1)
+    {
+      printf("FAILED: a body in linear motion meeting a flat box, or touching "
+        "a box at one instant, is not read\n");
+      result = 1;
+    }
+    free(flat); free(touch); free(b1); free(b2); free(at1); free(at2);
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 

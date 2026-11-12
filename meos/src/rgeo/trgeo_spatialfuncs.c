@@ -59,6 +59,7 @@
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "rgeo/trgeo.h"
+#include "rgeo/trgeo_distwalk.h"
 #include "rgeo/trgeo_geom_clip.h"
 #include "rgeo/trgeo_inst.h"
 #include "rgeo/trgeo_spatialfuncs.h"
@@ -473,6 +474,49 @@ instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
 }
 
 /**
+ * @brief Return true if the walk of the distance reads a body and a target
+ * @details The walk needs a body that is a convex polygon without holes
+ * (#distrefpoly_set), and a target of points, lines and convex polygons
+ * without holes, and of their collections of one type, the parts it measures
+ * (#dist_geo_parts reads them so); each is tested here without an error
+ * @param[in] ref Reference geometry of the body
+ * @param[in] target Target geometry
+ */
+static bool
+trgeometry_walk_reads(const GSERIALIZED *ref, const LWGEOM *target)
+{
+  LWGEOM *body = lwgeom_from_gserialized(ref);
+  DistRefPoly rp;
+  bool result = body->type == POLYGONTYPE &&
+    distrefpoly_set(&rp, (const LWPOLY *) body);
+  if (result)
+    distrefpoly_free(&rp);
+  lwgeom_free(body);
+  if (! result || lwgeom_is_empty(target))
+    return result;
+  uint32_t type = target->type;
+  if (type == POINTTYPE || type == LINETYPE || type == MULTIPOINTTYPE ||
+      type == MULTILINETYPE)
+    return true;
+  if (type != POLYGONTYPE && type != MULTIPOLYGONTYPE)
+    return false;
+  const LWCOLLECTION *coll = (type == MULTIPOLYGONTYPE) ?
+    (const LWCOLLECTION *) target : NULL;
+  uint32_t n = coll ? coll->ngeoms : 1;
+  for (uint32_t i = 0; i < n && result; i++)
+  {
+    const LWGEOM *part = coll ? coll->geoms[i] : target;
+    if (lwgeom_is_empty(part))
+      continue;
+    double cx, cy;
+    result = distrefpoly_set_static(&rp, (const LWPOLY *) part, &cx, &cy);
+    if (result)
+      distrefpoly_free(&rp);
+  }
+  return result;
+}
+
+/**
  * @brief Compute the timestamps at which a trgeometry body overlaps a target
  * geometry, returning a tstzspanset (or NULL if no overlap)
  * @details Iterates the trgeometry instants. Each linear segment is required to
@@ -506,6 +550,24 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
         "motion is not implemented");
       return NULL;
     }
+  }
+  /* A body in linear motion meets a closed target where its distance to it
+   * is zero, which the walk of the distance answers exactly, turning
+   * included (#tdwithin_trgeometry_geo); the clip below reads the bodies and
+   * targets the walk does not, and the upper borders a tile leaves out */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! excl &&
+      ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags) &&
+      trgeometry_walk_reads(ref, lwgs))
+  {
+    Temporal *within = tdwithin_trgeometry_geo(temp, gs, 0.0);
+    if (! within)
+    {
+      *err = true;
+      return NULL;
+    }
+    SpanSet *result = tbool_when_true(within);
+    pfree(within);
+    return result;
   }
   int spancap = 16, nspans = 0;
   Span *spans = palloc((size_t) spancap * sizeof(Span));
