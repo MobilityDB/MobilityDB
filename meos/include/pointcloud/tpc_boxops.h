@@ -75,6 +75,8 @@ extern Temporal *tpcpoint_restrict_tpcbox(const Temporal *temp,
   const TPCBox *box, bool border_inc, bool atfunc);
 extern Temporal *tpcpatch_restrict_tpcbox(const Temporal *temp,
   const TPCBox *box, bool border_inc, bool atfunc);
+extern Temporal *tpcpatch_restrict_tpcbox_fine(const Temporal *temp,
+  const TPCBox *box, bool border_inc, bool atfunc);
 
 /*****************************************************************************/
 
