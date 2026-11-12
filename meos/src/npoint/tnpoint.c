@@ -543,7 +543,7 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int64 rid = -1;
   int32_t srid = SRID_UNKNOWN;
-  LWLINE *lwline = NULL;
+  const LWLINE *lwline = NULL;
   double length = 0.0;
   STBox box;
   box.flags = 0;
@@ -553,25 +553,22 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq)
     const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
     if (! lwline || np->rid != rid)
     {
-      /* A route that is found is not empty */
-      const GSERIALIZED *line = route_geom(np->rid);
-      if (lwline)
-        lwline_free(lwline);
-      if (! line)
+      /* A route that is found is not empty. The line belongs to the ways
+       * cache, which keeps the route used last while the next one is read */
+      lwline = route_line(np->rid);
+      if (! lwline)
       {
         pfree_array((void **) instants, i);
         return NULL;
       }
       rid = np->rid;
-      srid = gserialized_get_srid(line);
-      lwline = (LWLINE *) lwgeom_from_gserialized(line);
+      srid = lwline->srid;
       length = ptarray_length_2d(lwline->points);
     }
     POINT4D pt;
     route_point_at(lwline->points, length, np->pos, &pt);
     instants[i] = route_point_tinstant(srid, &pt, inst->t, &box);
   }
-  lwline_free(lwline);
   /* The instants are points of routes at the increasing timestamps of the
    * sequence, and every route is a planar line in the SRID of the network,
    * which #ensure_valid_route tests when the network is read, so the
@@ -603,12 +600,11 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   assert(seq); assert(seq->temptype == T_TNPOINT);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
-  /* A route that is found is not empty */
-  const GSERIALIZED *line = route_geom(np->rid);
-  if (! line)
+  /* A route that is found is not empty. The line belongs to the ways cache */
+  const LWLINE *lwline = route_line(np->rid);
+  if (! lwline)
     return NULL;
-  int32_t srid = gserialized_get_srid(line);
-  LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
+  int32_t srid = lwline->srid;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
 
   /* Positions of the interior vertices of the route, which a linear segment
@@ -676,7 +672,6 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
 
   if (fracs)
     pfree(fracs);
-  lwline_free(lwline);
   /* The instants are points of one route at increasing timestamps, the
    * instants of the sequence and the vertices dated strictly between them,
    * and the route is a planar line in the SRID of the network, which

@@ -280,6 +280,29 @@ route_geom(int64 rid)
   return rec.the_geom;
 }
 
+/**
+ * @brief Return the geometry of a route read as a line, as #route_geom
+ * returns its geometry
+ * @details The line belongs to the ways cache, which reads it once from the
+ * geometry of the route, and is not freed by the caller
+ * @param[in] rid Route identifier
+ * @errval NULL
+ */
+const LWLINE *
+route_line(int64 rid)
+{
+  ways_record rec;
+  if (! route_lookup(rid, false, &rec))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot get the geometry for route " INT64_FORMAT, rid);
+    return NULL;
+  }
+  if (! ensure_not_empty(rec.the_geom))
+    return NULL;
+  return rec.the_line;
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

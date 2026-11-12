@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.0.0 |
-| Scope | The numbers a MEOS or MobilityDB value holds, and the answer to an operation whose result exceeds them |
-| Reference | `meos/include/temporal/temporal.h` (`ensure_finite`, `ensure_finite_result`), `meos/src/geo/geo_funcs.c` (`ensure_finite_geo`) |
+| Version | v1.1.0 |
+| Scope | The numbers a MEOS or MobilityDB value holds, the answer to an operation whose result exceeds them, and the class of the error it raises |
+| Reference | `meos/include/temporal/temporal.h` (`ensure_finite`, `ensure_finite_result`), `meos/src/geo/geo_funcs.c` (`ensure_finite_geo`), `meos/src/temporal/meos_error.c` (`meos_errcode_sqlstate`) |
 
 ## 1. Scope and intent
 
@@ -158,7 +158,34 @@ SELECT perimeter(stbox 'STBOX X((0,0),(5e-324,1e-323))') = 3e-323;
 -- t
 ```
 
-### 4.3 A division by zero
+The integers follow the same rule. The sum, the weighted sum and the delta of
+a temporal integer or a temporal big integer whose exact result leaves its
+type raise `integer out of range` or `bigint out of range`, with the code
+`MEOS_ERR_VALUE_OUT_OF_RANGE`, as the `int4` and `int8` arithmetic of
+PostgreSQL does, and never wrap around:
+
+```sql
+SELECT deltaValue(tint '[2147483646@2001-01-01, -3@2001-01-02]');
+-- ERROR:  integer out of range
+SELECT wsum(temp, interval '1 day') FROM (VALUES
+  ('{5000000000000000000@2001-01-01, 5000000000000000000@2001-01-02}'::tbigint)) t(temp);
+-- ERROR:  bigint out of range
+```
+
+### 4.3 Every magnitude of the doubles
+
+Holding finite numbers only does not narrow the numbers a value holds: from
+the subnormal doubles to `±DBL_MAX`, an answer is computed about the doubles
+the value holds and is the same at every magnitude, as
+[Exact geometry](meos-exact-geometry.md) states for the geometric answers. A
+squared difference, a shoelace product or a product of six coordinates that
+leaves the doubles is carried on in exact arithmetic, never rounded to 0 or to
+an infinity: a temporal point moving inside the square of side `2e154`, or of
+side `2e-210`, centred on the origin, is at distance 0 from it, the square
+bounding a region whose area no double holds. The area of a geometry is the
+one answer that still declines at such magnitudes (section 4.2).
+
+### 4.4 A division by zero
 
 A division by zero raises `Division by zero`, with the code
 `MEOS_ERR_DIVISION_BY_ZERO`, as the division of temporal numbers and the
@@ -286,6 +313,55 @@ In C, `tfloat_start_value` of that value answers `DBL_MAX` with
 `meos_errno()` 0. A caller of a function whose answers include its error
 value, or its missing answer, reads `meos_errno()` to tell them apart, as the
 example of section 6.1 does.
+
+### 6.5 The class of an error
+
+Each MEOS error code names the class of its error, and the errors MEOS raises
+from the PostgreSQL code it carries take the code of the class PostgreSQL
+gives the same message. In PostgreSQL an error is raised with the SQLSTATE of
+its class, so a client tells a value out of range from a malformed input by
+the state alone, as it does for the built-in types:
+
+| MEOS code | SQLSTATE |
+|---|---|
+| `MEOS_ERR_VALUE_OUT_OF_RANGE` | 22003 |
+| `MEOS_ERR_DATETIME_OUT_OF_RANGE` | 22008 |
+| `MEOS_ERR_DIVISION_BY_ZERO` | 22012 |
+| `MEOS_ERR_INVALID_ARG_VALUE` | 22023 |
+| `MEOS_ERR_FEATURE_NOT_SUPPORTED` | 0A000 |
+| `MEOS_ERR_INDETERMINATE_COLLATION` | 42P22 |
+| `MEOS_ERR_INVALID_REGULAR_EXPRESSION` | 2201B |
+| `MEOS_ERR_SYNTAX_ERROR` | 42601 |
+| `MEOS_ERR_TEXT_INPUT`, `MEOS_ERR_MFJSON_INPUT`, `MEOS_ERR_GEOJSON_INPUT` | 22P02 |
+| `MEOS_ERR_WKB_INPUT` | 22P03 |
+| the SQL/JSON codes, such as `MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM` | the SQL/JSON class of the same name, 22030 to 2203C, such as 22036 |
+| `MEOS_ERR_UNDEFINED_OBJECT` | 42704 |
+| `MEOS_ERR_MEMORY_ALLOC_ERROR`, `MEOS_ERR_OUT_OF_MEMORY` | 53200 |
+| a code with no class of its own, such as `MEOS_ERR_INTERNAL_ERROR` | XX000 |
+
+```sql
+\set VERBOSITY sqlstate
+SELECT tsum(temp) FROM (VALUES
+  ('2000000000@2001-01-01'::tint), ('2000000000@2001-01-01'::tint)) t(temp);
+-- ERROR:  22003
+SELECT tint '[1@2001-01-01, 2@2001-01-02]' / 0;
+-- ERROR:  22012
+SELECT tintFromBinary('\x00');
+-- ERROR:  22P03
+```
+
+A jsonpath applied to a `tjsonb` or a `jsonbset` raises the errors, and the
+SQLSTATEs, that the same path raises on a `jsonb`. An item method that cannot
+convert its argument raises the SQL/JSON class of a non-numeric item, a call
+that suppresses the errors of its path answers nothing and raises none, and
+the largest value of a type is a value:
+
+```sql
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"x\""}', '$.bigint()');
+-- ERROR:  argument "x" of jsonpath item method .bigint() is invalid for type bigint
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"9223372036854775807\""}', '$.bigint()');
+-- {9223372036854775807}
+```
 
 ## 7. Versioning and stability
 

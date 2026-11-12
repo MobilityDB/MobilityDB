@@ -92,3 +92,14 @@ SELECT ST_Area(traversedArea(
   trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(4 0 0),0,0,0,1)@2026-01-02]', TRUE));
 SELECT ST_NumGeometries(traversedArea(
   trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(4 0 0),0,0,0,1)@2026-01-02]'));
+-- A sequence set covers what each of its sequences sweeps and nothing in the
+-- gaps between them, in 2D, with Z, and where a sequence holds one instant
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0),0)@2026-01-01, Pose(Point(1 0),0)@2026-01-02], [Pose(Point(5 0),0)@2026-01-03, Pose(Point(6 0),0)@2026-01-04]}', TRUE), 6));
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));{[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(1 0 0),1,0,0,0)@2026-01-02], [Pose(Point Z(5 0 0),1,0,0,0)@2026-01-03, Pose(Point Z(6 0 0),1,0,0,0)@2026-01-04]}', TRUE), 6));
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0),0)@2026-01-01, Pose(Point(1 0),0)@2026-01-02], [Pose(Point(5 0),0)@2026-01-03]}', TRUE), 6));
+SELECT ST_Covers(traversedArea(
+  trgeometry 'Polygon((-2 -0.1,2 -0.1,2 0.1,-2 0.1,-2 -0.1));{[Pose(Point(0 0),0)@2026-01-01, Pose(Point(0 0),0.04)@2026-01-02], [Pose(Point(9 0),0)@2026-01-03, Pose(Point(9 0),0.04)@2026-01-04]}', TRUE),
+  geometry 'Point(5 0)');

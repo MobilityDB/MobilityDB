@@ -109,7 +109,8 @@ stbox_expand_point2d(const POINT2D *p, STBox *box)
  * the vertices of the route strictly between them, whose positions are the
  * ones #route_vertex_positions gives. The route is a planar line, as
  * #ensure_valid_route tests it when the network is read, and its points are
- * read in place up to the first vertex past the stretch
+ * read in place, from the line #route_line keeps in the ways cache, up to
+ * the first vertex past the stretch
  * @param[in] rid Route identifier
  * @param[in] pos1,pos2 Positions on the route
  * @param[out] box Spatiotemporal box
@@ -118,14 +119,13 @@ stbox_expand_point2d(const POINT2D *p, STBox *box)
 static bool
 route_stretch_set_stbox(int64 rid, double pos1, double pos2, STBox *box)
 {
-  const GSERIALIZED *gsline = route_geom(rid);
-  if (! gsline)
+  const LWLINE *line = route_line(rid);
+  if (! line)
     return false;
-  int32_t srid = gserialized_get_srid(gsline);
+  int32_t srid = line->srid;
   /* The routes of the table ways are planar geometries */
-  assert(! FLAGS_GET_GEODETIC(gsline->gflags));
-  assert(! FLAGS_GET_Z(gsline->gflags));
-  LWLINE *line = (LWLINE *) lwgeom_from_gserialized(gsline);
+  assert(! FLAGS_GET_GEODETIC(line->flags));
+  assert(! FLAGS_GET_Z(line->flags));
   const POINTARRAY *pa = line->points;
   double length = ptarray_length_2d(pa);
   double posmin = Min(pos1, pos2), posmax = Max(pos1, pos2);
@@ -157,7 +157,6 @@ route_stretch_set_stbox(int64 rid, double pos1, double pos2, STBox *box)
       p1 = p2;
     }
   }
-  lwline_free(line);
   return true;
 }
 

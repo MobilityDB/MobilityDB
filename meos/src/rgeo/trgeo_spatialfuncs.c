@@ -1276,6 +1276,8 @@ typedef struct
   GSERIALIZED **geoms;  /**< The placements */
   TimestampTz *times;   /**< The timestamp of each placement */
   bool *turns;          /**< True at k if the body turns from placement k - 1 */
+  bool *starts;         /**< True at k if placement k starts a sequence, the
+                             body not moving to it from placement k - 1 */
   int count;            /**< Number of placements */
   int cap;              /**< Capacity of the arrays */
   double radius;        /**< The greatest distance of a vertex of the body
@@ -1288,11 +1290,12 @@ typedef struct
  * @param[in] temp Temporal rigid geometry
  * @param[in] t Timestamp
  * @param[in] turn True if the body turns on its way to this placement
+ * @param[in] start True if this placement starts a sequence
  * @param[in,out] pl Placements
  */
 static void
 trgeometry_trav_emit_at(const Temporal *temp, TimestampTz t, bool turn,
-  TrgeoPlacements *pl)
+  bool start, TrgeoPlacements *pl)
 {
   Datum value;
   if (! trgeometry_value_at_timestamptz_intl(temp, t, false, &value))
@@ -1303,10 +1306,12 @@ trgeometry_trav_emit_at(const Temporal *temp, TimestampTz t, bool turn,
     pl->geoms = repalloc(pl->geoms, sizeof(GSERIALIZED *) * pl->cap);
     pl->times = repalloc(pl->times, sizeof(TimestampTz) * pl->cap);
     pl->turns = repalloc(pl->turns, sizeof(bool) * pl->cap);
+    pl->starts = repalloc(pl->starts, sizeof(bool) * pl->cap);
   }
   pl->geoms[pl->count] = DatumGetGserializedP(value);
   pl->times[pl->count] = t;
-  pl->turns[pl->count++] = turn;
+  pl->turns[pl->count] = turn;
+  pl->starts[pl->count++] = start;
 }
 
 /**
@@ -1375,9 +1380,9 @@ trgeometry_trav_segment(const Temporal *temp, const TInstant *inst_a,
     if (span > n)
       for (int i = 1; i <= n; i++)
         trgeometry_trav_emit_at(temp,
-          inst_a->t + (TimestampTz) (span * i / (n + 1)), turn, pl);
+          inst_a->t + (TimestampTz) (span * i / (n + 1)), turn, false, pl);
   }
-  trgeometry_trav_emit_at(temp, inst_b->t, turn, pl);
+  trgeometry_trav_emit_at(temp, inst_b->t, turn, false, pl);
 }
 
 /**
@@ -1843,7 +1848,9 @@ trgeometry_turn_sweep(const Temporal *temp, const GSERIALIZED *a,
  * @brief Return the placements a temporal rigid geometry passes through
  * @details Every input instant contributes its placement, and a segment
  * carries as many placements between two of them as its rotation asks for at
- * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` of turn each. The trgeometry-specific step
+ * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` of turn each. The first instant of every
+ * sequence starts the placements of that sequence, no segment joining it to
+ * the last instant of the sequence before. The trgeometry-specific step
  * is materialising the reference geometry at every emitted sample via
  * `pose_apply_geo`
  * @param[in] temp Temporal rigid geometry
@@ -1866,6 +1873,7 @@ trgeometry_placement_array(const Temporal *temp, TrgeoPlacements *pl)
   pl->geoms = palloc(sizeof(GSERIALIZED *) * pl->cap);
   pl->times = palloc(sizeof(TimestampTz) * pl->cap);
   pl->turns = palloc(sizeof(bool) * pl->cap);
+  pl->starts = palloc(sizeof(bool) * pl->cap);
   pl->count = 0;
   /* The reference geometry is the body about the point its pose places, so
    * the radius is the greatest distance of a vertex from the origin */
@@ -1880,13 +1888,23 @@ trgeometry_placement_array(const Temporal *temp, TrgeoPlacements *pl)
   lwpointiterator_destroy(it);
   lwgeom_free(ref);
 
-  /* Emit the first instant. */
-  trgeometry_trav_emit_at(temp, insts[0]->t, false, pl);
-  /* Per inter-instant segment, recursively bisect. The recursion
-   * appends samples on (t_m, t_b], reusing the t_a sample emitted by
-   * the previous iteration. */
-  for (int i = 0; i + 1 < n_insts; i++)
-    trgeometry_trav_segment(temp, insts[i], insts[i + 1], pl);
+  /* The first instant of every sequence starts its placements, and every
+   * segment of a sequence appends those on (t_a, t_b], reusing the one at
+   * t_a appended before */
+  const TSequenceSet *ss = (temp->subtype == TSEQUENCESET) ?
+    (const TSequenceSet *) temp : NULL;
+  int seq = 0, next_start = 0;
+  for (int i = 0; i < n_insts; i++)
+  {
+    if (i == next_start)
+    {
+      trgeometry_trav_emit_at(temp, insts[i]->t, false, true, pl);
+      next_start = ss ? next_start + TSEQUENCESET_SEQ_N(ss, seq++)->count :
+        n_insts;
+    }
+    else
+      trgeometry_trav_segment(temp, insts[i - 1], insts[i], pl);
+  }
 
   pfree(insts);
   return true;
@@ -1943,7 +1961,7 @@ trgeometry_placements(const Temporal *temp)
   TrgeoPlacements pl;
   if (! trgeometry_placement_array(temp, &pl))
     return NULL;
-  pfree(pl.times); pfree(pl.turns);
+  pfree(pl.times); pfree(pl.turns); pfree(pl.starts);
   return trgeometry_geoms_merge(pl.geoms, pl.count, UNARY_UNION_NO);
 }
 
@@ -2000,8 +2018,12 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
    * form in linear motion is refused rather than answered by its placements.
    * A value with Z covers the ground its shadow sweeps, and the shadow of a
    * body that turns in linear motion is refused as well */
-  bool linear = unary_union && n_geoms > 1 &&
-    MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  /* The body moves between two placements where one of them does not start
+   * a sequence */
+  bool moves = false;
+  for (int i = 1; i < n_geoms && ! moves; i++)
+    moves = ! pl.starts[i];
+  bool linear = unary_union && moves && MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
   const char *refused = NULL;
   if (linear && hasz && ! trgeometry_translates(temp))
@@ -2016,7 +2038,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
   {
     for (int i = 0; i < n_geoms; i++)
       pfree(geoms[i]);
-    pfree(geoms); pfree(pl.times); pfree(pl.turns);
+    pfree(geoms); pfree(pl.times); pfree(pl.turns); pfree(pl.starts);
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED, "%s", refused);
     return NULL;
   }
@@ -2028,13 +2050,16 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
      * does not interpolate */
     int cap = n_geoms * 2, n_swept = 0;
     GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * cap);
-    if (linear)
-      for (int i = 0; i + 1 < n_geoms; i++)
+    for (int i = 0; i < n_geoms; i++)
+    {
+      if (linear && i + 1 < n_geoms && ! pl.starts[i + 1])
         trgeometry_ground_sweep(geoms[i], geoms[i + 1], &swept, &n_swept,
           &cap);
-    else
-      for (int i = 0; i < n_geoms; i++)
+      /* A placement no pair holds: a value that does not interpolate, or a
+       * sequence of one instant */
+      else if (! linear || pl.starts[i])
         trgeometry_ground_sweep(geoms[i], geoms[i], &swept, &n_swept, &cap);
+    }
     for (int i = 0; i < n_geoms; i++)
       pfree(geoms[i]);
     pfree(geoms);
@@ -2045,14 +2070,22 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
   {
     int cap = n_geoms * 2, n_swept = 0;
     GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * cap);
-    for (int i = 0; i + 1 < n_geoms; i++)
+    for (int i = 0; i < n_geoms; i++)
     {
+      if (i + 1 == n_geoms || pl.starts[i + 1])
+      {
+        /* A sequence of one instant, which no pair holds */
+        if (pl.starts[i])
+          trgeometry_pieces_append(geo_copy(geoms[i]), &swept, &n_swept,
+            &cap);
+        continue;
+      }
       /* A pair the body turns between; the first placement is held by no
-       * earlier piece only at the start, each later one ending the pair
-       * before it */
+       * earlier piece only where it starts a sequence, each later one ending
+       * the pair before it */
       if (pl.turns[i + 1])
         trgeometry_turn_sweep(temp, geoms[i], geoms[i + 1], pl.times[i],
-          pl.times[i + 1], i == 0, &swept, &n_swept, &cap);
+          pl.times[i + 1], pl.starts[i], &swept, &n_swept, &cap);
       else
         trgeometry_pieces_append(trgeometry_convex_sweep(geoms[i],
           geoms[i + 1]), &swept, &n_swept, &cap);
@@ -2069,7 +2102,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
       pfree(swept);
   }
 
-  pfree(pl.times); pfree(pl.turns);
+  pfree(pl.times); pfree(pl.turns); pfree(pl.starts);
   return trgeometry_geoms_merge(geoms, n_geoms, unary_union);
 }
 
