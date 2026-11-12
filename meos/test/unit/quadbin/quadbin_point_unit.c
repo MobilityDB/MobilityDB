@@ -35,8 +35,9 @@
  * the parallels of the grid, and one ulp on each side of it, lies in the tile
  * whose box, as #quadbin_cell_bounding_box states it, holds it by the rule of
  * the cell walks: a tile holds its west and north bounds (#quadbin_cell_edge_held),
- * the first row every latitude above it and the last row every latitude below
- * it, the poles included (decision D5). The point function
+ * the first row every latitude above the limit of the grid and the last row
+ * every latitude below it, the poles included, their boxes reaching the poles
+ * (decision D5). The point function
  * #quadbin_point_to_cell and both ends of the planar walk
  * #quadbin_segment_cells name that tile. The fractional coordinates of the
  * Mercator projection, read in doubles, put the position beside a bound in
@@ -54,6 +55,10 @@
 #include "quadbin/quadbin.h"
 
 #define MAXZOOM 10
+
+/* The latitude limit of Web Mercator, the bound of the grid beyond which the
+ * first and the last rows extend to the poles */
+#define LIMIT 85.051128779806604
 
 /* The longest planar walk of a test segment, from the centre of a tile to a
  * bound of another tile of the same column or row */
@@ -129,24 +134,48 @@ main(int argc, char **argv)
       check(xmin, lat, zoom, k, k, "the west bound");
       check(nextafter(xmin, INFINITY), lat, zoom, k, k, "east of a bound");
       if (k > 0)
+      {
         check(nextafter(xmin, -INFINITY), lat, zoom, k - 1, k,
           "west of a bound");
-      /* The north bound of row k, held by it; north of it, row k - 1, or row
-       * 0 for every latitude above the limit of the grid */
-      check(lon, ymax, zoom, k, k, "the north bound");
-      check(lon, nextafter(ymax, -INFINITY), zoom, k, k, "south of a bound");
-      check(lon, nextafter(ymax, INFINITY), zoom, k, k > 0 ? k - 1 : 0,
-        "north of a bound");
+        /* The north bound of row k, held by it; north of it, row k - 1 */
+        check(lon, ymax, zoom, k, k, "the north bound");
+        check(lon, nextafter(ymax, -INFINITY), zoom, k, k,
+          "south of a bound");
+        check(lon, nextafter(ymax, INFINITY), zoom, k, k - 1,
+          "north of a bound");
+      }
+      else
+      {
+        /* The first row holds every latitude above the limit of the grid, and
+         * its box reaches the north pole */
+        if (ymax != 90.0)
+        {
+          printf("FAIL zoom %u: the box of the first row ends at %a, not at "
+            "the north pole\n", zoom, ymax);
+          failures++;
+        }
+        for (int i = -1; i <= 1; i++)
+          check(lon, i < 0 ? nextafter(LIMIT, -INFINITY) :
+            (i > 0 ? nextafter(LIMIT, INFINITY) : LIMIT), zoom, k, k,
+            "the limit of the grid");
+        check(lon, 90.0, zoom, k, k, "the north pole");
+      }
       if (k == n - 1)
       {
-        /* The last row holds its south bound and every latitude below it */
-        check(lon, ymin, zoom, k, k, "the south bound of the last row");
-        check(lon, nextafter(ymin, -INFINITY), zoom, k, k,
-          "south of the last row");
+        /* The last row holds every latitude below the limit of the grid, and
+         * its box reaches the south pole */
+        if (ymin != -90.0)
+        {
+          printf("FAIL zoom %u: the box of the last row ends at %a, not at "
+            "the south pole\n", zoom, ymin);
+          failures++;
+        }
+        for (int i = -1; i <= 1; i++)
+          check(lon, i < 0 ? nextafter(-LIMIT, -INFINITY) :
+            (i > 0 ? nextafter(-LIMIT, INFINITY) : -LIMIT), zoom, k, k,
+            "the limit of the grid");
         check(lon, -90.0, zoom, k, k, "the south pole");
       }
-      if (k == 0)
-        check(lon, 90.0, zoom, k, k, "the north pole");
     }
     printf("zoom %d: %u tiles a side, %d failures\n", z, n, failures - before);
   }
