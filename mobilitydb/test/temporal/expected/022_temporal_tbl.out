@@ -2562,13 +2562,13 @@ SELECT SUM(numInstants(insert(t1.inst, t2.inst))) FROM temp t1, temp t2 WHERE ge
 SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.k < t2.k;
   sum  
 -------
- 81994
+ 81545
 (1 row)
 
 SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k;
   sum  
 -------
- 75080
+ 75072
 (1 row)
 
 SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k;
@@ -2586,25 +2586,25 @@ SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_ttext t1, tbl_ttext t
 SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.k < t2.k;
   sum  
 -------
- 81599
+ 82053
 (1 row)
 
 SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k;
   sum  
 -------
- 75067
+ 75080
 (1 row)
 
 SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k;
   sum  
 -------
- 90956
+ 90980
 (1 row)
 
 SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.k < t2.k;
   sum  
 -------
- 90923
+ 90962
 (1 row)
 
 SELECT round(sum(integral(temp)), 6) FROM tbl_tint;
