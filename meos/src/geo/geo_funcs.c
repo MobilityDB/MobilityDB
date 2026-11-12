@@ -1278,6 +1278,77 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
 }
 
 /**
+ * @brief Return the sign of the difference of the parameters at which a
+ * segment crosses the lines through two edges, exactly
+ * @details The segment runs from P0 to P1 and crosses the line through A and
+ * B at the parameter `s = f(P0) / (f(P0) - f(P1))`, with `f(P) = cross(A, B,
+ * P) = (bx + ob - ax - oa) (py - ay) - (by - ay) (px - ax - oa)`, as
+ * #segment_edge_cross_offset dates it. The difference of the parameters of
+ * two lines has the sign of `f2(P0) f1(P1) - f1(P0) f2(P1)` times those of
+ * the two denominators, a polynomial of degree 4 in exact sums of the input
+ * doubles and offsets that #polynomial_sign_exact decides, and each
+ * denominator the sign of a cross product #cross_product_sign_offset
+ * decides. So two crossings are ordered along the segment, the crossings at
+ * a vertex where both lines meet are found equal, and no parameter is
+ * rounded. The x offsets, such as a multiple of 360 reading a cell across
+ * the antimeridian in the chart of the segment, are never added to a
+ * coordinate, where they would round.
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * @param[in] ax,ay,oa,bx,by,ob The first line, through A and B, and the
+ * offsets of their x
+ * @param[in] cx,cy,oc,dx,dy,od The second line, through C and D, and the
+ * offsets of their x
+ * @return -1, 0 or 1 as the segment crosses the first line before, at or
+ * after the second, or 0 when it is parallel to either line
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int
+segment_edge_cross_cmp(double x0, double y0, double x1, double y1,
+  double ax, double ay, double oa, double bx, double by, double ob,
+  double cx, double cy, double oc, double dx, double dy, double od)
+{
+  /* The signs of the denominators f(P0) - f(P1) = cross(B - A, P0 - P1) */
+  int den1 = cross_product_sign_offset(ax, ay, bx, by, x1, y1, x0, y0,
+    ob - oa, 0.0);
+  int den2 = cross_product_sign_offset(cx, cy, dx, dy, x1, y1, x0, y0,
+    od - oc, 0.0);
+  if (den1 == 0 || den2 == 0)
+    return 0;
+  ExactSum sums[12];
+  const double u1[4] = {bx, ob, - ax, - oa}, v1[2] = {by, - ay};
+  const double x01[3] = {x0, - ax, - oa}, y01[2] = {y0, - ay};
+  const double x11[3] = {x1, - ax, - oa}, y11[2] = {y1, - ay};
+  const double u2[4] = {dx, od, - cx, - oc}, v2[2] = {dy, - cy};
+  const double x02[3] = {x0, - cx, - oc}, y02[2] = {y0, - cy};
+  const double x12[3] = {x1, - cx, - oc}, y12[2] = {y1, - cy};
+  exact_sum_set(&sums[0], u1, 4);
+  exact_sum_set(&sums[1], v1, 2);
+  exact_sum_set(&sums[2], x01, 3);
+  exact_sum_set(&sums[3], y01, 2);
+  exact_sum_set(&sums[4], x11, 3);
+  exact_sum_set(&sums[5], y11, 2);
+  exact_sum_set(&sums[6], u2, 4);
+  exact_sum_set(&sums[7], v2, 2);
+  exact_sum_set(&sums[8], x02, 3);
+  exact_sum_set(&sums[9], y02, 2);
+  exact_sum_set(&sums[10], x12, 3);
+  exact_sum_set(&sums[11], y12, 2);
+  /* f1(P) = U1 (py - ay) - V1 (px - ax - oa), f2 alike, and the polynomial
+   * f2(P0) f1(P1) - f1(P0) f2(P1) */
+  PolyTerm terms[8] = {
+    {.coef = 1.0, .deg = 4, .sum = {6, 9, 0, 5}},
+    {.coef = -1.0, .deg = 4, .sum = {6, 9, 1, 4}},
+    {.coef = -1.0, .deg = 4, .sum = {7, 8, 0, 5}},
+    {.coef = 1.0, .deg = 4, .sum = {7, 8, 1, 4}},
+    {.coef = -1.0, .deg = 4, .sum = {0, 3, 6, 11}},
+    {.coef = 1.0, .deg = 4, .sum = {0, 3, 7, 10}},
+    {.coef = 1.0, .deg = 4, .sum = {1, 2, 6, 11}},
+    {.coef = -1.0, .deg = 4, .sum = {1, 2, 7, 10}}};
+  return polynomial_sign_exact(sums, terms, 8) * den1 * den2;
+}
+
+/**
  * @brief Read one edge of a ring for the location of a point by a ray cast to
  * the right at the point's height
  * @details The edge runs from A to B, their x coordinates shifted by exact

@@ -838,19 +838,6 @@ h3_point_cell(double lon, double lat, bool geodetic, int32 resolution)
 }
 
 /**
- * @brief Path a segment follows between its two endpoints
- * @details A planar point moves along the straight line in longitude and
- * latitude, a geodetic one along the great circle through its endpoints, as
- * `pointsegm_interpolate` places a temporal point between two instants.
- */
-typedef struct
-{
-  bool geodetic;          /**< True when the path is a great circle */
-  DggsLine line;          /**< Planar path: its straight line */
-  DggsArc arc;            /**< Geodetic path: its great circle */
-} H3SegmentPath;
-
-/**
  * @brief Return the length in degrees of the path between two positions
  * @details The path is the straight line in longitude and latitude for a
  * planar point and the great-circle arc for a geodetic one.
@@ -873,21 +860,6 @@ h3_segment_length_deg(double lon1, double lat1, double lon2, double lat2,
 }
 
 /**
- * @brief Return in the last argument the path between two positions
- * @return False when the path has no length, since it then leaves no cell
- */
-static bool
-h3_segment_path_init(double lon1, double lat1, double lon2, double lat2,
-  bool geodetic, H3SegmentPath *path)
-{
-  memset(path, 0, sizeof(H3SegmentPath));
-  path->geodetic = geodetic;
-  if (! geodetic)
-    return dggs_line_init(lon1, lat1, lon2, lat2, &path->line);
-  return dggs_arc_init(lon1, lat1, lon2, lat2, &path->arc);
-}
-
-/**
  * @brief Return true if the boundary of a cell is convex
  * @details A cell is a hexagon or a pentagon whose edges are arcs of great
  * circles, and it is convex unless it spans two faces of the icosahedron,
@@ -901,61 +873,12 @@ h3_cell_is_convex(H3Index cell, const CellBoundary *bnd)
 }
 
 /**
- * @brief Planes of the edges of a convex cell, as #dggs_cell_edge_planes
- * states them
- */
-typedef struct
-{
-  H3Index cell;                             /**< Cell, or 0 when none */
-  int count;                                /**< Number of edges */
-  double normals[3 * MAX_CELL_BNDRY_VERTS]; /**< Inward unit normals */
-  double origins[3 * MAX_CELL_BNDRY_VERTS]; /**< A position of each plane */
-} H3CellPlanes;
-
-/** @brief Planes of the last convex cell asked for, per thread */
-static MEOS_TLS H3CellPlanes h3_last_planes = { .cell = 0 };
-
-/**
- * @brief Return the planes of the edges of a convex cell, or NULL for a cell
- * bent across a face of the icosahedron
- * @details The planes are a function of the cell alone, so those of the last
- * cell asked for answer again for the same cell: consecutive segments of a
- * trajectory mostly lie in one cell, and reading its boundary and turning it
- * into planes costs more than the rest of the answer for such a segment
- * @param[in] cell Cell
- */
-static const H3CellPlanes *
-h3_cell_planes(H3Index cell)
-{
-  if (h3_last_planes.cell == cell)
-    return &h3_last_planes;
-  CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS ||
-      ! h3_cell_is_convex(cell, &bnd))
-    return NULL;
-  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
-  for (int i = 0; i < bnd.numVerts; i++)
-  {
-    lons[i] = bnd.verts[i].lng;
-    lats[i] = bnd.verts[i].lat;
-  }
-  /* cppcheck-suppress uninitvar */
-  dggs_cell_edge_planes(lons, lats, bnd.numVerts, h3_last_planes.normals,
-    h3_last_planes.origins);
-  h3_last_planes.count = bnd.numVerts;
-  h3_last_planes.cell = cell;
-  return &h3_last_planes;
-}
-
-/**
- * @brief Return where the path of a segment leaves a cell, and in the last
- * argument the edge of the cell boundary it crosses there
- * @details A geodetic path leaves where its great circle first leaves the
+ * @brief Return where the great circle of a geodetic segment leaves a cell,
+ * and in the last argument the edge of the cell boundary it crosses there
+ * @details The path leaves where its great circle first leaves the
  * hemisphere of an edge, found in closed form by
  * #dggs_arc_hemisphere_exit_param, or for a bent cell where it first crosses
- * an edge, by #dggs_arc_exit_param. A
- * planar path is a straight line in longitude and latitude, which a cell edge
- * is not, so its exit is searched for along it by #dggs_line_exit_param. The
+ * an edge, by #dggs_arc_exit_param. The
  * exit lies strictly ahead of `tmin`, or at `tmin` for a path on the boundary
  * there and heading out, and never on an edge the path entered the cell
  * through. A cell spanning two faces of the icosahedron bends at the vertices
@@ -965,7 +888,7 @@ h3_cell_planes(H3Index cell)
  * @param[in] bnd Boundary of the cell
  * @param[in] entry Mask of the edges of @p bnd the path entered the cell
  * through
- * @param[in] path Path of the segment
+ * @param[in] arc Great circle of the segment
  * @param[in] tmin Parameter at which the path entered the cell
  * @param[out] edge Edge of @p bnd crossed at the exit
  * @return the path parameter of the exit, or a value above 1 when the path
@@ -973,7 +896,7 @@ h3_cell_planes(H3Index cell)
  */
 static double
 h3_cell_exit_param(H3Index cell, const CellBoundary *bnd, uint32 entry,
-  const H3SegmentPath *path, double tmin, int *edge)
+  const DggsArc *arc, double tmin, int *edge)
 {
   double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
   for (int i = 0; i < bnd->numVerts; i++)
@@ -981,15 +904,11 @@ h3_cell_exit_param(H3Index cell, const CellBoundary *bnd, uint32 entry,
     lons[i] = bnd->verts[i].lng;
     lats[i] = bnd->verts[i].lat;
   }
-  bool convex = h3_cell_is_convex(cell, bnd);
-  if (path->geodetic)
-    return convex ?
-      dggs_arc_hemisphere_exit_param(&path->arc, lons, lats, bnd->numVerts,
-        tmin, entry, edge) :
-      dggs_arc_exit_param(&path->arc, lons, lats, bnd->numVerts, tmin, entry,
-        edge);
-  return dggs_line_exit_param(&path->line, lons, lats, bnd->numVerts, tmin,
-    convex, entry, edge);
+  if (h3_cell_is_convex(cell, bnd))
+    return dggs_arc_hemisphere_exit_param(arc, lons, lats, bnd->numVerts,
+      tmin, entry, edge);
+  return dggs_arc_exit_param(arc, lons, lats, bnd->numVerts, tmin, entry,
+    edge);
 }
 
 /**
@@ -1078,6 +997,397 @@ h3_cell_entry_edges(H3Index cell, const CellBoundary *bnd, H3Index neighbour)
   return mask;
 }
 
+/*****************************************************************************
+ * The planar walk on the straight-edged outlines
+ *****************************************************************************/
+
+/**
+ * @brief Outline of a cell read in the chart of a segment
+ * @details Vertex `i` of the chart, for any integer `i`, is the vertex `i mod
+ * n` of the outline, its longitude carrying the exact offset `xo[i mod n] +
+ * s`, and around a pole `wrap` more for each turn of the ring, so that the
+ * edge from each vertex to the next runs along the ring in the chart of the
+ * segment, the ring around a pole repeated every 360 degrees. No offset is
+ * added to a longitude, where it would round.
+ */
+typedef struct
+{
+  H3Index cell;                         /**< Cell */
+  H3Outline o;                          /**< Its outline */
+  double xo[MAX_CELL_BNDRY_VERTS];      /**< Offset of each vertex from the
+                                             first along the ring */
+  double s;                             /**< Offset of the copy */
+  double wrap;                          /**< Around a pole, the offset of
+                                             the ring after one turn */
+} H3Chart;
+
+/**
+ * @brief A crossing of the planar walk: the line of an edge of an outline
+ * in the chart of the segment, which the segment crosses where it leaves a
+ * cell
+ */
+typedef struct
+{
+  double ax, ay, oa;      /**< First vertex of the edge and its offset */
+  double bx, by, ob;      /**< Second vertex of the edge and its offset */
+  int index;              /**< Chart index of the edge crossed, or of the
+                               vertex passed */
+  bool vertex;            /**< True when the segment leaves at a vertex */
+  int cout;               /**< At a vertex, the side of the edge leaving it
+                               the segment heads to */
+  bool along_out;         /**< At a vertex, the segment runs along the edge
+                               leaving it */
+  bool back_in;           /**< At a vertex, the segment runs back along the
+                               edge reaching it */
+} H3Crossing;
+
+/**
+ * @brief Return in the last arguments the vertex `i` of a chart and the
+ * offset of its longitude
+ */
+static void
+h3_chart_vertex(const H3Chart *c, int i, double *x, double *y, double *off)
+{
+  int n = c->o.count;
+  int q = (i >= 0) ? i / n : - ((n - 1 - i) / n);
+  int k = i - q * n;
+  *x = c->o.lon[k];
+  *y = c->o.lat[k];
+  *off = c->xo[k] + c->s + (c->o.pole ? q * c->wrap : 0.0);
+  return;
+}
+
+/**
+ * @brief Return in the last argument the chart of a cell whose copy holds a
+ * longitude, as #h3_outline_holds_point reads it, false on an error of the
+ * H3 library
+ */
+static bool
+h3_chart_at_lon(H3Index cell, double x, H3Chart *c)
+{
+  const H3Outline *o = h3_cell_outline_last(cell);
+  if (! o)
+    return false;
+  c->cell = cell;
+  c->o = *o;
+  h3_outline_chart(o, x, c->xo, &c->s, &c->wrap);
+  return true;
+}
+
+/**
+ * @brief Return in the next to last argument the chart of a cell that puts
+ * one of its vertices at a given offset, and in the last one the index of
+ * that vertex, false when the cell has no such vertex
+ * @details The walk steps from a cell to the next through a vertex both
+ * outlines state with the same doubles, so the next chart continues the
+ * first along the segment
+ */
+static bool
+h3_chart_at_vertex(H3Index cell, double x, double y, double off, H3Chart *c,
+  int *vertex)
+{
+  if (! h3_chart_at_lon(cell, x, c))
+    return false;
+  for (int k = 0; k < c->o.count; k++)
+    if (c->o.lon[k] == x && c->o.lat[k] == y)
+    {
+      c->s = off - c->xo[k];
+      *vertex = k;
+      return true;
+    }
+  return false;
+}
+
+/**
+ * @brief Return true if the outline of a chart turns left, or goes
+ * straight, at every vertex, by the exact sign of each turn
+ */
+static bool
+h3_chart_convex(const H3Chart *c)
+{
+  if (c->o.pole)
+    return false;
+  for (int k = 0; k < c->o.count; k++)
+  {
+    double px, py, po, x, y, o, nx, ny, no;
+    h3_chart_vertex(c, k - 1, &px, &py, &po);
+    h3_chart_vertex(c, k, &x, &y, &o);
+    h3_chart_vertex(c, k + 1, &nx, &ny, &no);
+    if (cross_product_sign_offset(px, py, x, y, x, y, nx, ny, o - po,
+        no - o) < 0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the sign of the dot product of the vector from A to B with
+ * the vector of a segment parallel to it, from the signs of their components
+ */
+static int
+h3_parallel_dot_sign(double ax, double ay, double oa, double bx, double by,
+  double ob, int dxs, int dys)
+{
+  if (dxs != 0)
+    return offset_x_cmp(bx, ob - oa, ax) * dxs;
+  return ((by > ay) - (by < ay)) * dys;
+}
+
+/**
+ * @brief Return true if a segment passing through the vertex `j` of a chart
+ * lies in the cell just after it, and fill the fields of the crossing that
+ * name the cell it heads into otherwise
+ * @details Just after the vertex the segment lies in the cell where it lies
+ * left of both edges meeting there at a convex corner, or of either at a
+ * reflex one, since the cell lies left of its edges; running along an edge,
+ * it lies in the cell when the cell holds the edge (#h3_outline_edge_held).
+ * Every sign is exact on the doubles of the outline and the offsets of the
+ * chart (#cross_product_sign_offset)
+ */
+static bool
+h3_chart_vertex_inside(const H3Chart *c, int j, double x0, double y0,
+  double x1, double y1, H3Crossing *cr)
+{
+  double px, py, po, vx, vy, vo, nx, ny, no;
+  h3_chart_vertex(c, j - 1, &px, &py, &po);
+  h3_chart_vertex(c, j, &vx, &vy, &vo);
+  h3_chart_vertex(c, j + 1, &nx, &ny, &no);
+  int n = c->o.count;
+  int k = ((j % n) + n) % n;
+  int cin = cross_product_sign_offset(px, py, vx, vy, x0, y0, x1, y1,
+    vo - po, 0.0);
+  int cout = cross_product_sign_offset(vx, vy, nx, ny, x0, y0, x1, y1,
+    no - vo, 0.0);
+  int turn = cross_product_sign_offset(px, py, vx, vy, vx, vy, nx, ny,
+    vo - po, no - vo);
+  int dxs = (x1 > x0) - (x1 < x0), dys = (y1 > y0) - (y1 < y0);
+  cr->cout = cout;
+  cr->along_out = cout == 0 &&
+    h3_parallel_dot_sign(vx, vy, vo, nx, ny, no, dxs, dys) > 0;
+  cr->back_in = cin == 0 &&
+    h3_parallel_dot_sign(px, py, po, vx, vy, vo, dxs, dys) < 0;
+  if (cr->along_out)
+    return h3_outline_edge_held(&c->o, k);
+  if (cr->back_in)
+    return h3_outline_edge_held(&c->o, (k + n - 1) % n);
+  return (turn >= 0) ? (cin > 0 && cout > 0) : (cin > 0 || cout > 0);
+}
+
+/**
+ * @brief Return true and in the last argument where a planar segment leaves
+ * the cell of a chart, at or after a crossing, false when it ends in the
+ * cell
+ * @details The segment meets an edge of the outline where the two vertices of
+ * the edge lie on either side of its line or on it. Where it crosses the
+ * edge between its vertices, it leaves when it heads out, to the right of the
+ * edge; where it meets a vertex, it leaves when it does not lie in the cell
+ * just after (#h3_chart_vertex_inside). A meeting at the start of the
+ * segment, or at the crossing the walk entered the cell by, counts, so a
+ * segment passing a vertex reaches the third cell meeting there at the same
+ * parameter. The first meeting where it leaves is the exit, the meetings
+ * ordered by #segment_edge_cross_cmp; a meeting at the end of the segment is
+ * none, the end belonging to the cell of its own position. Around a pole the
+ * ring is read in the copies the segment reaches.
+ * @param[in] c Chart of the cell
+ * @param[in] x0,y0,x1,y1 The segment
+ * @param[in] t Crossing the walk entered the cell by, or NULL at the start
+ * @param[out] exit The exit
+ */
+static bool
+h3_chart_exit(const H3Chart *c, double x0, double y0, double x1, double y1,
+  const H3Crossing *t, H3Crossing *exit)
+{
+  int n = c->o.count, ilo = 0, ihi = n;
+  if (c->o.pole)
+  {
+    int nq = (int) ceil(fabs(x1 - x0) / 360.0) + 2;
+    ilo = - nq * n;
+    ihi = (nq + 1) * n;
+  }
+  bool found = false;
+  for (int i = ilo; i < ihi; i++)
+  {
+    H3Crossing cr;
+    memset(&cr, 0, sizeof(H3Crossing));
+    h3_chart_vertex(c, i, &cr.ax, &cr.ay, &cr.oa);
+    h3_chart_vertex(c, i + 1, &cr.bx, &cr.by, &cr.ob);
+    /* The sides of the line of the segment the vertices of the edge lie on */
+    int sa = cross_product_sign_offset(x0, y0, x1, y1, x0, y0, cr.ax, cr.ay,
+      0.0, cr.oa);
+    int sb = cross_product_sign_offset(x0, y0, x1, y1, x0, y0, cr.bx, cr.by,
+      0.0, cr.ob);
+    if ((sa == 0 && sb == 0) || sa * sb > 0)
+      continue;
+    /* The sign of f(P0) - f(P1), f the side of the edge, which is not 0
+     * since the vertices lie apart from the line of the segment; a crossing
+     * at or after the end of the segment is none */
+    int den = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, x1, y1,
+      x0, y0, cr.ob - cr.oa, 0.0);
+    int f1 = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, cr.ax,
+      cr.ay, x1, y1, cr.ob - cr.oa, - cr.oa);
+    if (f1 * den >= 0)
+      continue;
+    /* At or after the crossing the walk stands at */
+    int cmp;
+    if (! t)
+      cmp = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, cr.ax,
+        cr.ay, x0, y0, cr.ob - cr.oa, - cr.oa) * den;
+    else
+      cmp = segment_edge_cross_cmp(x0, y0, x1, y1, cr.ax, cr.ay, cr.oa,
+        cr.bx, cr.by, cr.ob, t->ax, t->ay, t->oa, t->bx, t->by, t->ob);
+    if (cmp < 0)
+      continue;
+    if (sa != 0 && sb != 0)
+    {
+      /* Across the edge between its vertices, heading out */
+      if (den <= 0)
+        continue;
+      cr.index = i;
+      cr.vertex = false;
+    }
+    else
+    {
+      cr.index = (sa == 0) ? i : i + 1;
+      cr.vertex = true;
+      if (h3_chart_vertex_inside(c, cr.index, x0, y0, x1, y1, &cr))
+        continue;
+    }
+    if (! found || segment_edge_cross_cmp(x0, y0, x1, y1, cr.ax, cr.ay,
+        cr.oa, cr.bx, cr.by, cr.ob, exit->ax, exit->ay, exit->oa, exit->bx,
+        exit->by, exit->ob) < 0)
+      *exit = cr;
+    found = true;
+  }
+  return found;
+}
+
+/**
+ * @brief Return the parameter at which a segment crosses the line of a
+ * crossing, in doubles
+ */
+static double
+h3_crossing_param(const H3Crossing *cr, double x0, double y0, double x1,
+  double y1)
+{
+  double ux = (cr->bx - cr->ax) + (cr->ob - cr->oa), uy = cr->by - cr->ay;
+  double f0 = ux * (y0 - cr->ay) - uy * ((x0 - cr->ax) - cr->oa);
+  double f1 = ux * (y1 - cr->ay) - uy * ((x1 - cr->ax) - cr->oa);
+  double t = (f0 == f1) ? 0.0 : f0 / (f0 - f1);
+  return fmin(1.0, fmax(0.0, t));
+}
+
+/** @brief Number of cells a planar walk steps through at one parameter
+ * before it gives up, at most three cells meeting at a vertex */
+#define H3_WALK_SAME_PARAM 6
+
+/**
+ * @brief Fill `cells` with every cell a planar segment crosses, and `enter`
+ * with the segment parameter at which it reaches each
+ * @details The walk of #h3_segment_cells for a planar segment, on the
+ * straight-edged outlines: the segment starts in the cell of its first
+ * position (#h3_point_cell), leaves each cell where #h3_chart_exit finds,
+ * and enters the cell across the edge it leaves by, or at a vertex the cell
+ * across the edge on whose side it heads, and from there the third cell
+ * meeting at the vertex at the same parameter where it lies in neither
+ * first. A segment ending in the convex cell it starts in never leaves it.
+ * Each entry states the edge crossed and which cell holds the crossing
+ * position: across an edge between its vertices, the one of the two holding
+ * the edge (#h3_outline_edge_held), at a vertex, the cells holding the vertex
+ * (#h3_outline_vertex_held).
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] resolution H3 resolution
+ * @param[out] cells,enter,cross Arrays of at least `maxout` entries, the last
+ * one possibly NULL
+ * @param[in] maxout Capacity of the arrays, at least 1
+ * @return Number of cells written, or 0 when the first lookup fails
+ */
+static int
+h3_segment_cells_planar(double lon1, double lat1, double lon2, double lat2,
+  int32 resolution, H3Index *cells, double *enter, H3EdgeCross *cross,
+  int maxout)
+{
+  H3Index cur = h3_point_cell(lon1, lat1, false, resolution);
+  if (cur == (H3Index) 0)
+    return 0;
+  cells[0] = cur; enter[0] = 0.0;
+  int n = 1;
+  if (lon1 == lon2 && lat1 == lat2)
+    return n;
+  H3Chart chart;
+  if (! h3_chart_at_lon(cur, lon1, &chart))
+    return n;
+  if (h3_chart_convex(&chart) &&
+      h3_point_cell(lon2, lat2, false, resolution) == cur)
+    return n;
+
+  H3Crossing t, exit;
+  memset(&t, 0, sizeof(H3Crossing));
+  bool started = false;
+  H3Index prev = (H3Index) 0;
+  int same = 0;
+  while (n < maxout &&
+      h3_chart_exit(&chart, lon1, lat1, lon2, lat2, started ? &t : NULL,
+        &exit))
+  {
+    int nv = chart.o.count;
+    int k = ((exit.index % nv) + nv) % nv;
+    double vx, vy, vo;
+    h3_chart_vertex(&chart, exit.index, &vx, &vy, &vo);
+    bool at_t = started && segment_edge_cross_cmp(lon1, lat1, lon2, lat2,
+      exit.ax, exit.ay, exit.oa, exit.bx, exit.by, exit.ob, t.ax, t.ay, t.oa,
+      t.bx, t.by, t.ob) == 0;
+    same = at_t ? same + 1 : 0;
+    if (same > H3_WALK_SAME_PARAM)
+      break;
+    H3Index next;
+    if (! exit.vertex)
+      next = chart.o.across[k];
+    else
+    {
+      /* The cell across the edge leaving the vertex or the edge reaching
+       * it, never the one the walk left at this parameter */
+      int kp = (k + nv - 1) % nv;
+      H3Index first = chart.o.across[k], second = chart.o.across[kp];
+      if (exit.back_in || (! exit.along_out && exit.cout >= 0))
+      {
+        first = chart.o.across[kp];
+        second = chart.o.across[k];
+      }
+      next = (at_t && first == prev) ? second : first;
+    }
+    H3Chart nc;
+    int vk;
+    if (next == (H3Index) 0 ||
+        ! h3_chart_at_vertex(next, vx, vy, vo, &nc, &vk))
+      break;
+    cells[n] = next;
+    enter[n] = h3_crossing_param(&exit, lon1, lat1, lon2, lat2);
+    if (cross)
+    {
+      H3EdgeCross *x = &cross[n];
+      x->ax = exit.ax; x->ay = exit.ay; x->oa = exit.oa;
+      x->bx = exit.bx; x->by = exit.by; x->ob = exit.ob;
+      if (exit.vertex)
+      {
+        x->held_left = h3_outline_vertex_held(&chart.o, k);
+        x->held_entered = h3_outline_vertex_held(&nc.o, vk);
+      }
+      else
+      {
+        x->held_left = h3_outline_edge_held(&chart.o, k);
+        x->held_entered = ! x->held_left;
+      }
+    }
+    n++;
+    prev = cur;
+    cur = next;
+    chart = nc;
+    t = exit;
+    started = true;
+  }
+  return n;
+}
+
 /**
  * @brief Fill `cells` with every cell the segment crosses, and `enter` with
  * the segment parameter at which it reaches each
@@ -1099,65 +1409,61 @@ h3_cell_entry_edges(H3Index cell, const CellBoundary *bnd, H3Index neighbour)
  * four tiles passes one of the two side tiles for no length.
  *
  * The walk follows the path the point moves along: the straight line in
- * longitude and latitude of a planar point, the great circle of a geodetic
- * one. A geodetic crossing is found on the sphere, where a path across the
+ * longitude and latitude of a planar point, walked on the straight-edged
+ * outlines of the cells by exact signs (#h3_segment_cells_planar), the
+ * great circle of a geodetic one on the boundaries of the library. A
+ * geodetic crossing is found on the sphere, where a path across the
  * antimeridian or over a pole is an arc like any other.
  * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
  * @param[in] geodetic True when the segment is geodetic
  * @param[in] resolution H3 resolution
  * @param[out] cells,enter Arrays of at least `maxout` entries; `enter[0]` is
  *   always 0, the parameter of the first endpoint
- * @param[in] maxout Capacity of both arrays
+ * @param[out] cross Array of at least `maxout` entries, or NULL; for a
+ *   planar segment, the crossing into each cell after the first
+ *   (#h3_segment_cells_planar)
+ * @param[in] maxout Capacity of the arrays
  * @return Number of cells written, or 0 when the first lookup fails
  */
 int
 h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
-  bool geodetic, int32 resolution, H3Index *cells, double *enter, int maxout)
+  bool geodetic, int32 resolution, H3Index *cells, double *enter,
+  H3EdgeCross *cross, int maxout)
 {
   assert(cells); assert(enter);
   if (maxout < 1)
     return 0;
-  H3Index cur = h3_latlng_deg_to_cell(lat1, lon1, resolution);
+  if (! geodetic)
+    return h3_segment_cells_planar(lon1, lat1, lon2, lat2, resolution, cells,
+      enter, cross, maxout);
+  H3Index cur = h3_point_cell(lon1, lat1, geodetic, resolution);
   if (cur == (H3Index) 0)
     return 0;
   cells[0] = cur; enter[0] = 0.0;
   int n = 1;
 
-  H3SegmentPath path;
-  if (! h3_segment_path_init(lon1, lat1, lon2, lat2, geodetic, &path))
+  DggsArc arc;
+  if (! dggs_arc_init(lon1, lat1, lon2, lat2, &arc))
     return n;
   /* A great circle meets a convex cell in a single arc, so a geodetic path
    * whose far endpoint lies in the same cell as its near one never leaves it
    * and there is no boundary to find. That is the common case wherever the
    * positions are closer together than a cell is wide, and reading the
-   * boundary for it costs more than the whole answer is worth. A straight
-   * line in longitude and latitude is no great circle: between two positions
-   * of one cell it bows off the arc joining them and can leave the cell and
-   * come back. It stays inside where both endpoints lie deeper inside every
-   * edge than it can bow, which #dggs_line_stays_in_planes reads from the
-   * planes of the edges without searching the path; any other planar path is
-   * followed until it ends inside the cell it stands in */
-  H3Index end = h3_latlng_deg_to_cell(lat2, lon2, resolution);
+   * boundary for it costs more than the whole answer is worth */
+  H3Index end = h3_point_cell(lon2, lat2, geodetic, resolution);
   if (end == cur)
-  {
-    if (geodetic)
-      return n;
-    const H3CellPlanes *planes = h3_cell_planes(cur);
-    if (planes && dggs_line_stays_in_planes(&path.line, planes->normals,
-        planes->origins, planes->count))
-      return n;
-  }
+    return n;
 
   double t = 0.0;
   H3Index prev = (H3Index) 0;
-  while (n < maxout && (! geodetic || cur != end))
+  while (n < maxout && cur != end)
   {
     CellBoundary bnd;
     if (cellToBoundary(cur, &bnd) != E_SUCCESS || bnd.numVerts < 3)
       break;
     uint32 entry = prev ? h3_cell_entry_edges(cur, &bnd, prev) : 0;
     int edge = -1;
-    double texit = h3_cell_exit_param(cur, &bnd, entry, &path, t, &edge);
+    double texit = h3_cell_exit_param(cur, &bnd, entry, &arc, t, &edge);
     if (texit > 1.0 || edge < 0)
       break;                 /* the segment ends inside this cell */
     H3Index next = h3_cell_across_edge(cur, &bnd, edge);
@@ -1201,7 +1507,7 @@ segment_to_cells_into(double lon1, double lat1, double lon2, double lat2,
   H3Index *cells = palloc(sizeof(H3Index) * (size_t) maxout);
   double *enter = palloc(sizeof(double) * (size_t) maxout);
   while ((ncells = h3_segment_cells(lon1, lat1, lon2, lat2, geodetic,
-      resolution, cells, enter, maxout)) == maxout)
+      resolution, cells, enter, NULL, maxout)) == maxout)
   {
     if (maxout >= H3_MAX_COVER_CELLS)
     {
@@ -1215,7 +1521,7 @@ segment_to_cells_into(double lon1, double lat1, double lon2, double lat2,
   }
   for (int k = 0; k < ncells; k++)
     h3_buf_push(out, cells[k]);
-  h3_buf_push(out, h3_latlng_deg_to_cell(lat2, lon2, resolution));
+  h3_buf_push(out, h3_point_cell(lon2, lat2, geodetic, resolution));
   pfree(cells); pfree(enter);
 }
 
@@ -1229,7 +1535,7 @@ pointarray_to_cells_into(const POINTARRAY *pa, bool geodetic,
   if (pa == NULL || pa->npoints == 0)
     return;
   const POINT2D *p = getPoint2d_cp(pa, 0);
-  h3_buf_push(out, h3_latlng_deg_to_cell(p->y, p->x, resolution));
+  h3_buf_push(out, h3_point_cell(p->x, p->y, geodetic, resolution));
   for (uint32_t i = 0; i + 1 < pa->npoints && ! out->overflow; i++)
   {
     const POINT2D *p0 = getPoint2d_cp(pa, i);
@@ -1428,7 +1734,7 @@ lwgeom_to_cells_into(LWGEOM *geom, bool geodetic, int32 resolution,
     case POINTTYPE:
     {
       const POINT2D *p = getPoint2d_cp(((const LWPOINT *) geom)->point, 0);
-      h3_buf_push(out, h3_latlng_deg_to_cell(p->y, p->x, resolution));
+      h3_buf_push(out, h3_point_cell(p->x, p->y, geodetic, resolution));
       break;
     }
     case LINETYPE:

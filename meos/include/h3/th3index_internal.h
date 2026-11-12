@@ -101,8 +101,21 @@ extern GSERIALIZED *h3index_cell_to_geog(H3Index cell);
  * latLngToCell wrapper that returns 0 on libh3 error. */
 extern double h3_segment_length_deg(double lon1, double lat1, double lon2,
   double lat2, bool geodetic);
+/* The crossing of a planar walk into a cell: the line of the edge of the
+ * outline crossed, its vertices and the exact offsets of their longitudes
+ * in the chart of the segment, and which of the cells holds the crossing
+ * position, the cell left, the cell entered, or at a vertex possibly
+ * neither. Filled by h3_segment_cells for a planar segment. */
+typedef struct
+{
+  double ax, ay, oa;      /**< First vertex of the edge and its offset */
+  double bx, by, ob;      /**< Second vertex of the edge and its offset */
+  bool held_left;         /**< The cell left holds the crossing position */
+  bool held_entered;      /**< The cell entered holds it */
+} H3EdgeCross;
 extern int h3_segment_cells(double lon1, double lat1, double lon2,
   double lat2, bool geodetic, int32 resolution, H3Index *cells, double *enter,
+  H3EdgeCross *cross,
   int maxout);
 extern H3Index h3_latlng_deg_to_cell(double lat_deg, double lng_deg,
   int32 resolution);
