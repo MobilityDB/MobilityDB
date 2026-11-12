@@ -90,6 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="ways__cache_8c_a1530ec6162b4897b8e617aef783eed23.html#a1530ec6162b4897b8e617aef783eed23">ways_cache_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways__cache_8c_a97218be3bf905e4ae6b8c0618c4d9a0f.html#a97218be3bf905e4ae6b8c0618c4d9a0f">WAYS_CACHE_NONE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways__cache_8c_a012746b49bb2092e2469fe1554e46c06.html#a012746b49bb2092e2469fe1554e46c06">ways_cache_push</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ways__cache_8c_a7c0463952079d0fd946977c3315ead4a.html#a7c0463952079d0fd946977c3315ead4a">ways_cache_release_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways__cache_8c_acab9e3cbdfe98a57bda2ba8478d3a065.html#acab9e3cbdfe98a57bda2ba8478d3a065">ways_cache_route_valid</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="ways__cache_8c_ad7a7d9485ae3de9baf1d7e85c91c8069.html#ad7a7d9485ae3de9baf1d7e85c91c8069">ways_cache_set_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways__cache_8c_a723970d4314dc628f64a9c1f24a8eb17.html#a723970d4314dc628f64a9c1f24a8eb17">ways_cache_slot</a></td></tr>
@@ -141,6 +142,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Give a geometry to an entry of the cache. </p>
+<p >The entry reads the geometry as a line once, a view over the points of the geometry the entry owns, as <a class="el" href="geo__funcs_8h_af7f74843ac01dd34b9227ebca273f2b6.html#af7f74843ac01dd34b9227ebca273f2b6" title="Return the context holding the edges of a serialized geometry, and the entry it belongs to where one ...">relate_ctx_borrow</a> reads the geometry of an entry of the relate context cache from the copy the entry owns, so that a caller reads the route as a line in place </p>
 
 </div>
 </div>
