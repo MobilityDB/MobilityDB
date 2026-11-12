@@ -333,6 +333,7 @@ subtypes:
     base:  pcpoint
     fam:   pointcloud
     brief: "temporal pgpointcloud points"
+    overlaps: box
     bin:   400
     category: tspatial
     # A point cloud point holds a POSITION, so the temporal geometry point its
@@ -357,6 +358,7 @@ subtypes:
     base:  pcpatch
     fam:   pointcloud
     brief: "temporal pgpointcloud patches"
+    overlaps: box
     bin:   400
     category: tspatial
     # A patch is a set of points, so its geometry is the multipoint of the

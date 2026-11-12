@@ -85,3 +85,23 @@ SELECT asText((:iA) #<> (:pB));
 SELECT asText((:seqAB) #<> (:seqAA));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+-- Ever and always overlaps: a value and a point cloud box
+
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) && tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(XT(((4,4),(6,6)),[2024-01-01 04:00, 2024-01-01 06:00]), 1)';
+SELECT tpcbox 'TPCBOX(XT(((4,4),(6,6)),[2024-01-01 04:00, 2024-01-01 06:00]), 1)' ?&& tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]);
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) %&& tpcbox 'TPCBOX(X((0,0),(10,10)), 1)';
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) %&& tpcbox 'TPCBOX(X((0,0),(9,9)), 1)';
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(T([2024-01-02, 2024-01-03]), 1)';
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2
+WHERE t1.temp ?&& tpcbox(t2.temp) <> (atTpcbox(t1.temp, tpcbox(t2.temp)) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2
+WHERE t1.temp %&& tpcbox(t2.temp) <> (minusTpcbox(t1.temp, tpcbox(t2.temp)) IS NULL);
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp ?&& tpcbox(t2.temp);
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp %&& tpcbox(t2.temp);
+/* Errors */
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(X((0,0),(10,10)), 999)';
