@@ -6435,95 +6435,15 @@ arr_cert_place(const Arr *a, double vx, double vy, double ax, double ay,
   f[0] = vx; f[1] = vy; f[2] = ax; f[3] = ay; f[4] = bx; f[5] = by;
 }
 
-/* Whether the point P lies farther than D from the
- * segment AB, decided exactly: the signs of (P - A).(B - A) and
- * (P - B).(A - B) tell whether the nearest point is an end or interior, then
- * |P - E|^2 - D^2 or (B - A) x (P - A))^2 - D^2 |B - A|^2, each the sign of a
- * polynomial in the doubles (#polynomial_sign_exact) */
-static bool cert_point_seg_far_slow(double px, double py, double ax,
-  double ay, double bx, double by, double d);
-
-/* The filter of #cert_point_seg_far_slow: each product of two rounded
- * differences is off by (3 + 16 eps) eps of the sum of the magnitudes it
- * adds (Shewchuk's bound for a sum of two products), and the comparisons
- * of squares carry that bound twice with a margin; where a bound cannot
- * decide, the exact test does */
+/* Whether the point P lies farther than D from the segment AB, D not
+ * negative: the sign of the distance of the point to the segment less D,
+ * which #point_segment_offset_sign reads exactly for every finite double */
 static inline bool
 cert_point_seg_far_exact(double px, double py, double ax, double ay,
   double bx, double by, double d)
 {
-  const double k = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON;
-  double A = bx - ax, B = by - ay, U = px - ax, V = py - ay;
-  double t1 = U * A, t2 = V * B, dot1 = t1 + t2;
-  double e1 = k * (fabs(t1) + fabs(t2));
-  double dd = d * d;
-  if (dot1 <= -e1)
-  {
-    double l = U * U + V * V, el = 2.0 * k * (l + dd) + 4.0 * DBL_MIN;
-    if (l - dd > el)
-      return true;
-    if (dd - l > el)
-      return false;
-  }
-  else if (dot1 > e1)
-  {
-    double P = px - bx, Q = py - by;
-    double t3 = P * A, t4 = Q * B, dot2 = t3 + t4;
-    double e2 = k * (fabs(t3) + fabs(t4));
-    if (dot2 >= e2)
-    {
-      double l = P * P + Q * Q, el = 2.0 * k * (l + dd) + 4.0 * DBL_MIN;
-      if (l - dd > el)
-        return true;
-      if (dd - l > el)
-        return false;
-    }
-    else if (dot2 < -e2)
-    {
-      double c1 = A * V, c2 = B * U, c = fabs(c1 - c2);
-      double ce = k * (fabs(c1) + fabs(c2));
-      double L = A * A + B * B, le = 2.0 * k * L;
-      double lo = c - ce, rhs_hi = dd * (L + le) * (1.0 + 8.0 * DBL_EPSILON);
-      double rhs_lo = dd * (L - le) * (1.0 - 8.0 * DBL_EPSILON);
-      if (lo > 0.0 && lo * lo * (1.0 - 8.0 * DBL_EPSILON) > rhs_hi +
-          4.0 * DBL_MIN)
-        return true;
-      double hi = c + ce;
-      if (hi * hi * (1.0 + 8.0 * DBL_EPSILON) + 4.0 * DBL_MIN < rhs_lo)
-        return false;
-    }
-  }
-  return cert_point_seg_far_slow(px, py, ax, ay, bx, by, d);
-}
-
-static bool
-cert_point_seg_far_slow(double px, double py, double ax, double ay,
-  double bx, double by, double d)
-{
-  double t[7][2] = {{bx, -ax}, {by, -ay}, {px, -ax}, {py, -ay}, {px, -bx},
-    {py, -by}, {d, 0.0}};
-  ExactSum sm[7];
-  for (int k = 0; k < 7; k++)
-    exact_sum_set(&sm[k], t[k], (k == 6) ? 1 : 2);
-  /* (P - A).(B - A) */
-  PolyTerm dot1[2] = {{1.0, 2, {2, 0}}, {1.0, 2, {3, 1}}};
-  if (polynomial_sign_exact(sm, dot1, 2) <= 0)
-  {
-    PolyTerm f[3] = {{1.0, 2, {2, 2}}, {1.0, 2, {3, 3}}, {-1.0, 2, {6, 6}}};
-    return polynomial_sign_exact(sm, f, 3) > 0;
-  }
-  /* (P - B).(B - A) >= 0: the end B is nearest */
-  PolyTerm dot2[2] = {{1.0, 2, {4, 0}}, {1.0, 2, {5, 1}}};
-  if (polynomial_sign_exact(sm, dot2, 2) >= 0)
-  {
-    PolyTerm f[3] = {{1.0, 2, {4, 4}}, {1.0, 2, {5, 5}}, {-1.0, 2, {6, 6}}};
-    return polynomial_sign_exact(sm, f, 3) > 0;
-  }
-  /* Cross = A' V - B' U with A' = bx - ax, B' = by - ay, U = px - ax,
-   * V = py - ay: cross^2 - D^2 (A'^2 + B'^2) */
-  PolyTerm f[5] = {{1.0, 4, {0, 0, 3, 3}}, {-2.0, 4, {0, 1, 2, 3}},
-    {1.0, 4, {1, 1, 2, 2}}, {-1.0, 4, {6, 6, 0, 0}}, {-1.0, 4, {6, 6, 1, 1}}};
-  return polynomial_sign_exact(sm, f, 5) > 0;
+  const double p[2] = {px, py}, a[2] = {ax, ay}, b[2] = {bx, by};
+  return point_segment_offset_sign(p, a, b, 2, d) > 0;
 }
 
 static pg_attribute_always_inline void arr_piece_write(const Arr *a,
