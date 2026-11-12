@@ -153,21 +153,13 @@ SELECT bool_and(atTpcbox(temp,
     'TPCBOX(ZT(((-100,-100,0),(100,100,100)),[2001-01-01, 2001-12-31]), 999)')
   IS NULL)
 FROM tbl_tpcpatch;
- bool_and 
-----------
- t
-(1 row)
-
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
 SELECT bool_and(minusTpcbox(temp,
   tpcbox
     'TPCBOX(ZT(((-100,-100,0),(100,100,100)),[2001-01-01, 2001-12-31]), 999)')
   IS NOT NULL)
 FROM tbl_tpcpatch;
- bool_and 
-----------
- t
-(1 row)
-
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
 SELECT COUNT(*) FROM tbl_tpcpatch
 WHERE atTpcboxFine(temp,
   tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,

@@ -140,6 +140,12 @@ SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1
 SELECT asText(trgeometryFromMFJSON(asMFJSON(v, 0, 0, 6))) = asText(v) FROM (VALUES (
   trgeometry 'POLYGON((-0.5 -1,-0.5 1,0.5 1,0.5 -1,-0.5 -1));[Pose(POINT(-104.5 41.5),0)@2025-12-24 20:05:06+00, Pose(POINT(-104.5 41.5),-2.5)@2025-12-24 20:05:07+00]'
 )) t(v);
+-- A value in step interpolation reads back from its output and its EWKT, the
+-- interpolation, and the SRID before it, preceding the reference geometry
+SELECT v::text::trgeometry = v, trgeometryFromText(asEWKT(v)) = v FROM (VALUES
+  (trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02]'),
+  (trgeometry 'SRID=3812,Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02], [Pose(Point(3 3),0.5)@2001-01-03, Pose(Point(4 4),1)@2001-01-04]}')
+) t(v);
 
 /* Errors */
 SELECT asMFJSON(trgeometry 'SRID=123456;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 2);

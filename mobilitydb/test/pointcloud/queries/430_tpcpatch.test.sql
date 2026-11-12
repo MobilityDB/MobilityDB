@@ -267,10 +267,13 @@ SELECT atTpcbox(:inst1, tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-31]', 1)) IS NOT NULL;
 SELECT minusTpcbox(:inst1, tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-31]', 1)) IS NULL;
--- The box is written rather than constructed because the constructor reads the
+-- A box of another schema raises, as the overlaps of their boxes raises. The
+-- box is written rather than constructed because the constructor reads the
 -- reference system off the schema its pcid names, and 999 names none.
 SELECT atTpcbox(:inst1, tpcbox
-  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)') IS NULL;
+  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)');
+SELECT minusTpcbox(:inst1, tpcbox
+  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)');
 
 -- Boxes without every dimension: a spatial-only box applies the PCBOUNDS
 -- test alone, a temporal-only box the period test alone.

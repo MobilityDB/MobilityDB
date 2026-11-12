@@ -44,6 +44,7 @@
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
 #include "rgeo/trgeo.h"
+#include "rgeo/trgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -302,6 +303,97 @@ int
 always_ne_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_trgeometry_trgeometry(temp1, temp2, &datum2_ne, ALWAYS);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal rigid geometry and a spatiotemporal box
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if a temporal rigid geometry ever (or always) lies in a
+ * spatiotemporal box, 0 if not, and -1 on error, as #eaoverlaps_tgeo_stbox
+ * answers it for a temporal geo
+ * @details The value ever lies in the box when its restriction to the box by
+ * #trgeometry_restrict_stbox is not empty, and always lies in it when its
+ * restriction to the complement of the box is empty; a box with only the T
+ * dimension restricts the value to its period
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] box Spatiotemporal box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_trgeometry_stbox(const Temporal *temp, const STBox *box, bool ever)
+{
+  /* Ensure the validity of the arguments: a box with the X dimension shares
+   * the SRID of the value, as #trgeometry_restrict_stbox reads it */
+  VALIDATE_TRGEOMETRY(temp, -1); VALIDATE_NOT_NULL(box, -1);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  if (hasx && ! ensure_valid_trgeometry_stbox(temp, box))
+    return -1;
+
+  bool atfunc = ever ? REST_AT : REST_MINUS;
+  Temporal *res = hasx ? trgeometry_restrict_stbox(temp, box, true, atfunc) :
+    temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  int result = ever ? (res != NULL) : (res == NULL);
+  if (res)
+    pfree(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return 1 if a temporal rigid geometry ever lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Ever_overlaps_trgeometry_stbox()
+ */
+int
+ever_overlaps_trgeometry_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_trgeometry_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return 1 if a temporal rigid geometry ever lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Ever_overlaps_stbox_trgeometry()
+ */
+int
+ever_overlaps_stbox_trgeometry(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_trgeometry_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return 1 if a temporal rigid geometry always lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Always_overlaps_trgeometry_stbox()
+ */
+int
+always_overlaps_trgeometry_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_trgeometry_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return 1 if a temporal rigid geometry always lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Always_overlaps_stbox_trgeometry()
+ */
+int
+always_overlaps_stbox_trgeometry(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_trgeometry_stbox(temp, box, ALWAYS);
 }
 
 /*****************************************************************************

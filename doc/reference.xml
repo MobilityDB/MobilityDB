@@ -1758,6 +1758,9 @@
 						<para><link linkend="tpose_ever_always"><varname>?=</varname>, <varname>%=</varname>, <varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpose_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpose_tcomp"><varname>::</varname></link>: Temporal comparisons</para>
 					</listitem>
 					<listitem>
@@ -2137,6 +2140,9 @@
 						<para><link linkend="tnpoint_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tnpoint_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tnpoint_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Temporal comparisons</para>
 					</listitem>
 				</itemizedlist>
@@ -2454,6 +2460,9 @@
 						<para><link linkend="tcbuffer_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tcbuffer_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tcbuffer_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Temporal comparisons</para>
 					</listitem>
 				</itemizedlist>
@@ -2713,6 +2722,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_ever_always"><varname>?=</varname>, <varname>%=</varname>, <varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_tcomp"><varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Temporal comparisons</para>

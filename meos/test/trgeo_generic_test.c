@@ -235,6 +235,31 @@ main(void)
   }
 
   free(tset); free(tspan); free(tss);
+
+  /* The reference geometry is rounded as the poses are, a polyhedral surface
+   * included */
+  {
+    checks++;
+    Temporal *t = trgeometry_in("PolyhedralSurface Z(((0 0 0,2.123456789 0 0,"
+      "2.123456789 2 0,0 0 0)),((0 0 0,2.123456789 2 0,0 0 2.123456789,"
+      "0 0 0)));[Pose(Point(1.123456789 1 5),1,0,0,0)@2001-01-01, "
+      "Pose(Point(2 2 5),1,0,0,0)@2001-01-02]");
+    Temporal *r = t ? temporal_round(t, 2) : NULL;
+    GSERIALIZED *g = t ? trgeometry_geom(t) : NULL;
+    GSERIALIZED *gr = g ? geo_round(g, 2) : NULL;
+    GSERIALIZED *rg = r ? trgeometry_geom(r) : NULL;
+    size_t n;
+    char *s1 = gr ? geo_as_text(gr, 6, &n) : NULL;
+    char *s2 = rg ? geo_as_text(rg, 6, &n) : NULL;
+    if (! s1 || ! s2 || strcmp(s1, s2) != 0)
+    {
+      printf("FAILED: temporal_round of a polyhedral surface: body %s "
+        "against %s\n", s2 ? s2 : "NULL", s1 ? s1 : "NULL");
+      failures++;
+    }
+    free(t); free(r); free(g); free(gr); free(rg); free(s1); free(s2);
+  }
+
   meos_finalize();
   printf("trgeo_generic_test: %d checks, %d failed\n", checks, failures);
   return failures ? 1 : 0;

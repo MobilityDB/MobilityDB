@@ -47,6 +47,7 @@
 #include "npoint/tnpoint.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
+#include "pg_geo/tspatial.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************
@@ -263,6 +264,66 @@ inline Datum
 Always_ne_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_ne_tnpoint_tnpoint);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal network point and a spatiotemporal box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Ever_overlaps_stbox_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_stbox_tnpoint);
+/**
+ * @ingroup mobilitydb_npoint_comp_ever
+ * @brief Return true if a temporal network point ever lies in a spatiotemporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_stbox_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &ever_overlaps_stbox_tnpoint);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tnpoint_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tnpoint_stbox);
+/**
+ * @ingroup mobilitydb_npoint_comp_ever
+ * @brief Return true if a temporal network point ever lies in a spatiotemporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tnpoint_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &ever_overlaps_tnpoint_stbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_stbox_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_stbox_tnpoint);
+/**
+ * @ingroup mobilitydb_npoint_comp_ever
+ * @brief Return true if a temporal network point always lies in a spatiotemporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_stbox_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &always_overlaps_stbox_tnpoint);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tnpoint_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tnpoint_stbox);
+/**
+ * @ingroup mobilitydb_npoint_comp_ever
+ * @brief Return true if a temporal network point always lies in a spatiotemporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tnpoint_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &always_overlaps_tnpoint_stbox);
 }
 
 /*****************************************************************************

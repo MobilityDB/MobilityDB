@@ -119,14 +119,15 @@ SELECT COUNT(*) FROM tbl_tpcpatch WHERE atTpcbox(temp,
   tpcboxZT(-100, -100, 0, 100, 100, 100,
     tstzspan '[2001-01-01, 2001-12-31]', 1)) IS NOT NULL;
 
--- atTpcbox with a pcid mismatch yields NULL (empty) for every row.
+-- atTpcbox with a box of another schema raises, as the overlaps of their
+-- boxes raises.
 SELECT bool_and(atTpcbox(temp,
   tpcbox
     'TPCBOX(ZT(((-100,-100,0),(100,100,100)),[2001-01-01, 2001-12-31]), 999)')
   IS NULL)
 FROM tbl_tpcpatch;
 
--- minusTpcbox is the complement.
+-- minusTpcbox raises as atTpcbox does.
 SELECT bool_and(minusTpcbox(temp,
   tpcbox
     'TPCBOX(ZT(((-100,-100,0),(100,100,100)),[2001-01-01, 2001-12-31]), 999)')

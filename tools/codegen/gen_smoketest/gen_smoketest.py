@@ -1425,6 +1425,10 @@ TNPOINT_CONFIG = dict(
         "tnpoint_at_stbox":             {1: "stbox_ways1"},
         "tnpoint_minus_stbox":          {1: "stbox_ways1"},
         "nad_tnpoint_stbox":            {1: "stbox_ways1"},
+        "ever_overlaps_tnpoint_stbox":  {1: "stbox_ways1"},
+        "always_overlaps_tnpoint_stbox": {1: "stbox_ways1"},
+        "ever_overlaps_stbox_tnpoint":  {0: "stbox_ways1"},
+        "always_overlaps_stbox_tnpoint": {0: "stbox_ways1"},
         # WKB byte-buffer input, paired with its size: built from
         # npoint_as_wkb() against a canned network point (variant 0 is plain
         # WKB, no hex encoding) rather than guessed.

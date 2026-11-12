@@ -1688,7 +1688,18 @@ temporal_round(const Temporal *temp, int maxdd)
   Temporal *result = tfunc_temporal(work, &lfinfo);
   if (work != temp)
     pfree(work);
-  return temporal_attach_geom(geom, result);
+  if (! geom || ! result)
+    return result;
+  /* The reference geometry is rounded as the poses are */
+  GSERIALIZED *geom_round = geo_round(geom, maxdd);
+  if (! geom_round)
+  {
+    pfree(result);
+    return NULL;
+  }
+  result = temporal_attach_geom(geom_round, result);
+  pfree(geom_round);
+  return result;
 }
 
 /**

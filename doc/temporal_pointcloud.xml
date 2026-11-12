@@ -1190,7 +1190,7 @@ SELECT numInstants(atTime(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 atTpcbox(tpcpoint,tpcbox,border_inc boolean=true) → tpcpoint
 minusTpcbox(tpcpoint,tpcbox,border_inc boolean=true) → tpcpoint
 </programlisting>
-					<para>Returns NULL when the tpcbox's pcid does not match the tpcpoint's. Internally projects to a tgeompoint via the schema cache, restricts the projection by the equivalent stbox, and lifts the result's time span back onto the original tpcpoint to preserve the full pcpoint values</para>
+					<para>A tpcbox of another schema, reference system or kind of coordinate raises an error, as the operators of the boxes do. Internally projects to a tgeompoint via the schema cache, restricts the projection by the equivalent stbox, and lifts the result's time span back onto the original tpcpoint to preserve the full pcpoint values</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
@@ -2049,7 +2049,7 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 
 atTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 </programlisting>
-					<para>Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim. The X and Y extent of a patch is pgPointCloud's 2D <varname>PCBOUNDS</varname>; when the box has Z, the Z extent of the patch is the one its points state, and a patch of a schema without Z fails the box. Returns NULL when the tpcbox's pcid does not match.</para>
+					<para>Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim. The X and Y extent of a patch is pgPointCloud's 2D <varname>PCBOUNDS</varname>; when the box has Z, the Z extent of the patch is the one its points state, and a patch of a schema without Z fails the box. A tpcbox of another schema, reference system or kind of coordinate raises an error, as the operators of the boxes do.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),

@@ -25,13 +25,13 @@ SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1.123456789 1.
 SELECT asText(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1.123456789 1.123456789),0.5)@2001-01-01, Pose(Point(2.123456789 2.123456789),0.5)@2001-01-02, Pose(Point(1.123456789 1.123456789),0.5)@2001-01-03]', 6);
                                                                                                                    astext                                                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- POLYGON((1 1,2 2,3 1,1 1));Interp=Step;[Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2.123457 2.123457),0.5)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1.123457 1.123457),0.5)@Wed Jan 03 00:00:00 2001 PST]
+ Interp=Step;POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2.123457 2.123457),0.5)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1.123457 1.123457),0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1.123456789 1.123456789),0.5)@2001-01-01, Pose(Point(2.123456789 2.123456789),0.5)@2001-01-02, Pose(Point(1.123456789 1.123456789),0.5)@2001-01-03],[Pose(Point(3.123456789 3.123456789),0.5)@2001-01-04, Pose(Point(3.123456789 3.123456789),0.5)@2001-01-05]}', 6);
                                                                                                                                                                                       astext                                                                                                                                                                                      
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- POLYGON((1 1,2 2,3 1,1 1));Interp=Step;{[Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2.123457 2.123457),0.5)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1.123457 1.123457),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(3.123457 3.123457),0.5)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(3.123457 3.123457),0.5)@Fri Jan 05 00:00:00 2001 PST]}
+ Interp=Step;POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2.123457 2.123457),0.5)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1.123457 1.123457),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(3.123457 3.123457),0.5)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(3.123457 3.123457),0.5)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01')));
@@ -79,13 +79,13 @@ SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02]')));
                                                                     asewkt                                                                     
 -----------------------------------------------------------------------------------------------------------------------------------------------
- POLYGON((1 1,2 2,3 1,1 1));Interp=Step;[Pose(POINT(1 2),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 4),0.5)@Tue Jan 02 00:00:00 2001 PST]
+ Interp=Step;POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 2),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 4),0.5)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02],[Pose(Point(1 2),0.5)@2001-01-03, Pose(Point(3 4),0.5)@2001-01-04]}')));
                                                                                                                          asewkt                                                                                                                          
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- POLYGON((1 1,2 2,3 1,1 1));Interp=Step;{[Pose(POINT(1 2),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 4),0.5)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(1 2),0.5)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(3 4),0.5)@Thu Jan 04 00:00:00 2001 PST]}
+ Interp=Step;POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 2),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 4),0.5)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(1 2),0.5)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(3 4),0.5)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01',1,0,2)));
@@ -399,6 +399,16 @@ SELECT asText(trgeometryFromMFJSON(asMFJSON(v, 0, 0, 6))) = asText(v) FROM (VALU
 ----------
  t
 (1 row)
+
+SELECT v::text::trgeometry = v, trgeometryFromText(asEWKT(v)) = v FROM (VALUES
+  (trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02]'),
+  (trgeometry 'SRID=3812,Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02], [Pose(Point(3 3),0.5)@2001-01-03, Pose(Point(4 4),1)@2001-01-04]}')
+) t(v);
+ ?column? | ?column? 
+----------+----------
+ t        | t
+ t        | t
+(2 rows)
 
 /* Errors */
 SELECT asMFJSON(trgeometry 'SRID=123456;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 2);
