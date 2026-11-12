@@ -820,7 +820,7 @@ SELECT getTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 		<para>The values of a temporal distance are exact. When a body turns, the distance between two instants does not change linearly, so the temporal distance also has an instant at each minimum and maximum of the distance. Thus the nearest approach distance and the nearest approach instant are exact.</para>
 
-		<para>The distance functions need a reference geometry that is a convex polygon without holes. A polygon of the other argument must also be convex and without holes. Other values give an error. The distance of a temporal rigid geometry in three dimensions is not yet supported, and neither is the distance to a geometry collection or a curve. The temporal distance between two concave geometries is thus not yet supported either.</para>
+		<para>The distance functions need a reference geometry that is a convex polygon without holes. A polygon of the other argument must also be convex and without holes. Other values give an error. A geometry collection, nested ones included, is read as its members, as a multi-geometry is. The distance of a temporal rigid geometry in three dimensions is not yet supported, and neither is the distance to a curve. The temporal distance between two concave geometries is thus not yet supported either.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
   Pose(Point(0 0),0)@2001-01-01', geometry 'Point(7 3)');

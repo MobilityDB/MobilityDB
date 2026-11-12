@@ -301,11 +301,11 @@ int main(void)
 
   Temporal *trgeo4 = trgeometry_in(trgeo4_in);
   Temporal *trgeo5 = trgeometry_in(trgeo5_in);
-  GSERIALIZED *coll = geom_in("GeometryCollection(Point(9 9))", -1);
+  GSERIALIZED *curve = geom_in("CircularString(9 9,10 10,11 9)", -1);
   GSERIALIZED *point3d = geom_in("Point(9 9 9)", -1);
   GSERIALIZED *point2d = geom_in("Point(9 9)", -1);
   STBox *box3d = stbox_in("STBOX ZT(((5,5,5),(6,6,6)),[2001-01-01, 2001-01-02])");
-  if (! trgeo4 || ! trgeo5 || ! coll || ! point3d || ! point2d || ! box3d)
+  if (! trgeo4 || ! trgeo5 || ! curve || ! point3d || ! point2d || ! box3d)
   {
     printf("FAILED: could not build the nearest approach distance arguments\n");
     result = 1;
@@ -313,9 +313,9 @@ int main(void)
   else
   {
     meos_errno_reset();
-    if (nad_trgeometry_geo(trgeo4, coll) != -1.0 || meos_errno() == 0)
+    if (nad_trgeometry_geo(trgeo4, curve) != -1.0 || meos_errno() == 0)
     {
-      printf("FAILED: nad_trgeometry_geo(trgeometry, collection)\n");
+      printf("FAILED: nad_trgeometry_geo(trgeometry, curve)\n");
       result = 1;
     }
     else
@@ -355,7 +355,7 @@ int main(void)
       printf("OK: nad_trgeometry_geo(trgeometry, point): %g\n", nad);
     meos_errno_reset();
   }
-  free(trgeo4); free(trgeo5); free(coll); free(point3d); free(point2d);
+  free(trgeo4); free(trgeo5); free(curve); free(point3d); free(point2d);
   free(box3d);
 
   /* The constructor accepts a polyhedral surface as a reference geometry, but
