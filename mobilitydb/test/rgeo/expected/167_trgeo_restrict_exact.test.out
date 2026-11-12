@@ -253,3 +253,13 @@ SELECT asText(atGeometry(
  t
 (1 row)
 
+SELECT getTime(atGeometry(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))'));
+ERROR:  The restriction of a temporal rigid geometry with holes in linear motion is not implemented
+SELECT getTime(atStbox(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', stbox 'STBOX X((2,2),(2.5,2.5))'));
+ERROR:  The restriction of a temporal rigid geometry with holes in linear motion is not implemented
+SELECT getTime(atGeometry(trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))'));
+ gettime 
+---------
+ 
+(1 row)
+
