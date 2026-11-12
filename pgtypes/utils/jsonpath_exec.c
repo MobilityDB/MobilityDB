@@ -1259,6 +1259,9 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
           jb = &jbv;
           jb->type = jbvNumeric;
           jb->val.numeric = float8_to_numeric(val);
+          /* tracked as executeNumericItemMethod() tracks its number, so the
+           * jsonb_path_* caller reclaims it via json_reset_tofree() */
+          json_add_tofree(jb->val.numeric);
           res = jperOk;
         }
 
@@ -1372,6 +1375,8 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         jb = &jbv;
         jb->type = jbvNumeric;
         jb->val.numeric = int64_to_numeric(val);
+        /* tracked as executeNumericItemMethod() tracks its number */
+        json_add_tofree(jb->val.numeric);
         res = executeNextItem(cxt, jsp, NULL, jb, found, true);
       }
       break;
@@ -1650,6 +1655,8 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         jb = &jbv;
         jb->type = jbvNumeric;
         jb->val.numeric = int32_to_numeric(val);
+        /* tracked as executeNumericItemMethod() tracks its number */
+        json_add_tofree(jb->val.numeric);
         res = executeNextItem(cxt, jsp, NULL, jb, found, true);
       }
       break;
