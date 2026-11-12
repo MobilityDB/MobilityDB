@@ -2530,8 +2530,10 @@ dggs_cell_edge_planes(const double *lons, const double *lats, int count,
  * @details Two consecutive visits meet at the instant of their crossing, and
  * the grid gives that instant to one of them: the one it assigns the crossing
  * position to, which holds it, the other leaving it out. A timestamp holds
- * whole microseconds, so several crossings may fall at one instant. A visit
- * then holding no time, an empty period, is no part of the answer, and where
+ * whole microseconds, so several crossings may fall at one instant, and a
+ * cell may be crossed between two microseconds. A visit then holding no
+ * microsecond, an empty period or one between two consecutive microseconds
+ * that holds neither, is no part of the answer, and where
  * two visits both hold the instant they meet at, the later one holds it, as a
  * value landing on the instant already stated replaces it
  * (#raster_run_push). The periods then partition the time of the trajectory.
@@ -2556,7 +2558,8 @@ dggs_visits_to_temporal(DggsVisit *visits, int count, MeosType temptype)
   for (int i = 0; i < count; i++)
   {
     DggsVisit v = visits[i];
-    if (v.lower == v.upper && ! (v.lower_inc && v.upper_inc))
+    if ((v.lower == v.upper && ! (v.lower_inc && v.upper_inc)) ||
+        (v.upper - v.lower == 1 && ! v.lower_inc && ! v.upper_inc))
       continue;
     while (n > 0 && visits[n - 1].upper == v.lower &&
       visits[n - 1].upper_inc && v.lower_inc)
