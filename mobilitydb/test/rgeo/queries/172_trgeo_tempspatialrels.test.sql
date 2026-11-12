@@ -133,3 +133,7 @@ SELECT tDisjoint(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0
 SELECT tIntersects(trgeometry 'SRID=5676;PolyhedralSurface(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)),((2 0 1,4 0 1,4 2 1,2 2 1,2 0 1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(0 0 0),1,0,0,0)@2001-01-02]', geometry 'SRID=5676;Point(3 1 1)');
 SELECT tDisjoint(trgeometry 'SRID=5676;PolyhedralSurface(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)),((2 0 1,4 0 1,4 2 1,2 2 1,2 0 1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(0 0 0),1,0,0,0)@2001-01-02]', geometry 'SRID=5676;Point(3 1 5)');
 SELECT tIntersects(trgeometry 'Interp=Step;PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(10 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(0.2 0.2 0)');
+-- A body in two dimensions reads a geometry in three dimensions in two
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 1 7)');
+SELECT tDisjoint(geometry 'Point(5 1 7)', trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+SELECT tDwithin(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 3 7)', 1.5);

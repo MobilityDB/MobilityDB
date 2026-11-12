@@ -207,3 +207,21 @@ SELECT tIntersects(trgeometry 'Interp=Step;PolyhedralSurface Z(((0 0 0,0 1 0,1 0
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 1 7)');
+                                                                             tintersects                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 07:12:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDisjoint(geometry 'Point(5 1 7)', trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+                            tdisjoint                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDwithin(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 3 7)', 1.5);
+                                                                                         tdwithin                                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 04:31:00.186337 2001 PST, t@Mon Jan 01 14:40:59.813663 2001 PST], (f@Mon Jan 01 14:40:59.813663 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+

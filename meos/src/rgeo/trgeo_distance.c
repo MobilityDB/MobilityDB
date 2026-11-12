@@ -1713,6 +1713,15 @@ tdwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   if (! ensure_finite(dist))
     return NULL;
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #tdistance_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    Temporal *result = tdwithin_trgeometry_geo(temp, flat, dist);
+    pfree(flat);
+    return result;
+  }
   if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8) ||
       ! ensure_valid_trgeometry_geo(temp, gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))

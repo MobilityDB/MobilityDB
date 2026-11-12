@@ -701,6 +701,58 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* The relationships of a temporal rigid geometry read a 3D geometry in 2D,
+   * as its distances do, in linear and in step interpolation */
+  {
+    const char *bodies[] = {
+      "Polygon((0 0,1 0,1 1,0 1,0 0));"
+        "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]",
+      "Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, "
+        "Pose(Point(2 0),0)@2001-01-03, Pose(Point(4 0),0)@2001-01-05]" };
+    const char *geos2[] = { "Point(2.5 0.5)", "Point(9 9)" };
+    const char *geos3[] = { "Point(2.5 0.5 7)", "Point(9 9 7)" };
+    for (int i = 0; i < 2; i++)
+    {
+      Temporal *body = trgeometry_in(bodies[i]);
+      for (int j = 0; j < 2; j++)
+      {
+        GSERIALIZED *g2 = geom_in(geos2[j], -1);
+        GSERIALIZED *g3 = geom_in(geos3[j], -1);
+        Temporal *ti2 = tintersects_trgeometry_geo(body, g2);
+        Temporal *ti3 = tintersects_trgeometry_geo(body, g3);
+        Temporal *td2 = tdisjoint_trgeometry_geo(body, g2);
+        Temporal *td3 = tdisjoint_trgeometry_geo(body, g3);
+        Temporal *tw2 = tdwithin_trgeometry_geo(body, g2, 0.1);
+        Temporal *tw3 = tdwithin_trgeometry_geo(body, g3, 0.1);
+        int ei2 = eintersects_trgeometry_geo(body, g2);
+        if (ei2 != (j == 0 ? 1 : 0) ||
+            eintersects_trgeometry_geo(body, g3) != ei2 ||
+            aintersects_trgeometry_geo(body, g3) !=
+              aintersects_trgeometry_geo(body, g2) ||
+            edisjoint_trgeometry_geo(body, g3) !=
+              edisjoint_trgeometry_geo(body, g2) ||
+            adisjoint_trgeometry_geo(body, g3) !=
+              adisjoint_trgeometry_geo(body, g2) ||
+            edwithin_trgeometry_geo(body, g3, 0.1) !=
+              edwithin_trgeometry_geo(body, g2, 0.1) ||
+            adwithin_trgeometry_geo(body, g3, 20.0) !=
+              adwithin_trgeometry_geo(body, g2, 20.0) ||
+            ! ti2 || ! ti3 || ! temporal_eq(ti2, ti3) ||
+            ! td2 || ! td3 || ! temporal_eq(td2, td3) ||
+            ! tw2 || ! tw3 || ! temporal_eq(tw2, tw3) || meos_errno() != 0)
+        {
+          printf("FAILED: a relationship of a temporal rigid geometry and the "
+            "3D geometry %s\n", geos3[j]);
+          result = 1;
+        }
+        free(g2); free(g3); free(ti2); free(ti3); free(td2); free(td3);
+        free(tw2); free(tw3);
+        meos_errno_reset();
+      }
+      free(body);
+    }
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
