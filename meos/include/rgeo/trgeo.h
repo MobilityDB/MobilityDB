@@ -60,6 +60,7 @@ extern bool ensure_valid_trgeometry_tpoint(const Temporal *temp1,
 extern GSERIALIZED *trgeometry_geo_common_dims(const Temporal *temp,
   const GSERIALIZED *gs);
 extern const GSERIALIZED *trgeometry_geom_p(const Temporal *temp);
+extern bool trgeometry_ref_is_flat(const GSERIALIZED *gs);
 
 /* Input/output functions */
 

@@ -11155,6 +11155,10 @@ typedef struct
   bool unsafe;      /**< A product may have left the range where the
                          arithmetic of expansions is exact */
   bool wide;        /**< Values are #WideDyadic rather than expansions */
+  bool filter;      /**< Values are doubles carrying a bound on their error,
+                         as #ArcsegFilter reads them: one component and
+                         the bound in its @p err, so a sign the bound cannot
+                         tell marks the arena unsafe */
 } ArcsegArena;
 
 /* An exact value: an expansion whose last component carries its sign, and a
@@ -11210,8 +11214,45 @@ arcseg_arena_init(ArcsegArena *arena, bool wide)
   arena->used = arena->n = arena->cap = 0;
   arena->unsafe = false;
   arena->wide = wide;
+  arena->filter = false;
   arena->blocks = NULL;
   return;
+}
+
+/* An empty arena of doubles carrying a bound on their error, which answers
+ * the signs it can tell before any expansion is formed (#ArcsegArena) */
+static void
+arcseg_arena_init_filter(ArcsegArena *arena)
+{
+  arcseg_arena_init(arena, false);
+  arena->filter = true;
+  return;
+}
+
+/* A value of a filter arena: one component and its bound */
+static ArcsegExact
+arcseg_x_filtered(ArcsegArena *arena, ArcsegFilter f)
+{
+  ArcsegExact r;
+  r.w = NULL;
+  r.e = arcseg_arena_alloc(arena, 1);
+  r.e[0] = f.v;
+  r.n = 1;
+  r.err = f.e;
+  /* A value or a bound that is not finite tells no sign */
+  if (! isfinite(f.v) || ! isfinite(f.e))
+    arena->unsafe = true;
+  return r;
+}
+
+/* The filter value a value of a filter arena holds */
+static inline ArcsegFilter
+arcseg_x_as_filter(ArcsegExact a)
+{
+  ArcsegFilter f;
+  f.v = a.e[0];
+  f.e = a.err;
+  return f;
 }
 
 static inline ArcsegFilter
@@ -11328,6 +11369,9 @@ arcseg_w_sum_fits(const WideDyadic *a, const WideDyadic *b)
 static ArcsegExact
 arcseg_x_diff(ArcsegArena *arena, double a, double b)
 {
+  /* A filter arena reads the difference as #arcseg_f_diff bounds it */
+  if (arena->filter)
+    return arcseg_x_filtered(arena, arcseg_f_diff(a, b));
   if (arena->wide)
   {
     /* A double that is not finite has no exact value */
@@ -11364,6 +11408,10 @@ arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
 {
   if (arena->unsafe)
     return arcseg_x_spent(arena);
+  /* A filter arena reads the sum as #arcseg_f_add bounds it */
+  if (arena->filter)
+    return arcseg_x_filtered(arena, arcseg_f_add(arcseg_x_as_filter(a),
+      arcseg_x_as_filter(b)));
   if (arena->wide)
   {
     if (! arcseg_w_sum_fits(a.w, b.w))
@@ -11391,6 +11439,10 @@ arcseg_x_scale(ArcsegArena *arena, ArcsegExact a, double k)
 {
   if (arena->unsafe)
     return arcseg_x_spent(arena);
+  /* A filter arena reads the product by a power of two as #arcseg_f_scale
+   * bounds it */
+  if (arena->filter)
+    return arcseg_x_filtered(arena, arcseg_f_scale(arcseg_x_as_filter(a), k));
   if (arena->wide)
   {
     WideDyadic wk;
@@ -11443,6 +11495,10 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
    * nothing is kept. The components grow in magnitude */
   if (arena->unsafe)
     return arcseg_x_spent(arena);
+  /* A filter arena reads the product as #arcseg_f_mul bounds it */
+  if (arena->filter)
+    return arcseg_x_filtered(arena, arcseg_f_mul(arcseg_x_as_filter(a),
+      arcseg_x_as_filter(b)));
   if (arena->wide)
   {
     if (a.w->len + b.w->len > WIDE_DYADIC_LIMBS)
@@ -11503,6 +11559,17 @@ arcseg_x_sign(ArcsegExact a)
 static int
 arcseg_x_sign_checked(ArcsegArena *arena, ArcsegExact a)
 {
+  /* A filter arena tells the sign #arcseg_f_sign tells, with its margin */
+  if (arena->filter)
+  {
+    int s = arcseg_f_sign(arcseg_x_as_filter(a));
+    if (s == 2)
+    {
+      arena->unsafe = true;
+      return 0;
+    }
+    return s;
+  }
   if (a.err > 0.0)
   {
     double low = (a.n > 0) ? fabs(a.e[a.n - 1]) : 0.0;
@@ -12586,13 +12653,18 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
     }
   }
   p = arcs[0]; q = arcs[1];
-  /* In expansions, and once more in #WideDyadic where those cannot tell a
-   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  /* In doubles carrying a bound on their error, which tell most signs,
+   * then in expansions, and once more in #WideDyadic where those cannot
+   * tell a sign or leave their exact range, as #tower_pred_run asks a
+   * tower */
   bool told = false;
-  for (int wide = 0; wide < 2 && ! told; wide++)
+  for (int pass = 0; pass < 3 && ! told; pass++)
   {
     ArcsegArena arena;
-    arcseg_arena_init(&arena, wide == 1);
+    if (pass == 0)
+      arcseg_arena_init_filter(&arena);
+    else
+      arcseg_arena_init(&arena, pass == 2);
     told = arcarc_meet_exact_ctx(&arena, p, q, meet, within);
     arcseg_arena_free(&arena);
   }
@@ -24773,6 +24845,22 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
         m->eb = 1;
     }
   }
+
+  /* An interval narrower than the band above is not classified, so the
+   * stretch between an end of the edge and a meeting near it is not read
+   * there. The start of an edge that was not cut is an input vertex, the end
+   * of the edge before it on its ring, located against the other area
+   * exactly (#relate_point_in_area_index), and the exterior is open: a start
+   * standing in it carries a stretch of this boundary outside the other area,
+   * however near the meeting is. Read while no interval has said so */
+  if (! edge->cut && (first ? m->be : m->eb) < 1 &&
+      relate_point_in_area_index(edge->x1, edge->y1, other, true) == 2)
+  {
+    if (first)
+      m->be = 1;
+    else
+      m->eb = 1;
+  }
   if (heap)
   {
     pfree(params);
@@ -27214,6 +27302,24 @@ relate_edges_boxes_overlap(Edge **e1, int n1, Edge **e2, int n2)
  * Meeting is the weaker question, so it reads the intersection type rather
  * than a count
  */
+/**
+ * @brief Return true if the ends of an arc are the points it is defined by,
+ * the arcs #arcarc_meet_exact answers
+ * @details A centred arc is its whole circle; the second half of a whole
+ * circle runs from the end of its diameter back to its start, as
+ * #arcsegm_meet_exact reads it
+ */
+static bool
+relate_arc_ends_defined(const Edge *e)
+{
+  if (e->centred)
+    return true;
+  if (e->x1 == e->sx && e->y1 == e->sy && e->x2 == e->ex && e->y2 == e->ey)
+    return true;
+  return e->diameter && e->x1 == e->ex && e->y1 == e->ey &&
+    e->x2 == e->sx && e->y2 == e->sy;
+}
+
 static bool
 relate_edges_meet(const Edge *a, const Edge *b)
 {
@@ -27230,13 +27336,45 @@ relate_edges_meet(const Edge *a, const Edge *b)
   }
   if (ea.etype == EDGE_LINEARC && eb.etype == EDGE_LINEARC)
   {
+    /* Two arcs of distinct circles meet where a meeting of the circles lies
+     * within both arcs (#arcarc_meet_exact) or at an end of one of them,
+     * an input vertex read on the other (#relate_point_on_edge), each
+     * decided on the input coordinates; an arc whose ends are not the
+     * points it is defined by keeps the meetings in doubles */
+    if (relate_arc_ends_defined(a) && relate_arc_ends_defined(b) &&
+        ! arc_same_circle(a, b))
+    {
+      int meet, within[2][2];
+      if (arcarc_meet_exact(a, b, &meet, within))
+      {
+        if (meet < 0)
+          return false;
+        if ((within[0][0] && within[0][1]) || (within[1][0] && within[1][1]))
+          return true;
+        return relate_point_on_edge(a->x1, a->y1, b, true) ||
+          relate_point_on_edge(a->x2, a->y2, b, true) ||
+          relate_point_on_edge(b->x1, b->y1, a, true) ||
+          relate_point_on_edge(b->x2, b->y2, a, true);
+      }
+    }
     double x[2], y[2];
     bool overlap = false;
     int n = relate_arc_arc_points(&ea, &eb, x, y, &overlap);
     return n > 0 || overlap;
   }
   /* A straight segment and a circular arc share no curve, so the isolated
-   * points answer the whole of it */
+   * points answer the whole of it, and whether there is one is decided
+   * exactly (#arcsegm_meet_exact), at an end of either included; an arc it
+   * does not answer keeps the meetings in doubles */
+  const Edge *seg = (ea.etype == EDGE_LINESEG) ? a : b;
+  const Edge *arc = (ea.etype == EDGE_LINESEG) ? b : a;
+  if (seg->x1 != seg->x2 || seg->y1 != seg->y2)
+  {
+    ArcsegMeet m[2];
+    int n = arcsegm_meet_exact(seg->x1, seg->y1, seg->x2, seg->y2, arc, m);
+    if (n >= 0)
+      return n > 0;
+  }
   double ix[2], iy[2];
   return relate_any_edge_intersection(a, b, ix, iy) > 0;
 }

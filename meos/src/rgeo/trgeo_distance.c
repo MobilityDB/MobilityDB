@@ -722,6 +722,55 @@ dist2d_seq_exact_values(const DistOps *ops, TSequence *dist,
 }
 
 /**
+ * @brief Return true if a body that translates from @p pose1 to @p pose2
+ * meets a part of the static geometry of @p ops, decided exactly
+ * (#convex_motion_meet_exact)
+ */
+static bool
+dist_parts_meet(const DistOps *ops, const Pose *pose1, const Pose *pose2)
+{
+  for (int j = 0; j < ops->nparts; j++)
+    if (convex_motion_meet_exact(ops->refxy, ops->nref, pose1->data,
+        pose2->data, ops->parts[j].xy, ops->parts[j].npts))
+      return true;
+  return false;
+}
+
+/**
+ * @brief Give the least instant inside a segment of a body that does not
+ * turn the distance 0 where the body meets the static geometry at no instant
+ * of the walk, see #dist_seq_least()
+ * @details At the distance @p level 0 of #DistOps, the result answers only on
+ * which side of 0 each value lies.  The least distance over the segment is 0
+ * where the body meets the geometry (#dist_parts_meet), and positive, as
+ * every value of the walk inside it, where it does not.  Where it is 0, no
+ * instant of the walk is at 0 and the body meets the geometry at neither end,
+ * the instant of least value takes 0, as #dist_seq_least() gives it the
+ * least distance.
+ * @param[in,out] values Values of the instants of the distance
+ * @param[in] first,last The instants first to last - 1 are inside the segment
+ * @return True if a value is changed
+ */
+static bool
+dist_seq_least_zero(const DistOps *ops, const Pose *pose1, const Pose *pose2,
+  double *values, int first, int last)
+{
+  int min = first;
+  for (int j = first; j < last; j++)
+  {
+    if (values[j] == 0.0)
+      return false;
+    if (values[j] < values[min])
+      min = j;
+  }
+  if (! dist_parts_meet(ops, pose1, pose2) ||
+      dist_parts_meet(ops, pose1, pose1) || dist_parts_meet(ops, pose2, pose2))
+    return false;
+  values[min] = 0.0;
+  return true;
+}
+
+/**
  * @brief Give the instants inside each segment of a body that does not turn
  * the exact least distance to a static geometry
  * @details A body whose poses at the two ends of a segment have the angle 0
@@ -733,7 +782,9 @@ dist2d_seq_exact_values(const DistOps *ops, TSequence *dist,
  * the instant of least value inside the segment, which the walk puts at the
  * least distance, takes it: the value at the event, whose time is not a
  * microsecond.  An instant whose value is exactly the distance @p level of
- * #DistOps keeps it, see #dist2d_seq_exact_values().
+ * #DistOps keeps it, see #dist2d_seq_exact_values().  At the distance
+ * @p level 0, whether the body meets the geometry decides the segment, see
+ * #dist_seq_least_zero().
  * @param[in] dist Temporal distance of @p seq to the static geometry, freed
  */
 static TSequence *
@@ -759,6 +810,11 @@ dist_seq_least(const DistOps *ops, const TSequence *seq, TSequence *dist)
     const Pose *pose2 = DatumGetPoseP(tinstant_value_p(inst2));
     if (first == last || pose1->data[2] != 0.0 || pose2->data[2] != 0.0)
       continue;
+    if (ops->level == 0.0)
+    {
+      changed |= dist_seq_least_zero(ops, pose1, pose2, values, first, last);
+      continue;
+    }
     double least = DBL_MAX;
     for (int j = 0; j < ops->nparts; j++)
       least = fmin(least, convex_motion_nad_exact(ops->refxy, ops->nref,
