@@ -32,8 +32,9 @@ var searchData=
   ['relatequery_29',['RelateQuery',['../structRelateQuery.html',1,'']]],
   ['relateseg_30',['RelateSeg',['../structRelateSeg.html',1,'']]],
   ['reltype_5fcatalog_5fstruct_31',['reltype_catalog_struct',['../structreltype__catalog__struct.html',1,'']]],
-  ['rtree_32',['RTree',['../structRTree.html',1,'']]],
-  ['rtreenncursor_33',['RTreeNNCursor',['../structRTreeNNCursor.html',1,'']]],
-  ['rtreennentry_34',['RTreeNNEntry',['../structRTreeNNEntry.html',1,'']]],
-  ['rtreenode_35',['RTreeNode',['../structRTreeNode.html',1,'']]]
+  ['row_32',['Row',['../structRow.html',1,'']]],
+  ['rtree_33',['RTree',['../structRTree.html',1,'']]],
+  ['rtreenncursor_34',['RTreeNNCursor',['../structRTreeNNCursor.html',1,'']]],
+  ['rtreennentry_35',['RTreeNNEntry',['../structRTreeNNEntry.html',1,'']]],
+  ['rtreenode_36',['RTreeNode',['../structRTreeNode.html',1,'']]]
 ];
