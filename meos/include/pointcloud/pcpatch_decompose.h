@@ -92,6 +92,15 @@ extern Pcpatch *pcpatch_filter_per_point(const Pcpatch *pa,
 extern bool pcpatch_any_point_matches(const Pcpatch *pa,
   pcpatch_pointpred_fn pred, void *extra);
 
+/**
+ * @brief Restrict a temporal point cloud patch to the points a predicate
+ *   selects, or to the other ones, an instant outside @p period, when given,
+ *   having no point the predicate selects and a NULL @p pred selecting every
+ *   point.
+ */
+extern Temporal *tpcpatch_restrict_points(const Temporal *temp,
+  const Span *period, pcpatch_pointpred_fn pred, void *extra, bool atfunc);
+
 /*****************************************************************************
  * Built-in predicates
  *
