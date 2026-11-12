@@ -10965,18 +10965,13 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
  * centre and radius, and a point lies on it where |Q - C|^2 = r^2 exactly
  */
 /* The side of the circle of a centred arc a point lies on, decided
- * exactly: the sign of |Q - C|^2 - r^2, a polynomial of degree two in exact
- * sums of the doubles (#polynomial_sign_exact) */
+ * exactly: the sign of |Q - C|^2 - r^2, the squared distance between the
+ * centre and the point less the square of the radius, which
+ * #point_within_distance_sign reads exactly for every finite double */
 static int
 centred_circle_side(const Edge *e, double qx, double qy)
 {
-  double t[3][2] = {{qx, -e->cx}, {qy, -e->cy}, {e->radius, 0.0}};
-  ExactSum sums[3];
-  for (int k = 0; k < 3; k++)
-    exact_sum_set(&sums[k], t[k], 2);
-  PolyTerm terms[3] = {
-    {1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
-  return polynomial_sign_exact(sums, terms, 3);
+  return point_within_distance_sign(e->cx, e->cy, qx, qy, e->radius);
 }
 
 bool
