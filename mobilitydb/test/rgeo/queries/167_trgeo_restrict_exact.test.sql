@@ -291,3 +291,17 @@ SELECT getTime(minusGeometry(
 SELECT getTime(atGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(2.5 0), 0.0)@2001-01-03}',
   geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1.5,2 1.5,2 -1))'));
+
+-------------------------------------------------------------------------------
+-- A body in linear motion meets a box where its distance to it is zero: a
+-- box flat in x, met from the first instant to a quarter of the day, and a
+-- box the body touches on its border at the first instant alone
+SELECT getTime(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(3 0), 0.0)@2001-01-01, Pose(Point(7 2), 0.0)@2001-01-02]',
+  stbox 'STBOX X((4,0),(4,3))'));
+SELECT getTime(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(4 1), 0.0)@2001-01-01, Pose(Point(2 -3), 0.0)@2001-01-02]',
+  stbox 'STBOX X((5,1),(8,2))'));
+SELECT getTime(minusStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(4 1), 0.0)@2001-01-01, Pose(Point(2 -3), 0.0)@2001-01-02]',
+  stbox 'STBOX X((5,1),(8,2))'));
