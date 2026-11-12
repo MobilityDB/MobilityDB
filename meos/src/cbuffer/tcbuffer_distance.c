@@ -1267,6 +1267,9 @@ typedef struct
   GBOX box;             /**< Box of the geometry as PostGIS keeps it, rounded
                              outward to floats, so holding every point of the
                              geometry, arcs included */
+  const Edge **eptrs;   /**< The edges of @p g as the within engine reads
+                             them (#tcbufferseg_within_exact_ctx), built on
+                             first use, or NULL */
 } TcbufferGeoCtx;
 
 /**
@@ -1336,6 +1339,7 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs, bool boundary)
   g.rtree = dist_geom_build_rtree(g.segs, g.n);
   ctx->g = g;
   ctx->hasbox = (gserialized_get_gbox_p(gs, &ctx->box) == LW_SUCCESS);
+  ctx->eptrs = NULL;
   /* Scratch buffer for the R-tree candidate ids, created with the R-tree and
    * freed with it in #tcbuffer_geo_ctx_free (see dist_pip_results). */
   dist_pip_results = index_result_create();
@@ -1358,6 +1362,8 @@ tcbuffer_geo_ctx_free(void *ctx)
     dist_pip_results = NULL;
   }
   dist_geom_free(&c->g);
+  if (c->eptrs)
+    pfree(c->eptrs);
   pfree(c);
 }
 
@@ -1604,6 +1610,40 @@ tcbuffer_double_cmp(const void *a, const void *b)
 {
   double d = *(const double *) a - *(const double *) b;
   return (d < 0.0) ? -1 : (d > 0.0 ? 1 : 0);
+}
+
+/**
+ * @brief Return the number of periods during which one linear moving disc
+ * segment of @p D microseconds is within a distance of the geometry of a
+ * context, decided exactly, or -1 for a geometry it does not answer
+ * @details The single within engine (#motion_edges_dwithin_periods), which
+ * does not answer an arc, nor faces that overlap; the bounds are
+ * microseconds from the start of the segment
+ * @param[in] cb1,cb2 Disc at the start and at the end of the segment
+ * @param[in] dist Distance
+ * @param[in] ctxv Geometry context (#tcbuffer_geo_ctx_make)
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] lo,hi Bounds of the periods, room for the number of edges of
+ * the context plus one each
+ */
+int
+tcbufferseg_within_exact_ctx(const Cbuffer *cb1, const Cbuffer *cb2,
+  double dist, const void *ctxv, int64 D, int64 *lo, int64 *hi)
+{
+  TcbufferGeoCtx *ctx = (TcbufferGeoCtx *) ctxv;
+  if (ctx->g.face)
+    return -1;
+  if (! ctx->eptrs)
+  {
+    ctx->eptrs = palloc(sizeof(Edge *) * Max(ctx->g.n, 1));
+    for (int i = 0; i < ctx->g.n; i++)
+      ctx->eptrs[i] = &ctx->g.segs[i];
+  }
+  const POINT2D *p1 = cbuffer_point2d_p(cb1);
+  const POINT2D *p2 = cbuffer_point2d_p(cb2);
+  const double c0[2] = {p1->x, p1->y}, c1[2] = {p2->x, p2->y};
+  return motion_edges_dwithin_periods(c0, c1, cb1->radius, cb2->radius,
+    ctx->eptrs, ctx->g.n, dist, D, lo, hi);
 }
 
 /**

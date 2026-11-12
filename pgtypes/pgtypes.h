@@ -712,7 +712,7 @@ extern char *pg_jsonpath_out(const JsonPath *jp);
 extern JsonPath *pg_jsonpath_copy(const JsonPath *jp);
 
 extern int pg_jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
-extern bool pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+extern int pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Jsonb *pg_jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Jsonb *pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Jsonb **pg_jsonb_path_query_all(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz, int *count);

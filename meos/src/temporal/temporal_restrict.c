@@ -538,26 +538,37 @@ Temporal *
 temporal_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 {
   assert(temp); assert(s);
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_restrict_tstzset((TInstant *) temp, s,
+      result = (Temporal *) tinstant_restrict_tstzset((TInstant *) work, s,
         atfunc);
+      break;
     case TSEQUENCE:
     {
-      if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
-        return (Temporal *) tdiscseq_restrict_tstzset((TSequence *) temp, s,
+      if (MEOS_FLAGS_DISCRETE_INTERP(work->flags))
+        result = (Temporal *) tdiscseq_restrict_tstzset((TSequence *) work, s,
           atfunc);
       else
-        return atfunc ?
-          (Temporal *) tcontseq_at_tstzset((TSequence *) temp, s) :
-          (Temporal *) tcontseq_minus_tstzset((TSequence *) temp, s);
+        result = atfunc ?
+          (Temporal *) tcontseq_at_tstzset((TSequence *) work, s) :
+          (Temporal *) tcontseq_minus_tstzset((TSequence *) work, s);
+      break;
     }
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_restrict_tstzset(
-        (TSequenceSet *) temp, s, atfunc);
+      result = (Temporal *) tsequenceset_restrict_tstzset(
+        (TSequenceSet *) work, s, atfunc);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /*****************************************************************************/
@@ -2929,7 +2940,6 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
     for (i = 0; i < n; i++)
       instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i);
     inst1 = TSEQUENCE_INST_N(seq, n);
-    inst2 = TSEQUENCE_INST_N(seq, n + 1);
     if (inst1->t == t)
     {
       if (interp == LINEAR)
@@ -2949,7 +2959,8 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
     }
     else
     {
-      /* inst1->t < t */
+      /* inst1->t < t, so an instant follows the n-th one */
+      inst2 = TSEQUENCE_INST_N(seq, n + 1);
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = (interp == LINEAR) ?
         tsegment_at_timestamptz(inst1, inst2, interp, t) :
@@ -2959,10 +2970,11 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       pfree(instants[n + 1]);
     }
   }
-  /* Compute the second sequence after t */
+  /* Compute the second sequence after t, of which there is none where t is
+   * the last instant, the n-th one being then followed by no instant */
   inst1 = TSEQUENCE_INST_N(seq, n);
-  inst2 = TSEQUENCE_INST_N(seq, n + 1);
-  if (t < inst2->t)
+  inst2 = (n < seq->count - 1) ? TSEQUENCE_INST_N(seq, n + 1) : NULL;
+  if (inst2 && t < inst2->t)
   {
     instants[0] = tsegment_at_timestamptz(inst1, inst2, interp, t);
     for (i = 1; i < seq->count - n; i++)
@@ -4443,18 +4455,31 @@ temporal_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  switch (temp->subtype)
+
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_before_timestamptz((TInstant *) temp, t,
+      result = (Temporal *) tinstant_before_timestamptz((TInstant *) work, t,
         strict);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_before_timestamptz((TSequence *) temp, t,
-          strict);
+      result = (Temporal *) tsequence_before_timestamptz((TSequence *) work, t,
+        strict);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_before_timestamptz(
-        (TSequenceSet *) temp, t, strict);
+      result = (Temporal *) tsequenceset_before_timestamptz(
+        (TSequenceSet *) work, t, strict);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /**
@@ -4472,18 +4497,31 @@ temporal_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  switch (temp->subtype)
+
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_after_timestamptz((TInstant *) temp, t,
+      result = (Temporal *) tinstant_after_timestamptz((TInstant *) work, t,
         strict);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_after_timestamptz((TSequence *) temp, t,
-          strict);
+      result = (Temporal *) tsequence_after_timestamptz((TSequence *) work, t,
+        strict);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_after_timestamptz(
-        (TSequenceSet *) temp, t, strict);
+      result = (Temporal *) tsequenceset_after_timestamptz(
+        (TSequenceSet *) work, t, strict);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /*****************************************************************************/

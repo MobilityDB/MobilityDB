@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -136,7 +137,7 @@ int main(void)
 
   /* uint64_t float4_hash_extended(float num, uint64_t seed); */
   uint64_result = float4_hash_extended(float4_in1, 1);
-  printf("float4_hash_extended(%f, 1): %lu\n", float4_in1, uint64_result);
+  printf("float4_hash_extended(%f, 1): %" PRIu64 "\n", float4_in1, uint64_result);
 
   /* float float4_in(const char *num); */
   float4_result = float4_in("1.23456789");
@@ -281,7 +282,7 @@ int main(void)
 
   /* uint64_t float8_hash_extended(double num, uint64_t seed); */
   uint64_result = float8_hash_extended(float8_in1, 1);
-  printf("float8_hash_extended(%lf, 1): %lu\n", float8_in1, uint64_result);
+  printf("float8_hash_extended(%lf, 1): %" PRIu64 "\n", float8_in1, uint64_result);
 
   /* double float8_in(const char *str); */
   float8_result = float8_in("1.23456789");

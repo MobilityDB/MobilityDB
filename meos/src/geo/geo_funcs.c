@@ -1083,6 +1083,131 @@ cross_product_sign_exact(double ax, double ay, double bx, double by,
 }
 
 /**
+ * @brief Return the sign of the cross product of the vectors B - A and D - C
+ * where each x difference carries an exact offset
+ * @details The sign of `(bx - ax + oab) * (dy - cy) - (by - ay) *
+ * (dx - cx + ocd)`. A cell of a grid read across the antimeridian holds
+ * vertices whose longitude is shifted by a multiple of 360 degrees, and that
+ * shift is not exact in doubles: 21.599649137590685 + 360 rounds, and two
+ * cells then no longer state a vertex they share with the same number. Each
+ * shifted difference is an exact sum of doubles instead, read through
+ * #polynomial_sign_exact, whose filter in doubles decides first. Without an
+ * offset the sign is #cross_product_sign's
+ * @param[in] ax,ay,bx,by,cx,cy,dx,dy Coordinates
+ * @param[in] oab,ocd Offsets of `bx - ax` and of `dx - cx`, exact doubles such
+ * as a multiple of 360
+ * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int
+cross_product_sign_offset(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy, double oab, double ocd)
+{
+  if (oab == 0.0 && ocd == 0.0)
+    return cross_product_sign(ax, ay, bx, by, cx, cy, dx, dy);
+  ExactSum sums[4];
+  const double t0[3] = {bx, - ax, oab}, t1[2] = {dy, - cy};
+  const double t2[2] = {by, - ay}, t3[3] = {dx, - cx, ocd};
+  exact_sum_set(&sums[0], t0, 3);
+  exact_sum_set(&sums[1], t1, 2);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  PolyTerm terms[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 1}},
+    {.coef = -1.0, .deg = 2, .sum = {2, 3}}};
+  return polynomial_sign_exact(sums, terms, 2);
+}
+
+/**
+ * @brief Return the sign of `x + o - p`, exactly, for doubles x and p and an
+ * exact offset o
+ */
+static int
+offset_x_cmp(double x, double o, double p)
+{
+  if (o == 0.0)
+    return (x > p) - (x < p);
+  ExactSum sum;
+  const double t[3] = {x, o, - p};
+  exact_sum_set(&sum, t, 3);
+  PolyTerm term = {.coef = 1.0, .deg = 1, .sum = {0}};
+  return polynomial_sign_exact(&sum, &term, 1);
+}
+
+/**
+ * @brief Read one edge of a ring for the location of a point by a ray cast to
+ * the right at the point's height
+ * @details The edge runs from A to B, their x coordinates shifted by exact
+ * offsets. The ray crosses the edge by the half-open rule, and the side of
+ * the edge the point lies on is #cross_product_sign_offset, so no shifted
+ * coordinate is rounded. The one step of #point_in_rings_exact and of
+ * #point_in_ring_offset_exact
+ * @param[in] ax,ay,oa A and the offset of its x coordinate
+ * @param[in] bx,by,ob B and the offset of its x coordinate
+ * @param[in] px,py The point
+ * @param[in,out] inside Parity of the crossings of the edges read before
+ * @return True if the point lies on the edge
+ */
+static bool
+ring_edge_ray_step(double ax, double ay, double oa, double bx, double by,
+  double ob, double px, double py, bool *inside)
+{
+  bool up = ay <= py && py < by;
+  bool down = by <= py && py < ay;
+  if (! up && ! down)
+  {
+    /* An edge the ray does not cross carries the point at its start or,
+     * lying at the point's height, between its two ends */
+    if (ay == py && offset_x_cmp(ax, oa, px) == 0)
+      return true;
+    if (ay == py && by == py)
+    {
+      int sa = offset_x_cmp(ax, oa, px), sb = offset_x_cmp(bx, ob, px);
+      if (sa * sb <= 0)
+        return true;
+    }
+    return false;
+  }
+  int side = cross_product_sign_offset(ax, ay, bx, by, ax, ay, px, py,
+    ob - oa, - oa);
+  if (side == 0)
+    return true;
+  if ((up && side > 0) || (down && side < 0))
+    *inside = ! *inside;
+  return false;
+}
+
+/**
+ * @brief Return 1 if a point lies in the interior of a ring whose x
+ * coordinates carry exact offsets, 0 if it lies outside, and -1 if it lies
+ * on the ring
+ * @details The ring has `n` vertices and the edges from each to the next, the
+ * last closing on the first; vertex i lies at `(x[i] + xoff[i], y[i])`. A
+ * ring of a grid cell read across the antimeridian carries offsets that are
+ * multiples of 360, which are not rounded into the coordinates. Each edge is
+ * read by #ring_edge_ray_step, as #point_in_rings_exact reads the rings of a
+ * geometry
+ * @param[in] x,y,xoff Coordinates of the vertices and the offsets of their x
+ * @param[in] n Number of vertices
+ * @param[in] px,py The point
+ */
+int
+point_in_ring_offset_exact(const double *x, const double *y,
+  const double *xoff, int n, double px, double py)
+{
+  bool inside = false;
+  for (int i = 0; i < n; i++)
+  {
+    int j = (i + 1 == n) ? 0 : i + 1;
+    if (ring_edge_ray_step(x[i], y[i], xoff[i], x[j], y[j], xoff[j], px, py,
+        &inside))
+      return -1;
+  }
+  return inside ? 1 : 0;
+}
+
+/**
  * @brief Return the cross product of the vectors B - A and D - C, computed
  * exactly and rounded once
  * @details The cross product of rounded differences carries an error of the
@@ -5381,15 +5506,45 @@ typedef struct
   WideDyadic B2D;   /**< 2 B D */
   WideDyadic CD2;   /**< C D^2 */
   WideDyadic BD;    /**< B D, for the vertex test A n + B D */
+  double a, b2d, cd2, bd; /**< The four in doubles (#wide_dyadic_approx) */
+  bool approx;      /**< Whether the doubles are set and each lies within
+                         2^-51 of its exact value, relatively */
 } DWithinGrid;
+
+/* The largest microsecond a double holds exactly, 2^53 */
+#define DWITHIN_GRID_EXACT_N 9007199254740992LL
 
 /**
  * @brief Return the sign of `D^2 q(n / D)` (@p vertex false) or of
  * `A n + B D` (@p vertex true), exactly
+ * @details A filter reads it first in doubles where #dwithin_grid_set holds
+ * them. Each coefficient in doubles lies within 2^-51 of the exact one
+ * relatively, and the evaluation rounds at most five times, so the value in
+ * doubles lies within `2^-49 M` of the exact one, with `M` the sum of the
+ * magnitudes of its terms; a value beyond `2^-47 M` carries the exact sign.
+ * The exact sign on #WideDyadic answers the rest, and wherever a double
+ * overflows, or `M` is not a normal double
  */
 static int
 dwithin_grid_sign(const DWithinGrid *g, int64 n, bool vertex)
 {
+  if (g->approx && n >= 0 && n <= DWITHIN_GRID_EXACT_N)
+  {
+    double dn = (double) n, v, M;
+    if (vertex)
+    {
+      v = g->a * dn + g->bd;
+      M = fabs(g->a * dn) + fabs(g->bd);
+    }
+    else
+    {
+      double an2 = g->a * dn * dn, bn = g->b2d * dn;
+      v = an2 + bn + g->cd2;
+      M = fabs(an2) + fabs(bn) + fabs(g->cd2);
+    }
+    if (isfinite(v) && isnormal(M) && fabs(v) > 0x1p-47 * M)
+      return (v > 0.0) - (v < 0.0);
+  }
   WideDyadic wn, t, acc;
   wide_dyadic_set_int(&wn, n);
   if (vertex)
@@ -5422,27 +5577,32 @@ dwithin_grid_start(double est, int64 lo, int64 hi)
 }
 
 /**
- * @brief Return the largest @p n in [@p lo, @p hi) at which the sign of
- * #dwithin_grid_sign is not positive, that sign being not positive at @p lo,
- * positive at @p hi and changing once in between
+ * @brief The sign of a quantity read at the whole microseconds of a segment
+ */
+typedef int (*GridSignFn)(const void *ctx, int64 n);
+
+/**
+ * @brief Return the largest @p n in [@p lo, @p hi) at which the sign @p fn
+ * reads is not positive, that sign being not positive at @p lo, positive at
+ * @p hi and changing once in between
  * @details A gallop from the estimate @p est brackets the answer, then halving
  * the bracket finds it, as #wide_dyadic_nearest_root finds its answer
  */
 static int64
-dwithin_grid_last(const DWithinGrid *g, int64 lo, int64 hi, double est,
-  bool vertex)
+grid_sign_last(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
+  double est)
 {
   if (hi - lo <= 1)
     return lo;
   int64 start = dwithin_grid_start(est, lo, hi);
   int64 step = 1;
-  if (dwithin_grid_sign(g, start, vertex) <= 0)
+  if (fn(ctx, start) <= 0)
   {
     lo = start;
     while (true)
     {
       int64 next = (hi - lo > step) ? lo + step : hi;
-      if (next == hi || dwithin_grid_sign(g, next, vertex) > 0)
+      if (next == hi || fn(ctx, next) > 0)
       {
         hi = next;
         break;
@@ -5457,7 +5617,7 @@ dwithin_grid_last(const DWithinGrid *g, int64 lo, int64 hi, double est,
     while (true)
     {
       int64 next = (hi - lo > step) ? hi - step : lo;
-      if (next == lo || dwithin_grid_sign(g, next, vertex) <= 0)
+      if (next == lo || fn(ctx, next) <= 0)
       {
         lo = next;
         break;
@@ -5469,7 +5629,7 @@ dwithin_grid_last(const DWithinGrid *g, int64 lo, int64 hi, double est,
   while (hi - lo > 1)
   {
     int64 mid = lo + (hi - lo) / 2;
-    if (dwithin_grid_sign(g, mid, vertex) <= 0)
+    if (fn(ctx, mid) <= 0)
       lo = mid;
     else
       hi = mid;
@@ -5478,24 +5638,25 @@ dwithin_grid_last(const DWithinGrid *g, int64 lo, int64 hi, double est,
 }
 
 /**
- * @brief Return the twin of #dwithin_grid_last for a sign that is positive at
+ * @brief Return the twin of #grid_sign_last for a sign that is positive at
  * @p lo and not positive at @p hi: the smallest @p n in (@p lo, @p hi] at
- * which the sign of `D^2 q(n / D)` is not positive
+ * which it is not positive
  */
 static int64
-dwithin_grid_first(const DWithinGrid *g, int64 lo, int64 hi, double est)
+grid_sign_first(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
+  double est)
 {
   if (hi - lo <= 1)
     return hi;
   int64 start = dwithin_grid_start(est, lo, hi);
   int64 step = 1;
-  if (dwithin_grid_sign(g, start, false) <= 0)
+  if (fn(ctx, start) <= 0)
   {
     hi = start;
     while (true)
     {
       int64 next = (hi - lo > step) ? hi - step : lo;
-      if (next == lo || dwithin_grid_sign(g, next, false) > 0)
+      if (next == lo || fn(ctx, next) > 0)
       {
         lo = next;
         break;
@@ -5510,7 +5671,7 @@ dwithin_grid_first(const DWithinGrid *g, int64 lo, int64 hi, double est)
     while (true)
     {
       int64 next = (hi - lo > step) ? lo + step : hi;
-      if (next == hi || dwithin_grid_sign(g, next, false) <= 0)
+      if (next == hi || fn(ctx, next) <= 0)
       {
         hi = next;
         break;
@@ -5522,12 +5683,48 @@ dwithin_grid_first(const DWithinGrid *g, int64 lo, int64 hi, double est)
   while (hi - lo > 1)
   {
     int64 mid = lo + (hi - lo) / 2;
-    if (dwithin_grid_sign(g, mid, false) <= 0)
+    if (fn(ctx, mid) <= 0)
       hi = mid;
     else
       lo = mid;
   }
   return hi;
+}
+
+/* The sign of `D^2 q(n / D)` (#dwithin_grid_sign) */
+static int
+dwithin_grid_sign_q(const void *ctx, int64 n)
+{
+  return dwithin_grid_sign((const DWithinGrid *) ctx, n, false);
+}
+
+/* The sign of `A n + B D` (#dwithin_grid_sign) */
+static int
+dwithin_grid_sign_v(const void *ctx, int64 n)
+{
+  return dwithin_grid_sign((const DWithinGrid *) ctx, n, true);
+}
+
+/**
+ * @brief Return the largest @p n in [@p lo, @p hi) at which the sign of
+ * #dwithin_grid_sign is not positive (#grid_sign_last)
+ */
+static int64
+dwithin_grid_last(const DWithinGrid *g, int64 lo, int64 hi, double est,
+  bool vertex)
+{
+  return grid_sign_last(g, vertex ? dwithin_grid_sign_v : dwithin_grid_sign_q,
+    lo, hi, est);
+}
+
+/**
+ * @brief Return the smallest @p n in (@p lo, @p hi] at which the sign of
+ * `D^2 q(n / D)` is not positive (#grid_sign_first)
+ */
+static int64
+dwithin_grid_first(const DWithinGrid *g, int64 lo, int64 hi, double est)
+{
+  return grid_sign_first(g, dwithin_grid_sign_q, lo, hi, est);
 }
 
 /**
@@ -5671,6 +5868,10 @@ point_motion_dwithin_period_filter(const double *a0, const double *a1,
   return -1;
 }
 
+static int dwithin_quadratic_period(const WideDyadic *Aq,
+  const WideDyadic *Bq, const WideDyadic *Cq, int64 D, int64 *n1, int64 *n2);
+static void dwithin_grid_set(DWithinGrid *g, const WideDyadic *A,
+  const WideDyadic *B, const WideDyadic *C, int64 D);
 static int point_motion_dwithin_period_wide(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
@@ -5756,16 +5957,10 @@ point_motion_dwithin_at_exact(const double *a0, const double *a1,
 {
   assert(D > 0); assert(ndims == 2 || ndims == 3);
   DWithinGrid g;
-  WideDyadic B, C, B2, t, wD;
+  WideDyadic A, B, C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
-    &g.A, &B, &C);
-  wide_dyadic_set_int(&t, 2);
-  wide_dyadic_mul(&B, &t, &B2);
-  wide_dyadic_set_int(&wD, D);
-  wide_dyadic_mul(&B2, &wD, &g.B2D);
-  wide_dyadic_mul(&C, &wD, &t);
-  wide_dyadic_mul(&t, &wD, &g.CD2);
-  wide_dyadic_mul(&B, &wD, &g.BD);
+    &A, &B, &C);
+  dwithin_grid_set(&g, &A, &B, &C, D);
   return dwithin_grid_sign(&g, n, false) <= 0;
 }
 
@@ -5781,10 +5976,29 @@ point_motion_dwithin_period_wide(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
   double rb0, double rb1, double d, int64 D, int64 *n1, int64 *n2)
 {
-  DWithinGrid g;
-  WideDyadic B, C, B2, t, q1;
+  WideDyadic A, B, C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
-    &g.A, &B, &C);
+    &A, &B, &C);
+  return dwithin_quadratic_period(&A, &B, &C, D, n1, n2);
+}
+
+/**
+ * @brief Return 2, 1 or 0 where a quadratic of the fraction of a segment is
+ * not positive during a period, at a single instant, or never
+ * @details The quadratic `q = A f^2 + 2 B f + C` is `|w(f)|^2 - L(f)^2`, with
+ * `w` affine and `L` affine and not negative over the segment, as
+ * #point_motion_dwithin_coeffs forms it, so the fractions at which it is not
+ * positive form one interval of [0, 1]. The microseconds from the start of
+ * the segment of @p D microseconds that bound the period are set in @p n1 and
+ * @p n2, each dated as #point_motion_dwithin_period_exact dates it
+ */
+static int
+dwithin_quadratic_period(const WideDyadic *Aq, const WideDyadic *Bq,
+  const WideDyadic *Cq, int64 D, int64 *n1, int64 *n2)
+{
+  DWithinGrid g;
+  WideDyadic B = *Bq, C = *Cq, B2, t, q1;
+  g.A = *Aq;
   /* q(1) = A + 2 B + C */
   wide_dyadic_set_int(&t, 2);
   wide_dyadic_mul(&B, &t, &B2);
@@ -5798,12 +6012,7 @@ point_motion_dwithin_period_wide(const double *a0, const double *a1,
     *n2 = D;
     return 2;
   }
-  WideDyadic wD;
-  wide_dyadic_set_int(&wD, D);
-  wide_dyadic_mul(&B2, &wD, &g.B2D);
-  wide_dyadic_mul(&C, &wD, &t);
-  wide_dyadic_mul(&t, &wD, &g.CD2);
-  wide_dyadic_mul(&B, &wD, &g.BD);
+  dwithin_grid_set(&g, Aq, &B, &C, D);
   /* Estimates of the roots of A x^2 + 2 B x + C, which only start the
    * searches, the one a difference of close values would form taken from
    * their product C / A */
@@ -5863,6 +6072,511 @@ point_motion_dwithin_period_wide(const double *a0, const double *a1,
   *n1 = dwithin_grid_root(&g, rlo, D, false, 0, inside);
   *n2 = dwithin_grid_root(&g, rhi, D, true, inside, D);
   return (*n1 == *n2) ? 1 : 2;
+}
+
+/**
+ * @brief Set the quadratic of #point_motion_dwithin_coeffs read at the whole
+ * microseconds of a segment of @p D microseconds (#DWithinGrid)
+ */
+static void
+dwithin_grid_set(DWithinGrid *g, const WideDyadic *A, const WideDyadic *B,
+  const WideDyadic *C, int64 D)
+{
+  WideDyadic t, wD, B2;
+  g->A = *A;
+  wide_dyadic_set_int(&t, 2);
+  wide_dyadic_mul(B, &t, &B2);
+  wide_dyadic_set_int(&wD, D);
+  wide_dyadic_mul(&B2, &wD, &g->B2D);
+  wide_dyadic_mul(C, &wD, &t);
+  wide_dyadic_mul(&t, &wD, &g->CD2);
+  wide_dyadic_mul(B, &wD, &g->BD);
+  /* The doubles of the filter of #dwithin_grid_sign: the top two limbs of
+   * each, within 2^-51 of it relatively where the double is normal; one
+   * that is not, or that overflows, leaves the filter off */
+  const WideDyadic *w[4] = {&g->A, &g->B2D, &g->CD2, &g->BD};
+  double *v[4] = {&g->a, &g->b2d, &g->cd2, &g->bd};
+  g->approx = true;
+  for (int i = 0; i < 4; i++)
+  {
+    *v[i] = wide_dyadic_approx(w[i]);
+    if (w[i]->sign != 0 && ! isnormal(*v[i]))
+      g->approx = false;
+  }
+  return;
+}
+
+/**
+ * @brief The three quadratics and the projection whose signs say whether a
+ * disc moving linearly over a segment of `D` microseconds is within a
+ * distance of a segment `a b` at a whole microseconds of it
+ * @details The disc is within at the fraction f where the distance of its
+ * centre `c(f)` to the segment is at most `L(f)`, the radius plus the
+ * distance: within of the end `a` (@p qa), of the end `b` (@p qb), or of the
+ * line of the segment (@p qp) where the projection of the centre lies on the
+ * segment, `0 <= (c - a) . u <= |u|^2` with `u = b - a`. Over the line the
+ * quadratic is `k(f)^2 - |u|^2 L(f)^2`, `k = u x (c - a)`, which is `|u|^2`
+ * times the one of the disc against its foot on the line
+ */
+typedef struct
+{
+  DWithinGrid qa, qb, qp;   /**< The quadratics at the ends and the line */
+  WideDyadic s0D, s1, l2D;  /**< `D (c0 - a) . u`, `(c1 - c0) . u`, `D |u|^2` */
+  double s0Dd, s1d, l2Dd;   /**< The three in doubles (#wide_dyadic_approx) */
+  bool approx;              /**< Whether each lies within 2^-51 of its exact
+                                 value, relatively */
+} SegmWithinGrid;
+
+/**
+ * @brief Return -1, 0 or 1 where the disc of #SegmWithinGrid is strictly
+ * within the distance of the segment at the microsecond @p n, at exactly that
+ * distance, or beyond it, exactly
+ */
+static int
+segm_within_sign(const void *ctx, int64 n)
+{
+  const SegmWithinGrid *s = (const SegmWithinGrid *) ctx;
+  int sign = Min(dwithin_grid_sign(&s->qa, n, false),
+    dwithin_grid_sign(&s->qb, n, false));
+  /* The projection D (c(n / D) - a) . u lies in [0, D |u|^2]: read first in
+   * doubles, as #dwithin_grid_sign reads its quadratic, each value within
+   * 2^-49 of the magnitudes of its terms */
+  if (s->approx && n >= 0 && n <= DWITHIN_GRID_EXACT_N)
+  {
+    double sn = s->s1d * (double) n;
+    double v = s->s0Dd + sn, M = fabs(s->s0Dd) + fabs(sn);
+    double r = v - s->l2Dd, Mr = M + fabs(s->l2Dd);
+    if (isfinite(v) && isfinite(r) && isnormal(M) && isnormal(Mr))
+    {
+      if (v < - 0x1p-47 * M || r > 0x1p-47 * Mr)
+        return sign;
+      if (v > 0x1p-47 * M && r < - 0x1p-47 * Mr)
+        return Min(sign, dwithin_grid_sign(&s->qp, n, false));
+    }
+  }
+  WideDyadic wn, t, sig, rest;
+  wide_dyadic_set_int(&wn, n);
+  wide_dyadic_mul(&s->s1, &wn, &t);
+  wide_dyadic_add(&s->s0D, &t, &sig);
+  if (sig.sign < 0)
+    return sign;
+  WideDyadic negl2 = s->l2D;
+  negl2.sign = - negl2.sign;
+  wide_dyadic_add(&sig, &negl2, &rest);
+  if (rest.sign > 0)
+    return sign;
+  return Min(sign, dwithin_grid_sign(&s->qp, n, false));
+}
+
+/**
+ * @brief Return 2, 1 or 0 where a disc moving linearly over a segment of
+ * @p D microseconds is within a distance of a segment during a period of it,
+ * at a single instant of it, or never
+ * @details The distance of the centre to the segment less the radius is
+ * convex in the fraction of the segment, a distance to a convex set of an
+ * affine map less an affine map, so the fractions at which the disc is within
+ * form one interval, the union of those at which it is within of an end
+ * (#point_motion_dwithin_period_exact) and of those at which it is within of
+ * the line where its projection lies on the segment (#segm_within_sign). A
+ * microsecond within it is found among the bounds of those three, and each
+ * bound of the interval is dated from it, by a search on the exact sign
+ * (#grid_sign_first, #grid_sign_last), as
+ * #point_motion_dwithin_period_exact dates its own: a period holding no whole
+ * microsecond is a single instant at the truncation of the bounds of the part
+ * that holds it
+ * @param[in] c0,c1 Centre of the disc at the start and at the end
+ * @param[in] r0,r1 Radius of the disc at the start and at the end
+ * @param[in] a,b Ends of the segment
+ * @param[in] d Distance
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] n1,n2 Bounds of the period in microseconds from the start
+ * @pre The radii and the distance are finite and not negative, `D > 0`
+ */
+int
+point_motion_segm_dwithin_period_exact(const double *c0, const double *c1,
+  double r0, double r1, const double *a, const double *b, double d, int64 D,
+  int64 *n1, int64 *n2)
+{
+  assert(D > 0);
+  assert(r0 >= 0.0 && r1 >= 0.0 && d >= 0.0);
+  if (a[0] == b[0] && a[1] == b[1])
+    return point_motion_dwithin_period_exact(c0, c1, a, a, 2, r0, r1, 0.0,
+      0.0, d, D, n1, n2);
+  /* A filter: the centre runs along the segment from c0 to c1, so where the
+   * least squared distance of that segment to the edge, bounded from below
+   * by #segment_distance_range, exceeds the square of the largest reach,
+   * the disc is never within. The reach and its square in doubles lie
+   * within 2^-50 of the exact ones relatively, which the margin covers */
+  const double pu[2] = {c1[0] - c0[0], c1[1] - c0[1]};
+  const double ev[2] = {b[0] - a[0], b[1] - a[1]};
+  double reach = Max(r0, r1) + d, lo2, hi2;
+  double reach2 = reach * reach * (1.0 + 0x1p-48);
+  if (isfinite(reach2) && segment_distance_range(c0, pu,
+        pu[0] * pu[0] + pu[1] * pu[1], a, ev, ev[0] * ev[0] + ev[1] * ev[1],
+        2, 0.0, &lo2, &hi2) && lo2 > reach2)
+    return 0;
+  SegmWithinGrid s;
+  WideDyadic A, B, C;
+  int64 lo[3], hi[3];
+  int k[3];
+  /* The ends */
+  point_motion_dwithin_coeffs(c0, c1, a, a, 2, r0, r1, 0.0, 0.0, d, 0.0, &A,
+    &B, &C);
+  dwithin_grid_set(&s.qa, &A, &B, &C, D);
+  k[0] = dwithin_quadratic_period(&A, &B, &C, D, &lo[0], &hi[0]);
+  point_motion_dwithin_coeffs(c0, c1, b, b, 2, r0, r1, 0.0, 0.0, d, 0.0, &A,
+    &B, &C);
+  dwithin_grid_set(&s.qb, &A, &B, &C, D);
+  k[1] = dwithin_quadratic_period(&A, &B, &C, D, &lo[1], &hi[1]);
+  /* The line: u = b - a, w0 = c0 - a, dc = c1 - c0, each difference exact */
+  WideDyadic u[2], w0[2], dc[2], p, q, k0, k1, l2, L0, dL, sq, l2L;
+  for (int i = 0; i < 2; i++)
+  {
+    u[i].sign = 0; u[i].len = 0; u[i].exp = 0;
+    wide_dyadic_accumulate_double(&u[i], b[i], 1);
+    wide_dyadic_accumulate_double(&u[i], a[i], -1);
+    w0[i].sign = 0; w0[i].len = 0; w0[i].exp = 0;
+    wide_dyadic_accumulate_double(&w0[i], c0[i], 1);
+    wide_dyadic_accumulate_double(&w0[i], a[i], -1);
+    dc[i].sign = 0; dc[i].len = 0; dc[i].exp = 0;
+    wide_dyadic_accumulate_double(&dc[i], c1[i], 1);
+    wide_dyadic_accumulate_double(&dc[i], c0[i], -1);
+  }
+  /* k0 = u x w0, k1 = u x dc, l2 = |u|^2 */
+  wide_dyadic_mul(&u[0], &w0[1], &p);
+  wide_dyadic_mul(&u[1], &w0[0], &q);
+  q.sign = - q.sign;
+  wide_dyadic_add(&p, &q, &k0);
+  wide_dyadic_mul(&u[0], &dc[1], &p);
+  wide_dyadic_mul(&u[1], &dc[0], &q);
+  q.sign = - q.sign;
+  wide_dyadic_add(&p, &q, &k1);
+  wide_dyadic_mul(&u[0], &u[0], &p);
+  wide_dyadic_mul(&u[1], &u[1], &q);
+  wide_dyadic_add(&p, &q, &l2);
+  /* L0 = r0 + d, dL = r1 - r0 */
+  L0.sign = 0; L0.len = 0; L0.exp = 0;
+  wide_dyadic_accumulate_double(&L0, r0, 1);
+  wide_dyadic_accumulate_double(&L0, d, 1);
+  dL.sign = 0; dL.len = 0; dL.exp = 0;
+  wide_dyadic_accumulate_double(&dL, r1, 1);
+  wide_dyadic_accumulate_double(&dL, r0, -1);
+  /* A = k1^2 - l2 dL^2, B = k0 k1 - l2 L0 dL, C = k0^2 - l2 L0^2 */
+  wide_dyadic_mul(&k1, &k1, &A);
+  wide_dyadic_mul(&dL, &dL, &sq);
+  wide_dyadic_mul(&l2, &sq, &l2L);
+  l2L.sign = - l2L.sign;
+  wide_dyadic_accumulate(&A, &l2L);
+  wide_dyadic_mul(&k0, &k1, &B);
+  wide_dyadic_mul(&L0, &dL, &sq);
+  wide_dyadic_mul(&l2, &sq, &l2L);
+  l2L.sign = - l2L.sign;
+  wide_dyadic_accumulate(&B, &l2L);
+  wide_dyadic_mul(&k0, &k0, &C);
+  wide_dyadic_mul(&L0, &L0, &sq);
+  wide_dyadic_mul(&l2, &sq, &l2L);
+  l2L.sign = - l2L.sign;
+  wide_dyadic_accumulate(&C, &l2L);
+  dwithin_grid_set(&s.qp, &A, &B, &C, D);
+  k[2] = dwithin_quadratic_period(&A, &B, &C, D, &lo[2], &hi[2]);
+  /* The projection: s0 = w0 . u, s1 = dc . u, held times D where read */
+  WideDyadic s0, wD;
+  wide_dyadic_mul(&w0[0], &u[0], &p);
+  wide_dyadic_mul(&w0[1], &u[1], &q);
+  wide_dyadic_add(&p, &q, &s0);
+  wide_dyadic_mul(&dc[0], &u[0], &p);
+  wide_dyadic_mul(&dc[1], &u[1], &q);
+  wide_dyadic_add(&p, &q, &s.s1);
+  wide_dyadic_set_int(&wD, D);
+  wide_dyadic_mul(&s0, &wD, &s.s0D);
+  wide_dyadic_mul(&l2, &wD, &s.l2D);
+  /* Their doubles, for the filter of #segm_within_sign */
+  s.s0Dd = wide_dyadic_approx(&s.s0D);
+  s.s1d = wide_dyadic_approx(&s.s1);
+  s.l2Dd = wide_dyadic_approx(&s.l2D);
+  s.approx = (s.s0D.sign == 0 || isnormal(s.s0Dd)) &&
+    (s.s1.sign == 0 || isnormal(s.s1d)) &&
+    (s.l2D.sign == 0 || isnormal(s.l2Dd));
+
+  int sign0 = segm_within_sign(&s, 0), signD = segm_within_sign(&s, D);
+  /* Within at both ends, within throughout, the gap being convex */
+  if (sign0 <= 0 && signD <= 0)
+  {
+    *n1 = 0;
+    *n2 = D;
+    return 2;
+  }
+  /* A whole microsecond within the period, among the bounds of the parts */
+  int64 inside = -1, first_est = D, last_est = 0;
+  for (int i = 0; i < 3 && inside < 0; i++)
+  {
+    if (k[i] == 0)
+      continue;
+    first_est = Min(first_est, lo[i]);
+    last_est = Max(last_est, hi[i]);
+    const int64 cand[4] = {lo[i], lo[i] + 1, hi[i], hi[i] + 1};
+    for (int j = 0; j < 4; j++)
+      if (cand[j] >= 0 && cand[j] <= D && segm_within_sign(&s, cand[j]) <= 0)
+      {
+        inside = cand[j];
+        break;
+      }
+  }
+  if (inside < 0)
+  {
+    /* A period holding no whole microsecond: within of an end, or within
+     * of the line during an instant alone, at its vertex -B / A, A > 0,
+     * where the projection lies on the segment. Where the line holds a whole
+     * microsecond and none of them is within, the projection leaves the
+     * segment wherever the disc is within of the line, and at an end of
+     * the segment the line and that end are as near, so the disc is within
+     * of an end there, which is answered above */
+    for (int i = 0; i < 2; i++)
+      if (k[i] != 0)
+      {
+        *n1 = *n2 = lo[i];
+        return 1;
+      }
+    if (k[2] != 1)
+      return 0;
+    /* (s0 A - s1 B) / A is the projection at the vertex, A > 0 */
+    WideDyadic va, vb, vs, vr, negl2A;
+    wide_dyadic_mul(&s0, &A, &va);
+    wide_dyadic_mul(&s.s1, &B, &vb);
+    vb.sign = - vb.sign;
+    wide_dyadic_add(&va, &vb, &vs);
+    wide_dyadic_mul(&l2, &A, &negl2A);
+    negl2A.sign = - negl2A.sign;
+    wide_dyadic_add(&vs, &negl2A, &vr);
+    if (vs.sign < 0 || vr.sign > 0)
+      return 0;
+    *n1 = *n2 = lo[2];
+    return 1;
+  }
+  /* A bound at which the disc comes within dates at the microsecond before
+   * the first one within, unless it is exactly at the distance there */
+  if (sign0 <= 0)
+    *n1 = 0;
+  else
+  {
+    int64 m = grid_sign_first(&s, segm_within_sign, 0, inside,
+      (double) first_est);
+    *n1 = (segm_within_sign(&s, m) == 0) ? m : m - 1;
+  }
+  *n2 = (signD <= 0) ? D :
+    grid_sign_last(&s, segm_within_sign, inside, D, (double) last_est);
+  return (*n1 == *n2) ? 1 : 2;
+}
+
+/**
+ * @brief Return true if the centre of a disc moving linearly over a segment
+ * of @p D microseconds lies inside the area some segments bound at the
+ * microsecond @p n of it, the centre lying on none of them, decided exactly
+ * @details The centre is `P / D` with `P = D c0 + n (c1 - c0)`, a rational
+ * point. A ray cast to its right crosses an edge by the half-open rule of
+ * #point_in_rings_exact, and the side of the edge it lies on is the sign of
+ * `(b - a) x (P - D a)`, held exactly, which is never zero where the ray
+ * crosses the edge since the centre lies on no edge
+ */
+static bool
+motion_point_inside_segms(const double *c0, const double *c1, int64 D,
+  int64 n, const Edge *const *edges, int nedges)
+{
+  WideDyadic P[2], wD, wn, t;
+  wide_dyadic_set_int(&wD, D);
+  wide_dyadic_set_int(&wn, n);
+  for (int i = 0; i < 2; i++)
+  {
+    WideDyadic c, dc;
+    c.sign = 0; c.len = 0; c.exp = 0;
+    wide_dyadic_accumulate_double(&c, c0[i], 1);
+    dc.sign = 0; dc.len = 0; dc.exp = 0;
+    wide_dyadic_accumulate_double(&dc, c1[i], 1);
+    wide_dyadic_accumulate_double(&dc, c0[i], -1);
+    wide_dyadic_mul(&c, &wD, &P[i]);
+    wide_dyadic_mul(&dc, &wn, &t);
+    wide_dyadic_accumulate(&P[i], &t);
+  }
+  WideDyadic negPy = P[1];
+  negPy.sign = - negPy.sign;
+  /* A filter: the height `P_y` in doubles, `c0_y D + n (c1_y - c0_y)`,
+   * within 2^-50 of the magnitudes it combines, so an edge both of whose
+   * ends stand beyond that, on one side of it, crosses no ray, and only
+   * the edges the doubles leave are read exactly */
+  double dD = (double) D, dn = (double) n;
+  double Pyd = c0[1] * dD + dn * (c1[1] - c0[1]);
+  double Pymag = fabs(c0[1]) * dD + dn * (fabs(c1[1]) + fabs(c0[1]));
+  bool filter = isfinite(Pyd) && isfinite(Pymag) && D <= DWITHIN_GRID_EXACT_N
+    && n <= DWITHIN_GRID_EXACT_N;
+  bool inside = false;
+  for (int k = 0; k < nedges; k++)
+  {
+    const Edge *e = edges[k];
+    if (e->etype != EDGE_POLYSEG)
+      continue;
+    if (filter)
+    {
+      double ya = e->y1 * dD - Pyd, yb = e->y2 * dD - Pyd;
+      double ea = 0x1p-46 * (fabs(e->y1) * dD + Pymag);
+      double eb = 0x1p-46 * (fabs(e->y2) * dD + Pymag);
+      if ((ya > ea && yb > eb) || (ya < - ea && yb < - eb))
+        continue;
+    }
+    /* The signs of D a_y - P_y and D b_y - P_y */
+    WideDyadic ay, by, ax, ux, uy, qx, qy, p, q, s;
+    ay.sign = 0; ay.len = 0; ay.exp = 0;
+    wide_dyadic_accumulate_double(&ay, e->y1, 1);
+    by.sign = 0; by.len = 0; by.exp = 0;
+    wide_dyadic_accumulate_double(&by, e->y2, 1);
+    wide_dyadic_mul(&ay, &wD, &q);
+    wide_dyadic_add(&q, &negPy, &p);
+    int sa = p.sign;
+    wide_dyadic_mul(&by, &wD, &q);
+    wide_dyadic_add(&q, &negPy, &p);
+    int sb = p.sign;
+    /* Up: a_y <= p_y < b_y; down: b_y <= p_y < a_y */
+    bool up = sa <= 0 && sb > 0, down = sb <= 0 && sa > 0;
+    if (! up && ! down)
+      continue;
+    /* (b - a) x (P - D a) */
+    ux.sign = 0; ux.len = 0; ux.exp = 0;
+    wide_dyadic_accumulate_double(&ux, e->x2, 1);
+    wide_dyadic_accumulate_double(&ux, e->x1, -1);
+    uy.sign = 0; uy.len = 0; uy.exp = 0;
+    wide_dyadic_accumulate_double(&uy, e->y2, 1);
+    wide_dyadic_accumulate_double(&uy, e->y1, -1);
+    ax.sign = 0; ax.len = 0; ax.exp = 0;
+    wide_dyadic_accumulate_double(&ax, e->x1, 1);
+    wide_dyadic_mul(&ax, &wD, &q);
+    q.sign = - q.sign;
+    wide_dyadic_add(&P[0], &q, &qx);
+    wide_dyadic_mul(&ay, &wD, &q);
+    q.sign = - q.sign;
+    wide_dyadic_add(&P[1], &q, &qy);
+    wide_dyadic_mul(&ux, &qy, &p);
+    wide_dyadic_mul(&uy, &qx, &q);
+    q.sign = - q.sign;
+    wide_dyadic_add(&p, &q, &s);
+    if ((up && s.sign > 0) || (down && s.sign < 0))
+      inside = ! inside;
+  }
+  return inside;
+}
+
+/* Order the periods by their start */
+static int
+period_cmp(const void *a, const void *b)
+{
+  const int64 *x = (const int64 *) a, *y = (const int64 *) b;
+  return (x[0] > y[0]) - (x[0] < y[0]);
+}
+
+/**
+ * @brief Return the number of periods during which a disc moving linearly
+ * over a segment is within a distance of a geometry, decided exactly
+ * @details The single engine of the within periods of a moving disc, a point
+ * being a disc of radius 0. Each edge contributes the period of
+ * #point_motion_segm_dwithin_period_exact, an edge whose box lies beyond the
+ * reach of the swept box contributing none. Periods no whole microsecond
+ * separates are merged, which holds the same microseconds. Every other gap,
+ * before the first period, between two, after the last, or the whole segment
+ * where there is none, is wholly inside or wholly outside the area the region
+ * edges bound, the centre crossing no edge where the disc is within of none,
+ * and is read at a whole microsecond of it (#motion_point_inside_segms),
+ * where the centre lies on no edge: inside, the gap is within too. The bounds
+ * are microseconds from the start of the segment, dated as
+ * #point_motion_dwithin_period_exact dates them.
+ * @param[in] c0,c1 Centre of the disc at the start and at the end
+ * @param[in] r0,r1 Radius of the disc at the start and at the end
+ * @param[in] edges,nedges Edges of the geometry (#geom_extract_edges)
+ * @param[in] d Distance
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] lo,hi Bounds of the periods, room for @p nedges + 1 each
+ * @return The number of periods, or -1 where an edge is an arc, which this
+ * engine does not answer
+ * @pre The radii and the distance are finite and not negative, `D > 0`, and
+ * the region edges bound areas that do not overlap
+ */
+int
+motion_edges_dwithin_periods(const double *c0, const double *c1, double r0,
+  double r1, const Edge *const *edges, int nedges, double d, int64 D,
+  int64 *lo, int64 *hi)
+{
+  bool region = false;
+  for (int k = 0; k < nedges; k++)
+  {
+    if (edges[k]->etype == EDGE_LINEARC || edges[k]->etype == EDGE_POLYARC)
+      return -1;
+    region |= (edges[k]->etype == EDGE_POLYSEG);
+  }
+  /* The swept box grown by the reach admits every edge a period can come
+   * from; padded by the rounding of its doubles, it only admits */
+  double reach = d + Max(r0, r1);
+  double bx0 = Min(c0[0], c1[0]), bx1 = Max(c0[0], c1[0]);
+  double by0 = Min(c0[1], c1[1]), by1 = Max(c0[1], c1[1]);
+  double mag = Max(Max(fabs(bx0), fabs(bx1)), Max(fabs(by0), fabs(by1)));
+  double pad = reach + 0x1p-50 * (mag + reach);
+  int64 *per = palloc(sizeof(int64) * 2 * (nedges + 1));
+  int np = 0;
+  for (int k = 0; k < nedges; k++)
+  {
+    const Edge *e = edges[k];
+    if (e->xmax < bx0 - pad || e->xmin > bx1 + pad ||
+        e->ymax < by0 - pad || e->ymin > by1 + pad)
+      continue;
+    const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+    int64 n1, n2;
+    if (point_motion_segm_dwithin_period_exact(c0, c1, r0, r1, a, b, d, D,
+        &n1, &n2) > 0)
+    {
+      per[2 * np] = n1;
+      per[2 * np + 1] = n2;
+      np++;
+    }
+  }
+  if (np == 0)
+  {
+    pfree(per);
+    if (region && motion_point_inside_segms(c0, c1, D, 0, edges, nedges))
+    {
+      lo[0] = 0;
+      hi[0] = D;
+      return 1;
+    }
+    return 0;
+  }
+  if (np > 1)
+    qsort(per, np, 2 * sizeof(int64), period_cmp);
+  int count = 0;
+  int64 cur_lo = per[0], cur_hi = per[1];
+  /* The microsecond 0 lies in the gap before the first period */
+  if (cur_lo > 0 && region &&
+      motion_point_inside_segms(c0, c1, D, 0, edges, nedges))
+    cur_lo = 0;
+  for (int i = 1; i < np; i++)
+  {
+    int64 nlo = per[2 * i], nhi = per[2 * i + 1];
+    /* The microsecond after the current period lies in the gap, if any */
+    if (nlo <= cur_hi + 1 || (region &&
+        motion_point_inside_segms(c0, c1, D, cur_hi + 1, edges, nedges)))
+    {
+      cur_hi = Max(cur_hi, nhi);
+      continue;
+    }
+    lo[count] = cur_lo;
+    hi[count] = cur_hi;
+    count++;
+    cur_lo = nlo;
+    cur_hi = nhi;
+  }
+  if (cur_hi < D && region &&
+      motion_point_inside_segms(c0, c1, D, cur_hi + 1, edges, nedges))
+    cur_hi = D;
+  lo[count] = cur_lo;
+  hi[count] = cur_hi;
+  count++;
+  pfree(per);
+  return count;
 }
 
 /**
@@ -11853,6 +12567,25 @@ arcarc_meet_exact_ctx(ArcsegArena *arena, const Edge *p, const Edge *q,
 bool
 arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
 {
+  /* The two halves of a whole circle lie on one diameter, and the second
+   * runs from its end back to its start (#emit_arc_edge): it is the half
+   * circle on that diameter read from its other end, turning the same way,
+   * as #arcsegm_meet_exact reads it */
+  Edge halves[2];
+  const Edge *arcs[2] = {p, q};
+  for (int k = 0; k < 2; k++)
+  {
+    const Edge *e = arcs[k];
+    if (e->diameter && e->x1 == e->ex && e->y1 == e->ey &&
+        e->x2 == e->sx && e->y2 == e->sy)
+    {
+      halves[k] = *e;
+      halves[k].sx = e->x1; halves[k].sy = e->y1;
+      halves[k].ex = e->x2; halves[k].ey = e->y2;
+      arcs[k] = &halves[k];
+    }
+  }
+  p = arcs[0]; q = arcs[1];
   /* In expansions, and once more in #WideDyadic where those cannot tell a
    * sign or leave their exact range, as #tower_pred_run asks a tower */
   bool told = false;
@@ -25041,7 +25774,8 @@ ring_orientation_sign(const POINTARRAY *pa)
  * rings bound, 0 if it lies outside it, and -1 if it lies on one of the rings
  * @details A ray cast to the right at the vertex's own height crosses an edge
  * by the half-open rule, and the side of the edge the vertex lies on is the
- * sign #cross_product_sign reads exactly, so the answer holds at every scale
+ * sign #cross_product_sign reads exactly, so the answer holds at every scale;
+ * each edge is read by #ring_edge_ray_step with no offset
  */
 static int
 point_in_rings_exact(const POINT2D *pt, POINTARRAY * const *rings,
@@ -25055,24 +25789,9 @@ point_in_rings_exact(const POINT2D *pt, POINTARRAY * const *rings,
     {
       const POINT2D *a = getPoint2d_cp(pa, i);
       const POINT2D *b = getPoint2d_cp(pa, i + 1);
-      bool up = a->y <= pt->y && pt->y < b->y;
-      bool down = b->y <= pt->y && pt->y < a->y;
-      if (! up && ! down)
-      {
-        /* An edge the ray does not cross carries the vertex at its start or,
-         * lying at the vertex's height, between its two ends */
-        if ((a->x == pt->x && a->y == pt->y) ||
-            (a->y == pt->y && b->y == pt->y && Min(a->x, b->x) <= pt->x &&
-              pt->x <= Max(a->x, b->x)))
-          return -1;
-        continue;
-      }
-      int side = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y,
-        pt->x, pt->y);
-      if (side == 0)
+      if (ring_edge_ray_step(a->x, a->y, 0.0, b->x, b->y, 0.0, pt->x, pt->y,
+          &inside))
         return -1;
-      if ((up && side > 0) || (down && side < 0))
-        inside = ! inside;
     }
   }
   return inside ? 1 : 0;

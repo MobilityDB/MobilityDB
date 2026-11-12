@@ -130,6 +130,19 @@ SELECT asText(cbuffer(ST_Point(1,1), 0.5));
  Cbuffer(POINT(1 1),0.5)
 (1 row)
 
+SELECT asEWKT(round(transform(cbuffer 'Cbuffer(SRID=25832;Point(651337 6058377),10)', 32632), 3));
+                    asewkt                    
+----------------------------------------------
+ SRID=32632;Cbuffer(POINT(651337 6058377),10)
+(1 row)
+
+SELECT asEWKT(transformPipeline(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+                       asewkt                        
+-----------------------------------------------------
+ SRID=32631;Cbuffer(POINT(595032.295 5634012.833),1)
+(1 row)
+
 SELECT asText(round(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)', 6));
                    astext                   
 --------------------------------------------
@@ -1887,15 +1900,15 @@ SELECT asText(deleteTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer
 (1 row)
 
 SELECT asText(deleteTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', timestamptz '2001-01-01'));
-                                                                                astext                                                                                
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {(Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]}
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(deleteTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', timestamptz '2001-01-01'));
-                                                                                                                                       astext                                                                                                                                       
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {(Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
+                                                                                                            astext                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(deleteTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', tstzset '{2001-01-01}'));
@@ -2003,6 +2016,12 @@ SELECT count(*) FROM ais, generate_series(0, 15) AS d
      0
 (1 row)
 
+SELECT asEWKT(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01', geometry 'Point(1.5 1)'));
                        astext                       
 ----------------------------------------------------
@@ -2069,6 +2088,20 @@ SELECT asText(tgeompoint(rotateZ(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, 
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT asEWKT(round(transform(tcbuffer 'SRID=25832;[Cbuffer(Point(651337 6058377),10)@2001-01-01, Cbuffer(Point(651437 6058377),10)@2001-01-02]', 32632), 3));
+                                                                   asewkt                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=32632;[Cbuffer(POINT(651337 6058377),10)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(651437 6058377),10)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(transformPipeline(tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
+  Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+                                                                          asewkt                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=32631;{Cbuffer(POINT(595215.059 5633645.441),1)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(282970.182 5710870.493),2)@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
 SELECT asText(nearestApproachInstant(geometry 'Point(2 3)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(4 0), 0.5)@2001-01-05]'));
@@ -2372,6 +2405,24 @@ SELECT asText(setIntersection(geogset '{"Point(1 1)", "Point(2 2)"}', geography 
  {"POINT(1 1)"}
 (1 row)
 
+SELECT asEWKT(geomset '{Point(1 2)}'::geogset);
+          asewkt          
+--------------------------
+ SRID=4326;{"POINT(1 2)"}
+(1 row)
+
+SELECT asEWKT(geomset 'SRID=4326;{Point(1 2), Point(3 4)}'::geogset);
+                 asewkt                 
+----------------------------------------
+ SRID=4326;{"POINT(1 2)", "POINT(3 4)"}
+(1 row)
+
+SELECT asEWKT(geogset '{Point(1 2)}'::geomset);
+          asewkt          
+--------------------------
+ SRID=4326;{"POINT(1 2)"}
+(1 row)
+
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))';
         stbox         
 ----------------------
@@ -2540,6 +2591,42 @@ SELECT asText(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)
  STBOX XT(((1.123457,1.234568),(2.123457,2.123457)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+SELECT asEWKT(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)),[2001-01-01,2001-01-02])', 6);
+                                                      asewkt                                                      
+------------------------------------------------------------------------------------------------------------------
+ STBOX XT(((1.123457,1.234568),(2.123457,2.123457)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT asText(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(2,2)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT asEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
+                                             asewkt                                             
+------------------------------------------------------------------------------------------------
+ SRID=4326;STBOX XT(((1,1),(2,2)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT asText(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])');
+                                            astext                                            
+----------------------------------------------------------------------------------------------
+ GEODSTBOX ZT(((1,1,1),(2,2,2)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT asEWKT(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])');
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX ZT(((1,1,1),(2,2,2)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT asEWKT(stbox 'SRID=4326;STBOX T([2001-01-01,2001-01-02])');
+                                asewkt                                 
+-----------------------------------------------------------------------
+ STBOX T([Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
 SELECT stboxFromBinary(asBinary(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
                                             stboxfrombinary                                             
 --------------------------------------------------------------------------------------------------------
@@ -2583,6 +2670,18 @@ SELECT stboxFromText('SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001
 (1 row)
 
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromText(asText(b)) <> asText(b)::stbox;
+ count 
+-------
+     0
+(1 row)
+
+SELECT stboxFromEWKT('SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])');
+                                             stboxfromewkt                                              
+--------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+(1 row)
+
+SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromEWKT(asEWKT(b)) <> b;
  count 
 -------
      0
@@ -5750,15 +5849,15 @@ SELECT asText(deleteTime(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-0
 (1 row)
 
 SELECT asText(deleteTime(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', timestamptz '2001-01-01'));
-                                                            astext                                                             
--------------------------------------------------------------------------------------------------------------------------------
- {(POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]}
+                                       astext                                       
+------------------------------------------------------------------------------------
+ [POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(deleteTime(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', timestamptz '2001-01-01'));
-                                                                                                      astext                                                                                                       
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {(POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(3 3)@Thu Jan 04 00:00:00 2001 PST, POINT(3 3)@Fri Jan 05 00:00:00 2001 PST]}
+                                                                                  astext                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(3 3)@Thu Jan 04 00:00:00 2001 PST, POINT(3 3)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(deleteTime(tgeography 'Point(1.5 1.5)@2001-01-01', timestamptz '2001-01-01'));
@@ -5774,15 +5873,15 @@ SELECT asText(deleteTime(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@
 (1 row)
 
 SELECT asText(deleteTime(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', timestamptz '2001-01-01'));
-                                                                  astext                                                                   
--------------------------------------------------------------------------------------------------------------------------------------------
- {(POINT(1.5 1.5)@Mon Jan 01 00:00:00 2001 PST, POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST]}
+                                           astext                                           
+--------------------------------------------------------------------------------------------
+ [POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(deleteTime(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', timestamptz '2001-01-01'));
-                                                                                                                astext                                                                                                                 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {(POINT(1.5 1.5)@Mon Jan 01 00:00:00 2001 PST, POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST]}
+                                                                                          astext                                                                                          
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(deleteTime(tgeometry 'Point(1 1)@2001-01-01', tstzset '{2001-01-01}'));
@@ -9066,15 +9165,15 @@ SELECT asText(deleteTime(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-
 (1 row)
 
 SELECT asText(deleteTime(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', timestamptz '2001-01-01'));
-                                                            astext                                                             
--------------------------------------------------------------------------------------------------------------------------------
- {(POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]}
+                                       astext                                       
+------------------------------------------------------------------------------------
+ [POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(deleteTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', timestamptz '2001-01-01'));
-                                                                                                      astext                                                                                                       
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {(POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(3 3)@Thu Jan 04 00:00:00 2001 PST, POINT(3 3)@Fri Jan 05 00:00:00 2001 PST]}
+                                                                                  astext                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(3 3)@Thu Jan 04 00:00:00 2001 PST, POINT(3 3)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(deleteTime(tgeogpoint 'Point(1.5 1.5)@2001-01-01', timestamptz '2001-01-01'));
@@ -9090,15 +9189,15 @@ SELECT asText(deleteTime(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@
 (1 row)
 
 SELECT asText(deleteTime(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', timestamptz '2001-01-01'));
-                                                                  astext                                                                   
--------------------------------------------------------------------------------------------------------------------------------------------
- {(POINT(1.5 1.5)@Mon Jan 01 00:00:00 2001 PST, POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST]}
+                                           astext                                           
+--------------------------------------------------------------------------------------------
+ [POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', timestamptz '2001-01-01'));
-                                                                                                                astext                                                                                                                 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {(POINT(1.5 1.5)@Mon Jan 01 00:00:00 2001 PST, POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST]}
+                                                                                          astext                                                                                          
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(deleteTime(tgeompoint 'Point(1 1)@2001-01-01', tstzset '{2001-01-01}'));
@@ -16869,6 +16968,82 @@ SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00, 
  [POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(0 0)@Mon Jan 01 00:00:10 2001 PST, POINT(0 0)@Mon Jan 01 00:00:20 2001 PST]
 (1 row)
 
+SELECT asText(reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01, Point(5000 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03]', 100));
+                                                            astext                                                             
+-------------------------------------------------------------------------------------------------------------------------------
+ [POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(10 0)@Mon Jan 01 00:00:01 2001 PST, POINT(30 0)@Mon Jan 01 00:00:03 2001 PST]
+(1 row)
+
+SELECT asText(reachabilityFilter(tgeompoint '{Point(0 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01, Point(5000 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03}', 100));
+                                                            astext                                                             
+-------------------------------------------------------------------------------------------------------------------------------
+ {POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(10 0)@Mon Jan 01 00:00:01 2001 PST, POINT(30 0)@Mon Jan 01 00:00:03 2001 PST}
+(1 row)
+
+SELECT asText(reachabilityFilter(tgeompoint '{[Point(0 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01], [Point(5000 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03]}', 100));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(10 0)@Mon Jan 01 00:00:01 2001 PST], [POINT(30 0)@Mon Jan 01 00:00:03 2001 PST]}
+(1 row)
+
+SELECT asText(reachabilityFilter(tgeompoint 'Point(1 1)@2001-01-01', 100));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(reachabilityFilter(tgeompoint '[Point(0 0 0)@2001-01-01 00:00:00, Point(0 0 10)@2001-01-01 00:00:01, Point(0 0 5000)@2001-01-01 00:00:02, Point(0 0 30)@2001-01-01 00:00:03]', 100));
+                                                                    astext                                                                    
+----------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT Z (0 0 0)@Mon Jan 01 00:00:00 2001 PST, POINT Z (0 0 10)@Mon Jan 01 00:00:01 2001 PST, POINT Z (0 0 30)@Mon Jan 01 00:00:03 2001 PST]
+(1 row)
+
+SELECT asText(reachabilityFilter(tgeogpoint '[Point(4.350 50.85)@2001-01-01 00:00:00, Point(4.351 50.85)@2001-01-01 00:00:01, Point(5.350 50.85)@2001-01-01 00:00:02, Point(4.353 50.85)@2001-01-01 00:00:03]', 400), 3);
+                                                                       astext                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT(4.35 50.85)@Mon Jan 01 00:00:00 2001 PST, POINT(4.351 50.85)@Mon Jan 01 00:00:01 2001 PST, POINT(4.353 50.85)@Mon Jan 01 00:00:03 2001 PST]
+(1 row)
+
+SELECT asText(reachabilityFilter(tfloat '[1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01, 1000@2001-01-01 00:00:02, 3@2001-01-01 00:00:03]', 5));
+                                              astext                                              
+--------------------------------------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 2@Mon Jan 01 00:00:01 2001 PST, 3@Mon Jan 01 00:00:03 2001 PST]
+(1 row)
+
+SELECT asText(reachabilityFilter(tgeompoint '{Point(5000 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01, Point(20 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03, Point(40 0)@2001-01-01 00:00:04, Point(50 0)@2001-01-01 00:00:05, Point(60 0)@2001-01-01 00:00:06, Point(70 0)@2001-01-01 00:00:07, Point(80 0)@2001-01-01 00:00:08, Point(90 0)@2001-01-01 00:00:09, Point(100 0)@2001-01-01 00:00:10, Point(110 0)@2001-01-01 00:00:11}', 100));
+                                                                                                                                                                                                                                      astext                                                                                                                                                                                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(10 0)@Mon Jan 01 00:00:01 2001 PST, POINT(20 0)@Mon Jan 01 00:00:02 2001 PST, POINT(30 0)@Mon Jan 01 00:00:03 2001 PST, POINT(40 0)@Mon Jan 01 00:00:04 2001 PST, POINT(50 0)@Mon Jan 01 00:00:05 2001 PST, POINT(60 0)@Mon Jan 01 00:00:06 2001 PST, POINT(70 0)@Mon Jan 01 00:00:07 2001 PST, POINT(80 0)@Mon Jan 01 00:00:08 2001 PST, POINT(90 0)@Mon Jan 01 00:00:09 2001 PST, POINT(100 0)@Mon Jan 01 00:00:10 2001 PST, POINT(110 0)@Mon Jan 01 00:00:11 2001 PST}
+(1 row)
+
+SELECT asText(reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst)))
+FROM unnest(instants(tgeompoint '{Point(5000 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01, Point(20 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03, Point(40 0)@2001-01-01 00:00:04, Point(50 0)@2001-01-01 00:00:05, Point(60 0)@2001-01-01 00:00:06, Point(70 0)@2001-01-01 00:00:07, Point(80 0)@2001-01-01 00:00:08, Point(90 0)@2001-01-01 00:00:09, Point(100 0)@2001-01-01 00:00:10, Point(5000 0)@2001-01-01 00:00:11, Point(120 0)@2001-01-01 00:00:12}')) AS inst;
+                                                                                                                                                                                                                                      astext                                                                                                                                                                                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT(10 0)@Mon Jan 01 00:00:01 2001 PST, POINT(20 0)@Mon Jan 01 00:00:02 2001 PST, POINT(30 0)@Mon Jan 01 00:00:03 2001 PST, POINT(40 0)@Mon Jan 01 00:00:04 2001 PST, POINT(50 0)@Mon Jan 01 00:00:05 2001 PST, POINT(60 0)@Mon Jan 01 00:00:06 2001 PST, POINT(70 0)@Mon Jan 01 00:00:07 2001 PST, POINT(80 0)@Mon Jan 01 00:00:08 2001 PST, POINT(90 0)@Mon Jan 01 00:00:09 2001 PST, POINT(100 0)@Mon Jan 01 00:00:10 2001 PST, POINT(120 0)@Mon Jan 01 00:00:12 2001 PST]
+(1 row)
+
+SELECT asText(reachabilityFilterAgg(inst, 400 ORDER BY getTimestamp(inst)), 3)
+FROM unnest(instants(tgeogpoint '{Point(4.350 50.85)@2001-01-01 00:00:00, Point(4.351 50.85)@2001-01-01 00:00:01, Point(5.350 50.85)@2001-01-01 00:00:02, Point(4.353 50.85)@2001-01-01 00:00:03}')) AS inst;
+                                                                       astext                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT(4.35 50.85)@Mon Jan 01 00:00:00 2001 PST, POINT(4.351 50.85)@Mon Jan 01 00:00:01 2001 PST, POINT(4.353 50.85)@Mon Jan 01 00:00:03 2001 PST]
+(1 row)
+
+SELECT asText(reachabilityFilterAgg(inst, 5 ORDER BY getTimestamp(inst)))
+FROM unnest(instants(tfloat '{1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01, 1000@2001-01-01 00:00:02, 3@2001-01-01 00:00:03}')) AS inst;
+                                              astext                                              
+--------------------------------------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 2@Mon Jan 01 00:00:01 2001 PST, 3@Mon Jan 01 00:00:03 2001 PST]
+(1 row)
+
+SELECT asText(reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst)))
+FROM unnest(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 00:00:00', tgeompoint 'Point(0 0)@2001-01-01 00:00:00', tgeompoint 'Point(10 0)@2001-01-01 00:00:01', tgeompoint 'Point(10 0)@2001-01-01 00:00:01']) AS inst;
+                                       astext                                        
+-------------------------------------------------------------------------------------
+ [POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(10 0)@Mon Jan 01 00:00:01 2001 PST]
+(1 row)
+
 SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
                                                            astext                                                            
 -----------------------------------------------------------------------------------------------------------------------------
@@ -18620,6 +18795,14 @@ SELECT nsegmentFromEWKT(asEWKT(nsegment 'NSegment(1,0.5,0.7)'))
 
 SELECT nsegmentFromEWKT('SRID=4326;NSegment(1,0.5,0.7)');
 ERROR:  The SRID of the nsegment (4326) does not match the SRID of the network (5676)
+INSERT INTO ways(gid, the_geom, length) VALUES
+  (9001, 'SRID=5676;LINESTRING Z(0 0 0,3 4 0)', 5),
+  (9002, 'SRID=5676;LINESTRING M(0 0 0,3 4 0)', 5),
+  (9003, 'SRID=5676;MULTILINESTRING((0 0,3 4))', 5),
+  (9004, 'SRID=4326;LINESTRING(0 0,3 4)', 5);
+INSERT 0 4
+DELETE FROM ways WHERE gid > 9000;
+DELETE 4
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromText(asText(n)) <> n;
  count 
 -------
@@ -19494,6 +19677,32 @@ SELECT tpcboxFromText(asText(tpcboxZT(0, 0, 0, 10, 10, 10,
  t
 (1 row)
 
+SELECT asText(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+           astext            
+-----------------------------
+ TPCBOX(X((0,0),(10,10)), 5)
+(1 row)
+
+SELECT asEWKT(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)');
+                asewkt                 
+---------------------------------------
+ SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
+(1 row)
+
+SELECT asEWKT(tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)', 1);
+                asewkt                 
+---------------------------------------
+ SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
+(1 row)
+
+SELECT tpcboxFromEWKT(asEWKT(tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-02]', 5)))
+  = tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 5);
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT tpcboxFromText('TPCBOX(X((0,0),(10,10)))');
 ERROR:  Could not parse tpcbox value: Missing comma before PCID
 SELECT tpcbox 'TPCBOX(X((0,0),(10,10)), 5)';
@@ -19664,6 +19873,18 @@ SELECT tpcpoint '0163000000000000000000F03F00000000000000400000000000000840@2024
 ERROR:  No schema registered for pcid 99
 LINE 1: SELECT tpcpoint '0163000000000000000000F03F00000000000000400...
                         ^
+SELECT asEWKT((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint, 6);
+                    asewkt                    
+----------------------------------------------
+ POINT Z (1 1 1)@Mon Jan 01 00:00:00 2024 PST
+(1 row)
+
+SELECT asEWKT((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeogpoint, 6);
+                         asewkt                         
+--------------------------------------------------------
+ SRID=4326;POINT Z (1 1 1)@Mon Jan 01 00:00:00 2024 PST
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tpcpoint
   WHERE tpcpointFromBinary(asBinary(temp)) <> temp;
  count 
@@ -20388,6 +20609,18 @@ SELECT asText(round(ARRAY[pose 'Pose(Point(1.123456789 1.123456789), 0.123456789
                                               astext                                              
 --------------------------------------------------------------------------------------------------
  {"Pose(POINT(1.123457 1.123457),0.123457)","Pose(POINT Z (2.987654 2.987654 2.987654),1,0,0,0)"}
+(1 row)
+
+SELECT asText(round(pose 'Pose(Point Z(1.23 1.23 1.23), 0.96, 0, 0, 0.28)', 1), 6);
+                      astext                       
+---------------------------------------------------
+ Pose(POINT Z (1.2 1.2 1.2),0.957826,0,0,0.287348)
+(1 row)
+
+SELECT asText(round(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)', 0), 6);
+                astext                 
+---------------------------------------
+ Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)
 (1 row)
 
 SELECT asText(poseNormalize(pose 'Pose(Point(1 1), 0.5)'));
@@ -22157,15 +22390,15 @@ SELECT asText(deleteTime(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 
 (1 row)
 
 SELECT asText(deleteTime(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', timestamptz '2001-01-01'));
-                                                                           astext                                                                            
--------------------------------------------------------------------------------------------------------------------------------------------------------------
- {(Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]}
+                                                 astext                                                 
+--------------------------------------------------------------------------------------------------------
+ [Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(deleteTime(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}', timestamptz '2001-01-01'));
-                                                                                                                               astext                                                                                                                                
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {(Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
+                                                                                                      astext                                                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(deleteTime(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', tstzset '{2001-01-01}'));
@@ -22282,10 +22515,6 @@ SELECT asText(tgeompoint(tpose '[GeodPose(Point(1 1),0.1)@2001-01-01]'));
  [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
-WITH ais(mmsi, temp) AS (
-  SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
-  FROM tbl_ais_instant GROUP BY mmsi )
--- The MF-JSON angle of a 2D pose is its yaw; a 3D pose carries a quaternion.
 SELECT asMFJSON(tpose 'SRID=4326;Pose(Point(1 2), 0.5)@2001-01-01');
                                                                                               asmfjson                                                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -22310,10 +22539,15 @@ SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","proper
  Pose(POINT(1 2),0.5)@Sun Dec 31 16:00:00 2000 PST
 (1 row)
 
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
 SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
-ERROR:  relation "ais" does not exist
-LINE 1: SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL...
-                             ^
+ count 
+-------
+     0
+(1 row)
+
 WITH ais(mmsi, temp) AS (
   SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
   FROM tbl_ais_instant GROUP BY mmsi )
@@ -22352,6 +22586,60 @@ SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01
                              astext                              
 -----------------------------------------------------------------
  GeodPose(POINT Z (8 47 0),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST
+(1 row)
+
+SELECT asEWKT(tpose 'Pose(Point(1 2),0.5)@2001-01-01'::tgeompoint);
+                 asewkt                  
+-----------------------------------------
+ POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tpose 'Pose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeompoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(stops(tpose '[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0)@2001-01-02, Pose(Point(2 2),0)@2001-01-03, Pose(Point(2 2),0)@2001-01-04]'));
+                                                                                                  astext                                                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(2 2),0)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(2 2),0)@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(stops(tpose '[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
+                                                 astext                                                 
+--------------------------------------------------------------------------------------------------------
+ {[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(stops(tpose '{[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1.5 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03], [Pose(Point(9 9),0)@2001-01-05, Pose(Point(9 9),0)@2001-01-07]}', 1.0, '36 hours'));
+                                                astext                                                
+------------------------------------------------------------------------------------------------------
+ {[Pose(POINT(9 9),0)@Fri Jan 05 00:00:00 2001 PST, Pose(POINT(9 9),0)@Sun Jan 07 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(stops(tpose '[Pose(Point(1 1 1),1,0,0,0)@2001-01-01, Pose(Point(1 1 9),1,0,0,0)@2001-01-02, Pose(Point(5 5 9),1,0,0,0)@2001-01-03]'));
+                                                           astext                                                           
+----------------------------------------------------------------------------------------------------------------------------
+ {[Pose(POINT Z (1 1 1),1,0,0,0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT Z (1 1 9),1,0,0,0)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(stops(tpose '[GeodPose(Point(4.35 50.85),0)@2001-01-01, GeodPose(Point(4.3501 50.85),0)@2001-01-02, GeodPose(Point(4.40 50.85),0)@2001-01-03]', 10.0));
+                                                            astext                                                            
+------------------------------------------------------------------------------------------------------------------------------
+ {[GeodPose(POINT(4.35 50.85),0)@Mon Jan 01 00:00:00 2001 PST, GeodPose(POINT(4.3501 50.85),0)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)));
@@ -23508,6 +23796,30 @@ SELECT asText(tpose(translate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(P
  t
 (1 row)
 
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
+                 asewkt                  
+-----------------------------------------
+ POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
  count 
 -------
@@ -23917,6 +24229,14 @@ SELECT quadbinFromText('0x480fffffffffffff') = quadbin '480fffffffffffff';
 
 SELECT quadbinFromText('48427xyz');
 ERROR:  quadbin value "48427xyz" does not encode a valid quadbin index
+SELECT COUNT(*) FILTER (WHERE quadbin_send(qb) = asBinary(qb)) AS same,
+  COUNT(*) FILTER (WHERE quadbin_send(qb) <> asBinary(qb)) AS different
+FROM tbl_quadbin;
+ same | different 
+------+-----------
+  100 |         0
+(1 row)
+
 SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}';
                 quadbinset                
 ------------------------------------------
@@ -24510,6 +24830,18 @@ FROM t;
  tc_geo_c | tc_c_geo | tc_c_c | tcv_geo_c | tcv_c_geo | tcv_c_c | tdj_geo_c | tdj_c_geo | tdj_c_c | ti_geo_c | ti_c_geo | ti_c_c | ttc_geo_c | ttc_c_geo | ttc_c_c | tdw_geo_c | tdw_c_geo | tdw_c_c 
 ----------+----------+--------+-----------+-----------+---------+-----------+-----------+---------+----------+----------+--------+-----------+-----------+---------+-----------+-----------+---------
  t        | t        | t      | t         | t         | t       | t         | t         | t       | t        | t        | t      | t         | t         | t       | t         | t         | t
+(1 row)
+
+SELECT asEWKT(tquadbin '480fffffffffffff@2001-01-01'::tgeogpoint, 6);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(0 0)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tquadbin '480fffffffffffff@2001-01-01'::tgeompoint, 6);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(0 0)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SET timezone = 'UTC';
@@ -25735,6 +26067,42 @@ SELECT asEWKT(trgeometry 'SRID=5676,Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pos
  SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Interp=Step;{[Pose(POINT(1 1),0.123457)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.523457)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.123457)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.723457)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.723457)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01');
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01, Pose(Point(2 2), 0.5)@2001-01-02]');
+                                                                   asewkt                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.5)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(trgeometry E'Polygon((1 1,2 2,3 1,1 1));SRID=5676;\n  Pose(Point(1 1), 0.5)@2001-01-01');
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(pose E'SRID=5676;\n  Pose(Point(1 1), 0.5)');
+             asewkt             
+--------------------------------
+ SRID=5676;Pose(POINT(1 1),0.5)
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.5)@2001-01-01, SRID=5676;Pose(Point(2 2), 0.5)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+LINE 1: SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(P...
+                                 ^
+SELECT asEWKT(tgeompoint '[Point(1 1)@2001-01-01, SRID=5676;Point(2 2)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+LINE 1: SELECT asEWKT(tgeompoint '[Point(1 1)@2001-01-01, SRID=5676;...
+                                 ^
+SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));SRID=3812;Pose(Point(1 1), 0.5)@2001-01-01';
+ERROR:  The SRID of the pose (3812) does not match the SRID of the trgeometry (5676)
+LINE 1: SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));SRID...
+                          ^
 SELECT asMFJSON(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.123456789)@2001-01-01', 6);
                                                                                                                                           asmfjson                                                                                                                                           
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -26217,6 +26585,12 @@ SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.
                                                                   astext                                                                  
 ------------------------------------------------------------------------------------------------------------------------------------------
  POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.123457)@Sun Jan 01 00:00:00 2012 PST, Pose(POINT(1 1),0.5)@Mon Jan 02 00:00:00 2012 PST)}
+(1 row)
+
+SELECT asText(round(trgeometry 'Polygon((1 1 1,2 2 1,3 1 1,1 1 1));[Pose(Point(1 1 1), 1, 0, 0, 0)@2001-01-01, Pose(Point(1 1 1), 0.96, 0, 0, 0.28)@2001-01-02]', 1), 6);
+                                                                                    astext                                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON Z ((1 1 1,2 2 1,3 1 1,1 1 1));[Pose(POINT Z (1 1 1),1,0,0,0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT Z (1 1 1),0.957826,0,0,0.287348)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(appendInstant(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01', trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.7)@2001-01-02'));
@@ -26971,15 +27345,15 @@ SELECT asText(deleteTime(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1)
 (1 row)
 
 SELECT asText(deleteTime(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', timestamptz '2001-01-01'));
-                                                                                         astext                                                                                         
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- POLYGON((1 1,2 2,3 1,1 1));{(Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]}
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(deleteTime(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}', timestamptz '2001-01-01'));
-                                                                                                                                             astext                                                                                                                                             
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- POLYGON((1 1,2 2,3 1,1 1));{(Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
+                                                                                                                   astext                                                                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(deleteTime(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01', tstzset '{2001-01-01}'));
@@ -27088,6 +27462,56 @@ SELECT asText(merge(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
 ERROR:  Operation on different reference geometries
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1.0000000001 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-02'));
+ERROR:  Operation on different reference geometries
+SELECT asText(merge(
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01',
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-02'));
+ERROR:  Operation on different reference geometries
+SELECT asText(merge(
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01',
+  trgeometry 'PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-02'));
+ERROR:  Operation on different reference geometries
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  trgeometry 'Polygon((-0 0,1 0,1 1,0 1,-0 0));Pose(Point(0 0), 0.0)@2001-01-02'));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(0 0),0)@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeography);
+                              asewkt                               
+-------------------------------------------------------------------
+ SRID=4326;POLYGON((1 2,2 2,2 3,1 2))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03, Pose(Point(5 5),0)@2001-01-04]'));
+                                                                                                               astext                                                                                                                
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 0));{[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(5 5),0)@Wed Jan 03 00:00:00 2001 PST, Pose(POINT(5 5),0)@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02, Pose(Point(5 5),0.5)@2001-01-03]'));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 0));{[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(stops(trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(1 1),0)@2001-01-01, Pose(Point(1.5 1),0)@2001-01-02, Pose(Point(5 5),0)@2001-01-03]', 1.0, '1 day'));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 0));{[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1.5 1),0)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789),0.5)@2001-01-01', 6);
                                            astext                                           
 --------------------------------------------------------------------------------------------
@@ -27650,6 +28074,29 @@ SELECT count(*) FROM tbl_ais_trgeometry
      0
 (1 row)
 
+SELECT asEWKT(round(transform(trgeometry
+  'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));[Pose(Point(4.35 50.85), 0.5)@2001-01-01, Pose(Point(4.36 50.86), 0.6)@2001-01-02]',
+  3812), 3));
+                                                                                            asewkt                                                                                             
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;POLYGON((-10 -5,50 -5,50 5,-10 5,-10 -5));[Pose(POINT(648679.018 671067.056),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(649383.21 672179.417),0.6)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(round(transform(trgeometry 'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));
+  Pose(Point(4.35 50.85), 0.5)@2001-01-01', 32631), 3));
+                                                           asewkt                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ SRID=32631;POLYGON((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(POINT(595032.295 5634012.833),0.518)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(round(transformPipeline(trgeometry
+  'SRID=4326;Polygon((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(Point(4.35 50.85), 0.5)@2001-01-01',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3));
+                                                           asewkt                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ SRID=32631;POLYGON((-10 -5,50 -5,50 5,-10 5,-10 -5));Pose(POINT(595032.295 5634012.833),0.518)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(atGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(2 0), 0.0)@2001-01-01',
   geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
@@ -28067,6 +28514,12 @@ SELECT round((
  1.878058267
 (1 row)
 
+SELECT asText(tgeometry(trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]'));
+                                                                astext                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ [POLYGON((-1 -1,1 -1,1 1,-1 1,-1 -1))@Mon Jan 01 00:00:00 2001 PST, POLYGON((9 -1,11 -1,11 1,9 1,9 -1))@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 WITH t AS (
   SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-03]' AS seq1,
          trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0),0)@2001-01-01, Pose(Point(2 2),0)@2001-01-03]' AS seq2,
@@ -28124,6 +28577,16 @@ SELECT s2cell 'zzz';
 ERROR:  The S2 token "zzz" holds the non-hexadecimal character 'z'
 LINE 1: SELECT s2cell 'zzz';
                       ^
+SELECT s2cell_send(c) = asBinary(c)
+FROM (VALUES (s2cell '47c3c444c0000000'), (s2cell '47c3c444c0000004'),
+  (s2cell '54b5c9')) t(c);
+ ?column? 
+----------
+ t
+ t
+ t
+(3 rows)
+
 SELECT asBinary(s2cell '47c3c444c');
           asbinary          
 ----------------------------
@@ -28679,6 +29142,18 @@ SELECT asText(ts2GridDistance(
                               astext                              
 ------------------------------------------------------------------
  [1@Tue Jan 02 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(ts2cell '47c3c3@2001-01-01'::tgeompoint, 6);
+                              asewkt                              
+------------------------------------------------------------------
+ SRID=4326;POINT(4.365034 50.889171)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(ts2cell '47c3c3@2001-01-01'::tgeogpoint, 6);
+                              asewkt                              
+------------------------------------------------------------------
+ SRID=4326;POINT(4.365034 50.889171)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT asText(tCount(temp)) FROM (VALUES
@@ -30316,6 +30791,32 @@ SELECT ttextFromHexWKB(overlay(asHexWKB(ttext '{AAA@2001-01-01}', 'NDR') placing
 ERROR:  WKB structure does not match expected size!
 SELECT tintFromText('[1.5@2001-01-01]');
 ERROR:  invalid input syntax for type integer: "1.5"
+WITH temp(inst) AS (
+  SELECT tfloat '1@2001-01-01' UNION SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '3@2001-01-05' UNION SELECT tfloat '5@2001-01-06' UNION
+  SELECT tfloat '4@2001-01-07' ),
+agg(seqset) AS (
+  SELECT appendInstant(inst, 'linear', NULL, interval '1 day' ORDER BY inst) FROM temp )
+SELECT numInstants(seqset), tfloatFromBinary(asBinary(seqset)) = seqset FROM agg;
+ numinstants | ?column? 
+-------------+----------
+           5 | t
+(1 row)
+
+SELECT tstzspan '[294277-01-01 00:00:00+00, 294277-01-02 00:00:00+00]';
+ERROR:  22008
+SELECT tint 'abc';
+ERROR:  22P02
+SELECT tintFromMFJSON('{"type":"MovingInteger"}');
+ERROR:  22P02
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]]}');
+ERROR:  22P02
+SELECT tintFromBinary('\x00');
+ERROR:  22P03
+SELECT intspanFromBinary('\x0102');
+ERROR:  22P03
+SELECT tintFromHexWKB('0001');
+ERROR:  22P03
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_cbufferset t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asText(v, maxdecimaldigits => 6), cbuffersetFromText(asText(v)) = v AS roundtrip FROM r ORDER BY k;
 ERROR:  Operation on mixed SRID
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_cbufferset t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, (v::varchar)::cbufferset = v AS output_roundtrip FROM r ORDER BY k;
@@ -30605,7 +31106,7 @@ WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER B
  302 | \x0154004fe40e00000100000001000000030105000000c0189c6d5b210540380ac0507f03564030c1836323ba86bfb8709b2f53a6314096ea2bfb517b50c0d759e2e14ddda33f445fff2b9b7c3540187f287505e44140ec6e7ba7f0d19e3f94dd4b2701bc3640f879bcf078293e40b54a7d1e2fd8993ff47d9ba57ec64ec09064e763faf2354047c6c63775c385bf0053b5e0d1260000                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | t
 (4 rows)
 
-WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_trgeometry2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, (v::varchar)::trgeometry = v AS output_roundtrip FROM r ORDER BY k;
+WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_ts2cell t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, (v::varchar)::ts2cell = v AS output_roundtrip FROM r ORDER BY k;
  k  | output_roundtrip 
 ----+------------------
   1 | t

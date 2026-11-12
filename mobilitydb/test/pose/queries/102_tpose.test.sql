@@ -717,9 +717,6 @@ SELECT asText(tgeompoint(tpose '[GeodPose(Point(1 1),0.1)@2001-01-01]'));
 -- thus report zero
 -------------------------------------------------------------------------------
 
-WITH ais(mmsi, temp) AS (
-  SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
-  FROM tbl_ais_instant GROUP BY mmsi )
 -- The MF-JSON angle of a 2D pose is its yaw; a 3D pose carries a quaternion.
 SELECT asMFJSON(tpose 'SRID=4326;Pose(Point(1 2), 0.5)@2001-01-01');
 SELECT asMFJSON(tpose 'SRID=4326;Pose(Point Z(1 2 3), 1, 0, 0, 0)@2001-01-01');
@@ -728,6 +725,9 @@ SELECT asMFJSON(tpose 'SRID=4326;Pose(Point Z(1 2 3), 1, 0, 0, 0)@2001-01-01');
 SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}'));
 SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"rotation":0.5}],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}'));
 
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
 SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
 
 WITH ais(mmsi, temp) AS (

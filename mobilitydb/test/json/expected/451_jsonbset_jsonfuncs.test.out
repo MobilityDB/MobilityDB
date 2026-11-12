@@ -471,6 +471,19 @@ SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @?
  {f,f}
 (1 row)
 
+/* The operator suppresses the error of a strict path, as it does on a jsonb */
+SELECT jsonbset '{"{\"a\": 1}", "{\"b\": 1}"}' @? 'strict $.b';
+ ?column? 
+----------
+ {t}
+(1 row)
+
+SELECT jsonb '{"a": 1}' @? 'strict $.b';
+ ?column? 
+----------
+ 
+(1 row)
+
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
  jsonbsetpathexists 
 --------------------
@@ -585,19 +598,51 @@ SELECT jsonbsetPathQueryFirstTz(jsonbset '{"[\"2015-08-01 12:00:00-05\"]", "[\"2
 (1 row)
 
 /* Errors */
-SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
-ERROR:  datetime format is not recognized: "not a date"
 SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"d\": \"2003-01-01\"}"}', '$.d.datetime("HH24:MI:SS")');
 ERROR:  unmatched format separator ":"
 SELECT jsonbsetPathQueryArray(jsonbset '{"[\"2015-08-01 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
 ERROR:  cannot convert value from date to timestamptz without time zone usage
 SELECT jsonbsetPathQueryFirst(jsonbset '{"[\"2015-08-01 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
 ERROR:  cannot convert value from date to timestamptz without time zone usage
-/* A path matching nothing is unknown, that is, false, for every element */
+/* A comparison with a path matching nothing is false, as on a jsonb. A
+ * comparison suppresses the errors of its operands, so one with a string that
+ * is no date is unknown. A value whose predicate is unknown or no Boolean has
+ * no answer, as a jsonb has none, and is left out, as in
+ * jsonbsetPathQueryFirst; a set with no value left has no answer */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);
  jsonbsetpathmatch 
 -------------------
  {f,f}
+(1 row)
+
+SELECT jsonb_path_match(jsonb '{"speed": 10}', '$.xxx > 15', '{}', false);
+ jsonb_path_match 
+------------------
+ f
+(1 row)
+
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
+ jsonbsetpathmatch 
+-------------------
+ 
+(1 row)
+
+SELECT jsonb_path_match(jsonb '{"d": "not a date"}', '$.d.datetime() > "2002-06-01".datetime()');
+ jsonb_path_match 
+------------------
+ 
+(1 row)
+
+SELECT jsonbset '{"{\"a\": 1}", "{\"a\": 2}"}' @@ '$.a';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT jsonb '{"a": 1}' @@ '$.a';
+ ?column? 
+----------
+ 
 (1 row)
 
 /* The comparison of two JSONB values is a three-way answer, so a set of them

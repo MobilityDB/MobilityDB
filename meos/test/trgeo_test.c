@@ -173,10 +173,10 @@ int main(void)
     /* Restricting to a pose the value takes keeps the instant at which it
      * takes it, with the reference geometry back on the result */
     meos_errno_reset();
-    Temporal *at = trgeometry_at_values(trgeo3, poseset1);
+    Temporal *at = temporal_at_values(trgeo3, poseset1);
     if (! at)
     {
-      printf("FAILED: trgeometry_at_values returned NULL, errno %d\n",
+      printf("FAILED: temporal_at_values returned NULL, errno %d\n",
         meos_errno());
       result = 1;
     }
@@ -185,29 +185,29 @@ int main(void)
       char *at_out = trgeometry_as_text(at, 6, &size_out);
       if (strcmp(at_out, at_expected) != 0)
       {
-        printf("FAILED: trgeometry_at_values: %s != %s\n", at_out,
+        printf("FAILED: temporal_at_values: %s != %s\n", at_out,
           at_expected);
         result = 1;
       }
       else
-        printf("OK: trgeometry_at_values(trgeometry, poseset): %s\n", at_out);
+        printf("OK: temporal_at_values(trgeometry, poseset): %s\n", at_out);
       free(at); free(at_out);
     }
 
     /* The complement keeps everything else, and the two together give back the
      * time of the value */
     meos_errno_reset();
-    Temporal *minus = trgeometry_minus_values(trgeo3, poseset1);
+    Temporal *minus = temporal_minus_values(trgeo3, poseset1);
     if (! minus)
     {
-      printf("FAILED: trgeometry_minus_values returned NULL, errno %d\n",
+      printf("FAILED: temporal_minus_values returned NULL, errno %d\n",
         meos_errno());
       result = 1;
     }
     else
     {
       char *minus_out = trgeometry_as_text(minus, 6, &size_out);
-      printf("OK: trgeometry_minus_values(trgeometry, poseset): %s\n",
+      printf("OK: temporal_minus_values(trgeometry, poseset): %s\n",
         minus_out);
       free(minus); free(minus_out);
     }
@@ -216,14 +216,14 @@ int main(void)
      * restriction and being rejected there */
     Set *geomset1 = geomset_in("{\"Point(0 0)\", \"Point(1 1)\"}");
     meos_errno_reset();
-    Temporal *bad = trgeometry_at_values(trgeo3, geomset1);
+    Temporal *bad = temporal_at_values(trgeo3, geomset1);
     if (bad || meos_errno() == 0)
     {
-      printf("FAILED: trgeometry_at_values accepted a geomset\n");
+      printf("FAILED: temporal_at_values accepted a geomset\n");
       result = 1;
     }
     else
-      printf("OK: trgeometry_at_values(trgeometry, geomset) rejected, "
+      printf("OK: temporal_at_values(trgeometry, geomset) rejected, "
         "errno %d\n", meos_errno());
     free(bad); free(geomset1);
     meos_errno_reset();
@@ -668,6 +668,120 @@ int main(void)
       free(a); free(b); free(m);
       meos_errno_reset();
     }
+  }
+
+  /* A body whose shape a function does not read is refused, never answered as
+   * another shape: the restriction of a body with holes in linear motion, and
+   * the united traversed area of a body that is not convex in linear motion;
+   * in step interpolation both answer */
+  {
+    const char *holed = "Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]";
+    const char *holed_step = "Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),"
+      "(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, "
+      "Pose(Point(10 0),0)@2001-01-02]";
+    Temporal *lin = trgeometry_in(holed), *step = trgeometry_in(holed_step);
+    GSERIALIZED *small = geom_in("Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))", -1);
+    meos_errno_reset();
+    Temporal *at = trgeometry_at_geom(lin, small);
+    int err_at = meos_errno();
+    meos_errno_reset();
+    GSERIALIZED *area = trgeometry_traversed_area(lin, true);
+    int err_area = meos_errno();
+    meos_errno_reset();
+    GSERIALIZED *area_step = trgeometry_traversed_area(step, true);
+    if (at || err_at == 0 || area || err_area == 0 || ! area_step ||
+        meos_errno() != 0)
+    {
+      printf("FAILED: a body with holes in linear motion is answered by the "
+        "restriction or the united traversed area\n");
+      result = 1;
+    }
+    free(lin); free(step); free(small); free(at); free(area); free(area_step);
+    meos_errno_reset();
+  }
+
+  /* The relationships of a temporal rigid geometry read a 3D geometry in 2D,
+   * as its distances do, in linear and in step interpolation */
+  {
+    const char *bodies[] = {
+      "Polygon((0 0,1 0,1 1,0 1,0 0));"
+        "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]",
+      "Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, "
+        "Pose(Point(2 0),0)@2001-01-03, Pose(Point(4 0),0)@2001-01-05]" };
+    const char *geos2[] = { "Point(2.5 0.5)", "Point(9 9)" };
+    const char *geos3[] = { "Point(2.5 0.5 7)", "Point(9 9 7)" };
+    for (int i = 0; i < 2; i++)
+    {
+      Temporal *body = trgeometry_in(bodies[i]);
+      for (int j = 0; j < 2; j++)
+      {
+        GSERIALIZED *g2 = geom_in(geos2[j], -1);
+        GSERIALIZED *g3 = geom_in(geos3[j], -1);
+        Temporal *ti2 = tintersects_trgeometry_geo(body, g2);
+        Temporal *ti3 = tintersects_trgeometry_geo(body, g3);
+        Temporal *td2 = tdisjoint_trgeometry_geo(body, g2);
+        Temporal *td3 = tdisjoint_trgeometry_geo(body, g3);
+        Temporal *tw2 = tdwithin_trgeometry_geo(body, g2, 0.1);
+        Temporal *tw3 = tdwithin_trgeometry_geo(body, g3, 0.1);
+        int ei2 = eintersects_trgeometry_geo(body, g2);
+        if (ei2 != (j == 0 ? 1 : 0) ||
+            eintersects_trgeometry_geo(body, g3) != ei2 ||
+            aintersects_trgeometry_geo(body, g3) !=
+              aintersects_trgeometry_geo(body, g2) ||
+            edisjoint_trgeometry_geo(body, g3) !=
+              edisjoint_trgeometry_geo(body, g2) ||
+            adisjoint_trgeometry_geo(body, g3) !=
+              adisjoint_trgeometry_geo(body, g2) ||
+            edwithin_trgeometry_geo(body, g3, 0.1) !=
+              edwithin_trgeometry_geo(body, g2, 0.1) ||
+            adwithin_trgeometry_geo(body, g3, 20.0) !=
+              adwithin_trgeometry_geo(body, g2, 20.0) ||
+            ! ti2 || ! ti3 || ! temporal_eq(ti2, ti3) ||
+            ! td2 || ! td3 || ! temporal_eq(td2, td3) ||
+            ! tw2 || ! tw3 || ! temporal_eq(tw2, tw3) || meos_errno() != 0)
+        {
+          printf("FAILED: a relationship of a temporal rigid geometry and the "
+            "3D geometry %s\n", geos3[j]);
+          result = 1;
+        }
+        free(g2); free(g3); free(ti2); free(ti3); free(td2); free(td3);
+        free(tw2); free(tw3);
+        meos_errno_reset();
+      }
+      free(body);
+    }
+  }
+
+  /* A region with holes restricts a body in step interpolation by its
+   * placements, the hole read as outside, and is refused for a body in linear
+   * interpolation */
+  {
+    const char *step = "Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2.5 0),0)@2001-01-03, "
+      "Pose(Point(5 0),0)@2001-01-05]";
+    const char *lin = "Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-05]";
+    Temporal *tstep = trgeometry_in(step), *tlin = trgeometry_in(lin);
+    GSERIALIZED *region = geom_in("Polygon((0 -2,6 -2,6 2,0 2,0 -2),"
+      "(2 -1,4 -1,4 1.5,2 1.5,2 -1))", -1);
+    meos_errno_reset();
+    Temporal *at = trgeometry_at_geom(tstep, region);
+    int err_step = meos_errno();
+    meos_errno_reset();
+    Temporal *at_lin = trgeometry_at_geom(tlin, region);
+    int err_lin = meos_errno();
+    SpanSet *ss = at ? temporal_time(at) : NULL;
+    int count = ss ? spanset_num_spans(ss) : -1;
+    if (! at || err_step != 0 || count != 2 || at_lin || err_lin == 0)
+    {
+      printf("FAILED: a region with holes is not read by the restriction of "
+        "a body in step interpolation, or is answered for one in linear "
+        "interpolation\n");
+      result = 1;
+    }
+    free(tstep); free(tlin); free(region); free(at); free(at_lin); free(ss);
+    meos_errno_reset();
   }
 
   /* Finalize MEOS */

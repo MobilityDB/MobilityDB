@@ -260,6 +260,11 @@ extern bool relate_members_apart_within(const LWGEOM *geom,
   int64 budget);
 extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
+extern int cross_product_sign_offset(double ax, double ay, double bx,
+  double by, double cx, double cy, double dx, double dy, double oab,
+  double ocd);
+extern int point_in_ring_offset_exact(const double *x, const double *y,
+  const double *xoff, int n, double px, double py);
 extern double cross_product_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
 extern int dot_product_sign_exact(const POINT3D *p, const POINT3D *q);
@@ -365,6 +370,12 @@ extern int point_motion_dwithin_period_exact(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
   int64 *n1, int64 *n2);
+extern int motion_edges_dwithin_periods(const double *c0, const double *c1,
+  double r0, double r1, const Edge *const *edges, int nedges, double d,
+  int64 D, int64 *lo, int64 *hi);
+extern int point_motion_segm_dwithin_period_exact(const double *c0,
+  const double *c1, double r0, double r1, const double *a, const double *b,
+  double d, int64 D, int64 *n1, int64 *n2);
 extern bool point_motion_dwithin_at_exact(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
@@ -1439,19 +1450,16 @@ arc_half_chord_rounding(double d, double r1, double r2, double aa)
  * @brief Return true if two circular arcs properly cross
  * @details Proper means the two curves pass through one another at a point
  * interior to both, which is for two arcs what #relate_edges_cross decides for
- * two straight edges and #arcsegm_cross for one of each. Two distinct circles
- * meet in at most two points, and the HALF-CHORD of that meeting is what says
- * whether they cross: it vanishes exactly when the circles are TANGENT, which
- * touches without passing through, and #relate_arc_arc_points reads the same
- * quantity against the same bound to decide it reports one point rather than
- * two. A half-chord standing clear of that bound therefore makes the circles
- * secant, and an intersection point strictly inside both arcs' angular spans
- * is a crossing point interior to both edges, around which the four sectors
- * are the four combinations of inside and outside.
+ * two straight edges and #arcsegm_cross for one of each: a meeting of two
+ * secant circles that #arcarc_meet_exact places strictly within both arcs.
+ * Tangent circles touch without passing through, and a meeting at an end of
+ * either arc is a touch, which the vertex routes answer. Each of these is
+ * decided exactly on the input coordinates.
  * COINCIDENT supporting circles are NOT a crossing: two arcs of one circle
  * either share a stretch or meet at an endpoint, and both are answered
- * elsewhere. Whatever these quantities cannot separate reads as NOT crossing,
- * which is the refusal the other two predicates make
+ * elsewhere (#arc_same_circle). Where the exact arithmetic cannot hold its
+ * signs, the pair reads as NOT crossing, the refusal the other two
+ * predicates make
  * @param[in] a,b The two arc edges
  */
 static inline bool
@@ -1460,61 +1468,10 @@ arcarc_cross(const Edge *a, const Edge *b)
   /* One circle: a shared stretch or a common endpoint, never a crossing */
   if (arc_same_circle(a, b))
     return false;
-  double dx = b->cx - a->cx, dy = b->cy - a->cy;
-  double d = hypot(dx, dy);
-  /* Two circles about one centre never meet */
-  if (d == 0.0)
+  int meet, within[2][2];
+  if (! arcarc_meet_exact(a, b, &meet, within) || meet <= 0)
     return false;
-  double aa = (d * d + a->radius * a->radius - b->radius * b->radius) /
-    (2.0 * d);
-  double h2 = a->radius * a->radius - aa * aa;
-  /* Separate and nested circles never meet, and tangent ones touch at one
-   * point without passing through */
-  if (h2 <= arc_half_chord_rounding(d, a->radius, b->radius, aa))
-    return false;
-  double h = sqrt(h2);
-
-  /* HOW FAR THE CROSSING POINT ITSELF IS RESOLVED, and why a parameter margin
-   * cannot stand in for it. The half-chord comes from `r^2 - aa^2`, two
-   * quantities of size radius squared differenced down to the chord: at a
-   * radius of 2e5 each is 4e10, whose last representable bit is 8e-6, so the
-   * point slides along the chord by about that much however exactly the input
-   * names it. A test asking only that the parameter be some tiny amount
-   * inside `[0, 1]` therefore reads an ENDPOINT as an interior crossing --
-   * measured, two arcs meeting exactly at their two shared endpoints report a
-   * crossing 3.8e-6 away from one of them. The distance below is that
-   * rounding written out, in the same form #arcsegm_intersect states its own,
-   * so a candidate nearer an endpoint than the arithmetic can resolve is
-   * refused rather than believed */
-  double resolution = DBL_EPSILON *
-    (a->radius * a->radius + aa * aa) / (2.0 * h);
-  double ux = dx / d, uy = dy / d;
-  double mx = a->cx + aa * ux, my = a->cy + aa * uy;
-  for (int k = 0; k < 2; k++)
-  {
-    double px = mx + (k ? h : -h) * (-uy);
-    double py = my + (k ? h : -h) * ux;
-    /* On both arcs at all */
-    if (! arc_contains_angle(a, atan2(py - a->cy, px - a->cx)) ||
-        ! arc_contains_angle(b, atan2(py - b->cy, px - b->cx)))
-      continue;
-    /* Clear of every endpoint by more than the point is resolved to. A
-     * meeting at an endpoint is a touch, which the vertex routes answer and
-     * which the straight predicate refuses for the same reason */
-    if (hypot(px - a->x1, py - a->y1) <= resolution ||
-        hypot(px - a->x2, py - a->y2) <= resolution ||
-        hypot(px - b->x1, py - b->y1) <= resolution ||
-        hypot(px - b->x2, py - b->y2) <= resolution)
-      continue;
-    double ua = arc_point_parameter(a, px, py);
-    if (ua <= MEOS_GEOM_TOLERANCE || ua >= 1 - MEOS_GEOM_TOLERANCE)
-      continue;
-    double ub = arc_point_parameter(b, px, py);
-    if (ub <= MEOS_GEOM_TOLERANCE || ub >= 1 - MEOS_GEOM_TOLERANCE)
-      continue;
-    return true;
-  }
-  return false;
+  return (within[0][0] && within[0][1]) || (within[1][0] && within[1][1]);
 }
 
 /**

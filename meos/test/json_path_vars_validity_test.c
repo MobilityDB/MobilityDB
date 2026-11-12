@@ -110,10 +110,9 @@ int main(void)
   assert(exists == -1);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
-  bool match = jsonb_path_match(jb, pred, NULL, false, false);
-  printf("jsonb_path_match(NULL): %s, errno %d\n", match ? "true" : "false",
-    meos_errno());
-  assert(! match);
+  int match = jsonb_path_match(jb, pred, NULL, false, false);
+  printf("jsonb_path_match(NULL): %d, errno %d\n", match, meos_errno());
+  assert(match == -1);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
   expect_error(jsonb_path_query_array(jb, query, NULL, false, false),
@@ -144,9 +143,8 @@ int main(void)
   printf("jsonb_path_exists(vars): %d, errno %d\n", exists, meos_errno());
   assert(exists == 1 && meos_errno() == 0);
   match = jsonb_path_match(jb, pred, vars, false, false);
-  printf("jsonb_path_match(vars): %s, errno %d\n", match ? "true" : "false",
-    meos_errno());
-  assert(match && meos_errno() == 0);
+  printf("jsonb_path_match(vars): %d, errno %d\n", match, meos_errno());
+  assert(match == 1 && meos_errno() == 0);
   expect_value(jsonb_path_query_array(jb, query, vars, false, false),
     "jsonb_path_query_array(vars)");
   expect_value(jsonb_path_query_first(jb, query, vars, false, false),

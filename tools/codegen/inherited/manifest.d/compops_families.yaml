@@ -59,6 +59,7 @@ compops_families:
   brief: "temporal geometries/geographies"
   basesym: geo
   tempsym: tgeo
+  overlaps: true
   support:
     sig: "tspatial_supportfn(internal)"
     ret: internal
@@ -78,6 +79,7 @@ compops_families:
   brief: "temporal geometry/geography points"
   basesym: geo
   tempsym: tgeo
+  overlaps: true
   # tpoint references tspatial_supportfn (declared by 054_tgeo_compops, loaded
   # first in extension script order); it does not redeclare it, so no `support:`.
   pairs:

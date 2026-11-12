@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -81,7 +82,7 @@ int main(void)
 
   /* uint64_t char_hash_extended(char c, uint64_t seed); */
   uint64_result = char_hash_extended('c', 1);
-  printf("char_hash_extended('c', 1): %lu\n", uint64_result);
+  printf("char_hash_extended('c', 1): %" PRIu64 "\n", uint64_result);
 
   /* text *cstring_to_text(const char *str); */
   text_result = cstring_to_text("azerty");
@@ -119,19 +120,19 @@ int main(void)
   /* text *int64_to_bin(int64_t num); */
   text_result = int64_to_bin(int64_in1);
   char_result = text_out(text_result, &size_out);
-  printf("int64_to_bin(%ld): %s\n", int64_in1, char_result);
+  printf("int64_to_bin(%" PRId64 "): %s\n", int64_in1, char_result);
   free(text_result); free(char_result);
 
   /* text *int64_to_hex(int64_t num); */
   text_result = int64_to_hex(int64_in1);
   char_result = text_out(text_result, &size_out);
-  printf("int64_to_hex(%ld): %s\n", int64_in1, char_result);
+  printf("int64_to_hex(%" PRId64 "): %s\n", int64_in1, char_result);
   free(text_result); free(char_result);
 
   /* text *int64_to_oct(int64_t num); */
   text_result = int64_to_oct(int64_in1);
   char_result = text_out(text_result, &size_out);
-  printf("int64_to_oct(%ld): %s\n", int64_in1, char_result);
+  printf("int64_to_oct(%" PRId64 "): %s\n", int64_in1, char_result);
   free(text_result); free(char_result);
 
   /* char *text_to_cstring(const text *txt); */
@@ -189,7 +190,7 @@ int main(void)
 
   /* uint64_t text_hash_extended(const text *txt, uint64_t seed, Oid collid); */
   uint64_result = text_hash_extended(text1, 1, 100);
-  printf("text_hash_extended(%s, 1, 100): %lud\n", text1_out, uint64_result);
+  printf("text_hash_extended(%s, 1, 100): %" PRIu64 "d\n", text1_out, uint64_result);
 
   /* text *text_in(const char *str); */
   text_result = text_in("azerty");

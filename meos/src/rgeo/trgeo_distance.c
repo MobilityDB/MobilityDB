@@ -1713,6 +1713,15 @@ tdwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   if (! ensure_finite(dist))
     return NULL;
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #tdistance_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    Temporal *result = tdwithin_trgeometry_geo(temp, flat, dist);
+    pfree(flat);
+    return result;
+  }
   if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8) ||
       ! ensure_valid_trgeometry_geo(temp, gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
@@ -1969,9 +1978,9 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
     temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
       return DBL_MAX;
-    /* The generic temporal restriction drops the reference geometry, so the
-     * rigid geometry restriction is the one that answers a trgeometry */
-    temp1 = trgeometry_restrict_tstzspan(temp, &inter, REST_AT);
+    /* The restriction keeps the reference geometry, which it strips before
+     * restricting the poses and gives back to the result */
+    temp1 = temporal_restrict_tstzspan(temp, &inter, REST_AT);
     /* The two spans meet while no value lies inside the intersection, which a
      * discrete or a step value can do */
     if (! temp1)

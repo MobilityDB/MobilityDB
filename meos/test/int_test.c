@@ -42,6 +42,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -94,7 +95,7 @@ int main(void)
 
   /* int64_t add_int16_int64(int16_t num1, int64_t num2); */
   int64_result = add_int16_int64(int16_in1, int64_in2);
-  printf("add_int16_int64(%d, %ld): %ld\n", int16_in1, int64_in2, int64_result);
+  printf("add_int16_int64(%d, %" PRId64 "): %" PRId64 "\n", int16_in1, int64_in2, int64_result);
 
   /* int32_t add_int32_int16(int32_t num1, int16_t num2); */
   int32_result = add_int32_int16(int32_in1, int16_in2);
@@ -106,19 +107,19 @@ int main(void)
 
   /* int64_t add_int32_int64(int32_t num1, int64_t num2); */
   int64_result = add_int32_int64(int32_in1, int64_in2);
-  printf("add_int32_int64(%d, %ld): %ld\n", int32_in1, int64_in2, int64_result);
+  printf("add_int32_int64(%d, %" PRId64 "): %" PRId64 "\n", int32_in1, int64_in2, int64_result);
 
   /* int64_t add_int64_int16(int64_t num1, int16_t num2); */
   int64_result = add_int64_int16(int64_in1, int16_in2);
-  printf("add_int64_int16(%ld, %d): %ld\n", int64_in1, int16_in2, int64_result);
+  printf("add_int64_int16(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int16_in2, int64_result);
 
   /* int64_t add_int64_int32(int64_t num1, int32_t num2); */
   int64_result = add_int64_int32(int64_in1, int32_in2);
-  printf("add_int64_int32(%ld, %d): %ld\n", int64_in1, int32_in2, int64_result);
+  printf("add_int64_int32(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int32_in2, int64_result);
 
   /* int64_t add_int64_int64(int64_t num1, int64_t num2); */
   int64_result = add_int64_int64(int64_in1, int64_in2);
-  printf("add_int64_int64(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("add_int64_int64(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* int32_t bool_to_int32(bool b); */
   int32_result = bool_to_int32(bool_in1);
@@ -134,7 +135,7 @@ int main(void)
 
   /* int64_t div_int16_int64(int16_t num1, int64_t num2); */
   int64_result = div_int16_int64(int16_in1, int64_in2);
-  printf("div_int16_int64(%d, %ld): %ld\n", int16_in1, int64_in2, int64_result);
+  printf("div_int16_int64(%d, %" PRId64 "): %" PRId64 "\n", int16_in1, int64_in2, int64_result);
 
   /* int32_t div_int32_int16(int32_t num1, int16_t num2); */
   int32_result = div_int32_int16(int32_in1, int16_in2);
@@ -146,19 +147,19 @@ int main(void)
 
   /* int64_t div_int32_int64(int32_t num1, int64_t num2); */
   int64_result = div_int32_int64(int32_in1, int64_in2);
-  printf("div_int32_int64(%d, %ld): %ld\n", int32_in1, int64_in2, int64_result);
+  printf("div_int32_int64(%d, %" PRId64 "): %" PRId64 "\n", int32_in1, int64_in2, int64_result);
 
   /* int64_t div_int64_int16(int64_t num1, int16_t num2); */
   int64_result = div_int64_int16(int64_in1, int16_in2);
-  printf("div_int64_int16(%ld, %d); %ld\n", int64_in1, int16_in2, int64_result);
+  printf("div_int64_int16(%" PRId64 ", %d); %" PRId64 "\n", int64_in1, int16_in2, int64_result);
 
   /* int64_t div_int64_int32(int64_t num1, int32_t num2); */
   int64_result = div_int64_int32(int64_in1, int32_in2);
-  printf("div_int64_int32(%ld, %d): %ld\n", int64_in1, int32_in2, int64_result);
+  printf("div_int64_int32(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int32_in2, int64_result);
 
   /* int64_t div_int64_int64(int64_t num1, int64_t num2); */
   int64_result = div_int64_int64(int64_in1, int64_in2);
-  printf("div_int64_int64(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("div_int64_int64(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* bool eq_int16_int16(int16_t num1, int16_t num2); */
   bool_result = eq_int16_int16(int16_in1, int16_in2);
@@ -170,7 +171,7 @@ int main(void)
 
   /* bool eq_int16_int64(int16_t num1, int64_t num2); */
   bool_result = eq_int16_int64(int16_in1, int64_in2);
-  printf("eq_int16_int64(%d, %ld): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("eq_int16_int64(%d, %" PRId64 "): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool eq_int32_int16(int32_t num1, int16_t num2); */
   bool_result = eq_int32_int16(int32_in1, int16_in2);
@@ -182,27 +183,27 @@ int main(void)
 
   /* bool eq_int32_int64(int32_t num1, int64_t num2); */
   bool_result = eq_int32_int64(int32_in1, int64_in2);
-  printf("eq_int32_int64(%d, %ld): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("eq_int32_int64(%d, %" PRId64 "): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool eq_int64_int16(int64_t num1, int16_t num2); */
   bool_result = eq_int64_int16(int64_in1, int16_in2);
-  printf("eq_int64_int16(%ld, %d) %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
+  printf("eq_int64_int16(%" PRId64 ", %d) %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
 
   /* bool eq_int64_int32(int64_t num1, int32_t num2); */
   bool_result = eq_int64_int32(int64_in1, int32_in2);
-  printf("eq_int64_int32(%ld, %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
+  printf("eq_int64_int32(%" PRId64 ", %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
 
   /* bool eq_int64_int64(int64_t num1, int64_t num2); */
   bool_result = eq_int64_int64(int64_in1, int64_in2);
-  printf("eq_int64_int64(%ld, %ld): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("eq_int64_int64(%" PRId64 ", %" PRId64 "): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* int64_t float4_to_int64(float num); */
   int64_result = float4_to_int64(float4_in1);
-  printf("float4_to_int64(%f): %ld\n", float4_in1, int64_result);
+  printf("float4_to_int64(%f): %" PRId64 "\n", float4_in1, int64_result);
 
   /* int64_t float8_to_int64(double num); */
   int64_result = float8_to_int64(float8_in1);
-  printf("float8_to_int64(%lf): %ld\n", float8_in1, int64_result);
+  printf("float8_to_int64(%lf): %" PRId64 "\n", float8_in1, int64_result);
 
   /* bool ge_int16_int16(int16_t num1, int16_t num2); */
   bool_result = ge_int16_int16(int16_in1, int16_in2);
@@ -214,7 +215,7 @@ int main(void)
 
   /* bool ge_int16_int64(int16_t num1, int64_t num2); */
   bool_result = ge_int16_int64(int16_in1, int64_in2);
-  printf("ge_int16_int64(%d, %ld): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("ge_int16_int64(%d, %" PRId64 "): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool ge_int32_int16(int32_t num1, int16_t num2); */
   bool_result = ge_int32_int16(int32_in1, int16_in2);
@@ -226,19 +227,19 @@ int main(void)
 
   /* bool ge_int32_int64(int32_t num1, int64_t num2); */
   bool_result = ge_int32_int64(int32_in1, int64_in2);
-  printf("ge_int32_int64(%d, %ld): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("ge_int32_int64(%d, %" PRId64 "): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool ge_int64_int16(int64_t num1, int16_t num2); */
   bool_result = ge_int64_int16(int64_in1, int16_in2);
-  printf("ge_int64_int16(%ld, %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
+  printf("ge_int64_int16(%" PRId64 ", %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
 
   /* bool ge_int64_int32(int64_t num1, int32_t num2); */
   bool_result = ge_int64_int32(int64_in1, int32_in2);
-  printf("ge_int64_int32(%ld, %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
+  printf("ge_int64_int32(%" PRId64 ", %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
 
   /* bool ge_int64_int64(int64_t num1, int64_t num2); */
   bool_result = ge_int64_int64(int64_in1, int64_in2);
-  printf("ge_int64_int64(%ld, %ld): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("ge_int64_int64(%" PRId64 ", %" PRId64 "): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool gt_int16_int16(int16_t num1, int16_t num2); */
   bool_result = gt_int16_int16(int16_in1, int16_in2);
@@ -250,7 +251,7 @@ int main(void)
 
   /* bool gt_int16_int64(int16_t num1, int64_t num2); */
   bool_result = gt_int16_int64(int16_in1, int64_in2);
-  printf("gt_int16_int64(%d, %ld): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("gt_int16_int64(%d, %" PRId64 "): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool gt_int32_int16(int32_t num1, int16_t num2); */
   bool_result = gt_int32_int16(int32_in1, int16_in2);
@@ -262,19 +263,19 @@ int main(void)
 
   /* bool gt_int32_int64(int32_t num1, int64_t num2); */
   bool_result = gt_int32_int64(int32_in1, int64_in2);
-  printf("gt_int32_int64(%d, %ld): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("gt_int32_int64(%d, %" PRId64 "): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool gt_int64_int16(int64_t num1, int16_t num2); */
   bool_result = gt_int64_int16(int64_in1, int16_in2);
-  printf("gt_int64_int16(%ld, %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
+  printf("gt_int64_int16(%" PRId64 ", %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
 
   /* bool gt_int64_int32(int64_t num1, int32_t num2); */
   bool_result = gt_int64_int32(int64_in1, int32_in2);
-  printf("gt_int64_int32(%ld, %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
+  printf("gt_int64_int32(%" PRId64 ", %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
 
   /* bool gt_int64_int64(int64_t num1, int64_t num2); */
   bool_result = gt_int64_int64(int64_in1, int64_in2);
-  printf("gt_int64_int64(%ld, %ld): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("gt_int64_int64(%" PRId64 ", %" PRId64 "): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* int16_t int16_abs(int16_t num); */
   int16_result = int16_abs(int16_in1);
@@ -290,7 +291,7 @@ int main(void)
 
   /* uint64_t int16_hash_extended(int16_t val, uint64_t seed); */
   uint64_result = int16_hash_extended(int16_in1, 1);
-  printf("int16_hash_extended(%d, 1): %lu\n", int16_in1, uint64_result);
+  printf("int16_hash_extended(%d, 1): %" PRIu64 "\n", int16_in1, uint64_result);
 
   /* int16_t int16_in(int16_t const char *str); */
   int16_result = int16_in("16");
@@ -335,7 +336,7 @@ int main(void)
 
   /* int64_t int16_to_int64(int16_t num); */
   int64_result = int16_to_int64(int16_in1);
-  printf("int16_to_int64(%d): %ld\n", int16_in1, int64_result);
+  printf("int16_to_int64(%d): %" PRId64 "\n", int16_in1, int64_result);
 
   /* int16_t int16_uminus(int16_t num); */
   int16_result = int16_uminus(int16_in1);
@@ -371,7 +372,7 @@ int main(void)
 
   /* uint64_t int32_hash_extended(int32_t val, uint64_t seed); */
   uint64_result = int32_hash_extended(int32_in1, 1);
-  printf("int32_hash_extended(%d, 1): %lu\n", int32_in1, uint64_result);
+  printf("int32_hash_extended(%d, 1): %" PRIu64 "\n", int32_in1, uint64_result);
 
   /* int32_t int32_in(int32_t const char *str); */
   int32_result = int32_in("32");
@@ -428,7 +429,7 @@ int main(void)
 
   /* int64_t int32_to_int64(int32_t num); */
   int64_result = int32_to_int64(int32_in1);
-  printf("int32_to_int64(%d): %ld\n", int32_in1, int64_result);
+  printf("int32_to_int64(%d): %" PRId64 "\n", int32_in1, int64_result);
 
   /* int32_t int32_uminus(int32_t num); */
   int32_result = int32_uminus(int32_in1);
@@ -444,104 +445,104 @@ int main(void)
 
   /* int64_t int64_abs(int64_t num); */
   int64_result = int64_abs(int64_in1);
-  printf("int64_abs(%ld): %ld\n", int64_in1, int64_result);
+  printf("int64_abs(%" PRId64 "): %" PRId64 "\n", int64_in1, int64_result);
 
   /* int64_t int64_and(int64_t num1, int64_t num2); */
   int64_result = int64_and(int64_in1, int64_in2);
-  printf("int64_and(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("int64_and(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
   
   /* int int64_cmp(int64_t l, int64_t r); */
   int32_result = int64_cmp(int64_in1, int64_in2);
-  printf("int64_cmp(%ld, %ld): %d\n", int64_in1, int64_in2, int32_result);
+  printf("int64_cmp(%" PRId64 ", %" PRId64 "): %d\n", int64_in1, int64_in2, int32_result);
 
   /* int64_t int64_dec(int64_t num); */
   int64_result = int64_dec(int64_in1);
-  printf("int64_dec(%ld): %ld\n", int64_in1, int64_result);
+  printf("int64_dec(%" PRId64 "): %" PRId64 "\n", int64_in1, int64_result);
 
   /* int64_t int64_gcd(int64_t num1, int64_t num2); */
   int64_result = int64_gcd(int64_in1, int64_in2);
-  printf("int64_gcd(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("int64_gcd(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* uint32_t int64_hash(int64_t num); */
   uint32_result = int64_hash(int64_in1);
-  printf("int32_hash(%ld): %u\n", int64_in1, uint32_result);
+  printf("int32_hash(%" PRId64 "): %u\n", int64_in1, uint32_result);
 
   /* uint64_t int64_hash_extended(int64_t num, uint64_t seed); */
   uint64_result = int64_hash_extended(int64_in1, 1);
-  printf("int32_hash_extended(%ld, 1): %lu\n", int64_in1, uint64_result);
+  printf("int32_hash_extended(%" PRId64 ", 1): %" PRIu64 "\n", int64_in1, uint64_result);
 
   /* int64_t int64_in(int64_t const char *str); */
   int64_result = int64_in("64");
-  printf("int64_in(\"64\"): %ld\n", int64_result);
+  printf("int64_in(\"64\"): %" PRId64 "\n", int64_result);
 
   /* int64_t int64_inc(int64_t num); */
   int64_result = int64_inc(int64_in1);
-  printf("int64_inc(%ld): %ld\n", int64_in1, int64_result);
+  printf("int64_inc(%" PRId64 "): %" PRId64 "\n", int64_in1, int64_result);
 
   /* int64_t int64_larger(int64_t num1, int64_t num2); */
   int64_result = int64_larger(int64_in1, int64_in2);
-  printf("int64_larger(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("int64_larger(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* int64_t int64_lcm(int64_t num1, int64_t num2); */
   int64_result = int64_lcm(int64_in1, int64_in2);
-  printf("int64_lcm(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("int64_lcm(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* int64_t int64_mod(int64_t num1, int64_t num2); */
   int64_result = int64_mod(int64_in1, int64_in2);
-  printf("int64_mod(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("int64_mod(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* int64_t int64_not(int64_t num); */
   int64_result = int64_not(int64_in1);
-  printf("int64_not(%ld): %ld\n", int64_in1, int64_result);
+  printf("int64_not(%" PRId64 "): %" PRId64 "\n", int64_in1, int64_result);
 
   /* int64_t int64_or(int64_t num1, int64_t num2); */
   int64_result = int64_or(int64_in1, int64_in2);
-  printf("int64_or(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("int64_or(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* char *int64_out(int64_t num, size_t *size_out); */
   char_result = int64_out(int64_in1, &size_out);
-  printf("int64_out(%ld): %s\n", int64_in1, char_result);
+  printf("int64_out(%" PRId64 "): %s\n", int64_in1, char_result);
   free(char_result);
 
   /* int64_t int64_shl(int64_t num1, int32_t num2); */
   int64_result = int64_shl(int64_in1, int32_in2);
-  printf("int64_shl(%ld, %d): %ld\n", int64_in1, int32_in2, int64_result);
+  printf("int64_shl(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int32_in2, int64_result);
 
   /* int64_t int64_shr(int64_t num1, int32_t num2); */
   int64_result = int64_shr(int64_in1, int32_in2);
-  printf("int64_shr(%ld, %d): %ld\n", int64_in1, int32_in2, int64_result);
+  printf("int64_shr(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int32_in2, int64_result);
 
   /* int64_t int64_smaller(int64_t num1, int64_t num2); */
   int64_result = int64_smaller(int64_in1, int64_in2);
-  printf("int64_smaller(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("int64_smaller(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* float int64_to_float4(int64_t num); */
   float4_result = int64_to_float4(int64_in1);
-  printf("int64_to_float4(%ld): %f\n", int64_in1, float4_result);
+  printf("int64_to_float4(%" PRId64 "): %f\n", int64_in1, float4_result);
 
   /* double int64_to_float8(int64_t num); */
   float8_result = int64_to_float8(int64_in1);
-  printf("int64_to_float8(%ld): %lf\n", int64_in1, float8_result);
+  printf("int64_to_float8(%" PRId64 "): %lf\n", int64_in1, float8_result);
 
   /* int16_t int64_to_int16(int64_t num); */
   int16_result = int64_to_int16(int64_in1);
-  printf("int64_to_int16(%ld): %d\n", int64_in1, int16_result);
+  printf("int64_to_int16(%" PRId64 "): %d\n", int64_in1, int16_result);
 
   /* int32_t int64_to_int32(int64_t num); */
   int32_result = int64_to_int32(int64_in1);
-  printf("int64_to_int32(%ld): %d\n", int64_in1, int32_result);
+  printf("int64_to_int32(%" PRId64 "): %d\n", int64_in1, int32_result);
 
   /* int64_t int64_uminus(int64_t num); */
   int64_result = int64_uminus(int64_in1);
-  printf("int64_uminus(%ld): %ld\n", int64_in1, int64_result);
+  printf("int64_uminus(%" PRId64 "): %" PRId64 "\n", int64_in1, int64_result);
 
   /* int64_t int64_uplus(int64_t num); */
   int64_result = int64_uplus(int64_in1);
-  printf("int64_uplus(%ld): %ld\n", int64_in1, int64_result);
+  printf("int64_uplus(%" PRId64 "): %" PRId64 "\n", int64_in1, int64_result);
 
   /* int64_t int64_xor(int64_t num1, int64_t num2); */
   int64_result = int64_xor(int64_in1, int64_in2);
-  printf("int64_xor(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("int64_xor(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* bool le_int16_int16(int16_t num1, int16_t num2); */
   bool_result = le_int16_int16(int16_in1, int16_in2);
@@ -553,7 +554,7 @@ int main(void)
 
   /* bool le_int16_int64(int16_t num1, int64_t num2); */
   bool_result = le_int16_int64(int16_in1, int64_in2);
-  printf("le_int16_int64(%d, %ld): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("le_int16_int64(%d, %" PRId64 "): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool le_int32_int16(int32_t num1, int16_t num2); */
   bool_result = le_int32_int16(int32_in1, int16_in2);
@@ -565,19 +566,19 @@ int main(void)
 
   /* bool le_int32_int64(int32_t num1, int64_t num2); */
   bool_result = le_int32_int64(int32_in1, int64_in2);
-  printf("le_int32_int64(%d, %ld): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("le_int32_int64(%d, %" PRId64 "): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool le_int64_int16(int64_t num1, int16_t num2); */
   bool_result = le_int64_int16(int64_in1, int16_in2);
-  printf("le_int64_int16(%ld, %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
+  printf("le_int64_int16(%" PRId64 ", %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
 
   /* bool le_int64_int32(int64_t num1, int32_t num2); */
   bool_result = le_int64_int32(int64_in1, int32_in2);
-  printf("le_int64_int32(%ld, %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
+  printf("le_int64_int32(%" PRId64 ", %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
 
   /* bool le_int64_int64(int64_t num1, int64_t num2); */
   bool_result = le_int64_int64(int64_in1, int64_in2);
-  printf("le_int64_int64(%ld, %ld): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("le_int64_int64(%" PRId64 ", %" PRId64 "): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool lt_int16_int16(int16_t num1, int16_t num2); */
   bool_result = lt_int16_int16(int16_in1, int16_in2);
@@ -589,7 +590,7 @@ int main(void)
 
   /* bool lt_int16_int64(int16_t num1, int64_t num2); */
   bool_result = lt_int16_int64(int16_in1, int64_in2);
-  printf("lt_int16_int64(%d, %ld): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("lt_int16_int64(%d, %" PRId64 "): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool lt_int32_int16(int32_t num1, int16_t num2); */
   bool_result = lt_int32_int16(int32_in1, int16_in2);
@@ -601,19 +602,19 @@ int main(void)
 
   /* bool lt_int32_int64(int32_t num1, int64_t num2); */
   bool_result = lt_int32_int64(int32_in1, int64_in2);
-  printf("lt_int32_int64(%d, %ld): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("lt_int32_int64(%d, %" PRId64 "): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool lt_int64_int16(int64_t num1, int16_t num2); */
   bool_result = lt_int64_int16(int64_in1, int16_in2);
-  printf("lt_int64_int16(%ld, %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
+  printf("lt_int64_int16(%" PRId64 ", %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
 
   /* bool lt_int64_int32(int64_t num1, int32_t num2); */
   bool_result = lt_int64_int32(int64_in1, int32_in2);
-  printf("lt_int64_int32(%ld, %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
+  printf("lt_int64_int32(%" PRId64 ", %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
 
   /* bool lt_int64_int64(int64_t num1, int64_t num2); */
   bool_result = lt_int64_int64(int64_in1, int64_in2);
-  printf("lt_int64_int64(%ld, %ld): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("lt_int64_int64(%" PRId64 ", %" PRId64 "): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* int16_t minus_int16_int16(int16_t num1, int16_t num2); */
   int16_result = minus_int16_int16(int16_in1, int16_in2);
@@ -625,7 +626,7 @@ int main(void)
 
   /* int64_t minus_int16_int64(int16_t num1, int64_t num2); */
   int64_result = minus_int16_int64(int16_in1, int64_in2);
-  printf("minus_int16_int64(%d, %ld): %ld\n", int16_in1, int64_in2, int64_result);
+  printf("minus_int16_int64(%d, %" PRId64 "): %" PRId64 "\n", int16_in1, int64_in2, int64_result);
 
   /* int32_t minus_int32_int16(int32_t num1, int16_t num2); */
   int32_result = minus_int32_int16(int32_in1, int16_in2);
@@ -637,19 +638,19 @@ int main(void)
 
   /* int64_t minus_int32_int64(int32_t num1, int64_t num2); */
   int64_result = minus_int32_int64(int32_in1, int64_in2);
-  printf("minus_int32_int64(%d, %ld): %ld\n", int32_in1, int64_in2, int64_result);
+  printf("minus_int32_int64(%d, %" PRId64 "): %" PRId64 "\n", int32_in1, int64_in2, int64_result);
 
   /* int64_t minus_int64_int16(int64_t num1, int16_t num2); */
   int64_result = minus_int64_int16(int64_in1, int16_in2);
-  printf("minus_int64_int16(%ld, %d): %ld\n", int64_in1, int16_in2, int64_result);
+  printf("minus_int64_int16(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int16_in2, int64_result);
 
   /* int64_t minus_int64_int32(int64_t num1, int32_t num2); */
   int64_result = minus_int64_int32(int64_in1, int32_in2);
-  printf("minus_int64_int32(%ld, %d): %ld\n", int64_in1, int32_in2, int64_result);
+  printf("minus_int64_int32(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int32_in2, int64_result);
 
   /* int64_t minus_int64_int64(int64_t num1, int64_t num2); */
   int64_result = minus_int64_int64(int64_in1, int64_in2);
-  printf("minus_int64_int64(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
+  printf("minus_int64_int64(%" PRId64 ", %" PRId64 "): %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* int16_t mul_int16_int16(int16_t num1, int16_t num2); */
   int16_result = mul_int16_int16(int16_in1, int16_in2);
@@ -661,7 +662,7 @@ int main(void)
 
   /* int64_t mul_int16_int64(int16_t num1, int64_t num2); */
   int64_result = mul_int16_int64(int16_in1, int64_in2);
-  printf("mul_int16_int64(%d, %ld): %ld\n", int16_in1, int64_in2, int64_result);
+  printf("mul_int16_int64(%d, %" PRId64 "): %" PRId64 "\n", int16_in1, int64_in2, int64_result);
 
   /* int32_t mul_int32_int16(int32_t num1, int16_t num2); */
   int32_result = mul_int32_int16(int32_in1, int16_in2);
@@ -673,19 +674,19 @@ int main(void)
 
   /* int64_t mul_int32_int64(int32_t num1, int64_t num2); */
   int64_result = mul_int32_int64(int32_in1, int64_in2);
-  printf("mul_int32_int64(%d, %ld): %ld\n", int32_in1, int64_in2, int64_result);
+  printf("mul_int32_int64(%d, %" PRId64 "): %" PRId64 "\n", int32_in1, int64_in2, int64_result);
   
   /* int64_t mul_int64_int16(int64_t num1, int16_t num2); */
   int64_result = mul_int64_int16(int64_in1, int16_in2);
-  printf("mul_int64_int16(%ld, %d): %ld\n", int64_in1, int16_in2, int64_result);
+  printf("mul_int64_int16(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int16_in2, int64_result);
 
   /* int64_t mul_int64_int32(int64_t num1, int32_t num2); */
   int64_result = mul_int64_int32(int64_in1, int32_in2);
-  printf("mul_int64_int32(%ld, %d): %ld\n", int64_in1, int32_in2, int64_result);
+  printf("mul_int64_int32(%" PRId64 ", %d): %" PRId64 "\n", int64_in1, int32_in2, int64_result);
 
   /* int64_t mul_int64_int64(int64_t num1, int64_t num2); */
   int64_result = mul_int64_int64(int64_in1, int64_in2);
-  printf("mul_int64_int64(%ld, %ld) %ld\n", int64_in1, int64_in2, int64_result);
+  printf("mul_int64_int64(%" PRId64 ", %" PRId64 ") %" PRId64 "\n", int64_in1, int64_in2, int64_result);
 
   /* bool ne_int16_int16(int16_t num1, int16_t num2); */
   bool_result = ne_int16_int16(int16_in1, int16_in2);
@@ -697,7 +698,7 @@ int main(void)
 
   /* bool ne_int16_int64(int16_t num1, int64_t num2); */
   bool_result = ne_int16_int64(int16_in1, int64_in2);
-  printf("ne_int16_int64(%d, %ld): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("ne_int16_int64(%d, %" PRId64 "): %c\n", int16_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool ne_int32_int16(int32_t num1, int16_t num2); */
   bool_result = ne_int32_int16(int32_in1, int16_in2);
@@ -709,19 +710,19 @@ int main(void)
 
   /* bool ne_int32_int64(int32_t num1, int64_t num2); */
   bool_result = ne_int32_int64(int32_in1, int64_in2);
-  printf("ne_int32_int64(%d, %ld): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("ne_int32_int64(%d, %" PRId64 "): %c\n", int32_in1, int64_in2, bool_result ? 't' : 'f');
 
   /* bool ne_int64_int16(int64_t num1, int16_t num2); */
   bool_result = ne_int64_int16(int64_in1, int16_in2);
-  printf("ne_int64_int16(%ld, %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
+  printf("ne_int64_int16(%" PRId64 ", %d): %c\n", int64_in1, int16_in2, bool_result ? 't' : 'f');
 
   /* bool ne_int64_int32(int64_t num1, int32_t num2); */
   bool_result = ne_int64_int32(int64_in1, int32_in2);
-  printf("ne_int64_int32(%ld, %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
+  printf("ne_int64_int32(%" PRId64 ", %d): %c\n", int64_in1, int32_in2, bool_result ? 't' : 'f');
 
   /* bool ne_int64_int64(int64_t num1, int64_t num2); */
   bool_result = ne_int64_int64(int64_in1, int64_in2);
-  printf("ne_int64_int64(%ld, %ld): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
+  printf("ne_int64_int64(%" PRId64 ", %" PRId64 "): %c\n", int64_in1, int64_in2, bool_result ? 't' : 'f');
 
   printf("****************************************************************\n");
 

@@ -490,6 +490,23 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
 {
   *err = false;
   const GSERIALIZED *ref = trgeometry_geom_p(temp);
+  /* The clip of a moving body reads its exterior ring alone (#trgeo_geom_clip),
+   * so a body with holes in linear motion is refused rather than answered as
+   * the region its exterior ring bounds */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+  {
+    LWGEOM *body = lwgeom_from_gserialized(ref);
+    bool holes = lwgeom_has_interior_ring(body);
+    lwgeom_free(body);
+    if (holes)
+    {
+      *err = true;
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "The restriction of a temporal rigid geometry with holes in linear "
+        "motion is not implemented");
+      return NULL;
+    }
+  }
   int spancap = 16, nspans = 0;
   Span *spans = palloc((size_t) spancap * sizeof(Span));
 
@@ -636,8 +653,9 @@ trgeometry_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc
  * @brief Return a temporal rigid geometry restricted to (the complement
  * of) a geometry
  * @details The restriction is exact on the body extent for pure-translation
- * trgeometries. Rotating segments and holey targets raise an honest
- * FEATURE_NOT_SUPPORTED error.
+ * trgeometries, and a value in step or discrete interpolation is restricted
+ * by its placements, holes of the target included. A target with holes for a
+ * value in linear interpolation raises a FEATURE_NOT_SUPPORTED error.
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
@@ -653,8 +671,11 @@ trgeometry_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfun
     return atfunc ? NULL : temporal_copy(temp);
 
   LWGEOM *lwgs = lwgeom_from_gserialized(gs);
-  /* The M1 clip ignores polygon holes; reject holey targets honestly. */
-  if (lwgeom_has_interior_ring(lwgs))
+  /* A body that holds each pose is restricted by the static intersection of
+   * each placement, which reads the holes of the target (#body_meets_target);
+   * the clip of a body in linear motion reads the exterior ring of the target
+   * alone, so a target with holes is refused for it */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && lwgeom_has_interior_ring(lwgs))
   {
     lwgeom_free(lwgs);
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
@@ -1620,6 +1641,21 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
    * spanning two of them answers for ground the body never crosses.
    * Only the united form sweeps; the collection form answers the placements
    * themselves, which #trgeometry_placements() gives a caller directly. */
+  /* A polygon that is not convex, concave or holed, sweeps more than the
+   * hull of two placements and less than their union reports, so its united
+   * form in linear motion is refused rather than answered by its placements */
+  if (unary_union && n_geoms > 1 && MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
+      gserialized_get_type(trgeometry_geom_p(temp)) == POLYGONTYPE &&
+      ! trgeometry_ref_is_convex(trgeometry_geom_p(temp)))
+  {
+    for (int i = 0; i < n_geoms; i++)
+      pfree(geoms[i]);
+    pfree(geoms); pfree(pl.times); pfree(pl.turns);
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The united traversed area of a temporal rigid geometry in linear motion "
+      "whose body is not convex is not implemented");
+    return NULL;
+  }
   if (unary_union && n_geoms > 1 && MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
       trgeometry_ref_is_convex(trgeometry_geom_p(temp)))
   {

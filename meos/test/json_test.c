@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -477,7 +478,7 @@ int main(void)
 
   /* uint64_t jsonb_hash_extended(Jsonb *jb, uint64_t seed); */
   uint64_result = jsonb_hash_extended(jb1, 1);
-  printf("jsonb_hash_extended(%s, 1): %lu\n", jb1_out, uint64_result);
+  printf("jsonb_hash_extended(%s, 1): %" PRIu64 "\n", jb1_out, uint64_result);
 
   /* Jsonb *jsonb_in(const char *str); */
   jsonb_result = jsonb_in("{}");
