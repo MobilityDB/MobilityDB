@@ -173,6 +173,9 @@ SELECT jsonbset '{"{\"speed\": 10}"}' ?| ARRAY[]::text[];
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.speed ? (@ > 15)';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.xxx';
+/* The operator suppresses the error of a strict path, as it does on a jsonb */
+SELECT jsonbset '{"{\"a\": 1}", "{\"b\": 1}"}' @? 'strict $.b';
+SELECT jsonb '{"a": 1}' @? 'strict $.b';
 
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ > $min)', '{"min": 15}');
@@ -203,13 +206,21 @@ SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"a\": [1, 2, 3]}", "{\"a\": [4]}"}',
 SELECT jsonbsetPathQueryArrayTz(jsonbset '{"[\"2015-08-01 12:00:00-05\"]", "[\"2015-08-03 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
 SELECT jsonbsetPathQueryFirstTz(jsonbset '{"[\"2015-08-01 12:00:00-05\"]", "[\"2015-08-03 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
 /* Errors */
-SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
 SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"d\": \"2003-01-01\"}"}', '$.d.datetime("HH24:MI:SS")');
 SELECT jsonbsetPathQueryArray(jsonbset '{"[\"2015-08-01 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
 SELECT jsonbsetPathQueryFirst(jsonbset '{"[\"2015-08-01 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
 
-/* A path matching nothing is unknown, that is, false, for every element */
+/* A comparison with a path matching nothing is false, as on a jsonb. A
+ * comparison suppresses the errors of its operands, so one with a string that
+ * is no date is unknown. A value whose predicate is unknown or no Boolean has
+ * no answer, as a jsonb has none, and is left out, as in
+ * jsonbsetPathQueryFirst; a set with no value left has no answer */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);
+SELECT jsonb_path_match(jsonb '{"speed": 10}', '$.xxx > 15', '{}', false);
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
+SELECT jsonb_path_match(jsonb '{"d": "not a date"}', '$.d.datetime() > "2002-06-01".datetime()');
+SELECT jsonbset '{"{\"a\": 1}", "{\"a\": 2}"}' @@ '$.a';
+SELECT jsonb '{"a": 1}' @@ '$.a';
 
 -------------------------------------------------------------------------------
 -- Ordering

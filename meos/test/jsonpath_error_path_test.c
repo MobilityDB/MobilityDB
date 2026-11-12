@@ -115,8 +115,8 @@ int main(void)
   check("jsonb_path_exists of $x", exists != -1);
   free(jp);
   jp = jsonpath_in("$x == 1");
-  bool match = jsonb_path_match(jb, jp, vars, false, false);
-  check("jsonb_path_match of $x == 1", match);
+  int match = jsonb_path_match(jb, jp, vars, false, false);
+  check("jsonb_path_match of $x == 1", match != -1);
   free(jp); free(vars); free(jb);
 
   printf("%d answer(s) other than expected\n", failures);

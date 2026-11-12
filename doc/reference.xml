@@ -2855,7 +2855,7 @@
 					<para><link linkend="jsonbset_path_query_array"><varname>jsonbsetPathQueryArray</varname>, <varname>jsonbsetPathQueryArrayTz</varname></link>: Return all items returned by a JSON path from a JSONB set, as a JSON array</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_path_query_first"><varname>jsonbsetPathQueryFirst</varname>, <varname>jsonbsetPathQueryFirstTz</varname></link>: Return the fist item returned by a JSON path from a JSONB set</para>
+					<para><link linkend="jsonbset_path_query_first"><varname>jsonbsetPathQueryFirst</varname>, <varname>jsonbsetPathQueryFirstTz</varname></link>: Return the first item returned by a JSON path from a JSONB set</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2981,7 +2981,7 @@
 					<para><link linkend="tjsonb_path_query_array"><varname>tjsonbPathQueryArray</varname>, <varname>tjsonbPathQueryArrayTz</varname></link>: Return all items returned by a JSON path from a temporal JSONB value, as a JSON array</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tjsonb_path_query_first"><varname>tjsonbPathQueryFirst</varname>, <varname>tjsonbPathQueryFirstTz</varname></link>: Return the fist item returned by a JSON path from a temporal JSONB value</para>
+					<para><link linkend="tjsonb_path_query_first"><varname>tjsonbPathQueryFirst</varname>, <varname>tjsonbPathQueryFirstTz</varname></link>: Return the first item returned by a JSON path from a temporal JSONB value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
