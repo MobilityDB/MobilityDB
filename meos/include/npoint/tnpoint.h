@@ -131,6 +131,7 @@ extern Datum datum_npoint_round(Datum npoint, Datum size);
 
 /* Conversion functions */
 
+extern const LWLINE *route_line(int64 rid);
 extern void route_point_at(const POINTARRAY *pa, double length,
   double fraction, POINT4D *pt);
 extern double *route_vertex_positions(const POINTARRAY *pa, int *count);
