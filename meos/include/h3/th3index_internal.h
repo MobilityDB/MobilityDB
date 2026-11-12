@@ -119,6 +119,10 @@ typedef struct
   double lat[MAX_CELL_BNDRY_VERTS];       /**< Latitudes in degrees */
   H3Index across[MAX_CELL_BNDRY_VERTS];   /**< Cell across the edge from
                                                vertex k to vertex k + 1 */
+  int pole;                               /**< 1 for the cell around the
+                                               north pole, -1 for the one
+                                               around the south pole, 0 for
+                                               any other */
 } H3Outline;
 extern bool h3_cell_outline(H3Index cell, H3Outline *out);
 /* The owner of a boundary point: whether a cell holds an edge or a vertex of
@@ -132,6 +136,14 @@ extern bool h3_outline_vertex_held(const H3Outline *o, int k);
  * outline, truncated, exactly. Body in h3_geo.c. */
 extern int64 h3_outline_edge_offset(const H3Outline *o, int k, double x0,
   double y0, double x1, double y1, int64 D, bool *whole);
+/* Whether a cell holds a position of the plane of longitude and latitude, by
+ * the exact signs of its outline and the owner rule, and the planar cell of
+ * a position. Bodies in h3_geo.c. */
+extern bool h3_outline_holds_point(const H3Outline *o, double x, double y);
+extern H3Index h3_point_cell(double lon, double lat, bool geodetic,
+  int32 resolution);
+/* The cells around the poles at a resolution. Body in th3index_boxops.c. */
+extern void h3index_pole_cells(int32_t res, H3Index *north, H3Index *south);
 
 /* Hierarchy — next-resolution conveniences. Bodies in
  * th3index_hierarchy.c. */
