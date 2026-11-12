@@ -1131,6 +1131,35 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="trgeometry_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Superposición alguna vez y siempre</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+trgeometry {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} trgeometry → boolean
+</programlisting>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; una geometría rígida está en un cuadro cuando lo interseca, tal como lo lee la restricción de una geometría rígida temporal a un cuadro.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- false
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' &amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- true
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+-- true
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' %&amp;&amp;
+  stbox 'STBOX X((0,0),(9,9))';
+-- false
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="trgeometry_tcomp">
 				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>

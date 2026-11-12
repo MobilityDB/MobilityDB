@@ -111,3 +111,18 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)
 SELECT tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01' #= tcbuffer 'SRID=3812;Cbuffer(Point(1 1),1)@2001-01-01';
 
 -------------------------------------------------------------------------------/
+
+-------------------------------------------------------------------------------
+
+-- Ever and always overlaps: a value and a spatiotemporal box
+
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00, Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' ?&& stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00, Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' && stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00, Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' ?&& stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+SELECT stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 08:00, 2001-01-01 10:00])' ?&& tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00, Cbuffer(Point(10 10), 1)@2001-01-01 10:00]';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00, Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' %&& stbox 'STBOX X((-1,-1),(11,11))';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00, Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' %&& stbox 'STBOX X((0,0),(10,10))';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 10), 1)@2001-01-02]' ?&& stbox 'STBOX T([2001-01-03, 2001-01-04])';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 10), 1)@2001-01-02]' %&& stbox 'STBOX T([2001-01-01, 2001-01-04])';
+/* Errors */
+SELECT tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01' ?&& stbox 'SRID=4326;STBOX X((0,0),(1,1))';

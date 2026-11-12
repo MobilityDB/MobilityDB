@@ -232,6 +232,66 @@ Always_ne_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Ever/always overlaps of a temporal rigid geometry and a spatiotemporal box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Ever_overlaps_stbox_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_stbox_trgeometry);
+/**
+ * @ingroup mobilitydb_rgeo_comp_ever
+ * @brief Return true if a temporal rigid geometry ever lies in a spatiotemporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_stbox_trgeometry(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &ever_overlaps_stbox_trgeometry);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_trgeometry_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_trgeometry_stbox);
+/**
+ * @ingroup mobilitydb_rgeo_comp_ever
+ * @brief Return true if a temporal rigid geometry ever lies in a spatiotemporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_trgeometry_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &ever_overlaps_trgeometry_stbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_stbox_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_stbox_trgeometry);
+/**
+ * @ingroup mobilitydb_rgeo_comp_ever
+ * @brief Return true if a temporal rigid geometry always lies in a spatiotemporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_stbox_trgeometry(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &always_overlaps_stbox_trgeometry);
+}
+
+PGDLLEXPORT Datum Always_overlaps_trgeometry_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_trgeometry_stbox);
+/**
+ * @ingroup mobilitydb_rgeo_comp_ever
+ * @brief Return true if a temporal rigid geometry always lies in a spatiotemporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_trgeometry_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &always_overlaps_trgeometry_stbox);
+}
+
+/*****************************************************************************
  * Temporal comparison functions
  *****************************************************************************/
 

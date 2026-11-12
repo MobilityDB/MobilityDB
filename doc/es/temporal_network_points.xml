@@ -1173,6 +1173,25 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-04)' &amp;= N
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tnpoint_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Superposición alguna vez y siempre</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tnpoint {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} tnpoint → boolean
+</programlisting>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; un punto de red está en un cuadro cuando su posición geométrica lo está.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]' ?&amp;&amp;
+  stbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]');
+-- true
+SELECT stbox 'STBOX T([2001-01-05, 2001-01-06])' ?&amp;&amp;
+  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]';
+-- false
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tnpoint_tcomp">
 				<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>#&lt;&gt;</varname></primary></indexterm>
