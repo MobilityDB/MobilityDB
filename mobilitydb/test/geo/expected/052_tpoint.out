@@ -1405,6 +1405,12 @@ SELECT asText(appendInstant(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2
  {[POINT(1.5 1.5)@Mon Jan 01 00:00:00 2001 PST, POINT(2.5 2.5)@Tue Jan 02 00:00:00 2001 PST, POINT(1.5 1.5)@Wed Jan 03 00:00:00 2001 PST], [POINT(3.5 3.5)@Thu Jan 04 00:00:00 2001 PST, POINT(3.5 3.5)@Fri Jan 05 00:00:00 2001 PST, POINT(1.5 1.5)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+SELECT stbox(appendInstant(tgeogpoint '[Point(0 50)@2001-01-01]', tgeogpoint 'Point(100 50)@2001-01-02')) = stbox(tgeogpoint '[Point(0 50)@2001-01-01, Point(100 50)@2001-01-02]');
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT asText(appendInstant(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint 'Point(1 1 1)@2001-01-02'));
                                             astext                                            
 ----------------------------------------------------------------------------------------------

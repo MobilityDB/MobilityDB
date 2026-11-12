@@ -181,6 +181,8 @@ SELECT appendInstant(tnpoint 'Npoint(1, 0.5)@2001-01-01', tnpoint 'Npoint(1, 0.7
 SELECT appendInstant(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', tnpoint 'Npoint(1, 0.7)@2001-01-04');
 SELECT appendInstant(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', tnpoint 'Npoint(1, 0.7)@2001-01-04');
 SELECT appendInstant(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }', tnpoint 'Npoint(2, 0.7)@2001-01-06');
+-- The box of the appended sequence holds the stretch of route of its last edge
+SELECT stbox(appendInstant(tnpoint '[Npoint(57, 0)@2001-01-01]', tnpoint 'Npoint(57, 0.75)@2001-01-02')) = stbox(tnpoint '[Npoint(57, 0)@2001-01-01, Npoint(57, 0.75)@2001-01-02]');
 /* Errors */
 SELECT appendInstant(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', tnpoint 'Npoint(2, 0.7)@2001-01-04');
 SELECT appendInstant(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }', tnpoint 'Npoint(1, 0.7)@2001-01-06');
