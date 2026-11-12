@@ -9835,26 +9835,14 @@ buffer_cert_places_clear(MeosArray **rings, uint32_t nrings,
 }
 
 /* exact signs of the (A) test. The sign of
- * a x b + c x d where a..d are differences of doubles, filtered by
- * Shewchuk's bound, exactly otherwise (#polynomial_sign_exact) */
+ * a x b + c x d where a..d are differences of doubles: the cross product of
+ * (a, c) and (-d, b), which #cross_product_sign reads exactly for every
+ * finite double */
 static inline int
 certa_sum2_sign(double a1, double a0, double b1, double b0, double c1,
   double c0, double d1, double d0)
 {
-  double a = a1 - a0, b = b1 - b0, c = c1 - c0, d = d1 - d0;
-  double ab = a * b, cd = c * d, v = ab + cd;
-  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
-    (fabs(ab) + fabs(cd));
-  if (v > bound)
-    return 1;
-  if (-v > bound)
-    return -1;
-  double t[4][2] = {{a1, -a0}, {b1, -b0}, {c1, -c0}, {d1, -d0}};
-  ExactSum sm[4];
-  for (int k = 0; k < 4; k++)
-    exact_sum_set(&sm[k], t[k], 2);
-  PolyTerm f[2] = {{1.0, 2, {0, 1}}, {1.0, 2, {2, 3}}};
-  return polynomial_sign_exact(sm, f, 2);
+  return cross_product_sign(a0, c0, a1, c1, d1, b0, d0, b1);
 }
 
 /* Whether |B - A|^2 > D^2, exactly */
