@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -88,7 +89,7 @@ int main(void)
 
   /* uint64_t bool_hash_extended(bool arg, uint64_t seed); */
   uint64_result = bool_hash_extended(b1, 1);
-  printf("bool_hash_extended(%s, 1): %lu\n", b1_out, uint64_result);
+  printf("bool_hash_extended(%s, 1): %" PRIu64 "\n", b1_out, uint64_result);
 
   /* bool bool_le(bool arg1, bool arg2); */
   bool_result = bool_le(b1, b2);

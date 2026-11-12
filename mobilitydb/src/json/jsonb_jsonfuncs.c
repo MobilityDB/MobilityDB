@@ -840,10 +840,12 @@ Jsonb_path_match_common(FunctionCallInfo fcinfo, bool tz)
   Jsonb *vars;
   bool silent;
   jsonb_path_args(fcinfo, &vars, &silent);
-  bool result = pg_jsonb_path_match(jb, jp, vars, silent, tz);
+  int result = pg_jsonb_path_match(jb, jp, vars, silent, tz);
   PG_FREE_IF_COPY(jb, 0);
   PG_FREE_IF_COPY(jp, 1);
-  PG_RETURN_BOOL(result);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result == 1);
 }
 
 PGDLLEXPORT Datum Jsonb_path_match(PG_FUNCTION_ARGS);

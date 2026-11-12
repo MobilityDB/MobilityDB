@@ -86,3 +86,15 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Poi
 SELECT asText(round(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'), 9));
 SELECT asText(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]')) =
   asText(angularSpeed(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'));
+-- The united form of a body that is not convex, with holes or concave, in
+-- linear motion is refused: it sweeps more than its placements and less than
+-- their hull
+SELECT ST_Area(traversedArea(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]', TRUE));
+SELECT ST_Area(traversedArea(
+  trgeometry 'Polygon((0 0,4 0,4 1,1 1,1 3,0 3,0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]', TRUE));
+-- its placements and its step form answer
+SELECT ST_Area(traversedArea(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]'));
+SELECT ST_Area(traversedArea(
+  trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]', TRUE));

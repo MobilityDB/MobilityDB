@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -526,13 +527,13 @@ int main(void)
   bigintarray[1] = int64_in2;
   bset_result = bigintset_make(bigintarray, 2);
   char_result = set_out(bset_result, 0, &size_out);
-  printf("bigintset_make({%lu, %lu} 2): %s\n", int64_in1, int64_in2, char_result);
+  printf("bigintset_make({%" PRId64 ", %" PRId64 "} 2): %s\n", int64_in1, int64_in2, char_result);
   free(bset_result); free(char_result);
 
   /* Span *bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc); */
   bspan_result = bigintspan_make(int64_in1, int64_in2, true, false);
   char_result = span_out(bspan_result, 0, &size_out);
-  printf("bigintspan_make(%ld, %ld, true, false): %s\n", int64_in1, int64_in2, char_result);
+  printf("bigintspan_make(%" PRId64 ", %" PRId64 ", true, false): %s\n", int64_in1, int64_in2, char_result);
   free(bspan_result); free(char_result);
 
   /* Set *dateset_make(const DateADT *values, int count); */
@@ -644,19 +645,19 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Set *bigint_to_set(int64 i); */
   bset_result = bigint_to_set(int64_in1);
   char_result = set_out(bset_result, 0, &size_out);
-  printf("bigint_to_set(%lu): %s\n", int64_in1, char_result);
+  printf("bigint_to_set(%" PRId64 "): %s\n", int64_in1, char_result);
   free(bset_result); free(char_result);
 
   /* Span *bigint_to_span(int64 i); */
   bspan_result = bigint_to_span(int64_in1);
   char_result = span_out(bspan_result, 0, &size_out);
-  printf("bigint_to_span(%lu): %s\n", int64_in1, char_result);
+  printf("bigint_to_span(%" PRId64 "): %s\n", int64_in1, char_result);
   free(bspan_result); free(char_result);
 
   /* SpanSet *bigint_to_spanset(int64 i); */
   bspanset_result = bigint_to_spanset(int64_in1);
   char_result = spanset_out(bspanset_result, 0, &size_out);
-  printf("bigint_to_spanset(%ld): %s\n", int64_in1, char_result);
+  printf("bigint_to_spanset(%" PRId64 "): %s\n", int64_in1, char_result);
   free(bspanset_result); free(char_result);
 
   /* Set *date_to_set(DateADT d); */
@@ -834,22 +835,22 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* int64 bigintset_end_value(const Set *s); */
   int64_result = bigintset_end_value(bset1);
-  printf("bigintset_end_value(%s): %ld\n", bset1_out, int64_result);
+  printf("bigintset_end_value(%s): %" PRId64 "\n", bset1_out, int64_result);
 
   /* int64 bigintset_start_value(const Set *s); */
   int64_result = bigintset_start_value(bset1);
-  printf("bigintset_start_value(%s): %ld\n", bset1_out, int64_result);
+  printf("bigintset_start_value(%s): %" PRId64 "\n", bset1_out, int64_result);
 
   /* bool bigintset_value_n(const Set *s, int n, int64 *result); */
   bool_result = bigintset_value_n(bset1, 1, &int64_result);
-  printf("bigintset_value_n(%s, 1, %ld): %c\n", bset1_out, int64_result, bool_result ? 't' : 'n');
+  printf("bigintset_value_n(%s, 1, %" PRId64 "): %c\n", bset1_out, int64_result, bool_result ? 't' : 'n');
 
   /* int64 *bigintset_values(const Set *s); */
   int64array_result = bigintset_values(bset1, &count);
   printf("bigintset_values(%s): {", bset1_out);
   for (int i = 0; i < bset1->count; i++)
   {
-    printf("%ld", int64array_result[i]);
+    printf("%" PRId64 "", int64array_result[i]);
     if (i < bset1->count - 1)
       printf(", ");
     else
@@ -859,27 +860,27 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* int64 bigintspan_lower(const Span *s); */
   int64_result = bigintspan_lower(bspan1);
-  printf("bigintspan_lower(%s): %ld\n", bspan1_out, int64_result);
+  printf("bigintspan_lower(%s): %" PRId64 "\n", bspan1_out, int64_result);
 
   /* int64 bigintspan_upper(const Span *s); */
   int64_result = bigintspan_upper(bspan1);
-  printf("bigintspan_upper(%s): %ld\n", bspan1_out, int64_result);
+  printf("bigintspan_upper(%s): %" PRId64 "\n", bspan1_out, int64_result);
 
   /* int64 bigintspan_width(const Span *s); */
   int64_result = bigintspan_width(bspan1);
-  printf("bigintspan_width(%s): %ld\n", bspan1_out, int64_result);
+  printf("bigintspan_width(%s): %" PRId64 "\n", bspan1_out, int64_result);
 
   /* int64 bigintspanset_lower(const SpanSet *ss); */
   int64_result = bigintspanset_lower(bspanset1);
-  printf("bigintspanset_lower(%s): %ld\n", bspanset1_out, int64_result);
+  printf("bigintspanset_lower(%s): %" PRId64 "\n", bspanset1_out, int64_result);
 
   /* int64 bigintspanset_upper(const SpanSet *ss); */
   int64_result = bigintspanset_upper(bspanset1);
-  printf("bigintspanset_upper(%s): %ld\n", bspanset1_out, int64_result);
+  printf("bigintspanset_upper(%s): %" PRId64 "\n", bspanset1_out, int64_result);
 
   /* int64 bigintspanset_width(spanset1, bool boundspan); */
   int64_result = bigintspanset_width(bspanset1, true);
-  printf("bigintspanset_width(%s): %ld\n", bspanset1_out, int64_result);
+  printf("bigintspanset_width(%s): %" PRId64 "\n", bspanset1_out, int64_result);
 
   /* DateADT dateset_end_value(const Set *s); */
   date_result = dateset_end_value(dset1);
@@ -1070,7 +1071,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* uint64 set_hash_extended(const Set *s, uint64 seed); */
   uint64_result = set_hash_extended(iset1, int32_in1);
-  printf("set_hash_extended(%s): %lu\n", iset1_out, uint64_result);
+  printf("set_hash_extended(%s): %" PRIu64 "\n", iset1_out, uint64_result);
 
   /* int set_num_values(const Set *s); */
   int32_result = set_num_values(iset1);
@@ -1082,7 +1083,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* uint64 span_hash_extended(const Span *s, uint64 seed); */
   uint64_result = span_hash_extended(ispan1, int32_in1);
-  printf("span_hash_extended(%s): %lu\n", ispan1_out, uint64_result);
+  printf("span_hash_extended(%s): %" PRIu64 "\n", ispan1_out, uint64_result);
 
   /* bool span_lower_inc(const Span *s); */
   bool_result = span_lower_inc(ispan1);
@@ -1104,7 +1105,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* uint64 spanset_hash_extended(spanset1, uint64 seed); */
   uint64_result = spanset_hash_extended(ispanset1, 1);
-  printf("spanset_hash_extended(%s): %lu\n", ispanset1_out, uint64_result);
+  printf("spanset_hash_extended(%s): %" PRIu64 "\n", ispanset1_out, uint64_result);
 
   /* bool spanset_lower_inc(const SpanSet *ss); */
   bool_result = spanset_lower_inc(ispanset1);
@@ -1291,7 +1292,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Set *bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift, bool haswidth); */
   bset_result = bigintset_shift_scale(bset1, int64_in1, int64_in2, true, true);
   char_result = set_out(bset_result, 0, &size_out);
-  printf("bigintset_shift_scale(%s, %ld, %ld, true, true): %s\n", bset1_out, int64_in1, int64_in2, char_result);
+  printf("bigintset_shift_scale(%s, %" PRId64 ", %" PRId64 ", true, true): %s\n", bset1_out, int64_in1, int64_in2, char_result);
   free(bset_result); free(char_result);
 
   /* Span *bigintspan_expand(const Span *s, int64 value); */
@@ -1303,13 +1304,13 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Span *bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift, bool haswidth); */
   bspan_result = bigintspan_shift_scale(bspan1, int64_in1, int64_in2, true, true);
   char_result = span_out(bspan_result, 0, &size_out);
-  printf("bigintspan_shift_scale(%s, %ld, %ld, true, true): %s\n", bspan1_out, int64_in1, int64_in2, char_result);
+  printf("bigintspan_shift_scale(%s, %" PRId64 ", %" PRId64 ", true, true): %s\n", bspan1_out, int64_in1, int64_in2, char_result);
   free(bspan_result); free(char_result);
 
   /* SpanSet *bigintspanset_shift_scale(spanset1, int64 shift, int64 width, bool hasshift, bool haswidth); */
   bspanset_result = bigintspanset_shift_scale(bspanset1, int64_in1, int64_in2, true, true);
   char_result = spanset_out(bspanset_result, 0, &size_out);
-  printf("bigintspanset_shift_scale(%s, %ld, %ld, true, true): %s\n", bspanset1_out, int64_in1, int64_in2, char_result);
+  printf("bigintspanset_shift_scale(%s, %" PRId64 ", %" PRId64 ", true, true): %s\n", bspanset1_out, int64_in1, int64_in2, char_result);
   free(bspanset_result); free(char_result);
 
   /* Set *dateset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth); */
@@ -1737,7 +1738,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool adjacent_span_bigint(const Span *s, int64 i); */
   bool_result = adjacent_span_bigint(bspan1, int64_in1);
-  printf("adjacent_span_bigint(%s, %ld): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("adjacent_span_bigint(%s, %" PRId64 "): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool adjacent_span_date(const Span *s, DateADT d); */
   bool_result = adjacent_span_date(dspan1, date1);
@@ -1765,7 +1766,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool adjacent_spanset_bigint(spanset1, int64 i); */
   bool_result = adjacent_spanset_bigint(bspanset1, int64_in1);
-  printf("adjacent_spanset_bigint(%s, %ld): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("adjacent_spanset_bigint(%s, %" PRId64 "): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool adjacent_spanset_date(spanset1, DateADT d); */
   bool_result = adjacent_spanset_date(dspanset1, date1);
@@ -1785,7 +1786,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool adjacent_bigint_spanset(int64 i, const SpanSet *ss); */
   bool_result = adjacent_bigint_spanset(int64_in1, bspanset1);
-  printf("adjacent_bigint_spanset(%ld, %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
+  printf("adjacent_bigint_spanset(%" PRId64 ", %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
 
   /* bool adjacent_date_spanset(DateADT d, const SpanSet *ss); */
   bool_result = adjacent_date_spanset(date1, dspanset1);
@@ -1813,15 +1814,15 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool contained_bigint_set(int64 i, const Set *s); */
   bool_result = contained_bigint_set(int64_in1, bset1);
-  printf("contained_bigint_set(%ld, %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
+  printf("contained_bigint_set(%" PRId64 ", %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
 
   /* bool contained_bigint_span(int64 i, const Span *s); */
   bool_result = contained_bigint_span(int64_in1, bspan1);
-  printf("contained_bigint_span(%ld, %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
+  printf("contained_bigint_span(%" PRId64 ", %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
 
   /* bool contained_bigint_spanset(int64 i, const SpanSet *ss); */
   bool_result = contained_bigint_spanset(int64_in1, bspanset1);
-  printf("contained_bigint_spanset(%ld, %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
+  printf("contained_bigint_spanset(%" PRId64 ", %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
 
   /* bool contained_date_set(DateADT d, const Set *s); */
   bool_result = contained_date_set(date1, dset1);
@@ -1897,7 +1898,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool contains_set_bigint(const Set *s, int64 i); */
   bool_result = contains_set_bigint(bset1, int64_in1);
-  printf("contains_set_bigint(%s, %ld): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("contains_set_bigint(%s, %" PRId64 "): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool contains_set_date(const Set *s, DateADT d); */
   bool_result = contains_set_date(dset1, date1);
@@ -1925,7 +1926,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool contains_span_bigint(const Span *s, int64 i); */
   bool_result = contains_span_bigint(bspan1, int64_in1);
-  printf("contains_span_bigint(%s, %ld): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("contains_span_bigint(%s, %" PRId64 "): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool contains_span_date(const Span *s, DateADT d); */
   bool_result = contains_span_date(dspan1, date1);
@@ -1953,7 +1954,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool contains_spanset_bigint(spanset1, int64 i); */
   bool_result = contains_spanset_bigint(bspanset1, int64_in1);
-  printf("contains_spanset_bigint(%s, %ld): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("contains_spanset_bigint(%s, %" PRId64 "): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool contains_spanset_date(spanset1, DateADT d); */
   bool_result = contains_spanset_date(dspanset1, date1);
@@ -2100,15 +2101,15 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool left_bigint_set(int64 i, const Set *s); */
   bool_result = left_bigint_set(int64_in1, bset1);
-  printf("left_bigint_set(%ld, %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
+  printf("left_bigint_set(%" PRId64 ", %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
 
   /* bool left_bigint_span(int64 i, const Span *s); */
   bool_result = left_bigint_span(int64_in1, bspan1);
-  printf("left_bigint_span(%ld, %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
+  printf("left_bigint_span(%" PRId64 ", %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
 
   /* bool left_bigint_spanset(int64 i, const SpanSet *ss); */
   bool_result = left_bigint_spanset(int64_in1, bspanset1);
-  printf("left_bigint_spanset(%ld, %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
+  printf("left_bigint_spanset(%" PRId64 ", %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
 
   /* bool left_float_set(double d, const Set *s); */
   bool_result = left_float_set(float8_in1, fset1);
@@ -2136,7 +2137,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool left_set_bigint(const Set *s, int64 i); */
   bool_result = left_set_bigint(bset1, int64_in1);
-  printf("left_set_bigint(%s, %ld): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("left_set_bigint(%s, %" PRId64 "): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool left_set_float(const Set *s, double d); */
   bool_result = left_set_float(fset1, float8_in1);
@@ -2156,7 +2157,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool left_span_bigint(const Span *s, int64 i); */
   bool_result = left_span_bigint(bspan1, int64_in1);
-  printf("left_span_bigint(%s, %ld): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("left_span_bigint(%s, %" PRId64 "): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool left_span_float(const Span *s, double d); */
   bool_result = left_span_float(fspan1, float8_in1);
@@ -2176,7 +2177,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool left_spanset_bigint(spanset1, int64 i); */
   bool_result = left_spanset_bigint(bspanset1, int64_in1);
-  printf("left_spanset_bigint(%s, %ld): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("left_spanset_bigint(%s, %" PRId64 "): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool left_spanset_float(spanset1, double d); */
   bool_result = left_spanset_float(fspanset1, float8_in1);
@@ -2296,15 +2297,15 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool overleft_bigint_set(int64 i, const Set *s); */
   bool_result = overleft_bigint_set(int64_in1, bset1);
-  printf("overleft_bigint_set(%ld, %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
+  printf("overleft_bigint_set(%" PRId64 ", %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
 
   /* bool overleft_bigint_span(int64 i, const Span *s); */
   bool_result = overleft_bigint_span(int64_in1, bspan1);
-  printf("overleft_bigint_span(%ld, %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
+  printf("overleft_bigint_span(%" PRId64 ", %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
 
   /* bool overleft_bigint_spanset(int64 i, const SpanSet *ss); */
   bool_result = overleft_bigint_spanset(int64_in1, bspanset1);
-  printf("overleft_bigint_spanset(%ld, %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
+  printf("overleft_bigint_spanset(%" PRId64 ", %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
 
   /* bool overleft_float_set(double d, const Set *s); */
   bool_result = overleft_float_set(float8_in1, fset1);
@@ -2332,7 +2333,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool overleft_set_bigint(const Set *s, int64 i); */
   bool_result = overleft_set_bigint(bset1, int64_in1);
-  printf("overleft_set_bigint(%s, %ld): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("overleft_set_bigint(%s, %" PRId64 "): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool overleft_set_float(const Set *s, double d); */
   bool_result = overleft_set_float(fset1, float8_in1);
@@ -2352,7 +2353,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool overleft_span_bigint(const Span *s, int64 i); */
   bool_result = overleft_span_bigint(bspan1, int64_in1);
-  printf("overleft_span_bigint(%s, %ld): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("overleft_span_bigint(%s, %" PRId64 "): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool overleft_span_float(const Span *s, double d); */
   bool_result = overleft_span_float(fspan1, float8_in1);
@@ -2372,7 +2373,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool overleft_spanset_bigint(spanset1, int64 i); */
   bool_result = overleft_spanset_bigint(bspanset1, int64_in1);
-  printf("overleft_spanset_bigint(%s, %ld): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("overleft_spanset_bigint(%s, %" PRId64 "): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool overleft_spanset_float(spanset1, double d); */
   bool_result = overleft_spanset_float(fspanset1, float8_in1);
@@ -2396,15 +2397,15 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool overright_bigint_set(int64 i, const Set *s); */
   bool_result = overright_bigint_set(int64_in1, bset1);
-  printf("overright_bigint_set(%ld, %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
+  printf("overright_bigint_set(%" PRId64 ", %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
 
   /* bool overright_bigint_span(int64 i, const Span *s); */
   bool_result = overright_bigint_span(int64_in1, bspan1);
-  printf("overright_bigint_span(%ld, %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
+  printf("overright_bigint_span(%" PRId64 ", %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
 
   /* bool overright_bigint_spanset(int64 i, const SpanSet *ss); */
   bool_result = overright_bigint_spanset(int64_in1, bspanset1);
-  printf("overright_bigint_spanset(%ld, %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
+  printf("overright_bigint_spanset(%" PRId64 ", %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
 
   /* bool overright_float_set(double d, const Set *s); */
   bool_result = overright_float_set(float8_in1, fset1);
@@ -2432,7 +2433,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool overright_set_bigint(const Set *s, int64 i); */
   bool_result = overright_set_bigint(bset1, int64_in1);
-  printf("overright_set_bigint(%s, %ld): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("overright_set_bigint(%s, %" PRId64 "): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool overright_set_float(const Set *s, double d); */
   bool_result = overright_set_float(fset1, float8_in1);
@@ -2452,7 +2453,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool overright_span_bigint(const Span *s, int64 i); */
   bool_result = overright_span_bigint(bspan1, int64_in1);
-  printf("overright_span_bigint(%s, %ld): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("overright_span_bigint(%s, %" PRId64 "): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool overright_span_float(const Span *s, double d); */
   bool_result = overright_span_float(fspan1, float8_in1);
@@ -2472,7 +2473,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool overright_spanset_bigint(spanset1, int64 i); */
   bool_result = overright_spanset_bigint(bspanset1, int64_in1);
-  printf("overright_spanset_bigint(%s, %ld): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("overright_spanset_bigint(%s, %" PRId64 "): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool overright_spanset_float(spanset1, double d); */
   bool_result = overright_spanset_float(fspanset1, float8_in1);
@@ -2496,15 +2497,15 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool right_bigint_set(int64 i, const Set *s); */
   bool_result = right_bigint_set(int64_in1, bset1);
-  printf("right_bigint_set(%ld, %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
+  printf("right_bigint_set(%" PRId64 ", %s): %c\n", int64_in1, bset1_out, bool_result ? 't' : 'n');
 
   /* bool right_bigint_span(int64 i, const Span *s); */
   bool_result = right_bigint_span(int64_in1, bspan1);
-  printf("right_bigint_span(%ld, %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
+  printf("right_bigint_span(%" PRId64 ", %s): %c\n", int64_in1, bspan1_out, bool_result ? 't' : 'n');
 
   /* bool right_bigint_spanset(int64 i, const SpanSet *ss); */
   bool_result = right_bigint_spanset(int64_in1, bspanset1);
-  printf("right_bigint_spanset(%ld, %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
+  printf("right_bigint_spanset(%" PRId64 ", %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
 
   /* bool right_float_set(double d, const Set *s); */
   bool_result = right_float_set(float8_in1, fset1);
@@ -2532,7 +2533,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool right_set_bigint(const Set *s, int64 i); */
   bool_result = right_set_bigint(bset1, int64_in1);
-  printf("right_set_bigint(%s, %ld): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("right_set_bigint(%s, %" PRId64 "): %c\n", bset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool right_set_float(const Set *s, double d); */
   bool_result = right_set_float(fset1, float8_in1);
@@ -2552,7 +2553,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool right_span_bigint(const Span *s, int64 i); */
   bool_result = right_span_bigint(bspan1, int64_in1);
-  printf("right_span_bigint(%s, %ld): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("right_span_bigint(%s, %" PRId64 "): %c\n", bspan1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool right_span_float(const Span *s, double d); */
   bool_result = right_span_float(fspan1, float8_in1);
@@ -2572,7 +2573,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* bool right_spanset_bigint(spanset1, int64 i); */
   bool_result = right_spanset_bigint(bspanset1, int64_in1);
-  printf("right_spanset_bigint(%s, %ld): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
+  printf("right_spanset_bigint(%s, %" PRId64 "): %c\n", bspanset1_out, int64_in1, bool_result ? 't' : 'n');
 
   /* bool right_spanset_float(spanset1, double d); */
   bool_result = right_spanset_float(fspanset1, float8_in1);
@@ -2602,7 +2603,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Set *intersection_bigint_set(int64 i, const Set *s); */
   bset_result = intersection_bigint_set(int64_in1, bset1);
   char_result = bset_result ? set_out(bset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("intersection_bigint_set(%ld, %s): %s\n", int64_in1, bset1_out, char_result);
+  printf("intersection_bigint_set(%" PRId64 ", %s): %s\n", int64_in1, bset1_out, char_result);
   if (bset_result)
     free(bset_result);
   free(char_result);
@@ -2610,7 +2611,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Span *intersection_bigint_span(int64 i, const Span *s); */
   bspan_result = intersection_bigint_span(int64_in1, bspan1);
   char_result = bspan_result ? span_out(bspan_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("intersection_bigint_span(%ld, %s): %s\n", int64_in1, bspan1_out, char_result);
+  printf("intersection_bigint_span(%" PRId64 ", %s): %s\n", int64_in1, bspan1_out, char_result);
   if (bspan_result)
     free(bspan_result);
   free(char_result);
@@ -2618,7 +2619,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* SpanSet *intersection_bigint_spanset(int64 i, const SpanSet *ss); */
   bspanset_result = intersection_bigint_spanset(int64_in1, bspanset1);
   char_result = bspanset_result ? spanset_out(bspanset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("intersection_bigint_spanset(%ld, %s): %s\n", int64_in1, bspanset1_out, char_result);
+  printf("intersection_bigint_spanset(%" PRId64 ", %s): %s\n", int64_in1, bspanset1_out, char_result);
   if (bspanset_result)
     free(bspanset_result);
   free(char_result);
@@ -2698,7 +2699,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Set *intersection_set_bigint(const Set *s, int64 i); */
   bset_result = intersection_set_bigint(bset1, int64_in1);
   char_result = bset_result ? set_out(bset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("intersection_set_bigint(%s, %ld): %s\n", bset1_out, int64_in1, char_result);
+  printf("intersection_set_bigint(%s, %" PRId64 "): %s\n", bset1_out, int64_in1, char_result);
   if (bset_result)
     free(bset_result);
   free(char_result);
@@ -2754,7 +2755,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Span *intersection_span_bigint(const Span *s, int64 i); */
   bspan_result = intersection_span_bigint(bspan1, int64_in1);
   char_result = bspan_result ? span_out(bspan_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("intersection_span_bigint(%s, %ld): %s\n", bspan1_out, int64_in1, char_result);
+  printf("intersection_span_bigint(%s, %" PRId64 "): %s\n", bspan1_out, int64_in1, char_result);
   if (bspan_result)
     free(bspan_result);
   free(char_result);
@@ -2810,7 +2811,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* SpanSet *intersection_spanset_bigint(spanset1, int64 i); */
   bspanset_result = intersection_spanset_bigint(bspanset1, int64_in1);
   char_result = bspanset_result ? spanset_out(bspanset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("intersection_spanset_bigint(%s, %ld): %s\n", bspanset1_out, int64_in1, char_result);
+  printf("intersection_spanset_bigint(%s, %" PRId64 "): %s\n", bspanset1_out, int64_in1, char_result);
   if (bspanset_result)
     free(bspanset_result);
   free(char_result);
@@ -2898,7 +2899,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Set *minus_bigint_set(int64 i, const Set *s); */
   bset_result = minus_bigint_set(int64_in1, bset1);
   char_result = bset_result ? set_out(bset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("minus_bigint_set(%ld, %s): %s\n", int64_in1, bset1_out, char_result);
+  printf("minus_bigint_set(%" PRId64 ", %s): %s\n", int64_in1, bset1_out, char_result);
   if (bset_result)
     free(bset_result);
   free(char_result);
@@ -2906,7 +2907,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* SpanSet *minus_bigint_span(int64 i, const Span *s); */
   bspanset_result = minus_bigint_span(int64_in1, bspan1);
   char_result = bspanset_result ? spanset_out(bspanset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("minus_bigint_span(%ld, %s): %s\n", int64_in1, bspan1_out, char_result);
+  printf("minus_bigint_span(%" PRId64 ", %s): %s\n", int64_in1, bspan1_out, char_result);
   if (bspanset_result)
     free(bspanset_result);
   free(char_result);
@@ -2914,7 +2915,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* SpanSet *minus_bigint_spanset(int64 i, const SpanSet *ss); */
   bspanset_result = minus_bigint_spanset(int64_in1, bspanset1);
   char_result = bspanset_result ? spanset_out(bspanset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("minus_bigint_spanset(%ld, %s): %s\n", int64_in1, bspanset1_out, char_result);
+  printf("minus_bigint_spanset(%" PRId64 ", %s): %s\n", int64_in1, bspanset1_out, char_result);
   if (bspanset_result)
     free(bspanset_result);
   free(char_result);
@@ -2994,7 +2995,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Set *minus_set_bigint(const Set *s, int64 i); */
   bset_result = minus_set_bigint(bset1, int64_in1);
   char_result = bset_result ? set_out(bset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("minus_set_bigint(%s, %ld): %s\n", bset1_out, int64_in1, char_result);
+  printf("minus_set_bigint(%s, %" PRId64 "): %s\n", bset1_out, int64_in1, char_result);
   if (bset_result)
     free(bset_result);
   free(char_result);
@@ -3050,7 +3051,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* SpanSet *minus_span_bigint(const Span *s, int64 i); */
   bspanset_result = minus_span_bigint(bspan1, int64_in1);
   char_result = bspanset_result ? spanset_out(bspanset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("minus_span_bigint(%s, %ld): %s\n", bspan1_out, int64_in1, char_result);
+  printf("minus_span_bigint(%s, %" PRId64 "): %s\n", bspan1_out, int64_in1, char_result);
   if (bspanset_result)
     free(bspanset_result);
   free(char_result);
@@ -3106,7 +3107,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* SpanSet *minus_spanset_bigint(spanset1, int64 i); */
   bspanset_result = minus_spanset_bigint(bspanset1, int64_in1);
   char_result = bspanset_result ? spanset_out(bspanset_result, 0, &size_out) : text_out(text_null, &size_out);
-  printf("minus_spanset_bigint(%s, %ld): %s\n", bspanset1_out, int64_in1, char_result);
+  printf("minus_spanset_bigint(%s, %" PRId64 "): %s\n", bspanset1_out, int64_in1, char_result);
   if (bspanset_result)
     free(bspanset_result);
   free(char_result);
@@ -3194,19 +3195,19 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Set *union_bigint_set(int64 i, const Set *s); */
   bset_result = union_bigint_set(int64_in1, bset1);
   char_result = set_out(bset_result, 0, &size_out);
-  printf("union_bigint_set(%ld, %s): %s\n", int64_in1, bset1_out, char_result);
+  printf("union_bigint_set(%" PRId64 ", %s): %s\n", int64_in1, bset1_out, char_result);
   free(bset_result); free(char_result);
 
   /* SpanSet *union_bigint_span(int64 i, const Span *s); */
   bspanset_result = union_bigint_span(int64_in1, bspan1);
   char_result = spanset_out(bspanset_result, 0, &size_out);
-  printf("union_bigint_span(%ld, %s): %s\n", int64_in1, bspan1_out, char_result);
+  printf("union_bigint_span(%" PRId64 ", %s): %s\n", int64_in1, bspan1_out, char_result);
   free(bspanset_result); free(char_result);
 
   /* SpanSet *union_bigint_spanset(int64 i, SpanSet *ss); */
   bspanset_result = union_bigint_spanset(int64_in1, bspanset1);
   char_result = spanset_out(bspanset_result, 0, &size_out);
-  printf("union_bigint_spanset(%ld, %s): %s\n", int64_in1, bspanset1_out, char_result);
+  printf("union_bigint_spanset(%" PRId64 ", %s): %s\n", int64_in1, bspanset1_out, char_result);
   free(bspanset_result); free(char_result);
 
   /* Set *union_date_set(DateADT d, const Set *s); */
@@ -3266,7 +3267,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Set *union_set_bigint(const Set *s, int64 i); */
   bset_result = union_set_bigint(bset1, int64_in1);
   char_result = set_out(bset_result, 0, &size_out);
-  printf("union_set_bigint(%s, %ld): %s\n", bset1_out, int64_in1, char_result);
+  printf("union_set_bigint(%s, %" PRId64 "): %s\n", bset1_out, int64_in1, char_result);
   free(bset_result); free(char_result);
 
   /* Set *union_set_date(const Set *s, DateADT d); */
@@ -3308,7 +3309,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* SpanSet *union_span_bigint(const Span *s, int64 i); */
   bspanset_result = union_span_bigint(bspan1, int64_in1);
   char_result = spanset_out(bspanset_result, 0, &size_out);
-  printf("union_span_bigint(%s, %ld): %s\n", bspan1_out, int64_in1, char_result);
+  printf("union_span_bigint(%s, %" PRId64 "): %s\n", bspan1_out, int64_in1, char_result);
   free(bspanset_result); free(char_result);
 
   /* SpanSet *union_span_date(const Span *s, DateADT d); */
@@ -3350,7 +3351,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* SpanSet *union_spanset_bigint(spanset1, int64 i); */
   bspanset_result = union_spanset_bigint(bspanset1, int64_in1);
   char_result = spanset_out(bspanset_result, 0, &size_out);
-  printf("union_spanset_bigint(%s, %ld): %s\n", bspanset1_out, int64_in1, char_result);
+  printf("union_spanset_bigint(%s, %" PRId64 "): %s\n", bspanset1_out, int64_in1, char_result);
   free(bspanset_result); free(char_result);
 
   /* SpanSet *union_spanset_date(spanset1, DateADT d); */
@@ -3420,19 +3421,19 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* int64 distance_bigintset_bigintset(const Set *s1, const Set *s2); */
   int64_result = distance_bigintset_bigintset(bset1, bset2);
-  printf("distance_bigintset_bigintset(%s, %s): %ld\n", bset1_out, bset2_out, int64_result);
+  printf("distance_bigintset_bigintset(%s, %s): %" PRId64 "\n", bset1_out, bset2_out, int64_result);
 
   /* int64 distance_bigintspan_bigintspan(const Span *s1, const Span *s2); */
   int64_result = distance_bigintspan_bigintspan(bspan1, bspan2);
-  printf("distance_bigintspan_bigintspan(%s, %s): %ld\n", bspan1_out, bspan2_out, int64_result);
+  printf("distance_bigintspan_bigintspan(%s, %s): %" PRId64 "\n", bspan1_out, bspan2_out, int64_result);
 
   /* int64 distance_bigintspanset_bigintspan(spanset1, const Span *s); */
   int64_result = distance_bigintspanset_bigintspan(bspanset1, bspan1);
-  printf("distance_bigintspanset_bigintspan(%s, %s): %ld\n", bspanset1_out, bspan1_out, int64_result);
+  printf("distance_bigintspanset_bigintspan(%s, %s): %" PRId64 "\n", bspanset1_out, bspan1_out, int64_result);
 
   /* int64 distance_bigintspanset_bigintspanset(const SpanSet *ss1, const SpanSet *ss2); */
   int64_result = distance_bigintspanset_bigintspanset(bspanset1, bspanset2);
-  printf("distance_bigintspanset_bigintspanset(%s, %s): %ld\n", bspanset1_out, bspanset2_out, int64_result);
+  printf("distance_bigintspanset_bigintspanset(%s, %s): %" PRId64 "\n", bspanset1_out, bspanset2_out, int64_result);
 
   /* int distance_dateset_dateset(const Set *s1, const Set *s2); */
   int32_result = distance_dateset_dateset(dset1, dset2);
@@ -3484,7 +3485,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* int64 distance_set_bigint(const Set *s, int64 i); */
   int64_result = distance_set_bigint(bset1, int64_in1);
-  printf("distance_set_bigint(%s, %ld): %ld\n", bset1_out, int64_in1, int64_result);
+  printf("distance_set_bigint(%s, %" PRId64 "): %" PRId64 "\n", bset1_out, int64_in1, int64_result);
 
   /* int distance_set_date(const Set *s, DateADT d); */
   int32_result = distance_set_date(dset1, date1);
@@ -3506,7 +3507,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* int64 distance_span_bigint(const Span *s, int64 i); */
   int64_result = distance_span_bigint(bspan1, int64_in1);
-  printf("distance_span_bigint(%s, %ld): %ld\n", bspan1_out, int64_in1, int64_result);
+  printf("distance_span_bigint(%s, %" PRId64 "): %" PRId64 "\n", bspan1_out, int64_in1, int64_result);
 
   /* int distance_span_date(const Span *s, DateADT d); */
   int32_result = distance_span_date(dspan1, date1);
@@ -3528,7 +3529,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* int64 distance_spanset_bigint(spanset1, int64 i); */
   int64_result = distance_spanset_bigint(bspanset1, int64_in1);
-  printf("distance_spanset_bigint(%s, %ld): %ld\n", bspanset1_out, int64_in1, int64_result);
+  printf("distance_spanset_bigint(%s, %" PRId64 "): %" PRId64 "\n", bspanset1_out, int64_in1, int64_result);
 
   /* int distance_spanset_date(spanset1, DateADT d); */
   int32_result = distance_spanset_date(dspanset1, date1);
@@ -3581,14 +3582,14 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   ispan_result = bigint_extent_transfn(NULL, int64_in1);
   ispan_result = bigint_extent_transfn(ispan_result, int64_in2);
   char_result = span_out(ispan_result, 0, &size_out);
-  printf("bigint_extent aggregate: %ld, %ld -> %s\n", int64_in1, int64_in2, char_result);
+  printf("bigint_extent aggregate: %" PRId64 ", %" PRId64 " -> %s\n", int64_in1, int64_in2, char_result);
   free(ispan_result); free(char_result);
 
   /* Set *bigint_union_transfn(Set *state, int64 i); */
   bset_result = bigint_union_transfn(NULL, int64_in1);
   bset_result = bigint_union_transfn(bset_result, int64_in2);
   char_result = set_out(bset_result, 0, &size_out);
-  printf("bigint_union aggregate: %ld, %ld -> %s\n", int64_in1, int64_in2, char_result);
+  printf("bigint_union aggregate: %" PRId64 ", %" PRId64 " -> %s\n", int64_in1, int64_in2, char_result);
   free(bset_result); free(char_result);
 
   /* Span *date_extent_transfn(Span *state, DateADT d); */
@@ -3756,13 +3757,13 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
 
   /* int64 bigint_get_bin(int64 value, int64 vsize, int64 vorigin); */
   int64_result = bigint_get_bin(int64_in1, int64_in2, int64_in2);
-  printf("bigint_get_bin(%ld, %ld, %ld): %d\n", int64_in1, int64_in2, int64_in2, int32_result);
+  printf("bigint_get_bin(%" PRId64 ", %" PRId64 ", %" PRId64 "): %d\n", int64_in1, int64_in2, int64_in2, int32_result);
 
   /* Span *bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, true,
     int *count); */
   bspan_result = bigintspan_bins(bspan1, int64_in1, int64_in2, true, &count);
   char_result = span_out(bspan_result, 0, &size_out);
-  printf("bigintspan_bins(%s, %ld, %ld, true): %s\n", bspan1_out, int64_in1,
+  printf("bigintspan_bins(%s, %" PRId64 ", %" PRId64 ", true): %s\n", bspan1_out, int64_in1,
     int64_in2, char_result);
   free(bspan_result); free(char_result);
 
@@ -3771,7 +3772,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   bspan_result = bigintspanset_bins(bspanset1, int64_in1, int64_in2, true,
     &count);
   char_result = span_out(bspan_result, 0, &size_out);
-  printf("bigintspanset_bins(%s, %ld, %ld, true): %s\n", bspanset1_out,
+  printf("bigintspanset_bins(%s, %" PRId64 ", %" PRId64 ", true): %s\n", bspanset1_out,
     int64_in1, int64_in2, char_result);
   free(bspan_result); free(char_result);
 

@@ -57,6 +57,8 @@ extern bool ensure_valid_trgeometry_trgeometry(const Temporal *temp1,
   const Temporal *temp2);
 extern bool ensure_valid_trgeometry_tpoint(const Temporal *temp1,
   const Temporal *temp2);
+extern GSERIALIZED *trgeometry_geo_common_dims(const Temporal *temp,
+  const GSERIALIZED *gs);
 extern const GSERIALIZED *trgeometry_geom_p(const Temporal *temp);
 
 /* Input/output functions */

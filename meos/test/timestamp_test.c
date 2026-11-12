@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -120,11 +121,11 @@ int main(void)
 
   /* int32_t cmp_timestamp_timestamptz(Timestamp ts, TimestampTz tstz); */
   int32_result = cmp_timestamp_timestamptz(ts1, tstz1);
-  printf("cmp_timestamp_timestamptz(%s, %s): %c\n", ts1_out, tstz1_out, int32_result);
+  printf("cmp_timestamp_timestamptz(%s, %s): %d\n", ts1_out, tstz1_out, int32_result);
 
   /* int32_t cmp_timestamptz_timestamp(TimestampTz tstz, Timestamp ts); */
   int32_result = cmp_timestamptz_timestamp(tstz1, ts1);
-  printf("cmp_timestamptz_timestamp(%s, %s): %c\n", tstz1_out, ts1_out, int32_result);
+  printf("cmp_timestamptz_timestamp(%s, %s): %d\n", tstz1_out, ts1_out, int32_result);
 
   /* bool eq_timestamp_date(Timestamp ts, DateADT date); */
   bool_result = eq_timestamp_date(ts1, date1);
@@ -288,7 +289,7 @@ int main(void)
 
   /* uint64_t timestamp_hash_extended(TimestampTz tstz, uint64_t seed); */
   uint64_result = timestamp_hash_extended(ts1, 1);
-  printf("timestamp_hash_extended(%s, 1): %lu\n", ts1_out, uint64_result);
+  printf("timestamp_hash_extended(%s, 1): %" PRIu64 "\n", ts1_out, uint64_result);
 
   /* Timestamp timestamp_in(const char *str, int32_t typmod); */
   ts_result = timestamp_in("2025-03-01 08:00:00", -1);
@@ -405,7 +406,7 @@ int main(void)
 
   /* uint64_t timestamptz_hash_extended(TimestampTz tstz, uint64_t seed); */
   uint64_result = timestamptz_hash_extended(tstz1, 1);
-  printf("timestamptz_hash_extended(%s, 1): %lu\n", tstz1_out, uint64_result);
+  printf("timestamptz_hash_extended(%s, 1): %" PRIu64 "\n", tstz1_out, uint64_result);
 
   /* TimestampTz timestamptz_in(const char *str, int32_t typmod); */
   tstz_result = timestamptz_in("2025-03-01 08:00:00", -1);

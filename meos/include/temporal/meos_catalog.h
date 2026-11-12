@@ -40,6 +40,14 @@
 /* MEOS */
 #include <meos.h>
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 /*****************************************************************************
  * Data structures
  *****************************************************************************/
@@ -318,6 +326,10 @@ extern bool ensure_tgeodetic_type(MeosType type);
 extern bool ensure_tnumber_tpoint_type(MeosType type);
 
 /*****************************************************************************/
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif /* __MEOS_CATALOG_H__ */
 

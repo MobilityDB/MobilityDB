@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -170,7 +171,7 @@ int main(void)
 
   /* uint64_t time_hash_extended(TimeADT time, int32_t seed); */
   uint64_result = time_hash_extended(time1, 1);
-  printf("time_hash_extended(%s, 1): %lu\n", time1_out, uint64_result);
+  printf("time_hash_extended(%s, 1): %" PRIu64 "\n", time1_out, uint64_result);
 
   /* TimeADT time_in(const char *str, int32_t typmod); */
   time_result = time_in("08:00:00", -1);
@@ -294,7 +295,7 @@ int main(void)
 
   // /* uint64_t timetz_hash_extended(const TimeTzADT *timetz, uint64_t seed); */
   // uint64_result = timetz_hash_extended(timetz1, 1);
-  // printf("timetz_hash_extended(%s, 1): %lu\n", timetz1_out, uint64_result);
+  // printf("timetz_hash_extended(%s, 1): %" PRIu64 "\n", timetz1_out, uint64_result);
 
   // /* TimeTzADT *timetz_in(const char *str, int32_t typmod); */
   // timetz_result = timetz_in("2025-03-01", -1);

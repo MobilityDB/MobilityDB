@@ -36,6 +36,7 @@
  * @endcode
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -225,13 +226,13 @@ int main(void)
   /* Npoint *npoint_make(int64 rid, double pos); */
   npoint_result = npoint_make(int64_in1, float8_in1);
   char_result = npoint_out(npoint_result, 6, &size_out);
-  printf("npoint_make(%ld, %lf): %s\n", int64_in1, float8_in1, char_result);
+  printf("npoint_make(%" PRId64 ", %lf): %s\n", int64_in1, float8_in1, char_result);
   free(npoint_result); free(char_result);
 
   /* Nsegment *nsegment_make(int64 rid, double pos1, double pos2); */
   nsegment_result = nsegment_make(int64_in1, float8_in1, float8_in2);
   char_result = nsegment_out(nsegment_result, 6, &size_out);
-  printf("nsegment_make(%ld, %lf, %lf): %s\n", int64_in1, float8_in1, float8_in2, char_result);
+  printf("nsegment_make(%" PRId64 ", %lf, %lf): %s\n", int64_in1, float8_in1, float8_in2, char_result);
   free(nsegment_result); free(char_result);
 
   /* Conversion functions */
@@ -294,7 +295,7 @@ int main(void)
 
   /* uint64 npoint_hash_extended(const Npoint *np, uint64 seed); */
   uint64_result = npoint_hash_extended(npoint1, 1);
-  printf("npoint_hash_extended(%s, 1): %lu\n", npoint1_out, uint64_result);
+  printf("npoint_hash_extended(%s, 1): %" PRIu64 "\n", npoint1_out, uint64_result);
 
   /* double npoint_position(const Npoint *np); */
   float8_result = npoint_position(npoint1);
@@ -302,7 +303,7 @@ int main(void)
 
   /* int64 npoint_route(const Npoint *np); */
   int64_result = npoint_route(npoint1);
-  printf("npoint_route(%s): %ld\n", npoint1_out, int64_result);
+  printf("npoint_route(%s): %" PRId64 "\n", npoint1_out, int64_result);
 
   /* double nsegment_end_position(const Nsegment *ns); */
   float8_result = nsegment_end_position(nsegment1);
@@ -310,7 +311,7 @@ int main(void)
 
   /* int64 nsegment_route(const Nsegment *ns); */
   int64_result = nsegment_route(nsegment1);
-  printf("nsegment_route(%s): %ld\n", nsegment1_out, int64_result);
+  printf("nsegment_route(%s): %" PRId64 "\n", nsegment1_out, int64_result);
 
   /* double nsegment_start_position(const Nsegment *ns); */
   float8_result = nsegment_start_position(nsegment1);
@@ -321,17 +322,17 @@ int main(void)
 
   /* bool route_exists(int64 rid); */
   bool_result = route_exists(int64_in1);
-  printf("route_exists(%lu): %c\n", int64_in1, bool_result ? 't' : 'n');
+  printf("route_exists(%" PRId64 "): %c\n", int64_in1, bool_result ? 't' : 'n');
 
   /* const GSERIALIZED *route_geom(int64 rid); */
   const GSERIALIZED *route = route_geom(int64_in1);
   char_result = geo_as_text(route, 6, &size_out);
-  printf("route_geom(%lu): %s\n", int64_in1, char_result);
+  printf("route_geom(%" PRId64 "): %s\n", int64_in1, char_result);
   free(char_result);
 
   /* double route_length(int64 rid); */
   float8_result = route_length(int64_in1);
-  printf("route_length(%lu): %lf\n", int64_in1, float8_result);
+  printf("route_length(%" PRId64 "): %lf\n", int64_in1, float8_result);
 
   /* Transformation functions */
   printf("****************************************************************\n");
@@ -664,7 +665,7 @@ int main(void)
 
   /* int64 tnpoint_route(const Temporal *temp); */
   int64_result = tnpoint_route(tnpoint1);
-  printf("tnpoint_route(%s): %lu\n", tnpoint1_out, int64_result);
+  printf("tnpoint_route(%s): %" PRId64 "\n", tnpoint1_out, int64_result);
 
   /* Set *tnpoint_routes(const Temporal *temp); */
   bigintset_result = tnpoint_routes(tnpoint1);
@@ -941,7 +942,7 @@ int main(void)
 
   /* bool contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid); */
   bool_result = contains_rid_tnpoint_bigint(tnpoint1, int64_in1);
-  printf("contains_rid_tnpoint_bigint(%s, %ld): %c\n", tnpoint1_out, int64_in1, bool_result ? 't' : 'f');
+  printf("contains_rid_tnpoint_bigint(%s, %" PRId64 "): %c\n", tnpoint1_out, int64_in1, bool_result ? 't' : 'f');
   if (bool_result != true)
     route_errors++;
 
@@ -965,7 +966,7 @@ int main(void)
 
   /* bool contained_rid_bigint_tnpoint(int64 rid, const Temporal *temp); */
   bool_result = contained_rid_bigint_tnpoint(int64_in1, tnpoint1);
-  printf("contained_rid_bigint_tnpoint(%ld, %s): %c\n", int64_in1, tnpoint1_out, bool_result ? 't' : 'f');
+  printf("contained_rid_bigint_tnpoint(%" PRId64 ", %s): %c\n", int64_in1, tnpoint1_out, bool_result ? 't' : 'f');
   if (bool_result != true)
     route_errors++;
 
@@ -995,7 +996,7 @@ int main(void)
 
   /* bool same_rid_bigint_tnpoint(int64 rid, const Temporal *temp); */
   bool_result = same_rid_bigint_tnpoint(int64_in1, tnpoint1);
-  printf("same_rid_bigint_tnpoint(%ld, %s): %c\n", int64_in1, tnpoint1_out, bool_result ? 't' : 'f');
+  printf("same_rid_bigint_tnpoint(%" PRId64 ", %s): %c\n", int64_in1, tnpoint1_out, bool_result ? 't' : 'f');
   if (bool_result != true)
     route_errors++;
 
@@ -1013,7 +1014,7 @@ int main(void)
 
   /* bool same_rid_tnpoint_bigint(const Temporal *temp, int64 rid); */
   bool_result = same_rid_tnpoint_bigint(tnpoint1, int64_in1);
-  printf("same_rid_tnpoint_bigint(%s, %ld): %c\n", tnpoint1_out, int64_in1, bool_result ? 't' : 'f');
+  printf("same_rid_tnpoint_bigint(%s, %" PRId64 "): %c\n", tnpoint1_out, int64_in1, bool_result ? 't' : 'f');
   if (bool_result != true)
     route_errors++;
 

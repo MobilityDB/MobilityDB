@@ -1083,6 +1083,131 @@ cross_product_sign_exact(double ax, double ay, double bx, double by,
 }
 
 /**
+ * @brief Return the sign of the cross product of the vectors B - A and D - C
+ * where each x difference carries an exact offset
+ * @details The sign of `(bx - ax + oab) * (dy - cy) - (by - ay) *
+ * (dx - cx + ocd)`. A cell of a grid read across the antimeridian holds
+ * vertices whose longitude is shifted by a multiple of 360 degrees, and that
+ * shift is not exact in doubles: 21.599649137590685 + 360 rounds, and two
+ * cells then no longer state a vertex they share with the same number. Each
+ * shifted difference is an exact sum of doubles instead, read through
+ * #polynomial_sign_exact, whose filter in doubles decides first. Without an
+ * offset the sign is #cross_product_sign's
+ * @param[in] ax,ay,bx,by,cx,cy,dx,dy Coordinates
+ * @param[in] oab,ocd Offsets of `bx - ax` and of `dx - cx`, exact doubles such
+ * as a multiple of 360
+ * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int
+cross_product_sign_offset(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy, double oab, double ocd)
+{
+  if (oab == 0.0 && ocd == 0.0)
+    return cross_product_sign(ax, ay, bx, by, cx, cy, dx, dy);
+  ExactSum sums[4];
+  const double t0[3] = {bx, - ax, oab}, t1[2] = {dy, - cy};
+  const double t2[2] = {by, - ay}, t3[3] = {dx, - cx, ocd};
+  exact_sum_set(&sums[0], t0, 3);
+  exact_sum_set(&sums[1], t1, 2);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  PolyTerm terms[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 1}},
+    {.coef = -1.0, .deg = 2, .sum = {2, 3}}};
+  return polynomial_sign_exact(sums, terms, 2);
+}
+
+/**
+ * @brief Return the sign of `x + o - p`, exactly, for doubles x and p and an
+ * exact offset o
+ */
+static int
+offset_x_cmp(double x, double o, double p)
+{
+  if (o == 0.0)
+    return (x > p) - (x < p);
+  ExactSum sum;
+  const double t[3] = {x, o, - p};
+  exact_sum_set(&sum, t, 3);
+  PolyTerm term = {.coef = 1.0, .deg = 1, .sum = {0}};
+  return polynomial_sign_exact(&sum, &term, 1);
+}
+
+/**
+ * @brief Read one edge of a ring for the location of a point by a ray cast to
+ * the right at the point's height
+ * @details The edge runs from A to B, their x coordinates shifted by exact
+ * offsets. The ray crosses the edge by the half-open rule, and the side of
+ * the edge the point lies on is #cross_product_sign_offset, so no shifted
+ * coordinate is rounded. The one step of #point_in_rings_exact and of
+ * #point_in_ring_offset_exact
+ * @param[in] ax,ay,oa A and the offset of its x coordinate
+ * @param[in] bx,by,ob B and the offset of its x coordinate
+ * @param[in] px,py The point
+ * @param[in,out] inside Parity of the crossings of the edges read before
+ * @return True if the point lies on the edge
+ */
+static bool
+ring_edge_ray_step(double ax, double ay, double oa, double bx, double by,
+  double ob, double px, double py, bool *inside)
+{
+  bool up = ay <= py && py < by;
+  bool down = by <= py && py < ay;
+  if (! up && ! down)
+  {
+    /* An edge the ray does not cross carries the point at its start or,
+     * lying at the point's height, between its two ends */
+    if (ay == py && offset_x_cmp(ax, oa, px) == 0)
+      return true;
+    if (ay == py && by == py)
+    {
+      int sa = offset_x_cmp(ax, oa, px), sb = offset_x_cmp(bx, ob, px);
+      if (sa * sb <= 0)
+        return true;
+    }
+    return false;
+  }
+  int side = cross_product_sign_offset(ax, ay, bx, by, ax, ay, px, py,
+    ob - oa, - oa);
+  if (side == 0)
+    return true;
+  if ((up && side > 0) || (down && side < 0))
+    *inside = ! *inside;
+  return false;
+}
+
+/**
+ * @brief Return 1 if a point lies in the interior of a ring whose x
+ * coordinates carry exact offsets, 0 if it lies outside, and -1 if it lies
+ * on the ring
+ * @details The ring has `n` vertices and the edges from each to the next, the
+ * last closing on the first; vertex i lies at `(x[i] + xoff[i], y[i])`. A
+ * ring of a grid cell read across the antimeridian carries offsets that are
+ * multiples of 360, which are not rounded into the coordinates. Each edge is
+ * read by #ring_edge_ray_step, as #point_in_rings_exact reads the rings of a
+ * geometry
+ * @param[in] x,y,xoff Coordinates of the vertices and the offsets of their x
+ * @param[in] n Number of vertices
+ * @param[in] px,py The point
+ */
+int
+point_in_ring_offset_exact(const double *x, const double *y,
+  const double *xoff, int n, double px, double py)
+{
+  bool inside = false;
+  for (int i = 0; i < n; i++)
+  {
+    int j = (i + 1 == n) ? 0 : i + 1;
+    if (ring_edge_ray_step(x[i], y[i], xoff[i], x[j], y[j], xoff[j], px, py,
+        &inside))
+      return -1;
+  }
+  return inside ? 1 : 0;
+}
+
+/**
  * @brief Return the cross product of the vectors B - A and D - C, computed
  * exactly and rounded once
  * @details The cross product of rounded differences carries an error of the
@@ -25041,7 +25166,8 @@ ring_orientation_sign(const POINTARRAY *pa)
  * rings bound, 0 if it lies outside it, and -1 if it lies on one of the rings
  * @details A ray cast to the right at the vertex's own height crosses an edge
  * by the half-open rule, and the side of the edge the vertex lies on is the
- * sign #cross_product_sign reads exactly, so the answer holds at every scale
+ * sign #cross_product_sign reads exactly, so the answer holds at every scale;
+ * each edge is read by #ring_edge_ray_step with no offset
  */
 static int
 point_in_rings_exact(const POINT2D *pt, POINTARRAY * const *rings,
@@ -25055,24 +25181,9 @@ point_in_rings_exact(const POINT2D *pt, POINTARRAY * const *rings,
     {
       const POINT2D *a = getPoint2d_cp(pa, i);
       const POINT2D *b = getPoint2d_cp(pa, i + 1);
-      bool up = a->y <= pt->y && pt->y < b->y;
-      bool down = b->y <= pt->y && pt->y < a->y;
-      if (! up && ! down)
-      {
-        /* An edge the ray does not cross carries the vertex at its start or,
-         * lying at the vertex's height, between its two ends */
-        if ((a->x == pt->x && a->y == pt->y) ||
-            (a->y == pt->y && b->y == pt->y && Min(a->x, b->x) <= pt->x &&
-              pt->x <= Max(a->x, b->x)))
-          return -1;
-        continue;
-      }
-      int side = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y,
-        pt->x, pt->y);
-      if (side == 0)
+      if (ring_edge_ray_step(a->x, a->y, 0.0, b->x, b->y, 0.0, pt->x, pt->y,
+          &inside))
         return -1;
-      if ((up && side > 0) || (down && side < 0))
-        inside = ! inside;
     }
   }
   return inside ? 1 : 0;

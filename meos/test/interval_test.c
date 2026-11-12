@@ -38,6 +38,7 @@
  */
 
 #include <stdbool.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -126,7 +127,7 @@ int main(void)
 
   /* uint64_t interval_hash_extended(const Interval *interv, uint64_t seed); */
   uint64_result = interval_hash_extended(interv_in1, 1);
-  printf("interval_hash_extended(%s): %lu\n", interv_out1, uint64_result);
+  printf("interval_hash_extended(%s): %" PRIu64 "\n", interv_out1, uint64_result);
 
   /* Interval *interval_in(const char *str, int32_t typmod); */
   interv_result = interval_in("3 hours", -1);

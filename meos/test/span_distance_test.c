@@ -35,7 +35,7 @@
  * @details Over a grid of spans, boxes and temporal numbers on either side of
  * each other, each answer of #nad_intspan_tbox, #nad_bigintspan_tbox and
  * #nad_floatspan_tbox is the distance of the box of the span to the box
- * (#nad_tboxint_tboxint, ...), and each answer of #nad_tint_intspan,
+ * (#nad_tbox_tbox), and each answer of #nad_tint_intspan,
  * #nad_tbigint_bigintspan and #nad_tfloat_floatspan the distance of the
  * temporal number to the box of the span (#nad_tint_tbox, ...).
  * The program can be build as follows
@@ -45,10 +45,20 @@
  */
 
 #include <assert.h>
+#include <float.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
+
+/* A typed distance read as #nad_tbox_tbox answers it: in doubles, with DBL_MAX
+ * where the operands share no time */
+static double
+as_box_distance(double d, double sentinel)
+{
+  return d == sentinel ? DBL_MAX : d;
+}
 
 /* Main program */
 int main(void)
@@ -116,11 +126,12 @@ int main(void)
           TBox *xi = span_to_tbox(si), *xb = span_to_tbox(sb),
             *xf = span_to_tbox(sf);
 
-          int e1 = nad_tboxint_tboxint(xi, bi), a1 = nad_intspan_tbox(si, bi);
-          int64 e2 = nad_tboxbigint_tboxbigint(xb, bb),
-            a2 = nad_bigintspan_tbox(sb, bb);
-          double e3 = nad_tboxfloat_tboxfloat(xf, bf),
-            a3 = nad_floatspan_tbox(sf, bf);
+          double e1 = nad_tbox_tbox(xi, bi),
+            a1 = as_box_distance(nad_intspan_tbox(si, bi), INT_MAX);
+          double e2 = nad_tbox_tbox(xb, bb),
+            a2 = as_box_distance((double) nad_bigintspan_tbox(sb, bb),
+              (double) INT64_MAX);
+          double e3 = nad_tbox_tbox(xf, bf), a3 = nad_floatspan_tbox(sf, bf);
           int e4 = nad_tint_tbox(ti, xi), a4 = nad_tint_intspan(ti, si);
           int64 e5 = nad_tbigint_tbox(tb, xb),
             a5 = nad_tbigint_bigintspan(tb, sb);
@@ -129,8 +140,8 @@ int main(void)
               a6 != e6)
           {
             if (bad < 5)
-              printf("%s %s %s: %d/%d %ld/%ld %g/%g %d/%d %ld/%ld %g/%g\n",
-                buf, sbuf, bi_in, a1, e1, (long) a2, (long) e2, a3, e3, a4, e4,
+              printf("%s %s %s: %g/%g %g/%g %g/%g %d/%d %ld/%ld %g/%g\n",
+                buf, sbuf, bi_in, a1, e1, a2, e2, a3, e3, a4, e4,
                 (long) a5, (long) e5, a6, e6);
             bad++;
           }

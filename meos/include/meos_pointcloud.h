@@ -49,6 +49,14 @@
 #include <meos.h>
 #include <meos_geo.h>   /* GSERIALIZED — needed by tpcpoint × geometry bridge */
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 /*****************************************************************************
  * Type definitions
  *
@@ -785,5 +793,9 @@ extern bool eintersects_tpcpoint_geo(const Temporal *temp,
 extern double nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 /*****************************************************************************/
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif /* __MEOS_POINTCLOUD_H__ */

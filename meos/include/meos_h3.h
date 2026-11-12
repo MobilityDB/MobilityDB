@@ -137,6 +137,14 @@
  * installed header carries inline */
 #include "h3_ext_defs.in.h"
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 extern H3Index h3index_from_wkb(const uint8_t *wkb, size_t size);
 extern H3Index h3index_from_hexwkb(const char *hexwkb);
 extern uint8_t *h3index_as_wkb(H3Index cell, uint8_t variant, size_t *size_out);
@@ -358,5 +366,9 @@ extern Temporal *th3index_local_ij_to_cell(const Temporal *origin,
 extern Temporal *th3index_edge_length(const Temporal *temp);
 extern Temporal *tgeogpoint_great_circle_distance(const Temporal *a,
   const Temporal *b);
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif /* __MEOS_H3_H__ */
