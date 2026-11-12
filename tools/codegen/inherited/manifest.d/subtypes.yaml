@@ -155,7 +155,7 @@ subtypes:
     distwith: [geometry]
     base:  npoint
     brief: "temporal network points"
-    overlaps: box
+    overlaps: true
     bin:   300
     category: tspatial
     # npoint's scalar base::stbox conversions are npoint-specific (Npoint_to_stbox

@@ -1181,14 +1181,21 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-04)' &amp;= N
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tnpoint {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tnpoint → boolean
+tnpoint {?&amp;&amp;, %&amp;&amp;} tnpoint → boolean
 </programlisting>
-				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a network point lies in a box when its geometric position does.</para>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a network point lies in a box when its geometric position does. Two values overlap where they are at one place of the map at a time they share: on one route at one fraction, or where their routes cross or meet, which is the spatial equality of their positions, as <varname>ST_Equals</varname> compares two geometries, where <varname>?=</varname> compares the route and the fraction. The position at a fraction of a route is a point computed in doubles, so two positions are one place when they are within the rounding of their coordinates, and a network point cast onto a crossing is at one place with the point of the other route cast onto it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]' ?&amp;&amp;
   stbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]');
 -- true
 SELECT stbox 'STBOX T([2001-01-05, 2001-01-06])' ?&amp;&amp;
   tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]';
+-- false
+SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.8)@2001-01-03]' ?&amp;&amp;
+  tnpoint '[Npoint(1, 0.8)@2001-01-01, Npoint(1, 0.2)@2001-01-03]';
+-- true
+SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]' ?&amp;&amp;
+  tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.7)@2001-01-03]';
 -- false
 </programlisting>
 			</listitem>
