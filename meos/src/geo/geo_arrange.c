@@ -6558,32 +6558,14 @@ cert_delta(double x, double y)
 }
 
 /* Whether the written arc through a, m and b is minor, its angle at m
- * obtuse, (a - m).(b - m) < 0: the two products filtered as
- * #cross_product_sign filters its two, decided exactly where the filter
- * cannot tell */
+ * obtuse, (a - m).(b - m) < 0: the cross product of (a - m) and the
+ * quarter turn of (b - m), which #cross_product_sign reads exactly for
+ * every finite double */
 static bool
 cert_arc_minor(const ArrangePiece *w)
 {
-  double l1 = w->x1 - w->mx, l2 = w->x2 - w->mx;
-  double r1 = w->y1 - w->my, r2 = w->y2 - w->my;
-  double left = l1 * l2, right = r1 * r2;
-  double mag = fabs(left) + fabs(right);
-  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON * mag;
-  if (mag >= 0x1p-969)
-  {
-    double dot = left + right;
-    if (dot < - bound)
-      return true;
-    if (dot > bound)
-      return false;
-  }
-  double t[4][2] = {{w->x1, -w->mx}, {w->x2, -w->mx}, {w->y1, -w->my},
-    {w->y2, -w->my}};
-  ExactSum sm[4];
-  for (int k = 0; k < 4; k++)
-    exact_sum_set(&sm[k], t[k], 2);
-  PolyTerm f[2] = {{1.0, 2, {0, 1}}, {1.0, 2, {2, 3}}};
-  return polynomial_sign_exact(sm, f, 2) < 0;
+  return cross_product_sign(w->mx, w->my, w->x1, w->y1, w->y2, w->mx,
+    w->my, w->x2) < 0;
 }
 
 /* The bound H of the written form of an arc piece against its exact
