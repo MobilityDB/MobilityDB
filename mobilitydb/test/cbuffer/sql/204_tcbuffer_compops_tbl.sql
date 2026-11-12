@@ -52,3 +52,14 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.k <= 30 AND t2.k 
 AND t1.temp %&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.k <= 30 AND t2.k <= 30
 AND t1.temp && expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
+
+-- Two values ever overlap only where their boxes overlap, and where they
+-- always overlap they ever do
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp ?&& t2.temp AND NOT t1.temp && t2.temp;
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp %&& t2.temp AND NOT t1.temp ?&& t2.temp;
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp ?&& t2.temp;
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp %&& t2.temp;

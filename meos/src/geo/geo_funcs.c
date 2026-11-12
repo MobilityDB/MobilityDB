@@ -31057,4 +31057,181 @@ geo_scale_pow2(const GSERIALIZED *gs, double scale)
   return NULL;
 }
 
+/*****************************************************************************
+ * Signs of sums of doubles and of functions linear over a segment
+ *****************************************************************************/
+
+/** Number of doubles a sum of #sums_nonpositive_exact may add */
+#define LINEAR_SUM_MAX_TERMS 8
+/** Number of functions #linear_sums_nonpositive_meet_exact may read */
+#define LINEAR_SUM_MAX_FUNCS 8
+
+/**
+ * @brief Set the sum of @p k doubles as a double and a bound on the error of
+ * its rounding, infinite where a partial sum leaves the doubles
+ */
+static void
+sum_filter(const double *t, int k, double *sum, double *err)
+{
+  double s = 0.0, mag = 0.0;
+  for (int i = 0; i < k; i++)
+  {
+    s += t[i];
+    mag += fabs(t[i]);
+  }
+  *sum = s;
+  /* Recursive summation of k terms errs by at most (k - 1) u times the sum of
+   * their magnitudes, u = DBL_EPSILON / 2, a bound k DBL_EPSILON covers with
+   * the rounding of the magnitudes themselves */
+  *err = isfinite(mag) ? (double) k * DBL_EPSILON * mag : INFINITY;
+  return;
+}
+
+/**
+ * @brief Set a #WideDyadic to the sum of @p k doubles, exactly
+ */
+static void
+wide_dyadic_sum(const double *t, int k, WideDyadic *r)
+{
+  WideDyadic acc, term, next;
+  wide_dyadic_set_double(&acc, 0.0);
+  for (int i = 0; i < k; i++)
+  {
+    wide_dyadic_set_double(&term, t[i]);
+    wide_dyadic_add(&acc, &term, &next);
+    acc = next;
+  }
+  *r = acc;
+  return;
+}
+
+/**
+ * @brief Return the sign of the sum of @p k doubles, decided exactly
+ * @details The sum in doubles decides where it exceeds the bound on its
+ * rounding (#sum_filter), and otherwise the sum is read on #WideDyadic
+ */
+static int
+sum_sign_exact(const double *t, int k)
+{
+  double sum, err;
+  sum_filter(t, k, &sum, &err);
+  if (fabs(sum) > err)
+    return (sum > 0.0) ? 1 : -1;
+  WideDyadic w;
+  wide_dyadic_sum(t, k, &w);
+  return w.sign;
+}
+
+/**
+ * @brief Return true if each of @p n sums of @p k doubles is at most zero,
+ * decided exactly
+ * @param[in] t Terms, the @p k terms of sum i from position i k
+ * @param[in] n Number of sums
+ * @param[in] k Number of terms of each sum, at most 8
+ */
+bool
+sums_nonpositive_exact(const double *t, int n, int k)
+{
+  assert(t); assert(n > 0); assert(k > 0 && k <= LINEAR_SUM_MAX_TERMS);
+  for (int i = 0; i < n; i++)
+    if (sum_sign_exact(t + i * k, k) > 0)
+      return false;
+  return true;
+}
+
+/**
+ * @brief Return the sign of `p1 e2 - p2 e1` for four sums of @p k doubles,
+ * decided exactly
+ * @details The products in doubles decide where their difference exceeds the
+ * bound on its error: the error of each sum (#sum_filter) carried through the
+ * two products, plus the rounding of the products and of their difference.
+ * Otherwise, and wherever the doubles may underflow or overflow, the four
+ * sums are read on #WideDyadic and compared by #wide_dyadic_product_cmp
+ */
+static int
+sum_products_sign_exact(const double *p1, const double *e1, const double *p2,
+  const double *e2, int k)
+{
+  double vp1, dp1, ve1, de1, vp2, dp2, ve2, de2;
+  sum_filter(p1, k, &vp1, &dp1);
+  sum_filter(e1, k, &ve1, &de1);
+  sum_filter(p2, k, &vp2, &dp2);
+  sum_filter(e2, k, &ve2, &de2);
+  double a = vp1 * ve2, b = vp2 * ve1, det = a - b;
+  double err = fabs(vp1) * de2 + fabs(ve2) * dp1 + dp1 * de2 +
+    fabs(vp2) * de1 + fabs(ve1) * dp2 + dp2 * de1 +
+    2.0 * DBL_EPSILON * (fabs(a) + fabs(b));
+  /* Below 2^-900 a product may have lost bits to the subnormal range, which
+   * the relative bound above does not cover */
+  if (isfinite(err) && fabs(det) > err * (1.0 + 4.0 * DBL_EPSILON) &&
+      fabs(det) > 0x1p-900)
+    return (det > 0.0) ? 1 : -1;
+  WideDyadic wp1, we1, wp2, we2;
+  wide_dyadic_sum(p1, k, &wp1);
+  wide_dyadic_sum(e1, k, &we1);
+  wide_dyadic_sum(p2, k, &wp2);
+  wide_dyadic_sum(e2, k, &we2);
+  return wide_dyadic_product_cmp(&wp1, &we2, &wp2, &we1);
+}
+
+/**
+ * @brief Return true if @p n functions linear over a segment are all at most
+ * zero at a common point of its interior, decided exactly
+ * @details Function i is linear in the fraction f of the segment, its value
+ * at f = 0 the sum of the @p k doubles of @p start from position i k and at
+ * f = 1 the sum of those of @p end. Each function is at most zero over an
+ * interval of the open segment, and intervals of a line meet together where
+ * each two of them meet (Helly's theorem on the line). A function at most zero
+ * at both ends is so over the whole segment. One that is at most zero at no
+ * point of the interior, as one positive at an end and zero at the other,
+ * meets no other. An increasing function negative at the start is at most
+ * zero up to its root f_i = p_i / (p_i - e_i), and a decreasing one negative
+ * at the end from its root f_j on, so the two meet where f_j <= f_i, that is
+ * where `p_i e_j - p_j e_i >= 0` (#sum_products_sign_exact). Two increasing
+ * or two decreasing functions meet near the end at which both are negative.
+ * No root is constructed: every sign is read on the doubles of the sums
+ * @param[in] start,end Terms of the values at the two ends of the segment
+ * @param[in] n Number of functions, at most 8
+ * @param[in] k Number of terms of each value, at most 8
+ */
+bool
+linear_sums_nonpositive_meet_exact(const double *start, const double *end,
+  int n, int k)
+{
+  assert(start); assert(end); assert(n > 0 && n <= LINEAR_SUM_MAX_FUNCS);
+  assert(k > 0 && k <= LINEAR_SUM_MAX_TERMS);
+  /* -1 for a function at most zero only from the start up to its root, 1
+   * for one at most zero only from its root to the end, 0 for one at most
+   * zero over the whole segment */
+  int kind[LINEAR_SUM_MAX_FUNCS];
+  for (int i = 0; i < n; i++)
+  {
+    int sp = sum_sign_exact(start + i * k, k);
+    int se = sum_sign_exact(end + i * k, k);
+    if (sp <= 0 && se <= 0)
+      kind[i] = 0;
+    else if (sp < 0)
+      kind[i] = -1;
+    else if (se < 0)
+      kind[i] = 1;
+    else
+      /* Positive at one end and not negative at the other */
+      return false;
+  }
+  for (int i = 0; i < n; i++)
+  {
+    if (kind[i] != -1)
+      continue;
+    for (int j = 0; j < n; j++)
+    {
+      if (kind[j] != 1)
+        continue;
+      if (sum_products_sign_exact(start + i * k, end + i * k,
+          start + j * k, end + j * k, k) < 0)
+        return false;
+    }
+  }
+  return true;
+}
+
 /*****************************************************************************/
