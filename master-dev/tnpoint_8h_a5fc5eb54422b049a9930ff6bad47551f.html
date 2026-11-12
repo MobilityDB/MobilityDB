@@ -112,6 +112,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_ac3b096d6102985eb5de0a897db8c4f0a.html#ac3b096d6102985eb5de0a897db8c4f0a">PG_RETURN_NPOINT_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a294bdc370095b6f9fadfd13011954c56.html#a294bdc370095b6f9fadfd13011954c56">PG_RETURN_NSEGMENT_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a3c557d8267086cb9c7f93a0794f97f92.html#a3c557d8267086cb9c7f93a0794f97f92">route_nearest_update</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_aa151531097c065034fe76652a298020f.html#aa151531097c065034fe76652a298020f">route_point_at</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f">route_vertex_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">tgeompointinst_tnpointinst</a></td></tr>
@@ -165,7 +166,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the positions of the interior vertices of a route. </p>
-<p >The position of a vertex is its distance along the route over the length of the route, the measure with which <code>lwline_interpolate_points</code> locates a position. Both <a class="el" href="meos_2src_2npoint_2tnpoint_8c_afcf686686d1ad88a2d9ecbf6e1e84898.html#afcf686686d1ad88a2d9ecbf6e1e84898" title="Convert a temporal network point into a temporal geometry point.">tnpointseq_tgeompointseq_cont</a> and <a class="el" href="tnpoint__boxops_8c_ab04908d89ef34f992d89608fd1e1f23f.html#ab04908d89ef34f992d89608fd1e1f23f" title="Return in the last argument q spatiotemporal box constructed from an array of temporal network point ...">tnpointinstarr_linear_set_stbox</a> read the vertices a linear segment passes from these positions </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The position of a vertex is its distance along the route over the length of the route, the measure with which <code>lwline_interpolate_points</code> locates a position. <a class="el" href="meos_2src_2npoint_2tnpoint_8c_afcf686686d1ad88a2d9ecbf6e1e84898.html#afcf686686d1ad88a2d9ecbf6e1e84898" title="Convert a temporal network point into a temporal geometry point.">tnpointseq_tgeompointseq_cont</a> reads the vertices a linear segment passes from these positions, and the box of a linear temporal network point computes the same positions as it walks the route </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Points of the route </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of positions </td></tr>
