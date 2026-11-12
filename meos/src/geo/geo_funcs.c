@@ -24846,6 +24846,21 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
     }
   }
 
+  /* An interval narrower than the band above is not classified, so the
+   * stretch between an end of the edge and a meeting near it is not read
+   * there. The start of an edge that was not cut is an input vertex, the end
+   * of the edge before it on its ring, located against the other area
+   * exactly (#relate_point_in_area_index), and the exterior is open: a start
+   * standing in it carries a stretch of this boundary outside the other area,
+   * however near the meeting is. Read while no interval has said so */
+  if (! edge->cut && (first ? m->be : m->eb) < 1 &&
+      relate_point_in_area_index(edge->x1, edge->y1, other, true) == 2)
+  {
+    if (first)
+      m->be = 1;
+    else
+      m->eb = 1;
+  }
   if (heap)
   {
     pfree(params);
