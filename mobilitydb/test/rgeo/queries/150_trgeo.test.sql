@@ -203,6 +203,10 @@ SELECT asText(setInterp(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pos
 
 SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
 SELECT asText(round(trgeometry 'Polygon((1 1 1,2 2 1,3 1 1,1 1 1));[Pose(Point(1 1 1), 1, 0, 0, 0)@2001-01-01, Pose(Point(1 1 1), 0.96, 0, 0, 0.28)@2001-01-02]', 1), 6);
+-- The reference geometry is rounded as the poses are
+SELECT ST_AsText(geometry(round(trgeometry 'Polygon((1.123456789 1,2 2.123456789,3 1,1.123456789 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-02]', 2)));
+SELECT ST_AsText(geometry(round(trgeometry 'PolyhedralSurface Z(((0 0 0,2.123456789 0 0,2.123456789 2 0,0 0 0)),((0 0 0,2.123456789 2 0,0 0 2.123456789,0 0 0)));[Pose(Point(1 1 5), 1, 0, 0, 0)@2001-01-01, Pose(Point(2 2 5), 1, 0, 0, 0)@2001-01-02]', 2)));
+SELECT asText(round(trgeometry 'PolyhedralSurface Z(((0 0 0,2.123456789 0 0,2.123456789 2 0,0 0 0)),((0 0 0,2.123456789 2 0,0 0 2.123456789,0 0 0)));[Pose(Point(1.123456789 1 5), 1, 0, 0, 0)@2001-01-01, Pose(Point(2 2 5), 1, 0, 0, 0)@2001-01-02]', 2));
 
 -------------------------------------------------------------------------------
 -- Append functions
