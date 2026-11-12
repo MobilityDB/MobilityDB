@@ -250,7 +250,7 @@ io_matrix.py \
 MobilitySpark, MobilityFlink and MobilityKafka commit no surface: their build generates it from
 the catalog and the JMEOS jar (`GENERATION.md` of each), and JMEOS generates the classes of the
 extended families, so a root under which git tracks no file is read as the refresh chain leaves it
-(MEOS-API `tools/refresh-binding.sh`, MEOS-API `cf4d124e6f`, JMEOS `53bfa71809`). Each generated
+(MEOS-API `tools/refresh-binding.sh`, MEOS-API `cf4d124e6f`, JMEOS `a6dead1345`). Each generated
 layer of a JVM consumer is a row of its own: the typed SQL layer of Spark, its whole surface (JMEOS #233), the
 typed SQL layer and the `MeosOps*` facades of Flink, the facades of Kafka. MEOS.js generates its 152 classes into one file, `core/objects/objects.generated.ts`,
 and the tool credits a `From<Format>` reader to the type its file is named after, so the MEOS.js
@@ -260,7 +260,7 @@ names are MEOS's C names by design.
 
 | Binding | commit | Text | EWKT | Binary | EWKB | HexWKB | HexEWKB | MFJSON | C-named type support functions | Role-named readers and writers |
 |---|---|---|---|---|---|---|---|---|---|---|
-| JMEOS | `53bfa71809` | yes / 37 of 58 | yes / 29 of 32 | **no** / 0 of 59 | yes / 30 of 32 | yes / 59 of 59 | yes / 30 of 32 | yes / 20 of 20 | none | 4: `generatedtbigint.in`, `generatedtemporal.out`, `generatedtfloat.in`, `generatedtint.in` |
+| JMEOS | `a6dead1345` | yes / 37 of 58 | yes / 29 of 32 | **no** / 0 of 59 | yes / 30 of 32 | yes / 59 of 59 | yes / 30 of 32 | yes / 20 of 20 | none | none |
 | MobilitySpark SQL | `6d8858f5e0` | yes / 58 of 58 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 20 of 20 | none | none |
 | MobilityFlink SQL | `924f4dc3a2` | yes / 58 of 58 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 20 of 20 | none | none |
 | MobilityFlink facades | `924f4dc3a2` | yes / 58 of 58 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 20 of 20 | none | none |
