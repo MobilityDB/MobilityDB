@@ -2045,8 +2045,13 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
       {
         tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
           start1->temptype, start1->t, end1->t, tpt1);
-        tpvalue2 = tsegment_value_at_timestamptz(startvalue2, endvalue2,
-          start1->temptype, start1->t, end1->t, tpt1);
+        /* Two geodetic segments meeting at the crossing construct two points
+         * apart by their rounding (#tgeogpointsegm_intersection): the
+         * function reads the one point they meet at */
+        tpvalue2 = (! lfinfo->tpfn_temp && MEOS_FLAGS_GET_GEODETIC(start1->flags)) ?
+          datum_copy(tpvalue1, basetype) :
+          tsegment_value_at_timestamptz(startvalue2, endvalue2,
+            start1->temptype, start1->t, end1->t, tpt1);
         tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
         DATUM_FREE(tpvalue1, basetype); DATUM_FREE(tpvalue2, basetype);
         lower_eq = datum_eq(startresult, tpresult, resbasetype);
@@ -3249,8 +3254,14 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
         {
           Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
             start1->temptype, start1->t, end1->t, tpts[k]);
-          Datum tpvalue2 = tsegment_value_at_timestamptz(startvalue2, endvalue2,
-            start2->temptype, start2->t, end2->t, tpts[k]);
+          /* Two geodetic segments meeting at the crossing construct two
+           * points apart by their rounding (#tgeogpointsegm_intersection):
+           * the function reads the one point they meet at */
+          Datum tpvalue2 =
+            (! lfinfo->tpfn_temp && MEOS_FLAGS_GET_GEODETIC(start1->flags)) ?
+            datum_copy(tpvalue1, temptype_basetype(seq1->temptype)) :
+            tsegment_value_at_timestamptz(startvalue2, endvalue2,
+              start2->temptype, start2->t, end2->t, tpts[k]);
           res = DatumGetBool(tfunc_base_base(tpvalue1, tpvalue2, lfinfo));
           DATUM_FREE(tpvalue1, temptype_basetype(seq1->temptype));
           DATUM_FREE(tpvalue2, temptype_basetype(seq1->temptype));
