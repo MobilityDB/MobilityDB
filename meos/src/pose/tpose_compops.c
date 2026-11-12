@@ -45,6 +45,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "pose/tpose.h"
+#include "pose/tpose_spatialfuncs.h"
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -246,6 +247,149 @@ int
 always_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_ne, ALWAYS);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal pose and a spatiotemporal box
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if a temporal pose ever (or always) lies in a
+ * spatiotemporal box, 0 if not, and -1 on error, as #eaoverlaps_tgeo_stbox
+ * answers it for a temporal geo
+ * @details The value ever lies in the box when its restriction to the box by
+ * #tpose_restrict_stbox is not empty, and always lies in it when its
+ * restriction to the complement of the box is empty; a box with only the T
+ * dimension restricts the value to its period
+ * @param[in] temp Temporal pose
+ * @param[in] box Spatiotemporal box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tpose_stbox(const Temporal *temp, const STBox *box, bool ever)
+{
+  /* Ensure the validity of the arguments: a box with the X dimension shares
+   * the SRID of the value, as #tpose_restrict_stbox reads it */
+  VALIDATE_TPOSE(temp, -1); VALIDATE_NOT_NULL(box, -1);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  if (hasx && ! ensure_valid_tpose_stbox(temp, box))
+    return -1;
+
+  bool atfunc = ever ? REST_AT : REST_MINUS;
+  Temporal *res = hasx ? tpose_restrict_stbox(temp, box, true, atfunc) :
+    temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  int result = ever ? (res != NULL) : (res == NULL);
+  if (res)
+    pfree(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_comp_ever
+ * @brief Return 1 if a temporal pose ever lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] temp Temporal pose
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Ever_overlaps_tpose_stbox()
+ */
+int
+ever_overlaps_tpose_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tpose_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_pose_comp_ever
+ * @brief Return 1 if a temporal pose ever lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal pose
+ * @csqlfn #Ever_overlaps_stbox_tpose()
+ */
+int
+ever_overlaps_stbox_tpose(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tpose_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_pose_comp_ever
+ * @brief Return 1 if a temporal pose always lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] temp Temporal pose
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Always_overlaps_tpose_stbox()
+ */
+int
+always_overlaps_tpose_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tpose_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_pose_comp_ever
+ * @brief Return 1 if a temporal pose always lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal pose
+ * @csqlfn #Always_overlaps_stbox_tpose()
+ */
+int
+always_overlaps_stbox_tpose(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tpose_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @brief Return 1 if the values of two temporal poses ever (or always)
+ * have overlapping bounding boxes at an instant they share, 0 if not, and -1
+ * on error, as #eaoverlaps_tgeo_tgeo answers it for two temporal geos
+ * @details The bounding box of the value is the box of its position, so two
+ * values overlap at an instant when their positions are equal, which the
+ * ever and always equality of the temporal points of their positions answers
+ * across the instants where linear segments cross
+ * @param[in] temp1,temp2 Temporal poses
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tpose_tpose(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpose_tpose(temp1, temp2))
+    return -1;
+  Temporal *tpoint1 = tpose_to_tpoint(temp1);
+  Temporal *tpoint2 = tpose_to_tpoint(temp2);
+  int result = ever ? ever_eq_tgeo_tgeo(tpoint1, tpoint2) :
+    always_eq_tgeo_tgeo(tpoint1, tpoint2);
+  pfree(tpoint1); pfree(tpoint2);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_comp_ever
+ * @brief Return 1 if the values of two temporal poses ever have overlapping bounding boxes at an
+ * instant they share, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal poses
+ * @csqlfn #Ever_overlaps_tpose_tpose()
+ */
+int
+ever_overlaps_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
+{
+  return eaoverlaps_tpose_tpose(temp1, temp2, EVER);
+}
+
+/**
+ * @ingroup meos_pose_comp_ever
+ * @brief Return 1 if the values of two temporal poses always have overlapping bounding boxes at
+ * the instants they share, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal poses
+ * @csqlfn #Always_overlaps_tpose_tpose()
+ */
+int
+always_overlaps_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
+{
+  return eaoverlaps_tpose_tpose(temp1, temp2, ALWAYS);
 }
 
 /*****************************************************************************

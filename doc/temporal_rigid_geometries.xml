@@ -473,7 +473,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_transformations">
 		<title>Transformations</title>
 
-		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> does not yet support a polyhedral surface, and the transformation to another SRID, <varname>transform</varname> and <varname>transformPipeline</varname>, is not yet supported for a temporal rigid geometry.</para>
+		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_round">
@@ -482,6 +482,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 round(trgeometry,integer) → trgeometry
 </programlisting>
+				<para>The coordinates of the reference geometry, a polygon or a polyhedral surface, are rounded as those of the poses are.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(round( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(1.123456789 1.123456789), 0.123456)@2001-01-01', 3));
@@ -1127,6 +1128,35 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
   Pose(Point(5 0), 0.0)@2001-01-02]' ?= geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))';
 -- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Ever and always overlaps</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+trgeometry {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} trgeometry → boolean
+</programlisting>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a rigid geometry lies in a box when it intersects it, as the restriction of a temporal rigid geometry to a box reads it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- false
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' &amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- true
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+-- true
+SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' %&amp;&amp;
+  stbox 'STBOX X((0,0),(9,9))';
+-- false
 </programlisting>
 			</listitem>
 

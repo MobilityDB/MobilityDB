@@ -46,6 +46,7 @@
 #include "pose/pose.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
+#include "pg_geo/tspatial.h"
 
 /*****************************************************************************
  * Ever/always comparison functions
@@ -267,6 +268,96 @@ inline Datum
 Always_ne_tpose_tpose(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_ne_tpose_tpose);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal pose and a spatiotemporal box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Ever_overlaps_stbox_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_stbox_tpose);
+/**
+ * @ingroup mobilitydb_pose_comp_ever
+ * @brief Return true if a temporal pose ever lies in a spatiotemporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_stbox_tpose(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &ever_overlaps_stbox_tpose);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tpose_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tpose_stbox);
+/**
+ * @ingroup mobilitydb_pose_comp_ever
+ * @brief Return true if a temporal pose ever lies in a spatiotemporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tpose_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &ever_overlaps_tpose_stbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_stbox_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_stbox_tpose);
+/**
+ * @ingroup mobilitydb_pose_comp_ever
+ * @brief Return true if a temporal pose always lies in a spatiotemporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_stbox_tpose(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &always_overlaps_stbox_tpose);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tpose_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tpose_stbox);
+/**
+ * @ingroup mobilitydb_pose_comp_ever
+ * @brief Return true if a temporal pose always lies in a spatiotemporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tpose_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &always_overlaps_tpose_stbox);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tpose_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tpose_tpose);
+/**
+ * @ingroup mobilitydb_pose_comp_ever
+ * @brief Return true if the values of two temporal poses ever have overlapping
+ * bounding boxes at an instant they share
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tpose_tpose(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &ever_overlaps_tpose_tpose);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tpose_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tpose_tpose);
+/**
+ * @ingroup mobilitydb_pose_comp_ever
+ * @brief Return true if the values of two temporal poses always have overlapping
+ * bounding boxes at the instants they share
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tpose_tpose(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &always_overlaps_tpose_tpose);
 }
 
 /*****************************************************************************

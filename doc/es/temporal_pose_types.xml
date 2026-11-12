@@ -1840,6 +1840,37 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tpose_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Superposición alguna vez y siempre</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{stbox,tpose} {?&amp;&amp;, %&amp;&amp;} {stbox,tpose} → boolean
+</programlisting>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; el cuadro delimitador de una pose es su posición, de modo que dos poses temporales se superponen en un instante en que sus posiciones son iguales, cualesquiera sean sus orientaciones.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- false
+SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' &amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- true
+SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+-- true
+SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
+  Pose(Point(10 10), 0)@2001-01-01 10:00]' %&amp;&amp;
+  stbox 'STBOX X((0,0),(9,9))';
+-- false
+SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' ?&amp;&amp;
+  tpose '[Pose(Point(1 1), 0.6)@2001-01-01, Pose(Point(1 1), 0.8)@2001-01-03]';
+-- true
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tpose_tcomp">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Comparaciones temporales</para>

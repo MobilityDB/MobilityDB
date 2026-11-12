@@ -329,12 +329,16 @@ extern int always_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *te
 extern int always_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp);
 extern int always_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern int always_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
+extern int always_overlaps_stbox_tcbuffer(const STBox *box, const Temporal *temp);
+extern int always_overlaps_tcbuffer_stbox(const Temporal *temp, const STBox *box);
 extern int ever_eq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp);
 extern int ever_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern int ever_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern int ever_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp);
 extern int ever_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern int ever_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
+extern int ever_overlaps_stbox_tcbuffer(const STBox *box, const Temporal *temp);
+extern int ever_overlaps_tcbuffer_stbox(const Temporal *temp, const STBox *box);
 
 /* Temporal comparison functions */
 

@@ -838,6 +838,45 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* A value in step interpolation reads back from what each writer writes,
+   * the interpolation, and the SRID before it, preceding the reference
+   * geometry as the parser reads them; the values are compared, not their
+   * text, whose timestamps the session time zone writes */
+  {
+    static const char *step_in[] = {
+      "Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));"
+        "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0.5)@2001-01-02]",
+      "SRID=3812,Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));"
+        "{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0.5)@2001-01-02], "
+        "[Pose(Point(3 0),1)@2001-01-03, Pose(Point(4 0),1.5)@2001-01-04]}",
+    };
+    for (int i = 0; i < 2; i++)
+    {
+      Temporal *t = trgeometry_in(step_in[i]);
+      char *written[3];
+      written[0] = t ? trgeometry_out(t, &size_out) : NULL;
+      written[1] = t ? trgeometry_as_ewkt(t, 15, &size_out) : NULL;
+      /* The text writes no SRID, so it reads back the value without one */
+      written[2] = (t && i == 0) ? trgeometry_as_text(t, 15, &size_out) : NULL;
+      for (int k = 0; k < 3; k++)
+      {
+        if (k == 2 && i != 0)
+          continue;
+        meos_errno_reset();
+        Temporal *u = written[k] ? trgeometry_in(written[k]) : NULL;
+        if (! u || ! temporal_eq(t, u))
+        {
+          printf("FAILED: a value in step interpolation does not read back "
+            "from %s\n", written[k] ? written[k] : "NULL");
+          result = 1;
+        }
+        free(u); free(written[k]);
+      }
+      free(t);
+    }
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 

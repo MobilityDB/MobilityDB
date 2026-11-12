@@ -349,12 +349,16 @@ extern int always_eq_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp
 extern int always_ne_npoint_tnpoint(const Npoint *np, const Temporal *temp);
 extern int always_ne_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern int always_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
+extern int always_overlaps_stbox_tnpoint(const STBox *box, const Temporal *temp);
+extern int always_overlaps_tnpoint_stbox(const Temporal *temp, const STBox *box);
 extern int ever_eq_npoint_tnpoint(const Npoint *np, const Temporal *temp);
 extern int ever_eq_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern int ever_eq_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
 extern int ever_ne_npoint_tnpoint(const Npoint *np, const Temporal *temp);
 extern int ever_ne_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern int ever_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
+extern int ever_overlaps_stbox_tnpoint(const STBox *box, const Temporal *temp);
+extern int ever_overlaps_tnpoint_stbox(const Temporal *temp, const STBox *box);
 
 /* Temporal comparisons */
 

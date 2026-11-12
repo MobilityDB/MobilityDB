@@ -41,6 +41,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer.h"
+#include "cbuffer/tcbuffer_spatialfuncs.h"
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -244,6 +245,97 @@ int
 always_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tcbuffer_tcbuffer(temp1, temp2, &datum2_ne, ALWAYS);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal circular buffer and a spatiotemporal box
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if a temporal circular buffer ever (or always) lies in a
+ * spatiotemporal box, 0 if not, and -1 on error, as #eaoverlaps_tgeo_stbox
+ * answers it for a temporal geo
+ * @details The value ever lies in the box when its restriction to the box by
+ * #tcbuffer_restrict_stbox is not empty, and always lies in it when its
+ * restriction to the complement of the box is empty; a box with only the T
+ * dimension restricts the value to its period
+ * @param[in] temp Temporal circular buffer
+ * @param[in] box Spatiotemporal box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tcbuffer_stbox(const Temporal *temp, const STBox *box, bool ever)
+{
+  /* Ensure the validity of the arguments: a box with the X dimension shares
+   * the SRID of the value, as #tcbuffer_restrict_stbox reads it */
+  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(box, -1);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  if (hasx && ! ensure_valid_tcbuffer_stbox(temp, box))
+    return -1;
+
+  bool atfunc = ever ? REST_AT : REST_MINUS;
+  Temporal *res = hasx ? tcbuffer_restrict_stbox(temp, box, true, atfunc) :
+    temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  int result = ever ? (res != NULL) : (res == NULL);
+  if (res)
+    pfree(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_cbuffer_comp_ever
+ * @brief Return 1 if a temporal circular buffer ever lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] temp Temporal circular buffer
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Ever_overlaps_tcbuffer_stbox()
+ */
+int
+ever_overlaps_tcbuffer_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tcbuffer_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_cbuffer_comp_ever
+ * @brief Return 1 if a temporal circular buffer ever lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Ever_overlaps_stbox_tcbuffer()
+ */
+int
+ever_overlaps_stbox_tcbuffer(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tcbuffer_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_cbuffer_comp_ever
+ * @brief Return 1 if a temporal circular buffer always lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] temp Temporal circular buffer
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Always_overlaps_tcbuffer_stbox()
+ */
+int
+always_overlaps_tcbuffer_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tcbuffer_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_cbuffer_comp_ever
+ * @brief Return 1 if a temporal circular buffer always lies in a spatiotemporal
+ * box, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Always_overlaps_stbox_tcbuffer()
+ */
+int
+always_overlaps_stbox_tcbuffer(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tcbuffer_stbox(temp, box, ALWAYS);
 }
 
 /*****************************************************************************
