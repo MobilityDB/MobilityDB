@@ -37,6 +37,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
@@ -246,6 +247,163 @@ int
 always_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tgeo_tgeo(temp1, temp2, &datum2_ne, ALWAYS);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal geo and a spatiotemporal box
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if a temporal geo ever (or always) lies in a spatiotemporal
+ * box, 0 if not, and -1 on error, as #eacomp_tgeo_geo answers an ever or
+ * always comparison
+ * @details A temporal geo ever lies in the box when its restriction to the
+ * box by #tgeo_restrict_stbox is not empty, and always lies in it when its
+ * restriction to the complement of the box is empty; the borders of the box
+ * belong to it, as the overlaps operator of the bounding boxes reads them
+ * @param[in] temp Temporal geo
+ * @param[in] box Spatiotemporal box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tgeo_stbox(const Temporal *temp, const STBox *box, bool ever)
+{
+  /* Ensure the validity of the arguments: a box with only the T dimension
+   * compares its period, and a box with the X dimension shares the SRID and
+   * the geodetic flag of the temporal value, as #tgeo_restrict_stbox reads
+   * them */
+  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(box, -1);
+  if (MEOS_FLAGS_GET_X(box->flags) &&
+      (! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
+       ! ensure_same_geodetic(temp->flags, box->flags) ||
+       /* Generic 3D geometries cannot be restricted to a spatiotemporal box */
+       (tgeo_type(temp->temptype) &&
+        ! ensure_has_not_Z(temp->temptype, temp->flags))))
+    return -1;
+
+  Temporal *rest = tgeo_restrict_stbox(temp, box, true,
+    ever ? REST_AT : REST_MINUS);
+  int result = ever ? (rest != NULL) : (rest == NULL);
+  if (rest)
+    pfree(rest);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_comp_ever
+ * @brief Return 1 if a temporal geo ever lies in a spatiotemporal box, 0 if
+ * not, and -1 on error
+ * @param[in] temp Temporal geo
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Ever_overlaps_tgeo_stbox()
+ */
+int
+ever_overlaps_tgeo_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tgeo_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_geo_comp_ever
+ * @brief Return 1 if a temporal geo ever lies in a spatiotemporal box, 0 if
+ * not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal geo
+ * @csqlfn #Ever_overlaps_stbox_tgeo()
+ */
+int
+ever_overlaps_stbox_tgeo(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tgeo_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_geo_comp_ever
+ * @brief Return 1 if a temporal geo always lies in a spatiotemporal box, 0 if
+ * not, and -1 on error
+ * @param[in] temp Temporal geo
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Always_overlaps_tgeo_stbox()
+ */
+int
+always_overlaps_tgeo_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tgeo_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_geo_comp_ever
+ * @brief Return 1 if a temporal geo always lies in a spatiotemporal box, 0 if
+ * not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal geo
+ * @csqlfn #Always_overlaps_stbox_tgeo()
+ */
+int
+always_overlaps_stbox_tgeo(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tgeo_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @brief Return true if the bounding boxes of two geos overlap, the
+ * comparison #datum2_eq is to the equality
+ * @note The temporal geos are validated by #eacomp_tgeo_tgeo before the
+ * instants are compared, so the boxes are compared by #stbox_overlaps
+ */
+static Datum
+datum2_geo_box_overlaps(Datum geo1, Datum geo2, MeosType basetype UNUSED)
+{
+  STBox box1, box2;
+  geo_set_stbox(DatumGetGserializedP(geo1), &box1);
+  geo_set_stbox(DatumGetGserializedP(geo2), &box2);
+  return BoolGetDatum(stbox_overlaps(&box1, &box2));
+}
+
+/**
+ * @brief Return 1 if the values of two temporal geos ever (or always) have
+ * overlapping bounding boxes at an instant they share, 0 if not, and -1 on
+ * error, as #eacomp_tgeo_tgeo answers an ever or always comparison
+ * @details The bounding box of a point is the point, so two temporal points
+ * overlap at an instant when they are equal at it, which #datum2_eq answers
+ * across the instants where linear segments cross; the other temporal geos
+ * keep their value between two instants, so their instants decide
+ * @param[in] temp1,temp2 Temporal geos
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
+  return eacomp_tgeo_tgeo(temp1, temp2, tpoint_type(temp1->temptype) ?
+    &datum2_eq : &datum2_geo_box_overlaps, ever);
+}
+
+/**
+ * @ingroup meos_geo_comp_ever
+ * @brief Return 1 if the values of two temporal geos ever have overlapping
+ * bounding boxes at an instant they share, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Ever_overlaps_tgeo_tgeo()
+ */
+int
+ever_overlaps_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+{
+  return eaoverlaps_tgeo_tgeo(temp1, temp2, EVER);
+}
+
+/**
+ * @ingroup meos_geo_comp_ever
+ * @brief Return 1 if the values of two temporal geos always have overlapping
+ * bounding boxes at the instants they share, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Always_overlaps_tgeo_tgeo()
+ */
+int
+always_overlaps_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+{
+  return eaoverlaps_tgeo_tgeo(temp1, temp2, ALWAYS);
 }
 
 /*****************************************************************************

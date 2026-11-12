@@ -744,231 +744,7 @@ trgeometry_value_at_timestamptz(const Temporal *temp, TimestampTz t,
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return a copy of the start instant of a temporal rigid geometry
- * @param[in] temp Temporal rigid geometry
- * @errval NULL
- * @csqlfn #Temporal_start_instant()
- */
-TInstant *
-trgeometry_start_instant(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  /* A temporal rigid geometry always has a start instant */
-  const TInstant *inst = temporal_start_inst(temp);
-  TInstant *res = trgeoinst_tposeinst(inst);
-  TInstant *result = geo_tposeinst_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return a copy of the end instant of a temporal rigid geometry
- * @param[in] temp Temporal rigid geometry
- * @errval NULL
- * @csqlfn #Temporal_end_instant()
- */
-TInstant *
-trgeometry_end_instant(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  /* A temporal rigid geometry always has an end instant */
-  const TInstant *inst = temporal_end_inst(temp);
-  TInstant *res = trgeoinst_tposeinst(inst);
-  TInstant *result = geo_tposeinst_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return a copy of the n-th instant of a temporal rigid geometry
- * @param[in] temp Temporal rigid geometry
- * @param[in] n Number (1-based)
- * @errval NULL
- * @csqlfn #Temporal_instant_n()
- */
-TInstant *
-trgeometry_instant_n(const Temporal *temp, int n)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_positive(n))
-    return NULL;
-
-  const TInstant *inst;
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      if (n != 1)
-        return NULL;
-      inst = (const TInstant *) temp;
-      break;
-    case TSEQUENCE:
-      if (n < 1 || n > ((TSequence *) temp)->count)
-        return NULL;
-      inst = TSEQUENCE_INST_N((TSequence *) temp, n - 1);
-      break;
-    default: /* TSEQUENCESET */
-      inst = tsequenceset_inst_n((TSequenceSet *) temp, n);
-      if (! inst)
-        return NULL;
-  }
-  /* inst is borrowed from temp (TSEQUENCE_INST_N / tsequenceset_inst_n);
-   * trgeoinst_tposeinst only reads it, so there is nothing to free here */
-  TInstant *res = trgeoinst_tposeinst(inst);
-  TInstant *result = geo_tposeinst_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return a copy of the distinct instants of a temporal rigid geometry
- * @param[in] temp Temporal rigid geometry
- * @param[out] count Number of values in the output array
- * @errval NULL
- * @csqlfn #Temporal_instants()
- */
-TInstant **
-trgeometry_instants(const Temporal *temp, int *count)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-
-  const TInstant **instants = temporal_insts_p(temp, count);
-  TInstant **result = palloc(sizeof(TInstant *) * *count);
-  const GSERIALIZED *geo = trgeometry_geom_p(temp);
-  for (int i = 0; i < *count; i ++)
-  {
-    TInstant *inst = trgeoinst_tposeinst(instants[i]);
-    result[i] = geo_tposeinst_to_trgeometry(geo, inst);
-    pfree(inst);
-  }
-  pfree(instants);
-  return result;
-}
-
 /*****************************************************************************/
-
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return a copy of the start sequence of a temporal sequence (set)
- * @param[in] temp Temporal rigid geometry
- * @errval NULL
- * @csqlfn #Temporal_start_sequence()
- */
-TSequence *
-trgeometry_start_sequence(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  /* Ensure the validity of the arguments */
-  if (! ensure_continuous_interp(temp))
-    return NULL;
-
-  const TSequence *res_pose = (temp->subtype == TSEQUENCE) ?
-    (TSequence *) temp : TSEQUENCESET_SEQ_N((TSequenceSet *) temp, 0);
-  TSequence *res = trgeoseq_tposeseq(res_pose);
-  TSequence *result = geo_tposeseq_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return a copy of the end sequence of a temporal sequence (set)
- * @param[in] temp Temporal rigid geometry
- * @errval NULL
- * @csqlfn #Temporal_end_sequence()
- */
-TSequence *
-trgeometry_end_sequence(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_continuous_interp(temp))
-    return NULL;
-
-  const TSequence *res_pose = (temp->subtype == TSEQUENCE) ?
-    (TSequence *) temp : TSEQUENCESET_SEQ_N((TSequenceSet *) temp,
-      ((TSequenceSet *) temp)->count - 1);
-  TSequence *res = trgeoseq_tposeseq(res_pose);
-  TSequence *result = geo_tposeseq_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return a copy of the n-th sequence of a temporal sequence (set)
- * @param[in] temp Temporal rigid geometry
- * @param[in] n Number (1-based)
- * @errval NULL
- * @csqlfn #Temporal_sequence_n()
- */
-TSequence *
-trgeometry_sequence_n(const Temporal *temp, int n)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_continuous_interp(temp) || ! ensure_positive(n))
-    return NULL;
-
-  const TSequence *res_pose;
-  if (temp->subtype == TSEQUENCE)
-    res_pose = (n == 1) ? (const TSequence *) temp : NULL;
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    const TSequenceSet *ss = (const TSequenceSet *) temp;
-    res_pose = (n >= 1 && n <= ss->count) ? TSEQUENCESET_SEQ_N(ss, n - 1) :
-      NULL;
-  }
-  if (! res_pose)
-    return NULL;
-  TSequence *res = trgeoseq_tposeseq(res_pose);
-  TSequence *result = geo_tposeseq_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return an array of copies of the sequences of a temporal sequence
- * (set)
- * @param[in] temp Temporal rigid geometry
- * @param[out] count Number of values in the output array
- * @errval NULL
- * @csqlfn #Temporal_sequences()
- */
-TSequence **
-trgeometry_sequences(const Temporal *temp, int *count)
-{
-  /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL);
-  *count = 0;
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_continuous_interp(temp))
-    return NULL;
-
-  const GSERIALIZED *geo = trgeometry_geom_p(temp);
-  const TSequence **sequences = temporal_sequences_p(temp, count);
-  TSequence **result = palloc(sizeof(TSequence *) * *count);
-  for (int i = 0; i < *count; i ++)
-  {
-    TSequence *seq = trgeoseq_tposeseq(sequences[i]);
-    result[i] = geo_tposeseq_to_trgeometry(geo, seq);
-    pfree(seq);
-  }
-  pfree(sequences);
-  return result;
-}
 
 /*****************************************************************************/
 
@@ -1056,43 +832,6 @@ trgeometry_roll(const Temporal *temp)
   return trgeometry_lift_tpose_accessor(temp, &tpose_roll);
 }
 
-/**
- * @ingroup meos_rgeo_accessor
- * @brief Return the array of inter-instant segments of a temporal rigid
- * geometry — one TSequence per consecutive pair of instants
- * @param[in] temp Temporal rigid geometry
- * @param[out] count Number of resulting segments
- * @csqlfn #Temporal_segments()
- */
-TSequence **
-trgeometry_segments(const Temporal *temp, int *count)
-{
-  /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL);
-  *count = 0;
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_continuous_interp(temp))
-    return NULL;
-
-  const GSERIALIZED *geo = trgeometry_geom_p(temp);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  if (! tpose)
-    return NULL;
-  TSequence **segs = temporal_segments(tpose, count);
-  pfree(tpose);
-  if (! segs)
-    return NULL;
-  TSequence **result = palloc(sizeof(TSequence *) * (*count));
-  for (int i = 0; i < *count; i++)
-  {
-    result[i] = geo_tposeseq_to_trgeometry(geo, segs[i]);
-    pfree(segs[i]);
-  }
-  pfree(segs);
-  return result;
-}
-
 /*****************************************************************************
  * Modification functions
  *****************************************************************************/
@@ -1121,7 +860,7 @@ geometry_tpose_to_trgeometry_intl(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_rgeo_modif
+ * @ingroup meos_internal_rgeo_modif
  * @brief Return two temporal rigid geometries merged into one
  * @param[in] temp1,temp2 Temporal rigid geometries @nullable
  * @details A temporal rigid geometry is a temporal pose carrying a reference
@@ -1129,7 +868,7 @@ geometry_tpose_to_trgeometry_intl(const GSERIALIZED *gs, const Temporal *temp)
  * The rebuilt value carries no reference geometry of its own, so the body the
  * operands share is attached to it: the merge of two rigid geometries is a
  * rigid geometry, and reading its body is what a caller does next.
- * @csqlfn #Temporal_merge()
+ * @note #temporal_merge tests the arguments, which this function asserts
  */
 Temporal *
 trgeometry_merge(const Temporal *temp1, const Temporal *temp2)
@@ -1142,13 +881,10 @@ trgeometry_merge(const Temporal *temp1, const Temporal *temp2)
   if (! temp2)
     return temporal_copy(temp1);
 
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp1, NULL);
-  VALIDATE_TRGEOMETRY(temp2, NULL);
+  assert(temp1->temptype == T_TRGEOMETRY);
+  assert(temp2->temptype == T_TRGEOMETRY);
+  /* #temporal_merge tested that the two are the same body */
   const GSERIALIZED *geo = trgeometry_geom_p(temp1);
-  /* Two rigid geometries merge into one only where they are the same body */
-  if (! ensure_same_geom(geo, trgeometry_geom_p(temp2)))
-    return NULL;
 
   Temporal *tpose1 = trgeometry_to_tpose(temp1);
   Temporal *tpose2 = trgeometry_to_tpose(temp2);
@@ -1168,27 +904,21 @@ trgeometry_merge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_rgeo_modif
+ * @ingroup meos_internal_rgeo_modif
  * @brief Return the temporal rigid geometries of an array merged into one
  * @param[in] temparr Array of temporal rigid geometries
  * @param[in] count Number of elements in the array
- * @csqlfn #Temporal_merge_array()
+ * @note #temporal_merge_array tests the arguments, which this function
+ * asserts
  */
 Temporal *
 trgeometry_merge_array(Temporal **temparr, int count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temparr, NULL);
-  if (! ensure_positive(count))
-    return NULL;
-  for (int i = 0; i < count; i++)
-    VALIDATE_TRGEOMETRY(temparr[i], NULL);
-
+  assert(temparr); assert(count > 0);
+  /* #temporal_merge_array tested that every value is the same body */
   const GSERIALIZED *geo = trgeometry_geom_p(temparr[0]);
-  /* Every body merged into one is the same body */
-  for (int i = 1; i < count; i++)
-    if (! ensure_same_geom(geo, trgeometry_geom_p(temparr[i])))
-      return NULL;
+  for (int i = 0; i < count; i++)
+    assert(temparr[i]->temptype == T_TRGEOMETRY);
 
   Temporal **poses = palloc(sizeof(Temporal *) * count);
   for (int i = 0; i < count; i++)
@@ -1218,33 +948,11 @@ trgeometry_merge_array(Temporal **temparr, int count)
  *****************************************************************************/
 
 /**
- * @ingroup meos_rgeo_transf
- * @brief Return a temporal rigid geometry rounded to a given number of decimal places
- * @param[in] temp Temporal rigid geometry
- * @param[in] maxdd Maximum number of decimal digits to output
- * @csqlfn #Temporal_round()
- */
-Temporal *
-trgeometry_round(const Temporal *temp, int maxdd)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  GSERIALIZED *res_geo = geo_round(trgeometry_geom_p(temp), maxdd);
-  Temporal *res_tpose = temporal_round(tpose, maxdd);
-  Temporal *result = geometry_tpose_to_trgeometry(res_geo, res_tpose);
-  pfree(tpose); pfree(res_geo); pfree(res_tpose);
-  return result;
-}
-
-/**
  * @brief Return a temporal rigid geometry moved by the rigid motion a pose
  * states, which the function frees
  * @details The value is split into its pose and its reference geometry and
- * rebuilt from them, as #trgeometry_round splits and rebuilds it. The motion
+ * rebuilt from them, as #temporal_strip_geom splits it and #temporal_attach_geom
+ * rebuilds it. The motion
  * moves the pose as #tpose_motion moves a temporal pose, and a pose it takes
  * out of the plane takes the reference geometry with it, read in the plane
  * z = 0, since a rigid geometry states its geometry and its pose in one
@@ -1277,7 +985,7 @@ trgeometry_motion_free(const Temporal *temp, Pose *frame)
  * @brief Return true if a reference geometry is a polygon in a plane of
  * constant z
  */
-static bool
+bool
 trgeometry_ref_is_flat(const GSERIALIZED *gs)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -1525,29 +1233,6 @@ trgeometry_as_tsequenceset(const Temporal *temp, interpType interp)
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_rgeo_transf
- * @brief Restrict a temporal rigid geometry transformed to an interpolation
- * @param[in] temp Temporal rigid geometry
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_set_interp()
- */
-Temporal *
-trgeometry_set_interp(const Temporal *temp, interpType interp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_set_interp(tpose, interp);
-  if (! res)
-    return NULL;
-  /* We need to explicitly set the temporal type to T_TPOSE */
-  res->temptype = T_TPOSE;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res); pfree(tpose);
-  return result;
-}
-
 /*****************************************************************************
  * Restriction functions
  *****************************************************************************/
@@ -1613,342 +1298,29 @@ trgeometry_minus_value(const Temporal *temp, const Pose *pose)
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) a set of
- * poses
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Set of poses
- * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @note The base values of a temporal rigid geometry are poses. As the other
- * restrictions do, the function strips the value to its temporal pose,
- * restricts that, and puts the reference geometry back on the result
- * @csqlfn #Temporal_at_values(), #Temporal_minus_values()
- */
-Temporal *
-trgeometry_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_POSESET(s, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_restrict_values(tpose, s, atfunc);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to a set of poses
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Set of poses
- * @csqlfn #Temporal_at_values()
- */
-Temporal *
-trgeometry_at_values(const Temporal *temp, const Set *s)
-{
-  return trgeometry_restrict_values(temp, s, REST_AT);
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to the complement of a set of
- * poses
- * @param[in] temp Temporal rigid geometry
- * @csqlfn #Temporal_minus_values()
- * @param[in] s Set of poses
- */
-Temporal *
-trgeometry_minus_values(const Temporal *temp, const Set *s)
-{
-  return trgeometry_restrict_values(temp, s, REST_MINUS);
-}
+/*****************************************************************************/
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) a
- * timestamptz
- * @param[in] temp Temporal rigid geometry
- * @param[in] t Timestamptz
- * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_at_timestamptz(), #Temporal_minus_timestamptz()
- */
-Temporal *
-trgeometry_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_restrict_timestamptz(tpose, t, atfunc);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to a timestamptz
- * @param[in] temp Temporal rigid geometry
- * @param[in] t Timestamptz
- * @csqlfn #Temporal_at_timestamptz()
- */
-Temporal *
-trgeometry_at_timestamptz(const Temporal *temp, TimestampTz t)
-{
-  return trgeometry_restrict_timestamptz(temp, t, REST_AT);
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to the complement of a
- * timestamptz
- * @param[in] temp Temporal rigid geometry
- * @param[in] t Timestamptz
- * @csqlfn #Temporal_minus_timestamptz()
- */
-Temporal *
-trgeometry_minus_timestamptz(const Temporal *temp, TimestampTz t)
-{
-  return trgeometry_restrict_timestamptz(temp, t, REST_MINUS);
-}
+/*****************************************************************************/
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) a
- * timestamptz set
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Timestamp set
- * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_at_tstzset(), #Temporal_minus_tstzset()
- */
-Temporal *
-trgeometry_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_restrict_tstzset(tpose, s, atfunc);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to a timestamptz set
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Set
- * @csqlfn #Temporal_at_tstzset()
- */
-Temporal *
-trgeometry_at_tstzset(const Temporal *temp, const Set *s)
-{
-  return trgeometry_restrict_tstzset(temp, s, REST_AT);
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to the complement of a
- * timestamptz set
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Set
- * @csqlfn #Temporal_minus_tstzset()
- */
-Temporal *
-trgeometry_minus_tstzset(const Temporal *temp, const Set *s)
-{
-  return trgeometry_restrict_tstzset(temp, s, REST_MINUS);
-}
-
 /*****************************************************************************/
-
-/**
- * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) a
- * timestamptz span
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Span
- * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_at_tstzspan(), #Temporal_minus_tstzspan()
- */
-Temporal *
-trgeometry_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_restrict_tstzspan(tpose, s, atfunc);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to a timestamptz span
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Span
- * @csqlfn #Temporal_at_tstzspan()
- */
-Temporal *
-trgeometry_at_tstzspan(const Temporal *temp, const Span *s)
-{
-  return trgeometry_restrict_tstzspan(temp, s, REST_AT);
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to the complement of a timestamptz
- * span
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Span
- * @csqlfn #Temporal_minus_tstzspan()
- */
-Temporal *
-trgeometry_minus_tstzspan(const Temporal *temp, const Span *s)
-{
-  return trgeometry_restrict_tstzspan(temp, s, REST_MINUS);
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) a
- * timestamptz span set
- * @param[in] temp Temporal rigid geometry
- * @param[in] ss Span set
- * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_at_tstzspanset(), #Temporal_minus_tstzspanset()
- */
-Temporal *
-trgeometry_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
-  bool atfunc)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_restrict_tstzspanset(tpose, ss, atfunc);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to a timestamptz span set
- * @param[in] temp Temporal rigid geometry
- * @param[in] ss Span set
- * @csqlfn #Temporal_at_tstzspanset()
- */
-Temporal *
-trgeometry_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
-{
-  return trgeometry_restrict_tstzspanset(temp, ss, REST_AT);
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to the complement of a
- * timestamptz span set
- * @param[in] temp Temporal rigid geometry
- * @param[in] ss Span set
- * @csqlfn #Temporal_minus_tstzspanset()
- */
-Temporal *
-trgeometry_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
-{
-  return trgeometry_restrict_tstzspanset(temp, ss, REST_MINUS);
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to instants before or equal a
- * timestamptz
- * @param[in] temp Temporal rigid geometry
- * @param[in] t Timestamptz
- * @param[in] strict True if the restriction is strictly before, false when
- * the restriction is before or equal
- * @csqlfn #Temporal_before_timestamptz()
- */
-Temporal *
-trgeometry_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_before_timestamptz(tpose, t, atfunc);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to instants after or equal a
- * timestamptz
- * @param[in] temp Temporal rigid geometry
- * @param[in] t Timestamptz
- * @param[in] strict True if the restriction is strictly after, false when
- * the restriction is before or equal
- * @csqlfn #Temporal_after_timestamptz()
- */
-Temporal *
-trgeometry_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_after_timestamptz(tpose, t, atfunc);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
 
 /*****************************************************************************
  * Modification functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_rgeo_modif
+ * @ingroup meos_internal_rgeo_modif
  * @brief Append an instant to a temporal value
- * @param[in,out] temp Temporal rigid geometry
+ * @param[in] temp Temporal rigid geometry
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
  * @param[in] maxt Maximum time interval for defining a gap @nullable
  * @param[in] expand True when reserving space for additional instants
- * @csqlfn #Temporal_append_tinstant()
  * @return A NEW temporal value is always returned, the temporal value passed
  * as first argument is neither modified nor freed
  * @note The space reserved for additional instants cannot be kept in the
@@ -1958,21 +1330,14 @@ trgeometry_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * pose is not consumed by #temporal_append_tinstant and can be freed below
  */
 Temporal *
-trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
+trgeometry_append_tinstant(const Temporal *temp, const TInstant *inst,
   interpType interp, double maxdist, const Interval *maxt,
   bool expand UNUSED)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(inst, NULL);
-  if (! ensure_finite(maxdist))
-    return NULL;
-  /* The instant is the same body, as #trgeometry_merge requires of its two
-   * arguments, since the answer carries a single reference geometry */
-  if (! ensure_spatial_validity(temp, (const Temporal *) inst) ||
-      ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT) ||
-      ! ensure_same_geom(trgeometry_geom_p(temp),
-          trgeometry_geom_p((const Temporal *) inst)))
-    return NULL;
+  /* #temporal_append_tinstant tests the arguments, the instant being the
+   * same body since the answer carries a single reference geometry */
+  assert(temp->temptype == T_TRGEOMETRY);
+  assert(inst->temptype == T_TRGEOMETRY);
 
   Temporal *tpose = trgeometry_to_tpose(temp);
   TInstant *tpose_inst = trgeoinst_tposeinst(inst);
@@ -1991,12 +1356,11 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
 }
 
 /**
- * @ingroup meos_rgeo_modif
+ * @ingroup meos_internal_rgeo_modif
  * @brief Append a sequence to a temporal value
- * @param[in,out] temp Temporal rigid geometry
+ * @param[in] temp Temporal rigid geometry
  * @param[in] seq Temporal sequence
  * @param[in] expand True when reserving space for additional sequences
- * @csqlfn #Temporal_append_tsequence()
  * @return A NEW temporal value is always returned, the temporal value passed
  * as first argument is neither modified nor freed
  * @note The space reserved for additional sequences cannot be kept in the
@@ -2006,20 +1370,13 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
  * pose is not consumed by #temporal_append_tsequence and can be freed below
  */
 Temporal *
-trgeometry_append_tsequence(Temporal *temp, const TSequence *seq,
+trgeometry_append_tsequence(const Temporal *temp, const TSequence *seq,
   bool expand UNUSED)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(seq, NULL);
-  /* The sequence is the same body, as #trgeometry_merge requires of its two
-   * arguments, since the answer carries a single reference geometry */
-  if ((temp->subtype != TINSTANT &&
-      ! ensure_same_interp(temp, (Temporal *) seq)) ||
-      ! ensure_spatial_validity(temp, (Temporal *) seq) ||
-      ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE) ||
-      ! ensure_same_geom(trgeometry_geom_p(temp),
-          trgeometry_geom_p((const Temporal *) seq)))
-    return NULL;
+  /* #temporal_append_tsequence tests the arguments, the sequence being the
+   * same body since the answer carries a single reference geometry */
+  assert(temp->temptype == T_TRGEOMETRY);
+  assert(seq->temptype == T_TRGEOMETRY);
 
   Temporal *tpose = trgeometry_to_tpose(temp);
   TSequence *tpose_seq = trgeoseq_tposeseq(seq);
@@ -2037,99 +1394,5 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq,
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup meos_rgeo_modif
- * @brief Return the value of a temporal rigid geometry at a timestamptz
- * @csqlfn #Temporal_delete_timestamptz()
- */
-Temporal *
-trgeometry_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_delete_timestamptz(tpose, t, connect);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_modif
- * @brief Delete a timestamp set from a temporal rigid geometry connecting the
- * instants before and after the given timestamp, if any
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Timestamp set
- * @param[in] connect True when the instants before and after the timestamp
- * set are connected in the result
- * @csqlfn #Temporal_delete_tstzset()
- */
-Temporal *
-trgeometry_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_delete_tstzset(tpose, s, connect);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_modif
- * @brief Delete a timestamptz span from a temporal rigid geometry
- * @param[in] temp Temporal rigid geometry
- * @param[in] s Span
- * @param[in] connect True when the instants before and after the span, if any,
- * are connected in the result
- * @csqlfn #Temporal_delete_tstzspan()
- */
-Temporal *
-trgeometry_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_delete_tstzspan(tpose, s, connect);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_modif
- * @brief Delete a timestamptz span set from a temporal rigid geometry
- * @param[in] temp Temporal rigid geometry
- * @param[in] ss Span set
- * @param[in] connect True when the instants before and after the span set, if
- * any, are connected in the result
- * @csqlfn #Temporal_delete_tstzspanset()
- */
-Temporal *
-trgeometry_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
-  bool connect)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  Temporal *tpose = trgeometry_to_tpose(temp);
-  Temporal *res = temporal_delete_tstzspanset(tpose, ss, connect);
-  pfree(tpose);
-  if (! res)
-    return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res);
-  return result;
-}
 
 /*****************************************************************************/

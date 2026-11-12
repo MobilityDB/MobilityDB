@@ -458,7 +458,7 @@ SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1 1)@2001-01-01,
 
 		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="ttype_p1"/>, the bounding box associated to a temporal type depends on the base type: It is the <varname>tstzspan</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname>, <varname>tbigint</varname>, and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="box_conversions"/>, many PostgreSQL, PostGIS, or MobilityDB types can be converted to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and span types can be converted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be converted to type <varname>stbox</varname>, and time types and temporal types can be converted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
 
-		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
+		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments. They read the bounding box of a temporal value, not the value: whether the value itself lies in a box at some instant, or at every instant, is tested by the ever and always overlaps <varname>?&amp;&amp;</varname> and <varname>%&amp;&amp;</varname> (<xref linkend="ttype_ever_always_overlaps"/>).</para>
 
 		<para>Another set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for the <varname>tint</varname>, <varname>tbigint</varname>, and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types.</para>
 
@@ -624,6 +624,54 @@ SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03),
   [BBB@2001-01-04, BBB@2001-01-05)}' %&gt; 'AAA'::text;
 -- false
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="ttype_ever_always_overlaps">
+					<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+					<para>Ever and always overlaps</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tstzspan,tbool,ttext} ?&amp;&amp; {tstzspan,tbool,ttext} → boolean
+{tstzspan,tbool,ttext} %&amp;&amp; {tstzspan,tbool,ttext} → boolean
+{tbox,tnumber} ?&amp;&amp; {tbox,tnumber} → boolean
+{tbox,tnumber} %&amp;&amp; {tbox,tnumber} → boolean
+{stbox,tgeo} ?&amp;&amp; {stbox,tgeo} → boolean
+{stbox,tgeo} %&amp;&amp; {stbox,tgeo} → boolean
+</programlisting>
+					<para>The bounding box operator <varname>&amp;&amp;</varname> (<xref linkend="ttype_bbox"/>) tests whether the bounding box of a temporal value overlaps a box, while <varname>?&amp;&amp;</varname> tests whether the value itself lies in the box at some instant, and <varname>%&amp;&amp;</varname> whether it lies in the box at every instant at which it is defined. The box of a temporal Boolean or text is a <varname>tstzspan</varname>, that of a temporal number a <varname>tbox</varname>, and that of a temporal geo an <varname>stbox</varname>; the borders of a spatiotemporal box belong to it, and a span, as the value span of a temporal box, contains its bounds as it states them. A value whose bounding box overlaps a box need not lie in it at any instant. In the examples below, a temporal point moves from (0,0) to (10,10) between 0:00 and 10:00, so its bounding box overlaps a box in the corner (8,0)–(10,2), which the point never enters, and a box over its path between 8:00 and 10:00, which the point crosses at 5:00. Likewise, a temporal text defined on 1 and 2 January and on 4 and 5 January has a bounding period that overlaps the morning of 3 January, at which the text is not defined, and a temporal float from 1 to 5 over four days lies in the box of the values 2.5 to 3.5 and never in the box of the values 4.5 to 5 over its first two days. For two temporal values, the operators test whether the bounding boxes of their values overlap at some instant, or at every instant, that both values share; for two temporal points or numbers, whether they are at the same position or have the same value, and for two temporal Booleans or texts, whether they share an instant. Two values that share no instant answer NULL, as their ever equality does.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- false
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+-- true
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 08:00, 2001-01-01 10:00])';
+-- false
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' %&amp;&amp;
+  stbox 'STBOX X((0,0),(10,10))';
+-- true
+SELECT ttext '{[AA@2001-01-01, AA@2001-01-02], [BB@2001-01-04, BB@2001-01-05]}' &amp;&amp;
+  tstzspan '[2001-01-03, 2001-01-03 12:00]';
+-- true
+SELECT ttext '{[AA@2001-01-01, AA@2001-01-02], [BB@2001-01-04, BB@2001-01-05]}' ?&amp;&amp;
+  tstzspan '[2001-01-03, 2001-01-03 12:00]';
+-- false
+SELECT tfloat '[1@2001-01-01, 5@2001-01-05]' ?&amp;&amp;
+  tbox 'TBOXFLOAT XT([2.5, 3.5],[2001-01-01, 2001-01-05])';
+-- true
+SELECT tfloat '[1@2001-01-01, 5@2001-01-05]' ?&amp;&amp;
+  tbox 'TBOXFLOAT XT([4.5, 5],[2001-01-01, 2001-01-03])';
+-- false
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' ?&amp;&amp; tfloat '[3@2001-01-01, 1@2001-01-03]';
+-- true
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' %&amp;&amp; tfloat '[3@2001-01-01, 1@2001-01-03]';
+-- false
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&amp;&amp;
+  tgeompoint '[Point(2 0)@2001-01-01, Point(0 2)@2001-01-03]';
+-- true
 </programlisting>
 				</listitem>
 			</itemizedlist>

@@ -94,3 +94,72 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp #<> 
    150
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+WHERE t1.temp ?&& stbox(t2.temp) <> (atStbox(t1.temp, stbox(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+WHERE t1.temp %&& stbox(t2.temp) <> (minusStbox(t1.temp, stbox(t2.temp)) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+WHERE stbox(t2.temp) ?&& t1.temp <> t1.temp ?&& stbox(t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
+WHERE t1.temp ?&& stbox(timeSpan(t2.temp)) <> (atStbox(t1.temp, stbox(timeSpan(t2.temp))) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+WHERE t1.temp ?&& expandSpace(stbox(startValue(t2.temp), startTimestamp(t2.temp)), 1) <>
+  (atStbox(t1.temp, expandSpace(stbox(startValue(t2.temp), startTimestamp(t2.temp)), 1)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+WHERE t1.temp ?&& stbox(t2.temp) <> (atStbox(t1.temp, stbox(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp ?&& stbox(t2.temp);
+ count 
+-------
+   147
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp %&& stbox(t2.temp);
+ count 
+-------
+   119
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+WHERE t1.temp ?&& t2.temp <> t1.temp ?= t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+WHERE t1.temp %&& t2.temp <> t1.temp %= t2.temp;
+ count 
+-------
+     0
+(1 row)
+

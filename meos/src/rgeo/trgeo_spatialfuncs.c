@@ -59,6 +59,7 @@
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "rgeo/trgeo.h"
+#include "rgeo/trgeo_distwalk.h"
 #include "rgeo/trgeo_geom_clip.h"
 #include "rgeo/trgeo_inst.h"
 #include "rgeo/trgeo_spatialfuncs.h"
@@ -222,22 +223,54 @@ body_on_excluded_border(const GSERIALIZED *body, const STBox *box)
   STBox bbox;
   if (! geo_set_stbox(body, &bbox))
     return false;
-  return (bbox.xmin >= box->xmax) || (bbox.ymin >= box->ymax);
+  return (bbox.xmin >= box->xmax) || (bbox.ymin >= box->ymax) ||
+    (MEOS_FLAGS_GET_Z(box->flags) && bbox.zmin >= box->zmax);
+}
+
+/**
+ * @brief Return whether a vertex of a body lies in a closed box with Z, by
+ * comparisons of its coordinates
+ * @param[in] body Body with Z, already placed in the world
+ * @param[in] box Box with Z
+ */
+static bool
+body_vertex_in_box(const GSERIALIZED *body, const STBox *box)
+{
+  LWGEOM *geom = lwgeom_from_gserialized(body);
+  LWPOINTITERATOR *it = lwpointiterator_create(geom);
+  POINT4D p;
+  bool found = false;
+  while (! found && lwpointiterator_next(it, &p))
+    found = p.x >= box->xmin && p.x <= box->xmax && p.y >= box->ymin &&
+      p.y <= box->ymax && p.z >= box->zmin && p.z <= box->zmax;
+  lwpointiterator_destroy(it);
+  lwgeom_free(geom);
+  return found;
 }
 
 /**
  * @brief Return whether a body meets a target, leaving out the upper borders
  * of @p excl where it is given
+ * @details A body meets a closed box with Z where a vertex of it lies in the
+ * box or where it is at distance zero of the faces of the box, which
+ * #geom_dwithin3d answers exactly for faces lying in a plane: a body meeting
+ * the box and holding no vertex in it crosses its boundary. A target with no
+ * box with Z is met in 2D (#geom_intersects2d)
  * @param[in] body Body, already placed in the world
- * @param[in] target Target geometry
+ * @param[in] target Target geometry, the faces of @p box3d where it is given
  * @param[in] excl Box whose upper borders are left out, NULL to meet the
  * target as a closed region @nullable
+ * @param[in] box3d Box with Z the target bounds, NULL for a target met in
+ * 2D @nullable
  */
 static bool
 body_meets_target(const GSERIALIZED *body, const GSERIALIZED *target,
-  const STBox *excl)
+  const STBox *excl, const STBox *box3d)
 {
-  if (! geom_intersects2d(body, target))
+  bool meets = box3d ?
+    body_vertex_in_box(body, box3d) || geom_dwithin3d(body, target, 0.0) :
+    geom_intersects2d(body, target);
+  if (! meets)
     return false;
   return excl ? ! body_on_excluded_border(body, excl) : true;
 }
@@ -286,7 +319,7 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
     double tm = 0.5 * (ta + tb);
     Pose *posem = posesegm_interpolate(pose1, pose2, tm);
     GSERIALIZED *bodym = pose_apply_geo(posem, ref);
-    bool ov = body_meets_target(bodym, target, excl);
+    bool ov = body_meets_target(bodym, target, excl, NULL);
     pfree(bodym);
     pfree(posem);
     if (ov && ! prev_overlap)
@@ -352,7 +385,7 @@ body_meets_at(const GSERIALIZED *ref, const Pose *pose1, const Pose *pose2,
 {
   Pose *p = posesegm_interpolate(pose1, pose2, ratio);
   GSERIALIZED *body = pose_apply_geo(p, ref);
-  bool ov = body_meets_target(body, target, excl);
+  bool ov = body_meets_target(body, target, excl, NULL);
   pfree(body); pfree(p);
   return ov;
 }
@@ -454,11 +487,11 @@ segment_overlap_spans_rotating(const GSERIALIZED *ref, const Pose *pose1,
 
 static void
 instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
-  const GSERIALIZED *target, const STBox *excl, Span **spans, int *nspans,
-  int *spancap)
+  const GSERIALIZED *target, const STBox *excl, const STBox *box3d,
+  Span **spans, int *nspans, int *spancap)
 {
   GSERIALIZED *body = pose_apply_geo(pose, ref);
-  bool ov = body_meets_target(body, target, excl);
+  bool ov = body_meets_target(body, target, excl, box3d);
   pfree(body);
   if (! ov)
     return;
@@ -470,6 +503,93 @@ instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
   (*nspans)++;
+}
+
+/**
+ * @brief Return true if the walk of the distance reads a body and a target
+ * @details The walk needs a body that is a convex polygon without holes
+ * (#distrefpoly_set), and a target of points, lines and convex polygons
+ * without holes, and of their collections of one type, the parts it measures
+ * (#dist_geo_parts reads them so); each is tested here without an error
+ * @param[in] ref Reference geometry of the body
+ * @param[in] target Target geometry
+ */
+static bool
+trgeometry_walk_reads(const GSERIALIZED *ref, const LWGEOM *target)
+{
+  LWGEOM *body = lwgeom_from_gserialized(ref);
+  DistRefPoly rp;
+  bool result = body->type == POLYGONTYPE &&
+    distrefpoly_set(&rp, (const LWPOLY *) body);
+  if (result)
+    distrefpoly_free(&rp);
+  lwgeom_free(body);
+  if (! result || lwgeom_is_empty(target))
+    return result;
+  uint32_t type = target->type;
+  if (type == POINTTYPE || type == LINETYPE || type == MULTIPOINTTYPE ||
+      type == MULTILINETYPE)
+    return true;
+  if (type != POLYGONTYPE && type != MULTIPOLYGONTYPE)
+    return false;
+  const LWCOLLECTION *coll = (type == MULTIPOLYGONTYPE) ?
+    (const LWCOLLECTION *) target : NULL;
+  uint32_t n = coll ? coll->ngeoms : 1;
+  for (uint32_t i = 0; i < n && result; i++)
+  {
+    const LWGEOM *part = coll ? coll->geoms[i] : target;
+    if (lwgeom_is_empty(part))
+      continue;
+    double cx, cy;
+    result = distrefpoly_set_static(&rp, (const LWPOLY *) part, &cx, &cy);
+    if (result)
+      distrefpoly_free(&rp);
+  }
+  return result;
+}
+
+/**
+ * @brief Return true if a segment between two poses with Z translates
+ * @details A pose with Z holds its orientation in a quaternion, the data after
+ * its position, and the segment translates where the two quaternions are
+ * equal or opposite
+ */
+static bool
+pose3d_segment_translates(const Pose *pose1, const Pose *pose2)
+{
+  const double *q1 = &pose1->data[3], *q2 = &pose2->data[3];
+  bool same = true, opposite = true;
+  for (int k = 0; k < 4; k++)
+  {
+    same &= q1[k] == q2[k];
+    opposite &= q1[k] == -q2[k];
+  }
+  return same || opposite;
+}
+
+/**
+ * @brief Return true if every segment of a temporal rigid geometry with Z in
+ * linear interpolation translates, see #pose3d_segment_translates()
+ */
+static bool
+trgeometry_translates(const Temporal *temp)
+{
+  if (temp->subtype == TINSTANT)
+    return true;
+  const TSequenceSet *ss = (temp->subtype == TSEQUENCESET) ?
+    (const TSequenceSet *) temp : NULL;
+  int nseqs = ss ? ss->count : 1;
+  for (int s = 0; s < nseqs; s++)
+  {
+    const TSequence *seq = ss ? TSEQUENCESET_SEQ_N(ss, s) :
+      (const TSequence *) temp;
+    for (int i = 0; i + 1 < seq->count; i++)
+      if (! pose3d_segment_translates(
+          DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq, i))),
+          DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq, i + 1)))))
+        return false;
+  }
+  return true;
 }
 
 /**
@@ -486,7 +606,7 @@ instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
  */
 static SpanSet *
 trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
-  const LWGEOM *lwgs, const STBox *excl, bool *err)
+  const LWGEOM *lwgs, const STBox *excl, const STBox *box3d, bool *err)
 {
   *err = false;
   const GSERIALIZED *ref = trgeometry_geom_p(temp);
@@ -507,6 +627,45 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
       return NULL;
     }
   }
+  /* A body in linear motion meets a closed target where its distance to it
+   * is zero, which the walk of the distance answers exactly, turning
+   * included (#tdwithin_trgeometry_geo); the clip below reads the bodies and
+   * targets the walk does not, and the upper borders a tile leaves out.  A
+   * body with Z in a plane of constant z that translates, against a target
+   * without Z, is read on the dimensions they share, its projection to the
+   * ground (#trgeometry_force2d), which moves rigidly with it */
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  Temporal *ground = NULL;
+  if (linear && ! excl && MEOS_FLAGS_GET_Z(temp->flags) &&
+      ! FLAGS_GET_Z(gs->gflags) && trgeometry_ref_is_flat(ref) &&
+      trgeometry_translates(temp))
+  {
+    ground = trgeometry_force2d(temp);
+    if (! ground)
+    {
+      *err = true;
+      return NULL;
+    }
+  }
+  const Temporal *value = ground ? ground : temp;
+  if (linear && ! excl && ! MEOS_FLAGS_GET_Z(value->flags) &&
+      ! FLAGS_GET_Z(gs->gflags) &&
+      trgeometry_walk_reads(trgeometry_geom_p(value), lwgs))
+  {
+    Temporal *within = tdwithin_trgeometry_geo(value, gs, 0.0);
+    if (ground)
+      pfree(ground);
+    if (! within)
+    {
+      *err = true;
+      return NULL;
+    }
+    SpanSet *result = tbool_when_true(within);
+    pfree(within);
+    return result;
+  }
+  if (ground)
+    pfree(ground);
   int spancap = 16, nspans = 0;
   Span *spans = palloc((size_t) spancap * sizeof(Span));
 
@@ -514,7 +673,7 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
   {
     const TInstant *inst = (const TInstant *) temp;
     instant_overlap_span(ref, DatumGetPoseP(tinstant_value_p(inst)),
-      inst->t, gs, excl, &spans, &nspans, &spancap);
+      inst->t, gs, excl, box3d, &spans, &nspans, &spancap);
   }
   else
   {
@@ -536,7 +695,6 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
       for (int i = 0; i < nseqs; i++)
         ((const TSequence **) seqs)[i] = TSEQUENCESET_SEQ_N(sset, i);
     }
-    bool linear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
     for (int s = 0; s < nseqs; s++)
     {
       const TSequence *seq = seqs[s];
@@ -544,7 +702,7 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
       {
         const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
         instant_overlap_span(ref, DatumGetPoseP(tinstant_value_p(inst)),
-          inst->t, gs, excl, &spans, &nspans, &spancap);
+          inst->t, gs, excl, box3d, &spans, &nspans, &spancap);
         continue;
       }
       if (! linear)
@@ -557,7 +715,7 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
           const TInstant *inst = TSEQUENCE_INST_N(seq, i);
           const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
           GSERIALIZED *body = pose_apply_geo(pose, ref);
-          bool ov = body_meets_target(body, gs, excl);
+          bool ov = body_meets_target(body, gs, excl, box3d);
           pfree(body);
           if (! ov)
             continue;
@@ -581,6 +739,29 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
         const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
         const Pose *pose1 = DatumGetPoseP(tinstant_value_p(inst1));
         const Pose *pose2 = DatumGetPoseP(tinstant_value_p(inst2));
+        /* A pose with Z holds its orientation in a quaternion, the data after
+         * its position, and a segment translates where the two quaternions
+         * are equal or opposite; a segment turning in 3D is refused, its
+         * projection on the plane being no rigid motion of it */
+        if (MEOS_FLAGS_GET_Z(temp->flags))
+        {
+          bool turns = ! pose3d_segment_translates(pose1, pose2);
+          if (! turns && segment_overlap_spans(ref, pose1, pose2, inst1->t,
+              inst2->t, gs, lwgs, excl, &spans, &nspans, &spancap))
+            continue;
+          pfree(spans);
+          if (temp->subtype == TSEQUENCESET)
+            pfree(seqs);
+          *err = true;
+          if (turns)
+          {
+            meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+              "The restriction of a temporal rigid geometry with Z turning in "
+              "linear interpolation is not implemented");
+            return NULL;
+          }
+          return NULL;
+        }
         /* A rotating segment carries its vertices along arcs, which the
          * swept-edge clip of the translating path does not solve, so it is
          * read in pieces short enough to hold one answer each */
@@ -653,8 +834,9 @@ trgeometry_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc
  * @brief Return a temporal rigid geometry restricted to (the complement
  * of) a geometry
  * @details The restriction is exact on the body extent for pure-translation
- * trgeometries. Rotating segments and holey targets raise an honest
- * FEATURE_NOT_SUPPORTED error.
+ * trgeometries, and a value in step or discrete interpolation is restricted
+ * by its placements, holes of the target included. A target with holes for a
+ * value in linear interpolation raises a FEATURE_NOT_SUPPORTED error.
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
@@ -670,8 +852,11 @@ trgeometry_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfun
     return atfunc ? NULL : temporal_copy(temp);
 
   LWGEOM *lwgs = lwgeom_from_gserialized(gs);
-  /* The M1 clip ignores polygon holes; reject holey targets honestly. */
-  if (lwgeom_has_interior_ring(lwgs))
+  /* A body that holds each pose is restricted by the static intersection of
+   * each placement, which reads the holes of the target (#body_meets_target);
+   * the clip of a body in linear motion reads the exterior ring of the target
+   * alone, so a target with holes is refused for it */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && lwgeom_has_interior_ring(lwgs))
   {
     lwgeom_free(lwgs);
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
@@ -683,7 +868,7 @@ trgeometry_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfun
   bool err;
   /* A geometry is met as a closed region: only a box of a grid leaves its
    * upper borders out */
-  SpanSet *ss = trgeometry_overlap_spanset(temp, gs, lwgs, NULL, &err);
+  SpanSet *ss = trgeometry_overlap_spanset(temp, gs, lwgs, NULL, NULL, &err);
   lwgeom_free(lwgs);
   if (err)
     return NULL;
@@ -756,19 +941,45 @@ trgeometry_restrict_stbox(const Temporal *temp, const STBox *box, bool border_in
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   if (! hasx)
     return temporal_restrict_tstzspan(temp, &box->period, atfunc);
-  if (! ensure_valid_trgeometry_stbox(temp, box))
+  /* The box is read on the dimensions the value and the box both have, as a
+   * relationship of two spatial values reads them (#tgeo_different_dimensions) */
+  if (! ensure_has_X(T_STBOX, box->flags) ||
+      ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)))
     return NULL;
+  STBox box1 = *box;
+  bool z = MEOS_FLAGS_GET_Z(temp->flags) && MEOS_FLAGS_GET_Z(box->flags);
+  if (! z)
+    MEOS_FLAGS_SET_Z(box1.flags, false);
+  /* A body in linear motion against a box with Z sweeps a region in 3D,
+   * which no kernel solves yet; one holding each pose is read placement by
+   * placement */
+  if (z && MEOS_FLAGS_LINEAR_INTERP(temp->flags) && temp->subtype != TINSTANT)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The restriction of a temporal rigid geometry with Z in linear "
+      "interpolation by a box with Z is not implemented");
+    return NULL;
+  }
   /* The box period already carries its temporal-border inclusivity. On the
    * spatial side the box is closed where the upper border is asked for, and
    * half-open where it is not, so that the tiles either side of a grid line
    * claim a body lying on that line exactly once */
-  const STBox *excl = border_inc ? NULL : box;
+  const STBox *excl = border_inc ? NULL : &box1;
 
-  /* Spatial overlap spans */
-  GSERIALIZED *geo = stbox_geo(box);
+  /* Spatial overlap spans. A box with Z is met through its faces, read as a
+   * surface rather than as the solid #stbox_geo flags, and its vertices
+   * (#body_meets_target) */
+  GSERIALIZED *geo = stbox_geo(&box1);
   LWGEOM *lwgeo = lwgeom_from_gserialized(geo);
+  if (z)
+  {
+    FLAGS_SET_SOLID(lwgeo->flags, 0);
+    pfree(geo);
+    geo = geo_serialize(lwgeo);
+  }
   bool err;
-  SpanSet *spatial = trgeometry_overlap_spanset(temp, geo, lwgeo, excl, &err);
+  SpanSet *spatial = trgeometry_overlap_spanset(temp, geo, lwgeo, excl,
+    z ? &box1 : NULL, &err);
   lwgeom_free(lwgeo);
   pfree(geo);
   if (err)

@@ -847,6 +847,8 @@ tcbufferseq_linear_within_spanset(const TSequence *seq, double dist,
   int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
   double *rlo = palloc(sizeof(double) * maxo);
   double *rhi = palloc(sizeof(double) * maxo);
+  int64 *nlo = palloc(sizeof(int64) * maxo);
+  int64 *nhi = palloc(sizeof(int64) * maxo);
   SpanSet *ss = NULL;
   bool lower_inc = seq->period.lower_inc;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
@@ -854,13 +856,26 @@ tcbufferseq_linear_within_spanset(const TSequence *seq, double dist,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     bool upper_inc = seq->period.upper_inc;
-    double dur = (double) (inst2->t - inst1->t);
-    int nr = tcbufferseg_within_ctx(DatumGetCbufferP(tinstant_value_p(inst1)),
-      DatumGetCbufferP(tinstant_value_p(inst2)), dist, ctx, rlo, rhi, maxo);
+    const Cbuffer *cb1 = DatumGetCbufferP(tinstant_value_p(inst1));
+    const Cbuffer *cb2 = DatumGetCbufferP(tinstant_value_p(inst2));
+    /* The exact engine dates the periods in whole microseconds; a geometry
+     * it does not answer, an arc or faces that overlap, takes the roots */
+    int64 D = inst2->t - inst1->t;
+    int nr = tcbufferseg_within_exact_ctx(cb1, cb2, dist, ctx, D, nlo, nhi);
+    if (nr < 0)
+    {
+      double dur = (double) D;
+      nr = tcbufferseg_within_ctx(cb1, cb2, dist, ctx, rlo, rhi, maxo);
+      for (int j = 0; j < nr; j++)
+      {
+        nlo[j] = llround(rlo[j] * dur);
+        nhi[j] = llround(rhi[j] * dur);
+      }
+    }
     for (int j = 0; j < nr; j++)
     {
-      TimestampTz mint = inst1->t + (TimestampTz) llround(rlo[j] * dur);
-      TimestampTz maxt = inst1->t + (TimestampTz) llround(rhi[j] * dur);
+      TimestampTz mint = inst1->t + (TimestampTz) nlo[j];
+      TimestampTz maxt = inst1->t + (TimestampTz) nhi[j];
       if (mint < inst1->t) mint = inst1->t;
       if (maxt > inst2->t) maxt = inst2->t;
       bool lower_inc1 = (mint == inst1->t) ? lower_inc : true;
@@ -881,7 +896,7 @@ tcbufferseq_linear_within_spanset(const TSequence *seq, double dist,
     }
     inst1 = inst2;
   }
-  pfree(rlo); pfree(rhi);
+  pfree(rlo); pfree(rhi); pfree(nlo); pfree(nhi);
   return ss;
 }
 

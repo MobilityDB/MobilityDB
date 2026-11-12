@@ -203,6 +203,8 @@ typedef enum
   TEMPCONTAINS_OP  = 43, /**< Contains `#@>` operator for JSON */
   TEMPCONTAINED_OP = 44, /**< Contained `<@#` operator for JSON */
 #endif /* JSON */
+  EVEROVERLAPS_OP   = 45, /**< Everoverlaps `?&&` operator */
+  ALWAYSOVERLAPS_OP = 46, /**< Alwaysoverlaps `%&&` operator */
 } MeosOper;
 
 /**

@@ -173,10 +173,10 @@ int main(void)
     /* Restricting to a pose the value takes keeps the instant at which it
      * takes it, with the reference geometry back on the result */
     meos_errno_reset();
-    Temporal *at = trgeometry_at_values(trgeo3, poseset1);
+    Temporal *at = temporal_at_values(trgeo3, poseset1);
     if (! at)
     {
-      printf("FAILED: trgeometry_at_values returned NULL, errno %d\n",
+      printf("FAILED: temporal_at_values returned NULL, errno %d\n",
         meos_errno());
       result = 1;
     }
@@ -185,29 +185,29 @@ int main(void)
       char *at_out = trgeometry_as_text(at, 6, &size_out);
       if (strcmp(at_out, at_expected) != 0)
       {
-        printf("FAILED: trgeometry_at_values: %s != %s\n", at_out,
+        printf("FAILED: temporal_at_values: %s != %s\n", at_out,
           at_expected);
         result = 1;
       }
       else
-        printf("OK: trgeometry_at_values(trgeometry, poseset): %s\n", at_out);
+        printf("OK: temporal_at_values(trgeometry, poseset): %s\n", at_out);
       free(at); free(at_out);
     }
 
     /* The complement keeps everything else, and the two together give back the
      * time of the value */
     meos_errno_reset();
-    Temporal *minus = trgeometry_minus_values(trgeo3, poseset1);
+    Temporal *minus = temporal_minus_values(trgeo3, poseset1);
     if (! minus)
     {
-      printf("FAILED: trgeometry_minus_values returned NULL, errno %d\n",
+      printf("FAILED: temporal_minus_values returned NULL, errno %d\n",
         meos_errno());
       result = 1;
     }
     else
     {
       char *minus_out = trgeometry_as_text(minus, 6, &size_out);
-      printf("OK: trgeometry_minus_values(trgeometry, poseset): %s\n",
+      printf("OK: temporal_minus_values(trgeometry, poseset): %s\n",
         minus_out);
       free(minus); free(minus_out);
     }
@@ -216,14 +216,14 @@ int main(void)
      * restriction and being rejected there */
     Set *geomset1 = geomset_in("{\"Point(0 0)\", \"Point(1 1)\"}");
     meos_errno_reset();
-    Temporal *bad = trgeometry_at_values(trgeo3, geomset1);
+    Temporal *bad = temporal_at_values(trgeo3, geomset1);
     if (bad || meos_errno() == 0)
     {
-      printf("FAILED: trgeometry_at_values accepted a geomset\n");
+      printf("FAILED: temporal_at_values accepted a geomset\n");
       result = 1;
     }
     else
-      printf("OK: trgeometry_at_values(trgeometry, geomset) rejected, "
+      printf("OK: temporal_at_values(trgeometry, geomset) rejected, "
         "errno %d\n", meos_errno());
     free(bad); free(geomset1);
     meos_errno_reset();
@@ -751,6 +751,91 @@ int main(void)
       }
       free(body);
     }
+  }
+
+  /* A region with holes restricts a body in step interpolation by its
+   * placements, the hole read as outside, and is refused for a body in linear
+   * interpolation */
+  {
+    const char *step = "Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2.5 0),0)@2001-01-03, "
+      "Pose(Point(5 0),0)@2001-01-05]";
+    const char *lin = "Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-05]";
+    Temporal *tstep = trgeometry_in(step), *tlin = trgeometry_in(lin);
+    GSERIALIZED *region = geom_in("Polygon((0 -2,6 -2,6 2,0 2,0 -2),"
+      "(2 -1,4 -1,4 1.5,2 1.5,2 -1))", -1);
+    meos_errno_reset();
+    Temporal *at = trgeometry_at_geom(tstep, region);
+    int err_step = meos_errno();
+    meos_errno_reset();
+    Temporal *at_lin = trgeometry_at_geom(tlin, region);
+    int err_lin = meos_errno();
+    SpanSet *ss = at ? temporal_time(at) : NULL;
+    int count = ss ? spanset_num_spans(ss) : -1;
+    if (! at || err_step != 0 || count != 2 || at_lin || err_lin == 0)
+    {
+      printf("FAILED: a region with holes is not read by the restriction of "
+        "a body in step interpolation, or is answered for one in linear "
+        "interpolation\n");
+      result = 1;
+    }
+    free(tstep); free(tlin); free(region); free(at); free(at_lin); free(ss);
+    meos_errno_reset();
+  }
+
+  /* A body in linear motion meets a box where its distance to it is zero: a
+   * box flat in x from the first instant to a quarter of the day, and a box
+   * touched on its border at the first instant alone */
+  {
+    Temporal *flat = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(3 0),0)@2001-01-01, Pose(Point(7 2),0)@2001-01-02]");
+    Temporal *touch = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(4 1),0)@2001-01-01, Pose(Point(2 -3),0)@2001-01-02]");
+    STBox *b1 = stbox_in("STBOX X((4,0),(4,3))");
+    STBox *b2 = stbox_in("STBOX X((5,1),(8,2))");
+    Temporal *at1 = trgeometry_at_stbox(flat, b1, true);
+    Temporal *at2 = trgeometry_at_stbox(touch, b2, true);
+    /* A quarter of a day in microseconds */
+    TimestampTz quarter = (TimestampTz) 6 * 3600 * 1000000;
+    if (! at1 || temporal_end_timestamptz(at1) -
+          temporal_start_timestamptz(at1) != quarter ||
+        ! at2 || temporal_num_instants(at2) != 1)
+    {
+      printf("FAILED: a body in linear motion meeting a flat box, or touching "
+        "a box at one instant, is not read\n");
+      result = 1;
+    }
+    free(flat); free(touch); free(b1); free(b2); free(at1); free(at2);
+  }
+
+  /* A box is read on the dimensions it shares with a value with Z: a step
+   * value against a box without Z on the plane, and a value translating at
+   * z = 1 against a box flat in x as its projection to the ground, from the
+   * first instant to a quarter of the day */
+  {
+    Temporal *step = trgeometry_in("Interp=Step;Polygon Z((0 0 0,1 0 0,"
+      "1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 2),1,0,0,0)@2001-01-01, "
+      "Pose(Point Z(5 0 2),1,0,0,0)@2001-01-02]");
+    Temporal *lin = trgeometry_in("Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,"
+      "0 0 0));[Pose(Point Z(3 0 1),1,0,0,0)@2001-01-01, "
+      "Pose(Point Z(7 2 1),1,0,0,0)@2001-01-02]");
+    STBox *b1 = stbox_in("STBOX X((0,0),(2,2))");
+    STBox *b2 = stbox_in("STBOX X((4,0),(4,3))");
+    meos_errno_reset();
+    Temporal *at1 = trgeometry_at_stbox(step, b1, true);
+    Temporal *at2 = trgeometry_at_stbox(lin, b2, true);
+    TimestampTz quarter = (TimestampTz) 6 * 3600 * 1000000;
+    if (meos_errno() != 0 || ! at1 || ! at2 ||
+        temporal_end_timestamptz(at2) - temporal_start_timestamptz(at2) !=
+          quarter)
+    {
+      printf("FAILED: a value with Z is not read on the plane against a box "
+        "without Z\n");
+      result = 1;
+    }
+    free(step); free(lin); free(b1); free(b2); free(at1); free(at2);
+    meos_errno_reset();
   }
 
   /* Finalize MEOS */

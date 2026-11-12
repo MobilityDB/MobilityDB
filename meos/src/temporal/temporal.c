@@ -709,6 +709,24 @@ temporal_attach_geom(const GSERIALIZED *geom, Temporal *temp)
 #endif /* RGEO */
 }
 
+/**
+ * @brief Give a reference geometry back to each temporal value of an array, as
+ * #temporal_attach_geom gives it back to one
+ * @param[in] geom Reference geometry, NULL where the values carry none
+ * @param[in,out] temparr Array of temporal values, each element becoming the
+ * value that carries the geometry
+ * @param[in] count Number of values in the array
+ */
+void
+temporal_attach_geom_array(const GSERIALIZED *geom, Temporal **temparr,
+  int count)
+{
+  if (! geom || ! temparr)
+    return;
+  for (int i = 0; i < count; i++)
+    temparr[i] = temporal_attach_geom(geom, temparr[i]);
+}
+
 /*****************************************************************************
  * General functions
  *****************************************************************************/
@@ -2127,17 +2145,27 @@ temporal_set_interp(const Temporal *temp, interpType interp)
   if (! ensure_valid_interp(temp->temptype, interp))
     return NULL;
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_as_tsequence((TInstant *) temp, interp);
+      result = (Temporal *) tinstant_as_tsequence((TInstant *) work, interp);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_set_interp((TSequence *) temp, interp);
+      result = (Temporal *) tsequence_set_interp((TSequence *) work, interp);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_set_interp((TSequenceSet *) temp,
+      result = (Temporal *) tsequenceset_set_interp((TSequenceSet *) work,
         interp);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /*****************************************************************************/
@@ -3008,17 +3036,19 @@ temporal_start_sequence(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  /* Ensure the validity of the arguments */
   if (! ensure_continuous_interp(temp))
     return NULL;
 
-  if (temp->subtype == TSEQUENCE)
-    return tsequence_copy((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    const TSequenceSet *ss = (const TSequenceSet *) temp;
-    return tsequence_copy(TSEQUENCESET_SEQ_N(ss, 0));
-  }
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  TSequence *result = (work->subtype == TSEQUENCE) ?
+    tsequence_copy((TSequence *) work) :
+    tsequence_copy(TSEQUENCESET_SEQ_N((const TSequenceSet *) work, 0));
+  if (work != temp)
+    pfree(work);
+  return (TSequence *) temporal_attach_geom(geom, (Temporal *) result);
 }
 
 /**
@@ -3036,13 +3066,21 @@ temporal_end_sequence(const Temporal *temp)
   if (! ensure_continuous_interp(temp))
     return NULL;
 
-  if (temp->subtype == TSEQUENCE)
-    return tsequence_copy((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  TSequence *result;
+  if (work->subtype == TSEQUENCE)
+    result = tsequence_copy((TSequence *) work);
+  else /* work->subtype == TSEQUENCESET */
   {
-    const TSequenceSet *ss = (const TSequenceSet *) temp;
-    return tsequence_copy(TSEQUENCESET_SEQ_N(ss, ss->count - 1));
+    const TSequenceSet *ss = (const TSequenceSet *) work;
+    result = tsequence_copy(TSEQUENCESET_SEQ_N(ss, ss->count - 1));
   }
+  if (work != temp)
+    pfree(work);
+  return (TSequence *) temporal_attach_geom(geom, (Temporal *) result);
 }
 
 /**
@@ -3061,18 +3099,25 @@ temporal_sequence_n(const Temporal *temp, int n)
   if (! ensure_continuous_interp(temp))
     return NULL;
 
-  if (temp->subtype == TSEQUENCE)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  TSequence *result = NULL;
+  if (work->subtype == TSEQUENCE)
   {
     if (n == 1)
-      return tsequence_copy((const TSequence *) temp);
+      result = tsequence_copy((const TSequence *) work);
   }
-  else /* temp->subtype == TSEQUENCESET */
+  else /* work->subtype == TSEQUENCESET */
   {
-    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    const TSequenceSet *ss = (const TSequenceSet *) work;
     if (n >= 1 && n <= ss->count)
-      return tsequence_copy(TSEQUENCESET_SEQ_N(ss, n - 1));
+      result = tsequence_copy(TSEQUENCESET_SEQ_N(ss, n - 1));
   }
-  return NULL;
+  if (work != temp)
+    pfree(work);
+  return (TSequence *) temporal_attach_geom(geom, (Temporal *) result);
 }
 
 /**
@@ -3120,12 +3165,21 @@ temporal_sequences(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
+
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
   /* We do a casting to avoid allocating a new array of sequences */
-  TSequence **sequences = (TSequence **) temporal_sequences_p(temp, count);
+  TSequence **sequences = (TSequence **) temporal_sequences_p(work, count);
+  if (sequences)
+    for (int i = 0; i < *count; i ++)
+      sequences[i] = tsequence_copy(sequences[i]);
+  if (work != temp)
+    pfree(work);
   if (! sequences)
     return NULL;
-  for (int i = 0; i < *count; i ++)
-    sequences[i] = tsequence_copy(sequences[i]);
+  temporal_attach_geom_array(geom, (Temporal **) sequences, *count);
   return sequences;
 }
 
@@ -3145,19 +3199,25 @@ temporal_segments(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  if (temp->subtype == TINSTANT)
   {
-    case TINSTANT:
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-        "The temporal value must be of subtype sequence (set)");
-      return NULL;
-    case TSEQUENCE:
-      return tsequence_segments((TSequence *) temp, count);
-    default: /* TSEQUENCESET */
-      return tsequenceset_segments((TSequenceSet *) temp, count);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be of subtype sequence (set)");
+    return NULL;
   }
+
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  TSequence **result = (work->subtype == TSEQUENCE) ?
+    tsequence_segments((TSequence *) work, count) :
+    tsequenceset_segments((TSequenceSet *) work, count);
+  if (work != temp)
+    pfree(work);
+  if (result)
+    temporal_attach_geom_array(geom, (Temporal **) result, *count);
+  return result;
 }
 
 /**
@@ -3269,7 +3329,14 @@ temporal_start_instant(const Temporal *temp)
   VALIDATE_NOT_NULL(temp, NULL);
 
   /* A temporal value always has a start instant */
-  return tinstant_copy(temporal_start_inst(temp));
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  TInstant *result = tinstant_copy(temporal_start_inst(work));
+  if (work != temp)
+    pfree(work);
+  return (TInstant *) temporal_attach_geom(geom, (Temporal *) result);
 }
 
 /**
@@ -3315,7 +3382,14 @@ temporal_end_instant(const Temporal *temp)
   VALIDATE_NOT_NULL(temp, NULL);
 
   /* A temporal value always has an end instant */
-  return tinstant_copy(temporal_end_inst(temp));
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  TInstant *result = tinstant_copy(temporal_end_inst(work));
+  if (work != temp)
+    pfree(work);
+  return (TInstant *) temporal_attach_geom(geom, (Temporal *) result);
 }
 
 /**
@@ -3360,8 +3434,15 @@ temporal_instant_n(const Temporal *temp, int n)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
-  const TInstant *result = temporal_inst_n(temp, n);
-  return result ? tinstant_copy(result) : NULL;
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  const TInstant *inst = temporal_inst_n(work, n);
+  TInstant *result = inst ? tinstant_copy(inst) : NULL;
+  if (work != temp)
+    pfree(work);
+  return (TInstant *) temporal_attach_geom(geom, (Temporal *) result);
 }
 
 /**
@@ -3410,9 +3491,17 @@ temporal_instants(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  TInstant **instants = (TInstant **) temporal_insts_p(temp, count);
+
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+  TInstant **instants = (TInstant **) temporal_insts_p(work, count);
   for (int i = 0; i < *count; i ++)
     instants[i] = tinstant_copy(instants[i]);
+  if (work != temp)
+    pfree(work);
+  temporal_attach_geom_array(geom, (Temporal **) instants, *count);
   return instants;
 }
 

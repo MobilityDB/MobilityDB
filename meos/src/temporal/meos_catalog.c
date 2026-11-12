@@ -239,6 +239,8 @@ static const char *MEOS_OPER_NAMES[] =
   [TEMPCONTAINS_OP] = "#@>",
   [TEMPCONTAINED_OP] = "<@#",
 #endif /* JSON */
+  [EVEROVERLAPS_OP] = "?&&",
+  [ALWAYSOVERLAPS_OP] = "%&&",
 };
 
 /**
@@ -530,6 +532,8 @@ meostype_from_string(const char *name)
 /**
  * @brief Fetch the operator number from its name
  * @arg[in] str Name of the type
+ * @note An operator of a family the build leaves out has no name, so its
+ * entry of #MEOS_OPER_NAMES is skipped
  */
 MeosOper
 meosoper_from_string(const char *str)
@@ -537,7 +541,7 @@ meosoper_from_string(const char *str)
   int n = sizeof(MEOS_OPER_NAMES) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
-    if (strcmp(MEOS_OPER_NAMES[i], str) == 0)
+    if (MEOS_OPER_NAMES[i] && strcmp(MEOS_OPER_NAMES[i], str) == 0)
       return i;
   }
   return UNKNOWN_OP;

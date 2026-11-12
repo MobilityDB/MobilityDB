@@ -39,6 +39,10 @@ add_executable(arc_cross_unit arc_cross_unit.c)
 target_link_libraries(arc_cross_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME arc_cross_unit COMMAND arc_cross_unit)
 
+add_executable(relate_arc_end_unit relate_arc_end_unit.c)
+target_link_libraries(relate_arc_end_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME relate_arc_end_unit COMMAND relate_arc_end_unit)
+
 add_executable(ray_cast_unit ray_cast_unit.c)
 target_link_libraries(ray_cast_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME ray_cast_unit COMMAND ray_cast_unit)
@@ -47,3 +51,11 @@ add_executable(shift_signs_unit shift_signs_unit.c)
 target_include_directories(shift_signs_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(shift_signs_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME shift_signs_unit COMMAND shift_signs_unit)
+
+add_executable(within_time_unit within_time_unit.c)
+target_link_libraries(within_time_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME within_time_unit COMMAND within_time_unit)
+
+add_executable(simple_traj_unit simple_traj_unit.c)
+target_link_libraries(simple_traj_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME simple_traj_unit COMMAND simple_traj_unit)
