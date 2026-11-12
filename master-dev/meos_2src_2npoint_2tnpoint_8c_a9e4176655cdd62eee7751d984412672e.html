@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: route_point_tinstant</title>
+<title>MobilityDB: route_points_set_stbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,7 +89,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_ab22ba536dffb591c803cbc3c66257c2e.html#ab22ba536dffb591c803cbc3c66257c2e">ensure_valid_tnpoint_tnpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__set__accessor_gacac2cd1c73502ff07c70f9696bdc8ac8.html#gacac2cd1c73502ff07c70f9696bdc8ac8">npointset_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_aa151531097c065034fe76652a298020f.html#aa151531097c065034fe76652a298020f">route_point_at</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_afecdda167604016f32501ccac5cfe6de.html#afecdda167604016f32501ccac5cfe6de">route_point_tinstant</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_acf43e4684edf812f72bfd7314bda8443.html#acf43e4684edf812f72bfd7314bda8443">route_point_tinstant</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a9e4176655cdd62eee7751d984412672e.html#a9e4176655cdd62eee7751d984412672e">route_points_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f">route_vertex_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__conversion_ga18e87096b5f9556a9fe9d4f70f9eefe5.html#ga18e87096b5f9556a9fe9d4f70f9eefe5">tgeompoint_to_tnpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">tgeompointinst_tnpointinst</a></td></tr>
@@ -143,8 +144,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="afecdda167604016f32501ccac5cfe6de" name="afecdda167604016f32501ccac5cfe6de"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afecdda167604016f32501ccac5cfe6de">&#9670;&#160;</a></span>route_point_tinstant()</h2>
+<a id="a9e4176655cdd62eee7751d984412672e" name="a9e4176655cdd62eee7751d984412672e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e4176655cdd62eee7751d984412672e">&#9670;&#160;</a></span>route_points_set_stbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -153,22 +154,40 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structTInstant.html">TInstant</a> * route_point_tinstant </td>
+          <td class="memname">static void route_points_set_stbox </td>
           <td>(</td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid</em>, </td>
+          <td class="paramtype"><a class="el" href="structTInstant.html">TInstant</a> **&#160;</td>
+          <td class="paramname"><em>instants</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structPOINT4D.html">POINT4D</a> *&#160;</td>
-          <td class="paramname"><em>pt</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TimestampTz&#160;</td>
-          <td class="paramname"><em>t</em>&#160;</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>lower_inc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>upper_inc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a>&#160;</td>
+          <td class="paramname"><em>interp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
+          <td class="paramname"><em>box</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -183,15 +202,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return a temporal geometry point instant located at a point of a route. </p>
-<p >The instant a point of a route makes, as <a class="el" href="meos_2src_2npoint_2tnpoint_8c_abda8d6a60233ff78a9f73757aa59f1ba.html#abda8d6a60233ff78a9f73757aa59f1ba" title="Convert a temporal network point into a temporal geometry point.">tnpointinst_tgeompointinst</a> makes it for a network point, made from its coordinates by <a class="el" href="tgeo__spatialfuncs_8h_a6ae54d8c8f5a6de2fe2a14020aa51009.html#a6ae54d8c8f5a6de2fe2a14020aa51009" title="Return a temporal point instant from the coordinates of a point and a timestamptz.">tpointinst_make_coords</a>. A route is a planar line with finite coordinates, as <a class="el" href="tnpoint_8h_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc" title="Ensure that the geometry of a route read from the ways network is a planar line without Z or M dimens...">ensure_valid_route</a> tests when the network is read, and a point of it at a fraction of its length has two finite coordinates </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID of the route </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pt</td><td>Point </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Return in the last argument the box of a temporal geometry point sequence converted from a temporal network point, given the spatial box of its points. </p>
+<p >The box <a class="el" href="meos_2include_2temporal_2temporal__boxops_8h_a98d1427f4e19032a70af65589868f0e6.html#a98d1427f4e19032a70af65589868f0e6" title="Set a bounding box from an array of temporal instant values.">tinstarr_set_bbox</a> computes from the instants, the spatial box of their points and the period from the first instant to the last </p>
 
 </div>
 </div>
