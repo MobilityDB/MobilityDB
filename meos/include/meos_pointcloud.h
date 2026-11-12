@@ -557,6 +557,8 @@ extern Temporal *tpcpatch_at_value(const Temporal *temp, const Pcpatch *pa);
 extern Temporal *tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa);
 extern Temporal *tpcpatch_at_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc);
 extern Temporal *tpcpatch_minus_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc);
+extern Temporal *tpcpatch_at_tpcbox_fine(const Temporal *temp, const TPCBox *box, bool border_inc);
+extern Temporal *tpcpatch_minus_tpcbox_fine(const Temporal *temp, const TPCBox *box, bool border_inc);
 extern uint32_t tpcpatch_pcid(const Temporal *temp);
 extern uint32_t tpcpatch_start_npoints(const Temporal *temp);
 extern uint32_t tpcpatch_end_npoints(const Temporal *temp);

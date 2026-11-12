@@ -37,12 +37,15 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+/* PostgreSQL */
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
+#include "temporal/temporal_boxops.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -398,15 +401,54 @@ tnpointinst_tgeompointinst(const TInstant *inst)
  * #tnpointinst_tgeompointinst makes it for a network point, made from its
  * coordinates by #tpointinst_make_coords. A route is a planar line with
  * finite coordinates, as #ensure_valid_route tests when the network is read,
- * and a point of it at a fraction of its length has two finite coordinates
+ * and a point of it at a fraction of its length has two finite coordinates.
+ * The point expands the spatial box of the points of the conversion as
+ * #tgeoinstarr_set_stbox reads it from them, and starts it when the box has
+ * no spatial extent yet
  * @param[in] srid SRID of the route
  * @param[in] pt Point
  * @param[in] t Timestamp
+ * @param[inout] box Spatial box of the points
  */
 static TInstant *
-route_point_tinstant(int32_t srid, const POINT4D *pt, TimestampTz t)
+route_point_tinstant(int32_t srid, const POINT4D *pt, TimestampTz t,
+  STBox *box)
 {
+  if (! MEOS_FLAGS_GET_X(box->flags))
+    stbox_set(true, false, false, srid, pt->x, pt->x, pt->y, pt->y, 0.0, 0.0,
+      NULL, box);
+  else
+  {
+    box->xmin = Min(box->xmin, pt->x); box->xmax = Max(box->xmax, pt->x);
+    box->ymin = Min(box->ymin, pt->y); box->ymax = Max(box->ymax, pt->y);
+  }
   return tpointinst_make_coords(pt->x, pt->y, 0.0, false, false, srid, t);
+}
+
+/**
+ * @brief Return in the last argument the box of a temporal geometry point
+ * sequence converted from a temporal network point, given the spatial box of
+ * its points
+ * @details The box #tinstarr_set_bbox computes from the instants, the
+ * spatial box of their points and the period from the first instant to the
+ * last
+ */
+static void
+route_points_set_stbox(TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp, STBox *box)
+{
+  span_set(TimestampTzGetDatum(instants[0]->t),
+    TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
+    T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
+  MEOS_FLAGS_SET_T(box->flags, true);
+#ifndef NDEBUG
+  STBox box1;
+  tinstarr_set_bbox(instants, count, lower_inc, upper_inc, interp, &box1);
+  assert(stbox_eq(box, &box1));
+#else
+  (void) interp;
+#endif /* NDEBUG */
+  return;
 }
 
 /**
@@ -501,45 +543,45 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int64 rid = -1;
   int32_t srid = SRID_UNKNOWN;
-  LWLINE *lwline = NULL;
+  const LWLINE *lwline = NULL;
   double length = 0.0;
+  STBox box;
+  box.flags = 0;
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
     if (! lwline || np->rid != rid)
     {
-      /* A route that is found is not empty */
-      const GSERIALIZED *line = route_geom(np->rid);
-      if (lwline)
-        lwline_free(lwline);
-      if (! line)
+      /* A route that is found is not empty. The line belongs to the ways
+       * cache, which keeps the route used last while the next one is read */
+      lwline = route_line(np->rid);
+      if (! lwline)
       {
         pfree_array((void **) instants, i);
         return NULL;
       }
       rid = np->rid;
-      srid = gserialized_get_srid(line);
-      lwline = (LWLINE *) lwgeom_from_gserialized(line);
+      srid = lwline->srid;
       length = ptarray_length_2d(lwline->points);
     }
     POINT4D pt;
     route_point_at(lwline->points, length, np->pos, &pt);
-    instants[i] = route_point_tinstant(srid, &pt, inst->t);
+    instants[i] = route_point_tinstant(srid, &pt, inst->t, &box);
   }
-  lwline_free(lwline);
   /* The instants are points of routes at the increasing timestamps of the
    * sequence, and every route is a planar line in the SRID of the network,
    * which #ensure_valid_route tests when the network is read, so the
    * sequence is valid by construction and is built without testing them
-   * again */
+   * again, with the box of the points it made */
   assert(seq->count > 0);
 #ifndef NDEBUG
   for (int i = 1; i < seq->count; i++)
     assert(instants[i - 1]->t < instants[i]->t);
 #endif /* NDEBUG */
+  route_points_set_stbox(instants, seq->count, true, true, DISCRETE, &box);
   TSequence *result = tsequence_make_exp1(instants, seq->count, seq->count,
-    true, true, DISCRETE, NORMALIZE_NO, NULL);
+    true, true, DISCRETE, NORMALIZE_NO, &box);
   pfree_array((void **) instants, seq->count);
   return result;
 }
@@ -558,12 +600,11 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   assert(seq); assert(seq->temptype == T_TNPOINT);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
-  /* A route that is found is not empty */
-  const GSERIALIZED *line = route_geom(np->rid);
-  if (! line)
+  /* A route that is found is not empty. The line belongs to the ways cache */
+  const LWLINE *lwline = route_line(np->rid);
+  if (! lwline)
     return NULL;
-  int32_t srid = gserialized_get_srid(line);
-  LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
+  int32_t srid = lwline->srid;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
 
   /* Positions of the interior vertices of the route, which a linear segment
@@ -589,6 +630,8 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
 
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   int ninsts = 0;
+  STBox box;
+  box.flags = 0;
   for (int i = 0; i < seq->count; i++)
   {
     inst = TSEQUENCE_INST_N(seq, i);
@@ -619,29 +662,31 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
         if (t <= instants[ninsts - 1]->t || t >= inst->t)
           continue;
         instants[ninsts++] = route_point_tinstant(srid,
-          getPoint4d_cp(pa, k + 1), t);
+          getPoint4d_cp(pa, k + 1), t, &box);
       }
     }
     POINT4D pt;
     route_point_at(pa, length, np->pos, &pt);
-    instants[ninsts++] = route_point_tinstant(srid, &pt, inst->t);
+    instants[ninsts++] = route_point_tinstant(srid, &pt, inst->t, &box);
   }
 
   if (fracs)
     pfree(fracs);
-  lwline_free(lwline);
   /* The instants are points of one route at increasing timestamps, the
    * instants of the sequence and the vertices dated strictly between them,
    * and the route is a planar line in the SRID of the network, which
    * #ensure_valid_route tests when the network is read, so the sequence is
-   * valid by construction and is built without testing them again */
+   * valid by construction and is built without testing them again, with the
+   * box of the points it made */
   assert(ninsts > 0);
 #ifndef NDEBUG
   for (int i = 1; i < ninsts; i++)
     assert(instants[i - 1]->t < instants[i]->t);
 #endif /* NDEBUG */
+  route_points_set_stbox(instants, ninsts, seq->period.lower_inc,
+    seq->period.upper_inc, interp, &box);
   TSequence *result = tsequence_make_exp1(instants, ninsts, ninsts,
-    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO, NULL);
+    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO, &box);
   pfree_array((void **) instants, ninsts);
   return result;
 }

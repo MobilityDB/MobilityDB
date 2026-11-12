@@ -1360,11 +1360,12 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
     nfree = 0; /* counter for the connections to be freed */
   while (i < ss1->count || j < ss2->count)
   {
-    /* Take the composing sequence starting first */
+    /* Take the composing sequence starting first, an inclusive lower bound
+     * before an exclusive one on the same timestamp, in the order of
+     * #tseqarr_sort in #tcontseq_merge_array_iter */
     bool first = (j == ss2->count) || (i < ss1->count &&
-      timestamptz_cmp_internal(
-        DatumGetTimestampTz(TSEQUENCESET_SEQ_N(ss1, i)->period.lower),
-        DatumGetTimestampTz(TSEQUENCESET_SEQ_N(ss2, j)->period.lower)) <= 0);
+      span_cmp(&TSEQUENCESET_SEQ_N(ss1, i)->period,
+        &TSEQUENCESET_SEQ_N(ss2, j)->period) <= 0);
     const TSequence *seq = first ? TSEQUENCESET_SEQ_N(ss1, i++) :
       TSEQUENCESET_SEQ_N(ss2, j++);
     /* Connect it to the sequence before when the two come from different

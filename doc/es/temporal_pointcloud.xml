@@ -2108,7 +2108,7 @@ SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1,
 atTpcboxFine(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcboxFine(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 </programlisting>
-					<para>Cada instante superviviente contiene un pcpatch recién construido que incluye solo los puntos dentro, o fuera en la forma minus, del tpcbox en dos dimensiones, y en tres cuando la caja tiene dimensión Z. Los instantes cuyo parche filtra hasta cero puntos se descartan. Más lenta que la variante aproximada porque cada parche se descomprime y reconstruye; úsela cuando se necesite fidelidad a nivel de punto.</para>
+					<para>Cada instante superviviente contiene un pcpatch recién construido que incluye solo los puntos dentro, o fuera en la forma minus, del tpcbox en dos dimensiones, y en tres cuando la caja tiene dimensión Z. Los instantes cuyo parche filtra hasta cero puntos se descartan, un instante fuera del período de la caja no teniendo ningún punto en ella, y una caja sin dimensión X contiene todos los puntos de un instante en su período. Un tpcbox de otro esquema, sistema de referencia o tipo de coordenada provoca un error, como lo hacen los operadores de las cajas. Más lenta que la variante aproximada porque cada parche se descomprime y reconstruye; úsela cuando se necesite fidelidad a nivel de punto.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcboxFine(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),

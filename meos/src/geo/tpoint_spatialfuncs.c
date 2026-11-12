@@ -506,8 +506,33 @@ tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /**
+ * @brief Return the distance within which two geodetic points MEOS
+ * constructs along the great circles of two segments at one instant are the
+ * same point
+ * @details A geodetic point at an instant of a segment is computed in doubles
+ * along its great circle, so two segments meeting at that instant give two
+ * points apart by the rounding of their coordinates, and the exact distance
+ * between them is almost never zero. The distance is the band of a
+ * constructed point the exact computation of MEOS admits, as
+ * #geompoint_route_band is for a point on a route: #MEOS_GEOM_TOLERANCE plus
+ * four units of rounding of the largest coordinate of the two points, which
+ * no two points genuinely apart are within
+ * @param[in] p1,p2 Points
+ */
+static double
+geogpoint_meeting_band(const POINT4D *p1, const POINT4D *p2)
+{
+  return MEOS_GEOM_TOLERANCE + 4.0 * DBL_EPSILON *
+    Max(Max(fabs(p1->x), fabs(p1->y)), Max(fabs(p2->x), fabs(p2->y)));
+}
+
+/**
  * @brief Return 1 or 2 if two temporal geography point segments intersect
  * during the period defined by the output timestamps, return 0 otherwise
+ * @details The instant is the turning point of their distance
+ * (#tgeogpointsegm_distance_turnpt), and the segments meet there where the
+ * two points they interpolate at it lie within the band of those
+ * constructed points (#geogpoint_meeting_band)
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
@@ -517,8 +542,19 @@ int
 tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  return tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
-    (Datum) 0.0, lower, upper, t1, t2);
+  if (! tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
+    (Datum) 0.0, lower, upper, t1, t2))
+    return 0;
+  Datum v1 = tsegment_value_at_timestamptz(start1, end1, T_TGEOGPOINT, lower,
+    upper, *t1);
+  Datum v2 = tsegment_value_at_timestamptz(start2, end2, T_TGEOGPOINT, lower,
+    upper, *t1);
+  POINT4D p1, p2;
+  datum_point4d(v1, &p1);
+  datum_point4d(v2, &p2);
+  pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
+  return (hypot(p1.x - p2.x, p1.y - p2.y) <=
+    geogpoint_meeting_band(&p1, &p2)) ? 1 : 0;
 }
 
 /*****************************************************************************
