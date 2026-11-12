@@ -2929,7 +2929,6 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
     for (i = 0; i < n; i++)
       instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i);
     inst1 = TSEQUENCE_INST_N(seq, n);
-    inst2 = TSEQUENCE_INST_N(seq, n + 1);
     if (inst1->t == t)
     {
       if (interp == LINEAR)
@@ -2949,7 +2948,8 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
     }
     else
     {
-      /* inst1->t < t */
+      /* inst1->t < t, so an instant follows the n-th one */
+      inst2 = TSEQUENCE_INST_N(seq, n + 1);
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = (interp == LINEAR) ?
         tsegment_at_timestamptz(inst1, inst2, interp, t) :
@@ -2959,10 +2959,11 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       pfree(instants[n + 1]);
     }
   }
-  /* Compute the second sequence after t */
+  /* Compute the second sequence after t, of which there is none where t is
+   * the last instant, the n-th one being then followed by no instant */
   inst1 = TSEQUENCE_INST_N(seq, n);
-  inst2 = TSEQUENCE_INST_N(seq, n + 1);
-  if (t < inst2->t)
+  inst2 = (n < seq->count - 1) ? TSEQUENCE_INST_N(seq, n + 1) : NULL;
+  if (inst2 && t < inst2->t)
   {
     instants[0] = tsegment_at_timestamptz(inst1, inst2, interp, t);
     for (i = 1; i < seq->count - n; i++)

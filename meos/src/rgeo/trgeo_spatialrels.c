@@ -74,6 +74,15 @@ static int
 ea_spatialrel_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   int (*func)(const Temporal *, const GSERIALIZED *, bool), bool ever)
 {
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #tdistance_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    int result = ea_spatialrel_trgeometry_geo(temp, flat, func, ever);
+    pfree(flat);
+    return result;
+  }
   if (! ensure_valid_trgeometry_geo(temp, gs))
     return -1;
   Temporal *tgeo = trgeometry_to_tgeometry(temp);
@@ -99,6 +108,15 @@ static int
 ea_spatialrel_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
   int (*func)(const GSERIALIZED *, const Temporal *, bool), bool ever)
 {
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #tdistance_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    int result = ea_spatialrel_geo_trgeometry(flat, temp, func, ever);
+    pfree(flat);
+    return result;
+  }
   if (! ensure_valid_trgeometry_geo(temp, gs))
     return -1;
   Temporal *tgeo = trgeometry_to_tgeometry(temp);
@@ -368,6 +386,15 @@ ea_covers_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bo
 int
 ea_disjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #tdistance_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    int result = ea_disjoint_trgeometry_geo(temp, flat, ever);
+    pfree(flat);
+    return result;
+  }
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
@@ -483,6 +510,15 @@ adisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 ea_intersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #tdistance_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    int result = ea_intersects_trgeometry_geo(temp, flat, ever);
+    pfree(flat);
+    return result;
+  }
   if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
   /* A body in linear motion meets a geometry between its poses as well, where
@@ -692,6 +728,15 @@ int
 ea_dwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool ever)
 {
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #tdistance_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    int result = ea_dwithin_trgeometry_geo(temp, flat, dist, ever);
+    pfree(flat);
+    return result;
+  }
   if (! ensure_valid_trgeometry_geo(temp, gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -818,6 +863,15 @@ static Temporal *
 tinterrel_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool disjoint)
 {
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #tdistance_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    Temporal *result = tinterrel_trgeometry_geo(temp, flat, disjoint);
+    pfree(flat);
+    return result;
+  }
   if (! ensure_valid_trgeometry_geo(temp, gs))
     return NULL;
   if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! gserialized_is_empty(gs))
