@@ -300,13 +300,13 @@ SELECT tDisjoint(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-
 SELECT tDisjoint(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]');
                                                                                          tdisjoint                                                                                         
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 08:29:07.012947 2001 PST], (t@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 15:30:52.987053 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 08:29:07.012947 2001 PST], (t@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 15:30:52.987052 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDisjoint(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03], [Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}');
                                                                                                                           tdisjoint                                                                                                                          
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 08:29:07.012947 2001 PST], (t@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 15:30:52.987053 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 08:29:07.012947 2001 PST], (t@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 15:30:52.987052 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDisjoint(geometry 'Point empty', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
@@ -348,13 +348,13 @@ SELECT tDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 
 SELECT tDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]', geometry 'Point(1 1)');
                                                                                          tdisjoint                                                                                         
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 08:29:07.012947 2001 PST], (t@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 15:30:52.987053 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 08:29:07.012947 2001 PST], (t@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 15:30:52.987052 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03], [Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}', geometry 'Point(1 1)');
                                                                                                                           tdisjoint                                                                                                                          
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 08:29:07.012947 2001 PST], (t@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 15:30:52.987053 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 08:29:07.012947 2001 PST], (t@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 15:30:52.987052 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDisjoint(tcbuffer '[Cbuffer(Point(0 1),0.5)@2001-01-01, Cbuffer(Point(2 1),0.5)@2001-01-04]', geometry 'Linestring(1 0,1 1,2 1,2 0)');
@@ -501,13 +501,13 @@ SELECT tIntersects(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@200
 SELECT tIntersects(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]');
                                                                                         tintersects                                                                                        
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, t@Tue Jan 02 15:30:52.987053 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, t@Tue Jan 02 15:30:52.987052 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tIntersects(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03], [Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}');
                                                                                                                          tintersects                                                                                                                         
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, t@Tue Jan 02 15:30:52.987053 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, t@Tue Jan 02 15:30:52.987052 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tIntersects(geometry 'Point empty', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
@@ -549,13 +549,13 @@ SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]', geometry 'Point(1 1)');
                                                                                         tintersects                                                                                        
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, t@Tue Jan 02 15:30:52.987053 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, t@Tue Jan 02 15:30:52.987052 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03], [Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}', geometry 'Point(1 1)');
                                                                                                                          tintersects                                                                                                                         
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, t@Tue Jan 02 15:30:52.987053 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, t@Tue Jan 02 15:30:52.987052 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(0 1),0.5)@2001-01-01, Cbuffer(Point(2 1),0.5)@2001-01-04]', geometry 'Linestring(1 0,1 1,2 1,2 0)');
@@ -1445,7 +1445,7 @@ SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),2)@2001-01-01', tcbuffer 'Cbuffer(Po
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]', geometry 'Point(0 0)');
                                                                                         tintersects                                                                                        
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 22:09:13.846154 2001 PST, t@Tue Jan 02 02:10:54.545455 2001 PST], (f@Tue Jan 02 02:10:54.545455 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 22:09:13.846153 2001 PST, t@Tue Jan 02 02:10:54.545454 2001 PST], (f@Tue Jan 02 02:10:54.545454 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');

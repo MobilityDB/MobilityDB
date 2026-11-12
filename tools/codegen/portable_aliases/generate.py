@@ -87,8 +87,8 @@ ALREADY_NAMED = {
 # Coverage-audit buckets: operators that need no portable rename.
 SCALAR_SQL = {"+", "-", "*", "/", "=", "<>", "<", "<=", ">", ">=", "@"}
 TEMP = {"#=", "#<>", "#<", "#<=", "#>", "#>="}
-EVER = {"?=", "?<>", "?<", "?<=", "?>", "?>="}
-ALWAYS = {"%=", "%<>", "%<", "%<=", "%>", "%>="}
+EVER = {"?=", "?<>", "?<", "?<=", "?>", "?>=", "?&&"}
+ALWAYS = {"%=", "%<>", "%<", "%<=", "%>", "%>=", "%&&"}
 DIST = {"<->", "|=|", "<#>", "|=|>"}
 # json-specific access/existence operators carried by the tjsonb/jsonbset types
 # (field/element access ->, ->>; path delete #-; key existence ?, ?&, ?|). Each
@@ -99,9 +99,9 @@ JSON_ACCESS = {"->", "->>", "#-", "?", "?&", "?|"}
 # The temporal (#), ever (?) and always (%) comparison families map to the
 # camelCase prefix (t/e/a) followed by the operation spelled out (= -> Equal,
 # <> -> NotEqual, < -> LessThan, <= -> LessEqual, > -> GreaterThan,
-# >= -> GreaterEqual).
+# >= -> GreaterEqual, && -> Overlaps, the operation TOPOLOGY names for &&).
 _CMP_SUFFIX = {"=": "Equal", "<>": "NotEqual", "<": "LessThan", "<=": "LessEqual",
-               ">": "GreaterThan", ">=": "GreaterEqual"}
+               ">": "GreaterThan", ">=": "GreaterEqual", "&&": "Overlaps"}
 for _ops, _prefix in ((TEMP, "t"), (EVER, "e"), (ALWAYS, "a")):
     for _op in _ops:
         OP_TO_NAME[_op] = _prefix + _CMP_SUFFIX[_op[1:]]

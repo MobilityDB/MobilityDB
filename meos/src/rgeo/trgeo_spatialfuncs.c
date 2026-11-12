@@ -653,8 +653,9 @@ trgeometry_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc
  * @brief Return a temporal rigid geometry restricted to (the complement
  * of) a geometry
  * @details The restriction is exact on the body extent for pure-translation
- * trgeometries. Rotating segments and holey targets raise an honest
- * FEATURE_NOT_SUPPORTED error.
+ * trgeometries, and a value in step or discrete interpolation is restricted
+ * by its placements, holes of the target included. A target with holes for a
+ * value in linear interpolation raises a FEATURE_NOT_SUPPORTED error.
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
@@ -670,8 +671,11 @@ trgeometry_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfun
     return atfunc ? NULL : temporal_copy(temp);
 
   LWGEOM *lwgs = lwgeom_from_gserialized(gs);
-  /* The M1 clip ignores polygon holes; reject holey targets honestly. */
-  if (lwgeom_has_interior_ring(lwgs))
+  /* A body that holds each pose is restricted by the static intersection of
+   * each placement, which reads the holes of the target (#body_meets_target);
+   * the clip of a body in linear motion reads the exterior ring of the target
+   * alone, so a target with holes is refused for it */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && lwgeom_has_interior_ring(lwgs))
   {
     lwgeom_free(lwgs);
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,

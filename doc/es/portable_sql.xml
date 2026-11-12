@@ -215,12 +215,14 @@
 					<row><entry></entry><entry>?&lt;=</entry><entry><indexterm significance="normal"><primary><varname>eLessEqual</varname></primary></indexterm>eLessEqual(a, b)</entry></row>
 					<row><entry></entry><entry>?&gt;</entry><entry><indexterm significance="normal"><primary><varname>eGreaterThan</varname></primary></indexterm>eGreaterThan(a, b)</entry></row>
 					<row><entry></entry><entry>?&gt;=</entry><entry><indexterm significance="normal"><primary><varname>eGreaterEqual</varname></primary></indexterm>eGreaterEqual(a, b)</entry></row>
+					<row><entry></entry><entry>?&amp;&amp;</entry><entry><indexterm significance="normal"><primary><varname>eOverlaps</varname></primary></indexterm>eOverlaps(a, b)</entry></row>
 					<row><entry>Comparación siempre</entry><entry>%=</entry><entry><indexterm significance="normal"><primary><varname>aEqual</varname></primary></indexterm>aEqual(a, b)</entry></row>
 					<row><entry></entry><entry>%&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>aNotEqual</varname></primary></indexterm>aNotEqual(a, b)</entry></row>
 					<row><entry></entry><entry>%&lt;</entry><entry><indexterm significance="normal"><primary><varname>aLessThan</varname></primary></indexterm>aLessThan(a, b)</entry></row>
 					<row><entry></entry><entry>%&lt;=</entry><entry><indexterm significance="normal"><primary><varname>aLessEqual</varname></primary></indexterm>aLessEqual(a, b)</entry></row>
 					<row><entry></entry><entry>%&gt;</entry><entry><indexterm significance="normal"><primary><varname>aGreaterThan</varname></primary></indexterm>aGreaterThan(a, b)</entry></row>
 					<row><entry></entry><entry>%&gt;=</entry><entry><indexterm significance="normal"><primary><varname>aGreaterEqual</varname></primary></indexterm>aGreaterEqual(a, b)</entry></row>
+					<row><entry></entry><entry>%&amp;&amp;</entry><entry><indexterm significance="normal"><primary><varname>aOverlaps</varname></primary></indexterm>aOverlaps(a, b)</entry></row>
 				</tbody>
 			</tgroup>
 		</informaltable>

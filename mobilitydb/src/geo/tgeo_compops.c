@@ -44,6 +44,7 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "temporal/temporal_compops.h"
+#include "geo/stbox.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
@@ -266,6 +267,138 @@ inline Datum
 Always_ne_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_ne_tgeo_tgeo);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal geo and a spatiotemporal box
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for the ever/always overlaps of a spatiotemporal
+ * box and a temporal geo, as #EAcomp_geo_tspatial answers an ever or always
+ * comparison
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always overlaps
+ */
+static Datum
+EAoverlaps_stbox_tgeo(FunctionCallInfo fcinfo,
+  int (*func)(const STBox *, const Temporal *))
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int result = func(box, temp);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for the ever/always overlaps of a temporal geo and
+ * a spatiotemporal box, as #EAcomp_tspatial_geo answers an ever or always
+ * comparison
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always overlaps
+ */
+static Datum
+EAoverlaps_tgeo_stbox(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const STBox *))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  int result = func(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_stbox_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_stbox_tgeo);
+/**
+ * @ingroup mobilitydb_geo_comp_ever
+ * @brief Return true if a temporal geo ever lies in a spatiotemporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_stbox_tgeo(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tgeo(fcinfo, &ever_overlaps_stbox_tgeo);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tgeo_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tgeo_stbox);
+/**
+ * @ingroup mobilitydb_geo_comp_ever
+ * @brief Return true if a temporal geo ever lies in a spatiotemporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tgeo_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tgeo_stbox(fcinfo, &ever_overlaps_tgeo_stbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_stbox_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_stbox_tgeo);
+/**
+ * @ingroup mobilitydb_geo_comp_ever
+ * @brief Return true if a temporal geo always lies in a spatiotemporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_stbox_tgeo(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tgeo(fcinfo, &always_overlaps_stbox_tgeo);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tgeo_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tgeo_stbox);
+/**
+ * @ingroup mobilitydb_geo_comp_ever
+ * @brief Return true if a temporal geo always lies in a spatiotemporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tgeo_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tgeo_stbox(fcinfo, &always_overlaps_tgeo_stbox);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tgeo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tgeo_tgeo);
+/**
+ * @ingroup mobilitydb_geo_comp_ever
+ * @brief Return true if the values of two temporal geos ever have overlapping
+ * bounding boxes at an instant they share, as #Ever_eq_tgeo_tgeo answers an
+ * ever comparison
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tgeo_tgeo(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &ever_overlaps_tgeo_tgeo);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tgeo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tgeo_tgeo);
+/**
+ * @ingroup mobilitydb_geo_comp_ever
+ * @brief Return true if the values of two temporal geos always have
+ * overlapping bounding boxes at the instants they share, as
+ * #Always_eq_tgeo_tgeo answers an always comparison
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tgeo_tgeo(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &always_overlaps_tgeo_tgeo);
 }
 
 /*****************************************************************************

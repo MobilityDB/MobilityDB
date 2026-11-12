@@ -740,6 +740,7 @@ SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 		<para>Las funciones <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname> y <varname>minusStbox</varname> restringen una trgeometry a (el complemento de) una geometría o una caja espaciotemporal. La semántica refleja la de <varname>tpose</varname>: una geometría rígida temporal está «en» una región en el instante <varname>t</varname> si y solo si su cuerpo, la geometría de referencia situada por la pose en <varname>t</varname>, toca esa región. <varname>atGeometry</varname> y <varname>minusGeometry</varname> aún no se admiten para un valor en tres dimensiones, ni para una geometría con Z o con agujeros, y <varname>atStbox</varname> y <varname>minusStbox</varname> aún no leen la dimensión Z de una caja.</para>
 		<para>Un cuerpo con agujeros en interpolación lineal aún no se admite en estas cuatro funciones, que leen solo el anillo exterior de un cuerpo en movimiento: la región que un agujero del cuerpo contiene en un instante no toca el cuerpo.</para>
+		<para>Una geometría con agujeros se admite para un valor en interpolación escalonada o discreta, que mantiene cada colocación de su cuerpo y se restringe donde la colocación toca la geometría, leídos los agujeros como exteriores a ella; para un valor en interpolación lineal aún no se admite.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_atValue">

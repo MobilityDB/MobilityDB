@@ -2873,6 +2873,9 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
   bool lower_inc = seq->period.lower_inc;
   Edge **sel_edges = edges;
   int sel_nedges = nedges;
+  /* The bounds of the periods of the exact engine of one segment */
+  int64 *exact_lo = palloc(sizeof(int64) * (nedges + 1));
+  int64 *exact_hi = palloc(sizeof(int64) * (nedges + 1));
   /* Loop for each segment */
   for (int i = 1; i < seq->count; i++)
   {
@@ -2893,6 +2896,32 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
         cand_edges[j] = edges[INDEX_RESULT_ID_N(rtree_results, j)];
       sel_edges = cand_edges;
       sel_nedges = cand_nedges;
+    }
+
+    /* The exact engine dates the periods in whole microseconds; a geometry
+     * it does not answer, an arc, takes the roots below */
+    const double c0[2] = {a->x, a->y}, c1[2] = {b->x, b->y};
+    int64 D = inst2->t - inst1->t;
+    int np = motion_edges_dwithin_periods(c0, c1, 0.0, 0.0,
+      (const Edge *const *) edges, nedges, dist, D, exact_lo, exact_hi);
+    if (np >= 0)
+    {
+      for (int j = 0; j < np; j++)
+      {
+        /* A single instant on an exclusive bound is not in the sequence */
+        if (exact_lo[j] == exact_hi[j] &&
+            ((exact_lo[j] == 0 && ! lower_inc) ||
+             (exact_hi[j] == D && ! upper_inc)))
+          continue;
+        Span s;
+        span_set(TimestampTzGetDatum(inst1->t + exact_lo[j]),
+          TimestampTzGetDatum(inst1->t + exact_hi[j]), true, true,
+          T_TIMESTAMPTZ, T_TSTZSPAN, &s);
+        meos_array_add(periods, &s);
+      }
+      inst1 = inst2;
+      a = b;
+      continue;
     }
 
     /* Reset and compute the within intervals for this segment */
@@ -2958,6 +2987,8 @@ next_segment:
     inst1 = inst2;
     a = b;
   }
+  pfree(exact_lo);
+  pfree(exact_hi);
   return;
 }
 
