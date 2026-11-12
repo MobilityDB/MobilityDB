@@ -1225,3 +1225,157 @@ SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp #>= t2.temp IS NOT
    130
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp ?&& tbox(t2.temp) <> (atTbox(t1.temp, tbox(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp %&& tbox(t2.temp) <> (minusTbox(t1.temp, tbox(t2.temp)) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE tbox(t2.temp) ?&& t1.temp <> t1.temp ?&& tbox(t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_floatspan t2
+WHERE t1.temp ?&& tbox(t2.f) <> (atTbox(t1.temp, tbox(t2.f)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp ?&& tbox(t2.temp) <> (atTbox(t1.temp, tbox(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp %&& tbox(t2.temp) <> (minusTbox(t1.temp, tbox(t2.temp)) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp ?&& tbox(t2.temp);
+ count 
+-------
+   123
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp %&& tbox(t2.temp);
+ count 
+-------
+   108
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2
+WHERE t1.temp ?&& t2.t <> (atTime(t1.temp, t2.t) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2
+WHERE t1.temp %&& t2.t <> (minusTime(t1.temp, t2.t) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
+WHERE t1.temp ?&& timeSpan(t2.temp) <> (atTime(t1.temp, timeSpan(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tstzspan t2
+WHERE t2.t ?&& t1.temp <> t1.temp ?&& t2.t;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2 WHERE t1.temp ?&& t2.t;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2 WHERE t1.temp %&& t2.t;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2 WHERE t1.temp && t2.t;
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2
+WHERE t1.temp && t2.t AND atTime(t1.temp, t2.t) IS NULL;
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp ?&& timeSpan(t2.temp) <> (atTime(t1.temp, timeSpan(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp %&& timeSpan(t2.temp) <> (minusTime(t1.temp, timeSpan(t2.temp)) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ?&& timeSpan(t2.temp);
+ count 
+-------
+   132
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp %&& timeSpan(t2.temp);
+ count 
+-------
+   118
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp ?&& t2.temp <> t1.temp ?= t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp %&& t2.temp <> t1.temp %= t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp ?&& t2.temp <> (atTime(t1.temp, getTime(t2.temp)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+

@@ -669,7 +669,6 @@ TRGEO_CONFIG = dict(
         "shortestline_trgeometry_tpoint":   {1: "tpoint1"},
         # The merge refuses two values that disagree where they overlap, so its
         # second operand is the LATER sequence rather than the canned one.
-        "trgeometry_merge":                 {1: "(Temporal *) trgeo_tseq2"},
         # The body-point trajectory follows one POINT of the rigid body; the
         # default polygon geom1 is rejected ("Only point geometries accepted").
         "trgeometry_body_point_trajectory": {1: "geom_point1"},
@@ -683,16 +682,6 @@ TRGEO_CONFIG = dict(
         # The value of a temporal is read off an instant; a sequence is refused
         # ("The temporal value must be of subtype Instant").
         "trgeometry_value":                 {0: "(Temporal *) trgeo_inst1"},
-        # Append is not destructive — it reads its first argument and returns a
-        # fresh value — but what it appends has to start after trgeo_seq1 ends,
-        # otherwise only the increasing-timestamps check is exercised. The
-        # trailing `expand` argument asks the kernel to grow the value in place
-        # and hand back the same allocation, which is the one ownership model
-        # the smoke harness cannot express; append without it.
-        "trgeometry_append_tinstant":       {1: "trgeo_inst3", 5: "false"},
-        # The values of a trgeometry are poses, so the set it is restricted to
-        # is a poseset; the default tstzset1 is refused ("The set must be of
-        # type poseset").
         # The relationships answer a rigid geometry at its instants and refuse
         # linear interpolation, so they read the step sequence of the same two
         # instants. So do the temporal geometry and the temporal geography of a
@@ -715,12 +704,6 @@ TRGEO_CONFIG = dict(
         "aintersects_trgeometry_geo": {0: "trgeo_stepseq1"},
         "aintersects_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
         "atouches_trgeometry_geo": {0: "trgeo_stepseq1"},
-        "trgeometry_restrict_values":       {1: "poseset1"},
-        # ... and so are the two entries that spell the same restriction as a
-        # pair, which the line above did not reach.
-        "trgeometry_at_values":             {1: "poseset1"},
-        "trgeometry_minus_values":          {1: "poseset1"},
-        "trgeometry_append_tsequence":      {1: "trgeo_tseq2", 2: "false"},
         # char * string constructors. The WKT is hand-written in the parser
         # format; the MFJSON is pasted verbatim from temporal_as_mfjson() on a
         # canned trgeometry, not guessed.
@@ -737,7 +720,6 @@ TRGEO_CONFIG = dict(
         # The merge takes an array of whole temporal values. Its two elements
         # must not disagree where they overlap, so they are the two instants
         # the sequence above is built from, each on its own.
-        "trgeometry_merge_array":     {0: "trgeoarr1", 1: "2"},
     },
     skip={},
     # The generic emitter would allocate into geom_out_param and never free it;
@@ -772,13 +754,13 @@ TRGEO_CONFIG = dict(
   TInstant *trgeo_inst2 = trgeometryinst_make(geom1, pose1,
     timestamptz_in("2001-01-03", -1));
   Temporal *trgeo_seq1 = (Temporal *) trgeo_inst1;
-  trgeo_seq1 = trgeometry_append_tinstant(trgeo_seq1, trgeo_inst2,
+  trgeo_seq1 = temporal_append_tinstant(trgeo_seq1, trgeo_inst2,
     LINEAR, 0.0, NULL, false);
   TSequence    *trgeo_tseq1    = (TSequence *) trgeo_seq1;
   TSequenceSet *trgeo_tseqset1 = NULL;
   /* The relationships answer a rigid geometry at its instants, so they take
    * step interpolation and refuse the linear sequence above. */
-  Temporal *trgeo_stepseq1 = trgeometry_append_tinstant(
+  Temporal *trgeo_stepseq1 = temporal_append_tinstant(
     (Temporal *) trgeo_inst1, trgeo_inst2, STEP, 0.0, NULL, false);
   /* A later instant and a later sequence, so that the append surface performs
    * a real append instead of tripping the increasing-timestamps check. */
@@ -786,7 +768,7 @@ TRGEO_CONFIG = dict(
     timestamptz_in("2001-01-04", -1));
   TInstant *trgeo_inst4 = trgeometryinst_make(geom1, pose1,
     timestamptz_in("2001-01-05", -1));
-  TSequence *trgeo_tseq2 = (TSequence *) trgeometry_append_tinstant(
+  TSequence *trgeo_tseq2 = (TSequence *) temporal_append_tinstant(
     (Temporal *) trgeo_inst3, trgeo_inst4, LINEAR, 0.0, NULL, false);
   Temporal *tpoint1 = trgeometry_to_tgeompoint(trgeo_seq1);
   Temporal *tpose1 = trgeometry_to_tpose(trgeo_seq1);
