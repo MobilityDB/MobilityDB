@@ -127,7 +127,7 @@ refuse, as the rule states for an operation comparing values. A comment of
 | A geometry with Z | `atGeometry`, `minusGeometry`, `aContains`, `tContains`, `tCovers`, `tTouches`, and `aCovers` in some forms | "The geometry cannot have Z dimension" | The restriction and these relationships to a geometry in three dimensions are not yet supported. |
 | A value in 3D | `tContains`, `tCovers`, `tTouches` | "The tgeometry cannot have Z dimension" | These relationships of a temporal rigid geometry in three dimensions are not yet supported. |
 | Another SRID | `transform`, `transformPipeline` | "Transformation to another SRID is not supported for type trgeometry" | The transformation of a temporal rigid geometry to another SRID is not yet supported. |
-| A surface | `asMFJSON`, `round` | "'PolyhedralSurface' geometry type not supported", "Unsupported geometry type in round function" | These functions do not yet support a polyhedral surface. TG17 closes both. |
+| A surface | `asMFJSON`, `round` | "'PolyhedralSurface' geometry type not supported", "Unsupported geometry type in round function" | These functions do not yet support a polyhedral surface. TG17 closes both, merged as #3606 and #3611. |
 
 ## Defects, which the manual should not state
 
