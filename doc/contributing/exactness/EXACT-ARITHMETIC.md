@@ -210,7 +210,7 @@ implementation; "survivor" is the one covering every finite double with the most
 
 | Question | Implementations | Survivor | What the others are |
 |---|---|---|---|
-| Orientation of three points in the plane | `cross_product_sign`, `cross_product_exact`, `relate_orientation`, `seg2d_side`, `certa_sum2_sign`, the inline sign of `cert_arc_minor`, `sum_point_orient`, `arr_cross_ival` | `cross_product_sign` (109 calls) | `cross_product_exact` has no caller; `certa_sum2_sign` and the sign of `cert_arc_minor` read `cross_product_sign` from C7 (fix/dot-sign-one-contract); before it, the same sign on the polynomial ladder, exact only in its range; `relate_orientation` stops at its filter, so its 0 is collinear or undecided; `seg2d_side` reads `cross_product_sign` with the opposite sign from #3593 (C5); before it, `MEOS_EPSILON` on the cross product |
+| Orientation of three points in the plane | `cross_product_sign`, `cross_product_exact`, `relate_orientation`, `seg2d_side`, `certa_sum2_sign`, the inline sign of `cert_arc_minor`, `sum_point_orient`, `arr_cross_ival` | `cross_product_sign` (109 calls) | `cross_product_exact` has no caller; `certa_sum2_sign` and the sign of `cert_arc_minor` read `cross_product_sign` from C7 (#3603); before it, the same sign on the polynomial ladder, exact only in its range; `relate_orientation` stops at its filter, so its 0 is collinear or undecided; `seg2d_side` reads `cross_product_sign` with the opposite sign from #3593 (C5); before it, `MEOS_EPSILON` on the cross product |
 | Orientation of four points in 3D | `vector_triple_sign`, `triple_product_sign` and its `_exact` | `vector_triple_sign` | `triple_product_sign` is exact only where no product overflows or underflows |
 | Sign of a dot product | `point_segment_dot_sign_inputs`, `dot_product_sign` and its `_exact` | `point_segment_dot_sign_inputs` | `dot_product_sign` is exact only in its range |
 | Do two segments meet | `linesegm_intersect`, `wide_segment_meet`, `relate_edges_cross`, `cert_segs_cross_exact`, `cert_segs_meet` | `linesegm_intersect` | each calls a different set of contacts a meeting (Section 4.7) |
@@ -326,7 +326,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    merged, for a geometry of segments; one carrying an arc follows), and `seg2d_side` by
    `cross_product_sign` (C5, #3593, merged). These change answers, where the tolerance answers
    wrongly, so each comes with a witness CGAL judges. Relate on arcs near an end
-   (fix/relate-arc-near-end): whether two boundary edges meet is decided by
+   (#3598, merged): whether two boundary edges meet is decided by
    `arcsegm_meet_exact` and `arcarc_meet_exact`, the latter reading its signs in doubles
    carrying a bound on their error first, and the start of
    an uncut edge standing outside the other area is read exactly where the boundary walk skips an
@@ -338,7 +338,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    survivor's contract become calls to it, one question per pull request, each proven by a
    differential: `cross_product_exact` (no caller), `certa_sum2_sign` and the sign of
    `cert_arc_minor` (to `cross_product_sign`, the cross product of (a, c) and (-d, b): C7,
-   fix/dot-sign-one-contract, its differential 1960 rows, the two agreeing with
+   #3603, its differential 1960 rows, the two agreeing with
    `cross_product_sign` between 2^-300 and 2^300 and answering 0 for 1 or -1 on 580 and 400 rows
    beyond, where a product of the ladder leaves the doubles), `triple_product_sign` and `dot_product_sign` (to
    `vector_triple_sign` and `point_segment_dot_sign_inputs`), `certa_longer` and
