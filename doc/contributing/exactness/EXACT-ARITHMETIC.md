@@ -211,7 +211,7 @@ implementation; "survivor" is the one covering every finite double with the most
 | Question | Implementations | Survivor | What the others are |
 |---|---|---|---|
 | Orientation of three points in the plane | `cross_product_sign`, `cross_product_exact`, `relate_orientation`, `seg2d_side`, `certa_sum2_sign`, the inline sign of `cert_arc_minor`, `sum_point_orient`, `arr_cross_ival` | `cross_product_sign` (109 calls) | `cross_product_exact` has no caller; `certa_sum2_sign` and the sign of `cert_arc_minor` read `cross_product_sign` from C7 (#3603, merged); before it, the same sign on the polynomial ladder, exact only in its range; `relate_orientation` stops at its filter, so its 0 is collinear or undecided; `seg2d_side` reads `cross_product_sign` with the opposite sign from #3593 (C5); before it, `MEOS_EPSILON` on the cross product |
-| Orientation of four points in 3D | `vector_triple_sign`, `triple_product_sign` and its `_exact` | `vector_triple_sign` | `triple_product_sign` is exact only where no product overflows or underflows, and reads `vector_triple_sign` from C8; `vector_triple_sign` itself answered 0 past 2^512 where two products of a component of `ddb_cross3` overflowed to one infinity and read as an exact zero, which #3617, merged, removes (a face and a segment crossing it inside, at 2^600, answered apart by `geom_dwithin3d`) |
+| Orientation of four points in 3D | `vector_triple_sign`, `triple_product_sign` and its `_exact` | `vector_triple_sign` | `triple_product_sign` is exact only where no product overflows or underflows, and reads `vector_triple_sign` from C8 (#3624); `vector_triple_sign` itself answered 0 past 2^512 where two products of a component of `ddb_cross3` overflowed to one infinity and read as an exact zero, which #3617, merged, removes (a face and a segment crossing it inside, at 2^600, answered apart by `geom_dwithin3d`) |
 | Sign of a dot product | `point_segment_dot_sign_inputs`, `dot_product_sign` and its `_exact` | `point_segment_dot_sign_inputs` | `dot_product_sign` is exact only in its range |
 | Do two segments meet | `linesegm_intersect`, `wide_segment_meet`, `relate_edges_cross`, `cert_segs_cross_exact`, `cert_segs_meet` | `linesegm_intersect` | each calls a different set of contacts a meeting (Section 4.7) |
 | Two points within a distance, a point against a centred circle | `point_within_distance_sign`, `point_distance_square_sum_sign`, `point_distance_square_sign_exact`, `point_distance_offset_pair_side_sign`, `certa_longer`, `centred_circle_side` | one sign of `\|p - q\|^2 - (t1 + ... + tn)^2` on `square_products_sign` | the first four differ only in signature; `certa_longer` and `centred_circle_side` read it on the polynomial ladder, in its range |
@@ -341,7 +341,11 @@ layer holds it for every question. The phases, each a series of pull requests:
    #3603, merged, its differential 1960 rows, the two agreeing with
    `cross_product_sign` between 2^-300 and 2^300 and answering 0 for 1 or -1 on 580 and 400 rows
    beyond, where a product of the ladder leaves the doubles), `triple_product_sign` and `dot_product_sign` (to
-   `vector_triple_sign` and `point_segment_dot_sign_inputs`), `certa_longer` and
+   `vector_triple_sign` and `point_segment_dot_sign_inputs`: C8, #3624, its differential 3200
+   rows, the two agreeing between 2^-300 and 2^320, the unit sphere of the cell walks included, and
+   answering 0 for 1 or -1 on 310 and 310 rows at 2^+-580 and beyond and on subnormal coordinates;
+   its differential found `ddb_cross3` reading two equal infinite products as an exact zero, fixed
+   first by #3617, merged), `certa_longer` and
    `centred_circle_side` (to the one sign of `|p - q|^2 - (t1 + ... + tn)^2`),
    `cert_point_seg_far_slow`, `point_segm_within` and its filter (to `point_segment_offset_sign`).
    Where the duplicate is exact in a narrower range than its survivor, the merge changes answers
@@ -512,7 +516,7 @@ the candidate moves of `point_distance_offset_filter` become side functions it r
 
 The gaps of Section 4.4 close on the one ladder: tier 2 where it is missing (after EA2), tier 3
 for `incircle_sign`, with a witness past the range of its expansions. `dot_product_sign` and
-`triple_product_sign` need none of their own: C8 reads them by `point_segment_dot_sign_inputs` and
+`triple_product_sign` need none of their own: C8 (#3624) reads them by `point_segment_dot_sign_inputs` and
 `vector_triple_sign`, which carry it.
 
 ### EA8. The double nearest a transcendental value
