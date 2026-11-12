@@ -30,10 +30,10 @@
 # These programs test internal functions of meos/src/quadbin, so CMake builds
 # them against the internal headers; their names end in _unit.c, so that CI
 # does not take them for tests of the public API.  Run them with
-#   ctest -R 'quadbin_owner|quadbin_point|quadbin_border'
+#   ctest -R 'quadbin_owner|quadbin_point|quadbin_border|quadbin_walk'
 # The first reads every tile up to the zoom it takes, 8 here; the second the
-# bounds of the tiles up to zoom 10, and the third the split of a segment
-# ending on those bounds.
+# bounds of the tiles up to zoom 10, the third the split of a segment ending
+# on those bounds, and the fourth the walks of quadbin_walk_rows.inc.
 
 add_executable(quadbin_owner_unit quadbin_owner_unit.c)
 target_link_libraries(quadbin_owner_unit ${MEOS_LIB_NAME} postgis pgtypes m)
@@ -46,3 +46,7 @@ add_test(NAME quadbin_point_unit COMMAND quadbin_point_unit)
 add_executable(quadbin_border_unit quadbin_border_unit.c)
 target_link_libraries(quadbin_border_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME quadbin_border_unit COMMAND quadbin_border_unit)
+
+add_executable(quadbin_walk_unit quadbin_walk_unit.c)
+target_link_libraries(quadbin_walk_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME quadbin_walk_unit COMMAND quadbin_walk_unit)

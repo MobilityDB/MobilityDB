@@ -69,6 +69,7 @@
 #include "temporal/tcellindex.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"  /* cross_product_sign */
 
 /*****************************************************************************
  * Input/output
@@ -1197,30 +1198,41 @@ quadbin_segment_cells(double lon1, double lat1, double lon2, double lat2,
   {
     /* The parameters at which the path reaches the next column boundary and
      * the next row boundary in the direction it travels */
-    double tcol = HUGE_VAL, trow = HUGE_VAL;
+    double tcol = HUGE_VAL, trow = HUGE_VAL, cx = 0.0, cy = 0.0;
     if (tx != ex && dlon != 0.0)
     {
-      double bx = (double) ((stepx > 0) ? tx + 1 : tx);
-      tcol = (quadbin_col_longitude(bx, n) - lon1) / dlon;
+      cx = quadbin_col_longitude((double) ((stepx > 0) ? tx + 1 : tx), n);
+      tcol = (cx - lon1) / dlon;
     }
     if (ty != ey && dlat != 0.0)
     {
-      double by = (double) ((stepy > 0) ? ty + 1 : ty);
-      trow = (quadbin_row_latitude(by, n) - lat1) / dlat;
+      cy = quadbin_row_latitude((double) ((stepy > 0) ? ty + 1 : ty), n);
+      trow = (cy - lat1) / dlat;
     }
     if (tcol == HUGE_VAL && trow == HUGE_VAL)
       break;
-    /* The crossings follow one another along the path, an order the
-     * rounding of the two boundary forms does not reverse */
-    double tnext = (tcol < trow) ? tcol : trow;
+    /* The path reaches the column bound first when the corner where the two
+     * bounds meet lies on one side of it, the row bound first when it lies
+     * on the other, and both at once when it passes through the corner: the
+     * sign of a cross product on the input doubles decides it exactly, where
+     * the two quotients round to the same parameter or to a reversed order */
+    int order;
+    if (tcol == HUGE_VAL)
+      order = -1;
+    else if (trow == HUGE_VAL)
+      order = 1;
+    else
+      order = cross_product_sign(lon1, lat1, lon2, lat2, lon1, lat1, cx, cy) *
+        ((dlon > 0.0) ? 1 : -1) * ((dlat > 0.0) ? 1 : -1);
+    double tnext = (order > 0) ? tcol : ((order < 0) ? trow : fmin(tcol, trow));
     if (tnext < t)
       tnext = t;
     if (tnext > 1.0)
       tnext = 1.0;
     t = tnext;
-    if (tcol < trow)
+    if (order > 0)
       tx += stepx;
-    else if (trow < tcol)
+    else if (order < 0)
       ty += stepy;
     else
     {
