@@ -1,32 +1,3 @@
--------------------------------------------------------------------------------
---
--- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
--- contributors
---
--- MobilityDB includes portions of PostGIS version 3 source code released
--- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2026, PostGIS contributors
---
--- Permission to use, copy, modify, and distribute this software and its
--- documentation for any purpose, without fee, and without a written
--- agreement is hereby granted, provided that the above copyright notice and
--- this paragraph and the following two paragraphs appear in all copies.
---
--- IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
--- DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
--- LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
--- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
--- OF SUCH DAMAGE.
---
--- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
--- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
--- AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
--- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
--- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
---
--------------------------------------------------------------------------------
-
 -- Ever/always and temporal comparison operators for tpcpoint. Values are built
 -- with the ergonomic pcpoint constructor because pgPointCloud's pcpoint_in
 -- accepts hex-WKB only, so a literal is not readable here. Equality on a
@@ -85,3 +56,23 @@ SELECT asText((:iA) #<> (:pB));
 SELECT asText((:seqAB) #<> (:seqAA));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+-- Ever and always overlaps: a value and a point cloud box
+
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) && tpcbox 'TPCBOX(XT(((8,0),(10,2)),[2024-01-01 00:00, 2024-01-01 10:00]), 1)';
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(XT(((4,4),(6,6)),[2024-01-01 04:00, 2024-01-01 06:00]), 1)';
+SELECT tpcbox 'TPCBOX(XT(((4,4),(6,6)),[2024-01-01 04:00, 2024-01-01 06:00]), 1)' ?&& tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]);
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) %&& tpcbox 'TPCBOX(X((0,0),(10,10)), 1)';
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) %&& tpcbox 'TPCBOX(X((0,0),(9,9)), 1)';
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(T([2024-01-02, 2024-01-03]), 1)';
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2
+WHERE t1.temp ?&& tpcbox(t2.temp) <> (atTpcbox(t1.temp, tpcbox(t2.temp)) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2
+WHERE t1.temp %&& tpcbox(t2.temp) <> (minusTpcbox(t1.temp, tpcbox(t2.temp)) IS NULL);
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp ?&& tpcbox(t2.temp);
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp %&& tpcbox(t2.temp);
+/* Errors */
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 10:00'::timestamptz)]) ?&& tpcbox 'TPCBOX(X((0,0),(10,10)), 999)';
