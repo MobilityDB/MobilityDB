@@ -230,7 +230,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a JSON path expression returns at least one item for a JSONB value. </p>
+<p>Return true if a JSON path expression returns at least one item for a JSONB value, or the error value of a Boolean when the path raises an error it is asked to suppress. </p>
+<dl class="section note"><dt>Note</dt><dd>The answer of PostgreSQL is then missing (SQL NULL), told apart from true by the error value of <a class="el" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a7e6eaf3154fefa31bcf46d93579d9d07.html#a7e6eaf3154fefa31bcf46d93579d9d07" title="Return the value that stands for a missing or invalid value of a key extracted from a JSONB value int...">jsonb_to_alphanum_error</a>, as <a class="el" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a40eb86584f9a0cbd5f478612a1bd8b02.html#a40eb86584f9a0cbd5f478612a1bd8b02" title="Convert a JSONB value into a base alphanumeric value.">datum_jsonb_to_alphanum</a> tells a missing key </dd></dl>
 
 </div>
 </div>

@@ -96,7 +96,7 @@ var searchData=
   ['jsonb_5fpath_5fexists_93',['Jsonb_path_exists',['../group__mobilitydb__json__json_gac89fa5788b0f6f7ffda010f7b51ca364.html#gac89fa5788b0f6f7ffda010f7b51ca364',1,'jsonb_jsonfuncs.c']]],
   ['jsonb_5fpath_5fexists_5fcommon_94',['Jsonb_path_exists_common',['../jsonb__jsonfuncs_8c_a3b94e6761a912594ca26e924d1c834c8.html#a3b94e6761a912594ca26e924d1c834c8',1,'jsonb_jsonfuncs.c']]],
   ['jsonb_5fpath_5fexists_5ftz_95',['Jsonb_path_exists_tz',['../group__mobilitydb__json__json_ga56e93bf48fcd882b28985a1646a58ac2.html#ga56e93bf48fcd882b28985a1646a58ac2',1,'jsonb_jsonfuncs.c']]],
-  ['jsonb_5fpath_5fmatch_96',['jsonb_path_match',['../meos__json_8h_a0f8b89be25084af21673180c689bda0b.html#a0f8b89be25084af21673180c689bda0b',1,'meos_json.h']]],
+  ['jsonb_5fpath_5fmatch_96',['jsonb_path_match',['../meos__json_8h_a98198ee452ef647b92109b1159648281.html#a98198ee452ef647b92109b1159648281',1,'meos_json.h']]],
   ['jsonb_5fpath_5fmatch_97',['Jsonb_path_match',['../group__mobilitydb__json__json_ga33d8fe3beee635486429dca581724640.html#ga33d8fe3beee635486429dca581724640',1,'jsonb_jsonfuncs.c']]],
   ['jsonb_5fpath_5fmatch_5fcommon_98',['Jsonb_path_match_common',['../jsonb__jsonfuncs_8c_a807e97a8525e559b0fe207cdc3f0edeb.html#a807e97a8525e559b0fe207cdc3f0edeb',1,'jsonb_jsonfuncs.c']]],
   ['jsonb_5fpath_5fmatch_5ftz_99',['Jsonb_path_match_tz',['../group__mobilitydb__json__json_ga01f6906cf0fe4a0c1851a81d027d76eb.html#ga01f6906cf0fe4a0c1851a81d027d76eb',1,'jsonb_jsonfuncs.c']]],
