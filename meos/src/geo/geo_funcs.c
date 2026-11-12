@@ -12567,6 +12567,25 @@ arcarc_meet_exact_ctx(ArcsegArena *arena, const Edge *p, const Edge *q,
 bool
 arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
 {
+  /* The two halves of a whole circle lie on one diameter, and the second
+   * runs from its end back to its start (#emit_arc_edge): it is the half
+   * circle on that diameter read from its other end, turning the same way,
+   * as #arcsegm_meet_exact reads it */
+  Edge halves[2];
+  const Edge *arcs[2] = {p, q};
+  for (int k = 0; k < 2; k++)
+  {
+    const Edge *e = arcs[k];
+    if (e->diameter && e->x1 == e->ex && e->y1 == e->ey &&
+        e->x2 == e->sx && e->y2 == e->sy)
+    {
+      halves[k] = *e;
+      halves[k].sx = e->x1; halves[k].sy = e->y1;
+      halves[k].ex = e->x2; halves[k].ey = e->y2;
+      arcs[k] = &halves[k];
+    }
+  }
+  p = arcs[0]; q = arcs[1];
   /* In expansions, and once more in #WideDyadic where those cannot tell a
    * sign or leave their exact range, as #tower_pred_run asks a tower */
   bool told = false;
