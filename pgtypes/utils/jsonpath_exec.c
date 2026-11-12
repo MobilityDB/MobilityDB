@@ -82,6 +82,7 @@
 #include "utils/mb/pg_wchar.h"
 #include "utils/palloc.h"  /* MEOS: MemoryContext + MemoryContextSwitchTo (backend build) */
 #include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
+#include "../../meos/include/temporal/meos_error_save.h"  /* MEOS: soft parse */
 
 /* MEOS: the vendored memutils.h omits this backend global; declare it locally,
  * as dynahash.c and pg_locale.c do, so the extension can pin the static
@@ -1211,8 +1212,11 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         if (jb->type == jbvNumeric)
         {
           char *tmp = pg_numeric_out(jb->val.numeric);
+          bool failed;
+          bool *saved = meos_error_save_begin(&failed);
           double val = float8_in(tmp);
-          if (val == DBL_MAX)
+          meos_error_save_end(saved);
+          if (failed)
           {
             if (jspThrowErrors(cxt))
               meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
@@ -1236,8 +1240,11 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         {
           /* cast string as double */
           char *tmp = pnstrdup(jb->val.string.val, jb->val.string.len);
+          bool failed;
+          bool *saved = meos_error_save_begin(&failed);
           double val = float8_in(tmp);
-          if (val == DBL_MAX)
+          meos_error_save_end(saved);
+          if (failed)
           {
             if (jspThrowErrors(cxt))
               meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
@@ -1349,8 +1356,11 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         {
           /* cast string as bigint */
           char *tmp = pnstrdup(jb->val.string.val, jb->val.string.len);
+          bool failed;
+          bool *saved = meos_error_save_begin(&failed);
           val = int64_in(tmp);
-          if (val == PG_INT64_MAX)
+          meos_error_save_end(saved);
+          if (failed)
           {
             if (jspThrowErrors(cxt))
               meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
@@ -1396,8 +1406,11 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         else if (jb->type == jbvNumeric)
         {
           char *tmp = pg_numeric_out(jb->val.numeric);
+          bool failed;
+          bool *saved = meos_error_save_begin(&failed);
           int ival = int32_in(tmp);
-          if (ival == PG_INT32_MAX)
+          meos_error_save_end(saved);
+          if (failed)
           {
             if (jspThrowErrors(cxt))
               meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
@@ -1474,8 +1487,11 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
            * and scale of .decimal() are applied to it, as PostgreSQL keeps
            * it, and freed once at each exit */
           numstr = pnstrdup(jb->val.string.val, jb->val.string.len);
+          bool failed;
+          bool *saved = meos_error_save_begin(&failed);
           num = pg_numeric_in(numstr, -1);
-          if (! num)
+          meos_error_save_end(saved);
+          if (failed || ! num)
           {
             if (jspThrowErrors(cxt))
               meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
@@ -1566,13 +1582,21 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
             }
           }
 
-          /* pg_numeric_typmodin() takes the precision and scale and raises
-           * the error of a precision or a scale it refuses, after which there
-           * is no typmod to apply */
+          /* pg_numeric_typmodin() takes the precision and scale; a path that
+           * does not raise its errors saves the error of a precision or a
+           * scale it refuses, as make_numeric_typmod_safe() of PostgreSQL
+           * does, while a path that raises them raises it; either way there
+           * is then no typmod to apply */
           int32 arrtypmod[2];
           arrtypmod[0] = precision;
           arrtypmod[1] = scale;
+          bool failed = false;
+          bool *saved = NULL;
+          if (! jspThrowErrors(cxt))
+            saved = meos_error_save_begin(&failed);
           int32 typmod = pg_numeric_typmodin(arrtypmod, 2);
+          if (! jspThrowErrors(cxt))
+            meos_error_save_end(saved);
           if (typmod == INT_MAX)
           {
             pfree(numstr);
@@ -1580,8 +1604,10 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
           }
           /* Convert numstr to Numeric with typmod */
           Assert(numstr != NULL);
+          saved = meos_error_save_begin(&failed);
           num = pg_numeric_in(numstr, typmod);
-          if (! num)
+          meos_error_save_end(saved);
+          if (failed || ! num)
           {
             if (jspThrowErrors(cxt))
               meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,
@@ -1630,8 +1656,11 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         {
           /* cast string as integer */
           char *tmp = pnstrdup(jb->val.string.val, jb->val.string.len);
+          bool failed;
+          bool *saved = meos_error_save_begin(&failed);
           val = int32_in(tmp);
-          if (val == PG_INT32_MAX)
+          meos_error_save_end(saved);
+          if (failed)
           {
             if (jspThrowErrors(cxt))
               meos_error(ERROR, MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM,

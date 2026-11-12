@@ -193,6 +193,19 @@ SELECT jsonb_path_match(jsonb '{"d": "not a date"}', '$.d.datetime() > "2002-06-
 SELECT jsonbset '{"{\"a\": 1}", "{\"a\": 2}"}' @@ '$.a';
 SELECT jsonb '{"a": 1}' @@ '$.a';
 
+/* An item method that cannot convert its argument raises the error of a
+ * non-numeric SQL/JSON item, as on a jsonb, a call that suppresses the errors
+ * of its jsonpath answers nothing, and the greatest value of a type is a
+ * value */
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"x\""}', '$.double()');
+SELECT jsonb_path_query_first(jsonb '"x"', '$.double()');
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"x\""}', '$.bigint()');
+SELECT jsonb_path_query_first(jsonb '"x"', '$.bigint()');
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"x\""}', '$.double()', '{}', true);
+SELECT jsonb_path_query_first(jsonb '"x"', '$.double()', '{}', true);
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"9223372036854775807\""}', '$.bigint()');
+SELECT jsonb_path_query_first(jsonb '"9223372036854775807"', '$.bigint()');
+
 -------------------------------------------------------------------------------
 -- Ordering
 -------------------------------------------------------------------------------
