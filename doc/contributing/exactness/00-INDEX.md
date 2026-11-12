@@ -40,7 +40,7 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 | [Exact crossings in the lifting infrastructure](EXACT-CROSSINGS.md) | Which microsecond dates a crossing that falls between two microseconds, and whether ever/always and the temporal result read the crossing in the same time |
 | [Any number of turning points in a binary lift](N-TURNING-POINTS.md) | Whether the lifting of a function of two arguments accepts any number of turning points per segment, as the unary lift already does, so that the temporal rigid geometries and the geodetic points stop keeping walks of their own |
 | [The temporal rigid geometries](../trgeometry/00-INDEX.md) | MobilityDB #3441 holds, as one plan of that type, the distance of non-convex and holed geometries with its feasibility, and the relationships of a rigid geometry in linear motion. |
-| [Every MEOS value is a finite number](FINITE-VALUES.md), MobilityDB #3352 | The rule (NaN and ±Infinity refused at every entry point, a result of finite operands beyond the doubles an error, a result within them answered, a division by zero an error, -0 equal to 0), the census of where MEOS does not apply it, and the pull requests that apply it, in order: the NaN work, the finite rule and the double error value |
+| Every MEOS value is a finite number, MobilityDB #3352 (closed) | The rule (NaN and ±Infinity refused at every entry point, a result of finite operands beyond the doubles an error, a result within them answered, a division by zero an error, -0 equal to 0), the census of where MEOS does not apply it, and the pull requests that apply it, every one merged: the NaN work, the finite rule (MobilityDB #3361) and the double error value. The one topic it leaves, the exact area of a geometry, stands below |
 | [Exact text output of floating-point values](EXACT-FLOAT-TEXT.md) | Whether the default text of a floating-point value becomes the shortest form that reads back as the same double, and in which notation |
 | [The exact arithmetic of the geometry engine](EXACT-ARITHMETIC.md) | The three layers of the engine (user entries, geometric algorithms, exact arithmetic), the tiers every exact sign is read in, the machinery the engine holds for each, the rule of one machinery per need, the seam at the user entries, and the steps that merge the machinery into one |
 
@@ -93,4 +93,12 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   of its decisions is an exact sign, CGAL finds no answer it certifies wrong (1 199 of 1 199
   natural areas certified), and it owes its speed (1.045 of GEOS called directly at distance 1);
   [Exact buffer](EXACT-BUFFER.md), where these steps stand.
+- **The area of a geometry is the double nearest its exact value**: `geom_area` raises "not
+  supported" where scaling the geometry into 2^-500 to 2^500 is not exact, such as coordinates
+  near the largest double beside coordinates the scaling by 2^-523 rounds. MobilityDB #3557
+  (draft) sums the area in 128-bit integers, then in doubles with a bound on their rounding, then
+  on `WideDyadic`: 2000 of 2000 rows and the 1000 area rows of the far-magnitude corpus answer the
+  double nearest the exact area, as CGAL judges them (witnesses `area-nearest` and `area-far`), at
+  kernel speed 0.37 and route speed 4.0. The owner ruled on 2026-11-12 that it first closes its
+  speed gap to GEOS's area. It is the one topic of MobilityDB #3352 left open.
 - **Open pull requests** on 2026-11-03: this one and MobilityDB #3259.
