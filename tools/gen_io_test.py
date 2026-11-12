@@ -28,12 +28,12 @@
 
 """Generate the input and output regression test of every type and format.
 
-The test `mobilitydb/test/io/queries/700_io_every_type_tbl.test.sql` holds,
+The test `mobilitydb/test/io/sql/700_io_every_type_tbl.sql` holds,
 for every type MobilityDB declares and every format the type has, its
 written form and its round trip.  It is made of two parts:
 
   - the extracted queries: every query of a regression test
-    (`mobilitydb/test/<family>/queries/*.test.sql`, the test having its
+    (`mobilitydb/test/<family>/sql/*.sql`, the test having its
     expected output) that calls a reader `<type>From<Format>` or a writer
     `as<Format>`, or that prints a typed literal of a MobilityDB type, its
     text kept verbatim; a query reading a table other than the fixtures
@@ -98,7 +98,7 @@ from banner import render  # noqa: E402
 
 TEST_DIR = os.path.join(ROOT, 'mobilitydb', 'test')
 TEST_NAME = '700_io_every_type_tbl'
-TEST_FILE = os.path.join(TEST_DIR, 'io', 'queries', TEST_NAME + '.test.sql')
+TEST_FILE = os.path.join(TEST_DIR, 'io', 'sql', TEST_NAME + '.sql')
 
 # The portable formats, as the reader `<type>From<Format>` and the writer
 # `as<Format>` spell them, and the default output of a typed literal.
@@ -371,14 +371,14 @@ def split_statements(text):
 def test_files():
   """Return every regression test having an expected output, in order."""
   result = []
-  for path in sorted(glob.glob(os.path.join(TEST_DIR, '*', 'queries',
-      '*.test.sql'))):
+  for path in sorted(glob.glob(os.path.join(TEST_DIR, '*', 'sql',
+      '*.sql'))):
     family = os.path.basename(os.path.dirname(os.path.dirname(path)))
-    name = os.path.basename(path)[:-len('.test.sql')]
+    name = os.path.basename(path)[:-len('.sql')]
     if family == 'io':
       continue
     if os.path.isfile(os.path.join(TEST_DIR, family, 'expected',
-        name + '.test.out')):
+        name + '.out')):
       result.append((family, name, path))
   return result
 
@@ -485,7 +485,7 @@ def extract(analyzer):
     if any(TRANSACTION_RE.match(code) for code in codes):
       continue
     expected = os.path.join(os.path.dirname(os.path.dirname(path)),
-      'expected', name + '.test.out')
+      'expected', name + '.out')
     blocks = out_blocks(expected, statements) \
       if os.path.exists(expected) else {}
     created = set()
@@ -656,7 +656,7 @@ def build():
   for family, name, stmt, _ in extracted:
     if (family, name) != current:
       current = (family, name)
-      lines += [RULE, '-- Extracted from %s/queries/%s.test.sql' %
+      lines += [RULE, '-- Extracted from %s/sql/%s.sql' %
         (family, name), RULE, '']
     lines.append(stmt)
   lines += ['', RULE, '-- Added for the pairs no extracted query covers', RULE]
@@ -801,11 +801,11 @@ def verify(path):
   for family, name, stmt, _ in queries:
     key = (family, name)
     if key not in originals:
-      with open(os.path.join(TEST_DIR, family, 'queries', name + '.test.sql'),
+      with open(os.path.join(TEST_DIR, family, 'sql', name + '.sql'),
           encoding='utf-8') as handle:
         theirs = split_statements(handle.read())
       blocks = out_blocks(os.path.join(TEST_DIR, family, 'expected',
-        name + '.test.out'), theirs)
+        name + '.out'), theirs)
       originals[key] = {}
       for index, s in enumerate(theirs):
         originals[key].setdefault(s, []).append(blocks.get(index))

@@ -29,7 +29,7 @@
 
 -- Comparison operators (=, <>, <, <=, >=, >, cmp, B-tree opclass) for the
 -- static pcpoint / pcpatch base types. Uses the ergonomic pcpoint/pcpatch
--- constructors (same pattern as 420_tpcpoint.test.sql / 430_tpcpatch.test.sql).
+-- constructors (same pattern as 420_tpcpoint.sql / 430_tpcpatch.sql).
 
 -------------------------------------------------------------------------------
 -- pcpoint

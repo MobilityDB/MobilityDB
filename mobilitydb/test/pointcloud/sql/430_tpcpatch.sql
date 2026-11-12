@@ -28,7 +28,7 @@
 -------------------------------------------------------------------------------
 
 -- Value-level tests for tpcpatch — same constructor-function pattern
--- as 420_tpcpoint.test.sql.
+-- as 420_tpcpoint.sql.
 
 \set patch1 'PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])'
 \set patch2 'PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[5.0, 5.0, 5.0]::float[]), PC_MakePoint(1, ARRAY[6.0, 6.0, 6.0]::float[])])'
