@@ -132,8 +132,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Insert the second temporal value into the first one. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Insert the second temporal value into the first one, connecting each composing sequence of one value to the composing sequences of the other value before and after it, if any. </p>
+<p >The composing sequences of the two values are taken in time order, and two consecutive ones coming from different values are connected when the bounds they meet on are both inclusive, as <a class="el" href="temporal__modif_8c_aeaf91b292531ea7682788c2d9f0d1223.html#aeaf91b292531ea7682788c2d9f0d1223" title="Insert the second temporal value into the first one.">tcontseq_insert</a> connects two sequences </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ss1,ss2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> sequence sets </td></tr>
   </table>
