@@ -158,7 +158,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Delete a timestamptz from a continuous temporal sequence. </p>
-<p >If an instant has the same timestamp, it will be removed. If the instant is in the middle, it will be connected to the next and previous instants in the result. If the instant is at the beginning or at the end, the time span of the sequence is reduced. In this case the bounds of the sequence will be adjusted accordingly, inclusive at the beginning and exclusive at the end. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >If an instant has the same timestamp, it will be removed. If the instant is in the middle, it will be connected to the next and previous instants in the result. If the instant is at the beginning or at the end, the time span of the sequence is reduced. In this case the bounds of the sequence are inclusive at the beginning and at the end, the first and the last instants of the result being instants the value takes. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> sequence </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Timestamp set </td></tr>
