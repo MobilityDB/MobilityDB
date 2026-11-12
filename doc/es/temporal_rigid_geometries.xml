@@ -340,6 +340,7 @@ traversedArea(trgeometry,unary_union boolean=false) → geometry
 </programlisting>
 				<para>El argumento es falso salvo que se indique, y la función responde entonces las colocaciones mismas reunidas en una geometría, un multipolígono para un cuerpo que es un polígono, que es lo que quiere quien llama y hace su propio posprocesamiento. Con <varname>unary_union = true</varname> se disuelven en la región que cubren. <emphasis>Nota de muestreo:</emphasis> la forma disuelta de un cuerpo convexo que se traslada es exacta. Donde el cuerpo gira, se lee en colocaciones separadas por no más de 0,05 radianes de giro, y más cercanas donde recorre mucho mientras gira, cada vértice moviéndose a lo largo de la cuerda de su arco entre dos de ellas. La región contiene entonces solo terreno que el cuerpo cubre y deja fuera el abombamiento de los arcos más allá de sus cuerdas: sobre un corpus de cuerpos que giran, a lo sumo 5,8e-4 del diámetro del cuerpo.</para>
 				<para>La forma disuelta de un valor en tres dimensiones es la región sobre el suelo, sin Z. Donde el cuerpo gira, su área aún no es la que tiene el mismo valor en dos dimensiones.</para>
+				<para>La forma disuelta de un cuerpo que es un polígono no convexo, cóncavo o con agujeros, en interpolación lineal, aún no se admite: tal cuerpo barre más suelo del que cubren sus colocaciones y menos que su envolvente.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
@@ -729,6 +730,7 @@ SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
 </programlisting>
+				<para>Dos geometrías de referencia son la misma cuando tienen los mismos anillos y caras y los mismos puntos en el mismo orden, cada coordenada igual; cualquier otro par da un error.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -737,6 +739,7 @@ SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 		<title>Restricciones</title>
 
 		<para>Las funciones <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname> y <varname>minusStbox</varname> restringen una trgeometry a (el complemento de) una geometría o una caja espaciotemporal. La semántica refleja la de <varname>tpose</varname>: una geometría rígida temporal está «en» una región en el instante <varname>t</varname> si y solo si su cuerpo, la geometría de referencia situada por la pose en <varname>t</varname>, toca esa región. <varname>atGeometry</varname> y <varname>minusGeometry</varname> aún no se admiten para un valor en tres dimensiones, ni para una geometría con Z o con agujeros, y <varname>atStbox</varname> y <varname>minusStbox</varname> aún no leen la dimensión Z de una caja.</para>
+		<para>Un cuerpo con agujeros en interpolación lineal aún no se admite en estas cuatro funciones, que leen solo el anillo exterior de un cuerpo en movimiento: la región que un agujero del cuerpo contiene en un instante no toca el cuerpo.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_atValue">

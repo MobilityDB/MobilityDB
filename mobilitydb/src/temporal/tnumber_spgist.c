@@ -879,7 +879,7 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
         distances[i] = -get_float8_infinity();
         continue;
       }
-      distances[i] = distance_double(nad_tbox_tbox(&box, key),
+      distances[i] = distance_double(nad_tbox_tbox_intl(&box, key),
         key->span.basetype);
     }
   }

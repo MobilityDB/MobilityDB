@@ -65,7 +65,7 @@ boxgist:
       sharedcast:   ""
       same:         span
       distance: >-
-        distance_double(nad_tbox_tbox(key, &query),
+        distance_double(nad_tbox_tbox_intl(key, &query),
             key->span.basetype)
       bound:        false
       noun:         temporal boxes

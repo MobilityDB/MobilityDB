@@ -107,6 +107,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_out);
 /**
  * @ingroup mobilitydb_rgeo_inout
  * @brief Generic output function for temporal rigid geometries
+ * @sqlfn trgeometry_out()
  */
 Datum
 Trgeometry_out(PG_FUNCTION_ARGS)

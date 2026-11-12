@@ -349,6 +349,7 @@ SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<para>The argument is false unless it is given, and the function then answers the placements themselves gathered into one geometry, a multipolygon for a body that is a polygon, which is what a caller that does its own post-processing wants. With <varname>unary_union = true</varname> they are dissolved into the region they cover.</para>
 				<para><emphasis>Sampling note:</emphasis> the merged form of a convex body that translates is exact. Where the body turns, it is read at placements no more than 0.05 radians of turn apart, and nearer where it travels far while it turns, each vertex moving along the chord of its arc between two of them. The region then holds only ground the body covers and leaves out the bulge of the arcs past their chords: over a corpus of turning bodies, at most 5.8e-4 of the diameter of the body.</para>
 				<para>The merged form of a value in three dimensions is the region on the ground, with no Z. Where the body turns, its area is not yet the one the same value has in two dimensions.</para>
+				<para>The merged form of a body that is a polygon not convex, concave or with holes, in linear interpolation, is not yet supported: such a body sweeps more ground than its placements cover and less than their hull.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -730,6 +731,7 @@ SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
 </programlisting>
+				<para>Two reference geometries are the same where they have the same rings and faces and the same points in the same order, each coordinate equal; any other pair gives an error.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -738,6 +740,7 @@ SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 		<title>Restrictions</title>
 
 		<para>The <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname>, and <varname>minusStbox</varname> functions restrict a trgeometry to (the complement of) a geometry or a spatiotemporal box. The semantic mirrors <varname>tpose</varname>: a temporal rigid geometry is "in" a region at time <varname>t</varname> iff its body, the reference geometry placed by the pose at <varname>t</varname>, meets that region. <varname>atGeometry</varname> and <varname>minusGeometry</varname> are not yet supported for a value in three dimensions, nor for a geometry with Z or with holes, and <varname>atStbox</varname> and <varname>minusStbox</varname> do not yet read the Z dimension of a box.</para>
+		<para>A body with holes in linear interpolation is not yet supported by these four functions, which read the exterior ring of a moving body alone: the region a hole of the body holds at an instant does not meet the body.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_atValue">

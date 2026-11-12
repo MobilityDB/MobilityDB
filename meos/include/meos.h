@@ -127,6 +127,14 @@
 
 #include "meos_error.h"
 
+/* The functions declared below are the MEOS API, which the MobilityDB
+ * extension exports as libmeos does, so that another extension loaded in the
+ * backend can call them; every other function of the extension stays hidden */
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility push(default)
+#endif
+
+
 /*****************************************************************************
  * Type definitions
  *****************************************************************************/
@@ -2076,9 +2084,8 @@ extern Temporal *tdistance_tfloat_float(const Temporal *temp, double d);
 extern Temporal *tdistance_tint_int(const Temporal *temp, int i);
 extern Temporal *tdistance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern int64 nad_bigintspan_tbox(const Span *s, const TBox *box);
-extern double nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2);
+extern double nad_tbox_tbox(const TBox *box1, const TBox *box2);
 extern double nad_floatspan_tbox(const Span *s, const TBox *box);
-extern int nad_tboxint_tboxint(const TBox *box1, const TBox *box2);
 extern int nad_intspan_tbox(const Span *s, const TBox *box);
 extern double nad_tfloat_float(const Temporal *temp, double d);
 extern double nad_tfloat_floatspan(const Temporal *temp, const Span *s);
@@ -2088,7 +2095,6 @@ extern int64 nad_tbigint_bigint(const Temporal *temp, int64 i);
 extern int64 nad_tbigint_bigintspan(const Temporal *temp, const Span *s);
 extern int64 nad_tbigint_tbox(const Temporal *temp, const TBox *box);
 extern int64 nad_tbigint_tbigint(const Temporal *temp1, const Temporal *temp2);
-extern int64 nad_tboxbigint_tboxbigint(const TBox *box1, const TBox *box2);
 extern int nad_tint_int(const Temporal *temp, int i);
 extern int nad_tint_intspan(const Temporal *temp, const Span *s);
 extern int nad_tint_tbox(const Temporal *temp, const TBox *box);
@@ -2239,5 +2245,9 @@ extern TBox *tintbox_value_tiles(const TBox *box, int vsize, int vorigin, bool b
 extern TBox *tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration, int vorigin, TimestampTz torigin, bool border_inc, int *count);
 
 /*****************************************************************************/
+
+#if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
+#pragma GCC visibility pop
+#endif
 
 #endif

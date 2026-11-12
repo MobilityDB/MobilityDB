@@ -46,7 +46,7 @@ boxspgist:
       kdnode:      false
       leafrecheck: strategy
       distance: >-
-        distance_double(nad_tbox_tbox(&box, key),
+        distance_double(nad_tbox_tbox_intl(&box, key),
                 key->span.basetype)
       bound:       false
       noun:        temporal numbers

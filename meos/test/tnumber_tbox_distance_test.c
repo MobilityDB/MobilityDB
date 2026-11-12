@@ -32,7 +32,7 @@
  * @brief A program that checks the nearest approach distance of a temporal
  * number and a temporal box against the distance of their boxes
  * @details The temporal number restricted to the period of the box, when the
- * box has one, has a box whose distance to the box (#nad_tboxint_tboxint, ...)
+ * box has one, has a box whose distance to the box (#nad_tbox_tbox)
  * is the nearest approach distance; over a grid of temporal numbers and boxes
  * on either side of them, below, above and across, each answer of
  * #nad_tint_tbox, #nad_tbigint_tbox and #nad_tfloat_tbox is that distance.
@@ -43,10 +43,20 @@
  */
 
 #include <assert.h>
+#include <float.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
+
+/* A typed distance read as #nad_tbox_tbox answers it: in doubles, with DBL_MAX
+ * where the operands share no time */
+static double
+as_box_distance(double d, double sentinel)
+{
+  return d == sentinel ? DBL_MAX : d;
+}
 
 /* The temporal number restricted to the period of the box, if it has one */
 static Temporal *
@@ -117,18 +127,18 @@ int main(void)
             {
               TBox *xi = tnumber_to_tbox(ri), *xb = tnumber_to_tbox(rb),
                 *xf = tnumber_to_tbox(rf);
-              int ei = nad_tboxint_tboxint(xi, bi);
-              int64 eb = nad_tboxbigint_tboxbigint(xb, bb);
-              double ef = nad_tboxfloat_tboxfloat(xf, bf);
-              int ai = nad_tint_tbox(ti, bi);
-              int64 ab = nad_tbigint_tbox(tb, bb);
+              double ei = nad_tbox_tbox(xi, bi);
+              double eb = nad_tbox_tbox(xb, bb);
+              double ef = nad_tbox_tbox(xf, bf);
+              double ai = as_box_distance(nad_tint_tbox(ti, bi), INT_MAX);
+              double ab = as_box_distance((double) nad_tbigint_tbox(tb, bb),
+                (double) INT64_MAX);
               double af = nad_tfloat_tbox(tf, bf);
               if (ai != ei || ab != eb || af != ef)
               {
                 if (bad < 5)
-                  printf("%s %s: tint %d box %d, tbigint %ld box %ld, "
-                    "tfloat %g box %g\n", buf, boxi, ai, ei, (long) ab,
-                    (long) eb, af, ef);
+                  printf("%s %s: tint %g box %g, tbigint %g box %g, "
+                    "tfloat %g box %g\n", buf, boxi, ai, ei, ab, eb, af, ef);
                 bad++;
               }
               apart += (ei != 0);

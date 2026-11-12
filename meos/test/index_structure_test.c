@@ -324,14 +324,7 @@ box_dist(const char *type, const void *a, const void *b)
 {
   if (! strcmp(type, "stbox"))
     return nad_stbox_stbox((const STBox *) a, (const STBox *) b, true);
-  const TBox *x = (const TBox *) a, *y = (const TBox *) b;
-  if (MEOS_FLAGS_GET_X(x->flags) && x->span.basetype == T_INT4 &&
-      MEOS_FLAGS_GET_X(y->flags) && y->span.basetype == T_INT4)
-  {
-    int d = nad_tboxint_tboxint(x, y);
-    return d < 0 ? DBL_MAX : (double) d;
-  }
-  double d = nad_tboxfloat_tboxfloat(x, y);
+  double d = nad_tbox_tbox((const TBox *) a, (const TBox *) b);
   return d < 0 ? DBL_MAX : d;
 }
 

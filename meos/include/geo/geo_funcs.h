@@ -296,6 +296,7 @@ typedef struct
 } ExactArc;
 
 extern void exact_arc_bound(ExactArc *arc, double box[4]);
+extern void exact_arc_from_edge(const Edge *e, ExactArc *arc);
 
 extern bool point_arc_within_exact(const double *p, const ExactArc *arc,
   double dist);
@@ -1387,60 +1388,30 @@ arc_point_parameter(const Edge *e, double x, double y)
  * @brief Return true if a straight segment properly crosses a circular arc
  * @details Proper means the segment passes from one side of the arc to the
  * other at a point interior to both edges, which is for an arc what
- * #relate_edges_cross decides for two straight edges. The quadratic
- * #arcsegm_intersect solves is what says so, read for its DISCRIMINANT rather
- * than for its roots alone: a line meeting a circle at a double root is a
- * TANGENT, which touches without passing through, and only a discriminant
- * standing clear of the rounding that function already reads it against makes
- * the line a secant. A root strictly inside the segment and strictly inside
- * the arc's angular span is then a crossing point interior to both edges, and
- * the four sectors around it are the four combinations of inside and outside.
- * Nothing is read off the arc's endpoints: the edge carries the centre, the
- * radius and the span, so the curve between them is determined.
- * Whatever these quantities cannot separate reads as NOT crossing, which is
- * the same refusal the straight predicate makes and leaves the pair to the
- * routes that already answer it
- * @param[in] ax,ay Coordinates of the start of the straight segment
- * @param[in] rx,ry Vector of the straight segment
+ * #relate_edges_cross decides for two straight edges: a meeting
+ * #arcsegm_meet_exact places interior to both, at a simple root of the
+ * quadratic that meets the line with the circle. A double root is a tangency,
+ * which touches without passing through, and a meeting at an end of either
+ * edge is a touch, which the vertex routes answer. Each of these is decided
+ * exactly on the input coordinates. That function answers every arc
+ * #geom_extract_edges emits, the two halves of a whole circle included, and
+ * relate reads this answer as complete: a crossing missed here makes two
+ * overlapping interiors read as touching
+ * @param[in] ax,ay,bx,by Start and end of the straight segment
  * @param[in] e Arc edge
  */
 static inline bool
-arcsegm_cross(double ax, double ay, double rx, double ry, const Edge *e)
+arcsegm_cross(double ax, double ay, double bx, double by, const Edge *e)
 {
-  /* A segment of no length, read as #arcsegm_intersect reads it */
-  if (rx == 0.0 && ry == 0.0)
+  /* A segment of no length meets the arc at a point at most, never across */
+  if (ax == bx && ay == by)
     return false;
-  double aa = rx * rx + ry * ry;
-
-  double wx = ax - e->cx, wy = ay - e->cy;
-  double bb = 2 * (wx * rx + wy * ry);
-  double cc = wx * wx + wy * wy - e->radius * e->radius;
-  double disc = bb * bb - 4 * aa * cc;
-  /* The rounding the discriminant is read against, in the form
-   * #arcsegm_intersect states and for the reason it gives there */
-  double eps = 1e-14 * (fabs(bb * bb) + fabs(4 * aa * cc) +
-    aa * (wx * wx + wy * wy + e->radius * e->radius));
-  /* A tangent line reaches the circle without passing through it */
-  if (disc <= eps)
-    return false;
-
-  double sq = sqrt(disc);
-  for (int k = 0; k < 2; k++)
+  ArcsegMeet m[2];
+  int n = arcsegm_meet_exact(ax, ay, bx, by, e, m);
+  for (int i = 0; i < n; i++)
   {
-    double t = (k == 0 ? -bb - sq : -bb + sq) / (2 * aa);
-    /* Strictly interior to the segment. A crossing at an endpoint is a touch,
-     * which the vertex routes answer and which the straight predicate refuses
-     * for the same reason */
-    if (t <= MEOS_GEOM_TOLERANCE || t >= 1 - MEOS_GEOM_TOLERANCE)
-      continue;
-    double px = ax + t * rx, py = ay + t * ry;
-    if (! arc_contains_angle(e, atan2(py - e->cy, px - e->cx)))
-      continue;
-    /* Strictly interior to the arc, for the same reason */
-    double u = arc_point_parameter(e, px, py);
-    if (u <= MEOS_GEOM_TOLERANCE || u >= 1 - MEOS_GEOM_TOLERANCE)
-      continue;
-    return true;
+    if (m[i].kind == ARCSEG_INTERIOR && m[i].sigma != 0)
+      return true;
   }
   return false;
 }

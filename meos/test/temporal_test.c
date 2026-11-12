@@ -3274,13 +3274,11 @@ int main(void)
   printf("tdistance_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_result); free(char_result);
 
-  /* double nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2); */
-  float8_result = nad_tboxfloat_tboxfloat(tbox1, tbox2);
-  printf("nad_tboxfloat_tboxfloat(%s, %s): %lf\n", tbox1_out, tbox2_out, float8_result);
-
-  /* int nad_tboxint_tboxint(const TBox *box1, const TBox *box2); */
-  int32_result = nad_tboxint_tboxint(tintbox1, tintbox2);
-  printf("nad_tboxint_tboxint(%s, %s): %d\n", tintbox1_out, tintbox2_out, int32_result);
+  /* double nad_tbox_tbox(const TBox *box1, const TBox *box2); */
+  float8_result = nad_tbox_tbox(tbox1, tbox2);
+  printf("nad_tbox_tbox(%s, %s): %lf\n", tbox1_out, tbox2_out, float8_result);
+  float8_result = nad_tbox_tbox(tintbox1, tintbox2);
+  printf("nad_tbox_tbox(%s, %s): %lf\n", tintbox1_out, tintbox2_out, float8_result);
 
   /* double nad_tfloat_float(const Temporal *temp, double d); */
   float8_result = nad_tfloat_float(tfloat1, float8_in1);

@@ -4646,15 +4646,18 @@ gserialized_is_poly(const GSERIALIZED* gs)
 }
 
 /**
- * @brief Return the side of a point relative to a segment, as the PostGIS
- * function @p itree_segment_side computes it
+ * @brief Return the side of a point relative to a segment, 1 on its left, -1
+ * on its right and 0 on its line, read exactly (#cross_product_sign)
+ * @details The PostGIS function @p itree_segment_side computes the same
+ * cross product in doubles, whose rounding can turn its sign for a point a few
+ * units in the last place off the segment
  */
-static inline double
+static inline int
 pip_segment_side(const POINT2D *seg1, const POINT2D *seg2,
   const POINT2D *point)
 {
-  return ((seg2->x - seg1->x) * (point->y - seg1->y) -
-    (point->x - seg1->x) * (seg2->y - seg1->y));
+  return cross_product_sign(seg1->x, seg1->y, seg2->x, seg2->y, seg1->x,
+    seg1->y, point->x, point->y);
 }
 
 /**
@@ -4679,8 +4682,10 @@ pip_point_on_segment(const POINT2D *seg1, const POINT2D *seg2,
  * @details The tree tests each segment of nonzero length and finite
  * coordinates whose range of y covers the one of the point, a segment
  * outside that range contributing neither a boundary nor a winding; the
- * segments are tested here in turn with the same arithmetic, so the location
- * is the one of the tree, which a single location does not pay for building
+ * segments are tested here in turn, which a single location does not pay for
+ * building the tree for. The side of the point is read exactly
+ * (#pip_segment_side), where the tree reads it in doubles, so the location is
+ * the exact one at every scale
  */
 static IntervalTreeResult
 pip_point_in_ring(const POINTARRAY *pa, const POINT2D *pt)
@@ -4698,9 +4703,9 @@ pip_point_in_ring(const POINTARRAY *pa, const POINT2D *pt)
     if (! FP_CONTAINS_INCL(FP_MIN(seg1->y, seg2->y), pt->y,
           FP_MAX(seg1->y, seg2->y)))
       continue;
-    double side = pip_segment_side(seg1, seg2, pt);
+    int side = pip_segment_side(seg1, seg2, pt);
     /* A point on the boundary of a ring is not contained */
-    if (side == 0.0 && pip_point_on_segment(seg1, seg2, pt) == 1)
+    if (side == 0 && pip_point_on_segment(seg1, seg2, pt) == 1)
       return ITREE_BOUNDARY;
     if ((seg1->y <= pt->y) && (pt->y < seg2->y) && (side > 0))
       winding_number++;

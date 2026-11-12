@@ -634,6 +634,73 @@ int main(void)
     free(body); free(g2); free(g3); free(pt2); free(pt3);
   }
 
+  /* Two bodies are one where every coordinate is equal: merging bodies a
+   * vertex of which differs by 1e-10, or surfaces of which one has fewer
+   * faces, in either order, is refused, and 0 and -0 are one vertex */
+  {
+    const char *pairs[][2] = {
+      {"Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01",
+       "Polygon((0 0,1.0000000001 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-02"},
+      {"PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));"
+         "Pose(Point(0 0 0),1,0,0,0)@2001-01-01",
+       "PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));"
+         "Pose(Point(0 0 0),1,0,0,0)@2001-01-02"},
+      {"PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)));"
+         "Pose(Point(0 0 0),1,0,0,0)@2001-01-01",
+       "PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 0 0)),((0 0 0,1 1 0,0 1 0,0 0 0)));"
+         "Pose(Point(0 0 0),1,0,0,0)@2001-01-02"},
+      {"Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01",
+       "Polygon((-0 0,1 0,1 1,0 1,-0 0));Pose(Point(0 0),0)@2001-01-02"} };
+    const bool merges[] = {false, false, false, true};
+    for (int i = 0; i < 4; i++)
+    {
+      Temporal *a = trgeometry_in(pairs[i][0]);
+      Temporal *b = trgeometry_in(pairs[i][1]);
+      meos_errno_reset();
+      Temporal *m = temporal_merge(a, b);
+      bool merged = m != NULL && meos_errno() == 0;
+      if (merged != merges[i])
+      {
+        printf("FAILED: merging the bodies of pair %d %s\n", i,
+          merged ? "answers" : "is refused");
+        result = 1;
+      }
+      free(a); free(b); free(m);
+      meos_errno_reset();
+    }
+  }
+
+  /* A body whose shape a function does not read is refused, never answered as
+   * another shape: the restriction of a body with holes in linear motion, and
+   * the united traversed area of a body that is not convex in linear motion;
+   * in step interpolation both answer */
+  {
+    const char *holed = "Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));"
+      "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]";
+    const char *holed_step = "Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),"
+      "(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, "
+      "Pose(Point(10 0),0)@2001-01-02]";
+    Temporal *lin = trgeometry_in(holed), *step = trgeometry_in(holed_step);
+    GSERIALIZED *small = geom_in("Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))", -1);
+    meos_errno_reset();
+    Temporal *at = trgeometry_at_geom(lin, small);
+    int err_at = meos_errno();
+    meos_errno_reset();
+    GSERIALIZED *area = trgeometry_traversed_area(lin, true);
+    int err_area = meos_errno();
+    meos_errno_reset();
+    GSERIALIZED *area_step = trgeometry_traversed_area(step, true);
+    if (at || err_at == 0 || area || err_area == 0 || ! area_step ||
+        meos_errno() != 0)
+    {
+      printf("FAILED: a body with holes in linear motion is answered by the "
+        "restriction or the united traversed area\n");
+      result = 1;
+    }
+    free(lin); free(step); free(small); free(at); free(area); free(area_step);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
