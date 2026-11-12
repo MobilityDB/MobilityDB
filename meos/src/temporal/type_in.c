@@ -1318,9 +1318,31 @@ parse_mfjson_ref_geo(json_object *mfjson, int32_t srid, bool geodetic)
     lwgeom_free(geo);
     geo = tmp;
   }
-  lwgeom_add_bbox(geo);
   lwgeom_set_srid(geo, srid);
   lwgeom_set_geodetic(geo, geodetic);
+  /* GeoJSON states no polyhedral surface, so a surface is written as the
+   * multipolygon of its faces, which is read back as the surface. The flags
+   * are set on the multipolygon, since liblwgeom function lwgeom_set_geodetic
+   * does not read a polyhedral surface. */
+  if (geo->type == MULTIPOLYGONTYPE)
+  {
+    LWMPOLY *mpoly = lwgeom_as_lwmpoly(geo);
+    LWPSURFACE *psurf = (LWPSURFACE *) lwcollection_construct_empty(
+      POLYHEDRALSURFACETYPE, mpoly->srid, FLAGS_GET_Z(mpoly->flags),
+      FLAGS_GET_M(mpoly->flags));
+    for (uint32_t i = 0; i < mpoly->ngeoms; i++)
+      psurf = lwpsurface_add_lwpoly(psurf, mpoly->geoms[i]);
+    /* The faces now belong to the surface, so only the multipolygon is
+     * freed */
+    if (mpoly->bbox)
+      lwfree(mpoly->bbox);
+    if (mpoly->geoms)
+      lwfree(mpoly->geoms);
+    lwfree(mpoly);
+    FLAGS_SET_GEODETIC(psurf->flags, geodetic);
+    geo = (LWGEOM *) psurf;
+  }
+  lwgeom_add_bbox(geo);
   GSERIALIZED *result = geo_serialize(geo);
   lwgeom_free(geo);
   return result;

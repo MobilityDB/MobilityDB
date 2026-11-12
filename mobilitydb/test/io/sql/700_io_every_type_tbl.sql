@@ -7163,6 +7163,14 @@ SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02],[Pose(Point(1 2),0.5)@2001-01-03, Pose(Point(3 4),0.5)@2001-01-04]}')));
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02]')));
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02],[Pose(Point(1 2),0.5)@2001-01-03, Pose(Point(3 4),0.5)@2001-01-04]}')));
+SELECT asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));Pose(Point(1 1 5),1,0,0,0)@2001-01-01');
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));Pose(Point(1 1 5),1,0,0,0)@2001-01-01')));
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));{Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02}')));
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02]')));
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=3812;PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));{[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),1,0,0,0)@2001-01-02],[Pose(Point(3 3 5),1,0,0,0)@2001-01-03]}',1,0,2)));
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'PolyhedralSurface(((0 0,2 0,2 2,0 2,0 0)));Pose(Point(1 1),0.3)@2001-01-01')));
+WITH t(temp) AS (SELECT trgeometry 'PolyhedralSurface Z(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),0.96,0,0,0.28)@2001-01-02]')
+SELECT trgeometryFromMFJSON(asMFJSON(temp)) = temp, ST_GeometryType(geometry(trgeometryFromMFJSON(asMFJSON(temp)))) FROM t;
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01',1,0,2)));
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02}',1,0,2)));
 SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2001-01-01, Pose(Point(3 4),0.5)@2001-01-02]',1,0,2)));
@@ -7227,6 +7235,10 @@ SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1
 SELECT asText(trgeometryFromMFJSON(asMFJSON(v, 0, 0, 6))) = asText(v) FROM (VALUES (
   trgeometry 'POLYGON((-0.5 -1,-0.5 1,0.5 1,0.5 -1,-0.5 -1));[Pose(POINT(-104.5 41.5),0)@2025-12-24 20:05:06+00, Pose(POINT(-104.5 41.5),-2.5)@2025-12-24 20:05:07+00]'
 )) t(v);
+SELECT v::text::trgeometry = v, trgeometryFromText(asEWKT(v)) = v FROM (VALUES
+  (trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02]'),
+  (trgeometry 'SRID=3812,Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02], [Pose(Point(3 3),0.5)@2001-01-03, Pose(Point(4 4),1)@2001-01-04]}')
+) t(v);
 SELECT asMFJSON(trgeometry 'SRID=123456;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 2);
 SELECT asBinary(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01');
 SELECT asBinary(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01', 'NDR');

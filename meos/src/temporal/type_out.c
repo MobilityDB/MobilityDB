@@ -60,6 +60,7 @@
 #include "temporal/tbox.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/stbox.h"
 #include "geo/meos_transform.h"
 #if CBUFFER
@@ -987,6 +988,39 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
 
 /*****************************************************************************/
 
+#if RGEO
+/**
+ * @brief Return the GeoJSON representation of the reference geometry of a
+ * temporal rigid geometry
+ * @details GeoJSON states no polyhedral surface, so a surface is written as
+ * the multipolygon of its faces, which the MF-JSON input of a temporal rigid
+ * geometry reads back as a polyhedral surface
+ */
+static char *
+trgeo_geom_as_geojson(const GSERIALIZED *gs, int precision, size_t *size_out)
+{
+  if (gserialized_get_type(gs) != POLYHEDRALSURFACETYPE)
+    return geo_as_geojson(gs, 0, precision, NULL, size_out);
+  LWPSURFACE *psurf = (LWPSURFACE *) lwgeom_from_gserialized(gs);
+  LWMPOLY *mpoly = lwmpoly_construct_empty(psurf->srid,
+    FLAGS_GET_Z(psurf->flags), FLAGS_GET_M(psurf->flags));
+  for (uint32_t i = 0; i < psurf->ngeoms; i++)
+    mpoly = lwmpoly_add_lwpoly(mpoly, psurf->geoms[i]);
+  GSERIALIZED *faces = geo_serialize((LWGEOM *) mpoly);
+  /* The faces belong to the surface, so only the multipolygon, with the
+   * bounding box its serialization adds, is freed */
+  if (mpoly->bbox)
+    lwfree(mpoly->bbox);
+  if (mpoly->geoms)
+    lwfree(mpoly->geoms);
+  lwfree(mpoly);
+  lwgeom_free((LWGEOM *) psurf);
+  char *result = geo_as_geojson(faces, 0, precision, NULL, size_out);
+  pfree(faces);
+  return result;
+}
+#endif /* RGEO */
+
 /**
  * @brief Write into the buffer a temporal instant in the MF-JSON
  * representation
@@ -1062,8 +1096,8 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
   {
     /* Do not repeat the crs for the composing geometries */
     stringbuffer_append_len(sb, "\"geometry\":", 11);
-    const GSERIALIZED *gs = trgeoinst_geom_p(inst);
-    char *str = geo_as_geojson(gs, 0, precision, NULL, &size_out);
+    char *str = trgeo_geom_as_geojson(trgeoinst_geom_p(inst), precision,
+      &size_out);
     stringbuffer_aprintf(sb, "%s,", str);
     pfree(str);
     stringbuffer_append_len(sb, "\"values\":[", 10);
@@ -1125,8 +1159,8 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
   else if (seq->temptype == T_TRGEOMETRY)
   {
     stringbuffer_append_len(sb, "\"geometry\":", 11);
-    const GSERIALIZED *gs = trgeoseq_geom_p(seq);
-    char *str = geo_as_geojson(gs, 0, precision, NULL, &size_out);
+    char *str = trgeo_geom_as_geojson(trgeoseq_geom_p(seq), precision,
+      &size_out);
     stringbuffer_aprintf(sb, "%s,\"values\":[", str);
     pfree(str);
   }
@@ -1249,7 +1283,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
   if (ss->temptype == T_TRGEOMETRY)
   {
     stringbuffer_append_len(sb, "\"geometry\":", 11);
-    char *str = geo_as_geojson(trgeoseqset_geom_p(ss), 0, precision, NULL,
+    char *str = trgeo_geom_as_geojson(trgeoseqset_geom_p(ss), precision,
       &size_out);
     stringbuffer_aprintf(sb, "%s,", str);
     pfree(str);

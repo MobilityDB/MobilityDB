@@ -90,7 +90,7 @@ asMFJSON(trgeometry [, options integer=0 [, flags integer=0
 SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0),0)@2001-01-01');
 </programlisting>
-				<para><varname>asMFJSON</varname> does not yet support a polyhedral surface.</para>
+				<para>GeoJSON has no polyhedral surface, so a reference geometry that is a polyhedral surface is written as the <varname>MultiPolygon</varname> of its faces, which <varname>trgeometryFromMFJSON</varname> reads back as the polyhedral surface.</para>
 			</listitem>
 
 			<listitem xml:id="trgeometry_asEWKB">
