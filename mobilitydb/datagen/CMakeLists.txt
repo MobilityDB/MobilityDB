@@ -2,7 +2,7 @@
 configure_file(mobilitydb_datagen.in.control ${CMAKE_BINARY_DIR}/mobilitydb_datagen.control)
 
 # Configure the header template directly into the extension file
-string(TIMESTAMP GENERATION_DATE "%Y-%m-%d %H:%M:%S")
+string(TIMESTAMP GENERATION_DATE "%Y-%m-%d %H:%M:%S" UTC)
 configure_file(
     header.in.sql
     ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE}
