@@ -348,6 +348,23 @@ tpcbox_extent_transfn(TPCBox *state, const TPCBox *box)
  *****************************************************************************/
 
 /**
+ * @brief Ensure the validity of a temporal point cloud value and a point
+ * cloud box: the box of the value and the box share their schema, their
+ * reference system and their geodetic flag, as #ensure_valid_tpcbox_tpcbox
+ * states it for two boxes
+ * @param[in] temp Temporal point cloud value
+ * @param[in] box Point cloud box
+ */
+bool
+ensure_valid_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box)
+{
+  VALIDATE_TPOINTCLOUD(temp, false); VALIDATE_TPCBOX(box, false);
+  TPCBox box1;
+  temporal_set_bbox(temp, &box1);
+  return ensure_valid_tpcbox_tpcbox(&box1, box);
+}
+
+/**
  * @brief Generic bbox dispatcher between a temporal pointcloud value and a
  *   TPCBox
  * @param[in] temp Temporal pointcloud value
