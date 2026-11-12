@@ -1007,12 +1007,11 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Determines the side of segment P where Q lies. </p>
-<ul>
+<p>Determines the side of the line through segment P where Q lies. </p>
+<p >The sign of the cross product (Q - P1) x (P2 - P1), read exactly on the input doubles by <a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a></p><ul>
 <li>Return -1 if point Q is left of segment P</li>
 <li>Return 1 if point Q is right of segment P</li>
-<li>Return 0 if point Q in on segment P <dl class="section note"><dt>Note</dt><dd>Function adapted from <code>lw_segment_side()</code> to take into account precision errors </dd></dl>
-</li>
+<li>Return 0 if point Q is on the line of segment P </li>
 </ul>
 
 </div>
