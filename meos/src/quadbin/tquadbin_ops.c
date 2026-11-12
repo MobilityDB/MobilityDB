@@ -66,6 +66,7 @@
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/geo_funcs.h"  /* segment_edge_cross_offset */
 
 /*****************************************************************************
  * Datum-convention static-cell wrappers
@@ -325,22 +326,67 @@ tquadbin_entered_holds(Quadbin cell, Quadbin next)
 }
 
 /**
+ * @brief Return the offset in microseconds from the start of a planar segment
+ * at which it crosses from a tile into an adjacent one, truncated
+ * @details The bound between the two tiles is the west bound of the tile of
+ * higher column where the column changes, else the north bound of the tile
+ * of higher row, read from #quadbin_cell_bounding_box, the doubles the point
+ * function and the walk compare with. The crossing of that meridian or
+ * parallel is dated by #segment_edge_cross_offset, as the walk of an H3 cell
+ * dates the crossing of an edge: the truncation of the exact parameter, and
+ * whether the segment lies on the bound at the microsecond returned. A walk
+ * through a corner steps both coordinates at one crossing, where the two
+ * bounds are reached at once
+ * @param[in] p1,p2 Start and end points of the segment
+ * @param[in] duration Duration of the segment in microseconds
+ * @param[in] from,to The tile left and the tile entered
+ * @param[out] whole True when the segment lies on the bound at the offset
+ */
+static int64
+tquadbin_cross_offset(const POINT2D *p1, const POINT2D *p2, int64 duration,
+  Quadbin from, Quadbin to, bool *whole)
+{
+  uint32_t x1, y1, z1, x2, y2, z2;
+  quadbin_cell_tile(from, &x1, &y1, &z1);
+  quadbin_cell_tile(to, &x2, &y2, &z2);
+  double xmin, ymin, xmax, ymax;
+  if (x1 != x2)
+  {
+    /* The meridian x = xmin of the tile of higher column */
+    quadbin_cell_bounding_box(x2 > x1 ? to : from, &xmin, &ymin, &xmax,
+      &ymax);
+    return segment_edge_cross_offset(p1->x, p1->y, p2->x, p2->y, duration,
+      xmin, 0.0, 0.0, xmin, 1.0, 0.0, whole);
+  }
+  /* The parallel y = ymax of the tile of higher row */
+  quadbin_cell_bounding_box(y2 > y1 ? to : from, &xmin, &ymin, &xmax, &ymax);
+  return segment_edge_cross_offset(p1->x, p1->y, p2->x, p2->y, duration,
+    0.0, ymax, 0.0, 1.0, ymax, 0.0, whole);
+}
+
+/**
  * @brief Append to the visits of a trajectory the cell it enters at a
  * timestamp, the previous visit ending there
- * @details The crossing position belongs to one of the two cells
- * (#tquadbin_entered_holds), which holds the crossing instant, the other one
- * leaving it out. A crossing landing before the previous one, which the
- * truncation of two crossings closer than a microsecond can give, lands on
- * it: the instants are never moved past one another
+ * @details A cell holds exactly the microseconds whose exact position lies
+ * in it. The timestamp is the microsecond of the crossing, truncated: where
+ * the trajectory reaches the boundary exactly at it (@p whole), the crossing
+ * position belongs to one of the two cells (#tquadbin_entered_holds), which
+ * holds that instant, the other one leaving it out; where it reaches the
+ * boundary after it, the trajectory is still in the cell it leaves at that
+ * instant, which holds it. A crossing landing before the previous one, which
+ * the truncation of two crossings within one microsecond gives, lands on it:
+ * the instants are never moved past one another, and a cell holding no
+ * microsecond between them holds nothing
  */
 static void
 tquadbin_visit_append(DggsVisit **visits, int *count, int *size, Quadbin cell,
-  TimestampTz t)
+  TimestampTz t, bool whole)
 {
   DggsVisit *prev = &(*visits)[*count - 1];
   if (t < prev->lower)
     t = prev->lower;
-  bool entered = tquadbin_entered_holds(DatumGetQuadbin(prev->cell), cell);
+  bool entered = whole &&
+    tquadbin_entered_holds(DatumGetQuadbin(prev->cell), cell);
   prev->upper = t;
   prev->upper_inc = ! entered;
   if (*count == *size)
@@ -538,10 +584,23 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution,
       if (cells[k] == last)
         continue;
       /* The crossing is dated as the restriction of a trajectory to a tile
-       * dates it, truncating its parameter to the microsecond */
-      TimestampTz tenter = inst1->t +
-        (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]);
-      tquadbin_visit_append(&visits, &nvisits, &vsize, cells[k], tenter);
+       * dates it, by the truncation of its exact parameter. A planar
+       * segment crosses the bound between the two tiles, the west bound of
+       * the one of higher column or else the north bound of the one of
+       * higher row, both as the box of that tile states it, and
+       * #segment_edge_cross_offset dates that crossing on the input doubles
+       * and says whether it falls on the microsecond returned. A geodetic
+       * segment reads the parameter of its walk */
+      TimestampTz tenter;
+      bool whole = true;
+      if (! geodetic)
+        tenter = inst1->t + tquadbin_cross_offset(p1, p2,
+          inst2->t - inst1->t, last, cells[k], &whole);
+      else
+        tenter = inst1->t +
+          (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]);
+      tquadbin_visit_append(&visits, &nvisits, &vsize, cells[k], tenter,
+        whole);
       last = cells[k];
     }
     /* The endpoint's own cell closes the segment when the traversal stopped
@@ -551,7 +610,8 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution,
       (uint32_t) resolution);
     if (endcell != last)
     {
-      tquadbin_visit_append(&visits, &nvisits, &vsize, endcell, inst2->t);
+      tquadbin_visit_append(&visits, &nvisits, &vsize, endcell, inst2->t,
+        true);
       last = endcell;
     }
   }
