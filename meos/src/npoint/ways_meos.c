@@ -425,6 +425,27 @@ route_geom(int64 rid)
 }
 
 /**
+ * @brief Return the geometry of a route read as a line, as #route_geom
+ * returns its geometry
+ * @details The line belongs to the ways cache, which reads it once from the
+ * geometry of the route, and is not freed by the caller
+ * @param[in] rid Route identifier
+ * @errval NULL
+ */
+const LWLINE *
+route_line(int64 rid)
+{
+  ways_record rec;
+  if (route_lookup(rid, false, &rec) == LW_FAILURE)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot get the geometry for route %lld", (long long) rid);
+    return NULL;
+  }
+  return rec.the_line;
+}
+
+/**
  * @ingroup meos_npoint_base_route
  * @brief Access the edge table to return the route length from the
  * corresponding route identifier
