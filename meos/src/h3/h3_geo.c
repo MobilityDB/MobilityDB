@@ -431,6 +431,36 @@ h3_outline_vertex_held(const H3Outline *o, int k)
 }
 
 /**
+ * @brief Return the microsecond at which a segment crosses the line of the
+ * edge of an outline from the vertex k to the vertex k + 1, as the offset
+ * from the start of the segment, truncated
+ * @details The edge is read in the chart of the start of the segment, each
+ * vertex through an exact offset of 360 (#h3_lon_offset), and the crossing
+ * is dated by #segment_edge_cross_offset, the truncation of its exact
+ * parameter. Whether the segment meets the edge itself, between its
+ * vertices, is a question of its own.
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the first vertex of the edge
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment, in degrees
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] whole True when the segment lies on the line exactly at the
+ * microsecond returned
+ */
+int64
+h3_outline_edge_offset(const H3Outline *o, int k, double x0, double y0,
+  double x1, double y1, int64 D, bool *whole)
+{
+  int k1 = (k + 1) % o->count;
+  double ax = o->lon[k], bx = o->lon[k1];
+  double oa = h3_lon_offset(x0, ax);
+  /* Both offsets are multiples of 360 of small magnitude, so their sum is
+   * exact */
+  double ob = oa + h3_lon_offset(ax, bx);
+  return segment_edge_cross_offset(x0, y0, x1, y1, D, ax, o->lat[k], oa, bx,
+    o->lat[k1], ob, whole);
+}
+
+/**
  * @brief Path a segment follows between its two endpoints
  * @details A planar point moves along the straight line in longitude and
  * latitude, a geodetic one along the great circle through its endpoints, as

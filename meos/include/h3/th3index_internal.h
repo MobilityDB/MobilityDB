@@ -126,6 +126,10 @@ extern bool h3_cell_outline(H3Index cell, H3Outline *out);
  * north and west sides). Bodies in h3_geo.c. */
 extern bool h3_outline_edge_held(const H3Outline *o, int k);
 extern bool h3_outline_vertex_held(const H3Outline *o, int k);
+/* The microsecond at which a segment crosses the line of an edge of an
+ * outline, truncated, exactly. Body in h3_geo.c. */
+extern int64 h3_outline_edge_offset(const H3Outline *o, int k, double x0,
+  double y0, double x1, double y1, int64 D, bool *whole);
 
 /* Hierarchy — next-resolution conveniences. Bodies in
  * th3index_hierarchy.c. */
