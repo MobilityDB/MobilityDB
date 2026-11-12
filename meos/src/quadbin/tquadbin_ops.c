@@ -377,7 +377,11 @@ typedef struct
  * where the border lies exactly on a tile boundary and the extent spreads
  * along that axis, and the grid leaves it out when it does not contain the
  * border. The extent is the bounding box of the trajectory, which for a
- * geodetic one holds its great circles
+ * geodetic one holds its great circles. The tile holding the corner of the
+ * upper border is the one #quadbin_point_to_cell names, and the border lies
+ * on its boundary when it equals, as doubles, the west or the north bound
+ * #quadbin_cell_bounding_box states for that tile, so the decision reads the
+ * bounds the tiles hold and no fractional tile coordinate.
  */
 static void
 tquadbin_border(const Temporal *temp, int32 resolution, bool border_inc,
@@ -388,14 +392,16 @@ tquadbin_border(const Temporal *temp, int32 resolution, bool border_inc,
     return;
   STBox box;
   tspatial_set_stbox(temp, &box);
-  double n = (double) (UINT64_C(1) << resolution);
-  double xwest, ynorth, xeast, ysouth;
-  quadbin_tile_coords(box.xmin, box.ymax, n, &xwest, &ynorth);
-  quadbin_tile_coords(box.xmax, box.ymin, n, &xeast, &ysouth);
-  if (xeast > xwest && xeast == floor(xeast) && xeast < n)
-    border->x = (long) xeast;
-  if (ysouth > ynorth && ysouth == floor(ysouth) && ysouth < n)
-    border->y = (long) ysouth;
+  Quadbin corner = quadbin_point_to_cell(box.xmax, box.ymin,
+    (uint32_t) resolution);
+  double xmin, ymin, xmax, ymax;
+  quadbin_cell_bounding_box(corner, &xmin, &ymin, &xmax, &ymax);
+  uint32_t x, y, z;
+  quadbin_cell_tile(corner, &x, &y, &z);
+  if (box.xmax > box.xmin && box.xmax == xmin)
+    border->x = (long) x;
+  if (box.ymin < box.ymax && box.ymin == ymax)
+    border->y = (long) y;
   return;
 }
 
