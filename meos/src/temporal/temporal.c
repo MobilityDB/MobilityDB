@@ -950,6 +950,11 @@ temporal_out(const Temporal *temp, int maxdd, size_t *size_out)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
+#if RGEO
+  /* A temporal rigid geometry writes its reference geometry before its poses */
+  if (temp->temptype == T_TRGEOMETRY)
+    return trgeometry_out(temp, maxdd, size_out);
+#endif /* RGEO */
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {

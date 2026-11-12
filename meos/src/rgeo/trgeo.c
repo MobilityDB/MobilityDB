@@ -234,22 +234,29 @@ trgeometry_text_join(int32_t srid, const char *geom, const char *poses,
  * @brief Return the Well-Known Text (WKT) representation of a temporal rigid
  * geometry
  * @param[in] temp Temporal rigid geometry
+ * @param[in] maxdd Maximum number of decimal digits
  * @param[out] size_out Size of the result, the terminating null character
  * included
  * @csqlfn #Trgeometry_out()
  */
 char *
-trgeometry_out(const Temporal *temp, size_t *size_out)
+trgeometry_out(const Temporal *temp, int maxdd, size_t *size_out)
 {
   size_t str_size;
   size_t part_size;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
 
   /* The hexadecimal EWKB of the reference geometry carries its SRID */
   char *geom = geo_out(trgeometry_geom_p(temp), &part_size);
-  char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, &str_size);
+  /* The poses are written by the temporal pose, since #temporal_out writes a
+   * temporal rigid geometry through this function */
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  char *pose = temporal_out(tpose, maxdd, &str_size);
+  pfree(tpose);
   char *result = trgeometry_text_join(SRID_UNKNOWN, geom, pose, size_out);
   pfree(geom); pfree(pose);
   return result;
@@ -280,8 +287,11 @@ trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended,
   char *wkt_geom = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO,
     maxdd, NULL);
   lwgeom_free(geom);
-  /* Write the pose */
-  char *wkt_pose = tspatial_as_text(temp, maxdd, &part_size);
+  /* Write the poses through the temporal pose, since #tspatial_as_text writes
+   * a temporal rigid geometry through this function */
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  char *wkt_pose = tspatial_as_text(tpose, maxdd, &part_size);
+  pfree(tpose);
   char *result = trgeometry_text_join(srid, wkt_geom, wkt_pose, size_out);
   pfree(wkt_geom); pfree(wkt_pose);
   return result;
