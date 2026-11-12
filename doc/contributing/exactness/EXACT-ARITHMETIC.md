@@ -210,7 +210,7 @@ implementation; "survivor" is the one covering every finite double with the most
 
 | Question | Implementations | Survivor | What the others are |
 |---|---|---|---|
-| Orientation of three points in the plane | `cross_product_sign`, `cross_product_exact`, `relate_orientation`, `seg2d_side`, `certa_sum2_sign`, the inline sign of `cert_arc_minor`, `sum_point_orient`, `arr_cross_ival` | `cross_product_sign` (109 calls) | `cross_product_exact` has no caller; `certa_sum2_sign` is the same sign on the polynomial ladder, exact only in its range; `relate_orientation` stops at its filter, so its 0 is collinear or undecided; `seg2d_side` reads `cross_product_sign` with the opposite sign from C5 (fix/simple-exact-side); before it, `MEOS_EPSILON` on the cross product |
+| Orientation of three points in the plane | `cross_product_sign`, `cross_product_exact`, `relate_orientation`, `seg2d_side`, `certa_sum2_sign`, the inline sign of `cert_arc_minor`, `sum_point_orient`, `arr_cross_ival` | `cross_product_sign` (109 calls) | `cross_product_exact` has no caller; `certa_sum2_sign` is the same sign on the polynomial ladder, exact only in its range; `relate_orientation` stops at its filter, so its 0 is collinear or undecided; `seg2d_side` reads `cross_product_sign` with the opposite sign from #3593 (C5); before it, `MEOS_EPSILON` on the cross product |
 | Orientation of four points in 3D | `vector_triple_sign`, `triple_product_sign` and its `_exact` | `vector_triple_sign` | `triple_product_sign` is exact only where no product overflows or underflows |
 | Sign of a dot product | `point_segment_dot_sign_inputs`, `dot_product_sign` and its `_exact` | `point_segment_dot_sign_inputs` | `dot_product_sign` is exact only in its range |
 | Do two segments meet | `linesegm_intersect`, `wide_segment_meet`, `relate_edges_cross`, `cert_segs_cross_exact`, `cert_segs_meet` | `linesegm_intersect` | each calls a different set of contacts a meeting (Section 4.7) |
@@ -223,13 +223,13 @@ implementation; "survivor" is the one covering every finite double with the most
 | Point in polygon | `point_in_rings_exact`, `point_arc_ray_parity`, `dist_poly_seg_raycross`, `dist_geom_point_inside`, `pip_point_in_ring` | `point_in_rings_exact` and, for arcs, `point_arc_ray_parity` | from #3575 (C2) the other three read the exact sign (`pip_point_in_ring`) or the exact parities (`dist_poly_seg_raycross`, through `exact_arc_from_edge`); before it, doubles, `MEOS_GEOM_TOLERANCE` and `atan2` |
 | The circle of an arc | `arcarc_centre_exact` and `arcarc_radius2_exact`, `arr_arc_centre_y_side`, `mec_exact_set` and `mec_beyond`, `exact_arc_bound`, `tower_arc_read`, `hull_exact` | `arcarc_centre_exact` | six arc models form the same circumcentre (Section 4.7) |
 | A segment against an arc | the `arcseg_*` meetings, `tower_point_line_circle`, `arcsegm_cross` | the `arcseg_*` meetings on input segments, the tower on tower points | `arcsegm_cross`, which relate reads, answers by `arcsegm_meet_exact` from #3567 (C1); before it, a `1e-14` band, `MEOS_GEOM_TOLERANCE` and `atan2` read three proper crossings as none |
-| Two arcs | `arcarc_meet_exact`, `tower_point_circles`, `arcarc_cross` | `arcarc_meet_exact` | `arcarc_cross`, which relate reads, answers by `arcarc_meet_exact` from C6 (fix/arcarc-cross-exact), which also reads the second half of a whole circle from its other end, as `arcsegm_meet_exact` does; before it, a band on the half-chord and `MEOS_GEOM_TOLERANCE` on the fraction. The meeting points `relate_arc_arc_points` places stay in doubles |
+| Two arcs | `arcarc_meet_exact`, `tower_point_circles`, `arcarc_cross` | `arcarc_meet_exact` | `arcarc_cross`, which relate reads, answers by `arcarc_meet_exact` from #3595 (C6, merged), which also reads the second half of a whole circle from its other end, as `arcsegm_meet_exact` does; before it, a band on the half-chord and `MEOS_GEOM_TOLERANCE` on the fraction. The meeting points `relate_arc_arc_points` places stay in doubles |
 | Within a distance of an arc | `point_arc_offset_sign` and its segment and arc siblings, the `*_within_pred` family on the expression ladder, the far certificates of the buffer | none yet | one family per arc model |
 | The order of edges leaving a point | `edges_turn_cmp_exact`, `edges_turn_cmp_meet`, `arr_turn_cmp` | none yet | they differ in how the point is held: doubles, a tower meeting, intervals |
 | The order of meetings along an edge | `meets_order_tower`, `meets_order_scaled` | the expression ladder | `meets_order_scaled` is the arena twin |
 | A meeting point held exactly | `meet_tower_build`, `meet_point_exact` | the expression ladder | `meet_point_exact` is the arena twin |
 | Nearest approach of two motions | `point_motion_nad_exact`, `point_motion_point_offset_exact`, `convex_motion_nad_exact` | none yet | two time models (Section 4.7) |
-| Within a distance over time | `point_motion_dwithin_exact`, `point_motion_dwithin_period_exact`, `tcbuffer_region_within_roots` | `point_motion_dwithin_period_exact`, which states a point as a disc of radius 0 | from #3588 (C4) the periods of a point or a disc against a geometry of segments come from one engine, `motion_edges_dwithin_periods`, built on the period logic of `point_motion_dwithin_period_exact`; `tcbuffer_region_within_roots`, in doubles with a `1e-18` tolerance, answers only a geometry carrying an arc |
+| Within a distance over time | `point_motion_dwithin_exact`, `point_motion_dwithin_period_exact`, `tcbuffer_region_within_roots` | `point_motion_dwithin_period_exact`, which states a point as a disc of radius 0 | from #3588 (C4, merged) the periods of a point or a disc against a geometry of segments come from one engine, `motion_edges_dwithin_periods`, built on the period logic of `point_motion_dwithin_period_exact`; `tcbuffer_region_within_roots`, in doubles with a `1e-18` tolerance, answers only a geometry carrying an arc |
 
 ### 4.7 What the duplicates disagree on
 
@@ -241,7 +241,7 @@ Built apart, the implementations of one question drift apart in contract:
   `point_within_distance_sign`) are exact for every finite double. EA1 measures the consequence: 50
   of 228 calls answered 0 for -1.
 - **A tolerance beside an exact sign for the same question**: relate's crossings of a segment
-  and an arc (`arcsegm_cross`, #3567) and of two arcs (`arcarc_cross`, C6) answer by the exact
+  and an arc (`arcsegm_cross`, #3567) and of two arcs (`arcarc_cross`, #3595) answer by the exact
   arc meetings; `buffer_ring_signed_area` against `ring_area_sign`; and, for a geometry carrying an arc,
   `tcbuffer_region_within_roots` against `point_motion_dwithin_period_exact` (a geometry of
   segments is answered exactly from #3588). The ray casts
@@ -316,16 +316,20 @@ layer holds it for every question. The phases, each a series of pull requests:
 
 1. **The tolerances beside exact signs (C1 to C6).** Each question of Section 4.7 that keeps a
    tolerant route beside an exact one is answered by the exact one: relate's segment-arc crossing
-   `arcsegm_cross` by the exact arc meetings (C1, #3567) and its arc-arc crossing `arcarc_cross`
-   likewise (C6, fix/arcarc-cross-exact), the ray casts in
+   `arcsegm_cross` by the exact arc meetings (C1, #3567, merged) and its arc-arc crossing
+   `arcarc_cross` likewise (C6, #3595, merged), the ray casts in
    doubles (`dist_poly_seg_raycross`, `pip_point_in_ring`, the `inside` of
    `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity` (C2,
-   #3575), the ring
-   area in doubles of the buffer by `ring_area_sign`, the within-times of a moving disc in
-   `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact` (C4, #3588, for a
-   geometry of segments; one carrying an arc follows), and `seg2d_side` by
-   `cross_product_sign` (C5, fix/simple-exact-side). These change answers, where the tolerance answers wrongly, so each comes
-   with a witness CGAL judges.
+   #3575, merged), the ring
+   area in doubles of the buffer by `ring_area_sign` (C3, paused), the within-times of a moving
+   disc in `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact` (C4, #3588,
+   merged, for a geometry of segments; one carrying an arc follows), and `seg2d_side` by
+   `cross_product_sign` (C5, #3593). These change answers, where the tolerance answers wrongly,
+   so each comes with a witness CGAL judges. Relate on arcs keeps one wrong class the
+   consolidation measured and did not cause: on 396 pairs of curve polygons whose arcs cross or
+   miss 2^-38 to 2^-50 of the radius from an end, 26 intersects and 62 areal answers disagree
+   with CGAL, before C6 and after it, the cause not yet located (`oracle-kit`,
+   `cpwork/c6/arcarc_pairs.txt`).
 2. **The duplicates of one contract (C7 onwards).** The functions Section 4.6 shows answering the
    survivor's contract become calls to it, one question per pull request, each proven by a
    differential: `cross_product_exact` (no caller), `certa_sum2_sign` and the sign of
