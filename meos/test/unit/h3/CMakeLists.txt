@@ -30,7 +30,7 @@
 # These programs test internal functions of meos/src/h3, so CMake builds
 # them against the internal headers; their names end in _unit.c, so that CI
 # does not take them for tests of the public API.  Run them with
-#   ctest -R 'h3_outline|h3_owner'
+#   ctest -R 'h3_outline|h3_owner|h3_ring'
 # Each reads every cell up to the resolution it takes, 2 here; run it with 3
 # or more for a deeper check (about a minute at 3).
 
@@ -43,3 +43,9 @@ add_executable(h3_owner_unit h3_owner_unit.c)
 target_link_libraries(h3_owner_unit ${MEOS_LIB_NAME} ${H3_LIBRARY} postgis
   pgtypes m)
 add_test(NAME h3_owner_unit COMMAND h3_owner_unit)
+
+add_executable(h3_ring_unit h3_ring_unit.c)
+target_include_directories(h3_ring_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(h3_ring_unit ${MEOS_LIB_NAME} ${H3_LIBRARY} postgis
+  pgtypes m)
+add_test(NAME h3_ring_unit COMMAND h3_ring_unit)

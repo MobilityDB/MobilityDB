@@ -1136,6 +1136,148 @@ offset_x_cmp(double x, double o, double p)
 }
 
 /**
+ * @brief Return the side of the line through A and B on which a point moving
+ * from P0 to P1 lies after n of D microseconds, exactly
+ * @details The sign of `(D - n) cross(A, B, P0) + n cross(A, B, P1)`, D
+ * times the cross product of B - A and P(n) - A, with
+ * `cross(A, B, P) = (bx + ob - ax - oa) (py - ay) - (by - ay) (px - ax - oa)`.
+ * The sums are those #segment_edge_cross_offset sets, the coefficients
+ * integers below 2^53, so exact doubles
+ */
+static int
+segment_edge_side_at(const ExactSum *sums, int64 D, int64 n)
+{
+  PolyTerm terms[4];
+  int nterms = 0;
+  if (n < D)
+  {
+    terms[nterms++] = (PolyTerm) {.coef = (double) (D - n), .deg = 2,
+      .sum = {0, 2}};
+    terms[nterms++] = (PolyTerm) {.coef = - (double) (D - n), .deg = 2,
+      .sum = {1, 3}};
+  }
+  if (n > 0)
+  {
+    terms[nterms++] = (PolyTerm) {.coef = (double) n, .deg = 2,
+      .sum = {0, 4}};
+    terms[nterms++] = (PolyTerm) {.coef = - (double) n, .deg = 2,
+      .sum = {1, 5}};
+  }
+  return polynomial_sign_exact(sums, terms, nterms);
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the line of an
+ * edge whose x coordinates carry exact offsets, as the offset from the start
+ * of the segment, truncated
+ * @details The point moves from P0 to P1 over @p D microseconds, and lies on
+ * the line through A and B at the exact parameter where
+ * `(D - n) cross(A, B, P0) + n cross(A, B, P1)` vanishes, a function of `n`
+ * that is linear, hence monotone. The offset returned is the last
+ * microsecond `n` at which the point is still on the side of the line it
+ * starts on or on the line, each side the exact sign
+ * #segment_edge_side_at decides on the input doubles, the integer @p D and
+ * the offsets, so the crossing is dated by the truncation of its exact
+ * parameter and no rounded parameter decides it. A double estimate starts
+ * a galloping search, then a bisection, on that sign. The x offsets, such
+ * as a multiple of 360 reading a cell across the antimeridian in the chart
+ * of the segment, are never added to a coordinate, where they would round.
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * @param[in] D Duration of the segment in microseconds, below 2^53
+ * @param[in] ax,ay,oa Vertex A of the edge and the offset of its x
+ * @param[in] bx,by,ob Vertex B of the edge and the offset of its x
+ * @param[out] whole True when the point lies on the line exactly at the
+ * microsecond returned
+ * @return The offset in microseconds: 0 when the segment starts on the line,
+ * @p D when it reaches the line only at its end or never
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int64
+segment_edge_cross_offset(double x0, double y0, double x1, double y1,
+  int64 D, double ax, double ay, double oa, double bx, double by, double ob,
+  bool *whole)
+{
+  assert(D >= 0); assert(whole);
+  ExactSum sums[6];
+  const double t0[4] = {bx, ob, - ax, - oa}, t1[2] = {by, - ay};
+  const double t2[2] = {y0, - ay}, t3[3] = {x0, - ax, - oa};
+  const double t4[2] = {y1, - ay}, t5[3] = {x1, - ax, - oa};
+  exact_sum_set(&sums[0], t0, 4);
+  exact_sum_set(&sums[1], t1, 2);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  exact_sum_set(&sums[4], t4, 2);
+  exact_sum_set(&sums[5], t5, 3);
+  int s0 = segment_edge_side_at(sums, D, 0);
+  if (s0 == 0 || D == 0)
+  {
+    *whole = (s0 == 0);
+    return 0;
+  }
+  /* The estimate in doubles, the start of the search only */
+  double c0 = sums[0].approx * sums[2].approx - sums[1].approx * sums[3].approx;
+  double c1 = sums[0].approx * sums[4].approx - sums[1].approx * sums[5].approx;
+  double est = (double) D * (c0 / (c0 - c1));
+  int64 n = 0;
+  if (isfinite(est) && est > 0.0)
+    n = (est >= (double) D) ? D : (int64) est;
+  /* lo is the last microsecond known on the start side, hi the first known
+   * past it, D + 1 standing for none */
+  int64 lo, hi;
+  if (s0 * segment_edge_side_at(sums, D, n) >= 0)
+  {
+    lo = n;
+    int64 step = 1;
+    for (;;)
+    {
+      if (lo == D)
+      {
+        hi = D + 1;
+        break;
+      }
+      int64 c = (step > D - lo) ? D : lo + step;
+      if (s0 * segment_edge_side_at(sums, D, c) >= 0)
+      {
+        lo = c;
+        step *= 2;
+      }
+      else
+      {
+        hi = c;
+        break;
+      }
+    }
+  }
+  else
+  {
+    hi = n;
+    int64 step = 1;
+    for (;;)
+    {
+      int64 c = (step >= hi) ? 0 : hi - step;
+      if (c == 0 || s0 * segment_edge_side_at(sums, D, c) >= 0)
+      {
+        lo = c;
+        break;
+      }
+      hi = c;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    int64 mid = lo + (hi - lo) / 2;
+    if (s0 * segment_edge_side_at(sums, D, mid) >= 0)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  *whole = (segment_edge_side_at(sums, D, lo) == 0);
+  return lo;
+}
+
+/**
  * @brief Read one edge of a ring for the location of a point by a ray cast to
  * the right at the point's height
  * @details The edge runs from A to B, their x coordinates shifted by exact
