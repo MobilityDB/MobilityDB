@@ -1190,7 +1190,7 @@ SELECT numInstants(atTime(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 atTpcbox(tpcpoint,tpcbox,border_inc boolean=true) → tpcpoint
 minusTpcbox(tpcpoint,tpcbox,border_inc boolean=true) → tpcpoint
 </programlisting>
-					<para>Devuelve NULL cuando el pcid del tpcbox no coincide con el del tpcpoint. Internamente proyecta a un tgeompoint a través de la caché de esquemas, restringe la proyección mediante el stbox equivalente y devuelve el span temporal del resultado al tpcpoint original para preservar los valores pcpoint completos</para>
+					<para>Un tpcbox de otro esquema, sistema de referencia o tipo de coordenada provoca un error, como lo hacen los operadores de las cajas. Internamente proyecta a un tgeompoint a través de la caché de esquemas, restringe la proyección mediante el stbox equivalente y devuelve el span temporal del resultado al tpcpoint original para preservar los valores pcpoint completos</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
@@ -2049,7 +2049,7 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 
 atTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 </programlisting>
-					<para>La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente. La extensión en X y en Y de un parche es el <varname>PCBOUNDS</varname> 2D de pgPointCloud; cuando la caja tiene Z, la extensión en Z del parche es la que indican sus puntos, y un parche de un esquema sin Z no supera la caja. Devuelve NULL cuando el pcid del tpcbox no coincide.</para>
+					<para>La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente. La extensión en X y en Y de un parche es el <varname>PCBOUNDS</varname> 2D de pgPointCloud; cuando la caja tiene Z, la extensión en Z del parche es la que indican sus puntos, y un parche de un esquema sin Z no supera la caja. Un tpcbox de otro esquema, sistema de referencia o tipo de coordenada provoca un error, como lo hacen los operadores de las cajas.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),

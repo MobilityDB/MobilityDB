@@ -48,7 +48,7 @@ SELECT asText(appendInstant(t, 'step')) FROM (VALUES
   (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(2 2),0.5)@2001-01-02')) v(t);
                                                                      astext                                                                      
 -------------------------------------------------------------------------------------------------------------------------------------------------
- POLYGON((0 0,1 0,1 1,0 1,0 0));Interp=Step;[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.5)@Tue Jan 02 00:00:00 2001 PST]
+ Interp=Step;POLYGON((0 0,1 0,1 1,0 1,0 0));[Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.5)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT asText(appendInstant(t, 'linear', NULL, interval '1 day')) FROM (VALUES

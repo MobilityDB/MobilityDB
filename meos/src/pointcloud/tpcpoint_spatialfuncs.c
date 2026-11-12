@@ -56,6 +56,7 @@
 #include "temporal/type_util.h"  /* pfree_array */
 #include "geo/tgeo_spatialfuncs.h"  /* tpointinst_make_coords */
 #include "pointcloud/pcpoint.h" /* struct Pcpoint body (.pcid field) */
+#include "pointcloud/tpc_boxops.h"  /* tpcpoint_restrict_tpcbox */
 
 /*****************************************************************************
  * Internal helpers
@@ -280,6 +281,101 @@ nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   double result = geom_distance2d(probe, gs);
   pfree(probe);
   return result;
+}
+
+/*****************************************************************************
+ * Bbox-based restrictions — at_tpcbox / minus_tpcbox
+ *
+ * Strategy: project the tpcpoint onto a tgeompoint via the schema
+ * cache, restrict the projection by the equivalent stbox (TPCBox shares
+ * the STBox prefix layout — copy the first 80 bytes), extract the time
+ * span of the result, and restrict the ORIGINAL tpcpoint by that time
+ * span.  Restricting the original (not the projected tgeompoint and
+ * casting back) preserves the full pcpoint values, including
+ * non-spatial dimensions like Intensity / Classification.
+ *****************************************************************************/
+
+/**
+ * @brief Restrict (or remove) a tpcpoint by a TPCBox
+ * @details A box of another schema or reference system raises an error
+ * @return Newly-palloc'd Temporal, or @p NULL when the result is empty.
+ */
+Temporal *
+tpcpoint_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
+  bool border_inc, bool atfunc)
+{
+  /* Ensure the validity of the arguments: a box of another schema or
+   * reference system raises, as the overlaps of their boxes raises */
+  VALIDATE_TPCPOINT(temp, NULL);
+  if (! ensure_valid_tpointcloud_tpcbox(temp, box))
+    return NULL;
+
+  /* Project tpcpoint -> tgeompoint via the shared MEOS conversion. */
+  Temporal *tpoint = tpcpoint_to_tgeompoint(temp);
+  if (! tpoint)
+    return atfunc ? NULL : temporal_copy(temp);
+
+  /* TPCBox shares the period + xyz + srid prefix of STBox, but inserts
+   * pcid before flags, so the flags byte offsets differ.  Build the
+   * STBox explicitly, mirroring the box's own dimension flags, with
+   * GEODETIC cleared. */
+  STBox sbox;
+  memset(&sbox, 0, sizeof(STBox));
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  if (hast)
+    sbox.period = box->period;
+  sbox.xmin = box->xmin; sbox.ymin = box->ymin; sbox.zmin = box->zmin;
+  sbox.xmax = box->xmax; sbox.ymax = box->ymax; sbox.zmax = box->zmax;
+  sbox.srid = box->srid;
+  MEOS_FLAGS_SET_X(sbox.flags, MEOS_FLAGS_GET_X(box->flags));
+  MEOS_FLAGS_SET_Z(sbox.flags, MEOS_FLAGS_GET_Z(box->flags));
+  MEOS_FLAGS_SET_T(sbox.flags, hast);
+  MEOS_FLAGS_SET_GEODETIC(sbox.flags, false);
+
+  /* Restrict projection by the equivalent stbox.  An empty restriction
+   * of the pcid-matched projection is an empty result for at and minus
+   * alike: a NULL minus means no part of the value lies outside the
+   * box. */
+  Temporal *tpoint_rest = tgeo_restrict_stbox(tpoint, &sbox, border_inc, atfunc);
+  pfree(tpoint);
+  if (! tpoint_rest)
+    return NULL;
+
+  /* Lift the result's time span back onto the ORIGINAL tpcpoint to
+   * recover the full pcpoint values at each surviving instant. */
+  SpanSet *ss = temporal_time(tpoint_rest);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+  pfree(ss);
+  pfree(tpoint_rest);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_restrict
+ * @brief Return a temporal point cloud point restricted to a point cloud box
+ * @param[in] temp Temporal point cloud point
+ * @param[in] box Point cloud box
+ * @param[in] border_inc True when the box contains the upper border
+ * @csqlfn #Tpcpoint_at_tpcbox()
+ */
+Temporal *
+tpcpoint_at_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc)
+{
+  return tpcpoint_restrict_tpcbox(temp, box, border_inc, REST_AT);
+}
+
+/**
+ * @ingroup meos_pointcloud_restrict
+ * @brief Return a temporal point cloud point restricted to the complement of a point cloud box
+ * @param[in] temp Temporal point cloud point
+ * @param[in] box Point cloud box
+ * @param[in] border_inc True when the box contains the upper border
+ * @csqlfn #Tpcpoint_minus_tpcbox()
+ */
+Temporal *
+tpcpoint_minus_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc)
+{
+  return tpcpoint_restrict_tpcbox(temp, box, border_inc, REST_MINUS);
 }
 
 /*****************************************************************************/

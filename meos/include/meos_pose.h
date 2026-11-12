@@ -359,12 +359,18 @@ extern int always_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
 extern int always_ne_pose_tpose(const Pose *pose, const Temporal *temp);
 extern int always_ne_tpose_pose(const Temporal *temp, const Pose *pose);
 extern int always_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
+extern int always_overlaps_stbox_tpose(const STBox *box, const Temporal *temp);
+extern int always_overlaps_tpose_stbox(const Temporal *temp, const STBox *box);
+extern int always_overlaps_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
 extern int ever_eq_pose_tpose(const Pose *pose, const Temporal *temp);
 extern int ever_eq_tpose_pose(const Temporal *temp, const Pose *pose);
 extern int ever_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
 extern int ever_ne_pose_tpose(const Pose *pose, const Temporal *temp);
 extern int ever_ne_tpose_pose(const Temporal *temp, const Pose *pose);
 extern int ever_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
+extern int ever_overlaps_stbox_tpose(const STBox *box, const Temporal *temp);
+extern int ever_overlaps_tpose_stbox(const Temporal *temp, const STBox *box);
+extern int ever_overlaps_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
 

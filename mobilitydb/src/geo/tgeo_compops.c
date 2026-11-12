@@ -275,13 +275,13 @@ Always_ne_tgeo_tgeo(PG_FUNCTION_ARGS)
 
 /**
  * @brief Generic function for the ever/always overlaps of a spatiotemporal
- * box and a temporal geo, as #EAcomp_geo_tspatial answers an ever or always
- * comparison
+ * box and a spatiotemporal value, as #EAcomp_geo_tspatial answers an ever or
+ * always comparison
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always overlaps
  */
-static Datum
-EAoverlaps_stbox_tgeo(FunctionCallInfo fcinfo,
+Datum
+EAoverlaps_stbox_tspatial(FunctionCallInfo fcinfo,
   int (*func)(const STBox *, const Temporal *))
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -294,14 +294,14 @@ EAoverlaps_stbox_tgeo(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the ever/always overlaps of a temporal geo and
- * a spatiotemporal box, as #EAcomp_tspatial_geo answers an ever or always
- * comparison
+ * @brief Generic function for the ever/always overlaps of a spatiotemporal
+ * value and a spatiotemporal box, as #EAcomp_tspatial_geo answers an ever or
+ * always comparison
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always overlaps
  */
-static Datum
-EAoverlaps_tgeo_stbox(FunctionCallInfo fcinfo,
+Datum
+EAoverlaps_tspatial_stbox(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const STBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -324,7 +324,7 @@ PG_FUNCTION_INFO_V1(Ever_overlaps_stbox_tgeo);
 inline Datum
 Ever_overlaps_stbox_tgeo(PG_FUNCTION_ARGS)
 {
-  return EAoverlaps_stbox_tgeo(fcinfo, &ever_overlaps_stbox_tgeo);
+  return EAoverlaps_stbox_tspatial(fcinfo, &ever_overlaps_stbox_tgeo);
 }
 
 PGDLLEXPORT Datum Ever_overlaps_tgeo_stbox(PG_FUNCTION_ARGS);
@@ -338,7 +338,7 @@ PG_FUNCTION_INFO_V1(Ever_overlaps_tgeo_stbox);
 inline Datum
 Ever_overlaps_tgeo_stbox(PG_FUNCTION_ARGS)
 {
-  return EAoverlaps_tgeo_stbox(fcinfo, &ever_overlaps_tgeo_stbox);
+  return EAoverlaps_tspatial_stbox(fcinfo, &ever_overlaps_tgeo_stbox);
 }
 
 PGDLLEXPORT Datum Always_overlaps_stbox_tgeo(PG_FUNCTION_ARGS);
@@ -352,7 +352,7 @@ PG_FUNCTION_INFO_V1(Always_overlaps_stbox_tgeo);
 inline Datum
 Always_overlaps_stbox_tgeo(PG_FUNCTION_ARGS)
 {
-  return EAoverlaps_stbox_tgeo(fcinfo, &always_overlaps_stbox_tgeo);
+  return EAoverlaps_stbox_tspatial(fcinfo, &always_overlaps_stbox_tgeo);
 }
 
 PGDLLEXPORT Datum Always_overlaps_tgeo_stbox(PG_FUNCTION_ARGS);
@@ -366,7 +366,7 @@ PG_FUNCTION_INFO_V1(Always_overlaps_tgeo_stbox);
 inline Datum
 Always_overlaps_tgeo_stbox(PG_FUNCTION_ARGS)
 {
-  return EAoverlaps_tgeo_stbox(fcinfo, &always_overlaps_tgeo_stbox);
+  return EAoverlaps_tspatial_stbox(fcinfo, &always_overlaps_tgeo_stbox);
 }
 
 PGDLLEXPORT Datum Ever_overlaps_tgeo_tgeo(PG_FUNCTION_ARGS);

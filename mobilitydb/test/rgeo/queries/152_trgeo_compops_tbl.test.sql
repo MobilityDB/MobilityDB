@@ -44,3 +44,20 @@ SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_geometry t2 WHERE t1.temp #<> ST_S
 SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+-- Ever and always overlaps: a value and a spatiotemporal box
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp ?&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year') <> (atStbox(t1.temp, expandTime(expandSpace(stbox(t2.temp), 20), '1 year')) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp %&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year') <> (minusStbox(t1.temp, expandTime(expandSpace(stbox(t2.temp), 20), '1 year')) IS NULL);
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND expandTime(expandSpace(stbox(t2.temp), 20), '1 year') ?&& t1.temp <> t1.temp ?&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp ?&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp %&& expandTime(expandSpace(stbox(t2.temp), 20), '1 year');
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp && expandTime(expandSpace(stbox(t2.temp), 20), '1 year');

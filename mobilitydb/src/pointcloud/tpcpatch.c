@@ -195,176 +195,6 @@ Tpcpatch_swath(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * TPCBox-based restriction (patch-level / coarse)
- *
- * Each pcpatch instant is kept-or-dropped based on whether its extent
- * overlaps the box's spatial extent and its timestamp falls in the box's
- * period. The X and Y extent is the one the PCBOUNDS header of the patch
- * states. When the box has Z, the Z extent is the one the points of the
- * patch state, read by @c pcpatch_srid_to_tpcbox, so a patch of a schema
- * without Z fails a box with Z, as each of its points fails it in
- * @c pcpoint_in_tpcbox. The patch payload is preserved verbatim.
- *
- * The @p border_inc flag toggles inclusive (touching counts) vs.
- * strict overlap; the default is inclusive.
- *****************************************************************************/
-
-/**
- * @brief Return true if two extents along one dimension overlap
- * @param min1,max1 First extent
- * @param min2,max2 Second extent
- * @param border_inc Inclusive (@c true) or strict (@c false) overlap
- */
-static bool
-extent_overlaps(double min1, double max1, double min2, double max2,
-  bool border_inc)
-{
-  if (border_inc)
-    return ! (min1 > max2 || max1 < min2);
-  return ! (min1 >= max2 || max1 <= min2);
-}
-
-/**
- * @brief Per-instant predicate: pcpatch's pcid, spatial extent and timestamp
- * all overlap the supplied @c TPCBox
- * @param pa          Source pcpatch.
- * @param t           Instant timestamp.
- * @param box         Filtering @c TPCBox.
- * @param border_inc  Inclusive (@c true) or strict (@c false) overlap.
- * @return @c true if the instant should be kept under at-semantics.
- */
-static bool
-pcpatch_passes_tpcbox(const Pcpatch *pa, TimestampTz t, const TPCBox *box,
-  bool border_inc)
-{
-  if (pa->pcid != box->pcid)
-    return false;
-  if (MEOS_FLAGS_GET_T(box->flags) &&
-      ! contains_span_timestamptz(&box->period, t))
-    return false;
-  if (! MEOS_FLAGS_GET_X(box->flags))
-    return true;
-  /* PCBOUNDS layout: {xmin, xmax, ymin, ymax} — see pc_api.h. */
-  if (! extent_overlaps(pa->bounds[0], pa->bounds[1], box->xmin, box->xmax,
-        border_inc) ||
-      ! extent_overlaps(pa->bounds[2], pa->bounds[3], box->ymin, box->ymax,
-        border_inc))
-    return false;
-  if (! MEOS_FLAGS_GET_Z(box->flags))
-    return true;
-  /* PCBOUNDS states no Z extent: the one of the points is the one the box
-   * of the patch carries */
-  TPCBox *pbox = pcpatch_srid_to_tpcbox(pa, box->srid);
-  if (! pbox)
-    return false;
-  bool result = MEOS_FLAGS_GET_Z(pbox->flags) &&
-    extent_overlaps(pbox->zmin, pbox->zmax, box->zmin, box->zmax, border_inc);
-  pfree(pbox);
-  return result;
-}
-
-/**
- * @brief Patch-level @c at / @c minus restriction by @c TPCBox
- * @details Walks every instant of @p temp, collects the timestamps whose patch
- * passes the extent-overlap + timestamp-in-period predicate, then defers
- * to @c temporal_restrict_tstzset for the actual restriction. Granularity is
- * patch-level — surviving instants keep their pcpatch payload verbatim.
- *
- * @param temp        Source tpcpatch.
- * @param box         Filtering @c TPCBox.
- * @param border_inc  Inclusive (@c true) or strict (@c false) overlap.
- * @param atfunc      @c REST_AT keeps passing instants; @c REST_MINUS
- *                    keeps the complement.
- * @return Newly allocated @c Temporal of the same subtype as @p temp,
- *   or @c NULL when every instant is dropped (or every instant
- *   survives in @c REST_MINUS).
- */
-static Temporal *
-tpcpatch_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
-  bool border_inc, bool atfunc)
-{
-  /* PCID mismatch on the first instant: short-circuit to the identity
-   * branch without scanning the rest (all instants share pcid). */
-  const Pcpatch *first =
-    (const Pcpatch *) DatumGetPointer(temporal_start_value(temp));
-  if (first->pcid != box->pcid)
-    return atfunc ? NULL : temporal_copy(temp);
-
-  /* Upper bound on the number of surviving timestamps. */
-  int ninst = 0;
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      ninst = 1;
-      break;
-    case TSEQUENCE:
-      ninst = ((const TSequence *) temp)->count;
-      break;
-    default: /* TSEQUENCESET */
-    {
-      const TSequenceSet *ss = (const TSequenceSet *) temp;
-      for (int i = 0; i < ss->count; i++)
-        ninst += TSEQUENCESET_SEQ_N(ss, i)->count;
-    }
-  }
-
-  Datum *kept = palloc(sizeof(Datum) * ninst);
-  int nkept = 0;
-
-  if (temp->subtype == TINSTANT)
-  {
-    const TInstant *inst = (const TInstant *) temp;
-    const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
-    if (pcpatch_passes_tpcbox(pa, inst->t, box, border_inc))
-      kept[nkept++] = TimestampTzGetDatum(inst->t);
-  }
-  else if (temp->subtype == TSEQUENCE)
-  {
-    const TSequence *seq = (const TSequence *) temp;
-    for (int i = 0; i < seq->count; i++)
-    {
-      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-      const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
-      if (pcpatch_passes_tpcbox(pa, inst->t, box, border_inc))
-        kept[nkept++] = TimestampTzGetDatum(inst->t);
-    }
-  }
-  else /* TSEQUENCESET */
-  {
-    const TSequenceSet *ss = (const TSequenceSet *) temp;
-    for (int i = 0; i < ss->count; i++)
-    {
-      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-      for (int j = 0; j < seq->count; j++)
-      {
-        const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-        const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
-        if (pcpatch_passes_tpcbox(pa, inst->t, box, border_inc))
-          kept[nkept++] = TimestampTzGetDatum(inst->t);
-      }
-    }
-  }
-
-  /* Edge cases: no survivors / all survivors. */
-  if (nkept == 0)
-  {
-    pfree(kept);
-    return atfunc ? NULL : temporal_copy(temp);
-  }
-  if (nkept == ninst)
-  {
-    pfree(kept);
-    return atfunc ? temporal_copy(temp) : NULL;
-  }
-
-  Set *tset = set_make(kept, nkept, T_TIMESTAMPTZ, ORDER);
-  pfree(kept);
-  Temporal *result = temporal_restrict_tstzset(temp, tset, atfunc);
-  pfree(tset);
-  return result;
-}
-
-/*****************************************************************************
  * Per-point restrict — filter every point of every patch through a
  * predicate, rebuild instants, repackage. Used by atTpcboxFine,
  * minusTpcboxFine, atGeometry, minusGeometry on tpcpatch.
@@ -694,7 +524,7 @@ Tpcpatch_at_tpcbox(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TPCBox *box = PG_GETARG_TPCBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tpcpatch_restrict_tpcbox(temp, box, border_inc, REST_AT);
+  Temporal *result = tpcpatch_at_tpcbox(temp, box, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -714,7 +544,7 @@ Tpcpatch_minus_tpcbox(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TPCBox *box = PG_GETARG_TPCBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tpcpatch_restrict_tpcbox(temp, box, border_inc, REST_MINUS);
+  Temporal *result = tpcpatch_minus_tpcbox(temp, box, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

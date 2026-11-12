@@ -383,12 +383,14 @@ SELECT minusTpcbox(tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '202
 (1 row)
 
 SELECT atTpcbox(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcbox
-  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)') IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
+  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)');
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
+SELECT minusTpcbox(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcbox
+  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)');
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
+SELECT tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz) && tpcbox
+  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)';
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]),
   tpcboxZ(0, 0, 0, 2, 2, 2, 1)));
  numinstants 

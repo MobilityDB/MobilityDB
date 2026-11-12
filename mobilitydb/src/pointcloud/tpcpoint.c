@@ -286,73 +286,6 @@ Tpcpoint_to_tgeogpoint(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/*****************************************************************************
- * Bbox-based restrictions — at_tpcbox / minus_tpcbox
- *
- * Strategy: project the tpcpoint onto a tgeompoint via the schema
- * cache, restrict the projection by the equivalent stbox (TPCBox shares
- * the STBox prefix layout — copy the first 80 bytes), extract the time
- * span of the result, and restrict the ORIGINAL tpcpoint by that time
- * span.  Restricting the original (not the projected tgeompoint and
- * casting back) preserves the full pcpoint values, including
- * non-spatial dimensions like Intensity / Classification.
- *****************************************************************************/
-
-/**
- * @brief Restrict (or remove) a tpcpoint by a TPCBox
- * @details PCID mismatch yields the @p atfunc empty / minus identity.
- * @return Newly-palloc'd Temporal, or @p NULL when the result is empty.
- */
-static Temporal *
-tpcpoint_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
-  bool border_inc, bool atfunc)
-{
-  /* PCID mismatch: at -> empty (NULL); minus -> full copy */
-  const Pcpoint *first =
-    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
-  if (first->pcid != box->pcid)
-    return atfunc ? NULL : temporal_copy(temp);
-
-  /* Project tpcpoint -> tgeompoint via the shared MEOS conversion. */
-  Temporal *tpoint = tpcpoint_to_tgeompoint(temp);
-  if (! tpoint)
-    return atfunc ? NULL : temporal_copy(temp);
-
-  /* TPCBox shares the period + xyz + srid prefix of STBox, but inserts
-   * pcid before flags, so the flags byte offsets differ.  Build the
-   * STBox explicitly, mirroring the box's own dimension flags, with
-   * GEODETIC cleared. */
-  STBox sbox;
-  memset(&sbox, 0, sizeof(STBox));
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  if (hast)
-    sbox.period = box->period;
-  sbox.xmin = box->xmin; sbox.ymin = box->ymin; sbox.zmin = box->zmin;
-  sbox.xmax = box->xmax; sbox.ymax = box->ymax; sbox.zmax = box->zmax;
-  sbox.srid = box->srid;
-  MEOS_FLAGS_SET_X(sbox.flags, MEOS_FLAGS_GET_X(box->flags));
-  MEOS_FLAGS_SET_Z(sbox.flags, MEOS_FLAGS_GET_Z(box->flags));
-  MEOS_FLAGS_SET_T(sbox.flags, hast);
-  MEOS_FLAGS_SET_GEODETIC(sbox.flags, false);
-
-  /* Restrict projection by the equivalent stbox.  An empty restriction
-   * of the pcid-matched projection is an empty result for at and minus
-   * alike: a NULL minus means no part of the value lies outside the
-   * box. */
-  Temporal *tpoint_rest = tgeo_restrict_stbox(tpoint, &sbox, border_inc, atfunc);
-  pfree(tpoint);
-  if (! tpoint_rest)
-    return NULL;
-
-  /* Lift the result's time span back onto the ORIGINAL tpcpoint to
-   * recover the full pcpoint values at each surviving instant. */
-  SpanSet *ss = temporal_time(tpoint_rest);
-  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
-  pfree(ss);
-  pfree(tpoint_rest);
-  return result;
-}
-
 PGDLLEXPORT Datum Tpcpoint_at_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpoint_at_tpcbox);
 /**
@@ -366,7 +299,7 @@ Tpcpoint_at_tpcbox(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TPCBox *box = PG_GETARG_TPCBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tpcpoint_restrict_tpcbox(temp, box, border_inc, REST_AT);
+  Temporal *result = tpcpoint_at_tpcbox(temp, box, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -385,7 +318,7 @@ Tpcpoint_minus_tpcbox(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TPCBox *box = PG_GETARG_TPCBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tpcpoint_restrict_tpcbox(temp, box, border_inc, REST_MINUS);
+  Temporal *result = tpcpoint_minus_tpcbox(temp, box, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

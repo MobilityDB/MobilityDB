@@ -54,6 +54,10 @@ extern Datum EAcomp_tspatial_geo(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const GSERIALIZED *));
 extern Datum EAcomp_geo_tspatial(FunctionCallInfo fcinfo,
   int (*func)(const GSERIALIZED *, const Temporal *));
+extern Datum EAoverlaps_stbox_tspatial(FunctionCallInfo fcinfo,
+  int (*func)(const STBox *, const Temporal *));
+extern Datum EAoverlaps_tspatial_stbox(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const STBox *));
   
 extern Datum Tcomp_geo_tspatial(FunctionCallInfo fcinfo,
   Temporal * (*func)(const GSERIALIZED *, const Temporal *));

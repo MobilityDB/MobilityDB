@@ -1367,6 +1367,35 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcbuffer_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Ever and always overlaps</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcbuffer {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
+</programlisting>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a circular buffer lies in a box when it intersects it, as the restriction of a temporal circular buffer to a box reads it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
+  Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- false
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
+  Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' &amp;&amp;
+  stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
+-- true
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
+  Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' ?&amp;&amp;
+  stbox 'STBOX XT(((4,4),(6,6)),[2001-01-01 04:00, 2001-01-01 06:00])';
+-- true
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
+  Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' %&amp;&amp;
+  stbox 'STBOX X((-1,-1),(11,11))';
+-- true
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcbuffer_tcomp">
 				<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>#&lt;&gt;</varname></primary></indexterm>
