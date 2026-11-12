@@ -87,6 +87,7 @@
 #include <meos.h>
 #include <meos_tls.h>     /* MEOS_TLS — per-thread error number (restore #815) */
 #include "temporal/temporal.h"
+#include "temporal/meos_error_save.h"
 
 /*****************************************************************************
  * Global variables
@@ -406,6 +407,63 @@ pg_error(int errlevel, int code, const char *errmsg)
 #endif /* ! MEOS */
 
 /**
+ * @brief Variable that, while a parse saves its errors, points to the flag
+ * recording that one occurred
+ */
+static MEOS_TLS bool *MEOS_ERROR_SAVE = NULL;
+
+/**
+ * @brief Save the errors raised until #meos_error_save_end instead of
+ * raising them
+ * @details The twin of passing an ErrorSaveContext to an input function of
+ * PostgreSQL. An error of a value a parser refuses, that is, a text that is
+ * no value of the type, a value beyond the range of the type or an argument
+ * value it refuses, sets @p occurred and leaves both the handler and the
+ * error number as they are, the parser returning its sentinel. Any other
+ * error, such as an internal one or an allocation that fails, is raised as
+ * usual, as PostgreSQL raises it whatever the context. The pair nests as
+ * #meos_errno_reset and #meos_errno_restore do: this function returns the
+ * state it replaces and #meos_error_save_end puts it back.
+ * @param[out] occurred Flag set when an error is saved, cleared here
+ * @return The flag of the enclosing scope, which #meos_error_save_end restores
+ */
+bool *
+meos_error_save_begin(bool *occurred)
+{
+  bool *previous = MEOS_ERROR_SAVE;
+  *occurred = false;
+  MEOS_ERROR_SAVE = occurred;
+  return previous;
+}
+
+/**
+ * @brief Raise again the errors that follow, or save them in the enclosing
+ * scope
+ * @details The twin of #meos_errno_restore for #meos_error_save_begin
+ * @param[in] previous Flag that #meos_error_save_begin returned
+ */
+void
+meos_error_save_end(bool *previous)
+{
+  MEOS_ERROR_SAVE = previous;
+  return;
+}
+
+/**
+ * @brief Return true when an error of the code is the refusal of a value,
+ * which a parse saves
+ * @details The codes are those #meos_errcode_sqlstate maps to the states an
+ * input function of PostgreSQL saves in an ErrorSaveContext
+ */
+static bool
+meos_error_is_saved(int errcode)
+{
+  return errcode == MEOS_ERR_TEXT_INPUT ||
+    errcode == MEOS_ERR_VALUE_OUT_OF_RANGE ||
+    errcode == MEOS_ERR_INVALID_ARG_VALUE;
+}
+
+/**
  * @ingroup meos_misc
  * @brief Function handling error messages
  *
@@ -423,6 +481,13 @@ pg_error(int errlevel, int code, const char *errmsg)
 void
 meos_error(int errlevel, int errcode, const char *format, ...)
 {
+  /* A parse that saves its errors, see #meos_error_save_begin, reads that one
+   * occurred */
+  if (errlevel >= ERROR && MEOS_ERROR_SAVE && meos_error_is_saved(errcode))
+  {
+    *MEOS_ERROR_SAVE = true;
+    return;
+  }
   char buffer[1024];
   va_list args;
   va_start(args, format);
