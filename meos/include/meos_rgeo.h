@@ -113,21 +113,12 @@ extern Temporal *trgeometry_to_tgeography(const Temporal *temp);
  * Accessor functions
  *****************************************************************************/
 
-extern TInstant *trgeometry_end_instant(const Temporal *temp);
-extern TSequence *trgeometry_end_sequence(const Temporal *temp);
 extern GSERIALIZED *trgeometry_end_value(const Temporal *temp);
 extern GSERIALIZED *trgeometry_geom(const Temporal *temp);
-extern TInstant *trgeometry_instant_n(const Temporal *temp, int n);
-extern TInstant **trgeometry_instants(const Temporal *temp, int *count);
 extern Set *trgeometry_points(const Temporal *temp);
 extern Temporal *trgeometry_yaw(const Temporal *temp);
 extern Temporal *trgeometry_pitch(const Temporal *temp);
 extern Temporal *trgeometry_roll(const Temporal *temp);
-extern TSequence **trgeometry_segments(const Temporal *temp, int *count);
-extern TSequence *trgeometry_sequence_n(const Temporal *temp, int i);
-extern TSequence **trgeometry_sequences(const Temporal *temp, int *count);
-extern TInstant *trgeometry_start_instant(const Temporal *temp);
-extern TSequence *trgeometry_start_sequence(const Temporal *temp);
 extern GSERIALIZED *trgeometry_start_value(const Temporal *temp);
 extern Pose *trgeometry_value(const Temporal *temp);
 extern Pose **trgeometry_values(const Temporal *temp, int *count);
@@ -156,21 +147,11 @@ extern GSERIALIZED *trgeometry_twcentroid(const Temporal *temp);
  * Transformation functions
  *****************************************************************************/
 
-extern Temporal *trgeometry_append_tinstant(Temporal *temp, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt, bool expand);
-extern Temporal *trgeometry_append_tsequence(Temporal *temp, const TSequence *seq, bool expand);
-extern Temporal *trgeometry_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect);
-extern Temporal *trgeometry_delete_tstzset(const Temporal *temp, const Set *s, bool connect);
-extern Temporal *trgeometry_delete_tstzspan(const Temporal *temp, const Span *s, bool connect);
-extern Temporal *trgeometry_delete_tstzspanset(const Temporal *temp, const SpanSet *ss, bool connect);
 extern Temporal *trgeometry_force2d(const Temporal *temp);
-extern Temporal *trgeometry_merge(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *trgeometry_merge_array(Temporal **temparr, int count);
-extern Temporal *trgeometry_round(const Temporal *temp, int maxdd);
 extern Temporal *trgeometry_rotate(const Temporal *temp, double angle, double x0, double y0);
 extern Temporal *trgeometry_rotate_x(const Temporal *temp, double angle);
 extern Temporal *trgeometry_rotate_y(const Temporal *temp, double angle);
 extern Temporal *trgeometry_rotate_z(const Temporal *temp, double angle);
-extern Temporal *trgeometry_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *trgeometry_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
 extern TInstant *trgeometry_as_tinstant(const Temporal *temp);
 extern TSequence *trgeometry_as_tsequence(const Temporal *temp, interpType interp);
@@ -180,15 +161,8 @@ extern TSequenceSet *trgeometry_as_tsequenceset(const Temporal *temp, interpType
  * Restriction functions
  *****************************************************************************/
 
-extern Temporal *trgeometry_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict);
-extern Temporal *trgeometry_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict);
 
-extern Temporal *trgeometry_restrict_values(const Temporal *temp, const Set *s, bool atfunc);
 
-extern Temporal *trgeometry_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc);
-extern Temporal *trgeometry_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc);
-extern Temporal *trgeometry_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc);
-extern Temporal *trgeometry_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss, bool atfunc);
 
 extern Temporal *trgeometry_at_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
@@ -196,16 +170,6 @@ extern Temporal *trgeometry_at_stbox(const Temporal *temp, const STBox *box, boo
 extern Temporal *trgeometry_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *trgeometry_at_value(const Temporal *temp, const Pose *pose);
 extern Temporal *trgeometry_minus_value(const Temporal *temp, const Pose *pose);
-extern Temporal *trgeometry_at_values(const Temporal *temp, const Set *s);
-extern Temporal *trgeometry_minus_values(const Temporal *temp, const Set *s);
-extern Temporal *trgeometry_at_timestamptz(const Temporal *temp, TimestampTz t);
-extern Temporal *trgeometry_minus_timestamptz(const Temporal *temp, TimestampTz t);
-extern Temporal *trgeometry_at_tstzset(const Temporal *temp, const Set *s);
-extern Temporal *trgeometry_minus_tstzset(const Temporal *temp, const Set *s);
-extern Temporal *trgeometry_at_tstzspan(const Temporal *temp, const Span *s);
-extern Temporal *trgeometry_minus_tstzspan(const Temporal *temp, const Span *s);
-extern Temporal *trgeometry_at_tstzspanset(const Temporal *temp, const SpanSet *ss);
-extern Temporal *trgeometry_minus_tstzspanset(const Temporal *temp, const SpanSet *ss);
 // extern Temporal *trgeometry_at_geo(const Temporal *temp, const GSERIALIZED *gs);
 // extern Temporal *trgeometry_minus_geo(const Temporal *temp, const GSERIALIZED *gs);
 

@@ -1978,9 +1978,9 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
     temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
       return DBL_MAX;
-    /* The generic temporal restriction drops the reference geometry, so the
-     * rigid geometry restriction is the one that answers a trgeometry */
-    temp1 = trgeometry_restrict_tstzspan(temp, &inter, REST_AT);
+    /* The restriction keeps the reference geometry, which it strips before
+     * restricting the poses and gives back to the result */
+    temp1 = temporal_restrict_tstzspan(temp, &inter, REST_AT);
     /* The two spans meet while no value lies inside the intersection, which a
      * discrete or a step value can do */
     if (! temp1)

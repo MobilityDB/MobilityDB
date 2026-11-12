@@ -395,3 +395,55 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp #>= t IS NOT NULL;
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp #>= t2.temp IS NOT NULL;
 
 -------------------------------------------------------------------------------
+
+-- Ever and always overlaps: a temporal number lies in a box when its
+-- restriction to the box is not empty, and always lies in it when its
+-- restriction to the complement of the box is empty; a temporal value is
+-- defined in a span when its restriction to the span is not empty, and always
+-- when its restriction to the complement of the span is empty
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp ?&& tbox(t2.temp) <> (atTbox(t1.temp, tbox(t2.temp)) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp %&& tbox(t2.temp) <> (minusTbox(t1.temp, tbox(t2.temp)) IS NULL);
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE tbox(t2.temp) ?&& t1.temp <> t1.temp ?&& tbox(t2.temp);
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_floatspan t2
+WHERE t1.temp ?&& tbox(t2.f) <> (atTbox(t1.temp, tbox(t2.f)) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp ?&& tbox(t2.temp) <> (atTbox(t1.temp, tbox(t2.temp)) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp %&& tbox(t2.temp) <> (minusTbox(t1.temp, tbox(t2.temp)) IS NULL);
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp ?&& tbox(t2.temp);
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp %&& tbox(t2.temp);
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2
+WHERE t1.temp ?&& t2.t <> (atTime(t1.temp, t2.t) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2
+WHERE t1.temp %&& t2.t <> (minusTime(t1.temp, t2.t) IS NULL);
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
+WHERE t1.temp ?&& timeSpan(t2.temp) <> (atTime(t1.temp, timeSpan(t2.temp)) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tstzspan t2
+WHERE t2.t ?&& t1.temp <> t1.temp ?&& t2.t;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2 WHERE t1.temp ?&& t2.t;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2 WHERE t1.temp %&& t2.t;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2 WHERE t1.temp && t2.t;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2
+WHERE t1.temp && t2.t AND atTime(t1.temp, t2.t) IS NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp ?&& timeSpan(t2.temp) <> (atTime(t1.temp, timeSpan(t2.temp)) IS NOT NULL);
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp %&& timeSpan(t2.temp) <> (minusTime(t1.temp, timeSpan(t2.temp)) IS NULL);
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ?&& timeSpan(t2.temp);
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp %&& timeSpan(t2.temp);
+
+-- Two temporal numbers overlap at an instant where they are equal, two other
+-- temporal values at every instant they share
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp ?&& t2.temp <> t1.temp ?= t2.temp;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp %&& t2.temp <> t1.temp %= t2.temp;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp ?&& t2.temp <> (atTime(t1.temp, getTime(t2.temp)) IS NOT NULL);
+
+-------------------------------------------------------------------------------

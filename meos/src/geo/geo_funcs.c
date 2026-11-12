@@ -16611,23 +16611,18 @@ parseg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
 }
 
 /**
- * @brief Determines the side of segment P where Q lies
- * @details
+ * @brief Determines the side of the line through segment P where Q lies
+ * @details The sign of the cross product (Q - P1) x (P2 - P1), read exactly
+ * on the input doubles by #cross_product_sign
  * - Return -1  if point Q is left of segment P
  * - Return  1  if point Q is right of segment P
- * - Return  0  if point Q in on segment P
- * @note Function adapted from @p lw_segment_side() to take into account
- * precision errors
+ * - Return  0  if point Q is on the line of segment P
  */
 static int
 seg2d_side(const POINT2D *p1, const POINT2D *p2, const POINT2D *q)
 {
-  double side = ( (q->x - p1->x) * (p2->y - p1->y) -
-    (p2->x - p1->x) * (q->y - p1->y) );
-  if (fabs(side) < MEOS_EPSILON)
-    return 0;
-  else
-    return SIGNUM(side);
+  return - cross_product_sign(p1->x, p1->y, p2->x, p2->y, p1->x, p1->y,
+    q->x, q->y);
 }
 
 /**

@@ -603,6 +603,100 @@ CREATE OPERATOR %>= (
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
+CREATE FUNCTION eOverlaps(tstzspan, tbool)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tbox, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tbox, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tstzspan, ttext)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = tstzspan, RIGHTARG = tbool,
+  PROCEDURE = eOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tbox, RIGHTARG = tint,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tbox, RIGHTARG = tbigint,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tbox, RIGHTARG = tfloat,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tstzspan, RIGHTARG = ttext,
+  PROCEDURE = eOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+CREATE FUNCTION aOverlaps(tstzspan, tbool)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tbox, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tbox, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tstzspan, ttext)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = tstzspan, RIGHTARG = tbool,
+  PROCEDURE = aOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tbox, RIGHTARG = tint,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tbox, RIGHTARG = tbigint,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tbox, RIGHTARG = tfloat,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tstzspan, RIGHTARG = ttext,
+  PROCEDURE = aOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
 /*****************************************************************************/
 
 CREATE FUNCTION eEqual(tbool, boolean)
@@ -1155,6 +1249,100 @@ CREATE OPERATOR %>= (
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
+CREATE FUNCTION eOverlaps(tbool, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tfloat, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(ttext, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = tbool, RIGHTARG = tstzspan,
+  PROCEDURE = eOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tint, RIGHTARG = tbox,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tbigint, RIGHTARG = tbox,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tfloat, RIGHTARG = tbox,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = ttext, RIGHTARG = tstzspan,
+  PROCEDURE = eOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+CREATE FUNCTION aOverlaps(tbool, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tfloat, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(ttext, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = tbool, RIGHTARG = tstzspan,
+  PROCEDURE = aOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tint, RIGHTARG = tbox,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tbigint, RIGHTARG = tbox,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tfloat, RIGHTARG = tbox,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = ttext, RIGHTARG = tstzspan,
+  PROCEDURE = aOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
 /*****************************************************************************/
 
 CREATE FUNCTION eEqual(tbool, tbool)
@@ -1704,6 +1892,100 @@ CREATE OPERATOR %>= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = aGreaterEqual,
   NEGATOR = ?<,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+CREATE FUNCTION eOverlaps(tbool, tbool)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tint, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(tfloat, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eOverlaps(ttext, ttext)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = tbool, RIGHTARG = tbool,
+  PROCEDURE = eOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tint, RIGHTARG = tint,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tbigint, RIGHTARG = tbigint,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = tfloat, RIGHTARG = tfloat,
+  PROCEDURE = eOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?&& (
+  LEFTARG = ttext, RIGHTARG = ttext,
+  PROCEDURE = eOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+CREATE FUNCTION aOverlaps(tbool, tbool)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tint, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(tfloat, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aOverlaps(ttext, ttext)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = tbool, RIGHTARG = tbool,
+  PROCEDURE = aOverlaps,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tint, RIGHTARG = tint,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tbigint, RIGHTARG = tbigint,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = tfloat, RIGHTARG = tfloat,
+  PROCEDURE = aOverlaps,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR %&& (
+  LEFTARG = ttext, RIGHTARG = ttext,
+  PROCEDURE = aOverlaps,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 

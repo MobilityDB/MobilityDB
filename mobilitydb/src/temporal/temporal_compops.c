@@ -45,6 +45,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "temporal/span.h"
+#include "temporal/tbox.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 /* MobilityDB */
@@ -638,6 +640,230 @@ inline Datum
 Always_ge_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_ge_temporal_temporal);
+}
+
+/*****************************************************************************
+ * Ever/always overlaps of a temporal value and its bounding box type
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for the ever/always overlaps of a timestamptz span and a temporal value, as
+ * #EAcomp_base_temporal answers an ever or always comparison
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always overlaps
+ */
+static Datum
+EAoverlaps_tstzspan_temporal(FunctionCallInfo fcinfo,
+  int (*func)(const Span *, const Temporal *))
+{
+  Span *box = PG_GETARG_SPAN_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int result = func(box, temp);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for the ever/always overlaps of a temporal value and a timestamptz span, as
+ * #EAcomp_temporal_base answers an ever or always comparison
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always overlaps
+ */
+static Datum
+EAoverlaps_temporal_tstzspan(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const Span *))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *box = PG_GETARG_SPAN_P(1);
+  int result = func(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tstzspan_temporal);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if a temporal value is ever defined in a timestamptz span
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tstzspan_temporal(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tstzspan_temporal(fcinfo, &ever_overlaps_tstzspan_temporal);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_temporal_tstzspan);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if a temporal value is ever defined in a timestamptz span
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_temporal_tstzspan(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_temporal_tstzspan(fcinfo, &ever_overlaps_temporal_tstzspan);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tstzspan_temporal);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if a temporal value is always defined in a timestamptz span
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tstzspan_temporal(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tstzspan_temporal(fcinfo, &always_overlaps_tstzspan_temporal);
+}
+
+PGDLLEXPORT Datum Always_overlaps_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_temporal_tstzspan);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if a temporal value is always defined in a timestamptz span
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_temporal_tstzspan(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_temporal_tstzspan(fcinfo, &always_overlaps_temporal_tstzspan);
+}
+
+/**
+ * @brief Generic function for the ever/always overlaps of a temporal box and a temporal number, as
+ * #EAcomp_base_temporal answers an ever or always comparison
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always overlaps
+ */
+static Datum
+EAoverlaps_tbox_tnumber(FunctionCallInfo fcinfo,
+  int (*func)(const TBox *, const Temporal *))
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int result = func(box, temp);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for the ever/always overlaps of a temporal number and a temporal box, as
+ * #EAcomp_temporal_base answers an ever or always comparison
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always overlaps
+ */
+static Datum
+EAoverlaps_tnumber_tbox(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const TBox *))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  int result = func(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tbox_tnumber(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tbox_tnumber);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if a temporal number is ever lies in a temporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tbox_tnumber(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tbox_tnumber(fcinfo, &ever_overlaps_tbox_tnumber);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tnumber_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tnumber_tbox);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if a temporal number is ever lies in a temporal box
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tnumber_tbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tnumber_tbox(fcinfo, &ever_overlaps_tnumber_tbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tbox_tnumber(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tbox_tnumber);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if a temporal number is always lies in a temporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tbox_tnumber(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tbox_tnumber(fcinfo, &always_overlaps_tbox_tnumber);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tnumber_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tnumber_tbox);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if a temporal number is always lies in a temporal box
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tnumber_tbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tnumber_tbox(fcinfo, &always_overlaps_tnumber_tbox);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_temporal_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_temporal_temporal);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if the values of two temporal values ever have
+ * overlapping bounding boxes at an instant they share, as
+ * #Ever_eq_temporal_temporal answers an ever comparison
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_temporal_temporal(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &ever_overlaps_temporal_temporal);
+}
+
+PGDLLEXPORT Datum Always_overlaps_temporal_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_temporal_temporal);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if the values of two temporal values always have
+ * overlapping bounding boxes at the instants they share, as
+ * #Always_eq_temporal_temporal answers an always comparison
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_temporal_temporal(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &always_overlaps_temporal_temporal);
 }
 
 /*****************************************************************************
