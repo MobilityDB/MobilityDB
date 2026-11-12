@@ -645,6 +645,42 @@ SELECT jsonb '{"a": 1}' @@ '$.a';
  
 (1 row)
 
+/* An item method that cannot convert its argument raises the error of a
+ * non-numeric SQL/JSON item, as on a jsonb, a call that suppresses the errors
+ * of its jsonpath answers nothing, and the greatest value of a type is a
+ * value */
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"x\""}', '$.double()');
+ERROR:  argument "x" of jsonpath item method .double() is invalid for type double precision
+SELECT jsonb_path_query_first(jsonb '"x"', '$.double()');
+ERROR:  argument "x" of jsonpath item method .double() is invalid for type double precision
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"x\""}', '$.bigint()');
+ERROR:  argument "x" of jsonpath item method .bigint() is invalid for type bigint
+SELECT jsonb_path_query_first(jsonb '"x"', '$.bigint()');
+ERROR:  argument "x" of jsonpath item method .bigint() is invalid for type bigint
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"x\""}', '$.double()', '{}', true);
+ jsonbsetpathqueryfirst 
+------------------------
+ 
+(1 row)
+
+SELECT jsonb_path_query_first(jsonb '"x"', '$.double()', '{}', true);
+ jsonb_path_query_first 
+------------------------
+ 
+(1 row)
+
+SELECT jsonbsetPathQueryFirst(jsonbset '{"\"9223372036854775807\""}', '$.bigint()');
+ jsonbsetpathqueryfirst 
+------------------------
+ {9223372036854775807}
+(1 row)
+
+SELECT jsonb_path_query_first(jsonb '"9223372036854775807"', '$.bigint()');
+ jsonb_path_query_first 
+------------------------
+ 9223372036854775807
+(1 row)
+
 /* The comparison of two JSONB values is a three-way answer, so a set of them
  * sorts ascending as every other set type does, and each of the assertions
  * below holds whatever the values are */

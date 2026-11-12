@@ -25,6 +25,13 @@
 #include "../../meos/include/meos_error.h"
 
 /*
+ * MEOS: Where the extension build takes the functions of this file from the
+ * backend (pgtypes/CMakeLists.txt), it keeps the two parsers
+ * #pg_strtoint32_safe and #pg_strtoint64_safe, which bind within the library
+ * (utils/builtins.h), so that their errors reach #meos_error()
+ */
+#ifndef PG_EXT_NO_BACKEND_DUPS
+/*
  * A table of all two-digit numbers. This is used to speed up decimal digit
  * generation by copying pairs of digits into the final output.
  */
@@ -86,6 +93,7 @@ decimalLength64(const uint64 v)
   t = (pg_leftmost_one_pos64(v) + 1) * 1233 / 4096;
   return t + (v >= PowersOfTen[t]);
 }
+#endif /* PG_EXT_NO_BACKEND_DUPS */
 
 static const int8 hexlookup[128] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -98,6 +106,7 @@ static const int8 hexlookup[128] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
+#ifndef PG_EXT_NO_BACKEND_DUPS
 /*
  * Convert input string to a signed 16 bit integer.  Input strings may be
  * expressed in base-10, hexadecimal, octal, or binary format, all of which
@@ -356,6 +365,7 @@ pg_strtoint16(const char *s)
 {
   return pg_strtoint16_safe(s, NULL);
 }
+#endif /* PG_EXT_NO_BACKEND_DUPS */
 
 
 /*
@@ -380,11 +390,13 @@ pg_strtoint16(const char *s)
  * representation of the most negative number, which can't be represented as a
  * signed positive number.
  */
+#ifndef PG_EXT_NO_BACKEND_DUPS
 int32
 pg_strtoint32(const char *s)
 {
   return pg_strtoint32_safe(s, NULL);
 }
+#endif /* PG_EXT_NO_BACKEND_DUPS */
 
 int32
 pg_strtoint32_safe(const char *s, Node *escontext UNUSED)
@@ -870,6 +882,7 @@ invalid_syntax:
   return LONG_MAX;
 }
 
+#ifndef PG_EXT_NO_BACKEND_DUPS
 int64
 pg_strtoint64(const char *s)
 {
@@ -1301,3 +1314,4 @@ pg_ultostr(char *str, uint32 value)
 
   return str + len;
 }
+#endif /* PG_EXT_NO_BACKEND_DUPS */

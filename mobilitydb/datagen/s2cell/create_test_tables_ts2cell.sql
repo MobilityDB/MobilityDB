@@ -32,7 +32,7 @@
  * @brief Build the test tables for the static and temporal S2 cell index
  * types
  * @details This is the OFFLINE regeneration job that produces the frozen
- * pg_dump fixture test/s2cell/data/load_s2cell.sql.xz; it is NOT part of the
+ * fixture test/s2cell/data/*.data; it is NOT part of the
  * mobilitydb_datagen extension (only the random_* helpers are), as
  * create_test_tables_quadbin of datagen/quadbin is not.
  */
