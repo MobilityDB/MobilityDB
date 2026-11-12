@@ -95,9 +95,13 @@ SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03),
   [BBB@2001-01-04, BBB@2001-01-05)}' %&gt; 'AAA'::text;
 -- false
 </pre></li><li class="listitem"><a name="ttype_ever_always_overlaps"></a><a class="indexterm" name="id5257"></a><a class="indexterm" name="id5260"></a><p>Ever and always overlaps</p><pre class="programlisting">
+{tstzspan,tbool,ttext} ?&amp;&amp; {tstzspan,tbool,ttext} → boolean
+{tstzspan,tbool,ttext} %&amp;&amp; {tstzspan,tbool,ttext} → boolean
+{tbox,tnumber} ?&amp;&amp; {tbox,tnumber} → boolean
+{tbox,tnumber} %&amp;&amp; {tbox,tnumber} → boolean
 {stbox,tgeo} ?&amp;&amp; {stbox,tgeo} → boolean
 {stbox,tgeo} %&amp;&amp; {stbox,tgeo} → boolean
-</pre><p>The bounding box operator <code class="varname">&amp;&amp;</code> (<a class="xref" href="ch05s03.html" title="Bounding Box Operators">the section called “Bounding Box Operators”</a>) tests whether the bounding box of a temporal value overlaps a box, while <code class="varname">?&amp;&amp;</code> tests whether the value itself lies in the box at some instant, and <code class="varname">%&amp;&amp;</code> whether it lies in the box at every instant at which it is defined; the borders of the box belong to it. A value whose bounding box overlaps a box need not lie in it at any instant. In the examples below, a temporal point moves from (0,0) to (10,10) between 0:00 and 10:00, so its bounding box overlaps a box in the corner (8,0)–(10,2), which the point never enters, and a box over its path between 8:00 and 10:00, which the point crosses at 5:00. For two temporal values, the operators test whether the bounding boxes of their values overlap at some instant, or at every instant, that both values share; for two temporal points, whether they are at the same position.</p><pre class="programlisting">
+</pre><p>The bounding box operator <code class="varname">&amp;&amp;</code> (<a class="xref" href="ch05s03.html" title="Bounding Box Operators">the section called “Bounding Box Operators”</a>) tests whether the bounding box of a temporal value overlaps a box, while <code class="varname">?&amp;&amp;</code> tests whether the value itself lies in the box at some instant, and <code class="varname">%&amp;&amp;</code> whether it lies in the box at every instant at which it is defined. The box of a temporal Boolean or text is a <code class="varname">tstzspan</code>, that of a temporal number a <code class="varname">tbox</code>, and that of a temporal geo an <code class="varname">stbox</code>; the borders of a spatiotemporal box belong to it, and a span, as the value span of a temporal box, contains its bounds as it states them. A value whose bounding box overlaps a box need not lie in it at any instant. In the examples below, a temporal point moves from (0,0) to (10,10) between 0:00 and 10:00, so its bounding box overlaps a box in the corner (8,0)–(10,2), which the point never enters, and a box over its path between 8:00 and 10:00, which the point crosses at 5:00. Likewise, a temporal text defined on 1 and 2 January and on 4 and 5 January has a bounding period that overlaps the morning of 3 January, at which the text is not defined, and a temporal float from 1 to 5 over four days lies in the box of the values 2.5 to 3.5 and never in the box of the values 4.5 to 5 over its first two days. For two temporal values, the operators test whether the bounding boxes of their values overlap at some instant, or at every instant, that both values share; for two temporal points or numbers, whether they are at the same position or have the same value, and for two temporal Booleans or texts, whether they share an instant. Two values that share no instant answer NULL, as their ever equality does.</p><pre class="programlisting">
 SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&amp;&amp;
   stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
 -- false
@@ -110,10 +114,26 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]'
 SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' %&amp;&amp;
   stbox 'STBOX X((0,0),(10,10))';
 -- true
+SELECT ttext '{[AA@2001-01-01, AA@2001-01-02], [BB@2001-01-04, BB@2001-01-05]}' &amp;&amp;
+  tstzspan '[2001-01-03, 2001-01-03 12:00]';
+-- true
+SELECT ttext '{[AA@2001-01-01, AA@2001-01-02], [BB@2001-01-04, BB@2001-01-05]}' ?&amp;&amp;
+  tstzspan '[2001-01-03, 2001-01-03 12:00]';
+-- false
+SELECT tfloat '[1@2001-01-01, 5@2001-01-05]' ?&amp;&amp;
+  tbox 'TBOXFLOAT XT([2.5, 3.5],[2001-01-01, 2001-01-05])';
+-- true
+SELECT tfloat '[1@2001-01-01, 5@2001-01-05]' ?&amp;&amp;
+  tbox 'TBOXFLOAT XT([4.5, 5],[2001-01-01, 2001-01-03])';
+-- false
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' ?&amp;&amp; tfloat '[3@2001-01-01, 1@2001-01-03]';
+-- true
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' %&amp;&amp; tfloat '[3@2001-01-01, 1@2001-01-03]';
+-- false
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&amp;&amp;
   tgeompoint '[Point(2 0)@2001-01-01, Point(0 2)@2001-01-03]';
 -- true
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id1344"></a>Temporal Comparisons</h3></div></div></div><p>Another possible generalization of the traditional comparison operators (<code class="varname">=</code>, <code class="varname">&lt;&gt;</code>, <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>,  etc.) to temporal types consists in determining whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <code class="varname">#</code>. Some examples are <code class="varname">#=</code> or <code class="varname">#&lt;=</code>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <code class="varname">tint</code>, <code class="varname">tfloat</code>, or <code class="varname">ttext</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_tcomp"></a><a class="indexterm" name="id5285"></a><a class="indexterm" name="id5288"></a><a class="indexterm" name="id5291"></a><a class="indexterm" name="id5294"></a><a class="indexterm" name="id5297"></a><a class="indexterm" name="id5300"></a><p>Temporal comparisons</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id1344"></a>Temporal Comparisons</h3></div></div></div><p>Another possible generalization of the traditional comparison operators (<code class="varname">=</code>, <code class="varname">&lt;&gt;</code>, <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>,  etc.) to temporal types consists in determining whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <code class="varname">#</code>. Some examples are <code class="varname">#=</code> or <code class="varname">#&lt;=</code>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <code class="varname">tint</code>, <code class="varname">tfloat</code>, or <code class="varname">ttext</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_tcomp"></a><a class="indexterm" name="id5288"></a><a class="indexterm" name="id5291"></a><a class="indexterm" name="id5294"></a><a class="indexterm" name="id5297"></a><a class="indexterm" name="id5300"></a><a class="indexterm" name="id5303"></a><p>Temporal comparisons</p><pre class="programlisting">
 {base,ttype} {#=, #&lt;&gt;, #&lt;, #&gt;, #&lt;=, #&gt;=} {base,ttype} → boolean
 </pre><pre class="programlisting">
 SELECT tfloat '[1@2001-01-01, 2@2001-01-04)' #= 3;
