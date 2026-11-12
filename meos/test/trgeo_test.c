@@ -701,6 +701,67 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* The united traversed area of a value with Z is the ground it covers: a
+   * cube translating covers the corridor between its placements, a cube in
+   * step interpolation its placements on the ground, with no Z, and a body
+   * turning in linear motion is refused */
+  {
+#define TRGEO_TEST_CUBE "PolyhedralSurface Z(((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))," \
+  "((0 0 1,1 0 1,1 1 1,0 1 1,0 0 1)),((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0))," \
+  "((1 0 0,1 1 0,1 1 1,1 0 1,1 0 0)),((1 1 0,0 1 0,0 1 1,1 1 1,1 1 0))," \
+  "((0 1 0,0 0 0,0 0 1,0 1 1,0 1 0)))"
+#define TRGEO_TEST_POSES "[Pose(Point Z(0 0 0),1,0,0,0)@2001-01-01, " \
+  "Pose(Point Z(4 2 1),1,0,0,0)@2001-01-03]"
+    Temporal *lin = trgeometry_in(TRGEO_TEST_CUBE ";" TRGEO_TEST_POSES);
+    Temporal *step = trgeometry_in("Interp=Step;" TRGEO_TEST_CUBE ";"
+      TRGEO_TEST_POSES);
+    Temporal *turn = trgeometry_in("Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));"
+      "[Pose(Point Z(0 0 0),1,0,0,0)@2001-01-01, "
+      "Pose(Point Z(4 0 0),0,0,0,1)@2001-01-03]");
+#undef TRGEO_TEST_CUBE
+#undef TRGEO_TEST_POSES
+    GSERIALIZED *mid = geom_in("Point(2.5 1.5)", -1);
+    meos_errno_reset();
+    GSERIALIZED *area = trgeometry_traversed_area(lin, true);
+    GSERIALIZED *area_step = trgeometry_traversed_area(step, true);
+    bool corridor = area && geom_covers(area, mid);
+    bool ground = area_step && ! FLAGS_GET_Z(area_step->gflags) &&
+      ! geom_covers(area_step, mid);
+    int err = meos_errno();
+    GSERIALIZED *area_turn = trgeometry_traversed_area(turn, true);
+    if (! corridor || ! ground || err != 0 || area_turn ||
+        meos_errno() == 0)
+    {
+      printf("FAILED: the united traversed area of a value with Z is not the "
+        "ground it covers\n");
+      result = 1;
+    }
+    free(lin); free(step); free(turn); free(mid); free(area); free(area_step);
+    free(area_turn);
+    meos_errno_reset();
+  }
+
+  /* The united traversed area of a sequence set covers what each sequence
+   * sweeps and nothing in the gap between them */
+  {
+    Temporal *set = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-02], "
+      "[Pose(Point(5 0),0)@2001-01-03, Pose(Point(6 0),0)@2001-01-04]}");
+    GSERIALIZED *in1 = geom_in("Point(1.5 0.5)", -1);
+    GSERIALIZED *in2 = geom_in("Point(6.5 0.5)", -1);
+    GSERIALIZED *gap = geom_in("Point(3.5 0.5)", -1);
+    GSERIALIZED *area = trgeometry_traversed_area(set, true);
+    if (! area || ! geom_covers(area, in1) || ! geom_covers(area, in2) ||
+        geom_covers(area, gap))
+    {
+      printf("FAILED: the united traversed area of a sequence set covers a "
+        "gap between its sequences\n");
+      result = 1;
+    }
+    free(set); free(in1); free(in2); free(gap); free(area);
+    meos_errno_reset();
+  }
+
   /* The relationships of a temporal rigid geometry read a 3D geometry in 2D,
    * as its distances do, in linear and in step interpolation */
   {

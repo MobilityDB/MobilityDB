@@ -6,8 +6,8 @@
 /*_smoketest.c
 /trgeometry_test.c
 
-# Table fixtures exported from the pg_regress archives by
-# tools/gen_test_csv.py. mobilitydb/test/<family>/data/load_*.sql.xz is the one
+# Table fixtures exported from the data files of the pg_regress suite by
+# tools/gen_test_csv.py. mobilitydb/test/<family>/data/*.data is the one
 # copy of this data; the CSV form is written from it before the programs that
 # read it run, so neither form can drift from the other.
 /csv/

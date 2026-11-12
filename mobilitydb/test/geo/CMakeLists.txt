@@ -29,14 +29,14 @@ add_test(
   NAME load_geo_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_geo_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_geo.sql.xz
+    -D TEST_NAME=load_geo_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_geo.sql
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
   )
 add_test(
   NAME load_point_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_point_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_point.sql.xz
+    -D TEST_NAME=load_point_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_point.sql
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
   )
 
@@ -44,7 +44,7 @@ add_test(
   NAME load_ais_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_ais_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_ais.sql.xz
+    -D TEST_NAME=load_ais_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_ais.sql
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
   )
 
@@ -61,7 +61,7 @@ set_tests_properties(load_point_tables PROPERTIES
   FIXTURES_SETUP DBPOINT
   FIXTURES_REQUIRED "DB")
 
-file(GLOB testfiles "sql/*.sql")
+file(GLOB testfiles "sql/[0-9]*.sql")
 list(SORT testfiles)
 
 foreach(file ${testfiles})

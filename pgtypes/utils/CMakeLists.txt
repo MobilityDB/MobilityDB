@@ -31,12 +31,8 @@ set(UTILS_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/jsonpath_exec.c
   ${CMAKE_CURRENT_SOURCE_DIR}/jsonpath_gram.c
   ${CMAKE_CURRENT_SOURCE_DIR}/jsonpath_scan.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/numutils.c
 )
-
-# numutils.c fully duplicates symbols the backend already exports.
-if(NOT PGTYPES_EXT_NO_BACKEND_DUPS)
-  list(APPEND UTILS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/numutils.c)
-endif()
 
 # Aggregate with child contributions
 set(ALL_SOURCES

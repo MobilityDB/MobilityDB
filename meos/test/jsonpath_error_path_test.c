@@ -50,6 +50,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <meos.h>
 #include <meos_json.h>
 
@@ -85,6 +86,55 @@ first_entry(const char *json, const char *path)
   free(res); free(vars); free(jp); free(jb);
 }
 
+/* Apply a jsonpath to a JSON value through #jsonb_path_query_first, with its
+ * errors suppressed or raised, and verify that it reports no error and that
+ * it answers the expected text, NULL standing for no answer */
+static void
+first_entry_answers(const char *json, const char *path, bool silent,
+  const char *expected)
+{
+  Jsonb *jb = jsonb_in(json);
+  JsonPath *jp = jsonpath_in(path);
+  Jsonb *vars = jsonb_in("{}");
+  Jsonb *res = jsonb_path_query_first(jb, jp, vars, silent, false);
+  int err = meos_errno();
+  size_t size;
+  char *text = res ? jsonb_out(res, &size) : NULL;
+  printf("%s on %s%s: error %d, %s\n", path, json, silent ? " (silent)" : "",
+    err, text ? text : "no answer");
+  bool same = expected ? (text && strcmp(text, expected) == 0) : ! text;
+  if (err != 0 || ! same)
+  {
+    printf("  expected no error and %s\n", expected ? expected : "no answer");
+    failures++;
+  }
+  meos_errno_reset();
+  free(text); free(res); free(vars); free(jp); free(jb);
+}
+
+/* Apply a jsonpath to a JSON value through #jsonb_path_query_first, raising
+ * its errors, and verify that it reports the error of a non-numeric SQL/JSON
+ * item, the code PostgreSQL raises as 22036, and answers nothing */
+static void
+first_entry_non_numeric(const char *json, const char *path)
+{
+  Jsonb *jb = jsonb_in(json);
+  JsonPath *jp = jsonpath_in(path);
+  Jsonb *vars = jsonb_in("{}");
+  Jsonb *res = jsonb_path_query_first(jb, jp, vars, false, false);
+  int err = meos_errno();
+  printf("%s on %s: error %d, %s\n", path, json, err,
+    res ? "answered" : "no answer");
+  if (err != MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM || res)
+  {
+    printf("  expected error %d and no answer\n",
+      MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM);
+    failures++;
+  }
+  meos_errno_reset();
+  free(res); free(vars); free(jp); free(jb);
+}
+
 int main(void)
 {
   /* Initialize MEOS and install the error handler that reports through
@@ -97,6 +147,40 @@ int main(void)
   first_entry("\"x\"", "$.bigint()");
   first_entry("1e30", "$.bigint()");
   first_entry("1e30", "$.integer()");
+  /* The error an item method raises is that of a non-numeric SQL/JSON item,
+   * whatever the parser of the type it converts to reports */
+  first_entry_non_numeric("\"x\"", "$.double()");
+  first_entry_non_numeric("\"x\"", "$.bigint()");
+  first_entry_non_numeric("\"x\"", "$.integer()");
+  first_entry_non_numeric("\"x\"", "$.number()");
+  first_entry_non_numeric("\"x\"", "$.decimal()");
+  first_entry_non_numeric("\"1.5\"", "$.integer()");
+  first_entry_non_numeric("1.5", "$.boolean()");
+  first_entry_non_numeric("123.456", "$.decimal(4, 2)");
+  first_entry_non_numeric("\"123.456\"", "$.decimal(4, 2)");
+  /* A suppressed error leaves no error and no answer */
+  first_entry_answers("\"x\"", "$.double()", true, NULL);
+  first_entry_answers("\"x\"", "$.bigint()", true, NULL);
+  first_entry_answers("\"x\"", "$.integer()", true, NULL);
+  first_entry_answers("\"x\"", "$.number()", true, NULL);
+  first_entry_answers("1.5", "$.boolean()", true, NULL);
+  first_entry_answers("123.456", "$.decimal(4, 2)", true, NULL);
+  first_entry_answers("\"123.456\"", "$.decimal(4, 2)", true, NULL);
+  first_entry_answers("1", "$.decimal(0)", true, NULL);
+  /* The greatest value of each type is a value, not an error */
+  first_entry_answers("\"9223372036854775807\"", "$.bigint()", false,
+    "9223372036854775807");
+  first_entry_answers("\"2147483647\"", "$.integer()", false, "2147483647");
+  first_entry_answers("2147483647", "$.boolean()", false, "true");
+  /* The greatest double, which .double() answers as the numeric of its 15
+   * significant digits, as float8_numeric() of PostgreSQL writes it */
+  char dblmax[310];
+  snprintf(dblmax, sizeof(dblmax), "%s", "179769313486232");
+  for (int i = 15; i < 309; i++)
+    dblmax[i] = '0';
+  dblmax[309] = '\0';
+  first_entry_answers("\"1.7976931348623157e308\"", "$.double()", false,
+    dblmax);
   /* A member the object does not hold */
   first_entry("{\"a\": 1}", "strict $.b");
   /* A variable the variables do not hold, through each function */
