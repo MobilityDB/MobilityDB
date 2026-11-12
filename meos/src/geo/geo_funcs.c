@@ -11155,6 +11155,10 @@ typedef struct
   bool unsafe;      /**< A product may have left the range where the
                          arithmetic of expansions is exact */
   bool wide;        /**< Values are #WideDyadic rather than expansions */
+  bool filter;      /**< Values are doubles carrying a bound on their error,
+                         as #ArcsegFilter reads them: one component and
+                         the bound in its @p err, so a sign the bound cannot
+                         tell marks the arena unsafe */
 } ArcsegArena;
 
 /* An exact value: an expansion whose last component carries its sign, and a
@@ -11210,8 +11214,45 @@ arcseg_arena_init(ArcsegArena *arena, bool wide)
   arena->used = arena->n = arena->cap = 0;
   arena->unsafe = false;
   arena->wide = wide;
+  arena->filter = false;
   arena->blocks = NULL;
   return;
+}
+
+/* An empty arena of doubles carrying a bound on their error, which answers
+ * the signs it can tell before any expansion is formed (#ArcsegArena) */
+static void
+arcseg_arena_init_filter(ArcsegArena *arena)
+{
+  arcseg_arena_init(arena, false);
+  arena->filter = true;
+  return;
+}
+
+/* A value of a filter arena: one component and its bound */
+static ArcsegExact
+arcseg_x_filtered(ArcsegArena *arena, ArcsegFilter f)
+{
+  ArcsegExact r;
+  r.w = NULL;
+  r.e = arcseg_arena_alloc(arena, 1);
+  r.e[0] = f.v;
+  r.n = 1;
+  r.err = f.e;
+  /* A value or a bound that is not finite tells no sign */
+  if (! isfinite(f.v) || ! isfinite(f.e))
+    arena->unsafe = true;
+  return r;
+}
+
+/* The filter value a value of a filter arena holds */
+static inline ArcsegFilter
+arcseg_x_as_filter(ArcsegExact a)
+{
+  ArcsegFilter f;
+  f.v = a.e[0];
+  f.e = a.err;
+  return f;
 }
 
 static inline ArcsegFilter
@@ -11328,6 +11369,9 @@ arcseg_w_sum_fits(const WideDyadic *a, const WideDyadic *b)
 static ArcsegExact
 arcseg_x_diff(ArcsegArena *arena, double a, double b)
 {
+  /* A filter arena reads the difference as #arcseg_f_diff bounds it */
+  if (arena->filter)
+    return arcseg_x_filtered(arena, arcseg_f_diff(a, b));
   if (arena->wide)
   {
     /* A double that is not finite has no exact value */
@@ -11364,6 +11408,10 @@ arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
 {
   if (arena->unsafe)
     return arcseg_x_spent(arena);
+  /* A filter arena reads the sum as #arcseg_f_add bounds it */
+  if (arena->filter)
+    return arcseg_x_filtered(arena, arcseg_f_add(arcseg_x_as_filter(a),
+      arcseg_x_as_filter(b)));
   if (arena->wide)
   {
     if (! arcseg_w_sum_fits(a.w, b.w))
@@ -11391,6 +11439,10 @@ arcseg_x_scale(ArcsegArena *arena, ArcsegExact a, double k)
 {
   if (arena->unsafe)
     return arcseg_x_spent(arena);
+  /* A filter arena reads the product by a power of two as #arcseg_f_scale
+   * bounds it */
+  if (arena->filter)
+    return arcseg_x_filtered(arena, arcseg_f_scale(arcseg_x_as_filter(a), k));
   if (arena->wide)
   {
     WideDyadic wk;
@@ -11443,6 +11495,10 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
    * nothing is kept. The components grow in magnitude */
   if (arena->unsafe)
     return arcseg_x_spent(arena);
+  /* A filter arena reads the product as #arcseg_f_mul bounds it */
+  if (arena->filter)
+    return arcseg_x_filtered(arena, arcseg_f_mul(arcseg_x_as_filter(a),
+      arcseg_x_as_filter(b)));
   if (arena->wide)
   {
     if (a.w->len + b.w->len > WIDE_DYADIC_LIMBS)
@@ -11503,6 +11559,17 @@ arcseg_x_sign(ArcsegExact a)
 static int
 arcseg_x_sign_checked(ArcsegArena *arena, ArcsegExact a)
 {
+  /* A filter arena tells the sign #arcseg_f_sign tells, with its margin */
+  if (arena->filter)
+  {
+    int s = arcseg_f_sign(arcseg_x_as_filter(a));
+    if (s == 2)
+    {
+      arena->unsafe = true;
+      return 0;
+    }
+    return s;
+  }
   if (a.err > 0.0)
   {
     double low = (a.n > 0) ? fabs(a.e[a.n - 1]) : 0.0;
@@ -12586,13 +12653,18 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
     }
   }
   p = arcs[0]; q = arcs[1];
-  /* In expansions, and once more in #WideDyadic where those cannot tell a
-   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  /* In doubles carrying a bound on their error, which tell most signs,
+   * then in expansions, and once more in #WideDyadic where those cannot
+   * tell a sign or leave their exact range, as #tower_pred_run asks a
+   * tower */
   bool told = false;
-  for (int wide = 0; wide < 2 && ! told; wide++)
+  for (int pass = 0; pass < 3 && ! told; pass++)
   {
     ArcsegArena arena;
-    arcseg_arena_init(&arena, wide == 1);
+    if (pass == 0)
+      arcseg_arena_init_filter(&arena);
+    else
+      arcseg_arena_init(&arena, pass == 2);
     told = arcarc_meet_exact_ctx(&arena, p, q, meet, within);
     arcseg_arena_free(&arena);
   }
@@ -24773,6 +24845,7 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
         m->eb = 1;
     }
   }
+
   if (heap)
   {
     pfree(params);
