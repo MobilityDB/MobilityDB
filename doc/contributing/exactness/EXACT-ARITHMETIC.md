@@ -210,7 +210,7 @@ implementation; "survivor" is the one covering every finite double with the most
 
 | Question | Implementations | Survivor | What the others are |
 |---|---|---|---|
-| Orientation of three points in the plane | `cross_product_sign`, `cross_product_exact`, `relate_orientation`, `seg2d_side`, `certa_sum2_sign`, the inline sign of `cert_arc_minor`, `sum_point_orient`, `arr_cross_ival` | `cross_product_sign` (109 calls) | `cross_product_exact` has no caller; `certa_sum2_sign` and the sign of `cert_arc_minor` read `cross_product_sign` from C7 (#3603, merged); before it, the same sign on the polynomial ladder, exact only in its range; `relate_orientation` stops at its filter, so its 0 is collinear or undecided; `seg2d_side` reads `cross_product_sign` with the opposite sign from #3593 (C5); before it, `MEOS_EPSILON` on the cross product |
+| Orientation of three points in the plane | `cross_product_sign`, `cross_product_exact`, `relate_orientation`, `seg2d_side`, `certa_sum2_sign`, the inline sign of `cert_arc_minor`, `sum_point_orient`, `arr_cross_ival` | `cross_product_sign` (109 calls) | `cross_product_exact` answers another question, the cross product's value rounded once, which the vendored `lw_arc_frame` (`lwalgorithm.c`) and `lw_dist2d_arc_circle` (`measures.c`) read where their filter cannot trust the rounded product, so it stays; `certa_sum2_sign` and the sign of `cert_arc_minor` read `cross_product_sign` from C7 (#3603, merged); before it, the same sign on the polynomial ladder, exact only in its range; `relate_orientation` stops at its filter, so its 0 is collinear or undecided; `seg2d_side` reads `cross_product_sign` with the opposite sign from #3593 (C5); before it, `MEOS_EPSILON` on the cross product |
 | Orientation of four points in 3D | `vector_triple_sign`, `triple_product_sign` and its `_exact` | `vector_triple_sign` | `triple_product_sign` is exact only where no product overflows or underflows, and reads `vector_triple_sign` from C8 (#3624); `vector_triple_sign` itself answered 0 past 2^512 where two products of a component of `ddb_cross3` overflowed to one infinity and read as an exact zero, which #3617, merged, removes (a face and a segment crossing it inside, at 2^600, answered apart by `geom_dwithin3d`) |
 | Sign of a dot product | `point_segment_dot_sign_inputs`, `dot_product_sign` and its `_exact` | `point_segment_dot_sign_inputs` | `dot_product_sign` is exact only in its range |
 | Do two segments meet | `linesegm_intersect`, `wide_segment_meet`, `relate_edges_cross`, `cert_segs_cross_exact`, `cert_segs_meet` | `linesegm_intersect` | each calls a different set of contacts a meeting (Section 4.7) |
@@ -336,7 +336,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    parity.
 2. **The duplicates of one contract (C7 onwards).** The functions Section 4.6 shows answering the
    survivor's contract become calls to it, one question per pull request, each proven by a
-   differential: `cross_product_exact` (no caller), `certa_sum2_sign` and the sign of
+   differential: `certa_sum2_sign` and the sign of
    `cert_arc_minor` (to `cross_product_sign`, the cross product of (a, c) and (-d, b): C7,
    #3603, merged, its differential 1960 rows, the two agreeing with
    `cross_product_sign` between 2^-300 and 2^300 and answering 0 for 1 or -1 on 580 and 400 rows
@@ -346,8 +346,15 @@ layer holds it for every question. The phases, each a series of pull requests:
    answering 0 for 1 or -1 on 310 and 310 rows at 2^+-580 and beyond and on subnormal coordinates;
    its differential found `ddb_cross3` reading two equal infinite products as an exact zero, fixed
    first by #3617, merged), `certa_longer` and
-   `centred_circle_side` (to the one sign of `|p - q|^2 - (t1 + ... + tn)^2`),
-   `cert_point_seg_far_slow`, `point_segm_within` and its filter (to `point_segment_offset_sign`).
+   `centred_circle_side` (to `point_within_distance_sign`, the sign of `|p - q|^2 - d^2`: C9, its
+   differential 1240 rows, the two agreeing between 2^-300 and 2^300 and answering wrongly on 206
+   and 400 rows at 2^+-600 and beyond and on subnormal differences), `cert_point_seg_far_exact`
+   and `cert_point_seg_far_slow` (to `point_segment_offset_sign`: C10, its differential 975 rows,
+   the former answering within for farther on 184 rows from 2^+-300 on, where its product of four
+   differences leaves the doubles, at the same cost on the buffer). `point_segm_within` keeps its
+   filter in front of `point_segment_offset_sign`: the filter never answers wrongly on the 975 rows
+   and decides most of them, and without it the distances to an arc cost 1.26 times as many
+   instructions, so it is a tier of the survivor, not a second evaluation.
    Where the duplicate is exact in a narrower range than its survivor, the merge changes answers
    outside that range only, as EA1 finds for the polynomial ladder.
 3. **One convention.** One meaning of "undecided" inside the layer (2) and one answer outside it
