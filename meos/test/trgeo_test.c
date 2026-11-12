@@ -809,6 +809,35 @@ int main(void)
     free(flat); free(touch); free(b1); free(b2); free(at1); free(at2);
   }
 
+  /* A box is read on the dimensions it shares with a value with Z: a step
+   * value against a box without Z on the plane, and a value translating at
+   * z = 1 against a box flat in x as its projection to the ground, from the
+   * first instant to a quarter of the day */
+  {
+    Temporal *step = trgeometry_in("Interp=Step;Polygon Z((0 0 0,1 0 0,"
+      "1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 2),1,0,0,0)@2001-01-01, "
+      "Pose(Point Z(5 0 2),1,0,0,0)@2001-01-02]");
+    Temporal *lin = trgeometry_in("Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,"
+      "0 0 0));[Pose(Point Z(3 0 1),1,0,0,0)@2001-01-01, "
+      "Pose(Point Z(7 2 1),1,0,0,0)@2001-01-02]");
+    STBox *b1 = stbox_in("STBOX X((0,0),(2,2))");
+    STBox *b2 = stbox_in("STBOX X((4,0),(4,3))");
+    meos_errno_reset();
+    Temporal *at1 = trgeometry_at_stbox(step, b1, true);
+    Temporal *at2 = trgeometry_at_stbox(lin, b2, true);
+    TimestampTz quarter = (TimestampTz) 6 * 3600 * 1000000;
+    if (meos_errno() != 0 || ! at1 || ! at2 ||
+        temporal_end_timestamptz(at2) - temporal_start_timestamptz(at2) !=
+          quarter)
+    {
+      printf("FAILED: a value with Z is not read on the plane against a box "
+        "without Z\n");
+      result = 1;
+    }
+    free(step); free(lin); free(b1); free(b2); free(at1); free(at2);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 

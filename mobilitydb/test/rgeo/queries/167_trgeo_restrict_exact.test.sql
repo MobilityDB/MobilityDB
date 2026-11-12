@@ -305,3 +305,22 @@ SELECT getTime(atStbox(
 SELECT getTime(minusStbox(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(4 1), 0.0)@2001-01-01, Pose(Point(2 -3), 0.0)@2001-01-02]',
   stbox 'STBOX X((5,1),(8,2))'));
+
+-------------------------------------------------------------------------------
+-- A box is read on the dimensions it shares with the value: a value with Z in
+-- step interpolation against a box without Z on the plane, and against a box
+-- with Z in three dimensions, its square at z = 2 above the box; the value
+-- with Z translating against a flat box without Z as its projection to the
+-- ground; and against a box with Z in linear interpolation, refused
+SELECT getTime(atStbox(
+  trgeometry 'Interp=Step;Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 2), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(5 0 2), 1, 0, 0, 0)@2001-01-02]',
+  stbox 'STBOX X((0,0),(2,2))'));
+SELECT getTime(atStbox(
+  trgeometry 'Interp=Step;Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 2), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(5 0 2), 1, 0, 0, 0)@2001-01-02]',
+  stbox 'STBOX Z((0,0,0),(2,2,1))'));
+SELECT getTime(atStbox(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(3 0 1), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(7 2 1), 1, 0, 0, 0)@2001-01-02]',
+  stbox 'STBOX X((4,0),(4,3))'));
+SELECT getTime(atStbox(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(3 0 1), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(7 2 1), 1, 0, 0, 0)@2001-01-02]',
+  stbox 'STBOX Z((4,0,0),(4,3,2))'));

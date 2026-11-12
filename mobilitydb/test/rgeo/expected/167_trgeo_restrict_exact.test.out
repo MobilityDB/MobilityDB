@@ -311,3 +311,31 @@ SELECT getTime(minusStbox(
  {(Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+SELECT getTime(atStbox(
+  trgeometry 'Interp=Step;Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 2), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(5 0 2), 1, 0, 0, 0)@2001-01-02]',
+  stbox 'STBOX X((0,0),(2,2))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
+SELECT getTime(atStbox(
+  trgeometry 'Interp=Step;Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 2), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(5 0 2), 1, 0, 0, 0)@2001-01-02]',
+  stbox 'STBOX Z((0,0,0),(2,2,1))'));
+ gettime 
+---------
+ 
+(1 row)
+
+SELECT getTime(atStbox(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(3 0 1), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(7 2 1), 1, 0, 0, 0)@2001-01-02]',
+  stbox 'STBOX X((4,0),(4,3))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 06:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(atStbox(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(3 0 1), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(7 2 1), 1, 0, 0, 0)@2001-01-02]',
+  stbox 'STBOX Z((4,0,0),(4,3,2))'));
+ERROR:  The restriction of a temporal rigid geometry with Z in linear interpolation by a box with Z is not implemented
