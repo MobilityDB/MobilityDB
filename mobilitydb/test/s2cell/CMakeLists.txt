@@ -29,7 +29,7 @@ add_test(
   NAME load_s2cell_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_s2cell_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_s2cell.sql.xz
+    -D TEST_NAME=load_s2cell_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_s2cell.sql
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
 )
 
@@ -38,7 +38,7 @@ set_tests_properties(load_s2cell_tables PROPERTIES
   FIXTURES_SETUP DBS2CELL
   FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
 
-file(GLOB testfiles "sql/*.sql")
+file(GLOB testfiles "sql/[0-9]*.sql")
 list(SORT testfiles)
 
 foreach(file ${testfiles})

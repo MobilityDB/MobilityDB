@@ -139,7 +139,7 @@ jobs:
             exit 1
           fi
           # The programs below read the tables the PostgreSQL suite loads, in
-          # the CSV form tools/gen_test_csv.py writes from the same archives,
+          # the CSV form tools/gen_test_csv.py writes from the same data files,
           # so the two suites answer their queries over one set of fixtures
           python3 ../../tools/gen_test_csv.py
           gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_geometry_read tbl_geometry_read.c -L/usr/local/lib -lmeos -lm
@@ -147,8 +147,8 @@ jobs:
           gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_value_value tbl_value_value.c -L/usr/local/lib -lmeos -lm
           ./tbl_value_value
           # The program reads the fixture it is given and takes the type from
-          # its name, so the loop covers every temporal table the archives
-          # carry, including the ones a family adds later
+          # its name, so the loop covers every temporal table the data
+          # files carry, including the ones a family adds later
           gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_temporal tbl_temporal.c -L/usr/local/lib -lmeos -lm
           for f in csv/tbl_t*.csv; do ./tbl_temporal "$f" > /dev/null; done
           gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_temporal_value tbl_temporal_value.c -L/usr/local/lib -lmeos -lm

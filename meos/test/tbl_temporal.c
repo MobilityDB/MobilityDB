@@ -43,7 +43,7 @@
  * type rather than the one a reader uncomments. To exercise a type-specific
  * function instead, apply it to the value the loop parses.
  *
- * The fixtures are written by `tools/gen_test_csv.py` from the archives the
+ * The fixtures are written by `tools/gen_test_csv.py` from the data files the
  * PostgreSQL suite loads.
  *
  * The program can be build as follows
@@ -67,7 +67,7 @@
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a temporal value in the input data. The
- * program reads every temporal table the archives carry, so the bound is the
+ * program reads every temporal table the data files carry, so the bound is the
  * longest value across all of them rather than one table's:
  * SELECT MAX(length(temp::text)) FROM tbl_tposechain;
  * -- 20899
@@ -132,7 +132,7 @@ main(int argc, char **argv)
   MeosType temptype = fixture_temptype(path);
   if (temptype == T_UNKNOWN)
   {
-    /* The caller hands over every fixture the archives carry, so a table of
+    /* The caller hands over every fixture the data files carry, so a table of
      * some other type is an answer rather than a failure: say which file names
      * no temporal type, and leave the exit status to the files that do. */
     printf("%s names no temporal type\n", path);

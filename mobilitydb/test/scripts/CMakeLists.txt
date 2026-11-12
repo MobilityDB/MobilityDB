@@ -27,8 +27,6 @@
 
 set(CTEST_PARALLEL_LEVEL 1)
 
-find_package(Xz REQUIRED)
-
 # The temporary PostgreSQL cluster of the tests lies in tmptest under the build
 # directory, unless another directory is given at configure time. Its server
 # listens on a socket in a short directory under /tmp, see test.cmake.

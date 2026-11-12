@@ -421,7 +421,7 @@ route_point_tinstant(int32_t srid, const POINT4D *pt, TimestampTz t)
  * @param[in] fraction Fraction of the length
  * @param[out] pt Point
  */
-static void
+void
 route_point_at(const POINTARRAY *pa, double length, double fraction,
   POINT4D *pt)
 {
@@ -460,9 +460,9 @@ route_point_at(const POINTARRAY *pa, double length, double fraction,
  * @brief Return the positions of the interior vertices of a route
  * @details The position of a vertex is its distance along the route over the
  * length of the route, the measure with which `lwline_interpolate_points`
- * locates a position. Both #tnpointseq_tgeompointseq_cont and
- * #tnpointinstarr_linear_set_stbox read the vertices a linear segment passes
- * from these positions
+ * locates a position. #tnpointseq_tgeompointseq_cont reads the vertices a
+ * linear segment passes from these positions, and the box of a linear
+ * temporal network point computes the same positions as it walks the route
  * @param[in] pa Points of the route
  * @param[out] count Number of positions
  * @return NULL when the route has no interior vertex or no length

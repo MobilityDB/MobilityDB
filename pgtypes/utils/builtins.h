@@ -32,12 +32,25 @@ extern uint64 hex_decode_safe(const char *src, size_t len, char *dst,
                 Node *escontext);
 
 /* numutils.c */
+/*
+ * MEOS: In the extension build the functions pgtypes shares with the backend
+ * bind to the backend's (pgtypes/CMakeLists.txt). The two parsers below read
+ * no state of the backend, and #int32_in and #int64_in reach them, so they
+ * bind within the library: their errors then go through #meos_error(), which
+ * a parse that saves its errors, as an item method of a jsonpath does, reads,
+ * where the backend's copy raises them itself
+ */
+#if ! MEOS
+#define PGTYPES_LOCAL __attribute__((visibility("hidden")))
+#else
+#define PGTYPES_LOCAL
+#endif
 extern int16 pg_strtoint16(const char *s);
 extern int16 pg_strtoint16_safe(const char *s, Node *escontext);
 extern int32 pg_strtoint32(const char *s);
-extern int32 pg_strtoint32_safe(const char *s, Node *escontext);
+extern PGTYPES_LOCAL int32 pg_strtoint32_safe(const char *s, Node *escontext);
 extern int64 pg_strtoint64(const char *s);
-extern int64 pg_strtoint64_safe(const char *s, Node *escontext);
+extern PGTYPES_LOCAL int64 pg_strtoint64_safe(const char *s, Node *escontext);
 extern uint32 uint32in_subr(const char *s, char **endloc,
               const char *typname, Node *escontext);
 extern uint64 uint64in_subr(const char *s, char **endloc,

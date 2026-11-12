@@ -69,3 +69,26 @@ SELECT ST_Area(traversedArea(
   trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]'));
 SELECT ST_Area(traversedArea(
   trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]', TRUE));
+-- The united form of a value with Z is the ground it covers, with no Z: a
+-- square climbing while it travels covers the corridor of the same square on
+-- the ground, a cube the hull of its two shadows, an L and a square with a
+-- hole what their faces sweep, the hole of a square moving less than its
+-- width staying uncovered, a wall moving along itself a segment
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(4 0 3),1,0,0,0)@2026-01-02]', TRUE), 6));
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),((0 0 1,1 0 1,1 1 1,0 1 1,0 0 1)),((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0)),((1 0 0,1 1 0,1 1 1,1 0 1,1 0 0)),((1 1 0,0 1 0,0 1 1,1 1 1,1 1 0)),((0 1 0,0 0 0,0 0 1,0 1 1,0 1 0)));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(4 2 1),1,0,0,0)@2026-01-02]', TRUE), 6));
+SELECT ST_Area(traversedArea(
+  trgeometry 'Polygon Z((0 0 0,3 0 0,3 1 0,1 1 0,1 3 0,0 3 0,0 0 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(2 2 1),1,0,0,0)@2026-01-02]', TRUE));
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'Polygon Z((0 0 0,6 0 0,6 6 0,0 6 0,0 0 0),(2 2 0,4 2 0,4 4 0,2 4 0,2 2 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(1 0 0),1,0,0,0)@2026-01-02]', TRUE), 6));
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(3 0 0),1,0,0,0)@2026-01-02]', TRUE), 6));
+-- in step interpolation, the placements on the ground
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'Interp=Step;Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(4 0 3),1,0,0,0)@2026-01-02]', TRUE), 6));
+-- a body turning in linear motion is refused, its placements answer
+SELECT ST_Area(traversedArea(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(4 0 0),0,0,0,1)@2026-01-02]', TRUE));
+SELECT ST_NumGeometries(traversedArea(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(0 0 0),1,0,0,0)@2026-01-01, Pose(Point Z(4 0 0),0,0,0,1)@2026-01-02]'));
