@@ -60,6 +60,8 @@
 #include "temporal/meos_catalog.h"  /* T_TGEOMETRY */
 #include "geo/geo_funcs.h"  /* geo_serialize */
 #include "pointcloud/pcpatch.h" /* struct Pcpatch body (.pcid field) */
+#include "pointcloud/pcpatch_decompose.h"  /* pcpatch_filter_per_point */
+#include "temporal/type_util.h"  /* pfree_array */
 #include "pointcloud/pgsql_compat.h"  /* MEOS_PC_PATCH_DESERIALIZE */
 #include "pointcloud/meos_schema_hook.h"  /* meos_pc_schema */
 #include "pointcloud/tpc_boxops.h"  /* tpcpatch_restrict_tpcbox */
@@ -581,6 +583,207 @@ Temporal *
 tpcpatch_minus_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc)
 {
   return tpcpatch_restrict_tpcbox(temp, box, border_inc, REST_MINUS);
+}
+
+/*****************************************************************************
+ * Point-level restriction
+ *
+ * Each point of each patch is kept or dropped by a predicate, a patch keeps
+ * the points that survive, and an instant whose patch keeps none is dropped.
+ * A period, when given, holds the instants the predicate reads: an instant
+ * outside it has no point the predicate selects.
+ *****************************************************************************/
+
+/**
+ * @brief Return an instant of a temporal point cloud patch keeping the points
+ * a predicate selects, or NULL when it keeps none
+ * @param[in] inst Instant
+ * @param[in] period Period of the instants the predicate reads, NULL for all
+ * @param[in] pred Predicate on a point, NULL when it selects every point
+ * @param[in] extra Argument of the predicate
+ * @param[in] atfunc True when the points the predicate selects are kept,
+ * false when the other ones are
+ */
+static TInstant *
+tpcpatchinst_restrict_points(const TInstant *inst, const Span *period,
+  pcpatch_pointpred_fn pred, void *extra, bool atfunc)
+{
+  bool inperiod = ! period || contains_span_timestamptz(period, inst->t);
+  /* The points of the instant are all selected or none is */
+  if (! inperiod || ! pred)
+    return (inperiod == atfunc) ? tinstant_copy(inst) : NULL;
+  const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
+  Pcpatch *filtered = pcpatch_filter_per_point(pa, pred, extra, atfunc);
+  if (! filtered)
+    return NULL;
+  TInstant *result = tinstant_make(PointerGetDatum(filtered), T_TPCPATCH,
+    inst->t);
+  pfree(filtered);
+  return result;
+}
+
+/**
+ * @brief Restrict the instants of a sequence of a temporal point cloud patch
+ * to the points a predicate selects, adding a sequence to an array for each
+ * run of instants keeping a point
+ * @param[in] seq Sequence
+ * @param[in] period Period of the instants the predicate reads, NULL for all
+ * @param[in] pred Predicate on a point, NULL when it selects every point
+ * @param[in] extra Argument of the predicate
+ * @param[in] atfunc True when the points the predicate selects are kept,
+ * false when the other ones are
+ * @param[out] result Array of sequences, with room for one per instant
+ * @return Number of sequences added to the array
+ */
+static int
+tpcpatchseq_restrict_points(const TSequence *seq, const Span *period,
+  pcpatch_pointpred_fn pred, void *extra, bool atfunc, TSequence **result)
+{
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  TInstant **run = palloc(sizeof(TInstant *) * seq->count);
+  int nrun = 0, nseqs = 0;
+  bool lower_inc = seq->period.lower_inc;
+  for (int i = 0; i < seq->count; i++)
+  {
+    TInstant *inst = tpcpatchinst_restrict_points(TSEQUENCE_INST_N(seq, i),
+      period, pred, extra, atfunc);
+    if (inst)
+      run[nrun++] = inst;
+    else if (nrun > 0)
+    {
+      result[nseqs++] = tsequence_make(run, nrun,
+        lower_inc, true, interp, NORMALIZE);
+      pfree_array((void **) run, nrun);
+      run = palloc(sizeof(TInstant *) * seq->count);
+      nrun = 0;
+      lower_inc = true;
+    }
+  }
+  if (nrun > 0)
+  {
+    result[nseqs++] = tsequence_make(run, nrun,
+      lower_inc, seq->period.upper_inc, interp, NORMALIZE);
+    pfree_array((void **) run, nrun);
+  }
+  else
+    pfree(run);
+  return nseqs;
+}
+
+/**
+ * @brief Return a temporal point cloud patch restricted to the points a
+ * predicate selects, or to the other ones
+ * @details Shared by the restrictions to a point cloud box and to a geometry
+ * that read each point of a patch
+ * @param[in] temp Temporal point cloud patch
+ * @param[in] period Period of the instants the predicate reads, NULL for all
+ * @param[in] pred Predicate on a point, NULL when it selects every point
+ * @param[in] extra Argument of the predicate
+ * @param[in] atfunc True when the points the predicate selects are kept,
+ * false when the other ones are
+ * @return NULL when no instant keeps a point
+ */
+Temporal *
+tpcpatch_restrict_points(const Temporal *temp, const Span *period,
+  pcpatch_pointpred_fn pred, void *extra, bool atfunc)
+{
+  assert(temp); assert(temp->temptype == T_TPCPATCH);
+  if (temp->subtype == TINSTANT)
+    return (Temporal *) tpcpatchinst_restrict_points((const TInstant *) temp,
+      period, pred, extra, atfunc);
+
+  int nseqs;
+  TSequence **seqs;
+  if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (const TSequence *) temp;
+    seqs = palloc(sizeof(TSequence *) * seq->count);
+    nseqs = tpcpatchseq_restrict_points(seq, period, pred, extra, atfunc,
+      seqs);
+    if (nseqs == 1)
+    {
+      Temporal *result = (Temporal *) seqs[0];
+      pfree(seqs);
+      return result;
+    }
+  }
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    /* At most one sequence for each instant */
+    int count = 0;
+    for (int i = 0; i < ss->count; i++)
+      count += TSEQUENCESET_SEQ_N(ss, i)->count;
+    seqs = palloc(sizeof(TSequence *) * count);
+    nseqs = 0;
+    for (int i = 0; i < ss->count; i++)
+      nseqs += tpcpatchseq_restrict_points(TSEQUENCESET_SEQ_N(ss, i), period,
+        pred, extra, atfunc, &seqs[nseqs]);
+  }
+  if (nseqs == 0)
+  {
+    pfree(seqs);
+    return NULL;
+  }
+  return (Temporal *) tsequenceset_make_free(seqs, nseqs, NORMALIZE);
+}
+
+/**
+ * @brief Return a temporal point cloud patch restricted to the points in a
+ * point cloud box or to the other ones
+ * @details An instant outside the period of the box has no point in it, and
+ * when the box has no X dimension every point of an instant in its period is
+ * in it
+ * @param[in] temp Temporal point cloud patch
+ * @param[in] box Point cloud box
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[in] atfunc True if the restriction is at, false for minus
+ */
+Temporal *
+tpcpatch_restrict_tpcbox_fine(const Temporal *temp, const TPCBox *box,
+  bool border_inc, bool atfunc)
+{
+  /* Ensure the validity of the arguments: a box of another schema or
+   * reference system raises, as the overlaps of their boxes raises */
+  VALIDATE_TPCPATCH(temp, NULL);
+  if (! ensure_valid_tpointcloud_tpcbox(temp, box))
+    return NULL;
+  PcpointInTpcboxArgs args = { .box = box, .border_inc = border_inc };
+  return tpcpatch_restrict_points(temp,
+    MEOS_FLAGS_GET_T(box->flags) ? &box->period : NULL,
+    MEOS_FLAGS_GET_X(box->flags) ? pcpoint_in_tpcbox : NULL, &args, atfunc);
+}
+
+/**
+ * @ingroup meos_pointcloud_restrict
+ * @brief Return a temporal point cloud patch restricted to the points in a
+ * point cloud box
+ * @param[in] temp Temporal point cloud patch
+ * @param[in] box Point cloud box
+ * @param[in] border_inc True when the box contains the upper border
+ * @csqlfn #Tpcpatch_at_tpcbox_fine()
+ */
+Temporal *
+tpcpatch_at_tpcbox_fine(const Temporal *temp, const TPCBox *box,
+  bool border_inc)
+{
+  return tpcpatch_restrict_tpcbox_fine(temp, box, border_inc, REST_AT);
+}
+
+/**
+ * @ingroup meos_pointcloud_restrict
+ * @brief Return a temporal point cloud patch restricted to the points outside
+ * a point cloud box
+ * @param[in] temp Temporal point cloud patch
+ * @param[in] box Point cloud box
+ * @param[in] border_inc True when the box contains the upper border
+ * @csqlfn #Tpcpatch_minus_tpcbox_fine()
+ */
+Temporal *
+tpcpatch_minus_tpcbox_fine(const Temporal *temp, const TPCBox *box,
+  bool border_inc)
+{
+  return tpcpatch_restrict_tpcbox_fine(temp, box, border_inc, REST_MINUS);
 }
 
 /*****************************************************************************/
