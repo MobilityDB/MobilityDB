@@ -8039,13 +8039,14 @@ ddb_cross3(const DDBound *a, const DDBound *b, DDBound *r)
       two_product(a[j].hi, b[i].hi, &p2, &e2);
       /* Two exact products are equal where their pairs are, the pair of a
        * product being unique, and their difference is then an exact zero;
-       * a product that underflows is not split exactly, so two of them say
-       * nothing by being equal */
+       * a product that underflows or overflows is not split exactly, so two
+       * of them say nothing by being equal: two products past the largest
+       * double, of one sign, are both an infinity whatever their values */
       bool under = (p1 != 0.0 && fabs(p1) < DDB_EXACT_PRODUCT) ||
         (p2 != 0.0 && fabs(p2) < DDB_EXACT_PRODUCT) ||
         (p1 == 0.0 && a[i].hi != 0.0 && b[j].hi != 0.0) ||
         (p2 == 0.0 && a[j].hi != 0.0 && b[i].hi != 0.0);
-      if (! under && p1 == p2 && e1 == e2)
+      if (! under && isfinite(p1) && p1 == p2 && e1 == e2)
       {
         r[c].hi = r[c].lo = r[c].e = 0.0;
         continue;
