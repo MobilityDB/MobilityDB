@@ -27214,6 +27214,24 @@ relate_edges_boxes_overlap(Edge **e1, int n1, Edge **e2, int n2)
  * Meeting is the weaker question, so it reads the intersection type rather
  * than a count
  */
+/**
+ * @brief Return true if the ends of an arc are the points it is defined by,
+ * the arcs #arcarc_meet_exact answers
+ * @details A centred arc is its whole circle; the second half of a whole
+ * circle runs from the end of its diameter back to its start, as
+ * #arcsegm_meet_exact reads it
+ */
+static bool
+relate_arc_ends_defined(const Edge *e)
+{
+  if (e->centred)
+    return true;
+  if (e->x1 == e->sx && e->y1 == e->sy && e->x2 == e->ex && e->y2 == e->ey)
+    return true;
+  return e->diameter && e->x1 == e->ex && e->y1 == e->ey &&
+    e->x2 == e->sx && e->y2 == e->sy;
+}
+
 static bool
 relate_edges_meet(const Edge *a, const Edge *b)
 {
@@ -27230,13 +27248,45 @@ relate_edges_meet(const Edge *a, const Edge *b)
   }
   if (ea.etype == EDGE_LINEARC && eb.etype == EDGE_LINEARC)
   {
+    /* Two arcs of distinct circles meet where a meeting of the circles lies
+     * within both arcs (#arcarc_meet_exact) or at an end of one of them,
+     * an input vertex read on the other (#relate_point_on_edge), each
+     * decided on the input coordinates; an arc whose ends are not the
+     * points it is defined by keeps the meetings in doubles */
+    if (relate_arc_ends_defined(a) && relate_arc_ends_defined(b) &&
+        ! arc_same_circle(a, b))
+    {
+      int meet, within[2][2];
+      if (arcarc_meet_exact(a, b, &meet, within))
+      {
+        if (meet < 0)
+          return false;
+        if ((within[0][0] && within[0][1]) || (within[1][0] && within[1][1]))
+          return true;
+        return relate_point_on_edge(a->x1, a->y1, b, true) ||
+          relate_point_on_edge(a->x2, a->y2, b, true) ||
+          relate_point_on_edge(b->x1, b->y1, a, true) ||
+          relate_point_on_edge(b->x2, b->y2, a, true);
+      }
+    }
     double x[2], y[2];
     bool overlap = false;
     int n = relate_arc_arc_points(&ea, &eb, x, y, &overlap);
     return n > 0 || overlap;
   }
   /* A straight segment and a circular arc share no curve, so the isolated
-   * points answer the whole of it */
+   * points answer the whole of it, and whether there is one is decided
+   * exactly (#arcsegm_meet_exact), at an end of either included; an arc it
+   * does not answer keeps the meetings in doubles */
+  const Edge *seg = (ea.etype == EDGE_LINESEG) ? a : b;
+  const Edge *arc = (ea.etype == EDGE_LINESEG) ? b : a;
+  if (seg->x1 != seg->x2 || seg->y1 != seg->y2)
+  {
+    ArcsegMeet m[2];
+    int n = arcsegm_meet_exact(seg->x1, seg->y1, seg->x2, seg->y2, arc, m);
+    if (n >= 0)
+      return n > 0;
+  }
   double ix[2], iy[2];
   return relate_any_edge_intersection(a, b, ix, iy) > 0;
 }
