@@ -128,7 +128,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__conversion_ga43b5c7d9e0d83d5134b3032af399d498.html#ga43b5c7d9e0d83d5134b3032af399d498">trgeometry_to_tgeography</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__conversion_ga137cc1c0fb7a5fd65104491f437de231.html#ga137cc1c0fb7a5fd65104491f437de231">trgeometry_to_tgeometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a2369f7c9229ec04bcd566462b2adb0df.html#a2369f7c9229ec04bcd566462b2adb0df">trgeometry_translates</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a8eb5cf51c030974e17d439d8a919825e.html#a8eb5cf51c030974e17d439d8a919825e">trgeometry_trav_emit_at</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a1a5e3185156f7e12c67f799f6b2afb47.html#a1a5e3185156f7e12c67f799f6b2afb47">trgeometry_trav_emit_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_ae63c8a6a45a5ec1d705fd72723a11874.html#ae63c8a6a45a5ec1d705fd72723a11874">trgeometry_trav_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_gafad5e1f103acc3df6c73a5f221afbaf2.html#gafad5e1f103acc3df6c73a5f221afbaf2">trgeometry_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_adb1089b2cd87798265b5dc5a2ed5644a.html#adb1089b2cd87798265b5dc5a2ed5644a">trgeometry_triangle_append</a></td></tr>
@@ -141,8 +141,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8eb5cf51c030974e17d439d8a919825e" name="a8eb5cf51c030974e17d439d8a919825e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8eb5cf51c030974e17d439d8a919825e">&#9670;&#160;</a></span>trgeometry_trav_emit_at()</h2>
+<a id="a1a5e3185156f7e12c67f799f6b2afb47" name="a1a5e3185156f7e12c67f799f6b2afb47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a5e3185156f7e12c67f799f6b2afb47">&#9670;&#160;</a></span>trgeometry_trav_emit_at()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -171,6 +171,12 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="structTrgeoPlacements.html">TrgeoPlacements</a> *&#160;</td>
           <td class="paramname"><em>pl</em>&#160;</td>
         </tr>
@@ -193,6 +199,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">turn</td><td>True if the body turns on its way to this placement </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start</td><td>True if this placement starts a sequence </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">pl</td><td>Placements </td></tr>
   </table>
   </dd>
