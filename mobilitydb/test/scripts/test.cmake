@@ -45,7 +45,6 @@ message(STATUS "----------------------")
 set(SOURCE_DIR "@CMAKE_SOURCE_DIR@")
 set(POSTGRESQL_BIN_DIR "@POSTGRESQL_BIN_DIR@")
 set(POSTGIS_LIBRARY "@POSTGIS_LIBRARY@")
-set(XZCAT_EXECUTABLE "@XZCAT_EXECUTABLE@")
 
 # The PostgreSQL programs by their file names, which carry the platform's
 # executable suffix: MSYS2 installs a shell wrapper named plain `initdb` or
@@ -361,32 +360,20 @@ elseif(TEST_OPER MATCHES "run_passfail")
   # Explanation of the parameters for psql (see above), except that the load
   # stops at its first error: psql reads the file from its standard input,
   # where an error does not change its exit status otherwise, and a table
-  # that fails to load is only seen in the differences of the tests reading it
-  if(${TEST_FILE} MATCHES ".xz")
-    # Load the data into the test database. The status of every command of
-    # the pipeline is read, since a file xz cannot read reaches psql empty.
-    execute_process(
-      COMMAND ${XZCAT_EXECUTABLE} ${TEST_FILE}
-      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=1 -d postgres
-      OUTPUT_QUIET
-      ERROR_VARIABLE TEST_ERROR
-      RESULTS_VARIABLE TEST_RESULTS
-    )
-    if(NOT TEST_RESULTS STREQUAL "0;0")
-      message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULTS}\n${TEST_ERROR}")
-    endif()
-  else()
-    execute_process(
-      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=1 -d postgres
-      INPUT_FILE ${TEST_FILE}
-      OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
-      ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
-      RESULT_VARIABLE TEST_RESULT
-    )
-    if(TEST_RESULT)
-      fail_with_logs("Test ${TEST_NAME} failed" "${TEST_RESULT}"
-        ${TEST_DIR_OUT}/${TEST_NAME}.out)
-    endif()
+  # that fails to load is only seen in the differences of the tests reading it.
+  # A setup script reads the data files of its module in the source tree,
+  # which it finds through this environment variable.
+  set(ENV{MOBILITYDB_SOURCE_DIR} ${SOURCE_DIR})
+  execute_process(
+    COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=1 -d postgres
+    INPUT_FILE ${TEST_FILE}
+    OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
+    ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
+    RESULT_VARIABLE TEST_RESULT
+  )
+  if(TEST_RESULT)
+    fail_with_logs("Test ${TEST_NAME} failed" "${TEST_RESULT}"
+      ${TEST_DIR_OUT}/${TEST_NAME}.out)
   endif()
 
 #-------------------------------------------------------------------------------
