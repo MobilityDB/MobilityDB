@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: configure_file</title>
+<title>MobilityDB: add_test</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="mobilitydb_2test_2pointcloud_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="mobilitydb_2test_2s2cell_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,22 +79,25 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2test_2pointcloud_2CMakeLists_8txt_aa7c88fbceaada8058859ce7076606376.html#aa7c88fbceaada8058859ce7076606376">configure_file</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2test_2s2cell_2CMakeLists_8txt_a2bf2d23fb6c1118e45cb22c7c95a6a6b.html#a2bf2d23fb6c1118e45cb22c7c95a6a6b">add_test</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2test_2s2cell_2CMakeLists_8txt_a36df77ddd36ee79d48cb286138cb84d6.html#a36df77ddd36ee79d48cb286138cb84d6">DBGEO</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2test_2s2cell_2CMakeLists_8txt_a7708aadea9f91ed0e865b3f59acc2f7f.html#a7708aadea9f91ed0e865b3f59acc2f7f">file</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2test_2s2cell_2CMakeLists_8txt_a2111ac758a070cf508db5cb5473838f8.html#a2111ac758a070cf508db5cb5473838f8">get_filename_component</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa7c88fbceaada8058859ce7076606376" name="aa7c88fbceaada8058859ce7076606376"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7c88fbceaada8058859ce7076606376">&#9670;&#160;</a></span>configure_file()</h2>
+<a id="a2bf2d23fb6c1118e45cb22c7c95a6a6b" name="a2bf2d23fb6c1118e45cb22c7c95a6a6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bf2d23fb6c1118e45cb22c7c95a6a6b">&#9670;&#160;</a></span>add_test()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">configure_file </td>
+          <td class="memname">add_test </td>
           <td>(</td>
-          <td class="paramtype">data/load_pointcloud.sql.in ${CMAKE_CURRENT_BINARY_DIR}/data/load_pointcloud.sql @&#160;</td>
-          <td class="paramname"><em>ONLY</em></td><td>)</td>
+          <td class="paramtype">NAME load_s2cell_tables WORKING_DIRECTORY ${CMAKE_BINARY_DIR} COMMAND ${CMAKE_COMMAND} -D&#160;</td>
+          <td class="paramname"><em>TEST_OPER</em> = <code>run_passfail&#160;-D&#160;TEST_NAME=load_s2cell_tables&#160;-D&#160;TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_s2cell.sql&#160;-<a class="el" href="index__structure__test_8c_afcb6af1fe1e462eee771edc1ada9a6bf.html#afcb6af1fe1e462eee771edc1ada9a6bf">P</a>&#160;${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
