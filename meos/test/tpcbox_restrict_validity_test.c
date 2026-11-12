@@ -126,7 +126,34 @@ int main(void)
   check("tpcpatch_at_tpcbox(tint, box1)",
     tpcpatch_at_tpcbox(tint, box1, true), false, MEOS_ERR_INVALID_ARG_TYPE);
 
-  free(pt); free(pa); free(tint); free(box1); free(box2);
+  /* The restriction of each point of a patch reads every dimension of the
+   * box and refuses a box of another schema in the same way */
+  TPCBox *box3 = tpcbox_in("TPCBOX(XT(((0,0),(5,5)),[2025-01-01,2025-01-02]), 1)");
+  TPCBox *box4 = tpcbox_in("TPCBOX(T([2024-01-01,2024-01-02]), 1)");
+  assert(box3); assert(box4);
+  check("tpcpatch_at_tpcbox_fine(pa, box1)",
+    tpcpatch_at_tpcbox_fine(pa, box1, true), true, 0);
+  check("tpcpatch_minus_tpcbox_fine(pa, box1)",
+    tpcpatch_minus_tpcbox_fine(pa, box1, true), false, 0);
+  check("tpcpatch_at_tpcbox_fine(pa, box3)",
+    tpcpatch_at_tpcbox_fine(pa, box3, true), false, 0);
+  check("tpcpatch_minus_tpcbox_fine(pa, box3)",
+    tpcpatch_minus_tpcbox_fine(pa, box3, true), true, 0);
+  check("tpcpatch_at_tpcbox_fine(pa, box4)",
+    tpcpatch_at_tpcbox_fine(pa, box4, true), true, 0);
+  check("tpcpatch_minus_tpcbox_fine(pa, box4)",
+    tpcpatch_minus_tpcbox_fine(pa, box4, true), false, 0);
+  check("tpcpatch_at_tpcbox_fine(pa, box2)",
+    tpcpatch_at_tpcbox_fine(pa, box2, true), false, MEOS_ERR_INVALID_ARG_VALUE);
+  check("tpcpatch_minus_tpcbox_fine(pa, box2)",
+    tpcpatch_minus_tpcbox_fine(pa, box2, true), false,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check("tpcpatch_at_tpcbox_fine(tint, box1)",
+    tpcpatch_at_tpcbox_fine(tint, box1, true), false,
+    MEOS_ERR_INVALID_ARG_TYPE);
+
+  free(pt); free(pa); free(tint); free(box1); free(box2); free(box3);
+  free(box4);
   meos_finalize();
   printf("tpcbox_restrict_validity_test: OK\n");
   return EXIT_SUCCESS;

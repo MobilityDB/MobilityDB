@@ -653,6 +653,46 @@ SELECT PC_AsText(getValue(minusTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1
  {"pcid":1,"pts":[[2,2,2]]}
 (1 row)
 
+SELECT atTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz), tpcboxZT(0, 0, 0, 3, 3, 3,
+  tstzspan '[2025-01-01, 2025-01-31]', 1)) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT startNumPoints(minusTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz), tpcboxZT(0, 0, 0, 3, 3, 3,
+  tstzspan '[2025-01-01, 2025-01-31]', 1)));
+ startnumpoints 
+----------------
+              2
+(1 row)
+
+SELECT startNumPoints(atTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
+  tpcbox 'TPCBOX(T([2024-01-01, 2024-01-31]), 1)'));
+ startnumpoints 
+----------------
+              2
+(1 row)
+
+SELECT minusTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
+  tpcbox 'TPCBOX(T([2024-01-01, 2024-01-31]), 1)') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT atTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
+  tpcbox 'TPCBOX(T([2025-01-01, 2025-01-31]), 1)') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT atTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz), tpcbox 'TPCBOX(X((0,0),(3,3)), 999)');
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
+SELECT minusTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz), tpcbox 'TPCBOX(X((0,0),(3,3)), 999)');
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
 SELECT startNumPoints(atGeometry(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
   geometry 'Polygon((0 0, 0 3, 3 3, 3 0, 0 0))'));
  startnumpoints 
