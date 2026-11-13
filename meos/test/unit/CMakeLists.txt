@@ -32,6 +32,9 @@
 # programs of meos/test test the installed public API.
 
 add_subdirectory(geo)
+if(POSE)
+  add_subdirectory(pose)
+endif()
 if(RGEO)
   add_subdirectory(rgeo)
 endif()
