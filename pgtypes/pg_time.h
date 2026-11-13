@@ -97,11 +97,13 @@ extern bool timetz_le(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
 extern bool timetz_lt(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
 extern bool timetz_ne(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
 extern TimeTzADT *timetz_copy(const TimeTzADT *timetz);
+extern TimeTzADT *timetz_from_parts(int64 us, int32 offset);
 extern char *timetz_out(const TimeTzADT *timetz, size_t *size_out);
 extern bool timetz_overlaps(const TimeTzADT *ts1, const TimeTzADT *te1, const TimeTzADT *ts2, const TimeTzADT *te2);
 extern float8 timetz_part(const TimeTzADT *timetz, const text *units);
 extern TimeTzADT *timetz_scale(const TimeTzADT *timetz, int32 typmod);
 extern TimeTzADT *timetz_smaller(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern bool timetz_to_parts(const TimeTzADT *timetz, int64 *us, int32 *offset);
 extern TimeADT timetz_to_time(const TimeTzADT *timetz);
 extern TimeTzADT *timetz_zone(const TimeTzADT *timetz, const text *zone);
 

@@ -677,6 +677,10 @@ distfun_sign_after(const DistFun *f, double level, double t, double ftol)
  * - If @p f changes sign in the cell, it refines the root.
  * - If |f(m)| > (h/2) * max|f'| over the cell, with m the middle and h the
  *   width of the cell, the cell has no root.
+ * - If |f(m)| > (h/2) * |f'(m)| + (h/2)^2 / 2 * max|f''| over the cell, the
+ *   cell has no root, by the Taylor expansion of @p f at m.  This test reads
+ *   no bound of f', which is loose where @p f is the difference of two large
+ *   functions that cancel.
  * - If |f'(m)| > (h/2) * max|f''| over the cell, @p f is monotonic in the
  *   cell.  Since @p f does not change sign, the cell has no root.
  * - Otherwise, it splits the cell in two.
@@ -821,6 +825,14 @@ distfun_roots(const DistFun *f, double level, double lo, double hi,
     /* No point of the cell is farther than half its width from the middle,
      * thus f cannot reach zero in the cell */
     if (fabs(distfun_eval(&g, m)) > half * distfun_absmax(&dg, a, b))
+      continue;
+    /* The same with the Taylor expansion of f at the middle: there,
+     * |f(x)| >= |f(m)| - |f'(m)| half - half^2 / 2 max |f''|.  The bound on
+     * f' over the cell is loose where f is the difference of two large
+     * functions that cancel, as the difference of the distances to two
+     * parts, and then the first test needs cells too narrow for the budget */
+    if (fabs(distfun_eval(&g, m)) > half * fabs(distfun_eval(&dg, m)) +
+        0.5 * half * half * distfun_absmax(&d2g, a, b))
       continue;
     /* The same test for f' proves that f is monotonic in the cell.  Near a
      * root, f is small and the first test fails, but f' is not small.
