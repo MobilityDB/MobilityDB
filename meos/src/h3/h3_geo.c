@@ -431,6 +431,82 @@ h3_outline_vertex_held(const H3Outline *o, int k)
 }
 
 /**
+ * @brief Return in @p v the geodetic position of the vertex k of an outline,
+ * the vector of decision D6 of the cell walks (#lonlat_vector_nearest)
+ */
+static void
+h3_outline_vector(const H3Outline *o, int k, POINT3D *v)
+{
+  double d[3];
+  lonlat_vector_nearest(o->lon[k], o->lat[k], d);
+  v->x = d[0];
+  v->y = d[1];
+  v->z = d[2];
+}
+
+/**
+ * @brief Return true if the cell left of the great-circle arc from @p a to
+ * @p b lies south of it, or east of it where the arc runs north-south
+ * @details The cell lies on the side the normal a x b points to, so it lies
+ * south of the arc when the z component of the normal, ax by - ay bx, is
+ * negative, an exact sign of the doubles of the two vectors; where it is 0
+ * the arc lies in a meridian plane, and the cell left of it is east of it
+ * when the arc runs south
+ */
+static bool
+h3_arc_south_side(const POINT3D *a, const POINT3D *b)
+{
+  int nz = cross_product_sign_exact(0.0, 0.0, a->x, a->y, 0.0, 0.0, b->x,
+    b->y);
+  if (nz != 0)
+    return nz < 0;
+  return b->z < a->z;
+}
+
+/**
+ * @brief Return true if a cell holds the edge of its outline from the vertex
+ * k to the vertex k + 1, the edge read as a great-circle arc
+ * @details The geodetic twin of #h3_outline_edge_held: a cell holds its north
+ * and west sides, each sign exact on the geodetic positions of the vertices,
+ * which two neighbours read from the same doubles, so exactly one of the two
+ * cells holds the edge
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the first vertex of the edge
+ */
+bool
+h3_outline_edge_held_geodetic(const H3Outline *o, int k)
+{
+  POINT3D a, b;
+  h3_outline_vector(o, k, &a);
+  h3_outline_vector(o, (k + 1) % o->count, &b);
+  return h3_arc_south_side(&a, &b);
+}
+
+/**
+ * @brief Return true if a cell holds the vertex k of its outline, its edges
+ * read as great-circle arcs
+ * @details The geodetic twin of #h3_outline_vertex_held: the vertex belongs
+ * to the cell whose corner there opens south, or east where one of its edges
+ * runs due south; the turn of the corner is the sign of the triple product of
+ * the previous, the current and the next vertex (#triple_product_sign_exact),
+ * positive at a convex corner of an outline turning counter-clockwise
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the vertex
+ */
+bool
+h3_outline_vertex_held_geodetic(const H3Outline *o, int k)
+{
+  POINT3D p, v, n;
+  h3_outline_vector(o, (k + o->count - 1) % o->count, &p);
+  h3_outline_vector(o, k, &v);
+  h3_outline_vector(o, (k + 1) % o->count, &n);
+  bool in = h3_arc_south_side(&p, &v);
+  bool out = h3_arc_south_side(&v, &n);
+  int turn = triple_product_sign_exact(&p, &v, &n);
+  return turn > 0 ? (in && out) : (in || out);
+}
+
+/**
  * @brief Return the microsecond at which a segment crosses the line of the
  * edge of an outline from the vertex k to the vertex k + 1, as the offset
  * from the start of the segment, truncated
