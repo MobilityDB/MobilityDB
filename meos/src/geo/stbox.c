@@ -99,9 +99,6 @@
 /* Buffer size for input and output of STBox */
 #define MAXSTBOXLEN    256
 
-/* PostGIS prototype */
-extern void ll2cart(const POINT2D *g, POINT3D *p);
-
 /*****************************************************************************
  * General functions
  *****************************************************************************/
@@ -702,31 +699,13 @@ stbox_geo(const STBox *box)
   STBox box1;
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
+  /* A geodetic box holds longitudes and latitudes in degrees, the coordinates
+   * of the geography, so its corners are those of the polygon as they are;
+   * a geography holds no polyhedral surface, so a geodetic box with Z is
+   * its rectangle at z = 0 */
+  memcpy(&box1, box, sizeof(STBox));
   if (geodetic)
-  {
-    /* Transform the stbox coordinates, expressed as Cartesian coordinates on
-     * unit sphere back to lon/lat coordinates */
-    POINT2D min2d, max2d;
-    POINT3D p1, p2;
-    GEOGRAPHIC_POINT g1, g2;
-    min2d.x = box->xmin;
-    min2d.y = box->ymin;
-    max2d.x = box->xmax;
-    max2d.y = box->ymax;
-    ll2cart(&min2d, &p1);
-    ll2cart(&max2d, &p2);
-    cart2geog(&p1, &g1);
-    cart2geog(&p2, &g2);
-    memset(&box1, 0, sizeof(STBox));
-    box1.xmin = rad2deg(g1.lon);
-    box1.ymin = rad2deg(g1.lat);
-    box1.xmax = rad2deg(g2.lon);
-    box1.ymax = rad2deg(g2.lat);
-    box1.flags = box->flags;
-    box1.srid = box->srid;
-  }
-  else
-    memcpy(&box1, box, sizeof(STBox));
+    box1.zmin = box1.zmax = 0.0;
   if (hasz)
   {
     stbox_set_box3d(&box1, &box3d);
