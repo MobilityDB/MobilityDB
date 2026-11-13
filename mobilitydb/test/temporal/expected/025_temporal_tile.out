@@ -1418,5 +1418,38 @@ SELECT b, (valueTimeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2
  f |      3 | Sun Sep 02 00:00:00 2001 PDT | {[3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)}
 (5 rows)
 
+SELECT bins(floatspan '[1, 2]', 0.3);
+                         bins                          
+-------------------------------------------------------
+ {"[0.9, 1.2)","[1.2, 1.5)","[1.5, 1.8)","[1.8, 2.1)"}
+(1 row)
+
+SELECT bins(floatspanset '{[1, 1.2], [1.9, 2]}', 0.3);
+                 bins                 
+--------------------------------------
+ {"[1, 1.2)","[1.2, 1.2]","[1.9, 2]"}
+(1 row)
+
+SELECT (valueTiles(tbox 'TBOXFLOAT X([1, 2])', 0.3)).*;
+ index |          tile           
+-------+-------------------------
+     1 | TBOXFLOAT X([0.9, 1.2))
+     2 | TBOXFLOAT X([1.2, 1.5))
+     3 | TBOXFLOAT X([1.5, 1.8))
+     4 | TBOXFLOAT X([1.8, 2.1))
+(4 rows)
+
+SELECT round(number::numeric, 6) AS bin,
+  round(minValue(tnumber)::numeric, 6) AS minvalue,
+  round(maxValue(tnumber)::numeric, 6) AS maxvalue
+FROM valueSplit(tfloat '[1@2001-01-01, 2@2001-01-02]', 0.3);
+   bin    | minvalue | maxvalue 
+----------+----------+----------
+ 0.900000 | 1.000000 | 1.200000
+ 1.200000 | 1.200000 | 1.500000
+ 1.500000 | 1.500000 | 1.800000
+ 1.800000 | 1.800000 | 2.000000
+(4 rows)
+
 SELECT getValueTile(1.7976931348623157e308, 1.7976931348623157e308, 1.7976931348623157e308);
 ERROR:  value out of range: overflow
