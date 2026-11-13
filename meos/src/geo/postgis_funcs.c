@@ -1764,6 +1764,26 @@ geom_distance_nsegs(const POINTARRAY *pa)
 }
 
 /**
+ * @brief Return the bytes a point of a point array takes, read once ahead of
+ * a loop over its points in place of #getPoint2d_cp at each
+ */
+static pg_attribute_always_inline size_t
+geom_pa_stride(const POINTARRAY *pa)
+{
+  return sizeof(double) * (size_t) FLAGS_NDIMS(pa->flags);
+}
+
+/**
+ * @brief Return the coordinates of a point of a point array, given its stride
+ * (#geom_pa_stride)
+ */
+static pg_attribute_always_inline const double *
+geom_pa_point(const POINTARRAY *pa, size_t stride, uint32_t i)
+{
+  return (const double *) (pa->serialized_pointlist + stride * i);
+}
+
+/**
  * @brief Return the ends of the segment of rank @p k of a point array, each
  * the coordinates of a point, its x first
  */
@@ -2095,6 +2115,12 @@ geom_dwithin_segs(const double *a, const double *b, const double *c,
       fmax(fabs(c[k]), fabs(d[k]))));
   }
   double margin = (big >= 0x1p-400 && big <= 0x1p400) ? 0x1p-40 * big : -1.0;
+  /* A segment of no length is a point, nearest the other segment at itself:
+   * that one end answers the pair */
+  if (a[0] == b[0] && a[1] == b[1] && a[2 % ndims] == b[2 % ndims])
+    return geom_dwithin_end(a, c, d, ndims, dist, margin);
+  if (c[0] == d[0] && c[1] == d[1] && c[2 % ndims] == d[2 % ndims])
+    return geom_dwithin_end(c, a, b, ndims, dist, margin);
   bool inner = (ndims == 2) ?
     linesegm_intersect(a[0], a[1], b[0], b[1], c[0], c[1], d[0],
       d[1]).type != INTERSECT_NONE :
@@ -2231,9 +2257,12 @@ geom_distance_visit(const double *a, const double *b, const double *c,
  * it: the answer is then the double nearest the distance where that double is
  * at most @p cut with no upper bound below it, and otherwise a value on the same
  * side of @p cut as the distance
- * @param[in,out] within Where not NULL, with @p cut, set to true where the answer
- * equals @p cut and two segments are within it exactly (#geom_dwithin_segs); a
- * pair kept is the only one whose distance can reach @p cut, so no other is read
+ * @param[in,out] within Where not NULL, with @p cut, set to true where two
+ * segments are within @p cut exactly (#geom_dwithin_segs), the answer then
+ * being @p cut; each pair kept is then answered by that exact sign alone, not
+ * by its distance, and the answer is above @p cut where none is within it. A
+ * pair kept is the only one whose distance can reach @p cut, so no other is
+ * read
  * @return DBL_MAX where a list holds no point, an infinity where the distance
  * exceeds the largest double
  */
@@ -2250,10 +2279,13 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   {
     geom_distance_seg(arr1[0], 0, &a, &b);
     geom_distance_seg(arr2[0], 0, &c, &d);
-    double v = segment_distance_exact(a, b, c, d, ndims);
-    if (within && v == *cut)
+    /* Asked only whether they are within the cut, the exact sign answers */
+    if (within)
+    {
       *within = geom_dwithin_segs(a, b, c, d, ndims, *cut);
-    return v;
+      return *within ? *cut : INFINITY;
+    }
+    return segment_distance_exact(a, b, c, d, ndims);
   }
 
   /* The largest magnitude of a coordinate, which sizes the margin of the
@@ -2268,9 +2300,11 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
     const POINTARRAY *const *arr = g ? arr2 : arr1;
     uint32_t n = g ? n2 : n1;
     for (uint32_t k = 0; k < n; k++)
+    {
+      size_t st = geom_pa_stride(arr[k]);
       for (uint32_t v = 0; v < arr[k]->npoints; v++)
       {
-        const double *p = (const double *) getPoint2d_cp(arr[k], v);
+        const double *p = geom_pa_point(arr[k], st, v);
         for (int dim = 0; dim < ndims; dim++)
         {
           double m = fabs(p[dim]);
@@ -2283,6 +2317,7 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
           z += p[dim] - p[dim];
         }
       }
+    }
   }
   bool finite = (z == 0.0);
   /* The extent of the two geometries along their coordinates, moved up past
@@ -2325,9 +2360,10 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
           box[dim] = INFINITY;
           box[3 + dim] = -INFINITY;
         }
+        size_t st = geom_pa_stride(arr[k]);
         for (uint32_t v = 0; v < arr[k]->npoints; v++)
         {
-          const double *p = (const double *) getPoint2d_cp(arr[k], v);
+          const double *p = geom_pa_point(arr[k], st, v);
           for (int dim = 0; dim < ndims; dim++)
           {
             if (p[dim] < box[dim])
@@ -2412,17 +2448,24 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
     {
       if (cand[i].lo > geom_distance_fmin(minhi, best))
         break;
+      /* Asked only whether a pair is within the cut, its exact sign answers,
+       * the answer being the cut where one is and above it otherwise */
+      if (within)
+      {
+        if (geom_dwithin_segs(cand[i].a, cand[i].b, cand[i].c, cand[i].d,
+            ndims, *cut))
+        {
+          *within = true;
+          best = *cut;
+          break;
+        }
+        continue;
+      }
       double v = segment_distance_exact_bounded(cand[i].a, cand[i].b, cand[i].c,
         cand[i].d, ndims, big);
       best = geom_distance_fmin(best, v);
       if (cut && best < *cut)
         break;
-      if (within && v == *cut && geom_dwithin_segs(cand[i].a, cand[i].b,
-          cand[i].c, cand[i].d, ndims, *cut))
-      {
-        *within = true;
-        break;
-      }
     }
   }
   if (cand != candstack)
@@ -3753,6 +3796,7 @@ typedef struct
   uint32_t nrings;           /**< Number of rings */
   const double *a, *b, *c;   /**< Three vertices spanning the plane */
   int axis;                  /**< An axis the normal is not parallel to */
+  int naxis;                 /**< The axis the normal lies along, or -1 */
   double lo[3], hi[3];       /**< Box of the vertices */
 } GeomFace;
 
@@ -3812,26 +3856,29 @@ geom_faces_add_array(GeomFaces *gf, const POINTARRAY *pa)
 }
 
 /**
- * @brief Return true if the rings of a polygon or a triangle lie exactly in
- * one plane, appending them as a face where three of their vertices span it
+ * @brief Return 1 if the rings of a face lie exactly in one plane, which three
+ * of their vertices span, setting the plane of the face, 0 where they all lie
+ * on one line, and -1 where a vertex lies off the plane
  * @details The first vertex, the first one differing from it, and the first
  * one off the line of these two span the plane: a vertex lies off that line
  * exactly where a component of the cross product is not zero
  * (#vector_cross_signs). Every other vertex then lies in the plane exactly
  * where its orientation with the three is zero (#vector_triple_sign). Rings
- * whose vertices all lie on one line
- * bound no region and add no face; their segments are read as segments
- * @return False where a vertex lies off the plane
+ * whose vertices all lie on one line bound no region and form no face; their
+ * segments are read as segments
  */
-static bool
-geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
+static int
+geom_face_plane(GeomFace *face)
 {
+  POINTARRAY *const *rings = face->rings;
+  uint32_t nrings = face->nrings;
   const double *a = NULL, *b = NULL, *c = NULL;
   int sn[3] = {0, 0, 0};
+  size_t st = geom_pa_stride(rings[0]);
   for (uint32_t r = 0; r < nrings && ! c; r++)
     for (uint32_t i = 0; i < rings[r]->npoints && ! c; i++)
     {
-      const double *v = (const double *) getPoint2d_cp(rings[r], i);
+      const double *v = geom_pa_point(rings[r], st, i);
       if (! a)
         a = v;
       else if (! b)
@@ -3847,56 +3894,105 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
       }
     }
   if (! c)
-    return true;
+    return 0;
 
-  GeomFace face;
-  face.rings = rings;
-  face.nrings = nrings;
-  face.a = a; face.b = b; face.c = c;
+  face->a = a; face->b = b; face->c = c;
   for (int k = 0; k < 3; k++)
   {
-    face.lo[k] = INFINITY;
-    face.hi[k] = -INFINITY;
+    face->lo[k] = INFINITY;
+    face->hi[k] = -INFINITY;
   }
+  /* The normal formed once, at the first vertex not spanning the plane, where
+   * it is held exactly (#plane_normal_exact), each such vertex then read
+   * against it (#plane_normal_offset_sign); a triangle forms none */
+  double nrm[3];
+  int nexact = -1;
+  /* A normal along an axis, the exact signs of its components having one not
+   * zero (#vector_cross_signs), lies across that axis: a vertex is in the
+   * plane exactly where its coordinate on the axis is that of the first,
+   * which the normal held exactly or not reads alike */
+  int naxis = -1;
+  if ((sn[0] != 0) + (sn[1] != 0) + (sn[2] != 0) == 1)
+    naxis = (sn[0] != 0) ? 0 : ((sn[1] != 0) ? 1 : 2);
   for (uint32_t r = 0; r < nrings; r++)
     for (uint32_t i = 0; i < rings[r]->npoints; i++)
     {
-      const double *v = (const double *) getPoint2d_cp(rings[r], i);
-      /* The three vertices spanning the plane, and a vertex equal to one of
-       * them as the last of a ring is to its first, lie in it */
-      bool span = false;
-      for (int k = 0; k < 3 && ! span; k++)
+      const double *v = geom_pa_point(rings[r], st, i);
+      /* Across an axis, one coordinate tells, the spanning vertices
+       * included */
+      if (naxis >= 0)
       {
-        const double *s = (k == 0) ? a : ((k == 1) ? b : c);
-        span = v[0] == s[0] && v[1] == s[1] && v[2] == s[2];
+        if (v[naxis] != a[naxis])
+          return -1;
       }
-      if (! span && vector_triple_sign(a, b, a, c, a, v) != 0)
-        return false;
+      else
+      {
+        /* The three vertices spanning the plane, and a vertex equal to one
+         * of them as the last of a ring is to its first, lie in it */
+        bool span = false;
+        for (int k = 0; k < 3 && ! span; k++)
+        {
+          const double *s = (k == 0) ? a : ((k == 1) ? b : c);
+          span = v[0] == s[0] && v[1] == s[1] && v[2] == s[2];
+        }
+        if (! span)
+        {
+          if (nexact < 0)
+            nexact = plane_normal_exact(a, b, c, nrm) ? 1 : 0;
+          int s = nexact ? plane_normal_offset_sign(nrm, a, v) : 2;
+          if (s == 2)
+            s = vector_triple_sign(a, b, a, c, a, v);
+          if (s != 0)
+            return -1;
+        }
+      }
       for (int k = 0; k < 3; k++)
       {
-        if (v[k] < face.lo[k])
-          face.lo[k] = v[k];
-        if (v[k] > face.hi[k])
-          face.hi[k] = v[k];
+        if (v[k] < face->lo[k])
+          face->lo[k] = v[k];
+        if (v[k] > face->hi[k])
+          face->hi[k] = v[k];
       }
     }
   /* The normal has a component that is not zero; an axis other than its own
    * is one the normal is not parallel to */
   int k = (sn[2] != 0) ? 2 : ((sn[1] != 0) ? 1 : 0);
-  face.axis = (k + 1) % 3;
-  if (gf->nfaces == gf->capfaces)
+  face->axis = (k + 1) % 3;
+  face->naxis = naxis;
+  return 1;
+}
+
+/**
+ * @brief Append a face of a geometry in 3D, its plane read once its segments
+ * do not answer (#geom_faces_planes)
+ */
+static void
+geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
+{
+  GeomFace *face = &gf->faces[gf->nfaces++];
+  face->rings = rings;
+  face->nrings = nrings;
+  return;
+}
+
+/**
+ * @brief Return true if the faces of a geometry in 3D lie each exactly in a
+ * plane, setting their planes and dropping those whose rings lie on one line
+ * (#geom_face_plane)
+ */
+static bool
+geom_faces_planes(GeomFaces *gf)
+{
+  uint32_t n = 0;
+  for (uint32_t i = 0; i < gf->nfaces; i++)
   {
-    gf->capfaces *= 2;
-    if (gf->faces == gf->facestack)
-    {
-      GeomFace *faces = palloc(sizeof(GeomFace) * gf->capfaces);
-      memcpy(faces, gf->facestack, sizeof(GeomFace) * gf->nfaces);
-      gf->faces = faces;
-    }
-    else
-      gf->faces = repalloc(gf->faces, sizeof(GeomFace) * gf->capfaces);
+    int s = geom_face_plane(&gf->faces[i]);
+    if (s < 0)
+      return false;
+    if (s > 0)
+      gf->faces[n++] = gf->faces[i];
   }
-  gf->faces[gf->nfaces++] = face;
+  gf->nfaces = n;
   return true;
 }
 
@@ -4033,8 +4129,8 @@ geom_faces_gs_array(GeomFaces *gf, const uint8_t *pts, uint32_t npoints,
  * its faces, read in place, and setting in @p size the bytes it takes
  * @details A point, a line, a polygon, a triangle, and the collections of
  * these, a TIN and a polyhedral surface among them, as #geom_faces_gs_count
- * counts them; a polygon whose vertices do not lie exactly in one plane is
- * not (#geom_faces_add_face)
+ * counts them, their faces appended and their planes read later
+ * (#geom_faces_planes)
  */
 static bool
 geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
@@ -4055,7 +4151,8 @@ geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
         return true;
       POINTARRAY **ring = &gf->rings[gf->nrings++];
       *ring = pa;
-      return geom_faces_add_face(gf, ring, 1);
+      geom_faces_add_face(gf, ring, 1);
+      return true;
     }
     case POLYGONTYPE:
     {
@@ -4070,7 +4167,8 @@ geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
         pts += (size_t) npoints * ptsize;
       }
       *size = (size_t) (pts - p);
-      return geom_faces_add_face(gf, &gf->rings[first], num);
+      geom_faces_add_face(gf, &gf->rings[first], num);
+      return true;
     }
     default:
     {
@@ -4091,14 +4189,15 @@ geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
 
 /**
  * @brief Return true if a serialized geometry in 3D is one of points, segments
- * and faces lying exactly in a plane, reading its point arrays and its faces in
- * place (#geom_faces_gs_read)
+ * and faces, reading its point arrays and its faces in place
+ * (#geom_faces_gs_read)
  * @details The point arrays and the faces are counted first
  * (#geom_faces_gs_count), so that the arrays holding them, and the rings a face
  * references, are sized once. The faces of a solid are those of its surface,
  * and its inside is read apart (#geom_faces_solid_contains). A solid inside a
- * collection, a geometry carrying an arc and a polygon whose vertices do not
- * lie exactly in one plane are not read
+ * collection and a geometry carrying an arc are not read. Whether the
+ * vertices of a face lie exactly in one plane is read later, only where the
+ * segments do not answer (#geom_faces_planes)
  */
 static bool
 geom_faces_init(GeomFaces *gf, const GSERIALIZED *gs)
@@ -4177,6 +4276,37 @@ geom_faces_free(GeomFaces *gf)
 static bool
 geom_face_inside(const GeomFace *f, const double *p, const double *q)
 {
+  /* A face across an axis, its normal along that axis: the foot of a point
+   * lies inside it where the point lies inside its rings read on the two other
+   * axes, the parity of the edges a ray along the first of them crosses, each
+   * crossing read by the side of the point of the edge (#cross_product_sign) */
+  if (! q && f->naxis >= 0)
+  {
+    int i = (f->naxis + 1) % 3, k = (f->naxis + 2) % 3, cnt = 0;
+    for (uint32_t r = 0; r < f->nrings; r++)
+    {
+      const POINTARRAY *pa = f->rings[r];
+      if (pa->npoints < 2)
+        continue;
+      size_t st = geom_pa_stride(pa);
+      const double *u = geom_pa_point(pa, st, 0);
+      for (uint32_t m = 1; m < pa->npoints; m++)
+      {
+        const double *v = geom_pa_point(pa, st, m);
+        bool up = (u[k] <= p[k] && v[k] > p[k]),
+          down = (v[k] <= p[k] && u[k] > p[k]);
+        if (up || down)
+        {
+          int o = cross_product_sign(u[i], u[k], v[i], v[k], u[i], u[k],
+            p[i], p[k]);
+          if ((up && o > 0) || (down && o < 0))
+            cnt++;
+        }
+        u = v;
+      }
+    }
+    return (cnt & 1) != 0;
+  }
   int j = f->axis;
   if (q)
   {
@@ -4200,12 +4330,13 @@ geom_face_inside(const GeomFace *f, const double *p, const double *q)
     const POINTARRAY *pa = f->rings[r];
     if (pa->npoints < 2)
       continue;
-    const double *u = (const double *) getPoint2d_cp(pa, 0);
+    size_t st = geom_pa_stride(pa);
+    const double *u = geom_pa_point(pa, st, 0);
     int su = q ? vector_triple_sign(p, q, GEOM_FACE_ORIGIN, e, p, u) :
       plane_cross_dot_sign(f->a, f->b, f->c, GEOM_FACE_ORIGIN, e, p, u);
     for (uint32_t i = 1; i < pa->npoints; i++)
     {
-      const double *v = (const double *) getPoint2d_cp(pa, i);
+      const double *v = geom_pa_point(pa, st, i);
       int sv = q ? vector_triple_sign(p, q, GEOM_FACE_ORIGIN, e, p, v) :
         plane_cross_dot_sign(f->a, f->b, f->c, GEOM_FACE_ORIGIN, e, p, v);
       bool up = (su <= 0 && sv > 0), down = (sv <= 0 && su > 0);
@@ -4242,8 +4373,11 @@ geom_face_point_within(const GeomFace *f, const double *p, double dist)
     if (gap > dist * (1.0 + 0x1p-50) + 0x1p-1060)
       return false;
   }
-  return plane_point_offset_sign(f->a, f->b, f->c, p, dist) <= 0 &&
-    geom_face_inside(f, p, NULL);
+  /* A plane across an axis reads the gap on that axis (#axis_offset_sign) */
+  int s = (f->naxis >= 0) ?
+    axis_offset_sign(p[f->naxis], f->a[f->naxis], dist) :
+    plane_point_offset_sign(f->a, f->b, f->c, p, dist);
+  return s <= 0 && geom_face_inside(f, p, NULL);
 }
 
 /**
@@ -4278,14 +4412,15 @@ geom_faces_meet(const GeomFaces *g1, const GeomFaces *g2, double dist)
     for (uint32_t k = 0; k < g2->narrs; k++)
     {
       const POINTARRAY *pa = g2->arrs[k];
+      size_t st = geom_pa_stride(pa);
       for (uint32_t v = 0; v < pa->npoints; v++)
       {
-        const double *p = (const double *) getPoint2d_cp(pa, v);
+        const double *p = geom_pa_point(pa, st, v);
         if (geom_face_point_within(f, p, dist))
           return true;
         if (v > 0)
         {
-          const double *o = (const double *) getPoint2d_cp(pa, v - 1);
+          const double *o = geom_pa_point(pa, st, v - 1);
           if (geom_face_segment_cross(f, o, p))
             return true;
         }
@@ -4484,6 +4619,50 @@ geom_point_meets_faces(const double *p, const GeomFaces *g)
 }
 
 /**
+ * @brief Return true if the boxes of the points of two geometries in 3D lie
+ * farther apart along an axis than a distance, exactly
+ * @details Every point of a face lies in the box of its vertices, so two
+ * geometries whose boxes lie farther apart are not within the distance,
+ * whatever their faces are. A gap above the distance in doubles, moved up
+ * past its rounding, lies above it exactly, as #geom_face_point_within reads it
+ */
+static bool
+geom_faces_boxes_beyond(const GeomFaces *g1, const GeomFaces *g2, double dist)
+{
+  double lo[2][3], hi[2][3];
+  for (int g = 0; g < 2; g++)
+  {
+    const GeomFaces *gf = g ? g2 : g1;
+    for (int k = 0; k < 3; k++)
+    {
+      lo[g][k] = INFINITY;
+      hi[g][k] = -INFINITY;
+    }
+    for (uint32_t i = 0; i < gf->narrs; i++)
+    {
+      const POINTARRAY *pa = gf->arrs[i];
+      size_t st = geom_pa_stride(pa);
+      for (uint32_t v = 0; v < pa->npoints; v++)
+      {
+        const double *p = geom_pa_point(pa, st, v);
+        for (int k = 0; k < 3; k++)
+        {
+          if (p[k] < lo[g][k])
+            lo[g][k] = p[k];
+          if (p[k] > hi[g][k])
+            hi[g][k] = p[k];
+        }
+      }
+    }
+  }
+  double bound = dist * (1.0 + 0x1p-50) + 0x1p-1060;
+  for (int k = 0; k < 3; k++)
+    if (lo[1][k] - hi[0][k] > bound || lo[0][k] - hi[1][k] > bound)
+      return true;
+  return false;
+}
+
+/**
  * @brief Return true if a point and a geometry with Z of points, segments and
  * faces lying exactly in a plane intersect, exactly, setting the answer in the
  * last argument, and false where the geometry is not of these
@@ -4499,12 +4678,78 @@ geom_point_intersects3d_faces(const GSERIALIZED *point, const GSERIALIZED *gs,
   bool *result)
 {
   GeomFaces g;
-  bool ok = geom_faces_init(&g, gs);
+  /* The planes of the faces, which the point is read against, are read
+   * once the faces are (#geom_faces_planes) */
+  bool ok = geom_faces_init(&g, gs) && geom_faces_planes(&g);
   if (ok)
     *result = geom_point_meets_faces(
       (const double *) GSERIALIZED_POINT3DZ_P(point), &g);
   geom_faces_free(&g);
   return ok;
+}
+
+/**
+ * @brief Return true if the boxes two serialized geometries in 3D carry lie
+ * farther apart along an axis than a distance, exactly
+ * @details A box is read in place where the serialized form holds one, its
+ * bounds rounded outward, or from a point; a geometry carrying neither, or of
+ * a type that may hold an arc, answers false, as does a box holding a NaN
+ * or a bound at the largest float, which a coordinate beyond it rounds to.
+ * The gap of boxes rounded outward is at most the gap of the geometries, so a
+ * gap above the distance in doubles, moved up past its rounding, lies above
+ * it exactly
+ */
+static bool
+geom_faces_gs_beyond(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  double dist)
+{
+  double lo[2][3], hi[2][3];
+  for (int g = 0; g < 2; g++)
+  {
+    const GSERIALIZED *gs = g ? gs2 : gs1;
+    const uint8_t *p = gs_geometry_ptr(gs);
+    uint32_t type;
+    memcpy(&type, p, 4);
+    /* Only types that hold no arc: a geometry carrying one is not answered
+     * here (#geom_faces_gs_count) */
+    if (type == POINTTYPE)
+    {
+      /* The coordinates follow the type and the number of points, read as
+       * the type is */
+      double pt[3];
+      memcpy(pt, p + 8, sizeof(pt));
+      for (int k = 0; k < 3; k++)
+        lo[g][k] = hi[g][k] = pt[k];
+    }
+    else if ((type == LINETYPE || type == POLYGONTYPE ||
+        type == TRIANGLETYPE || type == MULTIPOINTTYPE ||
+        type == MULTILINETYPE || type == MULTIPOLYGONTYPE ||
+        type == TINTYPE || type == POLYHEDRALSURFACETYPE) &&
+        G2FLAGS_GET_BBOX(gs->gflags))
+    {
+      /* The box precedes the geometry, after the extended flags, as
+       * #gs_geometry_ptr reads it: least then greatest x, y and z */
+      float box[6];
+      memcpy(box, (const uint8_t *) gs->data +
+        (G2FLAGS_GET_EXTENDED(gs->gflags) ? 8 : 0), sizeof(box));
+      for (int k = 0; k < 3; k++)
+      {
+        /* A bound at the largest float may stand for a coordinate beyond it,
+         * where the box tells nothing */
+        if (! (fabsf(box[2 * k]) < FLT_MAX && fabsf(box[2 * k + 1]) < FLT_MAX))
+          return false;
+        lo[g][k] = (double) box[2 * k];
+        hi[g][k] = (double) box[2 * k + 1];
+      }
+    }
+    else
+      return false;
+  }
+  double bound = dist * (1.0 + 0x1p-50) + 0x1p-1060;
+  for (int k = 0; k < 3; k++)
+    if (lo[1][k] - hi[0][k] > bound || lo[0][k] - hi[1][k] > bound)
+      return true;
+  return false;
 }
 
 /**
@@ -4520,7 +4765,10 @@ geom_point_intersects3d_faces(const GSERIALIZED *point, const GSERIALIZED *gs,
  * the distance with the distance as its cut (#geom_distance_walk), as
  * #geom_dwithin3d_exact reads them, and the faces by exact signs
  * (#geom_faces_meet), both read in place on the serialized form
- * (#geom_faces_init)
+ * (#geom_faces_init). Segments within the distance answer before the planes
+ * of the faces are read (#geom_faces_planes): their points belong to the
+ * geometries whatever the faces are; so do boxes farther apart than the
+ * distance (#geom_faces_boxes_beyond)
  * @param[in] gs1,gs2 Geometries with Z, not empty
  * @param[in] dist Distance, finite and not negative
  * @param[out] result Answer
@@ -4529,6 +4777,13 @@ static bool
 geom_dwithin3d_faces(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double dist, bool *result)
 {
+  /* Boxes the geometries carry farther apart than the distance answer before
+   * any of their points is read, a solid lying in its box too */
+  if (geom_faces_gs_beyond(gs1, gs2, dist))
+  {
+    *result = false;
+    return true;
+  }
   GeomFaces g1, g2;
   bool ok = geom_faces_init(&g1, gs1);
   ok = geom_faces_init(&g2, gs2) && ok;
@@ -4542,15 +4797,34 @@ geom_dwithin3d_faces(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
       *result = nearest < dist;
     else
       *result = within;
-    if (! *result && nearest != DBL_MAX)
-      *result = geom_faces_meet(&g1, &g2, dist) ||
-        geom_faces_meet(&g2, &g1, dist);
-    /* A solid also holds what lies inside it */
+    /* Segments within the distance answer whatever the faces are; the planes
+     * of the faces are read only past them */
+    /* Boxes farther apart than the distance hold no meeting of faces, and
+     * neither geometry inside the other */
+    bool planes = false;
+    bool beyond = ! *result && nearest != DBL_MAX &&
+      geom_faces_boxes_beyond(&g1, &g2, dist);
+    if (! *result && nearest != DBL_MAX && ! beyond)
+    {
+      ok = geom_faces_planes(&g1) && geom_faces_planes(&g2);
+      planes = true;
+      if (ok)
+        *result = geom_faces_meet(&g1, &g2, dist) ||
+          geom_faces_meet(&g2, &g1, dist);
+    }
+    /* A solid also holds what lies inside it, read on the planes of its
+     * faces, which the segments may have left unread */
     int in = 0;
-    if (! *result && geom_is_solid(gs1))
-      in = geom_faces_solid_contains(&g1, &g2);
-    if (! *result && in == 0 && geom_is_solid(gs2))
-      in = geom_faces_solid_contains(&g2, &g1);
+    if (ok && ! *result && ! beyond &&
+        (geom_is_solid(gs1) || geom_is_solid(gs2)))
+    {
+      if (! planes)
+        ok = geom_faces_planes(&g1) && geom_faces_planes(&g2);
+      if (ok && geom_is_solid(gs1))
+        in = geom_faces_solid_contains(&g1, &g2);
+      if (ok && in == 0 && geom_is_solid(gs2))
+        in = geom_faces_solid_contains(&g2, &g1);
+    }
     if (in < 0)
     {
       geom_faces_free(&g1);

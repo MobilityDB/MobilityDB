@@ -2768,6 +2768,34 @@ static int
 point_distance_offset_pair_side_sign(const double *p, const double *q,
   int ndims, double r, double rlo, double c, double g)
 {
+  /* In pairs of doubles first, as #segment_interior_mid_sign reads its own: the
+   * differences of the coordinates exact as pairs (#two_diff), the squared
+   * distance and the square of `r + rlo + c + g/2` within 2^-104 of their
+   * operands at each of about ten steps, so the value lies within 2^-96 of the
+   * squared distance plus the square, where that sum lies inside 2^-900 and
+   * 2^900 and half the gap is exact */
+  double hg = g / 2.0;
+  if (hg * 2.0 == g)
+  {
+    double sh = 0.0, sl = 0.0, mag = 0.0;
+    for (int i = 0; i < ndims; i++)
+    {
+      double dh, dl, qh, ql;
+      two_diff(q[i], p[i], &dh, &dl);
+      pair_mul(dh, dl, dh, dl, &qh, &ql);
+      pair_add(sh, sl, qh, ql, &sh, &sl);
+      mag += dh * dh;
+    }
+    double th, tl, t2h, t2l, vh, vl;
+    pair_add(r, rlo, c, 0.0, &th, &tl);
+    pair_add(th, tl, hg, 0.0, &th, &tl);
+    pair_mul(th, tl, th, tl, &t2h, &t2l);
+    pair_add(sh, sl, - t2h, - t2l, &vh, &vl);
+    mag += th * th;
+    double bound = 0x1p-96 * mag;
+    if (mag >= 0x1p-900 && mag <= 0x1p900 && isfinite(vh) && fabs(vh) > bound)
+      return (vh > 0.0) ? 1 : -1;
+  }
   double left[19], right[19], factor[19];
   int n = 0;
   for (int i = 0; i < ndims; i++)
@@ -8831,6 +8859,46 @@ point_segment_distance_offset_exact(const double *p, const double *a,
 }
 
 /**
+ * @brief Return the sign of `(u . u)(w . w - r^2) - (w . u)^2` where its
+ * evaluation in pairs of doubles decides it, and 2 otherwise
+ * @details The value #point_segment_side_sign_inputs decides exactly, with
+ * `w = p - a` and `u = b - a`, evaluated on pairs of doubles carrying a bound
+ * on their error (#DDBound), as #plane_point_offset_sign reads its value ahead
+ * of #WideDyadic and as #point_segment_offset_filter_sign filters the rounding
+ * of the same quantity. A value whose bound leaves it on one side of zero has
+ * that sign, and a value with no error that is zero is an exact zero
+ * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r Radius, not negative
+ * @return -1, 0 or 1, or 2 where the bound cannot tell
+ */
+static int
+point_segment_side_sign_filter(const double *p, const double *a,
+  const double *b, int ndims, double r)
+{
+  DDBound u[3], w[3], rr;
+  for (int k = 0; k < 3; k++)
+  {
+    if (k < ndims)
+    {
+      two_diff(b[k], a[k], &u[k].hi, &u[k].lo);
+      two_diff(p[k], a[k], &w[k].hi, &w[k].lo);
+    }
+    else
+      u[k].hi = u[k].lo = w[k].hi = w[k].lo = 0.0;
+    u[k].e = w[k].e = 0.0;
+  }
+  rr.hi = r; rr.lo = 0.0; rr.e = 0.0;
+  DDBound uu = ddb_dot3(u, u), ww = ddb_dot3(w, w), wu = ddb_dot3(w, u);
+  DDBound val = ddb_sub(ddb_mul(uu, ddb_sub(ww, ddb_mul(rr, rr))),
+    ddb_mul(wu, wu));
+  if (ddb_is_zero(val))
+    return 0;
+  int sign = ddb_sign(val);
+  return (sign != 0) ? sign : 2;
+}
+
+/**
  * @brief Return the sign of the distance of a point to a segment less a
  * radius, computed exactly for any finite doubles
  * @details The sign #point_segment_distance_offset_exact rounds its answer
@@ -8838,9 +8906,11 @@ point_segment_distance_offset_exact(const double *p, const double *a,
  * #point_segment_dot_sign_inputs says so, and the sign is then that of the
  * squared distance of the two points less the squared radius
  * (#point_distance_offset_side_sign); otherwise it is that of
- * `(w x u)^2 - r^2 (u . u)` (#point_segment_side_sign_inputs). Each is a sum
- * of products of the input doubles decided exactly, so the answer is 0
- * exactly where the disc of the radius is tangent to the segment
+ * `(w x u)^2 - r^2 (u . u)`, read first in pairs of doubles
+ * (#point_segment_side_sign_filter) and exactly where they cannot tell
+ * (#point_segment_side_sign_inputs). Each is a sum of products of the input
+ * doubles decided exactly, so the answer is 0 exactly where the disc of the
+ * radius is tangent to the segment
  * @param[in] p,a,b The point and the two ends of the segment
  * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r Radius, not negative
@@ -8856,6 +8926,9 @@ point_segment_offset_sign(const double *p, const double *a, const double *b,
     return point_distance_offset_side_sign(p, a, ndims, r, 0.0, 0.0);
   if (point_segment_dot_sign_inputs(p, b, a, b, ndims) >= 0)
     return point_distance_offset_side_sign(p, b, ndims, r, 0.0, 0.0);
+  int sign = point_segment_side_sign_filter(p, a, b, ndims, r);
+  if (sign != 2)
+    return sign;
   return point_segment_side_sign_inputs(p, a, b, ndims, r, 0.0, 0.0);
 }
 
@@ -10013,12 +10086,116 @@ segment_interior_wide(const double *a, const double *b, const double *c,
 }
 
 /**
+ * @brief Return the sign of a bounded value where its bound decides it, 0 for
+ * an exact zero, and 2 where the bound cannot tell
+ */
+static pg_attribute_always_inline int
+ddb_sign_known(DDBound x)
+{
+  if (ddb_is_zero(x))
+    return 0;
+  int sign = ddb_sign(x);
+  return (sign != 0) ? sign : 2;
+}
+
+static inline void dbl_cross3(const double *a0, const double *a1,
+  const double *b0, const double *b1, double *x, double *mx);
+
+/**
+ * @brief Return the sign #segment_interior_offset_sign answers where its
+ * evaluation in doubles, then in pairs of doubles, decides it, and 2 otherwise
+ * @details The signs placing the nearest points are read first in doubles
+ * (#dbl_cross3), one known on the wrong side answering 1. The values #segment_interior_wide_values forms on #WideDyadic,
+ * with `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v`, formed on pairs
+ * of doubles carrying a bound on their error (#DDBound), as
+ * #plane_point_offset_sign reads its value ahead of #WideDyadic. The nearest
+ * points lie outside a segment, the answer 1, where one of the signs that
+ * place them is known on the wrong side (#SEGMENT_INSIDE); they lie inside
+ * both where all are known on the right side, and the answer is then the sign
+ * of `(e . n)^2 - r^2 (n . n)` where its bound decides it. A value with no
+ * error that is zero is an exact zero (#ddb_sign_known)
+ * @param[in] a,b The two ends of the first segment, three coordinates each
+ * @param[in] c,d The two ends of the second segment, three coordinates each
+ * @param[in] r Radius, not negative
+ * @return -1, 0 or 1, or 2 where the bounds cannot tell
+ */
+static int
+segment_interior_offset_filter(const double *a, const double *b,
+  const double *c, const double *d, double r)
+{
+  /* In doubles first: each component of the three cross products lies within
+   * 2^-50 of the sum of the magnitudes of its products (#dbl_cross3), so each
+   * dot product of two of them lies within 2^-48 of the sum of the products of
+   * those sums, and a difference of two within 2^-47 of the sum of theirs; a
+   * sign they place on the wrong side is the answer 1, where every sum lies
+   * inside 2^-900 and 2^900 */
+  {
+    double xn[3], mn[3], xev[3], mev[3], xeu[3], meu[3];
+    dbl_cross3(a, b, c, d, xn, mn);
+    dbl_cross3(a, c, c, d, xev, mev);
+    dbl_cross3(a, c, a, b, xeu, meu);
+    double nnd = 0.0, sd = 0.0, td = 0.0, bnn = 0.0, bs = 0.0, bt = 0.0;
+    for (int k = 0; k < 3; k++)
+    {
+      nnd += xn[k] * xn[k];
+      sd += xev[k] * xn[k];
+      td += xeu[k] * xn[k];
+      bnn += mn[k] * mn[k];
+      bs += mev[k] * mn[k];
+      bt += meu[k] * mn[k];
+    }
+    if (bnn >= 0x1p-900 && bnn <= 0x1p900 && bs >= 0x1p-900 &&
+        bs <= 0x1p900 && bt >= 0x1p-900 && bt <= 0x1p900)
+    {
+      const double vals[4] = {sd, sd - nnd, td, td - nnd};
+      const double bnds[4] = {0x1p-48 * bs, 0x1p-47 * (bs + bnn), 0x1p-48 * bt,
+        0x1p-47 * (bt + bnn)};
+      /* The sign each must have for the nearest points to lie inside both */
+      static const int inside[4] = {1, -1, 1, -1};
+      for (int k = 0; k < 4; k++)
+        if ((inside[k] > 0 && vals[k] < - bnds[k]) ||
+            (inside[k] < 0 && vals[k] > bnds[k]))
+          return 1;
+    }
+  }
+  DDBound u[3], v[3], e[3], n[3], ev[3], eu[3], rr;
+  ddb_diff3(b, a, u);
+  ddb_diff3(d, c, v);
+  ddb_diff3(c, a, e);
+  ddb_cross3(u, v, n);
+  ddb_cross3(e, v, ev);
+  ddb_cross3(e, u, eu);
+  DDBound nn = ddb_dot3(n, n), s = ddb_dot3(ev, n), t = ddb_dot3(eu, n);
+  const int q[5] = {ddb_sign_known(nn), ddb_sign_known(s),
+    ddb_sign_known(ddb_sub(s, nn)), ddb_sign_known(t),
+    ddb_sign_known(ddb_sub(t, nn))};
+  /* The sign each must have for the nearest points to lie inside both */
+  static const int inside[5] = {1, 1, -1, 1, -1};
+  bool known = true;
+  for (int k = 0; k < 5; k++)
+  {
+    if (q[k] == 2)
+      known = false;
+    else if (q[k] != inside[k])
+      return 1;
+  }
+  if (! known)
+    return 2;
+  rr.hi = r; rr.lo = 0.0; rr.e = 0.0;
+  DDBound en = ddb_dot3(e, n);
+  return ddb_sign_known(ddb_sub(ddb_mul(en, en),
+    ddb_mul(ddb_mul(rr, rr), nn)));
+}
+
+/**
  * @brief Return the sign of the distance of two segments in 3D less a radius
  * where their nearest points lie inside both, computed exactly for any finite
  * doubles, and 1 otherwise
  * @details The sign of `(e . n)^2 - r^2 (n . n)`, as #nearest_lines_side reads
- * it for a midpoint (#segment_interior_wide_values). Where the nearest points
- * do not lie inside both, an end of one of the segments is the nearest, which
+ * it for a midpoint, read first in pairs of doubles
+ * (#segment_interior_offset_filter) and on #WideDyadic where they cannot tell
+ * (#segment_interior_wide_values). Where the nearest points do not lie inside
+ * both, an end of one of the segments is the nearest, which
  * #point_segment_offset_sign answers
  * @param[in] a,b The two ends of the first segment, three coordinates each
  * @param[in] c,d The two ends of the second segment, three coordinates each
@@ -10030,6 +10207,9 @@ segment_interior_offset_sign(const double *a, const double *b, const double *c,
   const double *d, double r)
 {
   assert(r >= 0.0);
+  int sign = segment_interior_offset_filter(a, b, c, d, r);
+  if (sign != 2)
+    return sign;
   WideDyadic en, nn, wr, r2;
   if (! segment_interior_wide_values(a, b, c, d, &en, &nn))
     return 1;
@@ -10228,6 +10408,145 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
   wide_cross3(wv, ww, wx);
   wide_dot3(wu, wx, &r);
   return r.sign;
+}
+
+/**
+ * @brief Return the sign of the distance of a point to a plane less a
+ * distance, `|p - a| - d`, for a plane across an axis on which the point
+ * reads @p p and the plane @p a, computed exactly for any finite doubles
+ * @details The sign #plane_point_offset_sign answers for a normal along that
+ * axis, `n^2 ((p - a)^2 - d^2)`, with no product: the difference splits
+ * exactly into its rounded value `x` and the error `y` of that rounding
+ * (#two_diff), and as `|y|` lies within half a unit of `x`, `|p - a|` is
+ * `|x| + y` where `x` is positive and `|x| - y` otherwise, whose difference
+ * with @p d is the sum of three doubles read exactly as an expansion
+ * (#grow_expansion)
+ * @param[in] p,a Coordinates of the point and of the plane on the axis
+ * @param[in] d Distance, not negative
+ * @return -1, 0 or 1
+ */
+int
+axis_offset_sign(double p, double a, double d)
+{
+  assert(d >= 0.0);
+  double x, y;
+  two_diff(p, a, &x, &y);
+  if (x == 0.0)
+  {
+    double ay = fabs(y);
+    return (ay > d) ? 1 : ((ay < d) ? -1 : 0);
+  }
+  double ax = fabs(x), sy = (x > 0.0) ? y : - y;
+  double h0[3], h1[3];
+  h0[0] = ax;
+  int len = grow_expansion(1, h0, sy, h1);
+  len = grow_expansion(len, h1, - d, h0);
+  double last = h0[len - 1];
+  return (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
+}
+
+/**
+ * @brief Set the normal of the plane of three points in 3D,
+ * `(b - a) x (c - a)`, and return true where every difference, every product
+ * and every component is a double held exactly; return false otherwise
+ * @details Each difference and each component is exact where #two_diff
+ * leaves no error, and each product where #two_product leaves none and it
+ * lies within the normal doubles, not below #DDB_EXACT_PRODUCT, under which
+ * the error of the product is not exact
+ * @param[in] a,b,c Points, three coordinates each
+ * @param[out] n The normal, three coordinates
+ */
+bool
+plane_normal_exact(const double *a, const double *b, const double *c,
+  double *n)
+{
+  double u[3], w[3], e;
+  for (int k = 0; k < 3; k++)
+  {
+    two_diff(b[k], a[k], &u[k], &e);
+    if (e != 0.0)
+      return false;
+    two_diff(c[k], a[k], &w[k], &e);
+    if (e != 0.0)
+      return false;
+  }
+  for (int k = 0; k < 3; k++)
+  {
+    int i = (k + 1) % 3, j = (k + 2) % 3;
+    double p, pe, q, qe;
+    two_product(u[i], w[j], &p, &pe);
+    two_product(u[j], w[i], &q, &qe);
+    if (pe != 0.0 || qe != 0.0 || ! isfinite(p) || ! isfinite(q) ||
+        (p != 0.0 && fabs(p) < DDB_EXACT_PRODUCT) ||
+        (q != 0.0 && fabs(q) < DDB_EXACT_PRODUCT))
+      return false;
+    two_diff(p, q, &n[k], &e);
+    if (e != 0.0 || ! isfinite(n[k]))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the sign of the offset of a point from the plane through a
+ * point with a normal held exactly (#plane_normal_exact), `n . (v - a)`, or 2
+ * where it cannot be read exactly from those doubles
+ * @details The sign of `vector_triple_sign(a, b, a, c, a, v)` for the normal
+ * `n` of `a`, `b` and `c`, as `u . (w x x) = (u x w) . x`, with the cross
+ * product formed once for every vertex of a face. The differences `v - a`
+ * are exact where #two_diff leaves no error, and the three products then split
+ * exactly into six doubles (#two_product) where each lies within the normal
+ * doubles. Their sum is read first in doubles: rounded three times and each
+ * product once, it lies within `4 * 2^-53` of the sum of the magnitudes of the
+ * products, read within 2^-50 of it where that sum lies inside 2^-900 and
+ * 2^900; otherwise exactly, as an expansion of the six doubles
+ * (#grow_expansion), whose last component carries its sign. A point lying in
+ * the plane is the exact zero no bound tells
+ * @param[in] n Normal of the plane, three coordinates
+ * @param[in] a,v Points, three coordinates each
+ * @return -1, 0 or 1, or 2 where a difference or a product is not held
+ * exactly
+ */
+int
+plane_normal_offset_sign(const double *n, const double *a, const double *v)
+{
+  /* A normal along an axis, as a face lying level or holding two axes has,
+   * reads the one coordinate it does not cancel by comparing two doubles,
+   * as #vector_cross_signs reads a component of exact terms with no product */
+  int nz = (n[0] != 0.0) + (n[1] != 0.0) + (n[2] != 0.0);
+  if (nz == 1)
+  {
+    int k = (n[0] != 0.0) ? 0 : ((n[1] != 0.0) ? 1 : 2);
+    int side = (v[k] > a[k]) ? 1 : ((v[k] < a[k]) ? -1 : 0);
+    return (n[k] > 0.0) ? side : - side;
+  }
+  double x[6], e;
+  for (int k = 0; k < 3; k++)
+  {
+    double d;
+    two_diff(v[k], a[k], &d, &e);
+    if (e != 0.0)
+      return 2;
+    two_product(n[k], d, &x[2 * k], &x[2 * k + 1]);
+    if (! isfinite(x[2 * k]) ||
+        (x[2 * k] != 0.0 && fabs(x[2 * k]) < DDB_EXACT_PRODUCT))
+      return 2;
+  }
+  double s = x[0] + x[2] + x[4];
+  double perm = fabs(x[0]) + fabs(x[2]) + fabs(x[4]);
+  if (perm >= 0x1p-900 && perm <= 0x1p900 && fabs(s) > 0x1p-50 * perm)
+    return (s > 0.0) ? 1 : -1;
+  double h0[6], h1[6];
+  double *h = h0, *g = h1;
+  h[0] = x[0];
+  int len = 1;
+  for (int i = 1; i < 6; i++)
+  {
+    len = grow_expansion(len, h, x[i], g);
+    double *t = h; h = g; g = t;
+  }
+  double last = h[len - 1];
+  return (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
 }
 
 /**
