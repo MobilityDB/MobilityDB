@@ -34,6 +34,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
@@ -42,6 +43,7 @@
 #include "temporal/type_util.h"
 #include "temporal/temporal_compops.h"
 #include "geo/geo_funcs.h"
+#include "geo/tgeo_spatialrels.h"
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************
@@ -340,28 +342,69 @@ always_overlaps_stbox_tnpoint(const STBox *box, const Temporal *temp)
 }
 
 /**
+ * @brief Return in the last arguments the bounds of the bounding period of a
+ * temporal network point, read in place
+ * @param[in] temp Temporal network point
+ * @param[out] lower,upper Bounds of the period
+ * @param[out] lower_inc,upper_inc Inclusivity of the bounds
+ */
+static void
+tnpoint_period_bounds(const Temporal *temp, TimestampTz *lower,
+  TimestampTz *upper, bool *lower_inc, bool *upper_inc)
+{
+  if (temp->subtype == TINSTANT)
+  {
+    *lower = *upper = ((const TInstant *) temp)->t;
+    *lower_inc = *upper_inc = true;
+    return;
+  }
+  const Span *p = (temp->subtype == TSEQUENCE) ?
+    &((const TSequence *) temp)->period :
+    &((const TSequenceSet *) temp)->period;
+  *lower = DatumGetTimestampTz(p->lower);
+  *upper = DatumGetTimestampTz(p->upper);
+  *lower_inc = p->lower_inc;
+  *upper_inc = p->upper_inc;
+}
+
+/**
+ * @brief Return true if the bounding periods of two temporal network points
+ * share an instant, as #overlaps_span_span answers it for the two periods
+ * @param[in] temp1,temp2 Temporal network points
+ */
+static bool
+tnpoint_periods_meet(const Temporal *temp1, const Temporal *temp2)
+{
+  TimestampTz l1, u1, l2, u2;
+  bool li1, ui1, li2, ui2;
+  tnpoint_period_bounds(temp1, &l1, &u1, &li1, &ui1);
+  tnpoint_period_bounds(temp2, &l2, &u2, &li2, &ui2);
+  /* Each period starts before the other ends, or at the instant it ends
+   * when both include it */
+  return (l1 < u2 || (l1 == u2 && li1 && ui2)) &&
+    (l2 < u1 || (l2 == u1 && li2 && ui1));
+}
+
+/**
  * @brief Return the distance within which the points the routes of two
- * temporal network points construct at one instant are one place
+ * temporal network points construct at one instant are one place, given the
+ * largest bounds of construction of the routes of the two values
  * @details A position along a route is a point computed in doubles, as
  * #npoint_to_geompoint computes it, so two network points at one place of
  * the map, a crossing of their routes, give two points apart by the rounding
  * of their coordinates, and the exact distance between them is almost never
- * zero. The distance is the band of a constructed point the exact
- * computation of MEOS admits, as #geogpoint_meeting_band reads it for the
- * meeting of two geography points: #MEOS_GEOM_TOLERANCE plus four units of
- * rounding of the largest
- * coordinate of the two values, which no two points genuinely apart are
- * within
- * @param[in] box1,box2 Spatiotemporal boxes of the two values
+ * zero. Each lies within the bound of construction of its route
+ * (#route_construction_bound) of the place, so the two lie within the sum of
+ * the bounds of the routes of the two values, which is the distance, with no
+ * absolute term
+ * @param[in] bound1,bound2 Largest bounds of construction of the routes of
+ * the two values, which #tnpoint_tgeompoint_bound returns with their
+ * positions
  */
 static double
-tnpoint_meeting_band(const STBox *box1, const STBox *box2)
+tnpoint_meeting_band(double bound1, double bound2)
 {
-  double mag1 = Max(Max(fabs(box1->xmin), fabs(box1->xmax)),
-    Max(fabs(box1->ymin), fabs(box1->ymax)));
-  double mag2 = Max(Max(fabs(box2->xmin), fabs(box2->xmax)),
-    Max(fabs(box2->ymin), fabs(box2->ymax)));
-  return MEOS_GEOM_TOLERANCE + 4.0 * DBL_EPSILON * Max(mag1, mag2);
+  return (bound1 + bound2) * (1.0 + 4.0 * DBL_EPSILON);
 }
 
 /**
@@ -375,7 +418,7 @@ tnpoint_meeting_band(const STBox *box1, const STBox *box2)
  * positions are constructed points, so they coincide within the band of
  * #tnpoint_meeting_band, and the values are at one place at a time where the
  * temporal points of their positions (#tnpoint_to_tgeompoint) are within that
- * distance (#edwithin_tgeo_tgeo, #adwithin_tgeo_tgeo)
+ * distance (#ea_dwithin_tgeo_tgeo)
  * @param[in] temp1,temp2 Temporal network points
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
@@ -386,16 +429,20 @@ eaoverlaps_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
     return -1;
-  STBox box1, box2;
-  tspatial_set_stbox(temp1, &box1);
-  tspatial_set_stbox(temp2, &box2);
-  double band = tnpoint_meeting_band(&box1, &box2);
-  Temporal *tpoint1 = tnpoint_to_tgeompoint(temp1);
-  Temporal *tpoint2 = tnpoint_to_tgeompoint(temp2);
+  /* Two values whose bounding periods do not meet share no time and answer
+   * -1, as #ea_dwithin_tgeo_tgeo answers them, before their positions are
+   * constructed; it reads any other pair */
+  if (! tnpoint_periods_meet(temp1, temp2))
+    return -1;
+  double bound1, bound2;
+  Temporal *tpoint1 = tnpoint_tgeompoint_bound(temp1, &bound1);
+  Temporal *tpoint2 = tnpoint_tgeompoint_bound(temp2, &bound2);
   int result = -1;
   if (tpoint1 && tpoint2)
-    result = ever ? edwithin_tgeo_tgeo(tpoint1, tpoint2, band, false) :
-      adwithin_tgeo_tgeo(tpoint1, tpoint2, band, false);
+  {
+    double band = tnpoint_meeting_band(bound1, bound2);
+    result = ea_dwithin_tgeo_tgeo(tpoint1, tpoint2, band, false, ever);
+  }
   if (tpoint1)
     pfree(tpoint1);
   if (tpoint2)

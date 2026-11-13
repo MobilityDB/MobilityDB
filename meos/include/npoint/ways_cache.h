@@ -57,6 +57,9 @@ typedef struct
                                the cache and not by a fetch function */
   double length;          /**< Length of the route, DBL_MAX when it states
                                none */
+  double bound;           /**< Bound of the construction of a point on the
+                               route (#route_construction_bound), set by the
+                               cache and not by a fetch function */
 } ways_record;
 
 /**

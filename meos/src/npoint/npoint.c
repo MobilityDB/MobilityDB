@@ -1304,6 +1304,29 @@ nsegment_to_geom(const Nsegment *ns)
 }
 
 /**
+ * @brief Return a bound on the distance between a point a route constructs
+ * and the point of the route it stands for
+ * @details The bound is the largest, over the segments of the route, of the
+ * diagonal of the box of #segment_construction_bound, within which a point
+ * constructed on that segment lies of the point of the segment it stands for
+ * @param[in] line Route
+ */
+double
+route_construction_bound(const LWLINE *line)
+{
+  const POINTARRAY *pa = line->points;
+  double result = 0.0;
+  for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    result = Max(result, hypot(segment_construction_bound(a->x, b->x),
+      segment_construction_bound(a->y, b->y)));
+  }
+  return result * (1.0 + 4.0 * DBL_EPSILON);
+}
+
+/**
  * @brief Return true if a point is one that MEOS constructs on a route
  * @details A point at a position along a route is constructed in doubles, so
  * it lies off the route by the rounding of its coordinates, and it is almost
