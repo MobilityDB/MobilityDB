@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: PAIRS</title>
+<title>MobilityDB: corner_twice</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_b0e6555625305bf6f77beb749e7698be.html">test</a></li><li class="navelem"><a class="el" href="geodetic__meeting__test_8c.html">geodetic_meeting_test.c</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_b0e6555625305bf6f77beb749e7698be.html">test</a></li><li class="navelem"><a class="el" href="dir_bf6c700a4487675397c4359251a23164.html">unit</a></li><li class="navelem"><a class="el" href="dir_5f59f7d23a604e0fe0d8d532b0770119.html">s2cell</a></li><li class="navelem"><a class="el" href="s2__corner__unit_8c.html">s2_corner_unit.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,43 +79,60 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="geodetic__meeting__test_8c_a6bd2df38d42655885c78a17a25f56d11.html#a6bd2df38d42655885c78a17a25f56d11">expected</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geodetic__meeting__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geodetic__meeting__test_8c_acd9fc7b66c8657b53970f9de11f58b1f.html#acd9fc7b66c8657b53970f9de11f58b1f">PAIRS</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geodetic__meeting__test_8c_aef5cc2630952520eb1555df93622d239.html#aef5cc2630952520eb1555df93622d239">temp1</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geodetic__meeting__test_8c_a6761a26e01f1182df7768d4d87dc2e67.html#a6761a26e01f1182df7768d4d87dc2e67">temp2</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="s2__corner__unit_8c_ab3de94b9c772c0ea3dd2f254578d2904.html#ab3de94b9c772c0ea3dd2f254578d2904">corner_num</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="s2__corner__unit_8c_a2e575089b9f281f94e2c6f32b111258a.html#a2e575089b9f281f94e2c6f32b111258a">corner_twice</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="s2__corner__unit_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="s2__corner__unit_8c_accc9c921f2da9b4fc28e05bde98af8e2.html#accc9c921f2da9b4fc28e05bde98af8e2">rows</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="acd9fc7b66c8657b53970f9de11f58b1f" name="acd9fc7b66c8657b53970f9de11f58b1f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acd9fc7b66c8657b53970f9de11f58b1f">&#9670;&#160;</a></span></h2>
+<a id="a2e575089b9f281f94e2c6f32b111258a" name="a2e575089b9f281f94e2c6f32b111258a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e575089b9f281f94e2c6f32b111258a">&#9670;&#160;</a></span>corner_twice()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const struct  { ... }  PAIRS[]</td>
+          <td class="memname">static void corner_twice </td>
+          <td>(</td>
+          <td class="paramtype">unsigned&#160;</td>
+          <td class="paramname"><em>face</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>I</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>J</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64 *&#160;</td>
+          <td class="paramname"><em>v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
-<div class="line">  </div>
-<div class="line">  {<span class="stringliteral">&quot;[Point(1 1)@2019-09-01, Point(2 2)@2019-09-02]&quot;</span>,</div>
-<div class="line">   <span class="stringliteral">&quot;[Point(2 2)@2019-09-01, Point(1 1)@2019-09-02, Point(1 1)@2019-09-03]&quot;</span>,</div>
-<div class="line">   <span class="stringliteral">&quot;{[f@2019-09-01 00:00:00+00, t@2019-09-01 12:00:00+00], &quot;</span></div>
-<div class="line">     <span class="stringliteral">&quot;(f@2019-09-01 12:00:00+00, f@2019-09-02 00:00:00+00]}&quot;</span>},</div>
-<div class="line">  </div>
-<div class="line">  {<span class="stringliteral">&quot;[Point(10 3)@2019-09-01, Point(12 -3)@2019-09-02]&quot;</span>,</div>
-<div class="line">   <span class="stringliteral">&quot;[Point(10 -3)@2019-09-01, Point(12 3)@2019-09-02]&quot;</span>,</div>
-<div class="line">   <span class="stringliteral">&quot;{[f@2019-09-01 00:00:00+00, t@2019-09-01 12:00:00+00], &quot;</span></div>
-<div class="line">     <span class="stringliteral">&quot;(f@2019-09-01 12:00:00+00, f@2019-09-02 00:00:00+00]}&quot;</span>},</div>
-<div class="line">  </div>
-<div class="line">  {<span class="stringliteral">&quot;[Point(10 3)@2019-09-01, Point(12 -3)@2019-09-02]&quot;</span>,</div>
-<div class="line">   <span class="stringliteral">&quot;[Point(10 -3)@2019-09-01, Point(12.000001 3)@2019-09-02]&quot;</span>,</div>
-<div class="line">   <span class="stringliteral">&quot;[f@2019-09-01 00:00:00+00, f@2019-09-02 00:00:00+00]&quot;</span>},</div>
-<div class="line">}</div>
-</div><!-- fragment -->
+
 </div>
 </div>
     </td>
