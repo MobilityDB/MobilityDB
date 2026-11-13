@@ -7,7 +7,7 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   {[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02],
   [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0), 0.0)@2001-01-05]}';
-</pre><p>La geometría de referencia puede ser cualquier polígono o superficie poliédrica, con la dimensión de la pose: una pose con un cuaternión necesita una geometría de referencia en tres dimensiones, y <code class="varname">ST_Force3D</code> da una plana, en el plano z = 0 del cuerpo. Otros valores dan un error. La interpolación de la pose es lineal en la traslación y de camino angular más corto en la rotación. Los SRID se heredan de la geometría de referencia y de la pose; deben coincidir.</p><p>Se puede especificar un SRID para una trgeometry al comienzo del literal, como se muestra a continuación, o antes de su primera pose, y es entonces el SRID de la geometría de referencia y de cada pose.</p><pre class="programlisting">
+</pre><p>La geometría de referencia puede ser cualquier polígono o superficie poliédrica, con la dimensión de la pose: una pose con un cuaternión necesita una geometría de referencia en tres dimensiones, y <code class="varname">ST_Force3D</code> da una plana, en el plano z = 0 del cuerpo. Una superficie poliédrica cerrada delimita un sólido, y el cuerpo es ese sólido: un punto en su interior toca el cuerpo, como PostGIS lee una geometría de <code class="varname">ST_MakeSolid</code>, mientras que <code class="varname">ST_3DIntersects</code> lee el mismo texto como sus caras solamente. Una superficie poliédrica abierta es sus caras. Otros valores dan un error. La interpolación de la pose es lineal en la traslación y de camino angular más corto en la rotación. Los SRID se heredan de la geometría de referencia y de la pose; deben coincidir.</p><p>Se puede especificar un SRID para una trgeometry al comienzo del literal, como se muestra a continuación, o antes de su primera pose, y es entonces el SRID de la geometría de referencia y de cada pose.</p><pre class="programlisting">
 SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0), 0.5)@2001-01-01';
 SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -16,25 +16,25 @@ SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 </pre><p>La interpolación escalonada también se puede especificar de la misma manera que para otros tipos temporales:</p><pre class="programlisting">
 SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
-</pre><p>Se admiten los formatos de transmisión estándar.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_asText"></a><a class="indexterm" name="id11431"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
+</pre><p>Se admiten los formatos de transmisión estándar.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_asText"></a><a class="indexterm" name="id11433"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
 asText({trgeometry,trgeometry[]} [, maxdecimaldigits integer=15]) → text
 </pre><pre class="programlisting">
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
   Pose(Point(1.123456789 1.123456789), 0.5)@2001-01-01', 6);
 -- POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@2001-01-01
-</pre></li><li class="listitem"><a name="trgeometry_asEWKT"></a><a class="indexterm" name="id11438"></a><p>Devuelve la representación extendida de texto conocido (EWKT), prefijada con el SRID</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_asEWKT"></a><a class="indexterm" name="id11440"></a><p>Devuelve la representación extendida de texto conocido (EWKT), prefijada con el SRID</p><pre class="programlisting">
 asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits integer=15]) → text
 </pre><pre class="programlisting">
 SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));
   Pose(Point(1 1),0.5)@2001-01-01');
 -- SRID=25832;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@2001-01-01
-</pre></li><li class="listitem"><a name="trgeometry_asMFJSON"></a><a class="indexterm" name="id11445"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_asMFJSON"></a><a class="indexterm" name="id11447"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
 asMFJSON(trgeometry [, options integer=0 [, flags integer=0
   [, maxdecimaldigits integer=15]]]) → text
 </pre><pre class="programlisting">
 SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0),0)@2001-01-01');
-</pre><p>GeoJSON no tiene superficie poliédrica, por lo que una geometría de referencia que es una superficie poliédrica se escribe como el <code class="varname">MultiPolygon</code> de sus caras, que <code class="varname">trgeometryFromMFJSON</code> lee de nuevo como la superficie poliédrica.</p></li><li class="listitem"><a name="trgeometry_asEWKB"></a><a class="indexterm" name="id11455"></a><a class="indexterm" name="id11458"></a><a class="indexterm" name="id11461"></a><p>Devuelve la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre><p>GeoJSON no tiene superficie poliédrica, por lo que una geometría de referencia que es una superficie poliédrica se escribe como el <code class="varname">MultiPolygon</code> de sus caras, que <code class="varname">trgeometryFromMFJSON</code> lee de nuevo como la superficie poliédrica.</p></li><li class="listitem"><a name="trgeometry_asEWKB"></a><a class="indexterm" name="id11457"></a><a class="indexterm" name="id11460"></a><a class="indexterm" name="id11463"></a><p>Devuelve la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 asEWKB(trgeometry [, endian text]) → bytea
 asHexWKB(trgeometry [, endian text]) → text
 asHexEWKB(trgeometry [, endian text]) → text
@@ -49,7 +49,7 @@ SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0
 SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(1 1), 0.5)@2001-01-01')));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-</pre></li><li class="listitem"><a name="trgeometry_fromText"></a><a class="indexterm" name="id11471"></a><a class="indexterm" name="id11474"></a><a class="indexterm" name="id11477"></a><a class="indexterm" name="id11480"></a><a class="indexterm" name="id11483"></a><a class="indexterm" name="id11486"></a><p>Entrada desde la representación de texto conocido (WKT), desde la representación extendida de texto conocido (EWKT), desde la representación JSON de características móviles (MF-JSON), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_fromText"></a><a class="indexterm" name="id11473"></a><a class="indexterm" name="id11476"></a><a class="indexterm" name="id11479"></a><a class="indexterm" name="id11482"></a><a class="indexterm" name="id11485"></a><a class="indexterm" name="id11488"></a><p>Entrada desde la representación de texto conocido (WKT), desde la representación extendida de texto conocido (EWKT), desde la representación JSON de características móviles (MF-JSON), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 trgeometryFromText(text) → trgeometry
 trgeometryFromEWKT(text) → trgeometry
 trgeometryFromMFJSON(text) → trgeometry
