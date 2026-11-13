@@ -30,8 +30,10 @@
 /**
  * @file
  * @brief A program that tests the conversion of a timestamptz and of a
- * timestamp to and from the microseconds from the Unix epoch, and of a date to
- * and from the days from it
+ * timestamp to and from the microseconds from the Unix epoch, of a date to and
+ * from the days from it, of an interval to and from its months, days and
+ * microseconds, and of a time with time zone to and from its microseconds from
+ * midnight and its offset east of UTC
  * @details Each count is the one Python's datetime computes for the same
  * instant: a year start clear of the PostgreSQL epoch, the Unix epoch, the
  * microsecond before the Unix epoch, and an instant with a fraction of a
@@ -53,6 +55,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
+#include <pg_time.h>
 #include <meos_geo.h>
 #include <pg_timestamp.h>
 
@@ -124,6 +127,50 @@ check_days(const char *text, int32 expected)
   meos_errno_reset();
 }
 
+/* Verify the parts of an interval and its round trip, as #check_count does
+ * for a timestamptz */
+static void
+check_interval(const char *text, int32 months, int32 days, int64 us)
+{
+  Interval *iv = interval_in(text, -1);
+  int32 m = 0, d = 0;
+  int64 u = 0;
+  bool ok = interval_to_parts(iv, &m, &d, &u);
+  Interval *back = interval_from_parts(m, d, u);
+  printf("interval %s: %d %d %lld\n", text, m, d, (long long) u);
+  if (! ok || m != months || d != days || u != us || ! back ||
+      interval_cmp(back, iv) != 0 || meos_errno() != 0)
+  {
+    printf("  expected %d %d %lld and the same interval back\n", months, days,
+      (long long) us);
+    failures++;
+  }
+  free(iv); free(back);
+  meos_errno_reset();
+}
+
+/* Verify the parts of a time with time zone and its round trip, as
+ * #check_count does for a timestamptz */
+static void
+check_timetz(const char *text, int64 us, int32 offset)
+{
+  TimeTzADT *t = timetz_in(text, -1);
+  int64 u = 0;
+  int32 o = 0;
+  bool ok = timetz_to_parts(t, &u, &o);
+  TimeTzADT *back = timetz_from_parts(u, o);
+  printf("timetz %s: %lld %d\n", text, (long long) u, o);
+  if (! ok || u != us || o != offset || ! back || ! timetz_eq(back, t) ||
+      meos_errno() != 0)
+  {
+    printf("  expected %lld %d and the same time back\n", (long long) us,
+      offset);
+    failures++;
+  }
+  free(t); free(back);
+  meos_errno_reset();
+}
+
 int main(void)
 {
   /* Initialize MEOS and install the error handler that reports through
@@ -182,6 +229,35 @@ int main(void)
   check_error("unix_days_to_date(INT32_MIN)", DT);
   unix_days_to_date(INT32_MAX);
   check_error("unix_days_to_date(INT32_MAX)", DT);
+
+  /* An interval holds its months, days and microseconds apart */
+  check_interval("1 mon 2 days 03:00:00.5", 1, 2, 10800500000);
+  check_interval("-1 year", -12, 0, 0);
+  check_interval("36 hours", 0, 0, 129600000000);
+  check_interval("1 day", 0, 1, 0);
+  check_interval("00:00:00.000001", 0, 0, 1);
+  int32 m;
+  int64 u;
+  Interval *inf = interval_in("infinity", -1);
+  interval_to_parts(inf, &m, &m, &u);
+  check_error("interval_to_parts(infinity)", DT);
+  free(inf);
+  interval_from_parts(INT32_MAX, INT32_MAX, INT64_MAX);
+  check_error("interval_from_parts(INT32_MAX, INT32_MAX, INT64_MAX)", DT);
+  interval_from_parts(INT32_MIN, INT32_MIN, INT64_MIN);
+  check_error("interval_from_parts(INT32_MIN, INT32_MIN, INT64_MIN)", DT);
+
+  /* A time with time zone has its offset in seconds east of UTC */
+  check_timetz("12:00:00+01", 43200000000, 3600);
+  check_timetz("12:00:00-05", 43200000000, -18000);
+  check_timetz("23:59:59.999999+15:59", 86399999999, 57540);
+  check_timetz("24:00:00+00", 86400000000, 0);
+  timetz_from_parts(-1, 0);
+  check_error("timetz_from_parts(-1, 0)", DT);
+  timetz_from_parts(86400000001, 0);
+  check_error("timetz_from_parts(86400000001, 0)", DT);
+  timetz_from_parts(0, 57601);
+  check_error("timetz_from_parts(0, 57601)", DT);
 
   /* The Unix seconds of the vector tile encoding */
   STBox *bounds = stbox_in("STBOX X((0,0),(1000,1000))");

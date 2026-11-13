@@ -652,6 +652,8 @@ extern Span *intspan_to_bigintspan(const Span *s);
 extern Span *bigintspan_to_intspan(const Span *s);
 extern Span *bigintspan_to_floatspan(const Span *s);
 extern SpanSet *intspanset_to_floatspanset(const SpanSet *ss);
+extern Interval *interval_from_parts(int32 months, int32 days, int64 us);
+extern bool interval_to_parts(const Interval *interv, int32 *months, int32 *days, int64 *us);
 extern Span *set_to_span(const Set *s);
 extern SpanSet *set_to_spanset(const Set *s);
 extern SpanSet *span_to_spanset(const Span *s);

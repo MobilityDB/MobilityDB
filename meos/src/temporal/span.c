@@ -2202,6 +2202,127 @@ unix_days_to_date(int32 days)
 }
 
 /**
+ * @ingroup meos_base_interval
+ * @brief Return in the last three arguments the months, the days and the
+ * microseconds of an interval
+ * @details A binding converts an interval to the duration of its host
+ * through this function and back through #interval_from_parts, as
+ * #timestamptz_to_unix_us converts a timestamptz. The three parts are those
+ * the interval holds: a day of an interval is not 24 hours across a change of
+ * the offset of a time zone, nor a month a number of days, so a host duration
+ * counting time alone states an interval whose months and days are zero.
+ * @param[in] interv Interval
+ * @param[out] months Months
+ * @param[out] days Days
+ * @param[out] us Microseconds
+ * @errval false
+ */
+bool
+interval_to_parts(const Interval *interv, int32 *months, int32 *days,
+  int64 *us)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(interv, false); VALIDATE_NOT_NULL(months, false);
+  VALIDATE_NOT_NULL(days, false); VALIDATE_NOT_NULL(us, false);
+  /* An infinite interval has no parts a host states */
+  if (INTERVAL_NOT_FINITE(interv))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "interval out of range");
+    return false;
+  }
+  *months = interv->month;
+  *days = interv->day;
+  *us = interv->time;
+  return true;
+}
+
+/**
+ * @ingroup meos_base_interval
+ * @brief Return the interval of a number of months, days and microseconds
+ * @details The exact counterpart of #interval_make, which reads the seconds
+ * as a double
+ * @param[in] months Months
+ * @param[in] days Days
+ * @param[in] us Microseconds
+ * @errval NULL
+ * @see #interval_to_parts
+ */
+Interval *
+interval_from_parts(int32 months, int32 days, int64 us)
+{
+  Interval *result = palloc(sizeof(Interval));
+  result->month = months;
+  result->day = days;
+  result->time = us;
+  /* Ensure the validity of the arguments: the three parts of an infinite
+   * interval are the extreme values of their types, which state no finite
+   * interval */
+  if (INTERVAL_NOT_FINITE(result))
+  {
+    pfree(result);
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_time
+ * @brief Return in the last two arguments the microseconds from midnight and
+ * the offset from UTC of a time with time zone
+ * @details A binding converts a time with time zone to the time of its host
+ * through this function and back through #timetz_from_parts, as
+ * #timestamptz_to_unix_us converts a timestamptz. The offset is in seconds
+ * east of UTC, as ISO 8601 and the hosts state it: a time with time zone
+ * holds the seconds west of UTC, so that `12:00:00+01` has the offset 3600.
+ * @param[in] timetz Time with time zone
+ * @param[out] us Microseconds from midnight
+ * @param[out] offset Seconds east of UTC
+ * @errval false
+ */
+bool
+timetz_to_parts(const TimeTzADT *timetz, int64 *us, int32 *offset)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(timetz, false); VALIDATE_NOT_NULL(us, false);
+  VALIDATE_NOT_NULL(offset, false);
+  *us = timetz->time;
+  *offset = - timetz->zone;
+  return true;
+}
+
+/**
+ * @ingroup meos_base_time
+ * @brief Return the time with time zone of a number of microseconds from
+ * midnight and an offset from UTC
+ * @param[in] us Microseconds from midnight, from 0 to 24:00:00
+ * @param[in] offset Seconds east of UTC
+ * @errval NULL
+ * @see #timetz_to_parts
+ */
+TimeTzADT *
+timetz_from_parts(int64 us, int32 offset)
+{
+  /* Ensure the validity of the arguments, as a time with time zone refuses a
+   * time outside a day and an offset beyond the one PostgreSQL reads */
+  if (us < 0 || us > USECS_PER_DAY)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "time out of range");
+    return NULL;
+  }
+  if (offset < - TZDISP_LIMIT || offset > TZDISP_LIMIT)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "time zone displacement out of range");
+    return NULL;
+  }
+  TimeTzADT *result = palloc(sizeof(TimeTzADT));
+  result->time = us;
+  result->zone = - offset;
+  return result;
+}
+
+/**
  * @ingroup meos_internal_setspan_transf
  * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
