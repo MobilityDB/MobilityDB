@@ -53,6 +53,8 @@ typedef struct
 {
   int64 gid;              /**< Identifier of the route */
   GSERIALIZED *the_geom;  /**< Geometry of the route */
+  const LWLINE *the_line; /**< Geometry of the route read as a line, set by
+                               the cache and not by a fetch function */
   double length;          /**< Length of the route, DBL_MAX when it states
                                none */
 } ways_record;

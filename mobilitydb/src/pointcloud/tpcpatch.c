@@ -195,163 +195,6 @@ Tpcpatch_swath(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Per-point restrict — filter every point of every patch through a
- * predicate, rebuild instants, repackage. Used by atTpcboxFine,
- * minusTpcboxFine, atGeometry, minusGeometry on tpcpatch.
- *****************************************************************************/
-
-/**
- * @brief Filter one instant of a tpcpatch through @p pred
- * @param inst             Source instant.
- * @param pred             Per-point predicate.
- * @param extra            Caller-supplied state for @p pred.
- * @param keep_when_true   @c true for @c at semantics, @c false for
- *                         @c minus.
- * @return Newly allocated @c TInstant whose value is the filtered
- *   pcpatch, or @c NULL when no points survive.
- */
-static TInstant *
-tpcpatch_inst_filter(const TInstant *inst, pcpatch_pointpred_fn pred,
-  void *extra, bool keep_when_true)
-{
-  const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
-  Pcpatch *filtered = pcpatch_filter_per_point(pa, pred, extra, keep_when_true);
-  if (! filtered)
-    return NULL;
-  TInstant *result = tinstant_make(PointerGetDatum(filtered), T_TPCPATCH,
-    inst->t);
-  pfree(filtered);
-  return result;
-}
-
-/**
- * @brief Filter a @c TSequence's instants, emit one output TSequence per
- * contiguous run of survivors
- * @param seq              Source sequence.
- * @param pred             Per-point predicate.
- * @param extra            Caller-supplied state for @p pred.
- * @param keep_when_true   @c true for @c at semantics, @c false for
- *                         @c minus.
- * @param out_seqs         Output buffer (caller-owned, capacity at
- *                         least @c seq->count).
- * @return Number of @c TSequences appended to @p out_seqs.
- */
-static int
-tpcpatch_seq_filter(const TSequence *seq, pcpatch_pointpred_fn pred,
-  void *extra, bool keep_when_true, TSequence **out_seqs)
-{
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  TInstant **run = palloc(sizeof(TInstant *) * seq->count);
-  int run_n = 0, n_emitted = 0;
-  bool run_starts_at_seq_lower = true;
-
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    TInstant *filt = tpcpatch_inst_filter(inst, pred, extra, keep_when_true);
-    if (filt)
-    {
-      run[run_n++] = filt;
-    }
-    else if (run_n > 0)
-    {
-      bool low = run_starts_at_seq_lower ? seq->period.lower_inc : true;
-      out_seqs[n_emitted++] = tsequence_make((TInstant **) run, run_n,
-        low, true, interp, NORMALIZE);
-      for (int k = 0; k < run_n; k++) pfree(run[k]);
-      run_n = 0;
-      run_starts_at_seq_lower = false;
-    }
-  }
-  if (run_n > 0)
-  {
-    bool low = run_starts_at_seq_lower ? seq->period.lower_inc : true;
-    out_seqs[n_emitted++] = tsequence_make((TInstant **) run, run_n,
-      low, seq->period.upper_inc, interp, NORMALIZE);
-    for (int k = 0; k < run_n; k++) pfree(run[k]);
-  }
-  pfree(run);
-  return n_emitted;
-}
-
-/**
- * @brief Per-point @c at / @c minus restriction driver
- * @details Shared backend for atTpcboxFine, minusTpcboxFine, atGeometry, and
- * minusGeometry on tpcpatch. Switches on subtype, calls
- * @c tpcpatch_seq_filter where applicable, repackages survivors into
- * a result of the same subtype shape (or a TSequenceSet when a
- * TSequence input contains gaps).
- *
- * @param temp     Source tpcpatch.
- * @param pred     Per-point predicate.
- * @param extra    Caller-supplied state for @p pred.
- * @param atfunc   @c REST_AT keeps points where @p pred is true,
- *                 @c REST_MINUS keeps the complement.
- * @return Newly allocated @c Temporal, or @c NULL when every instant
- *   filters to empty.
- */
-static Temporal *
-tpcpatch_filter_temporal(const Temporal *temp, pcpatch_pointpred_fn pred,
-  void *extra, bool atfunc)
-{
-  /* keep_when_true mirrors atfunc: at keeps points where pred is true,
-   * minus keeps the complement. */
-  bool keep = atfunc;
-
-  if (temp->subtype == TINSTANT)
-  {
-    TInstant *result = tpcpatch_inst_filter((const TInstant *) temp, pred,
-      extra, keep);
-    return (Temporal *) result;
-  }
-
-  if (temp->subtype == TSEQUENCE)
-  {
-    const TSequence *seq = (const TSequence *) temp;
-    TSequence **seqs = palloc(sizeof(TSequence *) * seq->count);
-    int n = tpcpatch_seq_filter(seq, pred, extra, keep, seqs);
-    if (n == 0)
-    {
-      pfree(seqs);
-      return NULL;
-    }
-    Temporal *result;
-    if (n == 1)
-    {
-      result = (Temporal *) seqs[0];
-    }
-    else
-    {
-      result = (Temporal *) tsequenceset_make(seqs, n, NORMALIZE);
-      for (int i = 0; i < n; i++) pfree(seqs[i]);
-    }
-    pfree(seqs);
-    return result;
-  }
-
-  /* TSEQUENCESET */
-  const TSequenceSet *ss = (const TSequenceSet *) temp;
-  /* Upper bound: at most one output TSequence per input instant. */
-  int cap = 0;
-  for (int i = 0; i < ss->count; i++)
-    cap += TSEQUENCESET_SEQ_N(ss, i)->count;
-  TSequence **seqs = palloc(sizeof(TSequence *) * cap);
-  int n = 0;
-  for (int i = 0; i < ss->count; i++)
-    n += tpcpatch_seq_filter(TSEQUENCESET_SEQ_N(ss, i), pred, extra, keep,
-      seqs + n);
-  if (n == 0)
-  {
-    pfree(seqs);
-    return NULL;
-  }
-  Temporal *result = (Temporal *) tsequenceset_make(seqs, n, NORMALIZE);
-  for (int i = 0; i < n; i++) pfree(seqs[i]);
-  pfree(seqs);
-  return result;
-}
-
-/*****************************************************************************
  * Per-point restrict by TPCBox (atTpcboxFine / minusTpcboxFine)
  *****************************************************************************/
 
@@ -362,8 +205,8 @@ PG_FUNCTION_INFO_V1(Tpcpatch_at_tpcbox_fine);
  * @brief Restrict a tpcpatch to only the points inside the supplied TPCBox
  * @details Per-point granularity: each surviving instant carries a
  *   freshly-built pcpatch containing only the points inside the box.
- *   Instants whose patches have zero points inside are dropped. The
- *   timestamp must also fall in the box's period.
+ *   Instants whose patches have zero points inside are dropped, an instant
+ *   outside the period of the box having none.
  * @sqlfn atTpcboxFine()
  */
 Datum
@@ -372,9 +215,7 @@ Tpcpatch_at_tpcbox_fine(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TPCBox *box = PG_GETARG_TPCBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  PcpointInTpcboxArgs args = { .box = box, .border_inc = border_inc };
-  Temporal *result = tpcpatch_filter_temporal(temp, pcpoint_in_tpcbox, &args,
-    REST_AT);
+  Temporal *result = tpcpatch_at_tpcbox_fine(temp, box, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -395,9 +236,7 @@ Tpcpatch_minus_tpcbox_fine(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TPCBox *box = PG_GETARG_TPCBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  PcpointInTpcboxArgs args = { .box = box, .border_inc = border_inc };
-  Temporal *result = tpcpatch_filter_temporal(temp, pcpoint_in_tpcbox, &args,
-    REST_MINUS);
+  Temporal *result = tpcpatch_minus_tpcbox_fine(temp, box, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -420,8 +259,8 @@ Tpcpatch_at_geometry(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tpcpatch_filter_temporal(temp, pcpoint_intersects_geometry,
-    (void *) gs, REST_AT);
+  Temporal *result = tpcpatch_restrict_points(temp, NULL,
+    pcpoint_intersects_geometry, (void *) gs, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result) PG_RETURN_NULL();
@@ -441,8 +280,8 @@ Tpcpatch_minus_geometry(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tpcpatch_filter_temporal(temp, pcpoint_intersects_geometry,
-    (void *) gs, REST_MINUS);
+  Temporal *result = tpcpatch_restrict_points(temp, NULL,
+    pcpoint_intersects_geometry, (void *) gs, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result) PG_RETURN_NULL();

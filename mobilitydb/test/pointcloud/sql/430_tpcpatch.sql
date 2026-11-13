@@ -323,6 +323,23 @@ SELECT PC_AsText(getValue(atTpcboxFine(:inst1, tpcboxZT(0, 0, 0, 1, 1, 1,
 SELECT PC_AsText(getValue(minusTpcboxFine(:inst1, tpcboxZT(0, 0, 0, 1, 1, 1,
   tstzspan '[2024-01-01, 2024-01-31]', 1))));
 
+-- A box restricts by each of its dimensions: an instant outside its period
+-- keeps no point in the box, and a box without X keeps every point of an
+-- instant in its period.
+SELECT atTpcboxFine(:inst1, tpcboxZT(0, 0, 0, 3, 3, 3,
+  tstzspan '[2025-01-01, 2025-01-31]', 1)) IS NULL;
+SELECT startNumPoints(minusTpcboxFine(:inst1, tpcboxZT(0, 0, 0, 3, 3, 3,
+  tstzspan '[2025-01-01, 2025-01-31]', 1)));
+SELECT startNumPoints(atTpcboxFine(:inst1,
+  tpcbox 'TPCBOX(T([2024-01-01, 2024-01-31]), 1)'));
+SELECT minusTpcboxFine(:inst1,
+  tpcbox 'TPCBOX(T([2024-01-01, 2024-01-31]), 1)') IS NULL;
+SELECT atTpcboxFine(:inst1,
+  tpcbox 'TPCBOX(T([2025-01-01, 2025-01-31]), 1)') IS NULL;
+/* Errors */
+SELECT atTpcboxFine(:inst1, tpcbox 'TPCBOX(X((0,0),(3,3)), 999)');
+SELECT minusTpcboxFine(:inst1, tpcbox 'TPCBOX(X((0,0),(3,3)), 999)');
+
 -------------------------------------------------------------------------------
 -- Per-point restrictions by geometry — atGeometry / minusGeometry.
 -------------------------------------------------------------------------------

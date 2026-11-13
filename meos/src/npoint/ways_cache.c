@@ -70,6 +70,9 @@ typedef struct
 {
   int64 gid;              /**< Identifier of the route */
   GSERIALIZED *the_geom;  /**< Geometry of the route, NULL when released */
+  LWLINE *the_line;       /**< Geometry read as a line, a view over the
+                               points of the geometry it is read from, which
+                               it is released with */
   double length;          /**< Length of the route */
   int32 prev;             /**< Previous entry holding a geometry, in the
                                order of their use */
@@ -223,6 +226,24 @@ ways_cache_touch(WaysCache *cache, int32 pos)
 }
 
 /**
+ * @brief Release the geometry of an entry of the cache and the line read
+ * from it
+ * @details The line is a view over the points of the geometry, so it is
+ * released first, as #relate_ctx_cache_clear_entry releases the geometry of
+ * an entry before the copy it reads
+ */
+static void
+ways_cache_release_geom(WaysCacheEntry *entry)
+{
+  if (entry->the_line)
+    lwline_free(entry->the_line);
+  pfree(entry->the_geom);
+  entry->the_line = NULL;
+  entry->the_geom = NULL;
+  return;
+}
+
+/**
  * @brief Release the geometries used least recently until those held fit
  * in the bound of the cache
  * @details The two geometries used most recently are never released: a
@@ -240,19 +261,23 @@ ways_cache_evict(WaysCache *cache)
     WaysCacheEntry *entry = &cache->entries[pos];
     ways_cache_unlink(cache, pos);
     cache->geombytes -= VARSIZE(entry->the_geom);
-    pfree(entry->the_geom);
-    entry->the_geom = NULL;
+    ways_cache_release_geom(entry);
   }
   return;
 }
 
 /**
  * @brief Give a geometry to an entry of the cache
+ * @details The entry reads the geometry as a line once, a view over the
+ * points of the geometry the entry owns, as #relate_ctx_borrow reads the
+ * geometry of an entry of the relate context cache from the copy the entry
+ * owns, so that a caller reads the route as a line in place
  */
 static void
 ways_cache_set_geom(WaysCache *cache, int32 pos, GSERIALIZED *geom)
 {
   cache->entries[pos].the_geom = geom;
+  cache->entries[pos].the_line = (LWLINE *) lwgeom_from_gserialized(geom);
   cache->geombytes += VARSIZE(geom);
   ways_cache_push(cache, pos);
   ways_cache_evict(cache);
@@ -271,6 +296,7 @@ ways_cache_add(WaysCache *cache, const ways_record *rec)
   WaysCacheEntry *entry = &cache->entries[pos];
   entry->gid = rec->gid;
   entry->the_geom = NULL;
+  entry->the_line = NULL;
   entry->length = rec->length;
   entry->prev = entry->next = WAYS_CACHE_NONE;
   ways_cache_slot_set(cache, pos);
@@ -306,7 +332,7 @@ ways_cache_free(WaysCache *cache)
   for (int32 i = 0; i < cache->count; i++)
   {
     if (cache->entries[i].the_geom)
-      pfree(cache->entries[i].the_geom);
+      ways_cache_release_geom(&cache->entries[i]);
   }
   pfree(cache->entries);
   pfree(cache->slots);
@@ -340,9 +366,9 @@ ways_cache_route_valid(WaysCache *cache, ways_record *rec)
  * @brief Return in the last argument the record of a route, read from the
  * ways cache or else from the ways network, and return false when there is
  * no such route
- * @details The geometry of the record belongs to the cache. A route whose
- * geometry the cache released is read again from the network, and only its
- * geometry is kept, since its entry is still there.
+ * @details The geometry of the record and the line read from it belong to
+ * the cache. A route whose geometry the cache released is read again from
+ * the network, and only its geometry is kept, since its entry is still there.
  * @param[in] cache Ways cache
  * @param[in] gid Route identifier
  * @param[in] any_gid True when the record of any route is asked for
@@ -382,6 +408,7 @@ ways_cache_lookup(WaysCache *cache, int64 gid, bool any_gid,
   WaysCacheEntry *entry = &cache->entries[pos];
   rec->gid = entry->gid;
   rec->the_geom = entry->the_geom;
+  rec->the_line = entry->the_line;
   rec->length = entry->length;
   return true;
 }
