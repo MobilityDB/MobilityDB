@@ -3273,9 +3273,10 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
     }
     /* If either the start values or the end values are equal, determine
      * whether there is a crossing and if there is one compute the value at
-     * the crossing */
+     * the crossing; a lift with a bound function reads its period wherever
+     * the values start */
     if (datum_ne(startvalue1, startvalue2, basetype) ||
-        datum_eq(endvalue1, endvalue2, basetype))
+        datum_eq(endvalue1, endvalue2, basetype) || lfinfo->tpfn_temp_bound)
     {
       /* The interval of the segment during which the predicate holds, one at
        * most, a touch at one instant being the interval of that instant */
@@ -3292,7 +3293,23 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
       else
         cross = tsegment_intersection(startvalue1, endvalue1, startvalue2,
           endvalue2, start1->temptype, start1->t, end1->t, &tpi[0], &tpi[1]);
-      if (cross)
+      if (lfinfo->tpfn_temp_bound)
+      {
+        /* A lift with a bound function states with its turning point
+         * function the period where the predicate holds inside the segment,
+         * a touch at one instant or an interval, whose ends are read above:
+         * it holds inside the segment where the period meets its interior,
+         * and fails there where the period does not cover it */
+        bool holds = cross && (tpi[0] < tpi[1] ||
+          (tpi[0] > start1->t && tpi[0] < end1->t));
+        bool fails = ! cross || tpi[0] > start1->t || tpi[1] < end1->t;
+        if ((lfinfo->ever && holds) || (! lfinfo->ever && fails))
+        {
+          pfree_array((void **) tofree, nfree);
+          return lfinfo->ever ? 1 : 0;
+        }
+      }
+      else if (cross)
       {
         TimestampTz tpt1 = tpi[0], tpt2 = tpi[1];
         /* The predicate may hold only strictly inside the turning-point

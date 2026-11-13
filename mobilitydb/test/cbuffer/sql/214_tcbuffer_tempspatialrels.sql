@@ -427,6 +427,52 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),
 -- Discs of a strictly positive radius keep the disc kernels
 SELECT tTouches(tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01', tcbuffer 'Cbuffer(Point(2 0),1)@2001-01-01');
 SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),2)@2001-01-01', tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01');
+-- The distance of the centres equals the difference of the radii throughout
+-- the segment, and the first disc covers the second one where that
+-- difference is not negative. A point on the boundary at the start is
+-- contained right after it
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)');
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]');
+-- The difference of the radii changes sign at 04:00, where the centres meet:
+-- the first disc covers the second one after it, and the second the first
+-- before it
+SELECT tContains(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)');
+SELECT tContains(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00]', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00]', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00]');
+SELECT tContains(tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)');
+-- The second disc is covered from 03:00, after the middle of the segment
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00)');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00)');
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00]');
+-- Concentric discs: the first covers the second one until 02:40, while its
+-- radius is not the smaller one
+SELECT tContains(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00)');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00)');
+SELECT tContains(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00]');
+-- A point leaving the boundary for the centre is contained after the start,
+-- and one reaching the boundary at the end is contained before the end
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(1 0),0)@2001-01-01 00:00, Cbuffer(Point(0 0),0)@2001-01-01 01:00]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(1 0),0)@2001-01-01 00:00, Cbuffer(Point(0 0),0)@2001-01-01 01:00]');
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(0 0),0)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 01:00]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(0 0),0)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 01:00]');
+-- A point on the boundary at a start the period excludes is always contained
+-- over the period, and is not where the period includes the start
+SELECT tContains(tcbuffer '(Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '(Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+SELECT tCovers(tcbuffer '(Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '(Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+SELECT tContains(tcbuffer '[Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+-- A cover at a single instant inside a segment: the discs touch from inside
+-- at 01:48, and the centres meet at 02:20 where the radii are equal
+SELECT tContains(tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(2 2),0)@2001-01-01 01:00, Cbuffer(Point(0 0),1)@2001-01-01 03:00]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(2 2),0)@2001-01-01 01:00, Cbuffer(Point(0 0),1)@2001-01-01 03:00]');
+SELECT tContains(tcbuffer '[Cbuffer(Point(3 2),3)@2001-01-01 01:00, Cbuffer(Point(1 2),2)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(3 2),3)@2001-01-01 01:00, Cbuffer(Point(1 2),2)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]');
 -- A single disc of a strictly positive radius keeps the disc semantics
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]', geometry 'Point(0 0)');
 SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');

@@ -95,6 +95,15 @@ typedef struct
                                  point function dates it at an instant at which
                                  the predicate need not hold; NULL where it
                                  holds at every turning point */
+  tpfunc_temp_at tpfn_temp_bound; /**< Value of the predicate at an end of a
+                                 segment that bounds the period the turning
+                                 point function returns, when it need not hold
+                                 there, as a disk does not contain a point on
+                                 its boundary; NULL where it holds at every
+                                 such end. A lift with one states with its
+                                 turning point function the period where the
+                                 predicate holds inside a segment, which the
+                                 ever and always walk takes as it is */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/
