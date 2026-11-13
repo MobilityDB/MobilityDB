@@ -26,4 +26,21 @@ SELECT atTime(tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-0
 SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
   tstzspan '[2001-01-02, 2001-01-03]');
 -- [47c3c@2001-01-02, 47c3c@2001-01-03]
+</pre></li><li class="listitem"><a name="tcell_atStbox"></a><a class="indexterm" name="id14812"></a><a class="indexterm" name="id14815"></a><p>Restrict a temporal QUADBIN cell to (the complement of) a spatiotemporal box</p><pre class="programlisting">
+atStbox(tquadbin,stbox,borderInc boolean=true) → tquadbin
+minusStbox(tquadbin,stbox,borderInc boolean=true) → tquadbin
+</pre><p>A cell lies in a box at an instant when its tile, with the boundary points it owns, shares a point with the box. A tile holds its west and north boundaries and its north-west corner, and a tile of the last row its south boundary too, as for <a class="link" href="ch16s12.html#tcell_tgeompoint_to_th3"><code class="varname">tquadbin</code></a>, so a box touching a tile only along its east meridian or its south parallel leaves it out. The box holds its upper borders unless <code class="varname">borderInc</code> is false. The box has the SRID 4326 of the cell; a box with the time dimension alone restricts the value to its period.</p><pre class="programlisting">
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+-- NULL
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+-- 4817ffffffffffff@2001-01-01
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02,
+  4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+/* {[4817ffffffffffff@2001-01-01, 4817ffffffffffff@2001-01-02),
+   [4817ffffffffffff@2001-01-03]} */
+SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02,
+  4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+-- {[4813ffffffffffff@2001-01-02, 4813ffffffffffff@2001-01-03)}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Modifications </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Static Geometry Coverage</td></tr></table></div></body></html>
