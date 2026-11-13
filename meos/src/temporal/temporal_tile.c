@@ -582,8 +582,10 @@ span_num_bins(const Span *s, Datum size, Datum origin, bool border_inc,
       /* The width between two finite bins can exceed the largest float while
        * their number is an integer, so the quotient is taken over the halves
        * of the bins and of the size, which are exact; that number can then
-       * exceed the largest integer */
-      double result = floor((DatumGetFloat8(*end_bin) * 0.5 -
+       * exceed the largest integer. The two bins are bins of one grid, so
+       * their quotient over the size is a whole number up to the rounding of
+       * the bins, read as the nearest one */
+      double result = rint((DatumGetFloat8(*end_bin) * 0.5 -
         DatumGetFloat8(*start_bin) * 0.5) / (DatumGetFloat8(size) * 0.5));
       if (result > INT_MAX)
       {

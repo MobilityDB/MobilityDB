@@ -1578,7 +1578,7 @@ SELECT ts2cell '47c3c@2001-01-01' #&gt;&gt; ts2cell '47c4@2001-01-05';
 cellArea(cell) → float
 cellArea(tcell) → tfloat
 </programlisting>
-				<para>A cell area shrinks toward the poles on the QUADBIN grid, as Web-Mercator squares cover progressively less ground at higher latitudes. An H3 or an S2 cell is defined on the sphere, so its area varies only with resolution and with the cell's position in the base solid.</para>
+				<para>A cell area shrinks toward the poles on the QUADBIN grid, as Web-Mercator squares cover progressively less ground at higher latitudes. The first and the last rows of the grid hold every position beyond the latitude limit of Web Mercator, 85.051129 degrees, so their boundary, their box and their area reach the poles, and the cells of a resolution cover the whole sphere: the cell of resolution 0 has the area of the sphere. An H3 or an S2 cell is defined on the sphere, so its area varies only with resolution and with the cell's position in the base solid.</para>
 				<para>The unit is the square metre for every grid, so <varname>cellArea</varname> answers the same quantity whichever grid holds the cell. The h3-pg function <varname>h3_cell_area</varname> answers square kilometres unless asked otherwise, so for an H3 cell <varname>cellArea</varname> answers a million times its default.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');

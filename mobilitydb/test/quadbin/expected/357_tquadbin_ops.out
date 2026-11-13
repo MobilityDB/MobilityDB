@@ -77,10 +77,11 @@ SELECT cellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
  t
 (1 row)
 
-SELECT round(startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
-       round       
--------------------
- 508164135963886.0
+SELECT round((startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}')) /
+  (4 * pi() * 6371007.180918475 ^ 2))::numeric, 6);
+  round   
+----------
+ 1.000000
 (1 row)
 
 SELECT tquadbinCellToQuadkey(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
@@ -143,7 +144,7 @@ FROM (SELECT tquadbin(tgeompoint
   'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4) AS t) AS q;
  numvalues | numinstants | ?column? | ?column? 
 -----------+-------------+----------+----------
-         5 |           6 | t        | t
+         5 |          10 | t        | t
 (1 row)
 
 SELECT count(*) AS instants,
@@ -314,8 +315,8 @@ SELECT b AS borderInc, count(*) AS cells,
 FROM cells c GROUP BY b ORDER BY b;
  borderinc | cells | cells_outside_their_tile | trips_covering_other_time 
 -----------+-------+--------------------------+---------------------------
- f         |    11 |                        2 |                         0
- t         |    13 |                        2 |                         0
+ f         |    11 |                        0 |                         0
+ t         |    13 |                        0 |                         0
 (2 rows)
 
 SELECT borderInc, tquadbin(tgeompoint
@@ -369,7 +370,7 @@ SELECT numSequences(tquadbin(tgeompoint
   [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));
  numsequences 
 --------------
-            2
+            6
 (1 row)
 
 SELECT tquadbin(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10) =
