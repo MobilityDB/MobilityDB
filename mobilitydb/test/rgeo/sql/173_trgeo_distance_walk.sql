@@ -98,6 +98,12 @@ SELECT round(tDistance(
 SELECT round(tDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
   geometry 'Linestring(-9 5,0 -3,9 5)'), 6);
+-- A turning pentagon past a line of three segments: the difference of the
+-- distances to a vertex of one segment and to an edge of another is about a
+-- thousandth of its terms, and the root finder proves that it has no root
+SELECT round(tDistance(
+  trgeometry 'Polygon((-4.008 2.466,-1.573 -0.227,5.773 1.303,3.14 4.07,-3.751 4.79,-4.008 2.466));[Pose(Point(-3.563 4.187),1.243925)@2001-01-01 00:00:03.946233, Pose(Point(-1.248 0.922),-1.629078)@2001-01-01 00:00:04.241707]',
+  geometry 'LineString(-0.13 -3.582,2.001 -1.124,3.445 -1.225,2.237 -1.643)'), 6);
 SELECT round(nearestApproachDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
   geometry 'MultiLinestring((-5 4,0 2.5,5 4),(0 -3,0 -8))')::numeric, 6);

@@ -61,6 +61,9 @@
  *    and the difference that they build.
  * 10. An interval one double wide gives its roots without spending the
  *    budget of cells.
+ * 11. A function much smaller than its terms, the difference of the
+ *    distances to two parts, gives its roots without spending the budget of
+ *    cells.
  *
  * Every other random function of checks 1 to 6 has quadratic coefficients,
  * the terms of distfun_square().
@@ -557,6 +560,58 @@ main(int argc, char **argv)
     printf("10. intervals one double wide              failures %d %s\n", bad,
       bad ? "FAIL" : "ok");
     if (bad)
+      fail++;
+  }
+
+  /* 11. The difference of the distances to a vertex and to an edge of two
+   * parts of a line, L^2 V - G^2, from a turning pentagon: its terms reach
+   * 299 in the interval, its values stay between 1.6e-3 and 0.095.  The
+   * functions h - d have no root for d below the minimum of h and two roots
+   * above it.  Each sign change of a dense scan has a root, and no function
+   * spends the budget of cells */
+  {
+    DistFun h;
+    distfun_init(&h);
+    distfun_add_cs2(&h, 0x1.6fbe8ff327aa6p+1, 1.0, 0.0, 0.0,
+      0x1.1a48bd6335d2p+1, -0x1.99e8df79f819p+2, 0.0, 0x1.f717aa339586ap+5,
+      -0x1.6d464c0cd56e3p+7);
+    distfun_add_cs2(&h, 0x1.6fbe8ff327aa6p+2, 1.0, 0.0, 0.0, 0.0,
+      -0x1.24d6a0b2e1243p+5, 0.0, 0.0, 0x1.4906d4b11e3f7p+1);
+    distfun_add_poly(&h, 0x1.af9f1fe64f54ep+3, -0x1.3961efbefb641p+6,
+      0x1.2cec8af9be0e6p+7);
+    double lo = 0x1.0eb829c299dacp-1, hi = 0x1.5989d30fc9ad8p-1;
+    int budget = 0, missed = 0;
+    const int nscan = 20000;
+    for (int k = 0; k < trials; k++)
+    {
+      double d = (k == 0) ? 0.0 : rnd(0.0, 3e-3);
+      double roots[DISTFUN_MAXROOTS];
+      int n = distfun_roots(&h, d, lo, hi, 1e-14, roots, DISTFUN_MAXROOTS);
+      if (n < 0)
+      {
+        budget++;
+        continue;
+      }
+      double prev = distfun_eval(&h, lo) - d;
+      for (int i = 1; i <= nscan; i++)
+      {
+        double t = lo + (hi - lo) * i / nscan;
+        double v = distfun_eval(&h, t) - d;
+        if (prev * v < 0.0)
+        {
+          double t0 = lo + (hi - lo) * (i - 1) / nscan;
+          bool found = false;
+          for (int j = 0; j < n; j++)
+            found |= (roots[j] >= t0 - 1e-12 && roots[j] <= t + 1e-12);
+          if (! found)
+            missed++;
+        }
+        prev = v;
+      }
+    }
+    printf("11. terms that cancel                      budget %d, missed %d "
+      "%s\n", budget, missed, (budget || missed) ? "FAIL" : "ok");
+    if (budget || missed)
       fail++;
   }
 
