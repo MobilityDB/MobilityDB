@@ -368,7 +368,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    pieces of no length in a difference, so that rule changes only with the clip's reading of a
    point edge; the measuring found that a ring repeating a vertex made relate read two equal
    areas as neither containing nor covering each other, every natural area of the speed cells
-   failing against itself written with a vertex repeated, which #3655 fixes in the boundary walk,
+   failing against itself written with a vertex repeated, which #3655, merged, fixes in the boundary walk,
    CGAL agreeing on those 384 pairs); one angular origin. Each is a pull request touching every
    caller of what it changes. The two digits of `point_motion_dwithin_period_filter` (1 for the
    whole segment, 2 for an instant, the reverse of `point_motion_dwithin_period_exact`) are read
