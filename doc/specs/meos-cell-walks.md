@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.3.0 |
+| Version | v0.4.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split and the QUADBIN, S2 and H3 cells, and how the instant a trajectory crosses from one cell to the next is dated |
-| Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position), `meos/src/geo/geo_funcs.c` (exact signs) |
+| Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices and owner) |
 
 ## 1. Scope and intent
 
@@ -91,6 +91,30 @@ QUADBIN tiles have the same edges in both models, their sides being
 meridians and parallels. For H3, the two models differ in the band between a
 straight edge and its arc, about 27 km wide at resolution 0 and 0.7 mm at
 resolution 9 on average.
+
+The **vertices of an S2 cell** are the exact corners of the cube. At the
+dyadic s = i / 2^30 of a corner, its face coordinate is the rational
+(4s² − 1)/3, or (1 − 4(1 − s)²)/3 below 1/2, so the corner scaled by 3·4^30
+is a vector of integers. Its face coordinates are the doubles nearest those
+rationals, and its longitude and latitude the doubles nearest the degrees of
+that exact vector, which the trigonometry of no system library computes, so
+every platform reads the same vertices. Two corners have no single
+longitude, and each takes the one its cell gives it:
+
+- a corner on the antimeridian, 180 and −180 at once, takes the side of its
+  cell: −180 where another vertex of the cell lies west of the antimeridian,
+  180 otherwise;
+- a corner at a pole, every longitude at once, takes the longitude of the
+  vertex before it, the meridian along which the edge from that vertex
+  arrives.
+
+The longitudes of a cell are then contiguous, and its box holds that cell
+alone: the cell of face 3 at level 5 with i = 16 and j = 16, west of the
+antimeridian, has the longitudes [−180, −177.539585…], its neighbour east of
+it [177.539585…, 180], and a cell touching the north pole between the
+meridians 0 and 90 the longitudes [0, 90]. The cell holding a pole, the one
+whose low corner it is (section 3), has every longitude, a position at a
+pole being stated at any of them.
 
 ## 5. The cell of a position
 
@@ -220,12 +244,14 @@ number with corrections of wording.
 | v0.1.0 | The box grid, the rule and owners of the four grids and the geodetic H3 owner, the geodetic position, the QUADBIN grid and its cover |
 | v0.2.0 | The planar H3 cell of a position and the planar H3 cells of a trajectory, walked and dated on the outlines |
 | v0.3.0 | The geodetic H3 cell of a position and the geodetic H3 cells of a trajectory, walked on great-circle outlines and dated at constant angular speed |
+| v0.4.0 | The vertices of an S2 cell, the exact corners of the cube, a corner on the antimeridian or at a pole taking the longitude its cell gives it |
 
 ## 8. Out of scope
 
 Future: the rule extends to these, each added here with its version (the
-owners of section 3 for S2 are in MEOS already; the cells of a position and
-of a trajectory read them from these versions):
+owners of section 3 and the vertices of section 4 for S2 are in MEOS
+already; the cells of a position and of a trajectory read them from these
+versions):
 
 - the geodetic walk of S2, its crossings dated on the great-circle arc at
   constant angular speed;
