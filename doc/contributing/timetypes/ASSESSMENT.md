@@ -63,7 +63,7 @@ and its task measures it before the fix.
 | MobilityNebula | `MEOSWrapper.cpp` `convertEpochToTimestamp` and the hand-written operators | `timestamptz` | text of whole seconds, `timestamptz_in` | the unit guessed from the magnitude; clamped to 2100-01-01 |
 | MobilityNebula | the generated kernels | `interval` | text, `interval_in` | |
 | MobilityFlink, MobilityKafka, MobilitySpark | through JMEOS and its `MeosSqlRuntime` | | | no cast of their own; the benchmarks write timestamps as text of whole seconds |
-| MobilityAPI-Python | SQL text through psycopg2 | | | no cast through MEOS |
+| MobilityAPI-Python | through PyMEOS (`mobilityapi/wire.py`) and SQL text through psycopg2 | | | no cast of its own |
 
 ## The types each binding has no cast for
 
@@ -78,4 +78,4 @@ and its task measures it before the fix.
 | meos-rs | `timestamp`, `time`, `timetz` |
 | MobilityDuck | `time`, `timetz` |
 | MobilityNebula | `timestamp`, `date`, `time`, `timetz`; `interval` from text only |
-| MobilityAPI-Python | all six |
+| MobilityAPI-Python | all six of its own; those of PyMEOS through it |
