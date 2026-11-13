@@ -89,6 +89,15 @@ SELECT round(tDistance(
 SELECT round(tDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
   geometry 'Linestring(-5 4,0 2.5,5 4)'), 6);
+-- A turning body between two points and inside the angle of a line: the
+-- closest part changes inside the segment, at a corner of the distance,
+-- a local maximum, at the instant where the two parts are at the same distance
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  geometry 'MultiPoint(-2 3,2 -3)'), 6);
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  geometry 'Linestring(-9 5,0 -3,9 5)'), 6);
 SELECT round(nearestApproachDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
   geometry 'MultiLinestring((-5 4,0 2.5,5 4),(0 -3,0 -8))')::numeric, 6);

@@ -835,7 +835,7 @@ SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
 {geometry,tgeompoint,trgeometry} &lt;-&gt; {geometry,tgeompoint,trgeometry} → tfloat
 tDistance({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → tfloat
 </programlisting>
-				<para>En el primer ejemplo, un cuadrado pasa junto a un punto. Su lado permanece a distancia 2 del punto desde las 10:00 hasta las 14:00. En el segundo ejemplo, el cuadrado gira un cuarto de vuelta junto al punto. Una esquina del cuadrado se acerca más al punto a las 12:00, y el resultado tiene un instante allí.</para>
+				<para>En el primer ejemplo, un cuadrado pasa junto a un punto. Su lado permanece a distancia 2 del punto desde las 10:00 hasta las 14:00. En el segundo ejemplo, el cuadrado gira un cuarto de vuelta junto al punto. Una esquina del cuadrado se acerca más al punto a las 12:00, y el resultado tiene un instante allí. En el tercer ejemplo, un cuadrado pasa junto a dos cuadrados. La distancia a una geometría de varias partes es la menor de las distancias a sus partes, y la parte más cercana cambia donde el cuadrado está a la misma distancia de ambas, a las 13:12. La distancia tiene allí un máximo, y el resultado tiene un instante en él.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
   [Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]' &lt;-&gt;
@@ -847,6 +847,10 @@ SELECT round(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
   geometry 'Point(3 0)', 6);
 -- [2@2001-01-01, 1.828427@2001-01-01 05:11:32.371809, 1.585786@2001-01-01 12:00:00,
 --  1.828427@2001-01-01 18:48:27.628191, 2@2001-01-02]
+SELECT round(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' &lt;-&gt;
+  geometry 'MultiPolygon(((0 5,1 5,1 6,0 6,0 5)),((11 5,12 5,12 6,11 6,11 5)))', 6);
+-- [4@2001-01-01, 4@2001-01-01 02:24:00, 6.020797@2001-01-01 13:12:00, 4@2001-01-02]
 SELECT trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]' &lt;-&gt;
   tgeompoint '[Point(3 -4)@2001-01-01, Point(3 4)@2001-01-02]';
