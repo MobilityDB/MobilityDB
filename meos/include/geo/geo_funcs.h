@@ -1681,4 +1681,24 @@ point_on_segment_exact(double px, double py, double x1, double y1, double x2,
   return cross_product_sign(x1, y1, x2, y2, x1, y1, px, py) == 0;
 }
 
+/*****************************************************************************
+ * The nearest double of a value read exactly
+ *****************************************************************************/
+
+/* A dyadic rational of any size, opaque outside geo_funcs.c */
+typedef struct WideDyadic WideDyadic;
+
+/* The sign of the value a search reads less @p mid */
+typedef int (*NearestSide)(const WideDyadic *mid, const void *arg);
+
+extern double nearest_double_exact(double c, NearestSide side,
+  const void *arg);
+extern int wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign,
+  const uint64 *mag, int nlimbs, int exp);
+
+/* The double nearest the sine and cosine of degrees (geo_trig.c) */
+extern double sind_nearest(double deg);
+extern double cosd_nearest(double deg);
+extern void lonlat_vector_nearest(double lon, double lat, double *v);
+
 #endif /* __GEO_FUNCS_H__ */
