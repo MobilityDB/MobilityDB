@@ -16,6 +16,11 @@ The tasks are the commits of three pull requests to master, in the order below: 
 state. A task is done when its witness passes on its own head: the answers of master are never the
 oracle.
 
+What a user relies on from each merged row enters the user specification
+`doc/specs/meos-cell-walks.md` (v0.1.0, #3644: the box grid, the rule and owners, the geodetic
+position, the QUADBIN grid and its cover), its minor version raised with each merge; this plan keeps
+the process, the receipts and the measurements.
+
 ## Decisions
 
 | Row | Decision | State |
