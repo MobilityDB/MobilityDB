@@ -114,6 +114,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a229cda2ae3ad8e0d7442268b96597743.html#a229cda2ae3ad8e0d7442268b96597743">lfunc_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a7e9ca8f134ee94c6d0b43b72d14db963.html#a7e9ca8f134ee94c6d0b43b72d14db963">lfunc_set_bool</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a5968c97abb9299234d1c02daad5ebc0b.html#a5968c97abb9299234d1c02daad5ebc0b">lfunc_set_dispatch</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="lifting_8c_a734f218991bf56e488c7d77f4b78ec2c.html#a734f218991bf56e488c7d77f4b78ec2c">lifting_instants_room</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a30b00b0c7ef6d28cd32a3c9db4eb81ec.html#a30b00b0c7ef6d28cd32a3c9db4eb81ec">lifting_result</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a8a9abebb73577819bd3316906a185784.html#a8a9abebb73577819bd3316906a185784">lifting_result_int</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a02211f6130cc4ffe14944aa75dc68c01.html#a02211f6130cc4ffe14944aa75dc68c01">lifting_tinstant_to_tsequence_free</a></td></tr>
@@ -153,7 +154,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a53cfc9500170a018a72a583893e70a22.html#a53cfc9500170a018a72a583893e70a22">tfunc_tlinearseq_base</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_ab19b62fa043bcacdf227ca50c6efa788.html#ab19b62fa043bcacdf227ca50c6efa788">tfunc_tlinearseq_base_discfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a68f9b9628b8be7bc5a7d8c89269f008e.html#a68f9b9628b8be7bc5a7d8c89269f008e">tfunc_tlinearseq_base_turnpt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="lifting_8c_a54e6440f8765d8acf2f9a8c33d95bd77.html#a54e6440f8765d8acf2f9a8c33d95bd77">tfunc_tlinearseq_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a63f8a01c272517289b0c1f68969742cf.html#a63f8a01c272517289b0c1f68969742cf">tfunc_tlinearseq_tstepseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a44af6cb76b733549bdc1eda70569bc58.html#a44af6cb76b733549bdc1eda70569bc58">tfunc_tlinearseq_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a04a5ad06efd912047349df0ae0f1eea7.html#a04a5ad06efd912047349df0ae0f1eea7">tfunc_tsequence</a></td></tr>
@@ -181,7 +181,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Adaptive sub-sampling tolerances for densifying a non-analytic unary lifted function (tan) over a linear segment. </p>
-<p >Mirrors TRGEO_TDISTANCE_ADAPTIVE_TOL / TRGEO_TDISTANCE_ADAPTIVE_MAX_DEPTH in the trgeometry distance kernel. <code>MEOS_ADAPTIVE_TOL</code> is the argument-span tolerance in the input space: a segment is subdivided while its float argument spans more than this many units. For tan the argument is radians, so the same 0.05 rad (~2.86 deg) tolerance the trgeometry kernels use bounds the per-segment chord error away from a pole to about tol^2/8 ~ 3e-4. <code>MEOS_ADAPTIVE_MAX_DEPTH</code> bounds the recursion so a pathological segment (one straddling very many periods, or approaching a tan pole) cannot subdivide without end: a single segment yields at most 2^depth sub-samples, but the adaptive test stops far earlier wherever the argument span is already below the tolerance. </p>
+<p ><code>MEOS_ADAPTIVE_TOL</code> is the argument-span tolerance in the input space: a segment is subdivided while its float argument spans more than this many units. For tan the argument is radians, so 0.05 rad (~2.86 deg), the turn a sample interval of the traversed area of a temporal rigid geometry spans at most (<code>TRGEO_TRAVERSED_AREA_ANGLE_TOL</code>), bounds the per-segment chord error away from a pole to about tol^2/8 ~ 3e-4. <code>MEOS_ADAPTIVE_MAX_DEPTH</code> bounds the recursion so a pathological segment (one straddling very many periods, or approaching a tan pole) cannot subdivide without end: a single segment yields at most 2^depth sub-samples, but the adaptive test stops far earlier wherever the argument span is already below the tolerance. </p>
 
 </div>
 </div>
