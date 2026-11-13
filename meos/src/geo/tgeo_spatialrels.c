@@ -2409,14 +2409,17 @@ point_coords(Datum value, bool hasz, double coords[3])
  * @param[in] value Base value
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants.
  */
 int
 tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum value, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   double dist = DatumGetFloat8(value);
   double duration = (double) (upper - lower);

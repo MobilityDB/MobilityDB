@@ -82,7 +82,7 @@ extern void geo_dwithin_lfinfo_geo(int16 flags1, uint8_t flags2, double dist,
 
 extern int tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum value, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap);
+  TimestampTz *tps, Datum *values, int cap);
 extern bool tpointsegm_tdwithin_at(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum value, TimestampTz lower, TimestampTz upper,
   TimestampTz t);

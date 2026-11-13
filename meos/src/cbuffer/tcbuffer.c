@@ -232,14 +232,17 @@ tcbuffersegm_length_roots(const Cbuffer *sv1, const Cbuffer *ev1,
  * @param[in] dist Distance
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   Datum dist, TimestampTz lower, TimestampTz upper, TimestampTz *tps,
-  int cap UNUSED)
+  Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
@@ -285,14 +288,17 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * @param[in] dist Distance
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
@@ -628,14 +634,17 @@ tcbuffersegm_contains_end(const Cbuffer *sv1, const Cbuffer *ev1,
  * @param[in] strict Passed as a float, non-zero for contains, zero for covers
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum strict, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
@@ -747,14 +756,17 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] dist Distance, unused parameter
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  Datum end2, Datum dist UNUSED, TimestampTz lower, TimestampTz upper,
- TimestampTz *tps, int cap)
+ TimestampTz *tps, Datum *values UNUSED, int cap)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
@@ -847,7 +859,7 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
    * distance answers it */
   if (best < 0.0)
     return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
-      lower, upper, tps, cap);
+      lower, upper, tps, NULL, cap);
 
   tps[0] = lower + (TimestampTz) ((double) (upper - lower) * fbest);
   return 1;
@@ -872,7 +884,7 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
   assert(lower < upper); assert(t1); assert(t2);
   TimestampTz tps[2];
   int result = tcbuffersegm_dwithin_turnpt(start, end, value, value,
-    (Datum) 0.0, lower, upper, tps, 2);
+    (Datum) 0.0, lower, upper, tps, NULL, 2);
   if (result == 0)
   {
     *t1 = *t2 = (TimestampTz) 0;

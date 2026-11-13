@@ -60,7 +60,7 @@ typedef enum
 
 extern int tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap);
+  TimestampTz *tps, Datum *values, int cap);
 
 extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
   TArithmetic oper, Datum (*func)(Datum, Datum, MeosType), bool invert);
