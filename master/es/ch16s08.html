@@ -26,9 +26,11 @@ SELECT atTime(tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-0
 SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
   tstzspan '[2001-01-02, 2001-01-03]');
 -- [47c3c@2001-01-02, 47c3c@2001-01-03]
-</pre></li><li class="listitem"><a name="tcell_atStbox"></a><a class="indexterm" name="id14237"></a><a class="indexterm" name="id14240"></a><p>Restringir una celda QUADBIN temporal a (el complemento de) una caja espaciotemporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_atStbox"></a><a class="indexterm" name="id14237"></a><a class="indexterm" name="id14240"></a><p>Restringir una celda QUADBIN o H3 temporal a (el complemento de) una caja espaciotemporal</p><pre class="programlisting">
 atStbox(tquadbin,stbox,borderInc boolean=true) → tquadbin
 minusStbox(tquadbin,stbox,borderInc boolean=true) → tquadbin
+atStbox(th3index,stbox,borderInc boolean=true) → th3index
+minusStbox(th3index,stbox,borderInc boolean=true) → th3index
 </pre><p>Una celda está en una caja en un instante cuando su tesela, con los puntos del borde que le pertenecen, comparte un punto con la caja. Una tesela contiene sus bordes oeste y norte y su esquina noroeste, y una tesela de la última fila también su borde sur, como para <a class="link" href="ch16s12.html#tcell_tgeompoint_to_th3"><code class="varname">tquadbin</code></a>, por lo que una caja que toca una tesela solo a lo largo de su meridiano este o de su paralelo sur la deja fuera. La caja contiene sus bordes superiores salvo que <code class="varname">borderInc</code> sea falso. La caja tiene el SRID 4326 de la celda; una caja con solo la dimensión temporal restringe el valor a su período.</p><pre class="programlisting">
 SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
   stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
@@ -43,4 +45,11 @@ SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2
 SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02,
   4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
 -- {[4813ffffffffffff@2001-01-02, 4813ffffffffffff@2001-01-03)}
+</pre><p>Una celda H3 toma una caja geodésica, y está en ella en un instante cuando la celda, con los puntos del borde que le pertenecen, comparte una posición con la caja. La celda es la región que delimita su contorno, cuyas aristas son arcos de círculo máximo, y contiene sus lados norte y oeste, como para <a class="link" href="ch16s12.html#tcell_tgeompoint_to_th3"><code class="varname">th3index</code></a>. La caja se lee sobre sus límites, los meridianos y paralelos de sus longitudes y latitudes, nunca sobre el polígono de sus esquinas, cuyas aristas son círculos máximos que se apartan de los paralelos: en la caja <code class="varname">X((0,40),(90,50))</code> la celda alrededor de <code class="varname">Point(45 55)</code> está dentro del polígono de las esquinas y fuera de la caja. Un vértice de la celda está en la caja según sus grados, como lo está una posición, y una arista entra en ella donde su círculo máximo cruza los meridianos y paralelos de la caja, como lo hace la trayectoria de un <code class="varname">tgeogpoint</code> entre dos instantes, por lo que una celda y un punto geográfico temporal que recorre sus aristas se leen igual. La celda misma se lee sobre las posiciones geodésicas de sus vértices, que distan hasta 5·10<sup>-15</sup> grados de sus grados, y los cruces de una arista con los paralelos de la caja se calculan en trigonometría de coma flotante: una caja cuyo límite pasa así de cerca de un vértice de una celda puede leerse de uno u otro lado. Las celdas S2 no se restringen a una caja.</p><pre class="programlisting">
+SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+-- 832d5afffffffff@2001-01-01
+SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+-- NULL
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s09.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Modificaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Cobertura de geometrías estáticas</td></tr></table></div></body></html>

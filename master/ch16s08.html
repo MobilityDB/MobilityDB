@@ -26,9 +26,11 @@ SELECT atTime(tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-0
 SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
   tstzspan '[2001-01-02, 2001-01-03]');
 -- [47c3c@2001-01-02, 47c3c@2001-01-03]
-</pre></li><li class="listitem"><a name="tcell_atStbox"></a><a class="indexterm" name="id14812"></a><a class="indexterm" name="id14815"></a><p>Restrict a temporal QUADBIN cell to (the complement of) a spatiotemporal box</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_atStbox"></a><a class="indexterm" name="id14812"></a><a class="indexterm" name="id14815"></a><p>Restrict a temporal QUADBIN or H3 cell to (the complement of) a spatiotemporal box</p><pre class="programlisting">
 atStbox(tquadbin,stbox,borderInc boolean=true) → tquadbin
 minusStbox(tquadbin,stbox,borderInc boolean=true) → tquadbin
+atStbox(th3index,stbox,borderInc boolean=true) → th3index
+minusStbox(th3index,stbox,borderInc boolean=true) → th3index
 </pre><p>A cell lies in a box at an instant when its tile, with the boundary points it owns, shares a point with the box. A tile holds its west and north boundaries and its north-west corner, and a tile of the last row its south boundary too, as for <a class="link" href="ch16s12.html#tcell_tgeompoint_to_th3"><code class="varname">tquadbin</code></a>, so a box touching a tile only along its east meridian or its south parallel leaves it out. The box holds its upper borders unless <code class="varname">borderInc</code> is false. The box has the SRID 4326 of the cell; a box with the time dimension alone restricts the value to its period.</p><pre class="programlisting">
 SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
   stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
@@ -43,4 +45,11 @@ SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2
 SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02,
   4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
 -- {[4813ffffffffffff@2001-01-02, 4813ffffffffffff@2001-01-03)}
+</pre><p>An H3 cell takes a geodetic box, and lies in it at an instant when the cell, with the boundary points it owns, shares a position with the box. The cell is the region its outline bounds, its edges great-circle arcs, holding its north and west sides, as for <a class="link" href="ch16s12.html#tcell_tgeompoint_to_th3"><code class="varname">th3index</code></a>. The box is read on its bounds, the meridians and parallels of its longitudes and latitudes, never on the polygon of its corners, whose edges are great circles that leave the parallels: in the box <code class="varname">X((0,40),(90,50))</code> the cell around <code class="varname">Point(45 55)</code> lies inside the polygon of the corners and outside the box. A vertex of the cell lies in the box by its degrees, as a position does, and an edge enters it where its great circle crosses the meridians and parallels of the box, as the path of a <code class="varname">tgeogpoint</code> between two instants does, so a cell and a temporal geography point travelling along its edges are read alike. The cell itself is read on the geodetic positions of its vertices, which lie up to 5·10<sup>-15</sup> degrees from their degrees, and the crossings of an edge with the parallels of the box are computed in floating-point trigonometry: a box whose bound passes that close to a vertex of a cell may be read on either side of it. S2 cells are not restricted to a box.</p><pre class="programlisting">
+SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+-- 832d5afffffffff@2001-01-01
+SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+-- NULL
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Modifications </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Static Geometry Coverage</td></tr></table></div></body></html>
