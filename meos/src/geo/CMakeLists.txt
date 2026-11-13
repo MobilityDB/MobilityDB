@@ -34,6 +34,7 @@ set(GEO_SOURCES
   geo_funcs.c
   geo_lwgeom_none.c
   geo_round.c
+  geo_trig.c
   geoset.c
   postgis_funcs.c
   stbox.c

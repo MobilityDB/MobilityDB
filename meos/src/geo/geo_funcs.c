@@ -3428,7 +3428,7 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
  * 64-bit limbs, the lowest first, as #square_products_wide holds its integer,
  * with exact sums and products of any two
  */
-typedef struct
+typedef struct WideDyadic
 {
   int sign;         /**< -1, 0 or 1 */
   int len;          /**< Number of limbs of the magnitude */
@@ -3805,6 +3805,46 @@ wide_dyadic_cmp(const WideDyadic *a, const WideDyadic *b)
 }
 
 /**
+ * @brief Return the sign of a #WideDyadic less a fixed-point value
+ * `sign * mag * 2^exp`, exactly, -1, 0 or 1
+ * @details It lets a side function of #nearest_double_exact compare the
+ * midpoint the search reads with the bounds of an enclosure it holds as
+ * integers, the #WideDyadic staying opaque outside this file
+ * @param[in] mid The #WideDyadic
+ * @param[in] sign Sign of the value, -1 or 1; a zero @p mag is the value 0
+ * whatever @p sign says
+ * @param[in] mag Magnitude of the value, @p nlimbs 64-bit limbs, the lowest
+ * first, as a #WideDyadic holds its magnitude
+ * @param[in] nlimbs Number of limbs of @p mag, at most #WIDE_DYADIC_LIMBS
+ * @param[in] exp Weight of the lowest bit of @p mag
+ */
+int
+wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign, const uint64 *mag,
+  int nlimbs, int exp)
+{
+  assert(nlimbs >= 0 && nlimbs <= WIDE_DYADIC_LIMBS);
+  assert(sign == -1 || sign == 1);
+  WideDyadic v;
+  v.len = nlimbs;
+  v.exp = exp;
+  v.sign = 0;
+  for (int i = 0; i < nlimbs; i++)
+  {
+    v.limb[i] = mag[i];
+    if (mag[i])
+      v.sign = sign;
+  }
+  if (v.sign == 0)
+  {
+    v.len = 0;
+    v.exp = 0;
+  }
+  else
+    wide_dyadic_normalize(&v);
+  return wide_dyadic_cmp(mid, &v);
+}
+
+/**
  * @brief Return the sign of the cross product of the vectors B - A and D - C,
  * read on #WideDyadic for any finite coordinates
  * @details The four differences are exact, and the sign is that of
@@ -4102,9 +4142,6 @@ wide_dyadic_nearest_root(const WideDyadic *n, const WideDyadic *d)
  * The nearest double of a value read exactly
  *****************************************************************************/
 
-/* The sign of the value a search reads less @p mid */
-typedef int (*NearestSide)(const WideDyadic *mid, const void *arg);
-
 /* True where the value, negated where @p neg is true, lies beyond the
  * midpoint from the double of bit pattern @p bits to the next one, a tie
  * being beyond where the last bit of that double is odd, so a tie goes to
@@ -4142,7 +4179,7 @@ nearest_bits_beyond(uint64_t bits, bool neg, NearestSide side,
  * it, as #wide_dyadic_nearest_root finds a root
  * @pre The value lies strictly between -DBL_MAX and DBL_MAX
  */
-static double
+double
 nearest_double_exact(double c, NearestSide side, const void *arg)
 {
   WideDyadic zero;
