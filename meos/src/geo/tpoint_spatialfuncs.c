@@ -490,6 +490,53 @@ geogpointsegm_closest(Datum start, Datum end, Datum point)
  *****************************************************************************/
 
 /**
+ * @brief Return true if two temporal geometry point segments over one period
+ * meet strictly inside it, decided exactly on the doubles of their ends
+ * @details The difference of the two points moves linearly from
+ * `start1 - start2` to `end1 - end2`, so the points meet strictly inside the
+ * period where that difference passes through the origin: every coordinate
+ * of it changes sign strictly between the two ends, or is zero at both, and
+ * the two differences lie on one line through the origin, the cross product
+ * of each pair of their coordinates being zero (#cross_product_sign, which
+ * reads the differences of the doubles exactly). Nothing is constructed: the
+ * meeting is the time parameter both coordinates share, as
+ * #tgeogpointsegm_intersection reads the geodetic one
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ */
+bool
+tgeompointsegm_meet(Datum start1, Datum end1, Datum start2, Datum end2)
+{
+  POINT4D a1, a2, b1, b2;
+  datum_point4d(start1, &a1);
+  datum_point4d(end1, &a2);
+  datum_point4d(start2, &b1);
+  datum_point4d(end2, &b2);
+  int n = FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags) ? 3 : 2;
+  const double s1[3] = {a1.x, a1.y, a1.z}, e1[3] = {a2.x, a2.y, a2.z};
+  const double s2[3] = {b1.x, b1.y, b1.z}, e2[3] = {b2.x, b2.y, b2.z};
+  bool moves = false;
+  for (int k = 0; k < n; k++)
+  {
+    int ds = (s1[k] > s2[k]) - (s1[k] < s2[k]);
+    int de = (e1[k] > e2[k]) - (e1[k] < e2[k]);
+    if (ds == 0 && de == 0)
+      continue;
+    if (ds == 0 || ds != - de)
+      return false;
+    moves = true;
+  }
+  if (! moves)
+    return false;
+  for (int i = 0; i < n; i++)
+    for (int j = i + 1; j < n; j++)
+      if (cross_product_sign(s2[i], s2[j], s1[i], s1[j], e2[i], e2[j], e1[i],
+          e1[j]) != 0)
+        return false;
+  return true;
+}
+
+/**
  * @brief Return 1 or 2 if two temporal geometry point segments intersect
  * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Values defining the first segment
