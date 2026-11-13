@@ -9,5 +9,6 @@ var searchData=
   ['commonentry_6',['CommonEntry',['../structCommonEntry.html',1,'']]],
   ['commune_5frecord_7',['commune_record',['../structcommune__record.html',1,'']]],
   ['comparescalarscontext_8',['CompareScalarsContext',['../structCompareScalarsContext.html',1,'']]],
-  ['considersplitcontext_9',['ConsiderSplitContext',['../structConsiderSplitContext.html',1,'']]]
+  ['considersplitcontext_9',['ConsiderSplitContext',['../structConsiderSplitContext.html',1,'']]],
+  ['coverrow_10',['CoverRow',['../structCoverRow.html',1,'']]]
 ];
