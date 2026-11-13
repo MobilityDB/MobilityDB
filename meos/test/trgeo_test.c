@@ -672,9 +672,10 @@ int main(void)
 
   /* The restriction of a body with holes in linear motion reads its holes:
    * the small square lies in the hole until 02:24 and leaves the body at
-   * 06:00. A body whose shape a function does not read is refused, never
-   * answered as another shape: the united traversed area of a body that is
-   * not convex in linear motion; in step interpolation it answers */
+   * 06:00. The united traversed area of a body with holes that translates is
+   * what its placements and the edges of its rings sweep, the point (2 2) in
+   * the hole of the first placement crossed by a wall; in step interpolation
+   * it answers */
   {
     const char *holed = "Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));"
       "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]";
@@ -683,6 +684,8 @@ int main(void)
       "Pose(Point(10 0),0)@2001-01-02]";
     Temporal *lin = trgeometry_in(holed), *step = trgeometry_in(holed_step);
     GSERIALIZED *small = geom_in("Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))", -1);
+    GSERIALIZED *hole = geom_in("Point(2 2)", -1);
+    GSERIALIZED *past = geom_in("Point(15 2)", -1);
     meos_errno_reset();
     Temporal *at = trgeometry_at_geom(lin, small);
     bool read = at && meos_errno() == 0 &&
@@ -691,16 +694,18 @@ int main(void)
       temporal_end_timestamptz(at) == timestamptz_in("2001-01-01 06:00:00", -1);
     meos_errno_reset();
     GSERIALIZED *area = trgeometry_traversed_area(lin, true);
-    int err_area = meos_errno();
+    bool swept = area && meos_errno() == 0 && geom_covers(area, hole) &&
+      ! geom_covers(area, past);
     meos_errno_reset();
     GSERIALIZED *area_step = trgeometry_traversed_area(step, true);
-    if (! read || area || err_area == 0 || ! area_step || meos_errno() != 0)
+    if (! read || ! swept || ! area_step || meos_errno() != 0)
     {
       printf("FAILED: a body with holes in linear motion is restricted by its "
-        "exterior ring alone, or answered by the united traversed area\n");
+        "exterior ring alone, or its united traversed area is not its sweep\n");
       result = 1;
     }
-    free(lin); free(step); free(small); free(at); free(area); free(area_step);
+    free(lin); free(step); free(small); free(hole); free(past); free(at);
+    free(area); free(area_step);
     meos_errno_reset();
   }
 

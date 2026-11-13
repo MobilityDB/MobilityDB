@@ -48,7 +48,9 @@ SELECT cellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
 -- Area (lifted, tfloat)
 -------------------------------------------------------------------------------
 
-SELECT round(startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
+-- The whole-world z0 cell has the area of the sphere of the authalic radius
+SELECT round((startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}')) /
+  (4 * pi() * 6371007.180918475 ^ 2))::numeric, 6);
 
 -------------------------------------------------------------------------------
 -- Quadkey (lifted, ttext)
@@ -92,7 +94,10 @@ SELECT tquadbin(setSRID(tgeompoint
 -- A linear trajectory holds every cell it crosses. The segment below starts in
 -- the zoom-4 tile of column 8 and row 7 and ends in the tile of column 10 and
 -- row 9, so it enters two more columns and two more rows: five cells, each
--- entered once, and the closing instant holding the last one to the end.
+-- entered once. A cell holds the microseconds whose exact position lies in
+-- it, and each crossing falls between two microseconds, so the tile left holds
+-- the one before it and the tile entered starts after it: five sequences of
+-- two instants, the closing instant holding the last cell to the end.
 SELECT numValues(getValues(t)), numInstants(t),
   startValue(t) = geoToQuadbinCell(geometry 'SRID=4326;Point(1 1)', 4),
   endValue(t) = geoToQuadbinCell(geometry 'SRID=4326;Point(60 -40)', 4)
@@ -205,13 +210,10 @@ SELECT tquadbin(tgeompoint
 -- from the origin flipped in latitude, since a QUADBIN tile holds its north
 -- boundary where a tile of the space grid holds its south one, so the space
 -- split of the trajectory mirrored in latitude states that tiling. The cover
--- and the split hold the same time, and the split gives each instant to the
--- tile holding the position of the trajectory at that instant. A crossing
--- falling between two microseconds is dated at the earlier one, where the
--- trajectory is still in the tile it leaves: the split gives that instant to
--- the tile left and the cover to the tile entered, so the two cells of the
--- trajectory from Point(-170 -60) starting at such an instant lie outside
--- their tile, and every other cell lies in it. Without the upper border of
+-- and the split hold the same time, and both give each instant to the tile
+-- holding the exact position of the trajectory at that instant: a crossing
+-- falling between two microseconds leaves the earlier one to the tile the
+-- trajectory leaves, so every cell lies in its tile. Without the upper border of
 -- the extent of the trajectory, the tiles holding nothing of it but that
 -- border are no part of either
 WITH trips(tp) AS (VALUES
@@ -280,7 +282,9 @@ FROM (SELECT tp, z, spansetUnion((u).time) AS whole,
     sum(duration((u).time)) AS total
   FROM trips, zooms, unnest(tquadbin(tp, z)) u GROUP BY tp, z) AS q;
 
--- A sequence set yields one sequence per sequence
+-- A sequence set yields the sequences of each of its sequences: the first
+-- crosses four bounds between two microseconds, each ending a sequence, and
+-- the second stays in one tile
 SELECT numSequences(tquadbin(tgeompoint
   'SRID=4326;{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
   [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));

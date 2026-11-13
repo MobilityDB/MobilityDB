@@ -93,7 +93,7 @@ static MEOS_TLS bool MEOS_H3_POLE_CELL_SET[H3_RESOLUTION_COUNT];
  * @param[out] north,south The cell holding the respective pole, or 0 for a
  *   resolution outside the grid or a lookup libh3 refuses
  */
-static void
+void
 h3index_pole_cells(int32_t res, H3Index *north, H3Index *south)
 {
   if (res < 0 || res >= H3_RESOLUTION_COUNT)
