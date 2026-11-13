@@ -277,7 +277,10 @@ bitmatrix_print(const BitMatrix *bm)
  * them only where its upper bound IS the lower bound of that tile and the box
  * extends along the dimension: that tile then holds nothing of the box but
  * the border it leaves out, and is no part of the grid. A tile the upper bound
- * lies inside holds the box up to that bound, and is part of it
+ * lies inside holds the box up to that bound, and is part of it. The two
+ * tiles are tiles of one grid, so the quotient of their difference over the
+ * size is a whole number up to the rounding of the tiles, read as the nearest
+ * one, as #span_num_bins counts the bins of a span
  * @param[in] lower,upper Bounds of the box along the dimension
  * @param[in] binmin,binmax Lower bounds of the tiles holding them
  * @param[in] size Tile size
@@ -287,7 +290,7 @@ static int
 tile_dim_count(double lower, double upper, double binmin, double binmax,
   double size, bool border_inc)
 {
-  int result = (int) ceil((binmax - binmin) / size) + 1;
+  int result = (int) rint((binmax - binmin) / size) + 1;
   if (! border_inc && upper > lower && upper == binmax)
     result--;
   return result;

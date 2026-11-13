@@ -329,6 +329,13 @@ FROM (VALUES (true), (false)) AS b(borderInc),
     borderInc := b.borderInc) AS tile
 GROUP BY borderInc ORDER BY borderInc;
 
+-- The tiles along a dimension are counted by the nearest whole number of
+-- sizes between the tiles of its bounds, which lie a whole number of sizes
+-- apart up to the rounding of the tiles: the x values 0.5 to 0.7 meet two
+-- tiles of size 0.1, the last one starting near 0.6 and holding 0.7
+SELECT count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
+FROM spaceTiles(stbox 'STBOX X((0.5,0),(0.7,0.05))', 0.1) AS tile;
+
 -- A trajectory split without the upper border of its extent keeps every tile
 -- it passes through, with or without the bit matrix, and loses only the
 -- instant it ends on that border

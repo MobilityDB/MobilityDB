@@ -345,6 +345,19 @@ SELECT b, (valueTimeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2
   FROM (VALUES (true), (false)) t(b);
 
 -------------------------------------------------------------------------------
+-- The float bins of a span are counted by the nearest whole number of sizes
+-- between the bins of its bounds, which lie a whole number of sizes apart up
+-- to the rounding of the bins: the values 1 to 2 meet four bins of size 0.3,
+-- the last one starting near 1.8 and holding 2
+SELECT bins(floatspan '[1, 2]', 0.3);
+SELECT bins(floatspanset '{[1, 1.2], [1.9, 2]}', 0.3);
+SELECT (valueTiles(tbox 'TBOXFLOAT X([1, 2])', 0.3)).*;
+SELECT round(number::numeric, 6) AS bin,
+  round(minValue(tnumber)::numeric, 6) AS minvalue,
+  round(maxValue(tnumber)::numeric, 6) AS maxvalue
+FROM valueSplit(tfloat '[1@2001-01-01, 2@2001-01-02]', 0.3);
+
+-------------------------------------------------------------------------------
 -- A tile whose upper bound exceeds the largest double raises an error
 SELECT getValueTile(1.7976931348623157e308, 1.7976931348623157e308, 1.7976931348623157e308);
 

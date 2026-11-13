@@ -351,10 +351,11 @@ SELECT ST_Contains(
  t
 (1 row)
 
-SELECT round(cellArea(quadbin '480fffffffffffff')::numeric, 1);
-       round       
--------------------
- 508164135963886.0
+SELECT round((cellArea(quadbin '480fffffffffffff') /
+  (4 * pi() * 6371007.180918475 ^ 2))::numeric, 6);
+  round   
+----------
+ 1.000000
 (1 row)
 
 SELECT cellArea(quadbin '48a6227affffffff')
