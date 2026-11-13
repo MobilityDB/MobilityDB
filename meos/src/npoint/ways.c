@@ -294,6 +294,21 @@ route_geom(int64 rid)
 const LWLINE *
 route_line(int64 rid)
 {
+  return route_line_bound(rid, NULL);
+}
+
+/**
+ * @brief Return the geometry of a route read as a line, as #route_line
+ * returns it, and in the last argument, when it is not NULL, the bound of
+ * the construction of a point on the route (#route_construction_bound),
+ * read by the ways cache with the line
+ * @param[in] rid Route identifier
+ * @param[out] bound Bound of the construction
+ * @errval NULL
+ */
+const LWLINE *
+route_line_bound(int64 rid, double *bound)
+{
   ways_record rec;
   if (! route_lookup(rid, false, &rec))
   {
@@ -303,6 +318,8 @@ route_line(int64 rid)
   }
   if (! ensure_not_empty(rec.the_geom))
     return NULL;
+  if (bound)
+    *bound = rec.bound;
   return rec.the_line;
 }
 

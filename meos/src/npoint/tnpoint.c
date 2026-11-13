@@ -384,14 +384,26 @@ tnpointseqset_from_base_tstzspanset(const Npoint *np, const SpanSet *ss,
 
 /**
  * @brief Convert a temporal network point into a temporal geometry point
+ * @details The point of the route #route_point_at gives, the one
+ * #npoint_to_geompoint gives
+ * @param[in] inst Temporal network point
+ * @param[out] bound When not NULL, the bound of construction of the route
+ * (#route_line_bound)
  */
 TInstant *
-tnpointinst_tgeompointinst(const TInstant *inst)
+tnpointinst_tgeompointinst(const TInstant *inst, double *bound)
 {
   assert(inst); assert(inst->temptype == T_TNPOINT);
-  GSERIALIZED *geom =
-    npoint_to_geompoint(DatumGetNpointP(tinstant_value_p(inst)));
-  return tinstant_make_free(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
+  const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
+  /* A route that is found is not empty. The line belongs to the ways cache */
+  const LWLINE *lwline = route_line_bound(np->rid, bound);
+  if (! lwline)
+    return NULL;
+  POINT4D pt;
+  route_point_at(lwline->points, ptarray_length_2d(lwline->points), np->pos,
+    &pt);
+  return tpointinst_make_coords(pt.x, pt.y, 0.0, false, false, lwline->srid,
+    inst->t);
 }
 
 /**
@@ -535,9 +547,12 @@ route_vertex_positions(const POINTARRAY *pa, int *count)
  * point #tnpointinst_tgeompointinst gives, and a route is read once for the
  * instants on it that follow one another, since the instants of a discrete
  * sequence may be on different routes
+ * @param[in] seq Temporal network point
+ * @param[out] bound When not NULL, the largest bound of construction of the
+ * routes (#route_line_bound), at least its value on entry
  */
 TSequence *
-tnpointseq_tgeompointseq_disc(const TSequence *seq)
+tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
 {
   assert(seq); assert(seq->temptype == T_TNPOINT);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -555,12 +570,15 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq)
     {
       /* A route that is found is not empty. The line belongs to the ways
        * cache, which keeps the route used last while the next one is read */
-      lwline = route_line(np->rid);
+      double b;
+      lwline = route_line_bound(np->rid, &b);
       if (! lwline)
       {
         pfree_array((void **) instants, i);
         return NULL;
       }
+      if (bound)
+        *bound = Max(*bound, b);
       rid = np->rid;
       srid = lwline->srid;
       length = ptarray_length_2d(lwline->points);
@@ -593,17 +611,23 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq)
  * of the result, located at the vertex. Its ratio in the segment is the one
  * #npointsegm_locate gives, and it is dated from the ratio as
  * #tnpointsegm_intersection dates a crossing
+ * @param[in] seq Temporal network point
+ * @param[out] bound When not NULL, the largest bound of construction of the
+ * route (#route_line_bound), at least its value on entry
  */
 TSequence *
-tnpointseq_tgeompointseq_cont(const TSequence *seq)
+tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
 {
   assert(seq); assert(seq->temptype == T_TNPOINT);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   /* A route that is found is not empty. The line belongs to the ways cache */
-  const LWLINE *lwline = route_line(np->rid);
+  double b;
+  const LWLINE *lwline = route_line_bound(np->rid, &b);
   if (! lwline)
     return NULL;
+  if (bound)
+    *bound = Max(*bound, b);
   int32_t srid = lwline->srid;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
 
@@ -692,15 +716,19 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
 
 /**
  * @brief Convert a temporal network point into a temporal geometry point
+ * @param[in] ss Temporal network point
+ * @param[out] bound When not NULL, the largest bound of construction of the
+ * routes (#route_line_bound), at least its value on entry
  */
 TSequenceSet *
-tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
+tnpointseqset_tgeompointseqset(const TSequenceSet *ss, double *bound)
 {
   assert(ss); assert(ss->temptype == T_TNPOINT);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    sequences[i] = tnpointseq_tgeompointseq_cont(TSEQUENCESET_SEQ_N(ss, i));
+    sequences[i] = tnpointseq_tgeompointseq_cont(TSEQUENCESET_SEQ_N(ss, i),
+      bound);
     if (! sequences[i])
     {
       pfree_array((void **) sequences, i);
@@ -721,18 +749,38 @@ tnpoint_to_tgeompoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL);
+  return tnpoint_tgeompoint_bound(temp, NULL);
+}
 
+/**
+ * @brief Convert a temporal network point into a temporal geometry point,
+ * as #tnpoint_to_tgeompoint converts it, and return in the last argument,
+ * when it is not NULL, the largest bound of construction of the routes it
+ * reads (#route_line_bound)
+ * @param[in] temp Temporal network point
+ * @param[out] bound Bound of construction
+ */
+Temporal *
+tnpoint_tgeompoint_bound(const Temporal *temp, double *bound)
+{
+  assert(temp); assert(temp->temptype == T_TNPOINT);
+  if (bound)
+    *bound = 0.0;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
+      return (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp,
+        bound);
     case TSEQUENCE:
       return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-        (Temporal *) tnpointseq_tgeompointseq_disc((TSequence *) temp) :
-        (Temporal *) tnpointseq_tgeompointseq_cont((TSequence *) temp);
+        (Temporal *) tnpointseq_tgeompointseq_disc((TSequence *) temp,
+          bound) :
+        (Temporal *) tnpointseq_tgeompointseq_cont((TSequence *) temp,
+          bound);
     default: /* TSEQUENCESET */
-      return (Temporal *) tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
+      return (Temporal *) tnpointseqset_tgeompointseqset((TSequenceSet *) temp,
+        bound);
   }
 }
 

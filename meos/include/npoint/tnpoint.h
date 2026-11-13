@@ -101,6 +101,7 @@ extern long double npointsegm_locate(const Npoint *start, const Npoint *end,
 
 /* General functions */
 
+extern double route_construction_bound(const LWLINE *line);
 extern bool route_constructs_point(const GSERIALIZED *line,
   const GSERIALIZED *gs);
 extern void route_nearest_update(const GSERIALIZED *gs, int64 gid,
@@ -137,13 +138,20 @@ extern Datum datum_npoint_round(Datum npoint, Datum size);
 /* Conversion functions */
 
 extern const LWLINE *route_line(int64 rid);
+extern const LWLINE *route_line_bound(int64 rid, double *bound);
 extern void route_point_at(const POINTARRAY *pa, double length,
   double fraction, POINT4D *pt);
 extern double *route_vertex_positions(const POINTARRAY *pa, int *count);
-extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
-extern TSequence *tnpointseq_tgeompointseq_disc(const TSequence *is);
-extern TSequence *tnpointseq_tgeompointseq_cont(const TSequence *seq);
-extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ss);
+extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst,
+  double *bound);
+extern TSequence *tnpointseq_tgeompointseq_disc(const TSequence *seq,
+  double *bound);
+extern TSequence *tnpointseq_tgeompointseq_cont(const TSequence *seq,
+  double *bound);
+extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ss,
+  double *bound);
+extern Temporal *tnpoint_tgeompoint_bound(const Temporal *temp,
+  double *bound);
 
 extern TInstant *tgeompointinst_tnpointinst(const TInstant *inst);
 extern TSequence *tgeompointseq_tnpointseq(const TSequence *seq);
