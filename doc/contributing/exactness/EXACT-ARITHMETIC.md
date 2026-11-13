@@ -375,8 +375,12 @@ layer holds it for every question. The phases, each a series of pull requests:
    `incircle_sign_filter`, `point_segm_within_filter`), spell it 2 in #3647, merged, their 15 readers
    with them, the six signs of the within-distance of a moving disc dropping their hand
    translation of 0 into 2; 5,015 differential rows answer alike with and without it, and CGAL
-   agrees on the buffer witness (1313) and the arc relate pairs (38,584). Left: 3
-   (`hull_passes_filter`), -2 (`arr_offsets_meet`) and the boolean filters.
+   agrees on the buffer witness (1313) and the arc relate pairs (38,584). The others conform:
+   `hull_passes_filter` answers 0 or 1, 2 where not told and 3 where one of its four signs is
+   not told, and `arr_offsets_meet` returns the count of meetings `towerseg_meet` returns, -1
+   where the segments run along each other (an answer) and -2 where not told, both enumerations
+   with values no answer takes; the boolean filters are one-sided certificates, true where proven
+   and false where not, with no third answer to spell. The meaning of "undecided" is one.
    C11, after the conventions: the turn of a pose segment in 2D, read as no turn where
    `fabs(theta_delta) < MEOS_EPSILON` in `posesegm_interpolate`, is an exact sign, as C1-C6 read
    their tolerances (EXACT-POSE.md P1).
