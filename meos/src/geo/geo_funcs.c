@@ -24953,6 +24953,15 @@ static void
 relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
   MeosDE9IM *m, bool first)
 {
+  /* A straight edge whose two ends are equal, a ring repeating a vertex, is a
+   * point, as #wide_segment_meet reads one: it has no open portion, and its
+   * point is an end of the edges before and after it on its ring, which
+   * classify it. Its one representative point is that vertex, which may lie
+   * ON the other boundary, where the reading below by parity alone can only
+   * answer wrongly */
+  if (edge->etype != EDGE_POLYARC && edge->etype != EDGE_LINEARC &&
+      edge->x1 == edge->x2 && edge->y1 == edge->y2)
+    return;
   /* An edge apart from the extent of the other boundary meets none of its
    * edges, so it is one open interval, and its midpoint, lying in the box of
    * the edge, stands apart from the other area as well */
