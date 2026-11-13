@@ -359,9 +359,15 @@ layer holds it for every question. The phases, each a series of pull requests:
    outside that range only, as EA1 finds for the polynomial ladder.
 3. **One convention.** One meaning of "undecided" inside the layer (2) and one answer outside it
    (-1, 0, 1); one sense per question (`arc_circle_side` and `point_arc_circle_side_pred` take the
-   sense of `incircle_sign`); one rule for a segment of no length (a point, as
-   `wide_segment_meet` reads it); one angular origin. Each is a pull request touching every caller
-   of what it changes.
+   sense of `incircle_sign`: #3632, its readers in the clip engine, the arrangement and
+   `point_arc_ray_parity` reading that sense, 49,608 queries answering alike with and without it,
+   and the arc relate oracle in CGAL agreeing on 38,584 pairs of a curve polygon and a point); one
+   rule for a segment of no length (a point, as `wide_segment_meet` reads it; `linesegm_intersect`
+   lets a first segment of no length meet nothing, which no public answer shows in either order, so
+   its callers are measured first); one angular origin. Each is a pull request touching every
+   caller of what it changes. The two digits of `point_motion_dwithin_period_filter` (1 for the
+   whole segment, 2 for an instant, the reverse of `point_motion_dwithin_period_exact`) are read
+   right by every caller and change with the meaning of "undecided", which that filter spells -1.
 4. **One arithmetic (EA1, EA4 to EA8).** One ladder, one pair type, one wide number, one search,
    every sign with every tier; then one arc model and one time model, each merge after a
    differential; then the double nearest a transcendental value (EA8), read by the one search.
