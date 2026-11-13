@@ -346,10 +346,10 @@ layer holds it for every question. The phases, each a series of pull requests:
    answering 0 for 1 or -1 on 310 and 310 rows at 2^+-580 and beyond and on subnormal coordinates;
    its differential found `ddb_cross3` reading two equal infinite products as an exact zero, fixed
    first by #3617, merged), `certa_longer` and
-   `centred_circle_side` (to `point_within_distance_sign`, the sign of `|p - q|^2 - d^2`: C9, #3630, its
+   `centred_circle_side` (to `point_within_distance_sign`, the sign of `|p - q|^2 - d^2`: C9, #3630, merged, its
    differential 1240 rows, the two agreeing between 2^-300 and 2^300 and answering wrongly on 206
    and 400 rows at 2^+-600 and beyond and on subnormal differences), `cert_point_seg_far_exact`
-   and `cert_point_seg_far_slow` (to `point_segment_offset_sign`: C10, #3631, its differential 975 rows,
+   and `cert_point_seg_far_slow` (to `point_segment_offset_sign`: C10, #3631, merged, its differential 975 rows,
    the former answering within for farther on 184 rows from 2^+-300 on, where its product of four
    differences leaves the doubles, at the same cost on the buffer). `point_segm_within` keeps its
    filter in front of `point_segment_offset_sign`: the filter never answers wrongly on the 975 rows
@@ -359,7 +359,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    outside that range only, as EA1 finds for the polynomial ladder.
 3. **One convention.** One meaning of "undecided" inside the layer (2) and one answer outside it
    (-1, 0, 1); one sense per question (`arc_circle_side` and `point_arc_circle_side_pred` take the
-   sense of `incircle_sign`: #3632, its readers in the clip engine, the arrangement and
+   sense of `incircle_sign`: #3632, merged, its readers in the clip engine, the arrangement and
    `point_arc_ray_parity` reading that sense, 49,608 queries answering alike with and without it,
    and the arc relate oracle in CGAL agreeing on 38,584 pairs of a curve polygon and a point); one
    rule for a segment of no length (a point, as `wide_segment_meet` reads it; `linesegm_intersect`
