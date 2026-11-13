@@ -70,6 +70,8 @@ span_index_leaf_consistent(const Span *key, const Span *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
       return span_overlaps(key, query);
     case RTContainsStrategyNumber:
       return span_contains(key, query);
@@ -112,6 +114,8 @@ span_gist_inner_consistent(const Span *key, const Span *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
       return span_overlaps(key, query);
     case RTContainsStrategyNumber:

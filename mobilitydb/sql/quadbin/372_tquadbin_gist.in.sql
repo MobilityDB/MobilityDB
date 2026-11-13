@@ -117,6 +117,10 @@ CREATE OPERATOR CLASS tquadbin_rtree_ops
   OPERATOR  31    #&> (tquadbin, tstzspan),
   OPERATOR  31    #&> (tquadbin, stbox),
   OPERATOR  31    #&> (tquadbin, tquadbin),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tquadbin, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tquadbin, stbox),
   -- functions
   FUNCTION  1 tquadbin_gist_consistent(internal, tquadbin, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -193,6 +197,10 @@ ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, tquadbin),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, tquadbin);
+  OPERATOR  31    #&> (stbox, tquadbin),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tquadbin),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tquadbin);
 
 /******************************************************************************/

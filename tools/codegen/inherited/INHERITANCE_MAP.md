@@ -355,6 +355,15 @@ under which `posops.sql.tmpl` declares the Z operators; the operator classes car
 strategies 32-35 keeps those predicates as a FILTER: the operator resolves, the plan never
 uses the index, and nothing errors — so the omission is invisible without reading `pg_amop`.
 
+**The ever and always overlaps are the `ever` axis, strategies 36 (`?&&`) and 37 (`%&&`), and no
+`boxmembers:` or partner lists it.** `_ever_overlaps_box` in `generate.py` derives it from the
+comparison surface: a temporal type whose `compops_families` entry or subtype states `overlaps`
+carries both strategies against the box it declares them with, in its own classes
+(`render_tempopclass`), in the classes of that box (`render_boxopclass`) and in the members a
+family adds to the classes of `stbox` (`render_boxmembers`). The index answers them as `&&` on the
+boxes, lossily, and the operator rechecks every row; `index_strategy_op` maps both to
+`INDEX_OVERLAPS`. The form of two temporal values has no strategy and stays a filter.
+
 **The operator classes of the temporal geometries, points and point clouds** are the
 `GENERATED-TEMPOPCLASS` regions of `073_tgeo_gist`, `074_tgeo_spgist`, `073_tpoint_gist`,
 `074_tpoint_spgist`, `439_tpc_gist` and `440_tpc_spgist`, one per class of each partner of
