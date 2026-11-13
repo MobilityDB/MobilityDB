@@ -541,6 +541,23 @@ cosines at rational degrees), come from a table, so the cosine of 90 and the sin
 exactly. Its witness is MPFR at 300 to 2400 bits, as the oracles of the cell walks read it
 (`h3_geodetic_oracle.py` of the oracle kit, its `d6`).
 
+The sine and cosine of degrees are on branch `ea8-trig-nearest`, ahead of EA4 to EA6, which
+change no contract it reads: the search `nearest_double_exact` and its hook `NearestSide` are
+exported from `geo_funcs.c`, and `wide_dyadic_cmp_fixed` compares the midpoint the search reads
+with a signed fixed-point value, so `WideDyadic` stays opaque to the new file `geo_trig.c` when
+EA5 replaces it. The angle is reduced to [0, 45] degrees by subtractions that are exact
+(Sterbenz); pi (Machin's formula) and the Taylor series of the sine and cosine are enclosed in
+fixed-point integers rounded outward, the next term of each alternating series bounding what it
+leaves out; a value exactly 0 is +0, and a nonzero value below half the least subnormal the
+zero of its sign. On 35766 positions (the vertices of the H3 cells of resolutions 0 to 2,
+random positions, the doubles beside the multiples of 30, angles beyond a turn, the special
+values) the head answers every component of the vector `lonlat_vector_nearest` returns, judged
+in MPFR with directed rounding (`mpfr_d6` of the oracle kit) and by mpmath intervals; the vector
+of PostGIS's `ll2cart`, which MEOS reads today, differs on 32730 of the positions (60757 of
+107298 components), the sine of the latitude alone on 4219 of the 12937 vertices. A vector
+costs 185 microseconds. Left: the angles of an exact S2 corner and the latitude of a QUADBIN
+row, which take the same side function on an atan2 and an atan(sinh) enclosure.
+
 ### EA9. The signs on coordinates shifted by multiples of 360
 
 A cell straddling the antimeridian is read with vertices shifted by 360 degrees, and the shift is
