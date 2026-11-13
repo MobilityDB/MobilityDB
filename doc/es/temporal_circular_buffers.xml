@@ -1372,8 +1372,9 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbuffer {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
+tcbuffer {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
 </programlisting>
-				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; un búfer circular está en un cuadro cuando lo interseca, tal como lo lee la restricción de un búfer circular temporal a un cuadro.</para>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; un búfer circular está en un cuadro cuando lo interseca, tal como lo lee la restricción de un búfer circular temporal a un cuadro. Dos valores se superponen donde los cuadros de sus búferes circulares se superponen en un instante que comparten, es decir, donde la mayor de las distancias de sus centros según x e y es como máximo la suma de sus radios; los cuadros se comparan también entre los instantes de los valores, donde dos búferes en movimiento pueden superponerse solo por un momento, y dos valores que no comparten ningún instante responden NULL.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
   Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' ?&amp;&amp;
@@ -1391,6 +1392,16 @@ SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
   Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' %&amp;&amp;
   stbox 'STBOX X((-1,-1),(11,11))';
 -- true
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-03]' ?&amp;&amp;
+  tcbuffer '[Cbuffer(Point(10 0), 1)@2001-01-01, Cbuffer(Point(0 0), 1)@2001-01-03]';
+-- true
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(0 0), 1)@2001-01-03]' ?&amp;&amp;
+  tcbuffer '[Cbuffer(Point(2.5 -6), 1)@2001-01-01, Cbuffer(Point(2.5 6), 1)@2001-01-03]';
+-- false
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(0 0), 1)@2001-01-03]' %&amp;&amp;
+  tcbuffer '[Cbuffer(Point(2 0), 1)@2001-01-01, Cbuffer(Point(6 0), 1)@2001-01-02,
+  Cbuffer(Point(2 0), 1)@2001-01-03]';
+-- false
 </programlisting>
 			</listitem>
 

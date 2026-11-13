@@ -125,12 +125,16 @@ lwgeom_has_interior_ring(const LWGEOM *geom)
 }
 
 /**
- * @brief Append to @p events the per-body-edge clip-interval endpoints (in
- * segment-local parameter t in [0, 1]) for a pure-translation body segment
+ * @brief Append to @p events the fractions (in segment-local parameter t in
+ * [0, 1]) at which the contact of a pure-translation body segment with a
+ * target may change
  * @details The body translates by @p dx, @p dy with fixed orientation. Each
- * exterior ring edge of the (already world-posed at t = 0) body @p body0 sweeps
- * a parallelogram; the clip primitive returns the times at which that edge
- * touches the target boundary.
+ * edge of every ring of the (already world-posed at t = 0) body @p body0
+ * sweeps a parallelogram, the edges of a hole bounding the body as those of
+ * its exterior ring do, and the contact changes only where a vertex of the
+ * edge crosses the target or a vertex of the target crosses the edge
+ * (#trgeometry_geom_clip_events); each such fraction is appended, a contact
+ * that lasts an instant included.
  */
 static void
 collect_edge_events_m1(const LWGEOM *body0, double dx, double dy,
@@ -143,29 +147,18 @@ collect_edge_events_m1(const LWGEOM *body0, double dx, double dy,
     case POLYGONTYPE:
     {
       const LWPOLY *poly = (const LWPOLY *) body0;
-      /* Exterior ring only: the body interior is solid for overlap. */
-      const POINTARRAY *pa = poly->rings[0];
-      for (uint32_t k = 0; k + 1 < pa->npoints; k++)
+      for (uint32_t r = 0; r < poly->nrings; r++)
       {
-        const POINT2D *p0 = getPoint2d_cp(pa, k);
-        const POINT2D *p1 = getPoint2d_cp(pa, k + 1);
-        POINT2D a1 = *p0, b1 = *p1;
-        POINT2D a2 = { p0->x + dx, p0->y + dy };
-        POINT2D b2 = { p1->x + dx, p1->y + dy };
-        Span *iv = NULL;
-        int n = trgeometry_geom_clip_lwgeom(&a1, &b1, &a2, &b2, target, &iv);
-        for (int m = 0; m < n; m++)
+        const POINTARRAY *pa = poly->rings[r];
+        for (uint32_t k = 0; k + 1 < pa->npoints; k++)
         {
-          if (*nevents + 2 > *cap)
-          {
-            *cap = (*nevents + 2) * 2 + 8;
-            *events = repalloc(*events, (size_t) *cap * sizeof(double));
-          }
-          (*events)[(*nevents)++] = DatumGetFloat8(iv[m].lower);
-          (*events)[(*nevents)++] = DatumGetFloat8(iv[m].upper);
+          const POINT2D *p0 = getPoint2d_cp(pa, k);
+          const POINT2D *p1 = getPoint2d_cp(pa, k + 1);
+          POINT2D a2 = { p0->x + dx, p0->y + dy };
+          POINT2D b2 = { p1->x + dx, p1->y + dy };
+          trgeometry_geom_clip_events(p0, p1, &a2, &b2, target, events,
+            nevents, cap);
         }
-        if (iv)
-          pfree(iv);
       }
       break;
     }
@@ -190,18 +183,6 @@ restrict_double_cmp(const void *a, const void *b)
   return (da < db) ? -1 : (da > db) ? 1 : 0;
 }
 
-/**
- * @brief Compute, for one pure-translation segment, the absolute-time spans
- * during which the posed body overlaps the target, appending them to the
- * dynamic span buffer (@p spans, @p nspans, @p spancap).
- *
- * @param[in] ref Body reference geometry (body frame)
- * @param[in] pose1,pose2 Segment endpoint poses (same orientation)
- * @param[in] t1,t2 Segment endpoint timestamps
- * @param[in] target Static target geometry
- * @param[in] lwtarget LWGEOM view of @p target (for the clip primitive)
- * @return true on success, false if the error handler returned (error set)
- */
 /**
  * @brief Return true where a body meets a box only along the borders the box
  * leaves out
@@ -275,6 +256,39 @@ body_meets_target(const GSERIALIZED *body, const GSERIALIZED *target,
   return excl ? ! body_on_excluded_border(body, excl) : true;
 }
 
+/**
+ * @brief Return whether a body placed by the pose at a ratio of a segment
+ * meets a target
+ */
+static bool
+body_meets_at(const GSERIALIZED *ref, const Pose *pose1, const Pose *pose2,
+  double ratio, const GSERIALIZED *target, const STBox *excl)
+{
+  Pose *p = posesegm_interpolate(pose1, pose2, ratio);
+  GSERIALIZED *body = pose_apply_geo(p, ref);
+  bool ov = body_meets_target(body, target, excl, NULL);
+  pfree(body); pfree(p);
+  return ov;
+}
+
+/**
+ * @brief Compute, for one pure-translation segment, the absolute-time spans
+ * during which the posed body overlaps the target, appending them to the
+ * dynamic span buffer (@p spans, @p nspans, @p spancap)
+ * @details The contact changes only at the events of the edges of the body
+ * (#collect_edge_events_m1), so it holds or fails throughout each interval
+ * between two events, read at its middle, and an event is read itself: a run
+ * of contact starts and ends at an event, and a contact at an event alone,
+ * where a vertex touches an edge for an instant, is a run of its own
+ * @param[in] ref Body reference geometry (body frame)
+ * @param[in] pose1,pose2 Segment endpoint poses (same orientation)
+ * @param[in] t1,t2 Segment endpoint timestamps
+ * @param[in] target Static target geometry
+ * @param[in] lwtarget LWGEOM view of @p target (for the clip primitive)
+ * @param[in] excl Box whose upper borders are left out, NULL for none @nullable
+ * @param[in,out] spans,nspans,spancap Spans to append to
+ * @return true on success, false if the error handler returned (error set)
+ */
 static bool
 segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
   const Pose *pose2, TimestampTz t1, TimestampTz t2,
@@ -290,7 +304,7 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
   GSERIALIZED *body0_gs = pose_apply_geo(pose1, ref);
   LWGEOM *body0 = lwgeom_from_gserialized(body0_gs);
 
-  /* Critical events: clip-interval endpoints across all body edges. */
+  /* Critical events across all body edges */
   int cap = 16;
   double *events = palloc((size_t) cap * sizeof(double));
   int nevents = 0;
@@ -299,61 +313,43 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
   collect_edge_events_m1(body0, dx, dy, lwtarget, &events, &nevents, &cap);
 
   qsort(events, (size_t) nevents, sizeof(double), restrict_double_cmp);
-  /* Deduplicate. */
   int nuniq = 0;
   for (int k = 0; k < nevents; k++)
-    if (nuniq == 0 ||
-        fabs(events[k] - events[nuniq - 1]) > MEOS_GEOM_TOLERANCE)
+    if (nuniq == 0 || events[k] != events[nuniq - 1])
       events[nuniq++] = events[k];
 
-  /* Classify each inter-event sub-interval by an exact GEOS overlap test at
-   * its midpoint, applied to the materialised world body. Merge adjacent
-   * overlapping sub-intervals. */
-  bool prev_overlap = false;
+  bool run = false;
   double run_start = 0.0;
-  for (int k = 0; k < nuniq - 1; k++)
+  for (int k = 0; k < nuniq; k++)
   {
-    double ta = events[k], tb = events[k + 1];
-    if (tb - ta <= MEOS_GEOM_TOLERANCE)
+    double te = events[k];
+    if (! run && body_meets_at(ref, pose1, pose2, te, target, excl))
+    {
+      run = true;
+      run_start = te;
+    }
+    bool next = (k + 1 < nuniq) && body_meets_at(ref, pose1, pose2,
+      0.5 * (te + events[k + 1]), target, excl);
+    if (next && ! run)
+    {
+      run = true;
+      run_start = te;
+    }
+    if (! run || next)
       continue;
-    double tm = 0.5 * (ta + tb);
-    Pose *posem = posesegm_interpolate(pose1, pose2, tm);
-    GSERIALIZED *bodym = pose_apply_geo(posem, ref);
-    bool ov = body_meets_target(bodym, target, excl, NULL);
-    pfree(bodym);
-    pfree(posem);
-    if (ov && ! prev_overlap)
-    {
-      run_start = ta;
-      prev_overlap = true;
-    }
-    else if (! ov && prev_overlap)
-    {
-      /* Emit [run_start, ta] in absolute time. */
-      if (*nspans + 1 > *spancap)
-      {
-        *spancap = (*nspans + 1) * 2 + 8;
-        *spans = repalloc(*spans, (size_t) *spancap * sizeof(Span));
-      }
-      TimestampTz lo = t1 + (TimestampTz) llround(run_start * (double) (t2 - t1));
-      TimestampTz hi = t1 + (TimestampTz) llround(ta * (double) (t2 - t1));
-      span_set(TimestampTzGetDatum(lo), TimestampTzGetDatum(hi),
-        true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
-      (*nspans)++;
-      prev_overlap = false;
-    }
-  }
-  if (prev_overlap)
-  {
+    /* Emit [run_start, te] in absolute time */
     if (*nspans + 1 > *spancap)
     {
       *spancap = (*nspans + 1) * 2 + 8;
       *spans = repalloc(*spans, (size_t) *spancap * sizeof(Span));
     }
     TimestampTz lo = t1 + (TimestampTz) llround(run_start * (double) (t2 - t1));
-    span_set(TimestampTzGetDatum(lo), TimestampTzGetDatum(t2),
-      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
+    TimestampTz hi = (k + 1 == nuniq) ? t2 :
+      t1 + (TimestampTz) llround(te * (double) (t2 - t1));
+    span_set(TimestampTzGetDatum(lo), TimestampTzGetDatum(hi), true, true,
+      T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
     (*nspans)++;
+    run = false;
   }
 
   pfree(events);
@@ -374,21 +370,6 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
  * throughout each. The same turn bounds the pieces of the traversed area
  */
 #define TRGEO_OVERLAP_ANGLE_TOL 0.05
-
-/**
- * @brief Return whether a body placed by the pose at a ratio of a segment
- * meets a target
- */
-static bool
-body_meets_at(const GSERIALIZED *ref, const Pose *pose1, const Pose *pose2,
-  double ratio, const GSERIALIZED *target, const STBox *excl)
-{
-  Pose *p = posesegm_interpolate(pose1, pose2, ratio);
-  GSERIALIZED *body = pose_apply_geo(p, ref);
-  bool ov = body_meets_target(body, target, excl, NULL);
-  pfree(body); pfree(p);
-  return ov;
-}
 
 /**
  * @brief Return the ratio at which the overlap of a rotating body with a
@@ -610,23 +591,6 @@ trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
 {
   *err = false;
   const GSERIALIZED *ref = trgeometry_geom_p(temp);
-  /* The clip of a moving body reads its exterior ring alone (#trgeo_geom_clip),
-   * so a body with holes in linear motion is refused rather than answered as
-   * the region its exterior ring bounds */
-  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-  {
-    LWGEOM *body = lwgeom_from_gserialized(ref);
-    bool holes = lwgeom_has_interior_ring(body);
-    lwgeom_free(body);
-    if (holes)
-    {
-      *err = true;
-      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-        "The restriction of a temporal rigid geometry with holes in linear "
-        "motion is not implemented");
-      return NULL;
-    }
-  }
   /* A body in linear motion meets a closed target where its distance to it
    * is zero, which the walk of the distance answers exactly, turning
    * included (#tdwithin_trgeometry_geo); the clip below reads the bodies and

@@ -45,6 +45,7 @@
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "temporal/temporal_boxops.h"
+#include "geo/postgis_funcs.h"
 #include "rgeo/trgeo_all.h"
 #include "rgeo/trgeo_boxops.h"
 #include "rgeo/trgeo_utils.h"
@@ -152,6 +153,12 @@ trgeoseq_make1_exp(const GSERIALIZED *geom, TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
+  /* A closed polyhedral surface is kept as the solid it bounds
+   * (#geom_solid_from_closed) */
+  GSERIALIZED *solid = geom_solid_from_closed(geom);
+  if (solid)
+    geom = solid;
+
   /* Normalize the array of instants */
   TInstant **norminsts = (TInstant **) instants;
   int newcount = count;
@@ -229,6 +236,8 @@ trgeoseq_make1_exp(const GSERIALIZED *geom, TInstant **instants,
 
   if (interp != DISCRETE && normalize && count > 1)
     pfree(norminsts);
+  if (solid)
+    pfree(solid);
   return result;
 }
 

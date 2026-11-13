@@ -1123,7 +1123,7 @@ cross_product_sign_offset(double ax, double ay, double bx, double by,
  * @brief Return the sign of `x + o - p`, exactly, for doubles x and p and an
  * exact offset o
  */
-static int
+int
 offset_x_cmp(double x, double o, double p)
 {
   if (o == 0.0)
@@ -1133,6 +1133,148 @@ offset_x_cmp(double x, double o, double p)
   exact_sum_set(&sum, t, 3);
   PolyTerm term = {.coef = 1.0, .deg = 1, .sum = {0}};
   return polynomial_sign_exact(&sum, &term, 1);
+}
+
+/**
+ * @brief Return the side of the line through A and B on which a point moving
+ * from P0 to P1 lies after n of D microseconds, exactly
+ * @details The sign of `(D - n) cross(A, B, P0) + n cross(A, B, P1)`, D
+ * times the cross product of B - A and P(n) - A, with
+ * `cross(A, B, P) = (bx + ob - ax - oa) (py - ay) - (by - ay) (px - ax - oa)`.
+ * The sums are those #segment_edge_cross_offset sets, the coefficients
+ * integers below 2^53, so exact doubles
+ */
+static int
+segment_edge_side_at(const ExactSum *sums, int64 D, int64 n)
+{
+  PolyTerm terms[4];
+  int nterms = 0;
+  if (n < D)
+  {
+    terms[nterms++] = (PolyTerm) {.coef = (double) (D - n), .deg = 2,
+      .sum = {0, 2}};
+    terms[nterms++] = (PolyTerm) {.coef = - (double) (D - n), .deg = 2,
+      .sum = {1, 3}};
+  }
+  if (n > 0)
+  {
+    terms[nterms++] = (PolyTerm) {.coef = (double) n, .deg = 2,
+      .sum = {0, 4}};
+    terms[nterms++] = (PolyTerm) {.coef = - (double) n, .deg = 2,
+      .sum = {1, 5}};
+  }
+  return polynomial_sign_exact(sums, terms, nterms);
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the line of an
+ * edge whose x coordinates carry exact offsets, as the offset from the start
+ * of the segment, truncated
+ * @details The point moves from P0 to P1 over @p D microseconds, and lies on
+ * the line through A and B at the exact parameter where
+ * `(D - n) cross(A, B, P0) + n cross(A, B, P1)` vanishes, a function of `n`
+ * that is linear, hence monotone. The offset returned is the last
+ * microsecond `n` at which the point is still on the side of the line it
+ * starts on or on the line, each side the exact sign
+ * #segment_edge_side_at decides on the input doubles, the integer @p D and
+ * the offsets, so the crossing is dated by the truncation of its exact
+ * parameter and no rounded parameter decides it. A double estimate starts
+ * a galloping search, then a bisection, on that sign. The x offsets, such
+ * as a multiple of 360 reading a cell across the antimeridian in the chart
+ * of the segment, are never added to a coordinate, where they would round.
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * @param[in] D Duration of the segment in microseconds, below 2^53
+ * @param[in] ax,ay,oa Vertex A of the edge and the offset of its x
+ * @param[in] bx,by,ob Vertex B of the edge and the offset of its x
+ * @param[out] whole True when the point lies on the line exactly at the
+ * microsecond returned
+ * @return The offset in microseconds: 0 when the segment starts on the line,
+ * @p D when it reaches the line only at its end or never
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int64
+segment_edge_cross_offset(double x0, double y0, double x1, double y1,
+  int64 D, double ax, double ay, double oa, double bx, double by, double ob,
+  bool *whole)
+{
+  assert(D >= 0); assert(whole);
+  ExactSum sums[6];
+  const double t0[4] = {bx, ob, - ax, - oa}, t1[2] = {by, - ay};
+  const double t2[2] = {y0, - ay}, t3[3] = {x0, - ax, - oa};
+  const double t4[2] = {y1, - ay}, t5[3] = {x1, - ax, - oa};
+  exact_sum_set(&sums[0], t0, 4);
+  exact_sum_set(&sums[1], t1, 2);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  exact_sum_set(&sums[4], t4, 2);
+  exact_sum_set(&sums[5], t5, 3);
+  int s0 = segment_edge_side_at(sums, D, 0);
+  if (s0 == 0 || D == 0)
+  {
+    *whole = (s0 == 0);
+    return 0;
+  }
+  /* The estimate in doubles, the start of the search only */
+  double c0 = sums[0].approx * sums[2].approx - sums[1].approx * sums[3].approx;
+  double c1 = sums[0].approx * sums[4].approx - sums[1].approx * sums[5].approx;
+  double est = (double) D * (c0 / (c0 - c1));
+  int64 n = 0;
+  if (isfinite(est) && est > 0.0)
+    n = (est >= (double) D) ? D : (int64) est;
+  /* lo is the last microsecond known on the start side, hi the first known
+   * past it, D + 1 standing for none */
+  int64 lo, hi;
+  if (s0 * segment_edge_side_at(sums, D, n) >= 0)
+  {
+    lo = n;
+    int64 step = 1;
+    for (;;)
+    {
+      if (lo == D)
+      {
+        hi = D + 1;
+        break;
+      }
+      int64 c = (step > D - lo) ? D : lo + step;
+      if (s0 * segment_edge_side_at(sums, D, c) >= 0)
+      {
+        lo = c;
+        step *= 2;
+      }
+      else
+      {
+        hi = c;
+        break;
+      }
+    }
+  }
+  else
+  {
+    hi = n;
+    int64 step = 1;
+    for (;;)
+    {
+      int64 c = (step >= hi) ? 0 : hi - step;
+      if (c == 0 || s0 * segment_edge_side_at(sums, D, c) >= 0)
+      {
+        lo = c;
+        break;
+      }
+      hi = c;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    int64 mid = lo + (hi - lo) / 2;
+    if (s0 * segment_edge_side_at(sums, D, mid) >= 0)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  *whole = (segment_edge_side_at(sums, D, lo) == 0);
+  return lo;
 }
 
 /**
@@ -3428,7 +3570,7 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
  * 64-bit limbs, the lowest first, as #square_products_wide holds its integer,
  * with exact sums and products of any two
  */
-typedef struct
+typedef struct WideDyadic
 {
   int sign;         /**< -1, 0 or 1 */
   int len;          /**< Number of limbs of the magnitude */
@@ -3805,6 +3947,46 @@ wide_dyadic_cmp(const WideDyadic *a, const WideDyadic *b)
 }
 
 /**
+ * @brief Return the sign of a #WideDyadic less a fixed-point value
+ * `sign * mag * 2^exp`, exactly, -1, 0 or 1
+ * @details It lets a side function of #nearest_double_exact compare the
+ * midpoint the search reads with the bounds of an enclosure it holds as
+ * integers, the #WideDyadic staying opaque outside this file
+ * @param[in] mid The #WideDyadic
+ * @param[in] sign Sign of the value, -1 or 1; a zero @p mag is the value 0
+ * whatever @p sign says
+ * @param[in] mag Magnitude of the value, @p nlimbs 64-bit limbs, the lowest
+ * first, as a #WideDyadic holds its magnitude
+ * @param[in] nlimbs Number of limbs of @p mag, at most #WIDE_DYADIC_LIMBS
+ * @param[in] exp Weight of the lowest bit of @p mag
+ */
+int
+wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign, const uint64 *mag,
+  int nlimbs, int exp)
+{
+  assert(nlimbs >= 0 && nlimbs <= WIDE_DYADIC_LIMBS);
+  assert(sign == -1 || sign == 1);
+  WideDyadic v;
+  v.len = nlimbs;
+  v.exp = exp;
+  v.sign = 0;
+  for (int i = 0; i < nlimbs; i++)
+  {
+    v.limb[i] = mag[i];
+    if (mag[i])
+      v.sign = sign;
+  }
+  if (v.sign == 0)
+  {
+    v.len = 0;
+    v.exp = 0;
+  }
+  else
+    wide_dyadic_normalize(&v);
+  return wide_dyadic_cmp(mid, &v);
+}
+
+/**
  * @brief Return the sign of the cross product of the vectors B - A and D - C,
  * read on #WideDyadic for any finite coordinates
  * @details The four differences are exact, and the sign is that of
@@ -4102,9 +4284,6 @@ wide_dyadic_nearest_root(const WideDyadic *n, const WideDyadic *d)
  * The nearest double of a value read exactly
  *****************************************************************************/
 
-/* The sign of the value a search reads less @p mid */
-typedef int (*NearestSide)(const WideDyadic *mid, const void *arg);
-
 /* True where the value, negated where @p neg is true, lies beyond the
  * midpoint from the double of bit pattern @p bits to the next one, a tie
  * being beyond where the last bit of that double is odd, so a tie goes to
@@ -4142,7 +4321,7 @@ nearest_bits_beyond(uint64_t bits, bool neg, NearestSide side,
  * it, as #wide_dyadic_nearest_root finds a root
  * @pre The value lies strictly between -DBL_MAX and DBL_MAX
  */
-static double
+double
 nearest_double_exact(double c, NearestSide side, const void *arg)
 {
   WideDyadic zero;
@@ -10965,18 +11144,13 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
  * centre and radius, and a point lies on it where |Q - C|^2 = r^2 exactly
  */
 /* The side of the circle of a centred arc a point lies on, decided
- * exactly: the sign of |Q - C|^2 - r^2, a polynomial of degree two in exact
- * sums of the doubles (#polynomial_sign_exact) */
+ * exactly: the sign of |Q - C|^2 - r^2, the squared distance between the
+ * centre and the point less the square of the radius, which
+ * #point_within_distance_sign reads exactly for every finite double */
 static int
 centred_circle_side(const Edge *e, double qx, double qy)
 {
-  double t[3][2] = {{qx, -e->cx}, {qy, -e->cy}, {e->radius, 0.0}};
-  ExactSum sums[3];
-  for (int k = 0; k < 3; k++)
-    exact_sum_set(&sums[k], t[k], 2);
-  PolyTerm terms[3] = {
-    {1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
-  return polynomial_sign_exact(sums, terms, 3);
+  return point_within_distance_sign(e->cx, e->cy, qx, qy, e->radius);
 }
 
 bool
@@ -10997,25 +11171,25 @@ point_on_arc_circle(const Edge *e, double qx, double qy)
 
 /**
  * @brief Return the side of the circle of an arc a point lies on, decided
- * exactly: -1 inside it, 0 on it, 1 outside it
+ * exactly: 1 inside it, 0 on it, -1 outside it, the sense of #incircle_sign
  * @details The circle is the one #point_on_arc_circle reads. For a half of a
  * full circle the side is the sign of the dot product of the vectors from the
- * point to the two ends of the diameter, negative where the point sees the
- * diameter at an obtuse angle, which is inside (Thales). For an arc given by
- * three points it is the sign of #incircle_sign, positive inside the circle
- * of three points turning counterclockwise, read against the turn they make.
- * For a centred arc it is the sign of |Q - C|^2 - r^2
+ * point to the two ends of the diameter, negated: negative where the point
+ * sees the diameter at an obtuse angle, which is inside (Thales). For an arc
+ * given by three points it is the sign of #incircle_sign, positive inside the
+ * circle of three points turning counterclockwise, read against the turn they
+ * make. For a centred arc it is the sign of r^2 - |Q - C|^2
  */
 int
 arc_circle_side(const Edge *e, double qx, double qy)
 {
   if (e->centred)
-    return centred_circle_side(e, qx, qy);
+    return - centred_circle_side(e, qx, qy);
   if (e->diameter)
-    return cross_product_sign(e->sx, e->sy, qx, qy, qy, e->ex, e->ey, qx);
+    return - cross_product_sign(e->sx, e->sy, qx, qy, qy, e->ex, e->ey, qx);
   int turn = cross_product_sign(e->sx, e->sy, e->mx, e->my, e->sx, e->sy,
     e->ex, e->ey);
-  return - turn * incircle_sign(e->sx, e->sy, e->mx, e->my, e->ex, e->ey,
+  return turn * incircle_sign(e->sx, e->sy, e->mx, e->my, e->ex, e->ey,
     qx, qy);
 }
 
@@ -14719,24 +14893,25 @@ point_segm_ray_parity(const double *p, const double *a, const double *b)
   return up ? s > 0 : s < 0;
 }
 
-/* The sign of the square of the distance from a point moved as
- * #point_line_side_moved moves it to the centre of an arc, less the square of
- * the radius, times w^2 */
+/* The side of the circle of an arc a point moved as #point_line_side_moved
+ * moves it lies on, in the sense of #arc_circle_side: the sign of the square
+ * of the radius less the square of the distance from the point to the
+ * centre, times w^2, positive inside */
 static int
 point_arc_circle_side_pred(TowerCtx *ctx, const void *varg)
 {
   const ArcWithinArg *o = varg;
   TowerArc arc;
   tower_arc_read(ctx, o->p, o->a[0], o->a[1], &arc);
-  int s = tx_sign(ctx, tx_sub(ctx, tx_add(ctx, tx_mul(ctx, arc.cx, arc.cx),
-    tx_mul(ctx, arc.cy, arc.cy)), arc.r2));
+  int s = tx_sign(ctx, tx_sub(ctx, arc.r2, tx_add(ctx,
+    tx_mul(ctx, arc.cx, arc.cx), tx_mul(ctx, arc.cy, arc.cy))));
   if (s == 0)
   {
     /* Moved along the radius from the centre, whose first coordinates are
-     * those of - c */
-    s = - tx_sign(ctx, arc.cx);
+     * those of - c, so the first of them not zero gives the side */
+    s = tx_sign(ctx, arc.cx);
     if (s == 0)
-      s = - tx_sign(ctx, arc.cy);
+      s = tx_sign(ctx, arc.cy);
   }
   return tower_ctx_unsafe(ctx) ? 2 : s;
 }
@@ -14760,7 +14935,7 @@ point_arc_ray_parity(const double *p, const ExactArc *arc)
   if (point_line_side_moved(p, arc->s, arc->e) != side)
     return parity;
   ArcWithinArg arg = {p, NULL, arc, NULL, 0.0};
-  return (tower_pred_run(point_arc_circle_side_pred, &arg) < 0) ? ! parity :
+  return (tower_pred_run(point_arc_circle_side_pred, &arg) > 0) ? ! parity :
     parity;
 }
 
@@ -31059,6 +31234,183 @@ geo_scale_pow2(const GSERIALIZED *gs, double scale)
     "A geometry with coordinates near the largest and the smallest doubles "
     "cannot be measured exactly");
   return NULL;
+}
+
+/*****************************************************************************
+ * Signs of sums of doubles and of functions linear over a segment
+ *****************************************************************************/
+
+/** Number of doubles a sum of #sums_nonpositive_exact may add */
+#define LINEAR_SUM_MAX_TERMS 8
+/** Number of functions #linear_sums_nonpositive_meet_exact may read */
+#define LINEAR_SUM_MAX_FUNCS 8
+
+/**
+ * @brief Set the sum of @p k doubles as a double and a bound on the error of
+ * its rounding, infinite where a partial sum leaves the doubles
+ */
+static void
+sum_filter(const double *t, int k, double *sum, double *err)
+{
+  double s = 0.0, mag = 0.0;
+  for (int i = 0; i < k; i++)
+  {
+    s += t[i];
+    mag += fabs(t[i]);
+  }
+  *sum = s;
+  /* Recursive summation of k terms errs by at most (k - 1) u times the sum of
+   * their magnitudes, u = DBL_EPSILON / 2, a bound k DBL_EPSILON covers with
+   * the rounding of the magnitudes themselves */
+  *err = isfinite(mag) ? (double) k * DBL_EPSILON * mag : INFINITY;
+  return;
+}
+
+/**
+ * @brief Set a #WideDyadic to the sum of @p k doubles, exactly
+ */
+static void
+wide_dyadic_sum(const double *t, int k, WideDyadic *r)
+{
+  WideDyadic acc, term, next;
+  wide_dyadic_set_double(&acc, 0.0);
+  for (int i = 0; i < k; i++)
+  {
+    wide_dyadic_set_double(&term, t[i]);
+    wide_dyadic_add(&acc, &term, &next);
+    acc = next;
+  }
+  *r = acc;
+  return;
+}
+
+/**
+ * @brief Return the sign of the sum of @p k doubles, decided exactly
+ * @details The sum in doubles decides where it exceeds the bound on its
+ * rounding (#sum_filter), and otherwise the sum is read on #WideDyadic
+ */
+static int
+sum_sign_exact(const double *t, int k)
+{
+  double sum, err;
+  sum_filter(t, k, &sum, &err);
+  if (fabs(sum) > err)
+    return (sum > 0.0) ? 1 : -1;
+  WideDyadic w;
+  wide_dyadic_sum(t, k, &w);
+  return w.sign;
+}
+
+/**
+ * @brief Return true if each of @p n sums of @p k doubles is at most zero,
+ * decided exactly
+ * @param[in] t Terms, the @p k terms of sum i from position i k
+ * @param[in] n Number of sums
+ * @param[in] k Number of terms of each sum, at most 8
+ */
+bool
+sums_nonpositive_exact(const double *t, int n, int k)
+{
+  assert(t); assert(n > 0); assert(k > 0 && k <= LINEAR_SUM_MAX_TERMS);
+  for (int i = 0; i < n; i++)
+    if (sum_sign_exact(t + i * k, k) > 0)
+      return false;
+  return true;
+}
+
+/**
+ * @brief Return the sign of `p1 e2 - p2 e1` for four sums of @p k doubles,
+ * decided exactly
+ * @details The products in doubles decide where their difference exceeds the
+ * bound on its error: the error of each sum (#sum_filter) carried through the
+ * two products, plus the rounding of the products and of their difference.
+ * Otherwise, and wherever the doubles may underflow or overflow, the four
+ * sums are read on #WideDyadic and compared by #wide_dyadic_product_cmp
+ */
+static int
+sum_products_sign_exact(const double *p1, const double *e1, const double *p2,
+  const double *e2, int k)
+{
+  double vp1, dp1, ve1, de1, vp2, dp2, ve2, de2;
+  sum_filter(p1, k, &vp1, &dp1);
+  sum_filter(e1, k, &ve1, &de1);
+  sum_filter(p2, k, &vp2, &dp2);
+  sum_filter(e2, k, &ve2, &de2);
+  double a = vp1 * ve2, b = vp2 * ve1, det = a - b;
+  double err = fabs(vp1) * de2 + fabs(ve2) * dp1 + dp1 * de2 +
+    fabs(vp2) * de1 + fabs(ve1) * dp2 + dp2 * de1 +
+    2.0 * DBL_EPSILON * (fabs(a) + fabs(b));
+  /* Below 2^-900 a product may have lost bits to the subnormal range, which
+   * the relative bound above does not cover */
+  if (isfinite(err) && fabs(det) > err * (1.0 + 4.0 * DBL_EPSILON) &&
+      fabs(det) > 0x1p-900)
+    return (det > 0.0) ? 1 : -1;
+  WideDyadic wp1, we1, wp2, we2;
+  wide_dyadic_sum(p1, k, &wp1);
+  wide_dyadic_sum(e1, k, &we1);
+  wide_dyadic_sum(p2, k, &wp2);
+  wide_dyadic_sum(e2, k, &we2);
+  return wide_dyadic_product_cmp(&wp1, &we2, &wp2, &we1);
+}
+
+/**
+ * @brief Return true if @p n functions linear over a segment are all at most
+ * zero at a common point of its interior, decided exactly
+ * @details Function i is linear in the fraction f of the segment, its value
+ * at f = 0 the sum of the @p k doubles of @p start from position i k and at
+ * f = 1 the sum of those of @p end. Each function is at most zero over an
+ * interval of the open segment, and intervals of a line meet together where
+ * each two of them meet (Helly's theorem on the line). A function at most zero
+ * at both ends is so over the whole segment. One that is at most zero at no
+ * point of the interior, as one positive at an end and zero at the other,
+ * meets no other. An increasing function negative at the start is at most
+ * zero up to its root f_i = p_i / (p_i - e_i), and a decreasing one negative
+ * at the end from its root f_j on, so the two meet where f_j <= f_i, that is
+ * where `p_i e_j - p_j e_i >= 0` (#sum_products_sign_exact). Two increasing
+ * or two decreasing functions meet near the end at which both are negative.
+ * No root is constructed: every sign is read on the doubles of the sums
+ * @param[in] start,end Terms of the values at the two ends of the segment
+ * @param[in] n Number of functions, at most 8
+ * @param[in] k Number of terms of each value, at most 8
+ */
+bool
+linear_sums_nonpositive_meet_exact(const double *start, const double *end,
+  int n, int k)
+{
+  assert(start); assert(end); assert(n > 0 && n <= LINEAR_SUM_MAX_FUNCS);
+  assert(k > 0 && k <= LINEAR_SUM_MAX_TERMS);
+  /* -1 for a function at most zero only from the start up to its root, 1
+   * for one at most zero only from its root to the end, 0 for one at most
+   * zero over the whole segment */
+  int kind[LINEAR_SUM_MAX_FUNCS];
+  for (int i = 0; i < n; i++)
+  {
+    int sp = sum_sign_exact(start + i * k, k);
+    int se = sum_sign_exact(end + i * k, k);
+    if (sp <= 0 && se <= 0)
+      kind[i] = 0;
+    else if (sp < 0)
+      kind[i] = -1;
+    else if (se < 0)
+      kind[i] = 1;
+    else
+      /* Positive at one end and not negative at the other */
+      return false;
+  }
+  for (int i = 0; i < n; i++)
+  {
+    if (kind[i] != -1)
+      continue;
+    for (int j = 0; j < n; j++)
+    {
+      if (kind[j] != 1)
+        continue;
+      if (sum_products_sign_exact(start + i * k, end + i * k,
+          start + j * k, end + j * k, k) < 0)
+        return false;
+    }
+  }
+  return true;
 }
 
 /*****************************************************************************/

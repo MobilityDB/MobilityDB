@@ -9845,24 +9845,13 @@ certa_sum2_sign(double a1, double a0, double b1, double b0, double c1,
   return cross_product_sign(a0, c0, a1, c1, d1, b0, d0, b1);
 }
 
-/* Whether |B - A|^2 > D^2, exactly */
+/* Whether |B - A|^2 > D^2, D not negative: the sign of the squared distance
+ * between A and B less the square of D, which #point_within_distance_sign
+ * reads exactly for every finite double */
 static pg_attribute_always_inline bool
 certa_longer(double ax, double ay, double bx, double by, double d)
 {
-  double ux = bx - ax, uy = by - ay;
-  double l = ux * ux + uy * uy, dd = d * d;
-  double bound = 2.0 * (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON * (l + dd) +
-    4.0 * DBL_MIN;
-  if (l - dd > bound)
-    return true;
-  if (dd - l > bound)
-    return false;
-  double t[3][2] = {{bx, -ax}, {by, -ay}, {d, 0.0}};
-  ExactSum sm[3];
-  for (int k = 0; k < 3; k++)
-    exact_sum_set(&sm[k], t[k], (k == 2) ? 1 : 2);
-  PolyTerm f[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
-  return polynomial_sign_exact(sm, f, 3) > 0;
+  return point_within_distance_sign(ax, ay, bx, by, d) > 0;
 }
 
 /* the sign of

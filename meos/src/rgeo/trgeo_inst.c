@@ -41,6 +41,7 @@
 #include "temporal/type_util.h"
 #include "temporal/tinstant.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/postgis_funcs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"
 
@@ -149,6 +150,11 @@ trgeoinst_make_valid(const GSERIALIZED *gs, const Pose *pose)
 TInstant *
 trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
 {
+  /* A closed polyhedral surface is kept as the solid it bounds
+   * (#geom_solid_from_closed) */
+  GSERIALIZED *solid = geom_solid_from_closed(geom);
+  if (solid)
+    geom = solid;
   size_t value_offset = offsetof(TInstant, value);
   size_t size = value_offset;
   /* Create the temporal instant */
@@ -175,6 +181,8 @@ trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
   MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(pose->flags));
   MEOS_FLAGS_SET_GEODETIC(result->flags, false);
   MEOS_FLAGS_SET_GEOM(result->flags, WITH_GEOM);
+  if (solid)
+    pfree(solid);
   return result;
 }
 

@@ -155,6 +155,25 @@ SELECT round(tDistance(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'MultiPolygon(((0 5,1 5,1 6,0 6,0 5)),((11 5,12 5,12 6,11 6,11 5)))'), 6);
 
+-- A geometry collection, nested ones included, answers as its members do
+-- written as one multi-geometry, and the distance to it as to the members
+-- gathered; one holding a curve is refused
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'GeometryCollection(Point(0 5),Polygon((11 5,12 5,12 6,11 6,11 5)))'), 6);
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'GeometryCollection(Point(0 5),GeometryCollection(MultiPoint(11 5)))') =
+  tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPoint(0 5,11 5)');
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'GeometryCollection(Linestring(3 4,6 3),Point(20 20))')::numeric, 6);
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'GeometryCollection(Point(0 5),CircularString(0 5,1 6,2 5))');
+
 -- A single-component multi geometry answers exactly as the component alone does
 SELECT round(minValue(tDistance(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
