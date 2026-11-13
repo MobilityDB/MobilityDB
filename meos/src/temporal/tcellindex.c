@@ -466,6 +466,75 @@ ensure_valid_tcellindex_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
+ * @brief Margin in degrees by which the box of a temporal cell is widened
+ * before it is found to share no position with a box
+ * @details The box of a cell holds its vertices and the latitudes its edges
+ * rise to, which the test of a cell against a box reads through its own
+ * trigonometry; the margin covers the rounding between the two readings, so
+ * a box beyond it meets no cell of the value
+ */
+#define TCELL_BOX_MARGIN 1.0e-9
+
+/**
+ * @brief The test of a cell against a box, with the answer for the last cell
+ * it was given
+ * @details A temporal cell keeps one cell over many consecutive instants, so
+ * the test is computed once for each run of instants holding the same cell
+ */
+typedef struct
+{
+  Datum (*cell_meets_box)(Datum cell, Datum box, Datum border_inc);
+  MeosType basetype;  /**< The type of the cells */
+  Datum box;          /**< The box, an STBox pointer */
+  Datum border_inc;   /**< True when the box holds its upper borders */
+  bool set;           /**< True when the last cell and its answer are set */
+  Datum cell;         /**< The last cell tested, a cell passed by value */
+  Datum result;       /**< Its answer */
+} CellMeetsBoxCache;
+
+/**
+ * @brief Return true if the spatial extent of a box, widened by
+ * #TCELL_BOX_MARGIN, shares no position with the spatial extent of another
+ * box
+ * @param[in] vbox Box of a cell or of a temporal cell
+ * @param[in] box Box
+ */
+static bool
+tcellindex_box_apart(const STBox *vbox, const STBox *box)
+{
+  return vbox->xmax + TCELL_BOX_MARGIN < box->xmin ||
+    box->xmax + TCELL_BOX_MARGIN < vbox->xmin ||
+    vbox->ymax + TCELL_BOX_MARGIN < box->ymin ||
+    box->ymax + TCELL_BOX_MARGIN < vbox->ymin;
+}
+
+/**
+ * @brief Return whether a cell meets the box of a cache, computing the test
+ * only when the cell differs from the last one given
+ * @details A cell whose box is apart from the box meets it nowhere, which the
+ * box of the cell answers before its region is read
+ * @param[in] cell Cell, passed by value
+ * @param[in] cache Pointer to a #CellMeetsBoxCache
+ */
+static Datum
+datum_cell_meets_box_cached(Datum cell, Datum cache)
+{
+  CellMeetsBoxCache *c = (CellMeetsBoxCache *) DatumGetPointer(cache);
+  if (! c->set || c->cell != cell)
+  {
+    STBox cbox;
+    if (spatial_set_stbox(cell, c->basetype, &cbox) &&
+        tcellindex_box_apart(&cbox, (const STBox *) DatumGetPointer(c->box)))
+      c->result = BoolGetDatum(false);
+    else
+      c->result = c->cell_meets_box(cell, c->box, c->border_inc);
+    c->cell = cell;
+    c->set = true;
+  }
+  return c->result;
+}
+
+/**
  * @brief Return a temporal cell restricted to (the complement of) a
  * spatiotemporal box
  * @details A cell lies in a box at an instant when its region, with the
@@ -492,6 +561,11 @@ tcellindex_restrict_stbox(const Temporal *temp, const STBox *box,
     return NULL;
   if (! MEOS_FLAGS_GET_X(box->flags))
     return temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  /* No cell of the value meets a box apart from the box of the value */
+  STBox vbox;
+  tspatial_set_stbox(temp, &vbox);
+  if (tcellindex_box_apart(&vbox, box))
+    return atfunc ? NULL : temporal_copy(temp);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
   /* Restrict first to the period of the box, which the test of a cell does
    * not read */
@@ -501,12 +575,17 @@ tcellindex_restrict_stbox(const Temporal *temp, const STBox *box,
   SpanSet *inside = NULL;
   if (intime)
   {
+    CellMeetsBoxCache cache;
+    memset(&cache, 0, sizeof(CellMeetsBoxCache));
+    cache.cell_meets_box = ops->cell_meets_box;
+    cache.basetype = temptype_basetype(temp->temptype);
+    cache.box = PointerGetDatum(box);
+    cache.border_inc = BoolGetDatum(border_inc);
     LiftedFunctionInfo lfinfo;
     memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-    lfinfo.func = (varfunc) ops->cell_meets_box;
-    lfinfo.numparam = 2;
-    lfinfo.param[0] = PointerGetDatum(box);
-    lfinfo.param[1] = BoolGetDatum(border_inc);
+    lfinfo.func = (varfunc) &datum_cell_meets_box_cached;
+    lfinfo.numparam = 1;
+    lfinfo.param[0] = PointerGetDatum(&cache);
     lfinfo.argtype[0] = temp->temptype;
     lfinfo.restype = T_TBOOL;
     lfinfo.reslinear = false;
