@@ -301,11 +301,11 @@ int main(void)
 
   Temporal *trgeo4 = trgeometry_in(trgeo4_in);
   Temporal *trgeo5 = trgeometry_in(trgeo5_in);
-  GSERIALIZED *coll = geom_in("GeometryCollection(Point(9 9))", -1);
+  GSERIALIZED *curve = geom_in("CircularString(9 9,10 10,11 9)", -1);
   GSERIALIZED *point3d = geom_in("Point(9 9 9)", -1);
   GSERIALIZED *point2d = geom_in("Point(9 9)", -1);
   STBox *box3d = stbox_in("STBOX ZT(((5,5,5),(6,6,6)),[2001-01-01, 2001-01-02])");
-  if (! trgeo4 || ! trgeo5 || ! coll || ! point3d || ! point2d || ! box3d)
+  if (! trgeo4 || ! trgeo5 || ! curve || ! point3d || ! point2d || ! box3d)
   {
     printf("FAILED: could not build the nearest approach distance arguments\n");
     result = 1;
@@ -313,9 +313,9 @@ int main(void)
   else
   {
     meos_errno_reset();
-    if (nad_trgeometry_geo(trgeo4, coll) != -1.0 || meos_errno() == 0)
+    if (nad_trgeometry_geo(trgeo4, curve) != -1.0 || meos_errno() == 0)
     {
-      printf("FAILED: nad_trgeometry_geo(trgeometry, collection)\n");
+      printf("FAILED: nad_trgeometry_geo(trgeometry, curve)\n");
       result = 1;
     }
     else
@@ -355,7 +355,7 @@ int main(void)
       printf("OK: nad_trgeometry_geo(trgeometry, point): %g\n", nad);
     meos_errno_reset();
   }
-  free(trgeo4); free(trgeo5); free(coll); free(point3d); free(point2d);
+  free(trgeo4); free(trgeo5); free(curve); free(point3d); free(point2d);
   free(box3d);
 
   /* The constructor accepts a polyhedral surface as a reference geometry, but
@@ -670,10 +670,11 @@ int main(void)
     }
   }
 
-  /* A body whose shape a function does not read is refused, never answered as
-   * another shape: the restriction of a body with holes in linear motion, and
-   * the united traversed area of a body that is not convex in linear motion;
-   * in step interpolation both answer */
+  /* The restriction of a body with holes in linear motion reads its holes:
+   * the small square lies in the hole until 02:24 and leaves the body at
+   * 06:00. A body whose shape a function does not read is refused, never
+   * answered as another shape: the united traversed area of a body that is
+   * not convex in linear motion; in step interpolation it answers */
   {
     const char *holed = "Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));"
       "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]";
@@ -684,17 +685,19 @@ int main(void)
     GSERIALIZED *small = geom_in("Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))", -1);
     meos_errno_reset();
     Temporal *at = trgeometry_at_geom(lin, small);
-    int err_at = meos_errno();
+    bool read = at && meos_errno() == 0 &&
+      temporal_start_timestamptz(at) ==
+        timestamptz_in("2001-01-01 02:24:00", -1) &&
+      temporal_end_timestamptz(at) == timestamptz_in("2001-01-01 06:00:00", -1);
     meos_errno_reset();
     GSERIALIZED *area = trgeometry_traversed_area(lin, true);
     int err_area = meos_errno();
     meos_errno_reset();
     GSERIALIZED *area_step = trgeometry_traversed_area(step, true);
-    if (at || err_at == 0 || area || err_area == 0 || ! area_step ||
-        meos_errno() != 0)
+    if (! read || area || err_area == 0 || ! area_step || meos_errno() != 0)
     {
-      printf("FAILED: a body with holes in linear motion is answered by the "
-        "restriction or the united traversed area\n");
+      printf("FAILED: a body with holes in linear motion is restricted by its "
+        "exterior ring alone, or answered by the united traversed area\n");
       result = 1;
     }
     free(lin); free(step); free(small); free(at); free(area); free(area_step);
@@ -960,6 +963,36 @@ int main(void)
       printf("OK: the MF-JSON of a body that is a polyhedral surface is read "
         "back as the value\n");
     free(tsurf); free(mfjson); free(back);
+    meos_errno_reset();
+  }
+
+  /* A closed polyhedral surface bounds a solid: a point inside the body meets
+   * it, through the text of the value as well, while an open surface is its
+   * faces */
+  {
+    const char *closed = "PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),"
+      "((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),"
+      "((1 0 0,0 1 0,0 0 1,1 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01";
+    const char *open = "PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),"
+      "((0 0 0,0 0 1,0 1 0,0 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01";
+    Temporal *solid = trgeometry_in(closed);
+    Temporal *faces = trgeometry_in(open);
+    GSERIALIZED *inside = geom_in("Point(0.1 0.1 0.1)", -1);
+    GSERIALIZED *outside = geom_in("Point(1 1 1)", -1);
+    size_t len;
+    char *text = trgeometry_out(solid, 15, &len);
+    Temporal *back = text ? trgeometry_in(text) : NULL;
+    if (eintersects_trgeometry_geo(solid, inside) != 1 ||
+        eintersects_trgeometry_geo(solid, outside) != 0 ||
+        eintersects_trgeometry_geo(faces, inside) != 0 ||
+        ! back || eintersects_trgeometry_geo(back, inside) != 1 ||
+        meos_errno() != 0)
+    {
+      printf("FAILED: a point inside the solid a closed surface bounds\n");
+      result = 1;
+    }
+    free(solid); free(faces); free(inside); free(outside); free(text);
+    free(back);
     meos_errno_reset();
   }
 
