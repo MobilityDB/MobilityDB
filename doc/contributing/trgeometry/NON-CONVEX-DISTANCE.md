@@ -32,8 +32,8 @@ This note proposes how to answer every polygon, non-convex or holed, on either s
 The third point also concerns master as it is. The fold over the parts of a static line or
 multi-geometry, which master already performs, places the corner between two parts where their
 linear interpolations cross. That corner is a local maximum of the distance, which the book's
-contract keeps (Sect. 4.6.3). Whether master misplaces or misses it in practice is stated as a
-hypothesis to measure (section 6.4).
+contract keeps (Sect. 4.6.3). Master misses every such corner on the corpus of section 6.4, so the
+envelope is also a correction of master.
 
 ## 2. What the book states
 
@@ -117,7 +117,7 @@ go wrong with the master fold:
 
 Minima are not affected: every minimum of the fold is a minimum of one part, which the part's walk
 carries exactly. So `nearestApproachDistance` and `nearestApproachInstant` are exact, and the curve
-between them is what may be wrong. Section 6.4 states how to measure it.
+between them is what is wrong, as section 6.4 measures.
 
 ## 4. The tools master already has
 
@@ -260,20 +260,29 @@ never a wrong answer.
   next instant it can become the minimum. It handles the pairs left after pruning (section 7) in
   O(k log k) per segment for k pairs.
 
-### 6.4 The defect master may already have, to measure first
+### 6.4 The corners master misses
 
 Section 3.4 describes how master's fold over the parts of a static line or multi-geometry can cut or
-miss the corners of the distance. **This is a hypothesis, not a measurement.** The measurement:
+miss the corners of the distance. It misses them all. The measurement, on master `990787c4fc`:
 
-- a body that rotates while it passes between two point targets, or along a line of two segments
-  meeting at an angle, so that the closest part changes inside a segment of the body;
-- the true corner from high-precision arithmetic (`mpmath`, 60 digits) on the same doubles: the
-  instant where the two exact distances are equal, and the distance there;
-- master's `tDistance`: whether it has an instant within one microsecond of each true corner, and
-  whether its maximum near the corner is the true one.
+- the corpus `corner_corpus.py`: 400 convex bodies turning by 0.4 to 2.8 radians per segment over two
+  or three poses while they pass a multi-point of two points on either side of the path (160 rows), of
+  three points (120), or inside the angle of a line of two segments (120), so that the closest part
+  changes inside a segment of the body;
+- the judge `corner_judge.py`: the body placed as `posesegm_interpolate` places it, the ratio exact;
+  each corner found by sampling and refined by bisection at 60 digits in `mpmath`; the distance it
+  computes at the 6816 instants of master's answers agreeing with master's values within 1.4e-15, so
+  the corners it finds are those of the function master evaluates;
+- master's `tDistance`, dumped by `corner_dump.c`: an instant within one microsecond of each corner is
+  a hit, and its curve interpolated at the corner below the true distance by more than the distance
+  falls within one microsecond of the corner is a cut.
 
-If master is right on that corpus, section 6 is needed only for the new parts of section 5. If it is
-wrong, the envelope is also a correction of master's existing fold, and it comes first (section 10).
+Master hits 0 of the 515 corners of the 394 rows that have one, and cuts 496 of them; the cut is a
+median 1.6 percent of the distance, 7.0 percent at the 90th percentile and 21.1 percent at most. The
+positive control `corner_control.py`, master's instants plus each true corner dated to the nearest
+microsecond with its value, hits 515 of 515 and cuts none. So the envelope is also a correction of
+master's existing fold, and it comes first (section 10). The instruments are in `oracle-kit`,
+`cpwork/tg12`.
 
 ## 7. Cost, and how it is kept down
 
