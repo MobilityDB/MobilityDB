@@ -547,7 +547,7 @@ cosines at rational degrees), come from a table, so the cosine of 90 and the sin
 exactly. Its witness is MPFR at 300 to 2400 bits, as the oracles of the cell walks read it
 (`h3_geodetic_oracle.py` of the oracle kit, its `d6`).
 
-The sine and cosine of degrees are open as #3637 (branch `fix/ea8-trig-nearest`), ahead of EA4 to EA6, which
+The sine and cosine of degrees are merged as #3637, ahead of EA4 to EA6, which
 change no contract it reads: the search `nearest_double_exact` and its hook `NearestSide` are
 exported from `geo_funcs.c`, and `wide_dyadic_cmp_fixed` compares the midpoint the search reads
 with a signed fixed-point value, so `WideDyadic` stays opaque to the new file `geo_trig.c` when
