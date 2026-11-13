@@ -1712,6 +1712,26 @@ geom_distance_straight_type(uint32_t type)
 }
 
 /**
+ * @brief Return true if a geometry is one of straight edges whose distance
+ * #geom_distance2d_exact answers: one of the types
+ * #geom_distance_straight_type admits, or a geometry collection whose members,
+ * nested collections included, all are
+ */
+static bool
+geom_distance_straight(const LWGEOM *geom)
+{
+  if (geom->type != COLLECTIONTYPE)
+    return geom_distance_straight_type(geom->type);
+  const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  {
+    if (! geom_distance_straight(coll->geoms[i]))
+      return false;
+  }
+  return true;
+}
+
+/**
  * @brief Return the number of point arrays of a point, a line or a polygon,
  * writing them in the last argument: one for a point or a line, the rings of a
  * polygon, its exterior first
@@ -1950,18 +1970,58 @@ geom_distance_first_point(const LWGEOM *part)
 }
 
 /**
- * @brief Return the number of parts of a geometry of the types
- * #geom_distance_straight_type admits, writing them in the last argument: the
- * members of a collection, or the geometry itself
- * @param[in] geom Address of the geometry, which @p parts may reference
- * @param[out] parts Parts
+ * @brief Return the number of points, lines and polygons a geometry
+ * #geom_distance_straight admits holds, writing them in @p out where it is
+ * not NULL: the members of a multi-geometry or a geometry collection, nested
+ * ones included, or the geometry itself
  */
 static uint32_t
-geom_distance_parts(const LWGEOM *const *geom, const LWGEOM *const **parts)
+geom_distance_leaves(const LWGEOM *geom, const LWGEOM **out)
 {
+  if (! lwgeom_is_collection(geom))
+  {
+    if (out)
+      out[0] = geom;
+    return 1;
+  }
+  const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+  uint32_t n = 0;
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+    n += geom_distance_leaves(coll->geoms[i], out ? out + n : NULL);
+  return n;
+}
+
+/**
+ * @brief Return the number of parts of a geometry #geom_distance_straight
+ * admits, writing them in the last argument: the members of a collection, or
+ * the geometry itself
+ * @details A geometry collection holding a multi-geometry or another
+ * collection is read as the points, lines and polygons it holds
+ * (#geom_distance_leaves), in an array written in @p flat, which the caller
+ * frees; @p flat is NULL otherwise
+ * @param[in] geom Address of the geometry, which @p parts may reference
+ * @param[out] parts Parts
+ * @param[out] flat Array the parts are written in, or NULL
+ */
+static uint32_t
+geom_distance_parts(const LWGEOM *const *geom, const LWGEOM *const **parts,
+  const LWGEOM ***flat)
+{
+  *flat = NULL;
   if (lwgeom_is_collection(*geom))
   {
     const LWCOLLECTION *coll = (const LWCOLLECTION *) *geom;
+    bool nested = false;
+    for (uint32_t i = 0; i < coll->ngeoms && ! nested; i++)
+      nested = lwgeom_is_collection(coll->geoms[i]);
+    if (nested)
+    {
+      uint32_t n = geom_distance_leaves(*geom, NULL);
+      *flat = palloc(sizeof(LWGEOM *) * n);
+      geom_distance_leaves(*geom, *flat);
+      *parts = (const LWGEOM *const *) *flat;
+      return n;
+    }
     *parts = (const LWGEOM *const *) coll->geoms;
     return coll->ngeoms;
   }
@@ -2387,8 +2447,7 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
  * the least distance of two segments, one of each (#geom_distance_walk), over
  * the point arrays of their parts. Where no segment meets the other
  * geometry, a part lies inside a polygon exactly where one of its points does
- * @param[in] geom1,geom2 Geometries of the types #geom_distance_straight_type
- * admits, not empty
+ * @param[in] geom1,geom2 Geometries #geom_distance_straight admits, not empty
  * @param[in] cut Where not NULL, a distance the answer is only compared with
  * (#geom_distance_walk)
  * @param[in,out] within As #geom_distance_walk reads it @nullable
@@ -2398,6 +2457,7 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2,
   const double *cut, bool *within)
 {
   const LWGEOM *const *parts[2];
+  const LWGEOM **flat[2];
   uint32_t nparts[2];
   const LWGEOM *geoms[2] = {geom1, geom2};
   const POINTARRAY *stack[2][GEOM_DISTANCE_ARRAYS];
@@ -2405,7 +2465,7 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2,
   uint32_t narrs[2];
   for (int i = 0; i < 2; i++)
   {
-    nparts[i] = geom_distance_parts(&geoms[i], &parts[i]);
+    nparts[i] = geom_distance_parts(&geoms[i], &parts[i], &flat[i]);
     /* The point arrays of the parts, in one list */
     uint32_t total = 0;
     for (uint32_t j = 0; j < nparts[i]; j++)
@@ -2433,12 +2493,15 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2,
   for (int i = 0; i < 2; i++)
     if (arrs[i] != stack[i])
       pfree(arrs[i]);
-  if (best == 0.0 || best == DBL_MAX || (cut && best < *cut))
-    return best;
-
-  /* No segment meets the other geometry */
-  return geom_distance_part_inside(parts[0], nparts[0], parts[1], nparts[1]) ?
-    0.0 : best;
+  /* Where no segment meets the other geometry, a part of one inside a polygon
+   * of the other makes the distance 0 */
+  if (! (best == 0.0 || best == DBL_MAX || (cut && best < *cut)) &&
+      geom_distance_part_inside(parts[0], nparts[0], parts[1], nparts[1]))
+    best = 0.0;
+  for (int i = 0; i < 2; i++)
+    if (flat[i])
+      pfree(flat[i]);
+  return best;
 }
 
 /**
@@ -2857,13 +2920,16 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return DBL_MAX;
 
   /* Two geometries of straight edges: the double nearest their distance, two
-   * points from their coordinates without deserializing them */
+   * points from their coordinates without deserializing them. A geometry
+   * collection is one where its members are (#geom_distance_straight), and is
+   * measured below otherwise */
   uint32_t stype1 = gserialized_get_type(gs1);
   uint32_t stype2 = gserialized_get_type(gs2);
-  if (geom_distance_straight_type(stype1) &&
-      geom_distance_straight_type(stype2))
+  if ((geom_distance_straight_type(stype1) || stype1 == COLLECTIONTYPE) &&
+      (geom_distance_straight_type(stype2) || stype2 == COLLECTIONTYPE))
   {
-    double result;
+    double result = 0.0;
+    bool straight = true;
     if (stype1 == POINTTYPE && stype2 == POINTTYPE)
       result = point_distance_exact(
         (const double *) GSERIALIZED_POINT2D_P(gs1),
@@ -2872,15 +2938,21 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     {
       LWGEOM *sgeom1 = lwgeom_from_gserialized(gs1);
       LWGEOM *sgeom2 = lwgeom_from_gserialized(gs2);
-      result = geom_distance2d_exact(sgeom1, sgeom2, NULL, NULL);
+      straight = geom_distance_straight(sgeom1) &&
+        geom_distance_straight(sgeom2);
+      if (straight)
+        result = geom_distance2d_exact(sgeom1, sgeom2, NULL, NULL);
       lwgeom_free(sgeom1);
       lwgeom_free(sgeom2);
     }
-    /* The double nearest a distance of finite coordinates is infinite where
-     * the distance leaves the doubles (#ensure_finite_result) */
-    if (! ensure_finite_result(result))
-      return -1.0;
-    return result;
+    if (straight)
+    {
+      /* The double nearest a distance of finite coordinates is infinite where
+       * the distance leaves the doubles (#ensure_finite_result) */
+      if (! ensure_finite_result(result))
+        return -1.0;
+      return result;
+    }
   }
 
   /* Fast path: the distance between two points is computed from their
@@ -3162,9 +3234,15 @@ geom_dwithin2d_exact(const LWGEOM *geom1, const LWGEOM *geom2, double dist)
   if (within)
     return true;
   const LWGEOM *const *parts1, *const *parts2;
-  uint32_t nparts1 = geom_distance_parts(&geom1, &parts1);
-  uint32_t nparts2 = geom_distance_parts(&geom2, &parts2);
-  return geom_distance_part_inside(parts1, nparts1, parts2, nparts2);
+  const LWGEOM **flat1, **flat2;
+  uint32_t nparts1 = geom_distance_parts(&geom1, &parts1, &flat1);
+  uint32_t nparts2 = geom_distance_parts(&geom2, &parts2, &flat2);
+  bool result = geom_distance_part_inside(parts1, nparts1, parts2, nparts2);
+  if (flat1)
+    pfree(flat1);
+  if (flat2)
+    pfree(flat2);
+  return result;
 }
 
 /**

@@ -470,6 +470,27 @@ SELECT ST_AsText(shortestLine(geometry 'Point(0 0 0)', geometry 'Linestring(1 -1
 SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
 SELECT maxDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
 
+-- A geometry collection of points, lines and polygons, nested ones included,
+-- is at the distance of the same members written as a multi-geometry, the
+-- double nearest the exact distance
+SELECT distance(geometry 'Linestring(-2.083 0.759,-0.097 4.264)',
+    geometry 'GeometryCollection(Point(2.579 -3.924),Point(1.665 -1.556))') =
+    float8 '4.4053069132581442',
+  distance(geometry 'Linestring(-2.083 0.759,-0.097 4.264)',
+    geometry 'GeometryCollection(Point(2.579 -3.924),Point(1.665 -1.556))') =
+  distance(geometry 'Linestring(-2.083 0.759,-0.097 4.264)',
+    geometry 'MultiPoint(2.579 -3.924,1.665 -1.556)');
+SELECT distance(geometry 'Point(2.853 -4.856)',
+    geometry 'GeometryCollection(MultiPoint((0.718 1.927),(3.782 3.818),(4.257 4.039)),Point(-0.907 4.516))') =
+  distance(geometry 'Point(2.853 -4.856)',
+    geometry 'MultiPoint(0.718 1.927,3.782 3.818,4.257 4.039,-0.907 4.516)');
+SELECT distance(geometry 'Linestring(2.468 1.602,3.627 -0.441)',
+    geometry 'GeometryCollection(GeometryCollection(Linestring(-0.313 -3.032,1.431 0.067)),Point(0.561 2.667))') =
+  least(distance(geometry 'Linestring(2.468 1.602,3.627 -0.441)',
+      geometry 'Linestring(-0.313 -3.032,1.431 0.067)'),
+    distance(geometry 'Linestring(2.468 1.602,3.627 -0.441)',
+      geometry 'Point(0.561 2.667)'));
+
 -- A geography is measured on the spheroid by default and on the sphere when
 -- the last argument is false, as the PostGIS functions over geographies
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric),
