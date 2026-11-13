@@ -3223,7 +3223,7 @@
 					<para><link linkend="tcell_at_time"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restrict a temporal cell to (the complement of) a time value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict a temporal QUADBIN cell to (the complement of) a spatiotemporal box</para>
+					<para><link linkend="tcell_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict a temporal QUADBIN or H3 cell to (the complement of) a spatiotemporal box</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3296,7 +3296,7 @@
 					<para><link linkend="tcell_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps of a temporal QUADBIN cell and a spatiotemporal box</para>
+					<para><link linkend="tcell_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps of a temporal QUADBIN or H3 cell and a spatiotemporal box</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_position"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Position operators</para>

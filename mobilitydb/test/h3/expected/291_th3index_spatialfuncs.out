@@ -205,3 +205,63 @@ ORDER BY res, cut;
   12 |   3 |   456 | t
 (12 rows)
 
+SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+                    astext                    
+----------------------------------------------
+ 832d5afffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(th3index(h3index '8009fffffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+                    astext                    
+----------------------------------------------
+ 8009fffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(th3index(h3index '8001fffffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+                                                                     astext                                                                     
+------------------------------------------------------------------------------------------------------------------------------------------------
+ {[832d5afffffffff@Mon Jan 01 00:00:00 2001 PST, 832d5afffffffff@Tue Jan 02 00:00:00 2001 PST), [832d5afffffffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(minusStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ {[8310a5fffffffff@Tue Jan 02 00:00:00 2001 PST, 8310a5fffffffff@Wed Jan 03 00:00:00 2001 PST)}
+(1 row)
+
+SELECT th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02]' ?&&
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02]' %&&
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))';
+ ?column? 
+----------
+ f
+(1 row)
+
+/* Errors */
+SELECT atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,40),(90,50))');
+ERROR:  Operation on mixed planar and geodetic coordinates
