@@ -1022,7 +1022,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the sign of a polynomial in exact sums where its filters carry it, and 0 where they cannot tell. </p>
+<p>Return the sign of a polynomial in exact sums where its filters carry it, and 2 where they cannot tell. </p>
 <p >The two filters of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_afb68ffaedcd435b48c73c592d3315532.html#afb68ffaedcd435b48c73c592d3315532" title="Return the sign of a polynomial in exact sums, computed exactly.">polynomial_sign_exact</a>, in doubles and else in pairs of doubles (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a48f239cfa11bcd3eb38e3c4ae1be8980.html#a48f239cfa11bcd3eb38e3c4ae1be8980" title="Return the sign of a polynomial in exact sums where its evaluation in pairs of doubles carries it,...">polynomial_sign_pairs</a>). The polynomial is evaluated in doubles together with a bound on the error of every operation, each rounding contributing at most DBL_EPSILON times its result; where the value exceeds the bound its sign is the exact one. Neither filter answers a value outside the doubles, so a caller holding an exact route of its own reads it where this answers 0 </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">sums</td><td><a class="el" href="structExact.html">Exact</a> sums the terms refer to </td></tr>
@@ -1030,7 +1030,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>-1 or 1, or 0 where the filters cannot tell </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>-1 or 1, or 2 where the filters cannot tell </dd></dl>
 
 </div>
 </div>
