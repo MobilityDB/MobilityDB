@@ -151,6 +151,21 @@ main(void)
   segm_case(0.0, 1.0, 1.0, 2.0, 0, DAY, -1, "two parallel segments");
   segm_case(0.0, 1.0, 0.0, 2.0, 0, DAY, -1, "two segments equal at a bound");
 
+  /* A crossing belonging to a bound is dated at that bound */
+  TimestampTz t = -1;
+  check(! tfloatsegm_crossing(2.0, 1.0, 1.0000000000000002, 0, DAY, &t) &&
+    t == DAY, "the bound dating a crossing nearest to the upper bound");
+  t = -1;
+  check(! tfloatsegm_crossing(0.0, 1.0, 1e-12, 5, DAY + 5, &t) && t == 5,
+    "the bound dating a crossing nearest to the lower bound");
+  t = -1;
+  check(! tnumbersegm_crossing(2.0, 1.0, 1.0000000000000002,
+    1.0000000000000002, 0, DAY, &t) && t == DAY,
+    "the bound dating a crossing of two segments nearest to a bound");
+  t = -1;
+  check(! tfloatsegm_crossing(0.0, 1.0, 2.0, 0, DAY, &t) && t == -1,
+    "no instant where the segment does not cross");
+
   printf("%d of %d checks pass\n", checks - failures, checks);
   meos_finalize();
   return failures ? EXIT_FAILURE : EXIT_SUCCESS;

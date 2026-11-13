@@ -1211,9 +1211,10 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         cross = lfinfo->cross_type ? 0 :
           tsegment_intersection_value(startvalue, endvalue, value,
             start->temptype, start->t, end->t, &tpt1, &tpt2);
-        /* A crossing near a bound is not reported, see floatsegm_locate().
-         * If the results at the bounds differ, the result changes at a
-         * bound, and the value in the middle tells at which one. */
+        /* A crossing dated at a bound is not reported, see
+         * #tfloatsegm_crossing. If the results at the bounds differ, the
+         * result changes at a bound, and the value in the middle tells at
+         * which one. */
         if (! cross && ! datum_eq(startresult, endresult, resbasetype))
           midpoint = true;
       }
@@ -1303,19 +1304,17 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         }
         else /* ! lower_eq && ! upper_eq */
         {
-          /* The crossing is at the middle: close the current sequence */
+          /* The crossing is at the middle: close the current sequence at the
+           * crossing, which takes the value at the crossing, the sequence a
+           * closing sequence exclusive at the crossing and a singleton
+           * sequence at the crossing join into (#tsequence_join_test) */
           instants[ninsts++] = tinstant_make(startresult, restype, start->t);
-          instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
+          instants[ninsts++] = tinstant_make_free(tpresult, restype, tpt1);
           result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
-            false, STEP, NORMALIZE);
+            true, STEP, NORMALIZE);
           for (int j = 0; j < ninsts; j++)
             pfree(instants[j]);
           ninsts = 0;
-          /* Add a singleton sequence with the crossing */
-          instants[0] = tinstant_make_free(tpresult, restype, tpt1);
-          result[nseqs++] = lifting_tsequence_make(instants, 1, true, true,
-            STEP, NORMALIZE);
-          pfree(instants[0]);
           /* Start a new sequence from the crossing to the end of the segment */
           lower_inc = false;
           instants[ninsts++] = tinstant_make(endresult, restype, tpt1);
@@ -2013,9 +2012,10 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
             endvalue2, start1->temptype, start1->t, end1->t, &tps[0], &tps[1]);
         if (cross)
           tpt1 = tps[0];
-        /* A crossing near a bound is not reported, see floatsegm_locate().
-         * If the results at the bounds differ, the result changes at a
-         * bound, and the value in the middle tells at which one. */
+        /* A crossing dated at a bound is not reported, see
+         * #tnumbersegm_crossing. If the results at the bounds differ, the
+         * result changes at a bound, and the value in the middle tells at
+         * which one. */
         if (! cross && ! datum_eq(startresult, endresult, resbasetype))
           midpoint = true;
       }
@@ -2073,12 +2073,15 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
       {
         tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
           start1->temptype, start1->t, end1->t, tpt1);
-        /* Two point segments meeting at the crossing construct two points
-         * apart by their rounding where the meeting falls between two
-         * microseconds; the crossing is a meeting their intersection decides
-         * (#tgeompointsegm_meet, #tgeogpointsegm_intersection), so the
-         * function reads the one point they meet at */
-        tpvalue2 = (! lfinfo->tpfn_temp && tpoint_type(start1->temptype)) ?
+        /* Two segments take one value at their crossing, which the function
+         * reads. The values interpolated at the microsecond dating it differ
+         * by their rounding for two float segments, and two point segments
+         * construct two points apart by their rounding where the meeting
+         * falls between two microseconds, a meeting their intersection
+         * decides (#tgeompointsegm_meet, #tgeogpointsegm_intersection) */
+        tpvalue2 = (! lfinfo->tpfn_temp &&
+            (start1->temptype == T_TFLOAT ||
+             tpoint_type(start1->temptype))) ?
           datum_copy(tpvalue1, basetype) :
           tsegment_value_at_timestamptz(startvalue2, endvalue2,
             start1->temptype, start1->t, end1->t, tpt1);
@@ -2103,6 +2106,23 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
           /* The lower_inc of the new sequence is false if lower_eq is true */
           lower_inc = ! lower_eq;
           /* Start a new sequence */
+          instants[ninsts++] = tinstant_make(endresult, restype, tpt1);
+        }
+        else if (interp == STEP)
+        {
+          /* The crossing is at the middle: close the current sequence at the
+           * crossing, which takes the value at the crossing, the sequence a
+           * closing sequence exclusive at the crossing and a singleton
+           * sequence at the crossing join into (#tsequence_join_test) */
+          instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
+          instants[ninsts++] = tinstant_make_free(tpresult, restype, tpt1);
+          result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
+            true, interp, NORMALIZE);
+          for (int k = 0; k < ninsts; k++)
+            pfree(instants[k]);
+          ninsts = 0;
+          /* Start a new sequence from the crossing to the end of the segment */
+          lower_inc = false;
           instants[ninsts++] = tinstant_make(endresult, restype, tpt1);
         }
         else /* ! lower_eq && ! upper_eq */
@@ -2781,6 +2801,27 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
       lower_inc = true;
       continue;
     }
+    /* A float segment crosses the value strictly inside, in continuous time,
+     * where the value lies strictly between its bound values, a comparison
+     * of the doubles, whichever microsecond dates the crossing. On each side
+     * of the crossing the segment compares with the value as its bound value
+     * there does */
+    if (basetype == T_FLOAT8)
+    {
+      double dstart = DatumGetFloat8(startvalue);
+      double dend = DatumGetFloat8(endvalue);
+      double dvalue = DatumGetFloat8(value);
+      if (Min(dstart, dend) < dvalue && dvalue < Max(dstart, dend))
+      {
+        if (eafunc_value_decides(value, value, lfinfo, &result) ||
+            eafunc_value_decides(startvalue, value, lfinfo, &result) ||
+            eafunc_value_decides(endvalue, value, lfinfo, &result))
+          return result;
+        start = end;
+        lower_inc = true;
+        continue;
+      }
+    }
     /* Determine whether the segment crosses the value. The crossing is
      * strictly inside the segment, since the function answers 0 when the
      * value is the one of a bound, so the segment takes the value there
@@ -3280,6 +3321,36 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
     if (datum_ne(startvalue1, startvalue2, basetype) ||
         datum_eq(endvalue1, endvalue2, basetype) || lfinfo->tpfn_temp_bound)
     {
+      /* Two float segments cross strictly inside, in continuous time, where
+       * their gap has opposite signs at the bounds, comparisons of the
+       * doubles, whichever microsecond dates the crossing, and take one
+       * value there. Right after the start they compare as at the start
+       * where they differ there */
+      if (! lfinfo->tpfn_temp && start1->temptype == T_TFLOAT &&
+          start2->temptype == T_TFLOAT)
+      {
+        double s1 = DatumGetFloat8(startvalue1);
+        double s2 = DatumGetFloat8(startvalue2);
+        double e1 = DatumGetFloat8(endvalue1);
+        double e2 = DatumGetFloat8(endvalue2);
+        int sstart = (s1 > s2) - (s1 < s2);
+        int send = (e1 > e2) - (e1 < e2);
+        for (int k = 0; k < 2; k++)
+        {
+          if (sstart == 0 || (k == 0 && sstart != - send))
+            continue;
+          res = DatumGetBool(tfunc_base_base(startvalue1,
+            (k == 0) ? startvalue1 : startvalue2, lfinfo));
+          if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+          {
+            pfree_array((void **) tofree, nfree);
+            return lfinfo->ever ? 1 : 0;
+          }
+        }
+        start1 = end1; start2 = end2;
+        lower_inc = true;
+        continue;
+      }
       /* The interval of the segment during which the predicate holds, one at
        * most, a touch at one instant being the interval of that instant */
       TimestampTz tpi[2];

@@ -414,7 +414,8 @@ floatsegm_gap_sign_half(double start1, double end1, double start2,
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] sstart,send Signs of the gap at the start and at the end
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Microsecond nearest to the crossing
+ * @param[out] t Microsecond nearest to the crossing, set where the segments
+ * cross inside the period, a bound where the crossing belongs to it
  */
 static pg_noinline bool
 floatsegm_crossing_search(double start1, double end1, double start2,
@@ -497,11 +498,10 @@ floatsegm_crossing_search(double start1, double end1, double start2,
   int64 m = hi;
   if (shi == 0 && ((lower + m) & 1))
     m++;
-  /* A crossing whose nearest microsecond is a bound belongs to the bound */
-  if (m <= 0 || m >= d)
-    return false;
+  /* A crossing whose nearest microsecond is a bound belongs to the bound,
+   * which dates it */
   *t = lower + m;
-  return true;
+  return (m > 0 && m < d);
 }
 
 /**
@@ -515,7 +515,8 @@ floatsegm_crossing_search(double start1, double end1, double start2,
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Microsecond nearest to the crossing
+ * @param[out] t Microsecond nearest to the crossing, set where the segments
+ * cross inside the period, a bound where the crossing belongs to it
  */
 static inline bool
 floatsegm_crossing(double start1, double end1, double start2, double end2,
@@ -537,7 +538,6 @@ floatsegm_crossing(double start1, double end1, double start2, double end2,
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
  * @brief Return the exact sign of the gap between two float segments at a
  * timestamptz
  * @details The two-segment twin of #tfloatsegm_side, as
@@ -560,7 +560,6 @@ tnumbersegm_side(double start1, double end1, double start2, double end2,
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
  * @brief Return the exact sign of the difference between a float segment and
  * a value at a timestamptz
  * @details The sign is that of `x(t) - value` on the doubles, where the
@@ -583,7 +582,6 @@ tfloatsegm_side(double start, double end, double value, TimestampTz lower,
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
  * @brief Return true if two float segments cross strictly inside their
  * period, dated in the output argument by the microsecond nearest to the
  * crossing
@@ -594,7 +592,8 @@ tfloatsegm_side(double start, double end, double value, TimestampTz lower,
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] t Microsecond nearest to the crossing, a tie going to the even
- * timestamp
+ * timestamp, set where the segments cross inside the period, a bound where
+ * the crossing belongs to it
  * @return False where the segments do not cross inside the period or where
  * the microsecond nearest to the crossing is a bound
  * @pre The segments are synchronized
@@ -608,7 +607,6 @@ tnumbersegm_crossing(double start1, double end1, double start2, double end2,
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
  * @brief Return true if a float segment crosses a value strictly inside its
  * period, dated in the output argument by the microsecond nearest to the
  * crossing
@@ -623,7 +621,8 @@ tnumbersegm_crossing(double start1, double end1, double start2, double end2,
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segment
  * @param[out] t Microsecond nearest to the crossing, a tie going to the even
- * timestamp
+ * timestamp, set where the value is strictly between the bound values, a
+ * bound where the crossing belongs to it
  * @return False where the value is not strictly between the bound values or
  * where the microsecond nearest to the crossing is a bound
  */
@@ -3246,8 +3245,11 @@ intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
  *****************************************************************************/
 
 /**
- * @brief Return true if the segment of a temporal number intersects
- * the base value at a timestamptz
+ * @brief Return 1 if the segment of a temporal float crosses a float strictly
+ * inside its period, dated in the output argument by the microsecond nearest
+ * to the crossing, return 0 otherwise
+ * @details The crossing and its instant are decided exactly by
+ * #tfloatsegm_crossing, so the instant is strictly between the bounds
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segment
@@ -3258,20 +3260,8 @@ tfloatsegm_intersection_value(Datum start, Datum end, Datum value,
   TimestampTz lower, TimestampTz upper, TimestampTz *t)
 {
   assert(lower < upper); assert(t);
-  double dstart = DatumGetFloat8(start);
-  double dend = DatumGetFloat8(end);
-  double dvalue = DatumGetFloat8(value);
-  double fraction = floatsegm_locate(dstart, dend, dvalue);
-  if (fraction < 0.0)
-    return 0;
-  if (t)
-  {
-    double duration = (double) (upper - lower);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to lower or to upper */
-    *t = lower + (TimestampTz) (duration * fraction);
-  }
-  return 1;
+  return tfloatsegm_crossing(DatumGetFloat8(start), DatumGetFloat8(end),
+    DatumGetFloat8(value), lower, upper, t) ? 1 : 0;
 }
 
 /**
@@ -3293,6 +3283,16 @@ tsegment_intersection_value(Datum start, Datum end, Datum value,
 {
   assert(lower < upper); assert(t1); assert(t2);
   MeosType basetype = temptype_basetype(temptype);
+  /* A float crossing and its instant are decided exactly, a value at a bound
+   * answering 0 */
+  if (basetype == T_FLOAT8)
+  {
+    if (! tfloatsegm_crossing(DatumGetFloat8(start), DatumGetFloat8(end),
+        DatumGetFloat8(value), lower, upper, t1))
+      return 0;
+    *t2 = *t1;
+    return 1;
+  }
   if (datum_eq(value, start, basetype) || datum_eq(value, end, basetype))
     return 0;
 
@@ -3334,14 +3334,17 @@ tsegment_intersection_value(Datum start, Datum end, Datum value,
  */
 
 /**
- * @brief Return 1 or 2 if two temporal number segments intersect during the
- * the period defined by the output timestamps, return 0 otherwise
+ * @brief Return 1 if two temporal number segments cross strictly inside their
+ * period, dated in the output arguments by the microsecond nearest to the
+ * crossing, return 0 otherwise
+ * @details The crossing and its instant are decided exactly as
+ * #tnumbersegm_crossing decides them, inline, so the instant is strictly
+ * between the bounds
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] basetype Base type of the values
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
- * @note Only the intersection inside the segments is considered
+ * @param[out] t1,t2 Timestamps defining the resulting period, equal
  */
 int
 tnumbersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
@@ -3349,53 +3352,11 @@ tnumbersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  double x1 = datum_double(start1, basetype);
-  double x2 = datum_double(end1, basetype);
-  double x3 = datum_double(start2, basetype);
-  double x4 = datum_double(end2, basetype);
-
-  /* Segments intersecting in the boundaries */
-  if (float8_eq(x1, x3) || float8_eq(x2, x4))
+  if (! floatsegm_crossing(datum_double(start1, basetype),
+      datum_double(end1, basetype), datum_double(start2, basetype),
+      datum_double(end2, basetype), lower, upper, t1))
     return 0;
-
-  /*
-   * Using the parametric form of the segments, compute the instant t at which
-   * the two segments are equal: x1 + (x2 - x1) t = x3 + (x4 -x3) t
-   * that is t = (x3 - x1) / (x2 - x1 - x4 + x3).
-   */
-  long double denom = x2 - x1 - x4 + x3;
-  if (denom == 0)
-    /* Parallel segments */
-    return 0;
-
-  /*
-   * Potentially avoid the division based on
-   * Franklin Antonio, Faster Line Segment Intersection, Graphic Gems III
-   * https://github.com/erich666/GraphicsGems/blob/master/gemsiii/insectc.c
-   */
-  long double num = x3 - x1;
-  if (denom > 0)
-  {
-    if (num < 0 || num > denom)
-      return 0;
-  }
-  else
-  {
-    if (num > 0 || num < denom)
-      return 0;
-  }
-
-  long double fraction = num / denom;
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-    /* Intersection occurs out of the period */
-    return 0;
-
-  double duration = (double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the
-   * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t1 <= lower || *t2 >= upper)
-    return 0;
+  *t2 = *t1;
   return 1;
 }
 
