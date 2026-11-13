@@ -2566,23 +2566,23 @@ point_coords_get(Datum point, int ndims, double *c)
  * @param[in] start,end Values defining the first segment
  * @param[in] point Point to locate
  * @param[in] lower,upper Timestamps defining the segment
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segment is not constant
- * @post As there is a single turning point, `t2` is set to `t1`
  */
 static int
 tgeogpoint_geo_distance_turnpt(Datum start, Datum end, Datum point,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   long double duration = (long double) (upper - lower);
   double fraction = (double) geogpointsegm_closest(start, end, point);
   if (fraction < 0.0)
     return 0;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  tps[0] = lower + (TimestampTz) (duration * fraction);
   /* A turning point dated on a bound belongs to the bound, which has an instant
    * already */
-  return (*t1 > lower && *t1 < upper) ? 1 : 0;
+  return (tps[0] > lower && tps[0] < upper) ? 1 : 0;
 }
 
 /**
@@ -2726,21 +2726,21 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @note The PostGIS functions @p lw_dist2d_seg_seg and @p lw_dist3d_seg_seg
  * cannot be used since they do not take time into consideration and would
  * return, e.g., that the minimum distance between the two following segments
  * `[Point(2 2)@t1, Point(1 1)@t2]` and `[Point(3 1)@t1, Point(1 1)@t2]`
  * is at `Point(2 2)@t2` instead of `Point(1.5 1.5)@(t1 + (t2 - t1)/2)`.
  * @pre The segments are not both constants.
- * @post As there is a single turning point, `t2` is set to `t`
  */
 int
 tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   double fraction;
   bool hasz = FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags);
   if (hasz) /* 3D */
@@ -2765,7 +2765,7 @@ tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   }
 
   double duration = upper - lower;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  tps[0] = lower + (TimestampTz) (duration * fraction);
   return 1;
 }
 
@@ -2778,16 +2778,16 @@ tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants
- * @post As there is a single turning point, `t2` is  set to `t1`
  */
 int
 tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   const POINT2D *p1 = DATUM_POINT2D_P(start1);
   const POINT2D *p2 = DATUM_POINT2D_P(end1);
   const POINT2D *q1 = DATUM_POINT2D_P(start2);
@@ -2814,7 +2814,7 @@ tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return 0;
   double duration = (double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  tps[0] = lower + (TimestampTz) (duration * fraction);
   return 1;
 }
 
@@ -2826,20 +2826,21 @@ tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] start2,end2 Instants defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants.
  */
 int
 tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *tps, int cap)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   return FLAGS_GET_GEODETIC(DatumGetGserializedP(start1)->gflags) ?
     tgeogpointsegm_distance_turnpt(start1, end1, start2, end2, param,
-      lower, upper, t1, t2) :
+      lower, upper, tps, cap) :
     tgeompointsegm_distance_turnpt(start1, end1, start2, end2, param,
-      lower, upper, t1, t2);
+      lower, upper, tps, cap);
 }
 
 /*****************************************************************************/
@@ -3054,6 +3055,7 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
    * referenced as the previous instant in the next iteration) */
   int count = seq1->count - i + seq2->count - j;
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
+  TimestampTz tpbuf[TPFN_STACK_CAP];
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= upper || inst2->t <= upper))
   {
@@ -3097,29 +3099,40 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
       Datum end1 = tinstant_value_p(inst1);
       Datum start2 = tinstant_value_p(prev2);
       Datum end2 = tinstant_value_p(inst2);
-      TimestampTz tpt1, tpt2;
-      int found = turnpt(start1, end1, start2, end2, (Datum) 0, prev1->t,
-        inst1->t, &tpt1, &tpt2);
-      if (found)
+      TimestampTz *tps = tpbuf;
+      int ntps = turnpt(start1, end1, start2, end2, (Datum) 0, prev1->t,
+        inst1->t, tps, TPFN_STACK_CAP);
+      if (unlikely(ntps > TPFN_STACK_CAP))
       {
+        tps = palloc(sizeof(TimestampTz) * ntps);
+        turnpt(start1, end1, start2, end2, (Datum) 0, prev1->t, inst1->t, tps,
+          ntps);
+      }
+      if (ntps == 1)
+      {
+        /* One turning point, the case of every function of this arity */
         Datum v1 = tsegment_value_at_timestamptz(start1, end1, temptype,
-          prev1->t, inst1->t, tpt1);
+          prev1->t, inst1->t, tpbuf[0]);
         Datum v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
-          prev1->t, inst1->t, tpt1);
+          prev1->t, inst1->t, tpbuf[0]);
         double d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
-        if (d < curmin) { curmin = d; *tmin = tpt1; }
+        if (d < curmin) { curmin = d; *tmin = tpbuf[0]; }
         pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
-        /* Account for the second turning point if any */
-        if (found > 1)
+      }
+      else if (ntps > 1)
+      {
+        for (int k = 0; k < ntps; k++)
         {
-          v1 = tsegment_value_at_timestamptz(start1, end1, temptype,
-            prev1->t, inst1->t, tpt2);
-          v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
-            prev1->t, inst1->t, tpt2);
-          d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
-          if (d < curmin) { curmin = d; *tmin = tpt2; }
+          Datum v1 = tsegment_value_at_timestamptz(start1, end1, temptype,
+            prev1->t, inst1->t, tps[k]);
+          Datum v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
+            prev1->t, inst1->t, tps[k]);
+          double d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
+          if (d < curmin) { curmin = d; *tmin = tps[k]; }
           pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
         }
+        if (unlikely(ntps > TPFN_STACK_CAP))
+          pfree(tps);
       }
     }
     /* Evaluate the distance at the synchronized instant, unless the segment

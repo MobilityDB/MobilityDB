@@ -2408,15 +2408,16 @@ point_coords(Datum value, bool hasz, double coords[3])
  * @param[in] start2,end2 Base values defining the second segment
  * @param[in] value Base value
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants.
  */
 int
 tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum value, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1), assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   double dist = DatumGetFloat8(value);
   double duration = (double) (upper - lower);
   const GSERIALIZED *gs1 = DatumGetGserializedP(start1);
@@ -2440,8 +2441,8 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
       hasz ? 3 : 2, 0.0, 0.0, 0.0, 0.0, dist, upper - lower, &n1, &n2);
     if (result > 0)
     {
-      *t1 = lower + n1;
-      *t2 = lower + n2;
+      tps[0] = lower + n1;
+      tps[1] = lower + n2;
     }
     return result;
   }
@@ -2534,8 +2535,8 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
       BoolGetDatum(true));
     if (! DatumGetBool(within))
       return 0;
-    *t1 = lower;
-    *t2 = upper;
+    tps[0] = lower;
+    tps[1] = upper;
     return 2;
   }
 
@@ -2548,7 +2549,7 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
     long double t5 = (-1 * b) / (2 * a);
     if (t5 < 0.0 || t5 > 1.0)
       return 0;
-    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
+    tps[0] = lower + (TimestampTz) (t5 * duration);
     return 1;
   }
   /* No solution */
@@ -2578,13 +2579,13 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
     long double t8 = Min(1.0, t6);
     if (fabsl(t7 - t8) < MEOS_EPSILON)
     {
-      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
+      tps[0] = lower + (TimestampTz) (t7 * duration);
       return 1;
     }
     else
     {
-      *t1 = lower + (TimestampTz) (t7 * duration);
-      *t2 = lower + (TimestampTz) (t8 * duration);
+      tps[0] = lower + (TimestampTz) (t7 * duration);
+      tps[1] = lower + (TimestampTz) (t8 * duration);
       return 2;
     }
   }

@@ -47,14 +47,20 @@
  *
  * A function of the family is
  *
- *   F(t) = SUM_k [ (a1_k*t + a0_k) * cos(w_k*t)
- *                + (b1_k*t + b0_k) * sin(w_k*t) ]
+ *   F(t) = SUM_k [ (a2_k*t^2 + a1_k*t + a0_k) * cos(w_k*t)
+ *                + (b2_k*t^2 + b1_k*t + b0_k) * sin(w_k*t) ]
  *        + c2*t^2 + c1*t + c0
  *
  * Each term has phase zero and a frequency that is not negative.  In one
  * temporal segment, the frequencies are wA, wB and wA - wB, where wA and wB
  * are the rotations of the two bodies.  Thus a function has at most three
  * terms.  If the bodies do not rotate, the function is a quadratic.
+ *
+ * The functions of the walk have affine coefficients, a2 = b2 = 0.  The
+ * square of a function with one frequency w and an affine polynomial part,
+ * #distfun_square(), has the frequencies w and 2w and quadratic
+ * coefficients: the equation of the distance to a vertex and the distance to
+ * an edge is such a difference, see trgeo_distance.txt.
  *****************************************************************************/
 
 /** Maximum number of terms of a function */
@@ -72,8 +78,8 @@
 typedef struct
 {
   double w;            /**< Frequency, not negative */
-  double a1, a0;       /**< (a1*t + a0) * cos(w*t) */
-  double b1, b0;       /**< (b1*t + b0) * sin(w*t) */
+  double a2, a1, a0;   /**< (a2*t^2 + a1*t + a0) * cos(w*t) */
+  double b2, b1, b0;   /**< (b2*t^2 + b1*t + b0) * sin(w*t) */
 } DistFunTerm;
 
 /**
@@ -101,7 +107,11 @@ extern bool distfun_add(DistFun *f, double w, double g, double A1, double A0,
   double B1, double B0);
 extern bool distfun_add_cs(DistFun *f, double w, double cg, double sg,
   double A1, double A0, double B1, double B0);
+extern bool distfun_add_cs2(DistFun *f, double w, double cg, double sg,
+  double A2, double A1, double A0, double B2, double B1, double B0);
 extern void distfun_add_poly(DistFun *f, double c2, double c1, double c0);
+extern bool distfun_add_fun(DistFun *f, const DistFun *g, double s);
+extern bool distfun_square(const DistFun *f, DistFun *sq);
 
 extern double distfun_eval(const DistFun *f, double t);
 extern void distfun_deriv(const DistFun *f, DistFun *df);

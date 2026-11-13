@@ -253,7 +253,7 @@ SELECT numInstants(th3index(tgeogpoint
   '[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
  numinstants 
 -------------
-           4
+           6
 (1 row)
 
 SELECT numInstants(th3index(tgeompoint

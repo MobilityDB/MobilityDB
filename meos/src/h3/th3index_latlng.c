@@ -360,32 +360,27 @@ tpointseq_linear_to_th3index(const TSequence *seq, int32 resolution)
     {
       if (cells[k] == last)
         continue;
-      /* A planar crossing is dated as the restriction of a trajectory to a
-       * region dates it, by the truncation of its exact parameter: the
-       * segment crosses the line of the edge of the outline the walk
-       * names, and #segment_edge_cross_offset dates that crossing on the
-       * input doubles and says whether it falls on the microsecond
-       * returned. A geodetic crossing reads the parameter of its walk, a
-       * crossing the last microsecond of the segment holds being the end of
-       * the segment at the resolution a timestamp states, and the cell
-       * entered holds the instant it is entered at */
-      TimestampTz tenter;
+      /* A crossing is dated as the restriction of a trajectory to a region
+       * dates it, by the truncation of its exact parameter, and the cell
+       * holding the crossing position holds the microsecond where the
+       * trajectory lies on the edge exactly then. A planar segment crosses
+       * the line of the edge of the outline the walk names, dated on the
+       * input doubles by #segment_edge_cross_offset; a geodetic one the
+       * great circle of an edge through the crossing, dated on the geodetic
+       * positions by #h3_geodetic_edge_offset */
+      TimestampTz tenter = inst1->t;
       bool whole = true, held_left = false, held_entered = true;
-      if (! geodetic && k > 0)
+      if (k > 0)
       {
         const H3EdgeCross *x = &cross[k];
-        tenter = inst1->t + segment_edge_cross_offset(p1->x, p1->y, p2->x,
-          p2->y, inst2->t - inst1->t, x->ax, x->ay, x->oa, x->bx, x->by,
-          x->ob, &whole);
+        int64 D = inst2->t - inst1->t;
+        tenter += geodetic ?
+          h3_geodetic_edge_offset(p1->x, p1->y, p2->x, p2->y, D, x->ax,
+            x->ay, x->bx, x->by, enter[k], &whole) :
+          segment_edge_cross_offset(p1->x, p1->y, p2->x, p2->y, D, x->ax,
+            x->ay, x->oa, x->bx, x->by, x->ob, &whole);
         held_left = x->held_left;
         held_entered = x->held_entered;
-      }
-      else
-      {
-        tenter = inst1->t + (TimestampTz) ((double) (inst2->t - inst1->t) *
-          enter[k]);
-        if (inst2->t - tenter <= 1)
-          tenter = inst2->t;
       }
       th3index_visit_append(&visits, &nvisits, &vsize, cells[k], tenter,
         whole, held_left, held_entered);

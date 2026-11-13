@@ -49,6 +49,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 #include <math.h>
 #include <string.h>
 /* PostgreSQL */
@@ -627,6 +628,640 @@ trig_product_nearest(const double *deg, const bool *is_sin, int n)
     &pp);
   pfree(p.lo64);
   pfree(p.hi64);
+  return result;
+}
+
+/*****************************************************************************
+ * The angle between two exact vectors
+ *****************************************************************************/
+
+/* The precision, in bits of an angle, the comparison of a crossing fraction
+ * starts from, and the one beyond which it answers undecided; multiples of
+ * 32, as #fix_mul shifts by whole limbs */
+#define ANGLE_FIRST_BITS 128
+#define ANGLE_LAST_BITS (1 << 14)
+
+/* -1, 0 or 1 as a < b, a = b or a > b */
+static int
+fix_cmp(const uint32_t *a, const uint32_t *b, int L)
+{
+  for (int i = L - 1; i >= 0; i--)
+    if (a[i] != b[i])
+      return a[i] < b[i] ? -1 : 1;
+  return 0;
+}
+
+/* Index of the highest set bit, -1 for 0 */
+static int
+fix_top_bit(const uint32_t *a, int L)
+{
+  for (int i = L - 1; i >= 0; i--)
+    if (a[i])
+    {
+      int b = 31;
+      while (! ((a[i] >> b) & 1))
+        b--;
+      return 32 * i + b;
+    }
+  return -1;
+}
+
+static bool
+fix_get_bit(const uint32_t *a, int k)
+{
+  return (a[k / 32] >> (k % 32)) & 1;
+}
+
+static void
+fix_set_bit(uint32_t *a, int k)
+{
+  a[k / 32] |= (uint32_t) 1 << (k % 32);
+}
+
+/* a = 2 a; the callers keep a below 2^(32 L - 1) */
+static void
+fix_shl1(uint32_t *a, int L)
+{
+  for (int i = L - 1; i > 0; i--)
+    a[i] = (a[i] << 1) | (a[i - 1] >> 31);
+  a[0] <<= 1;
+}
+
+/* r = floor(sqrt(a)), or its ceiling where @p up, by the digit-by-digit
+ * method on exact integers; r may be a */
+static void
+fix_isqrt(const uint32_t *a, uint32_t *r, int L, bool up)
+{
+  uint32_t *rem = palloc(L * sizeof(uint32_t));
+  uint32_t *bit = palloc0(L * sizeof(uint32_t));
+  uint32_t *t = palloc(L * sizeof(uint32_t));
+  memcpy(rem, a, L * sizeof(uint32_t));
+  memset(r, 0, L * sizeof(uint32_t));
+  int top = fix_top_bit(rem, L);
+  if (top >= 0)
+  {
+    fix_set_bit(bit, top & ~1);
+    while (! fix_is_zero(bit, L))
+    {
+      fix_add(r, bit, t, L);
+      if (fix_cmp(rem, t, L) >= 0)
+      {
+        fix_sub_clamp(rem, t, rem, L);
+        fix_shift_right(r, 1, r, L, false);
+        fix_add(r, bit, r, L);
+      }
+      else
+        fix_shift_right(r, 1, r, L, false);
+      fix_shift_right(bit, 2, bit, L, false);
+    }
+    if (up && ! fix_is_zero(rem, L))
+      fix_increment(r, L);
+  }
+  pfree(rem); pfree(bit); pfree(t);
+}
+
+/* q = floor(a 2^k / d), or its ceiling where @p up, by binary long division
+ * on exact integers, d not 0; q may be a or d */
+static void
+fix_div_shift(const uint32_t *a, int k, const uint32_t *d, uint32_t *q,
+  int L, bool up)
+{
+  uint32_t *rem = palloc0(L * sizeof(uint32_t));
+  uint32_t *res = palloc0(L * sizeof(uint32_t));
+  int top = fix_top_bit(a, L);
+  /* The bits of a 2^k, from the highest: those of a, then k zeros */
+  for (int i = top + k; i >= 0; i--)
+  {
+    fix_shl1(rem, L);
+    if (i >= k && fix_get_bit(a, i - k))
+      rem[0] |= 1;
+    if (fix_cmp(rem, d, L) >= 0)
+    {
+      fix_sub_clamp(rem, d, rem, L);
+      fix_set_bit(res, i);
+    }
+  }
+  if (up && ! fix_is_zero(rem, L))
+    fix_increment(res, L);
+  memcpy(q, res, L * sizeof(uint32_t));
+  pfree(rem); pfree(res);
+}
+
+/**
+ * @brief Bound atan(t), 0 <= t <= 1 at the scale 2^-K, below or, where @p up,
+ * above, K a multiple of 32
+ * @details Two halvings, t / (1 + sqrt(1 + t^2)) each, an increasing
+ * function read rounded in the direction of the bound, bring t below
+ * tan(pi / 16); the series of the arctangent alternates with decreasing
+ * terms there, each power carried in two chains, one rounded up and one
+ * down, so every term is bounded in the direction its sign needs; it stops
+ * at a term of at most one unit, which bounds the rest; the result is four
+ * times that sum
+ */
+static void
+fix_atan_bound(const uint32_t *t, uint32_t *r, int L, int K, bool up)
+{
+  uint32_t *u = palloc(L * sizeof(uint32_t));
+  uint32_t *w = palloc(L * sizeof(uint32_t));
+  uint32_t *one = palloc(L * sizeof(uint32_t));
+  uint32_t *pup = palloc(L * sizeof(uint32_t));
+  uint32_t *pdn = palloc(L * sizeof(uint32_t));
+  uint32_t *u2up = palloc(L * sizeof(uint32_t));
+  uint32_t *u2dn = palloc(L * sizeof(uint32_t));
+  memcpy(u, t, L * sizeof(uint32_t));
+  for (int h = 0; h < 2; h++)
+  {
+    /* w = 2^(2K) + u^2 exactly, its square root at the scale 2^-K rounded
+     * against the bound, so the denominator moves the quotient its way */
+    fix_mul(u, u, w, L, 0, false);
+    fix_set_pow2(one, L, 2 * K);
+    fix_add(w, one, w, L);
+    fix_isqrt(w, w, L, ! up);
+    fix_set_pow2(one, L, K);
+    fix_add(w, one, w, L);
+    fix_div_shift(u, K, w, u, L, up);
+  }
+  /* The series u - u^3/3 + u^5/5 - ... */
+  fix_mul(u, u, u2up, L, K, true);
+  fix_mul(u, u, u2dn, L, K, false);
+  memcpy(pup, u, L * sizeof(uint32_t));
+  memcpy(pdn, u, L * sizeof(uint32_t));
+  memset(r, 0, L * sizeof(uint32_t));
+  for (uint32_t n = 0; ; n++)
+  {
+    /* The term is added where n is even, subtracted where odd: an upper
+     * bound adds the larger of a positive term, subtracts the smaller of a
+     * negative one, and a lower bound the reverse */
+    bool large = (n % 2 == 0) == up;
+    fix_div_small(large ? pup : pdn, 2 * n + 1, w, L, large);
+    uint32_t *wmax = palloc(L * sizeof(uint32_t));
+    fix_div_small(pup, 2 * n + 1, wmax, L, true);
+    bool last = fix_top_bit(wmax, L) <= 0;
+    pfree(wmax);
+    if (last)
+    {
+      /* The rest, this term included, is at most one unit */
+      fix_set_pow2(one, L, 0);
+      if (up)
+        fix_add(r, one, r, L);
+      else
+        fix_sub_clamp(r, one, r, L);
+      break;
+    }
+    if (n % 2 == 0)
+      fix_add(r, w, r, L);
+    else
+      fix_sub_clamp(r, w, r, L);
+    fix_mul(pup, u2up, pup, L, K, true);
+    fix_mul(pdn, u2dn, pdn, L, K, false);
+  }
+  fix_mul_small(r, 4, r, L);
+  pfree(u); pfree(w); pfree(one); pfree(pup); pfree(pdn);
+  pfree(u2up); pfree(u2dn);
+}
+
+/* Bound atan2(y, x), y, x >= 0 at the scale 2^-K, x and y not both 0, below
+ * or, where @p up, above */
+static void
+fix_atan2_bound(const uint32_t *y, const uint32_t *x, uint32_t *r, int L,
+  int K, bool up)
+{
+  uint32_t *t = palloc(L * sizeof(uint32_t));
+  if (fix_is_zero(y, L))
+    memset(r, 0, L * sizeof(uint32_t));
+  else if (fix_cmp(y, x, L) <= 0)
+  {
+    fix_div_shift(y, K, x, t, L, up);
+    fix_atan_bound(t, r, L, K, up);
+  }
+  else
+  {
+    /* pi/2 - atan(x / y), pi/2 at the scale 2^-K being pi at 2^-(K-1) */
+    uint32_t *plo = palloc(L * sizeof(uint32_t));
+    uint32_t *phi = palloc(L * sizeof(uint32_t));
+    fix_div_shift(x, K, y, t, L, ! up);
+    fix_atan_bound(t, r, L, K, ! up);
+    fix_pi(plo, phi, L, K - 1);
+    fix_sub_clamp(up ? phi : plo, r, r, L);
+    pfree(plo); pfree(phi);
+  }
+  pfree(t);
+}
+
+static int wide_sign(const WideDyadic *a);
+
+/**
+ * @brief Return floor(log2 |a|) of a nonzero #WideDyadic, read through
+ * #wide_dyadic_to_fixed into one limb: |a| 2^s fits in 64 bits for every s
+ * up to 63 - floor(log2 |a|)
+ */
+static int
+wide_log2(const WideDyadic *a)
+{
+  uint64 m;
+  int lo = -40000, hi = 40000;   /* |a| 2^lo fits, |a| 2^hi does not */
+  while (hi - lo > 1)
+  {
+    int mid = lo + (hi - lo) / 2;
+    if (wide_dyadic_to_fixed(a, mid, false, &m, 1) == 2)
+      hi = mid;
+    else
+      lo = mid;
+  }
+  return 63 - lo;
+}
+
+/**
+ * @brief Enclose atan2(sqrt(s), c) at the scale 2^-K in [lo, hi], for exact
+ * s >= 0 and c, not both 0
+ * @details The pair is scaled by a power of 2, which the angle does not see,
+ * so the larger of sqrt(s) and |c| lies below 2^(K-1) at the scale 2^-K;
+ * sqrt(s) is the integer square root of s read at twice that scale, every
+ * bound rounded outward
+ */
+static void
+fix_atan2_enclose(const WideDyadic *s, const WideDyadic *c, uint32_t *lo,
+  uint32_t *hi, int L, int K)
+{
+  int ss = wide_sign(s), sc = wide_sign(c);
+  int es = ss ? wide_log2(s) : INT_MIN / 4;
+  int ec = sc ? wide_log2(c) : INT_MIN / 4;
+  int E = Max((es + 1) / 2, ec);
+  int scale = K - 3 - E;
+  int n64 = (L + 1) / 2;
+  uint64 *buf = palloc(n64 * sizeof(uint64));
+  uint32_t *v[4];
+  for (int k = 0; k < 4; k++)
+  {
+    /* 0: s down, 1: s up, 2: |c| down, 3: |c| up */
+    v[k] = palloc(L * sizeof(uint32_t));
+    int sg = wide_dyadic_to_fixed(k < 2 ? s : c, k < 2 ? 2 * scale : scale,
+      k % 2 == 1, buf, n64);
+    assert(sg != 2);
+    if (k >= 2)
+      sc = sg;
+    for (int i = 0; i < L; i++)
+      v[k][i] = (uint32_t) (buf[i / 2] >> (32 * (i % 2)));
+  }
+  fix_isqrt(v[0], v[0], L, false);
+  fix_isqrt(v[1], v[1], L, true);
+  if (sc >= 0)
+  {
+    /* atan(y / x): increasing in y, decreasing in x */
+    fix_atan2_bound(v[0], v[3], lo, L, K, false);
+    fix_atan2_bound(v[1], v[2], hi, L, K, true);
+  }
+  else
+  {
+    /* pi - atan(y / |x|): decreasing in y, increasing in |x| */
+    uint32_t *pl = palloc(L * sizeof(uint32_t));
+    uint32_t *ph = palloc(L * sizeof(uint32_t));
+    uint32_t *a = palloc(L * sizeof(uint32_t));
+    fix_pi(pl, ph, L, K);
+    fix_atan2_bound(v[1], v[2], a, L, K, true);
+    fix_sub_clamp(pl, a, lo, L);
+    fix_atan2_bound(v[0], v[3], a, L, K, false);
+    fix_sub_clamp(ph, a, hi, L);
+    pfree(pl); pfree(ph); pfree(a);
+  }
+  pfree(buf);
+  for (int k = 0; k < 4; k++)
+    pfree(v[k]);
+}
+
+/* The exact cross product and dot product of #WideDyadic vectors */
+static void
+wide_cross(WideDyadic *const *a, WideDyadic *const *b, WideDyadic **r)
+{
+  WideDyadic *t1 = wide_dyadic_alloc(), *t2 = wide_dyadic_alloc();
+  for (int i = 0; i < 3; i++)
+  {
+    int j = (i + 1) % 3, k = (i + 2) % 3;
+    wide_dyadic_mul(a[j], b[k], t1);
+    wide_dyadic_mul(a[k], b[j], t2);
+    wide_dyadic_sub(t1, t2, r[i]);
+  }
+  pfree(t1); pfree(t2);
+}
+
+static void
+wide_dot(WideDyadic *const *a, WideDyadic *const *b, WideDyadic *r)
+{
+  WideDyadic *t = wide_dyadic_alloc(), *u = wide_dyadic_alloc();
+  WideDyadic *v = wide_dyadic_alloc();
+  wide_dyadic_mul(a[0], b[0], u);
+  wide_dyadic_mul(a[1], b[1], t);
+  wide_dyadic_add(u, t, v);
+  wide_dyadic_mul(a[2], b[2], t);
+  wide_dyadic_add(v, t, r);
+  pfree(t); pfree(u); pfree(v);
+}
+
+/* The sign of an exact value: at a scale far below its lowest bit every bit
+ * is dropped, so #wide_dyadic_to_fixed answers the sign alone */
+static int
+wide_sign(const WideDyadic *a)
+{
+  uint64 probe;
+  return wide_dyadic_to_fixed(a, -100000, false, &probe, 1);
+}
+
+static bool
+wide_vec_is_zero(WideDyadic *const *a)
+{
+  return wide_sign(a[0]) == 0 && wide_sign(a[1]) == 0 && wide_sign(a[2]) == 0;
+}
+
+static WideDyadic **
+wide_vec_alloc(void)
+{
+  WideDyadic **v = palloc(3 * sizeof(WideDyadic *));
+  for (int i = 0; i < 3; i++)
+    v[i] = wide_dyadic_alloc();
+  return v;
+}
+
+static void
+wide_vec_free(WideDyadic **v)
+{
+  for (int i = 0; i < 3; i++)
+    pfree(v[i]);
+  pfree(v);
+}
+
+/*****************************************************************************
+ * Directions read exactly
+ *
+ * The cells of a geodetic trajectory are decided on directions in space: the
+ * geodetic position of a vertex or of an instant (#lonlat_vector_nearest),
+ * the normal of the great circle of an edge or of a segment, the direction in
+ * which two great circles meet, and the sum of two directions, which lies
+ * between them on their circle. Each is a vector of exact values
+ * (#wide_cross, #wide_dot), so every sign read on it is exact.
+ *****************************************************************************/
+
+/** @brief A direction in space whose components are exact dyadic values */
+struct SphereDir
+{
+  WideDyadic *c[3];
+};
+
+static SphereDir *
+sphere_dir_alloc(void)
+{
+  SphereDir *r = palloc(sizeof(SphereDir));
+  for (int i = 0; i < 3; i++)
+    r->c[i] = wide_dyadic_alloc();
+  return r;
+}
+
+/**
+ * @brief Return the direction of a vector of doubles, read exactly
+ */
+SphereDir *
+sphere_dir_make(const double *v)
+{
+  SphereDir *r = sphere_dir_alloc();
+  for (int i = 0; i < 3; i++)
+    wide_dyadic_set_double(r->c[i], v[i]);
+  return r;
+}
+
+/**
+ * @brief Return the cross product of two directions, exactly
+ */
+SphereDir *
+sphere_dir_cross(const SphereDir *a, const SphereDir *b)
+{
+  SphereDir *r = sphere_dir_alloc();
+  wide_cross(a->c, b->c, r->c);
+  return r;
+}
+
+/**
+ * @brief Return the sum of two directions, exactly
+ */
+SphereDir *
+sphere_dir_add(const SphereDir *a, const SphereDir *b)
+{
+  SphereDir *r = sphere_dir_alloc();
+  for (int i = 0; i < 3; i++)
+    wide_dyadic_add(a->c[i], b->c[i], r->c[i]);
+  return r;
+}
+
+/**
+ * @brief Return the opposite of a direction, exactly
+ */
+SphereDir *
+sphere_dir_neg(const SphereDir *a)
+{
+  SphereDir *r = sphere_dir_alloc();
+  WideDyadic *zero = wide_dyadic_alloc();
+  for (int i = 0; i < 3; i++)
+    wide_dyadic_sub(zero, a->c[i], r->c[i]);
+  pfree(zero);
+  return r;
+}
+
+/**
+ * @brief Free a direction
+ */
+void
+sphere_dir_free(SphereDir *a)
+{
+  if (! a)
+    return;
+  for (int i = 0; i < 3; i++)
+    pfree(a->c[i]);
+  pfree(a);
+}
+
+/**
+ * @brief Return the sign of the dot product of two directions
+ */
+int
+sphere_dir_dot_sign(const SphereDir *a, const SphereDir *b)
+{
+  WideDyadic *t = wide_dyadic_alloc();
+  wide_dot(a->c, b->c, t);
+  int result = wide_sign(t);
+  pfree(t);
+  return result;
+}
+
+/**
+ * @brief Return the sign of the triple product (a x b) . c
+ */
+int
+sphere_dir_triple_sign(const SphereDir *a, const SphereDir *b,
+  const SphereDir *c)
+{
+  SphereDir *n = sphere_dir_cross(a, b);
+  int result = sphere_dir_dot_sign(n, c);
+  sphere_dir_free(n);
+  return result;
+}
+
+/**
+ * @brief Return the sign of (a . b)(c . d) - (a . d)(c . b)
+ * @details Where the dot products of a and c with d are positive, the sign
+ * compares the ratios (a . b) / (a . d) and (c . b) / (c . d), the coordinates
+ * along b of a and c in the gnomonic chart about d
+ */
+int
+sphere_dir_dot_diff_sign(const SphereDir *a, const SphereDir *b,
+  const SphereDir *c, const SphereDir *d)
+{
+  WideDyadic *ab = wide_dyadic_alloc(), *cd = wide_dyadic_alloc();
+  WideDyadic *ad = wide_dyadic_alloc(), *cb = wide_dyadic_alloc();
+  WideDyadic *l = wide_dyadic_alloc(), *r = wide_dyadic_alloc();
+  WideDyadic *t = wide_dyadic_alloc();
+  wide_dot(a->c, b->c, ab);
+  wide_dot(c->c, d->c, cd);
+  wide_dot(a->c, d->c, ad);
+  wide_dot(c->c, b->c, cb);
+  wide_dyadic_mul(ab, cd, l);
+  wide_dyadic_mul(ad, cb, r);
+  wide_dyadic_sub(l, r, t);
+  int result = wide_sign(t);
+  pfree(ab); pfree(cd); pfree(ad); pfree(cb); pfree(l); pfree(r); pfree(t);
+  return result;
+}
+
+/**
+ * @brief Return true if two directions lie on one line through the origin,
+ * their cross product being exactly 0
+ */
+bool
+sphere_dir_parallel(const SphereDir *a, const SphereDir *b)
+{
+  SphereDir *n = sphere_dir_cross(a, b);
+  bool result = wide_vec_is_zero(n->c);
+  sphere_dir_free(n);
+  return result;
+}
+
+/* sign(f - num/den) for a rational f = fn/fd given by small integers */
+static int
+fraction_cmp_rational(int64 fn, int64 fd, int64 num, int64 den)
+{
+  /* fn/fd - num/den: fn and fd at most 2, so fn den and num fd fit */
+  int64 l = fn * den, r = num * fd;
+  return (l > r) - (l < r);
+}
+
+/**
+ * @brief Return the sign of f - num/den, f the fraction of the great-circle
+ * arc from @p p0 to @p p1 at which it crosses the great circle of @p a and
+ * @p b, read at constant angular speed, -1, 0 or 1; 2 where undecided
+ * @details f = angle(p0, x) / angle(p0, p1), x the direction (p0 x p1) x
+ * (a x b) or its opposite, whichever lies ahead of p0 on the arc, each angle
+ * atan2(|u x v|, u . v) of exact vectors: every product is read exactly in
+ * #WideDyadic and each angle enclosed (#fix_atan2_enclose) at a precision
+ * raised until f - num/den lies clear of 0. It is 0 exactly where x lies
+ * along p0 (f = 0), along p1 (f = 1), or along p0 + p1 with |p0| = |p1|
+ * (f = 1/2), as the geodetic oracle of the cell walks decides a crossing
+ * @param[in] p0,p1 The geodetic positions of the ends of the arc, D6 vectors
+ * (#lonlat_vector_nearest), neither parallel nor antipodal
+ * @param[in] a,b Two points of the great circle crossed, not parallel
+ * @param[in] num,den The rational, den > 0
+ */
+int
+geodetic_arc_fraction_cmp(const double *p0, const double *p1,
+  const double *a, const double *b, int64 num, int64 den)
+{
+  WideDyadic **P0 = wide_vec_alloc(), **P1 = wide_vec_alloc();
+  WideDyadic **A = wide_vec_alloc(), **B = wide_vec_alloc();
+  for (int i = 0; i < 3; i++)
+  {
+    wide_dyadic_set_double(P0[i], p0[i]);
+    wide_dyadic_set_double(P1[i], p1[i]);
+    wide_dyadic_set_double(A[i], a[i]);
+    wide_dyadic_set_double(B[i], b[i]);
+  }
+  WideDyadic **M = wide_vec_alloc(), **N = wide_vec_alloc();
+  WideDyadic **X = wide_vec_alloc(), **C = wide_vec_alloc();
+  WideDyadic *s1 = wide_dyadic_alloc(), *c1 = wide_dyadic_alloc();
+  WideDyadic *s2 = wide_dyadic_alloc(), *c2 = wide_dyadic_alloc();
+  WideDyadic *t = wide_dyadic_alloc();
+  wide_cross(P0, P1, M);
+  wide_cross(A, B, N);
+  wide_cross(M, N, X);
+  /* x ahead of p0: (p0 x x) . m > 0 */
+  wide_cross(P0, X, C);
+  wide_dot(C, M, t);
+  if (wide_sign(t) < 0)
+  {
+    /* -x: 0 - x into a fresh value, as a result is never an operand */
+    WideDyadic *zero = wide_dyadic_alloc();
+    for (int i = 0; i < 3; i++)
+    {
+      WideDyadic *neg = wide_dyadic_alloc();
+      wide_dyadic_sub(zero, X[i], neg);
+      pfree(X[i]);
+      X[i] = neg;
+    }
+    pfree(zero);
+  }
+  int result = 2;
+  /* The exact fractions */
+  WideDyadic **Y = wide_vec_alloc();
+  wide_cross(X, P0, Y);
+  bool at0 = wide_vec_is_zero(Y);
+  wide_cross(X, P1, Y);
+  bool at1 = wide_vec_is_zero(Y);
+  WideDyadic **S = wide_vec_alloc();
+  for (int i = 0; i < 3; i++)
+    wide_dyadic_add(P0[i], P1[i], S[i]);
+  wide_cross(X, S, Y);
+  wide_dot(P0, P0, s1);
+  wide_dot(P1, P1, s2);
+  wide_dyadic_sub(s1, s2, t);
+  bool athalf = wide_vec_is_zero(Y) && wide_sign(t) == 0;
+  if (at0)
+    result = fraction_cmp_rational(0, 1, num, den);
+  else if (at1)
+    result = fraction_cmp_rational(1, 1, num, den);
+  else if (athalf)
+    result = fraction_cmp_rational(1, 2, num, den);
+  else
+  {
+    /* theta = atan2(|m|, p0 . p1), phi = atan2(|p0 x x|, p0 . x) */
+    wide_dot(M, M, s1);
+    wide_dot(P0, P1, c1);
+    wide_cross(P0, X, C);
+    wide_dot(C, C, s2);
+    wide_dot(P0, X, c2);
+    for (int K = ANGLE_FIRST_BITS; K <= ANGLE_LAST_BITS && result == 2;
+        K *= 2)
+    {
+      int L = (2 * K + 192) / 32;
+      uint32_t *tl = palloc(L * sizeof(uint32_t)), *th = palloc(L * sizeof(uint32_t));
+      uint32_t *pl = palloc(L * sizeof(uint32_t)), *ph = palloc(L * sizeof(uint32_t));
+      uint32_t *lhs = palloc(L * sizeof(uint32_t)), *rhs = palloc(L * sizeof(uint32_t));
+      fix_atan2_enclose(s1, c1, tl, th, L, K);
+      fix_atan2_enclose(s2, c2, pl, ph, L, K);
+      /* f > r where phi den > theta num at every point: pl den > th num;
+       * f < r where ph den < tl num */
+      memcpy(lhs, pl, L * sizeof(uint32_t)); fix_mul_u64(lhs, (uint64) den, L);
+      memcpy(rhs, th, L * sizeof(uint32_t)); fix_mul_u64(rhs, (uint64) num, L);
+      if (fix_cmp(lhs, rhs, L) > 0)
+        result = 1;
+      else
+      {
+        memcpy(lhs, ph, L * sizeof(uint32_t)); fix_mul_u64(lhs, (uint64) den, L);
+        memcpy(rhs, tl, L * sizeof(uint32_t)); fix_mul_u64(rhs, (uint64) num, L);
+        if (fix_cmp(lhs, rhs, L) < 0)
+          result = -1;
+      }
+      pfree(tl); pfree(th); pfree(pl); pfree(ph); pfree(lhs); pfree(rhs);
+    }
+  }
+  wide_vec_free(P0); wide_vec_free(P1); wide_vec_free(A); wide_vec_free(B);
+  wide_vec_free(M); wide_vec_free(N); wide_vec_free(X); wide_vec_free(C);
+  wide_vec_free(Y); wide_vec_free(S);
+  pfree(s1); pfree(c1); pfree(s2); pfree(c2); pfree(t);
   return result;
 }
 

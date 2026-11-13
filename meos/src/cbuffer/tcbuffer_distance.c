@@ -67,12 +67,13 @@
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestampts defining the segment
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segment is not constant.
  */
 int
 tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap)
 {
   /* A static circular buffer is a segment that does not move, so the question
    * is the one the two-segment turning point already answers: pass the value
@@ -81,7 +82,7 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
    * product (dist - r)(dist + r) rather than of the gap the distance reports,
    * and the two part company as soon as the radius varies. */
   return tcbuffersegm_distance_turnpt(start, end, value, value, (Datum) 0,
-    lower, upper, t1, t2);
+    lower, upper, tps, cap);
 }
 
 /*****************************************************************************
