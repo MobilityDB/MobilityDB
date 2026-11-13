@@ -1723,4 +1723,19 @@ extern void lonlat_vector_nearest(double lon, double lat, double *v);
 extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   const double *a, const double *b, int64 num, int64 den);
 
+/* A direction in space read exactly, opaque outside geo_trig.c */
+typedef struct SphereDir SphereDir;
+
+extern SphereDir *sphere_dir_make(const double *v);
+extern SphereDir *sphere_dir_cross(const SphereDir *a, const SphereDir *b);
+extern SphereDir *sphere_dir_add(const SphereDir *a, const SphereDir *b);
+extern SphereDir *sphere_dir_neg(const SphereDir *a);
+extern void sphere_dir_free(SphereDir *a);
+extern int sphere_dir_dot_sign(const SphereDir *a, const SphereDir *b);
+extern int sphere_dir_triple_sign(const SphereDir *a, const SphereDir *b,
+  const SphereDir *c);
+extern int sphere_dir_dot_diff_sign(const SphereDir *a, const SphereDir *b,
+  const SphereDir *c, const SphereDir *d);
+extern bool sphere_dir_parallel(const SphereDir *a, const SphereDir *b);
+
 #endif /* __GEO_FUNCS_H__ */
