@@ -172,6 +172,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af7aa6df0ab605f3926301b439af379de.html#af7aa6df0ab605f3926301b439af379de">cross_product_sign_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_adcdfd1f436ed2be03f7f365c94438101.html#adcdfd1f436ed2be03f7f365c94438101">cross_product_sign_offset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a07625556faf68687bb177f470b65028b.html#a07625556faf68687bb177f470b65028b">cross_product_sign_wide</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a36ec309245ec416429fe90c16beba4c3.html#a36ec309245ec416429fe90c16beba4c3">dbl_cross3</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_adb846d27cf7fa1d7e2c4fcc7b363d27f.html#adb846d27cf7fa1d7e2c4fcc7b363d27f">ddb_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a942b92ded04cd47896cf15f665e276ec.html#a942b92ded04cd47896cf15f665e276ec">ddb_cross3</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a247fb22ff91ecdd96c8702ebba6e77b3.html#a247fb22ff91ecdd96c8702ebba6e77b3">ddb_diff3</a></td></tr>
@@ -1041,7 +1042,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the sign of the dot product of the normal of a plane and of the cross product of two vectors, computed exactly for any finite doubles. </p>
-<p >The sign of <code>((b - a) x (c - a)) . ((x1 - x0) x (y1 - y0))</code>, of degree four, first in pairs of doubles with a bound on its error (<a class="el" href="structDDBound.html" title="A value held as the unevaluated sum of two doubles, with a bound on its distance to the exact value i...">DDBound</a>), then on <a class="el" href="structWideDyadic.html" title="A dyadic rational sign * magnitude * 2^exp, the magnitude held in 64-bit limbs, the lowest first,...">WideDyadic</a> where the bound cannot tell it </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The sign of <code>((b - a) x (c - a)) . ((x1 - x0) x (y1 - y0))</code>, of degree four, first in doubles with a bound on its error (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a36ec309245ec416429fe90c16beba4c3.html#a36ec309245ec416429fe90c16beba4c3">dbl_cross3</a>), then in pairs of doubles with a bound on their error (<a class="el" href="structDDBound.html" title="A value held as the unevaluated sum of two doubles, with a bound on its distance to the exact value i...">DDBound</a>), then on <a class="el" href="structWideDyadic.html" title="A dyadic rational sign * magnitude * 2^exp, the magnitude held in 64-bit limbs, the lowest first,...">WideDyadic</a> where the bound cannot tell it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">a,b,c</td><td>Three points spanning the plane, three coordinates each </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">x0,x1,y0,y1</td><td>Points, three coordinates each </td></tr>
