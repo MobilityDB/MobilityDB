@@ -367,10 +367,25 @@ layer holds it for every question. The phases, each a series of pull requests:
    its callers are measured first); one angular origin. Each is a pull request touching every
    caller of what it changes. The two digits of `point_motion_dwithin_period_filter` (1 for the
    whole segment, 2 for an instant, the reverse of `point_motion_dwithin_period_exact`) are read
-   right by every caller and change with the meaning of "undecided", which that filter spells -1.
-4. **One arithmetic (EA1, EA4 to EA8).** One ladder, one pair type, one wide number, one search,
-   every sign with every tier; then one arc model and one time model, each merge after a
-   differential; then the double nearest a transcendental value (EA8), read by the one search.
+   right by every caller and keep -1 for "undecided": the rule, read off the census of the 76
+   functions that may leave an answer undecided, is that a SIGN (-1, 0, 1) spells it 2, and an
+   ENUMERATION (the 1/0 of the motion filters, the 0/1/2 of the period filter) a value no answer
+   takes. The sign filters that spelled it 0, the same digit as an exact zero
+   (`polynomial_sign_filter` and `polynomial_sign_pairs`, the two offset filter signs,
+   `incircle_sign_filter`, `point_segm_within_filter`), spell it 2 in #3647, their 15 readers
+   with them, the six signs of the within-distance of a moving disc dropping their hand
+   translation of 0 into 2; 5,015 differential rows answer alike with and without it, and CGAL
+   agrees on the buffer witness (1313) and the arc relate pairs (38,584). Left: 3
+   (`hull_passes_filter`), -2 (`arr_offsets_meet`) and the boolean filters.
+   C11, after the conventions: the turn of a pose segment in 2D, read as no turn where
+   `fabs(theta_delta) < MEOS_EPSILON` in `posesegm_interpolate`, is an exact sign, as C1-C6 read
+   their tolerances (EXACT-POSE.md P1).
+4. **One arithmetic (EA1, EA4 to EA8, EA10).** One ladder, one pair type, one wide number, one
+   search, every sign with every tier; then one arc model and one time model, each merge after a
+   differential; then the double nearest a transcendental value (EA8), read by the one search;
+   then the roots of a sum of terms `(a + b t) cos(c + d t)` isolated exactly (EA10, the shared
+   layer's step that EXACT-POSE.md P3 reads), on EA6's search and EA8's sine and cosine, its
+   witness stated with the step.
 5. **The arithmetic in its own file (EA3)**, moved in the shape the merges give it, so that each
    function moves once. The signs on coordinates shifted by multiples of 360 (EA9, #3577, merged) come
    ahead of it, in `geo_funcs.c`, since the cell walks read them, and EA3 moves them with the rest.
