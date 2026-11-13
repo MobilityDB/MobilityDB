@@ -458,13 +458,13 @@ diffs classified:
 2. **The shared primitive** for tfloat (the float locator, `tnumbersegm_intersection`, the
    tfloat turning points), with every walk that uses them switching at once: comparisons,
    distances, ever/always, restrictions. Consistency across the forms of section 4 is part of
-   its witness. MobilityDB #3640, a draft stacked on #3629: the float locators agree with the
-   exact nearest microsecond on all 533988 float segments of the crossprobe corpus (332138 of
-   548989 before it); five expected outputs move, each row confirmed on exact rationals.
-   Callgrind against #3629, with about half of the segments crossing and with none: the
-   comparisons with a float 1.006 to 1.009 and 0.948, `#=` of two temporal floats 1.266 and
-   0.973, atSpan 1.061 and 1.054, sin and cos 1.163 and 1.099, so it is a draft by the parity
-   rule.
+   its witness. MobilityDB #3640, a draft: the float locators agree with the exact nearest
+   microsecond on all 533988 float segments of the crossprobe corpus (332138 of 548989 before
+   it); five expected outputs move, each row confirmed on exact rationals. Callgrind against
+   master `9b1cebc9b6`, with about half of the segments crossing and with none: the comparisons
+   with a float 0.971 and 0.935, `#=` with a float 0.660 and 0.934, `#=` of two temporal floats
+   0.937 and 0.965, atSpan 0.985 and 0.996, atValue 0.970 and 1.000, sin and cos 0.992 and
+   0.999, abs 1.005 and 1.000, the distance of two temporal floats 1.0004 and 0.999.
    The value split it switches counts its bins by MobilityDB #3641, merged as `31764297c1`:
    `span_num_bins` and `tile_dim_count` read the quotient of two bins of one grid over the size
    as the nearest whole number, so `bins(floatspan '[1, 2]', 0.3)` holds the bin `[1.8, 2.1)` and
@@ -476,7 +476,13 @@ diffs classified:
    only values the two sequences take, MobilityDB #3650, a draft: the end instant where the common
    period holds it, the open piece after an excluded start, and a step value up to its jump, never
    the value it jumps to. `tfloat '[1@2001-01-01, 2@2001-01-02)' ?= tfloat '[0@2001-01-01,
-   2@2001-01-02)'` is false, the two meeting only at the excluded end. #3640 rewrites the crossing
+   2@2001-01-02)'` is false, the two meeting only at the excluded end. Callgrind against master
+   `9b1cebc9b6` reads every walk within 0.1 percent of master, the geodetic within distance and
+   the always covers of two circular buffers 27 to 41 percent below, and the ever covers of two
+   circular buffers never covering 50 percent above: a segment with no turning point is read in
+   its middle, since the turning point functions of the geodetic within distance and of the
+   circular buffers can miss a meeting inside the segment, which step 3 decides exactly.
+   #3640 rewrites the crossing
    branch of the same walk, so the second of the two to merge rebases over the first. The planar
    ever within distance of two temporal points, `ea_dwithin_tpoint_tpoint_exact`, reads its
    intervals closed in the same way, and follows as its own pull request.

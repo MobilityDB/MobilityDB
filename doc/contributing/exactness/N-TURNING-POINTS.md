@@ -251,6 +251,13 @@ from one segment into the next. Supplying the exact values of the other families
 their expected outputs toward the exact ones, is a pull request of its own, after PR 3, decided by
 the owner on 2026-11-13.
 
+PR 3 is MobilityDB #3664, branch `refactor/trgeo-distance-through-lifting`, built on MobilityDB #3662, which proves
+that a difference of distances that cancel has no root within the budget of the root finder. It
+moves no answer of the 4000 rigid geometry cases (temporal distance, nearest approach distance and
+instant, shortest line) or of the 1098528 rows of the 62 lifted functions of the other families.
+Callgrind, Release: the temporal distance of rigid geometries 0.977 to 0.998 of
+master, and the walks of the other families 0.998 to 1.003, so it is a draft by the parity rule.
+
 ### 6.4 Later, each measured first
 
 - **The temporal distance of two temporal geography points.** It goes through
