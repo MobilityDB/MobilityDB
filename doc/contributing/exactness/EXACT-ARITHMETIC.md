@@ -369,7 +369,12 @@ layer holds it for every question. The phases, each a series of pull requests:
    point edge; the measuring found that a ring repeating a vertex made relate read two equal
    areas as neither containing nor covering each other, every natural area of the speed cells
    failing against itself written with a vertex repeated, which #3655, merged, fixes in the boundary walk,
-   CGAL agreeing on those 384 pairs); one angular origin. Each is a pull request touching every
+   CGAL agreeing on those 384 pairs); one angular origin, which the measuring settles as two
+   questions, not one: the hull walks from (0, -1) because that origin puts the start of its
+   output ring where GEOS 3.14 puts it (the same ring, vertex for vertex, on the hulls of
+   `MULTIPOINT((3 1),(0 2),(1 0),(4 3),(2 4),(1 3))` and of a square with a point inside), while
+   the turn of edges orders directions from +x inside the engine and reaches no output, so
+   neither moves. Each is a pull request touching every
    caller of what it changes. The two digits of `point_motion_dwithin_period_filter` (1 for the
    whole segment, 2 for an instant, the reverse of `point_motion_dwithin_period_exact`) are read
    right by every caller and keep -1 for "undecided": the rule, read off the census of the 76
@@ -544,6 +549,19 @@ pairs of `polynomial_sign_pairs` become `ddb_*` operations, their bounds carried
 `TowerWide`, the size of its value, stands for tier 3: `WideDyadic` and the `WIDE_LIMBS` integer
 of `square_products_wide` become it. A value of tier 3 then costs the limbs it holds, not 320.
 
+The measured case for it (relay of DESKTOP-B8RRPID, 2026-11-13, `ed24-kit/home/cpwork/ed24/exp`):
+on the ED24 cell "refuting at" 513 calls of `plane_point_offset_sign`, `point_segment_offset_sign`
+and `segment_interior_offset_sign` reach the exact tiers, 399 of them `WideDyadic` at 11-16K
+instructions each, 6.5M of the cell's 10.5M, while every one's coordinates span at most 6 bits:
+read as integers the tie costs about 100. A tier reading such coordinates as `int64`, built in
+those three signs and `plane_cross_dot_sign` (branch `exp/ed24-stack-tier`), takes the cell from
+2.00 to 1.515 of GEOS, CGAL agreeing on 320/1440/120/6, and costs random "at" 0.82 to 0.877 for
+its span check. It is not added as a tier of three signs: it is what EA5 gives every sign, a
+value of a few bits costing one limb, so it enters as EA5's measure, the span check taken once
+where the ladder leaves its doubles. What is left of the cell (2.55M against 1.68M) is not
+arithmetic but the walk itself, which a fixed route for a point, segment or triangle against a
+triangle answers in #3484.
+
 ### EA6. One search for the nearest double
 
 `nearest_double_exact` stands for the search: `wide_dyadic_nearest_root`, `ddb_nearest_root` and
@@ -555,6 +573,14 @@ The gaps of Section 4.4 close on the one ladder: tier 2 where it is missing (aft
 for `incircle_sign`, with a witness past the range of its expansions. `dot_product_sign` and
 `triple_product_sign` need none of their own: C8 (#3624, merged) reads them by `point_segment_dot_sign_inputs` and
 `vector_triple_sign`, which carry it.
+
+`exp/3576-on-3652` (DESKTOP-B8RRPID's #3576) adds a certificate to `vector_triple_sign`: when the
+first two differences and their cross product are exact in doubles, the determinant is a
+twelve-term expansion of the third vector's exact pairs, taking the hair triangles from 1.25 to
+0.977 of GEOS. It runs ahead of the branch that already settles the all-exact case, and costs
+the ED24 cell "refuting at" 5.89 to 6.21: it joins that branch as one widened precondition,
+so only a call whose third vector is inexact takes the new path, and is not a second exact
+branch of the same sign.
 
 ### EA8. The double nearest a transcendental value
 
