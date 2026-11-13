@@ -1950,8 +1950,11 @@ trgeometry_placements(const Temporal *temp)
  * ground the body covers and leaves out the bulge of the arcs past their
  * chords, at most 5.8e-4 of the diameter of the body over the 400 turning
  * rows of the corpus of the exact rigid distance (#trgeometry_turn_sweep).
- * The united form of a value with Z is the ground it covers, with no Z
- * (#trgeometry_ground_sweep), and is refused for a body turning in linear
+ * A polygon that is not convex, concave or holed, covers its placements and
+ * the parallelograms the edges of its rings sweep between every pair it
+ * translates between, exactly, and is refused where it turns in linear
+ * motion. The united form of a value with Z is the ground it covers, with no
+ * Z (#trgeometry_ground_sweep), and is refused for a body turning in linear
  * motion
  */
 GSERIALIZED *
@@ -1968,36 +1971,42 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
    * traverses is what it covers BETWEEN them as well. A convex body covers
    * what it sweeps between each consecutive pair, the hull of the pair where
    * it translates and #trgeometry_turn_sweep where it turns, which is the
-   * case the traversed area is defined for; a body with a concavity keeps the
-   * placements alone, as its hull would close a concavity the body never
-   * reaches.
+   * case the traversed area is defined for; a polygon that is not convex,
+   * concave or holed, covers what its placements and the edges of its rings
+   * sweep between each pair it translates between (#trgeometry_ground_sweep),
+   * as the faces of a value with Z do, its hull closing a concavity the body
+   * never reaches.
    * A body that does not interpolate covers nothing between its placements:
    * it holds each of them for the whole of its own interval and then stands
    * at the next, so the placements ARE the area it traverses and a hull
    * spanning two of them answers for ground the body never crosses.
    * Only the united form sweeps; the collection form answers the placements
    * themselves, which #trgeometry_placements() gives a caller directly. */
-  /* A polygon that is not convex, concave or holed, sweeps more than the
-   * hull of two placements and less than their union reports, so its united
-   * form in linear motion is refused rather than answered by its placements.
-   * A value with Z covers the ground its shadow sweeps, and the shadow of a
-   * body that turns in linear motion is refused as well */
+  /* A polygon that is not convex and turns sweeps more than the hull of two
+   * placements and less than their union reports, so its united form in
+   * linear motion is refused rather than answered by its placements. A value
+   * with Z covers the ground its shadow sweeps, and the shadow of a body that
+   * turns in linear motion is refused as well */
   /* The body moves between two placements where one of them does not start
-   * a sequence */
-  bool moves = false;
-  for (int i = 1; i < n_geoms && ! moves; i++)
-    moves = ! pl.starts[i];
+   * a sequence, and turns between two where it also turns */
+  bool moves = false, turns = false;
+  for (int i = 1; i < n_geoms; i++)
+  {
+    moves |= ! pl.starts[i];
+    turns |= ! pl.starts[i] && pl.turns[i];
+  }
   bool linear = unary_union && moves && MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  bool concave = linear && ! hasz &&
+    gserialized_get_type(trgeometry_geom_p(temp)) == POLYGONTYPE &&
+    ! trgeometry_ref_is_convex(trgeometry_geom_p(temp));
   const char *refused = NULL;
   if (linear && hasz && ! trgeometry_translates(temp))
     refused = "The united traversed area of a temporal rigid geometry with Z "
       "in linear motion that turns is not implemented";
-  else if (linear && ! hasz &&
-      gserialized_get_type(trgeometry_geom_p(temp)) == POLYGONTYPE &&
-      ! trgeometry_ref_is_convex(trgeometry_geom_p(temp)))
+  else if (concave && turns)
     refused = "The united traversed area of a temporal rigid geometry in "
-      "linear motion whose body is not convex is not implemented";
+      "linear motion whose body is not convex and turns is not implemented";
   if (refused)
   {
     for (int i = 0; i < n_geoms; i++)
@@ -2006,12 +2015,12 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED, "%s", refused);
     return NULL;
   }
-  if (unary_union && hasz)
+  if (unary_union && (hasz || concave))
   {
     /* The united form of a value with Z is the ground it covers: what each
      * face sweeps between every pair of placements the body translates
      * between, or what each face covers at every placement of a value that
-     * does not interpolate */
+     * does not interpolate; a polygon that is not convex is its own face */
     int cap = n_geoms * 2, n_swept = 0;
     GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * cap);
     for (int i = 0; i < n_geoms; i++)

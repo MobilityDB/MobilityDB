@@ -69,6 +69,7 @@
 #include "temporal/tcellindex.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"  /* cross_product_sign */
 
 /*****************************************************************************
  * Input/output
@@ -751,6 +752,49 @@ quadbin_row_latitude(double y, double n)
 }
 
 /**
+ * @brief Return the longitude of the column boundary `x` of the grid of `n`
+ * tiles a side
+ * @details The boundary is read as #quadbin_cell_bounding_box reads the
+ * longitudes of a cell, a value exact in doubles
+ */
+static double
+quadbin_col_longitude(double x, double n)
+{
+  return x / n * 360.0 - 180.0;
+}
+
+/**
+ * @brief Set the column and the row of the tile holding a lon/lat position in
+ * the grid of `n` tiles a side
+ * @details A tile holds its west and north bounds, the last row its south
+ * bound too, and a position beyond the latitude limit lies in the first or the
+ * last row, as #quadbin_cell_edge_held states the rule. The bounds are the
+ * doubles of #quadbin_cell_bounding_box, compared with the position as they
+ * are: the fractional coordinates of #quadbin_tile_coords round, and give
+ * the tile only to within one tile of the one holding the position
+ */
+static void
+quadbin_point_tile(double longitude, double latitude, double n, long *tx,
+  long *ty)
+{
+  double xf, yf;
+  quadbin_tile_coords(longitude, latitude, n, &xf, &yf);
+  long x = quadbin_tile_index(xf, n), y = quadbin_tile_index(yf, n);
+  long maxt = (long) n - 1;
+  while (x > 0 && longitude < quadbin_col_longitude((double) x, n))
+    x--;
+  while (x < maxt && longitude >= quadbin_col_longitude((double) x + 1.0, n))
+    x++;
+  while (y > 0 && latitude > quadbin_row_latitude((double) y, n))
+    y--;
+  while (y < maxt && latitude <= quadbin_row_latitude((double) y + 1.0, n))
+    y++;
+  *tx = x;
+  *ty = y;
+  return;
+}
+
+/**
  * @ingroup meos_quadbin
  * @brief Return the quadbin cell containing a lon/lat point at a resolution
  */
@@ -762,10 +806,9 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
   if (resolution == 0)
     return quadbin_tile_to_cell(0, 0, 0);
   double n = (double) (UINT64_C(1) << resolution);
-  double xf, yf;
-  quadbin_tile_coords(longitude, latitude, n, &xf, &yf);
-  return quadbin_tile_to_cell((uint32_t) quadbin_tile_index(xf, n),
-    (uint32_t) quadbin_tile_index(yf, n), resolution);
+  long tx, ty;
+  quadbin_point_tile(longitude, latitude, n, &tx, &ty);
+  return quadbin_tile_to_cell((uint32_t) tx, (uint32_t) ty, resolution);
 }
 
 
@@ -1140,11 +1183,9 @@ quadbin_segment_cells(double lon1, double lat1, double lon2, double lat2,
     return quadbin_arc_cells(lon1, lat1, lon2, lat2, resolution, cells, enter,
       maxout);
   double n = (double) (UINT64_C(1) << resolution);
-  double x0, y0, x1, y1;
-  quadbin_tile_coords(lon1, lat1, n, &x0, &y0);
-  quadbin_tile_coords(lon2, lat2, n, &x1, &y1);
-  long tx = quadbin_tile_index(x0, n), ty = quadbin_tile_index(y0, n);
-  long ex = quadbin_tile_index(x1, n), ey = quadbin_tile_index(y1, n);
+  long tx, ty, ex, ey;
+  quadbin_point_tile(lon1, lat1, n, &tx, &ty);
+  quadbin_point_tile(lon2, lat2, n, &ex, &ey);
   cells[0] = quadbin_tile_to_cell((uint32_t) tx, (uint32_t) ty, resolution);
   enter[0] = 0.0;
   int count = 1;
@@ -1157,30 +1198,41 @@ quadbin_segment_cells(double lon1, double lat1, double lon2, double lat2,
   {
     /* The parameters at which the path reaches the next column boundary and
      * the next row boundary in the direction it travels */
-    double tcol = HUGE_VAL, trow = HUGE_VAL;
+    double tcol = HUGE_VAL, trow = HUGE_VAL, cx = 0.0, cy = 0.0;
     if (tx != ex && dlon != 0.0)
     {
-      double bx = (double) ((stepx > 0) ? tx + 1 : tx);
-      tcol = (bx / n * 360.0 - 180.0 - lon1) / dlon;
+      cx = quadbin_col_longitude((double) ((stepx > 0) ? tx + 1 : tx), n);
+      tcol = (cx - lon1) / dlon;
     }
     if (ty != ey && dlat != 0.0)
     {
-      double by = (double) ((stepy > 0) ? ty + 1 : ty);
-      trow = (quadbin_row_latitude(by, n) - lat1) / dlat;
+      cy = quadbin_row_latitude((double) ((stepy > 0) ? ty + 1 : ty), n);
+      trow = (cy - lat1) / dlat;
     }
     if (tcol == HUGE_VAL && trow == HUGE_VAL)
       break;
-    /* The crossings follow one another along the path, an order the
-     * rounding of the two boundary forms does not reverse */
-    double tnext = (tcol < trow) ? tcol : trow;
+    /* The path reaches the column bound first when the corner where the two
+     * bounds meet lies on one side of it, the row bound first when it lies
+     * on the other, and both at once when it passes through the corner: the
+     * sign of a cross product on the input doubles decides it exactly, where
+     * the two quotients round to the same parameter or to a reversed order */
+    int order;
+    if (tcol == HUGE_VAL)
+      order = -1;
+    else if (trow == HUGE_VAL)
+      order = 1;
+    else
+      order = cross_product_sign(lon1, lat1, lon2, lat2, lon1, lat1, cx, cy) *
+        ((dlon > 0.0) ? 1 : -1) * ((dlat > 0.0) ? 1 : -1);
+    double tnext = (order > 0) ? tcol : ((order < 0) ? trow : fmin(tcol, trow));
     if (tnext < t)
       tnext = t;
     if (tnext > 1.0)
       tnext = 1.0;
     t = tnext;
-    if (tcol < trow)
+    if (order > 0)
       tx += stepx;
-    else if (trow < tcol)
+    else if (order < 0)
       ty += stepy;
     else
     {
@@ -1232,7 +1284,9 @@ quadbin_cell_point(Quadbin cell, double *longitude, double *latitude)
  * @brief Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell
  * @details Out-parameter kernel shared by the geometry boundary projection
  * cellToBoundary (via quadbin_cell_to_geom in quadbin_geo.c) and the
- * stbox(quadbin) cast (via quadbin_set_stbox).
+ * stbox(quadbin) cast (via quadbin_set_stbox). The first and the last rows
+ * hold every latitude beyond the limit of Web Mercator, so their boxes reach
+ * the poles, and the tiles of a zoom cover the sphere.
  * @param[in] cell Quadbin cell
  * @param[out] xmin Minimum X coordinate
  * @param[out] ymin Minimum Y coordinate
@@ -1248,13 +1302,14 @@ quadbin_cell_bounding_box(Quadbin cell, double *xmin, double *ymin,
   uint32_t x, y, z;
   quadbin_cell_tile(cell, &x, &y, &z);
   double n = (double) (UINT64_C(1) << z);
-  *xmin = (double) x / n * 360.0 - 180.0;
-  *xmax = (double) (x + 1) / n * 360.0 - 180.0;
-  /* y grows southward: tile y -> ymax, tile y+1 -> ymin */
-  double yr_top = M_PI * (1.0 - 2.0 * (double) y / n);
-  double yr_bot = M_PI * (1.0 - 2.0 * (double) (y + 1) / n);
-  *ymax = 180.0 / M_PI * atan(sinh(yr_top));
-  *ymin = 180.0 / M_PI * atan(sinh(yr_bot));
+  *xmin = quadbin_col_longitude((double) x, n);
+  *xmax = quadbin_col_longitude((double) x + 1.0, n);
+  /* y grows southward: tile y -> ymax, tile y+1 -> ymin; the first and the
+   * last rows hold every latitude beyond the limit of the grid, so they
+   * extend to the poles (decision D5 of the cell walks) */
+  *ymax = y == 0 ? 90.0 : quadbin_row_latitude((double) y, n);
+  *ymin = (uint64) y + 1 == (UINT64_C(1) << z) ? -90.0 :
+    quadbin_row_latitude((double) y + 1.0, n);
 }
 
 /**
