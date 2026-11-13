@@ -542,3 +542,52 @@ ever_eq_tquadbin_quadbinset(const Temporal *tqb, const Set *cells)
 }
 
 /*****************************************************************************/
+
+/**
+ * @brief Set in the last argument the span of the doubles from @p lower to
+ * @p upper with the stated inclusivity, and return false where it holds no
+ * double, its two bounds being equal and one of them left out
+ */
+static bool
+quadbin_axis_span(double lower, bool lower_inc, double upper, bool upper_inc,
+  Span *s)
+{
+  if (lower > upper || (lower == upper && ! (lower_inc && upper_inc)))
+    return false;
+  span_set(Float8GetDatum(lower), Float8GetDatum(upper), lower_inc,
+    upper_inc, T_FLOAT8, T_FLOATSPAN, s);
+  return true;
+}
+
+/**
+ * @brief Return true if the tile of a QUADBIN cell shares a point with a
+ * planar box
+ * @details A tile holds its west and north edges and its north-west corner,
+ * and the tile of the last row its south edge too, reaching the south pole
+ * (`doc/specs/meos-cell-walks.md`, section 3): its region is
+ * [xmin, xmax) x (ymin, ymax], or [ymin, ymax] in y for the last row, on the
+ * bounds #quadbin_cell_bounding_box gives. The box holds its lower borders,
+ * and its upper ones where @p border_inc is true. The two regions share a
+ * point where their spans overlap on each axis, compared as doubles
+ * @param[in] cell Cell
+ * @param[in] box Spatiotemporal box with the X dimension
+ * @param[in] border_inc True when the box contains its upper borders
+ */
+bool
+quadbin_cell_meets_box(Quadbin cell, const STBox *box, bool border_inc)
+{
+  assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
+  double xmin, ymin, xmax, ymax;
+  quadbin_cell_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
+  uint32_t x, y, z;
+  quadbin_cell_tile(cell, &x, &y, &z);
+  bool last_row = (uint64) y + 1 == (UINT64_C(1) << z);
+  Span tx, ty, bx, by;
+  return quadbin_axis_span(xmin, true, xmax, false, &tx) &&
+    quadbin_axis_span(ymin, last_row, ymax, true, &ty) &&
+    quadbin_axis_span(box->xmin, true, box->xmax, border_inc, &bx) &&
+    quadbin_axis_span(box->ymin, true, box->ymax, border_inc, &by) &&
+    overlaps_span_span(&tx, &bx) && overlaps_span_span(&ty, &by);
+}
+
+/*****************************************************************************/
