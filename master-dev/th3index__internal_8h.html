@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">th3index_internal.h File Reference</div></div>
@@ -91,6 +92,11 @@ $(function() {
 </div>
 <p><a href="th3index__internal_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structH3Outline.html">H3Outline</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:a42163dde6d2a853976e074583263b4fe"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_a42163dde6d2a853976e074583263b4fe.html#a42163dde6d2a853976e074583263b4fe">H3Unit</a> { <br />
@@ -200,6 +206,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a23cad0886d306461de90d1a601bf3a45"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_a23cad0886d306461de90d1a601bf3a45.html#a23cad0886d306461de90d1a601bf3a45">h3_cell_area_meos</a> (H3Index cell, <a class="el" href="th3index__internal_8h_a42163dde6d2a853976e074583263b4fe.html#a42163dde6d2a853976e074583263b4fe">H3Unit</a> unit)</td></tr>
 <tr class="memdesc:a23cad0886d306461de90d1a601bf3a45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the area of an H3 cell in a given unit.  <a href="th3index__internal_8h_a23cad0886d306461de90d1a601bf3a45.html#a23cad0886d306461de90d1a601bf3a45">More...</a><br /></td></tr>
 <tr class="separator:a23cad0886d306461de90d1a601bf3a45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4246b43f3afb0a969811dee3565b6a13"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_a4246b43f3afb0a969811dee3565b6a13.html#a4246b43f3afb0a969811dee3565b6a13">h3_cell_outline</a> (H3Index cell, <a class="el" href="structH3Outline.html">H3Outline</a> *out)</td></tr>
+<tr class="memdesc:a4246b43f3afb0a969811dee3565b6a13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument the canonical outline of a cell.  <a href="th3index__internal_8h_a4246b43f3afb0a969811dee3565b6a13.html#a4246b43f3afb0a969811dee3565b6a13">More...</a><br /></td></tr>
+<tr class="separator:a4246b43f3afb0a969811dee3565b6a13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af745069944aa4067a79c9cf0ebb08768"><td class="memItemLeft" align="right" valign="top">H3Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_af745069944aa4067a79c9cf0ebb08768.html#af745069944aa4067a79c9cf0ebb08768">h3_cell_to_center_child_next_meos</a> (H3Index cell)</td></tr>
 <tr class="memdesc:af745069944aa4067a79c9cf0ebb08768"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the center child of an H3 cell at the next finer resolution.  <a href="th3index__internal_8h_af745069944aa4067a79c9cf0ebb08768.html#af745069944aa4067a79c9cf0ebb08768">More...</a><br /></td></tr>
 <tr class="separator:af745069944aa4067a79c9cf0ebb08768"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -224,6 +233,21 @@ Functions</h2></td></tr>
 <tr class="memitem:a12e93d968a5c09f98309b2ef7fc2710b"><td class="memItemLeft" align="right" valign="top">H3Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_a12e93d968a5c09f98309b2ef7fc2710b.html#a12e93d968a5c09f98309b2ef7fc2710b">h3_local_ij_to_cell_meos</a> (H3Index origin, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *coord)</td></tr>
 <tr class="memdesc:a12e93d968a5c09f98309b2ef7fc2710b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the H3 cell at local IJ coordinates relative to an origin cell.  <a href="th3index__internal_8h_a12e93d968a5c09f98309b2ef7fc2710b.html#a12e93d968a5c09f98309b2ef7fc2710b">More...</a><br /></td></tr>
 <tr class="separator:a12e93d968a5c09f98309b2ef7fc2710b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbee31d846f7a85fcdbb5f84df7a7292"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_acbee31d846f7a85fcdbb5f84df7a7292.html#acbee31d846f7a85fcdbb5f84df7a7292">h3_outline_edge_held</a> (const <a class="el" href="structH3Outline.html">H3Outline</a> *o, int k)</td></tr>
+<tr class="memdesc:acbee31d846f7a85fcdbb5f84df7a7292"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a cell holds the edge of its outline from the vertex k to the vertex k + 1.  <a href="th3index__internal_8h_acbee31d846f7a85fcdbb5f84df7a7292.html#acbee31d846f7a85fcdbb5f84df7a7292">More...</a><br /></td></tr>
+<tr class="separator:acbee31d846f7a85fcdbb5f84df7a7292"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a935666363ba26516ca247ba726e9c38c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_a935666363ba26516ca247ba726e9c38c.html#a935666363ba26516ca247ba726e9c38c">h3_outline_edge_held_geodetic</a> (const <a class="el" href="structH3Outline.html">H3Outline</a> *o, int k)</td></tr>
+<tr class="memdesc:a935666363ba26516ca247ba726e9c38c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a cell holds the edge of its outline from the vertex k to the vertex k + 1, the edge read as a great-circle arc.  <a href="th3index__internal_8h_a935666363ba26516ca247ba726e9c38c.html#a935666363ba26516ca247ba726e9c38c">More...</a><br /></td></tr>
+<tr class="separator:a935666363ba26516ca247ba726e9c38c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affe57f5437c1e570ade485a7a2e3603e"><td class="memItemLeft" align="right" valign="top">int64&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_affe57f5437c1e570ade485a7a2e3603e.html#affe57f5437c1e570ade485a7a2e3603e">h3_outline_edge_offset</a> (const <a class="el" href="structH3Outline.html">H3Outline</a> *o, int k, double x0, double y0, double x1, double y1, int64 D, bool *whole)</td></tr>
+<tr class="memdesc:affe57f5437c1e570ade485a7a2e3603e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the microsecond at which a segment crosses the line of the edge of an outline from the vertex k to the vertex k + 1, as the offset from the start of the segment, truncated.  <a href="th3index__internal_8h_affe57f5437c1e570ade485a7a2e3603e.html#affe57f5437c1e570ade485a7a2e3603e">More...</a><br /></td></tr>
+<tr class="separator:affe57f5437c1e570ade485a7a2e3603e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bdbe60786f015869d2530b412a9e857"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_a8bdbe60786f015869d2530b412a9e857.html#a8bdbe60786f015869d2530b412a9e857">h3_outline_vertex_held</a> (const <a class="el" href="structH3Outline.html">H3Outline</a> *o, int k)</td></tr>
+<tr class="memdesc:a8bdbe60786f015869d2530b412a9e857"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a cell holds the vertex k of its outline.  <a href="th3index__internal_8h_a8bdbe60786f015869d2530b412a9e857.html#a8bdbe60786f015869d2530b412a9e857">More...</a><br /></td></tr>
+<tr class="separator:a8bdbe60786f015869d2530b412a9e857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa57fe2b310c53d5aa1d5a155e26b99c8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_aa57fe2b310c53d5aa1d5a155e26b99c8.html#aa57fe2b310c53d5aa1d5a155e26b99c8">h3_outline_vertex_held_geodetic</a> (const <a class="el" href="structH3Outline.html">H3Outline</a> *o, int k)</td></tr>
+<tr class="memdesc:aa57fe2b310c53d5aa1d5a155e26b99c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a cell holds the vertex k of its outline, its edges read as great-circle arcs.  <a href="th3index__internal_8h_aa57fe2b310c53d5aa1d5a155e26b99c8.html#aa57fe2b310c53d5aa1d5a155e26b99c8">More...</a><br /></td></tr>
+<tr class="separator:aa57fe2b310c53d5aa1d5a155e26b99c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77e682bb2d9696c9ff73149a101da9ce"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__internal_8h_a77e682bb2d9696c9ff73149a101da9ce.html#a77e682bb2d9696c9ff73149a101da9ce">h3_segment_cells</a> (double lon1, double lat1, double lon2, double lat2, bool geodetic, int32 resolution, H3Index *cells, double *enter, int maxout)</td></tr>
 <tr class="memdesc:a77e682bb2d9696c9ff73149a101da9ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill <code>cells</code> with every cell the segment crosses, and <code>enter</code> with the segment parameter at which it reaches each.  <a href="th3index__internal_8h_a77e682bb2d9696c9ff73149a101da9ce.html#a77e682bb2d9696c9ff73149a101da9ce">More...</a><br /></td></tr>
 <tr class="separator:a77e682bb2d9696c9ff73149a101da9ce"><td class="memSeparator" colspan="2">&#160;</td></tr>

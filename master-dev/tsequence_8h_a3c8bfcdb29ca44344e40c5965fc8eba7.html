@@ -177,7 +177,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if the value at the middle timestamp lies on the line through the other two, decided exactly. </p>
-<p >The three values are collinear exactly where the cross product <code>(t2 - t1) * (x3 - x1) - (x2 - x1) * (t3 - t1)</code> is zero. Its operands are input values, so it has one answer, which <a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> gives: its filter decides where the double evaluation carries the sign, and the sign is decided exactly elsewhere, so a zero is an exact zero. Exact collinearity is transitive, which makes the normalization of a sequence its own fixed point. Each duration enters as two doubles whose sum is the duration exactly (<a class="el" href="tsequence_8c_af8a650df80b0202a27afdcb65a4c62f7.html#af8a650df80b0202a27afdcb65a4c62f7" title="Split a duration into two doubles whose sum is the duration exactly.">duration_split</a>), and values so large that the product of their difference and a duration would overflow are scaled by a power of two, which leaves the sign unchanged. Values that are not all finite are collinear only where they are equal.</p>
+<p >The three values are collinear exactly where the cross product <code>(t2 - t1) * (x3 - x1) - (x2 - x1) * (t3 - t1)</code> is zero. Its operands are input values, so it has one answer, which <a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> gives: its filter decides where the double evaluation carries the sign, and the sign is decided exactly elsewhere, so a zero is an exact zero. <a class="el" href="structExact.html">Exact</a> collinearity is transitive, which makes the normalization of a sequence its own fixed point. Each duration enters as two doubles whose sum is the duration exactly (<a class="el" href="tsequence_8c_af8a650df80b0202a27afdcb65a4c62f7.html#af8a650df80b0202a27afdcb65a4c62f7" title="Split a duration into two doubles whose sum is the duration exactly.">duration_split</a>), and values so large that the product of their difference and a duration would overflow are scaled by a power of two, which leaves the sign unchanged. Values that are not all finite are collinear only where they are equal.</p>
 <p >A middle value the engine CONSTRUCTS, the value at which a restriction splits a segment, is rounded and lies on the line within that rounding only. It is collinear where it lies within the rounding of the value interpolated at its timestamp (<a class="el" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b" title="Return the distance within which two coordinates of this size are the same point.">coordinate_tolerance</a>) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">x1,x2,x3</td><td>Values </td></tr>
@@ -186,7 +186,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Exact where no product of a difference of the values and a duration underflows </dd></dl>
+<dl class="section note"><dt>Note</dt><dd><a class="el" href="structExact.html">Exact</a> where no product of a difference of the values and a duration underflows </dd></dl>
 
 </div>
 </div>

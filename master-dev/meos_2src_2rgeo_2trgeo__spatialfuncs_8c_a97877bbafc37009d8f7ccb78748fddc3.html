@@ -175,19 +175,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Compute, for one pure-translation segment, the absolute-time spans during which the posed body overlaps the target, appending them to the dynamic span buffer (<code>spans</code>, <code>nspans</code>, <code>spancap</code>). </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ref</td><td>Body reference geometry (body frame) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pose1,pose2</td><td>Segment endpoint poses (same orientation) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2</td><td>Segment endpoint timestamps </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">target</td><td>Static target geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwtarget</td><td><a class="el" href="structLWGEOM.html">LWGEOM</a> view of <code>target</code> (for the clip primitive) </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true on success, false if the error handler returned (error set)</dd></dl>
-<p>Return true where a body meets a box only along the borders the box leaves out</p>
+<p>Return true where a body meets a box only along the borders the box leaves out. </p>
 <p >A box of a grid is half-open, <code>[xmin,xmax) x [ymin,ymax)</code>, so the tiles either side of a grid line claim a value lying on that line exactly once. The overlap of two geometries is a closed test and answers true for a body that merely touches, so a body every point of which stands at or beyond one of the two upper borders meets the closed box while meeting no point of the half-open one </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">body</td><td>Body, already placed in the world </td></tr>

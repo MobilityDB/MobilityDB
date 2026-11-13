@@ -205,8 +205,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Append to <code>events</code> the per-body-edge clip-interval endpoints (in segment-local parameter t in [0, 1]) for a pure-translation body segment. </p>
-<p >The body translates by <code>dx</code>, <code>dy</code> with fixed orientation. Each exterior ring edge of the (already world-posed at t = 0) body <code>body0</code> sweeps a parallelogram; the clip primitive returns the times at which that edge touches the target boundary. </p>
+<p>Append to <code>events</code> the fractions (in segment-local parameter t in [0, 1]) at which the contact of a pure-translation body segment with a target may change. </p>
+<p >The body translates by <code>dx</code>, <code>dy</code> with fixed orientation. Each edge of every ring of the (already world-posed at t = 0) body <code>body0</code> sweeps a parallelogram, the edges of a hole bounding the body as those of its exterior ring do, and the contact changes only where a vertex of the edge crosses the target or a vertex of the target crosses the edge (<a class="el" href="trgeo__geom__clip_8h_af35b8dd0b7b36d143b8daa4610c43f6c.html#af35b8dd0b7b36d143b8daa4610c43f6c" title="Append the fractions of a translation at which a moving edge may come into or out of contact with a s...">trgeometry_geom_clip_events</a>); each such fraction is appended, a contact that lasts an instant included. </p>
 
 </div>
 </div>

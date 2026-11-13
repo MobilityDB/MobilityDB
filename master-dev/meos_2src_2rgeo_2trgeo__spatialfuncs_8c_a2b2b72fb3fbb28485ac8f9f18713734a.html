@@ -229,6 +229,21 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
+<p>Compute, for one pure-translation segment, the absolute-time spans during which the posed body overlaps the target, appending them to the dynamic span buffer (<code>spans</code>, <code>nspans</code>, <code>spancap</code>) </p>
+<p >The contact changes only at the events of the edges of the body (<a class="el" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a8f6669b151a75bccc710d2ed96fa2318.html#a8f6669b151a75bccc710d2ed96fa2318" title="Append to events the fractions (in segment-local parameter t in [0, 1]) at which the contact of a pur...">collect_edge_events_m1</a>), so it holds or fails throughout each interval between two events, read at its middle, and an event is read itself: a run of contact starts and ends at an event, and a contact at an event alone, where a vertex touches an edge for an instant, is a run of its own </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ref</td><td>Body reference geometry (body frame) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pose1,pose2</td><td>Segment endpoint poses (same orientation) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2</td><td>Segment endpoint timestamps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">target</td><td>Static target geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwtarget</td><td><a class="el" href="structLWGEOM.html">LWGEOM</a> view of <code>target</code> (for the clip primitive) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">excl</td><td>Box whose upper borders are left out, NULL for none (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">spans,nspans,spancap</td><td>Spans to append to </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success, false if the error handler returned (error set) </dd></dl>
+
 </div>
 </div>
     </td>
