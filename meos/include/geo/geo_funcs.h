@@ -1705,10 +1705,22 @@ extern double nearest_double_exact(double c, NearestSide side,
   const void *arg);
 extern int wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign,
   const uint64 *mag, int nlimbs, int exp);
+extern WideDyadic *wide_dyadic_alloc(void);
+extern void wide_dyadic_set_double(WideDyadic *a, double x);
+extern void wide_dyadic_add(const WideDyadic *a, const WideDyadic *b,
+  WideDyadic *r);
+extern void wide_dyadic_sub(const WideDyadic *a, const WideDyadic *b,
+  WideDyadic *r);
+extern void wide_dyadic_mul(const WideDyadic *a, const WideDyadic *b,
+  WideDyadic *r);
+extern int wide_dyadic_to_fixed(const WideDyadic *a, int scale, bool up,
+  uint64 *mag, int nlimbs);
 
 /* The double nearest the sine and cosine of degrees (geo_trig.c) */
 extern double sind_nearest(double deg);
 extern double cosd_nearest(double deg);
 extern void lonlat_vector_nearest(double lon, double lat, double *v);
+extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
+  const double *a, const double *b, int64 num, int64 den);
 
 #endif /* __GEO_FUNCS_H__ */
