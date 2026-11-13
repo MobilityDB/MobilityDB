@@ -27,6 +27,14 @@ SELECT tgeogpoint 'Point(1 1)@2001-01-01' ?<> tgeogpoint 'Point(1 1)@2001-01-01'
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' %= tgeogpoint 'Point(1 1)@2001-01-01';
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' %<> tgeogpoint 'Point(1 1)@2001-01-01';
 
+-- Two points meeting only at a bound of their common period that the period
+-- excludes are never equal
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' ?= tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' %<> tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' ?= tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' %<> tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]' ?= tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]';
+
 -- NULL
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= tgeompoint 'Point(1 1)@2001-01-02';
 
