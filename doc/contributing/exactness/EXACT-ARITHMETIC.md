@@ -372,7 +372,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    ENUMERATION (the 1/0 of the motion filters, the 0/1/2 of the period filter) a value no answer
    takes. The sign filters that spelled it 0, the same digit as an exact zero
    (`polynomial_sign_filter` and `polynomial_sign_pairs`, the two offset filter signs,
-   `incircle_sign_filter`, `point_segm_within_filter`), spell it 2 in #3647, their 15 readers
+   `incircle_sign_filter`, `point_segm_within_filter`), spell it 2 in #3647, merged, their 15 readers
    with them, the six signs of the within-distance of a moving disc dropping their hand
    translation of 0 into 2; 5,015 differential rows answer alike with and without it, and CGAL
    agrees on the buffer witness (1313) and the arc relate pairs (38,584). Left: 3
