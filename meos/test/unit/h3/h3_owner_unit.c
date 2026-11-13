@@ -87,6 +87,7 @@ main(int argc, char **argv)
   for (int res = 0; res <= maxres; res++)
   {
     long nedges = 0, nverts = 0, nextra = 0, nsense = 0, nheld = 0;
+    long ngheld = 0, nmodels = 0;
     long shape[7] = { 0 };
     /* The cells around the poles, by #h3_latlng_deg_to_cell */
     H3Index north = h3_latlng_deg_to_cell(90.0, 0.0, res);
@@ -119,8 +120,12 @@ main(int argc, char **argv)
         double cx = radsToDegs(centre.lng), cy = radsToDegs(centre.lat);
         bool plain = outline_plain(&o);
         int cellheld = 0, cellverts = 0, rawheld = 0;
+        int gheld = 0, gverts = 0;
         for (int k = 0; k < o.count; k++)
+        {
           cellverts += h3_outline_vertex_held(&o, k);
+          gverts += h3_outline_vertex_held_geodetic(&o, k);
+        }
         for (int k = 0; k < o.count; k++)
         {
           int k1 = (k + 1) % o.count;
@@ -168,6 +173,17 @@ main(int argc, char **argv)
               (unsigned long long) cells[c], held ? 2 : 0);
             failures++;
           }
+          /* The same edge read as a great-circle arc */
+          bool geo = h3_outline_edge_held_geodetic(&o, k);
+          ngheld += geo;
+          gheld += geo;
+          nmodels += (geo != held);
+          if (geo == h3_outline_edge_held_geodetic(&n, m))
+          {
+            printf("FAIL res %d: geodetic edge %d of %llx held by %d cells\n",
+              res, k, (unsigned long long) cells[c], geo ? 2 : 0);
+            failures++;
+          }
         }
         /* The rule holds the north side, not the south one: the cell
          * around the north pole holds nothing, the one around the south
@@ -181,6 +197,14 @@ main(int argc, char **argv)
             cellheld, cellverts, o.count);
           failures++;
         }
+        if ((cells[c] == north && (gheld != 0 || gverts != 0)) ||
+            (cells[c] == south && (gheld != o.count || gverts != o.count)))
+        {
+          printf("FAIL res %d: the polar cell %llx holds %d geodetic edges "
+            "and %d of its %d vertices\n", res, (unsigned long long) cells[c],
+            gheld, gverts, o.count);
+          failures++;
+        }
         if (! isPentagon(cells[c]) && cells[c] != north && cells[c] != south)
           shape[cellheld]++;
         /* Each vertex: the cell and the cells across its two edges */
@@ -191,6 +215,7 @@ main(int argc, char **argv)
           int nmeet = meet[1] == meet[2] ? 2 : 3;
           nextra += (nmeet == 2);
           int holders = h3_outline_vertex_held(&o, k);
+          int gholders = h3_outline_vertex_held_geodetic(&o, k);
           for (int j = 1; j < nmeet; j++)
           {
             H3Outline n;
@@ -205,12 +230,19 @@ main(int argc, char **argv)
               continue;
             }
             holders += h3_outline_vertex_held(&n, m);
+            gholders += h3_outline_vertex_held_geodetic(&n, m);
           }
           nverts++;
           if (holders != 1)
           {
             printf("FAIL res %d: vertex %d of %llx held by %d cells\n", res, k,
               (unsigned long long) cells[c], holders);
+            failures++;
+          }
+          if (gholders != 1)
+          {
+            printf("FAIL res %d: geodetic vertex %d of %llx held by %d "
+              "cells\n", res, k, (unsigned long long) cells[c], gholders);
             failures++;
           }
         }
@@ -220,6 +252,8 @@ main(int argc, char **argv)
     printf("res %d: %ld edges and %ld vertices read from each side, %ld of "
       "them extra vertices; %ld edges held; sense checked on %ld edges\n",
       res, nedges, nverts, nextra, nheld, nsense);
+    printf("res %d: %ld edges held as great-circle arcs, %ld of them by the "
+      "other cell than in the plane\n", res, ngheld, nmodels);
     printf("res %d: hexagons holding 0 to 6 edges: %ld %ld %ld %ld %ld %ld "
       "%ld\n", res, shape[0], shape[1], shape[2], shape[3], shape[4],
       shape[5], shape[6]);
