@@ -1467,6 +1467,26 @@ SELECT asEWKT(atValue(tposechain '{PoseChain(Pose(Point(1 1), 0.5))@2001-01-01,
 -- {PoseChain(Pose(POINT(2 2),0.5))@2001-01-02}
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tposechain_atStbox">
+				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restringe una cadena de poses temporal a (el complemento de) un cuadro espaciotemporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atStbox(tposechain,stbox,borderInc boolean=true) &#8594; tposechain
+minusStbox(tposechain,stbox,borderInc boolean=true) &#8594; tposechain
+</programlisting>
+				<para>Una cadena está en un cuadro en un instante en que alguna de sus articulaciones está en él, tal como el cuadro delimitador de una cadena cubre todas sus articulaciones. El primer enlace se mueve linealmente entre dos instantes, y una articulación compuesta de más de un enlace se mantiene en su valor de cada instante hasta el siguiente, tal como la conversión de una cadena en una pose temporal mantiene su pose compuesta.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01,
+  PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]', stbox 'STBOX X((-1,-1),(1,1))'));
+/* {[PoseChain(Pose(POINT(-1 0),0),Pose(POINT(0 20),0))@2001-01-01 09:36:00,
+   PoseChain(Pose(POINT(1 0),0),Pose(POINT(0 20),0))@2001-01-01 14:24:00]} */
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01',
+  stbox 'STBOX X((4,-1),(6,1))'));
+-- NULL
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -1846,8 +1866,10 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 				<para>Superposición alguna vez y siempre</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {stbox,tpose} {?&amp;&amp;, %&amp;&amp;} {stbox,tpose} → boolean
+tposechain {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} tposechain → boolean
 </programlisting>
-				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; el cuadro delimitador de una pose es su posición, de modo que dos poses temporales se superponen en un instante en que sus posiciones son iguales, cualesquiera sean sus orientaciones.</para>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; el cuadro delimitador de una pose es su posición, de modo que dos poses temporales se superponen en un instante en que sus posiciones son iguales, cualesquiera sean sus orientaciones. Una cadena de poses temporal está en un cuadro cuando alguna de sus articulaciones lo está, tal como la restringe <xref linkend="tposechain_atStbox"/>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
   Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
@@ -1867,6 +1889,9 @@ SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
 -- false
 SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' ?&amp;&amp;
   tpose '[Pose(Point(1 1), 0.6)@2001-01-01, Pose(Point(1 1), 0.8)@2001-01-03]';
+-- true
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01' ?&amp;&amp;
+  stbox 'STBOX X((-1,-1),(1,1))';
 -- true
 </programlisting>
 			</listitem>

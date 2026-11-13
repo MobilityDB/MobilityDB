@@ -57,6 +57,11 @@ extern bool ensure_valid_tposechain_tposechain(const Temporal *temp1,
 extern bool ensure_same_count_tposechaininst(const TInstant *inst1,
   const TInstant *inst2);
 
+/* Restriction functions */
+
+extern Temporal *tposechain_restrict_stbox(const Temporal *temp,
+  const STBox *box, bool border_inc, bool atfunc);
+
 /* Intersection functions */
 
 extern int tposechainsegm_intersection_value(Datum start, Datum end,

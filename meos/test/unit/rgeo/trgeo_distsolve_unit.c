@@ -57,6 +57,13 @@
  *    not reported, and distfun_sign_after() gives the correct side.
  * 8. A touch of a function with terms gives a few roots and no crossing,
  *    and a dip just past the level gives two crossings.
+ * 9. distfun_square() and distfun_add_fun() give the values of the product
+ *    and the difference that they build.
+ * 10. An interval one double wide gives its roots without spending the
+ *    budget of cells.
+ *
+ * Every other random function of checks 1 to 6 has quadratic coefficients,
+ * the terms of distfun_square().
  *
  * Check 4 is the most important.  A method that samples the function and
  * guesses the roots from the samples passes the other tests of the
@@ -93,20 +100,28 @@ rnd(double lo, double hi)
 typedef struct
 {
   double w[DISTFUN_MAXTERMS], g[DISTFUN_MAXTERMS];
-  double A1[DISTFUN_MAXTERMS], A0[DISTFUN_MAXTERMS];
-  double B1[DISTFUN_MAXTERMS], B0[DISTFUN_MAXTERMS];
+  double A2[DISTFUN_MAXTERMS], A1[DISTFUN_MAXTERMS], A0[DISTFUN_MAXTERMS];
+  double B2[DISTFUN_MAXTERMS], B1[DISTFUN_MAXTERMS], B0[DISTFUN_MAXTERMS];
   int n;
   double c2, c1, c0;
 } Recipe;
 
+/**
+ * @brief A random recipe; every other one has quadratic coefficients, the
+ * terms of #distfun_square()
+ */
 static void
 recipe_random(Recipe *r, int nterm, double wmax)
 {
+  static int calls = 0;
+  bool quad = (calls++ % 2 == 1);
   r->n = nterm;
   for (int i = 0; i < nterm; i++)
   {
     r->w[i] = rnd(-wmax, wmax);
     r->g[i] = rnd(-M_PI, M_PI);
+    r->A2[i] = quad ? rnd(-5, 5) : 0.0;
+    r->B2[i] = quad ? rnd(-5, 5) : 0.0;
     r->A1[i] = rnd(-5, 5); r->A0[i] = rnd(-5, 5);
     r->B1[i] = rnd(-5, 5); r->B0[i] = rnd(-5, 5);
   }
@@ -118,7 +133,8 @@ recipe_build(const Recipe *r, DistFun *f)
 {
   distfun_init(f);
   for (int i = 0; i < r->n; i++)
-    distfun_add(f, r->w[i], r->g[i], r->A1[i], r->A0[i], r->B1[i], r->B0[i]);
+    distfun_add_cs2(f, r->w[i], cos(r->g[i]), sin(r->g[i]), r->A2[i],
+      r->A1[i], r->A0[i], r->B2[i], r->B1[i], r->B0[i]);
   distfun_add_poly(f, r->c2, r->c1, r->c0);
 }
 
@@ -130,8 +146,8 @@ recipe_eval(const Recipe *r, double t)
   for (int i = 0; i < r->n; i++)
   {
     double u = r->w[i] * t + r->g[i];
-    v += (r->A1[i] * t + r->A0[i]) * cos(u) +
-      (r->B1[i] * t + r->B0[i]) * sin(u);
+    v += ((r->A2[i] * t + r->A1[i]) * t + r->A0[i]) * cos(u) +
+      ((r->B2[i] * t + r->B1[i]) * t + r->B0[i]) * sin(u);
   }
   return v;
 }
@@ -460,6 +476,85 @@ main(int argc, char **argv)
         bad++;
     }
     printf("8. touches that the cells find           failures %d %s\n", bad,
+      bad ? "FAIL" : "ok");
+    if (bad)
+      fail++;
+  }
+
+  /* 9. The square of a function of one frequency, and a difference of two
+   * functions, against their direct values: L^2 * V - G^2, the equation of
+   * the distances to a vertex and to an edge */
+  {
+    double worst = 0.0;
+    int refused = 0;
+    for (int k = 0; k < trials; k++)
+    {
+      double w = (k % 5 == 0) ? 0.0 : rnd(-M_PI, M_PI);
+      DistFun g, v, sq, h;
+      distfun_init(&g);
+      distfun_add(&g, w, rnd(-M_PI, M_PI), rnd(-5, 5), rnd(-5, 5),
+        rnd(-5, 5), rnd(-5, 5));
+      distfun_add_poly(&g, 0.0, rnd(-3, 3), rnd(-3, 3));
+      distfun_init(&v);
+      distfun_add(&v, w, rnd(-M_PI, M_PI), rnd(-5, 5), rnd(-5, 5),
+        rnd(-5, 5), rnd(-5, 5));
+      distfun_add_poly(&v, rnd(-3, 3), rnd(-3, 3), rnd(-3, 3));
+      double L = rnd(0.1, 4.0);
+      if (! distfun_square(&g, &sq))
+      {
+        refused++;
+        continue;
+      }
+      distfun_init(&h);
+      if (! distfun_add_fun(&h, &v, L * L) || ! distfun_add_fun(&h, &sq, -1.0))
+      {
+        refused++;
+        continue;
+      }
+      for (int j = 0; j <= 20; j++)
+      {
+        double t = j / 20.0, gv = distfun_eval(&g, t);
+        double direct = L * L * distfun_eval(&v, t) - gv * gv;
+        double d = fabs(distfun_eval(&h, t) - direct) / (1.0 + fabs(direct));
+        if (d > worst)
+          worst = d;
+      }
+    }
+    /* A quadratic polynomial part has no square in the family */
+    DistFun q, qs;
+    distfun_init(&q);
+    distfun_add_poly(&q, 1.0, 0.0, 0.0);
+    if (distfun_square(&q, &qs))
+      refused++;
+    printf("9. square and difference vs direct values   max rel err %.3e, "
+      "refusals %d %s\n", worst, refused, (worst < 1e-12 && ! refused) ?
+      "ok" : "FAIL");
+    if (! (worst < 1e-12) || refused)
+      fail++;
+  }
+
+  /* 10. An interval one double wide, which no cell can split, at a touch of
+   * the level, where neither test of a cell decides it: the roots come
+   * without spending the budget */
+  {
+    int bad = 0;
+    for (int k = 0; k < trials; k++)
+    {
+      /* f = c*(t - r)^2 + A*(1 - cos(w*(t - r))) touches zero at r, as in
+       * check 8 */
+      double r0 = rnd(0.05, 0.95), c = rnd(0.1, 5.0), A = rnd(0.1, 5.0);
+      double w = rnd(0.5, 20.0);
+      DistFun f;
+      distfun_init(&f);
+      distfun_add(&f, w, -w * r0, 0.0, -A, 0.0, 0.0);
+      distfun_add_poly(&f, c, -2.0 * c * r0, c * r0 * r0 + A);
+      double lo = r0, hi = nextafter(r0, 2.0);
+      double roots[DISTFUN_MAXROOTS];
+      int n = distfun_roots(&f, 0.0, lo, hi, 1e-12, roots, DISTFUN_MAXROOTS);
+      if (n == DISTFUN_BUDGET || n == DISTFUN_OVERFLOW || n == DISTFUN_NONFINITE)
+        bad++;
+    }
+    printf("10. intervals one double wide              failures %d %s\n", bad,
       bad ? "FAIL" : "ok");
     if (bad)
       fail++;

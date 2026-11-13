@@ -1532,8 +1532,11 @@ tdwithin_bounds_in(const LiftedFunctionInfo *lfinfo, int solutions,
 /**
  * @brief Add to a walk the result of the tdwithin function of a segment from
  * the solutions of the quadratic equation found previously
- * @details @p in1 and @p in2 are the values at the bounds @p t1 and @p t2
- * where these lie strictly inside the segment, as the value function of the
+ * @details The interval of the segment during which the values are within the
+ * distance is [@p t1, @p t2], its enter and exit instants, equal for a touch at
+ * one instant; @p solutions is 0 when there is none, 1 for a touch and 2
+ * otherwise. @p in1 and @p in2 are the values at its bounds where these lie
+ * strictly inside the segment, as the value function of the
  * turning point function states them (#tcbuffersegm_tdwithin_at); a bound at
  * which the values are not within the distance is excluded from the run of
  * true values and added to the neighbouring run of false ones, each run
@@ -1544,6 +1547,7 @@ tdwithin_add_solutions_run(int solutions, TimestampTz lower,
   TimestampTz upper, bool lower_inc, bool upper_inc, bool upper_inc1,
   TimestampTz t1, TimestampTz t2, bool in1, bool in2, TDwithinRun *run)
 {
+  assert(solutions >= 0 && solutions <= 2);
   const Datum datum_true = BoolGetDatum(true);
   const Datum datum_false = BoolGetDatum(false);
   /* <  F  > */
@@ -1674,19 +1678,23 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
     /* General case */
     else
     {
-      /* Find the instants t1 and t2 (if any) during which the dwithin
-       * function is true */
-      TimestampTz t1, t2;
+      /* Find the interval of the segment (if any) during which the dwithin
+       * function is true, one at most, a touch at one instant being the
+       * interval of that instant */
+      TimestampTz tps[2] = {0, 0};
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
       int solutions = tpfn(sv1, sev1, sv2, sev2, lfinfo->param[0], lower,
-        upper, &t1, &t2);
+        upper, tps, 2);
+      assert(solutions <= 2);
+      if (solutions == 1)
+        tps[1] = tps[0];
       bool upper_inc1 = linear1 && linear2 && upper_inc;
       bool in1 = true, in2 = true;
       tdwithin_bounds_in(lfinfo, solutions, sv1, sev1, sv2, sev2, lower, upper,
-        t1, t2, &in1, &in2);
+        tps[0], tps[1], &in1, &in2);
       tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
-        upper_inc, upper_inc1, t1, t2, in1, in2, &run);
+        upper_inc, upper_inc1, tps[0], tps[1], in1, in2, &run);
       /* Add extra final point if only one segment is linear */
       if (upper_inc && (! linear1 || ! linear2))
       {
@@ -1810,18 +1818,21 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point,
     /* General case */
     else
     {
-      /* Find the instants t1 and t2 (if any) during which the dwithin
-       * function is true */
-      TimestampTz t1, t2;
+      /* Find the interval of the segment (if any) during which the dwithin
+       * function is true, one at most, a touch at one instant being the
+       * interval of that instant */
+      TimestampTz tps[2] = {0, 0};
       int solutions = tpfn(startvalue, endvalue, point, point,
-        lfinfo->param[0], lower,
-        upper, &t1, &t2);
+        lfinfo->param[0], lower, upper, tps, 2);
+      assert(solutions <= 2);
+      if (solutions == 1)
+        tps[1] = tps[0];
       bool upper_inc1 = linear && upper_inc;
       bool in1 = true, in2 = true;
       tdwithin_bounds_in(lfinfo, solutions, startvalue, endvalue, point, point,
-        lower, upper, t1, t2, &in1, &in2);
+        lower, upper, tps[0], tps[1], &in1, &in2);
       tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
-        upper_inc, upper_inc1, t1, t2, in1, in2, &run);
+        upper_inc, upper_inc1, tps[0], tps[1], in1, in2, &run);
     }
     startvalue = endvalue;
     lower = upper;

@@ -501,8 +501,13 @@ int
 tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  return tgeompointsegm_distance_turnpt(start1, end1, start2, end2,
-    (Datum) 0.0, lower, upper, t1, t2);
+  assert(t1); assert(t2);
+  TimestampTz tps[2];
+  int result = tgeompointsegm_distance_turnpt(start1, end1, start2, end2,
+    (Datum) 0.0, lower, upper, tps, 2);
+  if (result)
+    *t1 = *t2 = tps[0];
+  return result;
 }
 
 /**
@@ -542,9 +547,12 @@ int
 tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
+  assert(t1); assert(t2);
+  TimestampTz tps[2];
   if (! tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
-    (Datum) 0.0, lower, upper, t1, t2))
+    (Datum) 0.0, lower, upper, tps, 2))
     return 0;
+  *t1 = *t2 = tps[0];
   Datum v1 = tsegment_value_at_timestamptz(start1, end1, T_TGEOGPOINT, lower,
     upper, *t1);
   Datum v2 = tsegment_value_at_timestamptz(start2, end2, T_TGEOGPOINT, lower,
@@ -2988,15 +2996,15 @@ geo_bearing_fn(int16 flags)
  * @param[in] start,end Values defining the segment
  * @param[in] point Geometric/geography point to locate
  * @param[in] lower,upper Timestampts defining the segment
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segment is not constant and has linear interpolation
- * @post As there is a single turning point, `t2` is set to `t1`
  */
 static int
 tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   const POINT2D *p1 = DATUM_POINT2D_P(start);
   const POINT2D *p2 = DATUM_POINT2D_P(end);
   const POINT2D *p = DATUM_POINT2D_P(point);
@@ -3035,11 +3043,11 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
       return 0;
   }
   long double duration = (long double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  tps[0] = lower + (TimestampTz) (duration * fraction);
   /* Compute the projected value only for geometries */
   if (! geodetic)
     proj = tsegment_value_at_timestamptz(start, end, T_TGEOMPOINT,
-      lower, upper, *t1);
+      lower, upper, tps[0]);
   q = DATUM_POINT2D_P(proj);
   /* We add a turning point only if p is to the North of q */
   int result = MEOS_FP_GE(p->y, q->y) ? 1 : 0;
@@ -3055,18 +3063,18 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants and are both linear
- * @post As there is a single turning point, `t2` is set to `t1`
  * @note This function is currently not available for two temporal geographic
  * points
  */
 static int
 tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   assert(! FLAGS_GET_GEODETIC(DatumGetGserializedP(start1)->gflags));
   const POINT2D *sp1 = DATUM_POINT2D_P(start1);
   const POINT2D *ep1 = DATUM_POINT2D_P(end1);
@@ -3085,11 +3093,11 @@ tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
     return 0;
 
   long double duration = (long double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  tps[0] = lower + (TimestampTz) (duration * fraction);
   Datum v1 = tsegment_value_at_timestamptz(start1, end1, T_TGEOMPOINT,
-    lower, upper, *t1);
+    lower, upper, tps[0]);
   Datum v2 = tsegment_value_at_timestamptz(start2, end2, T_TGEOMPOINT,
-    lower, upper, *t1);
+    lower, upper, tps[0]);
   /* We add a turning point only if the second point is to the North of the
    * first, where the bearing passes through 0 */
   int result = MEOS_FP_GE(DATUM_POINT2D_P(v2)->y, DATUM_POINT2D_P(v1)->y) ?

@@ -1688,6 +1688,9 @@
 					<listitem>
 						<para><link linkend="tposechain_atTime"><varname>atTime</varname>, <varname>atValue</varname></link>: Restrict a temporal pose chain to a time or to a value</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict a temporal pose chain to (the complement of) a spatiotemporal box</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
