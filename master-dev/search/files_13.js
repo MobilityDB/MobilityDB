@@ -63,5 +63,6 @@ var searchData=
   ['stbox_5findex_2eh_60',['stbox_index.h',['../stbox__index_8h.html',1,'']]],
   ['stbox_5fperiod_5ftest_2ec_61',['stbox_period_test.c',['../stbox__period__test_8c.html',1,'']]],
   ['stbox_5ftile_2ec_62',['stbox_tile.c',['../stbox__tile_8c.html',1,'']]],
-  ['stratnum_2eh_63',['stratnum.h',['../stratnum_8h.html',1,'']]]
+  ['stratnum_2eh_63',['stratnum.h',['../stratnum_8h.html',1,'']]],
+  ['sync_5fcrossing_5ftest_2ec_64',['sync_crossing_test.c',['../sync__crossing__test_8c.html',1,'']]]
 ];
