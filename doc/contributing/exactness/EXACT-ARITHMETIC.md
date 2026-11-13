@@ -346,10 +346,10 @@ layer holds it for every question. The phases, each a series of pull requests:
    answering 0 for 1 or -1 on 310 and 310 rows at 2^+-580 and beyond and on subnormal coordinates;
    its differential found `ddb_cross3` reading two equal infinite products as an exact zero, fixed
    first by #3617, merged), `certa_longer` and
-   `centred_circle_side` (to `point_within_distance_sign`, the sign of `|p - q|^2 - d^2`: C9, its
+   `centred_circle_side` (to `point_within_distance_sign`, the sign of `|p - q|^2 - d^2`: C9, #3630, its
    differential 1240 rows, the two agreeing between 2^-300 and 2^300 and answering wrongly on 206
    and 400 rows at 2^+-600 and beyond and on subnormal differences), `cert_point_seg_far_exact`
-   and `cert_point_seg_far_slow` (to `point_segment_offset_sign`: C10, its differential 975 rows,
+   and `cert_point_seg_far_slow` (to `point_segment_offset_sign`: C10, #3631, its differential 975 rows,
    the former answering within for farther on 184 rows from 2^+-300 on, where its product of four
    differences leaves the doubles, at the same cost on the buffer). `point_segm_within` keeps its
    filter in front of `point_segment_offset_sign`: the filter never answers wrongly on the 975 rows
