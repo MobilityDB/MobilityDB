@@ -465,6 +465,13 @@ diffs classified:
    comparisons with a float 1.006 to 1.009 and 0.948, `#=` of two temporal floats 1.266 and
    0.973, atSpan 1.061 and 1.054, sin and cos 1.163 and 1.099, so it is a draft by the parity
    rule.
+   The value split it switches counts its bins by MobilityDB #3641, merged as `31764297c1`:
+   `span_num_bins` and `tile_dim_count` read the quotient of two bins of one grid over the size
+   as the nearest whole number, so `bins(floatspan '[1, 2]', 0.3)` holds the bin `[1.8, 2.1)` and
+   `valueSplit` of that segment writes no piece past its arrays. The split places a value on a
+   grid starting at its first bin, which rounds apart from the grid of the count, so
+   `valueSplit` of `[0.1, 2.2]` by 0.7 leaves out the piece from 2.1 to 2.2; placing every value
+   on the grid of the origin follows #3640, whose value split it rewrites.
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
    turning points, through the same primitive with the exact polynomial sign.
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
