@@ -571,7 +571,7 @@ into the whole gap. Handing the operands by address through an inline form and r
 one comparison saves 0.6 to 2% more, the copy moving to the caller: not kept. The range checks are
 what makes the expression ladder exact unaided, so the gap is their price.
 
-**The proposal for the committers (Section 8):** the expression ladder is the one ladder, with
+**Decided (the owner, 2026-11-13):** the expression ladder is the one ladder, with
 each question's own first tier ahead of it, which costs as the polynomial ladder where the first
 tiers decide; a tie costs about 1.5 times the polynomial ladder's, and is exact for every finite
 double.
@@ -733,7 +733,8 @@ of its acceptance set held by no cell or by two.
 
 1. The one ladder: the expression ladder with each question's own first tier ahead of it, at
    about 1.5 times the polynomial ladder's cost on a tie (EA1), the price of being exact for
-   every finite double without its caller keeping a range.
+   every finite double without its caller keeping a range. Decided by the owner on 2026-11-13
+   ("yes accept the expression ladder"); EA4 and EA5 merge onto it.
 2. The order of Section 7: the tolerances beside exact signs first, the duplicates of one contract
    next, one convention, then one arithmetic, the speed of MobilityDB #3484 after.
 3. The conventions of phase 3: "undecided" is 2 inside the layer, an answer outside it is -1, 0
