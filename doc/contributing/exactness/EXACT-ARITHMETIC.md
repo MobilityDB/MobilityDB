@@ -577,8 +577,20 @@ in MPFR with directed rounding (`mpfr_d6` of the oracle kit) and by mpmath inter
 of PostGIS's `ll2cart`, which MEOS reads today, differs on 32730 of the positions (60757 of
 107298 components), the sine of the latitude alone on 4219 of the 12937 vertices. A vector
 costs 233 thousand instructions, pi read from a table of floor(pi 2^2048). The geodetic owner of
-the H3 cells (row CW4 of #3544) reads it. Left: the angles of an exact S2 corner and the latitude of a QUADBIN
-row, which take the same side function on an atan2 and an atan(sinh) enclosure.
+the H3 cells (row CW4 of #3544) reads it.
+
+The fraction of a geodetic arc at which it meets the great circle of a cell edge, the angle
+atan2(|p0 x x|, p0 . x) over the angle of the arc, is compared with a rational exactly
+(`geodetic_arc_fraction_cmp` in `geo_trig.c`, #3649), the question the truncation of a geodetic
+crossing to its microsecond asks: the vectors in `WideDyadic`, each angle enclosed in fixed-point
+integers by an arctangent halved twice and two outward-rounded series, the precision doubling
+until the difference lies clear of 0. `geo_funcs.c` exports `wide_dyadic_alloc`,
+`wide_dyadic_set_double`, `wide_dyadic_add`, `wide_dyadic_sub`, `wide_dyadic_mul` and
+`wide_dyadic_to_fixed`, the struct opaque, the signatures EA5 keeps. On 4360 rows judged in
+CGAL::Gmpq and MPFR's atan2 and by mpmath intervals, the head answers every row; the fraction
+read in doubles is wrong on 596 of the 4000 crossing rows. Left: the angles of an exact S2
+corner and the latitude of a QUADBIN row, which take the same side function on an atan2 and an
+atan(sinh) enclosure.
 
 ### EA9. The signs on coordinates shifted by multiples of 360
 
