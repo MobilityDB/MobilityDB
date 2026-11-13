@@ -461,10 +461,11 @@ diffs classified:
    its witness. MobilityDB #3640, a draft: the float locators agree with the exact nearest
    microsecond on all 533988 float segments of the crossprobe corpus (332138 of 548989 before
    it); five expected outputs move, each row confirmed on exact rationals. Callgrind against
-   master `9b1cebc9b6`, with about half of the segments crossing and with none: the comparisons
-   with a float 0.971 and 0.935, `#=` with a float 0.660 and 0.934, `#=` of two temporal floats
-   0.937 and 0.965, atSpan 0.985 and 0.996, atValue 0.970 and 1.000, sin and cos 0.992 and
-   0.999, abs 1.005 and 1.000, the distance of two temporal floats 1.0004 and 0.999.
+   master `b942d52758`, with about half of the segments crossing and with none: the comparisons
+   with a float 0.971 and 0.935, `#=` with a float 0.659 and 0.934, `#=` of two temporal floats
+   0.936 and 0.965, atSpan 0.984 and 0.996, atValue 0.969 and 1.000, sin and cos 0.990 and
+   0.998, abs 0.994 and 0.986, the distance of two temporal floats 0.992 and 0.988, every walk at
+   or below master.
    The value split it switches counts its bins by MobilityDB #3641, merged as `31764297c1`:
    `span_num_bins` and `tile_dim_count` read the quotient of two bins of one grid over the size
    as the nearest whole number, so `bins(floatspan '[1, 2]', 0.3)` holds the bin `[1.8, 2.1)` and
