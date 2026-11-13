@@ -625,6 +625,15 @@ pairs of `polynomial_sign_pairs` become `ddb_*` operations, their bounds carried
 `TowerWide`, the size of its value, stands for tier 3: `WideDyadic` and the `WIDE_LIMBS` integer
 of `square_products_wide` become it. A value of tier 3 then costs the limbs it holds, not 320.
 
+A fourth wide number, missing from Section 4.3, joins them: the fixed-point arrays of `uint32_t`
+limbs of `geo_trig.c` (`fix_isqrt`, `fix_div_shift`, `fix_atan2_enclose`), which enclose the
+correctly rounded degrees of an exact corner. Measured by the cell walks (D7, 2026-11-13,
+`~/cpwork/cw6/cg.s2.out` on P-ULB-PF59GXL3): an S2 cover at level 16 spends 91% of its time in
+those degrees, `fix_isqrt` 48% and `fix_div_shift` 32% inclusive, both working one bit at a time
+over the limbs, about 1.5M instructions a corner, every caller of `fix_atan2_enclose` paying it,
+the geodetic H3 dating of #3657 among them. Their division and square root become the wide
+number's own, by words and by Newton's iteration, so that one speed-up serves every reader.
+
 The measured case for it (relay of DESKTOP-B8RRPID, 2026-11-13, `ed24-kit/home/cpwork/ed24/exp`):
 on the ED24 cell "refuting at" 513 calls of `plane_point_offset_sign`, `point_segment_offset_sign`
 and `segment_interior_offset_sign` reach the exact tiers, 399 of them `WideDyadic` at 11-16K
