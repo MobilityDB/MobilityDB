@@ -1,4 +1,4 @@
-<html><head><meta charset="UTF-8"><title>Comparisons</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch12.html" title="Chapter 12. Temporal Circular Buffers"><link rel="prev" href="ch12s15.html" title="Spatiotemporal Relationships"><link rel="next" href="ch12s17.html" title="Aggregations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparisons</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s15.html">Prev</a> </td><th width="60%" align="center">Chapter 12. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch12s17.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_comparisons"></a>Comparisons</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_comp"></a><a class="indexterm" name="id10240"></a><a class="indexterm" name="id10243"></a><a class="indexterm" name="id10246"></a><a class="indexterm" name="id10249"></a><a class="indexterm" name="id10252"></a><a class="indexterm" name="id10255"></a><p>Traditional comparisons</p><pre class="programlisting">
+<html><head><meta charset="UTF-8"><title>Comparisons</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch12.html" title="Chapter 12. Temporal Circular Buffers"><link rel="prev" href="ch12s15.html" title="Spatiotemporal Relationships"><link rel="next" href="ch12s17.html" title="Aggregations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparisons</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s15.html">Prev</a> </td><th width="60%" align="center">Chapter 12. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch12s17.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_comparisons"></a>Comparisons</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_comp"></a><a class="indexterm" name="id10242"></a><a class="indexterm" name="id10245"></a><a class="indexterm" name="id10248"></a><a class="indexterm" name="id10251"></a><a class="indexterm" name="id10254"></a><a class="indexterm" name="id10257"></a><p>Traditional comparisons</p><pre class="programlisting">
 tcbuffer {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcbuffer → boolean
 </pre><pre class="programlisting">
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
@@ -14,7 +14,7 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.6)@2001-01-03]';
 -- false
-</pre></li><li class="listitem"><a name="tcbuffer_ever_always"></a><a class="indexterm" name="id10262"></a><a class="indexterm" name="id10265"></a><a class="indexterm" name="id10268"></a><a class="indexterm" name="id10271"></a><p>Ever and always comparisons</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_ever_always"></a><a class="indexterm" name="id10264"></a><a class="indexterm" name="id10267"></a><a class="indexterm" name="id10270"></a><a class="indexterm" name="id10273"></a><p>Ever and always comparisons</p><pre class="programlisting">
 {tcbuffer,cbuffer} {?=, ?&lt;&gt;, %=, %&lt;&gt;} {tcbuffer,cbuffer} → boolean
 </pre><pre class="programlisting">
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
@@ -27,10 +27,11 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
   Cbuffer(Point(1 1), 0.2)@2001-01-04)' %= cbuffer 'Cbuffer(Point(1 1), 0.2)';
 -- true
-</pre></li><li class="listitem"><a name="tcbuffer_ever_always_overlaps"></a><a class="indexterm" name="id10278"></a><a class="indexterm" name="id10281"></a><p>Ever and always overlaps</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_ever_always_overlaps"></a><a class="indexterm" name="id10280"></a><a class="indexterm" name="id10283"></a><p>Ever and always overlaps</p><pre class="programlisting">
 tcbuffer {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
-</pre><p>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <a class="xref" href="ch05s04.html#ttype_ever_always_overlaps">???</a> states it for the temporal geometries; a circular buffer lies in a box when it intersects it, as the restriction of a temporal circular buffer to a box reads it.</p><pre class="programlisting">
+tcbuffer {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
+</pre><p>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <a class="xref" href="ch05s04.html#ttype_ever_always_overlaps">???</a> states it for the temporal geometries; a circular buffer lies in a box when it intersects it, as the restriction of a temporal circular buffer to a box reads it. Two values overlap where the boxes of their circular buffers overlap at a time they share, that is, where the larger of the distances of their centres along x and y is at most the sum of their radii; the boxes are compared between the instants of the values too, where two moving buffers may overlap for a moment only, and two values that share no time answer NULL.</p><pre class="programlisting">
 SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
   Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' ?&amp;&amp;
   stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
@@ -47,7 +48,17 @@ SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
   Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' %&amp;&amp;
   stbox 'STBOX X((-1,-1),(11,11))';
 -- true
-</pre></li><li class="listitem"><a name="tcbuffer_tcomp"></a><a class="indexterm" name="id10290"></a><a class="indexterm" name="id10293"></a><p>Temporal comparisons</p><pre class="programlisting">
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-03]' ?&amp;&amp;
+  tcbuffer '[Cbuffer(Point(10 0), 1)@2001-01-01, Cbuffer(Point(0 0), 1)@2001-01-03]';
+-- true
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(0 0), 1)@2001-01-03]' ?&amp;&amp;
+  tcbuffer '[Cbuffer(Point(2.5 -6), 1)@2001-01-01, Cbuffer(Point(2.5 6), 1)@2001-01-03]';
+-- false
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(0 0), 1)@2001-01-03]' %&amp;&amp;
+  tcbuffer '[Cbuffer(Point(2 0), 1)@2001-01-01, Cbuffer(Point(6 0), 1)@2001-01-02,
+  Cbuffer(Point(2 0), 1)@2001-01-03]';
+-- false
+</pre></li><li class="listitem"><a name="tcbuffer_tcomp"></a><a class="indexterm" name="id10292"></a><a class="indexterm" name="id10295"></a><p>Temporal comparisons</p><pre class="programlisting">
 {tcbuffer,cbuffer} {#=, #&lt;&gt;} {tcbuffer,cbuffer} → tbool
 </pre><pre class="programlisting">
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,

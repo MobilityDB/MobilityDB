@@ -21,14 +21,21 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-04)' &amp;= N
 </pre></li><li class="listitem"><a name="tnpoint_ever_always_overlaps"></a><a class="indexterm" name="id8784"></a><a class="indexterm" name="id8787"></a><p>Superposición alguna vez y siempre</p><pre class="programlisting">
 tnpoint {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tnpoint → boolean
-</pre><p>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <a class="xref" href="ch05s04.html#ttype_ever_always_overlaps">???</a> para las geometrías temporales; un punto de red está en un cuadro cuando su posición geométrica lo está.</p><pre class="programlisting">
+tnpoint {?&amp;&amp;, %&amp;&amp;} tnpoint → boolean
+</pre><p>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <a class="xref" href="ch05s04.html#ttype_ever_always_overlaps">???</a> para las geometrías temporales; un punto de red está en un cuadro cuando su posición geométrica lo está. Dos valores se superponen donde están en un mismo lugar del mapa en un instante que comparten: en una misma ruta en una misma fracción, o donde sus rutas se cruzan o se encuentran, que es la igualdad espacial de sus posiciones, tal como <code class="varname">ST_Equals</code> compara dos geometrías, donde <code class="varname">?=</code> compara la ruta y la fracción. La posición en una fracción de una ruta es un punto calculado en dobles, por lo que dos posiciones son un mismo lugar cuando están dentro del redondeo de sus coordenadas, y un punto de red proyectado sobre un cruce está en un mismo lugar que el punto de la otra ruta proyectado sobre él.</p><pre class="programlisting">
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]' ?&amp;&amp;
   stbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]');
 -- true
 SELECT stbox 'STBOX T([2001-01-05, 2001-01-06])' ?&amp;&amp;
   tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]';
 -- false
-</pre></li><li class="listitem"><a name="tnpoint_tcomp"></a><a class="indexterm" name="id8796"></a><a class="indexterm" name="id8799"></a><p>Comparaciones temporales</p><pre class="programlisting">
+SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.8)@2001-01-03]' ?&amp;&amp;
+  tnpoint '[Npoint(1, 0.8)@2001-01-01, Npoint(1, 0.2)@2001-01-03]';
+-- true
+SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]' ?&amp;&amp;
+  tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.7)@2001-01-03]';
+-- false
+</pre></li><li class="listitem"><a name="tnpoint_tcomp"></a><a class="indexterm" name="id8798"></a><a class="indexterm" name="id8801"></a><p>Comparaciones temporales</p><pre class="programlisting">
 {npoint,tnpoint} {#=, #&lt;&gt;} {npoint,tnpoint} → tbool
 </pre><pre class="programlisting">
 SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01,
