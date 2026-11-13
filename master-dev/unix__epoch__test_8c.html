@@ -81,13 +81,14 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A program that tests the conversion of a timestamptz to and from the microseconds from the Unix epoch.  
+<p>A program that tests the conversion of a timestamptz and of a timestamp to and from the microseconds from the Unix epoch, of a date to and from the days from it, of an interval to and from its months, days and microseconds, and of a time with time zone to and from its microseconds from midnight and its offset east of UTC.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;pg_time.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &lt;pg_timestamp.h&gt;</code><br />
 </div><table class="memberdecls">
@@ -95,8 +96,16 @@ $(function() {
 Functions</h2></td></tr>
 <tr class="memitem:abfc7c19dd740b989b0d796bdc3ecb53f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unix__epoch__test_8c_abfc7c19dd740b989b0d796bdc3ecb53f.html#abfc7c19dd740b989b0d796bdc3ecb53f">check_count</a> (const char *text, int64 <a class="el" href="delete__timestamptz__test_8c_a6bd2df38d42655885c78a17a25f56d11.html#a6bd2df38d42655885c78a17a25f56d11">expected</a>)</td></tr>
 <tr class="separator:abfc7c19dd740b989b0d796bdc3ecb53f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad272ef4a04dfa6919fbed43acfc6508"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unix__epoch__test_8c_aad272ef4a04dfa6919fbed43acfc6508.html#aad272ef4a04dfa6919fbed43acfc6508">check_count_ts</a> (const char *text, int64 <a class="el" href="delete__timestamptz__test_8c_a6bd2df38d42655885c78a17a25f56d11.html#a6bd2df38d42655885c78a17a25f56d11">expected</a>)</td></tr>
+<tr class="separator:aad272ef4a04dfa6919fbed43acfc6508"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae20d571896030f8ea6b0c6ef70f77e29"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unix__epoch__test_8c_ae20d571896030f8ea6b0c6ef70f77e29.html#ae20d571896030f8ea6b0c6ef70f77e29">check_days</a> (const char *text, int32 <a class="el" href="delete__timestamptz__test_8c_a6bd2df38d42655885c78a17a25f56d11.html#a6bd2df38d42655885c78a17a25f56d11">expected</a>)</td></tr>
+<tr class="separator:ae20d571896030f8ea6b0c6ef70f77e29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a986c344f6be1b8fe52402fbdb62afa85"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unix__epoch__test_8c_a986c344f6be1b8fe52402fbdb62afa85.html#a986c344f6be1b8fe52402fbdb62afa85">check_error</a> (const char *what, int <a class="el" href="delete__timestamptz__test_8c_a6bd2df38d42655885c78a17a25f56d11.html#a6bd2df38d42655885c78a17a25f56d11">expected</a>)</td></tr>
 <tr class="separator:a986c344f6be1b8fe52402fbdb62afa85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a514d44c7c019e649655d6769836a31b5"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unix__epoch__test_8c_a514d44c7c019e649655d6769836a31b5.html#a514d44c7c019e649655d6769836a31b5">check_interval</a> (const char *text, int32 months, int32 days, int64 us)</td></tr>
+<tr class="separator:a514d44c7c019e649655d6769836a31b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af57a40cbd40810e853c95de7bb70f123"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unix__epoch__test_8c_af57a40cbd40810e853c95de7bb70f123.html#af57a40cbd40810e853c95de7bb70f123">check_timetz</a> (const char *text, int64 us, int32 offset)</td></tr>
+<tr class="separator:af57a40cbd40810e853c95de7bb70f123"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unix__epoch__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -106,7 +115,7 @@ Variables</h2></td></tr>
 <tr class="separator:a5c7ba59d434acf5dafb8ec5fd28e9a1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A program that tests the conversion of a timestamptz to and from the microseconds from the Unix epoch. </p>
+<div class="textblock"><p >A program that tests the conversion of a timestamptz and of a timestamp to and from the microseconds from the Unix epoch, of a date to and from the days from it, of an interval to and from its months, days and microseconds, and of a time with time zone to and from its microseconds from midnight and its offset east of UTC. </p>
 <p >Each count is the one Python's datetime computes for the same instant: a year start clear of the PostgreSQL epoch, the Unix epoch, the microsecond before the Unix epoch, and an instant with a fraction of a second written in two zones, each with its round trip. An infinite timestamp, a count outside the range of timestamps and the last timestamp of the range, whose count exceeds a 64-bit integer, report <a class="el" href="meos__error_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a9e8b480a9cd31cf75e920c4325186754">MEOS_ERR_DATETIME_OUT_OF_RANGE</a>. The Unix seconds of the Mapbox Vector Tile encoding round towards negative infinity, so the instant half a second before the PostgreSQL epoch has the second before it.</p>
 <p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o unix_epoch_test unix_epoch_test.c -<a class="code hl_variable" href="trgeo__distance_8txt_a912268ab84e9ca487721bed51b5372aa.html#a912268ab84e9ca487721bed51b5372aa">L</a>/usr/local/lib -lmeos -lm</div>
 <div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
