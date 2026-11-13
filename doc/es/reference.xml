@@ -1686,6 +1686,9 @@
 				<listitem>
 					<para><link linkend="tposechain_atTime"><varname>atTime</varname>, <varname>atValue</varname></link>: Restringe una cadena de poses temporal a un tiempo o a un valor</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="tposechain_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restringe una cadena de poses temporal a (el complemento de) un cuadro espaciotemporal</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

@@ -41,7 +41,9 @@
 #include <meos.h>
 #include <meos_pose.h>
 #include "temporal/temporal.h"
+#include "geo/stbox.h"
 #include "geo/tspatial.h"
+#include "pose/tposechain.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
@@ -337,6 +339,55 @@ Tposechain_rotate_z(PG_FUNCTION_ARGS)
   Temporal *result = tposechain_rotate_z(temp, PG_GETARG_FLOAT8(1));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal pose chain restricted to (the complement of) a
+ * spatiotemporal box, as #Tpose_restrict_stbox restricts a temporal pose
+ */
+static Datum
+Tposechain_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tposechain_restrict_stbox(temp, box, border_inc, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tposechain_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_at_stbox);
+/**
+ * @ingroup mobilitydb_posechain_restrict
+ * @brief Return a temporal pose chain restricted to a spatiotemporal box, the
+ * times at which one of its joints lies in the box
+ * @sqlfn atStbox()
+ */
+inline Datum
+Tposechain_at_stbox(PG_FUNCTION_ARGS)
+{
+  return Tposechain_restrict_stbox(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tposechain_minus_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_minus_stbox);
+/**
+ * @ingroup mobilitydb_posechain_restrict
+ * @brief Return a temporal pose chain restricted to the complement of a
+ * spatiotemporal box, the times at which none of its joints lies in the box
+ * @sqlfn minusStbox()
+ */
+inline Datum
+Tposechain_minus_stbox(PG_FUNCTION_ARGS)
+{
+  return Tposechain_restrict_stbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
