@@ -285,6 +285,60 @@ holds:
 
 Section 7 merges the machinery of Section 4 into this one, a step per pull request.
 
+### 5.1 The three entry points of a temporal segment
+
+The same rule holds one level up, where a temporal value meets time. Every exact question a
+lifted function asks of a linear segment, against a value or against another segment, is one of
+three, each written once per base type (the owner, 2026-11-13: "with location, interpolate and
+dwithin exact for each base type the other exactness follow"):
+
+1. **Locate**: whether, and at which parameter, a segment takes a value or meets another
+   segment. The crossings of `=`, `<` and `>`, the restriction to a value and ever/always equal
+   are read from it. For one coordinate it is the sign of the gap at an instant, a cross product
+   of the doubles (EXACT-CROSSINGS.md, #3640). For several coordinates every pair of moving
+   coordinates is collinear in its projection, `cross_product_sign` on the doubles, a coordinate
+   that does not move equals the value exactly, and the crossing is then the one-coordinate
+   crossing of the coordinate that moves most. Two segments meet where the differences of their
+   ends are collinear, the same cross product. No ratio is compared against a band.
+2. **Interpolate**: the value at an instant, the double nearest the exact value there. It is
+   output only: no question is decided on a value it returns (the continuous-time rule).
+3. **Dwithin**: whether two values lie within a distance at an instant, a sign of degree 2 in
+   time, against a value, another segment or a geometry. `tDwithin`, ever/always dwithin, the
+   kinks of a distance and the nearest approach (where the derivative of the squared distance,
+   linear in time, crosses 0) are read from it, and a spatial relationship of a moving point
+   with a geometry is its case at distance 0.
+
+**Under all three, one dating**: a crossing is dated by the microsecond nearest it, found by
+exact signs, a tie going to the even microsecond (EXACT-CROSSINGS.md, Section 9). The search
+reads any exact sign at an instant, so a crossing found by locate and the same crossing found by
+dwithin are dated alike, which EXACT-CROSSINGS.md Section 4 measures as the condition for the
+forms of one crossing to agree.
+
+What does not reduce to them keeps the same shape on its own arithmetic: a geodetic segment
+(great circles), a 3D pose (SLERP), and the unary functions (`exp`, `sin`), each a sign at an
+instant, exact where it is algebraic, within the band of its rounding where it is transcendental,
+and dated by the same search.
+
+The inventory on master `69eeb91c37`:
+
+| Base type | Locate | Interpolate | Dwithin |
+|---|---|---|---|
+| float | `floatsegm_locate`: band, a fraction within 1e-6 of 0 or 1 is read as none; #3640 makes it the exact side and crossing (draft, the parity rule) | `floatsegm_interpolate`: the ratio and the value each rounded | not a primitive: the locate of `v - d` and `v + d` |
+| planar point (2D, 3D) | `pointsegm_locate`: band, the closest point is constructed and accepted within 1e-6 | `pointsegm_interpolate`, per coordinate as float | `point_motion_dwithin_period_exact`, `point_motion_dwithin_at_exact`: exact, shared with the circular buffer; `tpointsegm_tdwithin_turnpt` keeps a band, `fabsl(t7 - t8) < MEOS_EPSILON`; against a geometry, `tpoint_linear_dwithin_geom` over its edges |
+| geodetic point | `pointsegm_locate` on the sphere: band | `interpolate_point4d_spheroid` at a ratio in doubles | `tdwithin_tgeogpoint_geogpoint`, `tdwithin_tgeogpoint_geog`: its own walk on the spheroid |
+| circular buffer | `cbuffersegm_locate`: serializes the centres and calls `pointsegm_locate`, then matches the ratio of the radius within 1e-6 | `cbuffersegm_interpolate` | `tcbuffersegm_tdwithin_turnpt`, `tcbuffersegm_tdwithin_at`: the shared exact kernel |
+| network point | `npointsegm_locate`: band, a fraction within 1e-6 of 0 or 1 | `npointsegm_interpolate` on the position | through the geometry of the route, `edwithin_tgeo_tgeo` |
+| 2D pose | `posesegm_locate`: the point's band, then the ratio of the angle matched within 1e-6; each link of a chain alike (`posechain.c`) | `posesegm_interpolate`: no turn below 1e-6 on master, exact in C11 | through the position |
+| 3D pose | `posesegm_locate`: SLERP inverted by `acos`, matched within 1e-6 | SLERP | through the position |
+| rigid geometry | not a primitive: its value is its pose's | the pose's | `trgeometry_dwithin_interval`, the distance motion of its poses |
+
+The cells that hold a band are the work: locate for every type, the turning point of the planar
+dwithin, and the interpolations, which round the ratio before the value. Dwithin is already one
+kernel for the planar point and the circular buffer. The order follows Section 7: the
+one-coordinate crossing and its dating (#3640) first, then the locate of several coordinates on
+it, for the callers that locate a value they are given, classified call site by call site; a
+caller locating a point MEOS constructs keeps its path until it stops constructing it.
+
 ## 6. The seam at the user entries
 
 A user entry checks its arguments and calls the engine once: `geom_dwithin3d` validates its
@@ -393,7 +447,29 @@ layer holds it for every question. The phases, each a series of pull requests:
    and false where not, with no third answer to spell. The meaning of "undecided" is one.
    C11, after the conventions: the turn of a pose segment in 2D, read as no turn where
    `fabs(theta_delta) < MEOS_EPSILON` in `posesegm_interpolate`, is an exact sign, as C1-C6 read
-   their tolerances (EXACT-POSE.md P1).
+   their tolerances (EXACT-POSE.md P1): `theta_delta == 0`, since the difference of two distinct
+   doubles is never 0, the comparison `posesegm_locate` already makes. A corpus of 60,000
+   segments turning by 1e-15 to 1e-5 measures it (`~/claude-kits/oracle-kit`, `pose_turn_corpus.c`):
+   every turn of 1e-6 or less (`MEOS_EPSILON` is 1e-6) kept the start angle, 44,894 rows, and
+   44,809 interpolated poses were not located on their own segment. After it 22,460 are still not
+   located, every one a turn under 1e-9, and rightly so: a constructed pose is rounded, so whether it
+   lies on its own segment has the exact answer no, and the corpus's located column asked that
+   question. The next step, decided by the owner on 2026-11-13 ("go with the exact 2D locate after
+   C11"), is the locate itself: a 2D pose segment is a line in (x, y, theta) along which continuous
+   time moves linearly, and a pose lies on it where one t answers every coordinate. The parameters
+   of the coordinates that move are compared exactly, as signs of cross products of the input
+   doubles; a coordinate that does not move equals the pose's exactly; and the common t lies in
+   [0, 1]. The `MEOS_EPSILON` within which `posesegm_locate`, and `posechain` per link, match the
+   ratio of the angle to the ratio of the position goes. Its witness: poses exactly on the line
+   are found, and the same poses one ulp off in any coordinate are not, judged by CGAL's exact
+   kernel on the doubles (collinearity in each projection), never by master. The same exact helper serves every caller of the 2D locate that asks
+   about a value it is given, classified call site by call site (the owner, 2026-11-13, "go with
+   your recommendation"): the 2D pose and each link of a pose chain, the planar temporal point
+   restricted to a value, the position of a circular buffer; a caller locating a point MEOS
+   constructs, and `datumsegm_locate` until its callers are read, keep their path and are the
+   step after. A turn past pi is read on the unwrapped angle the interpolation
+   computes. A 3D pose follows apart: SLERP's parameter is transcendental, so its rotation keeps a
+   band sized to the rounding of the constructed value (EXACT-POSE.md P2), not a fixed 1e-6.
 4. **One arithmetic (EA1, EA4 to EA8, EA10).** One ladder, one pair type, one wide number, one
    search, every sign with every tier; then one arc model and one time model, each merge after a
    differential; then the double nearest a transcendental value (EA8), read by the one search;
