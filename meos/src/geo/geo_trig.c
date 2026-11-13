@@ -989,6 +989,159 @@ wide_vec_free(WideDyadic **v)
   pfree(v);
 }
 
+/*****************************************************************************
+ * Directions read exactly
+ *
+ * The cells of a geodetic trajectory are decided on directions in space: the
+ * geodetic position of a vertex or of an instant (#lonlat_vector_nearest),
+ * the normal of the great circle of an edge or of a segment, the direction in
+ * which two great circles meet, and the sum of two directions, which lies
+ * between them on their circle. Each is a vector of exact values
+ * (#wide_cross, #wide_dot), so every sign read on it is exact.
+ *****************************************************************************/
+
+/** @brief A direction in space whose components are exact dyadic values */
+struct SphereDir
+{
+  WideDyadic *c[3];
+};
+
+static SphereDir *
+sphere_dir_alloc(void)
+{
+  SphereDir *r = palloc(sizeof(SphereDir));
+  for (int i = 0; i < 3; i++)
+    r->c[i] = wide_dyadic_alloc();
+  return r;
+}
+
+/**
+ * @brief Return the direction of a vector of doubles, read exactly
+ */
+SphereDir *
+sphere_dir_make(const double *v)
+{
+  SphereDir *r = sphere_dir_alloc();
+  for (int i = 0; i < 3; i++)
+    wide_dyadic_set_double(r->c[i], v[i]);
+  return r;
+}
+
+/**
+ * @brief Return the cross product of two directions, exactly
+ */
+SphereDir *
+sphere_dir_cross(const SphereDir *a, const SphereDir *b)
+{
+  SphereDir *r = sphere_dir_alloc();
+  wide_cross(a->c, b->c, r->c);
+  return r;
+}
+
+/**
+ * @brief Return the sum of two directions, exactly
+ */
+SphereDir *
+sphere_dir_add(const SphereDir *a, const SphereDir *b)
+{
+  SphereDir *r = sphere_dir_alloc();
+  for (int i = 0; i < 3; i++)
+    wide_dyadic_add(a->c[i], b->c[i], r->c[i]);
+  return r;
+}
+
+/**
+ * @brief Return the opposite of a direction, exactly
+ */
+SphereDir *
+sphere_dir_neg(const SphereDir *a)
+{
+  SphereDir *r = sphere_dir_alloc();
+  WideDyadic *zero = wide_dyadic_alloc();
+  for (int i = 0; i < 3; i++)
+    wide_dyadic_sub(zero, a->c[i], r->c[i]);
+  pfree(zero);
+  return r;
+}
+
+/**
+ * @brief Free a direction
+ */
+void
+sphere_dir_free(SphereDir *a)
+{
+  if (! a)
+    return;
+  for (int i = 0; i < 3; i++)
+    pfree(a->c[i]);
+  pfree(a);
+}
+
+/**
+ * @brief Return the sign of the dot product of two directions
+ */
+int
+sphere_dir_dot_sign(const SphereDir *a, const SphereDir *b)
+{
+  WideDyadic *t = wide_dyadic_alloc();
+  wide_dot(a->c, b->c, t);
+  int result = wide_sign(t);
+  pfree(t);
+  return result;
+}
+
+/**
+ * @brief Return the sign of the triple product (a x b) . c
+ */
+int
+sphere_dir_triple_sign(const SphereDir *a, const SphereDir *b,
+  const SphereDir *c)
+{
+  SphereDir *n = sphere_dir_cross(a, b);
+  int result = sphere_dir_dot_sign(n, c);
+  sphere_dir_free(n);
+  return result;
+}
+
+/**
+ * @brief Return the sign of (a . b)(c . d) - (a . d)(c . b)
+ * @details Where the dot products of a and c with d are positive, the sign
+ * compares the ratios (a . b) / (a . d) and (c . b) / (c . d), the coordinates
+ * along b of a and c in the gnomonic chart about d
+ */
+int
+sphere_dir_dot_diff_sign(const SphereDir *a, const SphereDir *b,
+  const SphereDir *c, const SphereDir *d)
+{
+  WideDyadic *ab = wide_dyadic_alloc(), *cd = wide_dyadic_alloc();
+  WideDyadic *ad = wide_dyadic_alloc(), *cb = wide_dyadic_alloc();
+  WideDyadic *l = wide_dyadic_alloc(), *r = wide_dyadic_alloc();
+  WideDyadic *t = wide_dyadic_alloc();
+  wide_dot(a->c, b->c, ab);
+  wide_dot(c->c, d->c, cd);
+  wide_dot(a->c, d->c, ad);
+  wide_dot(c->c, b->c, cb);
+  wide_dyadic_mul(ab, cd, l);
+  wide_dyadic_mul(ad, cb, r);
+  wide_dyadic_sub(l, r, t);
+  int result = wide_sign(t);
+  pfree(ab); pfree(cd); pfree(ad); pfree(cb); pfree(l); pfree(r); pfree(t);
+  return result;
+}
+
+/**
+ * @brief Return true if two directions lie on one line through the origin,
+ * their cross product being exactly 0
+ */
+bool
+sphere_dir_parallel(const SphereDir *a, const SphereDir *b)
+{
+  SphereDir *n = sphere_dir_cross(a, b);
+  bool result = wide_vec_is_zero(n->c);
+  sphere_dir_free(n);
+  return result;
+}
+
 /* sign(f - num/den) for a rational f = fn/fd given by small integers */
 static int
 fraction_cmp_rational(int64 fn, int64 fd, int64 num, int64 den)
