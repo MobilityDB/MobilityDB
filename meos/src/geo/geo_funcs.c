@@ -1695,7 +1695,7 @@ exact_sum_set(ExactSum *sum, const double *terms, int nterms)
 
 /**
  * @brief Return the sign of a polynomial in exact sums where its evaluation
- * in pairs of doubles carries it, and 0 where it cannot tell
+ * in pairs of doubles carries it, and 2 where it cannot tell
  * @details The second filter of #polynomial_sign_exact. Each exact sum is read
  * as a pair, its largest component and the rounded sum of the others, within
  * 2 u of those others, u being DBL_EPSILON / 2. Each term is a pair, its
@@ -1739,7 +1739,7 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
       two_product(h, sh, &p, &pe);
       double ap = fabs(p);
       if (! isfinite(p) || (ap != 0.0 && (ap < 0x1p-900 || ap > 0x1p900)))
-        return 0;
+        return 2;
       double c = (pe + h * sl) + l * sh;
       double ne = (e * (fabs(sh) + fabs(sl)) + (fabs(h) + fabs(l)) * se +
         e * se + 8.1 * u * u * fabs(h) * fabs(sh)) * inflate;
@@ -1757,12 +1757,12 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
   double bound = 2.0 * (E + 8.0 * DBL_MIN * nterms * POLY_TERM_MAXDEG) *
     inflate;
   if (! isfinite(v) || ! isfinite(bound))
-    return 0;
+    return 2;
   if (v > bound)
     return 1;
   if (v < - bound)
     return -1;
-  return 0;
+  return 2;
 }
 
 /** Number of doubles of the arena in which #polynomial_sign_stack forms each
@@ -1826,7 +1826,7 @@ polynomial_sign_stack(const ExactSum *sums, const PolyTerm *terms,
 
 /**
  * @brief Return the sign of a polynomial in exact sums where its filters
- * carry it, and 0 where they cannot tell
+ * carry it, and 2 where they cannot tell
  * @details The two filters of #polynomial_sign_exact, in doubles and else in
  * pairs of doubles (#polynomial_sign_pairs). The polynomial is
  * evaluated in doubles together with a bound on the error of every operation,
@@ -1836,7 +1836,7 @@ polynomial_sign_stack(const ExactSum *sums, const PolyTerm *terms,
  * reads it where this answers 0
  * @param[in] sums Exact sums the terms refer to
  * @param[in] terms,nterms Terms of the polynomial and their number
- * @return -1 or 1, or 0 where the filters cannot tell
+ * @return -1 or 1, or 2 where the filters cannot tell
  */
 static inline int
 polynomial_sign_filter(const ExactSum *sums, const PolyTerm *terms,
@@ -1888,7 +1888,7 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   int nterms)
 {
   int sign = polynomial_sign_filter(sums, terms, nterms);
-  if (sign != 0)
+  if (sign != 2)
     return sign;
   if (polynomial_sign_stack(sums, terms, nterms, &sign))
     return sign;
@@ -2964,7 +2964,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of `a + b1 + b2 + b3`, or 0 where a filter on doubles cannot tell
+ * square of `a + b1 + b2 + b3`, or 2 where a filter on doubles cannot tell
  * @details The squared distance arrives as the sum `s` of the rounded squares
  * of the coordinate differences and the double `lo` of its small terms, whose
  * magnitudes add to @p lomag, as #point_distance_offset_filter forms them. The
@@ -2977,7 +2977,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
  * their magnitudes, which `2a` and `2 bmag` carry into the products), the
  * products and the three subtractions, each below `DBL_EPSILON` times the
  * magnitudes they read, and an absolute `DBL_MIN` for a square that underflows
- * @return 1 or -1 where the value stands clear of the bound, 0 otherwise,
+ * @return 1 or -1 where the value stands clear of the bound, 2 otherwise,
  * never the sign of an exact tie, which the caller reads exactly
  */
 static inline int
@@ -2999,7 +2999,7 @@ point_distance_offset_filter_sign(double s, double lo, double lomag, double a,
     return 1;
   if (value < - bound)
     return -1;
-  return 0;
+  return 2;
 }
 
 /**
@@ -3130,7 +3130,7 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
   /* The side of S - r^2 */
   int side = point_distance_offset_filter_sign(s, lo, lomag, r, rlo, 0.0,
     0.0);
-  if (side == 0)
+  if (side == 2)
     return false;
   if (side < 0)
   {
@@ -3158,19 +3158,19 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
     two_sum(r, c, &a, &a1);
     int su = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
       0.5 * (cu - c));
-    if (su > 0)
+    if (su == 1)
     {
       c = cu;
       continue;
     }
     int sd = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
       - 0.5 * (c - cd));
-    if (sd < 0)
+    if (sd == -1)
     {
       c = cd;
       continue;
     }
-    if (su < 0 && sd > 0)
+    if (su == -1 && sd == 1)
     {
       *result = c;
       return true;
@@ -7045,7 +7045,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
     t[n++] = (PolyTerm) {1.0, 2, {i, i}};
   t[n++] = (PolyTerm) {-1.0, 2, {L, L}};
   int sc = polynomial_sign_filter(sums, t, n);
-  if (sc == 0)
+  if (sc == 2)
     return 2;
   if (sc < 0)
     return -1;
@@ -7061,7 +7061,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
   t[n++] = (PolyTerm) {-2.0, 2, {L, R}};
   t[n++] = (PolyTerm) {-1.0, 2, {L, L}};
   int s1 = polynomial_sign_filter(sums, t, n);
-  if (s1 == 0)
+  if (s1 == 2)
     return 2;
   if (s1 < 0)
     return -1;
@@ -7071,7 +7071,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
     t[n++] = (PolyTerm) {1.0, 2, {ndims + i, ndims + i}};
   t[n++] = (PolyTerm) {-1.0, 2, {R, R}};
   int sa = polynomial_sign_filter(sums, t, n);
-  if (sa == 0)
+  if (sa == 2)
     return 2;
   if (sa < 0)
     return 1;
@@ -7080,7 +7080,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
     t[n++] = (PolyTerm) {1.0, 2, {i, ndims + i}};
   t[n++] = (PolyTerm) {-1.0, 2, {L, R}};
   int sb = polynomial_sign_filter(sums, t, n);
-  if (sb == 0)
+  if (sb == 2)
     return 2;
   if (sb > 0)
     return 1;
@@ -7094,7 +7094,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
   t[n++] = (PolyTerm) {-1.0, 2, {R, R}};
   t[n++] = (PolyTerm) {-1.0, 2, {L, R}};
   int sab = polynomial_sign_filter(sums, t, n);
-  if (sab == 0)
+  if (sab == 2)
     return 2;
   if (sab < 0)
     return 1;
@@ -7115,7 +7115,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
     t[n++] = (PolyTerm) {2.0, 4, {L, R, i, ndims + i}};
   }
   int sv = polynomial_sign_filter(sums, t, n);
-  if (sv == 0)
+  if (sv == 2)
     return 2;
   return (sv < 0) ? -1 : 1;
 }
@@ -7836,7 +7836,7 @@ point_segment_quarter_rounds(const double *p, const double *a,
 }
 
 /**
- * @brief Return the sign of `Q - (a + b1 + b2)^2 L`, or 0 where a filter on
+ * @brief Return the sign of `Q - (a + b1 + b2)^2 L`, or 2 where a filter on
  * doubles cannot tell, setting in @p value the double it reads
  * @details The twin of #point_distance_offset_filter_sign for a point and a
  * segment: `Q` is the squared cross product of the point less the segment's
@@ -7852,7 +7852,7 @@ point_segment_quarter_rounds(const double *p, const double *a,
  * the rounding of every product and sum, each below `DBL_EPSILON` times the
  * magnitudes it reads, with a factor of 32 over the count of operations, and
  * an absolute `4 DBL_MIN` for the products that underflow
- * @return 1 or -1 where the value stands clear of the bound, 0 otherwise,
+ * @return 1 or -1 where the value stands clear of the bound, 2 otherwise,
  * never the sign of an exact tie, which the caller reads exactly
  */
 static inline int
@@ -7882,7 +7882,7 @@ point_segment_offset_filter_sign(double qs, double qlo, double qmag,
     return 1;
   if (v < - bound)
     return -1;
-  return 0;
+  return 2;
 }
 
 /**
@@ -8031,7 +8031,7 @@ point_segment_offset_filter(const double *dw, const double *ew,
   double num;
   int side = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
     r, 0.0, 0.0, &num);
-  if (side == 0)
+  if (side == 2)
     return false;
   if (side < 0)
   {
@@ -8055,19 +8055,19 @@ point_segment_offset_filter(const double *dw, const double *ew,
     two_sum(r, c, &m, &m1e);
     int su = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
       m, m1e, 0.5 * (cu - c), &v);
-    if (su > 0)
+    if (su == 1)
     {
       c = cu;
       continue;
     }
     int sd = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
       m, m1e, - 0.5 * (c - cd), &v);
-    if (sd < 0)
+    if (sd == -1)
     {
       c = cd;
       continue;
     }
-    if (su < 0 && sd > 0)
+    if (su == -1 && sd == 1)
     {
       *result = c;
       return true;
@@ -11105,7 +11105,7 @@ incircle_pair(double a, double b, double c, double d, double *h, double *l,
 
 /**
  * @brief Return the sign of the incircle determinant of four points where its
- * evaluation in pairs of doubles carries it, and 0 where it cannot tell
+ * evaluation in pairs of doubles carries it, and 2 where it cannot tell
  * @details The second filter between the one of #incircle_sign and
  * #incircle_sign_exact, for four points whose coordinate differences from D
  * are exact doubles, as those of nearby points are (Sterbenz). Each lift and
@@ -11133,7 +11133,7 @@ incircle_sign_filter(double ax, double ay, double bx, double by, double cx,
     two_diff(from[i], to[i], &v[i], &err);
     double m = fabs(v[i]);
     if (err != 0.0 || (m != 0.0 && (m < 0x1p-200 || m > 0x1p200)))
-      return 0;
+      return 2;
   }
   /* Each lift times the cross product of the other two points */
   static const int cu[3] = {2, 4, 0}, cv[3] = {4, 0, 2};
@@ -11160,7 +11160,7 @@ incircle_sign_filter(double ax, double ay, double bx, double by, double cx,
     return 1;
   if (det < - bound)
     return -1;
-  return 0;
+  return 2;
 }
 
 /**
@@ -11197,7 +11197,7 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
   if (det < - bound)
     return -1;
   int sign = incircle_sign_filter(ax, ay, bx, by, cx, cy, dx, dy);
-  if (sign != 0)
+  if (sign != 2)
     return sign;
   return incircle_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
 }
@@ -14668,7 +14668,7 @@ arc_gap_past(double gap, double margin, double dist)
 }
 
 /* Where a point stands against a distance of a segment in doubles, as
- * #geom_dwithin_end reads it: 1 past it, -1 within it, 0 where it cannot tell */
+ * #geom_dwithin_end reads it: 1 past it, -1 within it, 2 where it cannot tell */
 static int
 point_segm_within_filter(const double *p, const double *a, const double *b,
   double dist)
@@ -14676,12 +14676,12 @@ point_segm_within_filter(const double *p, const double *a, const double *b,
   double big = fmax(fmax(fabs(p[0]), fabs(p[1])), fmax(fmax(fabs(a[0]),
     fabs(a[1])), fmax(fabs(b[0]), fabs(b[1]))));
   if (! (big >= ARC_FILTER_MIN && big <= ARC_FILTER_MAX))
-    return 0;
+    return 2;
   double v = sqrt(point_seg_dist2(p[0], p[1], a[0], a[1], b[0], b[1]));
   double margin = 0x1p-40 * big;
   if (arc_gap_past(v, margin, dist))
     return 1;
-  return ((v + margin) * (1.0 + 0x1p-50) < dist) ? -1 : 0;
+  return ((v + margin) * (1.0 + 0x1p-50) < dist) ? -1 : 2;
 }
 
 /* Whether a point is within a distance of a segment, exactly */
@@ -14689,7 +14689,7 @@ static bool
 point_segm_within(const double *p, const double *a, const double *b, double dist)
 {
   int f = point_segm_within_filter(p, a, b, dist);
-  return (f != 0) ? f < 0 :
+  return (f != 2) ? f < 0 :
     point_segment_offset_sign(p, a, b, 2, dist) <= 0;
 }
 
