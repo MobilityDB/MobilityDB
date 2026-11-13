@@ -3680,7 +3680,7 @@ wide_dyadic_normalize(WideDyadic *a)
  * @brief Set a #WideDyadic to a finite double, exactly: its integer mantissa
  * times the weight of its lowest bit
  */
-static void
+void
 wide_dyadic_set_double(WideDyadic *a, double x)
 {
   a->sign = 0;
@@ -3787,7 +3787,7 @@ wide_limbs_mul(const uint64_t *x, int nx, const uint64_t *y, int ny,
  * @brief Set the product of two #WideDyadic, exactly
  * @note The result is not one of the operands
  */
-static void
+void
 wide_dyadic_mul(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
 {
   r->sign = 0;
@@ -3902,7 +3902,7 @@ wide_dyadic_aligned(const WideDyadic *a, int e, uint64_t *out)
  * the lower of the two lowest bits, then added or the smaller subtracted
  * @note The result is not one of the operands
  */
-static void
+void
 wide_dyadic_add(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
 {
   if (a->sign == 0)
@@ -4055,6 +4055,72 @@ wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign, const uint64 *mag,
   else
     wide_dyadic_normalize(&v);
   return wide_dyadic_cmp(mid, &v);
+}
+
+/**
+ * @brief Return a #WideDyadic outside this file, which knows its size
+ * @details The storage is palloc0'd and freed by pfree; a zeroed #WideDyadic
+ * is the value 0 (sign 0, len 0), so it needs no initialisation
+ */
+WideDyadic *
+wide_dyadic_alloc(void)
+{
+  return palloc0(sizeof(WideDyadic));
+}
+
+/**
+ * @brief Write the magnitude of a #WideDyadic as a fixed-point integer and
+ * return its sign
+ * @details `mag` receives floor(|a| 2^scale), or its ceiling where @p up,
+ * in @p nlimbs 64-bit limbs, the lowest first, as #wide_dyadic_cmp_fixed
+ * reads one
+ * @param[in] a The value
+ * @param[in] scale The power of 2 the magnitude is scaled by
+ * @param[in] up True for the ceiling, false for the floor
+ * @param[out] mag The fixed-point magnitude
+ * @param[in] nlimbs Number of limbs of @p mag
+ * @return -1, 0 or 1, the sign of @p a; 2 where the magnitude needs more
+ * than @p nlimbs limbs, @p mag then undefined: the caller tests it, as
+ * nothing is truncated
+ */
+int
+wide_dyadic_to_fixed(const WideDyadic *a, int scale, bool up, uint64 *mag,
+  int nlimbs)
+{
+  memset(mag, 0, nlimbs * sizeof(uint64));
+  if (a->sign == 0)
+    return 0;
+  /* The weight of the lowest bit of the magnitude in the output */
+  int shift = a->exp + scale;
+  bool lost = false;
+  for (int i = 0; i < a->len; i++)
+  {
+    uint64 l = a->limb[i];
+    if (! l)
+      continue;
+    for (int b = 0; b < 64; b++)
+    {
+      if (! ((l >> b) & 1))
+        continue;
+      int pos = 64 * i + b + shift;
+      if (pos < 0)
+      {
+        lost = true;
+        continue;
+      }
+      if (pos >= 64 * nlimbs)
+        return 2;
+      mag[pos / 64] |= (uint64) 1 << (pos % 64);
+    }
+  }
+  if (up && lost)
+  {
+    for (int i = 0; i < nlimbs; i++)
+      if (++mag[i] != 0)
+        return a->sign;
+    return 2;
+  }
+  return a->sign;
 }
 
 /**
@@ -4669,7 +4735,7 @@ typedef struct
  * @brief Set the difference of two #WideDyadic, exactly
  * @note The result is not one of the operands
  */
-static void
+void
 wide_dyadic_sub(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
 {
   WideDyadic nb = *b;
