@@ -495,6 +495,8 @@ extern TimeADT timestamp_to_time(Timestamp ts);
 extern TimeADT timestamptz_to_time(TimestampTz tztz);
 extern TimeTzADT *timestamptz_to_timetz(TimestampTz tztz);
 extern bool timetz_overlaps(const TimeTzADT *ts1, const TimeTzADT *te1, const TimeTzADT *ts2, const TimeTzADT *te2);
+extern TimeTzADT *timetz_from_parts(int64 us, int32 offset);
+extern bool timetz_to_parts(const TimeTzADT *timetz, int64 *us, int32 *offset);
 extern TimeADT timetz_to_time(const TimeTzADT *timetz);
 extern Numeric timetz_extract(const TimeTzADT *timetz, const text *units);
  
