@@ -187,8 +187,11 @@ does not change.
 
 **Schedule.** This work starts only after the work of
 [Exact distance](EXACT-DISTANCE.md) is finished. Its pull requests interleave
-with the steps of [Exact crossings](EXACT-CROSSINGS.md), which share the same readers: PR 1 below,
-then steps 2–4 of that note, then PR 2 and PR 3 below.
+with the steps of [Exact crossings](EXACT-CROSSINGS.md), which share the same readers. The order,
+decided by the owner on 2026-11-13: PR 1 below, then PR 3 (the temporal rigid geometries), then
+steps 2–4 of that note and PR 2 below. PR 3 needs the callbacks of PR 1 and nothing of the crossing
+steps or of PR 2: the rigid geometry distance reaches the turning-point readers, not the interval
+readers.
 
 ### 6.1 Pull request 1: the merge, with the same results
 
