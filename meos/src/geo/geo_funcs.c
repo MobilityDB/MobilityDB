@@ -10092,8 +10092,11 @@ wide_dot3(const WideDyadic *u, const WideDyadic *v, WideDyadic *r)
  * @brief Return the sign of the determinant of three vectors in 3D, each the
  * difference of two points, computed exactly for any finite doubles
  * @details The determinant `(a1 - a0) . ((b1 - b0) x (c1 - c0))`, of degree
- * three, is first evaluated in pairs of doubles with a bound on its error
- * (#DDBound), and where the bound cannot tell its sign, on #WideDyadic. With
+ * three, is first evaluated in doubles with a bound on its error; where that
+ * cannot tell its sign, in expansions where every difference is a double held
+ * exactly (#triple_product_sign_exact), otherwise in pairs of doubles with a
+ * bound on their error (#DDBound), and where that cannot tell, on
+ * #WideDyadic. With
  * `a0 = b0 = c0` it is the orientation of four points: 0 exactly where they
  * are coplanar
  * @param[in] a0,a1,b0,b1,c0,c1 Points, three coordinates each
@@ -10103,20 +10106,27 @@ int
 vector_triple_sign(const double *a0, const double *a1, const double *b0,
   const double *b1, const double *c0, const double *c1)
 {
+  /* In doubles first, as #triple_product_sign filters a determinant of exact
+   * coordinates by Shewchuk's bound: of differences each rounded once, it
+   * lies within 2^-48 of its permanent, the sum of the magnitudes of its six
+   * products, where none of them leaves the normal doubles, inside 2^-900
+   * and 2^900 */
+  {
+    double u0 = a1[0] - a0[0], u1 = a1[1] - a0[1], u2 = a1[2] - a0[2];
+    double v0 = b1[0] - b0[0], v1 = b1[1] - b0[1], v2 = b1[2] - b0[2];
+    double w0 = c1[0] - c0[0], w1 = c1[1] - c0[1], w2 = c1[2] - c0[2];
+    double det = u0 * (v1 * w2 - v2 * w1) + u1 * (v2 * w0 - v0 * w2) +
+      u2 * (v0 * w1 - v1 * w0);
+    double perm = fabs(u0) * (fabs(v1 * w2) + fabs(v2 * w1)) +
+      fabs(u1) * (fabs(v2 * w0) + fabs(v0 * w2)) +
+      fabs(u2) * (fabs(v0 * w1) + fabs(v1 * w0));
+    if (perm >= 0x1p-900 && perm <= 0x1p900 && fabs(det) > 0x1p-48 * perm)
+      return (det > 0.0) ? 1 : -1;
+  }
   DDBound u[3], v[3], w[3], x[3];
   ddb_diff3(a1, a0, u);
   ddb_diff3(b1, b0, v);
   ddb_diff3(c1, c0, w);
-  ddb_cross3(v, w, x);
-  /* A bounded value with no error that is zero is an exact zero, which the
-   * filter does not tell: the orientation of a vertex of a face with three that
-   * span its plane is one */
-  DDBound det = ddb_dot3(u, x);
-  if (ddb_is_zero(det))
-    return 0;
-  int sign = ddb_sign(det);
-  if (sign != 0)
-    return sign;
   /* Where every difference is a double held exactly, each one zero or within
    * 2^-200 and 2^200, it is a multiple of 2^-252, so every product of three of
    * them and every part of its exact expansion is a multiple of 2^-756 below
@@ -10139,6 +10149,15 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
       pv = {v[0].hi, v[1].hi, v[2].hi}, pw = {w[0].hi, w[1].hi, w[2].hi};
     return triple_product_sign_exact(&pu, &pv, &pw);
   }
+  /* Otherwise in pairs of doubles with a bound on their error, where a value
+   * with no error that is zero is an exact zero the bound does not tell */
+  ddb_cross3(v, w, x);
+  DDBound det = ddb_dot3(u, x);
+  if (ddb_is_zero(det))
+    return 0;
+  int sign = ddb_sign(det);
+  if (sign != 0)
+    return sign;
   WideDyadic wu[3], wv[3], ww[3], wx[3], r;
   wide_diff3(a1, a0, wu);
   wide_diff3(b1, b0, wv);
@@ -10152,10 +10171,11 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
  * @brief Set the signs of the three components of the cross product of two
  * vectors in 3D, each the difference of two points, computed exactly for any
  * finite doubles
- * @details The cross product is formed once in pairs of doubles with a bound
- * on its error (#DDBound); a component the bound decides, or one that is an
- * exact zero, is read there, and another is the determinant of the unit
- * vector of its axis and the two vectors (#vector_triple_sign). All three are
+ * @details The cross product is formed first in doubles, a component whose
+ * bound decides it read there, then in pairs of doubles with a bound on its
+ * error (#DDBound); a component that bound decides, or one that is an exact
+ * zero, is read there, and another is the determinant of the unit vector of
+ * its axis and the two vectors (#vector_triple_sign). All three are
  * zero exactly where the two vectors are parallel
  * @param[in] b0,b1,c0,c1 Points, three coordinates each
  * @param[out] sn Signs of the three components, -1, 0 or 1
@@ -10167,12 +10187,67 @@ vector_cross_signs(const double *b0, const double *b1, const double *c0,
   static const double origin[3] = {0.0, 0.0, 0.0};
   static const double axis[3][3] = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0},
     {0.0, 0.0, 1.0}};
+  /* In doubles first, as #triple_product_sign filters its determinant: each
+   * component is the difference of two products of differences each rounded
+   * once, within four units of rounding of the sum of the magnitudes of the
+   * products, read within 2^-50 of it where they lie inside 2^-900 and 2^900 */
+  double v0 = b1[0] - b0[0], v1 = b1[1] - b0[1], v2 = b1[2] - b0[2];
+  double w0 = c1[0] - c0[0], w1 = c1[1] - c0[1], w2 = c1[2] - c0[2];
+  const double xs[3] = {v1 * w2 - v2 * w1, v2 * w0 - v0 * w2, v0 * w1 - v1 * w0};
+  const double ms[3] = {fabs(v1 * w2) + fabs(v2 * w1), fabs(v2 * w0) + fabs(v0 * w2),
+    fabs(v0 * w1) + fabs(v1 * w0)};
+  /* A component the bound does not tell is an exact zero where its two
+   * differences and its two products are exact, the products not below the
+   * least magnitude #two_product splits exactly, and the products are equal,
+   * as a face whose plane holds an axis has */
+  const double vs[3] = {v0, v1, v2}, ws[3] = {w0, w1, w2};
+  int exact = -1;     /* Read at the first component the bound leaves open */
+  static const int ia[3][2] = {{1, 2}, {2, 0}, {0, 1}};
+  bool told = true;
+  for (int k = 0; k < 3; k++)
+  {
+    sn[k] = 2;
+    if (ms[k] >= 0x1p-900 && ms[k] <= 0x1p900 && fabs(xs[k]) > 0x1p-50 * ms[k])
+    {
+      sn[k] = (xs[k] > 0.0) ? 1 : -1;
+      continue;
+    }
+    if (exact < 0)
+    {
+      exact = 1;
+      for (int c = 0; c < 3 && exact; c++)
+      {
+        double x, ev, ew;
+        two_diff(b1[c], b0[c], &x, &ev);
+        two_diff(c1[c], c0[c], &x, &ew);
+        exact = (ev == 0.0 && ew == 0.0);
+      }
+    }
+    if (exact)
+    {
+      int i = ia[k][0], j = ia[k][1];
+      double pp, pe, qq, qe;
+      two_product(vs[i], ws[j], &pp, &pe);
+      two_product(vs[j], ws[i], &qq, &qe);
+      if (pe == 0.0 && qe == 0.0 && pp == qq &&
+          (pp == 0.0 || fabs(pp) >= DDB_EXACT_PRODUCT))
+      {
+        sn[k] = 0;
+        continue;
+      }
+    }
+    told = false;
+  }
+  if (told)
+    return;
   DDBound v[3], w[3], x[3];
   ddb_diff3(b1, b0, v);
   ddb_diff3(c1, c0, w);
   ddb_cross3(v, w, x);
   for (int k = 0; k < 3; k++)
   {
+    if (sn[k] != 2)
+      continue;
     if (ddb_is_zero(x[k]))
       sn[k] = 0;
     else if ((sn[k] = ddb_sign(x[k])) == 0)
@@ -10181,12 +10256,32 @@ vector_cross_signs(const double *b0, const double *b1, const double *c0,
   return;
 }
 
+/* The cross product of two vectors in doubles, each the difference of two
+ * points rounded once, and the sum of the magnitudes of the two products of
+ * each component, within 2^-50 of which the component lies where that sum lies
+ * inside 2^-900 and 2^900 (#vector_cross_signs) */
+static inline void
+dbl_cross3(const double *a0, const double *a1, const double *b0,
+  const double *b1, double *x, double *mx)
+{
+  double u0 = a1[0] - a0[0], u1 = a1[1] - a0[1], u2 = a1[2] - a0[2];
+  double v0 = b1[0] - b0[0], v1 = b1[1] - b0[1], v2 = b1[2] - b0[2];
+  x[0] = u1 * v2 - u2 * v1;
+  x[1] = u2 * v0 - u0 * v2;
+  x[2] = u0 * v1 - u1 * v0;
+  mx[0] = fabs(u1 * v2) + fabs(u2 * v1);
+  mx[1] = fabs(u2 * v0) + fabs(u0 * v2);
+  mx[2] = fabs(u0 * v1) + fabs(u1 * v0);
+  return;
+}
+
 /**
  * @brief Return the sign of the dot product of the normal of a plane and of
  * the cross product of two vectors, computed exactly for any finite doubles
  * @details The sign of `((b - a) x (c - a)) . ((x1 - x0) x (y1 - y0))`, of
- * degree four, first in pairs of doubles with a bound on its error
- * (#DDBound), then on #WideDyadic where the bound cannot tell it
+ * degree four, first in doubles with a bound on its error (#dbl_cross3), then
+ * in pairs of doubles with a bound on their error (#DDBound), then on
+ * #WideDyadic where the bound cannot tell it
  * @param[in] a,b,c Three points spanning the plane, three coordinates each
  * @param[in] x0,x1,y0,y1 Points, three coordinates each
  * @return -1, 0 or 1
@@ -10195,6 +10290,18 @@ int
 plane_cross_dot_sign(const double *a, const double *b, const double *c,
   const double *x0, const double *x1, const double *y0, const double *y1)
 {
+  /* In doubles first: each component of the two cross products lies within
+   * 2^-50 of the sum of the magnitudes of its products (#dbl_cross3), so their
+   * dot product lies within 2^-48 of the sum of the products of those sums */
+  {
+    double xn[3], mn[3], xm[3], mm[3];
+    dbl_cross3(a, b, a, c, xn, mn);
+    dbl_cross3(x0, x1, y0, y1, xm, mm);
+    double dotd = xn[0] * xm[0] + xn[1] * xm[1] + xn[2] * xm[2];
+    double perm = mn[0] * mm[0] + mn[1] * mm[1] + mn[2] * mm[2];
+    if (perm >= 0x1p-900 && perm <= 0x1p900 && fabs(dotd) > 0x1p-48 * perm)
+      return (dotd > 0.0) ? 1 : -1;
+  }
   DDBound u[3], v[3], n[3], p[3], q[3], m[3];
   ddb_diff3(b, a, u);
   ddb_diff3(c, a, v);
@@ -10224,9 +10331,10 @@ plane_cross_dot_sign(const double *a, const double *b, const double *c,
  * @brief Return the sign of the distance of a point to a plane less a
  * distance, computed exactly for any finite doubles
  * @details With `n = (b - a) x (c - a)`, the sign of
- * `(n . (p - a))^2 - d^2 (n . n)`, of degree six, first in pairs of doubles
- * with a bound on its error (#DDBound), then as a comparison of two products
- * of #WideDyadic of degree at most four (#wide_dyadic_product_cmp)
+ * `(n . (p - a))^2 - d^2 (n . n)`, of degree six, first in doubles with a
+ * bound on its error (#dbl_cross3), then in pairs of doubles with a bound on
+ * their error (#DDBound), then as a comparison of two products of
+ * #WideDyadic of degree at most four (#wide_dyadic_product_cmp)
  * @param[in] a,b,c Three points spanning the plane, not collinear, three
  * coordinates each
  * @param[in] p Point, three coordinates
@@ -10238,6 +10346,25 @@ plane_point_offset_sign(const double *a, const double *b, const double *c,
   const double *p, double d)
 {
   assert(d >= 0.0);
+  /* In doubles first: with each component of n within 2^-50 of the sum of the
+   * magnitudes of its products (#dbl_cross3), n . (p - a) lies within 2^-48 of
+   * E1, the sum of those sums times |p - a|, and n . n within 2^-48 of S2, the
+   * sum of their squares, so the value lies within 2^-46 of E1^2 + d^2 S2,
+   * where no step leaves the normal doubles: that sum inside 2^-900 and
+   * 2^900, and d^2 normal or zero */
+  if (d == 0.0 || d >= 0x1p-450)
+  {
+    double xn[3], mn[3];
+    dbl_cross3(a, b, a, c, xn, mn);
+    double w0 = p[0] - a[0], w1 = p[1] - a[1], w2 = p[2] - a[2];
+    double en = xn[0] * w0 + xn[1] * w1 + xn[2] * w2;
+    double nn = xn[0] * xn[0] + xn[1] * xn[1] + xn[2] * xn[2];
+    double e1 = mn[0] * fabs(w0) + mn[1] * fabs(w1) + mn[2] * fabs(w2);
+    double s2 = mn[0] * mn[0] + mn[1] * mn[1] + mn[2] * mn[2];
+    double val = en * en - d * d * nn, mag = e1 * e1 + d * d * s2;
+    if (mag >= 0x1p-900 && mag <= 0x1p900 && fabs(val) > 0x1p-46 * mag)
+      return (val > 0.0) ? 1 : -1;
+  }
   DDBound u[3], v[3], w[3], n[3], dd;
   ddb_diff3(b, a, u);
   ddb_diff3(c, a, v);
