@@ -75,6 +75,7 @@
 #include <pgtypes.h>
 #include <pg_int.h>
 #include <port/pg_bitutils.h>
+#include "geo/geo_funcs.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
@@ -623,22 +624,199 @@ s2cell_cell_point(S2CellId cell, double *longitude, double *latitude)
   return;
 }
 
+/** @brief The denominator of the cube coordinate of a corner, 3 4^30 */
+#define S2_CORNER_DEN (INT64CONST(3) << 60)
+
+/**
+ * @brief Return the numerator of the cube coordinate of the corner at the
+ * leaf index @p I in `[0, 2^30]`, the coordinate being that numerator over
+ * #S2_CORNER_DEN
+ * @details The exact twin of #s2cell_st_to_uv: the quadratic transform at
+ * the dyadic s = I / 2^30 is the rational (4 s^2 - 1) / 3 from s = 1/2 up
+ * and (1 - 4 (1 - s)^2) / 3 below, so its numerator over
+ * 3 4^30 is 4 I^2 - 4^30 or 4^30 - 4 (2^30 - I)^2, at most 3 4^30 in
+ * magnitude (decision D7 of the cell walks)
+ */
+static int64
+s2cell_corner_num(uint32_t I)
+{
+  const int64 q = INT64CONST(1) << 60;
+  int64 i = I;
+  if (I >= (1u << 29))
+    return 4 * i * i - q;
+  int64 r = (INT64CONST(1) << 30) - i;
+  return q - 4 * r * r;
+}
+
+/**
+ * @brief Return in @p v the corner of a cube face at the leaf indices
+ * @p I and @p J, scaled by #S2_CORNER_DEN to a vector of integers, as
+ * #s2cell_face_uv_to_cube places it
+ */
+static void
+s2cell_corner_int(uint32_t face, uint32_t I, uint32_t J, int64 *v)
+{
+  const int64 n = S2_CORNER_DEN;
+  int64 u = s2cell_corner_num(I), w = s2cell_corner_num(J);
+  switch (face)
+  {
+    case 0: v[0] =  n; v[1] =  u; v[2] =  w; break;
+    case 1: v[0] = -u; v[1] =  n; v[2] =  w; break;
+    case 2: v[0] = -u; v[1] = -w; v[2] =  n; break;
+    case 3: v[0] = -n; v[1] = -w; v[2] = -u; break;
+    case 4: v[0] =  w; v[1] = -n; v[2] = -u; break;
+    default: v[0] = w; v[1] =  u; v[2] = -n; break;
+  }
+}
+
+/** @brief Number of entries of #s2_uv_cache and #s2_vertex_cache, a power
+ * of 2 */
+#define S2_CORNER_CACHE 1024
+
+/** @brief The cube coordinates of corners read last, per thread, by their
+ * leaf index */
+static MEOS_TLS struct
+{
+  uint32_t I;
+  double u;
+  bool used;
+} s2_uv_cache[S2_CORNER_CACHE];
+
+/** @brief The degrees of corners read last, per thread, by their face and
+ * leaf indices */
+static MEOS_TLS struct
+{
+  uint32_t face, I, J;
+  double lon, lat;
+  bool used;
+} s2_vertex_cache[S2_CORNER_CACHE];
+
+/** @brief The longitudes of corners read last, per thread, by their face
+ * and the one leaf index they depend on */
+static MEOS_TLS struct
+{
+  uint32_t face, index;
+  double lon;
+  bool used;
+} s2_lon_cache[S2_CORNER_CACHE];
+
+/**
+ * @brief Return the double nearest the cube coordinate of the corner at the
+ * leaf index @p I (#s2cell_corner_num, #rational_nearest)
+ * @details The coordinate is a function of the index alone, and a walk reads
+ * the corners neighbouring cells share again and again, so the ones read
+ * last are kept by their index and answer again, as #h3_lonlat_vector keeps
+ * the geodetic positions of the H3 vertices
+ */
+static double
+s2cell_corner_uv(uint32_t I)
+{
+  int k = (int) ((I * UINT64CONST(0x9E3779B97F4A7C15)) >> 54) &
+    (S2_CORNER_CACHE - 1);
+  if (! s2_uv_cache[k].used || s2_uv_cache[k].I != I)
+  {
+    s2_uv_cache[k].u = rational_nearest(s2cell_corner_num(I),
+      S2_CORNER_DEN);
+    s2_uv_cache[k].I = I;
+    s2_uv_cache[k].used = true;
+  }
+  return s2_uv_cache[k].u;
+}
+
+/**
+ * @brief Return the longitude of the corner of a face at the leaf indices
+ * @p I and @p J, the double nearest that of the exact corner @p v
+ * (#vector_lon_nearest)
+ * @details On the faces 0 and 1 the longitude is atan2(u, 1) and
+ * atan2(1, -u), and on the faces 3 and 4 atan2(-w, -1) and atan2(-1, w),
+ * functions of one index, so a walk along a row of cells reads it again
+ * from the cell before; those are kept by the face and that index, as
+ * #s2cell_corner_uv keeps the coordinates
+ */
+static double
+s2cell_corner_lon(uint32_t face, uint32_t I, uint32_t J, const int64 *v)
+{
+  if (face == 2 || face == 5)
+    return vector_lon_nearest(v);
+  uint32_t index = face < 2 ? I : J;
+  int k = (int) (((index * UINT64CONST(0x9E3779B97F4A7C15)) ^ face) *
+    UINT64CONST(0xBF58476D1CE4E5B9) >> 54) & (S2_CORNER_CACHE - 1);
+  if (! s2_lon_cache[k].used || s2_lon_cache[k].face != face ||
+      s2_lon_cache[k].index != index)
+  {
+    s2_lon_cache[k].lon = vector_lon_nearest(v);
+    s2_lon_cache[k].face = face;
+    s2_lon_cache[k].index = index;
+    s2_lon_cache[k].used = true;
+  }
+  return s2_lon_cache[k].lon;
+}
+
+/**
+ * @brief Return in @p lon and @p lat the degrees of the corner of a face at
+ * the leaf indices @p I and @p J, the doubles nearest those of the exact
+ * corner (#s2cell_corner_int, #s2cell_corner_lon, #vector_lat_nearest),
+ * kept as #s2cell_corner_uv keeps the coordinates
+ */
+static void
+s2cell_corner_lonlat(uint32_t face, uint32_t I, uint32_t J, double *lon,
+  double *lat)
+{
+  /* The face, I and J take 3 + 31 + 31 bits, more than one word holds, so
+   * an entry keeps the three and the hash only places it */
+  uint64 h = ((I * UINT64CONST(0x9E3779B97F4A7C15)) ^ J) *
+    UINT64CONST(0xBF58476D1CE4E5B9) + face;
+  int k = (int) ((h * UINT64CONST(0x9E3779B97F4A7C15)) >> 54) &
+    (S2_CORNER_CACHE - 1);
+  if (! s2_vertex_cache[k].used || s2_vertex_cache[k].face != face ||
+      s2_vertex_cache[k].I != I || s2_vertex_cache[k].J != J)
+  {
+    int64 v[3];
+    s2cell_corner_int(face, I, J, v);
+    s2_vertex_cache[k].lon = s2cell_corner_lon(face, I, J, v);
+    s2_vertex_cache[k].lat = vector_lat_nearest(v);
+    s2_vertex_cache[k].face = face;
+    s2_vertex_cache[k].I = I;
+    s2_vertex_cache[k].J = J;
+    s2_vertex_cache[k].used = true;
+  }
+  *lon = s2_vertex_cache[k].lon;
+  *lat = s2_vertex_cache[k].lat;
+}
+
+/**
+ * @brief Return the leaf indices of the low corner of an S2 cell and its
+ * size in leaves
+ */
+static uint32_t
+s2cell_cell_leaf(S2CellId cell, uint32_t *ilo, uint32_t *jlo,
+  uint32_t *size)
+{
+  uint32_t i, j;
+  uint32_t face = s2cell_to_face_ij(cell, &i, &j, NULL);
+  *size = 1u << (S2_MAX_LEVEL - s2cell_get_resolution(cell));
+  *ilo = i & ~(*size - 1);
+  *jlo = j & ~(*size - 1);
+  return face;
+}
+
 /**
  * @brief Return the `(u, v)` extent of an S2 cell on its cube face
+ * @details Each bound is the double nearest the exact coordinate of the
+ * corner, read through the cache of #s2cell_corner_uv, the twin of
+ * #h3_lonlat_vector, so every platform reads the same cell (decision D7 of
+ * the cell walks)
  */
 static uint32_t
 s2cell_cell_uv(S2CellId cell, double *umin, double *vmin, double *umax,
   double *vmax)
 {
-  uint32_t i, j;
-  uint32_t face = s2cell_to_face_ij(cell, &i, &j, NULL);
-  uint32_t size = 1u << (S2_MAX_LEVEL - s2cell_get_resolution(cell));
-  uint32_t ilo = i & ~(size - 1);
-  uint32_t jlo = j & ~(size - 1);
-  *umin = s2cell_st_to_uv((double) ilo / (double) S2_MAX_SIZE);
-  *umax = s2cell_st_to_uv((double) (ilo + size) / (double) S2_MAX_SIZE);
-  *vmin = s2cell_st_to_uv((double) jlo / (double) S2_MAX_SIZE);
-  *vmax = s2cell_st_to_uv((double) (jlo + size) / (double) S2_MAX_SIZE);
+  uint32_t ilo, jlo, size;
+  uint32_t face = s2cell_cell_leaf(cell, &ilo, &jlo, &size);
+  *umin = s2cell_corner_uv(ilo);
+  *umax = s2cell_corner_uv(ilo + size);
+  *vmin = s2cell_corner_uv(jlo);
+  *vmax = s2cell_corner_uv(jlo + size);
   return face;
 }
 
@@ -657,16 +835,33 @@ s2cell_cell_vertices(S2CellId cell, double *longitudes, double *latitudes)
       "Value %" PRIu64 " does not encode a valid S2 cell", (uint64) cell);
     return;
   }
-  double umin, vmin, umax, vmax;
-  uint32_t face = s2cell_cell_uv(cell, &umin, &vmin, &umax, &vmax);
-  const double us[4] = { umin, umax, umax, umin };
-  const double vs[4] = { vmin, vmin, vmax, vmax };
+  /* Each vertex is the exact corner of the cube, its degrees the doubles
+   * nearest those of that corner (decision D7 of the cell walks) */
+  uint32_t ilo, jlo, size;
+  uint32_t face = s2cell_cell_leaf(cell, &ilo, &jlo, &size);
+  const uint32_t is[4] = { ilo, ilo + size, ilo + size, ilo };
+  const uint32_t js[4] = { jlo, jlo, jlo + size, jlo + size };
+  bool west = false;
   for (int k = 0; k < 4; k++)
   {
-    double xyz[3];
-    s2cell_face_uv_to_xyz(face, us[k], vs[k], xyz);
-    s2cell_xyz_to_lonlat(xyz, &longitudes[k], &latitudes[k]);
+    s2cell_corner_lonlat(face, is[k], js[k], &longitudes[k], &latitudes[k]);
+    west = west || longitudes[k] < 0.0;
   }
+  /* A corner on the antimeridian lies at 180 and at -180, and
+   * #vector_lon_nearest reads it as 180: it takes the side of its cell, -180
+   * where another vertex lies west of the antimeridian, so the longitudes of
+   * a cell touching it are contiguous and its box states the cell alone */
+  if (west)
+    for (int k = 0; k < 4; k++)
+      if (longitudes[k] == 180.0)
+        longitudes[k] = -180.0;
+  /* A corner at a pole has every longitude: its two edges run along the
+   * meridians of the vertices beside it, so it takes that of the vertex
+   * before it, and the longitudes of the cell are those of its other
+   * vertices */
+  for (int k = 0; k < 4; k++)
+    if (latitudes[k] == 90.0 || latitudes[k] == -90.0)
+      longitudes[k] = longitudes[(k + 3) % 4];
   return;
 }
 
