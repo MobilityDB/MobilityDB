@@ -71,9 +71,9 @@
 int
 tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   double x1 = DatumGetFloat8(start1);
   double x2 = DatumGetFloat8(end1);
   double x3 = DatumGetFloat8(start2);
@@ -96,7 +96,7 @@ tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
     return 0;
 
   long double duration = (long double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  tps[0] = lower + (TimestampTz) (duration * fraction);
   return 1;
 }
 
@@ -1229,13 +1229,12 @@ datum_exp(Datum d)
  * slope.  Inserting one instant there reduces the piecewise-linear
  * approximation error from first- to second-order in the segment width.
  * @pre The segment is not constant.
- * @post As there is a single turning point, @p t2 is set to @p t1.
  */
 static int
 tfloat_exp_turnpt(Datum start, Datum end,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   double a = DatumGetFloat8(start);
   double b = DatumGetFloat8(end);
   if (a == b) return 0;
@@ -1257,7 +1256,7 @@ tfloat_exp_turnpt(Datum start, Datum end,
     1.0 + (log1p(- exp(- d)) - log(d)) / d;
   if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
     return 0;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  tps[0] = lower + (TimestampTz) (duration * fraction);
   return 1;
 }
 
@@ -1307,13 +1306,12 @@ datum_ln(Datum d)
  * strictly between @p start and @p end for unequal positive values; the
  * in-range guard is defensive against floating-point rounding.
  * @pre The segment is not constant; both endpoints are strictly positive.
- * @post As there is a single turning point, @p t2 is set to @p t1.
  */
 static int
 tfloat_ln_turnpt(Datum start, Datum end,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   double a = DatumGetFloat8(start);
   double b = DatumGetFloat8(end);
   if (a == b) return 0;
@@ -1325,7 +1323,7 @@ tfloat_ln_turnpt(Datum start, Datum end,
   double fraction = (xstar - a) / (b - a);
   if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
     return 0;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  tps[0] = lower + (TimestampTz) (duration * fraction);
   return 1;
 }
 
@@ -1380,9 +1378,9 @@ datum_log10(Datum d)
  */
 static int
 tfloat_log10_turnpt(Datum start, Datum end,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap)
 {
-  return tfloat_ln_turnpt(start, end, lower, upper, t1, t2);
+  return tfloat_ln_turnpt(start, end, lower, upper, tps, cap);
 }
 
 /**
@@ -1436,24 +1434,27 @@ datum_sin(Datum d)
  * @details The argument theta(t) varies linearly from @p v1 (at @p lower) to
  * @p v2 (at @p upper). sin/cos have a local extremum wherever their derivative
  * vanishes, i.e. at theta = (k + @p offset) * pi: offset 1/2 for sin (where
- * cos(theta) = 0) and offset 0 for cos (where sin(theta) = 0). This pallocs into
- * @p result, in ascending time order, the timestamps of every such extremum
- * STRICTLY inside the segment, and returns their count. The locations are
- * analytic, so the result is EXACT rather than adaptively approximated.
+ * cos(theta) = 0) and offset 0 for cos (where sin(theta) = 0). This writes in
+ * @p tps, in ascending time order and up to @p cap of them, the timestamps of
+ * every such extremum STRICTLY inside the segment, and returns their count,
+ * which may exceed @p cap. The locations are analytic, so the result is EXACT
+ * rather than adaptively approximated.
  */
 static int
 tfloatseg_trig_extrema(double v1, double v2, TimestampTz lower,
-  TimestampTz upper, double offset, TimestampTz **result)
+  TimestampTz upper, double offset, TimestampTz *tps, int cap)
 {
+  assert(tps); assert(cap > 0);
   double dv = v2 - v1;
   double lo = (v1 < v2) ? v1 : v2;
   double hi = (v1 < v2) ? v2 : v1;
   /* Critical arguments are (k + offset)*pi; bracket the integer range of k. */
   long kmin = (long) floor(lo / M_PI - offset);
   long kmax = (long) ceil(hi / M_PI - offset);
-  long span = kmax - kmin + 1;
-  TimestampTz *tps = palloc(sizeof(TimestampTz) * (span > 0 ? span : 1));
   int n = 0;
+  /* The last timestamp kept, with which the next one is compared whether or
+   * not it is written */
+  TimestampTz last = 0;
   /* Iterate k so the resulting timestamps come out in ascending time order
    * (k increasing for an increasing segment, decreasing otherwise). */
   long kfrom = (dv > 0) ? kmin : kmax;
@@ -1468,10 +1469,14 @@ tfloatseg_trig_extrema(double v1, double v2, TimestampTz lower,
     TimestampTz t = lower +
       (TimestampTz) llround(frac * (double) (upper - lower));
     /* Keep strictly interior, strictly increasing timestamps (dedup ties). */
-    if (t > lower && t < upper && (n == 0 || t > tps[n - 1]))
-      tps[n++] = t;
+    if (t > lower && t < upper && (n == 0 || t > last))
+    {
+      if (n < cap)
+        tps[n] = t;
+      last = t;
+      n++;
+    }
   }
-  *result = tps;
   return n;
 }
 
@@ -1481,10 +1486,10 @@ tfloatseg_trig_extrema(double v1, double v2, TimestampTz lower,
  */
 static int
 tfloatseg_sin_turnpt(Datum start, Datum end, TimestampTz lower,
-  TimestampTz upper, TimestampTz **result)
+  TimestampTz upper, TimestampTz *tps, int cap)
 {
   return tfloatseg_trig_extrema(DatumGetFloat8(start), DatumGetFloat8(end),
-    lower, upper, 0.5, result);
+    lower, upper, 0.5, tps, cap);
 }
 
 /**
@@ -1493,10 +1498,10 @@ tfloatseg_sin_turnpt(Datum start, Datum end, TimestampTz lower,
  */
 static int
 tfloatseg_cos_turnpt(Datum start, Datum end, TimestampTz lower,
-  TimestampTz upper, TimestampTz **result)
+  TimestampTz upper, TimestampTz *tps, int cap)
 {
   return tfloatseg_trig_extrema(DatumGetFloat8(start), DatumGetFloat8(end),
-    lower, upper, 0.0, result);
+    lower, upper, 0.0, tps, cap);
 }
 
 /**
@@ -1506,7 +1511,7 @@ tfloatseg_cos_turnpt(Datum start, Datum end, TimestampTz lower,
  * @note sin is oscillatory with an arbitrary number of turning points per linear
  * segment, but their locations are ANALYTIC (the extrema where cos = 0). The
  * result is densified at those EXACT turning points (no approximation); see
- * #tfunc_tlinearseq_set and #tfloatseg_sin_turnpt.
+ * #tfunc_tlinearseq_turnpt and #tfloatseg_sin_turnpt.
  * @csqlfn #Tfloat_sin()
  */
 Temporal *
@@ -1521,7 +1526,7 @@ tfloat_sin(const Temporal *temp)
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  lfinfo.tpfn_set = lfinfo.reslinear ? &tfloatseg_sin_turnpt : NULL;
+  lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloatseg_sin_turnpt : NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1544,7 +1549,7 @@ datum_cos(Datum d)
  * @note cos is oscillatory with an arbitrary number of turning points per linear
  * segment, but their locations are ANALYTIC (the extrema where sin = 0). The
  * result is densified at those EXACT turning points (no approximation); see
- * #tfunc_tlinearseq_set and #tfloatseg_cos_turnpt.
+ * #tfunc_tlinearseq_turnpt and #tfloatseg_cos_turnpt.
  * @csqlfn #Tfloat_cos()
  */
 Temporal *
@@ -1559,7 +1564,7 @@ tfloat_cos(const Temporal *temp)
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  lfinfo.tpfn_set = lfinfo.reslinear ? &tfloatseg_cos_turnpt : NULL;
+  lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloatseg_cos_turnpt : NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 

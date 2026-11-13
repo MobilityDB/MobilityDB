@@ -300,24 +300,29 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 /* Definition of a variadic function type for temporal lifting */
 typedef Datum (*varfunc) (Datum, ...);
 
-/* Definition of a turning point function for a unary temporal lift */
+/* Definition of a turning point function for a unary temporal lift. It writes
+ * in its array, in increasing order, at most as many instants of a segment as
+ * the capacity it receives, and returns how many there are, which may exceed
+ * the capacity */
 typedef int (*tpfunc_unary)(Datum, Datum, TimestampTz, TimestampTz,
-  TimestampTz *, TimestampTz *);
+  TimestampTz *, int);
 
-/* Definition of an exact turning point function for a unary temporal lift that
- * may have an arbitrary number of turning points per segment (e.g. the extrema
- * of sin/cos). It pallocs into its last argument an ordered array of the exact
- * critical timestamps strictly inside the segment and returns their count. */
-typedef int (*tpfunc_set)(Datum, Datum, TimestampTz, TimestampTz,
-  TimestampTz **);
-
-/* Definition of a turning point function for a temporal and a base types */
+/* Definition of a turning point function for a temporal and a base types,
+ * writing and counting its instants as a #tpfunc_unary does */
 typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
-  TimestampTz *, TimestampTz *);
+  TimestampTz *, int);
 
-/* Definition of a turning point function for two temporal types */
+/* Definition of a turning point function for two temporal types, writing and
+ * counting its instants as a #tpfunc_unary does. The instants of a predicate
+ * are the interval of a segment during which it holds: its enter and exit
+ * instants, or the one instant of a touch */
 typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
-  TimestampTz, TimestampTz *, TimestampTz *);
+  TimestampTz, TimestampTz *, int);
+
+/* Capacity of the array a caller of a turning point function holds on its
+ * stack, which it replaces by a larger one only when the function counts more
+ * instants */
+#define TPFN_STACK_CAP 8
 
 /* Definition of the value of a predicate of two temporal types at a turning
  * point of a segment */
