@@ -7,10 +7,11 @@ var searchData=
   ['sortedspan_4',['SortedSpan',['../span__index_8h_acf5c1ab3bbaa9c32e3050cfc3d729c59.html#acf5c1ab3bbaa9c32e3050cfc3d729c59',1,'span_index.h']]],
   ['sortedstbox_5',['SortedSTbox',['../stbox__index_8h_a43c01ae31cdf120e7ee3e8874ac9a62d.html#a43c01ae31cdf120e7ee3e8874ac9a62d',1,'stbox_index.h']]],
   ['sortedtbox_6',['SortedTbox',['../tbox__index_8h_ab1a422b8ed01b47432d699799c93e735.html#ab1a422b8ed01b47432d699799c93e735',1,'tbox_index.h']]],
-  ['spnncursor_7',['SPNNCursor',['../meos_8h_a328e93a8d8a910e7605fe36376822876.html#a328e93a8d8a910e7605fe36376822876',1,'meos.h']]],
-  ['spnnentry_8',['SPNNEntry',['../temporal__sptree_8c_a6bb7d40a2685cc0e76c5e727d2f9443a.html#a6bb7d40a2685cc0e76c5e727d2f9443a',1,'temporal_sptree.c']]],
-  ['spnode_9',['SPNode',['../temporal__sptree_8h_a541b943b3f5f7a1c831e4b4612b5ee5c.html#a541b943b3f5f7a1c831e4b4612b5ee5c',1,'temporal_sptree.h']]],
-  ['sptree_10',['SPTree',['../meos_8h_a2270a5e067ab26c981228dec4ed29a62.html#a2270a5e067ab26c981228dec4ed29a62',1,'meos.h']]],
-  ['sptree_5fctor_11',['sptree_ctor',['../sptree__test_8c_a7d6a35657da3aa5ea9e5b5a12a110e16.html#a7d6a35657da3aa5ea9e5b5a12a110e16',1,'sptree_test.c']]],
-  ['stboxgridstate_12',['STboxGridState',['../tgeo__tile_8h_a7d93e4a3fe1eb5f6dd67ee98ba5c127e.html#a7d93e4a3fe1eb5f6dd67ee98ba5c127e',1,'tgeo_tile.h']]]
+  ['spheredir_7',['SphereDir',['../geo__funcs_8h_a32f17d95b83969ba46d8bb1281ab42ca.html#a32f17d95b83969ba46d8bb1281ab42ca',1,'geo_funcs.h']]],
+  ['spnncursor_8',['SPNNCursor',['../meos_8h_a328e93a8d8a910e7605fe36376822876.html#a328e93a8d8a910e7605fe36376822876',1,'meos.h']]],
+  ['spnnentry_9',['SPNNEntry',['../temporal__sptree_8c_a6bb7d40a2685cc0e76c5e727d2f9443a.html#a6bb7d40a2685cc0e76c5e727d2f9443a',1,'temporal_sptree.c']]],
+  ['spnode_10',['SPNode',['../temporal__sptree_8h_a541b943b3f5f7a1c831e4b4612b5ee5c.html#a541b943b3f5f7a1c831e4b4612b5ee5c',1,'temporal_sptree.h']]],
+  ['sptree_11',['SPTree',['../meos_8h_a2270a5e067ab26c981228dec4ed29a62.html#a2270a5e067ab26c981228dec4ed29a62',1,'meos.h']]],
+  ['sptree_5fctor_12',['sptree_ctor',['../sptree__test_8c_a7d6a35657da3aa5ea9e5b5a12a110e16.html#a7d6a35657da3aa5ea9e5b5a12a110e16',1,'sptree_test.c']]],
+  ['stboxgridstate_13',['STboxGridState',['../tgeo__tile_8h_a7d93e4a3fe1eb5f6dd67ee98ba5c127e.html#a7d93e4a3fe1eb5f6dd67ee98ba5c127e',1,'tgeo_tile.h']]]
 ];

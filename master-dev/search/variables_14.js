@@ -94,7 +94,7 @@ var searchData=
   ['start_91',['start',['../structArrStretchEdges_aa3f35c46794890255f95f18909036b87.html#aa3f35c46794890255f95f18909036b87',1,'ArrStretchEdges::start()'],['../structBufferOperandRings_a87ada140908e48303e8ff51b47dd050e.html#a87ada140908e48303e8ff51b47dd050e',1,'BufferOperandRings::start()'],['../structArr_aa6d4468a29ddedfbc7346bf04c9171d9.html#aa6d4468a29ddedfbc7346bf04c9171d9',1,'Arr::start()'],['../structDistBucket_ae0c31fc45c619b0ad0592f8e0785c87b.html#ae0c31fc45c619b0ad0592f8e0785c87b',1,'DistBucket::start()']]],
   ['starts_92',['starts',['../structTrgeoPlacements_a2f56112069f46f7f409bf681a9def159.html#a2f56112069f46f7f409bf681a9def159',1,'TrgeoPlacements']]],
   ['state_93',['state',['../structDistGeom_a97593008007f477f4f793e5bddbc7ccb.html#a97593008007f477f4f793e5bddbc7ccb',1,'DistGeom']]],
-  ['stated_94',['STATED',['../delete__timestamptz__test_8c_aacb049bcca478cea9765501db2f8902e.html#aacb049bcca478cea9765501db2f8902e',1,'delete_timestamptz_test.c']]],
+  ['stated_94',['STATED',['../delete__timestamptz__test_8c_a77627ad67b8923f1b952b46a150991f5.html#a77627ad67b8923f1b952b46a150991f5',1,'delete_timestamptz_test.c']]],
   ['status_95',['status',['../structoid__meosoper__entry_a80d41e29cc96f1bb3c26538cfe7d8214.html#a80d41e29cc96f1bb3c26538cfe7d8214',1,'oid_meosoper_entry::status()'],['../structoid__meostype__entry_adf81197bd7bc7446cf31b6ba0d5bb5c4.html#adf81197bd7bc7446cf31b6ba0d5bb5c4',1,'oid_meostype_entry::status()']]],
   ['stbox_5fops_96',['stbox_ops',['../index__structure__test_8c_a18d90a7860bd693a334ed909c6f21efc.html#a18d90a7860bd693a334ed909c6f21efc',1,'stbox_ops():&#160;index_structure_test.c'],['../sptree__test_8c_a6e953edde126de4592fd4ff6a1c33d37.html#a6e953edde126de4592fd4ff6a1c33d37',1,'stbox_ops():&#160;sptree_test.c']]],
   ['stbox_5fstructures_97',['stbox_structures',['../index__structure__test_8c_a622aa5b42412dc8a9f81261d05eec928.html#a622aa5b42412dc8a9f81261d05eec928',1,'index_structure_test.c']]],
@@ -117,6 +117,6 @@ var searchData=
   ['sweep_114',['sweep',['../structHullPiece_a21c1a7aa519bae8df99fd8c0a287b6d5.html#a21c1a7aa519bae8df99fd8c0a287b6d5',1,'HullPiece']]],
   ['sx_115',['sx',['../structDistRefEdge_a1e5fc14b8b16c05078df4602e7b4572c.html#a1e5fc14b8b16c05078df4602e7b4572c',1,'DistRefEdge::sx()'],['../structEdge_a231f0fcaeeae910d54f3adb66acfd4bd.html#a231f0fcaeeae910d54f3adb66acfd4bd',1,'Edge::sx()']]],
   ['sy_116',['sy',['../structEdge_aefc98ac054f610936a7dc9aecae1103a.html#aefc98ac054f610936a7dc9aecae1103a',1,'Edge::sy()'],['../structDistRefEdge_ac741b10d362cbda0e534f417f031c29a.html#ac741b10d362cbda0e534f417f031c29a',1,'DistRefEdge::sy()']]],
-  ['syncs_117',['SYNCS',['../sync__crossing__test_8c_a021a69006c27429323db3f2e9c9d8fb5.html#a021a69006c27429323db3f2e9c9d8fb5',1,'sync_crossing_test.c']]],
+  ['syncs_117',['SYNCS',['../sync__crossing__test_8c_a5c86961cd999f2f24487f966de3760de.html#a5c86961cd999f2f24487f966de3760de',1,'sync_crossing_test.c']]],
   ['sz_118',['sz',['../typeof__test_8c_aad50db3bff52eed270f16ef9e6acd8b1.html#aad50db3bff52eed270f16ef9e6acd8b1',1,'typeof_test.c']]]
 ];

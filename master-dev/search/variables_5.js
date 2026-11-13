@@ -14,7 +14,7 @@ var searchData=
   ['dcells_11',['dcells',['../structRelateQuery_a6055e89cdb70a6cfd718c3906cd847b6.html#a6055e89cdb70a6cfd718c3906cd847b6',1,'RelateQuery']]],
   ['dd_12',['dd',['../structTowerCtx_a6aca00483bc1322621a733595cdeba1d.html#a6aca00483bc1322621a733595cdeba1d',1,'TowerCtx']]],
   ['deg_13',['deg',['../structExact_ae8609c742968fb40e095bcc049cf75a3.html#ae8609c742968fb40e095bcc049cf75a3',1,'Exact::deg()'],['../structPolyTerm_a0e608eddae446dc397c1cae6ed019422.html#a0e608eddae446dc397c1cae6ed019422',1,'PolyTerm::deg()']]],
-  ['deletes_14',['DELETES',['../seqset__modif__free__test_8c_a632970fd1ebc5581b52efe58e13b7a1e.html#a632970fd1ebc5581b52efe58e13b7a1e',1,'seqset_modif_free_test.c']]],
+  ['deletes_14',['DELETES',['../seqset__modif__free__test_8c_ac053f1710d5d29d3f6281c4539c9a24b.html#ac053f1710d5d29d3f6281c4539c9a24b',1,'seqset_modif_free_test.c']]],
   ['delta_15',['delta',['../structCommonEntry_aa27379143a5d5dd717aa41dc0984d0a2.html#aa27379143a5d5dd717aa41dc0984d0a2',1,'CommonEntry']]],
   ['den_16',['den',['../structRow_ab5e2181d653d50cf6c368666d000fc2c.html#ab5e2181d653d50cf6c368666d000fc2c',1,'Row::den()'],['../structSegmentSquare_a0e445e9c35be1c4f2001490ef0eda5b2.html#a0e445e9c35be1c4f2001490ef0eda5b2',1,'SegmentSquare::den()']]],
   ['depth_17',['depth',['../structTower_a12463ef2ddb806abaf63e820508ba314.html#a12463ef2ddb806abaf63e820508ba314',1,'Tower::depth()'],['../structwkb__parse__state_a66c7b492910f1a8824722e88f05cef92.html#a66c7b492910f1a8824722e88f05cef92',1,'wkb_parse_state::depth()'],['../structBufferRingInfo_a79582270d90fc2fefe1a2314ea77cd3a.html#a79582270d90fc2fefe1a2314ea77cd3a',1,'BufferRingInfo::depth()']]],
