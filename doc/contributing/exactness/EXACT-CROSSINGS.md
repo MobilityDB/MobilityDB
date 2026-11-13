@@ -508,7 +508,7 @@ diffs classified:
    `end1 - end2`, so they meet strictly inside the period where every coordinate of it changes
    sign strictly or is zero at both ends and the two differences are collinear, a zero
    `cross_product_sign` in each pair of coordinates; both walks then read the one point they meet
-   at, as they do for geodetic points (branch `fix/planar-points-meet-between-microseconds`, the
+   at, as they do for geodetic points (MobilityDB #3670, the
    owner's go of 2026-11-13; CGAL agrees on 4000 rows of 2D and 3D meetings, their one-ulp moves
    and random pairs). The GEODETIC case stays this step's: its band, `geogpoint_meeting_band`,
    goes with it, since a band at a point the engine constructs is removed by no longer
