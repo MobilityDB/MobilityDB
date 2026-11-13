@@ -164,6 +164,7 @@ $(function() {
 <p >The function splits the interval into cells. The number of cells makes each cell cover at most a quarter turn of the phase of <code>f</code>. For each cell, the function does one of these steps:</p><ul>
 <li>If <code>f</code> changes sign in the cell, it refines the root.</li>
 <li>If |f(m)| &gt; (h/2) * max|f'| over the cell, with m the middle and h the width of the cell, the cell has no root.</li>
+<li>If |f(m)| &gt; (h/2) * |f'(m)| + (h/2)^2 / 2 * max|f''| over the cell, the cell has no root, by the Taylor expansion of <code>f</code> at m. This test reads no bound of f', which is loose where <code>f</code> is the difference of two large functions that cancel.</li>
 <li>If |f'(m)| &gt; (h/2) * max|f''| over the cell, <code>f</code> is monotonic in the cell. Since <code>f</code> does not change sign, the cell has no root.</li>
 <li>Otherwise, it splits the cell in two.</li>
 </ul>
