@@ -29,8 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests the conversion of a timestamptz to and from the
- * microseconds from the Unix epoch
+ * @brief A program that tests the conversion of a timestamptz and of a
+ * timestamp to and from the microseconds from the Unix epoch, and of a date to
+ * and from the days from it
  * @details Each count is the one Python's datetime computes for the same
  * instant: a year start clear of the PostgreSQL epoch, the Unix epoch, the
  * microsecond before the Unix epoch, and an instant with a fraction of a
@@ -88,6 +89,41 @@ check_count(const char *text, int64 expected)
   meos_errno_reset();
 }
 
+/* Verify the count of a timestamp without time zone and its round trip, as
+ * #check_count does for a timestamptz */
+static void
+check_count_ts(const char *text, int64 expected)
+{
+  Timestamp t = timestamp_in(text, -1);
+  int64 us = timestamp_to_unix_us(t);
+  Timestamp back = unix_us_to_timestamp(us);
+  printf("timestamp %s: %lld\n", text, (long long) us);
+  if (us != expected || back != t || meos_errno() != 0)
+  {
+    printf("  expected %lld and the same timestamp back\n",
+      (long long) expected);
+    failures++;
+  }
+  meos_errno_reset();
+}
+
+/* Verify the days from the Unix epoch of a date and its round trip, as
+ * #check_count does for a timestamptz */
+static void
+check_days(const char *text, int32 expected)
+{
+  DateADT d = date_in(text);
+  int32 days = date_to_unix_days(d);
+  DateADT back = unix_days_to_date(days);
+  printf("date %s: %d\n", text, days);
+  if (days != expected || back != d || meos_errno() != 0)
+  {
+    printf("  expected %d and the same date back\n", expected);
+    failures++;
+  }
+  meos_errno_reset();
+}
+
 int main(void)
 {
   /* Initialize MEOS and install the error handler that reports through
@@ -122,6 +158,30 @@ int main(void)
   check_error("timestamptz_to_unix_us(unix_us_to_timestamptz(INT64_MAX))", 0);
   timestamptz_to_unix_us(timestamptz_in("294276-12-31 23:59:59.999999+00", -1));
   check_error("timestamptz_to_unix_us(294276-12-31 23:59:59.999999+00)", DT);
+
+  /* A timestamp without time zone counts as a timestamptz in UTC does */
+  check_count_ts("2001-01-01 00:00:00", 978307200000000);
+  check_count_ts("1970-01-01 00:00:00", 0);
+  check_count_ts("1969-12-31 23:59:59.999999", -1);
+  check_count_ts("2025-03-01 08:00:00.123456", 1740816000123456);
+  timestamp_to_unix_us(timestamp_in("infinity", -1));
+  check_error("timestamp_to_unix_us(infinity)", DT);
+  unix_us_to_timestamp(INT64_MIN);
+  check_error("unix_us_to_timestamp(INT64_MIN)", DT);
+
+  /* A date counts its days from the Unix epoch */
+  check_days("2001-01-01", 11323);
+  check_days("1970-01-01", 0);
+  check_days("1969-12-31", -1);
+  check_days("2025-03-01", 20148);
+  date_to_unix_days(date_in("infinity"));
+  check_error("date_to_unix_days(infinity)", DT);
+  date_to_unix_days(date_in("-infinity"));
+  check_error("date_to_unix_days(-infinity)", DT);
+  unix_days_to_date(INT32_MIN);
+  check_error("unix_days_to_date(INT32_MIN)", DT);
+  unix_days_to_date(INT32_MAX);
+  check_error("unix_days_to_date(INT32_MAX)", DT);
 
   /* The Unix seconds of the vector tile encoding */
   STBox *bounds = stbox_in("STBOX X((0,0),(1000,1000))");

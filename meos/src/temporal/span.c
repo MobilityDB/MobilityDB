@@ -44,6 +44,7 @@
 #include <common/hashfn.h>
 #include <common/int.h>
 #include "port/pg_bitutils.h"
+#include <utils/date.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* MEOS */
@@ -2119,6 +2120,83 @@ unix_us_to_timestamptz(int64 us)
     meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp out of range");
     return DT_NOEND;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_timestamp
+ * @brief Return the microseconds from the Unix epoch of a timestamp
+ * @details A binding converts a timestamp to the timestamp of its host
+ * through this function and back through #unix_us_to_timestamp, as
+ * #timestamptz_to_unix_us converts a timestamptz
+ * @param[in] ts Timestamp
+ * @errval INT64_MAX
+ */
+int64
+timestamp_to_unix_us(Timestamp ts)
+{
+  /* A timestamp counts microseconds from the PostgreSQL epoch as a
+   * timestamptz does, without a time zone */
+  return timestamptz_to_unix_us((TimestampTz) ts);
+}
+
+/**
+ * @ingroup meos_base_timestamp
+ * @brief Return the timestamp of a count of microseconds from the Unix epoch
+ * @param[in] us Microseconds from the Unix epoch
+ * @errval DT_NOEND
+ * @see #timestamp_to_unix_us
+ */
+Timestamp
+unix_us_to_timestamp(int64 us)
+{
+  /* A timestamp counts microseconds from the PostgreSQL epoch as a
+   * timestamptz does, without a time zone */
+  return (Timestamp) unix_us_to_timestamptz(us);
+}
+
+/**
+ * @ingroup meos_base_date
+ * @brief Return the days from the Unix epoch of a date
+ * @details A binding converts a date to the date of its host through this
+ * function and back through #unix_days_to_date, as #timestamptz_to_unix_us
+ * converts a timestamptz
+ * @param[in] d Date
+ * @errval INT_MAX
+ */
+int32
+date_to_unix_days(DateADT d)
+{
+  /* Ensure the validity of the arguments: an infinite date has no count, and
+   * the count of every finite date fits in 32 bits since the last date
+   * counted from the PostgreSQL epoch is later than the Unix one */
+  if (DATE_NOT_FINITE(d))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "date out of range");
+    return INT_MAX;
+  }
+  return d + (POSTGRES_EPOCH_JDATE - UNIX_EPOCH_JDATE);
+}
+
+/**
+ * @ingroup meos_base_date
+ * @brief Return the date of a count of days from the Unix epoch
+ * @param[in] days Days from the Unix epoch
+ * @errval DATEVAL_NOEND
+ * @see #date_to_unix_days
+ */
+DateADT
+unix_days_to_date(int32 days)
+{
+  DateADT result;
+  /* Ensure the validity of the arguments, as the addition of an offset to a
+   * date refuses a result outside the range of dates */
+  if (unlikely(pg_sub_s32_overflow(days, POSTGRES_EPOCH_JDATE -
+        UNIX_EPOCH_JDATE, &result)) || ! IS_VALID_DATE(result))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "date out of range");
+    return DATEVAL_NOEND;
   }
   return result;
 }
