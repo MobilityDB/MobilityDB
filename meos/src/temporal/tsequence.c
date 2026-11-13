@@ -2755,10 +2755,11 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
         seq1->temptype, lower, upper, &tpt1, &tpt2);
       if (cross)
       {
-        Datum tpvalue1 = tsegment_value_at_timestamptz(start1, end1, 
+        /* The two sequences take one value at the crossing, which both
+         * instants copy before it is freed */
+        Datum tpvalue1 = tsegment_value_at_timestamptz(start1, end1,
           inst1->temptype, lower, upper, tpt1);
-        // Datum tpvalue2 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, tpt2);
-        instants1[ninsts] = tofree[nfree++] = tinstant_make_free(tpvalue1,
+        instants1[ninsts] = tofree[nfree++] = tinstant_make(tpvalue1,
           seq1->temptype, tpt1);
         instants2[ninsts++] = tofree[nfree++] = tinstant_make_free(tpvalue1,
           seq2->temptype, tpt1);
