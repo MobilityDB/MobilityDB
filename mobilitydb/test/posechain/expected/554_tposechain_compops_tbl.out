@@ -60,3 +60,45 @@ WHERE numPoses(t2.pc) <> numPoses(t1.temp);
  63443
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp ?&& expandSpace(stbox(t2.temp), 1) <> (atStbox(t1.temp, expandSpace(stbox(t2.temp), 1)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp %&& expandSpace(stbox(t2.temp), 1) <> (minusStbox(t1.temp, expandSpace(stbox(t2.temp), 1)) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND expandSpace(stbox(t2.temp), 1) ?&& t1.temp <> t1.temp ?&& expandSpace(stbox(t2.temp), 1);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp ?&& expandSpace(stbox(t2.temp), 1);
+ count 
+-------
+    29
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp %&& expandSpace(stbox(t2.temp), 1);
+ count 
+-------
+    29
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp && expandSpace(stbox(t2.temp), 1);
+ count 
+-------
+    29
+(1 row)
+

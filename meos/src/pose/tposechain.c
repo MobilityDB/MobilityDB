@@ -753,3 +753,124 @@ tposechain_minus_value(const Temporal *temp, const PoseChain *pc)
 }
 
 /*****************************************************************************/
+
+/**
+ * @brief Return the pose of joint @p n of a pose chain, the composition of
+ * its first @p n links, as a datum
+ */
+static Datum
+datum_posechain_joint_pose(Datum pc, Datum n)
+{
+  return PointerGetDatum(posechain_prefix_pose(DatumGetPoseChainP(pc),
+    DatumGetInt32(n)));
+}
+
+/**
+ * @brief Return the temporal pose of joint @p n of a temporal pose chain
+ * @details Joint 1 is the first link, which moves as the link moves. A joint
+ * composed of more than one link is a step function, as
+ * #tposechain_to_tpose holds the composed pose of the chain: composing the
+ * links multiplies their rotations, so the joint interpolated between two
+ * instants is not the pose interpolated between its two composed poses
+ * @param[in] temp Temporal pose chain
+ * @param[in] n Joint, from 1 to the number of links of the chain
+ */
+static Temporal *
+tposechain_joint_tpose(const Temporal *temp, int n)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_posechain_joint_pose;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(n);
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.restype = T_TPOSE;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags) && n == 1;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_internal_posechain_restrict
+ * @brief Return a temporal pose chain restricted to (the complement of) a
+ * spatiotemporal box
+ * @details A chain lies in a box at a time when any of its joints lies in it,
+ * as the box of a chain covers every joint (#posechain_set_stbox): the
+ * restriction keeps the union of the times at which the position of a joint
+ * lies in the box (#tposechain_joint_tpose, #tgeo_restrict_stbox), or the
+ * other times
+ * @param[in] temp Temporal pose chain
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ */
+Temporal *
+tposechain_restrict_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc, bool atfunc)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tposechain_stbox(temp, box))
+    return NULL;
+
+  int count = tposechain_num_poses(temp);
+  SpanSet *inside = NULL;
+  for (int n = 1; n <= count; n++)
+  {
+    Temporal *tpose = tposechain_joint_tpose(temp, n);
+    Temporal *tpoint = tpose_to_tpoint(tpose);
+    Temporal *res = tgeo_restrict_stbox(tpoint, box, border_inc, REST_AT);
+    if (res)
+    {
+      SpanSet *ss = temporal_time(res);
+      if (! inside)
+        inside = ss;
+      else
+      {
+        SpanSet *acc = union_spanset_spanset(inside, ss);
+        pfree(inside); pfree(ss);
+        inside = acc;
+      }
+      pfree(res);
+    }
+    pfree(tpoint); pfree(tpose);
+  }
+  if (! inside)
+    return atfunc ? NULL : temporal_copy(temp);
+  Temporal *result = temporal_restrict_tstzspanset(temp, inside, atfunc);
+  pfree(inside);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_restrict
+ * @brief Return a temporal pose chain restricted to a spatiotemporal box,
+ * the times at which one of its joints lies in the box
+ * @param[in] temp Temporal pose chain
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @errval NULL
+ * @csqlfn #Tposechain_at_stbox()
+ */
+Temporal *
+tposechain_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
+{
+  return tposechain_restrict_stbox(temp, box, border_inc, REST_AT);
+}
+
+/**
+ * @ingroup meos_posechain_restrict
+ * @brief Return a temporal pose chain restricted to the complement of a
+ * spatiotemporal box, the times at which none of its joints lies in the box
+ * @param[in] temp Temporal pose chain
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @errval NULL
+ * @csqlfn #Tposechain_minus_stbox()
+ */
+Temporal *
+tposechain_minus_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc)
+{
+  return tposechain_restrict_stbox(temp, box, border_inc, REST_MINUS);
+}
+
+/*****************************************************************************/
