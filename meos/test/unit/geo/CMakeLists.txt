@@ -61,6 +61,11 @@ target_include_directories(trig_nearest_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(trig_nearest_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME trig_nearest_unit COMMAND trig_nearest_unit)
 
+add_executable(geodetic_fraction_unit geodetic_fraction_unit.c)
+target_include_directories(geodetic_fraction_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(geodetic_fraction_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME geodetic_fraction_unit COMMAND geodetic_fraction_unit)
+
 add_executable(within_time_unit within_time_unit.c)
 target_link_libraries(within_time_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME within_time_unit COMMAND within_time_unit)

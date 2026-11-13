@@ -106,6 +106,15 @@ The derivative of a function of the family is in the family:
 Thus the derivative of a distance function comes from its coefficients,
 without sampling, and an extremum is a root of a function of the family.
 
+The terms can also have quadratic coefficients,
+
+    (a2*t^2 + a1*t + a0)*cos(w*t) + (b2*t^2 + b1*t + b0)*sin(w*t)
+
+whose derivative is again such a term.  They come from the square of a
+function of one frequency w, which has the frequencies w and 2w.  The
+lower envelope of the distances to the parts of a static geometry needs
+it, see Static geometries.
+
 Two facts make the equations simpler:
 
   * s = 0 is N = 0, and s = 1 is N = L^2.  Thus the two tests of Equations
@@ -441,11 +450,29 @@ A point, a segment and a convex polygon are convex bodies.  A line is a
 set of segments, and a multi geometry is a set of parts.  Thus the
 distance to a geometry is the minimum of the distances to its parts.
 
-The minimum of two linear interpolations has instants where they cross,
-and the value there comes from the interpolation.  Thus the algorithm
-computes each value of the minimum again, with PostGIS on the placed body,
-or for a body at the angle 0 on the exact sums, as at an instant of the
-operands.
+The minimum over the parts is their lower envelope.  In each segment, the
+walk of each part gives its pieces: the intervals in which it follows one
+feature, whose distance is sqrt(V) for a vertex and G / L for an edge, or
+in which the bodies overlap, at the distance zero.  In an interval in which
+every part keeps one piece, the closest part changes where the distance of
+another part crosses its own.  The sign of the difference of two distances
+is the sign of a function of the family:
+
+    vertex, vertex   Vo - Vc
+    edge, edge       Lc * Go - Lo * Gc
+    vertex, edge     Lc^2 * Vo - Gc^2
+
+The parts are at rest, so each function has the one frequency w of the
+moving body and an affine polynomial part, and the square of G has the
+frequencies w and 2w with quadratic coefficients.  The root finder isolates
+the first crossing with its proof.  Such a crossing is a corner of the
+distance, a local maximum, which Sect. 4.6.3 of the book keeps; its
+instant is the nearest microsecond of the root, as for every event.
+
+The result has the events of each part while it is the closest, its
+extrema and its crossings of a threshold, and the corners.  The algorithm
+computes each value again, with PostGIS on the placed body, or for a body
+at the angle 0 on the exact sums, as at an instant of the operands.
 
 A body whose poses at the two ends of a segment have the angle 0
 translates over the segment.  Its least distance to a part is then the
@@ -467,10 +494,9 @@ same microsecond as the instant.  Then the comparison with d does not see
 the crossing.
 
 The minimum is on the same side of d as the true distance at each time.
-If the interpolation of a part is at most d at a time, the part has no
-crossing of d in that piece, thus its true distance is at most d, and so
-is the minimum.  If all the interpolations are above d, all the true
-distances are above d.
+The distance crosses d only where the closest part crosses it, which is an
+event of that part, and between two instants the closest part does not
+cross d.
 
 Interpolation
 .............
@@ -510,8 +536,8 @@ paper:
     center, removes most pairs of parts before the walk.  It is built once
     for each reference geometry.
 
-  * The merge compares the distances of the parts with their exact values
-    at the instants, not with their linear interpolations only.
+  * The merge is the lower envelope of the parts, as for the parts of a
+    static geometry, see Static geometries.
 
 Code
 ----

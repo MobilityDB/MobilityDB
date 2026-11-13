@@ -194,13 +194,33 @@ typedef struct
 } DistEvent;
 
 /**
- * @brief Growable array of #DistEvent
+ * @brief A piece of the distance in a segment: an interval of time in which
+ * the walk follows one feature, or in which the bodies overlap
+ * @details For a vertex, @p f is the squared distance and @p len is 0.  For
+ * an edge, @p f is the cross function, which is not negative in the region
+ * of the edge, and @p len is the length of the edge, so that the distance is
+ * f / len.  In an overlap, the distance is zero.
+ */
+typedef struct
+{
+  double t0, t1;         /**< Interval, in [0, 1] */
+  bool zero;             /**< True if the bodies overlap */
+  double len;            /**< Length of the edge, or 0 for a vertex */
+  DistFun f;             /**< Function of the feature */
+} DistPiece;
+
+/**
+ * @brief Growable array of #DistEvent, and of the #DistPiece between them
+ * when the caller asks for them, see #distevents_keep_pieces()
  */
 typedef struct
 {
   DistEvent *ev;
   int count;
   int size;
+  DistPiece *pc;         /**< Pieces, or NULL if they are not kept */
+  int npc;               /**< Number of pieces */
+  int pcsize;            /**< Size of the array of pieces */
 } DistEvents;
 
 /* Results of #distwalk_segm() */
@@ -209,7 +229,9 @@ typedef struct
 #define DISTWALK_SOLVE  (-2)  /**< The root isolation failed */
 
 extern void distevents_init(DistEvents *events);
+extern void distevents_keep_pieces(DistEvents *events);
 extern void distevents_free(DistEvents *events);
+extern double distpiece_dist(const DistPiece *p, double t);
 
 extern double distwalk_ftol(const DistSegm *seg, const DistRefPoly *ra,
   const DistRefPoly *rb);
