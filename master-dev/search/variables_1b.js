@@ -10,5 +10,6 @@ var searchData=
   ['zmax_7',['zmax',['../structGBOX_a736f6719c3d2d4883e665b5020f132d4.html#a736f6719c3d2d4883e665b5020f132d4',1,'GBOX::zmax()'],['../structBOX3D_ac625e040f3a02fc0ac7babc9fbae0618.html#ac625e040f3a02fc0ac7babc9fbae0618',1,'BOX3D::zmax()'],['../structTPCBox_adba233bf83b823d515592d0914bae1fb.html#adba233bf83b823d515592d0914bae1fb',1,'TPCBox::zmax()'],['../structSTBox_ad82c8f59f944d1697eb47c4685f1adba.html#ad82c8f59f944d1697eb47c4685f1adba',1,'STBox::zmax()']]],
   ['zmin_8',['zmin',['../structSTBox_a3002c8690dec774bd9cba38d1650e8a0.html#a3002c8690dec774bd9cba38d1650e8a0',1,'STBox::zmin()'],['../structTPCBox_ac1549827d071d30e635af6505b734e89.html#ac1549827d071d30e635af6505b734e89',1,'TPCBox::zmin()'],['../structBOX3D_a74633fbecab8f93264b244fb6e605491.html#a74633fbecab8f93264b244fb6e605491',1,'BOX3D::zmin()'],['../structGBOX_a8f5a5c650b356663802fe72363e79be1.html#a8f5a5c650b356663802fe72363e79be1',1,'GBOX::zmin()']]],
   ['zoff_9',['zoff',['../structAFFINE_a560acdd204fbb960db373ac3b2e07c31.html#a560acdd204fbb960db373ac3b2e07c31',1,'AFFINE']]],
-  ['zsize_10',['zsize',['../structSTboxGridState_af382e31ad51839c9d2df8c7e0e6333f3.html#af382e31ad51839c9d2df8c7e0e6333f3',1,'STboxGridState']]]
+  ['zoom_10',['zoom',['../structWalkRow_a28ab74d89d16e243c09efd0cec9931aa.html#a28ab74d89d16e243c09efd0cec9931aa',1,'WalkRow']]],
+  ['zsize_11',['zsize',['../structSTboxGridState_af382e31ad51839c9d2df8c7e0e6333f3.html#af382e31ad51839c9d2df8c7e0e6333f3',1,'STboxGridState']]]
 ];
