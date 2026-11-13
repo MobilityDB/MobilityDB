@@ -81,14 +81,40 @@ compares within a distance sized to the rounding of the construction, a fixed
 `MEOS_GEOM_TOLERANCE` plus a few ulps of the coordinates
 (`coordinate_tolerance`).
 
+That band is one formula wherever it stands,
+
+    MEOS_GEOM_TOLERANCE + 4 * DBL_EPSILON * m
+
+with `MEOS_GEOM_TOLERANCE` equal to `1e-12` and `m` the largest absolute
+coordinate of the points it compares, and it judges only a point the engine
+builds:
+
+| Band | Where | The constructed point it judges |
+|---|---|---|
+| `coordinate_tolerance` | the buffer (`buffer_join_is_point`, `buffer_piece_contains_point`), the collinearity of three instants of a sequence (`geopoint_collinear`, `float_collinear`, `pose_collinear`, `cbuffer_collinear`), the sewing of two pieces (`sew_same_point`) | a corner, a join or a piece end the buffer computes; a value interpolated between two instants |
+| `geompoint_route_band` | the cast of a geometry to a network segment (`geom_to_nsegment`) and of a temporal geometry point to a temporal network point (`tgeompointinst_tnpointinst`) | the point at a fraction of a route, which `line_interpolate_point` computes in doubles, so that a point on the route maps back to it |
+| `tnpoint_meeting_band` | the ever and always overlaps of two temporal network points (`eaoverlaps_tnpoint_tnpoint`) | the positions of the two values at one instant, each a point at a fraction of its route, so that two network points cast onto one crossing are one place |
+| `geogpoint_meeting_band` | the meeting of two segments of temporal geography points (`tgeogpointsegm_intersection`) | the point each segment constructs along its great circle at the turning point of their distance |
+
+The band is a distance in the units of the coordinates. It decides whether two
+constructed points are one point, never a question about the input, which
+the engine decides exactly.
+
+**A tolerance is never an accuracy of the output.** `MEOS_GEOM_TOLERANCE`
+and `MEOS_EPSILON` (`1e-6`, the equality of two modelled values, which the
+microsecond of a timestamp pins) are the two tolerances MEOS owns. A value
+MEOS would have to build to a stated accuracy, such as a polygon following a
+curve the geometry cannot state, would need a third, and MEOS does not build
+it: the geography of a geodetic box is the polygon of its four corners, whose
+edges are great circles where the box's horizontal edges are parallels.
+
 **Some comparisons still read a fixed tolerance.** Parts of the engine compare
 a length or a parameter with `MEOS_GEOM_TOLERANCE` or `MEOS_EPSILON`, among
 them the ray crossing of a point in a polygon (`dist_poly_seg_raycross`), the
 closest point on an arc (`dist_geom_closest_on_arc`) and the turning points of
-the distance of a moving point (`tpoint_geo_distance_turnpt`). The exactness
-plan of the project, MobilityDB #3287, lists them and the changes that decide
-each one exactly. The answers this document states are the ones the CGAL
-judges check (section 8).
+the distance of a moving point (`tpoint_geo_distance_turnpt`). Their answers
+are not covered by this document's guarantee. The answers this document
+states are the ones the CGAL judges check (section 8).
 
 ## 4. How the engine reaches an exact answer
 
@@ -263,9 +289,8 @@ it against the other geometry within a tolerance sized to the construction
 Asking an exact question of that rounded point would answer about its rounding,
 not about the input: the point is not on the edge it was built from. A decision
 with no tolerance therefore needs the arrangement of the two geometries, whose
-vertices are held exactly and never located by a rounded coordinate. Step 16 of
-the exact buffer plan of the project, MobilityDB #3287, reads the relationship
-of two areal operands off that arrangement.
+vertices are held exactly and never located by a rounded coordinate, and the
+relationship of two areal operands read off that arrangement.
 
 The temporal relationships inherit this: at an instant they read the same
 engine.
