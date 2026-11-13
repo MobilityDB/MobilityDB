@@ -58,3 +58,45 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tNotEqual(t1.temp, t
    102
 (1 row)
 
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp ?&& expandSpace(stbox(t2.temp), 1) <> (atStbox(t1.temp, expandSpace(stbox(t2.temp), 1)) IS NOT NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp %&& expandSpace(stbox(t2.temp), 1) <> (minusStbox(t1.temp, expandSpace(stbox(t2.temp), 1)) IS NULL);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND expandSpace(stbox(t2.temp), 1) ?&& t1.temp <> t1.temp ?&& expandSpace(stbox(t2.temp), 1);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp ?&& expandSpace(stbox(t2.temp), 1);
+ count 
+-------
+    30
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp %&& expandSpace(stbox(t2.temp), 1);
+ count 
+-------
+    30
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.k <= 30 AND t2.k <= 30
+AND t1.temp && expandSpace(stbox(t2.temp), 1);
+ count 
+-------
+    30
+(1 row)
+

@@ -348,8 +348,10 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
     double y = start->data[1] * (1 - ratio) + end->data[1] * ratio;
     double theta;
     double theta_delta = end->data[2] - start->data[2];
-    /* If fabs(theta_delta) == M_PI: Always turn counter-clockwise */
-    if (fabs(theta_delta) < MEOS_EPSILON)
+    /* The pose turns where its two angles differ, however little, as
+     * #posesegm_locate reads it: the difference of two distinct doubles is
+     * never 0. If fabs(theta_delta) == M_PI: Always turn counter-clockwise */
+    if (theta_delta == 0.0)
       theta = start->data[2];
     else if (theta_delta > 0 && fabs(theta_delta) <= M_PI)
       theta = start->data[2] + theta_delta * ratio;

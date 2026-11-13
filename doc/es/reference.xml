@@ -3213,6 +3213,9 @@
 				<listitem>
 					<para><link linkend="tcell_at_time"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restringir una celda temporal a (el complemento de) un valor de tiempo</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="tcell_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restringir una celda QUADBIN o H3 temporal a (el complemento de) una caja espaciotemporal</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -3282,6 +3285,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Operadores topológicos</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tcell_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Superposición alguna vez y siempre de una celda QUADBIN o H3 temporal y una caja espaciotemporal</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_position"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Operadores de posición</para>

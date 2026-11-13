@@ -44,6 +44,7 @@
 #include <common/hashfn.h>
 #include <common/int.h>
 #include "port/pg_bitutils.h"
+#include <utils/date.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* MEOS */
@@ -2120,6 +2121,248 @@ unix_us_to_timestamptz(int64 us)
       "timestamp out of range");
     return DT_NOEND;
   }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_timestamp
+ * @brief Return the microseconds from the Unix epoch of a timestamp
+ * @details A binding converts a timestamp to the timestamp of its host
+ * through this function and back through #unix_us_to_timestamp, as
+ * #timestamptz_to_unix_us converts a timestamptz
+ * @param[in] ts Timestamp
+ * @errval INT64_MAX
+ */
+int64
+timestamp_to_unix_us(Timestamp ts)
+{
+  /* A timestamp counts microseconds from the PostgreSQL epoch as a
+   * timestamptz does, without a time zone */
+  return timestamptz_to_unix_us((TimestampTz) ts);
+}
+
+/**
+ * @ingroup meos_base_timestamp
+ * @brief Return the timestamp of a count of microseconds from the Unix epoch
+ * @param[in] us Microseconds from the Unix epoch
+ * @errval DT_NOEND
+ * @see #timestamp_to_unix_us
+ */
+Timestamp
+unix_us_to_timestamp(int64 us)
+{
+  /* A timestamp counts microseconds from the PostgreSQL epoch as a
+   * timestamptz does, without a time zone */
+  return (Timestamp) unix_us_to_timestamptz(us);
+}
+
+/**
+ * @ingroup meos_base_date
+ * @brief Return the days from the Unix epoch of a date
+ * @details A binding converts a date to the date of its host through this
+ * function and back through #unix_days_to_date, as #timestamptz_to_unix_us
+ * converts a timestamptz
+ * @param[in] d Date
+ * @errval INT_MAX
+ */
+int32
+date_to_unix_days(DateADT d)
+{
+  /* Ensure the validity of the arguments: an infinite date has no count, and
+   * the count of every finite date fits in 32 bits since the last date
+   * counted from the PostgreSQL epoch is later than the Unix one */
+  if (DATE_NOT_FINITE(d))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "date out of range");
+    return INT_MAX;
+  }
+  return d + (POSTGRES_EPOCH_JDATE - UNIX_EPOCH_JDATE);
+}
+
+/**
+ * @ingroup meos_base_date
+ * @brief Return the date of a count of days from the Unix epoch
+ * @param[in] days Days from the Unix epoch
+ * @errval DATEVAL_NOEND
+ * @see #date_to_unix_days
+ */
+DateADT
+unix_days_to_date(int32 days)
+{
+  DateADT result;
+  /* Ensure the validity of the arguments, as the addition of an offset to a
+   * date refuses a result outside the range of dates */
+  if (unlikely(pg_sub_s32_overflow(days, POSTGRES_EPOCH_JDATE -
+        UNIX_EPOCH_JDATE, &result)) || ! IS_VALID_DATE(result))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "date out of range");
+    return DATEVAL_NOEND;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_interval
+ * @brief Return in the last three arguments the months, the days and the
+ * microseconds of an interval
+ * @details A binding converts an interval to the duration of its host
+ * through this function and back through #interval_from_parts, as
+ * #timestamptz_to_unix_us converts a timestamptz. The three parts are those
+ * the interval holds: a day of an interval is not 24 hours across a change of
+ * the offset of a time zone, nor a month a number of days, so a host duration
+ * counting time alone states an interval whose months and days are zero.
+ * @param[in] interv Interval
+ * @param[out] months Months
+ * @param[out] days Days
+ * @param[out] us Microseconds
+ * @errval false
+ */
+bool
+interval_to_parts(const Interval *interv, int32 *months, int32 *days,
+  int64 *us)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(interv, false); VALIDATE_NOT_NULL(months, false);
+  VALIDATE_NOT_NULL(days, false); VALIDATE_NOT_NULL(us, false);
+  /* An infinite interval has no parts a host states */
+  if (INTERVAL_NOT_FINITE(interv))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "interval out of range");
+    return false;
+  }
+  *months = interv->month;
+  *days = interv->day;
+  *us = interv->time;
+  return true;
+}
+
+/**
+ * @ingroup meos_base_interval
+ * @brief Return the interval of a number of months, days and microseconds
+ * @details The exact counterpart of #interval_make, which reads the seconds
+ * as a double
+ * @param[in] months Months
+ * @param[in] days Days
+ * @param[in] us Microseconds
+ * @errval NULL
+ * @see #interval_to_parts
+ */
+Interval *
+interval_from_parts(int32 months, int32 days, int64 us)
+{
+  Interval *result = palloc(sizeof(Interval));
+  result->month = months;
+  result->day = days;
+  result->time = us;
+  /* Ensure the validity of the arguments: the three parts of an infinite
+   * interval are the extreme values of their types, which state no finite
+   * interval */
+  if (INTERVAL_NOT_FINITE(result))
+  {
+    pfree(result);
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_time
+ * @brief Return in the last argument the microseconds from midnight of a time
+ * @details A binding converts a time to the time of its host through this
+ * function and back through #time_from_parts, as #timetz_to_parts converts a
+ * time with time zone
+ * @param[in] time Time
+ * @param[out] us Microseconds from midnight
+ * @errval false
+ */
+bool
+time_to_parts(TimeADT time, int64 *us)
+{
+  /* Ensure the validity of the arguments, as a time is a count within a day */
+  VALIDATE_NOT_NULL(us, false);
+  if (time < 0 || time > USECS_PER_DAY)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "time out of range");
+    return false;
+  }
+  *us = time;
+  return true;
+}
+
+/**
+ * @ingroup meos_base_time
+ * @brief Return the time of a number of microseconds from midnight
+ * @param[in] us Microseconds from midnight, from 0 to 24:00:00
+ * @errval INT64_MAX
+ * @see #time_to_parts
+ */
+TimeADT
+time_from_parts(int64 us)
+{
+  /* Ensure the validity of the arguments, as a time refuses a count outside
+   * a day */
+  if (us < 0 || us > USECS_PER_DAY)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "time out of range");
+    return INT64_MAX;
+  }
+  return (TimeADT) us;
+}
+
+/**
+ * @ingroup meos_base_time
+ * @brief Return in the last two arguments the microseconds from midnight and
+ * the offset from UTC of a time with time zone
+ * @details A binding converts a time with time zone to the time of its host
+ * through this function and back through #timetz_from_parts, as
+ * #timestamptz_to_unix_us converts a timestamptz. The offset is in seconds
+ * east of UTC, as ISO 8601 and the hosts state it: a time with time zone
+ * holds the seconds west of UTC, so that `12:00:00+01` has the offset 3600.
+ * @param[in] timetz Time with time zone
+ * @param[out] us Microseconds from midnight
+ * @param[out] offset Seconds east of UTC
+ * @errval false
+ */
+bool
+timetz_to_parts(const TimeTzADT *timetz, int64 *us, int32 *offset)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(timetz, false); VALIDATE_NOT_NULL(us, false);
+  VALIDATE_NOT_NULL(offset, false);
+  *us = timetz->time;
+  *offset = - timetz->zone;
+  return true;
+}
+
+/**
+ * @ingroup meos_base_time
+ * @brief Return the time with time zone of a number of microseconds from
+ * midnight and an offset from UTC
+ * @param[in] us Microseconds from midnight, from 0 to 24:00:00
+ * @param[in] offset Seconds east of UTC
+ * @errval NULL
+ * @see #timetz_to_parts
+ */
+TimeTzADT *
+timetz_from_parts(int64 us, int32 offset)
+{
+  /* Ensure the validity of the arguments, as a time with time zone refuses a
+   * time outside a day and an offset beyond the one PostgreSQL reads */
+  if (us < 0 || us > USECS_PER_DAY)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "time out of range");
+    return NULL;
+  }
+  if (offset < - TZDISP_LIMIT || offset > TZDISP_LIMIT)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "time zone displacement out of range");
+    return NULL;
+  }
+  TimeTzADT *result = palloc(sizeof(TimeTzADT));
+  result->time = us;
+  result->zone = - offset;
   return result;
 }
 

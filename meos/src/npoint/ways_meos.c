@@ -209,6 +209,12 @@ GetWaysIndex(FILE *file)
     MEOS_WAYS_INDEX = NULL;
   }
   WaysIndex *index = calloc(1, sizeof(WaysIndex));
+  if (! index)
+  {
+    meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+      "Cannot allocate the index of the ways file");
+    return NULL;
+  }
   int capacity = 1024;
   index->offsets = malloc(sizeof(WaysOffset) * capacity);
   index->path = malloc(strlen(WAYS_CSV) + 1);

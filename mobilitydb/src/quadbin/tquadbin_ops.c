@@ -48,6 +48,7 @@
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
 #include "quadbin/tquadbin.h"
+#include "geo/stbox.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -382,6 +383,56 @@ Datum
 Tgeogpoint_quadbin_split(PG_FUNCTION_ARGS)
 {
   return Tpoint_quadbin_split_ext(fcinfo);
+}
+
+/*****************************************************************************
+ * Restriction to a box
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal QUADBIN cell restricted to (the complement of) a
+ * spatiotemporal box, as #Tpose_restrict_stbox restricts a temporal pose
+ */
+static Datum
+Tquadbin_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tcellindex_restrict_stbox(temp, box, border_inc, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tquadbin_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tquadbin_at_stbox);
+/**
+ * @ingroup mobilitydb_quadbin_restrict
+ * @brief Return a temporal QUADBIN cell restricted to a spatiotemporal box,
+ * the times at which its tile shares a point with the box
+ * @sqlfn atStbox()
+ */
+inline Datum
+Tquadbin_at_stbox(PG_FUNCTION_ARGS)
+{
+  return Tquadbin_restrict_stbox(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tquadbin_minus_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tquadbin_minus_stbox);
+/**
+ * @ingroup mobilitydb_quadbin_restrict
+ * @brief Return a temporal QUADBIN cell restricted to the complement of a
+ * spatiotemporal box, the times at which its tile shares no point with the
+ * box
+ * @sqlfn minusStbox()
+ */
+inline Datum
+Tquadbin_minus_stbox(PG_FUNCTION_ARGS)
+{
+  return Tquadbin_restrict_stbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

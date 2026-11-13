@@ -147,12 +147,19 @@ extern bool h3_outline_vertex_held_geodetic(const H3Outline *o, int k);
 extern bool h3_outline_vertex_held(const H3Outline *o, int k);
 /* The microsecond at which a segment crosses the line of an edge of an
  * outline, truncated, exactly. Body in h3_geo.c. */
+extern int64 h3_geodetic_edge_offset(double x0, double y0, double x1,
+  double y1, int64 D, double ax, double ay, double bx, double by, double f,
+  bool *whole);
 extern int64 h3_outline_edge_offset(const H3Outline *o, int k, double x0,
   double y0, double x1, double y1, int64 D, bool *whole);
 /* Whether a cell holds a position of the plane of longitude and latitude, by
  * the exact signs of its outline and the owner rule, and the planar cell of
  * a position. Bodies in h3_geo.c. */
 extern bool h3_outline_holds_point(const H3Outline *o, double x, double y);
+/* Whether a geodetic cell shares a position with a geodetic box, the cell
+ * read with the boundary points it owns. Body in h3_geo.c. */
+extern bool h3_cell_meets_box(H3Index cell, const STBox *box,
+  bool border_inc);
 extern H3Index h3_point_cell(double lon, double lat, bool geodetic,
   int32 resolution);
 /* The cells around the poles at a resolution. Body in th3index_boxops.c. */

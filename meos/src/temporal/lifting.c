@@ -2073,10 +2073,12 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
       {
         tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
           start1->temptype, start1->t, end1->t, tpt1);
-        /* Two geodetic segments meeting at the crossing construct two points
-         * apart by their rounding (#tgeogpointsegm_intersection): the
+        /* Two point segments meeting at the crossing construct two points
+         * apart by their rounding where the meeting falls between two
+         * microseconds; the crossing is a meeting their intersection decides
+         * (#tgeompointsegm_meet, #tgeogpointsegm_intersection), so the
          * function reads the one point they meet at */
-        tpvalue2 = (! lfinfo->tpfn_temp && MEOS_FLAGS_GET_GEODETIC(start1->flags)) ?
+        tpvalue2 = (! lfinfo->tpfn_temp && tpoint_type(start1->temptype)) ?
           datum_copy(tpvalue1, basetype) :
           tsegment_value_at_timestamptz(startvalue2, endvalue2,
             start1->temptype, start1->t, end1->t, tpt1);
@@ -3310,11 +3312,13 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
         {
           Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
             start1->temptype, start1->t, end1->t, tpts[k]);
-          /* Two geodetic segments meeting at the crossing construct two
-           * points apart by their rounding (#tgeogpointsegm_intersection):
+          /* Two point segments meeting at the crossing construct two points
+           * apart by their rounding where the meeting falls between two
+           * microseconds; the crossing is a meeting their intersection
+           * decides (#tgeompointsegm_meet, #tgeogpointsegm_intersection), so
            * the function reads the one point they meet at */
           Datum tpvalue2 =
-            (! lfinfo->tpfn_temp && MEOS_FLAGS_GET_GEODETIC(start1->flags)) ?
+            (! lfinfo->tpfn_temp && tpoint_type(start1->temptype)) ?
             datum_copy(tpvalue1, temptype_basetype(seq1->temptype)) :
             tsegment_value_at_timestamptz(startvalue2, endvalue2,
               start2->temptype, start2->t, end2->t, tpts[k]);
