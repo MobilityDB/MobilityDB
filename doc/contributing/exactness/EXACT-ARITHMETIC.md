@@ -629,6 +629,18 @@ and `DDBound`, on the calls the speed cells record and on ties, subnormal and hu
 the pull request then moves the readers and removes `pair_mul` and `pair_add`, judged by the
 speed cells, since a bound carried costs a third double per value.
 
+Measured (2026-11-13, `claude-kits` `ea4-kit`, branch `meas/ea4-pair-differential`): each reader's
+pair tier answered both ways on the calls of the speed cells and of the 17 witnesses of the ED24
+walk, and on ties, one-ulp moves and scales from 2^-1070 to 2^1000. No reader decides unlike on any
+call, and no decided answer is wrong where an exact reference exists. `DDBound` decides more:
+`point_distance_offset_pair_side_sign` 4480 of 38 108 calls the pairs leave to the next tier,
+each about 8000 instructions saved there, `pair_mid_sign` 276 of 10 788, 24 hard cases; it costs
+1.06 to 2.75 times the pairs per call at this tier (`pair_mid_sign` the most, 280 against 102).
+`polynomial_sign_pairs` is the exception: carrying the bound loses 16 of its 947 decisions, and
+it is the polynomial ladder's own first tier, so it leaves with that ladder, which EA1 retires,
+not in EA4. The pull request moves the other readers and then removes `pair_mul` and `pair_add`
+once nothing reads them, its speed cells judging `pair_mid_sign`.
+
 ### EA5. One wide number
 
 `TowerWide`, the size of its value, stands for tier 3: `WideDyadic` and the `WIDE_LIMBS` integer
