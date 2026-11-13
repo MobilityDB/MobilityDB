@@ -67,12 +67,15 @@
  * The function only return an intersection at the middle, that is, it
  * it returns false if the timestamp found is not at a bound
  * @note This function is called only when both sequences are linear
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  */
 int
 tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   double x1 = DatumGetFloat8(start1);
   double x2 = DatumGetFloat8(end1);
@@ -1527,6 +1530,7 @@ tfloat_sin(const Temporal *temp)
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloatseg_sin_turnpt : NULL;
+  lfinfo.tpfn_many = true;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1565,6 +1569,7 @@ tfloat_cos(const Temporal *temp)
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloatseg_cos_turnpt : NULL;
+  lfinfo.tpfn_many = true;
   return tfunc_temporal(temp, &lfinfo);
 }
 

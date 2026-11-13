@@ -551,7 +551,7 @@ tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   assert(t1); assert(t2);
   TimestampTz tps[2];
   int result = tgeompointsegm_distance_turnpt(start1, end1, start2, end2,
-    (Datum) 0.0, lower, upper, tps, 2);
+    (Datum) 0.0, lower, upper, tps, NULL, 2);
   if (result)
     *t1 = *t2 = tps[0];
   return result;
@@ -597,7 +597,7 @@ tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   assert(t1); assert(t2);
   TimestampTz tps[2];
   if (! tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
-    (Datum) 0.0, lower, upper, tps, 2))
+    (Datum) 0.0, lower, upper, tps, NULL, 2))
     return 0;
   *t1 = *t2 = tps[0];
   Datum v1 = tsegment_value_at_timestamptz(start1, end1, T_TGEOGPOINT, lower,
@@ -3044,13 +3044,17 @@ geo_bearing_fn(int16 flags)
  * @param[in] point Geometric/geography point to locate
  * @param[in] lower,upper Timestampts defining the segment
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segment is not constant and has linear interpolation
  */
 static int
 tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
-  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, Datum *values UNUSED,
+  int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   const POINT2D *p1 = DATUM_POINT2D_P(start);
   const POINT2D *p2 = DATUM_POINT2D_P(end);
@@ -3111,6 +3115,8 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants and are both linear
  * @note This function is currently not available for two temporal geographic
@@ -3119,8 +3125,9 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
 static int
 tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   assert(! FLAGS_GET_GEODETIC(DatumGetGserializedP(start1)->gflags));
   const POINT2D *sp1 = DATUM_POINT2D_P(start1);

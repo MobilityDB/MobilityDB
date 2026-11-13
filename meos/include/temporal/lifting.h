@@ -88,6 +88,18 @@ typedef struct
                                  the segment-locate dispatchers (datumsegm_locate)
                                  assume same-type comparisons and would reinterpret
                                  the right-hand bytes through the wrong type. */
+  bool tpfn_many;             /**< True if the turning point function can
+                                 count more than two instants in a segment,
+                                 as for sin and cos; the readers call one
+                                 that does not with an array of two instants,
+                                 and assert that it counts no more */
+  bool tpfn_value;            /**< True if the turning point function writes,
+                                 beside each instant, the value of the lifted
+                                 function at the exact time of which the
+                                 instant is the nearest microsecond, which the
+                                 readers take in place of evaluating the
+                                 function on the values placed at the instant,
+                                 and free as they free a value they compute */
   tpfunc_base tpfn_base;      /**< Turning point function for temporal and base types*/
   tpfunc_temp tpfn_temp;      /**< Turning point function for two temporal types */
   tpfunc_temp_at tpfn_temp_at; /**< Value of the predicate at a turning point
