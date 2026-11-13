@@ -52,10 +52,12 @@ SELECT
 FROM t;
 
 -------------------------------------------------------------------------------
--- The cell is the region H3 assigns its points to. The first point lies in
--- the resolution-0 cell of the queries below and 91 km outside the polygon
--- joining its vertices with straight lines in longitude and latitude; the
--- second lies 53 km inside that polygon and outside the cell.
+-- A geodetic cell is the region H3 assigns its points to, which eIntersects
+-- of a geography reads; the cell of a geometry point is the planar cell, the
+-- polygon joining its vertices with straight lines in longitude and latitude,
+-- which latLngToCell of a geometry reads. The first point lies in the
+-- resolution-0 cell of the queries below and 91 km outside that polygon; the
+-- second lies 53 km inside the polygon and outside the cell.
 -------------------------------------------------------------------------------
 
 SELECT latLngToCell(geometry 'SRID=4326;POINT(16.6328 71.9281)', 0) = h3index '8009fffffffffff',

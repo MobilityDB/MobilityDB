@@ -42,10 +42,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_quadbin.h>
+#include <meos_cellindex.h>
 #include "temporal/temporal.h"
 #include "quadbin/quadbin.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
+#include "pg_geo/tspatial.h"
 
 /*****************************************************************************
  * Shared helpers
@@ -336,5 +338,71 @@ PG_FUNCTION_INFO_V1(Tne_tquadbin_quadbin);
 inline Datum
 Tne_tquadbin_quadbin(PG_FUNCTION_ARGS)
 { return Tcomp_tquadbin_quadbin(fcinfo, &tne_tquadbin_quadbin); }
+
+/*****************************************************************************
+ * Ever/always overlaps with a box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Ever_overlaps_stbox_tquadbin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_stbox_tquadbin);
+/**
+ * @ingroup mobilitydb_quadbin_comp_ever
+ * @brief Return true if a temporal QUADBIN cell ever lies in a spatiotemporal
+ * box, as #Ever_overlaps_stbox_tpose answers it for a temporal pose
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+Datum
+Ever_overlaps_stbox_tquadbin(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &ever_overlaps_stbox_tcellindex);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_tquadbin_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tquadbin_stbox);
+/**
+ * @ingroup mobilitydb_quadbin_comp_ever
+ * @brief Return true if a temporal QUADBIN cell ever lies in a spatiotemporal
+ * box, as #Ever_overlaps_tpose_stbox answers it for a temporal pose
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+Datum
+Ever_overlaps_tquadbin_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &ever_overlaps_tcellindex_stbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_stbox_tquadbin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_stbox_tquadbin);
+/**
+ * @ingroup mobilitydb_quadbin_comp_ever
+ * @brief Return true if a temporal QUADBIN cell always lies in a
+ * spatiotemporal box, as #Always_overlaps_stbox_tpose answers it for a
+ * temporal pose
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+Datum
+Always_overlaps_stbox_tquadbin(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &always_overlaps_stbox_tcellindex);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tquadbin_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tquadbin_stbox);
+/**
+ * @ingroup mobilitydb_quadbin_comp_ever
+ * @brief Return true if a temporal QUADBIN cell always lies in a
+ * spatiotemporal box, as #Always_overlaps_tpose_stbox answers it for a
+ * temporal pose
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+Datum
+Always_overlaps_tquadbin_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &always_overlaps_tcellindex_stbox);
+}
 
 /*****************************************************************************/

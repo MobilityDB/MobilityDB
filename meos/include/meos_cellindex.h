@@ -84,6 +84,12 @@ extern Temporal *tcellindex_cell_to_parent(const Temporal *temp,
 extern Temporal *tcellindex_cell_to_point(const Temporal *temp);
 extern Temporal *tcellindex_cell_to_boundary(const Temporal *temp);
 extern Temporal *tcellindex_cell_area(const Temporal *temp);
+extern Temporal *tcellindex_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
+extern Temporal *tcellindex_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
+extern int ever_overlaps_tcellindex_stbox(const Temporal *temp, const STBox *box);
+extern int always_overlaps_tcellindex_stbox(const Temporal *temp, const STBox *box);
+extern int ever_overlaps_stbox_tcellindex(const STBox *box, const Temporal *temp);
+extern int always_overlaps_stbox_tcellindex(const STBox *box, const Temporal *temp);
 
 /*****************************************************************************/
 

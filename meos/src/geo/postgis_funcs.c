@@ -3170,9 +3170,9 @@ geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     geom_distance3d(gs1, gs2) : geom_distance2d(gs1, gs2);
 }
 
-static bool geom_is_solid(const LWGEOM *geom);
-static bool geom_dwithin3d_faces(const LWGEOM *geom1, const LWGEOM *geom2,
-  double dist, bool *result);
+static bool geom_is_solid(const GSERIALIZED *gs);
+static bool geom_dwithin3d_faces(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2, double dist, bool *result);
 
 /**
  * @ingroup meos_internal_geo_base_rel
@@ -3209,9 +3209,9 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 #endif
   bool exact = false, within = false;
   if (geom1 && geom2 && FLAGS_GET_Z(geom1->flags) &&
-      FLAGS_GET_Z(geom2->flags) && (geom_is_solid(geom1) ||
-      geom_is_solid(geom2)))
-    exact = geom_dwithin3d_faces(geom1, geom2, 0.0, &within);
+      FLAGS_GET_Z(geom2->flags) && (geom_is_solid(gs1) ||
+      geom_is_solid(gs2)))
+    exact = geom_dwithin3d_faces(gs1, gs2, 0.0, &within);
   double mindist = exact ? (within ? 0.0 : DBL_MAX) : (geom1 && geom2) ?
     lwgeom_mindistance3d_tolerance((LWGEOM *) geom1, (LWGEOM *) geom2, 0.0) :
     DBL_MAX;
@@ -3740,9 +3740,18 @@ typedef struct
   double lo[3], hi[3];       /**< Box of the vertices */
 } GeomFace;
 
+/** Point arrays and faces a geometry in 3D holds on the stack, beyond which
+ * they are allocated */
+#define GEOM_FACES_ARRAYS 16
+#define GEOM_FACES_FACES 4
+
 /**
- * @brief The point arrays and the faces of a geometry in 3D
- * (#geom_faces_add)
+ * @brief The point arrays and the faces of a geometry in 3D, read in place on
+ * its serialized form (#geom_faces_init)
+ * @details The point arrays reference the serialized coordinates, as
+ * #geom_distance_gs_arrays reads them, held with the faces in the arrays on
+ * the stack of the structure until they outgrow them, as
+ * #geom_distance2d_exact holds its point arrays
  */
 typedef struct
 {
@@ -3750,6 +3759,13 @@ typedef struct
   uint32_t narrs, caparrs;   /**< Their number and the capacity */
   GeomFace *faces;           /**< Faces */
   uint32_t nfaces, capfaces; /**< Their number and the capacity */
+  POINTARRAY *pas;           /**< The point arrays themselves */
+  POINTARRAY **rings;        /**< The rings of the faces, in order */
+  uint32_t npas, nrings;     /**< Their numbers */
+  const POINTARRAY *arrstack[GEOM_FACES_ARRAYS];
+  POINTARRAY pastack[GEOM_FACES_ARRAYS];
+  POINTARRAY *ringstack[GEOM_FACES_ARRAYS];
+  GeomFace facestack[GEOM_FACES_FACES];
 } GeomFaces;
 
 /** The origin and the unit vectors of the axes, as points */
@@ -3765,10 +3781,15 @@ geom_faces_add_array(GeomFaces *gf, const POINTARRAY *pa)
 {
   if (gf->narrs == gf->caparrs)
   {
-    gf->caparrs = gf->caparrs ? 2 * gf->caparrs : 8;
-    gf->arrs = gf->arrs ?
-      repalloc(gf->arrs, sizeof(POINTARRAY *) * gf->caparrs) :
-      palloc(sizeof(POINTARRAY *) * gf->caparrs);
+    gf->caparrs *= 2;
+    if (gf->arrs == gf->arrstack)
+    {
+      const POINTARRAY **arrs = palloc(sizeof(POINTARRAY *) * gf->caparrs);
+      memcpy(arrs, gf->arrstack, sizeof(POINTARRAY *) * gf->narrs);
+      gf->arrs = arrs;
+    }
+    else
+      gf->arrs = repalloc(gf->arrs, sizeof(POINTARRAY *) * gf->caparrs);
   }
   gf->arrs[gf->narrs++] = pa;
   return;
@@ -3849,22 +3870,29 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
   face.axis = (k + 1) % 3;
   if (gf->nfaces == gf->capfaces)
   {
-    gf->capfaces = gf->capfaces ? 2 * gf->capfaces : 4;
-    gf->faces = gf->faces ?
-      repalloc(gf->faces, sizeof(GeomFace) * gf->capfaces) :
-      palloc(sizeof(GeomFace) * gf->capfaces);
+    gf->capfaces *= 2;
+    if (gf->faces == gf->facestack)
+    {
+      GeomFace *faces = palloc(sizeof(GeomFace) * gf->capfaces);
+      memcpy(faces, gf->facestack, sizeof(GeomFace) * gf->nfaces);
+      gf->faces = faces;
+    }
+    else
+      gf->faces = repalloc(gf->faces, sizeof(GeomFace) * gf->capfaces);
   }
   gf->faces[gf->nfaces++] = face;
   return true;
 }
 
 /**
- * @brief Return true if a geometry is a solid bounded by a polyhedral surface
+ * @brief Return true if a serialized geometry is a solid bounded by a
+ * polyhedral surface
  */
 static bool
-geom_is_solid(const LWGEOM *geom)
+geom_is_solid(const GSERIALIZED *gs)
 {
-  return geom->type == POLYHEDRALSURFACETYPE && FLAGS_GET_SOLID(geom->flags);
+  return gserialized_get_type(gs) == POLYHEDRALSURFACETYPE &&
+    FLAGS_GET_SOLID(gserialized_get_lwflags(gs));
 }
 
 /**
@@ -3900,38 +3928,43 @@ geom_solid_from_closed(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Return true if a geometry in 3D is one of points, segments and faces
- * lying exactly in a plane, appending its point arrays and its faces
- * @details A point, a line, a polygon, a triangle, and the collections of
- * these, a TIN and a polyhedral surface among them, the latter flagged as a
- * solid or not: the faces of a solid are those of its surface, and its
- * inside is read apart (#geom_faces_solid_contains). A solid inside a
- * collection, a geometry carrying an arc, and a polygon whose vertices do
- * not lie exactly in one plane are not
+ * @brief Count the point arrays and the faces of a geometry in 3D serialized
+ * at @p p, setting in @p size the bytes it takes; return false for a type
+ * #geom_faces_gs_read does not read, a solid inside a collection of a geometry
+ * flagged as a solid (@p solid) among them
  */
 static bool
-geom_faces_add(GeomFaces *gf, const LWGEOM *geom)
+geom_faces_gs_count(const uint8_t *p, size_t ptsize, bool solid,
+  uint32_t *narrs, uint32_t *nfaces, size_t *size)
 {
-  switch (geom->type)
+  uint32_t type, num;
+  memcpy(&type, p, 4);
+  memcpy(&num, p + 4, 4);
+  switch (type)
   {
     case POINTTYPE:
-      geom_faces_add_array(gf, ((const LWPOINT *) geom)->point);
-      return true;
     case LINETYPE:
-      geom_faces_add_array(gf, ((const LWLINE *) geom)->points);
-      return true;
     case TRIANGLETYPE:
-    {
-      const LWTRIANGLE *tri = (const LWTRIANGLE *) geom;
-      geom_faces_add_array(gf, tri->points);
-      return geom_faces_add_face(gf, &tri->points, 1);
-    }
+      (*narrs)++;
+      if (type == TRIANGLETYPE)
+        (*nfaces)++;
+      *size = 8 + (size_t) num * ptsize;
+      return true;
     case POLYGONTYPE:
     {
-      const LWPOLY *poly = (const LWPOLY *) geom;
-      for (uint32_t i = 0; i < poly->nrings; i++)
-        geom_faces_add_array(gf, poly->rings[i]);
-      return geom_faces_add_face(gf, poly->rings, poly->nrings);
+      /* The numbers of points of the rings, padded to a multiple of 8 bytes,
+       * precede their coordinates, as #disc_walk_geom reads them */
+      size_t off = 8 + 4 * (size_t) num + ((num % 2) ? 4 : 0);
+      for (uint32_t k = 0; k < num; k++)
+      {
+        uint32_t npoints;
+        memcpy(&npoints, p + 8 + 4 * k, 4);
+        off += (size_t) npoints * ptsize;
+      }
+      *narrs += num;
+      (*nfaces)++;
+      *size = off;
+      return true;
     }
     case MULTIPOINTTYPE:
     case MULTILINETYPE:
@@ -3940,17 +3973,153 @@ geom_faces_add(GeomFaces *gf, const LWGEOM *geom)
     case TINTYPE:
     case COLLECTIONTYPE:
     {
-      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
-      for (uint32_t i = 0; i < coll->ngeoms; i++)
+      size_t off = 8;
+      for (uint32_t i = 0; i < num; i++)
+      {
+        size_t sub;
         /* A solid inside a collection is not read */
-        if ((geom->type == COLLECTIONTYPE && geom_is_solid(coll->geoms[i])) ||
-            ! geom_faces_add(gf, coll->geoms[i]))
+        if (solid && type == COLLECTIONTYPE)
+        {
+          uint32_t subtype;
+          memcpy(&subtype, p + off, 4);
+          if (subtype == POLYHEDRALSURFACETYPE)
+            return false;
+        }
+        if (! geom_faces_gs_count(p + off, ptsize, solid, narrs, nfaces,
+            &sub))
           return false;
+        off += sub;
+      }
+      *size = off;
       return true;
     }
     default:
       return false;
   }
+}
+
+/* A point array of the geometry, referencing its serialized coordinates */
+static POINTARRAY *
+geom_faces_gs_array(GeomFaces *gf, const uint8_t *pts, uint32_t npoints,
+  lwflags_t flags)
+{
+  POINTARRAY *pa = &gf->pas[gf->npas++];
+  pa->flags = flags;
+  pa->npoints = pa->maxpoints = npoints;
+  pa->serialized_pointlist = (uint8_t *) pts;
+  geom_faces_add_array(gf, pa);
+  return pa;
+}
+
+/**
+ * @brief Return true if a geometry in 3D serialized at @p p is one of points,
+ * segments and faces lying exactly in a plane, appending its point arrays and
+ * its faces, read in place, and setting in @p size the bytes it takes
+ * @details A point, a line, a polygon, a triangle, and the collections of
+ * these, a TIN and a polyhedral surface among them, as #geom_faces_gs_count
+ * counts them; a polygon whose vertices do not lie exactly in one plane is
+ * not (#geom_faces_add_face)
+ */
+static bool
+geom_faces_gs_read(GeomFaces *gf, const uint8_t *p, size_t ptsize,
+  lwflags_t flags, size_t *size)
+{
+  uint32_t type, num;
+  memcpy(&type, p, 4);
+  memcpy(&num, p + 4, 4);
+  switch (type)
+  {
+    case POINTTYPE:
+    case LINETYPE:
+    case TRIANGLETYPE:
+    {
+      POINTARRAY *pa = geom_faces_gs_array(gf, p + 8, num, flags);
+      *size = 8 + (size_t) num * ptsize;
+      if (type != TRIANGLETYPE)
+        return true;
+      POINTARRAY **ring = &gf->rings[gf->nrings++];
+      *ring = pa;
+      return geom_faces_add_face(gf, ring, 1);
+    }
+    case POLYGONTYPE:
+    {
+      const uint8_t *counts = p + 8;
+      const uint8_t *pts = counts + 4 * (size_t) num + ((num % 2) ? 4 : 0);
+      uint32_t first = gf->nrings;
+      for (uint32_t k = 0; k < num; k++)
+      {
+        uint32_t npoints;
+        memcpy(&npoints, counts + 4 * k, 4);
+        gf->rings[gf->nrings++] = geom_faces_gs_array(gf, pts, npoints, flags);
+        pts += (size_t) npoints * ptsize;
+      }
+      *size = (size_t) (pts - p);
+      return geom_faces_add_face(gf, &gf->rings[first], num);
+    }
+    default:
+    {
+      /* A collection, as #geom_faces_gs_count admits it */
+      size_t off = 8;
+      for (uint32_t i = 0; i < num; i++)
+      {
+        size_t sub;
+        if (! geom_faces_gs_read(gf, p + off, ptsize, flags, &sub))
+          return false;
+        off += sub;
+      }
+      *size = off;
+      return true;
+    }
+  }
+}
+
+/**
+ * @brief Return true if a serialized geometry in 3D is one of points, segments
+ * and faces lying exactly in a plane, reading its point arrays and its faces in
+ * place (#geom_faces_gs_read)
+ * @details The point arrays and the faces are counted first
+ * (#geom_faces_gs_count), so that the arrays holding them, and the rings a face
+ * references, are sized once. The faces of a solid are those of its surface,
+ * and its inside is read apart (#geom_faces_solid_contains). A solid inside a
+ * collection, a geometry carrying an arc and a polygon whose vertices do not
+ * lie exactly in one plane are not read
+ */
+static bool
+geom_faces_init(GeomFaces *gf, const GSERIALIZED *gs)
+{
+  gf->arrs = gf->arrstack;
+  gf->pas = gf->pastack;
+  gf->rings = gf->ringstack;
+  gf->faces = gf->facestack;
+  gf->narrs = gf->npas = gf->nrings = gf->nfaces = 0;
+  gf->caparrs = GEOM_FACES_ARRAYS;
+  gf->capfaces = GEOM_FACES_FACES;
+  /* The flags of the point arrays: the dimensions of the serialized form, no
+   * bounding box, and read only, as #geom_distance_gs_arrays sets them */
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, G2FLAGS_GET_Z(gs->gflags));
+  FLAGS_SET_M(flags, G2FLAGS_GET_M(gs->gflags));
+  FLAGS_SET_READONLY(flags, 1);
+  size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
+  const uint8_t *p = gs_geometry_ptr(gs);
+  uint32_t narrs = 0, nfaces = 0;
+  size_t size;
+  bool solid = FLAGS_GET_SOLID(gserialized_get_lwflags(gs));
+  if (! geom_faces_gs_count(p, ptsize, solid, &narrs, &nfaces, &size))
+    return false;
+  if (narrs > GEOM_FACES_ARRAYS)
+  {
+    gf->arrs = palloc(sizeof(POINTARRAY *) * narrs);
+    gf->pas = palloc(sizeof(POINTARRAY) * narrs);
+    gf->rings = palloc(sizeof(POINTARRAY *) * narrs);
+    gf->caparrs = narrs;
+  }
+  if (nfaces > GEOM_FACES_FACES)
+  {
+    gf->faces = palloc(sizeof(GeomFace) * nfaces);
+    gf->capfaces = nfaces;
+  }
+  return geom_faces_gs_read(gf, p, ptsize, flags, &size);
 }
 
 /**
@@ -3959,9 +4128,13 @@ geom_faces_add(GeomFaces *gf, const LWGEOM *geom)
 static void
 geom_faces_free(GeomFaces *gf)
 {
-  if (gf->arrs)
+  if (gf->arrs != gf->arrstack)
     pfree(gf->arrs);
-  if (gf->faces)
+  if (gf->pas != gf->pastack)
+    pfree(gf->pas);
+  if (gf->rings != gf->ringstack)
+    pfree(gf->rings);
+  if (gf->faces != gf->facestack)
     pfree(gf->faces);
   return;
 }
@@ -4229,7 +4402,7 @@ geom_faces_solid_contains(const GeomFaces *solid, const GeomFaces *g)
  * @brief Return true if two geometries with Z of points, segments and faces
  * lying exactly in a plane are within a distance, exactly, setting the answer
  * in the last argument, and false where a geometry is not of these
- * (#geom_faces_add)
+ * (#geom_faces_init)
  * @details Two such geometries are nearest at two points of their segments, at
  * a vertex of one and its foot inside a face of the other, or meet where a
  * segment of one crosses a face of the other: two points inside two faces are
@@ -4237,17 +4410,19 @@ geom_faces_solid_contains(const GeomFaces *solid, const GeomFaces *g)
  * reached at the boundary of one of them. The segments are read by the walk of
  * the distance with the distance as its cut (#geom_distance_walk), as
  * #geom_dwithin3d_exact reads them, and the faces by exact signs
- * (#geom_faces_meet)
- * @param[in] geom1,geom2 Geometries with Z, not empty
+ * (#geom_faces_meet), both read in place on the serialized form
+ * (#geom_faces_init)
+ * @param[in] gs1,gs2 Geometries with Z, not empty
  * @param[in] dist Distance, finite and not negative
  * @param[out] result Answer
  */
 static bool
-geom_dwithin3d_faces(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
-  bool *result)
+geom_dwithin3d_faces(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  double dist, bool *result)
 {
-  GeomFaces g1 = {NULL, 0, 0, NULL, 0, 0}, g2 = {NULL, 0, 0, NULL, 0, 0};
-  bool ok = geom_faces_add(&g1, geom1) && geom_faces_add(&g2, geom2);
+  GeomFaces g1, g2;
+  bool ok = geom_faces_init(&g1, gs1);
+  ok = geom_faces_init(&g2, gs2) && ok;
   if (ok)
   {
     bool within = false;
@@ -4263,9 +4438,9 @@ geom_dwithin3d_faces(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
         geom_faces_meet(&g2, &g1, dist);
     /* A solid also holds what lies inside it */
     int in = 0;
-    if (! *result && geom_is_solid(geom1))
+    if (! *result && geom_is_solid(gs1))
       in = geom_faces_solid_contains(&g1, &g2);
-    if (! *result && in == 0 && geom_is_solid(geom2))
+    if (! *result && in == 0 && geom_is_solid(gs2))
       in = geom_faces_solid_contains(&g2, &g1);
     if (in < 0)
     {
@@ -4327,17 +4502,16 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
       geom_distance3d_straight_type(type2))
     return geom_dwithin3d_exact(gs1, gs2, dist);
 
+  bool result;
+  if (geom_dwithin3d_faces(gs1, gs2, dist, &result))
+    return result;
+  /* A polygon not lying in a plane, a solid inside a collection or an arc */
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-  bool result;
-  if (! geom_dwithin3d_faces(geom1, geom2, dist, &result))
-  {
-    /* A polygon not lying in a plane, a solid inside a collection or an arc */
-    double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, dist);
-    /*empty geometries cases should be right handled since return from
-     underlying functions should be DBL_MAX which causes false as answer*/
-    result = (dist >= mindist);
-  }
+  double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, dist);
+  /*empty geometries cases should be right handled since return from
+   underlying functions should be DBL_MAX which causes false as answer*/
+  result = (dist >= mindist);
   lwgeom_free(geom1); lwgeom_free(geom2);
   return result;
 }

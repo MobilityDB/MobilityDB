@@ -52,6 +52,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include <pgtypes.h>
 #include "geo/geo_funcs.h"
 #include "temporal/set.h"
@@ -428,6 +429,225 @@ tcellindex_cell_area(const Temporal *temp)
   if (! ops)
     return NULL;
   return tcellindex_lift_unary(temp, ops->cell_area, "cellArea", T_TFLOAT);
+}
+
+/*****************************************************************************
+ * Restriction to a box
+ *****************************************************************************/
+
+/**
+ * @brief Ensure the validity of a temporal cell and a spatiotemporal box, as
+ * #ensure_valid_tposechain_stbox and #ensure_valid_tcbuffer_stbox ensure it
+ * for their families: a box with the X dimension shares the SRID and the
+ * model, planar or geodetic, of the value, and the family offers the test of
+ * a cell against a box
+ */
+static bool
+ensure_valid_tcellindex_stbox(const Temporal *temp, const STBox *box)
+{
+  VALIDATE_TCELLINDEX(temp, false); VALIDATE_NOT_NULL(box, false);
+  if (! MEOS_FLAGS_GET_X(box->flags))
+    return true;
+  STBox tbox;
+  tspatial_set_stbox(temp, &tbox);
+  if (! ensure_same_srid(tbox.srid, box->srid) ||
+      ! ensure_same_geodetic(tbox.flags, box->flags))
+    return false;
+  const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return false;
+  if (! ops->cell_meets_box)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation \"atStbox\" is not available for this DGGS cell type");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return a temporal cell restricted to (the complement of) a
+ * spatiotemporal box
+ * @details A cell lies in a box at an instant when its region, with the
+ * boundary points it owns, shares a point with the box, as the family states
+ * it in the `cell_meets_box` slot of its descriptor. A temporal cell keeps its
+ * value between two instants, so the test lifted over the value
+ * (#tfunc_temporal) gives a temporal Boolean whose true times
+ * (#tbool_when_true) are those the restriction keeps, or leaves out. The
+ * region of a cell is read in the model of its family: a QUADBIN tile in
+ * planar longitude and latitude, so the box shares the SRID and the planar
+ * model of the value; a box with only the T dimension restricts the value to
+ * its period
+ * @param[in] temp Temporal cell
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains its upper borders
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ */
+Temporal *
+tcellindex_restrict_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc, bool atfunc)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcellindex_stbox(temp, box))
+    return NULL;
+  if (! MEOS_FLAGS_GET_X(box->flags))
+    return temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  /* Restrict first to the period of the box, which the test of a cell does
+   * not read */
+  Temporal *intime = MEOS_FLAGS_GET_T(box->flags) ?
+    temporal_restrict_tstzspan(temp, &box->period, REST_AT) :
+    temporal_copy(temp);
+  SpanSet *inside = NULL;
+  if (intime)
+  {
+    LiftedFunctionInfo lfinfo;
+    memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+    lfinfo.func = (varfunc) ops->cell_meets_box;
+    lfinfo.numparam = 2;
+    lfinfo.param[0] = PointerGetDatum(box);
+    lfinfo.param[1] = BoolGetDatum(border_inc);
+    lfinfo.argtype[0] = temp->temptype;
+    lfinfo.restype = T_TBOOL;
+    lfinfo.reslinear = false;
+    lfinfo.invert = INVERT_NO;
+    lfinfo.discont = CONTINUOUS;
+    Temporal *meets = tfunc_temporal(intime, &lfinfo);
+    if (meets)
+    {
+      inside = tbool_when_true(meets);
+      pfree(meets);
+    }
+    pfree(intime);
+  }
+  if (! inside)
+    return atfunc ? NULL : temporal_copy(temp);
+  Temporal *result = temporal_restrict_tstzspanset(temp, inside, atfunc);
+  pfree(inside);
+  return result;
+}
+
+/**
+ * @ingroup meos_cellindex
+ * @brief Return a temporal cell restricted to a spatiotemporal box, the times
+ * at which its cell shares a point with the box
+ * @param[in] temp Temporal cell
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains its upper borders
+ * @errval NULL
+ * @csqlfn #Tquadbin_at_stbox()
+ */
+Temporal *
+tcellindex_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
+{
+  return tcellindex_restrict_stbox(temp, box, border_inc, REST_AT);
+}
+
+/**
+ * @ingroup meos_cellindex
+ * @brief Return a temporal cell restricted to the complement of a
+ * spatiotemporal box, the times at which its cell shares no point with the
+ * box
+ * @param[in] temp Temporal cell
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains its upper borders
+ * @errval NULL
+ * @csqlfn #Tquadbin_minus_stbox()
+ */
+Temporal *
+tcellindex_minus_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc)
+{
+  return tcellindex_restrict_stbox(temp, box, border_inc, REST_MINUS);
+}
+
+/**
+ * @brief Return 1 if a temporal cell ever (or always) lies in a
+ * spatiotemporal box, 0 if not, and -1 on error, as #eaoverlaps_tpose_stbox
+ * answers it for a temporal pose
+ * @details The value ever lies in the box when its restriction to the box by
+ * #tcellindex_restrict_stbox is not empty, and always lies in it when its
+ * restriction to the complement of the box is empty
+ * @param[in] temp Temporal cell
+ * @param[in] box Spatiotemporal box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tcellindex_stbox(const Temporal *temp, const STBox *box,
+  bool ever)
+{
+  /* Ensure the validity of the arguments, so that a NULL restriction below
+   * states an empty one */
+  if (! ensure_valid_tcellindex_stbox(temp, box))
+    return -1;
+  Temporal *res = tcellindex_restrict_stbox(temp, box, true,
+    ever ? REST_AT : REST_MINUS);
+  int result = ever ? (res != NULL) : (res == NULL);
+  if (res)
+    pfree(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_cellindex
+ * @brief Return 1 if a temporal cell ever lies in a spatiotemporal box, 0 if
+ * not, and -1 on error
+ * @param[in] temp Temporal cell
+ * @param[in] box Spatiotemporal box
+ * @errval -1
+ * @csqlfn #Ever_overlaps_tquadbin_stbox()
+ */
+int
+ever_overlaps_tcellindex_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tcellindex_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_cellindex
+ * @brief Return 1 if a temporal cell always lies in a spatiotemporal box, 0
+ * if not, and -1 on error
+ * @param[in] temp Temporal cell
+ * @param[in] box Spatiotemporal box
+ * @errval -1
+ * @csqlfn #Always_overlaps_tquadbin_stbox()
+ */
+int
+always_overlaps_tcellindex_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tcellindex_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_cellindex
+ * @brief Return 1 if a temporal cell ever lies in a spatiotemporal box, 0 if
+ * not, and -1 on error, as #ever_overlaps_stbox_tpose answers it for a
+ * temporal pose
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal cell
+ * @errval -1
+ * @csqlfn #Ever_overlaps_stbox_tquadbin()
+ */
+int
+ever_overlaps_stbox_tcellindex(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tcellindex_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_cellindex
+ * @brief Return 1 if a temporal cell always lies in a spatiotemporal box, 0
+ * if not, and -1 on error, as #always_overlaps_stbox_tpose answers it for a
+ * temporal pose
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal cell
+ * @errval -1
+ * @csqlfn #Always_overlaps_stbox_tquadbin()
+ */
+int
+always_overlaps_stbox_tcellindex(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tcellindex_stbox(temp, box, ALWAYS);
 }
 
 /*****************************************************************************
@@ -2530,8 +2750,10 @@ dggs_cell_edge_planes(const double *lons, const double *lats, int count,
  * @details Two consecutive visits meet at the instant of their crossing, and
  * the grid gives that instant to one of them: the one it assigns the crossing
  * position to, which holds it, the other leaving it out. A timestamp holds
- * whole microseconds, so several crossings may fall at one instant. A visit
- * then holding no time, an empty period, is no part of the answer, and where
+ * whole microseconds, so several crossings may fall at one instant, and a
+ * cell may be crossed between two microseconds. A visit then holding no
+ * microsecond, an empty period or one between two consecutive microseconds
+ * that holds neither, is no part of the answer, and where
  * two visits both hold the instant they meet at, the later one holds it, as a
  * value landing on the instant already stated replaces it
  * (#raster_run_push). The periods then partition the time of the trajectory.
@@ -2556,7 +2778,8 @@ dggs_visits_to_temporal(DggsVisit *visits, int count, MeosType temptype)
   for (int i = 0; i < count; i++)
   {
     DggsVisit v = visits[i];
-    if (v.lower == v.upper && ! (v.lower_inc && v.upper_inc))
+    if ((v.lower == v.upper && ! (v.lower_inc && v.upper_inc)) ||
+        (v.upper - v.lower == 1 && ! v.lower_inc && ! v.upper_inc))
       continue;
     while (n > 0 && visits[n - 1].upper == v.lower &&
       visits[n - 1].upper_inc && v.lower_inc)

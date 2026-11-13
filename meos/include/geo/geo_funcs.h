@@ -267,6 +267,9 @@ extern int offset_x_cmp(double x, double o, double p);
 extern int64 segment_edge_cross_offset(double x0, double y0, double x1,
   double y1, int64 D, double ax, double ay, double oa, double bx, double by,
   double ob, bool *whole);
+extern int segment_edge_cross_cmp(double x0, double y0, double x1, double y1,
+  double ax, double ay, double oa, double bx, double by, double ob,
+  double cx, double cy, double oc, double dx, double dy, double od);
 extern int point_in_ring_offset_exact(const double *x, const double *y,
   const double *xoff, int n, double px, double py);
 extern double cross_product_exact(double ax, double ay, double bx, double by,
@@ -1702,10 +1705,37 @@ extern double nearest_double_exact(double c, NearestSide side,
   const void *arg);
 extern int wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign,
   const uint64 *mag, int nlimbs, int exp);
+extern WideDyadic *wide_dyadic_alloc(void);
+extern void wide_dyadic_set_double(WideDyadic *a, double x);
+extern void wide_dyadic_add(const WideDyadic *a, const WideDyadic *b,
+  WideDyadic *r);
+extern void wide_dyadic_sub(const WideDyadic *a, const WideDyadic *b,
+  WideDyadic *r);
+extern void wide_dyadic_mul(const WideDyadic *a, const WideDyadic *b,
+  WideDyadic *r);
+extern int wide_dyadic_to_fixed(const WideDyadic *a, int scale, bool up,
+  uint64 *mag, int nlimbs);
 
 /* The double nearest the sine and cosine of degrees (geo_trig.c) */
 extern double sind_nearest(double deg);
 extern double cosd_nearest(double deg);
 extern void lonlat_vector_nearest(double lon, double lat, double *v);
+extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
+  const double *a, const double *b, int64 num, int64 den);
+
+/* A direction in space read exactly, opaque outside geo_trig.c */
+typedef struct SphereDir SphereDir;
+
+extern SphereDir *sphere_dir_make(const double *v);
+extern SphereDir *sphere_dir_cross(const SphereDir *a, const SphereDir *b);
+extern SphereDir *sphere_dir_add(const SphereDir *a, const SphereDir *b);
+extern SphereDir *sphere_dir_neg(const SphereDir *a);
+extern void sphere_dir_free(SphereDir *a);
+extern int sphere_dir_dot_sign(const SphereDir *a, const SphereDir *b);
+extern int sphere_dir_triple_sign(const SphereDir *a, const SphereDir *b,
+  const SphereDir *c);
+extern int sphere_dir_dot_diff_sign(const SphereDir *a, const SphereDir *b,
+  const SphereDir *c, const SphereDir *d);
+extern bool sphere_dir_parallel(const SphereDir *a, const SphereDir *b);
 
 #endif /* __GEO_FUNCS_H__ */

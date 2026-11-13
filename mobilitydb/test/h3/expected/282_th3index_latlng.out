@@ -229,7 +229,7 @@ SELECT numValues(getValues(th3index(tgeompoint
         16
 (1 row)
 
-SELECT numInstants(t) = numValues(getValues(t)) + 1 FROM (SELECT th3index(tgeompoint
+SELECT numSequences(t) = numValues(getValues(t)) FROM (SELECT th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
   10) AS t) AS q;
  ?column? 
@@ -253,14 +253,14 @@ SELECT numInstants(th3index(tgeogpoint
   '[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
  numinstants 
 -------------
-           4
+           6
 (1 row)
 
 SELECT numInstants(th3index(tgeompoint
   'SRID=4326;[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
  numinstants 
 -------------
-         438
+         874
 (1 row)
 
 SELECT count(*) FILTER (WHERE valueAtTimestamp(c, t) IS NOT NULL) AS instants,
@@ -330,17 +330,15 @@ FROM (SELECT p, r, th3index(p, r) AS c FROM (VALUES
       768 |          0
 (1 row)
 
-SELECT count(*) AS instants,
-  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
-    startValue(th3index(atTime(p, t), 5))) AS other_cell
-FROM (SELECT p, th3index(p, 5) AS c FROM (VALUES (tgeompoint
-  'SRID=4326;[Point(-36.006078674350391 -45.009967218319247)@2001-01-01,
-    Point(-36.056619492072663 -44.926892365766449)@2001-01-03]')) AS v(p))
-  AS q, generate_series(timestamptz '2001-01-01 00:17', '2001-01-02 23:43',
-    interval '37 minutes') AS t;
- instants | other_cell 
-----------+------------
-       77 |          0
+WITH ring(r) AS (
+  SELECT ST_ExteriorRing(cellToBoundary(h3index '85c4e06bfffffff')))
+SELECT th3index(tgeompointSeq(ARRAY[
+  tgeompoint(ST_PointN(r, 5), timestamptz '2001-01-01'),
+  tgeompoint(ST_PointN(r, 6), timestamptz '2001-01-03')]), 5)
+FROM ring;
+                                                                    th3index                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------
+ {[85c4e06ffffffff@Mon Jan 01 00:00:00 2001 PST], (85c4e06bfffffff@Mon Jan 01 00:00:00 2001 PST, 85c4e06bfffffff@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 WITH trip(tp) AS (

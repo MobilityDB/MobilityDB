@@ -1,0 +1,101 @@
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((-1,-1),(1,1))'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ PoseChain(Pose(POINT(0 0),0),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01' ?&& stbox 'STBOX X((-1,-1),(1,1))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01' ?&& stbox 'STBOX X((9,-1),(11,1))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((4,-1),(6,1))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((4,-1),(6,1))'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ PoseChain(Pose(POINT(0 0),0),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01' ?&& stbox 'STBOX X((4,-1),(6,1))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01, PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]', stbox 'STBOX X((-1,-1),(1,1))'));
+                                                                               astext                                                                                
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[PoseChain(Pose(POINT(-1 0),0),Pose(POINT(0 20),0))@Mon Jan 01 09:36:00 2001 PST, PoseChain(Pose(POINT(1 0),0),Pose(POINT(0 20),0))@Mon Jan 01 14:24:00 2001 PST]}
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01, PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]' ?&& stbox 'STBOX X((-1,-1),(1,1))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01, PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]' %&& stbox 'STBOX X((-1,-1),(1,1))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01, PoseChain(Pose(Point(0 5), 0), Pose(Point(10 0), 0))@2001-01-02]', stbox 'STBOX X((9,-1),(11,1))'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[PoseChain(Pose(POINT(0 0),0),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST, PoseChain(Pose(POINT(0 5),0),Pose(POINT(10 0),0))@Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01, PoseChain(Pose(Point(0 5), 0), Pose(Point(10 0), 0))@2001-01-02]' %&& stbox 'STBOX X((9,-1),(11,1))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'STBOX X((-1,-1),(1,1))' ?&& tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'STBOX X((-1,-1),(1,1))' %&& tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01' ?&& stbox 'STBOX XT(((-1,-1),(1,1)),[2001-01-02, 2001-01-03])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]' ?&& stbox 'STBOX T([2001-01-03, 2001-01-04])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]' %&& stbox 'STBOX T([2001-01-01, 2001-01-04])';
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01', stbox 'STBOX T([2001-01-01, 2001-01-04])');
+ERROR:  The stbox must have X dimension
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01' ?&& stbox 'SRID=4326;STBOX X((0,0),(1,1))';
+ERROR:  Operation on mixed SRID

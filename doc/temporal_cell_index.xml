@@ -1079,6 +1079,32 @@ SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
 -- [47c3c@2001-01-02, 47c3c@2001-01-03]
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tcell_atStbox">
+				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restrict a temporal QUADBIN cell to (the complement of) a spatiotemporal box</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atStbox(tquadbin,stbox,borderInc boolean=true) &#8594; tquadbin
+minusStbox(tquadbin,stbox,borderInc boolean=true) &#8594; tquadbin
+</programlisting>
+				<para>A cell lies in a box at an instant when its tile, with the boundary points it owns, shares a point with the box. A tile holds its west and north boundaries and its north-west corner, and a tile of the last row its south boundary too, as for <link linkend="tcell_tgeompoint_to_th3"><varname>tquadbin</varname></link>, so a box touching a tile only along its east meridian or its south parallel leaves it out. The box holds its upper borders unless <varname>borderInc</varname> is false. The box has the SRID 4326 of the cell; a box with the time dimension alone restricts the value to its period.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+-- NULL
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+-- 4817ffffffffffff@2001-01-01
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02,
+  4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+/* {[4817ffffffffffff@2001-01-01, 4817ffffffffffff@2001-01-02),
+   [4817ffffffffffff@2001-01-03]} */
+SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02,
+  4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+-- {[4813ffffffffffff@2001-01-02, 4813ffffffffffff@2001-01-03)}
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 	<sect1 xml:id="tcell_geo_coverage">
@@ -1516,6 +1542,25 @@ SELECT ts2cell '47c3c@2001-01-01' &amp;&amp; tstzspan '[2001-01-01, 2001-01-02]'
 -- t
 SELECT ts2cell '47c3c@2001-01-01' ~= ts2cell '47c3c@2001-01-01';
 -- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Ever and always overlaps of a temporal QUADBIN cell and a spatiotemporal box</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tquadbin {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} tquadbin → boolean
+</programlisting>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a cell lies in a box when its tile, with the boundary points it owns, shares a point with the box, as <xref linkend="tcell_atStbox"/> restricts it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' ?&amp;&amp;
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))';
+-- t
+SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' %&amp;&amp;
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))';
+-- f
 </programlisting>
 			</listitem>
 

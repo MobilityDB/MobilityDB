@@ -1278,6 +1278,77 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
 }
 
 /**
+ * @brief Return the sign of the difference of the parameters at which a
+ * segment crosses the lines through two edges, exactly
+ * @details The segment runs from P0 to P1 and crosses the line through A and
+ * B at the parameter `s = f(P0) / (f(P0) - f(P1))`, with `f(P) = cross(A, B,
+ * P) = (bx + ob - ax - oa) (py - ay) - (by - ay) (px - ax - oa)`, as
+ * #segment_edge_cross_offset dates it. The difference of the parameters of
+ * two lines has the sign of `f2(P0) f1(P1) - f1(P0) f2(P1)` times those of
+ * the two denominators, a polynomial of degree 4 in exact sums of the input
+ * doubles and offsets that #polynomial_sign_exact decides, and each
+ * denominator the sign of a cross product #cross_product_sign_offset
+ * decides. So two crossings are ordered along the segment, the crossings at
+ * a vertex where both lines meet are found equal, and no parameter is
+ * rounded. The x offsets, such as a multiple of 360 reading a cell across
+ * the antimeridian in the chart of the segment, are never added to a
+ * coordinate, where they would round.
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * @param[in] ax,ay,oa,bx,by,ob The first line, through A and B, and the
+ * offsets of their x
+ * @param[in] cx,cy,oc,dx,dy,od The second line, through C and D, and the
+ * offsets of their x
+ * @return -1, 0 or 1 as the segment crosses the first line before, at or
+ * after the second, or 0 when it is parallel to either line
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int
+segment_edge_cross_cmp(double x0, double y0, double x1, double y1,
+  double ax, double ay, double oa, double bx, double by, double ob,
+  double cx, double cy, double oc, double dx, double dy, double od)
+{
+  /* The signs of the denominators f(P0) - f(P1) = cross(B - A, P0 - P1) */
+  int den1 = cross_product_sign_offset(ax, ay, bx, by, x1, y1, x0, y0,
+    ob - oa, 0.0);
+  int den2 = cross_product_sign_offset(cx, cy, dx, dy, x1, y1, x0, y0,
+    od - oc, 0.0);
+  if (den1 == 0 || den2 == 0)
+    return 0;
+  ExactSum sums[12];
+  const double u1[4] = {bx, ob, - ax, - oa}, v1[2] = {by, - ay};
+  const double x01[3] = {x0, - ax, - oa}, y01[2] = {y0, - ay};
+  const double x11[3] = {x1, - ax, - oa}, y11[2] = {y1, - ay};
+  const double u2[4] = {dx, od, - cx, - oc}, v2[2] = {dy, - cy};
+  const double x02[3] = {x0, - cx, - oc}, y02[2] = {y0, - cy};
+  const double x12[3] = {x1, - cx, - oc}, y12[2] = {y1, - cy};
+  exact_sum_set(&sums[0], u1, 4);
+  exact_sum_set(&sums[1], v1, 2);
+  exact_sum_set(&sums[2], x01, 3);
+  exact_sum_set(&sums[3], y01, 2);
+  exact_sum_set(&sums[4], x11, 3);
+  exact_sum_set(&sums[5], y11, 2);
+  exact_sum_set(&sums[6], u2, 4);
+  exact_sum_set(&sums[7], v2, 2);
+  exact_sum_set(&sums[8], x02, 3);
+  exact_sum_set(&sums[9], y02, 2);
+  exact_sum_set(&sums[10], x12, 3);
+  exact_sum_set(&sums[11], y12, 2);
+  /* f1(P) = U1 (py - ay) - V1 (px - ax - oa), f2 alike, and the polynomial
+   * f2(P0) f1(P1) - f1(P0) f2(P1) */
+  PolyTerm terms[8] = {
+    {.coef = 1.0, .deg = 4, .sum = {6, 9, 0, 5}},
+    {.coef = -1.0, .deg = 4, .sum = {6, 9, 1, 4}},
+    {.coef = -1.0, .deg = 4, .sum = {7, 8, 0, 5}},
+    {.coef = 1.0, .deg = 4, .sum = {7, 8, 1, 4}},
+    {.coef = -1.0, .deg = 4, .sum = {0, 3, 6, 11}},
+    {.coef = 1.0, .deg = 4, .sum = {0, 3, 7, 10}},
+    {.coef = 1.0, .deg = 4, .sum = {1, 2, 6, 11}},
+    {.coef = -1.0, .deg = 4, .sum = {1, 2, 7, 10}}};
+  return polynomial_sign_exact(sums, terms, 8) * den1 * den2;
+}
+
+/**
  * @brief Read one edge of a ring for the location of a point by a ray cast to
  * the right at the point's height
  * @details The edge runs from A to B, their x coordinates shifted by exact
@@ -1624,7 +1695,7 @@ exact_sum_set(ExactSum *sum, const double *terms, int nterms)
 
 /**
  * @brief Return the sign of a polynomial in exact sums where its evaluation
- * in pairs of doubles carries it, and 0 where it cannot tell
+ * in pairs of doubles carries it, and 2 where it cannot tell
  * @details The second filter of #polynomial_sign_exact. Each exact sum is read
  * as a pair, its largest component and the rounded sum of the others, within
  * 2 u of those others, u being DBL_EPSILON / 2. Each term is a pair, its
@@ -1668,7 +1739,7 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
       two_product(h, sh, &p, &pe);
       double ap = fabs(p);
       if (! isfinite(p) || (ap != 0.0 && (ap < 0x1p-900 || ap > 0x1p900)))
-        return 0;
+        return 2;
       double c = (pe + h * sl) + l * sh;
       double ne = (e * (fabs(sh) + fabs(sl)) + (fabs(h) + fabs(l)) * se +
         e * se + 8.1 * u * u * fabs(h) * fabs(sh)) * inflate;
@@ -1686,12 +1757,12 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
   double bound = 2.0 * (E + 8.0 * DBL_MIN * nterms * POLY_TERM_MAXDEG) *
     inflate;
   if (! isfinite(v) || ! isfinite(bound))
-    return 0;
+    return 2;
   if (v > bound)
     return 1;
   if (v < - bound)
     return -1;
-  return 0;
+  return 2;
 }
 
 /** Number of doubles of the arena in which #polynomial_sign_stack forms each
@@ -1755,7 +1826,7 @@ polynomial_sign_stack(const ExactSum *sums, const PolyTerm *terms,
 
 /**
  * @brief Return the sign of a polynomial in exact sums where its filters
- * carry it, and 0 where they cannot tell
+ * carry it, and 2 where they cannot tell
  * @details The two filters of #polynomial_sign_exact, in doubles and else in
  * pairs of doubles (#polynomial_sign_pairs). The polynomial is
  * evaluated in doubles together with a bound on the error of every operation,
@@ -1765,7 +1836,7 @@ polynomial_sign_stack(const ExactSum *sums, const PolyTerm *terms,
  * reads it where this answers 0
  * @param[in] sums Exact sums the terms refer to
  * @param[in] terms,nterms Terms of the polynomial and their number
- * @return -1 or 1, or 0 where the filters cannot tell
+ * @return -1 or 1, or 2 where the filters cannot tell
  */
 static inline int
 polynomial_sign_filter(const ExactSum *sums, const PolyTerm *terms,
@@ -1817,7 +1888,7 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   int nterms)
 {
   int sign = polynomial_sign_filter(sums, terms, nterms);
-  if (sign != 0)
+  if (sign != 2)
     return sign;
   if (polynomial_sign_stack(sums, terms, nterms, &sign))
     return sign;
@@ -2893,7 +2964,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of `a + b1 + b2 + b3`, or 0 where a filter on doubles cannot tell
+ * square of `a + b1 + b2 + b3`, or 2 where a filter on doubles cannot tell
  * @details The squared distance arrives as the sum `s` of the rounded squares
  * of the coordinate differences and the double `lo` of its small terms, whose
  * magnitudes add to @p lomag, as #point_distance_offset_filter forms them. The
@@ -2906,7 +2977,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
  * their magnitudes, which `2a` and `2 bmag` carry into the products), the
  * products and the three subtractions, each below `DBL_EPSILON` times the
  * magnitudes they read, and an absolute `DBL_MIN` for a square that underflows
- * @return 1 or -1 where the value stands clear of the bound, 0 otherwise,
+ * @return 1 or -1 where the value stands clear of the bound, 2 otherwise,
  * never the sign of an exact tie, which the caller reads exactly
  */
 static inline int
@@ -2928,7 +2999,7 @@ point_distance_offset_filter_sign(double s, double lo, double lomag, double a,
     return 1;
   if (value < - bound)
     return -1;
-  return 0;
+  return 2;
 }
 
 /**
@@ -3059,7 +3130,7 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
   /* The side of S - r^2 */
   int side = point_distance_offset_filter_sign(s, lo, lomag, r, rlo, 0.0,
     0.0);
-  if (side == 0)
+  if (side == 2)
     return false;
   if (side < 0)
   {
@@ -3087,19 +3158,19 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
     two_sum(r, c, &a, &a1);
     int su = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
       0.5 * (cu - c));
-    if (su > 0)
+    if (su == 1)
     {
       c = cu;
       continue;
     }
     int sd = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
       - 0.5 * (c - cd));
-    if (sd < 0)
+    if (sd == -1)
     {
       c = cd;
       continue;
     }
-    if (su < 0 && sd > 0)
+    if (su == -1 && sd == 1)
     {
       *result = c;
       return true;
@@ -3609,7 +3680,7 @@ wide_dyadic_normalize(WideDyadic *a)
  * @brief Set a #WideDyadic to a finite double, exactly: its integer mantissa
  * times the weight of its lowest bit
  */
-static void
+void
 wide_dyadic_set_double(WideDyadic *a, double x)
 {
   a->sign = 0;
@@ -3716,7 +3787,7 @@ wide_limbs_mul(const uint64_t *x, int nx, const uint64_t *y, int ny,
  * @brief Set the product of two #WideDyadic, exactly
  * @note The result is not one of the operands
  */
-static void
+void
 wide_dyadic_mul(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
 {
   r->sign = 0;
@@ -3831,7 +3902,7 @@ wide_dyadic_aligned(const WideDyadic *a, int e, uint64_t *out)
  * the lower of the two lowest bits, then added or the smaller subtracted
  * @note The result is not one of the operands
  */
-static void
+void
 wide_dyadic_add(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
 {
   if (a->sign == 0)
@@ -3984,6 +4055,72 @@ wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign, const uint64 *mag,
   else
     wide_dyadic_normalize(&v);
   return wide_dyadic_cmp(mid, &v);
+}
+
+/**
+ * @brief Return a #WideDyadic outside this file, which knows its size
+ * @details The storage is palloc0'd and freed by pfree; a zeroed #WideDyadic
+ * is the value 0 (sign 0, len 0), so it needs no initialisation
+ */
+WideDyadic *
+wide_dyadic_alloc(void)
+{
+  return palloc0(sizeof(WideDyadic));
+}
+
+/**
+ * @brief Write the magnitude of a #WideDyadic as a fixed-point integer and
+ * return its sign
+ * @details `mag` receives floor(|a| 2^scale), or its ceiling where @p up,
+ * in @p nlimbs 64-bit limbs, the lowest first, as #wide_dyadic_cmp_fixed
+ * reads one
+ * @param[in] a The value
+ * @param[in] scale The power of 2 the magnitude is scaled by
+ * @param[in] up True for the ceiling, false for the floor
+ * @param[out] mag The fixed-point magnitude
+ * @param[in] nlimbs Number of limbs of @p mag
+ * @return -1, 0 or 1, the sign of @p a; 2 where the magnitude needs more
+ * than @p nlimbs limbs, @p mag then undefined: the caller tests it, as
+ * nothing is truncated
+ */
+int
+wide_dyadic_to_fixed(const WideDyadic *a, int scale, bool up, uint64 *mag,
+  int nlimbs)
+{
+  memset(mag, 0, nlimbs * sizeof(uint64));
+  if (a->sign == 0)
+    return 0;
+  /* The weight of the lowest bit of the magnitude in the output */
+  int shift = a->exp + scale;
+  bool lost = false;
+  for (int i = 0; i < a->len; i++)
+  {
+    uint64 l = a->limb[i];
+    if (! l)
+      continue;
+    for (int b = 0; b < 64; b++)
+    {
+      if (! ((l >> b) & 1))
+        continue;
+      int pos = 64 * i + b + shift;
+      if (pos < 0)
+      {
+        lost = true;
+        continue;
+      }
+      if (pos >= 64 * nlimbs)
+        return 2;
+      mag[pos / 64] |= (uint64) 1 << (pos % 64);
+    }
+  }
+  if (up && lost)
+  {
+    for (int i = 0; i < nlimbs; i++)
+      if (++mag[i] != 0)
+        return a->sign;
+    return 2;
+  }
+  return a->sign;
 }
 
 /**
@@ -4598,7 +4735,7 @@ typedef struct
  * @brief Set the difference of two #WideDyadic, exactly
  * @note The result is not one of the operands
  */
-static void
+void
 wide_dyadic_sub(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
 {
   WideDyadic nb = *b;
@@ -6974,7 +7111,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
     t[n++] = (PolyTerm) {1.0, 2, {i, i}};
   t[n++] = (PolyTerm) {-1.0, 2, {L, L}};
   int sc = polynomial_sign_filter(sums, t, n);
-  if (sc == 0)
+  if (sc == 2)
     return 2;
   if (sc < 0)
     return -1;
@@ -6990,7 +7127,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
   t[n++] = (PolyTerm) {-2.0, 2, {L, R}};
   t[n++] = (PolyTerm) {-1.0, 2, {L, L}};
   int s1 = polynomial_sign_filter(sums, t, n);
-  if (s1 == 0)
+  if (s1 == 2)
     return 2;
   if (s1 < 0)
     return -1;
@@ -7000,7 +7137,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
     t[n++] = (PolyTerm) {1.0, 2, {ndims + i, ndims + i}};
   t[n++] = (PolyTerm) {-1.0, 2, {R, R}};
   int sa = polynomial_sign_filter(sums, t, n);
-  if (sa == 0)
+  if (sa == 2)
     return 2;
   if (sa < 0)
     return 1;
@@ -7009,7 +7146,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
     t[n++] = (PolyTerm) {1.0, 2, {i, ndims + i}};
   t[n++] = (PolyTerm) {-1.0, 2, {L, R}};
   int sb = polynomial_sign_filter(sums, t, n);
-  if (sb == 0)
+  if (sb == 2)
     return 2;
   if (sb > 0)
     return 1;
@@ -7023,7 +7160,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
   t[n++] = (PolyTerm) {-1.0, 2, {R, R}};
   t[n++] = (PolyTerm) {-1.0, 2, {L, R}};
   int sab = polynomial_sign_filter(sums, t, n);
-  if (sab == 0)
+  if (sab == 2)
     return 2;
   if (sab < 0)
     return 1;
@@ -7044,7 +7181,7 @@ point_motion_gap_sign_filter(const double *c1, const double *c2,
     t[n++] = (PolyTerm) {2.0, 4, {L, R, i, ndims + i}};
   }
   int sv = polynomial_sign_filter(sums, t, n);
-  if (sv == 0)
+  if (sv == 2)
     return 2;
   return (sv < 0) ? -1 : 1;
 }
@@ -7765,7 +7902,7 @@ point_segment_quarter_rounds(const double *p, const double *a,
 }
 
 /**
- * @brief Return the sign of `Q - (a + b1 + b2)^2 L`, or 0 where a filter on
+ * @brief Return the sign of `Q - (a + b1 + b2)^2 L`, or 2 where a filter on
  * doubles cannot tell, setting in @p value the double it reads
  * @details The twin of #point_distance_offset_filter_sign for a point and a
  * segment: `Q` is the squared cross product of the point less the segment's
@@ -7781,7 +7918,7 @@ point_segment_quarter_rounds(const double *p, const double *a,
  * the rounding of every product and sum, each below `DBL_EPSILON` times the
  * magnitudes it reads, with a factor of 32 over the count of operations, and
  * an absolute `4 DBL_MIN` for the products that underflow
- * @return 1 or -1 where the value stands clear of the bound, 0 otherwise,
+ * @return 1 or -1 where the value stands clear of the bound, 2 otherwise,
  * never the sign of an exact tie, which the caller reads exactly
  */
 static inline int
@@ -7811,7 +7948,7 @@ point_segment_offset_filter_sign(double qs, double qlo, double qmag,
     return 1;
   if (v < - bound)
     return -1;
-  return 0;
+  return 2;
 }
 
 /**
@@ -7960,7 +8097,7 @@ point_segment_offset_filter(const double *dw, const double *ew,
   double num;
   int side = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
     r, 0.0, 0.0, &num);
-  if (side == 0)
+  if (side == 2)
     return false;
   if (side < 0)
   {
@@ -7984,19 +8121,19 @@ point_segment_offset_filter(const double *dw, const double *ew,
     two_sum(r, c, &m, &m1e);
     int su = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
       m, m1e, 0.5 * (cu - c), &v);
-    if (su > 0)
+    if (su == 1)
     {
       c = cu;
       continue;
     }
     int sd = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
       m, m1e, - 0.5 * (c - cd), &v);
-    if (sd < 0)
+    if (sd == -1)
     {
       c = cd;
       continue;
     }
-    if (su < 0 && sd > 0)
+    if (su == -1 && sd == 1)
     {
       *result = c;
       return true;
@@ -9955,8 +10092,11 @@ wide_dot3(const WideDyadic *u, const WideDyadic *v, WideDyadic *r)
  * @brief Return the sign of the determinant of three vectors in 3D, each the
  * difference of two points, computed exactly for any finite doubles
  * @details The determinant `(a1 - a0) . ((b1 - b0) x (c1 - c0))`, of degree
- * three, is first evaluated in pairs of doubles with a bound on its error
- * (#DDBound), and where the bound cannot tell its sign, on #WideDyadic. With
+ * three, is first evaluated in doubles with a bound on its error; where that
+ * cannot tell its sign, in expansions where every difference is a double held
+ * exactly (#triple_product_sign_exact), otherwise in pairs of doubles with a
+ * bound on their error (#DDBound), and where that cannot tell, on
+ * #WideDyadic. With
  * `a0 = b0 = c0` it is the orientation of four points: 0 exactly where they
  * are coplanar
  * @param[in] a0,a1,b0,b1,c0,c1 Points, three coordinates each
@@ -9966,20 +10106,27 @@ int
 vector_triple_sign(const double *a0, const double *a1, const double *b0,
   const double *b1, const double *c0, const double *c1)
 {
+  /* In doubles first, as #triple_product_sign filters a determinant of exact
+   * coordinates by Shewchuk's bound: of differences each rounded once, it
+   * lies within 2^-48 of its permanent, the sum of the magnitudes of its six
+   * products, where none of them leaves the normal doubles, inside 2^-900
+   * and 2^900 */
+  {
+    double u0 = a1[0] - a0[0], u1 = a1[1] - a0[1], u2 = a1[2] - a0[2];
+    double v0 = b1[0] - b0[0], v1 = b1[1] - b0[1], v2 = b1[2] - b0[2];
+    double w0 = c1[0] - c0[0], w1 = c1[1] - c0[1], w2 = c1[2] - c0[2];
+    double det = u0 * (v1 * w2 - v2 * w1) + u1 * (v2 * w0 - v0 * w2) +
+      u2 * (v0 * w1 - v1 * w0);
+    double perm = fabs(u0) * (fabs(v1 * w2) + fabs(v2 * w1)) +
+      fabs(u1) * (fabs(v2 * w0) + fabs(v0 * w2)) +
+      fabs(u2) * (fabs(v0 * w1) + fabs(v1 * w0));
+    if (perm >= 0x1p-900 && perm <= 0x1p900 && fabs(det) > 0x1p-48 * perm)
+      return (det > 0.0) ? 1 : -1;
+  }
   DDBound u[3], v[3], w[3], x[3];
   ddb_diff3(a1, a0, u);
   ddb_diff3(b1, b0, v);
   ddb_diff3(c1, c0, w);
-  ddb_cross3(v, w, x);
-  /* A bounded value with no error that is zero is an exact zero, which the
-   * filter does not tell: the orientation of a vertex of a face with three that
-   * span its plane is one */
-  DDBound det = ddb_dot3(u, x);
-  if (ddb_is_zero(det))
-    return 0;
-  int sign = ddb_sign(det);
-  if (sign != 0)
-    return sign;
   /* Where every difference is a double held exactly, each one zero or within
    * 2^-200 and 2^200, it is a multiple of 2^-252, so every product of three of
    * them and every part of its exact expansion is a multiple of 2^-756 below
@@ -10002,6 +10149,15 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
       pv = {v[0].hi, v[1].hi, v[2].hi}, pw = {w[0].hi, w[1].hi, w[2].hi};
     return triple_product_sign_exact(&pu, &pv, &pw);
   }
+  /* Otherwise in pairs of doubles with a bound on their error, where a value
+   * with no error that is zero is an exact zero the bound does not tell */
+  ddb_cross3(v, w, x);
+  DDBound det = ddb_dot3(u, x);
+  if (ddb_is_zero(det))
+    return 0;
+  int sign = ddb_sign(det);
+  if (sign != 0)
+    return sign;
   WideDyadic wu[3], wv[3], ww[3], wx[3], r;
   wide_diff3(a1, a0, wu);
   wide_diff3(b1, b0, wv);
@@ -10015,10 +10171,11 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
  * @brief Set the signs of the three components of the cross product of two
  * vectors in 3D, each the difference of two points, computed exactly for any
  * finite doubles
- * @details The cross product is formed once in pairs of doubles with a bound
- * on its error (#DDBound); a component the bound decides, or one that is an
- * exact zero, is read there, and another is the determinant of the unit
- * vector of its axis and the two vectors (#vector_triple_sign). All three are
+ * @details The cross product is formed first in doubles, a component whose
+ * bound decides it read there, then in pairs of doubles with a bound on its
+ * error (#DDBound); a component that bound decides, or one that is an exact
+ * zero, is read there, and another is the determinant of the unit vector of
+ * its axis and the two vectors (#vector_triple_sign). All three are
  * zero exactly where the two vectors are parallel
  * @param[in] b0,b1,c0,c1 Points, three coordinates each
  * @param[out] sn Signs of the three components, -1, 0 or 1
@@ -10030,12 +10187,67 @@ vector_cross_signs(const double *b0, const double *b1, const double *c0,
   static const double origin[3] = {0.0, 0.0, 0.0};
   static const double axis[3][3] = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0},
     {0.0, 0.0, 1.0}};
+  /* In doubles first, as #triple_product_sign filters its determinant: each
+   * component is the difference of two products of differences each rounded
+   * once, within four units of rounding of the sum of the magnitudes of the
+   * products, read within 2^-50 of it where they lie inside 2^-900 and 2^900 */
+  double v0 = b1[0] - b0[0], v1 = b1[1] - b0[1], v2 = b1[2] - b0[2];
+  double w0 = c1[0] - c0[0], w1 = c1[1] - c0[1], w2 = c1[2] - c0[2];
+  const double xs[3] = {v1 * w2 - v2 * w1, v2 * w0 - v0 * w2, v0 * w1 - v1 * w0};
+  const double ms[3] = {fabs(v1 * w2) + fabs(v2 * w1), fabs(v2 * w0) + fabs(v0 * w2),
+    fabs(v0 * w1) + fabs(v1 * w0)};
+  /* A component the bound does not tell is an exact zero where its two
+   * differences and its two products are exact, the products not below the
+   * least magnitude #two_product splits exactly, and the products are equal,
+   * as a face whose plane holds an axis has */
+  const double vs[3] = {v0, v1, v2}, ws[3] = {w0, w1, w2};
+  int exact = -1;     /* Read at the first component the bound leaves open */
+  static const int ia[3][2] = {{1, 2}, {2, 0}, {0, 1}};
+  bool told = true;
+  for (int k = 0; k < 3; k++)
+  {
+    sn[k] = 2;
+    if (ms[k] >= 0x1p-900 && ms[k] <= 0x1p900 && fabs(xs[k]) > 0x1p-50 * ms[k])
+    {
+      sn[k] = (xs[k] > 0.0) ? 1 : -1;
+      continue;
+    }
+    if (exact < 0)
+    {
+      exact = 1;
+      for (int c = 0; c < 3 && exact; c++)
+      {
+        double x, ev, ew;
+        two_diff(b1[c], b0[c], &x, &ev);
+        two_diff(c1[c], c0[c], &x, &ew);
+        exact = (ev == 0.0 && ew == 0.0);
+      }
+    }
+    if (exact)
+    {
+      int i = ia[k][0], j = ia[k][1];
+      double pp, pe, qq, qe;
+      two_product(vs[i], ws[j], &pp, &pe);
+      two_product(vs[j], ws[i], &qq, &qe);
+      if (pe == 0.0 && qe == 0.0 && pp == qq &&
+          (pp == 0.0 || fabs(pp) >= DDB_EXACT_PRODUCT))
+      {
+        sn[k] = 0;
+        continue;
+      }
+    }
+    told = false;
+  }
+  if (told)
+    return;
   DDBound v[3], w[3], x[3];
   ddb_diff3(b1, b0, v);
   ddb_diff3(c1, c0, w);
   ddb_cross3(v, w, x);
   for (int k = 0; k < 3; k++)
   {
+    if (sn[k] != 2)
+      continue;
     if (ddb_is_zero(x[k]))
       sn[k] = 0;
     else if ((sn[k] = ddb_sign(x[k])) == 0)
@@ -10044,12 +10256,32 @@ vector_cross_signs(const double *b0, const double *b1, const double *c0,
   return;
 }
 
+/* The cross product of two vectors in doubles, each the difference of two
+ * points rounded once, and the sum of the magnitudes of the two products of
+ * each component, within 2^-50 of which the component lies where that sum lies
+ * inside 2^-900 and 2^900 (#vector_cross_signs) */
+static inline void
+dbl_cross3(const double *a0, const double *a1, const double *b0,
+  const double *b1, double *x, double *mx)
+{
+  double u0 = a1[0] - a0[0], u1 = a1[1] - a0[1], u2 = a1[2] - a0[2];
+  double v0 = b1[0] - b0[0], v1 = b1[1] - b0[1], v2 = b1[2] - b0[2];
+  x[0] = u1 * v2 - u2 * v1;
+  x[1] = u2 * v0 - u0 * v2;
+  x[2] = u0 * v1 - u1 * v0;
+  mx[0] = fabs(u1 * v2) + fabs(u2 * v1);
+  mx[1] = fabs(u2 * v0) + fabs(u0 * v2);
+  mx[2] = fabs(u0 * v1) + fabs(u1 * v0);
+  return;
+}
+
 /**
  * @brief Return the sign of the dot product of the normal of a plane and of
  * the cross product of two vectors, computed exactly for any finite doubles
  * @details The sign of `((b - a) x (c - a)) . ((x1 - x0) x (y1 - y0))`, of
- * degree four, first in pairs of doubles with a bound on its error
- * (#DDBound), then on #WideDyadic where the bound cannot tell it
+ * degree four, first in doubles with a bound on its error (#dbl_cross3), then
+ * in pairs of doubles with a bound on their error (#DDBound), then on
+ * #WideDyadic where the bound cannot tell it
  * @param[in] a,b,c Three points spanning the plane, three coordinates each
  * @param[in] x0,x1,y0,y1 Points, three coordinates each
  * @return -1, 0 or 1
@@ -10058,6 +10290,18 @@ int
 plane_cross_dot_sign(const double *a, const double *b, const double *c,
   const double *x0, const double *x1, const double *y0, const double *y1)
 {
+  /* In doubles first: each component of the two cross products lies within
+   * 2^-50 of the sum of the magnitudes of its products (#dbl_cross3), so their
+   * dot product lies within 2^-48 of the sum of the products of those sums */
+  {
+    double xn[3], mn[3], xm[3], mm[3];
+    dbl_cross3(a, b, a, c, xn, mn);
+    dbl_cross3(x0, x1, y0, y1, xm, mm);
+    double dotd = xn[0] * xm[0] + xn[1] * xm[1] + xn[2] * xm[2];
+    double perm = mn[0] * mm[0] + mn[1] * mm[1] + mn[2] * mm[2];
+    if (perm >= 0x1p-900 && perm <= 0x1p900 && fabs(dotd) > 0x1p-48 * perm)
+      return (dotd > 0.0) ? 1 : -1;
+  }
   DDBound u[3], v[3], n[3], p[3], q[3], m[3];
   ddb_diff3(b, a, u);
   ddb_diff3(c, a, v);
@@ -10087,9 +10331,10 @@ plane_cross_dot_sign(const double *a, const double *b, const double *c,
  * @brief Return the sign of the distance of a point to a plane less a
  * distance, computed exactly for any finite doubles
  * @details With `n = (b - a) x (c - a)`, the sign of
- * `(n . (p - a))^2 - d^2 (n . n)`, of degree six, first in pairs of doubles
- * with a bound on its error (#DDBound), then as a comparison of two products
- * of #WideDyadic of degree at most four (#wide_dyadic_product_cmp)
+ * `(n . (p - a))^2 - d^2 (n . n)`, of degree six, first in doubles with a
+ * bound on its error (#dbl_cross3), then in pairs of doubles with a bound on
+ * their error (#DDBound), then as a comparison of two products of
+ * #WideDyadic of degree at most four (#wide_dyadic_product_cmp)
  * @param[in] a,b,c Three points spanning the plane, not collinear, three
  * coordinates each
  * @param[in] p Point, three coordinates
@@ -10101,6 +10346,25 @@ plane_point_offset_sign(const double *a, const double *b, const double *c,
   const double *p, double d)
 {
   assert(d >= 0.0);
+  /* In doubles first: with each component of n within 2^-50 of the sum of the
+   * magnitudes of its products (#dbl_cross3), n . (p - a) lies within 2^-48 of
+   * E1, the sum of those sums times |p - a|, and n . n within 2^-48 of S2, the
+   * sum of their squares, so the value lies within 2^-46 of E1^2 + d^2 S2,
+   * where no step leaves the normal doubles: that sum inside 2^-900 and
+   * 2^900, and d^2 normal or zero */
+  if (d == 0.0 || d >= 0x1p-450)
+  {
+    double xn[3], mn[3];
+    dbl_cross3(a, b, a, c, xn, mn);
+    double w0 = p[0] - a[0], w1 = p[1] - a[1], w2 = p[2] - a[2];
+    double en = xn[0] * w0 + xn[1] * w1 + xn[2] * w2;
+    double nn = xn[0] * xn[0] + xn[1] * xn[1] + xn[2] * xn[2];
+    double e1 = mn[0] * fabs(w0) + mn[1] * fabs(w1) + mn[2] * fabs(w2);
+    double s2 = mn[0] * mn[0] + mn[1] * mn[1] + mn[2] * mn[2];
+    double val = en * en - d * d * nn, mag = e1 * e1 + d * d * s2;
+    if (mag >= 0x1p-900 && mag <= 0x1p900 && fabs(val) > 0x1p-46 * mag)
+      return (val > 0.0) ? 1 : -1;
+  }
   DDBound u[3], v[3], w[3], n[3], dd;
   ddb_diff3(b, a, u);
   ddb_diff3(c, a, v);
@@ -11034,7 +11298,7 @@ incircle_pair(double a, double b, double c, double d, double *h, double *l,
 
 /**
  * @brief Return the sign of the incircle determinant of four points where its
- * evaluation in pairs of doubles carries it, and 0 where it cannot tell
+ * evaluation in pairs of doubles carries it, and 2 where it cannot tell
  * @details The second filter between the one of #incircle_sign and
  * #incircle_sign_exact, for four points whose coordinate differences from D
  * are exact doubles, as those of nearby points are (Sterbenz). Each lift and
@@ -11062,7 +11326,7 @@ incircle_sign_filter(double ax, double ay, double bx, double by, double cx,
     two_diff(from[i], to[i], &v[i], &err);
     double m = fabs(v[i]);
     if (err != 0.0 || (m != 0.0 && (m < 0x1p-200 || m > 0x1p200)))
-      return 0;
+      return 2;
   }
   /* Each lift times the cross product of the other two points */
   static const int cu[3] = {2, 4, 0}, cv[3] = {4, 0, 2};
@@ -11089,7 +11353,7 @@ incircle_sign_filter(double ax, double ay, double bx, double by, double cx,
     return 1;
   if (det < - bound)
     return -1;
-  return 0;
+  return 2;
 }
 
 /**
@@ -11126,7 +11390,7 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
   if (det < - bound)
     return -1;
   int sign = incircle_sign_filter(ax, ay, bx, by, cx, cy, dx, dy);
-  if (sign != 0)
+  if (sign != 2)
     return sign;
   return incircle_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
 }
@@ -14597,7 +14861,7 @@ arc_gap_past(double gap, double margin, double dist)
 }
 
 /* Where a point stands against a distance of a segment in doubles, as
- * #geom_dwithin_end reads it: 1 past it, -1 within it, 0 where it cannot tell */
+ * #geom_dwithin_end reads it: 1 past it, -1 within it, 2 where it cannot tell */
 static int
 point_segm_within_filter(const double *p, const double *a, const double *b,
   double dist)
@@ -14605,12 +14869,12 @@ point_segm_within_filter(const double *p, const double *a, const double *b,
   double big = fmax(fmax(fabs(p[0]), fabs(p[1])), fmax(fmax(fabs(a[0]),
     fabs(a[1])), fmax(fabs(b[0]), fabs(b[1]))));
   if (! (big >= ARC_FILTER_MIN && big <= ARC_FILTER_MAX))
-    return 0;
+    return 2;
   double v = sqrt(point_seg_dist2(p[0], p[1], a[0], a[1], b[0], b[1]));
   double margin = 0x1p-40 * big;
   if (arc_gap_past(v, margin, dist))
     return 1;
-  return ((v + margin) * (1.0 + 0x1p-50) < dist) ? -1 : 0;
+  return ((v + margin) * (1.0 + 0x1p-50) < dist) ? -1 : 2;
 }
 
 /* Whether a point is within a distance of a segment, exactly */
@@ -14618,7 +14882,7 @@ static bool
 point_segm_within(const double *p, const double *a, const double *b, double dist)
 {
   int f = point_segm_within_filter(p, a, b, dist);
-  return (f != 0) ? f < 0 :
+  return (f != 2) ? f < 0 :
     point_segment_offset_sign(p, a, b, 2, dist) <= 0;
 }
 
@@ -24816,6 +25080,15 @@ static void
 relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
   MeosDE9IM *m, bool first)
 {
+  /* A straight edge whose two ends are equal, a ring repeating a vertex, is a
+   * point, as #wide_segment_meet reads one: it has no open portion, and its
+   * point is an end of the edges before and after it on its ring, which
+   * classify it. Its one representative point is that vertex, which may lie
+   * ON the other boundary, where the reading below by parity alone can only
+   * answer wrongly */
+  if (edge->etype != EDGE_POLYARC && edge->etype != EDGE_LINEARC &&
+      edge->x1 == edge->x2 && edge->y1 == edge->y2)
+    return;
   /* An edge apart from the extent of the other boundary meets none of its
    * edges, so it is one open interval, and its midpoint, lying in the box of
    * the edge, stands apart from the other area as well */

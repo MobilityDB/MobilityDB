@@ -156,6 +156,23 @@ CREATE FUNCTION cellArea(tquadbin)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Restriction to a box
+ *
+ * `atStbox` keeps the times at which the tile shares a point with the box,
+ * with the boundary points the tile owns; `minusStbox` keeps the others.
+ ******************************************************************************/
+
+CREATE FUNCTION atStbox(tquadbin, stbox, boolean DEFAULT TRUE)
+  RETURNS tquadbin
+  AS 'MODULE_PATHNAME', 'Tquadbin_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusStbox(tquadbin, stbox, boolean DEFAULT TRUE)
+  RETURNS tquadbin
+  AS 'MODULE_PATHNAME', 'Tquadbin_minus_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Quadkey conversion (quadbin-unique, no H3 analogue)
  *
  * `tquadbinCellToQuadkey` lifts the base-4 slippy-tile quadkey

@@ -603,57 +603,67 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
  *
  * A unary function lifted over a LINEAR temporal float is itself emitted as a
  * piecewise-linear temporal float, so the result must carry a vertex at each of
- * the input segment's critical points. Three strategies are used, most-exact
+ * the input segment's critical points. Two strategies are used, the exact one
  * first:
  *
- *   1. #tfunc_tlinearseq_turnpt (#tpfn_unary): a closed form inserting at most
- *      two turning points per segment. Suffices for monotone or single-extremum
- *      lifts (exp, ln, log10, ...).
- *   2. #tfunc_tlinearseq_set (#tpfn_set): inserts the EXACT, analytically
- *      located turning points when their number per segment is unbounded but
- *      still closed-form. Used by sin and cos, whose extrema lie at
- *      theta = (k + 1/2)*pi and theta = k*pi; the result is exact.
- *   3. #tfunc_tlinearseq_adaptive (#tpfn_adaptive): adaptive recursive
- *      bisection, the fallback when the critical points are NOT analytic. Used
+ *   1. #tfunc_tlinearseq_turnpt (#tpfn_unary): inserts the turning points of
+ *      each segment, located in closed form, however many there are. One
+ *      suffices for the monotone lifts exp, ln and log10; sin and cos have one
+ *      at each of their extrema, theta = (k + 1/2)*pi and theta = k*pi, so
+ *      their result is exact.
+ *   2. #tfunc_tlinearseq_adaptive (#tpfn_adaptive): adaptive recursive
+ *      bisection, for functions whose critical points are NOT analytic. Used
  *      by tan, which is monotone within each branch but whose curvature grows
- *      without bound near its poles. This reuses the method of the trgeometry
- *      distance/traversed-area kernels (trgeo_pair_dist_adaptive /
- *      trgeo_trav_adaptive, which mirror `tdistance_trgeoseq_trgeoseq_linear`):
- *      a segment is bisected while a change metric across it exceeds a tolerance
- *      and the recursion depth is below a cap.
+ *      without bound near its poles: a segment is bisected while a change
+ *      metric across it exceeds a tolerance and the recursion depth is below a
+ *      cap.
  *
- * The adaptive metric is the SAME as the trgeometry kernels': the magnitude of
- * the argument change across the segment. There the argument is the pose
- * orientation, so the metric is the rotation magnitude (radians); here the
- * argument is the temporal float itself (an angle in radians for tan), so the
- * metric is the span of the float. Bounding each sub-segment to a small argument
- * span guarantees it spans only a small arc of the curve, within which the
- * lifted function is well approximated by its chord. An output-space
- * (chord-error) metric is deliberately NOT used: for a periodic function the
- * segment midpoint can land exactly on the endpoint chord (e.g. a function equal
- * to 0 at both endpoints and at the midpoint), which would falsely report
- * linearity and skip a whole period. The argument-span metric never cancels.
- * #NORMALIZE in #tsequence_make_free then collapses any collinear runs the
- * uniform-by-argument sampling produced.
+ * The adaptive metric is the magnitude of the argument change across the
+ * segment. The argument is the temporal float itself (an angle in radians for
+ * tan), so the metric is the span of the float. Bounding each sub-segment to a
+ * small argument span guarantees it spans only a small arc of the curve,
+ * within which the lifted function is well approximated by its chord. An
+ * output-space (chord-error) metric is deliberately NOT used: for a periodic
+ * function the segment midpoint can land exactly on the endpoint chord (e.g. a
+ * function equal to 0 at both endpoints and at the midpoint), which would
+ * falsely report linearity and skip a whole period. The argument-span metric
+ * never cancels. #NORMALIZE in #tsequence_make_free then collapses any
+ * collinear runs the uniform-by-argument sampling produced.
  *****************************************************************************/
 
 /**
  * @brief Adaptive sub-sampling tolerances for densifying a non-analytic unary
  * lifted function (tan) over a linear segment
- * @details Mirrors TRGEO_TDISTANCE_ADAPTIVE_TOL /
- * TRGEO_TDISTANCE_ADAPTIVE_MAX_DEPTH in the trgeometry distance kernel. @p
- * MEOS_ADAPTIVE_TOL is the argument-span tolerance in the input space: a
- * segment is subdivided while its float argument spans more than this many
- * units. For tan the argument is radians, so the same 0.05 rad (~2.86 deg)
- * tolerance the trgeometry kernels use bounds the per-segment chord error away
- * from a pole to about tol^2/8 ~ 3e-4. @p MEOS_ADAPTIVE_MAX_DEPTH bounds the
- * recursion so a pathological segment (one straddling very many periods, or
- * approaching a tan pole) cannot subdivide without end: a single segment yields
- * at most 2^depth sub-samples, but the adaptive test stops far earlier wherever
- * the argument span is already below the tolerance.
+ * @details @p MEOS_ADAPTIVE_TOL is the argument-span tolerance in the input
+ * space: a segment is subdivided while its float argument spans more than this
+ * many units. For tan the argument is radians, so 0.05 rad (~2.86 deg), the
+ * turn a sample interval of the traversed area of a temporal rigid geometry
+ * spans at most (`TRGEO_TRAVERSED_AREA_ANGLE_TOL`), bounds the per-segment
+ * chord error away from a pole to about tol^2/8 ~ 3e-4. @p
+ * MEOS_ADAPTIVE_MAX_DEPTH bounds the recursion so a pathological segment (one
+ * straddling very many periods, or approaching a tan pole) cannot subdivide
+ * without end: a single segment yields at most 2^depth sub-samples, but the
+ * adaptive test stops far earlier wherever the argument span is already below
+ * the tolerance.
  */
 #define MEOS_ADAPTIVE_TOL       0.05
 #define MEOS_ADAPTIVE_MAX_DEPTH 16
+
+/**
+ * @brief Return an array of instants with room for at least @p count of them,
+ * enlarging @p instants when it holds fewer
+ * @param[in] instants Array of instants
+ * @param[in,out] maxcount Number of instants the array holds
+ * @param[in] count Number of instants the array must hold
+ */
+static TInstant **
+lifting_instants_room(TInstant **instants, int *maxcount, int count)
+{
+  if (count <= *maxcount)
+    return instants;
+  *maxcount = Max(count, 2 * (*maxcount));
+  return repalloc(instants, sizeof(TInstant *) * (*maxcount));
+}
 
 /**
  * @brief Append a lifted result instant to a growing buffer, doubling the
@@ -674,8 +684,7 @@ tfunc_adaptive_emit(Datum resvalue, MeosType restype, TimestampTz t,
 /**
  * @brief Recursively bisect a linear segment of a unary lifted function,
  * appending result instants on the half-open interval @p (t1, t2]
- * @details Reuses the depth-bounded adaptive recursion of the trgeometry
- * distance/traversed-area kernels. The convergence test is the argument span
+ * @details The convergence test is the argument span
  * across the segment: if the input float moves by less than #MEOS_ADAPTIVE_TOL
  * (or the depth cap is reached, or the half-segment is sub-microsecond) the
  * arc is small enough that the lifted chord is accurate, and only the segment
@@ -699,8 +708,7 @@ tfunc_adaptive_bisect(Datum value1, Datum value2, TimestampTz t1,
   int *buf_cap)
 {
   assert(basetype == T_FLOAT8);
-  /* Argument span across the segment — the radian analog of the rotation
-   * magnitude used by the trgeometry kernels. */
+  /* Argument span across the segment */
   double dv = fabs(DatumGetFloat8(value2) - DatumGetFloat8(value1));
   if (dv < MEOS_ADAPTIVE_TOL || depth >= MEOS_ADAPTIVE_MAX_DEPTH ||
       t2 - t1 <= 1)
@@ -731,10 +739,9 @@ tfunc_adaptive_bisect(Datum value1, Datum value2, TimestampTz t1,
  * @details The fallback path for unary lifts whose critical points are not
  * known analytically (tan, whose curvature grows without bound near its poles):
  * each non-constant input segment is densified by adaptive recursive bisection
- * (#tfunc_adaptive_bisect), reusing the trgeometry distance kernel's method.
- * Constant segments are passed through unchanged. Mirrors the structure of
- * #tfunc_tlinearseq_turnpt, but with an unbounded (depth-capped) rather than a
- * fixed two-point insertion.
+ * (#tfunc_adaptive_bisect). Constant segments are passed through unchanged.
+ * Mirrors the structure of #tfunc_tlinearseq_turnpt, with the instants located
+ * by a depth-capped bisection rather than in closed form.
  * @param[in] seq Temporal sequence with LINEAR interpolation
  * @param[in] lfinfo Information about the lifted function (tpfn_adaptive set)
  */
@@ -772,11 +779,11 @@ tfunc_tlinearseq_adaptive(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 /**
  * @brief Apply a unary lifted function to a temporal sequence with
  * turning-point densification
- * @details For each consecutive non-constant pair of input instants, the
- * supplied @p tpfn_unary locates up to two intermediate timestamps where the
- * lifted function's chord-error is maximal; the lifted value at each of those
- * timestamps is inserted into the result sequence.  Mirrors the binary
- * #tfunc_tlinearseq_base_turnpt path that already exists for #tfunc_temporal_base.
+ * @details For each non-constant segment, @p tpfn_unary returns the turning
+ * points strictly inside it, in increasing order and however many there are,
+ * and the lifted value at each of them is inserted into the result sequence.
+ * Mirrors the binary #tfunc_tlinearseq_base_turnpt path of
+ * #tfunc_temporal_base.
  * @param[in] seq Temporal sequence with LINEAR interpolation
  * @param[in] lfinfo Information about the lifted function (tpfn_unary set)
  */
@@ -785,8 +792,12 @@ tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   MeosType basetype = temptype_basetype(seq->temptype);
   MeosType resbasetype = temptype_basetype(lfinfo->restype);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 3);
+  /* A segment adds its start instant and at most two turning points unless
+   * its turning point function counts more, which enlarges the array */
+  int maxinsts = seq->count * 3;
+  TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
   int ninsts = 0;
+  TimestampTz tpbuf[TPFN_STACK_CAP];
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value_p(inst1);
   for (int i = 1; i < seq->count; i++)
@@ -797,87 +808,48 @@ tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     /* Skip densification on constant segments */
     if (! datum_eq(value1, value2, basetype))
     {
-      TimestampTz tpt1, tpt2;
-      int found = lfinfo->tpfn_unary(value1, value2, inst1->t, inst2->t,
-        &tpt1, &tpt2);
-      if (found)
+      TimestampTz *tps = tpbuf;
+      int ntps = lfinfo->tpfn_unary(value1, value2, inst1->t, inst2->t, tps,
+        TPFN_STACK_CAP);
+      if (unlikely(ntps > 2))
       {
-        Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
-          inst1->temptype, inst1->t, inst2->t, tpt1);
-        Datum res = lfunc_base(tpvalue, lfinfo);
-        instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt1);
-        DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
-        if (found > 1)
+        if (ntps > TPFN_STACK_CAP)
         {
-          tpvalue = tsegment_value_at_timestamptz(value1, value2,
-            inst1->temptype, inst1->t, inst2->t, tpt2);
-          res = lfunc_base(tpvalue, lfinfo);
-          instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt2);
+          tps = palloc(sizeof(TimestampTz) * ntps);
+          lfinfo->tpfn_unary(value1, value2, inst1->t, inst2->t, tps, ntps);
+        }
+        /* The array holds three instants for each segment left, two turning
+         * points and the start instant, so it grows only when there are more */
+        instants = lifting_instants_room(instants, &maxinsts,
+          ninsts + ntps + 3 * (seq->count - i));
+      }
+      if (ntps == 1)
+      {
+        /* One turning point, the case of every lift but sin and cos */
+        Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
+          inst1->temptype, inst1->t, inst2->t, tpbuf[0]);
+        Datum res = lfunc_base(tpvalue, lfinfo);
+        instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpbuf[0]);
+        DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
+      }
+      else
+      {
+        for (int k = 0; k < ntps; k++)
+        {
+          Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
+            inst1->temptype, inst1->t, inst2->t, tps[k]);
+          Datum res = lfunc_base(tpvalue, lfinfo);
+          instants[ninsts++] = tinstant_make(res, lfinfo->restype, tps[k]);
           DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
         }
+        if (unlikely(ntps > TPFN_STACK_CAP))
+          pfree(tps);
       }
     }
     inst1 = inst2;
     value1 = value2;
   }
   instants[ninsts++] = tfunc_tinstant(inst1, lfinfo);
-  return lifting_tsequence_make_free(instants, ninsts, seq->period.lower_inc,
-    seq->period.upper_inc, LINEAR, NORMALIZE);
-}
-
-/**
- * @brief Apply a unary lifted function to a temporal sequence, densifying each
- * segment at its EXACT, analytically-located turning points
- * @details For each non-constant input segment, @p tpfn_set returns the ordered
- * array of exact critical timestamps strictly inside the segment (e.g. the
- * extrema of sin/cos); the lifted value at each is inserted. Unlike
- * #tfunc_tlinearseq_adaptive there is no approximation: the inserted vertices
- * are the analytic turning points. Mirrors #tfunc_tlinearseq_turnpt with an
- * arbitrary, rather than a fixed two-point, insertion (using the same growing
- * buffer as #tfunc_tlinearseq_adaptive).
- * @param[in] seq Temporal sequence with LINEAR interpolation
- * @param[in] lfinfo Information about the lifted function (tpfn_set set)
- */
-static TSequence *
-tfunc_tlinearseq_set(const TSequence *seq, LiftedFunctionInfo *lfinfo)
-{
-  MeosType basetype = temptype_basetype(seq->temptype);
-  /* The number of turning points per segment is not bounded a priori (a segment
-   * may span many periods), so grow the buffer on demand. */
-  int buf_cap = seq->count * 4;
-  TInstant **instants = palloc(sizeof(TInstant *) * buf_cap);
-  int ninsts = 0;
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value_p(inst1);
-  /* Emit the first instant */
-  tfunc_adaptive_emit(lfunc_base(value1, lfinfo), lfinfo->restype, inst1->t,
-    &instants, &ninsts, &buf_cap);
-  for (int i = 1; i < seq->count; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value_p(inst2);
-    /* Densify non-constant segments at their exact turning points */
-    if (! datum_eq(value1, value2, basetype))
-    {
-      TimestampTz *tps = NULL;
-      int ntp = lfinfo->tpfn_set(value1, value2, inst1->t, inst2->t, &tps);
-      for (int j = 0; j < ntp; j++)
-      {
-        Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
-          inst1->temptype, inst1->t, inst2->t, tps[j]);
-        tfunc_adaptive_emit(lfunc_base(tpvalue, lfinfo), lfinfo->restype,
-          tps[j], &instants, &ninsts, &buf_cap);
-        DATUM_FREE(tpvalue, basetype);
-      }
-      if (tps)
-        pfree(tps);
-    }
-    /* Emit the segment endpoint */
-    tfunc_adaptive_emit(lfunc_base(value2, lfinfo), lfinfo->restype, inst2->t,
-      &instants, &ninsts, &buf_cap);
-    inst1 = inst2;
-    value1 = value2;
-  }
   return lifting_tsequence_make_free(instants, ninsts, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
 }
@@ -891,17 +863,13 @@ TSequence *
 tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  /* Densified LINEAR output via closed-form turning-point insertion
-   * (at most two turning points per segment) */
+  /* Densified LINEAR output at the turning points located in closed form,
+   * however many a segment has (the sin/cos extrema) */
   if (lfinfo->tpfn_unary && interp == LINEAR)
     return tfunc_tlinearseq_turnpt(seq, lfinfo);
-  /* Densified LINEAR output at the EXACT, analytically-located turning points,
-   * for unary functions that have an arbitrary number of them (sin/cos extrema) */
-  if (lfinfo->tpfn_set && interp == LINEAR)
-    return tfunc_tlinearseq_set(seq, lfinfo);
   /* Densified LINEAR output via adaptive recursive bisection, for unary
-   * functions that may have more than two turning points per segment whose
-   * locations are not analytic (tan curvature and poles, the trgeometry kernels) */
+   * functions whose turning points are not analytic (the curvature and the
+   * poles of tan) */
   if (lfinfo->tpfn_adaptive && interp == LINEAR)
     return tfunc_tlinearseq_adaptive(seq, lfinfo);
 
@@ -1107,13 +1075,18 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
   MeosType basetype = temptype_basetype(seq->temptype);
   MeosType resbasetype = temptype_basetype(lfinfo->restype);
   int ninsts = 0;
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 3);
+  /* A segment adds its start instant and at most two turning points unless
+   * its turning point function counts more, which enlarges the array */
+  int maxinsts = seq->count * 3;
+  TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
+  TimestampTz tpbuf[TPFN_STACK_CAP];
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value_p(inst1);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   for (int i = 1; i < seq->count; i++)
   {
-    /* Each iteration of the loop adds between one and two instants */
+    /* Each iteration of the loop adds the start instant of the segment and
+     * its turning points */
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Datum value2 = tinstant_value_p(inst2);
     instants[ninsts++] = tfunc_tinstant_base(inst1, value, lfinfo);
@@ -1122,25 +1095,43 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
     if (lfinfo->tpfn_base && interp == LINEAR &&
       ! datum_eq(value1, value2, temptype_basetype(seq->temptype)))
     {
-      TimestampTz tpt1, tpt2;
-      int found = lfinfo->tpfn_base(value1, value2, value, inst1->t, inst2->t,
-        &tpt1, &tpt2);
-      if (found)
+      TimestampTz *tps = tpbuf;
+      int ntps = lfinfo->tpfn_base(value1, value2, value, inst1->t, inst2->t,
+        tps, TPFN_STACK_CAP);
+      if (unlikely(ntps > 2))
       {
-        Datum tpvalue = tsegment_value_at_timestamptz(value1, value2, 
-          inst1->temptype, inst1->t, inst2->t, tpt1);
-        Datum res = tfunc_base_base(tpvalue, value, lfinfo);
-        instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt1);
-        DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
-        /* Account for the second turning point if any */
-        if (found > 1)
+        if (ntps > TPFN_STACK_CAP)
         {
-          tpvalue = tsegment_value_at_timestamptz(value1, value2, 
-            inst1->temptype, inst1->t, inst2->t, tpt2);
-          res = tfunc_base_base(tpvalue, value, lfinfo);
-          instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt2);
+          tps = palloc(sizeof(TimestampTz) * ntps);
+          lfinfo->tpfn_base(value1, value2, value, inst1->t, inst2->t, tps,
+            ntps);
+        }
+        /* The array holds three instants for each segment left, two turning
+         * points and the start instant, so it grows only when there are more */
+        instants = lifting_instants_room(instants, &maxinsts,
+          ninsts + ntps + 3 * (seq->count - i));
+      }
+      if (ntps == 1)
+      {
+        /* One turning point, the case of every function of this arity */
+        Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
+          inst1->temptype, inst1->t, inst2->t, tpbuf[0]);
+        Datum res = tfunc_base_base(tpvalue, value, lfinfo);
+        instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpbuf[0]);
+        DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
+      }
+      else
+      {
+        for (int k = 0; k < ntps; k++)
+        {
+          Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
+            inst1->temptype, inst1->t, inst2->t, tps[k]);
+          Datum res = tfunc_base_base(tpvalue, value, lfinfo);
+          instants[ninsts++] = tinstant_make(res, lfinfo->restype, tps[k]);
           DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
         }
+        if (unlikely(ntps > TPFN_STACK_CAP))
+          pfree(tps);
       }
     }
     inst1 = inst2;
@@ -1783,8 +1774,12 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
   }
   int count = (seq1->count - i + seq2->count - j) * 3;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  /* A segment adds its end instant and at most two turning points unless its
+   * turning point function counts more, which enlarges the array */
+  int maxinsts = count;
+  TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
+  TimestampTz tpbuf[TPFN_STACK_CAP];
   Datum value;
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= upper || inst2->t <= upper))
@@ -1820,35 +1815,59 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
       Datum end1 = tinstant_value_p(inst1);
       Datum start2 = tinstant_value_p(prev2);
       Datum end2 = tinstant_value_p(inst2);
-      Datum tpvalue1, tpvalue2, tpresult;
-      TimestampTz tpt1, tpt2;
-      int found = lfinfo->tpfn_temp(start1, end1, start2, end2, lfinfo->param[0],
-        prev1->t, inst1->t, &tpt1, &tpt2);
-      /* Avoid adding a turning point at the same timestamp added next */
-      if (found && tpt1 != prev1->t)
+      TimestampTz *tps = tpbuf;
+      int ntps = lfinfo->tpfn_temp(start1, end1, start2, end2,
+        lfinfo->param[0], prev1->t, inst1->t, tps, TPFN_STACK_CAP);
+      if (ntps == 1)
       {
-        tpvalue1 = tsegment_value_at_timestamptz(start1, end1, prev1->temptype,
-          prev1->t, inst1->t, tpt1);
-        tpvalue2 = tsegment_value_at_timestamptz(start2, end2, prev1->temptype,
-          prev1->t, inst1->t, tpt1);
-        tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
-        instants[ninsts++] = tinstant_make_free(tpresult, lfinfo->restype,
-          tpt1);
-        DATUM_FREE(tpvalue1, basetype); DATUM_FREE(tpvalue2, basetype);
-        DATUM_FREE(tpresult, basetype_res);
+        /* One turning point, the case of every function of this arity; one
+         * at the start of the segment is the instant added there */
+        if (tpbuf[0] != prev1->t)
+        {
+          Datum tpvalue1 = tsegment_value_at_timestamptz(start1, end1,
+            prev1->temptype, prev1->t, inst1->t, tpbuf[0]);
+          Datum tpvalue2 = tsegment_value_at_timestamptz(start2, end2,
+            prev1->temptype, prev1->t, inst1->t, tpbuf[0]);
+          Datum tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
+          instants[ninsts++] = tinstant_make_free(tpresult, lfinfo->restype,
+            tpbuf[0]);
+          DATUM_FREE(tpvalue1, basetype); DATUM_FREE(tpvalue2, basetype);
+          DATUM_FREE(tpresult, basetype_res);
+        }
       }
-      /* Account for the second turning point if any */
-      if (found > 1)
+      else if (ntps > 1)
       {
-        tpvalue1 = tsegment_value_at_timestamptz(start1, end1, prev1->temptype,
-          prev1->t, inst1->t, tpt2);
-        tpvalue2 = tsegment_value_at_timestamptz(start2, end2, prev1->temptype,
-          prev1->t, inst1->t, tpt2);
-        tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
-        instants[ninsts++] = tinstant_make_free(tpresult, lfinfo->restype,
-          tpt2);
-        DATUM_FREE(tpvalue1, basetype); DATUM_FREE(tpvalue2, basetype);
-        DATUM_FREE(tpresult, basetype_res);
+        if (unlikely(ntps > 2))
+        {
+          if (ntps > TPFN_STACK_CAP)
+          {
+            tps = palloc(sizeof(TimestampTz) * ntps);
+            lfinfo->tpfn_temp(start1, end1, start2, end2, lfinfo->param[0],
+              prev1->t, inst1->t, tps, ntps);
+          }
+          /* The array holds three instants for each synchronized instant
+           * left, two turning points and the instant, so it grows only when
+           * there are more */
+          instants = lifting_instants_room(instants, &maxinsts, ninsts +
+            ntps + 3 * (seq1->count - i + seq2->count - j + 1));
+        }
+        for (int k = 0; k < ntps; k++)
+        {
+          /* Avoid adding a turning point at the same timestamp added next */
+          if (k == 0 && tps[0] == prev1->t)
+            continue;
+          Datum tpvalue1 = tsegment_value_at_timestamptz(start1, end1,
+            prev1->temptype, prev1->t, inst1->t, tps[k]);
+          Datum tpvalue2 = tsegment_value_at_timestamptz(start2, end2,
+            prev1->temptype, prev1->t, inst1->t, tps[k]);
+          Datum tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
+          instants[ninsts++] = tinstant_make_free(tpresult, lfinfo->restype,
+            tps[k]);
+          DATUM_FREE(tpvalue1, basetype); DATUM_FREE(tpvalue2, basetype);
+          DATUM_FREE(tpresult, basetype_res);
+        }
+        if (unlikely(ntps > TPFN_STACK_CAP))
+          pfree(tps);
       }
     }
     /* Compute the function on the synchronized instants */
@@ -1962,7 +1981,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     Datum endvalue2 = (interp2 == LINEAR) ? tinstant_value_p(end2) : startvalue2;
     Datum endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
     Datum tpvalue1, tpvalue2, tpresult;
-    TimestampTz tpt1 = 0, tpt2 = 0; /* make compiler quiet */
+    TimestampTz tpt1 = 0; /* make compiler quiet */
     bool lower_eq;
 
     /* Determine whether there is a crossing in the middle of the segments
@@ -1980,11 +1999,20 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
         midpoint = true;
       else
       {
-        cross = lfinfo->tpfn_temp ?
-          lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2, endvalue2,
-            lfinfo->param[0], start1->t, end1->t, &tpt1, &tpt2) :
-          tsegment_intersection(startvalue1, endvalue1, startvalue2, endvalue2,
-            start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
+        /* The interval of the segment during which the predicate holds, one
+         * at most, of which the start is read */
+        TimestampTz tps[2];
+        if (lfinfo->tpfn_temp)
+        {
+          cross = lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2,
+            endvalue2, lfinfo->param[0], start1->t, end1->t, tps, 2);
+          assert(cross <= 2);
+        }
+        else
+          cross = tsegment_intersection(startvalue1, endvalue1, startvalue2,
+            endvalue2, start1->temptype, start1->t, end1->t, &tps[0], &tps[1]);
+        if (cross)
+          tpt1 = tps[0];
         /* A crossing near a bound is not reported, see floatsegm_locate().
          * If the results at the bounds differ, the result changes at a
          * bound, and the value in the middle tells at which one. */
@@ -2144,10 +2172,12 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   MeosType basetype = temptype_basetype(seq1->temptype);
   /* Array that keeps the instants of a sequence of the result, which it
    * gathers from the instants of both inputs and from the turning points
-   * between them, at most two per segment as in
+   * between them, at most two per segment unless a turning point function
+   * counts more, which enlarges the array, as in
    * #tfunc_tcontseq_tcontseq_single */
-  TInstant **instants = palloc(sizeof(TInstant *) *
-    (seq1->count + seq2->count) * 3);
+  int maxinsts = (seq1->count + seq2->count) * 3;
+  TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
+  TimestampTz tpbuf[TPFN_STACK_CAP];
   /* Array that keeps the new instants added for synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
     (seq1->count + seq2->count) * 2);
@@ -2213,23 +2243,39 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     {
       Datum segend1 = step1 ? startvalue1 : endvalue1;
       Datum segend2 = step1 ? endvalue2 : startvalue2;
-      TimestampTz tpt[2];
-      int found = lfinfo->tpfn_temp(startvalue1, segend1, startvalue2, segend2,
-        lfinfo->param[0], start1->t, end1->t, &tpt[0], &tpt[1]);
-      for (int k = 0; k < found; k++)
+      TimestampTz *tps = tpbuf;
+      int ntps = lfinfo->tpfn_temp(startvalue1, segend1, startvalue2, segend2,
+        lfinfo->param[0], start1->t, end1->t, tps, TPFN_STACK_CAP);
+      if (unlikely(ntps > 2))
+      {
+        if (ntps > TPFN_STACK_CAP)
+        {
+          tps = palloc(sizeof(TimestampTz) * ntps);
+          lfinfo->tpfn_temp(startvalue1, segend1, startvalue2, segend2,
+            lfinfo->param[0], start1->t, end1->t, tps, ntps);
+        }
+        /* The array holds three instants for each segment left, two turning
+         * points and the instant closing the sequence or starting the next
+         * segment, so it grows only when there are more */
+        instants = lifting_instants_room(instants, &maxinsts, ninsts + ntps +
+          3 * (seq1->count - i + seq2->count - j + 1));
+      }
+      for (int k = 0; k < ntps; k++)
       {
         /* A turning point on a bound is the instant added there */
-        if (tpt[k] <= start1->t || tpt[k] >= end1->t ||
-            (k == 1 && tpt[1] == tpt[0]))
+        if (tps[k] <= start1->t || tps[k] >= end1->t ||
+            (k > 0 && tps[k] == tps[k - 1]))
           continue;
         Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, segend1,
-          start1->temptype, start1->t, end1->t, tpt[k]);
+          start1->temptype, start1->t, end1->t, tps[k]);
         Datum tpvalue2 = tsegment_value_at_timestamptz(startvalue2, segend2,
-          start2->temptype, start1->t, end1->t, tpt[k]);
+          start2->temptype, start1->t, end1->t, tps[k]);
         Datum tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
-        instants[ninsts++] = tinstant_make_free(tpresult, restype, tpt[k]);
+        instants[ninsts++] = tinstant_make_free(tpresult, restype, tps[k]);
         DATUM_FREE(tpvalue1, basetype); DATUM_FREE(tpvalue2, basetype);
       }
+      if (unlikely(ntps > TPFN_STACK_CAP))
+        pfree(tps);
     }
     /* Close the current sequence if the step sequence changed value */
     if (makeseq)
@@ -3231,14 +3277,24 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
     if (datum_ne(startvalue1, startvalue2, basetype) ||
         datum_eq(endvalue1, endvalue2, basetype))
     {
-      TimestampTz tpt1, tpt2;
-      int cross = lfinfo->tpfn_temp ?
-        lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2, endvalue2,
-          lfinfo->param[0], start1->t, end1->t, &tpt1, &tpt2) :
-        tsegment_intersection(startvalue1, endvalue1, startvalue2, endvalue2,
-          start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
+      /* The interval of the segment during which the predicate holds, one at
+       * most, a touch at one instant being the interval of that instant */
+      TimestampTz tpi[2];
+      int cross;
+      if (lfinfo->tpfn_temp)
+      {
+        cross = lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2,
+          endvalue2, lfinfo->param[0], start1->t, end1->t, tpi, 2);
+        assert(cross <= 2);
+        if (cross == 1)
+          tpi[1] = tpi[0];
+      }
+      else
+        cross = tsegment_intersection(startvalue1, endvalue1, startvalue2,
+          endvalue2, start1->temptype, start1->t, end1->t, &tpi[0], &tpi[1]);
       if (cross)
       {
+        TimestampTz tpt1 = tpi[0], tpt2 = tpi[1];
         /* The predicate may hold only strictly inside the turning-point
          * interval (t1, t2) -- for a within-distance predicate over a
          * trajectory crossing the values are within the band between t1 and

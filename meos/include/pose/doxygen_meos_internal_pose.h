@@ -139,6 +139,10 @@
  * @defgroup meos_internal_posechain_inout Input and output functions
  * @ingroup meos_internal_posechain
  * @brief Input and output functions for temporal pose chains
+ *
+ * @defgroup meos_internal_posechain_restrict Restriction functions
+ * @ingroup meos_internal_posechain
+ * @brief Restriction functions for temporal pose chains
  */
 
 /*****************************************************************************/

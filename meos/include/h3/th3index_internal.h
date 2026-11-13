@@ -101,8 +101,21 @@ extern GSERIALIZED *h3index_cell_to_geog(H3Index cell);
  * latLngToCell wrapper that returns 0 on libh3 error. */
 extern double h3_segment_length_deg(double lon1, double lat1, double lon2,
   double lat2, bool geodetic);
+/* The crossing of a planar walk into a cell: the line of the edge of the
+ * outline crossed, its vertices and the exact offsets of their longitudes
+ * in the chart of the segment, and which of the cells holds the crossing
+ * position, the cell left, the cell entered, or at a vertex possibly
+ * neither. Filled by h3_segment_cells for a planar segment. */
+typedef struct
+{
+  double ax, ay, oa;      /**< First vertex of the edge and its offset */
+  double bx, by, ob;      /**< Second vertex of the edge and its offset */
+  bool held_left;         /**< The cell left holds the crossing position */
+  bool held_entered;      /**< The cell entered holds it */
+} H3EdgeCross;
 extern int h3_segment_cells(double lon1, double lat1, double lon2,
   double lat2, bool geodetic, int32 resolution, H3Index *cells, double *enter,
+  H3EdgeCross *cross,
   int maxout);
 extern H3Index h3_latlng_deg_to_cell(double lat_deg, double lng_deg,
   int32 resolution);
@@ -119,6 +132,10 @@ typedef struct
   double lat[MAX_CELL_BNDRY_VERTS];       /**< Latitudes in degrees */
   H3Index across[MAX_CELL_BNDRY_VERTS];   /**< Cell across the edge from
                                                vertex k to vertex k + 1 */
+  int pole;                               /**< 1 for the cell around the
+                                               north pole, -1 for the one
+                                               around the south pole, 0 for
+                                               any other */
 } H3Outline;
 extern bool h3_cell_outline(H3Index cell, H3Outline *out);
 /* The owner of a boundary point: whether a cell holds an edge or a vertex of
@@ -130,8 +147,19 @@ extern bool h3_outline_vertex_held_geodetic(const H3Outline *o, int k);
 extern bool h3_outline_vertex_held(const H3Outline *o, int k);
 /* The microsecond at which a segment crosses the line of an edge of an
  * outline, truncated, exactly. Body in h3_geo.c. */
+extern int64 h3_geodetic_edge_offset(double x0, double y0, double x1,
+  double y1, int64 D, double ax, double ay, double bx, double by, double f,
+  bool *whole);
 extern int64 h3_outline_edge_offset(const H3Outline *o, int k, double x0,
   double y0, double x1, double y1, int64 D, bool *whole);
+/* Whether a cell holds a position of the plane of longitude and latitude, by
+ * the exact signs of its outline and the owner rule, and the planar cell of
+ * a position. Bodies in h3_geo.c. */
+extern bool h3_outline_holds_point(const H3Outline *o, double x, double y);
+extern H3Index h3_point_cell(double lon, double lat, bool geodetic,
+  int32 resolution);
+/* The cells around the poles at a resolution. Body in th3index_boxops.c. */
+extern void h3index_pole_cells(int32_t res, H3Index *north, H3Index *south);
 
 /* Hierarchy — next-resolution conveniences. Bodies in
  * th3index_hierarchy.c. */

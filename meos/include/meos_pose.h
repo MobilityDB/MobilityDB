@@ -609,7 +609,9 @@ extern Temporal *tposechain_translate(const Temporal *temp, double deltax, doubl
 
 /* Restriction functions */
 
+extern Temporal *tposechain_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *tposechain_at_value(const Temporal *temp, const PoseChain *pc);
+extern Temporal *tposechain_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *tposechain_minus_value(const Temporal *temp, const PoseChain *pc);
 
 /* Distance functions */
@@ -636,12 +638,16 @@ extern int always_eq_tposechain_tposechain(const Temporal *temp1, const Temporal
 extern int always_ne_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
 extern int always_ne_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
 extern int always_ne_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+extern int always_overlaps_stbox_tposechain(const STBox *box, const Temporal *temp);
+extern int always_overlaps_tposechain_stbox(const Temporal *temp, const STBox *box);
 extern int ever_eq_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
 extern int ever_eq_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
 extern int ever_eq_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
 extern int ever_ne_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
 extern int ever_ne_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
 extern int ever_ne_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+extern int ever_overlaps_stbox_tposechain(const STBox *box, const Temporal *temp);
+extern int ever_overlaps_tposechain_stbox(const Temporal *temp, const STBox *box);
 
 /*****************************************************************************/
 

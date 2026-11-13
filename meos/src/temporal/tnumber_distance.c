@@ -85,18 +85,20 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segment
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @note This function is passed to the lifting infrastructure when computing
  * the temporal distance
- * @post As there is a single turning point, `t2` is set to `t1`
  */
 int
 tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
-  Datum param UNUSED, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
-  TimestampTz *t2)
+  Datum param UNUSED, TimestampTz lower, TimestampTz upper, TimestampTz *tps,
+  int cap UNUSED)
 {
+  assert(tps); assert(cap >= 2);
+  /* The intersection is one instant, which both its outputs date */
   return tnumbersegm_intersection(start1, end1, start2, end2, T_FLOAT8,
-    lower, upper, t1, t2);
+    lower, upper, &tps[0], &tps[1]);
 }
 
 /**
@@ -105,16 +107,19 @@ tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @note This function is passed to the lifting infrastructure when computing
  * the temporal distance
  */
 int
 tfloat_base_distance_turnpt(Datum start, Datum end, Datum value,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
 {
-  return tfloat_distance_turnpt(start, end, value, value, value, lower, upper,
-    t1, t2);
+  assert(tps); assert(cap >= 2);
+  /* The intersection is one instant, which both its outputs date */
+  return tnumbersegm_intersection(start, end, value, value, T_FLOAT8, lower,
+    upper, &tps[0], &tps[1]);
 }
 
 /*****************************************************************************/

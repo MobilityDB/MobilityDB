@@ -9,6 +9,7 @@ subtypes:
     boxmembers: [topo, x, y, t]
     base:  quadbin
     brief: "temporal QUADBIN cells"
+    overlaps: box
     bin:   350
     category: tspatial
     # A cell-index inherits the scalar base::stbox cast like every spatial type,
@@ -256,6 +257,7 @@ subtypes:
     distwith: [geometry]
     base:  posechain
     brief: "temporal pose chains"
+    overlaps: box
     bin:   550
     category: tspatial
     # A geodetic value answers these with a geography as with a geometry

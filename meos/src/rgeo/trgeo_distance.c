@@ -538,10 +538,6 @@ dist_walk_seq(const DistOps *ops, const TSequence *seq1,
 {
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool jumps = seq2 && (linear1 != MEOS_FLAGS_LINEAR_INTERP(seq2->flags));
-  /* The distance to one part of a static geometry of several parts is not
-   * the distance to the geometry, whose values the minimum over the parts
-   * sets, see dist2d_seq_exact_values() */
-  bool exact = ! (ops->gs && ops->nparts > 1);
   DistEvents events;
   distevents_init(&events);
   int size = seq1->count * 4, count = 0, npieces = 0;
@@ -581,7 +577,7 @@ dist_walk_seq(const DistOps *ops, const TSequence *seq1,
       double ratio = events.ev[j].t;
       TimestampTz t = dist_event_time(seq1, i, ratio);
       double dist = events.ev[j].dist;
-      if (exact && (ratio <= 0.0 || ratio >= 1.0))
+      if (ratio <= 0.0 || ratio >= 1.0)
         dist = dist_segm_at(ops, seq1, seq2, i, t);
       dist_append(&insts, &count, &size, dist, t);
     }
@@ -614,87 +610,348 @@ dist_walk_seq(const DistOps *ops, const TSequence *seq1,
   return (Temporal *) tsequenceset_make_free(pieces, npieces, NORMALIZE_NO);
 }
 
+/*****************************************************************************
+ * Distance to a geometry of several parts: the lower envelope
+ *****************************************************************************/
+
 /**
- * @brief Return the value at @p t of the linear sequence @p seq, whose
- * instants @p i - 1 and @p i are before and after @p t
+ * @brief Set @p h to a function whose sign is the sign of the distance of
+ * the piece @p o minus the distance of the piece @p c, and @p htol to the
+ * tolerance of its values
+ * @details The distance of a vertex is sqrt(V) and the distance of an edge is
+ * G / L, with G not negative in the region of the edge, see #DistPiece.
+ * Thus, with the squares and the lengths that keep the sign,
+ * @code
+ * vertex, vertex   Vo - Vc
+ * edge, edge       Lc * Go - Lo * Gc
+ * vertex, edge     Lc^2 * Vo - Gc^2
+ * edge, vertex     Go^2 - Lo^2 * Vc
+ * @endcode
+ * The squares have the frequencies w and 2w of the rotation w of the body
+ * and quadratic coefficients, see #distfun_square().  The tolerance is the
+ * one of #distwalk_ftol() for the size of the values of the two sides.
+ * @pre Neither piece is an overlap
+ * @return False if a function is not in the family
  */
-static double
-dist_seq_interp(const TSequence *seq, int i, TimestampTz t)
+static bool
+dist_piece_diff(const DistPiece *o, const DistPiece *c, double lo, double hi,
+  DistFun *h, double *htol)
 {
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, i - 1);
-  const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-  double v1 = DatumGetFloat8(tinstant_value_p(inst1));
-  double v2 = DatumGetFloat8(tinstant_value_p(inst2));
-  return v1 + (v2 - v1) * ((double) (t - inst1->t) /
-    (double) (inst2->t - inst1->t));
+  DistFun a, b;
+  if (o->len == 0.0 && c->len == 0.0)
+  {
+    a = o->f;
+    b = c->f;
+  }
+  else if (o->len > 0.0 && c->len > 0.0)
+  {
+    distfun_init(&a);
+    distfun_init(&b);
+    if (! distfun_add_fun(&a, &o->f, c->len) ||
+        ! distfun_add_fun(&b, &c->f, o->len))
+      return false;
+  }
+  else if (o->len == 0.0)
+  {
+    distfun_init(&a);
+    if (! distfun_add_fun(&a, &o->f, c->len * c->len) ||
+        ! distfun_square(&c->f, &b))
+      return false;
+  }
+  else
+  {
+    distfun_init(&b);
+    if (! distfun_square(&o->f, &a) ||
+        ! distfun_add_fun(&b, &c->f, o->len * o->len))
+      return false;
+  }
+  distfun_init(h);
+  if (! distfun_add_fun(h, &a, 1.0) || ! distfun_add_fun(h, &b, -1.0))
+    return false;
+  *htol = 1e-14 * (distfun_absmax(&a, lo, hi) + distfun_absmax(&b, lo, hi));
+  return true;
 }
 
 /**
- * @brief Return the pointwise minimum of two temporal float sequences with
- * linear interpolation
- * @details The result has the instants of the two sequences, and an instant
- * where their linear interpolations cross, at the nearest microsecond.  It
- * is not normalized, so that it keeps the extrema and the crossings of a
- * threshold of each sequence, see dist_normalize().
- * @pre The two sequences have the same period
+ * @brief Return -1 if the piece @p o is closer than the piece @p c just
+ * after @p t, 1 if it is farther, and 0 if they are at the same distance
+ * @details An overlap is at the distance zero.  Two pieces whose difference
+ * is zero on the interval are at the same distance, as two parts that share
+ * the vertex closest to the body.
+ * @param[out] ok False if a function is not in the family
+ */
+static int
+dist_piece_cmp(const DistPiece *o, const DistPiece *c, double t, double hi,
+  bool *ok)
+{
+  *ok = true;
+  if (o->zero || c->zero)
+    return o->zero ? (c->zero ? 0 : -1) : 1;
+  DistFun h;
+  double htol;
+  if (! dist_piece_diff(o, c, t, hi, &h, &htol))
+  {
+    *ok = false;
+    return 0;
+  }
+  return distfun_sign_after(&h, 0.0, t, htol);
+}
+
+/**
+ * @brief An interval of a segment in which one part is the closest
+ */
+typedef struct
+{
+  double t0, t1;   /**< Interval, in [0, 1] */
+  int part;        /**< Part */
+} DistActive;
+
+/**
+ * @brief Return the piece of the walk @p ev in which @p t is, from the piece
+ * @p *from on, which it advances
+ */
+static const DistPiece *
+dist_piece_at(const DistEvents *ev, int *from, double t)
+{
+  while (*from < ev->npc - 1 && ev->pc[*from].t1 <= t)
+    (*from)++;
+  return &ev->pc[*from];
+}
+
+/**
+ * @brief Set @p active to the intervals of a segment in which each part of
+ * the geometry is the closest, and @p corners to the times at which the
+ * closest part changes
+ * @details The distance to the geometry is the least of the distances to its
+ * parts.  In an interval in which every part keeps one piece, the closest
+ * part changes where the distance of another part crosses its own, a root of
+ * #dist_piece_diff(), which #distfun_first_crossing() isolates with its
+ * proof.  At the start of each piece, the closest part is the one that is
+ * closest just after it.  Each change is a corner of the distance, a local
+ * maximum, whose time is the root, not where two interpolations cross.
+ * @param[in] ev Events and pieces of the walks of the parts, which cover
+ * [0, 1]
+ * @return False if a function is not in the family or a root isolation fails
+ */
+static bool
+dist_envelope(const DistEvents *ev, int nparts, DistActive **active,
+  int *nactive, double **corners, int *ncorners)
+{
+  int *at = palloc0(sizeof(int) * nparts);
+  int size = 8, csize = 8;
+  *active = palloc(sizeof(DistActive) * size);
+  *corners = palloc(sizeof(double) * csize);
+  *nactive = *ncorners = 0;
+  double t = 0.0;
+  int cur = -1;
+  bool ok = true;
+  while (ok && t < 1.0)
+  {
+    /* The end of the pieces in which t is */
+    double end = 1.0;
+    for (int k = 0; k < nparts; k++)
+    {
+      double t1 = dist_piece_at(&ev[k], &at[k], t)->t1;
+      /* The last piece of a walk ends at 1 */
+      if (t1 > t)
+        end = fmin(end, t1);
+    }
+    /* The closest part just after t */
+    int best = (cur >= 0) ? cur : 0;
+    for (int k = 0; k < nparts && ok; k++)
+      if (k != best && dist_piece_cmp(&ev[k].pc[at[k]], &ev[best].pc[at[best]],
+          t, end, &ok) < 0)
+        best = k;
+    if (! ok)
+      break;
+    if (best != cur)
+    {
+      if (cur >= 0)
+      {
+        (*active)[*nactive - 1].t1 = t;
+        if (*ncorners == csize)
+        {
+          csize *= 2;
+          *corners = repalloc(*corners, sizeof(double) * csize);
+        }
+        (*corners)[(*ncorners)++] = t;
+      }
+      if (*nactive == size)
+      {
+        size *= 2;
+        *active = repalloc(*active, sizeof(DistActive) * size);
+      }
+      (*active)[*nactive].t0 = t;
+      (*active)[*nactive].part = best;
+      (*nactive)++;
+      cur = best;
+    }
+    (*active)[*nactive - 1].t1 = end;
+    /* The first part whose distance goes below the one of the closest part
+     * before the end of the pieces */
+    const DistPiece *pc = &ev[cur].pc[at[cur]];
+    double tnext = end;
+    if (! pc->zero)
+      for (int k = 0; k < nparts; k++)
+      {
+        const DistPiece *po = &ev[k].pc[at[k]];
+        if (k == cur || po->zero)
+          continue;
+        DistFun h;
+        double htol, root;
+        if (! dist_piece_diff(po, pc, t, tnext, &h, &htol))
+        {
+          ok = false;
+          break;
+        }
+        int rc = (t < tnext) ?
+          distfun_first_crossing(&h, 0.0, t, tnext, htol, -1, &root) : 0;
+        if (rc < 0 && rc != DISTFUN_ZERO)
+        {
+          ok = false;
+          break;
+        }
+        if (rc == 1 && root < tnext)
+          tnext = root;
+      }
+    t = tnext;
+  }
+  pfree(at);
+  if (! ok)
+  {
+    pfree(*active);
+    pfree(*corners);
+  }
+  return ok;
+}
+
+/**
+ * @brief Return true if the part @p k is the closest at @p t, see
+ * #dist_envelope()
+ */
+static bool
+dist_active(const DistActive *active, int nactive, int k, double t)
+{
+  for (int i = 0; i < nactive; i++)
+    if (active[i].part == k && active[i].t0 <= t && t <= active[i].t1)
+      return true;
+  return false;
+}
+
+/**
+ * @brief Return the temporal distance between a temporal rigid geometry and
+ * the static geometry of several parts of @p ops
+ * @details In each segment, the walk of each part gives its events and its
+ * pieces, and #dist_envelope() the intervals in which each part is the
+ * closest.  The result has the events of each part in its intervals, its
+ * extrema and its crossings of the level, and a corner at each change of the
+ * closest part, at the nearest microsecond, see #dist_event_time().  Then
+ * #dist2d_seq_exact_values() gives the value of each instant.
+ *
+ * A failure of a walk or of the envelope raises an error.  It is not a
+ * property of the data but a defect.
  */
 static TSequence *
-tfloatseq_min_tfloatseq(const TSequence *seq1, const TSequence *seq2)
+dist_parts_seq(const DistOps *ops, const TSequence *seq1)
 {
-  TInstant **insts = palloc(sizeof(TInstant *) *
-    2 * (seq1->count + seq2->count));
-  int i = 0, j = 0, n = 0;
-  double prev1 = 0.0, prev2 = 0.0;
-  TimestampTz prevt = 0;
-  /* The sequences have the same first and last instants, thus they end
-   * together, and a sequence without an instant at t has one before and one
-   * after t */
-  while (i < seq1->count && j < seq2->count)
+  int nparts = ops->nparts;
+  DistEvents *ev = palloc(sizeof(DistEvents) * nparts);
+  DistPair *cf = palloc(sizeof(DistPair) * nparts);
+  for (int k = 0; k < nparts; k++)
   {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq1, i);
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq2, j);
-    /* The next timestamp is an instant of one sequence or of both */
-    bool at1 = (inst1->t <= inst2->t), at2 = (inst2->t <= inst1->t);
-    TimestampTz t = at1 ? inst1->t : inst2->t;
-    double v1 = at1 ? DatumGetFloat8(tinstant_value_p(inst1)) :
-      dist_seq_interp(seq1, i, t);
-    double v2 = at2 ? DatumGetFloat8(tinstant_value_p(inst2)) :
-      dist_seq_interp(seq2, j, t);
-    if (at1)
-      i++;
-    if (at2)
-      j++;
-    /* The minimum has a corner where the two interpolations cross */
-    double d0 = prev1 - prev2, d1 = v1 - v2;
-    if (n > 0 && ((d0 < 0.0 && d1 > 0.0) || (d0 > 0.0 && d1 < 0.0)))
-    {
-      double ratio = d0 / (d0 - d1);
-      TimestampTz tc = prevt + (TimestampTz) llround((double) (t - prevt) *
-        ratio);
-      if (tc > prevt && tc < t)
-      {
-        double vc = prev1 + (v1 - prev1) * ((double) (tc - prevt) /
-          (double) (t - prevt));
-        insts[n++] = tinstant_make(Float8GetDatum(vc), T_TFLOAT, tc);
-      }
-    }
-    insts[n++] = tinstant_make(Float8GetDatum(fmin(v1, v2)), T_TFLOAT, t);
-    prev1 = v1;
-    prev2 = v2;
-    prevt = t;
+    distevents_init(&ev[k]);
+    distevents_keep_pieces(&ev[k]);
+    cf[k].kind = DISTPAIR_NONE;
+    cf[k].i = cf[k].j = 0;
   }
-  return tsequence_make_free(insts, n, seq1->period.lower_inc,
+  int size = seq1->count * 4, count = 0;
+  TInstant **insts = palloc(sizeof(TInstant *) * size);
+  bool ok = true;
+  for (int i = 0; i < seq1->count - 1 && ok; i++)
+  {
+    DistMotion ma;
+    dist_segmotion(&ma, seq1, i, true);
+    for (int k = 0; k < nparts && ok; k++)
+    {
+      DistSegm dseg;
+      distsegm_set(&dseg, &ma, &ops->parts[k].motion);
+      ev[k].count = ev[k].npc = 0;
+      ok = (distwalk_segm(&dseg, &ops->body1, &ops->parts[k].body,
+        distwalk_ftol(&dseg, &ops->body1, &ops->parts[k].body), ops->level,
+        &cf[k], &ev[k]) == DISTWALK_OK);
+    }
+    DistActive *active = NULL;
+    double *corners = NULL;
+    int nactive, ncorners;
+    if (! ok || ! dist_envelope(ev, nparts, &active, &nactive, &corners,
+        &ncorners))
+    {
+      ok = false;
+      break;
+    }
+    /* The events of the closest parts and the corners, in time order: a
+     * merge of the sorted events of each part and of the sorted corners */
+    int *next = palloc0(sizeof(int) * nparts);
+    int nc = 0;
+    while (true)
+    {
+      double tmin = 2.0, dist = 0.0;
+      int kmin = -1;
+      for (int k = 0; k < nparts; k++)
+      {
+        while (next[k] < ev[k].count && ! dist_active(active, nactive, k,
+            ev[k].ev[next[k]].t))
+          next[k]++;
+        if (next[k] < ev[k].count && ev[k].ev[next[k]].t < tmin)
+        {
+          tmin = ev[k].ev[next[k]].t;
+          kmin = k;
+        }
+      }
+      if (nc < ncorners && corners[nc] < tmin)
+      {
+        /* The value at a corner is the one of the part that was closest
+         * before it, equal to the one that is closest after it */
+        tmin = corners[nc++];
+        int a = 0;
+        while (a < nactive - 1 && active[a].t1 < tmin)
+          a++;
+        int from = 0;
+        dist = distpiece_dist(dist_piece_at(&ev[active[a].part], &from, tmin),
+          tmin);
+      }
+      else if (kmin >= 0)
+        dist = ev[kmin].ev[next[kmin]++].dist;
+      else
+        break;
+      dist_append(&insts, &count, &size, dist,
+        dist_event_time(seq1, i, tmin));
+    }
+    pfree(next); pfree(active); pfree(corners);
+  }
+  for (int k = 0; k < nparts; k++)
+    distevents_free(&ev[k]);
+  pfree(ev); pfree(cf);
+  if (! ok)
+  {
+    pfree_array((void **) insts, count);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "The temporal distance of a temporal rigid geometry failed");
+    return NULL;
+  }
+  return tsequence_make_free(insts, count, seq1->period.lower_inc,
     seq1->period.upper_inc, LINEAR, NORMALIZE_NO);
 }
 
 /**
  * @brief Set the value of each instant of @p dist to the exact distance
  * between the rigid geometry @p seq and the static geometry of @p ops
- * @details The minimum of the distances to the parts has instants where two
- * linear interpolations cross.  The interpolated value there is not the
- * distance, thus the function computes the distance at each instant, see
- * #dist_pose_geo().  Then the result is exact at each instant, as for one
- * part, see #dist_walk_seq().
+ * @details The least of the distances to the parts, #dist_parts_seq(), has
+ * its corners at the nearest microsecond of the instants where two parts are
+ * at the same distance, and the value of the walk at its other events.  The
+ * function computes the distance at each instant, see #dist_pose_geo().  Then
+ * the result is exact at each instant, as for one part, see
+ * #dist_walk_seq().
  *
  * An instant whose value is exactly the distance level of @p ops keeps it.
  * Such a value comes from the crossing of the level by the part that is
@@ -917,28 +1174,18 @@ dist_seq(const DistOps *ops, const TSequence *seq1, const TSequence *seq2)
   if (seq2)
     return dist_walk_seq(ops, seq1, seq2, &ops->body2, NULL);
 
-  TSequence *result = NULL;
-  for (int k = 0; k < ops->nparts; k++)
+  TSequence *result;
+  if (ops->nparts == 1)
+    result = (TSequence *) dist_walk_seq(ops, seq1, NULL, &ops->parts[0].body,
+      &ops->parts[0].motion);
+  else
   {
-    TSequence *dist = (TSequence *) dist_walk_seq(ops, seq1, NULL,
-      &ops->parts[k].body, &ops->parts[k].motion);
-    if (! dist)
-    {
-      if (result)
-        pfree(result);
-      return NULL;
-    }
-    if (! result)
-      result = dist;
-    else
-    {
-      TSequence *min = tfloatseq_min_tfloatseq(result, dist);
-      pfree(result); pfree(dist);
-      result = min;
-    }
+    result = dist_parts_seq(ops, seq1);
+    if (result)
+      result = dist2d_seq_exact_values(ops, result, seq1);
   }
-  if (ops->nparts > 1)
-    result = dist2d_seq_exact_values(ops, result, seq1);
+  if (! result)
+    return NULL;
   if (ops->refxy)
     result = dist_seq_least(ops, seq1, result);
   return (Temporal *) result;

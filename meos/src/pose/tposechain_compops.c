@@ -246,6 +246,101 @@ always_ne_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2)
   return eacomp_tposechain_tposechain(temp1, temp2, &datum2_ne, ALWAYS);
 }
 
+/*****************************************************************************/
+
+/**
+ * @brief Return 1 if a temporal pose chain ever (or always) lies in a
+ * spatiotemporal box, 0 if not, and -1 on error, as #eaoverlaps_tpose_stbox
+ * answers it for a temporal pose
+ * @details The value ever lies in the box when its restriction to the box by
+ * #tposechain_restrict_stbox is not empty, which keeps the times at which one
+ * of its joints lies in the box, and always lies in it when its restriction to
+ * the complement of the box is empty; a box with only the T dimension
+ * restricts the value to its period
+ * @param[in] temp Temporal pose chain
+ * @param[in] box Spatiotemporal box
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tposechain_stbox(const Temporal *temp, const STBox *box,
+  bool ever)
+{
+  /* Ensure the validity of the arguments: a box with the X dimension shares
+   * the SRID of the value, as #tposechain_restrict_stbox reads it */
+  VALIDATE_TPOSECHAIN(temp, -1); VALIDATE_NOT_NULL(box, -1);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  if (hasx && ! ensure_valid_tposechain_stbox(temp, box))
+    return -1;
+
+  bool atfunc = ever ? REST_AT : REST_MINUS;
+  Temporal *res = hasx ? tposechain_restrict_stbox(temp, box, true, atfunc) :
+    temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  int result = ever ? (res != NULL) : (res == NULL);
+  if (res)
+    pfree(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_comp_ever
+ * @brief Return 1 if a temporal pose chain ever lies in a spatiotemporal
+ * box, one of its joints lying in it, 0 if not, and -1 on error
+ * @param[in] temp Temporal pose chain
+ * @param[in] box Spatiotemporal box
+ * @errval -1
+ * @csqlfn #Ever_overlaps_tposechain_stbox()
+ */
+int
+ever_overlaps_tposechain_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tposechain_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_posechain_comp_ever
+ * @brief Return 1 if a temporal pose chain ever lies in a spatiotemporal
+ * box, one of its joints lying in it, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal pose chain
+ * @errval -1
+ * @csqlfn #Ever_overlaps_stbox_tposechain()
+ */
+int
+ever_overlaps_stbox_tposechain(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tposechain_stbox(temp, box, EVER);
+}
+
+/**
+ * @ingroup meos_posechain_comp_ever
+ * @brief Return 1 if a temporal pose chain always lies in a spatiotemporal
+ * box, one of its joints lying in it at every time, 0 if not, and -1 on error
+ * @param[in] temp Temporal pose chain
+ * @param[in] box Spatiotemporal box
+ * @errval -1
+ * @csqlfn #Always_overlaps_tposechain_stbox()
+ */
+int
+always_overlaps_tposechain_stbox(const Temporal *temp, const STBox *box)
+{
+  return eaoverlaps_tposechain_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @ingroup meos_posechain_comp_ever
+ * @brief Return 1 if a temporal pose chain always lies in a spatiotemporal
+ * box, one of its joints lying in it at every time, 0 if not, and -1 on error
+ * @param[in] box Spatiotemporal box
+ * @param[in] temp Temporal pose chain
+ * @errval -1
+ * @csqlfn #Always_overlaps_stbox_tposechain()
+ */
+int
+always_overlaps_stbox_tposechain(const STBox *box, const Temporal *temp)
+{
+  return eaoverlaps_tposechain_stbox(temp, box, ALWAYS);
+}
+
 /*****************************************************************************
  * Temporal comparisons
  *****************************************************************************/
