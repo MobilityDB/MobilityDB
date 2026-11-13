@@ -1472,6 +1472,26 @@ SELECT asEWKT(atValue(tposechain '{PoseChain(Pose(Point(1 1), 0.5))@2001-01-01,
 -- {PoseChain(Pose(POINT(2 2),0.5))@2001-01-02}
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tposechain_atStbox">
+				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restrict a temporal pose chain to (the complement of) a spatiotemporal box</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atStbox(tposechain,stbox,borderInc boolean=true) &#8594; tposechain
+minusStbox(tposechain,stbox,borderInc boolean=true) &#8594; tposechain
+</programlisting>
+				<para>A chain lies in a box at a time when any of its joints lies in it, as the bounding box of a chain covers every joint. The first link moves linearly between two instants, and a joint composed of more than one link is held at its value of each instant until the next, as the conversion of a chain to a temporal pose holds its composed pose.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01,
+  PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]', stbox 'STBOX X((-1,-1),(1,1))'));
+/* {[PoseChain(Pose(POINT(-1 0),0),Pose(POINT(0 20),0))@2001-01-01 09:36:00,
+   PoseChain(Pose(POINT(1 0),0),Pose(POINT(0 20),0))@2001-01-01 14:24:00]} */
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01',
+  stbox 'STBOX X((4,-1),(6,1))'));
+-- NULL
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -1851,8 +1871,10 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 				<para>Ever and always overlaps</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {stbox,tpose} {?&amp;&amp;, %&amp;&amp;} {stbox,tpose} → boolean
+tposechain {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} tposechain → boolean
 </programlisting>
-				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; the bounding box of a pose is its position, so two temporal poses overlap at an instant where their positions are equal, whatever their orientations.</para>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; the bounding box of a pose is its position, so two temporal poses overlap at an instant where their positions are equal, whatever their orientations. A temporal pose chain lies in a box when any of its joints does, as <xref linkend="tposechain_atStbox"/> restricts it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
   Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
@@ -1872,6 +1894,9 @@ SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
 -- false
 SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' ?&amp;&amp;
   tpose '[Pose(Point(1 1), 0.6)@2001-01-01, Pose(Point(1 1), 0.8)@2001-01-03]';
+-- true
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01' ?&amp;&amp;
+  stbox 'STBOX X((-1,-1),(1,1))';
 -- true
 </programlisting>
 			</listitem>

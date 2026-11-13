@@ -88,4 +88,18 @@ CREATE FUNCTION rotateZ(tposechain, angle float)
   AS 'MODULE_PATHNAME', 'Tposechain_rotate_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+CREATE FUNCTION atStbox(tposechain, stbox, boolean DEFAULT TRUE)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusStbox(tposechain, stbox, boolean DEFAULT TRUE)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_minus_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
