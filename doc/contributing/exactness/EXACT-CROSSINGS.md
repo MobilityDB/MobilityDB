@@ -488,6 +488,22 @@ diffs classified:
    intervals closed in the same way, and follows as its own pull request.
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
    turning points, through the same primitive with the exact polynomial sign.
+   The meeting of two temporal points is decided on their shared time parameter, exactly, before
+   it is dated, for the planar and the geodetic points alike. On master `615eddb294` two points
+   meeting between two microseconds read as never meeting: `ever_eq_tgeo_tgeo` and
+   `eintersects_tgeo_tgeo` answer false on 15 of 15 meetings at an odd number of microseconds
+   (A from `(-h 0)` to `(h 0)`, B from `(0 -h)` to `(0 h)`, h = 0.1, 1, 10, D = 3 to 3600000003 us),
+   tgeompoint and tgeogpoint alike, since the walks compare the two positions constructed at the
+   dated instant (DESKTOP-B8RRPID's probe, 36 rows a type). The PLANAR case is decided by
+   `tgeompointsegm_meet`: the difference of the points moves linearly from `start1 - start2` to
+   `end1 - end2`, so they meet strictly inside the period where every coordinate of it changes
+   sign strictly or is zero at both ends and the two differences are collinear, a zero
+   `cross_product_sign` in each pair of coordinates; both walks then read the one point they meet
+   at, as they do for geodetic points (branch `fix/planar-points-meet-between-microseconds`, the
+   owner's go of 2026-11-13; CGAL agrees on 4000 rows of 2D and 3D meetings, their one-ulp moves
+   and random pairs). The GEODETIC case stays this step's: its band, `geogpoint_meeting_band`,
+   goes with it, since a band at a point the engine constructs is removed by no longer
+   constructing the point (the open question of #3656).
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
 5. **The raster grid walks** of `raster_quadbin.c`: `tpointseq_raster_point_traverse` dates each
    line of the grid a trip crosses as `inst1->t + (TimestampTz) (dt * s)` and reads the value at
