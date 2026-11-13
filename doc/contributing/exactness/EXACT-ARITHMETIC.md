@@ -448,7 +448,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    C11, after the conventions: the turn of a pose segment in 2D, read as no turn where
    `fabs(theta_delta) < MEOS_EPSILON` in `posesegm_interpolate`, is an exact sign, as C1-C6 read
    their tolerances (EXACT-POSE.md P1): `theta_delta == 0`, since the difference of two distinct
-   doubles is never 0, the comparison `posesegm_locate` already makes. A corpus of 60,000
+   doubles is never 0, the comparison `posesegm_locate` already makes (#3663, merged). A corpus of 60,000
    segments turning by 1e-15 to 1e-5 measures it (`~/claude-kits/oracle-kit`, `pose_turn_corpus.c`):
    every turn of 1e-6 or less (`MEOS_EPSILON` is 1e-6) kept the start angle, 44,894 rows, and
    44,809 interpolated poses were not located on their own segment. After it 22,460 are still not
