@@ -299,6 +299,24 @@ static const uint32_t PI_TABLE[PI_TABLE_BITS / 32 + 1] = {
   0x03707344, 0x13198a2e, 0x85a308d3, 0x243f6a88, 0x00000003,
 };
 
+/* floor(180 / pi 2^2048), 32-bit limbs, the lowest first, computed as
+ * #PI_TABLE is, in mpmath at 2300 and 4000 bits, which agree, and lying in
+ * the bracket #PI_TABLE gives; #degree_angle_enclose reads it */
+#define DEG_TABLE_BITS 2048
+static const uint32_t DEG_TABLE[DEG_TABLE_BITS / 32 + 1] = {
+  0x5940b061, 0xfa6ef8e9, 0xa8ad6367, 0xa37fb02b, 0x81c03402, 0xd88227fb,
+  0x525e3fa1, 0x5ba877d8, 0x9ecbd806, 0xef9e3198, 0x12c612a9, 0x2d8f11ad,
+  0xa99338f2, 0x0eb27e5f, 0x5db73af1, 0x0f9f81b1, 0x2ca956cc, 0x1e238083,
+  0x3a7bc73c, 0xebf21d1b, 0x4064a6b1, 0xb7f8e36d, 0x5ce580f3, 0xba011c3b,
+  0x79db066d, 0xa9082376, 0xc363da72, 0x3d1ef8f4, 0x17b2b4ee, 0xf65fa445,
+  0xa107a669, 0x748a6106, 0xeed6e553, 0x2ff7aa48, 0xadb853fb, 0xdeb24a13,
+  0xfd616a71, 0x652894d3, 0xa7aa5d0c, 0x168c2afd, 0x0df7759a, 0x3d656ff4,
+  0xc99824c9, 0x06899720, 0x2b425fff, 0x3d455038, 0x699262ee, 0x20ff6d9b,
+  0x6dd616ba, 0xbdc6f832, 0x48a4cc1d, 0x5684a816, 0x73ad5e31, 0x35ba7e47,
+  0x4f5c22c2, 0x62cec07b, 0x4e03645a, 0x689d0a6c, 0x2fc0b733, 0x20a897df,
+  0x3495f5cd, 0xa5d4dfd0, 0x83ef70c2, 0x4bb834c7, 0x00000039,
+};
+
 /**
  * @brief Enclose pi at the scale 2^-S in [lo, hi]
  * @details Up to #PI_TABLE_BITS, lo is the table shifted down, the floor of
@@ -873,20 +891,21 @@ wide_log2(const WideDyadic *a)
 
 /**
  * @brief Enclose atan2(sqrt(s), c) at the scale 2^-K in [lo, hi], for exact
- * s >= 0 and c, not both 0
+ * s >= 0 and c, not both 0, or atan2(s, c) where @p root, s being then its
+ * own square root
  * @details The pair is scaled by a power of 2, which the angle does not see,
  * so the larger of sqrt(s) and |c| lies below 2^(K-1) at the scale 2^-K;
  * sqrt(s) is the integer square root of s read at twice that scale, every
- * bound rounded outward
+ * bound rounded outward, and s itself read at that scale where @p root
  */
 static void
-fix_atan2_enclose(const WideDyadic *s, const WideDyadic *c, uint32_t *lo,
-  uint32_t *hi, int L, int K)
+fix_atan2_enclose_root(const WideDyadic *s, bool root, const WideDyadic *c,
+  uint32_t *lo, uint32_t *hi, int L, int K)
 {
   int ss = wide_sign(s), sc = wide_sign(c);
   int es = ss ? wide_log2(s) : INT_MIN / 4;
   int ec = sc ? wide_log2(c) : INT_MIN / 4;
-  int E = Max((es + 1) / 2, ec);
+  int E = Max(root ? es : (es + 1) / 2, ec);
   int scale = K - 3 - E;
   int n64 = (L + 1) / 2;
   uint64 *buf = palloc(n64 * sizeof(uint64));
@@ -895,16 +914,19 @@ fix_atan2_enclose(const WideDyadic *s, const WideDyadic *c, uint32_t *lo,
   {
     /* 0: s down, 1: s up, 2: |c| down, 3: |c| up */
     v[k] = palloc(L * sizeof(uint32_t));
-    int sg = wide_dyadic_to_fixed(k < 2 ? s : c, k < 2 ? 2 * scale : scale,
-      k % 2 == 1, buf, n64);
+    int sg = wide_dyadic_to_fixed(k < 2 ? s : c,
+      k < 2 && ! root ? 2 * scale : scale, k % 2 == 1, buf, n64);
     assert(sg != 2);
     if (k >= 2)
       sc = sg;
     for (int i = 0; i < L; i++)
       v[k][i] = (uint32_t) (buf[i / 2] >> (32 * (i % 2)));
   }
-  fix_isqrt(v[0], v[0], L, false);
-  fix_isqrt(v[1], v[1], L, true);
+  if (! root)
+  {
+    fix_isqrt(v[0], v[0], L, false);
+    fix_isqrt(v[1], v[1], L, true);
+  }
   if (sc >= 0)
   {
     /* atan(y / x): increasing in y, decreasing in x */
@@ -927,6 +949,17 @@ fix_atan2_enclose(const WideDyadic *s, const WideDyadic *c, uint32_t *lo,
   pfree(buf);
   for (int k = 0; k < 4; k++)
     pfree(v[k]);
+}
+
+/**
+ * @brief Enclose atan2(sqrt(s), c) at the scale 2^-K in [lo, hi], for exact
+ * s >= 0 and c, not both 0 (#fix_atan2_enclose_root)
+ */
+static void
+fix_atan2_enclose(const WideDyadic *s, const WideDyadic *c, uint32_t *lo,
+  uint32_t *hi, int L, int K)
+{
+  fix_atan2_enclose_root(s, false, c, lo, hi, L, K);
 }
 
 /* The exact cross product and dot product of #WideDyadic vectors */
@@ -1302,4 +1335,366 @@ lonlat_vector_nearest(double lon, double lat, double *v)
   v[0] = trig_product_nearest(deg, cc, 2);
   v[1] = trig_product_nearest(deg, cs, 2);
   v[2] = sind_nearest(lat);
+}
+
+/*****************************************************************************
+ * The degrees of an exact vector
+ *
+ * The inverse of #lonlat_vector_nearest: the longitude and the latitude of a
+ * vector of integers, read exactly, as the doubles nearest their degrees. A
+ * corner of an S2 cell is such a vector (decision D7 of the cell walks), so
+ * every platform reads the same corner.
+ *****************************************************************************/
+
+/* The magnitude of an int64 */
+static uint64
+int64_magnitude(int64 x)
+{
+  return x < 0 ? (uint64) 0 - (uint64) x : (uint64) x;
+}
+
+/* Read the magnitude @p m exactly, negated where @p neg: two parts of at
+ * most 32 bits, each a double, the sign applied last; a result is never an
+ * operand */
+static void
+wide_set_magnitude(WideDyadic *r, uint64 m, bool neg)
+{
+  WideDyadic *h = wide_dyadic_alloc(), *w = wide_dyadic_alloc();
+  WideDyadic *t = wide_dyadic_alloc(), *l = wide_dyadic_alloc();
+  WideDyadic *zero = wide_dyadic_alloc();
+  wide_dyadic_set_double(h, (double) (m >> 32));
+  wide_dyadic_set_double(w, 4294967296.0);
+  wide_dyadic_mul(h, w, t);
+  wide_dyadic_set_double(l, (double) (m & UINT64CONST(0xffffffff)));
+  if (neg)
+  {
+    WideDyadic *a = wide_dyadic_alloc();
+    wide_dyadic_add(t, l, a);
+    wide_dyadic_sub(zero, a, r);
+    pfree(a);
+  }
+  else
+    wide_dyadic_add(t, l, r);
+  pfree(h); pfree(w); pfree(t); pfree(l); pfree(zero);
+}
+
+/* Read an int64 exactly (#wide_set_magnitude) */
+static void
+wide_set_int64(WideDyadic *r, int64 x)
+{
+  wide_set_magnitude(r, int64_magnitude(x), x < 0);
+}
+
+/** @brief The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less
+ * it, and an enclosure of their magnitude, the twin of #TrigProduct */
+typedef struct
+{
+  const WideDyadic *s, *c;  /**< The angle atan2(sqrt(s), c) */
+  bool root;                /**< The angle is atan2(s, c) */
+  bool complement;          /**< The degrees are 90 less the angle */
+  int sign;                 /**< Sign of the degrees, -1 or 1 */
+  int bits;                 /**< Precision of the enclosure */
+  int exp;                  /**< Weight of the lowest bit of the bounds */
+  int n64;                  /**< Number of 64-bit limbs of each bound */
+  uint64 *lo64, *hi64;      /**< The bounds of the magnitude */
+} DegreeAngle;
+
+/**
+ * @brief Enclose the magnitude of the degrees of an angle at a precision of
+ * @p bits, the twin of #trig_product_enclose
+ * @details The angle in radians is enclosed by #fix_atan2_enclose_root, and
+ * its degrees are the radians times 180 over pi, each bound multiplied by
+ * the bound of 180 / pi of #DEG_TABLE that moves it outward, or, beyond the
+ * table, divided by the bound of pi (#fix_pi) that does
+ */
+static void
+degree_angle_enclose(DegreeAngle *p, int bits)
+{
+  /* The divisions by pi shift by K bits, so the limbs hold twice K, as the
+   * enclosures of #geodetic_arc_fraction_cmp size them */
+  int K = ((bits + 31) / 32) * 32 + 32;
+  int L = (2 * K + 192) / 32;
+  uint32_t *tlo = palloc(L * sizeof(uint32_t));
+  uint32_t *thi = palloc(L * sizeof(uint32_t));
+  uint32_t *plo = palloc(L * sizeof(uint32_t));
+  uint32_t *phi = palloc(L * sizeof(uint32_t));
+  uint32_t *dlo = palloc(L * sizeof(uint32_t));
+  uint32_t *dhi = palloc(L * sizeof(uint32_t));
+  fix_atan2_enclose_root(p->s, p->root, p->c, tlo, thi, L, K);
+  if (K <= DEG_TABLE_BITS)
+  {
+    /* 180 / pi at the scale 2^-K: the table shifted down, the floor of a
+     * floor being the floor, below it, and that floor plus one above it */
+    int n = DEG_TABLE_BITS / 32 + 1;
+    uint32_t *t = palloc0(Max(L, n) * sizeof(uint32_t));
+    memcpy(t, DEG_TABLE, n * sizeof(uint32_t));
+    fix_shift_right(t, DEG_TABLE_BITS - K, t, Max(L, n), false);
+    memcpy(plo, t, L * sizeof(uint32_t));
+    pfree(t);
+    memcpy(phi, plo, L * sizeof(uint32_t));
+    fix_increment(phi, L);
+    fix_mul(tlo, plo, dlo, L, K, false);
+    fix_mul(thi, phi, dhi, L, K, true);
+  }
+  else
+  {
+    fix_pi(plo, phi, L, K);
+    fix_mul_small(tlo, 180, tlo, L);
+    fix_mul_small(thi, 180, thi, L);
+    fix_div_shift(tlo, K, phi, dlo, L, false);
+    fix_div_shift(thi, K, plo, dhi, L, true);
+  }
+  if (p->complement)
+  {
+    /* 90 - d: its lower bound from the upper one of d, and conversely */
+    uint32_t *n = palloc(L * sizeof(uint32_t));
+    fix_set_pow2(n, L, K);
+    fix_mul_small(n, 90, n, L);
+    fix_sub_clamp(n, dhi, tlo, L);
+    fix_sub_clamp(n, dlo, thi, L);
+    memcpy(dlo, tlo, L * sizeof(uint32_t));
+    memcpy(dhi, thi, L * sizeof(uint32_t));
+    pfree(n);
+  }
+  int n64 = (L + 1) / 2;
+  if (p->lo64)
+  {
+    pfree(p->lo64);
+    pfree(p->hi64);
+  }
+  p->lo64 = palloc0(n64 * sizeof(uint64));
+  p->hi64 = palloc0(n64 * sizeof(uint64));
+  for (int i = 0; i < L; i++)
+  {
+    p->lo64[i / 2] |= (uint64) dlo[i] << (32 * (i % 2));
+    p->hi64[i / 2] |= (uint64) dhi[i] << (32 * (i % 2));
+  }
+  pfree(tlo); pfree(thi); pfree(plo); pfree(phi); pfree(dlo); pfree(dhi);
+  p->bits = bits;
+  p->exp = - K;
+  p->n64 = n64;
+}
+
+/**
+ * @brief Return the sign of the degrees of an angle less @p mid, raising
+ * the precision of their enclosure until it lies clear of @p mid, the twin
+ * of #trig_side
+ * @note The degrees of the angles that reach this test are irrational, the
+ * rational ones being answered before, so they are never the dyadic @p mid
+ */
+static int
+degree_angle_side(const WideDyadic *mid, const void *arg)
+{
+  DegreeAngle *p = *(DegreeAngle * const *) arg;
+  while (true)
+  {
+    int clo = wide_dyadic_cmp_fixed(mid, p->sign, p->lo64, p->n64, p->exp);
+    int chi = wide_dyadic_cmp_fixed(mid, p->sign, p->hi64, p->n64, p->exp);
+    if (p->sign > 0)
+    {
+      if (clo < 0)
+        return 1;
+      if (chi > 0)
+        return -1;
+    }
+    else
+    {
+      if (chi < 0)
+        return 1;
+      if (clo > 0)
+        return -1;
+    }
+    if (p->bits >= TRIG_LAST_BITS)
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "The nearest double of the degrees of an angle is undecided");
+      return 0;
+    }
+    degree_angle_enclose(p, 2 * p->bits);
+  }
+}
+
+/**
+ * @brief Return the double nearest the degrees of an angle, @p approx its
+ * estimate in doubles
+ */
+static double
+degree_angle_nearest(DegreeAngle *p, double approx)
+{
+  degree_angle_enclose(p, TRIG_FIRST_BITS);
+  DegreeAngle *pp = p;
+  double result = nearest_double_exact(approx, degree_angle_side, &pp);
+  pfree(p->lo64);
+  pfree(p->hi64);
+  return result;
+}
+
+/* -1, 0 or 1 as a < b, a = b or a > b */
+static int
+wide_cmp(const WideDyadic *a, const WideDyadic *b)
+{
+  WideDyadic *d = wide_dyadic_alloc();
+  wide_dyadic_sub(a, b, d);
+  int result = wide_sign(d);
+  pfree(d);
+  return result;
+}
+
+/**
+ * @brief Return the double nearest the longitude in degrees of the vector of
+ * integers @p v, read exactly, atan2(y, x) in (-180, 180]
+ * @details The inverse of #lonlat_vector_nearest, with
+ * #vector_lat_nearest. The degrees are rational exactly where Niven's
+ * theorem allows, a tangent y / x of 0, 1 or -1, read on the integers; any
+ * other is irrational: the double nearest it is read first in bounded pairs
+ * of doubles (#ddb_vector_lon_nearest), and where their bound cannot tell,
+ * by #nearest_double_exact on an enclosure of its degrees
+ * (#degree_angle_enclose), atan2(|y|, x) read with |y| as its own square
+ * root. A vector on the z axis answers 0.
+ * @param[in] v Vector of three integers
+ */
+double
+vector_lon_nearest(const int64 *v)
+{
+  int64 x = v[0], y = v[1];
+  if (y == 0)
+    return x < 0 ? 180.0 : 0.0;
+  if (x == 0)
+    return y > 0 ? 90.0 : -90.0;
+  uint64 ay = int64_magnitude(y);
+  if (int64_magnitude(x) == ay)
+    return (x > 0 ? 45.0 : 135.0) * (y > 0 ? 1.0 : -1.0);
+  /* Bounded pairs of doubles first, the enclosure where they cannot tell */
+  double first;
+  if (ddb_vector_lon_nearest(v, &first))
+    return first;
+  /* The angle is atan2(|y|, x), signed as y */
+  WideDyadic *X = wide_dyadic_alloc(), *AY = wide_dyadic_alloc();
+  wide_set_int64(X, x);
+  wide_set_magnitude(AY, ay, false);
+  DegreeAngle p;
+  memset(&p, 0, sizeof(p));
+  p.s = AY;
+  p.root = true;
+  p.c = X;
+  p.sign = y > 0 ? 1 : -1;
+  double result = degree_angle_nearest(&p, atan2((double) y, (double) x) *
+    (180.0 / M_PI));
+  pfree(X); pfree(AY);
+  return result;
+}
+
+/**
+ * @brief Return the double nearest the latitude in degrees of the vector of
+ * integers @p v, read exactly, atan2(z, sqrt(x^2 + y^2)) in [-90, 90]
+ * @details The inverse of #lonlat_vector_nearest, with
+ * #vector_lon_nearest. The degrees are rational exactly where Niven's
+ * theorem allows, a squared tangent z^2 / (x^2 + y^2) of 0, 1/3, 1 or 3,
+ * read on the exact integers; any other is irrational and is rounded by
+ * #nearest_double_exact on an enclosure of its degrees
+ * (#degree_angle_enclose), 90 less the angle atan2(sqrt(x^2 + y^2), |z|).
+ * Before both, bounded pairs of doubles answer wherever their bound places
+ * the degrees inside the rounding cell of one double
+ * (#ddb_vector_lat_nearest), a rational latitude, a double, included.
+ * A zero vector answers 0.
+ * @param[in] v Vector of three integers
+ */
+double
+vector_lat_nearest(const int64 *v)
+{
+  int64 x = v[0], y = v[1], z = v[2];
+  if (z == 0)
+    return 0.0;
+  double sz = z > 0 ? 1.0 : -1.0;
+  if (x == 0 && y == 0)
+    return 90.0 * sz;
+  /* Bounded pairs of doubles first, the exact reading where they cannot
+   * tell */
+  double result;
+  if (ddb_vector_lat_nearest(v, &result))
+    return result;
+  WideDyadic *X = wide_dyadic_alloc(), *Y = wide_dyadic_alloc();
+  WideDyadic *AZ = wide_dyadic_alloc();
+  wide_set_int64(X, x);
+  wide_set_int64(Y, y);
+  wide_set_magnitude(AZ, int64_magnitude(z), false);
+  WideDyadic *XX = wide_dyadic_alloc(), *YY = wide_dyadic_alloc();
+  WideDyadic *ZZ = wide_dyadic_alloc(), *RR = wide_dyadic_alloc();
+  WideDyadic *T = wide_dyadic_alloc(), *three = wide_dyadic_alloc();
+  wide_dyadic_mul(X, X, XX);
+  wide_dyadic_mul(Y, Y, YY);
+  wide_dyadic_mul(AZ, AZ, ZZ);
+  wide_dyadic_add(XX, YY, RR);
+  wide_dyadic_set_double(three, 3.0);
+  bool rational = true;
+  if (wide_cmp(ZZ, RR) == 0)
+    result = 45.0 * sz;
+  else
+  {
+    wide_dyadic_mul(three, RR, T);
+    if (wide_cmp(ZZ, T) == 0)
+      result = 60.0 * sz;
+    else
+    {
+      wide_dyadic_mul(three, ZZ, T);
+      if (wide_cmp(T, RR) == 0)
+        result = 30.0 * sz;
+      else
+        rational = false;
+    }
+  }
+  if (! rational)
+  {
+    /* The angle is 90 less atan2(sqrt(x^2 + y^2), |z|) */
+    DegreeAngle p;
+    memset(&p, 0, sizeof(p));
+    p.s = RR;
+    p.c = AZ;
+    p.complement = true;
+    p.sign = z > 0 ? 1 : -1;
+    double approx = atan2((double) z, sqrt((double) x * (double) x +
+      (double) y * (double) y)) * (180.0 / M_PI);
+    result = degree_angle_nearest(&p, approx);
+  }
+  pfree(X); pfree(Y); pfree(AZ); pfree(XX); pfree(YY); pfree(ZZ); pfree(RR);
+  pfree(T); pfree(three);
+  return result;
+}
+
+/** @brief A quotient of two exact values, for #rational_side */
+typedef struct
+{
+  const WideDyadic *n, *d;
+} RationalQuotient;
+
+/* The sign of n / d - mid, d > 0, that of n - mid d */
+static int
+rational_side(const WideDyadic *mid, const void *arg)
+{
+  const RationalQuotient *q = (const RationalQuotient *) arg;
+  WideDyadic *md = wide_dyadic_alloc(), *diff = wide_dyadic_alloc();
+  wide_dyadic_mul(mid, q->d, md);
+  wide_dyadic_sub(q->n, md, diff);
+  int result = wide_sign(diff);
+  pfree(md); pfree(diff);
+  return result;
+}
+
+/**
+ * @brief Return the double nearest the rational @p num / @p den, @p den > 0
+ * @details The coordinate of an S2 corner on its cube face is such a
+ * rational (decision D7 of the cell walks), rounded by
+ * #nearest_double_exact on the exact sign of num - mid den
+ */
+double
+rational_nearest(int64 num, int64 den)
+{
+  WideDyadic *N = wide_dyadic_alloc(), *D = wide_dyadic_alloc();
+  wide_set_int64(N, num);
+  wide_set_int64(D, den);
+  RationalQuotient q = { N, D };
+  double result = nearest_double_exact((double) num / (double) den,
+    rational_side, &q);
+  pfree(N); pfree(D);
+  return result;
 }

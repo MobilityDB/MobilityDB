@@ -396,6 +396,9 @@ extern bool point_motion_dwithin_at_exact(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
   int64 n);
+extern int point_motion_contains_disc_sign(const double *a0,
+  const double *a1, const double *b0, const double *b1, int ndims,
+  double ra0, double ra1, double rb0, double rb1, int *asign);
 extern bool point_motion_dwithin_never(const double *c1, const double *c2,
   const double *p, int ndims, double r1, double r2, double d);
 extern double point_motion_point_offset_exact(const double *c1,
@@ -1725,6 +1728,11 @@ extern int wide_dyadic_to_fixed(const WideDyadic *a, int scale, bool up,
 extern double sind_nearest(double deg);
 extern double cosd_nearest(double deg);
 extern void lonlat_vector_nearest(double lon, double lat, double *v);
+extern bool ddb_vector_lon_nearest(const int64 *v, double *result);
+extern bool ddb_vector_lat_nearest(const int64 *v, double *result);
+extern double vector_lon_nearest(const int64 *v);
+extern double vector_lat_nearest(const int64 *v);
+extern double rational_nearest(int64 num, int64 den);
 extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   const double *a, const double *b, int64 num, int64 den);
 
