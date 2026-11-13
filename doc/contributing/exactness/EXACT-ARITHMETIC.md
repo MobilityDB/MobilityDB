@@ -699,7 +699,9 @@ until the difference lies clear of 0. `geo_funcs.c` exports `wide_dyadic_alloc`,
 `wide_dyadic_set_double`, `wide_dyadic_add`, `wide_dyadic_sub`, `wide_dyadic_mul` and
 `wide_dyadic_to_fixed`, the struct opaque, the signatures EA5 keeps. On 4360 rows judged in
 CGAL::Gmpq and MPFR's atan2 and by mpmath intervals, the head answers every row; the fraction
-read in doubles is wrong on 596 of the 4000 crossing rows. Left: the angles of an exact S2
+read in doubles is wrong on 596 of the 4000 crossing rows. Merged as #3649; the geodetic H3 cover
+of #3657 dates its crossings by it. The witnesses of the row, D6, the geodetic owner and the
+fraction, are `ea8/` of the oracle kit (claude-kits `a5daa8d`). Left: the angles of an exact S2
 corner and the latitude of a QUADBIN row, which take the same side function on an atan2 and an
 atan(sinh) enclosure.
 
