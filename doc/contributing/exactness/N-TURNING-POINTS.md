@@ -88,7 +88,7 @@ The two outputs mean different things depending on the callback:
 
 | Reading | What `t1, t2` are | Callbacks | Readers |
 |---|---|---|---|
-| **turning points** | up to two instants where the result turns; for parallel motion `t1 < t2` bounds the stretch at constant minimum distance | `tfloat_exp/ln/log10_turnpt`, `tfloat_distance_turnpt`, `tfloat_base_distance_turnpt`, `tfloat_arithop_turnpt`, `tpoint_geo_distance_turnpt`, `tgeompointsegm/tgeogpointsegm/tpointsegm_distance_turnpt`, `tpoint_geo_bearing_turnpt`, `tpointsegm_bearing_turnpt`, `tcbuffer_cbuffer_distance_turnpt`, `tcbuffersegm_distance_turnpt` | `tfunc_tlinearseq_turnpt`, `tfunc_tlinearseq_base_turnpt`, `tfunc_tcontseq_tcontseq_single`, `tfunc_tlinearseq_tstepseq`, and the nearest approach kernel of `tgeo_distance.c` that receives `tpfunc_temp turnpt` |
+| **turning points** | up to two instants where the result turns; for parallel motion `t1 < t2` bounds the stretch at constant minimum distance | `tfloat_exp/ln/log10_turnpt`, `tfloat_distance_turnpt`, `tfloat_base_distance_turnpt`, `tfloat_arithop_turnpt`, `tgeogpoint_geo_distance_turnpt`, `tgeompointsegm/tgeogpointsegm/tpointsegm_distance_turnpt`, `tpoint_geo_bearing_turnpt`, `tpointsegm_bearing_turnpt`, `tcbuffer_cbuffer_distance_turnpt`, `tcbuffersegm_distance_turnpt` | `tfunc_tlinearseq_turnpt`, `tfunc_tlinearseq_base_turnpt`, `tfunc_tcontseq_tcontseq_single`, `tfunc_tlinearseq_tstepseq`, and the nearest approach kernel of `tgeo_distance.c` that receives `tpfunc_temp turnpt` |
 | **interval of truth** | the predicate holds on `[t1, t2]`; `t1 == t2` is a touch at one instant | `tpointsegm_tdwithin_turnpt`, `tcbuffersegm_dwithin_turnpt`, `tcbuffersegm_tdwithin_turnpt`, `tcbuffersegm_contains_turnpt` | `tdwithin_add_solutions_run` (from the two `tdwithin` walkers of `tspatial_tempspatialrels.c`), `tfunc_tcontseq_tcontseq_discfn`, `eafunc_tcontseq_tcontseq_discfn` |
 
 The second reading already caps a segment at **one** interval. `tfunc_tcontseq_tcontseq_discfn`
@@ -178,7 +178,7 @@ typedef int (*tpfunc_temp)(Datum start1, Datum end1, Datum start2, Datum end2,
 | `tgeo_distance.c` | the nearest approach kernel that receives `tpfunc_temp turnpt` loops over the array |
 | `tspatial_tempspatialrels.c` | `tdwithin_add_solutions_run` takes the pair array; its two callers pass it |
 | twenty callbacks | write into `tps`, return the count; the forwarders (`tpointsegm_distance_turnpt`, `tcbuffersegm_intersection_value`, the wrappers in `tcbuffer.c`, `tcbuffer_distance.c`, `tnumber_distance.c`, `tpoint_spatialfuncs.c`) pass `tps, cap` through |
-| internal headers | the declarations in `tcbuffer.h`, `tgeo_distance.h`, `tgeo_spatialrels.h`, `tgeo_tempspatialrels.h`, `tnumber_mathfuncs.h` |
+| internal headers | the declarations in `tcbuffer.h`, `tgeo_distance.h`, `tgeo_spatialrels.h`, `tnumber_mathfuncs.h` |
 
 `raster_half_turnpt` (`raster_quadbin.c`) shares the suffix but is not a lifting callback, so it
 does not change.
@@ -199,6 +199,16 @@ one pair.** The interval readers accept one pair and assert it. Acceptance:
 - on the standard benchmark, the ≤2 paths are no slower;
 - one internal kernel with three or more turning points per segment, judged by an oracle computed
   independently, exercises the array path of the turning-point readers.
+
+MobilityDB #3629, a draft, is this pull request. The interval callbacks keep master's encoding,
+a count of 0, of 1 for a touch at one instant or of 2 for an interval, since
+`tdwithin_add_solutions_run` reads its bounds by the count and a callback counting 2 can date both
+ends at one microsecond; the pair `(t, t)` belongs to pull request 2. Over 20000 cases of 62 lifted
+functions master and #3629 answer the same 1098528 rows, 17863 of them with more than eight extrema
+of sin or cos in one segment, the array path; CGAL agrees with every answer of its tdwithin of AIS
+trips (4000), of its temporal circular buffers (10541) and of its nearest approach of moving points
+(1032). Its callgrind counts over master run from 0.950 (sin) to 1.0072 (the temporal distance of a
+float to a number), four walks above 1.0035, so it is a draft by the parity rule.
 
 ### 6.2 Pull request 2: intervals of any number
 
