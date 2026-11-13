@@ -62,7 +62,7 @@ SELECT latLngToCell(geometry 'SRID=4326;POINT(16.6328 71.9281)', 0) = h3index '8
   eDisjoint(th3index '8009fffffffffff@2001-01-01', geography 'POINT(16.6328 71.9281)');
  ?column? | eintersects | edisjoint 
 ----------+-------------+-----------
- t        | t           | f
+ f        | t           | f
 (1 row)
 
 SELECT latLngToCell(geometry 'SRID=4326;POINT(-0.8367 59.2711)', 0) = h3index '8009fffffffffff',
@@ -70,7 +70,7 @@ SELECT latLngToCell(geometry 'SRID=4326;POINT(-0.8367 59.2711)', 0) = h3index '8
   eDisjoint(th3index '8009fffffffffff@2001-01-01', geography 'POINT(-0.8367 59.2711)');
  ?column? | eintersects | edisjoint 
 ----------+-------------+-----------
- f        | f           | t
+ t        | f           | t
 (1 row)
 
 SELECT eContains(geography 'POINT(4.297 50.804)', th3index '871fa44a8ffffff@2001-01-01');

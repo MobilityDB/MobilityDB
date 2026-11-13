@@ -81,9 +81,9 @@ geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution)
       ! ensure_valid_cell_resolution(T_TH3INDEX, resolution))
     return (H3Index) 0;
   const POINT2D *p = GSERIALIZED_POINT2D_P(point);
-  LatLng ll = { .lat = degsToRads(p->y), .lng = degsToRads(p->x) };
-  H3Index cell;
-  if (latLngToCell(&ll, resolution, &cell) != E_SUCCESS)
+  H3Index cell = h3_point_cell(p->x, p->y,
+    FLAGS_GET_GEODETIC(point->gflags), resolution);
+  if (cell == (H3Index) 0)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
     return (H3Index) 0;
@@ -213,13 +213,18 @@ h3index_cell_to_geog(H3Index cell)
  * (p_a@t_a, p_b@t_b), the cells the segment crosses one by one
  * (`h3_segment_cells`), following the great circle of a geodetic segment
  * and the straight line in longitude and latitude of a planar one, and
- * emits a th3index instant for every cell it enters. The timestamp of each
- * emitted instant is the linear interpolation of t_a and t_b at the
- * segment parameter where the segment reaches that cell.
+ * records a visit of every cell it enters. A cell holds exactly the
+ * microseconds whose exact position lies in it: a planar crossing is dated
+ * by the truncation of its exact parameter, and the cell holding the
+ * crossing position holds that microsecond where the segment reaches the
+ * boundary exactly at it; a geodetic crossing is dated by the linear
+ * interpolation of t_a and t_b at the segment parameter where the segment
+ * reaches that cell.
  *
- * Result is a STEP-interpolation th3index TSequence whose cardinality
- * is data-dependent (one instant per cell entry along the trajectory).
- * A segment that stays within the cell it starts in emits no instant.
+ * Result is a STEP-interpolation th3index sequence, or a sequence set where
+ * a crossing instant belongs to the cell left, whose cardinality is
+ * data-dependent (one instant per cell entry along the trajectory). A
+ * segment that stays within the cell it starts in adds no instant.
  *
  * Discrete-interpolation input is left at one-instant-per-input
  * (no segment to densify across).
@@ -240,200 +245,247 @@ tpointinst_to_th3index(const TInstant *inst, int32 resolution)
 }
 
 /**
- * @brief Densify a tgeompoint / tgeogpoint TSequence to a th3index STEP
- * TSequence
+ * @brief Convert a discrete or step tgeompoint / tgeogpoint TSequence to a
+ * th3index TSequence of the same interpolation, one instant per input
+ * instant, since it states nothing between its instants
+ */
+static TSequence *
+tpointseq_instants_to_th3index(const TSequence *seq, int32 resolution)
+{
+  TInstant **instants = palloc(sizeof(TInstant *) * (size_t) seq->count);
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = tpointinst_to_th3index(TSEQUENCE_INST_N(seq, i),
+      resolution);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+}
+
+/**
+ * @brief Return the 2D point of a temporal point instant, as
+ * #tpointinst_point2d of tquadbin_ops.c reads it
+ */
+static const POINT2D *
+th3index_inst_point2d(const TInstant *inst)
+{
+  return GSERIALIZED_POINT2D_P(DatumGetGserializedP(tinstant_value_p(inst)));
+}
+
+/**
+ * @brief Append to the visits of a trajectory the cell it enters at a
+ * timestamp, the previous visit ending there
+ * @details As #tquadbin_visit_append appends a tile. A cell holds exactly
+ * the microseconds whose exact position lies in it. The timestamp is the
+ * microsecond of the crossing, truncated: where the trajectory reaches the
+ * boundary exactly at it (@p whole), the crossing position belongs to the
+ * cell holding it, the one left (@p held_left), the one entered
+ * (@p held_entered), or at a vertex a third cell met there, which holds that
+ * instant; where it reaches the boundary after it, the trajectory is still
+ * in the cell it leaves at that instant, which holds it. A crossing landing
+ * before the previous one, which the truncation of two crossings within one
+ * microsecond gives, lands on it: the instants are never moved past one
+ * another, and a cell holding no microsecond between them holds nothing
+ */
+static void
+th3index_visit_append(DggsVisit **visits, int *count, int *size,
+  H3Index cell, TimestampTz t, bool whole, bool held_left, bool held_entered)
+{
+  DggsVisit *prev = &(*visits)[*count - 1];
+  if (t < prev->lower)
+    t = prev->lower;
+  prev->upper = t;
+  prev->upper_inc = ! whole || held_left;
+  if (*count == *size)
+  {
+    *size *= 2;
+    *visits = repalloc(*visits, sizeof(DggsVisit) * (size_t) *size);
+  }
+  DggsVisit *v = &(*visits)[(*count)++];
+  v->cell = H3IndexGetDatum(cell);
+  v->lower = t;
+  v->lower_inc = whole && held_entered;
+  return;
+}
+
+/**
+ * @brief Densify a linear tgeompoint / tgeogpoint TSequence to a th3index
+ * sequence or sequence set holding every cell the trajectory crosses
+ * @details See file-level comment for the algorithm, as
+ * #tpointseq_to_tquadbin walks the tiles of a trajectory. Return NULL when
+ * the first lookup fails, its error raised.
+ */
+static Temporal *
+tpointseq_linear_to_th3index(const TSequence *seq, int32 resolution)
+{
+  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+  /* Routing the first lookup through geo_to_h3index_cell applies the lon/lat
+   * SRID guard once for the whole sequence: SRID is a type-level property
+   * uniform across every instant, so validating it here is sufficient */
+  H3Index cell = geo_to_h3index_cell(
+    DatumGetGserializedP(tinstant_value_p(inst)), resolution);
+  if (cell == (H3Index) 0)
+    return NULL;
+  int vsize = seq->count + 1, nvisits = 1;
+  DggsVisit *visits = palloc(sizeof(DggsVisit) * (size_t) vsize);
+  visits[0].cell = H3IndexGetDatum(cell);
+  visits[0].lower = inst->t;
+  visits[0].lower_inc = seq->period.lower_inc;
+  H3Index last = cell;
+
+  /* A geodetic segment follows its great circle, a planar one its straight
+   * line in longitude and latitude. The walk writes one entry per cell a
+   * segment crosses, into arrays that grow until the whole segment fits, so
+   * no segment is cut short */
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
+  int maxout = 64;
+  H3Index *cells = palloc(sizeof(H3Index) * (size_t) maxout);
+  double *enter = palloc(sizeof(double) * (size_t) maxout);
+  H3EdgeCross *cross = palloc(sizeof(H3EdgeCross) * (size_t) maxout);
+  for (int i = 0; i + 1 < seq->count; i++)
+  {
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    const POINT2D *p1 = th3index_inst_point2d(inst1);
+    const POINT2D *p2 = th3index_inst_point2d(inst2);
+    int ncells;
+    while ((ncells = h3_segment_cells(p1->x, p1->y, p2->x, p2->y, geodetic,
+        resolution, cells, enter, cross, maxout)) == maxout)
+    {
+      maxout *= 2;
+      cells = repalloc(cells, sizeof(H3Index) * (size_t) maxout);
+      enter = repalloc(enter, sizeof(double) * (size_t) maxout);
+      cross = repalloc(cross, sizeof(H3EdgeCross) * (size_t) maxout);
+    }
+    /* A segment starts in the cell the previous one ends in */
+    for (int k = 0; k < ncells; k++)
+    {
+      if (cells[k] == last)
+        continue;
+      /* A planar crossing is dated as the restriction of a trajectory to a
+       * region dates it, by the truncation of its exact parameter: the
+       * segment crosses the line of the edge of the outline the walk
+       * names, and #segment_edge_cross_offset dates that crossing on the
+       * input doubles and says whether it falls on the microsecond
+       * returned. A geodetic crossing reads the parameter of its walk, a
+       * crossing the last microsecond of the segment holds being the end of
+       * the segment at the resolution a timestamp states, and the cell
+       * entered holds the instant it is entered at */
+      TimestampTz tenter;
+      bool whole = true, held_left = false, held_entered = true;
+      if (! geodetic && k > 0)
+      {
+        const H3EdgeCross *x = &cross[k];
+        tenter = inst1->t + segment_edge_cross_offset(p1->x, p1->y, p2->x,
+          p2->y, inst2->t - inst1->t, x->ax, x->ay, x->oa, x->bx, x->by,
+          x->ob, &whole);
+        held_left = x->held_left;
+        held_entered = x->held_entered;
+      }
+      else
+      {
+        tenter = inst1->t + (TimestampTz) ((double) (inst2->t - inst1->t) *
+          enter[k]);
+        if (inst2->t - tenter <= 1)
+          tenter = inst2->t;
+      }
+      th3index_visit_append(&visits, &nvisits, &vsize, cells[k], tenter,
+        whole, held_left, held_entered);
+      last = cells[k];
+    }
+    /* The endpoint's own cell, which holds it, closes the segment when the
+     * traversal stopped short of it */
+    H3Index endcell = h3_point_cell(p2->x, p2->y, geodetic, resolution);
+    if (endcell != (H3Index) 0 && endcell != last)
+    {
+      th3index_visit_append(&visits, &nvisits, &vsize, endcell, inst2->t,
+        true, false, true);
+      last = endcell;
+    }
+  }
+  pfree(cells); pfree(enter); pfree(cross);
+
+  /* The last cell holds to the end of the trajectory. A crossing dated at
+   * the first or the last instant of the trajectory holds that instant only
+   * where the trajectory does, as the restriction of the trajectory to a
+   * region answers no instant outside its period */
+  TimestampTz tstart = TSEQUENCE_INST_N(seq, 0)->t;
+  TimestampTz tend = TSEQUENCE_INST_N(seq, seq->count - 1)->t;
+  visits[nvisits - 1].upper = tend;
+  visits[nvisits - 1].upper_inc = seq->period.upper_inc;
+  for (int i = 0; i < nvisits; i++)
+  {
+    if (visits[i].lower == tstart)
+      visits[i].lower_inc &= seq->period.lower_inc;
+    if (visits[i].upper == tend)
+      visits[i].upper_inc &= seq->period.upper_inc;
+  }
+  Temporal *result = dggs_visits_to_temporal(visits, nvisits, T_TH3INDEX);
+  pfree(visits);
+  return result;
+}
+
+/**
+ * @brief Densify a tgeompoint / tgeogpoint TSequence to a th3index sequence
+ * or sequence set
  * @details See file-level comment for the algorithm. Discrete-interp input is
  * converted one-instant-per-input (no straight-line segment between instants to
  * walk).
  */
-static TSequence *
+static Temporal *
 tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
 {
   if (seq->count == 0)
     return NULL;
-
-  interpType in_interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  bool densify = (in_interp == LINEAR);
-
-  /* Initial capacity: at least the input cardinality. Grow as needed. */
-  int maxcount = seq->count;
-  TInstant **instants = palloc(sizeof(TInstant *) * (size_t) maxcount);
-  int ninsts = 0;
-  TimestampTz last_ts = 0;
-  bool have_ts = false;
-
-  /* Helper: push (cell, ts) into the result, growing if needed.
-   *
-   * A cell's entry time is interpolated from the parameter at which the
-   * path reaches it, while a timestamp holds whole microseconds, so two
-   * crossings closer together than one microsecond round to the same
-   * instant. A path passing near a vertex, where three cells meet, leaves
-   * one cell and enters the next over such a distance. The cell of a
-   * crossing landing on or before the instant already stated is held for no
-   * time, so it is not part of the result, as a crossing within
-   * #MEOS_EPSILON of the end of a segment is no crossing for
-   * #tgeogpointsegm_distance_turnpt(). */
-  #define PUSH_INSTANT(_cell, _ts)                                    \
-    do {                                                              \
-      TimestampTz ts_ = (_ts);                                        \
-      if (have_ts && ts_ <= last_ts)                                  \
-      {                                                               \
-        pfree(instants[--ninsts]);                                    \
-        ts_ = last_ts;                                                \
-      }                                                               \
-      if (ninsts >= maxcount)                                         \
-      {                                                               \
-        maxcount = (maxcount * 2 > ninsts + 1)                        \
-                   ? maxcount * 2 : ninsts + 1;                       \
-        instants = repalloc(instants, sizeof(TInstant *)              \
-                                      * (size_t) maxcount);           \
-      }                                                               \
-      instants[ninsts++] = tinstant_make(H3IndexGetDatum(_cell),      \
-                                         T_TH3INDEX, ts_);            \
-      last_ts = ts_;                                                  \
-      have_ts = true;                                                 \
-    } while (0)
-
-  if (! densify)
-  {
-    for (int i = 0; i < seq->count; i++)
-    {
-      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-      const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
-      H3Index cell = geo_to_h3index_cell(gs, resolution);
-      PUSH_INSTANT(cell, inst->t);
-    }
-  }
-  else
-  {
-    /* Emit the first instant's cell. Routing the first lookup through
-     * geo_to_h3index_cell applies the lon/lat SRID guard once for the
-     * whole sequence: SRID is a type-level property uniform across every
-     * instant, so validating it here is sufficient and the interpolated
-     * per-sample lookups below can use the cheaper raw-coordinate path. */
-    const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
-    const GSERIALIZED *gs0 = DatumGetGserializedP(tinstant_value_p(inst0));
-    H3Index last_cell = geo_to_h3index_cell(gs0, resolution);
-    PUSH_INSTANT(last_cell, inst0->t);
-
-    /* A geodetic segment follows its great circle, a planar one its straight
-     * line in longitude and latitude */
-    bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
-
-    /* The traversal writes one entry per cell a segment crosses, so the
-     * longest segment sizes the buffer for every one of them: a segment
-     * spans at most the length of its path in cell widths, and a cell is
-     * never narrower than its own edge */
-    double edge_m;
-    if (getHexagonEdgeLengthAvgM(resolution, &edge_m) != E_SUCCESS)
-      edge_m = 1000.0;
-    double half_edge_deg = (edge_m / 111320.0) / 2.0;
-    double longest = 0.0;
-    for (int i = 0; i + 1 < seq->count; i++)
-    {
-      const POINT2D *qa = GSERIALIZED_POINT2D_P(DatumGetGserializedP(
-        tinstant_value_p(TSEQUENCE_INST_N(seq, i))));
-      const POINT2D *qb = GSERIALIZED_POINT2D_P(DatumGetGserializedP(
-        tinstant_value_p(TSEQUENCE_INST_N(seq, i + 1))));
-      double d = h3_segment_length_deg(qa->x, qa->y, qb->x, qb->y, geodetic);
-      if (d > longest)
-        longest = d;
-    }
-    int xcap = (half_edge_deg > 0.0)
-      ? (int) (longest / half_edge_deg) + 8 : 8;
-    H3Index *xcells = palloc(sizeof(H3Index) * (size_t) xcap);
-    double *xenter = palloc(sizeof(double) * (size_t) xcap);
-
-    /* For each segment, traverse the cells it crosses and emit a
-     * cell-entry instant for each. */
-    for (int i = 0; i + 1 < seq->count; i++)
-    {
-      const TInstant *inst_a = TSEQUENCE_INST_N(seq, i);
-      const TInstant *inst_b = TSEQUENCE_INST_N(seq, i + 1);
-      const POINT2D *pa = GSERIALIZED_POINT2D_P(
-        DatumGetGserializedP(tinstant_value_p(inst_a)));
-      const POINT2D *pb = GSERIALIZED_POINT2D_P(
-        DatumGetGserializedP(tinstant_value_p(inst_b)));
-      /* The segment is TRAVERSED cell by cell, so the result holds every
-       * cell it crosses; `enter[k]` is the parameter at which it reaches
-       * cells[k], which the timestamp is interpolated from. The first
-       * entry repeats the cell the previous segment ended in and is
-       * dropped by the same-cell test below. */
-      int nx = h3_segment_cells(pa->x, pa->y, pb->x, pb->y, geodetic,
-        resolution, xcells, xenter, xcap);
-      for (int k = 0; k < nx; k++)
-      {
-        H3Index cell = xcells[k];
-        if (cell == last_cell)
-          continue;
-        /* A crossing the last microsecond of the segment holds is the end
-         * of the segment at the resolution a timestamp states, so it enters
-         * at that instant, as the clip of a segment by a geometry states a
-         * parameter of 1 as the instant of the second position. A cell is
-         * then entered at the same instant however the segment is cut */
-        TimestampTz ts = (k == 0) ? inst_a->t
-          : inst_a->t + (TimestampTz) ((double) (inst_b->t - inst_a->t)
-              * xenter[k]);
-        if (inst_b->t - ts <= 1)
-          ts = inst_b->t;
-        PUSH_INSTANT(cell, ts);
-        last_cell = cell;
-      }
-      /* The endpoint's own cell closes the segment when the traversal
-       * stopped inside it */
-      H3Index endcell = h3_latlng_deg_to_cell(pb->y, pb->x, resolution);
-      if (endcell != (H3Index) 0 && endcell != last_cell)
-      {
-        PUSH_INSTANT(endcell, inst_b->t);
-        last_cell = endcell;
-      }
-    }
-    pfree(xcells); pfree(xenter);
-
-    /* The last cell holds to the end of the trajectory, which the closing
-     * instant states, since a sequence reaches no further than its last
-     * instant. Under an exclusive upper bound, a cell the trajectory reaches
-     * at its end is held for no time and is no part of the value */
-    TimestampTz tend = TSEQUENCE_INST_N(seq, seq->count - 1)->t;
-    if (! seq->period.upper_inc)
-      while (ninsts > 1 && instants[ninsts - 1]->t >= tend)
-        pfree(instants[--ninsts]);
-    last_ts = instants[ninsts - 1]->t;
-    if (last_ts < tend)
-    {
-      H3Index endvalue = DatumGetH3Index(tinstant_value_p(
-        instants[ninsts - 1]));
-      PUSH_INSTANT(endvalue, tend);
-    }
-  }
-
-  #undef PUSH_INSTANT
-
-  /* A linear trajectory gives a STEP sequence, each instant marking the time
-   * the trajectory entered that cell; a discrete or stepwise one keeps its
-   * interpolation, since it states nothing between its instants.
-   * lower_inc / upper_inc inherited from the input. */
-  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
-    seq->period.upper_inc, densify ? STEP : in_interp, NORMALIZE);
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) != LINEAR)
+    return (Temporal *) tpointseq_instants_to_th3index(seq, resolution);
+  return tpointseq_linear_to_th3index(seq, resolution);
 }
 
 /**
- * @brief Densify a tgeompoint / tgeogpoint TSequenceSet to a th3index STEP
+ * @brief Densify a tgeompoint / tgeogpoint TSequenceSet to a th3index
  * TSequenceSet by per-sequence densification
+ * @details As #tpointseqset_to_tquadbin gathers its parts: each sequence
+ * answers a sequence, or a sequence set where a crossing instant belongs to
+ * the cell it leaves, and the answer holds all their sequences
  */
 static TSequenceSet *
 tpointseqset_densify_to_th3index(const TSequenceSet *ss, int32 resolution)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * (size_t) ss->count);
-  int nseq = 0;
+  int size = ss->count, count = 0;
+  TSequence **sequences = palloc(sizeof(TSequence *) * (size_t) size);
   for (int i = 0; i < ss->count; i++)
   {
-    TSequence *out = tpointseq_densify_to_th3index(
+    Temporal *part = tpointseq_densify_to_th3index(
       TSEQUENCESET_SEQ_N(ss, i), resolution);
-    if (out != NULL)
-      sequences[nseq++] = out;
+    if (part == NULL)
+      continue;
+    if (part->subtype == TSEQUENCE)
+    {
+      if (count == size)
+      {
+        size *= 2;
+        sequences = repalloc(sequences, sizeof(TSequence *) * (size_t) size);
+      }
+      sequences[count++] = (TSequence *) part;
+      continue;
+    }
+    const TSequenceSet *pss = (const TSequenceSet *) part;
+    for (int j = 0; j < pss->count; j++)
+    {
+      if (count == size)
+      {
+        size *= 2;
+        sequences = repalloc(sequences, sizeof(TSequence *) * (size_t) size);
+      }
+      sequences[count++] = tsequence_copy(TSEQUENCESET_SEQ_N(pss, j));
+    }
+    pfree(part);
   }
-  return tsequenceset_make_free(sequences, nseq, NORMALIZE);
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
+  return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**
@@ -453,8 +505,8 @@ tpoint_to_th3index_dense(const Temporal *temp, int32 resolution)
       return (Temporal *) tpointinst_to_th3index((const TInstant *) temp,
         resolution);
     case TSEQUENCE:
-      return (Temporal *) tpointseq_densify_to_th3index(
-        (const TSequence *) temp, resolution);
+      return tpointseq_densify_to_th3index((const TSequence *) temp,
+        resolution);
     default: /* TSEQUENCESET */
       return (Temporal *) tpointseqset_densify_to_th3index(
         (const TSequenceSet *) temp, resolution);

@@ -174,9 +174,10 @@ SELECT numValues(getValues(th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
   10)));
 
--- The walk enters each cell once, so the instants are the distinct cells of
--- the cover and the closing instant that holds the last one to the end.
-SELECT numInstants(t) = numValues(getValues(t)) + 1 FROM (SELECT th3index(tgeompoint
+-- The walk enters each cell once. Each crossing falls between two
+-- microseconds, and the cell left holds the earlier one, so each cell holds a
+-- period of its own: the cover is one sequence per cell entered.
+SELECT numSequences(t) = numValues(getValues(t)) FROM (SELECT th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
   10) AS t) AS q;
 
@@ -239,9 +240,11 @@ FROM (SELECT p, th3index(p, 9) AS c FROM (
 WHERE valueAtTimestamp(p, t) IS NOT NULL;
 
 -- A planar trajectory moves along the straight line in longitude and latitude,
--- which crosses a cell edge where the great-circle arc of the edge lies, not
--- where the straight chord between its vertices does. At resolution 1 the
--- trajectory below enters cell 811e3ffffffffff, and holds it at 22:00:30
+-- and a planar cell is its outline, the vertices of the vertex index joined by
+-- straight lines in longitude and latitude, so the trajectory crosses a cell
+-- edge where the straight chord between its vertices lies, not where the
+-- great-circle arc of the edge does. At resolution 1 the trajectory below
+-- enters cell 811e3ffffffffff, and holds it at 22:00:30
 SELECT valueAtTimestamp(th3index(tgeompoint
   'SRID=4326;[Point(-37.3 45)@2001-01-01, Point(22.7 45.5)@2001-01-02]', 1),
   timestamptz '2001-01-01 22:00:30');
@@ -261,19 +264,19 @@ FROM (SELECT p, r, th3index(p, r) AS c FROM (VALUES
   generate_series(timestamptz '2001-01-01 00:07:30',
     timestamptz '2001-01-01 23:52:30', interval '15 minutes') AS t;
 
--- A planar trajectory between two positions of one cell bows off the
--- great-circle arc joining them and can leave that cell and come back. The
--- trajectory below runs from one vertex of a cell to the next, inside the
--- neighbouring cell the whole way, and holds that neighbour at every sampled
--- timestamp
-SELECT count(*) AS instants,
-  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
-    startValue(th3index(atTime(p, t), 5))) AS other_cell
-FROM (SELECT p, th3index(p, 5) AS c FROM (VALUES (tgeompoint
-  'SRID=4326;[Point(-36.006078674350391 -45.009967218319247)@2001-01-01,
-    Point(-36.056619492072663 -44.926892365766449)@2001-01-03]')) AS v(p))
-  AS q, generate_series(timestamptz '2001-01-01 00:17', '2001-01-02 23:43',
-    interval '37 minutes') AS t;
+-- A planar trajectory from one vertex of an outline to the next runs along
+-- the edge joining them the whole way. A position on an edge belongs to the
+-- one cell holding the edge, a vertex to the one cell holding the vertex, by
+-- the exact signs of the rule of the cell walks. The trajectory below runs
+-- from the fifth vertex of 85c4e06bfffffff to the sixth, as the linked H3
+-- library places them: it starts at a vertex 85c4e06ffffffff holds and runs
+-- along the edge 85c4e06bfffffff holds
+WITH ring(r) AS (
+  SELECT ST_ExteriorRing(cellToBoundary(h3index '85c4e06bfffffff')))
+SELECT th3index(tgeompointSeq(ARRAY[
+  tgeompoint(ST_PointN(r, 5), timestamptz '2001-01-01'),
+  tgeompoint(ST_PointN(r, 6), timestamptz '2001-01-03')]), 5)
+FROM ring;
 
 -------------------------------------------------------------------------------
 
