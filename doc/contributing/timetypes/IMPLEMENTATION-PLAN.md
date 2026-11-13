@@ -39,4 +39,4 @@ measured value.
 | TT-11 | MobilityDuck | `time_util.hpp` through the MEOS conversions, the infinities of DuckDB mapped to those of MEOS; new casts of DuckDB's `TIME` and `TIMETZ` | after TT-5 |
 | TT-12 | MobilityNebula | `MEOSWrapper.cpp` and the hand-written operators through the casts of the kernel runtime, in place of the text of whole seconds; the milliseconds of NebulaStream stated exactly, an instant below a millisecond or before 1970 refused | after TT-5 |
 | TT-13 | MobilityFlink, MobilityKafka, MobilitySpark | the benchmarks' timestamps through the casts of JMEOS | after TT-4 |
-| TT-14 | MobilityAPI-Python | whether the server casts a time value through MEOS or keeps passing SQL text, which converts none | OPEN, the owner's call |
+| TT-14 | MobilityAPI-Python | none of its own: it holds MEOS values only through PyMEOS (`mobilityapi/wire.py` decodes them with `pymeos`) and passes every other time to MobilityDB as SQL text, which PostgreSQL's input functions read; its casts are PyMEOS's | follows TT-5 and TT-6 |
