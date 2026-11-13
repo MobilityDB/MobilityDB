@@ -33,9 +33,13 @@
  * geometries
  * @details Every equation that the distance algorithm solves has the form
  * @code
- * F(t) = SUM_k [ (a1_k*t + a0_k) * cos(w_k*t) + (b1_k*t + b0_k) * sin(w_k*t) ]
+ * F(t) = SUM_k [ (a2_k*t^2 + a1_k*t + a0_k) * cos(w_k*t)
+ *              + (b2_k*t^2 + b1_k*t + b0_k) * sin(w_k*t) ]
  *      + c2*t^2 + c1*t + c0
  * @endcode
+ * The functions of the walk have affine coefficients.  Quadratic coefficients
+ * come from the square of such a function, #distfun_square(), which the
+ * equation of the distances to a vertex and to an edge needs.
  * This file evaluates such functions, differentiates them, and finds all
  * their roots on an interval.
  *
@@ -68,16 +72,29 @@
  * Static helpers
  *****************************************************************************/
 
+static double quad_absmax(double c2, double c1, double c0, double lo,
+  double hi);
+
 /**
- * @brief Return the maximum of |(a1*t + a0)*cos(w*t) + (b1*t + b0)*sin(w*t)|
- * over [lo, hi]
- * @details The maximum is at most the amplitude |(a1*t + a0, b1*t + b0)|.
- * The amplitude is the distance from the origin to a point that moves on a
- * line, thus it is convex and its maximum is at an end of the interval.
+ * @brief Return an upper bound of
+ * |(a2*t^2 + a1*t + a0)*cos(w*t) + (b2*t^2 + b1*t + b0)*sin(w*t)| over
+ * [lo, hi]
+ * @details The value is at most the amplitude |(A(t), B(t))|, with A and B
+ * the two coefficients.  With affine coefficients, the amplitude is the
+ * distance from the origin to a point that moves on a line, thus it is convex
+ * and its maximum is at an end of the interval.  With quadratic coefficients,
+ * the amplitude is at most |(max|A|, max|B|)| over the interval, each maximum
+ * that of a quadratic, see #quad_absmax().
  */
 static double
 term_absmax(const DistFunTerm *k, double lo, double hi)
 {
+  if (k->a2 != 0.0 || k->b2 != 0.0)
+  {
+    double amax = quad_absmax(k->a2, k->a1, k->a0, lo, hi);
+    double bmax = quad_absmax(k->b2, k->b1, k->b0, lo, hi);
+    return sqrt(amax * amax + bmax * bmax);
+  }
   double alo = k->a1 * lo + k->a0, blo = k->b1 * lo + k->b0;
   double ahi = k->a1 * hi + k->a0, bhi = k->b1 * hi + k->b0;
   return sqrt(fmax(alo * alo + blo * blo, ahi * ahi + bhi * bhi));
@@ -370,22 +387,42 @@ bool
 distfun_add_cs(DistFun *f, double w, double cg, double sg, double A1,
   double A0, double B1, double B0)
 {
+  return distfun_add_cs2(f, w, cg, sg, 0.0, A1, A0, 0.0, B1, B0);
+}
+
+/**
+ * @brief Add (A2*t^2 + A1*t + A0)*cos(w*t + g) +
+ * (B2*t^2 + B1*t + B0)*sin(w*t + g) to @p f
+ * @details The term with quadratic coefficients of #distfun_add_cs(), which
+ * stores it in the same way: with phase zero, a frequency that is not
+ * negative, a term of frequency zero in the polynomial part, and a term of a
+ * frequency that @p f already has added to that term.
+ * @return False if @p f already has #DISTFUN_MAXTERMS terms
+ */
+bool
+distfun_add_cs2(DistFun *f, double w, double cg, double sg, double A2,
+  double A1, double A0, double B2, double B1, double B0)
+{
   assert(f);
   /* cos(w*t + g) = cos(g)*cos(w*t) - sin(g)*sin(w*t) and
    * sin(w*t + g) = cos(g)*sin(w*t) + sin(g)*cos(w*t) */
+  double a2 = A2 * cg + B2 * sg;
   double a1 = A1 * cg + B1 * sg;
   double a0 = A0 * cg + B0 * sg;
+  double b2 = B2 * cg - A2 * sg;
   double b1 = B1 * cg - A1 * sg;
   double b0 = B0 * cg - A0 * sg;
   /* cos is even and sin is odd */
   if (w < 0.0)
   {
     w = -w;
+    b2 = -b2;
     b1 = -b1;
     b0 = -b0;
   }
   if (w == 0.0)
   {
+    f->c2 += a2;
     f->c1 += a1;
     f->c0 += a0;
     return true;
@@ -394,8 +431,10 @@ distfun_add_cs(DistFun *f, double w, double cg, double sg, double A1,
   {
     if (f->term[i].w == w)
     {
+      f->term[i].a2 += a2;
       f->term[i].a1 += a1;
       f->term[i].a0 += a0;
+      f->term[i].b2 += b2;
       f->term[i].b1 += b1;
       f->term[i].b0 += b0;
       return true;
@@ -403,11 +442,10 @@ distfun_add_cs(DistFun *f, double w, double cg, double sg, double A1,
   }
   if (f->nterm >= DISTFUN_MAXTERMS)
     return false;
-  f->term[f->nterm].w = w;
-  f->term[f->nterm].a1 = a1;
-  f->term[f->nterm].a0 = a0;
-  f->term[f->nterm].b1 = b1;
-  f->term[f->nterm].b0 = b0;
+  DistFunTerm *k = &f->term[f->nterm];
+  k->w = w;
+  k->a2 = a2; k->a1 = a1; k->a0 = a0;
+  k->b2 = b2; k->b1 = b1; k->b0 = b0;
   f->nterm++;
   return true;
 }
@@ -436,6 +474,72 @@ distfun_add_poly(DistFun *f, double c2, double c1, double c0)
   f->c0 += c0;
 }
 
+/**
+ * @brief Add @p s times @p g to @p f
+ * @details The terms of @p g go to the terms of @p f with the same frequency,
+ * see #distfun_add_cs2(), thus two functions of the same segment combine
+ * into a function with their frequencies.
+ * @return False if the sum has more than #DISTFUN_MAXTERMS terms
+ */
+bool
+distfun_add_fun(DistFun *f, const DistFun *g, double s)
+{
+  assert(f); assert(g);
+  for (int i = 0; i < g->nterm; i++)
+  {
+    const DistFunTerm *k = &g->term[i];
+    if (! distfun_add_cs2(f, k->w, 1.0, 0.0, s * k->a2, s * k->a1, s * k->a0,
+        s * k->b2, s * k->b1, s * k->b0))
+      return false;
+  }
+  distfun_add_poly(f, s * g->c2, s * g->c1, s * g->c0);
+  return true;
+}
+
+/**
+ * @brief Set @p sq to the square of @p f
+ * @details For f = p + A*cos(w*t) + B*sin(w*t), with p, A and B affine,
+ * @code
+ * f^2 = p^2 + (A^2 + B^2)/2 + 2*p*A*cos(w*t) + 2*p*B*sin(w*t)
+ *     + (A^2 - B^2)/2 * cos(2*w*t) + A*B * sin(2*w*t)
+ * @endcode
+ * which has quadratic coefficients and the frequencies w and 2w.  The
+ * functions of the walk against a body at rest have one frequency, the
+ * rotation of the moving body, and an affine polynomial part.
+ * @return False if @p f has more than one term, a quadratic polynomial part
+ * or quadratic coefficients
+ */
+bool
+distfun_square(const DistFun *f, DistFun *sq)
+{
+  assert(f); assert(sq);
+  distfun_init(sq);
+  if (f->nterm > 1 || f->c2 != 0.0)
+    return false;
+  double p1 = f->c1, p0 = f->c0;
+  /* p^2 */
+  distfun_add_poly(sq, p1 * p1, 2.0 * p1 * p0, p0 * p0);
+  if (f->nterm == 0)
+    return true;
+  const DistFunTerm *k = &f->term[0];
+  if (k->a2 != 0.0 || k->b2 != 0.0)
+    return false;
+  double a1 = k->a1, a0 = k->a0, b1 = k->b1, b0 = k->b0, w = k->w;
+  /* A^2 and B^2, A*B, p*A and p*B as quadratics */
+  double aa2 = a1 * a1, aa1 = 2.0 * a1 * a0, aa0 = a0 * a0;
+  double bb2 = b1 * b1, bb1 = 2.0 * b1 * b0, bb0 = b0 * b0;
+  double ab2 = a1 * b1, ab1 = a1 * b0 + a0 * b1, ab0 = a0 * b0;
+  double pa2 = p1 * a1, pa1 = p1 * a0 + p0 * a1, pa0 = p0 * a0;
+  double pb2 = p1 * b1, pb1 = p1 * b0 + p0 * b1, pb0 = p0 * b0;
+  distfun_add_poly(sq, 0.5 * (aa2 + bb2), 0.5 * (aa1 + bb1),
+    0.5 * (aa0 + bb0));
+  if (! distfun_add_cs2(sq, w, 1.0, 0.0, 2.0 * pa2, 2.0 * pa1, 2.0 * pa0,
+      2.0 * pb2, 2.0 * pb1, 2.0 * pb0))
+    return false;
+  return distfun_add_cs2(sq, 2.0 * w, 1.0, 0.0, 0.5 * (aa2 - bb2),
+    0.5 * (aa1 - bb1), 0.5 * (aa0 - bb0), ab2, ab1, ab0);
+}
+
 /*****************************************************************************
  * Queries
  *****************************************************************************/
@@ -452,7 +556,8 @@ distfun_eval(const DistFun *f, double t)
   {
     const DistFunTerm *k = &f->term[i];
     double u = k->w * t;
-    res += (k->a1 * t + k->a0) * cos(u) + (k->b1 * t + k->b0) * sin(u);
+    res += ((k->a2 * t + k->a1) * t + k->a0) * cos(u) +
+      ((k->b2 * t + k->b1) * t + k->b0) * sin(u);
   }
   return res;
 }
@@ -469,14 +574,20 @@ distfun_deriv(const DistFun *f, DistFun *df)
   for (int i = 0; i < f->nterm; i++)
   {
     const DistFunTerm *k = &f->term[i];
+    /* d/dt [A*cos(w*t) + B*sin(w*t)] = (A' + w*B)*cos(w*t) +
+     * (B' - w*A)*sin(w*t), with A and B quadratics */
     double w = k->w;
-    double a1 = w * k->b1;
+    double a2 = w * k->b2;
+    double a1 = 2.0 * k->a2 + w * k->b1;
     double a0 = k->a1 + w * k->b0;
-    double b1 = -w * k->a1;
+    double b2 = -w * k->a2;
+    double b1 = 2.0 * k->b2 - w * k->a1;
     double b0 = k->b1 - w * k->a0;
     df->term[i].w = w;
+    df->term[i].a2 = a2;
     df->term[i].a1 = a1;
     df->term[i].a0 = a0;
+    df->term[i].b2 = b2;
     df->term[i].b1 = b1;
     df->term[i].b0 = b0;
   }
@@ -519,8 +630,8 @@ distfun_is_zero(const DistFun *f, double ftol)
   for (int i = 0; i < f->nterm; i++)
   {
     const DistFunTerm *k = &f->term[i];
-    if (fabs(k->a1) > ftol || fabs(k->a0) > ftol || fabs(k->b1) > ftol ||
-        fabs(k->b0) > ftol)
+    if (fabs(k->a2) > ftol || fabs(k->a1) > ftol || fabs(k->a0) > ftol ||
+        fabs(k->b2) > ftol || fabs(k->b1) > ftol || fabs(k->b0) > ftol)
       return false;
   }
   return true;
@@ -604,8 +715,9 @@ distfun_roots(const DistFun *f, double level, double lo, double hi,
   for (int i = 0; i < g.nterm; i++)
   {
     const DistFunTerm *k = &g.term[i];
-    if (! isfinite(k->w) || ! isfinite(k->a1) || ! isfinite(k->a0) ||
-        ! isfinite(k->b1) || ! isfinite(k->b0))
+    if (! isfinite(k->w) || ! isfinite(k->a2) || ! isfinite(k->a1) ||
+        ! isfinite(k->a0) || ! isfinite(k->b2) || ! isfinite(k->b1) ||
+        ! isfinite(k->b0))
       return DISTFUN_NONFINITE;
     wsum += k->w;
   }
@@ -627,8 +739,9 @@ distfun_roots(const DistFun *f, double level, double lo, double hi,
   }
 
   /* One term of constant amplitude over a constant */
-  if (g.nterm == 1 && g.term[0].a1 == 0.0 && g.term[0].b1 == 0.0 &&
-      g.c2 == 0.0 && g.c1 == 0.0)
+  if (g.nterm == 1 && g.term[0].a2 == 0.0 && g.term[0].b2 == 0.0 &&
+      g.term[0].a1 == 0.0 && g.term[0].b1 == 0.0 && g.c2 == 0.0 &&
+      g.c1 == 0.0)
   {
     int rc = sinusoid_roots(g.term[0].w, g.term[0].a0, g.term[0].b0, g.c0, lo,
       hi, roots, &nroots, maxroots, xacc);
@@ -644,8 +757,13 @@ distfun_roots(const DistFun *f, double level, double lo, double hi,
 
   /* The number of cells comes from the coefficients, not from a guess.  The
    * phase of the terms advances by at most (hi - lo) * SUM w, plus pi because
-   * the affine amplitude of a term turns by less than a half turn. */
-  double phase = (hi - lo) * wsum + M_PI;
+   * the affine amplitude of a term turns by less than a half turn, and 2 pi
+   * for a quadratic amplitude, a parabola, which turns by less than a full
+   * turn.  The tests of the cells, not their number, find the roots. */
+  bool quadratic = false;
+  for (int i = 0; i < g.nterm; i++)
+    quadratic |= (g.term[i].a2 != 0.0 || g.term[i].b2 != 0.0);
+  double phase = (hi - lo) * wsum + (quadratic ? 2.0 * M_PI : M_PI);
   int ncell = (int) ceil(phase / (M_PI / 4.0));
   if (ncell < 4)
     ncell = 4;
@@ -695,6 +813,10 @@ distfun_roots(const DistFun *f, double level, double lo, double hi,
       continue;
 
     double m = 0.5 * (a + b);
+    /* No double is strictly inside the cell, so it has no root but its ends,
+     * which are tested above, and its halves would be the cell itself */
+    if (m <= a || m >= b)
+      continue;
     double half = 0.5 * (b - a);
     /* No point of the cell is farther than half its width from the middle,
      * thus f cannot reach zero in the cell */

@@ -402,6 +402,25 @@ distevents_init(DistEvents *events)
   events->size = 64;
   events->count = 0;
   events->ev = palloc(sizeof(DistEvent) * events->size);
+  events->pc = NULL;
+  events->npc = events->pcsize = 0;
+}
+
+/**
+ * @brief Ask the walk to keep the pieces of the distance between its events,
+ * see #DistPiece
+ * @details The minimum over the parts of a geometry reads the pieces to find
+ * where two parts are at the same distance.
+ */
+void
+distevents_keep_pieces(DistEvents *events)
+{
+  assert(events);
+  if (events->pc)
+    return;
+  events->pcsize = 16;
+  events->npc = 0;
+  events->pc = palloc(sizeof(DistPiece) * events->pcsize);
 }
 
 /**
@@ -414,6 +433,36 @@ distevents_free(DistEvents *events)
   pfree(events->ev);
   events->ev = NULL;
   events->count = events->size = 0;
+  if (events->pc)
+    pfree(events->pc);
+  events->pc = NULL;
+  events->npc = events->pcsize = 0;
+}
+
+/**
+ * @brief Add the piece [@p t0, @p t1] of the feature function @p f, or of an
+ * overlap if @p f is NULL, to the pieces of @p events if it keeps them
+ */
+static void
+distevents_add_piece(DistEvents *events, double t0, double t1,
+  const DistFun *f, double len)
+{
+  if (! events->pc || t0 >= t1)
+    return;
+  if (events->npc == events->pcsize)
+  {
+    events->pcsize *= 2;
+    events->pc = repalloc(events->pc, sizeof(DistPiece) * events->pcsize);
+  }
+  DistPiece *p = &events->pc[events->npc++];
+  p->t0 = t0;
+  p->t1 = t1;
+  p->zero = (f == NULL);
+  p->len = len;
+  if (f)
+    p->f = *f;
+  else
+    distfun_init(&p->f);
 }
 
 /**
@@ -667,6 +716,17 @@ fun_dist(const DistFun *f, double len, double t)
   if (len == 0.0)
     return (v > 0.0) ? sqrt(v) : 0.0;
   return fabs(v) / len;
+}
+
+/**
+ * @brief Return the distance at @p t of the piece @p p, as the walk gives it
+ * at its events, see #fun_dist()
+ */
+double
+distpiece_dist(const DistPiece *p, double t)
+{
+  assert(p);
+  return p->zero ? 0.0 : fun_dist(&p->f, p->len, t);
 }
 
 /*****************************************************************************
@@ -1239,10 +1299,12 @@ distwalk_segm(const DistSegm *seg, const DistRefPoly *ra,
         return rc;
       if (! found)
       {
+        distevents_add_piece(events, t, 1.0, NULL, 0.0);
         distevents_add(events, 1.0, 0.0);
         cf->kind = DISTPAIR_NONE;
         return DISTWALK_OK;
       }
+      distevents_add_piece(events, t, texit, NULL, 0.0);
       distevents_add(events, texit, 0.0);
       t = texit;
       inside = false;
@@ -1274,6 +1336,7 @@ distwalk_segm(const DistSegm *seg, const DistRefPoly *ra,
     rc = walk_interval_events(&f, len, t, tentry, ftol, level, events);
     if (rc != DISTWALK_OK)
       return rc;
+    distevents_add_piece(events, t, tentry, &f, len);
 
     if (tentry < tnext)
     {
