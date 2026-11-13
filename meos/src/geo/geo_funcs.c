@@ -1120,6 +1120,101 @@ cross_product_sign_offset(double ax, double ay, double bx, double by,
 }
 
 /**
+ * @brief Return a bound on the rounding of one coordinate of a point
+ * constructed on a segment
+ * @details A point at a position along a route is constructed on one of its
+ * segments AB as liblwgeom's interpolate_point4d computes it, each coordinate
+ * `a + (b - a) * f` with `f` in [0, 1], in three roundings. With the unit
+ * roundoff `u = DBL_EPSILON / 2`, the computed coordinate lies within
+ * `u * |a + (b - a) * f| + 2u * |(b - a) * f|`, up to terms in u squared, of
+ * the coordinate of the point of AB at `f`, which is at most
+ * `u * (max(|a|, |b|) + 2 |b - a|)`. An error of `f` moves the point along
+ * AB, never off it. The factor `1 + 8 DBL_EPSILON` covers the terms in u
+ * squared and the rounding of the bound itself. The bound is that of the
+ * SEGMENT, not of the point: a point near the origin constructed on a long
+ * segment carries the rounding of the segment's coordinates
+ * @param[in] a,b Coordinates of the ends of the segment
+ */
+double
+segment_construction_bound(double a, double b)
+{
+  return 0.5 * DBL_EPSILON * (Max(fabs(a), fabs(b)) + 2.0 * fabs(b - a)) *
+    (1.0 + 8.0 * DBL_EPSILON);
+}
+
+/**
+ * @brief Return the side of the line of a segment AB on which the point
+ * `(px + ox, py + oy)` lies, exactly, for doubles and exact offsets
+ * @details The sign of `(bx - ax) * (py + oy - ay) - (by - ay) *
+ * (px + ox - ax)`, each difference an exact sum of doubles read through
+ * #polynomial_sign_exact, whose filter in doubles decides first
+ */
+static int
+segment_side_offset(double ax, double ay, double bx, double by, double px,
+  double py, double ox, double oy)
+{
+  ExactSum sums[4];
+  const double t0[2] = {bx, - ax}, t1[3] = {py, oy, - ay};
+  const double t2[2] = {by, - ay}, t3[3] = {px, ox, - ax};
+  exact_sum_set(&sums[0], t0, 2);
+  exact_sum_set(&sums[1], t1, 3);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  PolyTerm terms[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 1}},
+    {.coef = -1.0, .deg = 2, .sum = {2, 3}}};
+  return polynomial_sign_exact(sums, terms, 2);
+}
+
+/**
+ * @brief Return true if a segment meets the box of a point widened by two
+ * half-widths, `[px - ex, px + ex] x [py - ey, py + ey]`, decided exactly
+ * @details The segment meets the box where their extents meet and the four
+ * corners of the box do not all lie strictly on one side of the line of the
+ * segment. The corners are not doubles, so each comparison reads the point
+ * and the half-widths as exact sums (#offset_x_cmp, #segment_side_offset).
+ * The box with its corners rounded outwards to doubles holds it, so a segment
+ * missing that box, read by #cross_product_sign on the doubles, misses it,
+ * which settles most segments without an exact sum
+ * @param[in] ax,ay,bx,by Ends of the segment
+ * @param[in] px,py Point
+ * @param[in] ex,ey Half-widths of the box, non-negative doubles
+ */
+bool
+segment_meets_point_box(double ax, double ay, double bx, double by,
+  double px, double py, double ex, double ey)
+{
+  assert(ex >= 0.0); assert(ey >= 0.0);
+  /* The box with its corners rounded outwards, which holds the exact box */
+  double xmin = nextafter(px - ex, - HUGE_VAL);
+  double xmax = nextafter(px + ex, HUGE_VAL);
+  double ymin = nextafter(py - ey, - HUGE_VAL);
+  double ymax = nextafter(py + ey, HUGE_VAL);
+  if (Max(ax, bx) < xmin || Min(ax, bx) > xmax ||
+      Max(ay, by) < ymin || Min(ay, by) > ymax)
+    return false;
+  int s1 = cross_product_sign(ax, ay, bx, by, ax, ay, xmin, ymin);
+  int s2 = cross_product_sign(ax, ay, bx, by, ax, ay, xmax, ymin);
+  int s3 = cross_product_sign(ax, ay, bx, by, ax, ay, xmax, ymax);
+  int s4 = cross_product_sign(ax, ay, bx, by, ax, ay, xmin, ymax);
+  if ((s1 > 0 && s2 > 0 && s3 > 0 && s4 > 0) ||
+      (s1 < 0 && s2 < 0 && s3 < 0 && s4 < 0))
+    return false;
+  /* The exact box: its extents, then the sides of its four corners */
+  if (offset_x_cmp(px, - ex, Max(ax, bx)) > 0 ||
+      offset_x_cmp(px, ex, Min(ax, bx)) < 0 ||
+      offset_x_cmp(py, - ey, Max(ay, by)) > 0 ||
+      offset_x_cmp(py, ey, Min(ay, by)) < 0)
+    return false;
+  s1 = segment_side_offset(ax, ay, bx, by, px, py, - ex, - ey);
+  s2 = segment_side_offset(ax, ay, bx, by, px, py, ex, - ey);
+  s3 = segment_side_offset(ax, ay, bx, by, px, py, ex, ey);
+  s4 = segment_side_offset(ax, ay, bx, by, px, py, - ex, ey);
+  return ! ((s1 > 0 && s2 > 0 && s3 > 0 && s4 > 0) ||
+    (s1 < 0 && s2 < 0 && s3 < 0 && s4 < 0));
+}
+
+/**
  * @brief Return the sign of `x + o - p`, exactly, for doubles x and p and an
  * exact offset o
  */

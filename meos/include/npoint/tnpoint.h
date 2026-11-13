@@ -87,6 +87,7 @@ extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,
 /* Collinear functions */
 
 extern bool srid_matches_ways(int32_t srid);
+extern bool ensure_srid_ways(int32_t srid);
 extern bool npoint_collinear(const Npoint *np1, const Npoint *np2,
   const Npoint *np3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
   bool constructed);
@@ -100,10 +101,14 @@ extern long double npointsegm_locate(const Npoint *start, const Npoint *end,
 
 /* General functions */
 
-extern double geompoint_route_band(const GSERIALIZED *gs);
+extern bool route_constructs_point(const GSERIALIZED *line,
+  const GSERIALIZED *gs);
 extern void route_nearest_update(const GSERIALIZED *gs, int64 gid,
-  const GSERIALIZED *line, double tolerance, int64 *min_gid,
+  const GSERIALIZED *line, double tolerance, bool constructed, int64 *min_gid,
   double *min_dist, double *min_pos);
+extern Npoint *geompoint_to_npoint_cast(const GSERIALIZED *gs);
+extern Npoint *geompoint_route_npoint(const GSERIALIZED *gs, double tolerance,
+  bool constructed);
 extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
 extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
 extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);

@@ -630,10 +630,9 @@ tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
  * along its great circle, so two segments meeting at that instant give two
  * points apart by the rounding of their coordinates, and the exact distance
  * between them is almost never zero. The distance is the band of a
- * constructed point the exact computation of MEOS admits, as
- * #geompoint_route_band is for a point on a route: #MEOS_GEOM_TOLERANCE plus
- * four units of rounding of the largest coordinate of the two points, which
- * no two points genuinely apart are within
+ * constructed point the exact computation of MEOS admits:
+ * #MEOS_GEOM_TOLERANCE plus four units of rounding of the largest coordinate
+ * of the two points, which no two points genuinely apart are within
  * @param[in] p1,p2 Points
  */
 static double

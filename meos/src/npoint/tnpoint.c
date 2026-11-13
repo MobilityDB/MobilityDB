@@ -768,7 +768,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TGEOMPOINT);
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
-  Npoint *np = geompoint_to_npoint(gs, geompoint_route_band(gs));
+  Npoint *np = geompoint_route_npoint(gs, 0.0, true);
   if (np == NULL)
     return NULL;
   return tinstant_make_free(PointerGetDatum(np), T_TNPOINT, inst->t);

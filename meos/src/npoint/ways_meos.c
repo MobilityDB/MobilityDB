@@ -481,31 +481,23 @@ get_srid_ways(void)
  *****************************************************************************/
 
 /**
- * @ingroup meos_npoint_base_conversion
  * @brief Transform a geometry into a network point located on the route
- * nearest to it within a tolerance
- * @details The route is the nearest one among those whose distance to the
- * point is at most the tolerance, the one with the least identifier among
- * equally near routes, and the position is the one of the point projected on
- * that route. The result is `NULL` when no route is within the tolerance.
+ * nearest to it on which it lies, within a tolerance or as a point the route
+ * constructs
  * @param[in] gs Geometry
- * @param[in] tolerance Maximum distance between the point and the route, in
- * the units of the spatial reference system of the ways network
- * @csqlfn #Geompoint_to_npoint()
+ * @param[in] tolerance Maximum distance between the point and the route,
+ * read where @p constructed is false
+ * @param[in] constructed True for the casts (#route_constructs_point)
+ * @pre The geometry is a non-empty point in the SRID of the ways network
  */
 Npoint *
-geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
+geompoint_route_npoint(const GSERIALIZED *gs, double tolerance,
+  bool constructed)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
-      ! ensure_finite(tolerance) ||
-      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
-    return NULL;
-  int32_t srid_geom = gserialized_get_srid(gs);
+  assert(gs); assert(gserialized_get_type(gs) == POINTTYPE);
+  assert(! gserialized_is_empty(gs));
   int32_t srid_ways = get_srid_ways();
-  if (srid_ways == SRID_INVALID || ! ensure_same_srid(srid_geom, srid_ways))
-    return NULL;
+  assert(gserialized_get_srid(gs) == srid_ways);
 
   /* The full file path in the first argument is defined in a global variable*/
   FILE *file = fopen(WAYS_CSV, "r");
@@ -554,8 +546,8 @@ geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
         fclose(file);
         return NULL;
       }
-      route_nearest_update(gs, rec.gid, rec.the_geom, tolerance, &min_gid,
-        &min_dist, &min_pos);
+      route_nearest_update(gs, rec.gid, rec.the_geom, tolerance, constructed,
+        &min_gid, &min_dist, &min_pos);
       pfree(rec.the_geom);
     }
   } while (! feof(file));
@@ -568,6 +560,51 @@ geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
     return NULL;
 
   return npoint_make(min_gid, min_pos);
+}
+
+/**
+ * @ingroup meos_npoint_base_conversion
+ * @brief Transform a geometry into a network point located on the route
+ * nearest to it within a tolerance
+ * @details The route is the nearest one among those whose distance to the
+ * point is at most the tolerance, the one with the least identifier among
+ * equally near routes, and the position is the one of the point projected on
+ * that route. The result is `NULL` when no route is within the tolerance.
+ * @param[in] gs Geometry
+ * @param[in] tolerance Maximum distance between the point and the route, in
+ * the units of the spatial reference system of the ways network
+ * @csqlfn #Geompoint_to_npoint()
+ */
+Npoint *
+geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
+      ! ensure_finite(tolerance) ||
+      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8) ||
+      ! ensure_srid_ways(gserialized_get_srid(gs)))
+    return NULL;
+  return geompoint_route_npoint(gs, tolerance, false);
+}
+
+/**
+ * @brief Transform a geometry into a network point located on the route
+ * that constructs it, the cast of a geometry to a network point
+ * @details The route is the nearest one among those that construct the
+ * point (#route_constructs_point), the one with the least identifier among
+ * equally near routes. The result is `NULL` when no route constructs it.
+ * @param[in] gs Geometry
+ */
+Npoint *
+geompoint_to_npoint_cast(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
+      ! ensure_srid_ways(gserialized_get_srid(gs)))
+    return NULL;
+  return geompoint_route_npoint(gs, 0.0, true);
 }
 
 /*****************************************************************************/
