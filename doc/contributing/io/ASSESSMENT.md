@@ -240,7 +240,7 @@ io_matrix.py \
   --repo "MobilityFlink facades=<MobilityFlink>:binding/target/generated-facades" \
   --repo "MobilityKafka facades=<MobilityKafka>:binding/target/generated-facades" \
   --repo GoMEOS=<GoMEOS>:types --repo MEOS.NET=<MEOS.NET>:MEOS.NET/Types \
-  --repo meos-rs=<meos-rs>:src --repo MEOS.js=<MEOS.js>:core/types \
+  --repo meos-rs=<meos-rs>:src --repo MEOS.js=<MEOS.js>:core/types,core/objects \
   --repo MobilityDuck=<MobilityDuck>:src \
   --repo MobilityNebula=<MobilityNebula>:nes-plugins/MEOS \
   --repo PyMEOS=<PyMEOS>:pymeos --repo PyMEOS-CFFI=<PyMEOS-CFFI>:pymeos_cffi \
@@ -253,8 +253,8 @@ extended families, so a root under which git tracks no file is read as the refre
 (MEOS-API `tools/refresh-binding.sh`, MEOS-API `cf4d124e6f`, JMEOS `a6dead1345`). Each generated
 layer of a JVM consumer is a row of its own: the typed SQL layer of Spark, its whole surface (JMEOS #233), the
 typed SQL layer and the `MeosOps*` facades of Flink, the facades of Kafka. MEOS.js generates its 152 classes into one file, `core/objects/objects.generated.ts`,
-and the tool credits a `From<Format>` reader to the type its file is named after, so the MEOS.js
-row counts only the readers of the classes under `core/types`. MobilityAPI sends MobilityDB SQL
+and the tool credits a `From<Format>` reader to the class that defines it there (MobilityDB #3646); MEOS.js
+names its binary reader `fromWKB`, so its binary readers under the portable name `<type>FromBinary` are the 6 of `core/types`. MobilityAPI sends MobilityDB SQL
 and defines no `as<Format>` name of its own. PyMEOS-CFFI is the FFI layer PyMEOS calls, so its
 names are MEOS's C names by design.
 
@@ -268,7 +268,7 @@ names are MEOS's C names by design.
 | GoMEOS | `cbde8e3107` | yes / 58 of 58 | yes / 32 of 32 | **no** / 0 of 59 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 20 of 20 | none | none |
 | MEOS.NET | `205c6ea071` | yes / 58 of 58 | yes / 32 of 32 | **no** / 0 of 59 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 20 of 20 | none | none |
 | meos-rs | `2b49f27223` | **no** / 0 of 58 | yes / 0 of 32 | **no** / 0 of 59 | **no** / 0 of 32 | yes / 12 of 59 | **no** / 0 of 32 | yes / 4 of 20 | none | none |
-| MEOS.js | `ad64d5b107` | yes / 0 of 58 | yes / 0 of 32 | yes / 6 of 59 | yes / 2 of 32 | yes / 6 of 59 | yes / 2 of 32 | yes / 6 of 20 | none | none |
+| MEOS.js | `ad64d5b107` | yes / 58 of 58 | yes / 32 of 32 | yes / 6 of 59 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 20 of 20 | none | none |
 | MobilityDuck | `585046987b` | yes / 56 of 58 | yes / 30 of 32 | yes / 56 of 59 | yes / 31 of 32 | yes / 58 of 59 | yes / 31 of 32 | yes / 20 of 20 | none | none |
 | MobilityNebula | `5c0974e0a0` | yes / 58 of 58 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 20 of 20 | none | none |
 | PyMEOS | `246b002178` | yes / 54 of 58 | yes / 7 of 32 | **no** / 0 of 59 | yes / 8 of 32 | yes / 54 of 59 | yes / 8 of 32 | yes / 20 of 20 | none | none |
