@@ -162,6 +162,17 @@ datum_quadbin_cell_area(Datum d)
   return Float8GetDatum(quadbin_cell_area((Quadbin) DatumGetInt64(d)));
 }
 
+/**
+ * @brief Return whether the tile of a quadbin cell shares a point with a box,
+ * as #quadbin_cell_meets_box answers it
+ */
+static Datum
+datum_quadbin_cell_meets_box(Datum d, Datum box, Datum border_inc)
+{
+  return BoolGetDatum(quadbin_cell_meets_box((Quadbin) DatumGetInt64(d),
+    (const STBox *) DatumGetPointer(box), DatumGetBool(border_inc)));
+}
+
 /*****************************************************************************
  * Descriptor
  *****************************************************************************/
@@ -183,7 +194,8 @@ const DggsCellOps quadbin_cellops =
   .cell_to_parent  = &datum_quadbin_cell_to_parent,
   .cell_to_point   = &datum_quadbin_cell_to_point,
   .cell_to_boundary = &datum_quadbin_cell_to_boundary,
-  .cell_area       = &datum_quadbin_cell_area
+  .cell_area       = &datum_quadbin_cell_area,
+  .cell_meets_box  = &datum_quadbin_cell_meets_box
 };
 
 /*****************************************************************************

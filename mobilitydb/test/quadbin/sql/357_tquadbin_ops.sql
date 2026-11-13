@@ -505,3 +505,55 @@ SELECT tquadbinGridDistance(
   tquadbin(quadbinTileToCell(1, 1, 4), timestamptz '2001-01-01'));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Restriction to a box
+-------------------------------------------------------------------------------
+
+-- A tile holds its west edge, not its east one: the meridian 0 belongs to the
+-- tile east of it
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+
+-- A tile holds its north edge, not its south one, but the tile of the last
+-- row holds its south edge too: the equator belongs to the tile south of it
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,-10),(-5,0))'));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 1, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,-10),(-5,0))'));
+
+-- The box holds its upper borders unless the third argument is false
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,10),(0,20))'));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,10),(0,20))', false));
+
+-- A sequence keeps the times at which its cell lies in the box, and the
+-- restriction to the complement the others
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02, 4817ffffffffffff@2001-01-03]',
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02, 4817ffffffffffff@2001-01-03]',
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+
+-- A box with the T dimension alone restricts the value to its period
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-03]',
+  stbox 'STBOX T([2001-01-02, 2001-01-04])'));
+
+-- The overlaps holds where the restriction is not empty, ever, or where the
+-- restriction to the complement is empty, always
+SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' ?&&
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))';
+SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' %&&
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))';
+SELECT stbox 'SRID=4326;STBOX X((-180,-90),(180,90))' %&&
+  tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]';
+
+/* Errors */
+SELECT atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=3857;STBOX X((0,10),(10,20))');
+SELECT tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01') ?&&
+  stbox 'SRID=4326;GEODSTBOX X((0,10),(10,20))';
+
+-------------------------------------------------------------------------------

@@ -646,3 +646,94 @@ SELECT tquadbinGridDistance(
   tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01'),
   tquadbin(quadbinTileToCell(1, 1, 4), timestamptz '2001-01-01'));
 ERROR:  The quadbin cells must have the same zoom: 3, 4
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+                    astext                     
+-----------------------------------------------
+ 4817ffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,-10),(-5,0))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 1, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,-10),(-5,0))'));
+                    astext                     
+-----------------------------------------------
+ 481bffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,10),(0,20))'));
+                    astext                     
+-----------------------------------------------
+ 4817ffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,10),(0,20))', false));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02, 4817ffffffffffff@2001-01-03]',
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+                                                                      astext                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ {[4817ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4817ffffffffffff@Tue Jan 02 00:00:00 2001 PST), [4817ffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02, 4817ffffffffffff@2001-01-03]',
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+                                              astext                                              
+--------------------------------------------------------------------------------------------------
+ {[4813ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4813ffffffffffff@Wed Jan 03 00:00:00 2001 PST)}
+(1 row)
+
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-03]',
+  stbox 'STBOX T([2001-01-02, 2001-01-04])'));
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ [4817ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4813ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' ?&&
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' %&&
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=4326;STBOX X((-180,-90),(180,90))' %&&
+  tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=3857;STBOX X((0,10),(10,20))');
+ERROR:  Operation on mixed SRID
+SELECT tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01') ?&&
+  stbox 'SRID=4326;GEODSTBOX X((0,10),(10,20))';
+ERROR:  Operation on mixed planar and geodetic coordinates
