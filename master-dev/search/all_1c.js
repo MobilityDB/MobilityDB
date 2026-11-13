@@ -6,7 +6,7 @@ var searchData=
   ['z_5fdim_3',['Z_DIM',['../tspatial__selfuncs_8h_a4e67a69f461f2cc5cd1bade418dcd115.html#a4e67a69f461f2cc5cd1bade418dcd115',1,'tspatial_selfuncs.h']]],
   ['z_5fops_4',['Z_OPS',['../sptree__test_8c_afea0561f76d297c246bf3955c22c4b17.html#afea0561f76d297c246bf3955c22c4b17',1,'sptree_test.c']]],
   ['zconflict_5',['zconflict',['../structLiftPoint_a79196096c2f96d6762edc7693d72add4.html#a79196096c2f96d6762edc7693d72add4',1,'LiftPoint']]],
-  ['zero_6',['zero',['../trgeo__distance_8txt_abdb8fa24b105cd04043d5483b9b43cf4.html#abdb8fa24b105cd04043d5483b9b43cf4',1,'trgeo_distance.txt']]],
+  ['zero_6',['zero',['../structDistPiece_a7d90997735cbd0d454144a0dfc9a461e.html#a7d90997735cbd0d454144a0dfc9a461e',1,'DistPiece::zero()'],['../trgeo__distance_8txt_abdb8fa24b105cd04043d5483b9b43cf4.html#abdb8fa24b105cd04043d5483b9b43cf4',1,'zero():&#160;trgeo_distance.txt']]],
   ['zero_5fapart_7',['zero_apart',['../structTuCheck_a1496c830ba8488591e9f5a52e5fba63d.html#a1496c830ba8488591e9f5a52e5fba63d',1,'TuCheck']]],
   ['zeros_8',['zeros',['../trgeo__distance_8txt_a24cdc39d6be354c1b7da6402a01f4547.html#a24cdc39d6be354c1b7da6402a01f4547',1,'trgeo_distance.txt']]],
   ['zmax_9',['ZMAX',['../tgeo__restrict_8c_aff810458b98cc7f985d4d60152586eed.html#aff810458b98cc7f985d4d60152586eed',1,'tgeo_restrict.c']]],

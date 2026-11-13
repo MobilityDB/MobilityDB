@@ -82,6 +82,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a9383b01a754d0acd8f773a42598e302e.html#a9383b01a754d0acd8f773a42598e302e">distfun_absmax</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a19efa35ca7d68002dfc3a31af569e6d6.html#a19efa35ca7d68002dfc3a31af569e6d6">distfun_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a9d9f08938aba647f9c1c5fefe501df00.html#a9d9f08938aba647f9c1c5fefe501df00">distfun_add_cs</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_aa7661e448f6d50a89a9e845608db539b.html#aa7661e448f6d50a89a9e845608db539b">distfun_add_cs2</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_ab726059390889631570f2268c2bad977.html#ab726059390889631570f2268c2bad977">distfun_add_fun</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_ac3e7c84fb7a15c9a97abe5a491547cdc.html#ac3e7c84fb7a15c9a97abe5a491547cdc">distfun_add_poly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a1ef36510282cd89231863eea85a8e549.html#a1ef36510282cd89231863eea85a8e549">DISTFUN_CELLMAX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a22ca5d90b975b7d4563af425aaab2f76.html#a22ca5d90b975b7d4563af425aaab2f76">distfun_crossings</a></td></tr>
@@ -92,6 +94,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a56c307de68af5a2fd2879e9d137ae082.html#a56c307de68af5a2fd2879e9d137ae082">distfun_is_zero</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a6b7706ac8d3f90dfd77839cde8976d1a.html#a6b7706ac8d3f90dfd77839cde8976d1a">distfun_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a68259c7dd961db064866c7d55a2696ee.html#a68259c7dd961db064866c7d55a2696ee">distfun_sign_after</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_ad4d9429ac845e9efc69f1d9c218ec2f9.html#ad4d9429ac845e9efc69f1d9c218ec2f9">distfun_square</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_ab31305290cfcc297cde50bac228cb524.html#ab31305290cfcc297cde50bac228cb524">DISTFUN_STACKMAX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_affe725381e020e897033bd4ce5898f9a.html#affe725381e020e897033bd4ce5898f9a">gap_is_zero</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a47d0ee1b66108048ce4668a84e87254c.html#a47d0ee1b66108048ce4668a84e87254c">quad_absmax</a></td></tr>
@@ -147,8 +150,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the maximum of |(a1*t + a0)*cos(w*t) + (b1*t + b0)*sin(w*t)| over [lo, hi]. </p>
-<p >The maximum is at most the amplitude |(a1*t + a0, b1*t + b0)|. The amplitude is the distance from the origin to a point that moves on a line, thus it is convex and its maximum is at an end of the interval. </p>
+<p>Return an upper bound of |(a2*t^2 + a1*t + a0)*cos(w*t) + (b2*t^2 + b1*t + b0)*sin(w*t)| over [lo, hi]. </p>
+<p >The value is at most the amplitude |(<a class="el" href="trgeo__distance_8txt_a4512e746095747aa740bf8b40184ef4f.html#a4512e746095747aa740bf8b40184ef4f">A(t)</a>, B(t))|, with A and B the two coefficients. With affine coefficients, the amplitude is the distance from the origin to a point that moves on a line, thus it is convex and its maximum is at an end of the interval. With quadratic coefficients, the amplitude is at most |(max|A|, max|B|)| over the interval, each maximum that of a quadratic, see <a class="el" href="trgeo__distsolve_8c_a47d0ee1b66108048ce4668a84e87254c.html#a47d0ee1b66108048ce4668a84e87254c" title="Return the maximum of |c2*t^2 + c1*t + c0| over [lo, hi].">quad_absmax()</a>. </p>
 
 </div>
 </div>

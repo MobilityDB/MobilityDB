@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Growable array of <a class="el" href="structDistEvent.html" title="Distance at an instant of a segment.">DistEvent</a>.  
+<p>Growable array of <a class="el" href="structDistEvent.html" title="Distance at an instant of a segment.">DistEvent</a>, and of the <a class="el" href="structDistPiece.html" title="A piece of the distance in a segment: an interval of time in which the walk follows one feature,...">DistPiece</a> between them when the caller asks for them, see <a class="el" href="trgeo__distwalk_8h_aafafab942163261a104a01e800a20e13.html#aafafab942163261a104a01e800a20e13" title="Ask the walk to keep the pieces of the distance between its events, see DistPiece.">distevents_keep_pieces()</a>  
  <a href="structDistEvents.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="trgeo__distwalk_8h_source.html">trgeo_distwalk.h</a>&gt;</code></p>
@@ -87,11 +87,20 @@ Data Fields</h2></td></tr>
 <tr class="separator:a2f71d74c95856439e90d4a7100da1c43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9fb733c82817afb26e17b938e4a26e75"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structDistEvent.html">DistEvent</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDistEvents_a9fb733c82817afb26e17b938e4a26e75.html#a9fb733c82817afb26e17b938e4a26e75">ev</a></td></tr>
 <tr class="separator:a9fb733c82817afb26e17b938e4a26e75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7fd5d7f610ba65a61cedcadd22da426"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDistEvents_ad7fd5d7f610ba65a61cedcadd22da426.html#ad7fd5d7f610ba65a61cedcadd22da426">npc</a></td></tr>
+<tr class="memdesc:ad7fd5d7f610ba65a61cedcadd22da426"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of pieces.  <a href="structDistEvents_ad7fd5d7f610ba65a61cedcadd22da426.html#ad7fd5d7f610ba65a61cedcadd22da426">More...</a><br /></td></tr>
+<tr class="separator:ad7fd5d7f610ba65a61cedcadd22da426"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a947b495c2c6170bf7485c639f13cbc40"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structDistPiece.html">DistPiece</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDistEvents_a947b495c2c6170bf7485c639f13cbc40.html#a947b495c2c6170bf7485c639f13cbc40">pc</a></td></tr>
+<tr class="memdesc:a947b495c2c6170bf7485c639f13cbc40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pieces, or NULL if they are not kept.  <a href="structDistEvents_a947b495c2c6170bf7485c639f13cbc40.html#a947b495c2c6170bf7485c639f13cbc40">More...</a><br /></td></tr>
+<tr class="separator:a947b495c2c6170bf7485c639f13cbc40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b39b35b0a6dd186b503a6abf7bb07ea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDistEvents_a8b39b35b0a6dd186b503a6abf7bb07ea.html#a8b39b35b0a6dd186b503a6abf7bb07ea">pcsize</a></td></tr>
+<tr class="memdesc:a8b39b35b0a6dd186b503a6abf7bb07ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of the array of pieces.  <a href="structDistEvents_a8b39b35b0a6dd186b503a6abf7bb07ea.html#a8b39b35b0a6dd186b503a6abf7bb07ea">More...</a><br /></td></tr>
+<tr class="separator:a8b39b35b0a6dd186b503a6abf7bb07ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92ef2933e809b21ad42db966f1b7119f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDistEvents_a92ef2933e809b21ad42db966f1b7119f.html#a92ef2933e809b21ad42db966f1b7119f">size</a></td></tr>
 <tr class="separator:a92ef2933e809b21ad42db966f1b7119f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Growable array of <a class="el" href="structDistEvent.html" title="Distance at an instant of a segment.">DistEvent</a>. </p>
+<div class="textblock"><p >Growable array of <a class="el" href="structDistEvent.html" title="Distance at an instant of a segment.">DistEvent</a>, and of the <a class="el" href="structDistPiece.html" title="A piece of the distance in a segment: an interval of time in which the walk follows one feature,...">DistPiece</a> between them when the caller asks for them, see <a class="el" href="trgeo__distwalk_8h_aafafab942163261a104a01e800a20e13.html#aafafab942163261a104a01e800a20e13" title="Ask the walk to keep the pieces of the distance between its events, see DistPiece.">distevents_keep_pieces()</a> </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/include/rgeo/<a class="el" href="trgeo__distwalk_8h_source.html">trgeo_distwalk.h</a></li>
 </ul>

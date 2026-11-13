@@ -4,7 +4,7 @@ var searchData=
   ['z_1',['Z',['../structGeoPoseAnchor_a5112a2b7d87f581b5c19703610948c88.html#a5112a2b7d87f581b5c19703610948c88',1,'GeoPoseAnchor']]],
   ['z_2',['z',['../structSTboxGridState_adeeca2335d36668d094261ce5f8fd6f0.html#adeeca2335d36668d094261ce5f8fd6f0',1,'STboxGridState']]],
   ['zconflict_3',['zconflict',['../structLiftPoint_a79196096c2f96d6762edc7693d72add4.html#a79196096c2f96d6762edc7693d72add4',1,'LiftPoint']]],
-  ['zero_4',['zero',['../trgeo__distance_8txt_abdb8fa24b105cd04043d5483b9b43cf4.html#abdb8fa24b105cd04043d5483b9b43cf4',1,'trgeo_distance.txt']]],
+  ['zero_4',['zero',['../structDistPiece_a7d90997735cbd0d454144a0dfc9a461e.html#a7d90997735cbd0d454144a0dfc9a461e',1,'DistPiece::zero()'],['../trgeo__distance_8txt_abdb8fa24b105cd04043d5483b9b43cf4.html#abdb8fa24b105cd04043d5483b9b43cf4',1,'zero():&#160;trgeo_distance.txt']]],
   ['zero_5fapart_5',['zero_apart',['../structTuCheck_a1496c830ba8488591e9f5a52e5fba63d.html#a1496c830ba8488591e9f5a52e5fba63d',1,'TuCheck']]],
   ['zeros_6',['zeros',['../trgeo__distance_8txt_a24cdc39d6be354c1b7da6402a01f4547.html#a24cdc39d6be354c1b7da6402a01f4547',1,'trgeo_distance.txt']]],
   ['zmax_7',['ZMAX',['../tgeo__restrict_8c_aff810458b98cc7f985d4d60152586eed.html#aff810458b98cc7f985d4d60152586eed',1,'tgeo_restrict.c']]],

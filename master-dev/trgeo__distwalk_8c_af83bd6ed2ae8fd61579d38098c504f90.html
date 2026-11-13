@@ -80,12 +80,15 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_a68e2a996fc9fa19f6036b6d9ae42067d.html#a68e2a996fc9fa19f6036b6d9ae42067d">distevents_add</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_aa4c7423998e76285ed077f8a54fa1c2e.html#aa4c7423998e76285ed077f8a54fa1c2e">distevents_add_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_a764a69a0db4f9accf46825710863a152.html#a764a69a0db4f9accf46825710863a152">distevents_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_a8a114205c8654459039af45b4a2be8ca.html#a8a114205c8654459039af45b4a2be8ca">distevents_init</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_aafafab942163261a104a01e800a20e13.html#aafafab942163261a104a01e800a20e13">distevents_keep_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_a304b01025dfb6bde8c982e70c579fb5a.html#a304b01025dfb6bde8c982e70c579fb5a">distmotion_from_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_aa46e89993a58dd4578b167eed9b5076d.html#aa46e89993a58dd4578b167eed9b5076d">distmotion_place</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_a7b04260e1fa7cb6fa6fb53b59211bd1b.html#a7b04260e1fa7cb6fa6fb53b59211bd1b">distmotion_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_adf01f4e9b7eff0fb379c20f50b8841ae.html#adf01f4e9b7eff0fb379c20f50b8841ae">distmotion_set_static</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_aa5f1811f4aec37cd7ec979d40dbfba33.html#aa5f1811f4aec37cd7ec979d40dbfba33">distpiece_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_ad7a83df0d503c4a1948b06a3e8937672.html#ad7a83df0d503c4a1948b06a3e8937672">distrefedge_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_a5097510282b5d23fdb3c73edb37ae409.html#a5097510282b5d23fdb3c73edb37ae409">distrefpoly_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distwalk_8c_ac2a556e62cca03fcfe7667cce4a419ac.html#ac2a556e62cca03fcfe7667cce4a419ac">distrefpoly_set</a></td></tr>
@@ -180,7 +183,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if, just after <code>t</code>, edge <code>i</code> of A comes before the reversed edge <code>j</code> of B in counterclockwise order. </p>
-<p ><a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> i of A comes before the reversed edge j of B if the angle from the first to the second is in [0, pi). While the angle is not 0 or pi, its sine gives the answer. The parallel-edge function is <a class="el" href="trgeo__distance_8txt_a83a37dbc217b5ef129ad3b9db0d4fba8.html#a83a37dbc217b5ef129ad3b9db0d4fba8">cross(uA, uB)</a> = -<a class="el" href="trgeo__distance_8txt_a83a37dbc217b5ef129ad3b9db0d4fba8.html#a83a37dbc217b5ef129ad3b9db0d4fba8">cross(uA, reversed uB)</a>, which is negative when the angle is in (0, pi).</p>
+<p ><a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> i of A comes before the reversed edge j of B if the angle from the first to the second is in [0, pi). While the angle is not 0 or pi, its sine gives the answer. The parallel-edge function is cross(uA, uB) = -cross(uA, reversed uB), which is negative when the angle is in (0, pi).</p>
 <p >When the two edges stay parallel, the sine is zero and the cosine tells the angle 0 from the angle pi. The angle 0 counts as before: the edge of A comes first. Any fixed rule is correct there, because the two edges are then on the same line of the difference; what is necessary is that each question gets the same answer. The angle pi does not count as before. For a polygon B this makes no difference, but for a segment it does: its two reversed edges are at a half turn from each other, thus an edge of A that is parallel to the segment is at the angle 0 from one and pi from the other, and only one of them must be before it. </p>
 
 </div>
