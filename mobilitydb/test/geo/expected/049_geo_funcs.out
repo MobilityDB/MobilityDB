@@ -790,6 +790,38 @@ SELECT maxDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
            5
 (1 row)
 
+SELECT distance(geometry 'Linestring(-2.083 0.759,-0.097 4.264)',
+    geometry 'GeometryCollection(Point(2.579 -3.924),Point(1.665 -1.556))') =
+    float8 '4.4053069132581442',
+  distance(geometry 'Linestring(-2.083 0.759,-0.097 4.264)',
+    geometry 'GeometryCollection(Point(2.579 -3.924),Point(1.665 -1.556))') =
+  distance(geometry 'Linestring(-2.083 0.759,-0.097 4.264)',
+    geometry 'MultiPoint(2.579 -3.924,1.665 -1.556)');
+ ?column? | ?column? 
+----------+----------
+ t        | t
+(1 row)
+
+SELECT distance(geometry 'Point(2.853 -4.856)',
+    geometry 'GeometryCollection(MultiPoint((0.718 1.927),(3.782 3.818),(4.257 4.039)),Point(-0.907 4.516))') =
+  distance(geometry 'Point(2.853 -4.856)',
+    geometry 'MultiPoint(0.718 1.927,3.782 3.818,4.257 4.039,-0.907 4.516)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT distance(geometry 'Linestring(2.468 1.602,3.627 -0.441)',
+    geometry 'GeometryCollection(GeometryCollection(Linestring(-0.313 -3.032,1.431 0.067)),Point(0.561 2.667))') =
+  least(distance(geometry 'Linestring(2.468 1.602,3.627 -0.441)',
+      geometry 'Linestring(-0.313 -3.032,1.431 0.067)'),
+    distance(geometry 'Linestring(2.468 1.602,3.627 -0.441)',
+      geometry 'Point(0.561 2.667)'));
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric),
   round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
     round    |    round    
