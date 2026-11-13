@@ -37,6 +37,7 @@ This plan stands alone. It states every task with its own rows and its own state
 
 | Where | What it holds |
 |---|---|
+| `doc/specs/meos-cell-walks.md` | The user specification: what master guarantees from this plan, its minor version raised with each merged row; when the plan closes, unmerged, it is the document that remains |
 | `doc/temporal_types_analytics.xml`, `doc/es/temporal_types_analytics.xml` | The tiling chapter and its bound rule |
 | `doc/temporal_cell_index.xml`, `doc/es/temporal_cell_index.xml` | The cell covers, splits and their `borderInc` |
 | `doc/contributing/th3index_design_notes.md`, `doc/contributing/tquadbin_design_notes.md` | The design notes of the temporal cells |
