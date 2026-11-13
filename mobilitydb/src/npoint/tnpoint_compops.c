@@ -326,6 +326,38 @@ Always_overlaps_tnpoint_stbox(PG_FUNCTION_ARGS)
   return EAoverlaps_tspatial_stbox(fcinfo, &always_overlaps_tnpoint_stbox);
 }
 
+PGDLLEXPORT Datum Ever_overlaps_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tnpoint_tnpoint);
+/**
+ * @ingroup mobilitydb_npoint_comp_ever
+ * @brief Return true if two temporal network points are ever at one place of
+ * the map at a time they share, as #Ever_overlaps_tgeo_tgeo answers it for
+ * two temporal geos
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &ever_overlaps_tnpoint_tnpoint);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tnpoint_tnpoint);
+/**
+ * @ingroup mobilitydb_npoint_comp_ever
+ * @brief Return true if two temporal network points are always at one place
+ * of the map at the times they share, as #Always_overlaps_tgeo_tgeo answers
+ * it for two temporal geos
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &always_overlaps_tnpoint_tnpoint);
+}
+
 /*****************************************************************************
  * Temporal comparison functions
  *****************************************************************************/
