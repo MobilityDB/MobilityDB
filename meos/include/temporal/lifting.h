@@ -100,8 +100,33 @@ typedef struct
                                  readers take in place of evaluating the
                                  function on the values placed at the instant,
                                  and free as they free a value they compute */
+  bool tpfn_ends;             /**< True if the turning point function, which
+                                 writes values (tpfn_value), also writes the
+                                 two ends of each segment of a linear sequence
+                                 with the value there. The readers then call it
+                                 on every segment, a constant one included,
+                                 evaluate the function only at an instant that
+                                 ends no segment, and merge with tpfn_merge an
+                                 instant with the one added before it at the
+                                 same timestamp */
+  bool reskeep;               /**< True if the result keeps every instant and
+                                 every sequence a lift adds, without the
+                                 normalization that removes an instant on the
+                                 line through its neighbors, as a result whose
+                                 instants carry its extrema needs */
+  bool ressegs;               /**< True if the result of a lift of a linear and
+                                 a step sequence has one sequence for each
+                                 segment of the two sequences synchronized,
+                                 rather than one for each instant at which the
+                                 step sequence changes value */
   tpfunc_base tpfn_base;      /**< Turning point function for temporal and base types*/
   tpfunc_temp tpfn_temp;      /**< Turning point function for two temporal types */
+  datum_func2 tpfn_merge;     /**< Value of the result at a timestamp at which
+                                 two instants fall, the one added before and
+                                 the one a turning point function writes
+                                 (tpfn_ends); it returns one of its two
+                                 arguments, and the instant added before is
+                                 kept when it returns a value equal to it */
   tpfunc_temp_at tpfn_temp_at; /**< Value of the predicate at a turning point
                                  strictly inside a segment, when the turning
                                  point function dates it at an instant at which
