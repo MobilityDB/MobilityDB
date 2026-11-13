@@ -128,6 +128,10 @@ CREATE OPERATOR CLASS tposechain_rtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tposechain, stbox),
   OPERATOR  35    /&> (tposechain, tposechain),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tposechain, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tposechain, stbox),
   -- functions
   FUNCTION  1 tposechain_gist_consistent(internal, tposechain, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -218,6 +222,10 @@ CREATE OPERATOR CLASS tposechain_quadtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tposechain, stbox),
   OPERATOR  35    /&> (tposechain, tposechain),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tposechain, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tposechain, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -306,6 +314,10 @@ CREATE OPERATOR CLASS tposechain_kdtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tposechain, stbox),
   OPERATOR  35    /&> (tposechain, tposechain),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tposechain, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tposechain, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
@@ -443,7 +455,11 @@ ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
   -- strictly back
   OPERATOR  34    />> (stbox, tposechain),
   -- overlaps or back
-  OPERATOR  35    /&> (stbox, tposechain);
+  OPERATOR  35    /&> (stbox, tposechain),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tposechain),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tposechain);
 
 ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
   -- strictly left
@@ -489,7 +505,11 @@ ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
   -- strictly back
   OPERATOR  34    />> (stbox, tposechain),
   -- overlaps or back
-  OPERATOR  35    /&> (stbox, tposechain);
+  OPERATOR  35    /&> (stbox, tposechain),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tposechain),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tposechain);
 
 ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly left
@@ -535,6 +555,10 @@ ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly back
   OPERATOR  34    />> (stbox, tposechain),
   -- overlaps or back
-  OPERATOR  35    /&> (stbox, tposechain);
+  OPERATOR  35    /&> (stbox, tposechain),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tposechain),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tposechain);
 
 /******************************************************************************/

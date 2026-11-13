@@ -200,6 +200,10 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				<listitem>
 					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, and <varname>|=|</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <varname>tstzspan</varname>, <varname>tbox</varname>, or <varname>stbox</varname>), not the entire values.</para>
 				</listitem>
+
+				<listitem>
+					<para><varname>?&amp;&amp;</varname> and <varname>%&amp;&amp;</varname> with the bounding box of the indexed type, in either order (see <xref linkend="ttype_ever_always_overlaps"/>), which work on the entire values: the index keeps the values whose bounding box overlaps the query box, since a value lying in the box at some instant has such a bounding box, and each of them is then tested by the operator, so the query answers as it does without the index.</para>
+				</listitem>
 			</itemizedlist>
 		</para>
 

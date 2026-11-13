@@ -677,6 +677,8 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
       switch (strategy)
       {
         case RTOverlapStrategyNumber:
+        case RTEverOverlapStrategyNumber:
+        case RTAlwaysOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
           flag = (idxtype == SPGIST_QUADTREE) ?

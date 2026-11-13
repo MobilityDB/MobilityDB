@@ -6,6 +6,10 @@
 # `dist` for the nearest approach distance, `x`, `y`, `z` or `t` for a position
 # operator. A box type lists its axes in manifest.d/boxtypes.yaml (`posaxes:`),
 # and each partner of its classes the axes it carries (`opclasses:` `partners:`).
+# The `ever` axis holds the ever and always overlaps, which a class of a temporal type
+# takes against the box the type declares them with, and a class of a box against the
+# partners declaring them with it (generate.py #_ever_overlaps_box), no partner listing
+# the axis.
 boxstrategies:
   - {num: 1,  sqlop: "<<",  axis: x,    desc: strictly left}
   - {num: 2,  sqlop: "&<",  axis: x,    desc: overlaps or left}
@@ -29,3 +33,5 @@ boxstrategies:
   - {num: 33, sqlop: "<</", axis: z,    desc: strictly front}
   - {num: 34, sqlop: "/>>", axis: z,    desc: strictly back}
   - {num: 35, sqlop: "/&>", axis: z,    desc: overlaps or back}
+  - {num: 36, sqlop: "?&&", axis: ever, desc: ever overlaps}
+  - {num: 37, sqlop: "%&&", axis: ever, desc: always overlaps}

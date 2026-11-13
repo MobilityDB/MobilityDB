@@ -152,6 +152,16 @@ CREATE OPERATOR CLASS stbox_rtree_ops
   OPERATOR  35    /&> (stbox, stbox),
   OPERATOR  35    /&> (stbox, tgeompoint),
   OPERATOR  35    /&> (stbox, tgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tgeompoint),
+  OPERATOR  36    ?&& (stbox, tgeogpoint),
+  OPERATOR  36    ?&& (stbox, tgeometry),
+  OPERATOR  36    ?&& (stbox, tgeography),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tgeompoint),
+  OPERATOR  37    %&& (stbox, tgeogpoint),
+  OPERATOR  37    %&& (stbox, tgeometry),
+  OPERATOR  37    %&& (stbox, tgeography),
   -- functions
   FUNCTION  1  stbox_gist_consistent(internal, stbox, smallint, oid, internal),
   FUNCTION  2  stbox_gist_union(internal, internal),
@@ -259,6 +269,10 @@ CREATE OPERATOR CLASS tgeompoint_rtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tgeompoint, stbox),
   OPERATOR  35    /&> (tgeompoint, tgeompoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tgeompoint, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tgeompoint, stbox),
   -- functions
   FUNCTION  1 tgeompoint_gist_consistent(internal, tgeompoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -320,6 +334,10 @@ CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   OPERATOR  31    #&> (tgeogpoint, tstzspan),
   OPERATOR  31    #&> (tgeogpoint, stbox),
   OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tgeogpoint, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tgeogpoint, stbox),
   -- functions
   FUNCTION  1 tgeogpoint_gist_consistent(internal, tgeogpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),

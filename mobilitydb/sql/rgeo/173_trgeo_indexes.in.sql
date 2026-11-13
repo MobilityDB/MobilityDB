@@ -128,6 +128,10 @@ CREATE OPERATOR CLASS trgeometry_rtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (trgeometry, stbox),
   OPERATOR  35    /&> (trgeometry, trgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (trgeometry, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (trgeometry, stbox),
   -- functions
   FUNCTION  1 trgeometry_gist_consistent(internal, trgeometry, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -218,6 +222,10 @@ CREATE OPERATOR CLASS trgeometry_quadtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (trgeometry, stbox),
   OPERATOR  35    /&> (trgeometry, trgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (trgeometry, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (trgeometry, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -306,6 +314,10 @@ CREATE OPERATOR CLASS trgeometry_kdtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (trgeometry, stbox),
   OPERATOR  35    /&> (trgeometry, trgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (trgeometry, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (trgeometry, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
@@ -360,7 +372,11 @@ ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
   -- strictly back
   OPERATOR  34    />> (stbox, trgeometry),
   -- overlaps or back
-  OPERATOR  35    /&> (stbox, trgeometry);
+  OPERATOR  35    /&> (stbox, trgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, trgeometry),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, trgeometry);
 
 ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
   -- strictly left
@@ -406,7 +422,11 @@ ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
   -- strictly back
   OPERATOR  34    />> (stbox, trgeometry),
   -- overlaps or back
-  OPERATOR  35    /&> (stbox, trgeometry);
+  OPERATOR  35    /&> (stbox, trgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, trgeometry),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, trgeometry);
 
 ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly left
@@ -452,6 +472,10 @@ ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly back
   OPERATOR  34    />> (stbox, trgeometry),
   -- overlaps or back
-  OPERATOR  35    /&> (stbox, trgeometry);
+  OPERATOR  35    /&> (stbox, trgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, trgeometry),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, trgeometry);
 
 /******************************************************************************/

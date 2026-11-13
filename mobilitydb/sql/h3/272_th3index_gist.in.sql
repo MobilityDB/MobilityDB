@@ -117,6 +117,10 @@ CREATE OPERATOR CLASS th3index_rtree_ops
   OPERATOR  31    #&> (th3index, tstzspan),
   OPERATOR  31    #&> (th3index, stbox),
   OPERATOR  31    #&> (th3index, th3index),
+  -- ever overlaps
+  OPERATOR  36    ?&& (th3index, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (th3index, stbox),
   -- functions
   FUNCTION  1 th3index_gist_consistent(internal, th3index, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -193,6 +197,10 @@ ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, th3index),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, th3index);
+  OPERATOR  31    #&> (stbox, th3index),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, th3index),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, th3index);
 
 /******************************************************************************/
