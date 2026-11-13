@@ -620,6 +620,15 @@ answers a subnormal distance wrongly where its caller does not keep the range.
 `DDBound` stands for tier 1: `pair_mul`, `pair_add`, `pair_mid_sign`, `incircle_pair` and the
 pairs of `polynomial_sign_pairs` become `ddb_*` operations, their bounds carried in the value.
 
+The readers on master `e52809b1ea`, each of which states its bound by hand where `DDBound`
+carries it in the value: `pair_mid_sign`, `point_distance_offset_pair_side_sign`,
+`point_segment_distance_offset_exact`, `segment_interior_mid_sign`,
+`segment_interior_pairs_from`, `segment_pair_diff_sign`, `incircle_sign_filter` (through
+`incircle_pair`) and `polynomial_sign_pairs`. The differential answers each both ways, its pairs
+and `DDBound`, on the calls the speed cells record and on ties, subnormal and huge magnitudes;
+the pull request then moves the readers and removes `pair_mul` and `pair_add`, judged by the
+speed cells, since a bound carried costs a third double per value.
+
 ### EA5. One wide number
 
 `TowerWide`, the size of its value, stands for tier 3: `WideDyadic` and the `WIDE_LIMBS` integer
