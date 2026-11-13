@@ -4276,6 +4276,37 @@ geom_faces_free(GeomFaces *gf)
 static bool
 geom_face_inside(const GeomFace *f, const double *p, const double *q)
 {
+  /* A face across an axis, its normal along that axis: the foot of a point
+   * lies inside it where the point lies inside its rings read on the two other
+   * axes, the parity of the edges a ray along the first of them crosses, each
+   * crossing read by the side of the point of the edge (#cross_product_sign) */
+  if (! q && f->naxis >= 0)
+  {
+    int i = (f->naxis + 1) % 3, k = (f->naxis + 2) % 3, cnt = 0;
+    for (uint32_t r = 0; r < f->nrings; r++)
+    {
+      const POINTARRAY *pa = f->rings[r];
+      if (pa->npoints < 2)
+        continue;
+      size_t st = geom_pa_stride(pa);
+      const double *u = geom_pa_point(pa, st, 0);
+      for (uint32_t m = 1; m < pa->npoints; m++)
+      {
+        const double *v = geom_pa_point(pa, st, m);
+        bool up = (u[k] <= p[k] && v[k] > p[k]),
+          down = (v[k] <= p[k] && u[k] > p[k]);
+        if (up || down)
+        {
+          int o = cross_product_sign(u[i], u[k], v[i], v[k], u[i], u[k],
+            p[i], p[k]);
+          if ((up && o > 0) || (down && o < 0))
+            cnt++;
+        }
+        u = v;
+      }
+    }
+    return (cnt & 1) != 0;
+  }
   int j = f->axis;
   if (q)
   {
