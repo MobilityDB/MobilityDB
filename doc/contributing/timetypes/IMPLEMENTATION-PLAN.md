@@ -21,14 +21,14 @@ measured value.
 | Row | Task | State |
 |---|---|---|
 | TT-0 | The conversions of `timestamptz` (MobilityDB #3508), and of `timestamp`, `date`, `interval` and `timetz` (#3661) | MERGED |
-| TT-1 | `time_to_parts`, `time_from_parts`, the microseconds from midnight of a `time` (the owner 2026-11-13: "please make time as North Star as the other time types converters") | OPEN, branch `meos/time-to-parts` |
-| TT-2 | `doc/specs/meos-bindings-algebra.md` v0.2.0: the cast of each of the six types, its counts or parts and its errors | OPEN as MobilityDB #3648 (draft, v0.1.0), v0.2.0 on TT-1 |
+| TT-1 | `time_to_parts`, `time_from_parts`, the microseconds from midnight of a `time` (the owner 2026-11-13: "please make time as North Star as the other time types converters") | OPEN as MobilityDB #3667 |
+| TT-2 | `doc/specs/meos-bindings-algebra.md` v0.2.0: the cast of each of the six types, its counts or parts and its errors | OPEN as MobilityDB #3648 (draft), v0.2.0 its second commit; the `time` section names the functions of #3667 |
 
 ## The bindings
 
 | Row | Binding | Task | State |
 |---|---|---|---|
-| TT-3 | JMEOS | `utils.TimestampTzConverter` through the four conversions of the epochs, generated as native calls by `FunctionsGenerator`, an instant with a fraction of a microsecond refused; `utils.ConversionUtils` `LocalDateTime`, `OffsetDateTime` and `Duration` through them and `interval_to_parts`/`interval_from_parts`; `LocalDate` through `date_to_unix_days`/`unix_days_to_date` in place of the three copies of `dateset`, `datespan`, `datespanset`; new casts of `LocalTime` and `OffsetTime` through the `time` and `timetz` pairs (the owner 2026-11-13: "IMHO they are the same topic") | OPEN, branch `fix/time-casts-through-meos`; its CI reads master's catalog, so it follows TT-1 |
+| TT-3 | JMEOS | `utils.TimestampTzConverter` through the four conversions of the epochs, generated as native calls by `FunctionsGenerator`, an instant with a fraction of a microsecond refused; `utils.ConversionUtils` `LocalDateTime`, `OffsetDateTime` and `Duration` through them and `interval_to_parts`/`interval_from_parts`; `LocalDate` through `date_to_unix_days`/`unix_days_to_date` in place of the three copies of `dateset`, `datespan`, `datespanset`; new casts of `LocalTime` and `OffsetTime` through the `time` and `timetz` pairs (the owner 2026-11-13: "IMHO they are the same topic") | OPEN, branch `fix/time-casts-through-meos`, every cast written; its build and CI read a catalog of master, so its clean build and its push follow #3667 |
 | TT-4 | JMEOS `tools/codegen_jvm.py` | the `MeosSqlRuntime` it generates for Flink SQL and Spark SQL: `Instant`, `LocalDate` and `Duration` through the casts of TT-3, in place of its own constants and ISO text | after TT-3 |
 | TT-5 | PyMEOS-CFFI | `builder/templates/functions.py`: `datetime`, `date` and `timedelta` through the MEOS conversions on `_lib`, an interval with months refused by a `timedelta`; new casts of the naive `datetime`, `time` and the `time` with `tzinfo` | after TT-3 |
 | TT-6 | PyMEOS | `dateset`, `datespan`, `datespanset` `shift_scale`: a `timedelta` with a part below a day refused, not floored | after TT-5 |
