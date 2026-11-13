@@ -689,3 +689,6 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX X((1,2),(1,2))'::geography);
 SELECT stbox 'SRID=3857;STBOX X((1,2),(1,2))'::geography;
 SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geometry);
 SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geography);
+-- The polygon of a geodetic box has the corners of the box
+SELECT ST_Covers(stbox 'GEODSTBOX X((4.3088501085795237,50.84583267322806),(4.4214185584898926,50.932522756328005))'::geometry,
+  ST_Point(4.4214185584898926, 50.84583267322806, 4326));
