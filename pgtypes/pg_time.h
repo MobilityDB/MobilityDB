@@ -62,6 +62,7 @@ extern TimeTzADT *plus_timetz_interval(const TimeTzADT *timetz, const Interval *
 extern int32 time_cmp(TimeADT time1, TimeADT time2);
 extern bool time_eq(TimeADT time1, TimeADT time2);
 extern Numeric time_extract(TimeADT time, const text *units);
+extern TimeADT time_from_parts(int64 us);
 extern bool time_ge(TimeADT time1, TimeADT time2);
 extern bool time_gt(TimeADT time1, TimeADT time2);
 extern uint32 time_hash(TimeADT time);
@@ -78,6 +79,7 @@ extern float8 time_part(TimeADT time, const text *units);
 extern TimeADT time_scale(TimeADT date, int32 typmod);
 extern TimeADT time_smaller(TimeADT time1, TimeADT time2);
 extern Interval *time_to_interval(TimeADT time);
+extern bool time_to_parts(TimeADT time, int64 *us);
 extern TimeTzADT *time_to_timetz(TimeADT time);
 extern TimeADT timestamp_to_time(Timestamp ts);
 extern TimeADT timestamptz_to_time(TimestampTz tztz);
