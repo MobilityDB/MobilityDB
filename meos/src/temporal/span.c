@@ -2268,6 +2268,50 @@ interval_from_parts(int32 months, int32 days, int64 us)
 
 /**
  * @ingroup meos_base_time
+ * @brief Return in the last argument the microseconds from midnight of a time
+ * @details A binding converts a time to the time of its host through this
+ * function and back through #time_from_parts, as #timetz_to_parts converts a
+ * time with time zone
+ * @param[in] time Time
+ * @param[out] us Microseconds from midnight
+ * @errval false
+ */
+bool
+time_to_parts(TimeADT time, int64 *us)
+{
+  /* Ensure the validity of the arguments, as a time is a count within a day */
+  VALIDATE_NOT_NULL(us, false);
+  if (time < 0 || time > USECS_PER_DAY)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "time out of range");
+    return false;
+  }
+  *us = time;
+  return true;
+}
+
+/**
+ * @ingroup meos_base_time
+ * @brief Return the time of a number of microseconds from midnight
+ * @param[in] us Microseconds from midnight, from 0 to 24:00:00
+ * @errval INT64_MAX
+ * @see #time_to_parts
+ */
+TimeADT
+time_from_parts(int64 us)
+{
+  /* Ensure the validity of the arguments, as a time refuses a count outside
+   * a day */
+  if (us < 0 || us > USECS_PER_DAY)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "time out of range");
+    return INT64_MAX;
+  }
+  return (TimeADT) us;
+}
+
+/**
+ * @ingroup meos_base_time
  * @brief Return in the last two arguments the microseconds from midnight and
  * the offset from UTC of a time with time zone
  * @details A binding converts a time with time zone to the time of its host

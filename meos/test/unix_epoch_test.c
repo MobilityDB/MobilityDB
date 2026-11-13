@@ -149,6 +149,24 @@ check_interval(const char *text, int32 months, int32 days, int64 us)
   meos_errno_reset();
 }
 
+/* Verify the microseconds of a time and its round trip, as #check_count
+ * does for a timestamptz */
+static void
+check_time(const char *text, int64 us)
+{
+  TimeADT t = time_in(text, -1);
+  int64 u = 0;
+  bool ok = time_to_parts(t, &u);
+  TimeADT back = time_from_parts(u);
+  printf("time %s: %lld\n", text, (long long) u);
+  if (! ok || u != us || back != t || meos_errno() != 0)
+  {
+    printf("  expected %lld and the same time back\n", (long long) us);
+    failures++;
+  }
+  meos_errno_reset();
+}
+
 /* Verify the parts of a time with time zone and its round trip, as
  * #check_count does for a timestamptz */
 static void
@@ -246,6 +264,19 @@ int main(void)
   check_error("interval_from_parts(INT32_MAX, INT32_MAX, INT64_MAX)", DT);
   interval_from_parts(INT32_MIN, INT32_MIN, INT64_MIN);
   check_error("interval_from_parts(INT32_MIN, INT32_MIN, INT64_MIN)", DT);
+
+  /* A time is its microseconds from midnight */
+  check_time("00:00:00", 0);
+  check_time("00:00:00.000001", 1);
+  check_time("12:34:56.789012", 45296789012);
+  check_time("23:59:59.999999", 86399999999);
+  check_time("24:00:00", 86400000000);
+  time_from_parts(-1);
+  check_error("time_from_parts(-1)", DT);
+  time_from_parts(86400000001);
+  check_error("time_from_parts(86400000001)", DT);
+  time_to_parts(-1, &u);
+  check_error("time_to_parts(-1)", DT);
 
   /* A time with time zone has its offset in seconds east of UTC */
   check_timetz("12:00:00+01", 43200000000, 3600);

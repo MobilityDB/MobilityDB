@@ -983,6 +983,216 @@ h3_cell_holds_vec(H3Index cell, const double *p)
   return result;
 }
 
+/*****************************************************************************
+ * The meeting of a geodetic cell with a box of longitudes and latitudes
+ *****************************************************************************/
+
+/** @brief Number of spans of an edge of a cell in a box asked for, more than
+ * a great-circle arc shorter than half a turn has */
+#define H3_BOX_SPANS 4
+
+/**
+ * @brief Return true if a geodetic cell holds the position of degrees, read
+ * as its geodetic position (#h3_cell_holds_vec)
+ */
+static bool
+h3_cell_holds_lonlat(H3Index cell, double lon, double lat)
+{
+  double v[3];
+  h3_lonlat_vector(lon, lat, v);
+  return h3_cell_holds_vec(cell, v);
+}
+
+/**
+ * @brief Return true if a geodetic cell meets a box of no width or no height
+ * @details The box is a piece of a meridian or of a parallel. The edges of the
+ * outline cross it at positions that cut it into pieces lying wholly inside
+ * the cell or wholly outside it, each crossing read where
+ * #dggs_arc_meridian_params or #dggs_arc_parallel_params states it, as the
+ * restriction of a geodetic path to a box reads it. The ends of the piece, the
+ * crossings and a position halfway between each two consecutive ones, each
+ * read as a geodetic position the cell holds or not, say whether the cell
+ * holds a position of the box.
+ * @param[in] cell Cell
+ * @param[in] o Outline of the cell
+ * @param[in] xmin,ymin,xmax,ymax Bounds of the box, in degrees, with
+ * `xmin == xmax` or `ymin == ymax`
+ */
+static bool
+h3_outline_meets_line(H3Index cell, const H3Outline *o, double xmin,
+  double ymin, double xmax, double ymax)
+{
+  bool meridian = (xmin == xmax);
+  double lo = meridian ? ymin : xmin, hi = meridian ? ymax : xmax;
+  double cut[2 + 2 * MAX_CELL_BNDRY_VERTS];
+  int ncut = 0, n = o->count;
+  cut[ncut++] = lo;
+  cut[ncut++] = hi;
+  for (int k = 0; k < n; k++)
+  {
+    DggsArc arc;
+    int k1 = (k + 1) % n;
+    if (! dggs_arc_init(o->lon[k], o->lat[k], o->lon[k1], o->lat[k1], &arc))
+      continue;
+    double params[2];
+    int np = meridian ? dggs_arc_meridian_params(&arc, xmin, params) :
+      dggs_arc_parallel_params(&arc, ymin, params);
+    for (int i = 0; i < np; i++)
+    {
+      double lon, lat;
+      if (! dggs_arc_point(&arc, params[i], &lon, &lat))
+        continue;
+      /* The plane of a meridian holds the meridian half a turn from it too */
+      if (meridian && cos(lon - xmin * M_PI / 180.0) <= 0.0)
+        continue;
+      double c = (meridian ? lat : lon) * 180.0 / M_PI;
+      if (c > lo && c < hi)
+        cut[ncut++] = c;
+    }
+  }
+  /* In ascending order along the piece */
+  for (int i = 1; i < ncut; i++)
+  {
+    double v = cut[i];
+    int j = i - 1;
+    while (j >= 0 && cut[j] > v)
+    {
+      cut[j + 1] = cut[j];
+      j--;
+    }
+    cut[j + 1] = v;
+  }
+  for (int i = 0; i < ncut; i++)
+  {
+    double c = cut[i];
+    if (h3_cell_holds_lonlat(cell, meridian ? xmin : c, meridian ? c : ymin))
+      return true;
+    if (i > 0 && cut[i - 1] < c)
+    {
+      double m = (cut[i - 1] + c) / 2.0;
+      if (h3_cell_holds_lonlat(cell, meridian ? xmin : m, meridian ? m : ymin))
+        return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @brief Return the side of an edge of an outline a box lying along it is on
+ * @details The edge runs along a meridian or the equator bounding the box, and
+ * the cell lies on the side the normal a x b of its vertices points to, as
+ * #h3_arc_south_side reads it. The function returns 1 when the cell lies on
+ * the side of the box, -1 when it lies on the other side, and 0 when the edge
+ * does not run along a bound of the box.
+ */
+static int
+h3_outline_edge_box_side(const H3Outline *o, int k, double xmin, double ymin,
+  double xmax, double ymax)
+{
+  int k1 = (k + 1) % o->count;
+  POINT3D a, b, d = { 0.0, 0.0, 0.0 };
+  if (o->lon[k] == o->lon[k1] && (o->lon[k] == xmin || o->lon[k] == xmax))
+  {
+    /* East of the meridian from the west bound, west of it from the east */
+    double x = o->lon[k] * M_PI / 180.0;
+    double sign = (o->lon[k] == xmin) ? 1.0 : -1.0;
+    d.x = -sign * sin(x);
+    d.y = sign * cos(x);
+  }
+  else if (o->lat[k] == 0.0 && o->lat[k1] == 0.0 &&
+      (ymin == 0.0 || ymax == 0.0))
+    /* North of the equator from the south bound, south of it from the north */
+    d.z = (ymin == 0.0) ? 1.0 : -1.0;
+  else
+    return 0;
+  h3_outline_vector(o, k, &a);
+  h3_outline_vector(o, k1, &b);
+  return triple_product_sign_exact(&a, &b, &d) > 0 ? 1 : -1;
+}
+
+/**
+ * @brief Return true if a geodetic H3 cell shares a position with a geodetic
+ * box
+ * @details The cell is the region its outline bounds with the boundary points
+ * it owns, as the cell walks read it (#h3_cell_outline). The box holds the
+ * positions whose longitude and latitude lie within its bounds, closed, or
+ * open at their upper ends when @p border_inc is false. Each part of the
+ * question is decided as MEOS decides it for a position or a path:
+ * - a vertex of the outline lies in the box by its degrees, as a position
+ *   does, and the cell meets the box there when the vertex lies inside the
+ *   bounds or the cell owns it;
+ * - an edge enters the box where #dggs_arc_lonlat_box_spans states, as a
+ *   geodetic path along that arc does: a piece of some length holds positions
+ *   of the cell's interior in the box, unless the edge runs along a meridian
+ *   or the equator bounding the box with the cell on the other side; a single
+ *   position counts when the cell owns the edge;
+ * - otherwise the box lies inside the cell or apart from it, and its middle
+ *   position says which, read as a geodetic position (#h3_cell_holds_vec).
+ * The parallels of a box are not great circles, and they are read through the
+ * trigonometry of the restriction of a path, so the answer agrees with the
+ * restriction of a temporal geography point travelling along the edges of the
+ * cell. The QUADBIN twin is #quadbin_cell_meets_box.
+ * @param[in] cell Cell
+ * @param[in] box Box, geodetic
+ * @param[in] border_inc True when the box contains its upper bounds
+ */
+bool
+h3_cell_meets_box(H3Index cell, const STBox *box, bool border_inc)
+{
+  assert(box);
+  double xmin = box->xmin, ymin = box->ymin, xmax = box->xmax,
+    ymax = box->ymax;
+  /* A box of no width or no height holds no position when it leaves out its
+   * upper bounds */
+  if (! border_inc && (xmin == xmax || ymin == ymax))
+    return false;
+  const H3Outline *o = h3_cell_outline_last(cell);
+  if (! o)
+    return false;
+  if (xmin == xmax && ymin == ymax)
+    return h3_cell_holds_lonlat(cell, xmin, ymin);
+  if (xmin == xmax || ymin == ymax)
+    return h3_outline_meets_line(cell, o, xmin, ymin, xmax, ymax);
+  int n = o->count;
+  /* A vertex in the box */
+  for (int k = 0; k < n; k++)
+  {
+    double lon = o->lon[k], lat = o->lat[k];
+    if (lon < xmin || lat < ymin || (border_inc ?
+          (lon > xmax || lat > ymax) : (lon >= xmax || lat >= ymax)))
+      continue;
+    if ((lon > xmin && lon < xmax && lat > ymin && lat < ymax) ||
+        h3_outline_vertex_held_geodetic(o, k))
+      return true;
+  }
+  /* An edge entering the box */
+  for (int k = 0; k < n; k++)
+  {
+    DggsArc arc;
+    int k1 = (k + 1) % n;
+    if (! dggs_arc_init(o->lon[k], o->lat[k], o->lon[k1], o->lat[k1], &arc))
+      continue;
+    double tin[H3_BOX_SPANS], tout[H3_BOX_SPANS];
+    bool tin_upper[H3_BOX_SPANS], tout_upper[H3_BOX_SPANS];
+    int count = dggs_arc_lonlat_box_spans(&arc, xmin, ymin, xmax, ymax,
+      border_inc, tin, tout, tin_upper, tout_upper, H3_BOX_SPANS);
+    for (int i = 0; i < count; i++)
+    {
+      if (tout[i] > tin[i])
+      {
+        if (h3_outline_edge_box_side(o, k, xmin, ymin, xmax, ymax) >= 0 ||
+            h3_outline_edge_held_geodetic(o, k))
+          return true;
+      }
+      else if (tin[i] > 0.0 && tin[i] < 1.0 &&
+          h3_outline_edge_held_geodetic(o, k))
+        return true;
+    }
+  }
+  /* The box inside the cell */
+  return h3_cell_holds_lonlat(cell, (xmin + xmax) / 2.0, (ymin + ymax) / 2.0);
+}
+
 /** @brief Number of rings around the cell of the library a position is
  * looked for in */
 #define H3_POINT_CELL_RINGS 16
