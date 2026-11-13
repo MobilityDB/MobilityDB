@@ -245,9 +245,16 @@ SELECT asText(atGeometry(
   geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))')) IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- A body with holes in linear motion: its holes are not read, so it is refused
+-- A body with holes in linear motion reads its holes: the small square lies in
+-- the hole until 02:24 and leaves the body at 06:00
 SELECT getTime(atGeometry(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))'));
+SELECT getTime(minusGeometry(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))'));
 SELECT getTime(atStbox(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', stbox 'STBOX X((2,2),(2.5,2.5))'));
+SELECT getTime(minusStbox(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', stbox 'STBOX X((2,2),(2.5,2.5))'));
+-- a point the hole holds at the start, met by the body from 02:24 to 04:48
+SELECT getTime(atGeometry(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(2 2)'));
+-- a body whose corner touches the corner of a square at noon alone
+SELECT getTime(atGeometry(trgeometry 'Polygon((0 0,4 0,4 6,0 6,0 0),(1 1,3 1,3 5,1 5,1 1));[Pose(Point(-2 2),0)@2001-01-01, Pose(Point(6 4),0)@2001-01-02]', geometry 'Polygon((6 2,7 2,7 3,6 3,6 2))'));
 -- in step interpolation it holds each placement, holes included, which answers
 SELECT getTime(atGeometry(trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))'));
 -- A body in step interpolation holds each placement, which meets a region with
