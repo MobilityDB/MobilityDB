@@ -44,4 +44,15 @@ SELECT asEWKT(atValue(tposechain '{PoseChain(Pose(Point(1 1), 0.5))@2001-01-01,
   PoseChain(Pose(Point(2 2), 0.5))@2001-01-02}',
   posechain 'PoseChain(Pose(Point(2 2), 0.5))'));
 -- {PoseChain(Pose(POINT(2 2),0.5))@2001-01-02}
+</pre></li><li class="listitem"><a name="tposechain_atStbox"></a><a class="indexterm" name="id10751"></a><a class="indexterm" name="id10754"></a><p>Restringe una cadena de poses temporal a (el complemento de) un cuadro espaciotemporal</p><pre class="programlisting">
+atStbox(tposechain,stbox,borderInc boolean=true) → tposechain
+minusStbox(tposechain,stbox,borderInc boolean=true) → tposechain
+</pre><p>Una cadena está en un cuadro en un instante en que alguna de sus articulaciones está en él, tal como el cuadro delimitador de una cadena cubre todas sus articulaciones. El primer enlace se mueve linealmente entre dos instantes, y una articulación compuesta de más de un enlace se mantiene en su valor de cada instante hasta el siguiente, tal como la conversión de una cadena en una pose temporal mantiene su pose compuesta.</p><pre class="programlisting">
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01,
+  PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]', stbox 'STBOX X((-1,-1),(1,1))'));
+/* {[PoseChain(Pose(POINT(-1 0),0),Pose(POINT(0 20),0))@2001-01-01 09:36:00,
+   PoseChain(Pose(POINT(1 0),0),Pose(POINT(0 20),0))@2001-01-01 14:24:00]} */
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01',
+  stbox 'STBOX X((4,-1),(6,1))'));
+-- NULL
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s11.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s13.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Modificaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Sistema de referencia espacial</td></tr></table></div></body></html>
