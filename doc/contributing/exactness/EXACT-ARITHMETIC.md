@@ -364,7 +364,12 @@ layer holds it for every question. The phases, each a series of pull requests:
    and the arc relate oracle in CGAL agreeing on 38,584 pairs of a curve polygon and a point); one
    rule for a segment of no length (a point, as `wide_segment_meet` reads it; `linesegm_intersect`
    lets a first segment of no length meet nothing, which no public answer shows in either order, so
-   its callers are measured first); one angular origin. Each is a pull request touching every
+   its callers are measured first: reading it as a point there leaves the clip engine emitting
+   pieces of no length in a difference, so that rule changes only with the clip's reading of a
+   point edge; the measuring found that a ring repeating a vertex made relate read two equal
+   areas as neither containing nor covering each other, every natural area of the speed cells
+   failing against itself written with a vertex repeated, which #3655 fixes in the boundary walk,
+   CGAL agreeing on those 384 pairs); one angular origin. Each is a pull request touching every
    caller of what it changes. The two digits of `point_motion_dwithin_period_filter` (1 for the
    whole segment, 2 for an instant, the reverse of `point_motion_dwithin_period_exact`) are read
    right by every caller and keep -1 for "undecided": the rule, read off the census of the 76
