@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.1.0 |
+| Version | v0.2.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split and the QUADBIN, S2 and H3 cells, and how the instant a trajectory crosses from one cell to the next is dated |
-| Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/geo/geo_trig.c` (geodetic position), `meos/src/geo/geo_funcs.c` (exact signs) |
+| Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position), `meos/src/geo/geo_funcs.c` (exact signs) |
 
 ## 1. Scope and intent
 
@@ -27,9 +27,8 @@ to exactly one cell, decided exactly on the input coordinates. It is
 prescriptive: MEOS, MobilityDB and every binding generated from MEOS answer
 by it.
 
-The document grows with the campaign that establishes the rule (MobilityDB
-pull request #3544): each section states what master guarantees, and section
-8 lists what the rule does not yet cover.
+Each section states what master guarantees, and section 8 lists what the
+rule does not yet cover.
 
 ## 2. Notation
 
@@ -61,8 +60,9 @@ icosahedron can turn back at its extra vertex.
 Each decision is an exact sign computed on the input doubles, never a
 comparison within a tolerance, so two neighbouring cells read every shared
 point identically and no point is held by none or by two. The tiles of a box
-grid and the QUADBIN cells of a trajectory follow the rule; the H3 and S2
-cells of a trajectory follow it from the versions section 8 lists. For H3, two
+grid and the QUADBIN and planar H3 cells of a position and of a trajectory
+follow the rule; the geodetic H3 cells and the S2 cells follow it from the
+versions section 8 lists. For H3, two
 neighbours state their shared vertex with the same doubles: the outline of a
 cell is read from the vertex index of the library, and the extra vertex of
 an edge crossing a face of the icosahedron from the directed edge leaving
@@ -92,7 +92,9 @@ meridians and parallels. For H3, the two models differ in the band between a
 straight edge and its arc, about 27 km wide at resolution 0 and 0.7 mm at
 resolution 9 on average.
 
-## 5. The QUADBIN grid
+## 5. The cell of a position
+
+### QUADBIN
 
 - **The cell of a position** is the tile whose box holds it, decided by the
   bounds of the tile compared as doubles: a position on a bound, or one ulp
@@ -113,6 +115,27 @@ resolution 9 on average.
 - **The split by a space grid** keeps the border tile holding the corner of
   the border, decided by the bounds of the tiles.
 
+### Planar H3
+
+- **A planar cell is its outline**: the vertices of the vertex index of the
+  library joined by straight lines in longitude and latitude, holding its
+  interior and its north and west sides (section 3). The cell around a pole
+  is the region between its ring and the pole.
+- **The cell of a position** of a `geometry` or a `tgeompoint` is the cell
+  whose outline holds it: `latLngToCell` of a geometry names it. The H3
+  library's own cell is the region of its curved edges on the sphere, which
+  parts from the outline in the band of section 4; a geodetic position keeps
+  that cell until the version section 8 lists. The point below lies 53 km
+  inside the outline of the resolution-0 cell `8009fffffffffff` and outside
+  its geodetic cell:
+
+  ```sql
+  SELECT latLngToCell(geometry 'SRID=4326;POINT(-0.8367 59.2711)', 0) = h3index '8009fffffffffff',
+    eIntersects(th3index '8009fffffffffff@2001-01-01', geography 'POINT(-0.8367 59.2711)'),
+    eDisjoint(th3index '8009fffffffffff@2001-01-01', geography 'POINT(-0.8367 59.2711)');
+  -- t | f | t
+  ```
+
 ## 6. The cells of a trajectory
 
 A cell holds exactly the microseconds whose exact position lies in it. The
@@ -126,7 +149,8 @@ cell holding its position at that instant:
   boundary exactly at a microsecond, that instant belongs to the cell that
   owns the boundary point (section 3).
 - **A cell the trajectory touches only at a boundary point it does not own**
-  holds no instant, as a tile touched only at a corner holds none.
+  holds no instant, as a tile touched only at a corner holds none. A cell
+  crossed entirely between two microseconds holds no instant either.
 - **The order of two crossings** in one segment, through an edge and through
   a vertex or through two edges, is decided by exact signs, so a trajectory
   passing through a corner is walked through the cell the rule gives it.
@@ -144,30 +168,45 @@ FROM (SELECT tquadbin(tgeompoint
 -- 5 | 10 | t | t
 ```
 
+The planar H3 cells of a trajectory are walked on the outlines of section 5,
+each cell holding one sequence. A trip along the edge between the fifth and
+the sixth vertex of `85c4e06bfffffff`, as the linked library places them,
+holds at its first instant the cell `85c4e06ffffffff`, which holds that
+vertex, and then `85c4e06bfffffff`, which holds the edge:
+
+```sql
+WITH ring(r) AS (
+  SELECT ST_ExteriorRing(cellToBoundary(h3index '85c4e06bfffffff')))
+SELECT th3index(tgeompointSeq(ARRAY[
+  tgeompoint(ST_PointN(r, 5), timestamptz '2001-01-01'),
+  tgeompoint(ST_PointN(r, 6), timestamptz '2001-01-03')]), 5)
+FROM ring;
+-- {[85c4e06ffffffff@Mon Jan 01 00:00:00 2001 PST],
+--  (85c4e06bfffffff@Mon Jan 01 00:00:00 2001 PST, 85c4e06bfffffff@Wed Jan 03 00:00:00 2001 PST]}
+```
+
 The restriction of a temporal point to a box and its split by a space grid
 follow the same rule: each instant belongs to exactly one tile, and a box
 holds exactly the instants whose position lies in it.
 
 ## 7. Versioning and stability
 
-The version follows the campaign: the minor number rises with each part of
-the rule master gains, the patch number with corrections of wording.
+The minor number rises with each part of the rule master gains, the patch
+number with corrections of wording.
 
 | Version | Content |
 |---|---|
-| v0.1.0 | The box grid (#3558), the rule and owners of the four grids and the geodetic H3 owner (#3638), the geodetic position (#3637), the QUADBIN grid and its cover (#3642) |
+| v0.1.0 | The box grid, the rule and owners of the four grids and the geodetic H3 owner, the geodetic position, the QUADBIN grid and its cover |
+| v0.2.0 | The planar H3 cell of a position and the planar H3 cells of a trajectory, walked and dated on the outlines |
 
 ## 8. Out of scope
 
 Future: the rule extends to these, each added here with its version (the
-owners of section 3 for H3, in both models, and for S2 are in MEOS already;
-the cells of a trajectory read them from these versions):
+owners of section 3 for geodetic H3 and for S2 are in MEOS already; the cells
+of a position and of a trajectory read them from these versions):
 
-- the planar H3 cells of a trajectory and of a position, on the straight
-  outline of section 4, a cell crossed entirely between two microseconds
-  holding no instant;
-- the geodetic walks of H3 and S2, their crossings dated on the great-circle
-  arc at constant angular speed;
+- the geodetic H3 cell of a position, and the geodetic walks of H3 and S2,
+  their crossings dated on the great-circle arc at constant angular speed;
 - the S2 walk and point function;
 - the vertices of an H3 cell computed from H3's own formula, so that every
   build of the library reads the same outline;
@@ -179,14 +218,23 @@ questions of the spatial relationships.
 
 ## 9. References
 
-- The rule and its enumeration: `doc/contributing/cells/` of MobilityDB pull
-  request #3544.
-- The exact arithmetic the decisions read: `doc/specs/meos-exact-geometry.md`
-  and MobilityDB pull request #3287.
-- The dating of crossings: `doc/contributing/exactness/EXACT-CROSSINGS.md` of
-  MobilityDB pull request #3287.
+- [Exact geometry](meos-exact-geometry.md), the exact arithmetic the
+  decisions read.
+- [Finite values](meos-finite-values.md), whose doubles every position and
+  every vertex of a cell is.
+- [H3](https://h3geo.org/docs/core-library/overview/), its cells, vertices
+  and directed edges.
+- [S2](https://s2geometry.io/), its cube faces and cell coordinates.
+- [QUADBIN](https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes#quadbin),
+  the encoding of the Web Mercator tiles.
 
-## 10. References to the implementation
+## 10. Consumers
+
+Every binding generated from the MEOS catalog inherits the rule without code
+of its own: the cells of a position and of a trajectory are answered by MEOS
+and reach the binding unchanged.
+
+## 11. References to the implementation
 
 The source files of the reference line are authoritative. A disagreement
 between this document and the code is a defect of one of them, reported as an
