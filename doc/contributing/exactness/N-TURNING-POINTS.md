@@ -203,15 +203,16 @@ one pair.** The interval readers accept one pair and assert it. Acceptance:
 - one internal kernel with three or more turning points per segment, judged by an oracle computed
   independently, exercises the array path of the turning-point readers.
 
-MobilityDB #3629, a draft, is this pull request. The interval callbacks keep master's encoding,
+MobilityDB #3629, merged, is this pull request. The interval callbacks keep master's encoding,
 a count of 0, of 1 for a touch at one instant or of 2 for an interval, since
 `tdwithin_add_solutions_run` reads its bounds by the count and a callback counting 2 can date both
 ends at one microsecond; the pair `(t, t)` belongs to pull request 2. Over 20000 cases of 62 lifted
 functions master and #3629 answer the same 1098528 rows, 17863 of them with more than eight extrema
 of sin or cos in one segment, the array path; CGAL agrees with every answer of its tdwithin of AIS
 trips (4000), of its temporal circular buffers (10541) and of its nearest approach of moving points
-(1032). Its callgrind counts over master run from 0.950 (sin) to 1.0072 (the temporal distance of a
-float to a number), four walks above 1.0035, so it is a draft by the parity rule.
+(1032). A segment of one turning point is read without a loop over the array. Its callgrind counts
+over master run from 0.948 (sin) to 1.0007 (the temporal distance of two floats, the address of the
+second output its turning point function hands on); 13 of the 17 walks measured are at or below 1.
 
 ### 6.2 Pull request 2: intervals of any number
 

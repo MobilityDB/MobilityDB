@@ -472,6 +472,14 @@ diffs classified:
    grid starting at its first bin, which rounds apart from the grid of the count, so
    `valueSplit` of `[0.1, 2.2]` by 0.7 leaves out the piece from 2.1 to 2.2; placing every value
    on the grid of the origin follows #3640, whose value split it rewrites.
+   The ever and always walk of two temporal sequences, `eafunc_tcontseq_tcontseq_discfn`, reads
+   only values the two sequences take, MobilityDB #3650, a draft: the end instant where the common
+   period holds it, the open piece after an excluded start, and a step value up to its jump, never
+   the value it jumps to. `tfloat '[1@2001-01-01, 2@2001-01-02)' ?= tfloat '[0@2001-01-01,
+   2@2001-01-02)'` is false, the two meeting only at the excluded end. #3640 rewrites the crossing
+   branch of the same walk, so the second of the two to merge rebases over the first. The planar
+   ever within distance of two temporal points, `ea_dwithin_tpoint_tpoint_exact`, reads its
+   intervals closed in the same way, and follows as its own pull request.
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
    turning points, through the same primitive with the exact polynomial sign.
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
