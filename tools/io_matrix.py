@@ -87,7 +87,9 @@ declares.  A type's reader is named either as `<type>From<Format>`, the type
 spelled as its SQL name in any casing (`TGeomPointFromEWKB`,
 `tgeompoint_from_ewkb`), or as `From<Format>` in a file named after the type
 (`TGeomPoint.cs`, `tgeompoint.py`) or after its family (`Temporal.cs`,
-`set.py`), whose class the type's class inherits it from.  The last column lists the type support
+`set.py`), whose class the type's class inherits it from, or in the body of
+the class of the type or of its family in a file holding many classes
+(`class TGeomPoint` in MEOS.js's `objects.generated.ts`).  The last column lists the type support
 functions the object layer names under their C name, `<type>_in`, `<type>_out`,
 `<type>_recv` and `<type>_send` for a type of the SQL, which the portable
 surface replaces.
@@ -418,6 +420,10 @@ DEFINITION_RE = re.compile(
   r'|\b' + NAME + r'\s*\([^;{}()]*\)\s*(?::\s*[^;{}=]+)?(?:throws[^;{]*)?'
   r'(?:\{|=>)'
   r'|["\']' + NAME + r'["\']')
+# A class declaration, beside #DEFINITION_RE, in the languages whose object
+# layer declares classes: `class <Name>` (Java, C#, C++, TypeScript,
+# JavaScript, Python).
+CLASS_RE = re.compile(r'\bclass\s+' + NAME)
 
 
 def normal(name):
@@ -462,11 +468,20 @@ def root_files(path, root):
   return sorted(generated)
 
 
-def binding_names(path, roots):
-  """Return [(file stem, names)] of every file of the surface under the roots.
+def defined_names(text):
+  """Return the names `text` defines (#DEFINITION_RE), normalized by #normal."""
+  return {normal(next(g for g in groups if g))
+    for groups in DEFINITION_RE.findall(text)}
 
-  The files are those #root_files returns; the names are those a file defines
-  (#DEFINITION_RE), normalized by #normal.
+
+def binding_names(path, roots):
+  """Return [(key, names)] of every file of the surface under the roots.
+
+  The files are those #root_files returns.  Each file gives its stem the names
+  it defines, and each class it declares (#CLASS_RE) the names defined from
+  its declaration to the next one, so a file holding many classes, as MEOS.js
+  generates them into `objects.generated.ts`, credits a reader to the class
+  that defines it.
   """
   result = []
   for f in (f for root in roots for f in root_files(path, root)):
@@ -477,8 +492,10 @@ def binding_names(path, roots):
     except (OSError, IsADirectoryError):
       continue
     stem = normal(os.path.basename(f).split('.')[0])
-    result.append((stem, {normal(next(g for g in groups if g))
-      for groups in DEFINITION_RE.findall(text)}))
+    result.append((stem, defined_names(text)))
+    starts = [(m.start(), normal(m.group(1))) for m in CLASS_RE.finditer(text)]
+    for (start, cls), (end, _) in zip(starts, starts[1:] + [(len(text), None)]):
+      result.append((cls, defined_names(text[start:end])))
   return result
 
 
