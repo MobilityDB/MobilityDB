@@ -10149,6 +10149,69 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
       pv = {v[0].hi, v[1].hi, v[2].hi}, pw = {w[0].hi, w[1].hi, w[2].hi};
     return triple_product_sign_exact(&pu, &pv, &pw);
   }
+  /* The determinant is also `w . (u x v)`. Where the first two differences
+   * are doubles held exactly and their cross product is exact in doubles,
+   * each rounding having no error (#two_product, #two_diff), the determinant
+   * is the sum of the products of each component of that cross product with
+   * the two parts of the pair that is exactly the third difference, each
+   * product exact as a pair. The sum of those parts is first compensated
+   * (#two_sum), whose result lies within u of the sum plus gamma_23^2 times
+   * the sum of the magnitudes of the parts (Ogita, Rump and Oishi, Sum2), so
+   * a result above twice that bound has the sign of the sum; otherwise an
+   * expansion adds them exactly (#grow_expansion). Parts inside 2^-450 to
+   * 2^450 keep every product and its error in the normal doubles */
+  bool exact = true;
+  double n[3];
+  for (int k = 0; k < 3 && exact; k++)
+    exact = u[k].lo == 0.0 && v[k].lo == 0.0;
+  for (int k = 0; k < 3 && exact; k++)
+  {
+    int i = (k + 1) % 3, j = (k + 2) % 3;
+    double p, pe, q, qe, err;
+    two_product(u[i].hi, v[j].hi, &p, &pe);
+    two_product(u[j].hi, v[i].hi, &q, &qe);
+    two_diff(p, q, &n[k], &err);
+    exact = pe == 0.0 && qe == 0.0 && err == 0.0 &&
+      (n[k] == 0.0 || (fabs(n[k]) >= 0x1p-450 && fabs(n[k]) <= 0x1p450));
+  }
+  for (int k = 0; k < 3 && exact; k++)
+    exact = (w[k].hi == 0.0 || (fabs(w[k].hi) >= 0x1p-450 &&
+      fabs(w[k].hi) <= 0x1p450)) &&
+      (w[k].lo == 0.0 || fabs(w[k].lo) >= 0x1p-450);
+  if (exact)
+  {
+    double parts[12];
+    int np = 0;
+    for (int k = 0; k < 3; k++)
+    {
+      if (n[k] == 0.0)
+        continue;
+      two_product(n[k], w[k].hi, &parts[np], &parts[np + 1]);
+      np += 2;
+      if (w[k].lo != 0.0)
+      {
+        two_product(n[k], w[k].lo, &parts[np], &parts[np + 1]);
+        np += 2;
+      }
+    }
+    double s = 0.0, c = 0.0, mag = 0.0;
+    for (int i = 0; i < np; i++)
+    {
+      double se;
+      two_sum(s, parts[i], &s, &se);
+      c += se;
+      mag += fabs(parts[i]);
+    }
+    double res = s + c, g = 23.0 * DBL_EPSILON;
+    if (fabs(res) > 2.0 * g * g * mag * (1.0 + 4.0 * DBL_EPSILON))
+      return (res > 0.0) ? 1 : -1;
+    double e[12];
+    int len = 0;
+    for (int i = 0; i < np; i++)
+      len = grow_expansion(len, e, parts[i], e);
+    return (len == 0 || e[len - 1] == 0.0) ? 0 :
+      ((e[len - 1] > 0.0) ? 1 : -1);
+  }
   /* Otherwise in pairs of doubles with a bound on their error, where a value
    * with no error that is zero is an exact zero the bound does not tell */
   ddb_cross3(v, w, x);
