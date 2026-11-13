@@ -77,6 +77,12 @@
 #define DENSE_POSITIONS   2048
 /** Segments drawn at each site */
 #define NSEGMENTS         120
+/** Segments drawn at each site where MEOS_TEST_SMALL is set, as a run under
+ * valgrind sets it: every site and every cover is still read, on fewer
+ * segments, which reach the same functions */
+#define NSEGMENTS_SMALL   8
+/** Segments drawn at each site in this run */
+static int nsegments = NSEGMENTS;
 /** Length of the buffer a dense sequence is written into */
 #define DENSE_BUFSZ       ((size_t) DENSE_POSITIONS * 64 + 64)
 
@@ -448,6 +454,8 @@ ts2cell_check(double lon0, double lat0, double lon1, double lat1,
 int main(void)
 {
   meos_initialize();
+  if (getenv("MEOS_TEST_SMALL"))
+    nsegments = NSEGMENTS_SMALL;
 
   /* The sites carry the three regimes a cover meets: an ordinary hexagon
    * field, the neighbourhood of an H3 pentagon, whose cells are the smallest
@@ -469,7 +477,7 @@ int main(void)
      * zoom. The two differ by three orders of magnitude here */
     double h3_span = 0.00030;
     double qb_span = 360.0 / (double) (1ULL << zoom);
-    for (int t = 0; t < NSEGMENTS; t++)
+    for (int t = 0; t < nsegments; t++)
     {
       /* rand_r keeps the draw identical whatever else the process runs */
       for (int fam = 0; fam < 2; fam++)
@@ -553,7 +561,7 @@ int main(void)
       long miss = 0, offpath = 0, none = 0;
       unsigned seed = 20260913u + (unsigned) k;
       int32 res = (k == 3) ? 3 : resolution;
-      for (int t = 0; t < NSEGMENTS; t++)
+      for (int t = 0; t < nsegments; t++)
       {
         double r1 = rand_r(&seed) / (double) RAND_MAX;
         double r2 = rand_r(&seed) / (double) RAND_MAX;
@@ -618,7 +626,7 @@ int main(void)
     long wrong = 0, offpath = 0, none = 0;
     unsigned seed = 20260914u + (unsigned) k;
     double span = 360.0 / (double) (1ULL << zoom);
-    for (int t = 0; t < NSEGMENTS; t++)
+    for (int t = 0; t < nsegments; t++)
     {
       double j1 = (rand_r(&seed) / (double) RAND_MAX - 0.5) * span * 4.0;
       double j2 = (rand_r(&seed) / (double) RAND_MAX - 0.5) * span * 4.0;
@@ -655,7 +663,7 @@ int main(void)
       long wrong = 0, offpath = 0, none = 0;
       unsigned seed = 20260915u + (unsigned) k;
       int32 level = (k == 4) ? 4 : 16;
-      for (int t = 0; t < NSEGMENTS; t++)
+      for (int t = 0; t < nsegments; t++)
       {
         double r1 = rand_r(&seed) / (double) RAND_MAX;
         double r2 = rand_r(&seed) / (double) RAND_MAX;
