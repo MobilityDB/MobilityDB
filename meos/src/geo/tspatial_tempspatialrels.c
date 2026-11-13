@@ -1505,6 +1505,32 @@ tdwithin_run_add(TDwithinRun *run, Datum value, TimestampTz lower,
 
 /**
  * @brief Set the values at the bounds of the period a turning point function
+ * returns for a segment that lie at an end of the segment, where the
+ * predicate need not hold there
+ * @details The bound function of the lift states the value at such an end
+ * (#tcbuffersegm_contains_bound), as a disk does not contain a point on its
+ * boundary. Kept out of line, as #point_motion_dwithin_period_wide is, so
+ * that the lifts without a bound function pay nothing for it.
+ */
+static pg_noinline void
+tdwithin_bounds_end(const LiftedFunctionInfo *lfinfo, Datum start1,
+  Datum end1, Datum start2, Datum end2, TimestampTz lower, TimestampTz upper,
+  TimestampTz t1, TimestampTz t2, bool *in1, bool *in2)
+{
+  if (t1 == lower)
+    *in1 = lfinfo->tpfn_temp_bound(start1, end1, start2, end2,
+      lfinfo->param[0], lower, upper, lower);
+  if (t2 == upper)
+    *in2 = lfinfo->tpfn_temp_bound(start1, end1, start2, end2,
+      lfinfo->param[0], lower, upper, upper);
+  /* A touch at one instant has one value */
+  if (t2 == t1)
+    *in1 = *in2 = *in1 && *in2;
+  return;
+}
+
+/**
+ * @brief Set the values at the bounds of the period a turning point function
  * returns for a segment, true at a bound at an end of the segment
  * @details A bound strictly inside the segment takes the value the value
  * function of the lift states for it (#tcbuffersegm_tdwithin_at); without one,
@@ -1530,6 +1556,37 @@ tdwithin_bounds_in(const LiftedFunctionInfo *lfinfo, int solutions,
 }
 
 /**
+ * @brief Add to a walk the result of the tdwithin function of a segment whose
+ * period of values within the distance is bounded by an end of the segment
+ * at which they are not within (#tdwithin_bounds_end)
+ * @details Such an end is the instant of that end alone, where the segment
+ * contains it, and the run of true values excludes it:
+ *  [F](  T  ](  F  )   (  F  )[  T  )[F]
+ * Kept out of line, as #point_motion_dwithin_period_wide is, so that the
+ * walks whose bounds are within pay nothing for it.
+ */
+static pg_noinline void
+tdwithin_add_bounds_run(TimestampTz lower, TimestampTz upper, bool lower_inc,
+  bool upper_inc1, TimestampTz t1, TimestampTz t2, bool in1, bool in2,
+  TDwithinRun *run)
+{
+  const Datum datum_true = BoolGetDatum(true);
+  const Datum datum_false = BoolGetDatum(false);
+  if (t1 != lower)
+    tdwithin_run_add(run, datum_false, lower, t1, lower_inc, ! in1);
+  else if (! in1 && lower_inc)
+    tdwithin_run_add(run, datum_false, lower, lower, true, true);
+  tdwithin_run_add(run, datum_true, t1, t2,
+    (t1 == lower) ? lower_inc && in1 : in1,
+    (t2 == upper) ? upper_inc1 && in2 : in2);
+  if (t2 != upper)
+    tdwithin_run_add(run, datum_false, t2, upper, ! in2, upper_inc1);
+  else if (! in2 && upper_inc1)
+    tdwithin_run_add(run, datum_false, upper, upper, true, true);
+  return;
+}
+
+/**
  * @brief Add to a walk the result of the tdwithin function of a segment from
  * the solutions of the quadratic equation found previously
  * @details The interval of the segment during which the values are within the
@@ -1537,10 +1594,11 @@ tdwithin_bounds_in(const LiftedFunctionInfo *lfinfo, int solutions,
  * one instant; @p solutions is 0 when there is none, 1 for a touch and 2
  * otherwise. @p in1 and @p in2 are the values at its bounds where these lie
  * strictly inside the segment, as the value function of the
- * turning point function states them (#tcbuffersegm_tdwithin_at); a bound at
- * which the values are not within the distance is excluded from the run of
- * true values and added to the neighbouring run of false ones, each run
- * extended as #tdwithin_run_add extends it
+ * turning point function states them (#tcbuffersegm_tdwithin_at), and at an
+ * end of the segment where the lift reads them there (#tdwithin_bounds_end); a
+ * bound at which the values are not within the distance is excluded from the
+ * run of true values and added to the neighbouring run of false ones, each
+ * run extended as #tdwithin_run_add extends it
  */
 static void
 tdwithin_add_solutions_run(int solutions, TimestampTz lower,
@@ -1564,12 +1622,18 @@ tdwithin_add_solutions_run(int solutions, TimestampTz lower,
    */
   else if (! in1 || ! in2)
   {
-    if (t1 != lower)
-      tdwithin_run_add(run, datum_false, lower, t1, lower_inc, ! in1);
-    tdwithin_run_add(run, datum_true, t1, t2,
-      (t1 == lower) ? lower_inc : in1, (t2 == upper) ? upper_inc1 : in2);
-    if (t2 != upper)
-      tdwithin_run_add(run, datum_false, t2, upper, ! in2, upper_inc1);
+    if ((t1 == lower && ! in1) || (t2 == upper && ! in2))
+      tdwithin_add_bounds_run(lower, upper, lower_inc, upper_inc1, t1, t2,
+        in1, in2, run);
+    else
+    {
+      if (t1 != lower)
+        tdwithin_run_add(run, datum_false, lower, t1, lower_inc, ! in1);
+      tdwithin_run_add(run, datum_true, t1, t2,
+        (t1 == lower) ? lower_inc : in1, (t2 == upper) ? upper_inc1 : in2);
+      if (t2 != upper)
+        tdwithin_run_add(run, datum_false, t2, upper, ! in2, upper_inc1);
+    }
   }
   /*
    *  <  T  >               2 solutions, lower == t1, upper == t2
@@ -1619,20 +1683,23 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
 
 /**
  * @brief Return the timestamps at which the segments of two temporal point
- * sequences are within a distance (iterator function)
+ * sequences are within a distance (body of
+ * #tdwithin_tlinearseq_tlinearseq_iter)
  * @param[in] seq1,seq2 Temporal points
  * @param[in] lfinfo Function to be applied and its parameters, the distance
  * first
  * @param[in] tpfn Turning point function to be applied
+ * @param[in] bound True when the lift has a bound function
+ * (#tdwithin_bounds_end), a constant for which the body is compiled
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of elements in the resulting array
  * @pre The temporal points must be synchronized.
  */
-static int
-tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
+static pg_attribute_always_inline int
+tdwithin_tlinearseq_tlinearseq_walk(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn,
-  TSequence **result)
+  bool bound, TSequence **result)
 {
   const TInstant *start1 = TSEQUENCE_INST_N(seq1, 0);
   const TInstant *start2 = TSEQUENCE_INST_N(seq2, 0);
@@ -1693,6 +1760,9 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
       bool in1 = true, in2 = true;
       tdwithin_bounds_in(lfinfo, solutions, sv1, sev1, sv2, sev2, lower, upper,
         tps[0], tps[1], &in1, &in2);
+      if (bound && solutions)
+        tdwithin_bounds_end(lfinfo, sv1, sev1, sv2, sev2, lower, upper,
+          tps[0], tps[1], &in1, &in2);
       tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
         upper_inc, upper_inc1, tps[0], tps[1], in1, in2, &run);
       /* Add extra final point if only one segment is linear */
@@ -1712,6 +1782,32 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
   tdwithin_run_flush(&run);
   pfree(instants[0]); pfree(instants[1]); pfree(instants[2]);
   return run.nseqs;
+}
+
+/**
+ * @brief Return the timestamps at which the segments of two temporal point
+ * sequences are within a distance (iterator function)
+ * @details The walk is compiled apart for a lift with a bound function, so
+ * that the lifts without one pay nothing for it
+ * @param[in] seq1,seq2 Temporal points
+ * @param[in] lfinfo Function to be applied and its parameters, the distance
+ * first
+ * @param[in] tpfn Turning point function to be applied
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
+ * @return Number of elements in the resulting array
+ * @pre The temporal points must be synchronized.
+ */
+static int
+tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
+  const TSequence *seq2, LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn,
+  TSequence **result)
+{
+  return lfinfo->tpfn_temp_bound ?
+    tdwithin_tlinearseq_tlinearseq_walk(seq1, seq2, lfinfo, tpfn, true,
+      result) :
+    tdwithin_tlinearseq_tlinearseq_walk(seq1, seq2, lfinfo, tpfn, false,
+      result);
 }
 
 /**

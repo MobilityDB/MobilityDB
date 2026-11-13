@@ -1299,6 +1299,366 @@ SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),0)@2001-01-01', tcbuffer 'Cbuffer(
  t
 (1 row)
 
+SELECT eContains(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00]', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00]', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00]', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00]', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00]');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00)');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00)');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00)');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00]');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00)');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00)');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00)');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00]');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(1 0),0)@2001-01-01 00:00, Cbuffer(Point(0 0),0)@2001-01-01 01:00]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(1 0),0)@2001-01-01 00:00, Cbuffer(Point(0 0),0)@2001-01-01 01:00]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(1 0),0)@2001-01-01 00:00, Cbuffer(Point(0 0),0)@2001-01-01 01:00]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(1 0),0)@2001-01-01 00:00, Cbuffer(Point(0 0),0)@2001-01-01 01:00]');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(0 0),0)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 01:00]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(0 0),0)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 01:00]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(0 0),0)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 01:00]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(0 0),0)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 01:00]');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer '(Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '(Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '(Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '(Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '(Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '(Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+ acontains 
+-----------
+ t
+(1 row)
+
+SELECT aCovers(tcbuffer '(Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '(Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(2 2),0)@2001-01-01 01:00, Cbuffer(Point(0 0),1)@2001-01-01 03:00]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(2 2),0)@2001-01-01 01:00, Cbuffer(Point(0 0),1)@2001-01-01 03:00]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(2 2),0)@2001-01-01 01:00, Cbuffer(Point(0 0),1)@2001-01-01 03:00]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(2 2),0)@2001-01-01 01:00, Cbuffer(Point(0 0),1)@2001-01-01 03:00]');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(3 2),3)@2001-01-01 01:00, Cbuffer(Point(1 2),2)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(3 2),3)@2001-01-01 01:00, Cbuffer(Point(1 2),2)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(3 2),3)@2001-01-01 01:00, Cbuffer(Point(1 2),2)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(3 2),3)@2001-01-01 01:00, Cbuffer(Point(1 2),2)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]');
+ acovers 
+---------
+ f
+(1 row)
+
 SELECT eIntersects(tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01', geometry 'Point(1 0)');
  eintersects 
 -------------

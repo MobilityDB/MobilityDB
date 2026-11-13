@@ -46,6 +46,7 @@
 /* Degenerate value functions */
 
 extern bool tcbuffer_is_tpoint(const Temporal *temp);
+extern bool tcbuffer_has_point(const Temporal *temp);
 extern int cbuffer_covers_geo(const Cbuffer *cb, const GSERIALIZED *gs);
 extern int cbuffer_contains_geo(const Cbuffer *cb, const GSERIALIZED *gs);
 

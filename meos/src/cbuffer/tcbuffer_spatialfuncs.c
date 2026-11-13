@@ -695,6 +695,40 @@ tcbuffer_is_tpoint(const Temporal *temp)
   return result;
 }
 
+/**
+ * @brief Return true if some composing circular buffer of a temporal circular
+ * buffer has a zero radius, that is, the value is a point at some instant
+ * @details The twin of #tcbuffer_is_tpoint for some composing buffer instead
+ * of every one. A disc contains a disc of a positive radius wherever it covers
+ * it, so a value whose radius is never zero needs no other reading of the
+ * containment than its covering
+ * @param[in] temp Temporal circular buffer
+ */
+bool
+tcbuffer_has_point(const Temporal *temp)
+{
+  assert(temp); assert(temp->temptype == T_TCBUFFER);
+  /* A circular buffer is passed by reference, held in the instant from its
+   * value on, as #tinstant_value_p reads it */
+  if (temp->subtype == TINSTANT)
+    return ((const Cbuffer *) &((const TInstant *) temp)->value)->radius ==
+      0.0;
+  const TSequenceSet *ss = (temp->subtype == TSEQUENCESET) ?
+    (const TSequenceSet *) temp : NULL;
+  int nseqs = ss ? ss->count : 1;
+  for (int i = 0; i < nseqs; i++)
+  {
+    const TSequence *seq = ss ? TSEQUENCESET_SEQ_N(ss, i) :
+      (const TSequence *) temp;
+    for (int j = 0; j < seq->count; j++)
+    {
+      if (((const Cbuffer *) &TSEQUENCE_INST_N(seq, j)->value)->radius == 0.0)
+        return true;
+    }
+  }
+  return false;
+}
+
 /*****************************************************************************/
 
 /**

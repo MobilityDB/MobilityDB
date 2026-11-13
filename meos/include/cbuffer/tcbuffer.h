@@ -69,6 +69,9 @@ extern int tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2,
 extern int tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum strict, TimestampTz lower, TimestampTz upper,
   TimestampTz *tps, int cap);
+extern bool tcbuffersegm_contains_bound(Datum start1, Datum end1,
+  Datum start2, Datum end2, Datum strict, TimestampTz lower,
+  TimestampTz upper, TimestampTz t);
 extern int tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
   TimestampTz *tps, int cap);
