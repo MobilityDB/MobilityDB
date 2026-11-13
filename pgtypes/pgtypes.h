@@ -488,8 +488,10 @@ PGTYPES_INTERNAL_END
 extern TimeADT plus_time_interval(TimeADT time, Interval *interv);
 extern TimeTzADT *plus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
 extern Numeric time_extract(TimeADT time, const text *units);
+extern TimeADT time_from_parts(int64 us);
 extern TimeADT time_make(int tm_hour, int tm_min, double sec);
 extern Interval *time_to_interval(TimeADT time);
+extern bool time_to_parts(TimeADT time, int64 *us);
 extern TimeTzADT *time_to_timetz(TimeADT time);
 extern TimeADT timestamp_to_time(Timestamp ts);
 extern TimeADT timestamptz_to_time(TimestampTz tztz);
