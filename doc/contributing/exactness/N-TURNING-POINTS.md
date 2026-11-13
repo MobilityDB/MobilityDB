@@ -232,6 +232,24 @@ convex parts of a static geometry stays in the family, since it is a minimum ove
 lift. No expected output of the rigid geometry distance may move. If one does, it shows a
 difference between the two walks and is investigated, never regenerated.
 
+The readers of PR 1 receive an instant from a turning-point function and evaluate the lifted
+function on the operands placed at that microsecond, while the walk of the rigid geometries keeps
+the distance at the exact event time, of which only the instant is rounded. Over 4000 rigid
+geometry cases, translating and rotating, the value at the microsecond differs from the walk's in
+351 of the 2342 comparable rows, at 1902 instants, among them 455 contacts the walk dates at 0;
+the median relative difference is 1.9e-10 and the greatest 3.2e-3. The walk's value is the one the
+rules of exactness ask for: a quantity is computed over continuous time and only its instant is
+dated to a microsecond, and a point constructed at a rounded parameter is not evaluated again.
+So PR 3 first lets a turning-point function return the exact value of the lifted function with
+each instant, which the readers then take in place of evaluating at the microsecond; no function
+of the other families returns one, so none of their answers moves. The rigid geometries then move
+onto the readers with their exact values, together with what their walk keeps that the readers do
+not: every instant for the nearest approach and tDwithin, the threshold crossings read at the
+threshold, the smaller of two distances dated at one microsecond and the closest feature carried
+from one segment into the next. Supplying the exact values of the other families, which moves
+their expected outputs toward the exact ones, is a pull request of its own, after PR 3, decided by
+the owner on 2026-11-13.
+
 ### 6.4 Later, each measured first
 
 - **The temporal distance of two temporal geography points.** It goes through
