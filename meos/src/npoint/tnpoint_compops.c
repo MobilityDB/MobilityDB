@@ -36,9 +36,12 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "temporal/temporal_compops.h"
+#include "geo/geo_funcs.h"
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************
@@ -334,6 +337,98 @@ int
 always_overlaps_stbox_tnpoint(const STBox *box, const Temporal *temp)
 {
   return eaoverlaps_tnpoint_stbox(temp, box, ALWAYS);
+}
+
+/**
+ * @brief Return the distance within which the points the routes of two
+ * temporal network points construct at one instant are one place
+ * @details A position along a route is a point computed in doubles, as
+ * #npoint_to_geompoint computes it, so two network points at one place of
+ * the map, a crossing of their routes, give two points apart by the rounding
+ * of their coordinates, and the exact distance between them is almost never
+ * zero. The distance is the band of a constructed point the exact
+ * computation of MEOS admits, as #geompoint_route_band reads it for a point
+ * on a route and #geogpoint_meeting_band for the meeting of two geography
+ * points: #MEOS_GEOM_TOLERANCE plus four units of rounding of the largest
+ * coordinate of the two values, which no two points genuinely apart are
+ * within
+ * @param[in] box1,box2 Spatiotemporal boxes of the two values
+ */
+static double
+tnpoint_meeting_band(const STBox *box1, const STBox *box2)
+{
+  double mag1 = Max(Max(fabs(box1->xmin), fabs(box1->xmax)),
+    Max(fabs(box1->ymin), fabs(box1->ymax)));
+  double mag2 = Max(Max(fabs(box2->xmin), fabs(box2->xmax)),
+    Max(fabs(box2->ymin), fabs(box2->ymax)));
+  return MEOS_GEOM_TOLERANCE + 4.0 * DBL_EPSILON * Max(mag1, mag2);
+}
+
+/**
+ * @brief Return 1 if two temporal network points are ever (or always) at one
+ * place of the map at a time they share, 0 if not, and -1 on error
+ * @details Two network points are at one place where the points their routes
+ * construct for them coincide: on one route at one fraction, at a junction
+ * where one route ends and another starts, or at a crossing of two routes,
+ * the spatial equality of the two values as the equality of their geometries
+ * is to `=` and `<>`, which compare the route and the fraction. The
+ * positions are constructed points, so they coincide within the band of
+ * #tnpoint_meeting_band, and the values are at one place at a time where the
+ * temporal points of their positions (#tnpoint_to_tgeompoint) are within that
+ * distance (#edwithin_tgeo_tgeo, #adwithin_tgeo_tgeo)
+ * @param[in] temp1,temp2 Temporal network points
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+eaoverlaps_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
+    return -1;
+  STBox box1, box2;
+  tspatial_set_stbox(temp1, &box1);
+  tspatial_set_stbox(temp2, &box2);
+  double band = tnpoint_meeting_band(&box1, &box2);
+  Temporal *tpoint1 = tnpoint_to_tgeompoint(temp1);
+  Temporal *tpoint2 = tnpoint_to_tgeompoint(temp2);
+  int result = -1;
+  if (tpoint1 && tpoint2)
+    result = ever ? edwithin_tgeo_tgeo(tpoint1, tpoint2, band, false) :
+      adwithin_tgeo_tgeo(tpoint1, tpoint2, band, false);
+  if (tpoint1)
+    pfree(tpoint1);
+  if (tpoint2)
+    pfree(tpoint2);
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_comp_ever
+ * @brief Return 1 if two temporal network points are ever at one place of
+ * the map at a time they share, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal network points
+ * @errval -1
+ * @csqlfn #Ever_overlaps_tnpoint_tnpoint()
+ */
+int
+ever_overlaps_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  return eaoverlaps_tnpoint_tnpoint(temp1, temp2, EVER);
+}
+
+/**
+ * @ingroup meos_npoint_comp_ever
+ * @brief Return 1 if two temporal network points are always at one place of
+ * the map at the times they share, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal network points
+ * @errval -1
+ * @csqlfn #Always_overlaps_tnpoint_tnpoint()
+ */
+int
+always_overlaps_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  return eaoverlaps_tnpoint_tnpoint(temp1, temp2, ALWAYS);
 }
 
 /*****************************************************************************
