@@ -690,6 +690,55 @@ lifting_values_room(Datum *values, MeosType basetype, int count)
 }
 
 /**
+ * @brief Add to an array of instants those a turning point function writes
+ * for a segment, its ends included (#LiftedFunctionInfo.tpfn_ends), and
+ * return the number of instants of the array
+ * @details An instant at the timestamp of the last one of the array, the end
+ * of the segment before or an instant of this segment, is merged with it by
+ * tpfn_merge, which keeps the instant of the array when it returns a value
+ * equal to it.
+ * @param[in,out] instants Array of instants, with room for @p ntps more
+ * @param[in] ninsts Number of instants of the array
+ * @param[in] tps,values Instants of the segment and their values, which the
+ * function frees
+ * @param[in] ntps Number of instants of the segment
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+lifting_append_ends(TInstant **instants, int ninsts, const TimestampTz *tps,
+  Datum *values, int ntps, const LiftedFunctionInfo *lfinfo)
+{
+  assert(lfinfo->tpfn_ends); assert(lfinfo->tpfn_merge);
+  MeosType resbasetype = temptype_basetype(lfinfo->restype);
+  /* A value passed by reference is freed once its instant holds a copy */
+  bool byval = basetype_byvalue(resbasetype);
+  /* Timestamp of the last instant of the array, if any */
+  TimestampTz lastt = (ninsts > 0) ? instants[ninsts - 1]->t : 0;
+  for (int k = 0; k < ntps; k++)
+  {
+    if (ninsts > 0 && lastt >= tps[k])
+    {
+      Datum last = tinstant_value_p(instants[ninsts - 1]);
+      Datum merged = lfinfo->tpfn_merge(last, values[k]);
+      if (merged != last && ! datum_eq(merged, last, resbasetype))
+      {
+        pfree(instants[ninsts - 1]);
+        instants[ninsts - 1] = tinstant_make(merged, lfinfo->restype, tps[k]);
+        lastt = tps[k];
+      }
+      if (! byval)
+        pfree(DatumGetPointer(values[k]));
+      continue;
+    }
+    instants[ninsts++] = tinstant_make(values[k], lfinfo->restype, tps[k]);
+    lastt = tps[k];
+    if (! byval)
+      pfree(DatumGetPointer(values[k]));
+  }
+  return ninsts;
+}
+
+/**
  * @brief Append a lifted result instant to a growing buffer, doubling the
  * capacity as needed
  */
@@ -1128,12 +1177,42 @@ tfunc_tlinearseq_base_turnpt_walk(const TSequence *seq, Datum value,
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value_p(inst1);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  /* A turning point function that writes the ends of the segments gives
+   * every instant of a segment, a constant one included */
+  bool ends = values && lfinfo->tpfn_ends && lfinfo->tpfn_base &&
+    interp == LINEAR;
+  assert(! ends || lfinfo->tpfn_value);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds the start instant of the segment and
      * its turning points */
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Datum value2 = tinstant_value_p(inst2);
+    if (ends)
+    {
+      TimestampTz *tps = tpbuf;
+      Datum *vals = valstack;
+      int ntps = lfinfo->tpfn_base(value1, value2, value, inst1->t, inst2->t,
+        tps, vals, cap);
+      assert(many || ntps <= 2);
+      if (ntps > TPFN_STACK_CAP)
+      {
+        tps = palloc(sizeof(TimestampTz) * ntps);
+        vals = lifting_values_room(vals, resbasetype, ntps);
+        lfinfo->tpfn_base(value1, value2, value, inst1->t, inst2->t, tps,
+          vals, ntps);
+      }
+      instants = lifting_instants_room(instants, &maxinsts,
+        ninsts + ntps + 3 * (seq->count - i));
+      ninsts = lifting_append_ends(instants, ninsts, tps, vals, ntps, lfinfo);
+      if (ntps > TPFN_STACK_CAP)
+      {
+        pfree(tps); pfree(vals);
+      }
+      inst1 = inst2;
+      value1 = value2;
+      continue;
+    }
     instants[ninsts++] = tfunc_tinstant_base(inst1, value, lfinfo);
     /* If not constant segment and linear compute the function on the potential
        intermediate turning points before adding the new instant */
@@ -1203,9 +1282,14 @@ tfunc_tlinearseq_base_turnpt_walk(const TSequence *seq, Datum value,
     inst1 = inst2;
     value1 = value2;
   }
-  instants[ninsts++] = tfunc_tinstant_base(inst1, value, lfinfo);
+  /* The last instant ends the last segment, unless the turning point
+   * function wrote it, or none if the function wrote none, which it does
+   * when it raises an error */
+  if (! ends || ninsts == 0 || instants[ninsts - 1]->t != inst1->t)
+    instants[ninsts++] = tfunc_tinstant_base(inst1, value, lfinfo);
   result[0] = lifting_tsequence_make_free(instants, ninsts,
-    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
+    seq->period.lower_inc, seq->period.upper_inc, interp,
+    lfinfo->reskeep ? NORMALIZE_NO : NORMALIZE);
   return 1;
 }
 
@@ -1865,6 +1949,15 @@ tfunc_tcontseq_tcontseq_single_walk(const TSequence *seq1,
   Datum valbuf[TPFN_STACK_CAP];
   Datum *valstack = values ? valbuf : NULL;
   Datum value;
+  /* A turning point function that writes the ends of the segments gives
+   * every instant of a segment, and the function is evaluated only at an
+   * instant that ends no segment */
+  bool ends = values && lfinfo->tpfn_ends && lfinfo->tpfn_temp &&
+    interp1 == LINEAR;
+  assert(! ends || lfinfo->tpfn_value);
+  /* Number of synchronized instants read when the turning point function
+   * writes the ends of the segments, else the instants added count them */
+  int nsync = 0;
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= upper || inst2->t <= upper))
   {
@@ -1893,7 +1986,7 @@ tfunc_tcontseq_tcontseq_single_walk(const TSequence *seq1,
     }
     /* If not the first instant compute the function on the potential
        turning point before adding the new instants */
-    if (lfinfo->tpfn_temp && ninsts > 0)
+    if (lfinfo->tpfn_temp && (ends ? nsync : ninsts) > 0)
     {
       Datum start1 = tinstant_value_p(prev1);
       Datum end1 = tinstant_value_p(inst1);
@@ -1904,7 +1997,25 @@ tfunc_tcontseq_tcontseq_single_walk(const TSequence *seq1,
       int ntps = lfinfo->tpfn_temp(start1, end1, start2, end2,
         lfinfo->param[0], prev1->t, inst1->t, tps, vals, cap);
       assert(many || ntps <= 2);
-      if (ntps == 1)
+      if (ends)
+      {
+        if (ntps > TPFN_STACK_CAP)
+        {
+          tps = palloc(sizeof(TimestampTz) * ntps);
+          vals = lifting_values_room(vals, basetype_res, ntps);
+          lfinfo->tpfn_temp(start1, end1, start2, end2, lfinfo->param[0],
+            prev1->t, inst1->t, tps, vals, ntps);
+        }
+        instants = lifting_instants_room(instants, &maxinsts, ninsts + ntps +
+          3 * (seq1->count - i + seq2->count - j + 1));
+        ninsts = lifting_append_ends(instants, ninsts, tps, vals, ntps,
+          lfinfo);
+        if (ntps > TPFN_STACK_CAP)
+        {
+          pfree(tps); pfree(vals);
+        }
+      }
+      else if (ntps == 1)
       {
         /* One turning point, the case of every function of this arity; one
          * at the start of the segment is the instant added there */
@@ -1978,15 +2089,30 @@ tfunc_tcontseq_tcontseq_single_walk(const TSequence *seq1,
       }
     }
     /* Compute the function on the synchronized instants */
-    value = tfunc_base_base(tinstant_value_p(inst1), tinstant_value_p(inst2),
-      lfinfo);
-    instants[ninsts++] = tinstant_make_free(value, lfinfo->restype, inst1->t);
+    if (! ends)
+    {
+      value = tfunc_base_base(tinstant_value_p(inst1),
+        tinstant_value_p(inst2), lfinfo);
+      instants[ninsts++] = tinstant_make_free(value, lfinfo->restype,
+        inst1->t);
+    }
+    if (ends)
+      nsync++;
     if (i == seq1->count || j == seq2->count)
       break;
     prev1 = inst1;
     prev2 = inst2;
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
+  }
+  /* The last instant ends the last segment, unless the turning point
+   * function wrote it, or none if the function wrote none, which it does
+   * when it raises an error */
+  if (ends && (ninsts == 0 || instants[ninsts - 1]->t != inst1->t))
+  {
+    value = tfunc_base_base(tinstant_value_p(inst1), tinstant_value_p(inst2),
+      lfinfo);
+    instants[ninsts++] = tinstant_make_free(value, lfinfo->restype, inst1->t);
   }
   /* We are sure that ninsts != 0 due to the period intersection test above */
   /* The last two values of sequences with step interpolation and exclusive
@@ -2005,7 +2131,7 @@ tfunc_tcontseq_tcontseq_single_walk(const TSequence *seq1,
   if (interp == LINEAR && ! lfinfo->reslinear)
     interp = STEP;
   result[0] = lifting_tsequence_make_free(instants, ninsts, inter->lower_inc,
-    inter->upper_inc, interp, NORMALIZE);
+    inter->upper_inc, interp, lfinfo->reskeep ? NORMALIZE_NO : NORMALIZE);
   return 1;
 }
 
@@ -2336,11 +2462,19 @@ tfunc_tlinearseq_tstepseq_walk(const TSequence *seq1, const TSequence *seq2,
   bool lower_inc = inter->lower_inc;
   MeosType restype = lfinfo->restype;
   MeosType resbasetype = temptype_basetype(restype);
+  /* A turning point function that writes the ends of the segments gives
+   * every instant of a segment, and the function is evaluated only at an
+   * instant that ends no segment */
+  bool ends = values && lfinfo->tpfn_ends && lfinfo->tpfn_temp;
+  assert(! ends || lfinfo->tpfn_value);
   /* Compute the function at the start instant */
   Datum startvalue1 = tinstant_value_p(start1);
   Datum startvalue2 = tinstant_value_p(start2);
-  Datum startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
-  /* One sequence is produced for each instant of the step sequence */
+  Datum startresult = 0;
+  if (! ends)
+    startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
+  /* One sequence is produced for each instant of the step sequence, or for
+   * each segment (#LiftedFunctionInfo.ressegs) */
   while (i < seq1->count && j < seq2->count)
   {
     /* Synchronize the two end instants */
@@ -2370,8 +2504,12 @@ tfunc_tlinearseq_tstepseq_walk(const TSequence *seq1, const TSequence *seq2,
     /* Compute the function at the end instant */
     Datum endvalue1 = tinstant_value_p(end1);
     Datum endvalue2 = tinstant_value_p(end2);
-    Datum endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
-    instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
+    Datum endresult = 0;
+    if (! ends)
+    {
+      endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
+      instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
+    }
     /* Add the turning points of the segment, where the step sequence keeps
      * its start value up to the end instant, as #tfunc_tcontseq_tcontseq_single
      * adds them for two linear sequences */
@@ -2384,6 +2522,25 @@ tfunc_tlinearseq_tstepseq_walk(const TSequence *seq1, const TSequence *seq2,
       int ntps = lfinfo->tpfn_temp(startvalue1, segend1, startvalue2, segend2,
         lfinfo->param[0], start1->t, end1->t, tps, vals, cap);
       assert(many || ntps <= 2);
+      if (ends)
+      {
+        if (ntps > TPFN_STACK_CAP)
+        {
+          tps = palloc(sizeof(TimestampTz) * ntps);
+          vals = lifting_values_room(vals, resbasetype, ntps);
+          lfinfo->tpfn_temp(startvalue1, segend1, startvalue2, segend2,
+            lfinfo->param[0], start1->t, end1->t, tps, vals, ntps);
+        }
+        instants = lifting_instants_room(instants, &maxinsts, ninsts + ntps +
+          3 * (seq1->count - i + seq2->count - j + 1));
+        ninsts = lifting_append_ends(instants, ninsts, tps, vals, ntps,
+          lfinfo);
+        if (ntps > TPFN_STACK_CAP)
+        {
+          pfree(tps); pfree(vals);
+        }
+        ntps = 0;
+      }
       if (many && unlikely(ntps > 2))
       {
         if (ntps > TPFN_STACK_CAP)
@@ -2430,13 +2587,20 @@ tfunc_tlinearseq_tstepseq_walk(const TSequence *seq1, const TSequence *seq2,
           pfree(vals);
       }
     }
-    /* Close the current sequence if the step sequence changed value */
-    if (makeseq)
+    /* Close the current sequence if the step sequence changed value, or at
+     * the end of each segment */
+    if (makeseq || lfinfo->ressegs)
     {
-      Datum closeresult = (interp1 == LINEAR) ?
-        tfunc_base_base(endvalue1, startvalue2, lfinfo) :
-        tfunc_base_base(startvalue1, endvalue2, lfinfo);
-      instants[ninsts++] = tinstant_make_free(closeresult, restype, end1->t);
+      /* The turning point function wrote the end of the segment, where the
+       * step sequence keeps its start value */
+      if (! ends)
+      {
+        Datum closeresult = (interp1 == LINEAR) ?
+          tfunc_base_base(endvalue1, startvalue2, lfinfo) :
+          tfunc_base_base(startvalue1, endvalue2, lfinfo);
+        instants[ninsts++] = tinstant_make_free(closeresult, restype,
+          end1->t);
+      }
       result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
         false, LINEAR, NORMALIZE_NO);
       for (int k = 0; k < ninsts; k++)
@@ -2445,17 +2609,26 @@ tfunc_tlinearseq_tstepseq_walk(const TSequence *seq1, const TSequence *seq2,
     }
     start1 = end1; start2 = end2;
     startvalue1 = endvalue1; startvalue2 = endvalue2;
-    DATUM_FREE(startresult, resbasetype);
-    startresult = endresult;
+    if (! ends)
+    {
+      DATUM_FREE(startresult, resbasetype);
+      startresult = endresult;
+    }
     lower_inc = true;
   }
   /* Add a final sequence if any */
   if (inter->upper_inc)
+  {
+    if (ends)
+      startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
     instants[ninsts++] = tinstant_make_free(startresult, restype, start1->t);
+  }
+  else if (! ends)
+    DATUM_FREE(startresult, resbasetype);
   if (ninsts > 0)
     result[nseqs++] = lifting_tsequence_make(instants, ninsts,
       (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : inter->upper_inc,
-      LINEAR, NORMALIZE);
+      LINEAR, lfinfo->reskeep ? NORMALIZE_NO : NORMALIZE);
   pfree_array((void **) tofree, nfree);
   pfree(instants);
   return nseqs;
@@ -2467,7 +2640,8 @@ tfunc_tlinearseq_tstepseq_walk(const TSequence *seq1, const TSequence *seq2,
  * has step interpolation, in either order, and #tfunc_tcontseq_tcontseq_single
  * when both have the same interpolation. The value of the step sequence
  * changes at its instants, so a sequence of the result closes at each of
- * them, while the instants of the linear sequence are kept inside it.
+ * them, while the instants of the linear sequence are kept inside it, unless
+ * the result has one sequence for each segment (ressegs).
  */
 static int
 tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
@@ -2552,7 +2726,7 @@ tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
   else
   {
     TSequenceSet *result = lifting_tsequenceset_make_free(sequences, nseqs,
-      NORMALIZE);
+      lfinfo->reskeep ? NORMALIZE_NO : NORMALIZE);
     if (result && result->count == 1)
     {
       Temporal *resultseq = (Temporal *) tsequenceset_as_tsequence(result);
