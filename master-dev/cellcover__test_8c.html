@@ -76,7 +76,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">cellcover_test.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -106,6 +107,9 @@ Macros</h2></td></tr>
 <tr class="memitem:a85f7b1c3f13103a98c0033dab59544c6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellcover__test_8c_a85f7b1c3f13103a98c0033dab59544c6.html#a85f7b1c3f13103a98c0033dab59544c6">NSEGMENTS</a>&#160;&#160;&#160;120</td></tr>
 <tr class="memdesc:a85f7b1c3f13103a98c0033dab59544c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Segments drawn at each site.  <a href="cellcover__test_8c_a85f7b1c3f13103a98c0033dab59544c6.html#a85f7b1c3f13103a98c0033dab59544c6">More...</a><br /></td></tr>
 <tr class="separator:a85f7b1c3f13103a98c0033dab59544c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af972a06c7f3a50edbba9ae8eca99cb66"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellcover__test_8c_af972a06c7f3a50edbba9ae8eca99cb66.html#af972a06c7f3a50edbba9ae8eca99cb66">NSEGMENTS_SMALL</a>&#160;&#160;&#160;8</td></tr>
+<tr class="memdesc:af972a06c7f3a50edbba9ae8eca99cb66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Segments drawn at each site where MEOS_TEST_SMALL is set, as a run under valgrind sets it: every site and every cover is still read, on fewer segments, which reach the same functions.  <a href="cellcover__test_8c_af972a06c7f3a50edbba9ae8eca99cb66.html#af972a06c7f3a50edbba9ae8eca99cb66">More...</a><br /></td></tr>
+<tr class="separator:af972a06c7f3a50edbba9ae8eca99cb66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -144,6 +148,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a09a282b61b398ac169bf2bdb5d29ca52"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellcover__test_8c_a09a282b61b398ac169bf2bdb5d29ca52.html#a09a282b61b398ac169bf2bdb5d29ca52">unit_vector</a> (double <a class="el" href="meos_2src_2h3_2h3__geo_8c_ae36b7c4e139e267d5c124fe3eeea681f.html#ae36b7c4e139e267d5c124fe3eeea681f">lon</a>, double <a class="el" href="meos_2src_2h3_2h3__geo_8c_aac94f39e15b9aa5612bece7f0ffef858.html#aac94f39e15b9aa5612bece7f0ffef858">lat</a>, double p[3])</td></tr>
 <tr class="memdesc:a09a282b61b398ac169bf2bdb5d29ca52"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the last argument to the unit vector of a longitude and latitude in degrees.  <a href="cellcover__test_8c_a09a282b61b398ac169bf2bdb5d29ca52.html#a09a282b61b398ac169bf2bdb5d29ca52">More...</a><br /></td></tr>
 <tr class="separator:a09a282b61b398ac169bf2bdb5d29ca52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a5f995cb9b226fbc24819e7831cd77bad"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellcover__test_8c_a5f995cb9b226fbc24819e7831cd77bad.html#a5f995cb9b226fbc24819e7831cd77bad">nsegments</a> = <a class="el" href="cellcover__test_8c_a85f7b1c3f13103a98c0033dab59544c6.html#a85f7b1c3f13103a98c0033dab59544c6">NSEGMENTS</a></td></tr>
+<tr class="memdesc:a5f995cb9b226fbc24819e7831cd77bad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Segments drawn at each site in this run.  <a href="cellcover__test_8c_a5f995cb9b226fbc24819e7831cd77bad.html#a5f995cb9b226fbc24819e7831cd77bad">More...</a><br /></td></tr>
+<tr class="separator:a5f995cb9b226fbc24819e7831cd77bad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >A trajectory's cell cover holds every cell the trajectory crosses. </p>
