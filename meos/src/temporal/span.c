@@ -205,10 +205,10 @@ span_lower_cmp(const Span *s1, const Span *s2)
     return 0;
   else if (s1->lower_inc)
     /* first is inclusive and second is exclusive */
-    return 1;
+    return -1;
   else
     /* first is exclusive and second is inclusive */
-    return -1;
+    return 1;
 }
 
 /**
