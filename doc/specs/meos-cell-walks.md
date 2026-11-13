@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.2.0 |
+| Version | v0.3.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split and the QUADBIN, S2 and H3 cells, and how the instant a trajectory crosses from one cell to the next is dated |
 | Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position), `meos/src/geo/geo_funcs.c` (exact signs) |
 
@@ -60,9 +60,9 @@ icosahedron can turn back at its extra vertex.
 Each decision is an exact sign computed on the input doubles, never a
 comparison within a tolerance, so two neighbouring cells read every shared
 point identically and no point is held by none or by two. The tiles of a box
-grid and the QUADBIN and planar H3 cells of a position and of a trajectory
-follow the rule; the geodetic H3 cells and the S2 cells follow it from the
-versions section 8 lists. For H3, two
+grid, the QUADBIN cells and the planar and geodetic H3 cells of a position
+and of a trajectory follow the rule; the S2 cells follow it from the version
+section 8 lists. For H3, two
 neighbours state their shared vertex with the same doubles: the outline of a
 cell is read from the vertex index of the library, and the extra vertex of
 an edge crossing a face of the icosahedron from the directed edge leaving
@@ -122,12 +122,10 @@ resolution 9 on average.
   interior and its north and west sides (section 3). The cell around a pole
   is the region between its ring and the pole.
 - **The cell of a position** of a `geometry` or a `tgeompoint` is the cell
-  whose outline holds it: `latLngToCell` of a geometry names it. The H3
-  library's own cell is the region of its curved edges on the sphere, which
-  parts from the outline in the band of section 4; a geodetic position keeps
-  that cell until the version section 8 lists. The point below lies 53 km
-  inside the outline of the resolution-0 cell `8009fffffffffff` and outside
-  its geodetic cell:
+  whose outline holds it: `latLngToCell` of a geometry names it. The
+  geodetic cell below parts from the outline in the band of section 4. The
+  point below lies 53 km inside the outline of the resolution-0 cell
+  `8009fffffffffff` and outside its geodetic cell:
 
   ```sql
   SELECT latLngToCell(geometry 'SRID=4326;POINT(-0.8367 59.2711)', 0) = h3index '8009fffffffffff',
@@ -135,6 +133,17 @@ resolution 9 on average.
     eDisjoint(th3index '8009fffffffffff@2001-01-01', geography 'POINT(-0.8367 59.2711)');
   -- t | f | t
   ```
+
+### Geodetic H3
+
+- **A geodetic cell is the region its outline bounds on the sphere**, each
+  edge the great-circle arc between the geodetic positions of its vertices
+  (section 4), holding its interior and its north and west sides (section 3).
+- **The cell of a position** of a `geography` or a `tgeogpoint` is the cell
+  whose region holds its geodetic position, decided by exact signs on the
+  geodetic positions. The H3 library's `latLngToCell` reads its own
+  trigonometry in doubles and can name a neighbour of that cell for a
+  position within its rounding of an edge.
 
 ## 6. The cells of a trajectory
 
@@ -185,6 +194,18 @@ FROM ring;
 --  (85c4e06bfffffff@Mon Jan 01 00:00:00 2001 PST, 85c4e06bfffffff@Wed Jan 03 00:00:00 2001 PST]}
 ```
 
+The geodetic H3 cells of a trajectory are walked on the regions of section 5,
+the position moving at constant angular speed along the great circle of its
+segment, so a crossing is dated by the truncation of its exact fraction of
+the segment. A trip across the antimeridian at resolution 3 crosses three
+cells, each one sequence of two instants:
+
+```sql
+SELECT numInstants(th3index(tgeogpoint
+  '[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
+-- 6
+```
+
 The restriction of a temporal point to a box and its split by a space grid
 follow the same rule: each instant belongs to exactly one tile, and a box
 holds exactly the instants whose position lies in it.
@@ -198,15 +219,16 @@ number with corrections of wording.
 |---|---|
 | v0.1.0 | The box grid, the rule and owners of the four grids and the geodetic H3 owner, the geodetic position, the QUADBIN grid and its cover |
 | v0.2.0 | The planar H3 cell of a position and the planar H3 cells of a trajectory, walked and dated on the outlines |
+| v0.3.0 | The geodetic H3 cell of a position and the geodetic H3 cells of a trajectory, walked on great-circle outlines and dated at constant angular speed |
 
 ## 8. Out of scope
 
 Future: the rule extends to these, each added here with its version (the
-owners of section 3 for geodetic H3 and for S2 are in MEOS already; the cells
-of a position and of a trajectory read them from these versions):
+owners of section 3 for S2 are in MEOS already; the cells of a position and
+of a trajectory read them from these versions):
 
-- the geodetic H3 cell of a position, and the geodetic walks of H3 and S2,
-  their crossings dated on the great-circle arc at constant angular speed;
+- the geodetic walk of S2, its crossings dated on the great-circle arc at
+  constant angular speed;
 - the S2 walk and point function;
 - the vertices of an H3 cell computed from H3's own formula, so that every
   build of the library reads the same outline;
