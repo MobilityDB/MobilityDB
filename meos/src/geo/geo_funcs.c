@@ -6273,6 +6273,38 @@ point_motion_dwithin_at_exact(const double *a0, const double *a1,
 }
 
 /**
+ * @brief Return the sign of the discriminant of the quadratic whose sign says
+ * whether a disc moving linearly over a segment covers another one, exactly
+ * @details The first disc covers the second one where the distance of their
+ * centres is at most the difference L of their radii, where
+ * `q(f) = |w(f)|^2 - L(f)^2 = A f^2 + 2 B f + C` is not positive and L is not
+ * negative: the quadratic of #point_motion_dwithin_coeffs with the radius of
+ * the second disc negated and a zero distance. Its discriminant `B^2 - A C`
+ * is a sign of degree four in the input doubles, read on the exact
+ * coefficients by #wide_dyadic_product_cmp: zero where the two roots are one,
+ * the discs grazing at a single instant
+ * @param[in] a0,a1 Centre of the first disc at the start and at the end
+ * @param[in] b0,b1 Centre of the second disc at the start and at the end
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] ra0,ra1 Radius of the first disc at the start and at the end
+ * @param[in] rb0,rb1 Radius of the second disc at the start and at the end
+ * @param[out] asign Sign of the leading coefficient A
+ * @return 1, 0 or -1 for a discriminant positive, zero or negative
+ */
+int
+point_motion_contains_disc_sign(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, int *asign)
+{
+  assert(ndims == 2 || ndims == 3); assert(asign);
+  WideDyadic A, B, C;
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, - rb0, - rb1,
+    0.0, 0.0, &A, &B, &C);
+  *asign = A.sign;
+  return wide_dyadic_product_cmp(&B, &B, &A, &C);
+}
+
+/**
  * @brief Return the answer of #point_motion_dwithin_period_exact for a
  * segment its filter does not settle, on the exact quadratic
  * @details Kept out of line, as #point_distance_nearest is, so that the
