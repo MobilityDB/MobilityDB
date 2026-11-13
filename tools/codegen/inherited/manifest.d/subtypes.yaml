@@ -123,7 +123,7 @@ subtypes:
     distwith: [geometry]
     base:  cbuffer
     brief: "temporal circular buffers"
-    overlaps: box
+    overlaps: true
     bin:   200
     category: tspatial
     # Its set of base values is indexed beside it, by the box the set stores.
@@ -155,7 +155,7 @@ subtypes:
     distwith: [geometry]
     base:  npoint
     brief: "temporal network points"
-    overlaps: box
+    overlaps: true
     bin:   300
     category: tspatial
     # npoint's scalar base::stbox conversions are npoint-specific (Npoint_to_stbox

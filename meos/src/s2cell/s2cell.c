@@ -670,6 +670,52 @@ s2cell_cell_vertices(S2CellId cell, double *longitudes, double *latitudes)
   return;
 }
 
+/**
+ * @brief Return true if an S2 cell holds the edge of its ring from the
+ * vertex k to the vertex k + 1
+ * @details A cell holds the part of its ring facing the lower index
+ * coordinates of its face: its low-i edge, `u = umin`, and its low-j edge,
+ * `v = vmin`. #s2cell_cell_vertices orders the vertices `(umin,vmin)`,
+ * `(umax,vmin)`, `(umax,vmax)`, `(umin,vmax)`, so these are the edges from
+ * the vertices 3 and 0. An edge on a cube edge, where the axes of the two
+ * faces point in different directions, still has one owner: it is the low
+ * side of exactly one of the two faces. The decision reads the index alone.
+ * @param[in] k Index of the first vertex of the edge, 0 to 3
+ */
+bool
+s2cell_cell_edge_held(int k)
+{
+  return k == 0 || k == 3;
+}
+
+/**
+ * @brief Return true if an S2 cell holds the vertex k of its ring
+ * @details A cell holds the corner between its low-i and low-j edges, the
+ * vertex 0 of #s2cell_cell_vertices. Of the eight corners of the cube, two
+ * are the low corner of no cell, (1, -1, 1) and (-1, 1, -1), and each
+ * belongs to the cell of the lowest face meeting there: the cell of face 0
+ * at `i = 0` and the highest `j`, whose vertex 3 is (1, -1, 1), and the cell
+ * of face 1 at the highest `i` and `j = 0`, whose vertex 1 is (-1, 1, -1).
+ * The decision reads the index alone.
+ * @param[in] cell S2 cell
+ * @param[in] k Index of the vertex, 0 to 3
+ */
+bool
+s2cell_cell_vertex_held(S2CellId cell, int k)
+{
+  if (k == 0)
+    return true;
+  if (k != 1 && k != 3)
+    return false;
+  uint32_t i, j;
+  uint32_t face = s2cell_to_face_ij(cell, &i, &j, NULL);
+  uint32_t size = 1u << (S2_MAX_LEVEL - s2cell_get_resolution(cell));
+  uint32_t ilo = i & ~(size - 1), jlo = j & ~(size - 1);
+  if (k == 3)
+    return face == 0 && ilo == 0 && jlo + size == S2_MAX_SIZE;
+  return face == 1 && ilo + size == S2_MAX_SIZE && jlo == 0;
+}
+
 /*****************************************************************************
  * Cells crossed by a segment
  *****************************************************************************/

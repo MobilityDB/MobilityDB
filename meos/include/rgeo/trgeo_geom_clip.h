@@ -164,6 +164,23 @@ extern int trgeometry_geom_clip_lwgeom(
   const LWGEOM *geom, Span **intervals_out);
 
 /**
+ * @brief Append the fractions of a translation at which a moving edge may
+ * come into or out of contact with a static geometry
+ * @details The contact changes where a vertex of the edge crosses a segment
+ * of the geometry, a ring of a polygon among them, or a vertex of the
+ * geometry crosses the edge, and it may last an instant alone, so each such
+ * fraction is appended rather than an interval of contact
+ * (#trgeometry_geom_clip_lwgeom)
+ * @param[in] a1,b1,a2,b2 quad endpoints (pure translation)
+ * @param[in] geom static target, any LWGEOM subtype
+ * @param[in,out] events,nevents,cap Growing buffer of fractions in [0, 1]
+ */
+extern void trgeometry_geom_clip_events(
+  const POINT2D *a1, const POINT2D *b1,
+  const POINT2D *a2, const POINT2D *b2,
+  const LWGEOM *geom, double **events, int *nevents, int *cap);
+
+/**
  * @brief Time intervals during which a moving edge under arbitrary 2D
  * pose interpolation intersects any polygon component of a static geometry.
  *

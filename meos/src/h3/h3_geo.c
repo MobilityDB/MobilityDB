@@ -66,6 +66,8 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "h3/h3index.h"
+#include "h3/th3index_internal.h"  /* H3Outline */
+#include "geo/geo_funcs.h"  /* cross_product_sign_offset, ExactSum */
 #include "geo/tgeo_spatialfuncs.h"  /* ensure_srid_is_latlong */
 #include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/tcellindex.h"
@@ -275,6 +277,263 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
   if (latLngToCell(&ll, resolution, &cell) != E_SUCCESS)
     return (H3Index) 0;
   return cell;
+}
+
+/**
+ * @brief Return in the last argument the canonical outline of a cell
+ * @details Two neighbouring cells must state the vertices they share with the
+ * same doubles, so that a boundary point belongs to exactly one of them. The
+ * boundary #h3_cell_planes reads, `cellToBoundary`, does not: neighbours
+ * state a shared vertex with different doubles in 168 of the 360 pairs at
+ * resolution 0 and 16318 of the 6050520 at resolution 5. The outline reads
+ * each vertex once, from the vertex index (`cellToVertexes`,
+ * `vertexToLatLng`), in degrees by `radsToDegs`. An edge crossing a face of
+ * the icosahedron bends at an extra vertex, which the vertex index does not
+ * name; it is read from the directed edge leaving the lower of the two cells
+ * sharing the edge (`directedEdgeToBoundary`), so both cells read it from the
+ * same edge. Each edge of the outline records the cell across it.
+ * @param[in] cell Cell
+ * @param[out] out Outline, its vertices in the order of the vertex index
+ * @return False on an error of the H3 library
+ */
+bool
+h3_cell_outline(H3Index cell, H3Outline *out)
+{
+  H3Index verts[6] = { 0 };
+  H3Index nbrs[7] = { 0 };
+  if (cellToVertexes(cell, verts) != E_SUCCESS ||
+      gridDisk(cell, 1, nbrs) != E_SUCCESS)
+    return false;
+  int n = isPentagon(cell) ? 5 : 6;
+  out->count = 0;
+  for (int k = 0; k < n; k++)
+  {
+    LatLng v;
+    if (vertexToLatLng(verts[k], &v) != E_SUCCESS)
+      return false;
+    /* The neighbour sharing the vertices k and k + 1 */
+    H3Index next = verts[(k + 1) % n], across = 0;
+    for (int j = 0; j < 7 && ! across; j++)
+    {
+      if (nbrs[j] == 0 || nbrs[j] == cell)
+        continue;
+      H3Index nv[6] = { 0 };
+      if (cellToVertexes(nbrs[j], nv) != E_SUCCESS)
+        return false;
+      int shared = 0;
+      for (int m = 0; m < 6; m++)
+        if (nv[m] != 0 && (nv[m] == verts[k] || nv[m] == next))
+          shared++;
+      if (shared == 2)
+        across = nbrs[j];
+    }
+    if (! across)
+      return false;
+    out->lon[out->count] = radsToDegs(v.lng);
+    out->lat[out->count] = radsToDegs(v.lat);
+    out->across[out->count++] = across;
+    /* The extra vertex of the edge, from the directed edge leaving the lower
+     * of the two cells */
+    H3Index edge;
+    CellBoundary eb;
+    if (cellsToDirectedEdge(cell < across ? cell : across,
+          cell < across ? across : cell, &edge) != E_SUCCESS ||
+        directedEdgeToBoundary(edge, &eb) != E_SUCCESS)
+      return false;
+    if (eb.numVerts == 3)
+    {
+      out->lon[out->count] = radsToDegs(eb.verts[1].lng);
+      out->lat[out->count] = radsToDegs(eb.verts[1].lat);
+      out->across[out->count++] = across;
+    }
+    else if (eb.numVerts != 2)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the offset that reads a longitude in the chart of another
+ * @details The offset, 0 or a multiple of 360, puts the longitude less than
+ * 180 degrees from the reference, so that an edge of an outline crossing the
+ * antimeridian is read along its path. An edge of a cell spans far less than
+ * 180 degrees of longitude, so the rounded difference decides the chart; the
+ * offset is never added to the longitude, whose shifted value would round
+ */
+static double
+h3_lon_offset(double ref, double lon)
+{
+  if (lon - ref > 180.0)
+    return -360.0;
+  if (ref - lon > 180.0)
+    return 360.0;
+  return 0.0;
+}
+
+/**
+ * @brief Return 1 if the cell left of the edge from A to B lies south of it,
+ * or east of it where it runs north-south, and 0 otherwise
+ * @details The sign of the longitude difference, then of the latitude
+ * difference, each exact, B read in the chart of A
+ */
+static int
+h3_edge_south_side(double ax, double ay, double bx, double by)
+{
+  int dx = offset_x_cmp(bx, h3_lon_offset(ax, bx), ax);
+  if (dx != 0)
+    return dx < 0;
+  return by < ay;
+}
+
+/**
+ * @brief Return true if a cell holds the edge of its outline from the vertex
+ * k to the vertex k + 1
+ * @details A cell holds its north and west sides: an edge belongs to the cell
+ * south of it, and to the cell east of it where it runs north-south. The
+ * outline turns counter-clockwise, so the cell lies left of each edge, and
+ * the edge is a north side when it runs west. Each sign is exact on the
+ * doubles of the outline, which two neighbours share, so exactly one of the
+ * two cells holds the edge.
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the first vertex of the edge
+ */
+bool
+h3_outline_edge_held(const H3Outline *o, int k)
+{
+  int k1 = (k + 1) % o->count;
+  return h3_edge_south_side(o->lon[k], o->lat[k], o->lon[k1], o->lat[k1]);
+}
+
+/**
+ * @brief Return true if a cell holds the vertex k of its outline
+ * @details A vertex belongs to the cell whose corner there opens south, or
+ * east where one of its edges runs due south. A convex corner opens south
+ * when the cell lies south of both its edges, a reflex one when it lies
+ * south of either; the turn of the corner is #cross_product_sign_offset on
+ * the neighbouring vertices read in the chart of the vertex, so no shifted
+ * longitude is rounded.
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the vertex
+ */
+bool
+h3_outline_vertex_held(const H3Outline *o, int k)
+{
+  int kp = (k + o->count - 1) % o->count, kn = (k + 1) % o->count;
+  double x = o->lon[k], y = o->lat[k];
+  double px = o->lon[kp], py = o->lat[kp];
+  double nx = o->lon[kn], ny = o->lat[kn];
+  int in = h3_edge_south_side(px, py, x, y);
+  int out = h3_edge_south_side(x, y, nx, ny);
+  /* (here - prev) x (next - here), prev and next read in the chart of here */
+  int turn = cross_product_sign_offset(px, py, x, y, x, y, nx, ny,
+    - h3_lon_offset(x, px), h3_lon_offset(x, nx));
+  return turn > 0 ? (in && out) : (in || out);
+}
+
+/**
+ * @brief Return in @p v the geodetic position of the vertex k of an outline,
+ * the vector of decision D6 of the cell walks (#lonlat_vector_nearest)
+ */
+static void
+h3_outline_vector(const H3Outline *o, int k, POINT3D *v)
+{
+  double d[3];
+  lonlat_vector_nearest(o->lon[k], o->lat[k], d);
+  v->x = d[0];
+  v->y = d[1];
+  v->z = d[2];
+}
+
+/**
+ * @brief Return true if the cell left of the great-circle arc from @p a to
+ * @p b lies south of it, or east of it where the arc runs north-south
+ * @details The cell lies on the side the normal a x b points to, so it lies
+ * south of the arc when the z component of the normal, ax by - ay bx, is
+ * negative, an exact sign of the doubles of the two vectors; where it is 0
+ * the arc lies in a meridian plane, and the cell left of it is east of it
+ * when the arc runs south
+ */
+static bool
+h3_arc_south_side(const POINT3D *a, const POINT3D *b)
+{
+  int nz = cross_product_sign_exact(0.0, 0.0, a->x, a->y, 0.0, 0.0, b->x,
+    b->y);
+  if (nz != 0)
+    return nz < 0;
+  return b->z < a->z;
+}
+
+/**
+ * @brief Return true if a cell holds the edge of its outline from the vertex
+ * k to the vertex k + 1, the edge read as a great-circle arc
+ * @details The geodetic twin of #h3_outline_edge_held: a cell holds its north
+ * and west sides, each sign exact on the geodetic positions of the vertices,
+ * which two neighbours read from the same doubles, so exactly one of the two
+ * cells holds the edge
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the first vertex of the edge
+ */
+bool
+h3_outline_edge_held_geodetic(const H3Outline *o, int k)
+{
+  POINT3D a, b;
+  h3_outline_vector(o, k, &a);
+  h3_outline_vector(o, (k + 1) % o->count, &b);
+  return h3_arc_south_side(&a, &b);
+}
+
+/**
+ * @brief Return true if a cell holds the vertex k of its outline, its edges
+ * read as great-circle arcs
+ * @details The geodetic twin of #h3_outline_vertex_held: the vertex belongs
+ * to the cell whose corner there opens south, or east where one of its edges
+ * runs due south; the turn of the corner is the sign of the triple product of
+ * the previous, the current and the next vertex (#triple_product_sign_exact),
+ * positive at a convex corner of an outline turning counter-clockwise
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the vertex
+ */
+bool
+h3_outline_vertex_held_geodetic(const H3Outline *o, int k)
+{
+  POINT3D p, v, n;
+  h3_outline_vector(o, (k + o->count - 1) % o->count, &p);
+  h3_outline_vector(o, k, &v);
+  h3_outline_vector(o, (k + 1) % o->count, &n);
+  bool in = h3_arc_south_side(&p, &v);
+  bool out = h3_arc_south_side(&v, &n);
+  int turn = triple_product_sign_exact(&p, &v, &n);
+  return turn > 0 ? (in && out) : (in || out);
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the line of the
+ * edge of an outline from the vertex k to the vertex k + 1, as the offset
+ * from the start of the segment, truncated
+ * @details The edge is read in the chart of the start of the segment, each
+ * vertex through an exact offset of 360 (#h3_lon_offset), and the crossing
+ * is dated by #segment_edge_cross_offset, the truncation of its exact
+ * parameter. Whether the segment meets the edge itself, between its
+ * vertices, is a question of its own.
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the first vertex of the edge
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment, in degrees
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] whole True when the segment lies on the line exactly at the
+ * microsecond returned
+ */
+int64
+h3_outline_edge_offset(const H3Outline *o, int k, double x0, double y0,
+  double x1, double y1, int64 D, bool *whole)
+{
+  int k1 = (k + 1) % o->count;
+  double ax = o->lon[k], bx = o->lon[k1];
+  double oa = h3_lon_offset(x0, ax);
+  /* Both offsets are multiples of 360 of small magnitude, so their sum is
+   * exact */
+  double ob = oa + h3_lon_offset(ax, bx);
+  return segment_edge_cross_offset(x0, y0, x1, y1, D, ax, o->lat[k], oa, bx,
+    o->lat[k1], ob, whole);
 }
 
 /**

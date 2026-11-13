@@ -97,3 +97,30 @@ SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 10), 1)@20
 SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 10), 1)@2001-01-02]' %&& stbox 'STBOX T([2001-01-01, 2001-01-04])';
 /* Errors */
 SELECT tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01' ?&& stbox 'SRID=4326;STBOX X((0,0),(1,1))';
+
+-- Ever and always overlaps: two values, whose boxes are compared between
+-- their instants too, where two moving buffers may overlap for a moment
+
+-- Two buffers passing through each other between two instants
+SELECT tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-03]' ?&& tcbuffer '[Cbuffer(Point(10 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]';
+-- Boxes touching at one moment between two instants, and missing by 1/2
+SELECT tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]' ?&& tcbuffer '[Cbuffer(Point(2 -6),1)@2001-01-01, Cbuffer(Point(2 6),1)@2001-01-03]';
+SELECT tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]' ?&& tcbuffer '[Cbuffer(Point(2.5 -6),1)@2001-01-01, Cbuffer(Point(2.5 6),1)@2001-01-03]';
+SELECT tcbuffer '[Cbuffer(Point(500000 6000000),1)@2001-01-01, Cbuffer(Point(500000 6000000),1)@2001-01-03]' ?&& tcbuffer '[Cbuffer(Point(500002 5999994),1)@2001-01-01, Cbuffer(Point(500002 6000006),1)@2001-01-03]';
+-- A contact at an excluded bound, and at an included one
+SELECT tcbuffer '(Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-03]' ?&& tcbuffer '[Cbuffer(Point(2 0),1)@2001-01-01, Cbuffer(Point(30 0),1)@2001-01-03]';
+SELECT tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-03]' ?&& tcbuffer '[Cbuffer(Point(2 0),1)@2001-01-01, Cbuffer(Point(30 0),1)@2001-01-03]';
+-- Values synchronized between their instants
+SELECT tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(8 0),1)@2001-01-05]' ?&& tcbuffer '[Cbuffer(Point(4 4),1)@2001-01-03, Cbuffer(Point(4 -4),1)@2001-01-07]';
+SELECT tcbuffer '{Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(5 0),1)@2001-01-02}' ?&& tcbuffer '[Cbuffer(Point(10 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]';
+SELECT tcbuffer 'Cbuffer(Point(8 0),1)@2001-01-02' ?&& tcbuffer '[Cbuffer(Point(10 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]';
+-- Always: radii growing along, apart strictly between two instants, a step
+-- value jumping at its instant, and a sequence set
+SELECT tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),3)@2001-01-03]' %&& tcbuffer '[Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(11 1),3)@2001-01-03]';
+SELECT tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]' %&& tcbuffer '[Cbuffer(Point(2 0),1)@2001-01-01, Cbuffer(Point(6 0),1)@2001-01-02, Cbuffer(Point(2 0),1)@2001-01-03]';
+SELECT tcbuffer 'Interp=Step;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02, Cbuffer(Point(10 0),1)@2001-01-03]' %&& tcbuffer '[Cbuffer(Point(10 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-03]';
+SELECT tcbuffer '{[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02], [Cbuffer(Point(0 0),1)@2001-01-03, Cbuffer(Point(0 0),1)@2001-01-04]}' %&& tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-04]';
+-- Values sharing no time
+SELECT tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]' ?&& tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-03, Cbuffer(Point(0 0),1)@2001-01-04]';
+/* Errors */
+SELECT tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01' ?&& tcbuffer 'SRID=3812;Cbuffer(Point(0 0),1)@2001-01-01';

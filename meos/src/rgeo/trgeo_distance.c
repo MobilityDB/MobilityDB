@@ -207,41 +207,55 @@ dist_parts_free(DistPart *parts, int count)
 }
 
 /**
+ * @brief Add the parts of a geometry to an array of parts, reading the
+ * members of a multi-geometry or a geometry collection, nested collections
+ * included, as #dist_parts_add() reads a simple geometry
+ * @return False, with an error, if a member is a polygon that is not convex
+ * or has holes, or if its type is not supported
+ */
+static bool
+dist_parts_add_all(const LWGEOM *geom, DistPart *parts, int *n)
+{
+  uint32_t type = geom->type;
+  if (type == MULTIPOINTTYPE || type == MULTILINETYPE ||
+      type == MULTIPOLYGONTYPE || type == COLLECTIONTYPE)
+  {
+    const LWCOLLECTION *coll = lwgeom_as_lwcollection(geom);
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+    {
+      if (! dist_parts_add_all(coll->geoms[i], parts, n))
+        return false;
+    }
+    return true;
+  }
+  if (type != POINTTYPE && type != LINETYPE && type != POLYGONTYPE)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Unsupported geometry type: %s", lwtype_name(type));
+    return false;
+  }
+  return dist_parts_add(geom, parts, n);
+}
+
+/**
  * @brief Return the convex parts of a static geometry, and their number in
  * @p count
  * @details The walk finds the distance to a convex body.  A point, a
  * segment and a convex polygon are convex bodies, thus the distance to a
- * geometry is the minimum of the distances to its parts.
+ * geometry is the minimum of the distances to its parts, the members of a
+ * multi-geometry or a geometry collection all read as parts.
  * @return The parts, or NULL with an error if the geometry has a polygon that
- * is not convex or has holes, or if its type is not supported
+ * is not convex or has holes, or if a type it holds is not supported
  */
 static DistPart *
 dist_geo_parts(const GSERIALIZED *gs, int *count)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  uint32_t type = geom->type;
-  if (type != POINTTYPE && type != LINETYPE && type != POLYGONTYPE &&
-      type != MULTIPOINTTYPE && type != MULTILINETYPE &&
-      type != MULTIPOLYGONTYPE)
-  {
-    lwgeom_free(geom);
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "Unsupported geometry type: %s", lwtype_name(type));
-    return NULL;
-  }
   /* The number of parts is at most the number of points */
   int maxparts = (int) lwgeom_count_vertices(geom) + 1;
   DistPart *parts = palloc(sizeof(DistPart) * maxparts);
   *count = 0;
-  bool ok = true;
-  if (lwgeom_is_collection(geom))
-  {
-    const LWCOLLECTION *coll = lwgeom_as_lwcollection(geom);
-    for (uint32_t i = 0; ok && i < coll->ngeoms; i++)
-      ok = dist_parts_add(coll->geoms[i], parts, count);
-  }
-  else
-    ok = dist_parts_add(geom, parts, count);
+  bool ok = dist_parts_add_all(geom, parts, count);
   lwgeom_free(geom);
   if (! ok)
   {

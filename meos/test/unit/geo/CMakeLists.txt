@@ -56,6 +56,11 @@ target_include_directories(shift_signs_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(shift_signs_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME shift_signs_unit COMMAND shift_signs_unit)
 
+add_executable(trig_nearest_unit trig_nearest_unit.c)
+target_include_directories(trig_nearest_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(trig_nearest_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME trig_nearest_unit COMMAND trig_nearest_unit)
+
 add_executable(within_time_unit within_time_unit.c)
 target_link_libraries(within_time_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME within_time_unit COMMAND within_time_unit)
