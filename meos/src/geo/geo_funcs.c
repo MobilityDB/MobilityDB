@@ -8590,6 +8590,298 @@ ddb_nearest_root(DDBound n, DDBound d, double *result)
   return false;
 }
 
+/*****************************************************************************
+ * The degrees of the longitude and the latitude of a vector of integers, in
+ * bounded pairs of doubles: the first layer of #vector_lon_nearest and
+ * #vector_lat_nearest, whose enclosures in fixed point answer only where
+ * these bounds cannot
+ *****************************************************************************/
+
+/* 180 / pi as the sum of two doubles, within 2^-102.2 of it (mpmath at 4000
+ * bits), and the bound kept for it */
+#define DDB_DEG_HI 0x1.ca5dc1a63c1f8p+5
+#define DDB_DEG_LO -0x1.1e7ab456405f9p-49
+#define DDB_DEG_ERR 0x1p-100
+/* A factor above 1 covering the rounding of a bound formed by a few
+ * operations on doubles */
+#define DDB_UP (1.0 + 0x1p-40)
+
+/* The least upper bound in doubles of the magnitude of a bounded value */
+static double
+ddb_mag_up(DDBound a)
+{
+  return (fabs(a.hi) + fabs(a.lo) + a.e) * DDB_UP;
+}
+
+/* A lower bound in doubles of a bounded value lying above its bound, or a
+ * value that is not positive */
+static double
+ddb_low(DDBound a)
+{
+  return (a.hi - fabs(a.lo) - a.e) / DDB_UP;
+}
+
+/* Set @p r to the int64 @p x exactly, its rounding to a double and the
+ * remainder, which takes at most 10 bits; false where |x| >= 2^62 */
+static bool
+ddb_set_int64(int64 x, DDBound *r)
+{
+  if (x >= (INT64CONST(1) << 62) || x <= - (INT64CONST(1) << 62))
+    return false;
+  r->hi = (double) x;
+  r->lo = (double) (x - llrint(r->hi));
+  r->e = 0.0;
+  return true;
+}
+
+/* The magnitude of a bounded value */
+static DDBound
+ddb_abs(DDBound a)
+{
+  if (a.hi < 0.0)
+  {
+    a.hi = - a.hi;
+    a.lo = - a.lo;
+  }
+  return a;
+}
+
+/**
+ * @brief Set @p r to the quotient of two bounded values with its bound, or
+ * return false where the divisor does not lie above its bound
+ * @details The residual method of #ddb_nearest_root: the quotient in doubles
+ * corrected by the residual `a - q b` is a pair of doubles `q`; its bound is
+ * the residual of the values held, read again, over `b`, plus what the
+ * bounds of the operands move the quotient,
+ * `|A / B - a / b| <= (e_a + |a / b| e_b) / (b - e_b)`
+ */
+static bool
+ddb_div(DDBound a, DDBound b, DDBound *r)
+{
+  double blow = ddb_low(b);
+  if (! (blow > 0.0))
+    return false;
+  DDBound a0 = a, b0 = b;
+  a0.e = b0.e = 0.0;
+  double bv = b.hi + b.lo;
+  DDBound q1;
+  q1.hi = (a.hi + a.lo) / bv;
+  q1.lo = q1.e = 0.0;
+  DDBound res = ddb_sub(a0, ddb_mul(q1, b0));
+  DDBound q;
+  two_sum(q1.hi, (res.hi + res.lo) / bv, &q.hi, &q.lo);
+  q.e = 0.0;
+  DDBound res2 = ddb_sub(a0, ddb_mul(q, b0));
+  double e1 = ddb_mag_up(res2) / blow;
+  double e2 = (a.e + (fabs(q.hi) + fabs(q.lo) + e1) * DDB_UP * b.e) *
+    DDB_UP / blow;
+  q.e = (e1 + e2) * DDB_UP;
+  if (! isfinite(q.hi) || ! isfinite(q.lo) || ! isfinite(q.e))
+    return false;
+  *r = q;
+  return true;
+}
+
+/**
+ * @brief Set @p r to the square root of a bounded value with its bound, or
+ * return false where the value does not lie above its bound
+ * @details The residual method of #ddb_div: the root in doubles corrected by
+ * the residual `a - s^2` is a pair of doubles `s`, and
+ * `|sqrt(a) - s| = |a - s^2| / (sqrt(a) + s) <= |a - s^2| / sqrt(a)`, plus
+ * `|sqrt(A) - sqrt(a)| <= e_a / sqrt(a)`, sqrt(a) bounded below by the root
+ * of the lower bound of the value
+ */
+static bool
+ddb_sqrt(DDBound a, DDBound *r)
+{
+  double alow = ddb_low(a);
+  if (! (alow > 0.0))
+    return false;
+  DDBound a0 = a;
+  a0.e = 0.0;
+  DDBound s1;
+  s1.hi = sqrt(a.hi + a.lo);
+  s1.lo = s1.e = 0.0;
+  DDBound res = ddb_sub(a0, ddb_mul(s1, s1));
+  DDBound s;
+  two_sum(s1.hi, (res.hi + res.lo) / (2.0 * s1.hi), &s.hi, &s.lo);
+  s.e = 0.0;
+  DDBound res2 = ddb_sub(a0, ddb_mul(s, s));
+  double slow = sqrt(alow) / DDB_UP;
+  s.e = (ddb_mag_up(res2) + a.e * DDB_UP) * DDB_UP / slow;
+  if (! isfinite(s.hi) || ! isfinite(s.lo) || ! isfinite(s.e))
+    return false;
+  *r = s;
+  return true;
+}
+
+/**
+ * @brief Set @p r to the degrees of atan(t), the true t in [0, 1], with
+ * their bound, or return false where a bound cannot be kept
+ * @details The twin of #fix_atan_bound in bounded pairs of doubles: three
+ * halvings t / (1 + sqrt(1 + t^2)), each halving the angle exactly, bring
+ * t below tan(pi / 32) < 0.1, where the series of the arctangent alternates
+ * with decreasing terms; it stops at a power of t below 2^-112, which
+ * bounds the rest; the result is eight times the sum, times 180 / pi. Every
+ * operation carries the bound of its operands (#ddb_mul, #ddb_div,
+ * #ddb_sqrt), so the bound is on the degrees of the true t
+ */
+static bool
+ddb_atan_degrees(DDBound t, DDBound *r)
+{
+  DDBound one;
+  one.hi = 1.0;
+  one.lo = one.e = 0.0;
+  for (int h = 0; h < 3; h++)
+  {
+    DDBound s, q;
+    if (! ddb_sqrt(ddb_add(one, ddb_mul(t, t)), &s) ||
+        ! ddb_div(t, ddb_add(one, s), &q))
+      return false;
+    t = q;
+  }
+  DDBound t2 = ddb_mul(t, t), p = t, sum = t;
+  bool done = false;
+  for (int k = 1; k < 40 && ! done; k++)
+  {
+    p = ddb_mul(p, t2);
+    DDBound d, term;
+    d.hi = 2.0 * k + 1.0;
+    d.lo = d.e = 0.0;
+    if (! ddb_div(p, d, &term))
+      return false;
+    sum = (k % 2) ? ddb_sub(sum, term) : ddb_add(sum, term);
+    double pmag = ddb_mag_up(p);
+    if (pmag < 0x1p-112)
+    {
+      /* The rest alternates and decreases, so it lies within its first
+       * term, below p t^2 < p */
+      sum.e = (sum.e + pmag) * DDB_UP;
+      done = true;
+    }
+  }
+  if (! done)
+    return false;
+  sum.hi *= 8.0;
+  sum.lo *= 8.0;
+  sum.e *= 8.0;
+  DDBound deg;
+  deg.hi = DDB_DEG_HI;
+  deg.lo = DDB_DEG_LO;
+  deg.e = DDB_DEG_ERR;
+  *r = ddb_mul(sum, deg);
+  return isfinite(r->hi) && isfinite(r->lo) && isfinite(r->e);
+}
+
+/**
+ * @brief Set @p result to the double nearest the bounded positive value
+ * @p a, signed by @p sign, where its bound places it strictly inside the
+ * rounding cell of one double, and return false otherwise
+ * @details The value is a pair normalised by #two_sum, so `hi` is the double
+ * nearest `hi + lo`; the true value lies within `|lo| + e` of `hi`, and
+ * where that is below half the smaller gap from `hi` to its neighbours, `hi`
+ * is the double nearest it, the test of #ddb_nearest_root
+ */
+static bool
+ddb_degrees_nearest(DDBound a, double sign, double *result)
+{
+  double c = a.hi;
+  if (! (c > 0.0 && c < 360.0) || ! isfinite(a.lo) || ! isfinite(a.e))
+    return false;
+  uint64_t bits, ubits, dbits;
+  memcpy(&bits, &c, sizeof(bits));
+  ubits = bits + 1;
+  dbits = bits - 1;
+  double cu, cd;
+  memcpy(&cu, &ubits, sizeof(cu));
+  memcpy(&cd, &dbits, sizeof(cd));
+  double half = 0.5 * Min(cu - c, c - cd);
+  if (! ((fabs(a.lo) + a.e) * DDB_UP < half))
+    return false;
+  *result = sign * c;
+  return true;
+}
+
+/**
+ * @brief Set @p result to the double nearest the longitude in degrees of the
+ * vector of integers @p v, atan2(y, x), x and y not 0, where bounded pairs
+ * of doubles decide it, and return false where they cannot
+ * @details atan2(|y|, x) is the degrees of atan(|y| / |x|), or 180 less them
+ * for a negative x, where |y| < |x|, and 90 less or plus those of
+ * atan(|x| / |y|) otherwise (#ddb_atan_degrees, #ddb_degrees_nearest)
+ */
+bool
+ddb_vector_lon_nearest(const int64 *v, double *result)
+{
+  int64 x = v[0], y = v[1];
+  DDBound X, Y;
+  if (x == 0 || y == 0 || ! ddb_set_int64(x, &X) || ! ddb_set_int64(y, &Y))
+    return false;
+  X = ddb_abs(X);
+  Y = ddb_abs(Y);
+  uint64 ax = x < 0 ? (uint64) 0 - (uint64) x : (uint64) x;
+  uint64 ay = y < 0 ? (uint64) 0 - (uint64) y : (uint64) y;
+  bool low = ay < ax;
+  DDBound t, deg, k;
+  if (! ddb_div(low ? Y : X, low ? X : Y, &t) || ! ddb_atan_degrees(t, &deg))
+    return false;
+  k.lo = k.e = 0.0;
+  if (low)
+  {
+    if (x < 0)
+    {
+      k.hi = 180.0;
+      deg = ddb_sub(k, deg);
+    }
+  }
+  else
+  {
+    k.hi = 90.0;
+    deg = (x > 0) ? ddb_sub(k, deg) : ddb_add(k, deg);
+  }
+  return ddb_degrees_nearest(deg, y > 0 ? 1.0 : -1.0, result);
+}
+
+/**
+ * @brief Set @p result to the double nearest the latitude in degrees of the
+ * vector of integers @p v, atan2(z, sqrt(x^2 + y^2)), z and x^2 + y^2 not 0,
+ * where bounded pairs of doubles decide it, and return false where they
+ * cannot
+ * @details With r = sqrt(x^2 + y^2), atan2(|z|, r) is the degrees of
+ * atan(|z| / r) where |z| < r and 90 less those of atan(r / |z|) where |z|
+ * > r, the side read from the sign of z^2 - r^2, which must be decided
+ * (#ddb_atan_degrees, #ddb_degrees_nearest)
+ */
+bool
+ddb_vector_lat_nearest(const int64 *v, double *result)
+{
+  int64 z = v[2];
+  DDBound X, Y, Z, r, t, deg;
+  if (z == 0 || ! ddb_set_int64(v[0], &X) || ! ddb_set_int64(v[1], &Y) ||
+      ! ddb_set_int64(z, &Z))
+    return false;
+  Z = ddb_abs(Z);
+  DDBound rr = ddb_add(ddb_mul(X, X), ddb_mul(Y, Y));
+  int side = ddb_sign(ddb_sub(ddb_mul(Z, Z), rr));
+  if (side == 0 || ! ddb_sqrt(rr, &r))
+    return false;
+  if (side < 0)
+  {
+    if (! ddb_div(Z, r, &t) || ! ddb_atan_degrees(t, &deg))
+      return false;
+  }
+  else
+  {
+    DDBound k;
+    if (! ddb_div(r, Z, &t) || ! ddb_atan_degrees(t, &deg))
+      return false;
+    k.hi = 90.0;
+    k.lo = k.e = 0.0;
+    deg = ddb_sub(k, deg);
+  }
+  return ddb_degrees_nearest(deg, z > 0 ? 1.0 : -1.0, result);
+}
+
 /**
  * @brief Return the distance of a point to a segment less a radius, computed
  * exactly and rounded once, or 0 where the point is no farther from the
