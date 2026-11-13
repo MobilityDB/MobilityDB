@@ -62,6 +62,8 @@ extern void quadbin_tile_coords(double longitude, double latitude, double n,
   double *xf, double *yf);
 extern void quadbin_cell_point(Quadbin cell, double *longitude,
   double *latitude);
+extern bool quadbin_cell_meets_box(Quadbin cell, const STBox *box,
+  bool border_inc);
 extern void quadbin_cell_bounding_box(Quadbin cell, double *xmin,
   double *ymin, double *xmax, double *ymax);
 extern bool quadbin_cell_edge_held(Quadbin cell, int k);

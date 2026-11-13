@@ -118,6 +118,12 @@ typedef struct DggsCellOps
   Datum (*cell_to_point)(Datum cell);             /**< -> GSERIALIZED point */
   Datum (*cell_to_boundary)(Datum cell);          /**< -> GSERIALIZED polygon */
   Datum (*cell_area)(Datum cell);                 /**< -> Float8 (m^2) */
+  /** -> Bool: whether the region of the cell, with the boundary points it
+   * owns, shares a point with a box (an STBox pointer), whose upper borders
+   * are held where the third argument is true. The kernel of `atStbox`,
+   * `minusStbox` and the box `?&&` and `%&&`, which are its SQL names; no SQL
+   * function of its own */
+  Datum (*cell_meets_box)(Datum cell, Datum box, Datum border_inc);
 } DggsCellOps;
 
 /*****************************************************************************
@@ -141,6 +147,13 @@ extern bool ensure_tcellindex_type(MeosType type);
  * raise an error if @p temptype is not a (compiled-in) DGGS type.
  */
 extern const DggsCellOps *dggs_cellops(MeosType temptype);
+
+/**
+ * @brief Return a temporal cell restricted to (the complement of) a
+ * spatiotemporal box
+ */
+extern Temporal *tcellindex_restrict_stbox(const Temporal *temp,
+  const STBox *box, bool border_inc, bool atfunc);
 
 /**
  * @brief Ensure that a resolution lies in the range of the grid of a temporal

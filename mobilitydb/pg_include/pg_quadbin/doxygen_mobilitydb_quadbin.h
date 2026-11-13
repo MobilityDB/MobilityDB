@@ -58,6 +58,10 @@
  * @ingroup mobilitydb_quadbin
  * @brief Set functions for temporal QUADBIN cell indices
  *
+ * @defgroup mobilitydb_quadbin_restrict Restriction functions
+ * @ingroup mobilitydb_quadbin
+ * @brief Restriction functions for temporal QUADBIN cell indices
+ *
  * @defgroup mobilitydb_quadbin_comp Comparison functions
  * @ingroup mobilitydb_quadbin
  * @brief Comparison functions for temporal QUADBIN cell indices

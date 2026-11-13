@@ -1077,6 +1077,32 @@ SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
 -- [47c3c@2001-01-02, 47c3c@2001-01-03]
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tcell_atStbox">
+				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restringir una celda QUADBIN temporal a (el complemento de) una caja espaciotemporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atStbox(tquadbin,stbox,borderInc boolean=true) &#8594; tquadbin
+minusStbox(tquadbin,stbox,borderInc boolean=true) &#8594; tquadbin
+</programlisting>
+				<para>Una celda está en una caja en un instante cuando su tesela, con los puntos del borde que le pertenecen, comparte un punto con la caja. Una tesela contiene sus bordes oeste y norte y su esquina noroeste, y una tesela de la última fila también su borde sur, como para <link linkend="tcell_tgeompoint_to_th3"><varname>tquadbin</varname></link>, por lo que una caja que toca una tesela solo a lo largo de su meridiano este o de su paralelo sur la deja fuera. La caja contiene sus bordes superiores salvo que <varname>borderInc</varname> sea falso. La caja tiene el SRID 4326 de la celda; una caja con solo la dimensión temporal restringe el valor a su período.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+-- NULL
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+-- 4817ffffffffffff@2001-01-01
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02,
+  4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+/* {[4817ffffffffffff@2001-01-01, 4817ffffffffffff@2001-01-02),
+   [4817ffffffffffff@2001-01-03]} */
+SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02,
+  4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+-- {[4813ffffffffffff@2001-01-02, 4813ffffffffffff@2001-01-03)}
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 	<sect1 xml:id="tcell_geo_coverage">
@@ -1515,6 +1541,25 @@ SELECT ts2cell '47c3c@2001-01-01' &amp;&amp; tstzspan '[2001-01-01, 2001-01-02]'
 -- t
 SELECT ts2cell '47c3c@2001-01-01' ~= ts2cell '47c3c@2001-01-01';
 -- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_ever_always_overlaps">
+				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
+				<para>Superposición alguna vez y siempre de una celda QUADBIN temporal y una caja espaciotemporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tquadbin {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} tquadbin → boolean
+</programlisting>
+				<para>Si el valor está en una caja espaciotemporal en algún instante, o en todo instante en que está definido, como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; una celda está en una caja cuando su tesela, con los puntos del borde que le pertenecen, comparte un punto con la caja, como la restringe <xref linkend="tcell_atStbox"/>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' ?&amp;&amp;
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))';
+-- t
+SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' %&amp;&amp;
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))';
+-- f
 </programlisting>
 			</listitem>
 
