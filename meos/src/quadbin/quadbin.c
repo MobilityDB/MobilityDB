@@ -1258,6 +1258,57 @@ quadbin_cell_bounding_box(Quadbin cell, double *xmin, double *ymin,
 }
 
 /**
+ * @brief Return true if the tile of a cell is in the last row of its zoom,
+ * the southernmost
+ */
+static bool
+quadbin_cell_last_row(Quadbin cell)
+{
+  uint32_t x, y, z;
+  quadbin_cell_tile(cell, &x, &y, &z);
+  return (uint64) y + 1 == (UINT64_C(1) << z);
+}
+
+/**
+ * @brief Return true if a QUADBIN tile holds the edge of its ring from the
+ * vertex k to the vertex k + 1
+ * @details A tile holds the part of its ring facing the lower index
+ * coordinates, rows counting southward: its west and north edges. The ring
+ * of #quadbin_cell_to_geom runs south-west, south-east, north-east,
+ * north-west, so these are the edges from the vertices 3 and 2. The tiles of
+ * the last row extend to the south pole (decision D5 of the cell walks), the
+ * boundary of the grid, so they also hold their south edge, the edge from the
+ * vertex 0. The decision reads the index alone.
+ * @param[in] cell QUADBIN cell
+ * @param[in] k Index of the first vertex of the edge, 0 to 3
+ */
+bool
+quadbin_cell_edge_held(Quadbin cell, int k)
+{
+  if (k == 2 || k == 3)
+    return true;
+  return k == 0 && quadbin_cell_last_row(cell);
+}
+
+/**
+ * @brief Return true if a QUADBIN tile holds the vertex k of its ring
+ * @details A tile holds its north-west corner, the vertex 3 of the ring of
+ * #quadbin_cell_to_geom, and a tile of the last row also its south-west
+ * corner on the south pole, the vertex 0. The columns wrap at the
+ * antimeridian, so every corner is the north-west or, on the south pole, the
+ * south-west corner of exactly one tile. The decision reads the index alone.
+ * @param[in] cell QUADBIN cell
+ * @param[in] k Index of the vertex, 0 to 3
+ */
+bool
+quadbin_cell_vertex_held(Quadbin cell, int k)
+{
+  if (k == 3)
+    return true;
+  return k == 0 && quadbin_cell_last_row(cell);
+}
+
+/**
  * @ingroup meos_quadbin
  * @brief Return the area in square meters of a quadbin cell (WGS84 sphere)
  * @csqlfn #Quadbin_cell_area()

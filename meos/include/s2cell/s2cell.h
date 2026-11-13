@@ -80,6 +80,8 @@ extern void s2cell_cell_point(S2CellId cell, double *longitude,
   double *latitude);
 extern void s2cell_cell_vertices(S2CellId cell, double *longitudes,
   double *latitudes);
+extern bool s2cell_cell_edge_held(int k);
+extern bool s2cell_cell_vertex_held(S2CellId cell, int k);
 extern void s2cell_cell_bounding_box(S2CellId cell, double *xmin, double *ymin,
   double *xmax, double *ymax);
 extern int s2cell_segment_cells(double lon1, double lat1, double lon2,

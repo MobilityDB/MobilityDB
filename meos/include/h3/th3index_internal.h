@@ -107,6 +107,32 @@ extern int h3_segment_cells(double lon1, double lat1, double lon2,
 extern H3Index h3_latlng_deg_to_cell(double lat_deg, double lng_deg,
   int32 resolution);
 
+/* The canonical outline of a cell: the vertices of the vertex index in
+ * degrees, with the extra vertex of an edge crossing a face of the
+ * icosahedron read from the directed edge leaving the lower of its two
+ * cells, so that two neighbours state every vertex they share with the same
+ * doubles. Body in h3_geo.c. */
+typedef struct
+{
+  int count;                              /**< Number of vertices */
+  double lon[MAX_CELL_BNDRY_VERTS];       /**< Longitudes in degrees */
+  double lat[MAX_CELL_BNDRY_VERTS];       /**< Latitudes in degrees */
+  H3Index across[MAX_CELL_BNDRY_VERTS];   /**< Cell across the edge from
+                                               vertex k to vertex k + 1 */
+} H3Outline;
+extern bool h3_cell_outline(H3Index cell, H3Outline *out);
+/* The owner of a boundary point: whether a cell holds an edge or a vertex of
+ * its outline, by the exact signs of the rule of the cell walks (it holds its
+ * north and west sides). Bodies in h3_geo.c. */
+extern bool h3_outline_edge_held(const H3Outline *o, int k);
+extern bool h3_outline_edge_held_geodetic(const H3Outline *o, int k);
+extern bool h3_outline_vertex_held_geodetic(const H3Outline *o, int k);
+extern bool h3_outline_vertex_held(const H3Outline *o, int k);
+/* The microsecond at which a segment crosses the line of an edge of an
+ * outline, truncated, exactly. Body in h3_geo.c. */
+extern int64 h3_outline_edge_offset(const H3Outline *o, int k, double x0,
+  double y0, double x1, double y1, int64 D, bool *whole);
+
 /* Hierarchy — next-resolution conveniences. Bodies in
  * th3index_hierarchy.c. */
 extern H3Index h3_cell_to_parent_next_meos(H3Index cell);

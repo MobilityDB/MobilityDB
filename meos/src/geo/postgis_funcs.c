@@ -3170,9 +3170,19 @@ geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     geom_distance3d(gs1, gs2) : geom_distance2d(gs1, gs2);
 }
 
+static bool geom_is_solid(const LWGEOM *geom);
+static bool geom_dwithin3d_faces(const LWGEOM *geom1, const LWGEOM *geom2,
+  double dist, bool *result);
+
 /**
  * @ingroup meos_internal_geo_base_rel
  * @brief Return true if the 3D geometries intersect
+ * @details A solid holds what lies inside it: a solid and a geometry of points,
+ * segments and faces lying exactly in a plane are answered exactly, as
+ * #geom_dwithin3d answers them at a distance of 0 (#geom_dwithin3d_faces),
+ * since the test of liblwgeom, #lwgeom_solid_contains_lwgeom, clips the solid
+ * and reads the first point of the other geometry alone. The others read the
+ * distance of liblwgeom at 0
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_3DIntersects(PG_FUNCTION_ARGS)
  */
@@ -3197,7 +3207,12 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * it measures and to its parts, and they must live as long as the entry */
   MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
 #endif
-  double mindist = (geom1 && geom2) ?
+  bool exact = false, within = false;
+  if (geom1 && geom2 && FLAGS_GET_Z(geom1->flags) &&
+      FLAGS_GET_Z(geom2->flags) && (geom_is_solid(geom1) ||
+      geom_is_solid(geom2)))
+    exact = geom_dwithin3d_faces(geom1, geom2, 0.0, &within);
+  double mindist = exact ? (within ? 0.0 : DBL_MAX) : (geom1 && geom2) ?
     lwgeom_mindistance3d_tolerance((LWGEOM *) geom1, (LWGEOM *) geom2, 0.0) :
     DBL_MAX;
 #if ! MEOS
@@ -3844,18 +3859,59 @@ geom_faces_add_face(GeomFaces *gf, POINTARRAY *const *rings, uint32_t nrings)
 }
 
 /**
+ * @brief Return true if a geometry is a solid bounded by a polyhedral surface
+ */
+static bool
+geom_is_solid(const LWGEOM *geom)
+{
+  return geom->type == POLYHEDRALSURFACETYPE && FLAGS_GET_SOLID(geom->flags);
+}
+
+/**
+ * @brief Return the copy of a geometry that is a closed polyhedral surface in
+ * 3D flagged as the solid it bounds, and NULL where the geometry is kept as
+ * it is
+ * @details A closed polyhedral surface bounds a volume, as #lwgeom_dimension
+ * answers, and the body of a temporal rigid geometry is that volume, so a
+ * point inside it meets the body. Text and WKB do not carry the solid flag,
+ * so every value takes it here, from the closedness of its surface
+ * (#lwgeom_is_closed), whose edges are matched by their exact coordinates,
+ * and never from its input. A geometry flagged already is kept, so a value
+ * rebuilt from another one does not test its surface again
+ * @param[in] gs Geometry
+ */
+GSERIALIZED *
+geom_solid_from_closed(const GSERIALIZED *gs)
+{
+  assert(gs);
+  if (gserialized_get_type(gs) != POLYHEDRALSURFACETYPE ||
+      ! FLAGS_GET_Z(gs->gflags) ||
+      FLAGS_GET_SOLID(gserialized_get_lwflags(gs)))
+    return NULL;
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  GSERIALIZED *result = NULL;
+  if (lwgeom_is_closed(geom))
+  {
+    FLAGS_SET_SOLID(geom->flags, 1);
+    result = geo_serialize(geom);
+  }
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
  * @brief Return true if a geometry in 3D is one of points, segments and faces
  * lying exactly in a plane, appending its point arrays and its faces
  * @details A point, a line, a polygon, a triangle, and the collections of
- * these, a TIN and a polyhedral surface among them. A solid, a geometry
- * carrying an arc, and a polygon whose vertices do not lie exactly in one
- * plane are not
+ * these, a TIN and a polyhedral surface among them, the latter flagged as a
+ * solid or not: the faces of a solid are those of its surface, and its
+ * inside is read apart (#geom_faces_solid_contains). A solid inside a
+ * collection, a geometry carrying an arc, and a polygon whose vertices do
+ * not lie exactly in one plane are not
  */
 static bool
 geom_faces_add(GeomFaces *gf, const LWGEOM *geom)
 {
-  if (FLAGS_GET_SOLID(geom->flags))
-    return false;
   switch (geom->type)
   {
     case POINTTYPE:
@@ -3886,7 +3942,9 @@ geom_faces_add(GeomFaces *gf, const LWGEOM *geom)
     {
       const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
       for (uint32_t i = 0; i < coll->ngeoms; i++)
-        if (! geom_faces_add(gf, coll->geoms[i]))
+        /* A solid inside a collection is not read */
+        if ((geom->type == COLLECTIONTYPE && geom_is_solid(coll->geoms[i])) ||
+            ! geom_faces_add(gf, coll->geoms[i]))
           return false;
       return true;
     }
@@ -4048,6 +4106,125 @@ geom_faces_meet(const GeomFaces *g1, const GeomFaces *g2, double dist)
   return false;
 }
 
+/** Directions of the rays of #geom_faces_solid_point, none along an axis */
+static const double GEOM_SOLID_RAY[8][3] = {
+  {1.0, 0.6180339887498949, 0.4142135623730951},
+  {0.4142135623730951, 1.0, 0.7320508075688772},
+  {0.7320508075688772, 0.2360679774997897, 1.0},
+  {-1.0, 0.3819660112501051, 0.5857864376269049},
+  {0.5857864376269049, -1.0, 0.2679491924311228},
+  {0.2679491924311228, 0.7639320225002103, -1.0},
+  {-0.8284271247461901, -0.4641016151377546, 1.0},
+  {1.0, -0.5355339059327378, -0.6457513110645906}};
+
+/**
+ * @brief Return 1 if a point lies inside the solid a closed surface of faces
+ * bounds, 0 if it lies outside, and -1 where no ray of
+ * #GEOM_SOLID_RAY decides, the point lying on none of the faces
+ * @details A point outside the box of the faces lies outside the solid.
+ * Otherwise, the parity of the faces a segment from the point to a point past
+ * the box crosses strictly inside, as #geom_face_inside reads the parity of
+ * the edges of a ring. The segment crosses the plane of a face only where its
+ * two ends lie strictly on either side of it (#vector_triple_sign), and meets
+ * an edge `uv` of that face only where its two ends, `u` and `v` are four
+ * coplanar points: a direction for which no such edge is coplanar crosses each
+ * face it meets at a point inside it, and the next direction is taken
+ * otherwise. The end past the box is a double the direction leads to, and
+ * every sign is read on the segment it ends, so no point is constructed that
+ * a sign depends on. The liblwgeom test,
+ * #lwgeom_solid_contains_lwgeom, clips the solid at the height of the point,
+ * which constructs vertices, and retries at a boundary after a random skew
+ * @param[in] g Faces of a closed surface
+ * @param[in] p Point lying on none of the faces
+ */
+static int
+geom_faces_solid_point(const GeomFaces *g, const double *p)
+{
+  /* The box of the faces: a point outside it lies outside the solid */
+  double lo[3] = {DBL_MAX, DBL_MAX, DBL_MAX}, hi[3] = {-DBL_MAX, -DBL_MAX, -DBL_MAX};
+  for (uint32_t i = 0; i < g->nfaces; i++)
+    for (int k = 0; k < 3; k++)
+    {
+      lo[k] = Min(lo[k], g->faces[i].lo[k]);
+      hi[k] = Max(hi[k], g->faces[i].hi[k]);
+    }
+  for (int k = 0; k < 3; k++)
+    if (p[k] < lo[k] || p[k] > hi[k])
+      return 0;
+  double len = 1.0;
+  for (int k = 0; k < 3; k++)
+    len += hi[k] - lo[k];
+  for (int r = 0; r < 8; r++)
+  {
+    const double *d = GEOM_SOLID_RAY[r];
+    double q[3];
+    for (int k = 0; k < 3; k++)
+      q[k] = p[k] + 2.0 * len * d[k];
+    /* The segment meets an edge of a face only where it crosses the plane of
+     * the face strictly, the point lying on no face and the end past the box
+     * on none: an edge of that face coplanar with the segment may hold the
+     * crossing, and the next direction is taken */
+    bool generic = true;
+    int count = 0;
+    for (uint32_t i = 0; i < g->nfaces && generic; i++)
+    {
+      const GeomFace *f = &g->faces[i];
+      bool apart = false;
+      for (int k = 0; k < 3 && ! apart; k++)
+        apart = Max(p[k], q[k]) < f->lo[k] || Min(p[k], q[k]) > f->hi[k];
+      if (apart)
+        continue;
+      int sp = vector_triple_sign(f->a, f->b, f->a, f->c, f->a, p);
+      int sq = vector_triple_sign(f->a, f->b, f->a, f->c, f->a, q);
+      if (sp * sq >= 0)
+        continue;
+      for (uint32_t j = 0; j < f->nrings && generic; j++)
+      {
+        const POINTARRAY *pa = f->rings[j];
+        for (uint32_t v = 1; v < pa->npoints && generic; v++)
+          if (vector_triple_sign(p, q, p,
+                (const double *) getPoint2d_cp(pa, v - 1), p,
+                (const double *) getPoint2d_cp(pa, v)) == 0)
+            generic = false;
+      }
+      if (generic && geom_face_inside(f, p, q))
+        count++;
+    }
+    if (! generic)
+      continue;
+    return count & 1;
+  }
+  return -1;
+}
+
+/**
+ * @brief Return 1 if a part of a geometry lies inside the solid a closed
+ * surface of faces bounds, 0 if none does, and -1 where a ray decides none,
+ * the two meeting at no point (#geom_faces_meet)
+ * @details A geometry that meets no face of the solid lies, part by part,
+ * wholly inside or wholly outside it, so the first point of each point array
+ * decides its part (#geom_faces_solid_point). The liblwgeom test reads the
+ * first point of the geometry alone, which a part inside past a part outside
+ * escapes
+ * @param[in] solid Faces of a closed surface
+ * @param[in] g Point arrays of the other geometry
+ */
+static int
+geom_faces_solid_contains(const GeomFaces *solid, const GeomFaces *g)
+{
+  for (uint32_t k = 0; k < g->narrs; k++)
+  {
+    const POINTARRAY *pa = g->arrs[k];
+    if (pa->npoints == 0)
+      continue;
+    int in = geom_faces_solid_point(solid,
+      (const double *) getPoint2d_cp(pa, 0));
+    if (in != 0)
+      return in;
+  }
+  return 0;
+}
+
 /**
  * @brief Return true if two geometries with Z of points, segments and faces
  * lying exactly in a plane are within a distance, exactly, setting the answer
@@ -4084,6 +4261,22 @@ geom_dwithin3d_faces(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
     if (! *result && nearest != DBL_MAX)
       *result = geom_faces_meet(&g1, &g2, dist) ||
         geom_faces_meet(&g2, &g1, dist);
+    /* A solid also holds what lies inside it */
+    int in = 0;
+    if (! *result && geom_is_solid(geom1))
+      in = geom_faces_solid_contains(&g1, &g2);
+    if (! *result && in == 0 && geom_is_solid(geom2))
+      in = geom_faces_solid_contains(&g2, &g1);
+    if (in < 0)
+    {
+      geom_faces_free(&g1);
+      geom_faces_free(&g2);
+      *result = false;
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "No ray decides whether a geometry lies inside a solid");
+      return true;
+    }
+    *result = *result || in > 0;
   }
   geom_faces_free(&g1);
   geom_faces_free(&g2);
@@ -4139,7 +4332,7 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
   bool result;
   if (! geom_dwithin3d_faces(geom1, geom2, dist, &result))
   {
-    /* A polygon not lying in a plane, a solid or an arc */
+    /* A polygon not lying in a plane, a solid inside a collection or an arc */
     double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, dist);
     /*empty geometries cases should be right handled since return from
      underlying functions should be DBL_MAX which causes false as answer*/

@@ -334,6 +334,38 @@ Always_overlaps_tcbuffer_stbox(PG_FUNCTION_ARGS)
   return EAoverlaps_tspatial_stbox(fcinfo, &always_overlaps_tcbuffer_stbox);
 }
 
+PGDLLEXPORT Datum Ever_overlaps_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_comp_ever
+ * @brief Return true if the boxes of two temporal circular buffers ever
+ * overlap at a time they share, as #Ever_overlaps_tgeo_tgeo answers it for
+ * two temporal geos
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+inline Datum
+Ever_overlaps_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &ever_overlaps_tcbuffer_tcbuffer);
+}
+
+PGDLLEXPORT Datum Always_overlaps_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_comp_ever
+ * @brief Return true if the boxes of two temporal circular buffers always
+ * overlap at the times they share, as #Always_overlaps_tgeo_tgeo answers it
+ * for two temporal geos
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+inline Datum
+Always_overlaps_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EAcomp_temporal_temporal(fcinfo, &always_overlaps_tcbuffer_tcbuffer);
+}
+
 /*****************************************************************************
  * Temporal comparison functions
  *****************************************************************************/

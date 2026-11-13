@@ -263,6 +263,10 @@ extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
 extern int cross_product_sign_offset(double ax, double ay, double bx,
   double by, double cx, double cy, double dx, double dy, double oab,
   double ocd);
+extern int offset_x_cmp(double x, double o, double p);
+extern int64 segment_edge_cross_offset(double x0, double y0, double x1,
+  double y1, int64 D, double ax, double ay, double oa, double bx, double by,
+  double ob, bool *whole);
 extern int point_in_ring_offset_exact(const double *x, const double *y,
   const double *xoff, int n, double px, double py);
 extern double cross_product_exact(double ax, double ay, double bx, double by,
@@ -327,6 +331,9 @@ extern int plane_cross_dot_sign(const double *a, const double *b,
 extern int plane_point_offset_sign(const double *a, const double *b,
   const double *c, const double *p, double d);
 extern int point_arc_offset_sign(const double *p, const Edge *e, double r);
+extern bool sums_nonpositive_exact(const double *t, int n, int k);
+extern bool linear_sums_nonpositive_meet_exact(const double *start,
+  const double *end, int n, int k);
 extern double point_seg_dist2(double px, double py, double x1, double y1,
   double x2, double y2);
 extern double point_arc_dist2(double px, double py, const Edge *e);
@@ -1680,5 +1687,25 @@ point_on_segment_exact(double px, double py, double x1, double y1, double x2,
     return false;
   return cross_product_sign(x1, y1, x2, y2, x1, y1, px, py) == 0;
 }
+
+/*****************************************************************************
+ * The nearest double of a value read exactly
+ *****************************************************************************/
+
+/* A dyadic rational of any size, opaque outside geo_funcs.c */
+typedef struct WideDyadic WideDyadic;
+
+/* The sign of the value a search reads less @p mid */
+typedef int (*NearestSide)(const WideDyadic *mid, const void *arg);
+
+extern double nearest_double_exact(double c, NearestSide side,
+  const void *arg);
+extern int wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign,
+  const uint64 *mag, int nlimbs, int exp);
+
+/* The double nearest the sine and cosine of degrees (geo_trig.c) */
+extern double sind_nearest(double deg);
+extern double cosd_nearest(double deg);
+extern void lonlat_vector_nearest(double lon, double lat, double *v);
 
 #endif /* __GEO_FUNCS_H__ */
