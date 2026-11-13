@@ -347,9 +347,9 @@ always_overlaps_stbox_tnpoint(const STBox *box, const Temporal *temp)
  * the map, a crossing of their routes, give two points apart by the rounding
  * of their coordinates, and the exact distance between them is almost never
  * zero. The distance is the band of a constructed point the exact
- * computation of MEOS admits, as #geompoint_route_band reads it for a point
- * on a route and #geogpoint_meeting_band for the meeting of two geography
- * points: #MEOS_GEOM_TOLERANCE plus four units of rounding of the largest
+ * computation of MEOS admits, as #geogpoint_meeting_band reads it for the
+ * meeting of two geography points: #MEOS_GEOM_TOLERANCE plus four units of
+ * rounding of the largest
  * coordinate of the two values, which no two points genuinely apart are
  * within
  * @param[in] box1,box2 Spatiotemporal boxes of the two values

@@ -264,6 +264,9 @@ extern int cross_product_sign_offset(double ax, double ay, double bx,
   double by, double cx, double cy, double dx, double dy, double oab,
   double ocd);
 extern int offset_x_cmp(double x, double o, double p);
+extern double segment_construction_bound(double a, double b);
+extern bool segment_meets_point_box(double ax, double ay, double bx,
+  double by, double px, double py, double ex, double ey);
 extern int64 segment_edge_cross_offset(double x0, double y0, double x1,
   double y1, int64 D, double ax, double ay, double oa, double bx, double by,
   double ob, bool *whole);

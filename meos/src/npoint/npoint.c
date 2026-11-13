@@ -1304,51 +1304,74 @@ nsegment_to_geom(const Nsegment *ns)
 }
 
 /**
- * @brief Return the distance within which a point lies on a route when it is
- * a point MEOS constructs on that route
- * @details A point at a position along a route is computed in doubles, so it
- * lies off the route by the rounding of its coordinates, and the exact
- * distance between them is almost never zero. The distance is the band of a
- * constructed point the exact computation of MEOS admits,
- * #MEOS_GEOM_TOLERANCE plus four units of rounding of the largest coordinate
- * of the point, which no point lying genuinely off the route is within. It is
- * the tolerance of the casts from a geometry to a network point and a network
- * segment, which take no tolerance of their own.
+ * @brief Return true if a point is one that MEOS constructs on a route
+ * @details A point at a position along a route is constructed in doubles, so
+ * it lies off the route by the rounding of its coordinates, and it is almost
+ * never exactly on it. The point is one the route constructs where a segment
+ * of the route meets the box of the point widened by the bound of that
+ * rounding for that segment (#segment_construction_bound), decided exactly
+ * (#segment_meets_point_box), which a point lying genuinely off the route is
+ * not within. This is how the casts
+ * from a geometry to a network point and a network segment, which take no
+ * tolerance, find the route of a point
+ * @param[in] line Route
  * @param[in] gs Point
  */
-double
-geompoint_route_band(const GSERIALIZED *gs)
+bool
+route_constructs_point(const GSERIALIZED *line, const GSERIALIZED *gs)
 {
   const POINT2D *p = GSERIALIZED_POINT2D_P(gs);
-  return MEOS_GEOM_TOLERANCE + 4.0 * DBL_EPSILON * Max(fabs(p->x), fabs(p->y));
+  LWGEOM *geom = lwgeom_from_gserialized(line);
+  const POINTARRAY *pa = ((const LWLINE *) geom)->points;
+  bool result = false;
+  for (uint32_t i = 0; i + 1 < pa->npoints && ! result; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    double ex = segment_construction_bound(a->x, b->x);
+    double ey = segment_construction_bound(a->y, b->y);
+    result = segment_meets_point_box(a->x, a->y, b->x, b->y, p->x, p->y,
+      ex, ey);
+  }
+  lwgeom_free(geom);
+  return result;
 }
 
 /**
- * @brief Keep a route as the nearest one to a point within a tolerance when
- * it is nearer than the nearest one so far
+ * @brief Keep a route as the nearest one to a point where the point is on it
+ * and no route read before is nearer
  * @details The step of #geompoint_to_npoint that both builds share, the
  * MEOS build for every route of the ways CSV file and the PostgreSQL build
  * for every route the ways table returns, so that the two builds decide with
- * the same arithmetic. A route beyond the tolerance is no candidate, and of
- * two equally near routes the one with the least identifier is kept.
+ * the same arithmetic. The point is on a route within a tolerance, or, for
+ * the casts that take none, where the route constructs it
+ * (#route_constructs_point). Of two equally near routes the one with the
+ * least identifier is kept.
  * @param[in] gs Point
  * @param[in] gid Identifier of the route
  * @param[in] line Geometry of the route
- * @param[in] tolerance Maximum distance between the point and the route
+ * @param[in] tolerance Maximum distance between the point and the route,
+ * read where @p constructed is false
+ * @param[in] constructed True for the casts, which read the point as one the
+ * route constructs
  * @param[in,out] min_gid,min_dist,min_pos Route, distance and position of the
- * nearest route so far, `min_dist` being `DBL_MAX` before the first one
+ * nearest route read, `min_dist` being `DBL_MAX` before the first one
  */
 void
 route_nearest_update(const GSERIALIZED *gs, int64 gid,
-  const GSERIALIZED *line, double tolerance, int64 *min_gid,
+  const GSERIALIZED *line, double tolerance, bool constructed, int64 *min_gid,
   double *min_dist, double *min_pos)
 {
   if (geo_is_empty(line))
     return;
+  /* The test of a constructed point reads the extents of the segments first,
+   * so that it settles most routes before their distance is computed */
+  if (constructed && ! route_constructs_point(line, gs))
+    return;
   /* A distance raising an error, -1.0, makes no candidate */
   double dist = geom_distance2d(line, gs);
-  if (dist < 0.0 || dist > tolerance || dist > *min_dist ||
-      (dist == *min_dist && gid > *min_gid))
+  if (dist < 0.0 || (! constructed && dist > tolerance) ||
+      dist > *min_dist || (dist == *min_dist && gid > *min_gid))
     return;
   /* A position raising an error makes no candidate either */
   double pos = line_locate_point(line, gs);
@@ -1403,6 +1426,8 @@ geom_to_nsegment(const GSERIALIZED *gs)
       "Only point or line geometries accepted");
     return NULL;
   }
+  if (! ensure_srid_ways(gserialized_get_srid(gs)))
+    return NULL;
 
   Npoint **points;
   Npoint *np;
@@ -1410,7 +1435,7 @@ geom_to_nsegment(const GSERIALIZED *gs)
   if (geomtype == POINTTYPE)
   {
     points = palloc0(sizeof(Npoint *));
-    np = geompoint_to_npoint(gs, geompoint_route_band(gs));
+    np = geompoint_route_npoint(gs, 0.0, true);
     if (np)
       points[npoints++] = np;
   }
@@ -1422,7 +1447,7 @@ geom_to_nsegment(const GSERIALIZED *gs)
     {
       /* The composing points are from 1 to numcount */
       const GSERIALIZED *point = line_point_n(gs, i + 1);
-      np = geompoint_to_npoint(point, geompoint_route_band(point));
+      np = geompoint_route_npoint(point, 0.0, true);
       if (np)
         points[npoints++] = np;
       /* Cannot pfree(point); */
@@ -1708,6 +1733,18 @@ srid_matches_ways(int32_t srid)
 {
   int32_t ways_srid = get_srid_ways();
   return (ways_srid == SRID_UNKNOWN || ways_srid == srid);
+}
+
+/**
+ * @brief Ensure that a geometry in an SRID can be located on the routes of
+ * the ways network, which are in the SRID of the network
+ * @param[in] srid SRID of the geometry
+ */
+bool
+ensure_srid_ways(int32_t srid)
+{
+  int32_t ways_srid = get_srid_ways();
+  return ways_srid != SRID_INVALID && ensure_same_srid(srid, ways_srid);
 }
 
 /*****************************************************************************

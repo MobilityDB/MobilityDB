@@ -57,6 +57,9 @@
 
 /* Global variable saving the SRID of the ways table */
 static int32_t SRID_WAYS = SRID_INVALID;
+/* Global variable saving the largest absolute coordinate of the routes of the
+ * ways table, negative before it is read (#ways_magnitude) */
+static double WAYS_MAGNITUDE = -1.0;
 
 /*****************************************************************************
  * Ways cache
@@ -308,44 +311,72 @@ route_line(int64 rid)
  *****************************************************************************/
 
 /**
- * @ingroup meos_npoint_base_conversion
+ * @brief Return the largest absolute coordinate of the routes in the ways
+ * table
+ * @details The value is read once per backend from the extent of the table,
+ * whose boxes PostGIS rounds outwards, so that it bounds every coordinate of
+ * every route; the ways cache reads the network as the same one for the
+ * whole session. It must be called within an SPI connection.
+ */
+static double
+ways_magnitude(void)
+{
+  if (WAYS_MAGNITUDE >= 0.0)
+    return WAYS_MAGNITUDE;
+  const char *sql =
+    "SELECT GREATEST(abs(ST_XMin(e)), abs(ST_XMax(e)), abs(ST_YMin(e)), "
+    "abs(ST_YMax(e))) FROM (SELECT ST_Extent(the_geom) AS e "
+    "FROM public.ways) AS s";
+  int ret = SPI_execute(sql, true, 1);
+  if (ret == SPI_OK_SELECT && SPI_processed == 1 && SPI_tuptable)
+  {
+    bool isnull;
+    Datum value = SPI_getbinval(SPI_tuptable->vals[0],
+      SPI_tuptable->tupdesc, 1, &isnull);
+    WAYS_MAGNITUDE = isnull ? 0.0 : DatumGetFloat8(value);
+  }
+  return Max(WAYS_MAGNITUDE, 0.0);
+}
+
+/**
  * @brief Transform a geometry into a network point located on the route
- * nearest to it within a tolerance
- * @details The route is the nearest one among those whose distance to the
- * point is at most the tolerance, the one with the least identifier among
- * equally near routes, and the position is the one of the point projected on
- * that route. The result is `NULL` when no route is within the tolerance.
+ * nearest to it on which it lies, within a tolerance or as a point the route
+ * constructs
  * @param[in] gs Geometry
- * @param[in] tolerance Maximum distance between the point and the route, in
- * the units of the spatial reference system of the ways network
- * @csqlfn #Geompoint_to_npoint()
+ * @param[in] tolerance Maximum distance between the point and the route,
+ * read where @p constructed is false
+ * @param[in] constructed True for the casts (#route_constructs_point)
+ * @pre The geometry is a non-empty point in the SRID of the ways network
  */
 Npoint *
-geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
+geompoint_route_npoint(const GSERIALIZED *gs, double tolerance,
+  bool constructed)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
-      ! ensure_finite(tolerance) ||
-      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
-    return NULL;
-  int32_t srid_geom = gserialized_get_srid(gs);
+  assert(gs); assert(gserialized_get_type(gs) == POINTTYPE);
+  assert(! gserialized_is_empty(gs));
   int32_t srid_ways = get_srid_ways();
-  if (srid_ways == SRID_INVALID || ! ensure_same_srid(srid_geom, srid_ways))
-    return NULL;
+  assert(gserialized_get_srid(gs) == srid_ways);
 
   /* The table answers the routes whose bounding box meets the square of the
-   * tolerance around the point, which a spatial index on the routes serves.
-   * The boxes of PostGIS are rounded outwards, so that these routes include
-   * every route within the tolerance, and the distance is then decided by
-   * #route_nearest_update, as the MEOS build decides it. The point is passed
-   * in binary, which keeps every bit of its coordinates. */
+   * pad around the point, which a spatial index on the routes serves. The
+   * boxes of PostGIS are rounded outwards, so that these routes include every
+   * route the point lies on, and #route_nearest_update then decides, as the
+   * MEOS build decides it. For a tolerance the pad is the tolerance. For the
+   * casts it bounds the box of #route_constructs_point for every segment of
+   * the table, 2.5 DBL_EPSILON times the largest coordinate M of the routes,
+   * with the widening of that box and the rounding of the pad: 4 DBL_EPSILON
+   * times M. The point is passed in binary, which keeps every bit of its
+   * coordinates, made in the context of the caller before SPI_connect(),
+   * whose context SPI_finish() deletes. */
   size_t size;
   uint8_t *wkb = geo_as_ewkb(gs, "NDR", &size);
   bytea *point = bstring2bytea(wkb, size);
   pfree(wkb);
+  SPI_connect();
+  double pad = constructed ? 4.0 * DBL_EPSILON * ways_magnitude() :
+    tolerance;
   Oid argtypes[2] = {BYTEAOID, FLOAT8OID};
-  Datum values[2] = {PointerGetDatum(point), Float8GetDatum(tolerance)};
+  Datum values[2] = {PointerGetDatum(point), Float8GetDatum(pad)};
   const char *sql =
     "SELECT gid, the_geom FROM public.ways "
     "WHERE the_geom && ST_Expand(ST_GeomFromEWKB($1), $2)";
@@ -353,7 +384,6 @@ geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
   /* Route, distance and position of the nearest route */
   int64 min_gid = 0;
   double min_dist = DBL_MAX, min_pos = 0.0;
-  SPI_connect();
   int ret = SPI_execute_with_args(sql, 2, argtypes, values, NULL, true, 0);
   if (ret == SPI_OK_SELECT && SPI_tuptable)
   {
@@ -374,14 +404,59 @@ geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
         pfree(point);
         return NULL;
       }
-      route_nearest_update(gs, DatumGetInt64(gid), line, tolerance, &min_gid,
-        &min_dist, &min_pos);
+      route_nearest_update(gs, DatumGetInt64(gid), line, tolerance,
+        constructed, &min_gid, &min_dist, &min_pos);
     }
   }
   SPI_finish();
   pfree(point);
   /* The result is made after SPI_finish(), in the context of the caller */
   return (min_dist == DBL_MAX) ? NULL : npoint_make(min_gid, min_pos);
+}
+
+/**
+ * @ingroup meos_npoint_base_conversion
+ * @brief Transform a geometry into a network point located on the route
+ * nearest to it within a tolerance
+ * @details The route is the nearest one among those whose distance to the
+ * point is at most the tolerance, the one with the least identifier among
+ * equally near routes, and the position is the one of the point projected on
+ * that route. The result is `NULL` when no route is within the tolerance.
+ * @param[in] gs Geometry
+ * @param[in] tolerance Maximum distance between the point and the route, in
+ * the units of the spatial reference system of the ways network
+ * @csqlfn #Geompoint_to_npoint()
+ */
+Npoint *
+geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
+      ! ensure_finite(tolerance) ||
+      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8) ||
+      ! ensure_srid_ways(gserialized_get_srid(gs)))
+    return NULL;
+  return geompoint_route_npoint(gs, tolerance, false);
+}
+
+/**
+ * @brief Transform a geometry into a network point located on the route
+ * that constructs it, the cast of a geometry to a network point
+ * @details The route is the nearest one among those that construct the
+ * point (#route_constructs_point), the one with the least identifier among
+ * equally near routes. The result is `NULL` when no route constructs it.
+ * @param[in] gs Geometry
+ */
+Npoint *
+geompoint_to_npoint_cast(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
+      ! ensure_srid_ways(gserialized_get_srid(gs)))
+    return NULL;
+  return geompoint_route_npoint(gs, 0.0, true);
 }
 
 /*****************************************************************************/
