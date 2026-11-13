@@ -4465,6 +4465,27 @@ tcont_tcont_merge_walk(const Temporal *temp1, const Temporal *temp2,
   return false;
 }
 
+/**
+ * @brief Set in @p start_out and @p end_out whether the start and the end of
+ * an interval of #tcont_tcont_merge_walk are the first or the last instant of
+ * one of the sequences, which the sequence excludes, and so no instant of the
+ * time they share
+ */
+void
+tcont_interval_ends_out(const TSequence *seq1, const TSequence *seq2,
+  TimestampTz lower, TimestampTz upper, bool *start_out, bool *end_out)
+{
+  *start_out =
+    (lower == TSEQUENCE_INST_N(seq1, 0)->t && ! seq1->period.lower_inc) ||
+    (lower == TSEQUENCE_INST_N(seq2, 0)->t && ! seq2->period.lower_inc);
+  *end_out =
+    (upper == TSEQUENCE_INST_N(seq1, seq1->count - 1)->t &&
+      ! seq1->period.upper_inc) ||
+    (upper == TSEQUENCE_INST_N(seq2, seq2->count - 1)->t &&
+      ! seq2->period.upper_inc);
+  return;
+}
+
 /** Questions #tpoint_motion_walk answers */
 typedef enum
 {
@@ -4474,7 +4495,7 @@ typedef enum
   MOTION_ALWAYS,   /**< Always within a distance */
 } MotionQuery;
 
-/** State of #tpoint_motion_interval */
+/** State of the callbacks of #tpoint_motion_walk */
 typedef struct
 {
   MotionQuery query;   /**< Question asked */
@@ -4485,13 +4506,28 @@ typedef struct
 } MotionState;
 
 /**
- * @brief Answer the question of a #MotionState on one interval of
- * #tcont_tcont_merge_walk, returning true where the interval decides the
- * ever or always question
+ * @brief Return true if the start (@p start) or the end of an interval of
+ * #tcont_tcont_merge_walk is an instant of the time the two sequences share,
+ * the two points being within the distance at that end alone
+ * (#tcont_interval_ends_out)
+ */
+static pg_noinline bool
+tpoint_motion_end_held(const TSequence *seq1, const TSequence *seq2,
+  TimestampTz lower, TimestampTz upper, bool start)
+{
+  bool start_out, end_out;
+  tcont_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
+  return start ? ! start_out : ! end_out;
+}
+
+/**
+ * @brief Answer the nearest approach question of a #MotionState on one
+ * interval of #tcont_tcont_merge_walk, never stopping the walk
  */
 static bool
-tpoint_motion_interval(const TSequence *seq1, int k1, const TSequence *seq2,
-  int k2, TimestampTz lower, TimestampTz upper, void *state)
+tpoint_motion_nad_interval(const TSequence *seq1, int k1,
+  const TSequence *seq2, int k2, TimestampTz lower, TimestampTz upper,
+  void *state)
 {
   MotionState *ms = (MotionState *) state;
   double p0[2], p1[2], q0[2], q1[2];
@@ -4506,25 +4542,46 @@ tpoint_motion_interval(const TSequence *seq1, int k1, const TSequence *seq2,
       ms->best = v;
     return false;
   }
-  if (ms->query == MOTION_NAD)
-  {
-    /* Skip an interval whose least distance certainly exceeds the bound or
-     * the least distance of the intervals already walked, both doubles: its
-     * nearest double is then not below them, rounding to the nearest keeping
-     * the order */
-    double bound = (ms->best < ms->d) ? ms->best : ms->d;
-    if (bound < DBL_MAX && point_motion_nad_exceeds(p0, p1, s0, s1, q0, q1,
-          r0, r1, lower, upper, bound))
-      return false;
-    double v = point_motion_nad_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
-      upper);
-    if (v < ms->best)
-      ms->best = v;
+  /* Skip an interval whose least distance certainly exceeds the bound or the
+   * least distance of the intervals already walked, both doubles: its
+   * nearest double is then not below them, rounding to the nearest keeping
+   * the order */
+  double bound = (ms->best < ms->d) ? ms->best : ms->d;
+  if (bound < DBL_MAX && point_motion_nad_exceeds(p0, p1, s0, s1, q0, q1,
+        r0, r1, lower, upper, bound))
     return false;
-  }
+  double v = point_motion_nad_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
+    upper);
+  if (v < ms->best)
+    ms->best = v;
+  return false;
+}
+
+/**
+ * @brief Answer the ever or always question of a #MotionState on one
+ * interval of #tcont_tcont_merge_walk, returning true where the interval
+ * decides it
+ * @details Two points within the distance at one end of the interval alone
+ * are within over it where that end is an instant of the time the sequences
+ * share (#tpoint_motion_end_held)
+ */
+static bool
+tpoint_motion_dwithin_interval(const TSequence *seq1, int k1,
+  const TSequence *seq2, int k2, TimestampTz lower, TimestampTz upper,
+  /* cppcheck-suppress constParameterCallback */
+  void *state)
+{
+  const MotionState *ms = (const MotionState *) state;
+  double p0[2], p1[2], q0[2], q1[2];
+  int64 s0, s1, r0, r1;
+  tpoint_motion_segment(seq1, k1, p0, p1, &s0, &s1);
+  tpoint_motion_segment(seq2, k2, q0, q1, &r0, &r1);
   /* Ever within here, or not always within here: decided */
-  return point_motion_dwithin_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
-    upper, ms->d, ms->query == MOTION_EVER) == (ms->query == MOTION_EVER);
+  int within = point_motion_dwithin_exact(p0, p1, s0, s1, q0, q1, r0, r1,
+    lower, upper, ms->d, ms->query == MOTION_EVER);
+  if (within > 1)
+    return tpoint_motion_end_held(seq1, seq2, lower, upper, within == 2);
+  return within == (ms->query == MOTION_EVER);
 }
 
 /**
@@ -4555,27 +4612,28 @@ tpoint_motion_walk(const Temporal *temp1, const Temporal *temp2,
      * interval answers no less; otherwise the estimate missed and every
      * interval is read */
     MotionState est = {MOTION_NAD_APPROX, 0.0, DBL_MAX};
-    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &est,
+    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_nad_interval, &est,
       shared);
     if (! *shared)
       return DBL_MAX;
     double bound = (est.best < DBL_MAX / 2.0) ?
       est.best + ldexp(est.best, -20) : DBL_MAX;
     MotionState ms = {MOTION_NAD, bound, DBL_MAX};
-    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &ms,
+    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_nad_interval, &ms,
       shared);
     if (ms.best > bound)
     {
       ms.d = DBL_MAX;
       ms.best = DBL_MAX;
-      tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &ms,
+      tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_nad_interval, &ms,
         shared);
     }
     return ms.best;
   }
   MotionState ms = {query, d, DBL_MAX};
-  bool decided = tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval,
-    &ms, shared);
+  bool decided = tcont_tcont_merge_walk(temp1, temp2,
+    /* cppcheck-suppress constParameterCallback */
+    &tpoint_motion_dwithin_interval, &ms, shared);
   if (query == MOTION_EVER)
     return decided ? 1.0 : 0.0;
   return decided ? 0.0 : 1.0;
