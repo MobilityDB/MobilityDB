@@ -226,15 +226,16 @@ tcbuffersegm_length_roots(const Cbuffer *sv1, const Cbuffer *ev1,
  * @param[in] start2,end2 Circular buffers the second segment
  * @param[in] dist Distance
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
-  Datum dist, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
-  TimestampTz *t2)
+  Datum dist, TimestampTz lower, TimestampTz upper, TimestampTz *tps,
+  int cap UNUSED)
 {
-  assert(t1); assert(t2); assert(lower < upper);
+  assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
@@ -251,21 +252,13 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
    * the caller splices, being handled by the surrounding sequence construction,
    * and returning them duplicates a timestamp */
   double duration = (double) (upper - lower);
-  TimestampTz ts[2];
   int nts = 0;
   for (int i = 0; i < nroots; i++)
   {
     TimestampTz t = lower + (TimestampTz) (roots[i] * duration);
-    if (t > lower && t < upper && (nts == 0 || t != ts[nts - 1]))
-      ts[nts++] = t;
+    if (t > lower && t < upper && (nts == 0 || t != tps[nts - 1]))
+      tps[nts++] = t;
   }
-  if (nts == 0)
-  {
-    *t1 = *t2 = (TimestampTz) 0;
-    return 0;
-  }
-  *t1 = ts[0];
-  *t2 = ts[nts - 1];
   return nts;
 }
 
@@ -285,15 +278,16 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] dist Distance
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting within-distance period
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *tps, int cap UNUSED)
 {
-  assert(t1); assert(t2); assert(lower < upper);
+  assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
@@ -310,12 +304,9 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
     sv1->radius, ev1->radius, sv2->radius, ev2->radius, d, upper - lower,
     &n1, &n2);
   if (result == 0)
-  {
-    *t1 = *t2 = (TimestampTz) 0;
     return 0;
-  }
-  *t1 = lower + n1;
-  *t2 = lower + n2;
+  tps[0] = lower + n1;
+  tps[1] = lower + n2;
   return result;
 }
 
@@ -374,15 +365,16 @@ tcbuffersegm_tdwithin_at(Datum start1, Datum end1, Datum start2, Datum end2,
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] strict Passed as a float, non-zero for contains, zero for covers
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum strict, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *tps, int cap UNUSED)
 {
-  assert(t1); assert(t2); assert(lower < upper);
+  assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
@@ -408,10 +400,7 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   if (nroots == 0)
   {
     if (! in_lower)
-    {
-      *t1 = *t2 = (TimestampTz) 0;
       return 0;
-    }
     fstart = 0.0; fend = 1.0;
   }
   else if (nroots == 1)
@@ -438,10 +427,7 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
        * boundary of a disk of a strictly positive radius */
       long double r1 = sv1->radius + roots[0] * (ev1->radius - sv1->radius);
       if (is_strict && r1 > 0)
-      {
-        *t1 = *t2 = (TimestampTz) 0;
         return 0;
-      }
       fstart = fend = roots[0];
     }
   }
@@ -450,9 +436,9 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
     fstart = roots[0]; fend = roots[1];
   }
   double duration = (double) (upper - lower);
-  *t1 = lower + (TimestampTz) (fstart * duration);
-  *t2 = lower + (TimestampTz) (fend * duration);
-  return (*t1 == *t2) ? 1 : 2;
+  tps[0] = lower + (TimestampTz) (fstart * duration);
+  tps[1] = lower + (TimestampTz) (fend * duration);
+  return (tps[0] == tps[1]) ? 1 : 2;
 }
 
 /**
@@ -464,15 +450,16 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] start2,end2 Circular buffers the second segment
  * @param[in] dist Distance, unused parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] tps Array of the instants found
+ * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  Datum end2, Datum dist UNUSED, TimestampTz lower, TimestampTz upper,
- TimestampTz *t1, TimestampTz *t2)
+ TimestampTz *tps, int cap)
 {
-  assert(lower < upper); assert(t1); assert(t2);
+  assert(lower < upper); assert(tps); assert(cap >= 2);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
@@ -564,9 +551,9 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
    * distance answers it */
   if (best < 0.0)
     return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
-      lower, upper, t1, t2);
+      lower, upper, tps, cap);
 
-  *t1 = *t2 = lower + (TimestampTz) ((double) (upper - lower) * fbest);
+  tps[0] = lower + (TimestampTz) ((double) (upper - lower) * fbest);
   return 1;
 }
 
@@ -587,8 +574,16 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
+  TimestampTz tps[2];
   int result = tcbuffersegm_dwithin_turnpt(start, end, value, value,
-    (Datum) 0.0, lower, upper, t1, t2);
+    (Datum) 0.0, lower, upper, tps, 2);
+  if (result == 0)
+  {
+    *t1 = *t2 = (TimestampTz) 0;
+    return 0;
+  }
+  *t1 = tps[0];
+  *t2 = tps[result - 1];
   return result;
 }
 

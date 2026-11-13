@@ -68,8 +68,10 @@ typedef struct
   bool invert;                /**< True if the arguments of the function must be inverted */
   bool discont;               /**< True if the function has instantaneous discontinuities */
   bool ever;                  /**< True/false when computing the ever/always semantics */
-  tpfunc_unary tpfn_unary;    /**< Turning point function for unary lifts (closed
-                                 form, at most two turning points per segment) */
+  tpfunc_unary tpfn_unary;    /**< Turning point function for unary lifts, which
+                                 returns the turning points of a segment located
+                                 in closed form, however many there are (one for
+                                 exp and ln, every extremum of sin and cos) */
   bool tpfn_adaptive;         /**< True if the result of a unary lift over a linear
                                  segment is densified by adaptive recursive bisection
                                  (#tfunc_tlinearseq_adaptive), the fallback for
@@ -77,14 +79,8 @@ typedef struct
                                  analytically. Used by tan, which is monotone within
                                  each branch but has poles, so the steep near-pole
                                  regions are refined. Functions whose turning points
-                                 ARE analytic (the sin/cos extrema) use the exact
-                                 #tpfn_set path instead. */
-  tpfunc_set tpfn_set;        /**< Exact turning point function for a unary lift
-                                 with an arbitrary number of turning points whose
-                                 locations are known ANALYTICALLY (e.g. the
-                                 extrema of sin/cos). When set, the result is
-                                 densified at the EXACT critical timestamps via
-                                 #tfunc_tlinearseq_set, not by adaptive bisection. */
+                                 ARE analytic (the sin/cos extrema) use
+                                 #tpfn_unary instead. */
   bool cross_type;            /**< True if the right-hand argument's type differs from
                                  the temporal value's basetype (e.g. trgeometry vs
                                  geometry where basetype is Pose). When set,
