@@ -35,7 +35,8 @@ On master, finding and dating a crossing has three defects:
   SELECT tfloat '[0@2001-01-01 00:00:00, 1@2001-01-01 00:00:00.001]' #<= 0.0005;
   -- master:   ERROR  Timestamps for temporal value must be increasing:
   --                  2001-01-01 00:00:00+00, 2001-01-01 00:00:00+00
-  -- proposed: {[t@2001-01-01 00:00:00, f@2001-01-01 00:00:00.000001, f@2001-01-01 00:00:00.001]}
+  -- proposed: {[t@2001-01-01 00:00:00, t@2001-01-01 00:00:00.000001],
+  --            (f@2001-01-01 00:00:00.000001, f@2001-01-01 00:00:00.001]}
   ```
 
 Deciding with exact signs on the doubles, never with a band or an interpolated value, fixes all
@@ -441,8 +442,11 @@ adopted.
    never by a band on the fraction.
 2. **The instant that dates it** is the nearest microsecond, fixed by exact signs, a tie going
    to the even microsecond. If that microsecond is a bound, the crossing belongs to the bound.
-3. **The result at that instant** is taken from the exact side of the segment there, never from
-   a value interpolated at that instant.
+3. **The result at a crossing** is the result at the exact crossing over continuous time, never
+   one computed from a value interpolated at the instant that dates it. Only that instant is
+   rounded, so the value stated may differ from the value at its microsecond: the short segment
+   of section 1 crosses 0.0005 just past half a microsecond, is dated at 1 µs and is true there;
+   a crossing dated at a bound makes `?=` true with no instant at which `#=` is true.
 
 **Steps.** Each is its own PR, with its own witness, the regression suite, and the fixture
 diffs classified:
@@ -454,7 +458,13 @@ diffs classified:
 2. **The shared primitive** for tfloat (the float locator, `tnumbersegm_intersection`, the
    tfloat turning points), with every walk that uses them switching at once: comparisons,
    distances, ever/always, restrictions. Consistency across the forms of section 4 is part of
-   its witness.
+   its witness. MobilityDB #3640, a draft stacked on #3629: the float locators agree with the
+   exact nearest microsecond on all 533988 float segments of the crossprobe corpus (332138 of
+   548989 before it); five expected outputs move, each row confirmed on exact rationals.
+   Callgrind against #3629, with about half of the segments crossing and with none: the
+   comparisons with a float 1.006 to 1.009 and 0.948, `#=` of two temporal floats 1.266 and
+   0.973, atSpan 1.061 and 1.054, sin and cos 1.163 and 1.099, so it is a draft by the parity
+   rule.
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
    turning points, through the same primitive with the exact polynomial sign.
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
