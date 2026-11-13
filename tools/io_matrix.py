@@ -26,7 +26,8 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-"""Rebuild the table "Every type, at the three layers" of IO-PLAN.md.
+"""Rebuild the table "Every type, at the three layers" of
+doc/contributing/io/ASSESSMENT.md.
 
 The table states, for every type MobilityDB declares, the MEOS functions a
 binding calls to read and write it, the class the MEOS-API catalog files it
@@ -92,13 +93,15 @@ the class of the type or of its family in a file holding many classes
 (`class TGeomPoint` in MEOS.js's `objects.generated.ts`).  The last column lists the type support
 functions the object layer names under their C name, `<type>_in`, `<type>_out`,
 `<type>_recv` and `<type>_send` for a type of the SQL, which the portable
-surface replaces.
+surface replaces, and the next one the readers and writers its code names by
+their role, `In`, `Out`, `HexIn`, `HexOut`, `Recv` or `Send` alone or after the
+type the file is named for (`STBox.In`, `GeometryIn`), whoever owns the type.
 
 Usage:
   io_matrix.py [--root DIR] [--catalog FILE]
       print the table as Markdown
-  io_matrix.py [--root DIR] [--catalog FILE] --check IO-PLAN.md
-      compare the table with the one in IO-PLAN.md; print every cell that
+  io_matrix.py [--root DIR] [--catalog FILE] --check doc/contributing/io/ASSESSMENT.md
+      compare the table with the one in the assessment; print every cell that
       differs and exit non-zero when one does
   io_matrix.py [--root DIR] --repo NAME=PATH:ROOT[,ROOT...] ... [--check FILE]
       print, or compare with FILE, the table of the bindings
@@ -403,7 +406,7 @@ def check(rows, with_catalog, path):
 BINDING_FORMATS = ('Text', 'EWKT', 'Binary', 'EWKB', 'HexWKB', 'HexEWKB',
   'MFJSON')
 BINDING_COLUMNS = ('Binding', 'commit') + BINDING_FORMATS + \
-  ('C-named type support functions',)
+  ('C-named type support functions', 'Role-named readers and writers')
 SUPPORT_SUFFIXES = ('in', 'out', 'recv', 'send')
 NO_SURFACE = '(no generated surface under the roots)'
 # The name a file defines, in the forms the bindings' languages take: after
@@ -420,6 +423,17 @@ DEFINITION_RE = re.compile(
   r'|\b' + NAME + r'\s*\([^;{}()]*\)\s*(?::\s*[^;{}=]+)?(?:throws[^;{]*)?'
   r'(?:\{|=>)'
   r'|["\']' + NAME + r'["\']')
+# The names code defines, the first two forms of #DEFINITION_RE without the
+# string literal: a role name is a method or a function of the object layer,
+# and a literal "in" or "out" is an argument, never one.
+CODE_DEFINITION_RE = re.compile(
+  r'\b(?:func|def|fn|function)\s+(?:\([^)]*\)\s*)?' + NAME + r'\s*[(<]'
+  r'|\b' + NAME + r'\s*\([^;{}()]*\)\s*(?::\s*[^;{}=]+)?(?:throws[^;{]*)?'
+  r'(?:\{|=>)')
+# The roles a reader or writer is named by in place of the portable format
+# it reads or writes: In and Out, the hex forms of the point cloud types, and
+# the binary support functions.
+ROLE_NAMES = ('in', 'out', 'hexin', 'hexout', 'recv', 'send')
 # A class declaration, beside #DEFINITION_RE, in the languages whose object
 # layer declares classes: `class <Name>` (Java, C#, C++, TypeScript,
 # JavaScript, Python).
@@ -475,13 +489,16 @@ def defined_names(text):
 
 
 def binding_names(path, roots):
-  """Return [(key, names)] of every file of the surface under the roots.
+  """Return [(key, names, code names)] of every file of the surface under the
+  roots.
 
   The files are those #root_files returns.  Each file gives its stem the names
-  it defines, and each class it declares (#CLASS_RE) the names defined from
-  its declaration to the next one, so a file holding many classes, as MEOS.js
-  generates them into `objects.generated.ts`, credits a reader to the class
-  that defines it.
+  it defines (#DEFINITION_RE) and the names its code defines
+  (#CODE_DEFINITION_RE), both normalized by #normal; each class it declares
+  (#CLASS_RE) gives its name the names defined from its declaration to the
+  next one, so a file holding many classes, as MEOS.js generates them into
+  `objects.generated.ts`, credits a reader to the class that defines it, and
+  no code names, so #role_named reads a role name once, under its file.
   """
   result = []
   for f in (f for root in roots for f in root_files(path, root)):
@@ -492,19 +509,40 @@ def binding_names(path, roots):
     except (OSError, IsADirectoryError):
       continue
     stem = normal(os.path.basename(f).split('.')[0])
-    result.append((stem, defined_names(text)))
+    result.append((stem, defined_names(text),
+      {normal(next(g for g in groups if g))
+      for groups in CODE_DEFINITION_RE.findall(text)}))
     starts = [(m.start(), normal(m.group(1))) for m in CLASS_RE.finditer(text)]
     for (start, cls), (end, _) in zip(starts, starts[1:] + [(len(text), None)]):
-      result.append((cls, defined_names(text[start:end])))
+      result.append((cls, defined_names(text[start:end]), set()))
   return result
+
+
+def role_named(files, support):
+  """Return the sorted readers and writers the files name by their role.
+
+  A name is one when the code of a file defines it as a role (#ROLE_NAMES),
+  `In` or `out` in any file, or as the file's stem followed by a role,
+  `GeometryIn` in `geometry.go`; a C-named type support function, which
+  #binding_row reports apart, is none.
+  """
+  found = set()
+  for stem, _, code in files:
+    for n in code:
+      if n in ROLE_NAMES:
+        found.add('%s.%s' % (stem, n))
+      elif any(n == stem + role for role in ROLE_NAMES) and \
+          n not in support:
+        found.add(n)
+  return sorted(found)
 
 
 def binding_row(name, path, roots, types, functions):
   """Return the cells of the row of one binding."""
   files = binding_names(path, roots)
-  every = set().union(*(names for _, names in files)) if files else set()
+  every = set().union(*(names for _, names, _ in files)) if files else set()
   by_stem = {}
-  for stem, names in files:
+  for stem, names, _ in files:
     by_stem.setdefault(stem, set()).update(names)
   cells = ['%s' % name, '`%s`' % git(path, 'rev-parse', '--short=10',
     'HEAD').strip()]
@@ -526,6 +564,10 @@ def binding_row(name, path, roots, types, functions):
   cells.append('none' if not support else '%d: %s' % (len(support),
     ', '.join('`%s`' % s for s in support[:6]) +
     (', ...' if len(support) > 6 else '')))
+  roles = role_named(files, {normal(s) for s in support})
+  cells.append('none' if not roles else '%d: %s' % (len(roles),
+    ', '.join('`%s`' % s for s in roles[:6]) +
+    (', ...' if len(roles) > 6 else '')))
   return cells
 
 
@@ -577,7 +619,7 @@ def check_bindings(rows, path):
 def main():
   parser = argparse.ArgumentParser(
     description='Rebuild the table "Every type, at the three layers" of '
-    'IO-PLAN.md from the SQL, the public MEOS headers and the catalog, or '
+    'doc/contributing/io/ASSESSMENT.md from the SQL, the public MEOS headers and the catalog, or '
     'with --repo the table of the bindings.')
   parser.add_argument('--root', default=ROOT,
     help='the MobilityDB tree to read (default: the one holding this tool)')
