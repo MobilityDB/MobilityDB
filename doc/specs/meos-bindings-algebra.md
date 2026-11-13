@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.1.0 |
+| Version | v0.2.0 |
 | Scope | The values a binding of MEOS holds, the functions it calls on them, and the casts that connect them to the types of its host language |
-| Reference | `meos/include/meos.h` (`timestamptz_to_unix_us`, `unix_us_to_timestamptz`), `meos/src/temporal/span.c`, `meos/test/unix_epoch_test.c`; the MEOS-API catalog (`typeEncodings`, `bindingScope`) |
+| Reference | `meos/include/meos.h` (`timestamptz_to_unix_us`, `timestamp_to_unix_us`, `date_to_unix_days`, `interval_to_parts` and their inverses), `pgtypes/pg_time.h` (`time_to_parts`, `timetz_to_parts` and their inverses), `meos/src/temporal/span.c`, `meos/test/unix_epoch_test.c`; the MEOS-API catalog (`typeEncodings`, `bindingScope`) |
 
 ## 1. Scope and intent
 
@@ -121,6 +121,103 @@ and states the direction it drops the finer units in: MobilityNebula carries a
 `timestamptz` as NebulaStream's milliseconds from the Unix epoch, the
 microseconds below a millisecond dropped toward the past.
 
+### 5.2 `timestamp`
+
+MEOS holds a `timestamp` as the microseconds from 2000-01-01 00:00:00, with no
+time zone. A binding casts it to and from the timestamp of its host that has no
+time zone (Python's naive `datetime`, Java's `LocalDateTime`) through
+`timestamp_to_unix_us` and `unix_us_to_timestamp`, which count the
+microseconds from 1970-01-01 00:00:00:
+
+| `timestamp` | `timestamp_to_unix_us` |
+|---|---|
+| `2001-01-01 00:00:00` | `978307200000000` |
+| `1970-01-01 00:00:00` | `0` |
+| `1969-12-31 23:59:59.999999` | `-1` |
+| `2025-03-01 08:00:00.123456` | `1740816000123456` |
+
+`timestamp_to_unix_us` of `infinity` and `unix_us_to_timestamp(INT64_MIN)`
+raise `MEOS_ERR_DATETIME_OUT_OF_RANGE`; as for a `timestamptz`, the error is
+read from `meos_errno`.
+
+### 5.3 `date`
+
+MEOS holds a `date` as the days from 2000-01-01. A binding casts it to and
+from the date of its host through `date_to_unix_days` and `unix_days_to_date`,
+which count the days from 1970-01-01:
+
+| `date` | `date_to_unix_days` |
+|---|---|
+| `2001-01-01` | `11323` |
+| `1970-01-01` | `0` |
+| `1969-12-31` | `-1` |
+| `2025-03-01` | `20148` |
+
+`date_to_unix_days` of `infinity` or `-infinity`, and `unix_days_to_date` of a
+count outside the dates (`INT32_MIN`, `INT32_MAX`), raise
+`MEOS_ERR_DATETIME_OUT_OF_RANGE`. `date_to_unix_days` answers `INT32_MAX` on
+an error, which no valid date answers.
+
+### 5.4 `interval`
+
+MEOS holds an `interval` as three parts: months, days and microseconds, a
+month not being a number of days nor a day 24 hours across a change of the
+offset of a time zone. A binding reads and builds it through
+`interval_to_parts` and `interval_from_parts`:
+
+| `interval` | months | days | microseconds |
+|---|---|---|---|
+| `1 mon 2 days 03:00:00.5` | `1` | `2` | `10800500000` |
+| `-1 year` | `-12` | `0` | `0` |
+| `36 hours` | `0` | `0` | `129600000000` |
+| `1 day` | `0` | `1` | `0` |
+| `00:00:00.000001` | `0` | `0` | `1` |
+
+A host duration counting time alone (Python's `timedelta`, Java's `Duration`,
+Go's `time.Duration`) states an `interval` whose months are zero; a cast to it
+of an `interval` with months is an error of the binding, raised before any
+conversion. A host type with a calendar part (Java's `Period`) takes the months
+and days. `interval_to_parts` of an infinite `interval`, and
+`interval_from_parts` of the parts of one (`INT32_MAX, INT32_MAX, INT64_MAX`,
+`INT32_MIN, INT32_MIN, INT64_MIN`), raise `MEOS_ERR_DATETIME_OUT_OF_RANGE`.
+
+### 5.5 `time`
+
+MEOS holds a `time` as the microseconds from midnight. A binding casts it to
+and from the time of its host through `time_to_parts` and `time_from_parts`:
+
+| `time` | microseconds |
+|---|---|
+| `00:00:00` | `0` |
+| `00:00:00.000001` | `1` |
+| `12:34:56.789012` | `45296789012` |
+| `23:59:59.999999` | `86399999999` |
+| `24:00:00` | `86400000000` |
+
+A count outside a day (`-1`, `86400000001`) raises
+`MEOS_ERR_DATETIME_OUT_OF_RANGE`; `time_from_parts` answers `INT64_MAX` on an
+error, which no valid time holds. A host time ending a day before `24:00:00`
+(Python's `time`, Java's `LocalTime`) cannot state `24:00:00`, and a cast of it
+is an error of the binding.
+
+### 5.6 `timetz`
+
+MEOS holds a `timetz` as the microseconds from midnight and its offset. A
+binding reads and builds it through `timetz_to_parts` and `timetz_from_parts`,
+whose offset is in seconds east of UTC, as ISO 8601 and the hosts state it:
+
+| `timetz` | microseconds | offset |
+|---|---|---|
+| `12:00:00+01` | `43200000000` | `3600` |
+| `12:00:00-05` | `43200000000` | `-18000` |
+| `23:59:59.999999+15:59` | `86399999999` | `57540` |
+| `24:00:00+00` | `86400000000` | `0` |
+
+`timetz_from_parts` of a time outside a day (`-1`, `86400000001`) or an offset
+beyond 16:00:00 (`57601`) raises `MEOS_ERR_DATETIME_OUT_OF_RANGE`. Java's
+`OffsetTime` is the one host type holding a time with an offset; a host
+without one casts the parts.
+
 ## 6. Types out of binding scope
 
 `numeric`, `box2d` and `box3d` are no class of any object layer.
@@ -139,17 +236,15 @@ types of its host.
 | Version | Content |
 |---|---|
 | v0.1.0 | The closed algebra, the text of a value, the three rules of a cast, the cast of `timestamptz`, the types out of binding scope |
+| v0.2.0 | The casts of `timestamp`, `date`, `interval`, `time` and `timetz` |
 
 A minor version adds what MEOS and the catalog newly guarantee; a major
 version changes a rule a binding follows.
 
 ## 8. Out of scope
 
-Future: the casts of the other time types, each added here with its version as
-MEOS states its conversion: `timestamp`, `date`, `time`, `timetz` and
-`interval`, an `interval` holding months reaching a host duration without
-months as an error; the casts between a geometry and the geometry types of a
-host's libraries.
+Future: the casts between a geometry and the geometry types of a host's
+libraries.
 
 ## 9. References
 
@@ -160,6 +255,6 @@ host's libraries.
 ## 10. References to the implementation
 
 The source of truth is the C of MEOS (`meos/src/temporal/span.c` for the
-`timestamptz` cast) and the MEOS-API catalog it is parsed into, whose
+casts of the time types) and the MEOS-API catalog it is parsed into, whose
 `typeEncodings` and `bindingScope` every binding generator reads. A
 difference between this document and them is filed as an issue of MobilityDB.
