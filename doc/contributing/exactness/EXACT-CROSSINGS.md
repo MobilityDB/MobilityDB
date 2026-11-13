@@ -490,10 +490,10 @@ diffs classified:
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
    turning points, through the same primitive with the exact polynomial sign.
    The turning points of the containment of two circular buffers come first, MobilityDB #3671, a
-   draft: `tcbuffersegm_contains_turnpt` reads the squared clearance, whose square hides the sign
-   of the difference of the radii and reads a double root as none or as two, so a segment over
-   which the clearance vanishes, a touch inside a segment and a point on the boundary at an end
-   were decided from the start of the segment. CGAL, with exact square roots, agrees with every
+   draft: `tcbuffersegm_contains_turnpt` decides a segment over which the clearance vanishes, a
+   touch inside a segment and a point on the boundary at an end exactly, where the squared
+   clearance alone hides the sign of the difference of the radii and reads a double root as none
+   or as two. CGAL, with exact square roots, agrees with every
    answer of 40008 pairs of linear sequences over inclusive bounds; an ever or always walk decided
    at its first segment counts 10 instructions more than master, of 17000. With it, #3650 reads a
    segment of the circular buffers at its turning points alone.
