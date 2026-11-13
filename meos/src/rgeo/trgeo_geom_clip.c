@@ -827,6 +827,100 @@ trgeometry_geom_clip_lwgeom(const POINT2D *a1, const POINT2D *b1,
   return n;
 }
 
+/**
+ * @brief Append a fraction of a translation to a growing events buffer if it
+ * lies in [0, 1]
+ * @details The ends 0 and 1 are events of every segment, so a fraction out of
+ * [0, 1] adds none, where #push_event clamps one on a buffer of fixed size
+ */
+static void
+push_event_grow(double t, double **events, int *nevents, int *cap)
+{
+  if (t < 0.0 || t > 1.0)
+    return;
+  if (*nevents + 1 > *cap)
+  {
+    *cap = (*nevents + 1) * 2 + 8;
+    *events = repalloc(*events, (size_t) *cap * sizeof(double));
+  }
+  (*events)[(*nevents)++] = t;
+}
+
+/**
+ * @brief Append the fractions of a translation at which a vertex of a moving
+ * edge crosses a segment of a point array, or a vertex of the point array
+ * crosses the moving edge
+ * @details The events of #trgeometry_geom_clip_polygon, read on a point array
+ * that need not close: a point has its vertex alone, a line the segments
+ * between its consecutive vertices
+ */
+static void
+clip_pa_m1_events(const POINT2D *a1, const POINT2D *b1, double dxd,
+  double dyd, const POINTARRAY *pa, double **events, int *nevents, int *cap)
+{
+  double t;
+  for (uint32_t i = 0; i < pa->npoints; i++)
+  {
+    const POINT2D *pi = getPoint2d_cp(pa, i);
+    if (solve_m1_p_on_movingedge(pi->x, pi->y, a1->x, a1->y, b1->x, b1->y,
+        dxd, dyd, &t))
+      push_event_grow(t, events, nevents, cap);
+    if (i == 0)
+      continue;
+    const POINT2D *pj = getPoint2d_cp(pa, i - 1);
+    if (solve_m1_endpoint_on_edge(a1->x, a1->y, dxd, dyd, pj->x, pj->y,
+        pi->x, pi->y, &t))
+      push_event_grow(t, events, nevents, cap);
+    if (solve_m1_endpoint_on_edge(b1->x, b1->y, dxd, dyd, pj->x, pj->y,
+        pi->x, pi->y, &t))
+      push_event_grow(t, events, nevents, cap);
+  }
+  return;
+}
+
+void
+trgeometry_geom_clip_events(const POINT2D *a1, const POINT2D *b1,
+  const POINT2D *a2, const POINT2D *b2, const LWGEOM *geom, double **events,
+  int *nevents, int *cap)
+{
+  if (! geom || lwgeom_is_empty(geom))
+    return;
+  double dxd = a2->x - a1->x, dyd = a2->y - a1->y;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      clip_pa_m1_events(a1, b1, dxd, dyd, ((const LWPOINT *) geom)->point,
+        events, nevents, cap);
+      break;
+    case LINETYPE:
+      clip_pa_m1_events(a1, b1, dxd, dyd, ((const LWLINE *) geom)->points,
+        events, nevents, cap);
+      break;
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t r = 0; r < poly->nrings; r++)
+        clip_pa_m1_events(a1, b1, dxd, dyd, poly->rings[r], events, nevents,
+          cap);
+      break;
+    }
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        trgeometry_geom_clip_events(a1, b1, a2, b2, coll->geoms[i], events,
+          nevents, cap);
+      break;
+    }
+    default:
+      break;
+  }
+  return;
+}
+
 static int
 clip_lwgeom_m2_accum(const POINT2D *p_a_local, const POINT2D *p_b_local,
   const struct Pose *pose1, const struct Pose *pose2,

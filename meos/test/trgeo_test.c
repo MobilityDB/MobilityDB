@@ -670,10 +670,11 @@ int main(void)
     }
   }
 
-  /* A body whose shape a function does not read is refused, never answered as
-   * another shape: the restriction of a body with holes in linear motion, and
-   * the united traversed area of a body that is not convex in linear motion;
-   * in step interpolation both answer */
+  /* The restriction of a body with holes in linear motion reads its holes:
+   * the small square lies in the hole until 02:24 and leaves the body at
+   * 06:00. A body whose shape a function does not read is refused, never
+   * answered as another shape: the united traversed area of a body that is
+   * not convex in linear motion; in step interpolation it answers */
   {
     const char *holed = "Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1));"
       "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]";
@@ -684,17 +685,19 @@ int main(void)
     GSERIALIZED *small = geom_in("Polygon((2 2,2.5 2,2.5 2.5,2 2.5,2 2))", -1);
     meos_errno_reset();
     Temporal *at = trgeometry_at_geom(lin, small);
-    int err_at = meos_errno();
+    bool read = at && meos_errno() == 0 &&
+      temporal_start_timestamptz(at) ==
+        timestamptz_in("2001-01-01 02:24:00", -1) &&
+      temporal_end_timestamptz(at) == timestamptz_in("2001-01-01 06:00:00", -1);
     meos_errno_reset();
     GSERIALIZED *area = trgeometry_traversed_area(lin, true);
     int err_area = meos_errno();
     meos_errno_reset();
     GSERIALIZED *area_step = trgeometry_traversed_area(step, true);
-    if (at || err_at == 0 || area || err_area == 0 || ! area_step ||
-        meos_errno() != 0)
+    if (! read || area || err_area == 0 || ! area_step || meos_errno() != 0)
     {
-      printf("FAILED: a body with holes in linear motion is answered by the "
-        "restriction or the united traversed area\n");
+      printf("FAILED: a body with holes in linear motion is restricted by its "
+        "exterior ring alone, or answered by the united traversed area\n");
       result = 1;
     }
     free(lin); free(step); free(small); free(at); free(area); free(area_step);
