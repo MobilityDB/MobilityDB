@@ -255,8 +255,13 @@ PR 3 is MobilityDB #3664, branch `refactor/trgeo-distance-through-lifting`, on m
 MobilityDB #3662 (`3f092ed998`), which proves that a difference of distances that cancel has no root
 within the budget of the root finder. It moves no answer of the 4000 rigid geometry cases (temporal distance, nearest approach distance and
 instant, shortest line) or of the 1098528 rows of the 62 lifted functions of the other families.
-Callgrind, Release: the temporal distance of rigid geometries 0.977 to 0.998 of
-master, and the walks of the other families 0.998 to 1.003, so it is a draft by the parity rule.
+A lift declares whether its turning point function can give more than two instants
+(`tpfn_many`: sin, cos and the rigid geometries) and whether it gives their values (`tpfn_value`:
+the rigid geometries), and each reader selects once per walk between two instances of one inline
+walk: the general one, with the stack array of `TPFN_STACK_CAP` instants that grows, and the one of
+every other lift, reading at most two instants and no values. Callgrind, Release: the walks of the
+other families 0.9968 to 1.0000 of master, the temporal distance of rigid geometries 0.977 to
+0.998, and a turning rigid geometry against a multipolygon 1.0009, the lower envelope of its parts.
 
 ### 6.4 Later, each measured first
 
