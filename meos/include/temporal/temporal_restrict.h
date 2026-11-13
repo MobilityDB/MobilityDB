@@ -89,6 +89,9 @@ extern int tsequence_at_values_iter(const TSequence *seq, const Set *set,
   TSequence **result);
 extern int tnumberseq_cont_restrict_span_iter(const TSequence *seq,
   const Span *span, bool atfunc, TSequence **result);
+extern int tfloatsegm_restrict_span(const TInstant *inst1,
+  const TInstant *inst2, bool lower_inc, bool upper_inc, const Span *s,
+  bool atfunc, TSequence **result);
 extern int tnumberseq_cont_restrict_spanset_iter(const TSequence *seq,
   const SpanSet *ss, bool atfunc, TSequence **result);
 extern TInstant *tsegment_at_timestamptz(const TInstant *inst1,
