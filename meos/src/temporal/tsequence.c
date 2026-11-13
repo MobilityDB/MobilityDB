@@ -3117,8 +3117,11 @@ tsegment_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
         lower, upper, t1, t2);
       break;
     case T_TGEOMPOINT:
-      result = tgeompointsegm_intersection(start1, end1, start2, end2, lower,
-        upper, t1, t2);
+      /* The points meet only where their meeting is decided exactly
+       * (#tgeompointsegm_meet), which then dates it */
+      result = tgeompointsegm_meet(start1, end1, start2, end2) ?
+        tgeompointsegm_intersection(start1, end1, start2, end2, lower, upper,
+          t1, t2) : 0;
       break;
     case T_TGEOGPOINT:
       result = tgeogpointsegm_intersection(start1, end1, start2, end2, lower,
