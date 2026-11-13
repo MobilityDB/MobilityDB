@@ -43,6 +43,10 @@ add_executable(relate_arc_end_unit relate_arc_end_unit.c)
 target_link_libraries(relate_arc_end_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME relate_arc_end_unit COMMAND relate_arc_end_unit)
 
+add_executable(relate_repeated_vertex_unit relate_repeated_vertex_unit.c)
+target_link_libraries(relate_repeated_vertex_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME relate_repeated_vertex_unit COMMAND relate_repeated_vertex_unit)
+
 add_executable(cross3_overflow_unit cross3_overflow_unit.c)
 target_link_libraries(cross3_overflow_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME cross3_overflow_unit COMMAND cross3_overflow_unit)
