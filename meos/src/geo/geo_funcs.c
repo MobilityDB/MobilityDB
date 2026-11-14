@@ -1969,63 +1969,6 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
 
 /** Number of doubles of the arena in which #polynomial_sign_stack forms each
  * term, and of each of its two buffers of the total */
-#define POLY_STACK_ARENA 2048
-#define POLY_STACK_TOTAL 1024
-
-/**
- * @brief Set in @p sign the exact sign of a polynomial in exact sums and
- * return true, evaluated in buffers on the stack, or return false where an
- * expansion outgrows them
- * @details The evaluation of #polynomial_sign_exact: each term is formed in an
- * arena that is reset for the next one, and the total alternates between two
- * buffers, so that no expansion is allocated
- */
-static bool
-polynomial_sign_stack(const ExactSum *sums, const PolyTerm *terms,
-  int nterms, int *sign)
-{
-  double arena[POLY_STACK_ARENA], total[2][POLY_STACK_TOTAL];
-  int tlen = 0, cur = 0;
-  for (int i = 0; i < nterms; i++)
-  {
-    /* The term, starting from its coefficient */
-    double *prod = arena;
-    int plen = 1, top = 1;
-    prod[0] = terms[i].coef;
-    for (int k = 0; k < terms[i].deg; k++)
-    {
-      const ExactSum *s = &sums[terms[i].sum[k]];
-      int cap = 2 * plen * s->n;
-      if (top + 2 * cap + 2 * plen > POLY_STACK_ARENA)
-        return false;
-      double *h = arena + top, *tmp = h + cap, *part = tmp + cap;
-      top += 2 * cap + 2 * plen;
-      int hlen = expansion_product(plen, prod, s->n, s->e, h, tmp, part);
-      prod = tmp;
-      plen = compress_expansion(hlen, h, prod);
-    }
-    /* Add the term to the total */
-    if (tlen + plen > POLY_STACK_TOTAL || top + tlen + plen > POLY_STACK_ARENA)
-      return false;
-    if (tlen == 0)
-    {
-      memcpy(total[cur], prod, sizeof(double) * plen);
-      tlen = plen;
-    }
-    else
-    {
-      double *h = arena + top;
-      int hlen = expansion_sum(tlen, total[cur], plen, prod, h,
-        total[1 - cur]);
-      cur = 1 - cur;
-      tlen = compress_expansion(hlen, h, total[cur]);
-    }
-  }
-  double last = tlen ? total[cur][tlen - 1] : 0.0;
-  *sign = (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
-  return true;
-}
-
 /**
  * @brief Return the sign of a polynomial in exact sums where its filters
  * carry it, and 2 where they cannot tell
@@ -2069,21 +2012,20 @@ polynomial_sign_filter(const ExactSum *sums, const PolyTerm *terms,
   return polynomial_sign_pairs(sums, terms, nterms);
 }
 
+static int polynomial_sign_tower(const ExactSum *sums,
+  const PolyTerm *terms, int nterms);
+
 /**
  * @brief Return the sign of a polynomial in exact sums, computed exactly
  * @details The polynomial is first evaluated in doubles together with a bound
- * on the error of every operation, each rounding contributing at most
- * DBL_EPSILON times its result; where the value exceeds the bound its sign is
- * the exact one. Otherwise every term is formed as an expansion, the product
- * of its coefficient and of its exact sums (#expansion_product), the terms are
- * added (#expansion_sum), and the expansions are compressed as they grow; the
- * last component of the total carries the exact sign. Between the two, the
- * evaluation in pairs of doubles of #polynomial_sign_pairs is read against
- * its own bound
+ * on the error of every operation, then in pairs of doubles against its own
+ * bound (#polynomial_sign_filter); where neither tells, the sign is read on
+ * the expression ladder from its expansions on (#polynomial_sign_tower), in
+ * expansions and in #TowerWide where those leave their exact range, so it is
+ * exact for any finite sums
  * @param[in] sums Exact sums the terms refer to
  * @param[in] terms,nterms Terms of the polynomial and their number
  * @return -1, 0, or 1
- * @note Exact where no product of the components overflows or underflows
  */
 int
 polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
@@ -2092,53 +2034,7 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   int sign = polynomial_sign_filter(sums, terms, nterms);
   if (sign != 2)
     return sign;
-  if (polynomial_sign_stack(sums, terms, nterms, &sign))
-    return sign;
-
-  /* Exact evaluation */
-  int tlen = 0;
-  double *total = NULL;
-  for (int i = 0; i < nterms; i++)
-  {
-    /* The term, starting from its coefficient */
-    int plen = 1;
-    double *prod = palloc(sizeof(double));
-    prod[0] = terms[i].coef;
-    for (int k = 0; k < terms[i].deg; k++)
-    {
-      const ExactSum *s = &sums[terms[i].sum[k]];
-      int cap = 2 * plen * s->n;
-      double *h = palloc(sizeof(double) * cap);
-      double *tmp = palloc(sizeof(double) * cap);
-      double *part = palloc(sizeof(double) * 2 * plen);
-      int hlen = expansion_product(plen, prod, s->n, s->e, h, tmp, part);
-      pfree(prod); pfree(part);
-      prod = tmp;
-      plen = compress_expansion(hlen, h, prod);
-      pfree(h);
-    }
-    /* Add the term to the total */
-    if (! total)
-    {
-      total = prod;
-      tlen = plen;
-    }
-    else
-    {
-      int cap = tlen + plen;
-      double *h = palloc(sizeof(double) * cap);
-      double *tmp = palloc(sizeof(double) * cap);
-      int hlen = expansion_sum(tlen, total, plen, prod, h, tmp);
-      pfree(total); pfree(prod);
-      total = tmp;
-      tlen = compress_expansion(hlen, h, total);
-      pfree(h);
-    }
-  }
-  double last = total ? total[tlen - 1] : 0.0;
-  if (total)
-    pfree(total);
-  return (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
+  return polynomial_sign_tower(sums, terms, nterms);
 }
 
 /**
@@ -15372,13 +15268,32 @@ tangent_point_round(const TangentPoint *tp, double *x, double *y)
 typedef int (*TowerPred)(TowerCtx *ctx, const void *arg);
 
 /* The answer of a question in expansions, and in #TowerWide where those
- * leave their exact range, the question building its points again */
+ * leave their exact range, the question building its points again: the
+ * tiers of #tower_pred_run past its filters, for a question whose own
+ * filters read the first tiers */
+static int
+tower_pred_run_expansions(TowerPred fn, const void *arg)
+{
+  TowerCtx ctx;
+  tower_ctx_init(&ctx, false);
+  int r = fn(&ctx, arg);
+  bool again = (r == 2) || ctx.arena.unsafe;
+  tower_ctx_free(&ctx);
+  if (! again)
+    return r;
+  tower_ctx_init(&ctx, true);
+  r = fn(&ctx, arg);
+  tower_ctx_free(&ctx);
+  return r;
+}
+
+/* The answer of a question in doubles, then in pairs of doubles, each
+ * carrying a bound on its error, then in expansions and in #TowerWide where
+ * those leave their exact range (#tower_pred_run_expansions) */
 static int
 tower_pred_run(TowerPred fn, const void *arg)
 {
   TowerCtx ctx;
-  /* In doubles, then in pairs of doubles, carrying a bound on their error
-   * first */
   int r = 2;
   bool again = true;
   for (int pass = 0; pass < 2 && again; pass++)
@@ -15392,16 +15307,85 @@ tower_pred_run(TowerPred fn, const void *arg)
   }
   if (! again)
     return r;
-  tower_ctx_init(&ctx, false);
-  r = fn(&ctx, arg);
-  again = (r == 2) || ctx.arena.unsafe;
-  tower_ctx_free(&ctx);
-  if (! again)
-    return r;
-  tower_ctx_init(&ctx, true);
-  r = fn(&ctx, arg);
-  tower_ctx_free(&ctx);
-  return r;
+  return tower_pred_run_expansions(fn, arg);
+}
+
+/* A polynomial in exact sums, the question #polynomial_sign_pred reads */
+typedef struct
+{
+  const ExactSum *sums;
+  const PolyTerm *terms;
+  int nterms;
+} PolySignArg;
+
+/* The exact sums a polynomial reads on the stack, as #segment_square_cmp
+ * forms them; a polynomial reading more takes them from the heap */
+#define POLY_SIGN_STACK_SUMS 64
+
+/* The sign of a polynomial in exact sums, written once in the arithmetic of
+ * a #TowerCtx, as #point_arc_within_pred writes its question: each sum a
+ * term reads is the sum of its components, formed once, each term its
+ * coefficient times its sums, and the sign that of the total, or 2 where the
+ * tier of @p ctx cannot tell. A sum no term reads is never read, since a
+ * caller sets only the sums of its question (#segment_square_least) */
+static int
+polynomial_sign_pred(TowerCtx *ctx, const void *varg)
+{
+  const PolySignArg *a = (const PolySignArg *) varg;
+  int nsums = 0;
+  for (int i = 0; i < a->nterms; i++)
+    for (int k = 0; k < a->terms[i].deg; k++)
+      nsums = Max(nsums, a->terms[i].sum[k] + 1);
+  TowerX stack[POLY_SIGN_STACK_SUMS];
+  bool formed_stack[POLY_SIGN_STACK_SUMS];
+  TowerX *sums = stack;
+  bool *formed = formed_stack;
+  if (nsums > POLY_SIGN_STACK_SUMS)
+  {
+    sums = palloc(sizeof(TowerX) * nsums);
+    formed = palloc(sizeof(bool) * nsums);
+  }
+  memset(formed, 0, sizeof(bool) * nsums);
+  TowerX total = tx_val(ctx, 0.0);
+  for (int i = 0; i < a->nterms; i++)
+  {
+    TowerX t = tx_val(ctx, a->terms[i].coef);
+    for (int k = 0; k < a->terms[i].deg; k++)
+    {
+      int j = a->terms[i].sum[k];
+      if (! formed[j])
+      {
+        const ExactSum *e = &a->sums[j];
+        TowerX v = tx_val(ctx, e->e[0]);
+        for (int c = 1; c < e->n; c++)
+          v = tx_add(ctx, v, tx_val(ctx, e->e[c]));
+        sums[j] = v;
+        formed[j] = true;
+      }
+      t = tx_mul(ctx, t, sums[j]);
+    }
+    total = tx_add(ctx, total, t);
+  }
+  int sign = tx_sign(ctx, total);
+  if (sums != stack)
+  {
+    pfree(sums);
+    pfree(formed);
+  }
+  return tower_ctx_unsafe(ctx) ? 2 : sign;
+}
+
+/**
+ * @brief Return the sign of a polynomial in exact sums on the expression
+ * ladder from its expansions on, exact for any finite sums
+ * @details #polynomial_sign_exact reads it where its own filters cannot tell
+ */
+static int
+polynomial_sign_tower(const ExactSum *sums, const PolyTerm *terms,
+  int nterms)
+{
+  PolySignArg arg = {sums, terms, nterms};
+  return tower_pred_run_expansions(polynomial_sign_pred, &arg);
 }
 
 /* The two ends of a segment between tangent points */
