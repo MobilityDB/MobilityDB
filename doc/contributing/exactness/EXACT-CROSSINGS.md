@@ -515,7 +515,11 @@ diffs classified:
    owner's go of 2026-11-13; CGAL agrees on 4000 rows of 2D and 3D meetings, their one-ulp moves
    and random pairs). The GEODETIC case stays this step's: its band, `geogpoint_meeting_band`,
    goes with it, since a band at a point the engine constructs is removed by no longer
-   constructing the point (the open question of #3656).
+   constructing the point (the open question of #3656). MobilityDB #3693 (open) decides it where
+   the doubles of the ends prove it, the band removed: on the equator, on one meridian, a segment
+   and its reverse, and a segment and its mirror across the equator; two segments on different
+   great circles stay undecided, and [what the exact crossings establish](EXACT-CROSSINGS-INSIGHTS.md)
+   section 7 orders the pull requests that decide them.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
