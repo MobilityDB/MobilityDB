@@ -12321,14 +12321,57 @@ triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
 }
 
 /**
+ * @brief Return the sign of the incircle determinant of four points, read on
+ * #TowerWide for any finite coordinates
+ * @details The differences A - D, B - D and C - D are exact, and the
+ * determinant is the sum of each lift `|P - D|^2` times the cross product of
+ * the other two points taken from D, as #incircle_sign_exact forms it on
+ * expansions. #incircle_sign_exact calls it where a product of four of its
+ * components could overflow or underflow the doubles, as
+ * #cross_product_sign_exact calls #cross_product_sign_wide
+ */
+static int
+incircle_sign_wide(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  const double from[6] = {ax, ay, bx, by, cx, cy};
+  const double to[6] = {dx, dy, dx, dy, dx, dy};
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  const TowerWide *v[6];
+  for (int i = 0; i < 6; i++)
+    v[i] = tower_wide_sub(ar, tower_wide_of_double(ar, from[i]),
+      tower_wide_of_double(ar, to[i]));
+  static const int cu[3] = {2, 4, 0}, cv[3] = {4, 0, 2};
+  const TowerWide *det = tower_wide_of_double(ar, 0.0);
+  for (int k = 0; k < 3; k++)
+  {
+    const TowerWide *lift = tower_wide_add(ar,
+      tower_wide_mul(ar, v[2 * k], v[2 * k]),
+      tower_wide_mul(ar, v[2 * k + 1], v[2 * k + 1]));
+    int u = cu[k], w = cv[k];
+    const TowerWide *cross = tower_wide_sub(ar,
+      tower_wide_mul(ar, v[u], v[w + 1]), tower_wide_mul(ar, v[w], v[u + 1]));
+    det = tower_wide_add(ar, det, tower_wide_mul(ar, lift, cross));
+  }
+  int sign = det->sign;
+  tower_wide_arena_free(ar);
+  return sign;
+}
+
+/**
  * @brief Return the sign of the incircle determinant of four points, computed
  * exactly from their coordinates
  * @details Each coordinate difference is its rounded value plus the error of
  * the rounding (#two_diff), the three lifts and the three cross products are
  * formed from those as expansions, and the three terms are added, so the last
- * component of the sum carries the sign of the determinant
- * @note Exact where no product of coordinate differences overflows or
- * underflows
+ * component of the sum carries the sign of the determinant. Every product of
+ * the expansions is a product of four components of the differences, exact
+ * where the lowest set bits of the four reach that of the least subnormal and
+ * the product stays below the largest double: each component of at least
+ * 2^-268 in its lowest bit and below 2^250 keeps every product, lift, cross
+ * product and term in range. Otherwise the sign is read on #TowerWide
+ * (#incircle_sign_wide), exact for any finite coordinates.
  */
 static int
 incircle_sign_exact(double ax, double ay, double bx, double by, double cx,
@@ -12348,6 +12391,13 @@ incircle_sign_exact(double ax, double ay, double bx, double by, double cx,
       v[i][vl[i]++] = y;
     if (x != 0.0 || vl[i] == 0)
       v[i][vl[i]++] = x;
+    for (int j = 0; j < vl[i]; j++)
+    {
+      double c = v[i][j];
+      if (c != 0.0 && (! (fabs(c) < 0x1p250) ||
+          double_lowest_set_bit(c) < -268))
+        return incircle_sign_wide(ax, ay, bx, by, cx, cy, dx, dy);
+    }
   }
   double pa[8], pb[8], scratch[16], part[4];
   /* The lifts |A - D|^2, |B - D|^2, |C - D|^2 */
@@ -12447,7 +12497,9 @@ incircle_sign_filter(double ax, double ay, double bx, double by, double cx,
  * @details Positive where D lies inside the circle through A, B and C taken
  * counterclockwise, negative where it lies outside, and 0 exactly where the
  * four points lie on one circle. The determinant is evaluated in double and
- * read against Shewchuk's bound for it, formed from its own terms; where it
+ * read against Shewchuk's bound for it, formed from its own terms, where
+ * every nonzero coordinate difference lies from 2^-240 to 2^250, so that no
+ * product of two underflows; where it
  * cannot tell, the evaluation in pairs of doubles of #incircle_sign_filter
  * is read against its own bound. Both are filters, never tolerances, since
  * where neither can tell the exact sign is computed (#incircle_sign_exact)
@@ -12470,9 +12522,18 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
     (fabs(cdxady) + fabs(adxcdy)) * blift +
     (fabs(adxbdy) + fabs(bdxady)) * clift;
   double bound = (10.0 + 96.0 * DBL_EPSILON) * DBL_EPSILON * permanent;
-  if (det > bound)
+  /* The bound holds where no product underflows: each nonzero difference of
+   * at least 2^-240 keeps every product of two normal, and a later product
+   * that underflows errs by far less than the bound, of at least 2^-1012 */
+  const double diff[6] = {adx, ady, bdx, bdy, cdx, cdy};
+  bool in_range = true;
+  for (int i = 0; i < 6; i++)
+    if (diff[i] != 0.0 && ! (fabs(diff[i]) >= 0x1p-240 &&
+        fabs(diff[i]) < 0x1p250))
+      in_range = false;
+  if (in_range && det > bound)
     return 1;
-  if (det < - bound)
+  if (in_range && det < - bound)
     return -1;
   int sign = incircle_sign_filter(ax, ay, bx, by, cx, cy, dx, dy);
   if (sign != 2)
