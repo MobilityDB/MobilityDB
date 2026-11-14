@@ -45,6 +45,8 @@
 
 extern int ea_contains_geo_tcbuffer(const GSERIALIZED *gs,
   const Temporal *temp, bool ever);
+extern int ea_contains_geo_tcbuffer_intl(const GSERIALIZED *gs,
+  const Temporal *temp, bool ever);
 extern int ea_contains_tcbuffer_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
 extern int ea_contains_tcbuffer_cbuffer(const Temporal *temp,
@@ -55,6 +57,8 @@ extern int ea_contains_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2, bool ever);
 
 extern int ea_covers_geo_tcbuffer(const GSERIALIZED *gs,
+  const Temporal *temp, bool ever);
+extern int ea_covers_geo_tcbuffer_intl(const GSERIALIZED *gs,
   const Temporal *temp, bool ever);
 extern int ea_covers_tcbuffer_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
@@ -67,20 +71,30 @@ extern int ea_covers_tcbuffer_tcbuffer(const Temporal *temp1,
 
 extern int ea_disjoint_tcbuffer_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
+extern int ea_disjoint_tcbuffer_geo_intl(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
 extern int ea_disjoint_geo_tcbuffer(const GSERIALIZED *gs,
   const Temporal *temp, bool ever);
 extern int ea_disjoint_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool ever);
+extern int ea_disjoint_tcbuffer_cbuffer_intl(const Temporal *temp,
   const Cbuffer *cb, bool ever);
 extern int ea_disjoint_cbuffer_tcbuffer(const Cbuffer *cb,
   const Temporal *temp, bool ever);
 extern int ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2, bool ever);
+extern int ea_disjoint_tcbuffer_tcbuffer_intl(const Temporal *temp1,
+  const Temporal *temp2, bool ever);
 
 extern int ea_intersects_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
+extern int ea_intersects_tcbuffer_geo_intl(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
 extern int ea_intersects_geo_tcbuffer(const GSERIALIZED *gs,
   const Temporal *temp, bool ever);
 extern int ea_intersects_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool ever);
+extern int ea_intersects_tcbuffer_cbuffer_intl(const Temporal *temp,
   const Cbuffer *cb, bool ever);
 extern int ea_intersects_cbuffer_tcbuffer(const Cbuffer *cb,
   const Temporal *temp, bool ever);
@@ -88,6 +102,8 @@ extern int ea_intersects_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2, bool ever);
   
 extern int ea_touches_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
+extern int ea_touches_tcbuffer_geo_intl(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
 extern int ea_touches_geo_tcbuffer(const GSERIALIZED *gs,
   const Temporal *temp, bool ever);
@@ -97,7 +113,13 @@ extern int ea_touches_cbuffer_tcbuffer(const Cbuffer *cb,
   const Temporal *temp, bool ever);
 extern int ea_touches_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2, bool ever);
+extern int ea_touches_tcbuffer_tcbuffer_intl(const Temporal *temp1,
+  const Temporal *temp2, bool ever);
 
+extern int ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist, bool ever, bool invert);
+extern int ea_dwithin_tcbuffer_geo_intl(const Temporal *temp,
+  const GSERIALIZED *gs, double dist, bool ever, bool invert);
 extern int ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2, double dist, bool ever);
 
