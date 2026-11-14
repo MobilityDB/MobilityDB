@@ -7,5 +7,6 @@ var searchData=
   ['datum_5ffunc5_4',['datum_func5',['../meos__internal_8h_a8c77d47ed68c5e7bd499cced5eefa617.html#a8c77d47ed68c5e7bd499cced5eefa617',1,'meos_internal.h']]],
   ['datum_5ffunc6_5',['datum_func6',['../meos__internal_8h_a22055dbc59d1fa6b49a0da9c30ae398e.html#a22055dbc59d1fa6b49a0da9c30ae398e',1,'meos_internal.h']]],
   ['datum_5ffunc7_6',['datum_func7',['../meos__internal_8h_a52fe5aa5d5522f08571d57ad6d0ab7d8.html#a52fe5aa5d5522f08571d57ad6d0ab7d8',1,'meos_internal.h']]],
-  ['dggscellops_7',['DggsCellOps',['../tcellindex_8h_a8d82447b587f0f0f407186ef555637c2.html#a8d82447b587f0f0f407186ef555637c2',1,'tcellindex.h']]]
+  ['dggscellops_7',['DggsCellOps',['../tcellindex_8h_a8d82447b587f0f0f407186ef555637c2.html#a8d82447b587f0f0f407186ef555637c2',1,'tcellindex.h']]],
+  ['dggsplanarops_8',['DggsPlanarOps',['../tcellindex_8h_a4056e5928cbc718d8b020e179f7808ef.html#a4056e5928cbc718d8b020e179f7808ef',1,'tcellindex.h']]]
 ];

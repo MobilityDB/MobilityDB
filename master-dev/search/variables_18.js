@@ -22,7 +22,7 @@ var searchData=
   ['witness_19',['witness',['../shift__signs__unit_8c_aa2022311af112a977ef7161105528bd0.html#aa2022311af112a977ef7161105528bd0',1,'shift_signs_unit.c']]],
   ['wkb_20',['wkb',['../structwkb__parse__state_a539a905e8bca447511caa714e0dd23ea.html#a539a905e8bca447511caa714e0dd23ea',1,'wkb_parse_state::wkb()'],['../structmeos__wkb__parse__state_a87e2fad69aa16faa831c5aeda7170c16.html#a87e2fad69aa16faa831c5aeda7170c16',1,'meos_wkb_parse_state::wkb()']]],
   ['wkb_5fsize_21',['wkb_size',['../structwkb__parse__state_a9110e9495ca5121be4ce3b62da3bddb4.html#a9110e9495ca5121be4ce3b62da3bddb4',1,'wkb_parse_state::wkb_size()'],['../structmeos__wkb__parse__state_a465ca1f270143f18eef2be13c04bc216.html#a465ca1f270143f18eef2be13c04bc216',1,'meos_wkb_parse_state::wkb_size()']]],
-  ['wrap_22',['wrap',['../structH3Chart_aa3633c05656697c968d7d7e1ac05b102.html#aa3633c05656697c968d7d7e1ac05b102',1,'H3Chart']]],
+  ['wrap_22',['wrap',['../structDggsChart_a983d2b1a2671f6f08adb72298b34e31c.html#a983d2b1a2671f6f08adb72298b34e31c',1,'DggsChart']]],
   ['wx_23',['wx',['../structDistArc_a5b2980db06e6a2b8c275b1961343231a.html#a5b2980db06e6a2b8c275b1961343231a',1,'DistArc']]],
   ['wx0_24',['wx0',['../structDistSegm_aef94df6c4c8eca6e01c23258a5023f7a.html#aef94df6c4c8eca6e01c23258a5023f7a',1,'DistSegm']]],
   ['wx1_25',['wx1',['../structDistSegm_a4f1c09b08dcac6103c35ccedcd0dc74e.html#a4f1c09b08dcac6103c35ccedcd0dc74e',1,'DistSegm']]],
