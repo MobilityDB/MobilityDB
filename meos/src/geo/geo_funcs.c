@@ -8851,18 +8851,86 @@ ddb_triple3_points(const double *a, const double *b, const double *c,
   return;
 }
 
+/* The root of `n / d` that #ddb_nearest_root places, and the candidate whose
+ * residual it formed last */
+typedef struct
+{
+  DDBound n, d;
+  double dv;        /**< `d` in one double */
+  uint64 cbits;     /**< Bit pattern of the candidate, infinity's for none */
+  double c, gd;     /**< The candidate and the gap to its lower neighbour */
+  double rv, rerr;  /**< Its residual `n - c^2 d` and the bound of its error */
+} DDBRootSide;
+
+/**
+ * @brief The side of the root of `n / d` against the upper midpoint of the
+ * double of bit pattern @p bits, or 2 where the bounds cannot tell
+ * @details With `c` that double and `gu` the gap to its upper neighbour, the
+ * root passes the midpoint `c + gu / 2` exactly where the residual
+ * `n - c^2 d`, formed on two doubles with a bound on its error (#ddb_mul,
+ * #ddb_sub), exceeds `d gu (c + gu / 4)`. The upper midpoint of the lower
+ * neighbour of the candidate read last is that candidate's lower midpoint,
+ * passed where its residual exceeds `- d gd (c - gd / 4)`, `gd` the gap below
+ * it, so its residual serves again
+ */
+static pg_attribute_always_inline int
+ddb_nearest_root_side(uint64 bits, void *arg)
+{
+  DDBRootSide *f = (DDBRootSide *) arg;
+  double gap;
+  if (bits + 1 == f->cbits)
+  {
+    gap = - f->gd * (f->c - 0.25 * f->gd) * f->dv;
+  }
+  else
+  {
+    double c, cu, cd;
+    uint64 ubits = bits + 1, dbits = bits - 1;
+    memcpy(&c, &bits, sizeof(c));
+    if (! (c > 0.0 && c < DBL_MAX))
+      return 2;
+    memcpy(&cu, &ubits, sizeof(cu));
+    memcpy(&cd, &dbits, sizeof(cd));
+    if (! (cd > 0.0))
+      return 2;
+    /* The residual n - c^2 d and a bound on its error */
+    DDBound cc;
+    two_product(c, c, &cc.hi, &cc.lo);
+    cc.e = (fabs(cc.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
+    DDBound r = ddb_sub(f->n, ddb_mul(cc, f->d));
+    if (! isfinite(r.hi) || ! isfinite(r.lo) || ! isfinite(r.e))
+      return 2;
+    f->cbits = bits;
+    f->c = c;
+    f->gd = c - cd;
+    f->rv = r.hi + r.lo;
+    f->rerr = r.e + DBL_EPSILON * fabs(f->rv);
+    double gu = cu - c;
+    gap = gu * (c + 0.25 * gu) * f->dv;
+  }
+  /* The sign of the residual less the gap, its bound the error of the
+   * residual and 32 units of rounding of both magnitudes, for the rounding of
+   * the gap, of `d` and of the difference, as
+   * #point_distance_offset_filter_sign bounds its value */
+  double value = f->rv - gap;
+  double bound = f->rerr + 32.0 * DBL_EPSILON * (fabs(f->rv) + fabs(gap));
+  if (value > bound)
+    return 1;
+  if (value < - bound)
+    return -1;
+  return 2;
+}
+
 /**
  * @brief Return true and write in the last argument the double nearest the
  * root of `n / d`, `d` positive, where the bounds place the root strictly
  * inside the rounding cell of one double
  * @details The residual search of #point_distance_nearest, with `d` scaling
- * the gaps: with `c` a candidate, the root lies inside its cell exactly where
- * the residual `n - c^2 d` falls short of `d gu (c + gu / 4)` and exceeds
- * `- d gd (c - gd / 4)`, `gu` and `gd` the gaps from `c` to its upper and
- * lower neighbours. The residual is formed once per candidate on two doubles
- * with a bound on its error (#ddb_mul, #ddb_sub), and a residual beyond
- * either gap moves the candidate to that neighbour. A tie, or a root the
- * bounds cannot place, decides nothing
+ * the gaps: #nearest_double_search reads the sides #ddb_nearest_root_side
+ * forms on residuals bounded in two doubles from the candidate
+ * `sqrt(n / d)` in doubles, which rounds twice and so may be a neighbour of
+ * the answer, asking at most #NEAREST_FILTER_BUDGET of them. A tie, or a
+ * root the bounds cannot place, decides nothing
  */
 static bool
 ddb_nearest_root(DDBound n, DDBound d, double *result)
@@ -8881,53 +8949,17 @@ ddb_nearest_root(DDBound n, DDBound d, double *result)
   /* The bound of d must leave the gaps their meaning */
   if (! (d.e <= 0x1p-60 * dv))
     return false;
-  /* The quotient and the root in doubles round twice, so the candidate may
-   * be a neighbour of the answer: a few steps towards the side the residual
-   * names reach it */
   double c = sqrt((n.hi + n.lo) / dv);
-  for (int step = 0; step < 4; step++)
-  {
-    if (! (c > 0.0 && c < DBL_MAX))
-      return false;
-    uint64_t bits, ubits, dbits;
-    memcpy(&bits, &c, sizeof(bits));
-    ubits = bits + 1;
-    dbits = bits - 1;
-    double cu, cd;
-    memcpy(&cu, &ubits, sizeof(cu));
-    memcpy(&cd, &dbits, sizeof(cd));
-    if (! (cd > 0.0))
-      return false;
-    double gu = cu - c, gd = c - cd;
-    /* The residual n - c^2 d and a bound on its error */
-    DDBound cc;
-    two_product(c, c, &cc.hi, &cc.lo);
-    cc.e = (fabs(cc.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
-    DDBound r = ddb_sub(n, ddb_mul(cc, d));
-    if (! isfinite(r.hi) || ! isfinite(r.lo) || ! isfinite(r.e))
-      return false;
-    double rv = r.hi + r.lo;
-    double rerr = r.e + DBL_EPSILON * fabs(rv);
-    double up = gu * (c + 0.25 * gu) * dv, down = gd * (c - 0.25 * gd) * dv;
-    double near = (fabs(rv) + rerr) * (1.0 + 0x1p-50);
-    if (near < down * (1.0 - 0x1p-48) && near < up * (1.0 - 0x1p-48))
-    {
-      *result = c;
-      return true;
-    }
-    if ((rv - rerr) * (1.0 - 0x1p-50) > up * (1.0 + 0x1p-48))
-    {
-      c = cu;
-      continue;
-    }
-    if (- (rv + rerr) * (1.0 - 0x1p-50) > gd * c * dv * (1.0 + 0x1p-48))
-    {
-      c = cd;
-      continue;
-    }
+  if (! (c > 0.0 && c < DBL_MAX))
     return false;
-  }
-  return false;
+  DDBRootSide f = {n, d, dv, NEAREST_INF_BITS, 0.0, 0.0, 0.0, 0.0};
+  uint64 bits, found;
+  memcpy(&bits, &c, sizeof(bits));
+  if (! nearest_double_search(bits, &ddb_nearest_root_side, &f,
+      NEAREST_FILTER_BUDGET, &found))
+    return false;
+  memcpy(result, &found, sizeof(double));
+  return true;
 }
 
 /*****************************************************************************
