@@ -1793,6 +1793,15 @@ tower_wide_neg(TowerWideArena *ar, const TowerWide *a)
   return tower_wide_signed(ar, a, -1);
 }
 
+/**
+ * @brief Return the sign of a value, -1, 0 or 1
+ */
+static inline int
+wide_sign(const TowerWide *a)
+{
+  return a->sign;
+}
+
 extern int wide_limbs_divmod(const uint64 *u, int nu, const uint64 *v,
   int nv, uint64 *q, uint64 *r, int *nr);
 extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
@@ -1802,9 +1811,6 @@ extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
  * The nearest double of a value read exactly
  *****************************************************************************/
 
-/* A dyadic rational of any size, opaque outside geo_funcs.c */
-typedef struct WideDyadic WideDyadic;
-
 /* The sign of the value a search reads less @p mid, the values it forms taken
  * from @p ar, which releases them once it answers */
 typedef int (*NearestSide)(TowerWideArena *ar, const TowerWide *mid,
@@ -1812,18 +1818,6 @@ typedef int (*NearestSide)(TowerWideArena *ar, const TowerWide *mid,
 
 extern double nearest_double_exact(double c, NearestSide side,
   const void *arg);
-extern int wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign,
-  const uint64 *mag, int nlimbs, int exp);
-extern WideDyadic *wide_dyadic_alloc(void);
-extern void wide_dyadic_set_double(WideDyadic *a, double x);
-extern void wide_dyadic_add(const WideDyadic *a, const WideDyadic *b,
-  WideDyadic *r);
-extern void wide_dyadic_sub(const WideDyadic *a, const WideDyadic *b,
-  WideDyadic *r);
-extern void wide_dyadic_mul(const WideDyadic *a, const WideDyadic *b,
-  WideDyadic *r);
-extern int wide_dyadic_to_fixed(const WideDyadic *a, int scale, bool up,
-  uint64 *mag, int nlimbs);
 
 /* The double nearest the sine and cosine of degrees (geo_trig.c) */
 extern double sind_nearest(double deg);
