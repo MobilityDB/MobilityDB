@@ -2555,27 +2555,6 @@ tcbufferseq_disc_at(const TSequence *seq, int k, TimestampTz t, double *c,
   return;
 }
 
-/**
- * @brief Set in @p start_out and @p end_out whether the start and the end of
- * an interval of #tcont_tcont_merge_walk are the first or the last instant of
- * one of the sequences, which the sequence excludes, and so no instant of the
- * time they share
- */
-static void
-tcbuffer_interval_ends_out(const TSequence *seq1, const TSequence *seq2,
-  TimestampTz lower, TimestampTz upper, bool *start_out, bool *end_out)
-{
-  *start_out =
-    (lower == TSEQUENCE_INST_N(seq1, 0)->t && ! seq1->period.lower_inc) ||
-    (lower == TSEQUENCE_INST_N(seq2, 0)->t && ! seq2->period.lower_inc);
-  *end_out =
-    (upper == TSEQUENCE_INST_N(seq1, seq1->count - 1)->t &&
-      ! seq1->period.upper_inc) ||
-    (upper == TSEQUENCE_INST_N(seq2, seq2->count - 1)->t &&
-      ! seq2->period.upper_inc);
-  return;
-}
-
 /*****************************************************************************/
 
 /**
@@ -2730,7 +2709,7 @@ tcbuffer_touch_interval(const TSequence *seq1, int k1, const TSequence *seq2,
   tcbufferseq_disc_at(seq1, k1, upper, seg[1], &rad[1]);
   tcbufferseq_disc_at(seq2, k2, upper, seg[3], &rad[3]);
   bool start_out, end_out;
-  tcbuffer_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
+  tcont_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
   return tcbuffer_segm_touch(seg, rad, ! start_out, ! end_out, ever) == ever;
 }
 
@@ -2786,7 +2765,7 @@ tcbuffer_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2,
     return false;
   /* Within at an end alone that no instant of the shared time reaches */
   bool start_out, end_out;
-  tcbuffer_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
+  tcont_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
   if ((start_out && point_motion_dwithin_only_at_end(seg[0], seg[1],
         seg[2], seg[3], 2, rad[0], rad[1], rad[2], rad[3], st->dist, true)) ||
       (end_out && point_motion_dwithin_only_at_end(seg[0], seg[1], seg[2],
