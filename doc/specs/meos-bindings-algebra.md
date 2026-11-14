@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.2.0 |
+| Version | v0.3.0 |
 | Scope | The values a binding of MEOS holds, the functions it calls on them, and the casts that connect them to the types of its host language |
 | Reference | `meos/include/meos.h` (`timestamptz_to_unix_us`, `timestamp_to_unix_us`, `date_to_unix_days`, `interval_to_parts` and their inverses), `pgtypes/pg_time.h` (`time_to_parts`, `timetz_to_parts` and their inverses), `meos/src/temporal/span.c`, `meos/test/unix_epoch_test.c`; the MEOS-API catalog (`typeEncodings`, `bindingScope`) |
 
@@ -158,6 +158,20 @@ count outside the dates (`INT32_MIN`, `INT32_MAX`), raise
 `MEOS_ERR_DATETIME_OUT_OF_RANGE`. `date_to_unix_days` answers `INT32_MAX` on
 an error, which no valid date answers.
 
+A date is discrete, as an integer is, and the width of a date span runs from
+its first date to its last, as the width of an integer span runs from its
+first value to its last: one day less than the duration of the span. A width
+of 4 days holds 5 days, as `intspan '[1, 2)'` scaled to a width of 4 holds the
+values 1 to 5. A timestamp is continuous, and the width of a `tstzspan` is its
+duration. A binding passes the days of its host's width unchanged.
+`mobilitydb/test/temporal/sql/003_span.sql` records:
+
+| Statement | Result |
+|---|---|
+| `scale(intspan '[1,2)', 4)` | `[1, 6)` |
+| `scale(datespan '[2001-01-01,2001-01-02)', 4)` | `[2001-01-01, 2001-01-06)` |
+| `scale(tstzspan '[2001-01-01,2001-01-02]', '1 hour')` | `[2001-01-01 00:00:00, 2001-01-01 01:00:00]` |
+
 ### 5.4 `interval`
 
 MEOS holds an `interval` as three parts: months, days and microseconds, a
@@ -197,8 +211,9 @@ and from the time of its host through `time_to_parts` and `time_from_parts`:
 A count outside a day (`-1`, `86400000001`) raises
 `MEOS_ERR_DATETIME_OUT_OF_RANGE`; `time_from_parts` answers `INT64_MAX` on an
 error, which no valid time holds. A host time ending a day before `24:00:00`
-(Python's `time`, Java's `LocalTime`) cannot state `24:00:00`, and a cast of it
-is an error of the binding.
+(Python's `time`, Java's `LocalTime`, and Go's `time.Time` on 0000-01-01, the
+clock `time.Parse` answers) cannot state `24:00:00`, and a cast of it is an
+error of the binding.
 
 ### 5.6 `timetz`
 
@@ -215,8 +230,32 @@ whose offset is in seconds east of UTC, as ISO 8601 and the hosts state it:
 
 `timetz_from_parts` of a time outside a day (`-1`, `86400000001`) or an offset
 beyond 16:00:00 (`57601`) raises `MEOS_ERR_DATETIME_OUT_OF_RANGE`. Java's
-`OffsetTime` is the one host type holding a time with an offset; a host
-without one casts the parts.
+`OffsetTime` and Go's `time.Time` on 0000-01-01 in a zone of a fixed offset
+hold a time with an offset; a host without one casts the parts.
+
+### 5.7 The time zone of a thread
+
+A `timestamptz` is read and written in a time zone, which MEOS holds per
+thread. `meos_initialize_timezone` of a named zone makes it the zone of the
+calling thread and the zone of the program, the last naming winning, on
+whichever thread. A thread that names no zone reads and writes in the zone of
+the program, and follows each later naming; a thread that names its own zone
+keeps it; the zone of the machine answers while the program names none. A
+host runs its work on threads it does not choose (a goroutine moves between
+threads, a JVM executor or a test host hands work to a pool), so a binding
+names the zone once, on any thread, and every thread reads it.
+`meos/test/zone_thread_test.c` records, for `timestamptz_out` of
+`timestamptz_in('2001-12-06 00:00:00')`:
+
+| Thread | Zone named | Answer |
+|---|---|---|
+| main | `Asia/Kathmandu` | |
+| worker, naming none | | `2001-12-06 00:00:00+05:45` |
+| main | `America/New_York` | |
+| worker, naming none | | `2001-12-06 00:00:00-05` |
+| worker | `Europe/Moscow` | `2001-12-06 00:00:00+03` |
+| main, its own zone | | `2001-12-06 00:00:00-05` |
+| a later thread, naming none | | `2001-12-06 00:00:00+03` |
 
 ## 6. Types out of binding scope
 
@@ -237,6 +276,7 @@ types of its host.
 |---|---|
 | v0.1.0 | The closed algebra, the text of a value, the three rules of a cast, the cast of `timestamptz`, the types out of binding scope |
 | v0.2.0 | The casts of `timestamp`, `date`, `interval`, `time` and `timetz` |
+| v0.3.0 | The width of a discrete span, Go's host types of `time` and `timetz`, the time zone of a thread |
 
 A minor version adds what MEOS and the catalog newly guarantee; a major
 version changes a rule a binding follows.
