@@ -4786,127 +4786,8 @@ point_motion_squares(const double *p0, const double *p1, int64 s0, int64 s1,
   return (c < 0) ? -1 : ((c > 0) ? 1 : 0);
 }
 
-/**
- * @brief Return true where the root of `n / d` lies beyond the midpoint from
- * the double @p c to its upper neighbour @p up, infinity standing for 2^1024,
- * a tie being beyond where the last bit of @p c is odd
- */
-static bool
-tower_wide_root_beyond(TowerWideArena *ar, const TowerWide *n,
-  const TowerWide *d, double c, double up)
-{
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  TowerWide *wu;
-  if (isinf(up))
-  {
-    wu = tower_wide_of_int64(ar, 1);
-    wu->exp = 1024;
-  }
-  else
-    wu = tower_wide_of_double(ar, up);
-  TowerWide *mid = tower_wide_add(ar, tower_wide_of_double(ar, c), wu);
-  if (mid->sign != 0)
-    mid->exp -= 1;
-  int s = tower_wide_cmp(n, tower_wide_mul(ar, tower_wide_mul(ar, mid, mid),
-    d));
-  tower_wide_arena_release(ar, m);
-  uint64_t bits;
-  memcpy(&bits, &c, sizeof(bits));
-  return s > 0 || (s == 0 && (bits & 1) != 0);
-}
-
-/**
- * @brief Return the double nearest the square root of `n / d >= 0`, a tie
- * going to the even double
- * @details The answer is the smallest bit pattern whose upper midpoint the
- * root does not pass (#tower_wide_root_beyond): a gallop from a candidate
- * read on the leading limbs brackets it, then halving the bracket finds it, as
- * #point_segment_distance_offset_exact finds its answer
- */
-static double
-tower_wide_nearest_root(TowerWideArena *ar, const TowerWide *n,
-  const TowerWide *d)
-{
-  if (n->sign <= 0)
-    return 0.0;
-  int en, ed;
-  double mn = tower_wide_frexp(n, &en), md = tower_wide_frexp(d, &ed);
-  double ratio = mn / md;
-  int ex = en - ed;
-  if (ex % 2 != 0)
-  {
-    ratio *= 2.0;
-    ex -= 1;
-  }
-  double c = ldexp(sqrt(ratio), ex / 2);
-  if (! (c > 0.0))
-    c = 0.0;
-  if (isinf(c))
-    c = DBL_MAX;
-  uint64_t bits;
-  memcpy(&bits, &c, sizeof(bits));
-#define WD_BEYOND(bb, res) \
-  do { \
-    double cc, nn; \
-    uint64_t b1 = (bb), b2 = (bb) + 1; \
-    memcpy(&cc, &b1, sizeof(cc)); \
-    memcpy(&nn, &b2, sizeof(nn)); \
-    (res) = tower_wide_root_beyond(ar, n, d, cc, nn); \
-  } while (0)
-  uint64_t lo, hi;
-  bool beyond;
-  WD_BEYOND(bits, beyond);
-  if (beyond)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    uint64_t step = 1;
-    lo = bits;
-    const uint64_t inf_bits = 0x7FF0000000000000ULL;
-    while (true)
-    {
-      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
-      if (hi == inf_bits)
-        break;
-      WD_BEYOND(hi, beyond);
-      if (! beyond)
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    uint64_t step = 1;
-    hi = bits;
-    while (true)
-    {
-      if (hi == 0)
-        return 0.0;
-      lo = (hi > step) ? hi - step : 0;
-      WD_BEYOND(lo, beyond);
-      if (beyond)
-        break;
-      hi = lo;
-      if (lo == 0)
-        return 0.0;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    WD_BEYOND(mid, beyond);
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef WD_BEYOND
-  double result;
-  memcpy(&result, &hi, sizeof(result));
-  return result;
-}
+static double tower_wide_nearest_root(TowerWideArena *ar,
+  const TowerWide *n, const TowerWide *d);
 
 /*****************************************************************************
  * The nearest double of a value read exactly
@@ -5000,6 +4881,50 @@ nearest_double_exact(double c, NearestSide side, const void *arg)
   double result = nearest_double_in(&arena, c, side, arg);
   tower_wide_arena_free(&arena);
   return result;
+}
+
+/* A root `sqrt(n / d)`, n > 0 and d > 0 */
+typedef struct
+{
+  const TowerWide *n, *d;
+} NearestRoot;
+
+/* The sign of `sqrt(n / d) - mid`, that of `n - mid^2 d` for `mid >= 0` */
+static int
+nearest_root_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
+{
+  const NearestRoot *q = (const NearestRoot *) arg;
+  return tower_wide_cmp(q->n, tower_wide_mul(ar, tower_wide_mul(ar, mid,
+    mid), q->d));
+}
+
+/**
+ * @brief Return the double nearest the square root of `n / d >= 0`, a tie
+ * going to the even double
+ * @details #nearest_double_exact reads the side of the root from a candidate
+ * formed on the leading limbs of @p n and @p d, in the arena @p ar
+ */
+
+static double
+tower_wide_nearest_root(TowerWideArena *ar, const TowerWide *n,
+  const TowerWide *d)
+{
+  if (n->sign <= 0)
+    return 0.0;
+  int en, ed;
+  double mn = tower_wide_frexp(n, &en), md = tower_wide_frexp(d, &ed);
+  double ratio = mn / md;
+  int ex = en - ed;
+  if (ex % 2 != 0)
+  {
+    ratio *= 2.0;
+    ex -= 1;
+  }
+  double c = ldexp(sqrt(ratio), ex / 2);
+  if (! (c > 0.0))
+    c = 0.0;
+  NearestRoot q = {n, d};
+  return nearest_double_in(ar, c, &nearest_root_side, &q);
 }
 
 /* A quotient `n / d`, d > 0 */
