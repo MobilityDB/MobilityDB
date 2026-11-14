@@ -641,6 +641,13 @@ it is the polynomial ladder's own first tier, so it leaves with that ladder, whi
 not in EA4. The pull request moves the other readers and then removes `pair_mul` and `pair_add`
 once nothing reads them, its speed cells judging `pair_mid_sign`.
 
+The pull request is #3675 (branch `refactor/one-pair-type`, on master `ab15a473fa`): the five
+readers read `DDBound`, then `pair_mul` and `pair_add` leave. Its receipts are strict CI,
+cppcheck, valgrind, smoke, the oracle (the 17 ED24 witnesses and `buffer_natural_1313`, with their
+controls, against CGAL) and speed: against GEOS alone the buffer reads 0.94, 0.90, 0.57 and 0.72
+on 1, 50 and 500 natural areas and the joints, and the distance 0.18; 25 of the 26 cells are at
+parity, the 26th being the arcs, which GEOS times as straight segments.
+
 ### EA5. One wide number
 
 `TowerWide`, the size of its value, stands for tier 3: `WideDyadic` and the `WIDE_LIMBS` integer
