@@ -135,62 +135,76 @@ dist_part_point(DistPart *parts, int *n, double x, double y)
 }
 
 /**
- * @brief Add the parts of a simple geometry to an array of parts
- * @details A point is one part, a line is one part for each segment, and a
- * polygon is one part.  A segment of length zero is a point.
- * @return False, with an error, if a polygon is not convex or has holes
+ * @brief Add the segments of the points @p pa, a line or a ring of a polygon,
+ * to an array of parts
+ * @details A segment of length zero is a point, as is a line of one point.
  */
-static bool
-dist_parts_add(const LWGEOM *geom, DistPart *parts, int *n)
+static void
+dist_parts_add_points(const POINTARRAY *pa, DistPart *parts, int *n)
+{
+  for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, i);
+    const POINT2D *q = getPoint2d_cp(pa, i + 1);
+    if (p->x == q->x && p->y == q->y)
+      dist_part_point(parts, n, p->x, p->y);
+    else
+    {
+      double cx, cy;
+      distrefpoly_set_segment(&parts[*n].body, p->x, p->y, q->x, q->y, &cx,
+        &cy);
+      distmotion_set_static(&parts[*n].motion, cx, cy);
+      dist_part_points(&parts[*n], pa, i, 2);
+      (*n)++;
+    }
+  }
+  if (pa->npoints == 1)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, 0);
+    dist_part_point(parts, n, p->x, p->y);
+  }
+  return;
+}
+
+/**
+ * @brief Add the parts of a simple geometry to an array of parts
+ * @details A point is one part and a line is one part for each segment.  A
+ * convex polygon without holes is one part.  Any other polygon is one part
+ * for each segment of its rings, and is added to @p polys, whose area
+ * #dist_inside() reads.
+ */
+static void
+dist_parts_add(const LWGEOM *geom, DistPart *parts, int *n,
+  const LWPOLY **polys, int *npolys)
 {
   if (lwgeom_is_empty(geom))
-    return true;
+    return;
   if (geom->type == POINTTYPE)
   {
     const POINT2D *p = getPoint2d_cp(((LWPOINT *) geom)->point, 0);
     dist_part_point(parts, n, p->x, p->y);
-    return true;
+    return;
   }
   if (geom->type == LINETYPE)
   {
-    const POINTARRAY *pa = ((LWLINE *) geom)->points;
-    for (uint32_t i = 0; i + 1 < pa->npoints; i++)
-    {
-      const POINT2D *p = getPoint2d_cp(pa, i);
-      const POINT2D *q = getPoint2d_cp(pa, i + 1);
-      if (p->x == q->x && p->y == q->y)
-        dist_part_point(parts, n, p->x, p->y);
-      else
-      {
-        double cx, cy;
-        distrefpoly_set_segment(&parts[*n].body, p->x, p->y, q->x, q->y, &cx,
-          &cy);
-        distmotion_set_static(&parts[*n].motion, cx, cy);
-        dist_part_points(&parts[*n], pa, i, 2);
-        (*n)++;
-      }
-    }
-    if (pa->npoints == 1)
-    {
-      const POINT2D *p = getPoint2d_cp(pa, 0);
-      dist_part_point(parts, n, p->x, p->y);
-    }
-    return true;
+    dist_parts_add_points(((LWLINE *) geom)->points, parts, n);
+    return;
   }
   /* POLYGONTYPE */
+  const LWPOLY *poly = (LWPOLY *) geom;
   double cx, cy;
-  if (! distrefpoly_set_static(&parts[*n].body, (LWPOLY *) geom, &cx, &cy))
+  if (distrefpoly_set_static(&parts[*n].body, poly, &cx, &cy))
   {
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "The distance of a temporal rigid geometry to a polygon that is not "
-      "convex or has holes is not supported");
-    return false;
+    distmotion_set_static(&parts[*n].motion, cx, cy);
+    const POINTARRAY *ring = poly->rings[0];
+    dist_part_points(&parts[*n], ring, 0, (int) ring->npoints - 1);
+    (*n)++;
+    return;
   }
-  distmotion_set_static(&parts[*n].motion, cx, cy);
-  const POINTARRAY *ring = ((LWPOLY *) geom)->rings[0];
-  dist_part_points(&parts[*n], ring, 0, (int) ring->npoints - 1);
-  (*n)++;
-  return true;
+  for (uint32_t r = 0; r < poly->nrings; r++)
+    dist_parts_add_points(poly->rings[r], parts, n);
+  polys[(*npolys)++] = poly;
+  return;
 }
 
 /**
@@ -211,11 +225,11 @@ dist_parts_free(DistPart *parts, int count)
  * @brief Add the parts of a geometry to an array of parts, reading the
  * members of a multi-geometry or a geometry collection, nested collections
  * included, as #dist_parts_add() reads a simple geometry
- * @return False, with an error, if a member is a polygon that is not convex
- * or has holes, or if its type is not supported
+ * @return False, with an error, if the type of a member is not supported
  */
 static bool
-dist_parts_add_all(const LWGEOM *geom, DistPart *parts, int *n)
+dist_parts_add_all(const LWGEOM *geom, DistPart *parts, int *n,
+  const LWPOLY **polys, int *npolys)
 {
   uint32_t type = geom->type;
   if (type == MULTIPOINTTYPE || type == MULTILINETYPE ||
@@ -224,7 +238,7 @@ dist_parts_add_all(const LWGEOM *geom, DistPart *parts, int *n)
     const LWCOLLECTION *coll = lwgeom_as_lwcollection(geom);
     for (uint32_t i = 0; i < coll->ngeoms; i++)
     {
-      if (! dist_parts_add_all(coll->geoms[i], parts, n))
+      if (! dist_parts_add_all(coll->geoms[i], parts, n, polys, npolys))
         return false;
     }
     return true;
@@ -235,37 +249,9 @@ dist_parts_add_all(const LWGEOM *geom, DistPart *parts, int *n)
       "Unsupported geometry type: %s", lwtype_name(type));
     return false;
   }
-  return dist_parts_add(geom, parts, n);
+  dist_parts_add(geom, parts, n, polys, npolys);
+  return true;
 }
-
-/**
- * @brief Return the convex parts of a static geometry, and their number in
- * @p count
- * @details The walk finds the distance to a convex body.  A point, a
- * segment and a convex polygon are convex bodies, thus the distance to a
- * geometry is the minimum of the distances to its parts, the members of a
- * multi-geometry or a geometry collection all read as parts.
- * @return The parts, or NULL with an error if the geometry has a polygon that
- * is not convex or has holes, or if a type it holds is not supported
- */
-static DistPart *
-dist_geo_parts(const GSERIALIZED *gs, int *count)
-{
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  /* The number of parts is at most the number of points */
-  int maxparts = (int) lwgeom_count_vertices(geom) + 1;
-  DistPart *parts = palloc(sizeof(DistPart) * maxparts);
-  *count = 0;
-  bool ok = dist_parts_add_all(geom, parts, count);
-  lwgeom_free(geom);
-  if (! ok)
-  {
-    dist_parts_free(parts, *count);
-    return NULL;
-  }
-  return parts;
-}
-
 
 /*****************************************************************************
  * Distance at an instant
@@ -282,8 +268,12 @@ typedef struct
   const GSERIALIZED *ref1;   /**< Reference geometry of the first operand */
   DistRefPoly body1;         /**< Body of the first operand */
   const GSERIALIZED *gs;     /**< Static geometry @nullable */
+  LWGEOM *geom;              /**< Static geometry, which @p polys read */
   DistPart *parts;           /**< Parts of the static geometry */
   int nparts;                /**< Number of parts */
+  const LWPOLY **polys;      /**< Polygons of the static geometry read by
+                                  the segments of their rings */
+  int npolys;                /**< Number of such polygons */
   double *refxy;             /**< Vertices of the reference geometry of the
                                   first operand, x, y pairs, the first not
                                   repeated, for a static geometry */
@@ -297,29 +287,87 @@ typedef struct
 } DistOps;
 
 /**
+ * @brief Return true if a vertex of the first operand at the pose @p pose
+ * lies in a polygon of the static geometry of @p ops read by its rings
+ * @details A body with a vertex in such a polygon meets it, and its distance
+ * is 0.  A body with no vertex in it and no point on its rings, at a
+ * positive distance from every segment of its rings, lies outside it, since
+ * it cannot pass from the interior to the exterior without meeting a ring.
+ * Thus the distance of the body to the polygon is 0 or the least of the
+ * distances to the segments of its rings.  One vertex decides it, located
+ * exactly (#translated_point_in_rings_exact): at the angle 0, the vertex is
+ * the exact sum of its coordinates and the position, as
+ * #convex_motion_nad_exact reads it; at another angle, it is the vertex of the
+ * body placed at the pose (#lwgeom_apply_pose), as #dist_pose_geo() places it.
+ */
+static bool
+dist_inside(const DistOps *ops, const Pose *pose)
+{
+  if (ops->npolys == 0)
+    return false;
+  double x = ops->refxy[0], y = ops->refxy[1];
+  double tx = pose->data[0], ty = pose->data[1];
+  if (pose->data[2] != 0.0)
+  {
+    LWPOINT *pt = lwpoint_make2d(SRID_UNKNOWN, x, y);
+    lwgeom_apply_pose(pose, (LWGEOM *) pt);
+    const POINT2D *p = getPoint2d_cp(pt->point, 0);
+    x = p->x;
+    y = p->y;
+    tx = ty = 0.0;
+    lwpoint_free(pt);
+  }
+  for (int i = 0; i < ops->npolys; i++)
+  {
+    if (translated_point_in_rings_exact(x, y, tx, ty, ops->polys[i]->rings,
+        ops->polys[i]->nrings) != 0)
+      return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Return the nearest approach of the first operand, translating from
+ * the pose @p pose1 to the pose @p pose2 at the angle 0, and the static
+ * geometry of @p ops, the double nearest its exact value
+ * @details The least of the nearest approaches to the parts
+ * (#convex_motion_nad_exact), or 0 where the body at @p pose1 has a vertex
+ * in a polygon read by its rings (#dist_inside()).  A body that enters such
+ * a polygon meets one of its rings, whose segments are parts.
+ */
+static double
+dist_parts_nad(const DistOps *ops, const Pose *pose1, const Pose *pose2)
+{
+  if (dist_inside(ops, pose1))
+    return 0.0;
+  double result = DBL_MAX;
+  for (int i = 0; i < ops->nparts; i++)
+    result = fmin(result, convex_motion_nad_exact(ops->refxy, ops->nref,
+      pose1->data, pose2->data, ops->parts[i].xy, ops->parts[i].npts));
+  return result;
+}
+
+/**
  * @brief Return the distance between the first operand at the pose @p pose
  * and the static geometry of @p ops
  * @details A body at the angle 0 is its reference geometry moved by the
  * position of the pose, and its distance to the geometry is the least of the
  * distances to the parts, each the double nearest its exact value
  * (#convex_motion_nad_exact) on the exact sums of the coordinates and the
- * position.  Where no such sum rounds (#translation_is_exact), the placed
- * body is that body, and its distance is the one of #geom_distance2d().
- * Otherwise, and for a body that turns, the distance is the one of the body
- * placed at the pose.
+ * position, or 0 in a polygon read by its rings (#dist_parts_nad()).  Where
+ * no such sum rounds (#translation_is_exact), the placed body is that body,
+ * and its distance is the one of #geom_distance2d().  Otherwise, and for a
+ * body that turns, the distance is the one of the body placed at the pose,
+ * 0 where it has a vertex in a polygon read by its rings (#dist_inside()).
  */
 static double
 dist_pose_geo(const DistOps *ops, const Pose *pose)
 {
   if (ops->refxy && pose->data[2] == 0.0 &&
       ! translation_is_exact(ops->refxy, ops->nref, pose->data))
-  {
-    double result = DBL_MAX;
-    for (int i = 0; i < ops->nparts; i++)
-      result = fmin(result, convex_motion_nad_exact(ops->refxy, ops->nref,
-        pose->data, pose->data, ops->parts[i].xy, ops->parts[i].npts));
-    return result;
-  }
+    return dist_parts_nad(ops, pose, pose);
+  if (ops->refxy && dist_inside(ops, pose))
+    return 0.0;
   GSERIALIZED *geo = pose_apply_geo(pose, ops->ref1);
   double result = geom_distance2d(geo, ops->gs);
   pfree(geo);
@@ -1155,7 +1203,9 @@ dist_lift_seq(const DistOps *ops, const TSequence *seq1,
  * closest at that time, see distwalk_segm(), thus it is the exact distance.
  * A value from PostGIS has a rounding error, which can put the crossing in
  * the same microsecond as the instant, where the comparison with the level
- * does not see it.
+ * does not see it.  Where the body has a vertex in a polygon read by its
+ * rings (#dist_inside()), the crossing is one of the distance to the rings
+ * and not of the distance, which is 0 there.
  * @param[in] dist Minimum of the distances to the parts, freed
  */
 static TSequence *
@@ -1167,7 +1217,9 @@ dist2d_seq_exact_values(const DistOps *ops, TSequence *dist,
   for (int i = 0; i < dist->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(dist, i);
-    if (level >= 0.0 && DatumGetFloat8(tinstant_value_p(inst)) == level)
+    bool atlevel = (level >= 0.0 &&
+      DatumGetFloat8(tinstant_value_p(inst)) == level);
+    if (atlevel && ops->npolys == 0)
     {
       instants[i] = tinstant_copy(inst);
       continue;
@@ -1179,8 +1231,14 @@ dist2d_seq_exact_values(const DistOps *ops, TSequence *dist,
       instants[i] = tinstant_copy(inst);
       continue;
     }
-    instants[i] = tinstant_make(Float8GetDatum(dist_pose_geo(ops,
-      DatumGetPoseP(pose))), T_TFLOAT, inst->t);
+    /* A crossing of the level by the distance to the rings of a polygon is
+     * not one of the distance where the body lies in that polygon */
+    const Pose *p = DatumGetPoseP(pose);
+    if (atlevel && ! dist_inside(ops, p))
+      instants[i] = tinstant_copy(inst);
+    else
+      instants[i] = tinstant_make(Float8GetDatum(dist_pose_geo(ops, p)),
+        T_TFLOAT, inst->t);
     pfree(DatumGetPointer(pose));
   }
   TSequence *result = tsequence_make_free(instants, dist->count,
@@ -1191,8 +1249,10 @@ dist2d_seq_exact_values(const DistOps *ops, TSequence *dist,
 
 /**
  * @brief Return true if a body that translates from @p pose1 to @p pose2
- * meets a part of the static geometry of @p ops, decided exactly
- * (#convex_motion_meet_exact)
+ * meets the static geometry of @p ops, decided exactly
+ * @details The body meets the geometry where it meets a part
+ * (#convex_motion_meet_exact), or where it has a vertex at @p pose1 in a
+ * polygon read by its rings (#dist_inside()), see #dist_parts_nad().
  */
 static bool
 dist_parts_meet(const DistOps *ops, const Pose *pose1, const Pose *pose2)
@@ -1201,7 +1261,7 @@ dist_parts_meet(const DistOps *ops, const Pose *pose1, const Pose *pose2)
     if (convex_motion_meet_exact(ops->refxy, ops->nref, pose1->data,
         pose2->data, ops->parts[j].xy, ops->parts[j].npts))
       return true;
-  return false;
+  return dist_inside(ops, pose1);
 }
 
 /**
@@ -1245,7 +1305,8 @@ dist_seq_least_zero(const DistOps *ops, const Pose *pose1, const Pose *pose2,
  * translates.  Its least distance over the segment to a part at rest is the
  * nearest approach of the two, the double nearest its exact value
  * (#convex_motion_nad_exact), and the least over the parts is the least
- * distance to the geometry.  No instant inside the segment is below it.
+ * distance to the geometry, 0 in a polygon read by its rings
+ * (#dist_parts_nad()).  No instant inside the segment is below it.
  * Where it is below the distances at the two ends, computed in the same way,
  * the instant of least value inside the segment, which the walk puts at the
  * least distance, takes it: the value at the event, whose time is not a
@@ -1283,10 +1344,7 @@ dist_seq_least(const DistOps *ops, const TSequence *seq, TSequence *dist)
       changed |= dist_seq_least_zero(ops, pose1, pose2, values, first, last);
       continue;
     }
-    double least = DBL_MAX;
-    for (int j = 0; j < ops->nparts; j++)
-      least = fmin(least, convex_motion_nad_exact(ops->refxy, ops->nref,
-        pose1->data, pose2->data, ops->parts[j].xy, ops->parts[j].npts));
+    double least = dist_parts_nad(ops, pose1, pose2);
     int min = -1;
     bool reached = false;
     for (int j = first; j < last; j++)
@@ -1307,14 +1365,8 @@ dist_seq_least(const DistOps *ops, const TSequence *seq, TSequence *dist)
     }
     if (reached || min < 0 || values[min] == least)
       continue;
-    double end1 = DBL_MAX, end2 = DBL_MAX;
-    for (int j = 0; j < ops->nparts; j++)
-    {
-      end1 = fmin(end1, convex_motion_nad_exact(ops->refxy, ops->nref,
-        pose1->data, pose1->data, ops->parts[j].xy, ops->parts[j].npts));
-      end2 = fmin(end2, convex_motion_nad_exact(ops->refxy, ops->nref,
-        pose2->data, pose2->data, ops->parts[j].xy, ops->parts[j].npts));
-    }
+    double end1 = dist_parts_nad(ops, pose1, pose1);
+    double end2 = dist_parts_nad(ops, pose2, pose2);
     if (least < end1 && least < end2)
     {
       values[min] = least;
@@ -1443,18 +1495,16 @@ dist_temporal(const DistOps *ops, const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal distance between a temporal rigid geometry and
- * a geometry
- * @param[in] level Distance whose crossings are instants of the result, or a
- * negative value.  Then the result is on the same side of @p level as the
- * distance at each time, which the threshold functions such as
- * #tdwithin_trgeometry_geo() need.
- */
-/**
  * @brief Set the operands of the distance between a temporal rigid geometry
  * and a nonempty geometry
- * @return False, with an error, if the body or a part of the geometry is not
- * one the walk reads, see #dist_ref_body() and #dist_geo_parts()
+ * @details The walk finds the distance to a convex body.  A point, a segment
+ * and a convex polygon without holes are convex bodies, thus the distance to
+ * the geometry is the least of the distances to its parts, the members of a
+ * multi-geometry or a geometry collection all read as parts, and any other
+ * polygon read as the segments of its rings and its area, see
+ * #dist_parts_add() and #dist_inside().
+ * @return False, with an error, if the body is not one the walk reads, see
+ * #dist_ref_body(), or if a type the geometry holds is not supported
  */
 static bool
 dist_geo_ops_set(DistOps *ops, const Temporal *temp, const GSERIALIZED *gs,
@@ -1466,9 +1516,18 @@ dist_geo_ops_set(DistOps *ops, const Temporal *temp, const GSERIALIZED *gs,
   ops->level = level;
   if (! dist_ref_body(ops->ref1, &ops->body1))
     return false;
-  ops->parts = dist_geo_parts(gs, &ops->nparts);
-  if (! ops->parts)
+  ops->geom = lwgeom_from_gserialized(gs);
+  /* The number of parts is at most the number of points, and so is the
+   * number of polygons */
+  int maxparts = (int) lwgeom_count_vertices(ops->geom) + 1;
+  ops->parts = palloc(sizeof(DistPart) * maxparts);
+  ops->polys = palloc(sizeof(LWPOLY *) * maxparts);
+  if (! dist_parts_add_all(ops->geom, ops->parts, &ops->nparts, ops->polys,
+      &ops->npolys))
   {
+    dist_parts_free(ops->parts, ops->nparts);
+    pfree(ops->polys);
+    lwgeom_free(ops->geom);
     distrefpoly_free(&ops->body1);
     return false;
   }
@@ -1491,6 +1550,8 @@ dist_geo_ops_free(DistOps *ops)
 {
   pfree(ops->refxy);
   dist_parts_free(ops->parts, ops->nparts);
+  pfree(ops->polys);
+  lwgeom_free(ops->geom);
   distrefpoly_free(&ops->body1);
 }
 
@@ -1710,8 +1771,10 @@ dist_ever_seq(const DistOps *ops, const TSequence *seq1,
  * their nearest approach, the double nearest its exact value
  * (#convex_motion_nad_exact), which #dist_seq_least() gives the distance, the
  * ends of the segment included, and at the distance 0 it is 0 where they
- * meet (#convex_motion_meet_exact).  A segment where the body turns needs the
- * walk, and then #dist_seq() gives the distance of the sequence.
+ * meet (#convex_motion_meet_exact).  A body with a vertex at the start of a
+ * segment in a polygon read by its rings is at the distance 0
+ * (#dist_inside()).  A segment where the body turns needs the walk, and then
+ * #dist_seq() gives the distance of the sequence.
  */
 static int
 dist_ever_seq_geo(const DistOps *ops, const TSequence *seq, double dist)
@@ -1731,6 +1794,10 @@ dist_ever_seq_geo(const DistOps *ops, const TSequence *seq, double dist)
     const Pose *pose2 = DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq,
       i + 1)));
     bool still = (pose1->data[2] == 0.0 && pose2->data[2] == 0.0);
+    /* A body with a vertex in a polygon read by its rings is at the distance
+     * 0, and one that enters it meets a part, see #dist_inside() */
+    if (dist_inside(ops, pose1))
+      return 1;
     DistMotion ma;
     dist_segmotion(&ma, seq, i, true);
     for (int k = 0; k < ops->nparts; k++)
