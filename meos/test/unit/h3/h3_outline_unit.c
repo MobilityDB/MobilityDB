@@ -36,7 +36,8 @@
  * the neighbour's outline within SHARED degrees, must be that vertex with the
  * same doubles, the extra vertices of the edges crossing a face of the
  * icosahedron included; the cell across each edge must be a neighbour whose
- * outline has an edge across to the cell. The extra vertices appear at the
+ * outline has an edge across to the cell and holds both ends of the edge,
+ * which a cell across another edge does not. The extra vertices appear at the
  * odd resolutions only, and the test fails if none is met there, so that the
  * case they are read for is exercised.
  */
@@ -142,7 +143,14 @@ main(int argc, char **argv)
             int i = e % o.count;
             int j = outline_near(&n, o.lon[i], o.lat[i]);
             if (j < 0)
+            {
+              printf("FAIL res %d: %llx is across an edge of %llx whose "
+                "end %d it does not hold\n", res,
+                (unsigned long long) o.across[k],
+                (unsigned long long) cells[c], i);
+              failures++;
               continue;
+            }
             shared++;
             if (! outline_named(cells[c], o.lon[i], o.lat[i]))
               extra++;
