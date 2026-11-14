@@ -8128,6 +8128,8 @@ meos_disc_sweep_union(const POINT2D *centres, const double *radii,
   return result;
 }
 
+static LWGEOM *buffer_arcless_as_polygons(LWGEOM *geom);
+
 /**
  * @brief Return the union of the areal components of a geometry
  * @details The components are dissolved into the surfaces they cover: a pair
@@ -8256,6 +8258,9 @@ meos_areal_union(const LWGEOM *geom)
    * ring that carries no arc into one point array and loses nothing */
   if (! lwgeom_has_arc(result))
   {
+    LWGEOM *taken = buffer_arcless_as_polygons(result);
+    if (taken)
+      return taken;
     LWGEOM *straight = lwgeom_stroke(result, 0);
     if (straight)
     {
@@ -8302,6 +8307,145 @@ buffer_areal_dissolve(const LWGEOM *geom, LWGEOM **dissolved)
     return true;
   *dissolved = meos_areal_union(geom);
   return *dissolved != NULL;
+}
+
+/* A ring of straight members as one point array: the points
+ * lwcompound_linearize joins, its repeated points removed as it removes them,
+ * the array of a single member taken rather than copied; NULL where a member
+ * is not a line */
+static POINTARRAY *
+buffer_ring_points_take(LWGEOM *ring)
+{
+  if (ring->type == LINETYPE)
+  {
+    /* A line ring is copied as it is (lwcurvepoly_linearize) */
+    LWLINE *line = (LWLINE *) ring;
+    POINTARRAY *pa = line->points;
+    line->points = NULL;
+    return pa;
+  }
+  if (ring->type != COMPOUNDTYPE)
+    return NULL;
+  LWCOMPOUND *comp = (LWCOMPOUND *) ring;
+  for (uint32_t i = 0; i < comp->ngeoms; i++)
+    if (comp->geoms[i]->type != LINETYPE)
+      return NULL;
+  POINTARRAY *pa;
+  if (comp->ngeoms == 1)
+  {
+    LWLINE *line = (LWLINE *) comp->geoms[0];
+    pa = line->points;
+    line->points = NULL;
+  }
+  else
+  {
+    pa = ptarray_construct_empty(FLAGS_GET_Z(comp->flags),
+      FLAGS_GET_M(comp->flags), 64);
+    for (uint32_t i = 0; i < comp->ngeoms; i++)
+    {
+      const POINTARRAY *member = ((const LWLINE *) comp->geoms[i])->points;
+      for (uint32_t j = 0; j < member->npoints; j++)
+      {
+        POINT4D p;
+        getPoint4d_p(member, j, &p);
+        ptarray_append_point(pa, &p, LW_TRUE);
+      }
+    }
+  }
+  ptarray_remove_repeated_points_in_place(pa, 0.0, 2);
+  return pa;
+}
+
+/* Whether every ring of a curve polygon is a line or a compound of lines */
+static bool
+buffer_curvepoly_straight(const LWCURVEPOLY *cp)
+{
+  for (uint32_t i = 0; i < cp->nrings; i++)
+  {
+    const LWGEOM *ring = cp->rings[i];
+    if (ring->type == COMPOUNDTYPE)
+    {
+      const LWCOMPOUND *comp = (const LWCOMPOUND *) ring;
+      for (uint32_t j = 0; j < comp->ngeoms; j++)
+        if (comp->geoms[j]->type != LINETYPE)
+          return false;
+    }
+    else if (ring->type != LINETYPE)
+      return false;
+  }
+  return true;
+}
+
+/* A curve polygon of straight rings as a polygon, its rings' arrays taken */
+static LWPOLY *
+buffer_curvepoly_take(LWCURVEPOLY *cp)
+{
+  POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *) * Max(cp->nrings, 1u));
+  for (uint32_t i = 0; i < cp->nrings; i++)
+    rings[i] = buffer_ring_points_take(cp->rings[i]);
+  return lwpoly_construct(cp->srid, NULL, cp->nrings, rings);
+}
+
+/**
+ * @brief Return an answer that carries no arc as the polygons it draws, or
+ * NULL where it is not a surface this reads
+ * @details The answer is #lwgeom_stroke of the curve the boundary walk welds,
+ * built from the same points: a curve polygon becomes a polygon and a multi
+ * surface a multipolygon, every ring the points lwcompound_linearize joins
+ * with its repeated points removed. The point arrays of the curve are moved
+ * rather than copied, which #lwgeom_stroke does twice per ring, and the curve
+ * is freed. Another type is left to #lwgeom_stroke
+ * @param[in] geom Answer carrying no arc, freed where a polygon is returned
+ */
+static LWGEOM *
+buffer_arcless_as_polygons(LWGEOM *geom)
+{
+  if (geom->type == CURVEPOLYTYPE)
+  {
+    if (! buffer_curvepoly_straight((const LWCURVEPOLY *) geom))
+      return NULL;
+    LWPOLY *poly = buffer_curvepoly_take((LWCURVEPOLY *) geom);
+    lwgeom_free(geom);
+    return lwpoly_as_lwgeom(poly);
+  }
+  if (geom->type != MULTISURFACETYPE)
+    return NULL;
+  LWCOLLECTION *ms = (LWCOLLECTION *) geom;
+  /* Every member is read before any array is taken, so a member this does
+   * not read leaves the whole answer to #lwgeom_stroke */
+  for (uint32_t i = 0; i < ms->ngeoms; i++)
+  {
+    const LWGEOM *g = ms->geoms[i];
+    if (g->type != POLYGONTYPE && (g->type != CURVEPOLYTYPE ||
+        ! buffer_curvepoly_straight((const LWCURVEPOLY *) g)))
+      return NULL;
+  }
+  LWGEOM **polys = lwalloc(sizeof(LWGEOM *) * Max(ms->ngeoms, 1u));
+  for (uint32_t i = 0; i < ms->ngeoms; i++)
+  {
+    LWGEOM *g = ms->geoms[i];
+    if (g->type == POLYGONTYPE)
+    {
+      /* A polygon member is copied as it is (lwmsurface_linearize) */
+      LWPOLY *p = (LWPOLY *) g;
+      POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *) *
+        Max(p->nrings, 1u));
+      for (uint32_t r = 0; r < p->nrings; r++)
+      {
+        rings[r] = p->rings[r];
+        p->rings[r] = NULL;
+      }
+      polys[i] = lwpoly_as_lwgeom(lwpoly_construct(ms->srid, NULL,
+        p->nrings, rings));
+      p->nrings = 0;
+    }
+    else
+      polys[i] = lwpoly_as_lwgeom(buffer_curvepoly_take((LWCURVEPOLY *) g));
+  }
+  LWGEOM *result = lwcollection_as_lwgeom(lwcollection_construct(
+    MULTIPOLYGONTYPE, ms->srid, NULL, ms->ngeoms, polys));
+  lwgeom_free(geom);
+  return result;
 }
 
 /**
@@ -8364,6 +8508,9 @@ buffer_areal_operation(const LWGEOM *geom1, const LWGEOM *geom2,
    * of a ring that carries no arc into one point array and loses nothing */
   if (! lwgeom_has_arc(result))
   {
+    LWGEOM *taken = buffer_arcless_as_polygons(result);
+    if (taken)
+      return taken;
     LWGEOM *straight = lwgeom_stroke(result, 0);
     if (straight)
     {
