@@ -698,9 +698,7 @@ them; the sign tails of `geo_funcs.c`; `square_products_wide` and `wide_product`
 `WideDyadic` readers family by family; then `WideDyadic` and `WIDE_LIMBS` leave and the two
 `wide_sign` become one. Products go through `wide_mul64`, so the code builds with MSVC.
 
-The pull request is #3676 (branch `refactor/one-wide-number`, head `983782e477` on master
-`b8be143a79`, after #3675), in nine
-commits: the arena; division and square root; the sign tails; the square products; the arcs, the
+EA5 is merged as #3676 (`eccb946b5d` on master), in nine commits: the arena; division and square root; the sign tails; the square products; the arcs, the
 linear sums, the moving discs and gaps, and the nearest double with the motion distances and the
 degrees, a family each; then `WideDyadic` leaves, `WIDE_LIMBS` leaving with its last reader in
 the square products. Every wide answer agrees with GMP or MPFR on the recorded calls and hard
