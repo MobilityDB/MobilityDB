@@ -118,20 +118,19 @@ h3index_pole_cells(int32_t res, H3Index *north, H3Index *south)
 }
 
 /**
- * @brief Set the X/Y geodetic part of a spatiotemporal box from an H3 cell
- * @param[in] cell H3 cell index (must be a valid, non-zero cell)
- * @param[out] box Spatiotemporal box (caller-initialised; this function
- *   sets xmin/xmax/ymin/ymax, the X/Y/geodetic flags and the SRID)
+ * @brief Return in the last argument the bounds of the box of an H3 cell:
+ * xmin, ymin, xmax, ymax, in degrees
+ * @return False on an error of the H3 library, which it raises
  */
-static void
-th3index_cell_set_stbox(H3Index cell, STBox *box)
+static bool
+th3index_cell_bounds(H3Index cell, double *bounds)
 {
   CellBoundary bnd;
   if (cellToBoundary(cell, &bnd) != E_SUCCESS)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "H3 cellToBoundary failed for cell %" PRIx64, (uint64_t) cell);
-    return;
+    return false;
   }
   double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
   for (int i = 0; i < bnd.numVerts; i++)
@@ -143,14 +142,42 @@ th3index_cell_set_stbox(H3Index cell, STBox *box)
    * boundary vertices do not state */
   H3Index north, south;
   h3index_pole_cells(getResolution(cell), &north, &south);
-  double xmin, ymin, xmax, ymax;
   /* cppcheck-suppress uninitvar */
   dggs_lonlat_boundary_set_box(lons, lats, bnd.numVerts, north == cell,
-    south == cell, &xmin, &ymin, &xmax, &ymax);
-  box->xmin = xmin;
-  box->xmax = xmax;
-  box->ymin = ymin;
-  box->ymax = ymax;
+    south == cell, &bounds[0], &bounds[1], &bounds[2], &bounds[3]);
+  return true;
+}
+
+/** @brief Cell of the last box #th3index_cell_set_stbox computed, per
+ * thread, or 0 when none */
+static MEOS_TLS H3Index MEOS_H3_BOX_CELL = 0;
+/** @brief Bounds of the box of #MEOS_H3_BOX_CELL: xmin, ymin, xmax, ymax */
+static MEOS_TLS double MEOS_H3_BOX[4];
+
+/**
+ * @brief Set the X/Y geodetic part of a spatiotemporal box from an H3 cell
+ * @details The box is a function of the cell alone, so the bounds of the
+ * last cell computed answer again for it: the instants of a temporal value
+ * mostly come in runs on one cell
+ * @param[in] cell H3 cell index (must be a valid, non-zero cell)
+ * @param[out] box Spatiotemporal box (caller-initialised; this function
+ *   sets xmin/xmax/ymin/ymax, the X/Y/geodetic flags and the SRID)
+ */
+static void
+th3index_cell_set_stbox(H3Index cell, STBox *box)
+{
+  if (cell == (H3Index) 0 || cell != MEOS_H3_BOX_CELL)
+  {
+    double bounds[4];
+    if (! th3index_cell_bounds(cell, bounds))
+      return;
+    memcpy(MEOS_H3_BOX, bounds, sizeof(bounds));
+    MEOS_H3_BOX_CELL = cell;
+  }
+  box->xmin = MEOS_H3_BOX[0];
+  box->ymin = MEOS_H3_BOX[1];
+  box->xmax = MEOS_H3_BOX[2];
+  box->ymax = MEOS_H3_BOX[3];
   /* H3 cells are geographic (lat/lng, EPSG:4326); the box SRID must match
    * `spatial_srid(h3index)` so the standalone cell and the temporal value
    * agree under the spatial same-SRID checks (e.g. atValues / atValue). */

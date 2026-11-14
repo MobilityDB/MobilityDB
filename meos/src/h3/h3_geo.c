@@ -293,17 +293,36 @@ h3_boundary_holds(const CellBoundary *bnd, const LatLng *vertex)
 }
 
 /**
+ * @brief Return the direction of a directed edge from its origin, a digit
+ * of the IJK axes of H3 (1 to 6)
+ * @details The H3 index format holds it in the three mode-dependent bits 56
+ * to 58 of a directed edge (https://h3geo.org/docs/library/index/directededge)
+ */
+#define H3_EDGE_DIRECTION(edge) ((int) (((edge) >> 56) & 7))
+
+/** @brief Directions of the edges of a hexagon, in the order of its
+ * vertices up to a rotation: IJ, J, JK, K, IK, I */
+static const int H3_HEX_DIRECTIONS[6] = { 6, 2, 3, 1, 5, 4 };
+/** @brief Directions of the edges of a pentagon, which has no K axis, in the
+ * order of its vertices up to a rotation: IJ, J, JK, IK, I */
+static const int H3_PENT_DIRECTIONS[5] = { 6, 2, 3, 5, 4 };
+
+/**
  * @brief Fill the outline of a cell bent across no face of the icosahedron
  * and return true, or return false for a bent cell
  * @details A cell whose boundary in the library (`cellToBoundary`) holds no
  * more vertices than the cell has edges crosses no face of the icosahedron,
  * so its edges bend at no extra vertex, and that boundary lists the vertices
  * of the vertex index in their order (both measured over every cell of the
- * resolutions 0 to 5). The cell across the edge from the vertex k is then
- * the destination of the directed edge of the cell whose boundary holds the
- * k-th and the next vertex of the boundary, which the library computes
- * alike, as #h3_cell_across_edge reads it, so no vertex of a neighbour is
- * read
+ * resolutions 0 to 5). The edges of the cell take the directions of the IJK
+ * axes in one cyclic order of its vertices, #H3_HEX_DIRECTIONS or
+ * #H3_PENT_DIRECTIONS, from a vertex that depends on the cell: H3 rotates
+ * that order by the orientation of the face of the cell (`vertexRotations`
+ * of its vertex.c). One directed edge, the one whose boundary holds the k-th
+ * and the next vertex of the boundary, places the order, and the cell across
+ * each edge is the destination of the directed edge of its direction, so no
+ * vertex of a neighbour is read and one directed edge is read instead of
+ * every one.
  * @param[in] cell Cell
  * @param[in] verts,n Its vertices in the vertex index and their number
  * @param[out] out Outline, its vertices and the cells across its edges
@@ -317,19 +336,39 @@ h3_cell_outline_straight(H3Index cell, const H3Index *verts, int n,
   if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts != n ||
       originToDirectedEdges(cell, edges) != E_SUCCESS)
     return false;
-  CellBoundary eb[6];
-  H3Index dest[6];
-  int ne = 0;
+  const int *dirs = n == 5 ? H3_PENT_DIRECTIONS : H3_HEX_DIRECTIONS;
+  /* The destination of the directed edge in each direction */
+  H3Index dest[7] = { 0 };
+  int first = -1;
   for (int j = 0; j < 6; j++)
   {
     H3Index ends[2];
     if (edges[j] == (H3Index) 0)
       continue;
-    if (directedEdgeToBoundary(edges[j], &eb[ne]) != E_SUCCESS ||
-        directedEdgeToCells(edges[j], ends) != E_SUCCESS)
+    if (directedEdgeToCells(edges[j], ends) != E_SUCCESS)
       return false;
-    dest[ne++] = ends[1];
+    dest[H3_EDGE_DIRECTION(edges[j])] = ends[1];
+    if (first < 0)
+      first = j;
   }
+  if (first < 0)
+    return false;
+  /* The vertex k0 starting the edge of the first directed edge, and the
+   * place p0 of its direction in the order */
+  CellBoundary eb;
+  if (directedEdgeToBoundary(edges[first], &eb) != E_SUCCESS ||
+      eb.numVerts != 2)
+    return false;
+  int k0 = -1, p0 = -1, d0 = H3_EDGE_DIRECTION(edges[first]);
+  for (int k = 0; k < n && k0 < 0; k++)
+    if (h3_boundary_holds(&eb, &bnd.verts[k]) &&
+        h3_boundary_holds(&eb, &bnd.verts[(k + 1) % n]))
+      k0 = k;
+  for (int i = 0; i < n; i++)
+    if (dirs[i] == d0)
+      p0 = i;
+  if (k0 < 0 || p0 < 0)
+    return false;
   for (int k = 0; k < n; k++)
   {
     LatLng v;
@@ -337,11 +376,7 @@ h3_cell_outline_straight(H3Index cell, const H3Index *verts, int n,
       return false;
     out->lon[k] = radsToDegs(v.lng);
     out->lat[k] = radsToDegs(v.lat);
-    out->across[k] = (H3Index) 0;
-    for (int j = 0; j < ne && ! out->across[k]; j++)
-      if (eb[j].numVerts == 2 && h3_boundary_holds(&eb[j], &bnd.verts[k]) &&
-          h3_boundary_holds(&eb[j], &bnd.verts[(k + 1) % n]))
-        out->across[k] = dest[j];
+    out->across[k] = dest[dirs[(p0 + k - k0 + n) % n]];
     if (! out->across[k])
       return false;
   }
