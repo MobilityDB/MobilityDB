@@ -276,6 +276,7 @@ extern Temporal *dggs_visits_to_temporal(DggsVisit *visits, int count,
  */
 typedef struct
 {
+  uint64 cell;                          /**< Cell */
   int count;                            /**< Number of vertices */
   double lon[DGGS_OUTLINE_MAX];         /**< Longitudes in degrees */
   double lat[DGGS_OUTLINE_MAX];         /**< Latitudes in degrees */
@@ -300,6 +301,11 @@ typedef struct DggsPlanarOps
   bool (*edge_held)(const DggsOutline *o, int k);
   /** Whether a cell holds the vertex k of its outline */
   bool (*vertex_held)(const DggsOutline *o, int k);
+  /** The cell a segment lies in just after its start, where it is another
+   * than the one holding the start, 0 otherwise; NULL for a grid whose
+   * owner of a position always lies on the segment from it */
+  uint64 (*start_cell)(double lon1, double lat1, double lon2, double lat2,
+    int32 resolution);
 } DggsPlanarOps;
 
 /**

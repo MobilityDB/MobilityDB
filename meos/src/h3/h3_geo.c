@@ -378,6 +378,7 @@ h3_cell_outline(H3Index cell, DggsOutline *out)
     return false;
   H3Index north, south;
   h3index_pole_cells(getResolution(cell), &north, &south);
+  out->cell = cell;
   out->pole = cell == north ? 1 : (cell == south ? -1 : 0);
   if (h3_cell_outline_straight(cell, verts, isPentagon(cell) ? 5 : 6, out))
     return true;
@@ -766,7 +767,8 @@ static const DggsPlanarOps h3_planar_ops =
   h3_planar_outline,
   h3_planar_point_cell,
   h3_outline_edge_held,
-  h3_outline_vertex_held
+  h3_outline_vertex_held,
+  NULL
 };
 
 /**
