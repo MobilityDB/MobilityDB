@@ -98,13 +98,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a21c88d77dbcd89fb8f618cb2746a4f76.html#a21c88d77dbcd89fb8f618cb2746a4f76">tcbufferseg_within_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a5419f5d8f3f08a1b8427d150341cbbf5.html#a5419f5d8f3f08a1b8427d150341cbbf5">tcbufferseg_within_exact_ctx</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="tcbuffer_8h_a797f936f70d06efedcd8f7dcaaaf230c.html#a797f936f70d06efedcd8f7dcaaaf230c">tcbuffersegm_contains_bound</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_afb10c9da03f23676d90d5a0f16cf909c.html#afb10c9da03f23676d90d5a0f16cf909c">tcbuffersegm_contains_turnpt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ad42d9ca2be78b4c58c0f1a39546c246f.html#ad42d9ca2be78b4c58c0f1a39546c246f">tcbuffersegm_distance_turnpt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a13635a2ec78c0d5562747c2e7763dbb7.html#a13635a2ec78c0d5562747c2e7763dbb7">tcbuffersegm_dwithin_turnpt</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a1e77393d3bc8833cbe4d2734f5fdbb18.html#a1e77393d3bc8833cbe4d2734f5fdbb18">tcbuffersegm_contains_turnpt</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a6686acaefe6cb4c23bc594bf1571c800.html#a6686acaefe6cb4c23bc594bf1571c800">tcbuffersegm_distance_turnpt</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a42bef1e66a5cc4bbba948dcd0886c912.html#a42bef1e66a5cc4bbba948dcd0886c912">tcbuffersegm_dwithin_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ad43e8fc7429abf2a1a715d8487a06112.html#ad43e8fc7429abf2a1a715d8487a06112">tcbuffersegm_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a737d1fd050a3e1f157099b161487b5c6.html#a737d1fd050a3e1f157099b161487b5c6">tcbuffersegm_intersection_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a5ef972f7397bfc0bd9555029147726a7.html#a5ef972f7397bfc0bd9555029147726a7">tcbuffersegm_tdwithin_at</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ae4f9c9362ab09aad2dbf9ff2ac9c95a2.html#ae4f9c9362ab09aad2dbf9ff2ac9c95a2">tcbuffersegm_tdwithin_turnpt</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ad6269f33ce8b4f96e1150daad75b8a95.html#ad6269f33ce8b4f96e1150daad75b8a95">tcbuffersegm_tdwithin_turnpt</a></td></tr>
         </table>
       </div>
    </td>
@@ -171,7 +171,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a temporal circular buffer segment contains another one at an end of the segment that bounds the period <a class="el" href="meos_2src_2cbuffer_2tcbuffer_8c_a612bc7b58e90a949dbd8aed4867489cc.html#a612bc7b58e90a949dbd8aed4867489cc" title="Return 1 or 2 if a temporal circular buffer segment contains or covers another one during a sub-perio...">tcbuffersegm_contains_turnpt</a> returns. </p>
+<p>Return true if a temporal circular buffer segment contains another one at an end of the segment that bounds the period <a class="el" href="meos_2src_2cbuffer_2tcbuffer_8c_abda642fe5fe1f74547eb3e95c9816d41.html#abda642fe5fe1f74547eb3e95c9816d41" title="Return 1 or 2 if a temporal circular buffer segment contains or covers another one during a sub-perio...">tcbuffersegm_contains_turnpt</a> returns. </p>
 <p >The twin of <a class="el" href="meos_2src_2cbuffer_2tcbuffer_8c_a5ef972f7397bfc0bd9555029147726a7.html#a5ef972f7397bfc0bd9555029147726a7" title="Return true if two temporal circular buffer segments are within a distance at an instant of the segme...">tcbuffersegm_tdwithin_at</a> for an end of the segment. The first disk covers the second one at such an end, and contains it there unless the second one is a point on the boundary of the first one, as <a class="el" href="group__meos__internal__cbuffer__base__rel_ga66a0c3d6435f8215b5051e77fe2054b9.html#ga66a0c3d6435f8215b5051e77fe2054b9" title="Return true if the first circular buffer contains the second one.">cbuffer_contains</a> states it; a second disk of a positive radius is contained, whatever the rounding of the values the end interpolates </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Circular buffers defining the first segment </td></tr>
