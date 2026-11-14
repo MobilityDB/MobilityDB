@@ -523,6 +523,34 @@ ensure_finite(double d)
   return false;
 }
 /**
+ * @brief Ensure that a timestamp is finite
+ * @details `infinity` and `-infinity` have no position on the time line a
+ * span, a set or a temporal value bounds and interpolates over, so MEOS
+ * refuses them where a timestamp enters a value, as #ensure_finite refuses a
+ * number
+ */
+static inline bool
+ensure_finite_timestamptz(TimestampTz t)
+{
+  if (! TIMESTAMP_NOT_FINITE(t))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "The timestamp must be finite");
+  return false;
+}
+/**
+ * @brief Ensure that a date is finite
+ * @details A date span, a date set and a date bound hold finite dates only,
+ * as #ensure_finite_timestamptz states for a timestamp
+ */
+static inline bool
+ensure_finite_date(DateADT d)
+{
+  if (! DATE_NOT_FINITE(d))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "The date must be finite");
+  return false;
+}
+/**
  * @brief Ensure that the result of an operation is finite
  * @details Every MEOS value is finite (#ensure_finite), and an operation on
  * finite operands can leave the doubles, as a sum or a product beyond

@@ -421,12 +421,24 @@ set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype,
   bool order)
 {
   assert(values); assert(count > 0); assert(count <= maxcount);
-  /* Ensure that every float value and every coordinate of a geometry is
-   * finite */
+  /* Ensure that every float, timestamp and date value and every coordinate of
+   * a geometry is finite */
   if (basetype == T_FLOAT8)
   {
     for (int i = 0; i < count; i++)
       if (! ensure_finite(DatumGetFloat8(values[i])))
+        return NULL;
+  }
+  else if (basetype == T_TIMESTAMPTZ)
+  {
+    for (int i = 0; i < count; i++)
+      if (! ensure_finite_timestamptz(DatumGetTimestampTz(values[i])))
+        return NULL;
+  }
+  else if (basetype == T_DATE)
+  {
+    for (int i = 0; i < count; i++)
+      if (! ensure_finite_date(DatumGetDateADT(values[i])))
         return NULL;
   }
   else if (geo_basetype(basetype))

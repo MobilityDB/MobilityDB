@@ -84,6 +84,8 @@ posechain_timestamptz_to_stbox(const PoseChain *pc, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pc, NULL);
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   STBox box;
   if (! posechain_timestamptz_set_stbox(pc, t, &box))
     return NULL;
