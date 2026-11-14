@@ -81,6 +81,18 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   their twins carry above them. Five receipts (strict, cppcheck, valgrind, speed, and the CGAL
   oracle agreeing on 20000 of 20000 rows through `edwithin_tgeo_tgeo` and through the set-set
   join). MERGED as MobilityDB #3701 (`2f89e4e629`).
+- **The base relationships of geometries validate once, their internal twins asserting**, outside
+  the plan, by the same decision of the owner on 2026-11-14 ("The open item from the scan is the
+  internal functions in the box and geometry families that still validate their own arguments ->
+  please fix"): `geom_intersects3d`, `geom_dwithin2d` and `geom_dwithin3d` of
+  `meos/src/geo/postgis_funcs.c` each delegate to a twin `<name>_intl` defined directly above,
+  declared in the internal header `geo/postgis_funcs.h`, which the functions a lifted walk reads
+  at each instant and the placed body of a rigid geometry read; `contains_set_value` asserts its
+  set as `contains_span_value` does. The box predicates `span_contains`, `stbox_contains`,
+  `tbox_contains` and `tpcbox_contains` already assert their validation. MobilityDB #3706, branch
+  `perf/base-rels-intl`, head `8dd5b64290` on master `2f89e4e629`, with the strict, cppcheck,
+  valgrind and speed receipts and CGAL agreeing on 1953 of 1953 rows of circular arcs and 1886 of
+  1886 rows of planar faces.
   It rests on the route validation the owner asked for first ("validate the routes at the ways
   readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
   each route as a planar line in the SRID of the network when the ways readers read it.
