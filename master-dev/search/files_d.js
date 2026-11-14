@@ -4,7 +4,7 @@ var searchData=
   ['meos_2eh_1',['meos.h',['../meos_8h.html',1,'']]],
   ['meos_5farray_2ec_2',['meos_array.c',['../meos__array_8c.html',1,'']]],
   ['meos_5fcatalog_2ec_3',['meos_catalog.c',['../meos_2src_2temporal_2meos__catalog_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2temporal_2meos__catalog_8c.html',1,'(Global Namespace)']]],
-  ['meos_5fcatalog_2eh_4',['meos_catalog.h',['../meos_2include_2temporal_2meos__catalog_8h.html',1,'(Global Namespace)'],['../mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h.html',1,'(Global Namespace)']]],
+  ['meos_5fcatalog_2eh_4',['meos_catalog.h',['../mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h.html',1,'(Global Namespace)'],['../meos_2include_2temporal_2meos__catalog_8h.html',1,'(Global Namespace)']]],
   ['meos_5fcbuffer_2eh_5',['meos_cbuffer.h',['../meos__cbuffer_8h.html',1,'']]],
   ['meos_5fcellindex_2eh_6',['meos_cellindex.h',['../meos__cellindex_8h.html',1,'']]],
   ['meos_5ferror_2ec_7',['meos_error.c',['../meos__error_8c.html',1,'']]],
@@ -22,11 +22,12 @@ var searchData=
   ['meos_5fquadbin_2eh_19',['meos_quadbin.h',['../meos__quadbin_8h.html',1,'']]],
   ['meos_5fraster_2eh_20',['meos_raster.h',['../meos__raster_8h.html',1,'']]],
   ['meos_5frgeo_2eh_21',['meos_rgeo.h',['../meos__rgeo_8h.html',1,'']]],
-  ['meos_5fs2cell_2eh_22',['meos_s2cell.h',['../meos__s2cell_8h.html',1,'']]],
-  ['meos_5fschema_5fhook_2eh_23',['meos_schema_hook.h',['../meos__schema__hook_8h.html',1,'']]],
-  ['meos_5ftls_2eh_24',['meos_tls.h',['../meos__tls_8h.html',1,'']]],
-  ['meos_5ftransform_2eh_25',['meos_transform.h',['../meos__transform_8h.html',1,'']]],
-  ['merge_5ftest_2ec_26',['merge_test.c',['../merge__test_8c.html',1,'']]],
-  ['merge_5fvalidity_5ftest_2ec_27',['merge_validity_test.c',['../merge__validity__test_8c.html',1,'']]],
-  ['minus_5flast_5finstant_5ftest_2ec_28',['minus_last_instant_test.c',['../minus__last__instant__test_8c.html',1,'']]]
+  ['meos_5froundeven_2ec_22',['meos_roundeven.c',['../meos__roundeven_8c.html',1,'']]],
+  ['meos_5fs2cell_2eh_23',['meos_s2cell.h',['../meos__s2cell_8h.html',1,'']]],
+  ['meos_5fschema_5fhook_2eh_24',['meos_schema_hook.h',['../meos__schema__hook_8h.html',1,'']]],
+  ['meos_5ftls_2eh_25',['meos_tls.h',['../meos__tls_8h.html',1,'']]],
+  ['meos_5ftransform_2eh_26',['meos_transform.h',['../meos__transform_8h.html',1,'']]],
+  ['merge_5ftest_2ec_27',['merge_test.c',['../merge__test_8c.html',1,'']]],
+  ['merge_5fvalidity_5ftest_2ec_28',['merge_validity_test.c',['../merge__validity__test_8c.html',1,'']]],
+  ['minus_5flast_5finstant_5ftest_2ec_29',['minus_last_instant_test.c',['../minus__last__instant__test_8c.html',1,'']]]
 ];
