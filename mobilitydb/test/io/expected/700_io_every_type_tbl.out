@@ -17792,6 +17792,48 @@ FROM t, (VALUES (true), (false)) bb(b);
  f | [8a2a1072b59ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a1072b59ffff@Tue Jan 02 00:00:00 2001 PST) |         1
 (2 rows)
 
+SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+                    astext                    
+----------------------------------------------
+ 832d5afffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(th3index(h3index '8009fffffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+                    astext                    
+----------------------------------------------
+ 8009fffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(th3index(h3index '8001fffffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+                                                                     astext                                                                     
+------------------------------------------------------------------------------------------------------------------------------------------------
+ {[832d5afffffffff@Mon Jan 01 00:00:00 2001 PST, 832d5afffffffff@Tue Jan 02 00:00:00 2001 PST), [832d5afffffffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(minusStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ {[8310a5fffffffff@Tue Jan 02 00:00:00 2001 PST, 8310a5fffffffff@Wed Jan 03 00:00:00 2001 PST)}
+(1 row)
+
 SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromHexWKB(asHexWKB(s)) <> s;
  count 
 -------
@@ -23855,6 +23897,36 @@ SELECT asEWKT(round(tposechainFromGeoPose(
  SRID=4326;PoseChain(GeodPose(POINT Z (-122.3 47.7 11),1,0,0,0),Pose(POINT Z (2 0 0),1,0,0,0))@Tue Apr 27 22:36:10.083 2021 PDT
 (1 row)
 
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((-1,-1),(1,1))'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ PoseChain(Pose(POINT(0 0),0),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((4,-1),(6,1))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((4,-1),(6,1))'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ PoseChain(Pose(POINT(0 0),0),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01, PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]', stbox 'STBOX X((-1,-1),(1,1))'));
+                                                                               astext                                                                                
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[PoseChain(Pose(POINT(-1 0),0),Pose(POINT(0 20),0))@Mon Jan 01 09:36:00 2001 PST, PoseChain(Pose(POINT(1 0),0),Pose(POINT(0 20),0))@Mon Jan 01 14:24:00 2001 PST]}
+(1 row)
+
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01, PoseChain(Pose(Point(0 5), 0), Pose(Point(10 0), 0))@2001-01-02]', stbox 'STBOX X((9,-1),(11,1))'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[PoseChain(Pose(POINT(0 0),0),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST, PoseChain(Pose(POINT(0 5),0),Pose(POINT(10 0),0))@Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
 SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'));
                            astext                           
 ------------------------------------------------------------
@@ -24685,6 +24757,69 @@ SELECT asText(tquadbinGridDistance(
                               astext                              
 ------------------------------------------------------------------
  [3@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+                    astext                     
+-----------------------------------------------
+ 4817ffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,-10),(-5,0))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 1, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,-10),(-5,0))'));
+                    astext                     
+-----------------------------------------------
+ 481bffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,10),(0,20))'));
+                    astext                     
+-----------------------------------------------
+ 4817ffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,10),(0,20))', false));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02, 4817ffffffffffff@2001-01-03]',
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+                                                                      astext                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ {[4817ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4817ffffffffffff@Tue Jan 02 00:00:00 2001 PST), [4817ffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02, 4817ffffffffffff@2001-01-03]',
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+                                              astext                                              
+--------------------------------------------------------------------------------------------------
+ {[4813ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4813ffffffffffff@Wed Jan 03 00:00:00 2001 PST)}
+(1 row)
+
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-03]',
+  stbox 'STBOX T([2001-01-02, 2001-01-04])'));
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ [4817ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4813ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 WITH temp(inst) AS (
@@ -28608,6 +28743,18 @@ FROM t;
  tc_geo_rg | tc_rg_geo | tc_rg_rg | tcv_geo_rg | tcv_rg_geo | tcv_rg_rg | tdj_geo_rg | tdj_rg_geo | tdj_rg_rg | ti_geo_rg | ti_rg_geo | ti_rg_rg | ttc_geo_rg | ttc_rg_geo | ttc_rg_rg | tdw_geo_rg | tdw_rg_geo | tdw_rg_rg 
 -----------+-----------+----------+------------+------------+-----------+------------+------------+-----------+-----------+-----------+----------+------------+------------+-----------+------------+------------+-----------
  t         | t         | t        | t          | t          | t         | t          | t          | t         | t         | t         | t        | t          | t          | t         | t          | t          | t
+(1 row)
+
+SELECT tIntersects(trgeometry(asText(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01')), geometry 'Point(0.1 0.1 0.1)');
+          tintersects           
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tIntersects(trgeometryFromBinary(asBinary(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01')), geometry 'Point(0.1 0.1 0.1)');
+          tintersects           
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT s2cell '47c3c444c0000000';
