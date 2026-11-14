@@ -61,6 +61,7 @@
 #include "geo/tgeo.h"
 #include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/geo_ival.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"
 #include "rgeo/trgeo_distwalk.h"
@@ -1666,31 +1667,46 @@ tdistance_trgeometry_trgeometry_intl(const Temporal *temp1, const Temporal *temp
 
 /**
  * @brief Return true if two bodies are farther apart than @p dist during the
- * whole segment @p seg
- * @details Every point of a body lies within the distance @p rmax of its
- * rotation center, see #distmotion_place(), so the bodies are at least the
- * distance of their centers minus the two @p rmax apart.  The centers move
- * linearly in the segment, and their distance is smallest at the projection
- * of the origin on their relative motion, clamped to the segment.  The bound
- * is grown by #MEOS_EPSILON relative to the magnitude of the values it is
- * computed from, far above the rounding of the computation, so that no
- * segment in which the walk finds a distance at or below @p dist is skipped.
+ * whole segment @p seg, decided exactly where it answers true
+ * @details Every point of a body lies within the distance @p rmax_up of its
+ * rotation center at any pose, see #distrefpoly_radius_up(), so the bodies
+ * are at least the distance of their centers less the two radii apart.  The
+ * offset between the centers is W(t) = w0 + t w1 for t in [0, 1], whose
+ * square C + 2 B t + A t^2, with A = |w1|^2, B = w0.w1 and C = |w0|^2, is
+ * convex.  Its least value over [0, 1] is at least C where B >= 0, the value
+ * at 1 where its slope there is at most 0, else the least over every t,
+ * C - B^2 / A, or C + 2 B where A may be 0.  Each is read in intervals
+ * (#Ival) on the input doubles of the motions: a center is an input double,
+ * and a displacement the difference of two rounded to nearest, which the
+ * interval one step wider holds.  The answer is true only where the lower end
+ * of that least square exceeds the upper end of the square of @p dist plus
+ * the two radii, so it is the exact comparison; where the intervals cannot
+ * tell, it is false and the walk decides.
  */
 static bool
 dist_segm_apart(const DistSegm *seg, const DistRefPoly *ra,
   const DistRefPoly *rb, double dist)
 {
-  double vv = seg->wx1 * seg->wx1 + seg->wy1 * seg->wy1;
-  double t = 0.0;
-  if (vv > 0.0)
-    t = fmin(fmax(-(seg->wx0 * seg->wx1 + seg->wy0 * seg->wy1) / vv, 0.0),
-      1.0);
-  double nx = seg->wx0 + t * seg->wx1, ny = seg->wy0 + t * seg->wy1;
-  double near = sqrt(nx * nx + ny * ny);
-  double bound = dist + ra->rmax + rb->rmax;
-  double scale = fabs(seg->ma.cx) + fabs(seg->ma.cy) + fabs(seg->mb.cx) +
-    fabs(seg->mb.cy) + sqrt(vv) + bound;
-  return near > bound + MEOS_EPSILON * scale;
+  const DistMotion *ma = &seg->ma, *mb = &seg->mb;
+  Ival w0x = ival_sub(ival(mb->cx), ival(ma->cx));
+  Ival w0y = ival_sub(ival(mb->cy), ival(ma->cy));
+  Ival w1x = ival_sub(ival_out(mb->dx, mb->dx), ival_out(ma->dx, ma->dx));
+  Ival w1y = ival_sub(ival_out(mb->dy, mb->dy), ival_out(ma->dy, ma->dy));
+  Ival a = ival_dot(w1x, w1y, w1x, w1y);
+  Ival b = ival_dot(w0x, w0y, w1x, w1y);
+  Ival c = ival_dot(w0x, w0y, w0x, w0y);
+  double least;
+  if (b.lo >= 0.0)
+    least = c.lo;
+  else if (ival_add(a, b).hi <= 0.0)
+    least = ival_add(ival_add(c, ival_add(b, b)), a).lo;
+  else if (a.lo > 0.0)
+    least = ival_sub(c, ival_div(ival_mul(b, b), a)).lo;
+  else
+    least = ival_add(c, ival_add(b, b)).lo;
+  Ival bound = ival_add(ival_add(ival(dist), ival(ra->rmax_up)),
+    ival(rb->rmax_up));
+  return least > ival_mul(bound, bound).hi;
 }
 
 /**

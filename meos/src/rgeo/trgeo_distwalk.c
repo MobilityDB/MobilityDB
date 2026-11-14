@@ -44,6 +44,7 @@
 /* MEOS */
 #include "temporal/temporal.h"
 #include "geo/geo_funcs.h"
+#include "geo/geo_ival.h"
 
 
 /*****************************************************************************
@@ -1452,6 +1453,32 @@ refring_canonicalize(double *px, double *py, int n)
 }
 
 /**
+ * @brief Return a double no less than the exact largest distance of the
+ * @p n input vertices to (@p ox, @p oy)
+ * @details The bound of the distance #distrefvert_set() rounds to nearest as
+ * @p rho, read in intervals (#Ival) on the input doubles: each difference,
+ * square, sum and square root holds the exact value, so the upper end of the
+ * largest is no less than it.  The vertices the walk keeps are these less the
+ * center, rounded, and a body placed at any pose keeps every point of its
+ * input within this distance of its rotation center.
+ */
+static double
+distrefpoly_radius_up(const double *px, const double *py, int n, double ox,
+  double oy)
+{
+  double result = 0.0;
+  for (int i = 0; i < n; i++)
+  {
+    Ival x = ival_sub(ival(px[i]), ival(ox));
+    Ival y = ival_sub(ival(py[i]), ival(oy));
+    double r = ival_sqrt(ival_dot(x, y, x, y)).hi;
+    if (r > result)
+      result = r;
+  }
+  return result;
+}
+
+/**
  * @brief Set a body from a polygon whose vertices are relative to
  * (@p ox, @p oy)
  * @details A polygon with holes is refused: the walk uses the outer ring
@@ -1464,7 +1491,7 @@ distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
 {
   assert(rp);
   rp->nvert = rp->nedge = 0;
-  rp->rmax = 0.0;
+  rp->rmax = rp->rmax_up = 0.0;
   rp->verts = NULL;
   rp->edges = NULL;
   if (! poly || poly->nrings != 1 || poly->rings[0]->npoints < 4)
@@ -1478,6 +1505,9 @@ distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
     px[i] = p->x;
     py[i] = p->y;
   }
+  /* The bound reads every input vertex: one the cleaning removes lies on a
+   * segment between two that stay, no farther from the center */
+  double rmax_up = distrefpoly_radius_up(px, py, nraw, ox, oy);
   /* The ring is cleaned on its input vertices, which decide whether it is
    * convex.  The subtraction of a nonzero offset rounds, so the walk's ring
    * is cleaned again on the doubles it uses: two vertices can become one and
@@ -1498,6 +1528,7 @@ distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
     return false;
   }
   rp->nvert = rp->nedge = n;
+  rp->rmax_up = rmax_up;
   rp->verts = palloc(sizeof(DistRefVert) * n);
   rp->edges = palloc(sizeof(DistRefEdge) * n);
   for (int i = 0; i < n; i++)
@@ -1584,6 +1615,9 @@ distrefpoly_set_segment(DistRefPoly *rp, double x1, double y1, double x2,
   distrefedge_set(&rp->edges[0], -hx, -hy, hx, hy);
   distrefedge_set(&rp->edges[1], hx, hy, -hx, -hy);
   rp->rmax = rp->verts[0].rho;
+  /* The two input ends, from the rounded middle */
+  const double ex[2] = {x1, x2}, ey[2] = {y1, y2};
+  rp->rmax_up = distrefpoly_radius_up(ex, ey, 2, *cx, *cy);
 }
 
 /**
@@ -1595,7 +1629,7 @@ distrefpoly_set_point(DistRefPoly *rp)
   assert(rp);
   rp->nvert = 1;
   rp->nedge = 0;
-  rp->rmax = 0.0;
+  rp->rmax = rp->rmax_up = 0.0;
   rp->verts = palloc(sizeof(DistRefVert));
   rp->edges = NULL;
   distrefvert_set(&rp->verts[0], 0.0, 0.0);
@@ -1615,7 +1649,7 @@ distrefpoly_free(DistRefPoly *rp)
   rp->verts = NULL;
   rp->edges = NULL;
   rp->nvert = rp->nedge = 0;
-  rp->rmax = 0.0;
+  rp->rmax = rp->rmax_up = 0.0;
 }
 
 /*****************************************************************************/

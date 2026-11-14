@@ -112,6 +112,9 @@ typedef struct
   int nvert;             /**< Number of vertices */
   int nedge;             /**< Number of edges: nvert, or 0 for a point */
   double rmax;           /**< Largest distance of a vertex to the center */
+  double rmax_up;        /**< A double no less than the exact largest
+                              distance of an input vertex to the center, see
+                              #dist_segm_apart() */
   DistRefVert *verts;    /**< Vertices */
   DistRefEdge *edges;    /**< Edges */
 } DistRefPoly;
