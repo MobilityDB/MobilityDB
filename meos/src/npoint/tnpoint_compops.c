@@ -441,7 +441,7 @@ eaoverlaps_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   if (tpoint1 && tpoint2)
   {
     double band = tnpoint_meeting_band(bound1, bound2);
-    result = ea_dwithin_tgeo_tgeo(tpoint1, tpoint2, band, false, ever);
+    result = ea_dwithin_tgeo_tgeo_intl(tpoint1, tpoint2, band, false, ever);
   }
   if (tpoint1)
     pfree(tpoint1);
