@@ -3233,17 +3233,15 @@ static bool geom_point_intersects3d_faces(const GSERIALIZED *point,
  * (#geom_point_intersects3d_faces). A polygon not lying in a plane and an arc
  * read the distance of liblwgeom at 0
  * @param[in] gs1,gs2 Geometries
- * @note PostGIS function: @p ST_3DIntersects(PG_FUNCTION_ARGS)
+ * @pre The arguments are valid, as #geom_intersects3d ensures
  */
 bool
-geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+geom_intersects3d_intl(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  /* Ensure the validity of the arguments */
-  /* The Z dimension is not verified: PostGIS function
-   * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
-   * the geometries has no Z, regarding the missing value as any value */
-  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
-      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+  assert(ensure_valid_geo_geo(gs1, gs2));
+  assert(ensure_not_geodetic_geo(gs1));
+  /* An empty geometry intersects nothing */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
 
   /* Two geometries with Z of points, segments and faces lying exactly in a
@@ -3283,6 +3281,26 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   /* empty geometries cases should be right handled since return from
      underlying functions should be DBL_MAX which causes false as answer */
   return (mindist == 0.0);
+}
+
+/**
+ * @ingroup meos_internal_geo_base_rel
+ * @brief Return true if the 3D geometries intersect
+ * @details The answer is that of #geom_intersects3d_intl once the arguments
+ * are valid
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS function: @p ST_3DIntersects(PG_FUNCTION_ARGS)
+ */
+bool
+geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  /* The Z dimension is not verified: PostGIS function
+   * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
+   * the geometries has no Z, regarding the missing value as any value */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
+    return false;
+  return geom_intersects3d_intl(gs1, gs2);
 }
 
 /**
@@ -3713,19 +3731,17 @@ geom_dwithin_curves(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
  * collection, edge by edge (#geom_dwithin_curves)
  * @param[in] gs1,gs2 Geometries
  * @param[in] dist Distance
- * @note PostGIS function: @p LWGEOM_dwithin(PG_FUNCTION_ARGS)
+ * @pre The arguments are valid, as #geom_dwithin2d ensures
  */
 bool
-geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
+geom_dwithin2d_intl(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  double dist)
 {
-  /* Ensure the validity of the arguments */
-  /* The Z dimension is not verified: this is the function selected for mixed
-   * 2D/3D arguments, which are answered on their common dimensions */
-  if (! ensure_finite(dist))
-    return false;
-  if (! ensure_valid_geo_geo(gs1, gs2) ||
-      gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  assert(ensure_finite(dist));
+  assert(ensure_valid_geo_geo(gs1, gs2));
+  assert(ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8));
+  /* An empty geometry is within no distance of anything */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
 
   /* Two points are answered from their coordinates without deserializing
@@ -3758,6 +3774,27 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
   if (made1) lwgeom_free(made1);
   if (made2) lwgeom_free(made2);
   return result;
+}
+
+/**
+ * @ingroup meos_internal_geo_base_rel
+ * @brief Return true if two geometries are within a distance
+ * @details The answer is that of #geom_dwithin2d_intl once the arguments are
+ * valid
+ * @param[in] gs1,gs2 Geometries
+ * @param[in] dist Distance
+ * @note PostGIS function: @p LWGEOM_dwithin(PG_FUNCTION_ARGS)
+ */
+bool
+geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
+{
+  /* Ensure the validity of the arguments */
+  /* The Z dimension is not verified: this is the function selected for mixed
+   * 2D/3D arguments, which are answered on their common dimensions */
+  if (! ensure_finite(dist) || ! ensure_valid_geo_geo(gs1, gs2) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return false;
+  return geom_dwithin2d_intl(gs1, gs2, dist);
 }
 
 /**
@@ -4850,26 +4887,24 @@ geom_dwithin3d_faces(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * points, segments, triangles, TINs, and polygons and polyhedral surfaces
  * whose faces lie exactly in a plane (#geom_dwithin3d_faces). Two geometries
  * of which one has no Z are answered on their common dimensions
- * (#geom_dwithin2d)
+ * (#geom_dwithin2d_intl)
  * @param[in] gs1,gs2 Geometries
  * @param[in] dist Distance
- * @note PostGIS function: @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
+ * @pre The arguments are valid, as #geom_dwithin3d ensures
  */
 bool
-geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
+geom_dwithin3d_intl(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  double dist)
 {
-  /* Ensure the validity of the arguments */
-  /* The Z dimension is not verified: a geometry with no Z regards the missing
-   * value as any value, so the two are answered in 2D */
-  if (! ensure_finite(dist))
-    return false;
-  if (! ensure_valid_geo_geo(gs1, gs2) ||
-      gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  assert(ensure_finite(dist));
+  assert(ensure_valid_geo_geo(gs1, gs2));
+  assert(ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8));
+  /* An empty geometry is within no distance of anything */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
 
   if (! FLAGS_GET_Z(gs1->gflags) || ! FLAGS_GET_Z(gs2->gflags))
-    return geom_dwithin2d(gs1, gs2, dist);
+    return geom_dwithin2d_intl(gs1, gs2, dist);
 
   /* Two geometries of points and segments are answered exactly, two points
    * from their coordinates without deserializing them */
@@ -4897,6 +4932,27 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
   result = (dist >= mindist);
   lwgeom_free(geom1); lwgeom_free(geom2);
   return result;
+}
+
+/**
+ * @ingroup meos_internal_geo_base_rel
+ * @brief Return true if two geometries are within a distance
+ * @details The answer is that of #geom_dwithin3d_intl once the arguments are
+ * valid
+ * @param[in] gs1,gs2 Geometries
+ * @param[in] dist Distance
+ * @note PostGIS function: @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
+ */
+bool
+geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
+{
+  /* Ensure the validity of the arguments */
+  /* The Z dimension is not verified: a geometry with no Z regards the missing
+   * value as any value, so the two are answered in 2D */
+  if (! ensure_finite(dist) || ! ensure_valid_geo_geo(gs1, gs2) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return false;
+  return geom_dwithin3d_intl(gs1, gs2, dist);
 }
 
 /**

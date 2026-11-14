@@ -185,12 +185,12 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
  * @brief Return true if a set contains a value
  * @param[in] s Set
  * @param[in] value Value
+ * @pre The set is valid, as its callers ensure, alike #contains_span_value
  */
 bool
 contains_set_value(const Set *s, Datum value)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, false);
+  assert(s);
   /* Bound test */
   if (! contains_bound_set_value(s, value))
     return false;
