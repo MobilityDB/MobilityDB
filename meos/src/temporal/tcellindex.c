@@ -3219,4 +3219,583 @@ tcellindex_ever_in_set(const Temporal *temp, const Set *cells)
   }
 }
 
+/*****************************************************************************
+ * The planar walk on the straight-edged outlines — shared by every DGGS whose
+ * planar cell is its outline joined by straight edges in longitude and
+ * latitude
+ *****************************************************************************/
+
+/**
+ * @brief Return the offset that reads a longitude in the chart of another
+ * @details The offset, 0 or a multiple of 360, puts the longitude less than
+ * 180 degrees from the reference, so that an edge of an outline crossing the
+ * antimeridian is read along its path. An edge of a cell spans far less than
+ * 180 degrees of longitude, so the rounded difference decides the chart; the
+ * offset is never added to the longitude, whose shifted value would round
+ */
+double
+dggs_lon_offset(double ref, double lon)
+{
+  if (lon - ref > 180.0)
+    return -360.0;
+  if (ref - lon > 180.0)
+    return 360.0;
+  return 0.0;
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the line of the
+ * edge of an outline from the vertex k to the vertex k + 1, as the offset
+ * from the start of the segment, truncated
+ * @details The edge is read in the chart of the start of the segment, each
+ * vertex through an exact offset of 360 (#dggs_lon_offset), and the crossing
+ * is dated by #segment_edge_cross_offset, the truncation of its exact
+ * parameter. Whether the segment meets the edge itself, between its
+ * vertices, is a question of its own.
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the first vertex of the edge
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment, in degrees
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] whole True when the segment lies on the line exactly at the
+ * microsecond returned
+ */
+int64
+dggs_outline_edge_offset(const DggsOutline *o, int k, double x0, double y0,
+  double x1, double y1, int64 D, bool *whole)
+{
+  int k1 = (k + 1) % o->count;
+  double ax = o->lon[k], bx = o->lon[k1];
+  double oa = dggs_lon_offset(x0, ax);
+  /* Both offsets are multiples of 360 of small magnitude, so their sum is
+   * exact */
+  double ob = oa + dggs_lon_offset(ax, bx);
+  return segment_edge_cross_offset(x0, y0, x1, y1, D, ax, o->lat[k], oa, bx,
+    o->lat[k1], ob, whole);
+}
+
+/**
+ * @brief Return in the last arguments the chart in which an outline is read
+ * against a longitude
+ * @details The offset of each vertex from the first along the ring, chained
+ * by #dggs_lon_offset, so that no edge of the ring spans the antimeridian, and
+ * the offset of the copy of the ring read against the longitude: the copy
+ * whose middle lies within 180 degrees of it, or around a pole the copy
+ * whose 360 degrees, from the first vertex in the sense of the ring, hold
+ * it. The estimate of the copy is rounded, its correction exact
+ * @param[in] o Outline of the cell
+ * @param[in] x Longitude, in degrees
+ * @param[out] xo Offset of each vertex from the first
+ * @param[out] s Offset of the copy
+ * @param[out] wrap Around a pole, the offset of the ring after one turn,
+ * 360 or -360, and 0 for any other cell
+ */
+static void
+dggs_outline_chart(const DggsOutline *o, double x, double *xo, double *s,
+  double *wrap)
+{
+  int n = o->count;
+  xo[0] = 0.0;
+  for (int k = 1; k < n; k++)
+    xo[k] = xo[k - 1] + dggs_lon_offset(o->lon[k - 1], o->lon[k]);
+  double x0 = o->lon[0];
+  *wrap = 0.0;
+  if (o->pole)
+  {
+    *wrap = xo[n - 1] + dggs_lon_offset(o->lon[n - 1], x0);
+    double c = 360.0 * floor((x - x0) / 360.0);
+    if (*wrap > 0.0)
+    {
+      while (offset_x_cmp(x0, c, x) > 0)
+        c -= 360.0;
+      while (offset_x_cmp(x0, c + 360.0, x) <= 0)
+        c += 360.0;
+    }
+    else
+    {
+      c += 360.0;
+      while (offset_x_cmp(x0, c, x) < 0)
+        c += 360.0;
+      while (offset_x_cmp(x0, c - 360.0, x) >= 0)
+        c -= 360.0;
+    }
+    *s = c;
+    return;
+  }
+  double lo = x0, hi = x0;
+  for (int k = 1; k < n; k++)
+  {
+    double v = o->lon[k] + xo[k];
+    lo = fmin(lo, v);
+    hi = fmax(hi, v);
+  }
+  double mid = (lo + hi) / 2.0;
+  double c = 360.0 * round((x - mid) / 360.0);
+  while (mid + c - x > 180.0)
+    c -= 360.0;
+  while (x - (mid + c) > 180.0)
+    c += 360.0;
+  *s = c;
+  return;
+}
+
+/**
+ * @brief Return true if a cell holds a position of the plane of longitude
+ * and latitude
+ * @details A cell is its outline joined by straight edges in longitude and
+ * latitude, the ring read along its path across the antimeridian through
+ * exact offsets of 360 chained from its first vertex, and the cell around a
+ * pole is the region between its ring and the pole. A position strictly
+ * inside or outside is read by #point_in_ring_offset_exact on the copy of
+ * the ring #dggs_outline_chart reads against it; a position on the ring
+ * belongs to the cell when it holds the vertex or the edge the position lies
+ * on, by the rule of its grid (`vertex_held`, `edge_held`). A position on a
+ * side of the region around a pole that is no edge of the cell, the meridian
+ * where the ring is closed or the pole, lies inside it. Every sign is exact
+ * on the doubles of the outline, which neighbours share, so exactly one cell
+ * holds each position.
+ * @param[in] ops Planar walk of the grid
+ * @param[in] o Outline of the cell
+ * @param[in] x,y Longitude and latitude of the position, in degrees
+ */
+bool
+dggs_outline_holds_point(const DggsPlanarOps *ops, const DggsOutline *o,
+  double x, double y)
+{
+  if (! isfinite(x) || ! isfinite(y))
+    return false;
+  int n = o->count;
+  double xo[DGGS_OUTLINE_MAX], s, wrap;
+  dggs_outline_chart(o, x, xo, &s, &wrap);
+  double x0 = o->lon[0];
+  /* The closed polygon: the ring, and around a pole the vertex closing it
+   * 360 degrees on, then the pole at both ends */
+  double rx[DGGS_OUTLINE_MAX + 3] = { 0 },
+    ry[DGGS_OUTLINE_MAX + 3] = { 0 }, ro[DGGS_OUTLINE_MAX + 3] = { 0 };
+  int m = 0;
+  for (int k = 0; k < n; k++, m++)
+  {
+    rx[m] = o->lon[k];
+    ry[m] = o->lat[k];
+    ro[m] = xo[k] + s;
+  }
+  if (o->pole)
+  {
+    double py = o->pole > 0 ? 90.0 : -90.0;
+    rx[m] = x0; ry[m] = o->lat[0]; ro[m++] = wrap + s;
+    rx[m] = x0; ry[m] = py; ro[m++] = wrap + s;
+    rx[m] = x0; ry[m] = py; ro[m++] = s;
+  }
+  int loc = point_in_ring_offset_exact(rx, ry, ro, m, x, y);
+  if (loc >= 0)
+    return loc == 1;
+  /* On the polygon: the vertex or the edge of the ring the position lies
+   * on decides */
+  for (int k = 0; k < n; k++)
+  {
+    int j = o->pole ? k + 1 : (k + 1) % n;
+    int sa = offset_x_cmp(rx[k], ro[k], x), sb = offset_x_cmp(rx[j], ro[j], x);
+    if (sa == 0 && ry[k] == y)
+      return ops->vertex_held(o, k);
+    if (sb == 0 && ry[j] == y)
+      return ops->vertex_held(o, (k + 1) % n);
+    if (sa * sb <= 0 && fmin(ry[k], ry[j]) <= y && y <= fmax(ry[k], ry[j]) &&
+        cross_product_sign_offset(rx[k], ry[k], rx[j], ry[j], rx[k], ry[k], x,
+          y, ro[j] - ro[k], - ro[k]) == 0)
+      return ops->edge_held(o, k);
+  }
+  /* The meridian closing the ring around a pole, or the pole */
+  return o->pole != 0;
+}
+
+/**
+ * @brief Outline of a cell read in the chart of a segment
+ * @details Vertex `i` of the chart, for any integer `i`, is the vertex `i mod
+ * n` of the outline, its longitude carrying the exact offset `xo[i mod n] +
+ * s`, and around a pole `wrap` more for each turn of the ring, so that the
+ * edge from each vertex to the next runs along the ring in the chart of the
+ * segment, the ring around a pole repeated every 360 degrees. No offset is
+ * added to a longitude, where it would round.
+ */
+typedef struct
+{
+  const DggsPlanarOps *ops;     /**< Planar walk of the grid */
+  uint64 cell;                  /**< Cell */
+  DggsOutline o;                /**< Its outline */
+  double xo[DGGS_OUTLINE_MAX];  /**< Offset of each vertex from the first
+                                     along the ring */
+  double s;                     /**< Offset of the copy */
+  double wrap;                  /**< Around a pole, the offset of the ring
+                                     after one turn */
+} DggsChart;
+
+/**
+ * @brief A crossing of the planar walk: the line of an edge of an outline
+ * in the chart of the segment, which the segment crosses where it leaves a
+ * cell
+ */
+typedef struct
+{
+  double ax, ay, oa;      /**< First vertex of the edge and its offset */
+  double bx, by, ob;      /**< Second vertex of the edge and its offset */
+  int index;              /**< Chart index of the edge crossed, or of the
+                               vertex passed */
+  bool vertex;            /**< True when the segment leaves at a vertex */
+  int cout;               /**< At a vertex, the side of the edge leaving it
+                               the segment heads to */
+  bool along_out;         /**< At a vertex, the segment runs along the edge
+                               leaving it */
+  bool back_in;           /**< At a vertex, the segment runs back along the
+                               edge reaching it */
+} DggsCrossing;
+
+/**
+ * @brief Return in the last arguments the vertex `i` of a chart and the
+ * offset of its longitude
+ */
+static void
+dggs_chart_vertex(const DggsChart *c, int i, double *x, double *y, double *off)
+{
+  int n = c->o.count;
+  int q = (i >= 0) ? i / n : - ((n - 1 - i) / n);
+  int k = i - q * n;
+  *x = c->o.lon[k];
+  *y = c->o.lat[k];
+  *off = c->xo[k] + c->s + (c->o.pole ? q * c->wrap : 0.0);
+  return;
+}
+
+/**
+ * @brief Return in the last argument the chart of a cell whose copy holds a
+ * longitude, as #dggs_outline_holds_point reads it, false when the grid
+ * reads no outline of the cell
+ */
+static bool
+dggs_chart_at_lon(const DggsPlanarOps *ops, uint64 cell, double x,
+  DggsChart *c)
+{
+  const DggsOutline *o = ops->outline(cell);
+  if (! o)
+    return false;
+  c->ops = ops;
+  c->cell = cell;
+  c->o = *o;
+  dggs_outline_chart(o, x, c->xo, &c->s, &c->wrap);
+  return true;
+}
+
+/**
+ * @brief Return in the next to last argument the chart of a cell that puts
+ * one of its vertices at a given offset, and in the last one the index of
+ * that vertex, false when the cell has no such vertex
+ * @details The walk steps from a cell to the next through a vertex both
+ * outlines state with the same doubles, so the next chart continues the
+ * first along the segment
+ */
+static bool
+dggs_chart_at_vertex(const DggsPlanarOps *ops, uint64 cell, double x,
+  double y, double off, DggsChart *c, int *vertex)
+{
+  if (! dggs_chart_at_lon(ops, cell, x, c))
+    return false;
+  for (int k = 0; k < c->o.count; k++)
+    if (c->o.lon[k] == x && c->o.lat[k] == y)
+    {
+      c->s = off - c->xo[k];
+      *vertex = k;
+      return true;
+    }
+  return false;
+}
+
+/**
+ * @brief Return true if the outline of a chart turns left, or goes
+ * straight, at every vertex, by the exact sign of each turn
+ */
+static bool
+dggs_chart_convex(const DggsChart *c)
+{
+  if (c->o.pole)
+    return false;
+  for (int k = 0; k < c->o.count; k++)
+  {
+    double px, py, po, x, y, o, nx, ny, no;
+    dggs_chart_vertex(c, k - 1, &px, &py, &po);
+    dggs_chart_vertex(c, k, &x, &y, &o);
+    dggs_chart_vertex(c, k + 1, &nx, &ny, &no);
+    if (cross_product_sign_offset(px, py, x, y, x, y, nx, ny, o - po,
+        no - o) < 0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the sign of the dot product of the vector from A to B with
+ * the vector of a segment parallel to it, from the signs of their components
+ */
+static int
+dggs_parallel_dot_sign(double ax, double ay, double oa, double bx, double by,
+  double ob, int dxs, int dys)
+{
+  if (dxs != 0)
+    return offset_x_cmp(bx, ob - oa, ax) * dxs;
+  return ((by > ay) - (by < ay)) * dys;
+}
+
+/**
+ * @brief Return true if a segment passing through the vertex `j` of a chart
+ * lies in the cell just after it, and fill the fields of the crossing that
+ * name the cell it heads into otherwise
+ * @details Just after the vertex the segment lies in the cell where it lies
+ * left of both edges meeting there at a convex corner, or of either at a
+ * reflex one, since the cell lies left of its edges; running along an edge,
+ * it lies in the cell when the cell holds the edge (`edge_held`).
+ * Every sign is exact on the doubles of the outline and the offsets of the
+ * chart (#cross_product_sign_offset)
+ */
+static bool
+dggs_chart_vertex_inside(const DggsChart *c, int j, double x0, double y0,
+  double x1, double y1, DggsCrossing *cr)
+{
+  double px, py, po, vx, vy, vo, nx, ny, no;
+  dggs_chart_vertex(c, j - 1, &px, &py, &po);
+  dggs_chart_vertex(c, j, &vx, &vy, &vo);
+  dggs_chart_vertex(c, j + 1, &nx, &ny, &no);
+  int n = c->o.count;
+  int k = ((j % n) + n) % n;
+  int cin = cross_product_sign_offset(px, py, vx, vy, x0, y0, x1, y1,
+    vo - po, 0.0);
+  int cout = cross_product_sign_offset(vx, vy, nx, ny, x0, y0, x1, y1,
+    no - vo, 0.0);
+  int turn = cross_product_sign_offset(px, py, vx, vy, vx, vy, nx, ny,
+    vo - po, no - vo);
+  int dxs = (x1 > x0) - (x1 < x0), dys = (y1 > y0) - (y1 < y0);
+  cr->cout = cout;
+  cr->along_out = cout == 0 &&
+    dggs_parallel_dot_sign(vx, vy, vo, nx, ny, no, dxs, dys) > 0;
+  cr->back_in = cin == 0 &&
+    dggs_parallel_dot_sign(px, py, po, vx, vy, vo, dxs, dys) < 0;
+  if (cr->along_out)
+    return c->ops->edge_held(&c->o, k);
+  if (cr->back_in)
+    return c->ops->edge_held(&c->o, (k + n - 1) % n);
+  return (turn >= 0) ? (cin > 0 && cout > 0) : (cin > 0 || cout > 0);
+}
+
+/**
+ * @brief Return true and in the last argument where a planar segment leaves
+ * the cell of a chart, at or after a crossing, false when it ends in the
+ * cell
+ * @details The segment meets an edge of the outline where the two vertices of
+ * the edge lie on either side of its line or on it. Where it crosses the
+ * edge between its vertices, it leaves when it heads out, to the right of the
+ * edge; where it meets a vertex, it leaves when it does not lie in the cell
+ * just after (#dggs_chart_vertex_inside). A meeting at the start of the
+ * segment, or at the crossing the walk entered the cell by, counts, so a
+ * segment passing a vertex reaches the third cell meeting there at the same
+ * parameter. The first meeting where it leaves is the exit, the meetings
+ * ordered by #segment_edge_cross_cmp; a meeting at the end of the segment is
+ * none, the end belonging to the cell of its own position. Around a pole the
+ * ring is read in the copies the segment reaches.
+ * @param[in] c Chart of the cell
+ * @param[in] x0,y0,x1,y1 The segment
+ * @param[in] t Crossing the walk entered the cell by, or NULL at the start
+ * @param[out] exit The exit
+ */
+static bool
+dggs_chart_exit(const DggsChart *c, double x0, double y0, double x1, double y1,
+  const DggsCrossing *t, DggsCrossing *exit)
+{
+  int n = c->o.count, ilo = 0, ihi = n;
+  if (c->o.pole)
+  {
+    int nq = (int) ceil(fabs(x1 - x0) / 360.0) + 2;
+    ilo = - nq * n;
+    ihi = (nq + 1) * n;
+  }
+  bool found = false;
+  for (int i = ilo; i < ihi; i++)
+  {
+    DggsCrossing cr;
+    memset(&cr, 0, sizeof(DggsCrossing));
+    dggs_chart_vertex(c, i, &cr.ax, &cr.ay, &cr.oa);
+    dggs_chart_vertex(c, i + 1, &cr.bx, &cr.by, &cr.ob);
+    /* The sides of the line of the segment the vertices of the edge lie on */
+    int sa = cross_product_sign_offset(x0, y0, x1, y1, x0, y0, cr.ax, cr.ay,
+      0.0, cr.oa);
+    int sb = cross_product_sign_offset(x0, y0, x1, y1, x0, y0, cr.bx, cr.by,
+      0.0, cr.ob);
+    if ((sa == 0 && sb == 0) || sa * sb > 0)
+      continue;
+    /* The sign of f(P0) - f(P1), f the side of the edge, which is not 0
+     * since the vertices lie apart from the line of the segment; a crossing
+     * at or after the end of the segment is none */
+    int den = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, x1, y1,
+      x0, y0, cr.ob - cr.oa, 0.0);
+    int f1 = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, cr.ax,
+      cr.ay, x1, y1, cr.ob - cr.oa, - cr.oa);
+    if (f1 * den >= 0)
+      continue;
+    /* At or after the crossing the walk stands at */
+    int cmp;
+    if (! t)
+      cmp = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, cr.ax,
+        cr.ay, x0, y0, cr.ob - cr.oa, - cr.oa) * den;
+    else
+      cmp = segment_edge_cross_cmp(x0, y0, x1, y1, cr.ax, cr.ay, cr.oa,
+        cr.bx, cr.by, cr.ob, t->ax, t->ay, t->oa, t->bx, t->by, t->ob);
+    if (cmp < 0)
+      continue;
+    if (sa != 0 && sb != 0)
+    {
+      /* Across the edge between its vertices, heading out */
+      if (den <= 0)
+        continue;
+      cr.index = i;
+      cr.vertex = false;
+    }
+    else
+    {
+      cr.index = (sa == 0) ? i : i + 1;
+      cr.vertex = true;
+      if (dggs_chart_vertex_inside(c, cr.index, x0, y0, x1, y1, &cr))
+        continue;
+    }
+    if (! found || segment_edge_cross_cmp(x0, y0, x1, y1, cr.ax, cr.ay,
+        cr.oa, cr.bx, cr.by, cr.ob, exit->ax, exit->ay, exit->oa, exit->bx,
+        exit->by, exit->ob) < 0)
+      *exit = cr;
+    found = true;
+  }
+  return found;
+}
+
+/**
+ * @brief Return the parameter at which a segment crosses the line of a
+ * crossing, in doubles
+ */
+static double
+dggs_crossing_line_param(const DggsCrossing *cr, double x0, double y0,
+  double x1, double y1)
+{
+  double ux = (cr->bx - cr->ax) + (cr->ob - cr->oa), uy = cr->by - cr->ay;
+  double f0 = ux * (y0 - cr->ay) - uy * ((x0 - cr->ax) - cr->oa);
+  double f1 = ux * (y1 - cr->ay) - uy * ((x1 - cr->ax) - cr->oa);
+  double t = (f0 == f1) ? 0.0 : f0 / (f0 - f1);
+  return fmin(1.0, fmax(0.0, t));
+}
+
+/** @brief Number of cells a planar walk steps through at one parameter
+ * before it gives up, at most three cells meeting at a vertex */
+#define DGGS_WALK_SAME_PARAM 6
+
+/**
+ * @brief Fill `cells` with every cell a planar segment crosses, and `enter`
+ * with the segment parameter at which it reaches each
+ * @details The walk of a planar segment on the straight-edged outlines of a
+ * grid: the segment starts in the cell of its first position
+ * (`point_cell`), leaves each cell where #dggs_chart_exit finds,
+ * and enters the cell across the edge it leaves by, or at a vertex the cell
+ * across the edge on whose side it heads, and from there the third cell
+ * meeting at the vertex at the same parameter where it lies in neither
+ * first. A segment ending in the convex cell it starts in never leaves it.
+ * Each entry states the edge crossed and which cell holds the crossing
+ * position: across an edge between its vertices, the one of the two holding
+ * the edge (`edge_held`), at a vertex, the cells holding the vertex
+ * (`vertex_held`), each by the rule of the grid.
+ * @param[in] ops Planar walk of the grid
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] resolution Resolution of the cells
+ * @param[out] cells,enter,cross Arrays of at least `maxout` entries, the last
+ * one possibly NULL
+ * @param[in] maxout Capacity of the arrays, at least 1
+ * @return Number of cells written, or 0 when the first lookup fails
+ */
+int
+dggs_segment_cells_planar(const DggsPlanarOps *ops, double lon1, double lat1,
+  double lon2, double lat2, int32 resolution, uint64 *cells, double *enter,
+  DggsEdgeCross *cross, int maxout)
+{
+  uint64 cur = ops->point_cell(lon1, lat1, resolution);
+  if (cur == (uint64) 0)
+    return 0;
+  cells[0] = cur; enter[0] = 0.0;
+  int n = 1;
+  if (lon1 == lon2 && lat1 == lat2)
+    return n;
+  DggsChart chart;
+  if (! dggs_chart_at_lon(ops, cur, lon1, &chart))
+    return n;
+  if (dggs_chart_convex(&chart) &&
+      ops->point_cell(lon2, lat2, resolution) == cur)
+    return n;
+
+  DggsCrossing t, exit;
+  memset(&t, 0, sizeof(DggsCrossing));
+  bool started = false;
+  uint64 prev = (uint64) 0;
+  int same = 0;
+  while (n < maxout &&
+      dggs_chart_exit(&chart, lon1, lat1, lon2, lat2, started ? &t : NULL,
+        &exit))
+  {
+    int nv = chart.o.count;
+    int k = ((exit.index % nv) + nv) % nv;
+    double vx, vy, vo;
+    dggs_chart_vertex(&chart, exit.index, &vx, &vy, &vo);
+    bool at_t = started && segment_edge_cross_cmp(lon1, lat1, lon2, lat2,
+      exit.ax, exit.ay, exit.oa, exit.bx, exit.by, exit.ob, t.ax, t.ay, t.oa,
+      t.bx, t.by, t.ob) == 0;
+    same = at_t ? same + 1 : 0;
+    if (same > DGGS_WALK_SAME_PARAM)
+      break;
+    uint64 next;
+    if (! exit.vertex)
+      next = chart.o.across[k];
+    else
+    {
+      /* The cell across the edge leaving the vertex or the edge reaching
+       * it, never the one the walk left at this parameter */
+      int kp = (k + nv - 1) % nv;
+      uint64 first = chart.o.across[k], second = chart.o.across[kp];
+      if (exit.back_in || (! exit.along_out && exit.cout >= 0))
+      {
+        first = chart.o.across[kp];
+        second = chart.o.across[k];
+      }
+      next = (at_t && first == prev) ? second : first;
+    }
+    DggsChart nc;
+    int vk;
+    if (next == (uint64) 0 ||
+        ! dggs_chart_at_vertex(ops, next, vx, vy, vo, &nc, &vk))
+      break;
+    cells[n] = next;
+    enter[n] = dggs_crossing_line_param(&exit, lon1, lat1, lon2, lat2);
+    if (cross)
+    {
+      DggsEdgeCross *x = &cross[n];
+      x->ax = exit.ax; x->ay = exit.ay; x->oa = exit.oa;
+      x->bx = exit.bx; x->by = exit.by; x->ob = exit.ob;
+      if (exit.vertex)
+      {
+        x->held_left = ops->vertex_held(&chart.o, k);
+        x->held_entered = ops->vertex_held(&nc.o, vk);
+      }
+      else
+      {
+        x->held_left = ops->edge_held(&chart.o, k);
+        x->held_entered = ! x->held_left;
+      }
+    }
+    n++;
+    prev = cur;
+    cur = next;
+    chart = nc;
+    t = exit;
+    started = true;
+  }
+  return n;
+}
+
 /*****************************************************************************/

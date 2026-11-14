@@ -75,7 +75,7 @@ static const WalkRow rows[] =
 
 static H3Index cells[MAXCELLS];
 static double enter[MAXCELLS];
-static H3EdgeCross crossings[MAXCELLS];
+static DggsEdgeCross crossings[MAXCELLS];
 
 int
 main(void)
@@ -100,13 +100,13 @@ main(void)
           zero = false;
         else if (k == 0)
         {
-          const H3EdgeCross *c = &crossings[1];
+          const DggsEdgeCross *c = &crossings[1];
           zero = cross_product_sign_offset(c->ax, c->ay, c->bx, c->by, c->ax,
             c->ay, x0, y0, c->ob - c->oa, - c->oa) == 0;
         }
         else
         {
-          const H3EdgeCross *c = &crossings[k], *d = &crossings[k + 1];
+          const DggsEdgeCross *c = &crossings[k], *d = &crossings[k + 1];
           zero = segment_edge_cross_cmp(x0, y0, x1, y1, c->ax, c->ay, c->oa,
             c->bx, c->by, c->ob, d->ax, d->ay, d->oa, d->bx, d->by,
             d->ob) == 0;
