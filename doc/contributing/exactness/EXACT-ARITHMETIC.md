@@ -576,6 +576,18 @@ each question's own first tier ahead of it, which costs as the polynomial ladder
 tiers decide; a tie costs about 1.5 times the polynomial ladder's, and is exact for every finite
 double.
 
+**The build, in three steps.** First, the expansions kept compressed, open as #3700 on master
+`14466e19ae` (its receipts strict CI, cppcheck, valgrind, smoke, the oracle on the curve polygons
+and points at 2^0, 2^-300 and 2^300 and the buffer of 172 natural areas, and speed, 25 of the 26
+cells at parity as on EA5); `arcseg_arena_room` takes a constant arena and answers whether the
+room fits, each caller taking the room from its own arena. Second, the callers of the polynomial
+ladder move onto the expression ladder, each with its own first tier ahead, a differential first,
+family by family; on master `23f24644e0` they are 51 calls of `polynomial_sign_exact` and one of
+`polynomial_sign_wide` in 26 functions, `cert_seg_arc_interior_far` (10),
+`segment_interior_distance` (5), `cert_x_minus_ksqrt` (4), `cert_arc_far_exact` and
+`arr_arc_centre_y_side` (3 each) the most, and `polynomial_sign_exact`, its stack and its wide
+form leave with the last of them. Third, the ladder kept takes a name of the arithmetic.
+
 ### EA2. Tier 2 for the signs of degree six
 
 `plane_point_offset_sign` and `segment_interior_offset_sign` read their ties on the ladder EA1
