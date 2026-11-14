@@ -74,6 +74,8 @@ stbox_index_leaf_consistent(const STBox *key, const STBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
       retval = overlaps_stbox_stbox(key, query);
       break;
     case RTContainsStrategyNumber:
@@ -163,6 +165,8 @@ stbox_gist_inner_consistent(const STBox *key, const STBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
       retval = overlaps_stbox_stbox(key, query);
       break;

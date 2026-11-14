@@ -60,6 +60,8 @@ tpcbox_index_leaf_consistent(const TPCBox *key, const TPCBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
       return overlaps_tpcbox_tpcbox(key, query);
     case RTContainsStrategyNumber:
       return contains_tpcbox_tpcbox(key, query);
@@ -121,6 +123,8 @@ tpcbox_gist_inner_consistent(const TPCBox *key, const TPCBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
       return overlaps_tpcbox_tpcbox(key, query);
     case RTContainsStrategyNumber:

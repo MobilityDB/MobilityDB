@@ -153,11 +153,13 @@ CREATE FUNCTION eOverlaps(stbox, tgeography)
 CREATE OPERATOR ?&& (
   LEFTARG = stbox, RIGHTARG = tgeometry,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = stbox, RIGHTARG = tgeography,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -173,11 +175,13 @@ CREATE FUNCTION aOverlaps(stbox, tgeography)
 CREATE OPERATOR %&& (
   LEFTARG = stbox, RIGHTARG = tgeometry,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = stbox, RIGHTARG = tgeography,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -287,11 +291,13 @@ CREATE FUNCTION eOverlaps(tgeography, stbox)
 CREATE OPERATOR ?&& (
   LEFTARG = tgeometry, RIGHTARG = stbox,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tgeography, RIGHTARG = stbox,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -307,11 +313,13 @@ CREATE FUNCTION aOverlaps(tgeography, stbox)
 CREATE OPERATOR %&& (
   LEFTARG = tgeometry, RIGHTARG = stbox,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tgeography, RIGHTARG = stbox,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -421,11 +429,13 @@ CREATE FUNCTION eOverlaps(tgeography, tgeography)
 CREATE OPERATOR ?&& (
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tgeography, RIGHTARG = tgeography,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -441,11 +451,13 @@ CREATE FUNCTION aOverlaps(tgeography, tgeography)
 CREATE OPERATOR %&& (
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tgeography, RIGHTARG = tgeography,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 

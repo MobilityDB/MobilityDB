@@ -108,6 +108,10 @@ CREATE OPERATOR CLASS tquadbin_quadtree_ops
   OPERATOR  31    #&> (tquadbin, tstzspan),
   OPERATOR  31    #&> (tquadbin, stbox),
   OPERATOR  31    #&> (tquadbin, tquadbin),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tquadbin, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tquadbin, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -182,6 +186,10 @@ CREATE OPERATOR CLASS tquadbin_kdtree_ops
   OPERATOR  31    #&> (tquadbin, tstzspan),
   OPERATOR  31    #&> (tquadbin, stbox),
   OPERATOR  31    #&> (tquadbin, tquadbin),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tquadbin, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tquadbin, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
@@ -269,7 +277,11 @@ ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, tquadbin),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, tquadbin);
+  OPERATOR  31    #&> (stbox, tquadbin),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tquadbin),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tquadbin);
 
 ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly left
@@ -305,6 +317,10 @@ ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, tquadbin),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, tquadbin);
+  OPERATOR  31    #&> (stbox, tquadbin),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tquadbin),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tquadbin);
 
 /******************************************************************************/

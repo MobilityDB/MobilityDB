@@ -155,6 +155,12 @@ CREATE OPERATOR CLASS tpcbox_rtree_ops
   OPERATOR  35    /&> (tpcbox, tpcbox),
   OPERATOR  35    /&> (tpcbox, tpcpoint),
   OPERATOR  35    /&> (tpcbox, tpcpatch),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcbox, tpcpoint),
+  OPERATOR  36    ?&& (tpcbox, tpcpatch),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcbox, tpcpoint),
+  OPERATOR  37    %&& (tpcbox, tpcpatch),
   -- functions
   FUNCTION  1  tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
   FUNCTION  2  tpcbox_gist_union(internal, internal),
@@ -256,6 +262,10 @@ CREATE OPERATOR CLASS tpcpoint_rtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tpcpoint, tpcbox),
   OPERATOR  35    /&> (tpcpoint, tpcpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcpoint, tpcbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcpoint, tpcbox),
   -- functions
   FUNCTION  1 tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
   FUNCTION  2 tpcbox_gist_union(internal, internal),
@@ -354,6 +364,10 @@ CREATE OPERATOR CLASS tpcpatch_rtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tpcpatch, tpcbox),
   OPERATOR  35    /&> (tpcpatch, tpcpatch),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcpatch, tpcbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcpatch, tpcbox),
   -- functions
   FUNCTION  1 tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
   FUNCTION  2 tpcbox_gist_union(internal, internal),
