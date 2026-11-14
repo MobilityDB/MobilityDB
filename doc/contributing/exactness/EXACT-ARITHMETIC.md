@@ -751,6 +751,21 @@ the ED24 cell "refuting at" 5.89 to 6.21: it joins that branch as one widened pr
 so only a call whose third vector is inexact takes the new path, and is not a second exact
 branch of the same sign.
 
+The witness of `incircle_sign` (2026-11-14, master `e723878d0b`): its sign is homogeneous of
+degree 4 in the coordinate differences, so scaling four points by a power of two leaves it
+unchanged, and every scale outside 2^-250 to 2^250 answered wrongly, a point inside or outside a
+circle reading 0. Two stages caused it. The exact stage forms each product as one of four
+components of the differences, which overflows past 2^256 and underflows below 2^-268 in their
+lowest bits. The first stage, the determinant in doubles against Shewchuk's bound, assumes no
+product underflows: four points in general position near 2^-268 give a determinant of -2^-1074
+against a bound of 0. The exact stage reads the sign on `TowerWide` (`incircle_sign_wide`)
+outside that range, as `cross_product_sign_exact` reads `cross_product_sign_wide`, and the first
+stage decides only where every nonzero difference lies from 2^-240 to 2^250. Judged by GMP on
+every scale from 2^-1070 to 2^1020 and on 198 447 configurations of mixed magnitudes, 599 919
+rows, none is wrong; CGAL's circular-arc judge agrees with the head on 38 584 pairs of a curve
+polygon and a point at 2^0, 2^-300 and 2^300. It is open as #3694, test first, its receipts
+strict CI, cppcheck, valgrind, smoke, the oracle and speed.
+
 ### EA8. The double nearest a transcendental value
 
 The one search (EA6) rounds a value its exact signs can compare, a polynomial in doubles. The cell
