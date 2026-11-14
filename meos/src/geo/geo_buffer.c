@@ -3337,6 +3337,11 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
   MeosArray *result)
 {
   assert(pieces); assert(intersections); assert(result);
+  /* Each piece yields itself, and each intersection splits about two pieces
+   * once: the room is taken in one step (#edge_array_reserve) rather than
+   * doubled from the array's first sixteen slots, each doubling copying every
+   * piece split before */
+  edge_array_reserve(result, pieces->count + 2 * (size_t) intersections->count);
   /* Every piece is split at the same intersections, so they are indexed once
    * for all of them rather than scanned once per piece */
   BufferNodeIndex ix;
