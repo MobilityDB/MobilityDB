@@ -30,9 +30,15 @@
 # These programs test internal functions of meos/src/s2cell, so CMake builds
 # them against the internal headers; their names end in _unit.c, so that CI
 # does not take them for tests of the public API.  Run them with
-#   ctest -R s2_owner
-# It reads every cell up to the level it takes, 4 here.
+#   ctest -R 's2_owner|s2_corner'
+# s2_owner_unit reads every cell up to the level it takes, 4 here;
+# s2_corner_unit reads the rows of an exact judge.
 
 add_executable(s2_owner_unit s2_owner_unit.c)
 target_link_libraries(s2_owner_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME s2_owner_unit COMMAND s2_owner_unit)
+
+add_executable(s2_corner_unit s2_corner_unit.c)
+target_include_directories(s2_corner_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(s2_corner_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME s2_corner_unit COMMAND s2_corner_unit)
