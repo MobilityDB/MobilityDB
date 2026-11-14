@@ -72,6 +72,7 @@
 #include <meos_raster.h>
 #include <meos_s2cell.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 
 /** Positions of the dense sequence the truth is read from */
 #define DENSE_POSITIONS   2048
@@ -391,11 +392,16 @@ tquadbin_check(double lon0, double lat0, double lon1, double lat1,
  * is read from the temporal point itself and its cell through the static
  * adapter, and the segment spans an hour. A held cell the sampled positions do
  * not reach is one the path crosses between two of them, so it shares an edge
- * with a cell they reach.
+ * with a cell they reach. A segment over a pole whose ends lie on two opposite
+ * meridians runs in the plane of those meridians, so each of its positions
+ * lies exactly on one of them; where the meridians are edges of the cells, the
+ * position read in doubles lies a few units in the last place off the edge
+ * and on either side of it, so with @p on_meridians each position is placed on
+ * the meridian it lies on, at the latitude read, before its cell is read.
  */
 static void
 ts2cell_check(double lon0, double lat0, double lon1, double lat1,
-  int32 level, long *wrong, long *offpath, long *none)
+  int32 level, bool on_meridians, long *wrong, long *offpath, long *none)
 {
   char wkt[256];
   snprintf(wkt, sizeof(wkt), "[Point(%.9f %.9f)@2020-01-01 00:00:00, "
@@ -426,6 +432,17 @@ ts2cell_check(double lon0, double lat0, double lon1, double lat1,
       (*wrong)++;
       free(pos);
       continue;
+    }
+    if (on_meridians)
+    {
+      /* The meridian nearer the position read, by its longitude */
+      const POINT2D *q = GSERIALIZED_POINT2D_P(pos);
+      double d0 = fabs(remainder(q->x - lon0, 360.0));
+      double d1 = fabs(remainder(q->x - lon1, 360.0));
+      GSERIALIZED *exact = geogpoint_make2d(4326, d0 <= d1 ? lon0 : lon1,
+        q->y);
+      free(pos);
+      pos = exact;
     }
     S2CellId cell = geo_to_s2cell_cell(pos, level);
     free(pos);
@@ -651,7 +668,8 @@ int main(void)
    * where three cube faces meet, arcs of tens of degrees at a coarse level,
    * which pass from one face to the next, a path along the meridian 0 or 90,
    * which cube face 2 maps to a line between cells at every level, and a path
-   * along one of those meridians over the pole and down the opposite one */
+   * along one of those meridians over the pole and down the opposite one,
+   * each of its positions read on the meridian it lies on */
   {
     const char *sname[7] = { "antimeridian at 0N", "antimeridian at 60N",
       "beside the pole", "cube corner", "long arcs", "along a cell edge",
@@ -720,7 +738,8 @@ int main(void)
           if (lat1 < -85.0)
             lat1 = -85.0;
         }
-        ts2cell_check(lon0, lat0, lon1, lat1, level, &wrong, &offpath, &none);
+        ts2cell_check(lon0, lat0, lon1, lat1, level, k == 6, &wrong, &offpath,
+          &none);
       }
       printf("%-20s ts2cell positions in another cell %ld, off the path %ld\n",
         sname[k], wrong, offpath);

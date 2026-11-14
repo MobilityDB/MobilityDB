@@ -53,10 +53,9 @@ SELECT startValue(ts2CellToToken(ts2cell '[47c3c3@2001-01-01]'))
 -------------------------------------------------------------------------------
 -- Conversion from a temporal point: ts2cell(tgeogpoint, integer)
 --
--- The cell-entry timestamps are interpolated from floating-point crossings
--- whose low digits vary across build configurations, so the cases below state
--- the build-stable invariants and print whole values only where every
--- timestamp is exact.
+-- A crossing is dated by the truncation of its exact fraction at constant
+-- angular speed, the same microsecond on every build; the cases below state
+-- the invariants of the cover and print whole values where they are short.
 -------------------------------------------------------------------------------
 
 -- An instant yields the cell holding its position
