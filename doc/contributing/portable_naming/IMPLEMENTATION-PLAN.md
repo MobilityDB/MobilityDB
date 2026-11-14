@@ -70,6 +70,16 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `tsequence_make_exp1` replaces with its conditions as asserts. Head `9c9f69b93c` on master
   `cb53e29b35` holds its seven receipts (strict, Windows, cppcheck, valgrind, smoke, speed, and
   the CGAL oracle 1111 of 1111). MERGED as MobilityDB #3503 (`3bb9f756b5`).
+- **Each ever/always spatial relationship validates once, its internal twin asserting**, outside
+  the plan, as the owner decided on 2026-11-14 ("a fully 100% complaint North Star as the
+  siblings"): the nineteen validating `ea_*` functions of `meos/src/geo/tgeo_spatialrels.c` and
+  `meos/src/cbuffer/tcbuffer_spatialrels.c` each delegate to a twin `<name>_intl` defined directly
+  above, which asserts the same validation, and every caller that already validated reads the
+  twin, the set-set join included. Branch `perf/ea-spatialrels-intl` rewrites `5777307bcc` there,
+  the calls of `ea_dwithin_tgeo_geo` in `ea_disjoint_tgeo_geo` and `ea_intersects_tgeo_geo`, those
+  of `ea_dwithin_tgeo_tgeo` in `setset_ea_exact`, and the signatures of the two functions, which
+  their twins carry above them. Head `bd061f86ac` on master `8ed17f5485` holds the strict,
+  cppcheck and speed receipts.
   It rests on the route validation the owner asked for first ("validate the routes at the ways
   readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
   each route as a planar line in the SRID of the network when the ways readers read it.
