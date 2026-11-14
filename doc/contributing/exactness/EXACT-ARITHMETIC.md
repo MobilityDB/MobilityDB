@@ -675,6 +675,29 @@ where the ladder leaves its doubles. What is left of the cell (2.55M against 1.6
 arithmetic but the walk itself, which a fixed route for a point, segment or triangle against a
 triangle answers in #3484.
 
+Measured (2026-11-14, master `ab15a473fa`, `claude-kits` `ea5-kit`, branch
+`meas/ea5-wide-differential`): every reader of the three wide numbers answered both ways, on the
+recorded calls of the speed cells, the ED24 witnesses and the S2 corners, and on ties and limbs up
+to 1024, agrees with `TowerWide` (247 063 operations shadowed, 0 differences; the hard cases right
+against GMP and MPFR). No reader loses a decision, so none is left out. `TowerWide` on master
+allocates each value and is slower than `WideDyadic`; on an arena it costs a fifth to a half:
+`plane_point_offset_sign` 16.2K to 3.3K instructions, `segment_interior_offset_sign` 23.4K to
+11.6K, `point_segment_side_sign_inputs` 30.4K to 11.3K, `square_products_sign` 4.8K to 3.2K;
+division by words and Newton's square root take `fix_div_shift` from 61.4K to 1.15K and `fix_isqrt`
+from 127.8K to 4.1K, an enclosed corner from 1.1-1.4M to 0.25-0.30M. On master `ab15a473fa` the
+"refuting at" cell reaches tier 3 in 62 calls, 0.75M of 3.23M (2.70M on `TowerWide`), and an S2
+cover at level 16 never reaches `fix_*`, the `ddb_vector_*` prefilter answering all 1164 corners
+at about 12K each (143.6M both ways); the two figures above are from builds without them. The degrees still pay
+`fix_*` where the prefilter cannot tell: the S2 corner rows of the unit tests go from 404M to 153M
+and the geodetic dating test from 863M to 472M. The case for EA5 is therefore the one wide number
+and those readers, not the cover.
+
+The pull request, in order: `TowerCtx` takes arena blocks, subtraction, comparison and a product
+by one limb; division by words and Newton's square root, `fix_isqrt` and `fix_div_shift` reading
+them; the sign tails of `geo_funcs.c`; `square_products_wide` and `wide_product`; the other
+`WideDyadic` readers family by family; then `WideDyadic` and `WIDE_LIMBS` leave and the two
+`wide_sign` become one. Products go through `wide_mul64`, so the code builds with MSVC.
+
 ### EA6. One search for the nearest double
 
 `nearest_double_exact` stands for the search: `wide_dyadic_nearest_root`, `ddb_nearest_root` and
