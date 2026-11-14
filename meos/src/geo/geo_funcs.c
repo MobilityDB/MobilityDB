@@ -2188,131 +2188,777 @@ square_products_exact(const double *left, const double *right,
   return true;
 }
 
-/** Number of 64-bit limbs of #square_products_wide: they span the bits from
- * the lowest a product of two doubles times 1/4 carries past the sum of
- * fifteen products of the largest doubles times 2 */
-#define WIDE_LIMBS 66
-/** Exponent of the weight of the lowest bit of #square_products_wide, twice
- * the exponent of the lowest bit of a double, less 2 for a multiplier of 1/4 */
-#define WIDE_LOWEST_BIT (2 * -1074 - 2)
-
 /**
- * @brief Add a 64-bit integer times 2^pos to, or subtract it from, a two's
- * complement integer of #WIDE_LIMBS limbs
+ * @brief Set the product of two 64-bit integers as two 64-bit halves, from
+ * the four products of their 32-bit halves, each held in 64 bits
  */
-static void
-wide_add(uint64_t *acc, uint64_t v, int pos, bool negate)
+static inline void
+wide_mul64(uint64 a, uint64 b, uint64 *hi, uint64 *lo)
 {
-  int limb = pos / 64, shift = pos % 64;
-  uint64_t lo = v << shift;
-  uint64_t hi = shift ? v >> (64 - shift) : 0;
-  uint64_t carry = 0;
-  for (int i = limb; i < WIDE_LIMBS; i++)
-  {
-    uint64_t term = (i == limb) ? lo : ((i == limb + 1) ? hi : 0);
-    if (term == 0 && carry == 0)
-    {
-      if (i > limb + 1)
-        break;
-      continue;
-    }
-    uint64_t prev = acc[i];
-    if (! negate)
-    {
-      uint64_t sum = prev + term;
-      uint64_t c1 = sum < prev;
-      acc[i] = sum + carry;
-      carry = c1 + (acc[i] < sum);
-    }
-    else
-    {
-      uint64_t diff = prev - term;
-      uint64_t b1 = prev < term;
-      acc[i] = diff - carry;
-      carry = b1 + (diff < carry);
-    }
-  }
-}
-
-/**
- * @brief Set in a two's complement integer of #WIDE_LIMBS limbs a sum of
- * products of doubles, each times a power of two from 1/4 to 2 or its
- * negation, computed exactly
- * @details A finite double is an integer mantissa of at most 53 bits times a
- * power of two, so a product of two is the product of their mantissas, split
- * in four products of at most 64 bits, times the product of their lowest bits
- * and of the multiplier. Each is added at its bit position, so the sum is
- * exact whatever the magnitudes of the products, where an expansion loses the
- * low bits of a product below 2^-1074 and overflows past the largest double.
- * #square_products_sign calls it where #square_products_exact says it must
- * @param[in] left,right,factor Products, as two factors and a multiplier
- * @param[in] n Number of products
- * @param[out] acc The sum, the weight of its lowest bit 2^#WIDE_LOWEST_BIT
- */
-static void
-square_products_wide(const double *left, const double *right,
-  const double *factor, int n, uint64_t *acc)
-{
-  memset(acc, 0, WIDE_LIMBS * sizeof(uint64_t));
-  for (int j = 0; j < n; j++)
-  {
-    if (left[j] == 0.0 || right[j] == 0.0)
-      continue;
-    uint64_t abits, bbits;
-    memcpy(&abits, &left[j], sizeof(abits));
-    memcpy(&bbits, &right[j], sizeof(bbits));
-    uint64_t am = abits & 0xFFFFFFFFFFFFFULL, bm = bbits & 0xFFFFFFFFFFFFFULL;
-    if ((abits >> 52) & 0x7FF)
-      am |= 1ULL << 52;
-    if ((bbits >> 52) & 0x7FF)
-      bm |= 1ULL << 52;
-    bool negate = ((abits >> 63) != (bbits >> 63)) != (factor[j] < 0.0);
-    int pos = double_lowest_bit(left[j]) + double_lowest_bit(right[j]) -
-      WIDE_LOWEST_BIT + double_pow2_exponent(factor[j]);
-    /* The mantissas as 21 and 32 bits each, and their four products */
-    uint64_t ah = am >> 32, al = am & 0xFFFFFFFFULL;
-    uint64_t bh = bm >> 32, bl = bm & 0xFFFFFFFFULL;
-    wide_add(acc, al * bl, pos, negate);
-    wide_add(acc, ah * bl, pos + 32, negate);
-    wide_add(acc, al * bh, pos + 32, negate);
-    wide_add(acc, ah * bh, pos + 64, negate);
-  }
+  uint64 a0 = a & 0xFFFFFFFFULL, a1 = a >> 32;
+  uint64 b0 = b & 0xFFFFFFFFULL, b1 = b >> 32;
+  uint64 p00 = a0 * b0, p01 = a0 * b1, p10 = a1 * b0, p11 = a1 * b1;
+  uint64 mid = (p00 >> 32) + (p01 & 0xFFFFFFFFULL) + (p10 & 0xFFFFFFFFULL);
+  *lo = (p00 & 0xFFFFFFFFULL) | (mid << 32);
+  *hi = p11 + (p01 >> 32) + (p10 >> 32) + (mid >> 32);
   return;
 }
 
 /**
- * @brief Return the sign of an integer #square_products_wide sets
+ * @brief Set in @p out, of @p nx + @p ny limbs, the product of two
+ * magnitudes of @p nx and @p ny limbs, the lowest first
  */
-static int
-wide_sign(const uint64_t *acc)
+static void
+wide_limbs_mul(const uint64 *x, int nx, const uint64 *y, int ny,
+  uint64 *out)
 {
-  if (acc[WIDE_LIMBS - 1] >> 63)
-    return -1;
-  for (int i = 0; i < WIDE_LIMBS; i++)
+  memset(out, 0, (size_t) (nx + ny) * sizeof(uint64));
+  for (int i = 0; i < nx; i++)
   {
-    if (acc[i])
-      return 1;
+    uint64 carry = 0;
+    for (int j = 0; j < ny; j++)
+    {
+      uint64 hi, lo;
+      wide_mul64(x[i], y[j], &hi, &lo);
+      uint64 s = out[i + j] + lo;
+      hi += (s < lo);
+      uint64 s2 = s + carry;
+      hi += (s2 < s);
+      out[i + j] = s2;
+      carry = hi;
+    }
+    /* No earlier row reaches past limb i + ny - 1 */
+    out[i + ny] = carry;
+  }
+  return;
+}
+
+/*****************************************************************************
+ * The wide number
+ *****************************************************************************/
+
+/* Number of words of the head of a #TowerWide, before its limbs */
+#define TOWER_WIDE_HEAD ((offsetof(TowerWide, limb) + sizeof(uint64) - 1) / \
+  sizeof(uint64))
+
+/**
+ * @brief Set an empty #TowerWideArena
+ */
+void
+tower_wide_arena_init(TowerWideArena *ar)
+{
+  ar->used = 0;
+  ar->cap = TOWER_WIDE_ARENA_WORDS;
+  ar->blocks = NULL;
+  ar->caps = NULL;
+  ar->nblocks = ar->nkept = ar->capblocks = 0;
+  return;
+}
+
+/**
+ * @brief Free the blocks of a #TowerWideArena, which is then empty
+ */
+void
+tower_wide_arena_free(TowerWideArena *ar)
+{
+  for (int i = 0; i < ar->nkept; i++)
+    pfree(ar->blocks[i]);
+  if (ar->blocks)
+  {
+    pfree(ar->blocks);
+    pfree(ar->caps);
+  }
+  tower_wide_arena_init(ar);
+  return;
+}
+
+/**
+ * @brief Return the point a #TowerWideArena has reached, which
+ * #tower_wide_arena_release returns it to
+ */
+TowerWideMark
+tower_wide_arena_mark(const TowerWideArena *ar)
+{
+  TowerWideMark m;
+  m.nblocks = ar->nblocks;
+  m.used = ar->used;
+  return m;
+}
+
+/**
+ * @brief Return a #TowerWideArena to a point it reached, every value taken
+ * after it being released; the blocks are kept for the values taken next
+ */
+void
+tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m)
+{
+  ar->nblocks = m.nblocks;
+  ar->cap = m.nblocks ? ar->caps[m.nblocks - 1] : TOWER_WIDE_ARENA_WORDS;
+  ar->used = m.used;
+  return;
+}
+
+/* Make the current block of an arena a block of at least @p words free:
+ * the next block held where it is large enough, and otherwise a new one of
+ * twice the words of the current block, the held ones past it freed */
+static pg_noinline void
+tower_wide_arena_grow(TowerWideArena *ar, size_t words)
+{
+  if (ar->nblocks == ar->nkept || ar->caps[ar->nblocks] < words)
+  {
+    for (int i = ar->nblocks; i < ar->nkept; i++)
+      pfree(ar->blocks[i]);
+    ar->nkept = ar->nblocks;
+    if (ar->nkept == ar->capblocks)
+    {
+      ar->capblocks = ar->capblocks ? 2 * ar->capblocks : 8;
+      ar->blocks = ar->blocks ?
+        repalloc(ar->blocks, sizeof(uint64 *) * ar->capblocks) :
+        palloc(sizeof(uint64 *) * ar->capblocks);
+      ar->caps = ar->caps ?
+        repalloc(ar->caps, sizeof(size_t) * ar->capblocks) :
+        palloc(sizeof(size_t) * ar->capblocks);
+    }
+    size_t cap = Max(2 * ar->cap, 2 * words);
+    ar->blocks[ar->nkept] = palloc(sizeof(uint64) * cap);
+    ar->caps[ar->nkept] = cap;
+    ar->nkept++;
+  }
+  ar->cap = ar->caps[ar->nblocks];
+  ar->nblocks++;
+  ar->used = 0;
+  return;
+}
+
+/* A value 0 of an arena with room for @p n limbs */
+static inline TowerWide *
+tower_wide_alloc(TowerWideArena *ar, int n)
+{
+  size_t words = TOWER_WIDE_HEAD + (size_t) Max(n, 1);
+  if (unlikely(ar->used + words > ar->cap))
+    tower_wide_arena_grow(ar, words);
+  uint64 *base = ar->nblocks ? ar->blocks[ar->nblocks - 1] : ar->buf;
+  TowerWide *r = (TowerWide *) (base + ar->used);
+  ar->used += words;
+  r->sign = 0;
+  r->len = 0;
+  r->exp = 0;
+  return r;
+}
+
+/* Drop the zero limbs at both ends of a value, those at the bottom raising
+ * its exponent */
+static void
+tower_wide_normalize(TowerWide *a)
+{
+  while (a->len > 0 && a->limb[a->len - 1] == 0)
+    a->len--;
+  if (a->len == 0)
+  {
+    a->sign = 0;
+    a->exp = 0;
+    return;
+  }
+  int z = 0;
+  while (a->limb[z] == 0)
+    z++;
+  if (z > 0)
+  {
+    memmove(a->limb, a->limb + z, (size_t) (a->len - z) * sizeof(uint64));
+    a->len -= z;
+    a->exp += 64 * z;
+  }
+  return;
+}
+
+/* A finite double, exactly: its integer mantissa times the weight of its
+ * lowest bit */
+static TowerWide *
+tower_wide_of_double(TowerWideArena *ar, double x)
+{
+  TowerWide *r = tower_wide_alloc(ar, 1);
+  if (x == 0.0)
+    return r;
+  uint64 bits;
+  memcpy(&bits, &x, sizeof(bits));
+  int e = (int) ((bits >> 52) & 0x7FF);
+  uint64 m = bits & 0xFFFFFFFFFFFFFULL;
+  if (e)
+  {
+    m |= 1ULL << 52;
+    r->exp = e - 1075;
+  }
+  else
+    r->exp = -1074;
+  r->sign = (bits >> 63) ? -1 : 1;
+  r->limb[0] = m;
+  r->len = 1;
+  return r;
+}
+
+/* A copy of a value, @p sign times it */
+static TowerWide *
+tower_wide_signed(TowerWideArena *ar, const TowerWide *a, int sign)
+{
+  TowerWide *r = tower_wide_alloc(ar, a->len);
+  memcpy(r->limb, a->limb, sizeof(uint64) * (size_t) a->len);
+  r->len = a->len;
+  r->exp = a->exp;
+  r->sign = a->sign * sign;
+  return r;
+}
+
+/* The negation of a value */
+static inline TowerWide *
+tower_wide_neg(TowerWideArena *ar, const TowerWide *a)
+{
+  return tower_wide_signed(ar, a, -1);
+}
+
+/* Limb @p i of the magnitude of a value moved up by @p ls limbs and @p bs
+ * bits, bs below 64 */
+static inline uint64
+tower_wide_read(const TowerWide *a, int ls, int bs, int i)
+{
+  int j = i - ls;
+  uint64 v = 0;
+  if ((unsigned) j < (unsigned) a->len)
+    v = a->limb[j] << bs;
+  if (bs && (unsigned) (j - 1) < (unsigned) a->len)
+    v |= a->limb[j - 1] >> (64 - bs);
+  return v;
+}
+
+/* Limb @p i of the magnitude of a value read at the weight 2^e of its
+ * lowest bit, e not above its exponent */
+static inline uint64
+tower_wide_limb_at(const TowerWide *a, int e, int i)
+{
+  int s = a->exp - e;
+  return tower_wide_read(a, s >> 6, s & 63, i);
+}
+
+/* The weight of the bit above the highest one of a value that is not 0 */
+static inline int
+tower_wide_top(const TowerWide *a)
+{
+  return a->exp + 64 * (a->len - 1) +
+    pg_leftmost_one_pos64(a->limb[a->len - 1]) + 1;
+}
+
+/* -1, 0 or 1 as the magnitude of @p a is below, equal to or above that of
+ * @p b: their highest bits, then their limbs read at the lower of their
+ * lowest bits */
+static int
+tower_wide_cmp_mag(const TowerWide *a, const TowerWide *b)
+{
+  if (a->sign == 0 || b->sign == 0)
+    return (a->sign != 0) - (b->sign != 0);
+  int ta = tower_wide_top(a), tb = tower_wide_top(b);
+  if (ta != tb)
+    return (ta > tb) ? 1 : -1;
+  int e = Min(a->exp, b->exp);
+  for (int i = (ta - e + 63) / 64; i >= 0; i--)
+  {
+    uint64 x = tower_wide_limb_at(a, e, i), y = tower_wide_limb_at(b, e, i);
+    if (x != y)
+      return (x > y) ? 1 : -1;
   }
   return 0;
 }
 
+/* -1, 0 or 1 as @p a is below, equal to or above @p b */
+static int
+tower_wide_cmp(const TowerWide *a, const TowerWide *b)
+{
+  if (a->sign != b->sign)
+    return (a->sign > b->sign) ? 1 : -1;
+  if (a->sign == 0)
+    return 0;
+  return a->sign * tower_wide_cmp_mag(a, b);
+}
+
+/* `sa a + sb b`, @p sa and @p sb each -1 or 1, exactly: the magnitudes are
+ * read at the lower of their lowest bits as they are added, or the second
+ * subtracted from the first, a borrow out of the highest limb telling that
+ * the second is the larger, the difference then negated */
+static TowerWide *
+tower_wide_add_signed(TowerWideArena *ar, const TowerWide *a, int sa,
+  const TowerWide *b, int sb)
+{
+  int xa = a->sign * sa, xb = b->sign * sb;
+  if (xa == 0)
+    return tower_wide_signed(ar, b, sb);
+  if (xb == 0)
+    return tower_wide_signed(ar, a, sa);
+  int e = Min(a->exp, b->exp);
+  int n = (Max(tower_wide_top(a), tower_wide_top(b)) - e + 63) / 64;
+  TowerWide *r = tower_wide_alloc(ar, n + 1);
+  int da = a->exp - e, db = b->exp - e;
+  int la = da >> 6, ba = da & 63, lb = db >> 6, bb = db & 63;
+  r->exp = e;
+  if (xa == xb)
+  {
+    uint64 carry = 0;
+    for (int i = 0; i < n; i++)
+    {
+      uint64 x = tower_wide_read(a, la, ba, i),
+        y = tower_wide_read(b, lb, bb, i);
+      uint64 s = x + y;
+      uint64 c1 = s < x;
+      r->limb[i] = s + carry;
+      carry = c1 + (r->limb[i] < s);
+    }
+    r->limb[n] = carry;
+    r->len = n + 1;
+    r->sign = xa;
+  }
+  else
+  {
+    uint64 borrow = 0;
+    for (int i = 0; i < n; i++)
+    {
+      uint64 x = tower_wide_read(a, la, ba, i),
+        y = tower_wide_read(b, lb, bb, i);
+      uint64 d = x - y;
+      uint64 b1 = x < y;
+      r->limb[i] = d - borrow;
+      borrow = b1 + (d < borrow);
+    }
+    r->len = n;
+    r->sign = xa;
+    if (borrow)
+    {
+      /* The difference was taken modulo 2^(64 n): its negation is the
+       * magnitude, of the sign of the second */
+      uint64 c = 1;
+      for (int i = 0; i < n; i++)
+      {
+        r->limb[i] = ~r->limb[i] + c;
+        c = c && r->limb[i] == 0;
+      }
+      r->sign = xb;
+    }
+  }
+  tower_wide_normalize(r);
+  return r;
+}
+
+/* The sum of two values, exactly */
+static inline TowerWide *
+tower_wide_add(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  return tower_wide_add_signed(ar, a, 1, b, 1);
+}
+
+/* The difference of two values, exactly */
+static inline TowerWide *
+tower_wide_sub(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  return tower_wide_add_signed(ar, a, 1, b, -1);
+}
+
+/* The product of a value that is not 0 and one limb @p m that is not 0,
+ * times @p sign and the weight 2^e: one product of 64 bits a limb */
+static TowerWide *
+tower_wide_mul_limb(TowerWideArena *ar, const TowerWide *a, uint64 m,
+  int sign, int e)
+{
+  TowerWide *r = tower_wide_alloc(ar, a->len + 1);
+  r->sign = a->sign * sign;
+  r->exp = a->exp + e;
+  if (a->len == 1)
+  {
+    /* One product of 128 bits, either half possibly 0 */
+    uint64 hi, lo;
+    wide_mul64(a->limb[0], m, &hi, &lo);
+    if (lo == 0)
+    {
+      r->limb[0] = hi;
+      r->len = 1;
+      r->exp += 64;
+    }
+    else
+    {
+      r->limb[0] = lo;
+      r->limb[1] = hi;
+      r->len = hi ? 2 : 1;
+    }
+    return r;
+  }
+  uint64 carry = 0;
+  for (int i = 0; i < a->len; i++)
+  {
+    uint64 hi, lo;
+    wide_mul64(a->limb[i], m, &hi, &lo);
+    lo += carry;
+    carry = hi + (lo < carry);
+    r->limb[i] = lo;
+  }
+  r->limb[a->len] = carry;
+  r->len = a->len + 1;
+  tower_wide_normalize(r);
+  return r;
+}
+
+/* The product of two values, exactly, a factor of one limb read as one */
+static TowerWide *
+tower_wide_mul(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  if (a->sign == 0 || b->sign == 0)
+    return tower_wide_alloc(ar, 1);
+  if (b->len == 1)
+    return tower_wide_mul_limb(ar, a, b->limb[0], b->sign, b->exp);
+  if (a->len == 1)
+    return tower_wide_mul_limb(ar, b, a->limb[0], a->sign, a->exp);
+  TowerWide *r = tower_wide_alloc(ar, a->len + b->len);
+  wide_limbs_mul(a->limb, a->len, b->limb, b->len, r->limb);
+  r->len = a->len + b->len;
+  r->sign = a->sign * b->sign;
+  r->exp = a->exp + b->exp;
+  tower_wide_normalize(r);
+  return r;
+}
+
+/* The sign of `a b - c d`, exactly: the signs of the products, then their
+ * magnitudes */
+static int
+tower_wide_product_cmp(TowerWideArena *ar, const TowerWide *a,
+  const TowerWide *b, const TowerWide *c, const TowerWide *d)
+{
+  int s1 = a->sign * b->sign, s2 = c->sign * d->sign;
+  if (s1 != s2)
+    return (s1 > s2) ? 1 : -1;
+  if (s1 == 0)
+    return 0;
+  TowerWideMark m = tower_wide_arena_mark(ar);
+  int result = s1 * tower_wide_cmp_mag(tower_wide_mul(ar, a, b),
+    tower_wide_mul(ar, c, d));
+  tower_wide_arena_release(ar, m);
+  return result;
+}
+
 /**
- * @brief Return a positive integer #square_products_wide sets as a double
- * @p m and a power of two @p 2^exp whose product is within a relative 2^-63
- * of it, so that a caller scales the quotient of @p m rather than @p m, which
- * may lie below the smallest double
+ * @brief Return the quotient of the 128-bit number `hi 2^64 + lo` by @p d,
+ * `hi < d`, and set its remainder, from 32-bit digits (Hacker's Delight,
+ * divlu), so that no division wider than 64 bits is taken
+ */
+static uint64
+wide_div128(uint64 hi, uint64 lo, uint64 d, uint64 *rem)
+{
+  const uint64 b = UINT64CONST(1) << 32;
+  int s = 63 - pg_leftmost_one_pos64(d);
+  d <<= s;
+  uint64 un32 = s ? (hi << s) | (lo >> (64 - s)) : hi;
+  uint64 un10 = lo << s;
+  uint64 vn1 = d >> 32, vn0 = d & 0xFFFFFFFFULL;
+  uint64 un1 = un10 >> 32, un0 = un10 & 0xFFFFFFFFULL;
+  uint64 q1 = un32 / vn1, rhat = un32 - q1 * vn1;
+  while (q1 >= b || q1 * vn0 > b * rhat + un1)
+  {
+    q1--;
+    rhat += vn1;
+    if (rhat >= b)
+      break;
+  }
+  uint64 un21 = un32 * b + un1 - q1 * d;
+  uint64 q0 = un21 / vn1;
+  rhat = un21 - q0 * vn1;
+  while (q0 >= b || q0 * vn0 > b * rhat + un0)
+  {
+    q0--;
+    rhat += vn1;
+    if (rhat >= b)
+      break;
+  }
+  *rem = (un21 * b + un0 - q0 * d) >> s;
+  return q1 * b + q0;
+}
+
+/* The number of limbs of a magnitude of at most @p n limbs, its highest not
+ * 0 */
+static inline int
+wide_limbs_len(const uint64 *a, int n)
+{
+  while (n > 0 && a[n - 1] == 0)
+    n--;
+  return n;
+}
+
+/* -1, 0 or 1 as a magnitude of @p na limbs is below, equal to or above one
+ * of @p nb, the highest limb of each not 0 */
+static int
+wide_limbs_cmp(const uint64 *a, int na, const uint64 *b, int nb)
+{
+  if (na != nb)
+    return (na > nb) ? 1 : -1;
+  for (int i = na - 1; i >= 0; i--)
+    if (a[i] != b[i])
+      return (a[i] > b[i]) ? 1 : -1;
+  return 0;
+}
+
+/** Number of words of scratch the division and the square root take on
+ * the stack, more being allocated */
+#define WIDE_LIMBS_STACK 256
+
+/**
+ * @brief Set the quotient and the remainder of two magnitudes, exactly, by
+ * words: Knuth's algorithm D on 64-bit limbs, each digit of the quotient
+ * estimated from the two highest limbs of the remainder (#wide_div128) and
+ * corrected, every product formed by #wide_mul64
+ * @param[in] u,nu Dividend, of @p nu limbs, the lowest first
+ * @param[in] v,nv Divisor, of @p nv limbs, not 0
+ * @param[out] q Quotient, room for `nu - nv + 1` limbs, and at least one
+ * @param[out] r Remainder, room for @p nv limbs
+ * @param[out] nr Number of limbs of the remainder, its highest not 0
+ * @return Number of limbs of the quotient, its highest not 0
+ */
+int
+wide_limbs_divmod(const uint64 *u, int nu, const uint64 *v, int nv,
+  uint64 *q, uint64 *r, int *nr)
+{
+  nu = wide_limbs_len(u, nu);
+  nv = wide_limbs_len(v, nv);
+  assert(nv > 0);
+  if (wide_limbs_cmp(u, nu, v, nv) < 0)
+  {
+    memcpy(r, u, sizeof(uint64) * (size_t) nu);
+    *nr = nu;
+    return 0;
+  }
+  if (nv == 1)
+  {
+    uint64 rem = 0;
+    for (int i = nu - 1; i >= 0; i--)
+      q[i] = wide_div128(rem, u[i], v[0], &rem);
+    r[0] = rem;
+    *nr = rem ? 1 : 0;
+    return wide_limbs_len(q, nu);
+  }
+  /* The divisor shifted until its highest bit is set, and the dividend by
+   * as many bits, in one more limb */
+  uint64 sbuf[WIDE_LIMBS_STACK];
+  size_t need = (size_t) (nu + 1 + nv);
+  uint64 *un = (need <= WIDE_LIMBS_STACK) ? sbuf :
+    palloc(sizeof(uint64) * need);
+  uint64 *vn = un + nu + 1;
+  int s = 63 - pg_leftmost_one_pos64(v[nv - 1]);
+  for (int i = nv - 1; i > 0; i--)
+    vn[i] = (v[i] << s) | (s ? v[i - 1] >> (64 - s) : 0);
+  vn[0] = v[0] << s;
+  un[nu] = s ? u[nu - 1] >> (64 - s) : 0;
+  for (int i = nu - 1; i > 0; i--)
+    un[i] = (u[i] << s) | (s ? u[i - 1] >> (64 - s) : 0);
+  un[0] = u[0] << s;
+  const uint64 vtop = vn[nv - 1], vnext = vn[nv - 2];
+  for (int j = nu - nv; j >= 0; j--)
+  {
+    /* The digit from the two highest limbs, at most one above the base;
+     * where the highest limb equals that of the divisor the estimate is the
+     * largest digit, its remainder past 64 bits when the sum carries */
+    uint64 qhat, rhat;
+    bool rbig;
+    if (un[j + nv] >= vtop)
+    {
+      qhat = ~UINT64CONST(0);
+      rhat = un[j + nv - 1] + vtop;
+      rbig = rhat < vtop;
+    }
+    else
+    {
+      qhat = wide_div128(un[j + nv], un[j + nv - 1], vtop, &rhat);
+      rbig = false;
+    }
+    /* At most two corrections, read on the next limb of the divisor */
+    while (! rbig)
+    {
+      uint64 ph, pl;
+      wide_mul64(qhat, vnext, &ph, &pl);
+      if (ph < rhat || (ph == rhat && pl <= un[j + nv - 2]))
+        break;
+      qhat--;
+      rhat += vtop;
+      rbig = rhat < vtop;
+    }
+    /* The remainder less the digit times the divisor */
+    uint64 borrow = 0, carry = 0;
+    for (int i = 0; i < nv; i++)
+    {
+      uint64 ph, pl;
+      wide_mul64(qhat, vn[i], &ph, &pl);
+      pl += carry;
+      carry = ph + (pl < carry);
+      uint64 t = un[i + j] - pl;
+      uint64 b1 = un[i + j] < pl;
+      un[i + j] = t - borrow;
+      borrow = b1 + (t < borrow);
+    }
+    uint64 t = un[j + nv] - carry;
+    uint64 b1 = un[j + nv] < carry;
+    un[j + nv] = t - borrow;
+    bool neg = b1 || t < borrow;
+    q[j] = qhat;
+    if (neg)
+    {
+      /* The digit was one too large: add the divisor back */
+      q[j]--;
+      uint64 c = 0;
+      for (int i = 0; i < nv; i++)
+      {
+        uint64 sum = un[i + j] + c;
+        uint64 c1 = sum < c;
+        un[i + j] = sum + vn[i];
+        c = c1 + (un[i + j] < vn[i]);
+      }
+      un[j + nv] += c;
+    }
+  }
+  for (int i = 0; i < nv; i++)
+    r[i] = (un[i] >> s) | (s ? un[i + 1] << (64 - s) : 0);
+  *nr = wide_limbs_len(r, nv);
+  if (un != sbuf)
+    pfree(un);
+  return wide_limbs_len(q, nu - nv + 1);
+}
+
+/**
+ * @brief Set the floor of the square root of a magnitude, exactly, by
+ * Newton's iteration from above
+ * @details The iteration `x <- (x + n / x) / 2` (#wide_limbs_divmod) decreases
+ * from any start at or above the root to its floor, and then stops
+ * decreasing. It starts from the square root in doubles of the highest 62
+ * or 63 bits of @p n, an even number t of bits below them dropped, plus 2,
+ * times 2^(t/2): the root of those bits is at most one off in doubles, and
+ * `sqrt(n) < (floor(sqrt(m)) + 1) 2^(t/2)` for those bits m
+ * @param[in] n,nn The magnitude, of @p nn limbs
+ * @param[out] x The root, room for `nn / 2 + 2` limbs
+ * @param[out] exact Whether the root is exact, unless NULL
+ * @return Number of limbs of the root, its highest not 0
+ */
+int
+wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x, bool *exact)
+{
+  nn = wide_limbs_len(n, nn);
+  if (nn == 0)
+  {
+    if (exact)
+      *exact = true;
+    return 0;
+  }
+  int bits = 64 * (nn - 1) + pg_leftmost_one_pos64(n[nn - 1]) + 1;
+  int t = (bits > 62) ? ((bits - 62) & ~1) : 0;
+  int ls = t / 64, bs = t % 64;
+  uint64 m = n[ls] >> bs;
+  if (bs && ls + 1 < nn)
+    m |= n[ls + 1] << (64 - bs);
+  uint64 x0 = (uint64) sqrt((double) m) + 2;
+  /* The scratch: the next iterate, the quotient and the remainder, and the
+   * square of the root */
+  int nx_cap = nn / 2 + 2;
+  uint64 sbuf[WIDE_LIMBS_STACK];
+  size_t need = (size_t) (nx_cap + 1) + (size_t) (nn + 1) +
+    (size_t) nx_cap + 2 * (size_t) nx_cap;
+  uint64 *y = (need <= WIDE_LIMBS_STACK) ? sbuf :
+    palloc(sizeof(uint64) * need);
+  uint64 *qt = y + nx_cap + 1, *rm = qt + nn + 1, *sq = rm + nx_cap;
+  int hs = t / 2, hls = hs / 64, hbs = hs % 64;
+  memset(x, 0, sizeof(uint64) * (size_t) (hls + 2));
+  x[hls] = x0 << hbs;
+  if (hbs)
+    x[hls + 1] = x0 >> (64 - hbs);
+  int nx = wide_limbs_len(x, hls + 2);
+  while (true)
+  {
+    int nr;
+    int nq = wide_limbs_divmod(n, nn, x, nx, qt, rm, &nr);
+    /* y = (x + q) / 2 */
+    int ny = Max(nx, nq);
+    uint64 c = 0;
+    for (int i = 0; i < ny; i++)
+    {
+      uint64 xi = (i < nx) ? x[i] : 0, qi = (i < nq) ? qt[i] : 0;
+      uint64 s = xi + qi, c1 = s < xi;
+      y[i] = s + c;
+      c = c1 + (y[i] < s);
+    }
+    y[ny] = c;
+    for (int i = 0; i <= ny; i++)
+      y[i] = (y[i] >> 1) | ((i < ny) ? y[i + 1] << 63 : 0);
+    ny = wide_limbs_len(y, ny + 1);
+    if (wide_limbs_cmp(y, ny, x, nx) >= 0)
+      break;
+    memcpy(x, y, sizeof(uint64) * (size_t) ny);
+    nx = ny;
+  }
+  if (exact)
+  {
+    wide_limbs_mul(x, nx, x, nx, sq);
+    *exact = wide_limbs_cmp(sq, wide_limbs_len(sq, 2 * nx), n, nn) == 0;
+  }
+  if (y != sbuf)
+    pfree(y);
+  return nx;
+}
+
+/**
+ * @brief Return a value that is not 0 as a double @p m and a power of two
+ * 2^exp whose product is within a relative 2^-63 of its magnitude, from its
+ * two highest limbs, so that a caller divides two such values, or scales a
+ * quotient, without leaving the doubles
  */
 static double
-wide_frexp(const uint64_t *acc, int *exp)
+tower_wide_frexp(const TowerWide *a, int *exp)
 {
-  int i = WIDE_LIMBS - 1;
-  while (i > 0 && acc[i] == 0)
-    i--;
-  double m = (double) acc[i];
+  int i = a->len - 1;
+  double m = (double) a->limb[i];
   if (i > 0)
-    m += ldexp((double) acc[i - 1], -64);
-  *exp = 64 * i + WIDE_LOWEST_BIT;
+    m += ldexp((double) a->limb[i - 1], -64);
+  *exp = a->exp + 64 * i;
   return m;
+}
+
+/**
+ * @brief Return in @p ar a sum of products of doubles, each times a power of
+ * two from 1/4 to 2 or its negation, computed exactly
+ * @details A finite double is an integer mantissa of at most 53 bits times a
+ * power of two, so a product of two is the product of their mantissas times
+ * the product of their lowest bits and of the multiplier, which #TowerWide
+ * holds exactly whatever the magnitudes of the products, where an expansion
+ * loses the low bits of a product below 2^-1074 and overflows past the
+ * largest double. #square_products_sign calls it where
+ * #square_products_exact says it must
+ * @param[in] ar Arena of the sum
+ * @param[in] left,right,factor Products, as two factors and a multiplier
+ * @param[in] n Number of products
+ */
+static TowerWide *
+square_products_wide(TowerWideArena *ar, const double *left,
+  const double *right, const double *factor, int n)
+{
+  TowerWide *acc = tower_wide_alloc(ar, 1);
+  for (int j = 0; j < n; j++)
+  {
+    if (left[j] == 0.0 || right[j] == 0.0)
+      continue;
+    TowerWide *p = tower_wide_mul(ar, tower_wide_of_double(ar, left[j]),
+      tower_wide_of_double(ar, right[j]));
+    /* The multiplier moves the lowest bit and may negate */
+    if (factor[j] < 0.0)
+      p->sign = - p->sign;
+    p->exp += double_pow2_exponent(factor[j]);
+    acc = tower_wide_add(ar, acc, p);
+  }
+  return acc;
+}
+
+/**
+ * @brief Return the sign of a #TowerWide
+ */
+static inline int
+wide_sign(const TowerWide *a)
+{
+  return a->sign;
 }
 
 /**
@@ -2357,7 +3003,7 @@ square_products_expansion(const double *left, const double *right,
  * of two from 1/4 to 2 or its negation, computed exactly for any finite
  * doubles
  * @details The sign of the last component of #square_products_expansion where
- * #square_products_exact holds, and of the integer #square_products_wide sets
+ * #square_products_exact holds, and of the sum #square_products_wide forms
  * otherwise
  */
 static int
@@ -2366,9 +3012,11 @@ square_products_sign(const double *left, const double *right,
 {
   if (! square_products_exact(left, right, factor, n))
   {
-    uint64_t acc[WIDE_LIMBS];
-    square_products_wide(left, right, factor, n, acc);
-    return wide_sign(acc);
+    TowerWideArena ar;
+    tower_wide_arena_init(&ar);
+    int sign = wide_sign(square_products_wide(&ar, left, right, factor, n));
+    tower_wide_arena_free(&ar);
+    return sign;
   }
   double buf1[40], buf2[40];
   const double *ex;
@@ -2469,8 +3117,8 @@ point_distance_square_inputs_exact(const double *d, const double *e,
  * doubles
  * @details The sign of the last component of the expansion of the products of
  * #point_distance_square_terms where @p exact says the expansion holds them,
- * as #point_distance_square_inputs_exact reads it, and of their sum in a wide
- * integer (#square_products_wide) otherwise
+ * as #point_distance_square_inputs_exact reads it, and of their exact sum
+ * (#square_products_wide) otherwise
  */
 static pg_attribute_always_inline int
 point_distance_square_sign_given(const double *d, const double *e, int ndims,
@@ -2480,9 +3128,11 @@ point_distance_square_sign_given(const double *d, const double *e, int ndims,
   int n = point_distance_square_terms(d, e, ndims, t, nt, left, right, factor);
   if (! exact)
   {
-    uint64_t acc[WIDE_LIMBS];
-    square_products_wide(left, right, factor, n, acc);
-    return wide_sign(acc);
+    TowerWideArena ar;
+    tower_wide_arena_init(&ar);
+    int sign = wide_sign(square_products_wide(&ar, left, right, factor, n));
+    tower_wide_arena_free(&ar);
+    return sign;
   }
   double buf1[40], buf2[40];
   const double *ex;
@@ -2580,7 +3230,7 @@ static inline void
 point_distance_scale(double maxd, int *k, double *f1, double *f2, double *g1,
   double *g2)
 {
-  uint64_t maxbits;
+  uint64 maxbits;
   memcpy(&maxbits, &maxd, sizeof(maxbits));
   int maxexp = (int) ((maxbits >> 52) & 0x7FF);
   /* The exponent field of a normal double; a subnormal one asks #ilogb */
@@ -2683,7 +3333,7 @@ point_distance_nearest(const double *p, const double *q, double *d,
   /* Move the candidate to the nearest double */
   while (true)
   {
-    uint64_t bits;
+    uint64 bits;
     memcpy(&bits, &c, sizeof(bits));
     bool even = (bits & 1) == 0;
     double cs = c * f1 * f2;
@@ -2705,7 +3355,7 @@ point_distance_nearest(const double *p, const double *q, double *d,
      * midpoints. The factors cover the rounding of both sides of each test */
     if (c > 0.0 && c < DBL_MAX)
     {
-      uint64_t ubits = bits + 1, dbits = bits - 1;
+      uint64 ubits = bits + 1, dbits = bits - 1;
       double cu, cd;
       memcpy(&cu, &ubits, sizeof(cu));
       memcpy(&cd, &dbits, sizeof(cd));
@@ -2730,7 +3380,7 @@ point_distance_nearest(const double *p, const double *q, double *d,
      * patterns, the one after the largest double being infinity. Half the gap
      * to the upper neighbour is scaled with the rest; past the largest double
      * it is half the gap below it, 2^970 */
-    uint64_t upbits = bits + 1;
+    uint64 upbits = bits + 1;
     double up;
     memcpy(&up, &upbits, sizeof(up));
     double hu = isinf(up) ? ldexp(1.0, 970 + k) : (up - c) * f1 * f2 / 2.0;
@@ -2744,7 +3394,7 @@ point_distance_nearest(const double *p, const double *q, double *d,
     }
     if (c > 0.0)
     {
-      uint64_t downbits = bits - 1;
+      uint64 downbits = bits - 1;
       double down;
       memcpy(&down, &downbits, sizeof(down));
       double hd = (c - down) * f1 * f2 / 2.0;
@@ -2812,7 +3462,7 @@ point_distance_exact(const double *p, const double *q, int ndims)
   /* A largest difference from 2^-400 to 2^400 keeps every square between
    * 2^-1000 and 2^800, so the values are read as they are; beyond, they are
    * scaled by 2^k, exactly */
-  uint64_t maxbits;
+  uint64 maxbits;
   memcpy(&maxbits, &maxd, sizeof(maxbits));
   int maxexp = (int) ((maxbits >> 52) & 0x7FF) - 1023;
   if (maxexp >= -400 && maxexp <= 400)
@@ -2843,7 +3493,7 @@ point_distance_exact(const double *p, const double *q, int ndims)
     {
       two_square(c, &x, &y);
       double dm = (s - x) + (lo - y);
-      uint64_t cbits, ubits, dbits;
+      uint64 cbits, ubits, dbits;
       memcpy(&cbits, &c, sizeof(cbits));
       ubits = cbits + 1;
       dbits = cbits - 1;
@@ -3012,8 +3662,8 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
  * show that rounding, so no decision reads them. Whether the points are
  * farther apart than the radius, and each side of every candidate, is the
  * sign #point_distance_offset_pair_side_sign reads on the input coordinates,
- * exact for any finite doubles. The first candidate is read from the integer
- * #square_products_wide sets for `S - r^2` on the input coordinates, a start
+ * exact for any finite doubles. The first candidate is read from the sum
+ * #square_products_wide forms for `S - r^2` on the input coordinates, a start
  * only, as #point_distance_offset_exact reads it where the difference lies
  * below the smallest double
  * @param[in] p,q Coordinates of the two points
@@ -3039,14 +3689,16 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
   left[n] = r; right[n] = r; factor[n++] = -1.0;
   left[n] = r; right[n] = rlo; factor[n++] = -2.0;
   left[n] = rlo; right[n] = rlo; factor[n++] = -1.0;
-  uint64_t acc[WIDE_LIMBS];
-  square_products_wide(left, right, factor, n, acc);
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
+  const TowerWide *acc = square_products_wide(&ar, left, right, factor, n);
   /* (S - r^2) / (sqrt(S) + r), its numerator m * 2^exp and its denominator
    * read on the halves of the differences scaled by 2^-hexp, which brings the
    * largest into [1/2, 1), so that their squares neither overflow nor vanish;
    * the radius scales below 2, as sqrt(S) exceeds it */
   int exp, hexp;
-  double m = wide_frexp(acc, &exp);
+  double m = tower_wide_frexp(acc, &exp);
+  tower_wide_arena_free(&ar);
   double h[3], maxh = 0.0;
   for (int i = 0; i < ndims; i++)
   {
@@ -3070,10 +3722,10 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
   /* Move the candidate to the nearest double */
   while (true)
   {
-    uint64_t bits;
+    uint64 bits;
     memcpy(&bits, &c, sizeof(bits));
     bool even = (bits & 1) == 0;
-    uint64_t upbits = bits + 1;
+    uint64 upbits = bits + 1;
     double up;
     memcpy(&up, &upbits, sizeof(up));
     /* The gap to the upper neighbour, past the largest double the gap below
@@ -3089,7 +3741,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
     }
     if (c > 0.0)
     {
-      uint64_t downbits = bits - 1;
+      uint64 downbits = bits - 1;
       double down;
       memcpy(&down, &downbits, sizeof(down));
       int sd = point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c,
@@ -3198,9 +3850,9 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
   }
   if (! (c >= 0x1p-900) || ! isfinite(c))
     return false;
-  uint64_t bits;
+  uint64 bits;
   memcpy(&bits, &c, sizeof(bits));
-  uint64_t ubits = bits + 1, dbits = bits - 1;
+  uint64 ubits = bits + 1, dbits = bits - 1;
   double cu, cd;
   memcpy(&cu, &ubits, sizeof(cu));
   memcpy(&cd, &dbits, sizeof(cd));
@@ -3247,7 +3899,7 @@ static bool
 point_distance_offset_filter(const double *d, const double *e, int ndims,
   double r, double rlo, double maxd, double *result)
 {
-  uint64_t maxbits;
+  uint64 maxbits;
   memcpy(&maxbits, &maxd, sizeof(maxbits));
   int maxexp = (int) ((maxbits >> 52) & 0x7FF) - 1023;
   if (maxexp < -400 || maxexp > 400)
@@ -3288,9 +3940,9 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
   {
     if (! (c >= 0x1p-900) || ! isfinite(c))
       return false;
-    uint64_t bits;
+    uint64 bits;
     memcpy(&bits, &c, sizeof(bits));
-    uint64_t ubits = bits + 1, dbits = bits - 1;
+    uint64 ubits = bits + 1, dbits = bits - 1;
     double cu, cd;
     memcpy(&cu, &ubits, sizeof(cu));
     memcpy(&cd, &dbits, sizeof(cd));
@@ -3464,7 +4116,7 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
         cmin = pow2_double(ce);
       else if (ce >= -1074)
       {
-        uint64_t cbits = 1ULL << (ce + 1074);
+        uint64 cbits = 1ULL << (ce + 1074);
         memcpy(&cmin, &cbits, sizeof(cmin));
       }
       else
@@ -3482,12 +4134,14 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
     }
     else
     {
-      uint64_t acc[WIDE_LIMBS];
-      square_products_wide(left, right, factor, n, acc);
-      if (wide_sign(acc) <= 0)
+      TowerWideArena ar;
+      tower_wide_arena_init(&ar);
+      const TowerWide *acc = square_products_wide(&ar, left, right, factor, n);
+      int exp = 0;
+      double m = (wide_sign(acc) > 0) ? tower_wide_frexp(acc, &exp) : 0.0;
+      tower_wide_arena_free(&ar);
+      if (m == 0.0)
         return 0.0;
-      int exp;
-      double m = wide_frexp(acc, &exp);
       c = ldexp(m / (sqrt(sum) + rs + rlos), exp - k);
     }
   }
@@ -3499,10 +4153,10 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
   /* Move the candidate to the nearest double */
   while (true)
   {
-    uint64_t bits;
+    uint64 bits;
     memcpy(&bits, &c, sizeof(bits));
     bool even = (bits & 1) == 0;
-    uint64_t upbits = bits + 1;
+    uint64 upbits = bits + 1;
     double up;
     memcpy(&up, &upbits, sizeof(up));
     /* The gap to the upper neighbour, past the largest double the gap below
@@ -3519,7 +4173,7 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
     }
     if (c > 0.0)
     {
-      uint64_t downbits = bits - 1;
+      uint64 downbits = bits - 1;
       double down;
       memcpy(&down, &downbits, sizeof(down));
       int sd = point_distance_offset_side(p, q, d, e, ndims, r, rlo, rs,
@@ -3620,7 +4274,7 @@ point_within_distance_sign_exact(double px, double py, double qx, double qy,
     return (d > 0.0) ? -1 : 0;
   if (d >= 2.0 * maxd)
     return -1;
-  uint64_t maxbits;
+  uint64 maxbits;
   memcpy(&maxbits, &maxd, sizeof(maxbits));
   int maxexp = (int) ((maxbits >> 52) & 0x7FF) - 1023;
   if (maxexp >= -400 && maxexp <= 400)
@@ -3707,64 +4361,6 @@ point_segment_beyond(ExactSum *sums, int ndims, double r, double c, double h,
   return sign > 0 || (sign == 0 && odd);
 }
 
-/**
- * @brief Set the magnitude of a two's complement integer of #WIDE_LIMBS limbs
- * and return its sign
- */
-static int
-wide_magnitude(const uint64_t *acc, uint64_t *mag)
-{
-  int sign = wide_sign(acc);
-  memcpy(mag, acc, WIDE_LIMBS * sizeof(uint64_t));
-  if (sign < 0)
-  {
-    /* Negate: invert every bit and add one */
-    uint64_t carry = 1;
-    for (int i = 0; i < WIDE_LIMBS; i++)
-    {
-      mag[i] = ~mag[i] + carry;
-      carry = (carry && mag[i] == 0) ? 1 : 0;
-    }
-  }
-  return sign;
-}
-
-/**
- * @brief Set the product of two magnitudes #wide_magnitude sets, exactly, in
- * 32-bit words, the lowest first
- * @details The schoolbook product of the 32-bit halves of the limbs, each
- * partial product and its carries held in 64 bits
- * @param[in] x,y Magnitudes of #WIDE_LIMBS limbs
- * @param[out] out Product of 4 * #WIDE_LIMBS words
- */
-static void
-wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
-{
-  const int n = 2 * WIDE_LIMBS;
-  uint32_t a[2 * WIDE_LIMBS], b[2 * WIDE_LIMBS];
-  for (int i = 0; i < WIDE_LIMBS; i++)
-  {
-    a[2 * i] = (uint32_t) x[i]; a[2 * i + 1] = (uint32_t) (x[i] >> 32);
-    b[2 * i] = (uint32_t) y[i]; b[2 * i + 1] = (uint32_t) (y[i] >> 32);
-  }
-  memset(out, 0, 2 * n * sizeof(uint32_t));
-  for (int i = 0; i < n; i++)
-  {
-    if (a[i] == 0)
-      continue;
-    uint64_t carry = 0;
-    for (int j = 0; j < n; j++)
-    {
-      uint64_t t = (uint64_t) a[i] * b[j] + out[i + j] + carry;
-      out[i + j] = (uint32_t) t;
-      carry = t >> 32;
-    }
-    /* No earlier row reaches past word i + n - 1 */
-    out[i + n] = (uint32_t) carry;
-  }
-  return;
-}
-
 /** Number of 64-bit limbs of a #WideDyadic, which holds the widest quantity
  * of each of its callers. The terms #polynomial_sign_wide forms for
  * #segment_square_least are a coefficient times six exact sums of two
@@ -3780,8 +4376,8 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
 
 /**
  * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
- * 64-bit limbs, the lowest first, as #square_products_wide holds its integer,
- * with exact sums and products of any two
+ * 64-bit limbs, the lowest first, as #TowerWide holds one, with exact sums
+ * and products of any two
  */
 typedef struct WideDyadic
 {
@@ -3867,22 +4463,6 @@ wide_dyadic_set_int(WideDyadic *a, int64 v)
 }
 
 /**
- * @brief Set the product of two 64-bit integers as two 64-bit halves, from
- * their 32-bit halves as #wide_product forms its partial products
- */
-static inline void
-wide_mul64(uint64_t a, uint64_t b, uint64_t *hi, uint64_t *lo)
-{
-  uint64_t a0 = a & 0xFFFFFFFFULL, a1 = a >> 32;
-  uint64_t b0 = b & 0xFFFFFFFFULL, b1 = b >> 32;
-  uint64_t p00 = a0 * b0, p01 = a0 * b1, p10 = a1 * b0, p11 = a1 * b1;
-  uint64_t mid = (p00 >> 32) + (p01 & 0xFFFFFFFFULL) + (p10 & 0xFFFFFFFFULL);
-  *lo = (p00 & 0xFFFFFFFFULL) | (mid << 32);
-  *hi = p11 + (p01 >> 32) + (p10 >> 32) + (mid >> 32);
-  return;
-}
-
-/**
  * @brief Return false, raising an internal error, where @p n limbs exceed the
  * capacity of a #WideDyadic
  */
@@ -3894,703 +4474,6 @@ wide_dyadic_fits(int n)
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
     "An exact product exceeds %d limbs", WIDE_DYADIC_LIMBS);
   return false;
-}
-
-/**
- * @brief Set in @p out, of @p nx + @p ny limbs, the product of two
- * magnitudes of @p nx and @p ny limbs, the lowest first
- */
-static void
-wide_limbs_mul(const uint64_t *x, int nx, const uint64_t *y, int ny,
-  uint64_t *out)
-{
-  memset(out, 0, (size_t) (nx + ny) * sizeof(uint64_t));
-  for (int i = 0; i < nx; i++)
-  {
-    uint64_t carry = 0;
-    for (int j = 0; j < ny; j++)
-    {
-      uint64_t hi, lo;
-      wide_mul64(x[i], y[j], &hi, &lo);
-      uint64_t s = out[i + j] + lo;
-      hi += (s < lo);
-      uint64_t s2 = s + carry;
-      hi += (s2 < s);
-      out[i + j] = s2;
-      carry = hi;
-    }
-    /* No earlier row reaches past limb i + ny - 1 */
-    out[i + ny] = carry;
-  }
-  return;
-}
-
-/*****************************************************************************
- * The wide number
- *****************************************************************************/
-
-/* Number of words of the head of a #TowerWide, before its limbs */
-#define TOWER_WIDE_HEAD ((offsetof(TowerWide, limb) + sizeof(uint64_t) - 1) / \
-  sizeof(uint64_t))
-
-/**
- * @brief Set an empty #TowerWideArena
- */
-void
-tower_wide_arena_init(TowerWideArena *ar)
-{
-  ar->used = 0;
-  ar->cap = TOWER_WIDE_ARENA_WORDS;
-  ar->blocks = NULL;
-  ar->caps = NULL;
-  ar->nblocks = ar->nkept = ar->capblocks = 0;
-  return;
-}
-
-/**
- * @brief Free the blocks of a #TowerWideArena, which is then empty
- */
-void
-tower_wide_arena_free(TowerWideArena *ar)
-{
-  for (int i = 0; i < ar->nkept; i++)
-    pfree(ar->blocks[i]);
-  if (ar->blocks)
-  {
-    pfree(ar->blocks);
-    pfree(ar->caps);
-  }
-  tower_wide_arena_init(ar);
-  return;
-}
-
-/**
- * @brief Return the point a #TowerWideArena has reached, which
- * #tower_wide_arena_release returns it to
- */
-TowerWideMark
-tower_wide_arena_mark(const TowerWideArena *ar)
-{
-  TowerWideMark m;
-  m.nblocks = ar->nblocks;
-  m.used = ar->used;
-  return m;
-}
-
-/**
- * @brief Return a #TowerWideArena to a point it reached, every value taken
- * after it being released; the blocks are kept for the values taken next
- */
-void
-tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m)
-{
-  ar->nblocks = m.nblocks;
-  ar->cap = m.nblocks ? ar->caps[m.nblocks - 1] : TOWER_WIDE_ARENA_WORDS;
-  ar->used = m.used;
-  return;
-}
-
-/* Make the current block of an arena a block of at least @p words free:
- * the next block held where it is large enough, and otherwise a new one of
- * twice the words of the current block, the held ones past it freed */
-static pg_noinline void
-tower_wide_arena_grow(TowerWideArena *ar, size_t words)
-{
-  if (ar->nblocks == ar->nkept || ar->caps[ar->nblocks] < words)
-  {
-    for (int i = ar->nblocks; i < ar->nkept; i++)
-      pfree(ar->blocks[i]);
-    ar->nkept = ar->nblocks;
-    if (ar->nkept == ar->capblocks)
-    {
-      ar->capblocks = ar->capblocks ? 2 * ar->capblocks : 8;
-      ar->blocks = ar->blocks ?
-        repalloc(ar->blocks, sizeof(uint64_t *) * ar->capblocks) :
-        palloc(sizeof(uint64_t *) * ar->capblocks);
-      ar->caps = ar->caps ?
-        repalloc(ar->caps, sizeof(size_t) * ar->capblocks) :
-        palloc(sizeof(size_t) * ar->capblocks);
-    }
-    size_t cap = Max(2 * ar->cap, 2 * words);
-    ar->blocks[ar->nkept] = palloc(sizeof(uint64_t) * cap);
-    ar->caps[ar->nkept] = cap;
-    ar->nkept++;
-  }
-  ar->cap = ar->caps[ar->nblocks];
-  ar->nblocks++;
-  ar->used = 0;
-  return;
-}
-
-/* A value 0 of an arena with room for @p n limbs */
-static inline TowerWide *
-tower_wide_alloc(TowerWideArena *ar, int n)
-{
-  size_t words = TOWER_WIDE_HEAD + (size_t) Max(n, 1);
-  if (unlikely(ar->used + words > ar->cap))
-    tower_wide_arena_grow(ar, words);
-  uint64_t *base = ar->nblocks ? ar->blocks[ar->nblocks - 1] : ar->buf;
-  TowerWide *r = (TowerWide *) (base + ar->used);
-  ar->used += words;
-  r->sign = 0;
-  r->len = 0;
-  r->exp = 0;
-  return r;
-}
-
-/* Drop the zero limbs at both ends of a value, those at the bottom raising
- * its exponent */
-static void
-tower_wide_normalize(TowerWide *a)
-{
-  while (a->len > 0 && a->limb[a->len - 1] == 0)
-    a->len--;
-  if (a->len == 0)
-  {
-    a->sign = 0;
-    a->exp = 0;
-    return;
-  }
-  int z = 0;
-  while (a->limb[z] == 0)
-    z++;
-  if (z > 0)
-  {
-    memmove(a->limb, a->limb + z, (size_t) (a->len - z) * sizeof(uint64_t));
-    a->len -= z;
-    a->exp += 64 * z;
-  }
-  return;
-}
-
-/* A finite double, exactly: its integer mantissa times the weight of its
- * lowest bit */
-static TowerWide *
-tower_wide_of_double(TowerWideArena *ar, double x)
-{
-  TowerWide *r = tower_wide_alloc(ar, 1);
-  if (x == 0.0)
-    return r;
-  uint64_t bits;
-  memcpy(&bits, &x, sizeof(bits));
-  int e = (int) ((bits >> 52) & 0x7FF);
-  uint64_t m = bits & 0xFFFFFFFFFFFFFULL;
-  if (e)
-  {
-    m |= 1ULL << 52;
-    r->exp = e - 1075;
-  }
-  else
-    r->exp = -1074;
-  r->sign = (bits >> 63) ? -1 : 1;
-  r->limb[0] = m;
-  r->len = 1;
-  return r;
-}
-
-/* A copy of a value, @p sign times it */
-static TowerWide *
-tower_wide_signed(TowerWideArena *ar, const TowerWide *a, int sign)
-{
-  TowerWide *r = tower_wide_alloc(ar, a->len);
-  memcpy(r->limb, a->limb, sizeof(uint64_t) * (size_t) a->len);
-  r->len = a->len;
-  r->exp = a->exp;
-  r->sign = a->sign * sign;
-  return r;
-}
-
-/* The negation of a value */
-static inline TowerWide *
-tower_wide_neg(TowerWideArena *ar, const TowerWide *a)
-{
-  return tower_wide_signed(ar, a, -1);
-}
-
-/* Limb @p i of the magnitude of a value moved up by @p ls limbs and @p bs
- * bits, bs below 64 */
-static inline uint64_t
-tower_wide_read(const TowerWide *a, int ls, int bs, int i)
-{
-  int j = i - ls;
-  uint64_t v = 0;
-  if ((unsigned) j < (unsigned) a->len)
-    v = a->limb[j] << bs;
-  if (bs && (unsigned) (j - 1) < (unsigned) a->len)
-    v |= a->limb[j - 1] >> (64 - bs);
-  return v;
-}
-
-/* Limb @p i of the magnitude of a value read at the weight 2^e of its
- * lowest bit, e not above its exponent */
-static inline uint64_t
-tower_wide_limb_at(const TowerWide *a, int e, int i)
-{
-  int s = a->exp - e;
-  return tower_wide_read(a, s >> 6, s & 63, i);
-}
-
-/* The weight of the bit above the highest one of a value that is not 0 */
-static inline int
-tower_wide_top(const TowerWide *a)
-{
-  return a->exp + 64 * (a->len - 1) +
-    pg_leftmost_one_pos64(a->limb[a->len - 1]) + 1;
-}
-
-/* -1, 0 or 1 as the magnitude of @p a is below, equal to or above that of
- * @p b: their highest bits, then their limbs read at the lower of their
- * lowest bits */
-static int
-tower_wide_cmp_mag(const TowerWide *a, const TowerWide *b)
-{
-  if (a->sign == 0 || b->sign == 0)
-    return (a->sign != 0) - (b->sign != 0);
-  int ta = tower_wide_top(a), tb = tower_wide_top(b);
-  if (ta != tb)
-    return (ta > tb) ? 1 : -1;
-  int e = Min(a->exp, b->exp);
-  for (int i = (ta - e + 63) / 64; i >= 0; i--)
-  {
-    uint64_t x = tower_wide_limb_at(a, e, i), y = tower_wide_limb_at(b, e, i);
-    if (x != y)
-      return (x > y) ? 1 : -1;
-  }
-  return 0;
-}
-
-/* -1, 0 or 1 as @p a is below, equal to or above @p b */
-static int
-tower_wide_cmp(const TowerWide *a, const TowerWide *b)
-{
-  if (a->sign != b->sign)
-    return (a->sign > b->sign) ? 1 : -1;
-  if (a->sign == 0)
-    return 0;
-  return a->sign * tower_wide_cmp_mag(a, b);
-}
-
-/* `sa a + sb b`, @p sa and @p sb each -1 or 1, exactly: the magnitudes are
- * read at the lower of their lowest bits as they are added, or the second
- * subtracted from the first, a borrow out of the highest limb telling that
- * the second is the larger, the difference then negated */
-static TowerWide *
-tower_wide_add_signed(TowerWideArena *ar, const TowerWide *a, int sa,
-  const TowerWide *b, int sb)
-{
-  int xa = a->sign * sa, xb = b->sign * sb;
-  if (xa == 0)
-    return tower_wide_signed(ar, b, sb);
-  if (xb == 0)
-    return tower_wide_signed(ar, a, sa);
-  int e = Min(a->exp, b->exp);
-  int n = (Max(tower_wide_top(a), tower_wide_top(b)) - e + 63) / 64;
-  TowerWide *r = tower_wide_alloc(ar, n + 1);
-  int da = a->exp - e, db = b->exp - e;
-  int la = da >> 6, ba = da & 63, lb = db >> 6, bb = db & 63;
-  r->exp = e;
-  if (xa == xb)
-  {
-    uint64_t carry = 0;
-    for (int i = 0; i < n; i++)
-    {
-      uint64_t x = tower_wide_read(a, la, ba, i),
-        y = tower_wide_read(b, lb, bb, i);
-      uint64_t s = x + y;
-      uint64_t c1 = s < x;
-      r->limb[i] = s + carry;
-      carry = c1 + (r->limb[i] < s);
-    }
-    r->limb[n] = carry;
-    r->len = n + 1;
-    r->sign = xa;
-  }
-  else
-  {
-    uint64_t borrow = 0;
-    for (int i = 0; i < n; i++)
-    {
-      uint64_t x = tower_wide_read(a, la, ba, i),
-        y = tower_wide_read(b, lb, bb, i);
-      uint64_t d = x - y;
-      uint64_t b1 = x < y;
-      r->limb[i] = d - borrow;
-      borrow = b1 + (d < borrow);
-    }
-    r->len = n;
-    r->sign = xa;
-    if (borrow)
-    {
-      /* The difference was taken modulo 2^(64 n): its negation is the
-       * magnitude, of the sign of the second */
-      uint64_t c = 1;
-      for (int i = 0; i < n; i++)
-      {
-        r->limb[i] = ~r->limb[i] + c;
-        c = c && r->limb[i] == 0;
-      }
-      r->sign = xb;
-    }
-  }
-  tower_wide_normalize(r);
-  return r;
-}
-
-/* The sum of two values, exactly */
-static inline TowerWide *
-tower_wide_add(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
-{
-  return tower_wide_add_signed(ar, a, 1, b, 1);
-}
-
-/* The difference of two values, exactly */
-static inline TowerWide *
-tower_wide_sub(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
-{
-  return tower_wide_add_signed(ar, a, 1, b, -1);
-}
-
-/* The product of a value that is not 0 and one limb @p m that is not 0,
- * times @p sign and the weight 2^e: one product of 64 bits a limb */
-static TowerWide *
-tower_wide_mul_limb(TowerWideArena *ar, const TowerWide *a, uint64_t m,
-  int sign, int e)
-{
-  TowerWide *r = tower_wide_alloc(ar, a->len + 1);
-  r->sign = a->sign * sign;
-  r->exp = a->exp + e;
-  if (a->len == 1)
-  {
-    /* One product of 128 bits, either half possibly 0 */
-    uint64_t hi, lo;
-    wide_mul64(a->limb[0], m, &hi, &lo);
-    if (lo == 0)
-    {
-      r->limb[0] = hi;
-      r->len = 1;
-      r->exp += 64;
-    }
-    else
-    {
-      r->limb[0] = lo;
-      r->limb[1] = hi;
-      r->len = hi ? 2 : 1;
-    }
-    return r;
-  }
-  uint64_t carry = 0;
-  for (int i = 0; i < a->len; i++)
-  {
-    uint64_t hi, lo;
-    wide_mul64(a->limb[i], m, &hi, &lo);
-    lo += carry;
-    carry = hi + (lo < carry);
-    r->limb[i] = lo;
-  }
-  r->limb[a->len] = carry;
-  r->len = a->len + 1;
-  tower_wide_normalize(r);
-  return r;
-}
-
-/* The product of two values, exactly, a factor of one limb read as one */
-static TowerWide *
-tower_wide_mul(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
-{
-  if (a->sign == 0 || b->sign == 0)
-    return tower_wide_alloc(ar, 1);
-  if (b->len == 1)
-    return tower_wide_mul_limb(ar, a, b->limb[0], b->sign, b->exp);
-  if (a->len == 1)
-    return tower_wide_mul_limb(ar, b, a->limb[0], a->sign, a->exp);
-  TowerWide *r = tower_wide_alloc(ar, a->len + b->len);
-  wide_limbs_mul(a->limb, a->len, b->limb, b->len, r->limb);
-  r->len = a->len + b->len;
-  r->sign = a->sign * b->sign;
-  r->exp = a->exp + b->exp;
-  tower_wide_normalize(r);
-  return r;
-}
-
-/* The sign of `a b - c d`, exactly: the signs of the products, then their
- * magnitudes */
-static int
-tower_wide_product_cmp(TowerWideArena *ar, const TowerWide *a,
-  const TowerWide *b, const TowerWide *c, const TowerWide *d)
-{
-  int s1 = a->sign * b->sign, s2 = c->sign * d->sign;
-  if (s1 != s2)
-    return (s1 > s2) ? 1 : -1;
-  if (s1 == 0)
-    return 0;
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  int result = s1 * tower_wide_cmp_mag(tower_wide_mul(ar, a, b),
-    tower_wide_mul(ar, c, d));
-  tower_wide_arena_release(ar, m);
-  return result;
-}
-
-/**
- * @brief Return the quotient of the 128-bit number `hi 2^64 + lo` by @p d,
- * `hi < d`, and set its remainder, from 32-bit digits (Hacker's Delight,
- * divlu), so that no division wider than 64 bits is taken
- */
-static uint64_t
-wide_div128(uint64_t hi, uint64_t lo, uint64_t d, uint64_t *rem)
-{
-  const uint64_t b = UINT64CONST(1) << 32;
-  int s = 63 - pg_leftmost_one_pos64(d);
-  d <<= s;
-  uint64_t un32 = s ? (hi << s) | (lo >> (64 - s)) : hi;
-  uint64_t un10 = lo << s;
-  uint64_t vn1 = d >> 32, vn0 = d & 0xFFFFFFFFULL;
-  uint64_t un1 = un10 >> 32, un0 = un10 & 0xFFFFFFFFULL;
-  uint64_t q1 = un32 / vn1, rhat = un32 - q1 * vn1;
-  while (q1 >= b || q1 * vn0 > b * rhat + un1)
-  {
-    q1--;
-    rhat += vn1;
-    if (rhat >= b)
-      break;
-  }
-  uint64_t un21 = un32 * b + un1 - q1 * d;
-  uint64_t q0 = un21 / vn1;
-  rhat = un21 - q0 * vn1;
-  while (q0 >= b || q0 * vn0 > b * rhat + un0)
-  {
-    q0--;
-    rhat += vn1;
-    if (rhat >= b)
-      break;
-  }
-  *rem = (un21 * b + un0 - q0 * d) >> s;
-  return q1 * b + q0;
-}
-
-/* The number of limbs of a magnitude of at most @p n limbs, its highest not
- * 0 */
-static inline int
-wide_limbs_len(const uint64_t *a, int n)
-{
-  while (n > 0 && a[n - 1] == 0)
-    n--;
-  return n;
-}
-
-/* -1, 0 or 1 as a magnitude of @p na limbs is below, equal to or above one
- * of @p nb, the highest limb of each not 0 */
-static int
-wide_limbs_cmp(const uint64_t *a, int na, const uint64_t *b, int nb)
-{
-  if (na != nb)
-    return (na > nb) ? 1 : -1;
-  for (int i = na - 1; i >= 0; i--)
-    if (a[i] != b[i])
-      return (a[i] > b[i]) ? 1 : -1;
-  return 0;
-}
-
-/** Number of words of scratch the division and the square root take on
- * the stack, more being allocated */
-#define WIDE_LIMBS_STACK 256
-
-/**
- * @brief Set the quotient and the remainder of two magnitudes, exactly, by
- * words: Knuth's algorithm D on 64-bit limbs, each digit of the quotient
- * estimated from the two highest limbs of the remainder (#wide_div128) and
- * corrected, every product formed by #wide_mul64
- * @param[in] u,nu Dividend, of @p nu limbs, the lowest first
- * @param[in] v,nv Divisor, of @p nv limbs, not 0
- * @param[out] q Quotient, room for `nu - nv + 1` limbs, and at least one
- * @param[out] r Remainder, room for @p nv limbs
- * @param[out] nr Number of limbs of the remainder, its highest not 0
- * @return Number of limbs of the quotient, its highest not 0
- */
-int
-wide_limbs_divmod(const uint64_t *u, int nu, const uint64_t *v, int nv,
-  uint64_t *q, uint64_t *r, int *nr)
-{
-  nu = wide_limbs_len(u, nu);
-  nv = wide_limbs_len(v, nv);
-  assert(nv > 0);
-  if (wide_limbs_cmp(u, nu, v, nv) < 0)
-  {
-    memcpy(r, u, sizeof(uint64_t) * (size_t) nu);
-    *nr = nu;
-    return 0;
-  }
-  if (nv == 1)
-  {
-    uint64_t rem = 0;
-    for (int i = nu - 1; i >= 0; i--)
-      q[i] = wide_div128(rem, u[i], v[0], &rem);
-    r[0] = rem;
-    *nr = rem ? 1 : 0;
-    return wide_limbs_len(q, nu);
-  }
-  /* The divisor shifted until its highest bit is set, and the dividend by
-   * as many bits, in one more limb */
-  uint64_t sbuf[WIDE_LIMBS_STACK];
-  size_t need = (size_t) (nu + 1 + nv);
-  uint64_t *un = (need <= WIDE_LIMBS_STACK) ? sbuf :
-    palloc(sizeof(uint64_t) * need);
-  uint64_t *vn = un + nu + 1;
-  int s = 63 - pg_leftmost_one_pos64(v[nv - 1]);
-  for (int i = nv - 1; i > 0; i--)
-    vn[i] = (v[i] << s) | (s ? v[i - 1] >> (64 - s) : 0);
-  vn[0] = v[0] << s;
-  un[nu] = s ? u[nu - 1] >> (64 - s) : 0;
-  for (int i = nu - 1; i > 0; i--)
-    un[i] = (u[i] << s) | (s ? u[i - 1] >> (64 - s) : 0);
-  un[0] = u[0] << s;
-  const uint64_t vtop = vn[nv - 1], vnext = vn[nv - 2];
-  for (int j = nu - nv; j >= 0; j--)
-  {
-    /* The digit from the two highest limbs, at most one above the base;
-     * where the highest limb equals that of the divisor the estimate is the
-     * largest digit, its remainder past 64 bits when the sum carries */
-    uint64_t qhat, rhat;
-    bool rbig;
-    if (un[j + nv] >= vtop)
-    {
-      qhat = ~UINT64CONST(0);
-      rhat = un[j + nv - 1] + vtop;
-      rbig = rhat < vtop;
-    }
-    else
-    {
-      qhat = wide_div128(un[j + nv], un[j + nv - 1], vtop, &rhat);
-      rbig = false;
-    }
-    /* At most two corrections, read on the next limb of the divisor */
-    while (! rbig)
-    {
-      uint64_t ph, pl;
-      wide_mul64(qhat, vnext, &ph, &pl);
-      if (ph < rhat || (ph == rhat && pl <= un[j + nv - 2]))
-        break;
-      qhat--;
-      rhat += vtop;
-      rbig = rhat < vtop;
-    }
-    /* The remainder less the digit times the divisor */
-    uint64_t borrow = 0, carry = 0;
-    for (int i = 0; i < nv; i++)
-    {
-      uint64_t ph, pl;
-      wide_mul64(qhat, vn[i], &ph, &pl);
-      pl += carry;
-      carry = ph + (pl < carry);
-      uint64_t t = un[i + j] - pl;
-      uint64_t b1 = un[i + j] < pl;
-      un[i + j] = t - borrow;
-      borrow = b1 + (t < borrow);
-    }
-    uint64_t t = un[j + nv] - carry;
-    uint64_t b1 = un[j + nv] < carry;
-    un[j + nv] = t - borrow;
-    bool neg = b1 || t < borrow;
-    q[j] = qhat;
-    if (neg)
-    {
-      /* The digit was one too large: add the divisor back */
-      q[j]--;
-      uint64_t c = 0;
-      for (int i = 0; i < nv; i++)
-      {
-        uint64_t sum = un[i + j] + c;
-        uint64_t c1 = sum < c;
-        un[i + j] = sum + vn[i];
-        c = c1 + (un[i + j] < vn[i]);
-      }
-      un[j + nv] += c;
-    }
-  }
-  for (int i = 0; i < nv; i++)
-    r[i] = (un[i] >> s) | (s ? un[i + 1] << (64 - s) : 0);
-  *nr = wide_limbs_len(r, nv);
-  if (un != sbuf)
-    pfree(un);
-  return wide_limbs_len(q, nu - nv + 1);
-}
-
-/**
- * @brief Set the floor of the square root of a magnitude, exactly, by
- * Newton's iteration from above
- * @details The iteration `x <- (x + n / x) / 2` (#wide_limbs_divmod) decreases
- * from any start at or above the root to its floor, and then stops
- * decreasing. It starts from the square root in doubles of the highest 62
- * or 63 bits of @p n, an even number t of bits below them dropped, plus 2,
- * times 2^(t/2): the root of those bits is at most one off in doubles, and
- * `sqrt(n) < (floor(sqrt(m)) + 1) 2^(t/2)` for those bits m
- * @param[in] n,nn The magnitude, of @p nn limbs
- * @param[out] x The root, room for `nn / 2 + 2` limbs
- * @param[out] exact Whether the root is exact, unless NULL
- * @return Number of limbs of the root, its highest not 0
- */
-int
-wide_limbs_isqrt(const uint64_t *n, int nn, uint64_t *x, bool *exact)
-{
-  nn = wide_limbs_len(n, nn);
-  if (nn == 0)
-  {
-    if (exact)
-      *exact = true;
-    return 0;
-  }
-  int bits = 64 * (nn - 1) + pg_leftmost_one_pos64(n[nn - 1]) + 1;
-  int t = (bits > 62) ? ((bits - 62) & ~1) : 0;
-  int ls = t / 64, bs = t % 64;
-  uint64_t m = n[ls] >> bs;
-  if (bs && ls + 1 < nn)
-    m |= n[ls + 1] << (64 - bs);
-  uint64_t x0 = (uint64_t) sqrt((double) m) + 2;
-  /* The scratch: the next iterate, the quotient and the remainder, and the
-   * square of the root */
-  int nx_cap = nn / 2 + 2;
-  uint64_t sbuf[WIDE_LIMBS_STACK];
-  size_t need = (size_t) (nx_cap + 1) + (size_t) (nn + 1) +
-    (size_t) nx_cap + 2 * (size_t) nx_cap;
-  uint64_t *y = (need <= WIDE_LIMBS_STACK) ? sbuf :
-    palloc(sizeof(uint64_t) * need);
-  uint64_t *qt = y + nx_cap + 1, *rm = qt + nn + 1, *sq = rm + nx_cap;
-  int hs = t / 2, hls = hs / 64, hbs = hs % 64;
-  memset(x, 0, sizeof(uint64_t) * (size_t) (hls + 2));
-  x[hls] = x0 << hbs;
-  if (hbs)
-    x[hls + 1] = x0 >> (64 - hbs);
-  int nx = wide_limbs_len(x, hls + 2);
-  while (true)
-  {
-    int nr;
-    int nq = wide_limbs_divmod(n, nn, x, nx, qt, rm, &nr);
-    /* y = (x + q) / 2 */
-    int ny = Max(nx, nq);
-    uint64_t c = 0;
-    for (int i = 0; i < ny; i++)
-    {
-      uint64_t xi = (i < nx) ? x[i] : 0, qi = (i < nq) ? qt[i] : 0;
-      uint64_t s = xi + qi, c1 = s < xi;
-      y[i] = s + c;
-      c = c1 + (y[i] < s);
-    }
-    y[ny] = c;
-    for (int i = 0; i <= ny; i++)
-      y[i] = (y[i] >> 1) | ((i < ny) ? y[i + 1] << 63 : 0);
-    ny = wide_limbs_len(y, ny + 1);
-    if (wide_limbs_cmp(y, ny, x, nx) >= 0)
-      break;
-    memcpy(x, y, sizeof(uint64_t) * (size_t) ny);
-    nx = ny;
-  }
-  if (exact)
-  {
-    wide_limbs_mul(x, nx, x, nx, sq);
-    *exact = wide_limbs_cmp(sq, wide_limbs_len(sq, 2 * nx), n, nn) == 0;
-  }
-  if (y != sbuf)
-    pfree(y);
-  return nx;
 }
 
 /**
@@ -4961,9 +4844,9 @@ cross_product_sign_wide(double ax, double ay, double bx, double by,
 
 /**
  * @brief Return a #WideDyadic as a double @p m and a power of two whose
- * product is within a relative 2^-63 of it, as #wide_frexp reads an integer
- * of #square_products_wide, so a caller divides two such values without
- * leaving the doubles
+ * product is within a relative 2^-63 of it, as #tower_wide_frexp reads a
+ * #TowerWide, so a caller divides two such values without leaving the
+ * doubles
  */
 static double
 wide_dyadic_frexp(const WideDyadic *a, int *exp)
@@ -8290,10 +8173,10 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
  * identity `|w x u|^2 = (w . w)(u . u) - (w . u)^2`, in two coordinates as in
  * three, so the value is `(u . u)(w . w - m^2) - (w . u)^2`. The squared
  * length `u . u`, the difference `w . w - m^2` and the dot product `w . u`
- * are each a sum of products of two input doubles, an integer
- * #square_products_wide sets as #point_distance_offset_side_sign sets its
+ * are each a sum of products of two input doubles, which
+ * #square_products_wide forms as #point_distance_offset_side_sign sets its
  * terms, and the two products are compared on their exact values
- * (#wide_product), the two having the weight of the same lowest bit
+ * (#tower_wide_product_cmp)
  * @param[in] p,a,b The point and the two ends of the segment
  * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r Radius
@@ -8304,10 +8187,10 @@ static int
 point_segment_side_sign_inputs(const double *p, const double *a,
   const double *b, int ndims, double r, double c, double g)
 {
-  /* At most 15 products, each of a weight from 1/4 to 2, which the integer
-   * of #square_products_wide holds */
+  /* At most 15 products, each of a weight from 1/4 to 2 */
   double left[15], right[15], factor[15];
-  uint64_t wm[WIDE_LIMBS], len[WIDE_LIMBS], dot[WIDE_LIMBS];
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
   /* w . w - m^2 */
   int n = 0;
   for (int i = 0; i < ndims; i++)
@@ -8322,7 +8205,7 @@ point_segment_side_sign_inputs(const double *p, const double *a,
   left[n] = r; right[n] = c; factor[n++] = -2.0;
   left[n] = r; right[n] = g; factor[n++] = -1.0;
   left[n] = c; right[n] = g; factor[n++] = -1.0;
-  square_products_wide(left, right, factor, n, wm);
+  const TowerWide *wm = square_products_wide(&ar, left, right, factor, n);
   /* u . u */
   n = 0;
   for (int i = 0; i < ndims; i++)
@@ -8331,7 +8214,7 @@ point_segment_side_sign_inputs(const double *p, const double *a,
     left[n] = b[i]; right[n] = a[i]; factor[n++] = -2.0;
     left[n] = a[i]; right[n] = a[i]; factor[n++] = 1.0;
   }
-  square_products_wide(left, right, factor, n, len);
+  const TowerWide *len = square_products_wide(&ar, left, right, factor, n);
   /* w . u */
   n = 0;
   for (int i = 0; i < ndims; i++)
@@ -8341,28 +8224,12 @@ point_segment_side_sign_inputs(const double *p, const double *a,
     left[n] = a[i]; right[n] = b[i]; factor[n++] = -1.0;
     left[n] = a[i]; right[n] = a[i]; factor[n++] = 1.0;
   }
-  square_products_wide(left, right, factor, n, dot);
-
-  uint64_t mwm[WIDE_LIMBS], mlen[WIDE_LIMBS], mdot[WIDE_LIMBS];
-  int swm = wide_magnitude(wm, mwm);
-  int slen = wide_magnitude(len, mlen);
-  int sdot = wide_magnitude(dot, mdot);
+  const TowerWide *dot = square_products_wide(&ar, left, right, factor, n);
   /* The square of the dot product is not negative; the other product carries
-   * the signs of its factors */
-  int slhs = slen * swm;
-  if (slhs < 0)
-    return -1;
-  if (slhs == 0)
-    return (sdot != 0) ? -1 : 0;
-  uint32_t lhs[4 * WIDE_LIMBS], rhs[4 * WIDE_LIMBS];
-  wide_product(mlen, mwm, lhs);
-  wide_product(mdot, mdot, rhs);
-  for (int i = 4 * WIDE_LIMBS - 1; i >= 0; i--)
-  {
-    if (lhs[i] != rhs[i])
-      return (lhs[i] > rhs[i]) ? 1 : -1;
-  }
-  return 0;
+   * the signs of its factors (#tower_wide_product_cmp) */
+  int sign = tower_wide_product_cmp(&ar, len, wm, dot, dot);
+  tower_wide_arena_free(&ar);
+  return sign;
 }
 
 /**
