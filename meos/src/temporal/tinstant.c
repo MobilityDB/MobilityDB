@@ -322,27 +322,15 @@ ttextinst_in(const char *str)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_constructor
- * @brief Return a temporal instant from the arguments
- * @details The memory structure of a temporal instant is as follows
- * @code
- * ----------------
- * ( TInstant )_X |
- * ----------------
- * @endcode
- * where the attribute `value` of type `Datum` in the struct stores the base
- * value independently of whether it is passed by value or by reference.
- * For values passed by reference, the additional bytes needed are appended at
- * the end of the struct upon creation.
- *
+ * @brief Ensure that a value is one a temporal instant of a temporal type
+ * can hold, as #ensure_valid_tinstarr ensures it of the instants of a
+ * sequence
  * @param[in] value Value
  * @param[in] temptype Temporal type
- * @param[in] t Timestamp
  */
-TInstant *
-tinstant_make(Datum value, MeosType temptype, TimestampTz t)
+bool
+ensure_valid_tinstant_value(Datum value, MeosType temptype)
 {
-  /* Ensure the validity of the arguments */
   // TODO Should we bypass the tests on tnpoint ?
   if (tspatial_type(temptype) && temptype != T_TNPOINT)
   {
@@ -373,8 +361,52 @@ tinstant_make(Datum value, MeosType temptype, TimestampTz t)
    * no representation */
   if ((temptype == T_TINT || temptype == T_TBIGINT) &&
       ! ensure_span_bound_has_next(value, temptype_basetype(temptype)))
-    return NULL;
+    return false;
+  return true;
+}
 
+/**
+ * @ingroup meos_internal_temporal_constructor
+ * @brief Return a temporal instant from the arguments
+ * @param[in] value Value
+ * @param[in] temptype Temporal type
+ * @param[in] t Timestamp
+ */
+TInstant *
+tinstant_make(Datum value, MeosType temptype, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tinstant_value(value, temptype))
+    return NULL;
+  return tinstant_make_intl(value, temptype, t);
+}
+
+/**
+ * @ingroup meos_internal_temporal_constructor
+ * @brief Return a temporal instant from the arguments, the value being one
+ * the instant can hold
+ * @details The memory structure of a temporal instant is as follows
+ * @code
+ * ----------------
+ * ( TInstant )_X |
+ * ----------------
+ * @endcode
+ * where the attribute `value` of type `Datum` in the struct stores the base
+ * value independently of whether it is passed by value or by reference.
+ * For values passed by reference, the additional bytes needed are appended at
+ * the end of the struct upon creation.
+ *
+ * @param[in] value Value
+ * @param[in] temptype Temporal type
+ * @param[in] t Timestamp
+ * @note The function is called where the value is the value of an instant of
+ * a temporal value or the value of one of its segments at a timestamp, which
+ * #tinstant_make has already tested
+ */
+TInstant *
+tinstant_make_intl(Datum value, MeosType temptype, TimestampTz t)
+{
+  assert(ensure_valid_tinstant_value(value, temptype));
   size_t value_offset = offsetof(TInstant, value);
   size_t size = value_offset;
   /* Create the temporal instant */
