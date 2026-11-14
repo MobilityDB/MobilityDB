@@ -124,8 +124,8 @@ Temporal<T>              temporal_type      = ALL temporal types
   sharing their outermost frame.
   Its distance is the one of the temporal pose its composition gives:
   `560_tposechain_distance.in.sql` is written by the `distance` template, as
-  `110_tpose_distance.in.sql` is, and `566_tposechain_indexes.in.sql` by the
-  `indexes` template, with the classes of `posechainset`. Its ever/always
+  `110_tpose_distance.in.sql` is, and `572_tposechain_gist.in.sql` and
+  `573_tposechain_spgist.in.sql` by the `gist` and `spgist` templates, with the classes of `posechainset`. Its ever/always
   spatial relationships are those of the temporal geometry point of its composed
   pose: `562_tposechain_spatialrels.in.sql` is written by the `spatialrels`
   template, as `320_tnpoint_spatialrels.in.sql` is, its ever intersects and
@@ -303,7 +303,7 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   `074_tpoint_spgist`, and `tpcbox` its three in `439_tpc_gist` and
   `440_tpc_spgist`, its SP-GiST classes over the functions of `stbox`.
   A family a build can leave out adds its temporal type to the classes of
-  `stbox` in its own index file: the `{BOXMEMBERS}` token of the `indexes`,
+  `stbox` in its own index file: the `{BOXMEMBERS}` token of the
   `gist` and `spgist` templates writes, by `render_boxmembers`, one
   `ALTER OPERATOR FAMILY` per class of the file's access method, carrying every
   strategy whose axis the subtype's `boxmembers:` lists in `subtypes.yaml`
@@ -324,7 +324,7 @@ No manifest entry carries a comment block of its own. The three cell index famil
 state their `details` once, through a YAML anchor on the first of them.
 
 **A `positions:` entry only means a slot is reserved** (`manifest.d/positions.yaml`:
-compops, spatialfuncs, topops, posops, distance, aggfuncs, spatialrels, indexes,
+compops, spatialfuncs, topops, posops, distance, aggfuncs, spatialrels,
 gist, spgist). **A behaviour is *generated* for a given family only if the family
 lists it in its `subtypes:` entry's `files:`** (`manifest.d/subtypes.yaml`) **and a
 matching `templates/<behaviour>.sql.tmpl` exists** — or, for `aggfuncs`, if the
@@ -341,7 +341,7 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | indextrees (C) | `rtree_create.c.tmpl` + `sptree_create.c.tmpl` | **GENERATED** (the constructors of the in-memory trees, one per box type) |
 | boxgist (C) | `boxgist.c.tmpl` | **GENERATED** (the GiST support functions of `tbox`, `stbox` and `tpcbox`, one set per box type) |
 | boxspgist (C) | `boxspgist.c.tmpl` | **GENERATED** (the SP-GiST support functions of `tbox` and `stbox`, one set per box type; `tpcbox` is indexed by those of `stbox`) |
-| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — the three templates write the family's operator classes through the `{TEMPOPCLASS_RTREE}`, `{TEMPOPCLASS_QUADTREE}` and `{TEMPOPCLASS_KDTREE}` tokens, which `render_tempopclass` fills from `boxstrategies.yaml` with every strategy whose axis the family's `boxmembers:` lists, the Z-axis strategies 32-35 included when it lists `z`, and with its `distwith:` types on the nearest approach distance. `indexes.sql.tmpl` also declares the family's own consistent and distance support functions, `{TEMP}_gist_consistent` and `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share. Both it and `gist.sql.tmpl` carry `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the three templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
+| gist / spgist | `gist/spgist.sql.tmpl` | **GENERATED** (index infra) — the two templates write the family's operator classes through the `{TEMPOPCLASS_RTREE}`, `{TEMPOPCLASS_QUADTREE}` and `{TEMPOPCLASS_KDTREE}` tokens, which `render_tempopclass` fills from `boxstrategies.yaml` with every strategy whose axis the family's `boxmembers:` lists, the Z-axis strategies 32-35 included when it lists `z`, and with its `distwith:` types on the nearest approach distance. `gist.sql.tmpl` also declares the family's own consistent support function, `{TEMP}_gist_consistent`, and, under the flag `knn` that `render` reads from the axes of the class (a `dist` axis in `boxmembers:`), its distance support function `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share; it carries `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the two templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
 | distance | `distance.sql.tmpl` | **GENERATED** for `tpose` (`110_tpose_distance`) and `tposechain` (`560_tposechain_distance`); the temporal numbers' `036_tnumber_distance` the temporal geometries' `064_tgeo_distance`, the temporal points' `064_tpoint_distance`, the temporal rigid geometries' `164_trgeo_distance`, the temporal circular buffers' `210_tcbuffer_distance`, the temporal network points' `312_tnpoint_distance`, the temporal point clouds' `438_tpc_distance` and the temporal point cloud points' `447_tpcpoint_distance` are generated by the `distance_families` axis (§7); every other family's distance file is hand-written |
@@ -373,7 +373,7 @@ states the support functions their classes share.
 
 **The operator classes of the temporal numbers, booleans, texts and JSONB values** are the
 `GENERATED-TEMPOPCLASS` regions of `043_temporal_gist`, `044_temporal_spgist` and
-`466_tjsonb_indexes`, written the same way from the partners of `tbox` and `tstzspan`. A
+`466_tjsonb_gist` and `467_tjsonb_spgist`, written the same way from the partners of `tbox` and `tstzspan`. A
 temporal number's classes also take its `valspan` (`intspan`, `bigintspan`, `floatspan`) on
 every strategy but the time ones; a type the time span bounds alone carries the topological and
 time strategies against the span and itself, and `opnames` gives `tjsonb` its `#@>` and `<@#`,
@@ -550,7 +550,7 @@ Two more reference chapters carry inherited surface:
 | chapter → `<sect1>` | prefix | generated? | notes |
 |---|---|---|---|
 | `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **13 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, posechain, rgeo, tpoint, th3index, quadbin, ts2cell) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 20/20, full coverage. Every family declares an aggregate under its MobilityDB name alone, the cell index families included; DuckDB, Spark and Flink call the eleven whose name a function also holds `<name>Agg`, the `@altsqlfn` of their transition wrapper |
-| → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
+| → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
 | `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **30 entries**: 23 `reference: true` (geo, tpoint, cbuffer, json, json_boxops, npoint, tpcpoint, tpcpatch, tpc_boxops, pose, posechain, rgeo, tgeo_tile, trgeo_tile, tpoint_tile, tpose_tile, tpcpoint_tile, temporal, th3index, th3index_boxops, quadbin, quadbin_boxops, s2cell_boxops) and seven writing the `GENERATED-TILING` split region of a boxops file (temporal_splits, geo_splits, tpoint_splits, pose_splits, rgeo_splits, cbuffer_splits, npoint_splits). The entry names sit at four granularities — family (`geo`, `npoint`), per-FILE tile split (`tgeo_tile`, `tpose_tile`), per-FILE boxops split (`json_boxops`, `tpc_boxops`, `th3index_boxops`, `quadbin_boxops`) and per-FILE split functions (`geo_splits`). Every `splitN<Box>`/`splitEachN<Box>` of a boxops file is a `splits` stanza: its types, its box kinds (`spans`, `tboxes`, `stboxes`) and, per kind, the C prefix of a type with kernels of its own (`Trgeometry`, `Geo`) |
@@ -789,7 +789,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ✓ **GEN** (SQL) | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint, tpose, tposechain — `spatialrels.sql.tmpl`) and `spatialrel_families`-generated for the native families tgeo, tpoint, cbuffer and rgeo (`impl: native`, `spatialrels_native.sql.tmpl`) — `--gaps`: `spatialrel_families` 14/14; the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3). Not generated: the C wrappers outside the `GENERATED-SPATIALRELS` regions, the array pairs (`*_tgeoarr_tgeoarr`) of geo |
 | Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint, their C wrappers generated for geo, cbuffer and rgeo via the `temporal` entries of `spatialrel_families` (§3) but five `tDwithin` bodies. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while an area-valued family converts its boundary to tgeometry (tquadbin, trgeometry, tpcpatch) and a geodetic cell family to the tgeography of its boundary, relating two cells by `tDisjoint`/`tIntersects` (th3index, ts2cell) |
 
-Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
+Index infra (`gist`/`spgist`) is generated but is not a doc `<sect1>`.
 
 ### 5a. `TCellIndex<T>` (DGGS cell-index) — the descriptor-factored intermediate
 
@@ -858,20 +858,20 @@ plain = the file exists but is still hand-maintained.
 
 | family | compops | spatialfuncs | topops | posops | distance | aggfuncs | spatialrels | tempsp.rels | idx / gist·spgist | boxops |
 |---|---|---|---|---|---|---|---|---|---|---|
-| cbuffer (200) | **204** | 205 | **208** | **209** | 210 | **211** | 212 | **214** | **216** | 207 |
-| npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | **320** | **322** | **316** | 307 |
-| pose (100) | **104** | 105 | **108** | **109** | **110** | **111** | **112** | **114** | **116** | 107 |
-| posechain (550) | **554** | 555 | **558** | **559** | **560** | **561** | **562** | **564** | **566** | — |
-| rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
+| cbuffer (200) | **204** | 205 | **208** | **209** | 210 | **211** | 212 | **214** | **222**·**223** | 207 |
+| npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | **320** | **322** | **322**·**323** | 307 |
+| pose (100) | **104** | 105 | **108** | **109** | **110** | **111** | **112** | **114** | **122**·**123** | 107 |
+| posechain (550) | **554** | 555 | **558** | **559** | **560** | **561** | **562** | **564** | **572**·**573** | — |
+| rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173**·**174** | 160 |
 | h3 (250) | **254** | 255 | **258** | **259** | — | **261** | **262** | **264** | **272**·**273** | **257** |
 | quadbin (350) | **354** | 355 | **358** | **359** | — | **361** | **362** | **364** | **372**·**373** | **357** |
 | s2cell (600) | **604** | 605 | **608** | **609** | — | **611** | **612** | **614** | **622**·**623** | **607** |
 
 Reading the table:
 - **`compops`/`topops`/`posops`/`idx` are generated for every derived family** via the `subtypes:` `files:` track (§3): cbuffer and
-  rgeo (`[compops, topops, posops, indexes]`), npoint (`[compops, posops, topops,
-  spatialrels, indexes]`), pose (`[compops, topops, posops,
-  distance, indexes]`), posechain (`[compops, topops, posops, distance, spatialrels, indexes]`) and h3,
+  rgeo (`[compops, topops, posops, gist, spgist]`), npoint (`[compops, posops, topops,
+  spatialrels, gist, spgist]`), pose (`[compops, topops, posops,
+  distance, gist, spgist]`), posechain (`[compops, topops, posops, distance, spatialrels, gist, spgist]`) and h3,
   quadbin, s2cell (`[compops, posops, topops, spatialrels, gist, spgist]` — the three
   cell families declare one and the same list).
 - **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin,

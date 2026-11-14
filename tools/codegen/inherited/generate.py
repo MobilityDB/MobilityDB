@@ -282,8 +282,6 @@ def _geography_twins(body: str, names) -> str:
 BOXMEMBER_CLASSES = {
     "gist": [("stbox_rtree_ops", "gist")],
     "spgist": [("stbox_quadtree_ops", "spgist"), ("stbox_kdtree_ops", "spgist")],
-    "indexes": [("stbox_rtree_ops", "gist"), ("stbox_quadtree_ops", "spgist"),
-                ("stbox_kdtree_ops", "spgist")],
 }
 
 
@@ -342,7 +340,12 @@ def render(behaviour: str, sub: dict) -> str:
         # `compops_families:` entries (temporal, tgeo, tpoint) use.
         return generated(render_compops_body(
             _compops_spec_from_subtype(sub)), "compops.sql.tmpl")
-    tmpl = apply_conditionals(read_template(f"{behaviour}.sql.tmpl"), sub)
+    # `knn`: the class of the family has a nearest approach distance, so its
+    # GiST file declares the `{TEMP}_gist_distance` support function that
+    # FUNCTION 8 of the class names; it is read from the axes the class is
+    # rendered on (#render_tempopclass), never stated by hand.
+    tmpl = apply_conditionals(read_template(f"{behaviour}.sql.tmpl"),
+                              {**sub, "knn": "dist" in (sub.get("boxmembers") or [])})
     # `cellToBoundary` is a slot of the DggsCellOps descriptor, so it is one bare
     # polymorphic name overloaded by argument type across every cell-index family.
     boundary = "cellToBoundary"

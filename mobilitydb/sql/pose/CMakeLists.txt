@@ -38,10 +38,11 @@ SET(LOCAL_FILES
   111_tpose_aggfuncs
   112_tpose_spatialrels
   114_tpose_tempspatialrels
-  116_tpose_indexes
   117_tpose_analytics
   119_tpose_tile
   120_geopose_frames
+  122_tpose_gist
+  123_tpose_spgist
   )
 
 foreach (f ${LOCAL_FILES})

@@ -496,9 +496,9 @@ both required, or a faster build with a worse index passes as a win.
 
 A related blindness: `tools/scripts/check_opclass_members.py` compares OPERATOR
 members and is blind to a missing FUNCTION, so it would never report a class that
-forgot `FUNCTION 11`. What keeps a future family born with it are the
-`indexes.sql.tmpl` and `gist.sql.tmpl` templates, and `INHERITANCE_MAP.md` §6 names
-what those templates declare — so a member added to a template belongs in the same
+forgot `FUNCTION 11`. What keeps a future family born with it is the
+`gist.sql.tmpl` template, and `INHERITANCE_MAP.md` §6 names
+what the templates declare — so a member added to a template belongs in the same
 commit.
 
 ### 11.2 The shipped key is a time index in disguise
