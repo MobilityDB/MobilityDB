@@ -35,7 +35,7 @@ var searchData=
   ['datumgettpcboxp_32',['DatumGetTpcboxP',['../tpcbox_8h_aadfa535ac4950078ef45b0c9de489dac.html#aadfa535ac4950078ef45b0c9de489dac',1,'tpcbox.h']]],
   ['datumgettsequencep_33',['DatumGetTSequenceP',['../meos_2include_2temporal_2temporal_8h_ab4f26f123b82643ad331b632fc3d62c4.html#ab4f26f123b82643ad331b632fc3d62c4',1,'temporal.h']]],
   ['datumgettsequencesetp_34',['DatumGetTSequenceSetP',['../meos_2include_2temporal_2temporal_8h_a29b41350fabdf4f1522dbff000eb8a53.html#a29b41350fabdf4f1522dbff000eb8a53',1,'temporal.h']]],
-  ['day_35',['DAY',['../space__split__border__test_8c_a509a01c55cbe47386fe24602b7c7fda1.html#a509a01c55cbe47386fe24602b7c7fda1',1,'space_split_border_test.c']]],
+  ['day_35',['DAY',['../space__split__border__test_8c_a509a01c55cbe47386fe24602b7c7fda1.html#a509a01c55cbe47386fe24602b7c7fda1',1,'DAY():&#160;space_split_border_test.c'],['../crossing__unit_8c_a509a01c55cbe47386fe24602b7c7fda1.html#a509a01c55cbe47386fe24602b7c7fda1',1,'DAY():&#160;crossing_unit.c']]],
   ['ddb_5fdeg_5ferr_36',['DDB_DEG_ERR',['../meos_2src_2geo_2geo__funcs_8c_adc61c0c9788d20622e84f9d40d2d383f.html#adc61c0c9788d20622e84f9d40d2d383f',1,'geo_funcs.c']]],
   ['ddb_5fdeg_5fhi_37',['DDB_DEG_HI',['../meos_2src_2geo_2geo__funcs_8c_a6d60b67aba01d7607083267da35f57f0.html#a6d60b67aba01d7607083267da35f57f0',1,'geo_funcs.c']]],
   ['ddb_5fdeg_5flo_38',['DDB_DEG_LO',['../meos_2src_2geo_2geo__funcs_8c_adc2ef8cae6e84bbe18a17c85886c60f8.html#adc2ef8cae6e84bbe18a17c85886c60f8',1,'geo_funcs.c']]],
