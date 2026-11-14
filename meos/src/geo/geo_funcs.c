@@ -31101,7 +31101,16 @@ arc_angle_swept(double theta0, double theta1, bool ccw)
  * LIFT: the ordinates are given at the vertices and read between them along
  * the curve joining them, which for an arc is read by ANGLE rather than by the
  * chord. The middle control point carries its own ordinates, so the lift is
- * linear over each of the two halves of the sweep
+ * linear over each of the two halves of the sweep.
+ *
+ * The point is a vertex an overlay constructs, so it lies on the arc within
+ * the rounding of its construction, 4 epsilon of the largest coordinate of
+ * the arc and the point (#coordinate_rounding): whether the arc, the circle
+ * through its three control points within its sweep, passes within that
+ * distance of the point is decided exactly (#point_arc_within_exact), never
+ * against a centre constructed in doubles, whose error grows as the arc
+ * flattens. A whole circle, whose end is its start, is read as the two
+ * halves of the circle on the diameter from its start to its middle point
  * @param[in] p0,p1,p2 Control points of the arc
  * @param[in] px,py Point
  * @param[out] z,m Ordinates the arc determines there
@@ -31113,37 +31122,75 @@ arc_ordinates_at(const POINT4D *p0, const POINT4D *p1, const POINT4D *p2,
 {
   assert(p0); assert(p1); assert(p2); assert(z); assert(m);
   POINT2D a = { p0->x, p0->y }, b = { p1->x, p1->y }, c = { p2->x, p2->y };
+  bool whole = (a.x == c.x && a.y == c.y);
+  /* Three collinear points draw a segment, which the caller reads as one */
+  if (! whole && cross_product_sign(a.x, a.y, b.x, b.y, a.x, a.y, c.x, c.y) ==
+      0)
+    return false;
+  if (whole && a.x == b.x && a.y == b.y)
+    return false;
+
+  /* The point lies on the arc within the rounding of its construction */
+  double big = fmax(fmax(fmax(fabs(a.x), fabs(a.y)), fmax(fabs(b.x),
+    fabs(b.y))), fmax(fmax(fabs(c.x), fabs(c.y)), fmax(fabs(px), fabs(py))));
+  double band = coordinate_rounding(big, 0.0);
+  const double p[2] = { px, py };
+  bool on;
+  if (whole)
+  {
+    ExactArc h1 = {{a.x, a.y}, {0.0, 0.0}, {b.x, b.y}, true, 0, 0, 0, 0};
+    ExactArc h2 = {{b.x, b.y}, {0.0, 0.0}, {a.x, a.y}, true, 0, 0, 0, 0};
+    double box[4];
+    exact_arc_bound(&h1, box);
+    exact_arc_bound(&h2, box);
+    on = point_arc_within_exact(p, &h1, band) ||
+      point_arc_within_exact(p, &h2, band);
+  }
+  else
+  {
+    ExactArc arc = {{a.x, a.y}, {b.x, b.y}, {c.x, c.y}, false, 0, 0, 0, 0};
+    double box[4];
+    exact_arc_bound(&arc, box);
+    on = point_arc_within_exact(p, &arc, band);
+  }
+  if (! on)
+    return false;
+
+  /* Where it reads the ordinates along the arc: by angle about the centre,
+   * or along the chord of an arc too flat for the centre to be formed */
+  double f, fmid;
   POINT2D centre;
   double radius = lw_arc_center(&a, &b, &c, &centre);
-  /* Three collinear points draw a segment, which the caller reads as one */
   if (radius < 0)
-    return false;
-
-  /* The point lies on the circle */
-  double tol = fmax(
-    coordinate_tolerance(centre.x - radius, centre.x + radius),
-    coordinate_tolerance(centre.y - radius, centre.y + radius));
-  if (fabs(hypot(px - centre.x, py - centre.y) - radius) > tol)
-    return false;
-
-  /* The sweep runs from the first control point through the second, which is
-   * the direction the three of them turn in */
-  bool ccw = cross_product(&a, &b, &c) > 0;
-  double t0 = atan2(a.y - centre.y, a.x - centre.x);
-  double total = arc_angle_swept(t0,
-    atan2(c.y - centre.y, c.x - centre.x), ccw);
-  double mid = arc_angle_swept(t0,
-    atan2(b.y - centre.y, b.x - centre.x), ccw);
-  double here = arc_angle_swept(t0, atan2(py - centre.y, px - centre.x), ccw);
-  /* A full circle sweeps from a point back to itself, which reads as no sweep
-   * at all: its two halves are what the middle control point separates */
-  if (total <= 0)
-    total = 2 * M_PI;
-  /* The point is on the circle but outside the span the arc occupies */
-  if (here > total + MEOS_GEOM_TOLERANCE)
-    return false;
-
-  double f = here / total, fmid = mid / total;
+  {
+    POINT2D q = { px, py }, closest;
+    f = (double) closest_point2d_on_segment_ratio(&q, &a, &c, &closest);
+    fmid = (double) closest_point2d_on_segment_ratio(&b, &a, &c, &closest);
+  }
+  else
+  {
+    /* The sweep runs from the first control point through the second, which
+     * is the direction the three of them turn in */
+    bool ccw = cross_product(&a, &b, &c) > 0;
+    double t0 = atan2(a.y - centre.y, a.x - centre.x);
+    double total = arc_angle_swept(t0,
+      atan2(c.y - centre.y, c.x - centre.x), ccw);
+    double mid = arc_angle_swept(t0,
+      atan2(b.y - centre.y, b.x - centre.x), ccw);
+    double here = arc_angle_swept(t0, atan2(py - centre.y, px - centre.x),
+      ccw);
+    /* A full circle sweeps from a point back to itself, which reads as no
+     * sweep at all: its two halves are what the middle control point
+     * separates */
+    if (total <= 0)
+      total = 2 * M_PI;
+    /* A point on the arc within its band past one of its ends reads as that
+     * end */
+    if (here > total)
+      here = (here - total < 2 * M_PI - here) ? total : 0.0;
+    f = here / total;
+    fmid = mid / total;
+  }
   if (fmid <= 0 || fmid >= 1)
   {
     /* The middle point determines nothing of its own, so the lift runs from
