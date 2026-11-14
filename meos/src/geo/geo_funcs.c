@@ -874,19 +874,6 @@ build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
  *****************************************************************************/
 
 /**
- * @brief Split the difference of two doubles into its rounded value and the
- * error of that rounding, which together are the difference exactly
- */
-static inline void
-two_diff(double a, double b, double *x, double *y)
-{
-  *x = a - b;
-  double bv = a - *x;
-  double av = *x + bv;
-  *y = (a - av) + (bv - b);
-}
-
-/**
  * @brief Split the product of two doubles into its rounded value and the
  * error of that rounding, which together are the product exactly
  * @note Exact where the product neither overflows nor underflows
