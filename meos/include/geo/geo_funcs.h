@@ -1747,6 +1747,10 @@ extern void tower_wide_arena_init(TowerWideArena *ar);
 extern void tower_wide_arena_free(TowerWideArena *ar);
 extern TowerWideMark tower_wide_arena_mark(const TowerWideArena *ar);
 extern void tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m);
+extern int wide_limbs_divmod(const uint64 *u, int nu, const uint64 *v,
+  int nv, uint64 *q, uint64 *r, int *nr);
+extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
+  bool *exact);
 
 /*****************************************************************************
  * The nearest double of a value read exactly

@@ -4313,6 +4313,269 @@ tower_wide_mul(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
 }
 
 /**
+ * @brief Return the quotient of the 128-bit number `hi 2^64 + lo` by @p d,
+ * `hi < d`, and set its remainder, from 32-bit digits (Hacker's Delight,
+ * divlu), so that no division wider than 64 bits is taken
+ */
+static uint64_t
+wide_div128(uint64_t hi, uint64_t lo, uint64_t d, uint64_t *rem)
+{
+  const uint64_t b = UINT64CONST(1) << 32;
+  int s = 63 - pg_leftmost_one_pos64(d);
+  d <<= s;
+  uint64_t un32 = s ? (hi << s) | (lo >> (64 - s)) : hi;
+  uint64_t un10 = lo << s;
+  uint64_t vn1 = d >> 32, vn0 = d & 0xFFFFFFFFULL;
+  uint64_t un1 = un10 >> 32, un0 = un10 & 0xFFFFFFFFULL;
+  uint64_t q1 = un32 / vn1, rhat = un32 - q1 * vn1;
+  while (q1 >= b || q1 * vn0 > b * rhat + un1)
+  {
+    q1--;
+    rhat += vn1;
+    if (rhat >= b)
+      break;
+  }
+  uint64_t un21 = un32 * b + un1 - q1 * d;
+  uint64_t q0 = un21 / vn1;
+  rhat = un21 - q0 * vn1;
+  while (q0 >= b || q0 * vn0 > b * rhat + un0)
+  {
+    q0--;
+    rhat += vn1;
+    if (rhat >= b)
+      break;
+  }
+  *rem = (un21 * b + un0 - q0 * d) >> s;
+  return q1 * b + q0;
+}
+
+/* The number of limbs of a magnitude of at most @p n limbs, its highest not
+ * 0 */
+static inline int
+wide_limbs_len(const uint64_t *a, int n)
+{
+  while (n > 0 && a[n - 1] == 0)
+    n--;
+  return n;
+}
+
+/* -1, 0 or 1 as a magnitude of @p na limbs is below, equal to or above one
+ * of @p nb, the highest limb of each not 0 */
+static int
+wide_limbs_cmp(const uint64_t *a, int na, const uint64_t *b, int nb)
+{
+  if (na != nb)
+    return (na > nb) ? 1 : -1;
+  for (int i = na - 1; i >= 0; i--)
+    if (a[i] != b[i])
+      return (a[i] > b[i]) ? 1 : -1;
+  return 0;
+}
+
+/** Number of words of scratch the division and the square root take on
+ * the stack, more being allocated */
+#define WIDE_LIMBS_STACK 256
+
+/**
+ * @brief Set the quotient and the remainder of two magnitudes, exactly, by
+ * words: Knuth's algorithm D on 64-bit limbs, each digit of the quotient
+ * estimated from the two highest limbs of the remainder (#wide_div128) and
+ * corrected, every product formed by #wide_mul64
+ * @param[in] u,nu Dividend, of @p nu limbs, the lowest first
+ * @param[in] v,nv Divisor, of @p nv limbs, not 0
+ * @param[out] q Quotient, room for `nu - nv + 1` limbs, and at least one
+ * @param[out] r Remainder, room for @p nv limbs
+ * @param[out] nr Number of limbs of the remainder, its highest not 0
+ * @return Number of limbs of the quotient, its highest not 0
+ */
+int
+wide_limbs_divmod(const uint64_t *u, int nu, const uint64_t *v, int nv,
+  uint64_t *q, uint64_t *r, int *nr)
+{
+  nu = wide_limbs_len(u, nu);
+  nv = wide_limbs_len(v, nv);
+  assert(nv > 0);
+  if (wide_limbs_cmp(u, nu, v, nv) < 0)
+  {
+    memcpy(r, u, sizeof(uint64_t) * (size_t) nu);
+    *nr = nu;
+    return 0;
+  }
+  if (nv == 1)
+  {
+    uint64_t rem = 0;
+    for (int i = nu - 1; i >= 0; i--)
+      q[i] = wide_div128(rem, u[i], v[0], &rem);
+    r[0] = rem;
+    *nr = rem ? 1 : 0;
+    return wide_limbs_len(q, nu);
+  }
+  /* The divisor shifted until its highest bit is set, and the dividend by
+   * as many bits, in one more limb */
+  uint64_t sbuf[WIDE_LIMBS_STACK];
+  size_t need = (size_t) (nu + 1 + nv);
+  uint64_t *un = (need <= WIDE_LIMBS_STACK) ? sbuf :
+    palloc(sizeof(uint64_t) * need);
+  uint64_t *vn = un + nu + 1;
+  int s = 63 - pg_leftmost_one_pos64(v[nv - 1]);
+  for (int i = nv - 1; i > 0; i--)
+    vn[i] = (v[i] << s) | (s ? v[i - 1] >> (64 - s) : 0);
+  vn[0] = v[0] << s;
+  un[nu] = s ? u[nu - 1] >> (64 - s) : 0;
+  for (int i = nu - 1; i > 0; i--)
+    un[i] = (u[i] << s) | (s ? u[i - 1] >> (64 - s) : 0);
+  un[0] = u[0] << s;
+  const uint64_t vtop = vn[nv - 1], vnext = vn[nv - 2];
+  for (int j = nu - nv; j >= 0; j--)
+  {
+    /* The digit from the two highest limbs, at most one above the base;
+     * where the highest limb equals that of the divisor the estimate is the
+     * largest digit, its remainder past 64 bits when the sum carries */
+    uint64_t qhat, rhat;
+    bool rbig;
+    if (un[j + nv] >= vtop)
+    {
+      qhat = ~UINT64CONST(0);
+      rhat = un[j + nv - 1] + vtop;
+      rbig = rhat < vtop;
+    }
+    else
+    {
+      qhat = wide_div128(un[j + nv], un[j + nv - 1], vtop, &rhat);
+      rbig = false;
+    }
+    /* At most two corrections, read on the next limb of the divisor */
+    while (! rbig)
+    {
+      uint64_t ph, pl;
+      wide_mul64(qhat, vnext, &ph, &pl);
+      if (ph < rhat || (ph == rhat && pl <= un[j + nv - 2]))
+        break;
+      qhat--;
+      rhat += vtop;
+      rbig = rhat < vtop;
+    }
+    /* The remainder less the digit times the divisor */
+    uint64_t borrow = 0, carry = 0;
+    for (int i = 0; i < nv; i++)
+    {
+      uint64_t ph, pl;
+      wide_mul64(qhat, vn[i], &ph, &pl);
+      pl += carry;
+      carry = ph + (pl < carry);
+      uint64_t t = un[i + j] - pl;
+      uint64_t b1 = un[i + j] < pl;
+      un[i + j] = t - borrow;
+      borrow = b1 + (t < borrow);
+    }
+    uint64_t t = un[j + nv] - carry;
+    uint64_t b1 = un[j + nv] < carry;
+    un[j + nv] = t - borrow;
+    bool neg = b1 || t < borrow;
+    q[j] = qhat;
+    if (neg)
+    {
+      /* The digit was one too large: add the divisor back */
+      q[j]--;
+      uint64_t c = 0;
+      for (int i = 0; i < nv; i++)
+      {
+        uint64_t sum = un[i + j] + c;
+        uint64_t c1 = sum < c;
+        un[i + j] = sum + vn[i];
+        c = c1 + (un[i + j] < vn[i]);
+      }
+      un[j + nv] += c;
+    }
+  }
+  for (int i = 0; i < nv; i++)
+    r[i] = (un[i] >> s) | (s ? un[i + 1] << (64 - s) : 0);
+  *nr = wide_limbs_len(r, nv);
+  if (un != sbuf)
+    pfree(un);
+  return wide_limbs_len(q, nu - nv + 1);
+}
+
+/**
+ * @brief Set the floor of the square root of a magnitude, exactly, by
+ * Newton's iteration from above
+ * @details The iteration `x <- (x + n / x) / 2` (#wide_limbs_divmod) decreases
+ * from any start at or above the root to its floor, and then stops
+ * decreasing. It starts from the square root in doubles of the highest 62
+ * or 63 bits of @p n, an even number t of bits below them dropped, plus 2,
+ * times 2^(t/2): the root of those bits is at most one off in doubles, and
+ * `sqrt(n) < (floor(sqrt(m)) + 1) 2^(t/2)` for those bits m
+ * @param[in] n,nn The magnitude, of @p nn limbs
+ * @param[out] x The root, room for `nn / 2 + 2` limbs
+ * @param[out] exact Whether the root is exact, unless NULL
+ * @return Number of limbs of the root, its highest not 0
+ */
+int
+wide_limbs_isqrt(const uint64_t *n, int nn, uint64_t *x, bool *exact)
+{
+  nn = wide_limbs_len(n, nn);
+  if (nn == 0)
+  {
+    if (exact)
+      *exact = true;
+    return 0;
+  }
+  int bits = 64 * (nn - 1) + pg_leftmost_one_pos64(n[nn - 1]) + 1;
+  int t = (bits > 62) ? ((bits - 62) & ~1) : 0;
+  int ls = t / 64, bs = t % 64;
+  uint64_t m = n[ls] >> bs;
+  if (bs && ls + 1 < nn)
+    m |= n[ls + 1] << (64 - bs);
+  uint64_t x0 = (uint64_t) sqrt((double) m) + 2;
+  /* The scratch: the next iterate, the quotient and the remainder, and the
+   * square of the root */
+  int nx_cap = nn / 2 + 2;
+  uint64_t sbuf[WIDE_LIMBS_STACK];
+  size_t need = (size_t) (nx_cap + 1) + (size_t) (nn + 1) +
+    (size_t) nx_cap + 2 * (size_t) nx_cap;
+  uint64_t *y = (need <= WIDE_LIMBS_STACK) ? sbuf :
+    palloc(sizeof(uint64_t) * need);
+  uint64_t *qt = y + nx_cap + 1, *rm = qt + nn + 1, *sq = rm + nx_cap;
+  int hs = t / 2, hls = hs / 64, hbs = hs % 64;
+  memset(x, 0, sizeof(uint64_t) * (size_t) (hls + 2));
+  x[hls] = x0 << hbs;
+  if (hbs)
+    x[hls + 1] = x0 >> (64 - hbs);
+  int nx = wide_limbs_len(x, hls + 2);
+  while (true)
+  {
+    int nr;
+    int nq = wide_limbs_divmod(n, nn, x, nx, qt, rm, &nr);
+    /* y = (x + q) / 2 */
+    int ny = Max(nx, nq);
+    uint64_t c = 0;
+    for (int i = 0; i < ny; i++)
+    {
+      uint64_t xi = (i < nx) ? x[i] : 0, qi = (i < nq) ? qt[i] : 0;
+      uint64_t s = xi + qi, c1 = s < xi;
+      y[i] = s + c;
+      c = c1 + (y[i] < s);
+    }
+    y[ny] = c;
+    for (int i = 0; i <= ny; i++)
+      y[i] = (y[i] >> 1) | ((i < ny) ? y[i + 1] << 63 : 0);
+    ny = wide_limbs_len(y, ny + 1);
+    if (wide_limbs_cmp(y, ny, x, nx) >= 0)
+      break;
+    memcpy(x, y, sizeof(uint64_t) * (size_t) ny);
+    nx = ny;
+  }
+  if (exact)
+  {
+    wide_limbs_mul(x, nx, x, nx, sq);
+    *exact = wide_limbs_cmp(sq, wide_limbs_len(sq, 2 * nx), n, nn) == 0;
+  }
+  if (y != sbuf)
+    pfree(y);
+  return nx;
+}
+
+/**
  * @brief Set the product of two #WideDyadic, exactly
  * @note The result is not one of the operands
  */

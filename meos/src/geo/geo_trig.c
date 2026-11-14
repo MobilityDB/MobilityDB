@@ -684,85 +684,106 @@ fix_top_bit(const uint32_t *a, int L)
   return -1;
 }
 
-static bool
-fix_get_bit(const uint32_t *a, int k)
+/* The 64-bit limbs of an integer of @p L 32-bit limbs, the lowest first, in
+ * `(L + 1) / 2` limbs, and their number, the highest not 0 */
+static int
+fix_to_limbs(const uint32_t *a, int L, uint64 *o)
 {
-  return (a[k / 32] >> (k % 32)) & 1;
+  int n = (L + 1) / 2;
+  for (int i = 0; i < n; i++)
+    o[i] = (uint64) a[2 * i] |
+      ((2 * i + 1 < L) ? (uint64) a[2 * i + 1] << 32 : 0);
+  while (n > 0 && o[n - 1] == 0)
+    n--;
+  return n;
 }
 
+/* An integer of @p L 32-bit limbs from @p n 64-bit limbs, which it holds */
 static void
-fix_set_bit(uint32_t *a, int k)
+fix_of_limbs(const uint64 *o, int n, uint32_t *a, int L)
 {
-  a[k / 32] |= (uint32_t) 1 << (k % 32);
+  for (int i = 0; i < L; i++)
+    a[i] = (i / 2 < n) ? (uint32_t) (o[i / 2] >> (32 * (i % 2))) : 0;
 }
 
-/* a = 2 a; the callers keep a below 2^(32 L - 1) */
-static void
-fix_shl1(uint32_t *a, int L)
-{
-  for (int i = L - 1; i > 0; i--)
-    a[i] = (a[i] << 1) | (a[i - 1] >> 31);
-  a[0] <<= 1;
-}
+/* Number of 64-bit words of scratch the square root and the quotient take
+ * on the stack, more being allocated */
+#define FIX_LIMBS_STACK 192
 
-/* r = floor(sqrt(a)), or its ceiling where @p up, by the digit-by-digit
- * method on exact integers; r may be a */
+/* r = floor(sqrt(a)), or its ceiling where @p up, on the limbs of the wide
+ * number (#wide_limbs_isqrt); r may be a */
 static void
 fix_isqrt(const uint32_t *a, uint32_t *r, int L, bool up)
 {
-  uint32_t *rem = palloc(L * sizeof(uint32_t));
-  uint32_t *bit = palloc0(L * sizeof(uint32_t));
-  uint32_t *t = palloc(L * sizeof(uint32_t));
-  memcpy(rem, a, L * sizeof(uint32_t));
-  memset(r, 0, L * sizeof(uint32_t));
-  int top = fix_top_bit(rem, L);
-  if (top >= 0)
+  int n64 = (L + 1) / 2;
+  size_t need = (size_t) n64 + (size_t) (n64 / 2 + 2);
+  uint64 sbuf[FIX_LIMBS_STACK];
+  uint64 *buf = (need <= FIX_LIMBS_STACK) ? sbuf :
+    palloc(sizeof(uint64) * need);
+  uint64 *n = buf, *x = buf + n64;
+  int nn = fix_to_limbs(a, L, n);
+  bool exact;
+  int nx = wide_limbs_isqrt(n, nn, x, &exact);
+  /* The root of an integer below 2^(32 L) is below 2^(16 L), so one more
+   * stays within the limbs */
+  if (up && ! exact)
   {
-    fix_set_bit(bit, top & ~1);
-    while (! fix_is_zero(bit, L))
-    {
-      fix_add(r, bit, t, L);
-      if (fix_cmp(rem, t, L) >= 0)
-      {
-        fix_sub_clamp(rem, t, rem, L);
-        fix_shift_right(r, 1, r, L, false);
-        fix_add(r, bit, r, L);
-      }
-      else
-        fix_shift_right(r, 1, r, L, false);
-      fix_shift_right(bit, 2, bit, L, false);
-    }
-    if (up && ! fix_is_zero(rem, L))
-      fix_increment(r, L);
+    int i = 0;
+    while (i < nx && ++x[i] == 0)
+      i++;
+    if (i == nx)
+      x[nx++] = 1;
   }
-  pfree(rem); pfree(bit); pfree(t);
+  fix_of_limbs(x, nx, r, L);
+  if (buf != sbuf)
+    pfree(buf);
 }
 
-/* q = floor(a 2^k / d), or its ceiling where @p up, by binary long division
- * on exact integers, d not 0; q may be a or d */
+/* q = floor(a 2^k / d), or its ceiling where @p up, on the limbs of the wide
+ * number (#wide_limbs_divmod), d not 0 and the quotient within the limbs;
+ * q may be a or d */
 static void
 fix_div_shift(const uint32_t *a, int k, const uint32_t *d, uint32_t *q,
   int L, bool up)
 {
-  uint32_t *rem = palloc0(L * sizeof(uint32_t));
-  uint32_t *res = palloc0(L * sizeof(uint32_t));
-  int top = fix_top_bit(a, L);
-  /* The bits of a 2^k, from the highest: those of a, then k zeros */
-  for (int i = top + k; i >= 0; i--)
+  int n64 = (L + 1) / 2, ks = k / 64;
+  int nu_cap = n64 + ks + 1;
+  size_t need = 2 * (size_t) nu_cap + 2 * (size_t) n64 + 1;
+  uint64 sbuf[FIX_LIMBS_STACK];
+  uint64 *buf = (need <= FIX_LIMBS_STACK) ? sbuf :
+    palloc(sizeof(uint64) * need);
+  uint64 *u = buf, *dv = u + nu_cap, *qt = dv + n64, *rm = qt + nu_cap + 1;
+  /* a 2^k: the limbs of a moved up by ks limbs and kb bits */
+  memset(u, 0, sizeof(uint64) * (size_t) nu_cap);
+  int na = fix_to_limbs(a, L, u + ks);
+  int nu = 0;
+  if (na)
   {
-    fix_shl1(rem, L);
-    if (i >= k && fix_get_bit(a, i - k))
-      rem[0] |= 1;
-    if (fix_cmp(rem, d, L) >= 0)
+    nu = na + ks;
+    int kb = k % 64;
+    if (kb)
     {
-      fix_sub_clamp(rem, d, rem, L);
-      fix_set_bit(res, i);
+      for (int i = nu; i > ks; i--)
+        u[i] = (u[i] << kb) | (u[i - 1] >> (64 - kb));
+      u[ks] <<= kb;
+      nu++;
     }
   }
-  if (up && ! fix_is_zero(rem, L))
-    fix_increment(res, L);
-  memcpy(q, res, L * sizeof(uint32_t));
-  pfree(rem); pfree(res);
+  int nd = fix_to_limbs(d, L, dv);
+  int nq = 0, nr = 0;
+  if (nu)
+    nq = wide_limbs_divmod(u, nu, dv, nd, qt, rm, &nr);
+  if (up && nr)
+  {
+    int i = 0;
+    while (i < nq && ++qt[i] == 0)
+      i++;
+    if (i == nq)
+      qt[nq++] = 1;
+  }
+  fix_of_limbs(qt, nq, q, L);
+  if (buf != sbuf)
+    pfree(buf);
 }
 
 /**
