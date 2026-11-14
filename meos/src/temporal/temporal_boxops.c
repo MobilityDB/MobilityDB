@@ -645,6 +645,8 @@ index_strategy_op(StrategyNumber strategy, IndexSearchOp *op)
   switch (strategy)
   {
     case RTOverlapStrategyNumber: *op = INDEX_OVERLAPS; return true;
+    case RTEverOverlapStrategyNumber: *op = INDEX_OVERLAPS; return true;
+    case RTAlwaysOverlapStrategyNumber: *op = INDEX_OVERLAPS; return true;
     case RTContainsStrategyNumber: *op = INDEX_CONTAINS; return true;
     case RTContainedByStrategyNumber: *op = INDEX_CONTAINED_BY; return true;
     case RTSameStrategyNumber: *op = INDEX_SAME; return true;

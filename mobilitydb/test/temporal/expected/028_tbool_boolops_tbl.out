@@ -43,6 +43,6 @@ SELECT COUNT(*) FROM tbl_tbool WHERE ~ temp IS NOT NULL;
 SELECT MAX(duration(whenTrue(temp #> 5))) FROM tbl_tfloat;
        max       
 -----------------
- 03:36:45.567922
+ 03:36:45.567923
 (1 row)
 

@@ -282,8 +282,6 @@ def _geography_twins(body: str, names) -> str:
 BOXMEMBER_CLASSES = {
     "gist": [("stbox_rtree_ops", "gist")],
     "spgist": [("stbox_quadtree_ops", "spgist"), ("stbox_kdtree_ops", "spgist")],
-    "indexes": [("stbox_rtree_ops", "gist"), ("stbox_quadtree_ops", "spgist"),
-                ("stbox_kdtree_ops", "spgist")],
 }
 
 
@@ -301,6 +299,13 @@ def render_boxmembers(behaviour: str, sub: dict) -> str:
     for name, am in BOXMEMBER_CLASSES[behaviour]:
         members = []
         for s in strategies:
+            if s["axis"] == "ever":
+                # The box written first in the ever and always overlaps of the
+                # family's type (#_ever_overlaps_box)
+                if _ever_overlaps_box(temp) == "stbox":
+                    members += [f"  -- {s['desc']}",
+                                f"  OPERATOR  {s['num']}    {s['sqlop']} (stbox, {temp}),"]
+                continue
             if s["axis"] not in axes:
                 continue
             order = (" FOR ORDER BY pg_catalog.float_ops"
@@ -335,7 +340,12 @@ def render(behaviour: str, sub: dict) -> str:
         # `compops_families:` entries (temporal, tgeo, tpoint) use.
         return generated(render_compops_body(
             _compops_spec_from_subtype(sub)), "compops.sql.tmpl")
-    tmpl = apply_conditionals(read_template(f"{behaviour}.sql.tmpl"), sub)
+    # `knn`: the class of the family has a nearest approach distance, so its
+    # GiST file declares the `{TEMP}_gist_distance` support function that
+    # FUNCTION 8 of the class names; it is read from the axes the class is
+    # rendered on (#render_tempopclass), never stated by hand.
+    tmpl = apply_conditionals(read_template(f"{behaviour}.sql.tmpl"),
+                              {**sub, "knn": "dist" in (sub.get("boxmembers") or [])})
     # `cellToBoundary` is a slot of the DggsCellOps descriptor, so it is one bare
     # polymorphic name overloaded by argument type across every cell-index family.
     boundary = "cellToBoundary"
@@ -907,6 +917,15 @@ def render_boxopclass(bt: dict, cls: dict, strategies: list) -> str:
                                for p in bt["opclasses"].get("partners") or []]
     members = []
     for s in strategies:
+        if s["axis"] == "ever":
+            # The box written first in the ever and always overlaps of each
+            # partner declaring them with this box (#_ever_overlaps_box)
+            typs = [typ for typ, _ in partners[1:] if _ever_overlaps_box(typ) == box]
+            if typs:
+                members.append(f"  -- {s['desc']}")
+                members += [f"  OPERATOR  {s['num']}    {s['sqlop']} ({box}, {typ}),"
+                            for typ in typs]
+            continue
         if s["axis"] not in own:
             continue
         order = " FOR ORDER BY pg_catalog.float_ops" if s["axis"] == "dist" else ""
@@ -990,6 +1009,14 @@ def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
     axes = set(axes)
     members = []
     for s in strategies:
+        if s["axis"] == "ever":
+            # The ever and always overlaps, against the box the type declares
+            # them with (#_ever_overlaps_box)
+            if _ever_overlaps_box(temp) == box:
+                op = (opnames or {}).get(s["sqlop"], s["sqlop"])
+                members += [f"  -- {s['desc']}",
+                            f"  OPERATOR  {s['num']}    {op} ({temp}, {box}),"]
+            continue
         if s["axis"] not in axes:
             continue
         order = " FOR ORDER BY pg_catalog.float_ops" if s["axis"] == "dist" else ""
@@ -4921,6 +4948,24 @@ def _compops_box(temp: str) -> str | None:
             return "stbox"
     return None
 
+def _ever_overlaps_box(temp: str) -> str | None:
+    """The box with which the temporal type `temp` declares the ever and always
+    overlaps `?&&` and `%&&`, as #_compops_ea_group declares them for a
+    `compops_families` entry or a subtype stating `overlaps`, or None when its
+    family declares none. The index operator classes take these operators
+    against this box alone: a value lying in the box at some instant has a
+    bounding box overlapping it, which is the test the classes prune with,
+    whereas two values meeting within the band of a constructed point, as two
+    temporal network points do, need not have overlapping boxes."""
+    mf = load_manifest()
+    declared = any(fam.get("overlaps") and
+                   any(p["temp"] == temp for p in fam.get("pairs") or [])
+                   for fam in mf.get("compops_families", []))
+    declared = declared or any(sub["temp"] == temp and sub.get("overlaps")
+                               for sub in mf.get("subtypes", []))
+    return _compops_box(temp) if declared else None
+
+
 def _compops_box_tside(tempsym: str, box: str) -> str:
     """The temporal side of the C symbol of an overlaps with the box `box`, the
     narrower of the family's `tempsym` and the `tside` the box states in
@@ -4962,14 +5007,18 @@ def _compops_func(sig: str, ret: str, sym: str, support: str | None) -> str:
 
 
 def _compops_op_ea(op: str, l: str, r: str, proc: str, neg: str | None,
-                    rest: str, join: str) -> str:
+                    rest: str, join: str, comm: str | None = None) -> str:
     """An ever/always operator, written as #_compops_op_t writes a temporal
-    one; an operator no other operator negates states no NEGATOR."""
+    one; an operator no other operator negates states no NEGATOR, and one
+    whose arguments do not commute states no COMMUTATOR."""
     tmpl = read_template("compops_op_evalways.sql.tmpl")
     if neg is None:
         tmpl = tmpl.replace("  NEGATOR = {NEG},\n", "")
+    if comm is None:
+        tmpl = tmpl.replace("  COMMUTATOR = {COMM},\n", "")
     return (tmpl.replace("{OP}", op).replace("{L}", l).replace("{R}", r)
                 .replace("{PROC}", proc).replace("{NEG}", neg or "")
+                .replace("{COMM}", comm or "")
                 .replace("{REST}", rest).replace("{JOIN}", join).rstrip("\n"))
 
 
@@ -5010,8 +5059,12 @@ def _compops_ea_group(pred: dict, direction: str, pairs: list, basesym: str,
             support = p.get("eqsupport") if pred["key"] == "eq" else None
             funcs.append(_compops_func(f"{prefix}{pred['cap']}({l}, {r})",
                                         "boolean", sym, support))
+            # The overlaps asks the same of its two arguments in either order,
+            # so each order is the commutator of the other, which lets an index
+            # on the temporal value answer the box written first
             ops.append(_compops_op_ea(pred[op_key], l, r, f"{prefix}{pred['cap']}",
-                                       pred[neg_key], p["rest"], p["join"]))
+                                       pred[neg_key], p["rest"], p["join"],
+                                       pred[op_key] if pred.get("box") else None))
         out += "\n".join(funcs) + "\n\n" + "\n".join(ops) + "\n\n"
     return out
 

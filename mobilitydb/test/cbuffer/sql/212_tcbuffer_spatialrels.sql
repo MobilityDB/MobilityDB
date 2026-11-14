@@ -70,6 +70,14 @@ SELECT eCovers(tcbuffer '[Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(2 2),1
 -- Covered in the middle of the segment only
 SELECT eCovers(tcbuffer '[Cbuffer(Point(-1 1),3)@2001-01-01, Cbuffer(Point(1 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 3),2)@2001-01-01, Cbuffer(Point(1 -2),1)@2001-01-03]');
 SELECT aCovers(tcbuffer '[Cbuffer(Point(-1 1),3)@2001-01-01, Cbuffer(Point(1 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 3),2)@2001-01-01, Cbuffer(Point(1 -2),1)@2001-01-03]');
+-- Covered only at a bound of the common period that the period excludes, and
+-- not covered right after a lower bound that it excludes
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-02)', tcbuffer '[Cbuffer(Point(5 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02)');
+SELECT eContains(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-02)', tcbuffer '[Cbuffer(Point(5 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02)');
+SELECT eCovers(tcbuffer '(Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-02]', tcbuffer '(Cbuffer(Point(1 0),1)@2001-01-01, Cbuffer(Point(5 0),1)@2001-01-02]');
+SELECT aCovers(tcbuffer '(Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-02]', tcbuffer '(Cbuffer(Point(4 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+SELECT aContains(tcbuffer '(Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-02]', tcbuffer '(Cbuffer(Point(4 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-02]', tcbuffer '[Cbuffer(Point(5 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02]');
 
 -- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
 -- centre (0,0) and radius 5. The internally tangent disc is covered but not

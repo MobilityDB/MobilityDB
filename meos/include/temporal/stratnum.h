@@ -53,6 +53,8 @@
 #define RTFrontStrategyNumber         33    /* for <</ */
 #define RTBackStrategyNumber          34    /* for />> */
 #define RTOverBackStrategyNumber      35    /* for /&> */
+#define RTEverOverlapStrategyNumber   36    /* for ?&& */
+#define RTAlwaysOverlapStrategyNumber 37    /* for %&& */
 
 /*****************************************************************************/
 

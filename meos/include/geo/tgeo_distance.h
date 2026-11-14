@@ -53,10 +53,10 @@ extern bool point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
 
 extern int tgeompointsegm_distance_turnpt(Datum start1, Datum end1,
   Datum start2, Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap);
+  TimestampTz *tps, Datum *values, int cap);
 extern int tgeogpointsegm_distance_turnpt(Datum start1, Datum end1,
   Datum start2, Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap);
+  TimestampTz *tps, Datum *values, int cap);
   
 extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   LiftedFunctionInfo *lfinfo);
@@ -86,6 +86,9 @@ typedef bool (*mergewalk_func)(const TSequence *seq1, int k1,
 
 extern bool tcont_tcont_merge_walk(const Temporal *temp1,
   const Temporal *temp2, mergewalk_func func, void *state, bool *shared);
+extern void tcont_interval_ends_out(const TSequence *seq1,
+  const TSequence *seq2, TimestampTz lower, TimestampTz upper,
+  bool *start_out, bool *end_out);
 extern bool tpoint_motion_exact_applies(const Temporal *temp1,
   const Temporal *temp2);
 extern double nad_tpoint_tpoint_exact(const Temporal *temp1,

@@ -1192,6 +1192,7 @@ extern Temporal *temporal_from_mfjson(const char *mfjson, MeosType temptype);
 extern Temporal *temporal_from_base_temp(Datum value, MeosType temptype, const Temporal *temp);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, MeosType temptype, TimestampTz t);
+extern TInstant *tinstant_make_intl(Datum value, MeosType temptype, TimestampTz t);
 extern TInstant *tinstant_make_free(Datum value, MeosType temptype, TimestampTz t);
 extern TSequence *tsequence_copy(const TSequence *seq);
 extern TSequence *tsequence_derivative(const TSequence *seq, bool spheroid);

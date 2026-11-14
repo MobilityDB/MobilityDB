@@ -627,26 +627,31 @@ CREATE FUNCTION eOverlaps(tstzspan, ttext)
 CREATE OPERATOR ?&& (
   LEFTARG = tstzspan, RIGHTARG = tbool,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tbox, RIGHTARG = tint,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tbox, RIGHTARG = tbigint,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tbox, RIGHTARG = tfloat,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tstzspan, RIGHTARG = ttext,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
@@ -674,26 +679,31 @@ CREATE FUNCTION aOverlaps(tstzspan, ttext)
 CREATE OPERATOR %&& (
   LEFTARG = tstzspan, RIGHTARG = tbool,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tbox, RIGHTARG = tint,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tbox, RIGHTARG = tbigint,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tbox, RIGHTARG = tfloat,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tstzspan, RIGHTARG = ttext,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
@@ -1273,26 +1283,31 @@ CREATE FUNCTION eOverlaps(ttext, tstzspan)
 CREATE OPERATOR ?&& (
   LEFTARG = tbool, RIGHTARG = tstzspan,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tint, RIGHTARG = tbox,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tbigint, RIGHTARG = tbox,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tfloat, RIGHTARG = tbox,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = ttext, RIGHTARG = tstzspan,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
@@ -1320,26 +1335,31 @@ CREATE FUNCTION aOverlaps(ttext, tstzspan)
 CREATE OPERATOR %&& (
   LEFTARG = tbool, RIGHTARG = tstzspan,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tint, RIGHTARG = tbox,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tbigint, RIGHTARG = tbox,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tfloat, RIGHTARG = tbox,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = ttext, RIGHTARG = tstzspan,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
@@ -1919,26 +1939,31 @@ CREATE FUNCTION eOverlaps(ttext, ttext)
 CREATE OPERATOR ?&& (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tbigint, RIGHTARG = tbigint,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?&& (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
@@ -1966,26 +1991,31 @@ CREATE FUNCTION aOverlaps(ttext, ttext)
 CREATE OPERATOR %&& (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tbigint, RIGHTARG = tbigint,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %&& (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 

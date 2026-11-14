@@ -503,18 +503,73 @@ meos_default_timezone(void)  /* MEOS: probe the OS default zone once, process-wi
   return meos_default_tz_name[0] ? meos_default_tz_name : NULL;
 }
 
+/*
+ * MEOS: the time zone the program names.
+ *
+ * The session time zone is per thread, yet a host runs its work on threads
+ * it does not choose (Go moves a goroutine between threads, a JVM executor
+ * and a test host hand work to a pool), so a thread that names no zone takes
+ * the zone the program named last, by whichever thread, and the machine's
+ * zone only while the program names none. A thread taking it follows each
+ * later naming, as PostgreSQL's SET TIME ZONE moves every later statement and
+ * as every thread reads the ways file #meos_set_ways_csv names last; a
+ * thread naming its own keeps it. The name is copied whole under a lock, the
+ * lock-free idiom of #tznames_lock_acquire, and its generation counts the
+ * namings, 0 while the program names none.
+ */
+static char meos_program_tz_name[TZ_STRLEN_MAX + 1];  /* MEOS */
+static unsigned int meos_program_tz_gen;               /* MEOS: 0 while none named */
+static int32 meos_program_tz_lock;                     /* MEOS: 0 free / 1 held */
+/* Whether this thread names its own zone, and the generation of the program
+ * zone it takes when it does not */
+static MEOS_TLS bool meos_thread_tz_named = false;
+static MEOS_TLS unsigned int meos_thread_tz_gen = 0;
+
+/* Acquire the lock of the program zone, as #tznames_lock_acquire */
+static void
+program_tz_lock_acquire(void)
+{
+  int32 expected = 0;
+  while (! __atomic_compare_exchange_n(&meos_program_tz_lock, &expected, 1,
+      false, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
+    expected = 0;
+}
+
+/* Release the lock of the program zone, as #tznames_lock_release */
+static void
+program_tz_lock_release(void)
+{
+  __atomic_store_n(&meos_program_tz_lock, 0, __ATOMIC_RELEASE);
+}
+
 /**
  * @ingroup meos_setup
  * @brief Initialize timezone cache
+ * @details A named zone becomes the zone of this thread and the one every
+ * thread naming none takes, the last naming winning. `NULL` or empty takes
+ * that zone, or the zone of the machine (#meos_default_timezone) while the
+ * program names none, or GMT when there is none.
  * @param[in] tz_str Name of the time zone, `NULL` or empty for the local one, or
  * GMT when there is none @nullable
  */
 void
 meos_initialize_timezone(const char *tz_str)
 {
-  if (tz_str == NULL || strlen(tz_str) == 0)
-    /* fetch local timezone (probed once, process-wide -- MEOS) */
-    tz_str = meos_default_timezone();
+  char program_tz[TZ_STRLEN_MAX + 1];
+  bool named = (tz_str != NULL && strlen(tz_str) != 0);
+  unsigned int gen = 0;
+  if (! named)
+  {
+    /* The zone the program names, copied whole */
+    program_tz_lock_acquire();
+    gen = meos_program_tz_gen;
+    if (gen != 0)
+      strlcpy(program_tz, meos_program_tz_name, sizeof(program_tz));
+    program_tz_lock_release();
+    tz_str = (gen != 0) ? program_tz :
+      /* fetch local timezone (probed once, process-wide -- MEOS) */
+      meos_default_timezone();
+  }
   if (tz_str == NULL)
     /* default timezone */
     tz_str = "GMT";
@@ -532,8 +587,23 @@ meos_initialize_timezone(const char *tz_str)
    * PostgreSQL's assign_timezone clears it after a change of timezone */
   ClearTimeZoneAbbrevCache();
   if (! session_timezone)
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "Failed to initialize local timezone");
+    return;
+  }
+  meos_thread_tz_named = named;
+  meos_thread_tz_gen = gen;
+  if (named)
+  {
+    /* A zone that loads becomes the zone of the program */
+    program_tz_lock_acquire();
+    strlcpy(meos_program_tz_name, tz_str, sizeof(meos_program_tz_name));
+    unsigned int next = meos_program_tz_gen + 1;
+    /* 0 means none named: a wrap skips it */
+    __atomic_store_n(&meos_program_tz_gen, next ? next : 1, __ATOMIC_RELEASE);
+    program_tz_lock_release();
+  }
   return;
 }
 
@@ -546,11 +616,16 @@ meos_initialize_timezone(const char *tz_str)
  * touching it there segfaults.  Instead the datetime input/output entry
  * points call this idempotent guard, which runs once on first use (well
  * after the module is fully loaded) and is a no-op afterwards.
+ *
+ * MEOS: a thread taking the zone of the program (#meos_initialize_timezone)
+ * takes it again once the program names another, which one atomic read finds.
  */
 void
 meos_ensure_timezone(void)
 {
-  if (session_timezone == NULL)
+  if (session_timezone == NULL ||
+      (! meos_thread_tz_named && meos_thread_tz_gen !=
+        __atomic_load_n(&meos_program_tz_gen, __ATOMIC_ACQUIRE)))
     meos_initialize_timezone(NULL);
   return;
 }
@@ -568,6 +643,8 @@ meos_finalize_timezone(void)
   {
     /* The zone belongs to the cache destroyed below */
     session_timezone = NULL;
+    meos_thread_tz_named = false;
+    meos_thread_tz_gen = 0;
     ClearTimeZoneAbbrevCache();
   }
   if (timezone_cache)

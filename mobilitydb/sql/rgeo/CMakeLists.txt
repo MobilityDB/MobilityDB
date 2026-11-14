@@ -39,7 +39,8 @@ SET(LOCAL_FILES
   168_trgeo_aggfuncs
   170_trgeo_spatialrels
   172_trgeo_tempspatialrels
-  173_trgeo_indexes
+  173_trgeo_gist
+  174_trgeo_spgist
   175_trgeo_geom_clip
   )
 

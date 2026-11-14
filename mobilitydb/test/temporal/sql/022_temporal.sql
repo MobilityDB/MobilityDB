@@ -2280,6 +2280,19 @@ SELECT minusSpanset(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3
 SELECT minusSpanset(tfloat'[1@2001-01-01, 2@2001-01-03]',floatspanset '{[1,1.1],[1.5,2]}');
 SELECT minusSpanset(tfloat '[1@2001-01-01, 2@2001-01-02]', floatspanset '{[3,4], [5,6]}');
 SELECT minusSpanset(tfloat '1@2001-01-01', floatspanset '{[0,1),(1,2]}');
+-- A crossing is dated by the microsecond nearest to it, at which the segment
+-- takes the value crossed, and one whose nearest microsecond is a bound of
+-- the segment belongs to the bound
+SELECT atSpan(tfloat '[0@2001-01-01, 1@2001-01-02]', floatspan '[0.0000001, 0.9999999]');
+SELECT minusSpan(tfloat '[0@2001-01-01, 1@2001-01-02]', floatspan '[0.0000001, 0.9999999]');
+SELECT atSpan(tfloat '[1@2001-01-01, 2@2001-01-02]', floatspan '[1.3, 1.3]');
+SELECT minusSpan(tfloat '[1@2001-01-01, 2@2001-01-02]', floatspan '[1.3, 1.3]');
+SELECT atSpan(tfloat '[0@2001-01-01 00:00:00, 1@2001-01-01 00:00:00.001]', floatspan '[0.0005, 0.7]');
+SELECT atSpan(tfloat '[2@2001-01-01, 1@2001-01-02]', floatspan '[0, 1.0000000000000002]');
+SELECT minusSpan(tfloat '[2@2001-01-01, 1@2001-01-02]', floatspan '[0, 1.0000000000000002]');
+SELECT atValue(tfloat '[1@2001-01-01, 2@2001-01-02]', 1.3);
+SELECT minusValue(tfloat '[1@2001-01-01, 2@2001-01-02]', 1.3);
+SELECT atValue(tfloat '[2@2001-01-01, 1@2001-01-02]', 1.0000000000000002);
 
 SELECT atMin(tint '1@2001-01-01');
 SELECT atMin(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}');

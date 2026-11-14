@@ -2567,13 +2567,17 @@ point_coords_get(Datum point, int ndims, double *c)
  * @param[in] point Point to locate
  * @param[in] lower,upper Timestamps defining the segment
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segment is not constant
  */
 static int
 tgeogpoint_geo_distance_turnpt(Datum start, Datum end, Datum point,
-  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, Datum *values UNUSED,
+  int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   long double duration = (long double) (upper - lower);
   double fraction = (double) geogpointsegm_closest(start, end, point);
@@ -2727,6 +2731,8 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @note The PostGIS functions @p lw_dist2d_seg_seg and @p lw_dist3d_seg_seg
  * cannot be used since they do not take time into consideration and would
@@ -2738,8 +2744,9 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
 int
 tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   double fraction;
   bool hasz = FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags);
@@ -2779,14 +2786,17 @@ tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants
  */
 int
 tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   const POINT2D *p1 = DATUM_POINT2D_P(start1);
   const POINT2D *p2 = DATUM_POINT2D_P(end1);
@@ -2827,20 +2837,21 @@ tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, passed on
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants.
  */
 int
 tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap)
+  TimestampTz *tps, Datum *values, int cap)
 {
   assert(lower < upper); assert(tps); assert(cap >= 2);
   return FLAGS_GET_GEODETIC(DatumGetGserializedP(start1)->gflags) ?
     tgeogpointsegm_distance_turnpt(start1, end1, start2, end2, param,
-      lower, upper, tps, cap) :
+      lower, upper, tps, values, cap) :
     tgeompointsegm_distance_turnpt(start1, end1, start2, end2, param,
-      lower, upper, tps, cap);
+      lower, upper, tps, values, cap);
 }
 
 /*****************************************************************************/
@@ -3017,22 +3028,16 @@ tpointseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
 }
 
 /**
- * @brief Return the minimum time-synchronous distance over the overlapping
- * period of two linear temporal point sequences, updating the running minimum
- * @param[in] seq1,seq2 Temporal sequences with linear interpolation
- * @param[in] inter Overlapping period of the two sequences
- * @param[in] lfinfo Base value distance function and its parameters, applied
- * through #tfunc_base_base
- * @param[in] turnpt Per-segment distance turning-point function
- * @param[in] seglb Per-segment distance lower-bound function
- * @param[in] curmin Current minimum distance, or infinity at the beginning
- * @param[in,out] tmin Timestamp achieving the running minimum
- * @pre Both sequences are linear and of equal type; @p inter is their overlap
+ * @brief Walk of #nad_tcontseq_tcontseq_sync
+ * @details The turning point function counts more than two instants in a
+ * segment if @p many is true and writes their values if @p values is true;
+ * each caller passes literal flags, for which the walk is compiled apart
  */
-static double
-nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
+static pg_attribute_always_inline double
+nad_tcontseq_tcontseq_sync_walk(const TSequence *seq1, const TSequence *seq2,
   const Span *inter, LiftedFunctionInfo *lfinfo, tpfunc_temp turnpt,
-  seglb_func seglb, double curmin, TimestampTz *tmin)
+  seglb_func seglb, double curmin, TimestampTz *tmin,
+  bool many, bool values)
 {
   MeosType temptype = seq1->temptype;
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
@@ -3056,6 +3061,10 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
   int count = seq1->count - i + seq2->count - j;
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
   TimestampTz tpbuf[TPFN_STACK_CAP];
+  /* Capacity of the array a turning point function writes */
+  int cap = many ? TPFN_STACK_CAP : 2;
+  Datum valbuf[TPFN_STACK_CAP];
+  Datum *valstack = values ? valbuf : NULL;
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= upper || inst2->t <= upper))
   {
@@ -3100,39 +3109,61 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
       Datum start2 = tinstant_value_p(prev2);
       Datum end2 = tinstant_value_p(inst2);
       TimestampTz *tps = tpbuf;
+      /* A distance the turning point function writes is taken in place of
+       * the one at the instant, as #tfunc_tcontseq_tcontseq_single takes it */
+      Datum *vals = valstack;
       int ntps = turnpt(start1, end1, start2, end2, (Datum) 0, prev1->t,
-        inst1->t, tps, TPFN_STACK_CAP);
-      if (unlikely(ntps > TPFN_STACK_CAP))
+        inst1->t, tps, vals, cap);
+      assert(many || ntps <= 2);
+      if (many && unlikely(ntps > TPFN_STACK_CAP))
       {
         tps = palloc(sizeof(TimestampTz) * ntps);
+        if (vals)
+          vals = palloc(sizeof(Datum) * ntps);
         turnpt(start1, end1, start2, end2, (Datum) 0, prev1->t, inst1->t, tps,
-          ntps);
+          vals, ntps);
       }
       if (ntps == 1)
       {
         /* One turning point, the case of every function of this arity */
-        Datum v1 = tsegment_value_at_timestamptz(start1, end1, temptype,
-          prev1->t, inst1->t, tpbuf[0]);
-        Datum v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
-          prev1->t, inst1->t, tpbuf[0]);
-        double d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
+        double d;
+        if (vals)
+          d = DatumGetFloat8(valbuf[0]);
+        else
+        {
+          Datum v1 = tsegment_value_at_timestamptz(start1, end1, temptype,
+            prev1->t, inst1->t, tpbuf[0]);
+          Datum v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
+            prev1->t, inst1->t, tpbuf[0]);
+          d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
+          pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
+        }
         if (d < curmin) { curmin = d; *tmin = tpbuf[0]; }
-        pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
       }
       else if (ntps > 1)
       {
         for (int k = 0; k < ntps; k++)
         {
-          Datum v1 = tsegment_value_at_timestamptz(start1, end1, temptype,
-            prev1->t, inst1->t, tps[k]);
-          Datum v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
-            prev1->t, inst1->t, tps[k]);
-          double d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
+          double d;
+          if (vals)
+            d = DatumGetFloat8(vals[k]);
+          else
+          {
+            Datum v1 = tsegment_value_at_timestamptz(start1, end1, temptype,
+              prev1->t, inst1->t, tps[k]);
+            Datum v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
+              prev1->t, inst1->t, tps[k]);
+            d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
+            pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
+          }
           if (d < curmin) { curmin = d; *tmin = tps[k]; }
-          pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
         }
-        if (unlikely(ntps > TPFN_STACK_CAP))
-          pfree(tps);
+      }
+      if (many && unlikely(ntps > TPFN_STACK_CAP))
+      {
+        pfree(tps);
+        if (vals)
+          pfree(vals);
       }
     }
     /* Evaluate the distance at the synchronized instant, unless the segment
@@ -3153,6 +3184,31 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
   }
   pfree_array((void **) tofree, nfree);
   return curmin;
+}
+
+/**
+ * @brief Return the minimum time-synchronous distance over the overlapping
+ * period of two linear temporal point sequences, updating the running minimum
+ * @param[in] seq1,seq2 Temporal sequences with linear interpolation
+ * @param[in] inter Overlapping period of the two sequences
+ * @param[in] lfinfo Base value distance function and its parameters, applied
+ * through #tfunc_base_base
+ * @param[in] turnpt Per-segment distance turning-point function
+ * @param[in] seglb Per-segment distance lower-bound function
+ * @param[in] curmin Current minimum distance, or infinity at the beginning
+ * @param[in,out] tmin Timestamp achieving the running minimum
+ * @pre Both sequences are linear and of equal type; @p inter is their overlap
+ */
+static double
+nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
+  const Span *inter, LiftedFunctionInfo *lfinfo, tpfunc_temp turnpt,
+  seglb_func seglb, double curmin, TimestampTz *tmin)
+{
+  if (lfinfo->tpfn_many || lfinfo->tpfn_value)
+    return nad_tcontseq_tcontseq_sync_walk(seq1, seq2, inter, lfinfo, turnpt,
+      seglb, curmin, tmin, true, lfinfo->tpfn_value);
+  return nad_tcontseq_tcontseq_sync_walk(seq1, seq2, inter, lfinfo, turnpt,
+    seglb, curmin, tmin, false, false);
 }
 
 /**
@@ -4409,6 +4465,27 @@ tcont_tcont_merge_walk(const Temporal *temp1, const Temporal *temp2,
   return false;
 }
 
+/**
+ * @brief Set in @p start_out and @p end_out whether the start and the end of
+ * an interval of #tcont_tcont_merge_walk are the first or the last instant of
+ * one of the sequences, which the sequence excludes, and so no instant of the
+ * time they share
+ */
+void
+tcont_interval_ends_out(const TSequence *seq1, const TSequence *seq2,
+  TimestampTz lower, TimestampTz upper, bool *start_out, bool *end_out)
+{
+  *start_out =
+    (lower == TSEQUENCE_INST_N(seq1, 0)->t && ! seq1->period.lower_inc) ||
+    (lower == TSEQUENCE_INST_N(seq2, 0)->t && ! seq2->period.lower_inc);
+  *end_out =
+    (upper == TSEQUENCE_INST_N(seq1, seq1->count - 1)->t &&
+      ! seq1->period.upper_inc) ||
+    (upper == TSEQUENCE_INST_N(seq2, seq2->count - 1)->t &&
+      ! seq2->period.upper_inc);
+  return;
+}
+
 /** Questions #tpoint_motion_walk answers */
 typedef enum
 {
@@ -4418,7 +4495,7 @@ typedef enum
   MOTION_ALWAYS,   /**< Always within a distance */
 } MotionQuery;
 
-/** State of #tpoint_motion_interval */
+/** State of the callbacks of #tpoint_motion_walk */
 typedef struct
 {
   MotionQuery query;   /**< Question asked */
@@ -4429,13 +4506,28 @@ typedef struct
 } MotionState;
 
 /**
- * @brief Answer the question of a #MotionState on one interval of
- * #tcont_tcont_merge_walk, returning true where the interval decides the
- * ever or always question
+ * @brief Return true if the start (@p start) or the end of an interval of
+ * #tcont_tcont_merge_walk is an instant of the time the two sequences share,
+ * the two points being within the distance at that end alone
+ * (#tcont_interval_ends_out)
+ */
+static pg_noinline bool
+tpoint_motion_end_held(const TSequence *seq1, const TSequence *seq2,
+  TimestampTz lower, TimestampTz upper, bool start)
+{
+  bool start_out, end_out;
+  tcont_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
+  return start ? ! start_out : ! end_out;
+}
+
+/**
+ * @brief Answer the nearest approach question of a #MotionState on one
+ * interval of #tcont_tcont_merge_walk, never stopping the walk
  */
 static bool
-tpoint_motion_interval(const TSequence *seq1, int k1, const TSequence *seq2,
-  int k2, TimestampTz lower, TimestampTz upper, void *state)
+tpoint_motion_nad_interval(const TSequence *seq1, int k1,
+  const TSequence *seq2, int k2, TimestampTz lower, TimestampTz upper,
+  void *state)
 {
   MotionState *ms = (MotionState *) state;
   double p0[2], p1[2], q0[2], q1[2];
@@ -4450,25 +4542,46 @@ tpoint_motion_interval(const TSequence *seq1, int k1, const TSequence *seq2,
       ms->best = v;
     return false;
   }
-  if (ms->query == MOTION_NAD)
-  {
-    /* Skip an interval whose least distance certainly exceeds the bound or
-     * the least distance of the intervals already walked, both doubles: its
-     * nearest double is then not below them, rounding to the nearest keeping
-     * the order */
-    double bound = (ms->best < ms->d) ? ms->best : ms->d;
-    if (bound < DBL_MAX && point_motion_nad_exceeds(p0, p1, s0, s1, q0, q1,
-          r0, r1, lower, upper, bound))
-      return false;
-    double v = point_motion_nad_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
-      upper);
-    if (v < ms->best)
-      ms->best = v;
+  /* Skip an interval whose least distance certainly exceeds the bound or the
+   * least distance of the intervals already walked, both doubles: its
+   * nearest double is then not below them, rounding to the nearest keeping
+   * the order */
+  double bound = (ms->best < ms->d) ? ms->best : ms->d;
+  if (bound < DBL_MAX && point_motion_nad_exceeds(p0, p1, s0, s1, q0, q1,
+        r0, r1, lower, upper, bound))
     return false;
-  }
+  double v = point_motion_nad_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
+    upper);
+  if (v < ms->best)
+    ms->best = v;
+  return false;
+}
+
+/**
+ * @brief Answer the ever or always question of a #MotionState on one
+ * interval of #tcont_tcont_merge_walk, returning true where the interval
+ * decides it
+ * @details Two points within the distance at one end of the interval alone
+ * are within over it where that end is an instant of the time the sequences
+ * share (#tpoint_motion_end_held)
+ */
+static bool
+tpoint_motion_dwithin_interval(const TSequence *seq1, int k1,
+  const TSequence *seq2, int k2, TimestampTz lower, TimestampTz upper,
+  /* cppcheck-suppress constParameterCallback */
+  void *state)
+{
+  const MotionState *ms = (const MotionState *) state;
+  double p0[2], p1[2], q0[2], q1[2];
+  int64 s0, s1, r0, r1;
+  tpoint_motion_segment(seq1, k1, p0, p1, &s0, &s1);
+  tpoint_motion_segment(seq2, k2, q0, q1, &r0, &r1);
   /* Ever within here, or not always within here: decided */
-  return point_motion_dwithin_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
-    upper, ms->d, ms->query == MOTION_EVER) == (ms->query == MOTION_EVER);
+  int within = point_motion_dwithin_exact(p0, p1, s0, s1, q0, q1, r0, r1,
+    lower, upper, ms->d, ms->query == MOTION_EVER);
+  if (within > 1)
+    return tpoint_motion_end_held(seq1, seq2, lower, upper, within == 2);
+  return within == (ms->query == MOTION_EVER);
 }
 
 /**
@@ -4499,27 +4612,28 @@ tpoint_motion_walk(const Temporal *temp1, const Temporal *temp2,
      * interval answers no less; otherwise the estimate missed and every
      * interval is read */
     MotionState est = {MOTION_NAD_APPROX, 0.0, DBL_MAX};
-    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &est,
+    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_nad_interval, &est,
       shared);
     if (! *shared)
       return DBL_MAX;
     double bound = (est.best < DBL_MAX / 2.0) ?
       est.best + ldexp(est.best, -20) : DBL_MAX;
     MotionState ms = {MOTION_NAD, bound, DBL_MAX};
-    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &ms,
+    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_nad_interval, &ms,
       shared);
     if (ms.best > bound)
     {
       ms.d = DBL_MAX;
       ms.best = DBL_MAX;
-      tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &ms,
+      tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_nad_interval, &ms,
         shared);
     }
     return ms.best;
   }
   MotionState ms = {query, d, DBL_MAX};
-  bool decided = tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval,
-    &ms, shared);
+  bool decided = tcont_tcont_merge_walk(temp1, temp2,
+    /* cppcheck-suppress constParameterCallback */
+    &tpoint_motion_dwithin_interval, &ms, shared);
   if (query == MOTION_EVER)
     return decided ? 1.0 : 0.0;
   return decided ? 0.0 : 1.0;

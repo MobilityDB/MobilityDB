@@ -1621,12 +1621,175 @@ tdiscseq_restrict_values(const TSequence *seq, const Set *s, bool atfunc)
 /*****************************************************************************/
 
 /**
+ * @brief Return the instant of a linear float segment at which it reaches a
+ * bound of a span, and in the last argument whether the instant takes a value
+ * of the span
+ * @details A value strictly between the values of the segment is reached at a
+ * crossing dated by the microsecond nearest to it (#tfloatsegm_crossing), so
+ * the instant is in the span where the bound is inclusive. The instant takes
+ * the value of the segment at that microsecond, so that the pieces of the
+ * segment it bounds lie on the segment. A crossing whose nearest microsecond
+ * is a bound of the segment belongs to that bound, whose instant is in the
+ * span where the segment includes it and its value is in the span
+ * @param[in] inst1,inst2 Temporal instants defining the segment
+ * @param[in] start,end Values of the instants, read once by the caller
+ * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
+ * @param[in] s Span of floats
+ * @param[in] c,c_inc Bound of the span and whether it is inclusive
+ * @param[in] first True when @p c is the bound the segment reaches first
+ * @param[out] inc Whether the instant takes a value of the span
+ * @return The instant, newly allocated only when it is a crossing
+ */
+static TInstant *
+tfloatsegm_span_bound(const TInstant *inst1, const TInstant *inst2,
+  double start, double end, bool lower_inc, bool upper_inc, const Span *s,
+  double c, bool c_inc, bool first, bool *inc)
+{
+  const TInstant *inst;
+  if (Min(start, end) < c && c < Max(start, end))
+  {
+    /* The crossing, read by the filter of #tfloatsegm_crossing where it
+     * tells */
+    int64 m;
+    TimestampTz t;
+    bool cross = floatsegm_crossing_filter(start, end, c, c,
+        inst2->t - inst1->t, &m) ?
+      (t = inst1->t + m, true) :
+      tfloatsegm_crossing(start, end, c, inst1->t, inst2->t, &t);
+    if (cross)
+    {
+      *inc = c_inc;
+      return tsegment_at_timestamptz(inst1, inst2, LINEAR, t);
+    }
+    inst = (t == inst1->t) ? inst1 : inst2;
+  }
+  else
+  {
+    /* The bound of the span is not strictly inside the values of the
+     * segment, which it overlaps: the bound reached first is at or before
+     * the start, along the direction of the segment, or else at the end, and
+     * the other one is at or past the end, or else at the start */
+    bool increasing = start < end;
+    double pc = increasing ? c : - c;
+    inst = first ?
+      ((pc <= (increasing ? start : - start)) ? inst1 : inst2) :
+      ((pc >= (increasing ? end : - end)) ? inst2 : inst1);
+  }
+  *inc = ((inst == inst1) ? lower_inc : upper_inc) &&
+    contains_span_value(s, Float8GetDatum((inst == inst1) ? start : end));
+  return (TInstant *) inst;
+}
+
+/**
+ * @brief Restrict a linear segment of a temporal float to (the complement of)
+ * a span of floats
+ * @details The segment takes the values of the span from the instant at which
+ * it reaches the bound of the span it reaches first to the instant at which it
+ * reaches the other one (#tfloatsegm_span_bound). Two such instants dated by
+ * the same microsecond are one instant, which belongs to the answer where both
+ * include it, so that the spans of the bins of a split share no instant
+ * @param[in] inst1,inst2 Temporal instants defining the segment
+ * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
+ * @param[in] s Span of floats
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
+ * @return Number of resulting sequences returned
+ * @pre The segment is not constant and @p s overlaps its values
+ */
+int
+tfloatsegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
+  bool lower_inc, bool upper_inc, const Span *s, bool atfunc,
+  TSequence **result)
+{
+  double start = DatumGetFloat8(tinstant_value_p(inst1));
+  double end = DatumGetFloat8(tinstant_value_p(inst2));
+  assert(start != end); assert(s->basetype == T_FLOAT8);
+  bool increasing = start < end;
+  /* The bounds of the span in the order the segment reaches them */
+  bool ainc, binc;
+  TInstant *a = tfloatsegm_span_bound(inst1, inst2, start, end, lower_inc,
+    upper_inc, s, DatumGetFloat8(increasing ? s->lower : s->upper),
+    increasing ? s->lower_inc : s->upper_inc, true, &ainc);
+  /* A span of one value is reached once */
+  TInstant *b = (DatumGetFloat8(s->lower) == DatumGetFloat8(s->upper)) ? a :
+    tfloatsegm_span_bound(inst1, inst2, start, end, lower_inc, upper_inc, s,
+      DatumGetFloat8(increasing ? s->upper : s->lower),
+      increasing ? s->upper_inc : s->lower_inc, false, &binc);
+  if (b == a)
+    binc = ainc;
+  TInstant *tofree1 = (a != inst1 && a != inst2) ? a : NULL;
+  TInstant *tofree2 = (b != a && b != inst1 && b != inst2) ? b : NULL;
+  assert(a->t <= b->t);
+  /* Two instants dated by one microsecond are one instant, which belongs to
+   * the answer where both include it */
+  if (a->t == b->t)
+  {
+    b = a;
+    ainc = binc = ainc && binc;
+  }
+  TInstant *instants[2];
+  int nseqs = 0;
+  if (atfunc)
+  {
+    if (a->t < b->t)
+    {
+      instants[0] = a; instants[1] = b;
+      result[nseqs++] = tsequence_make(instants, 2, ainc,
+        binc, LINEAR, NORMALIZE_NO);
+    }
+    else if (ainc)
+      result[nseqs++] = tinstant_as_tsequence(a, LINEAR);
+  }
+  else if (a->t == b->t && ! ainc)
+  {
+    /* The answer of at is empty */
+    instants[0] = (TInstant *) inst1; instants[1] = (TInstant *) inst2;
+    result[nseqs++] = tsequence_make(instants, 2,
+      lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+  }
+  else
+  {
+    /* The instants of the segment before the first instant of at and after
+     * the last one */
+    bool aminc = (a == inst1) ? (lower_inc && ! ainc) :
+      ((a == inst2) ? (upper_inc && ! ainc) : ! ainc);
+    bool bminc = (b == inst1) ? (lower_inc && ! binc) :
+      ((b == inst2) ? (upper_inc && ! binc) : ! binc);
+    if (a->t > inst1->t)
+    {
+      instants[0] = (TInstant *) inst1; instants[1] = a;
+      result[nseqs++] = tsequence_make(instants, 2,
+        lower_inc, aminc, LINEAR, NORMALIZE_NO);
+    }
+    else if (aminc)
+      result[nseqs++] = tinstant_as_tsequence(inst1, LINEAR);
+    if (b->t < inst2->t)
+    {
+      instants[0] = b; instants[1] = (TInstant *) inst2;
+      result[nseqs++] = tsequence_make(instants, 2, bminc,
+        upper_inc, LINEAR, NORMALIZE_NO);
+    }
+    else if (bminc)
+      result[nseqs++] = tinstant_as_tsequence(inst2, LINEAR);
+  }
+  if (tofree1)
+    pfree(tofree1);
+  if (tofree2)
+    pfree(tofree2);
+  return nseqs;
+}
+
+/**
  * @brief Restrict a segment of a temporal sequence to (the complement of) a
  * base value
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] interp Interpolation
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
  * @param[in] value Base value
+ * @param[in] vspan Span of the value where the segment is a linear float
+ * one, built once by the caller for every segment of the sequence, as
+ * #tnumbersegm_restrict_span receives one span for every segment
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @param[out] result Array on which the pointers of the newly constructed
  * sequence is stored
@@ -1634,8 +1797,8 @@ tdiscseq_restrict_values(const TSequence *seq, const Set *s, bool atfunc)
  */
 static int
 tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
-  interpType interp, bool lower_inc, bool upper_inc, Datum value, bool atfunc,
-  TSequence **result)
+  interpType interp, bool lower_inc, bool upper_inc, Datum value,
+  const Span *vspan, bool atfunc, TSequence **result)
 {
   assert(inst1->temptype == inst2->temptype); assert(interp != DISCRETE);
   Datum start = tinstant_value_p(inst1);
@@ -1644,6 +1807,16 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   TInstant *instants[2];
   /* Is the segment constant? */
   bool isconst = datum_eq(start, end, basetype);
+  /* A linear float segment taking the value is restricted to the span of the
+   * value */
+  if (interp == LINEAR && ! isconst && basetype == T_FLOAT8)
+  {
+    double dstart = DatumGetFloat8(start), dend = DatumGetFloat8(end);
+    double dvalue = DatumGetFloat8(value);
+    if (Min(dstart, dend) <= dvalue && dvalue <= Max(dstart, dend))
+      return tfloatsegm_restrict_span(inst1, inst2, lower_inc, upper_inc,
+        vspan, atfunc, result);
+  }
   /* Does the lower bound belong to the answer? */
   bool lower = atfunc ? datum_eq(start, value, basetype) :
     datum_ne(start, value, basetype);
@@ -1805,6 +1978,10 @@ tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
 
   /* General case */
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  /* The span of the value to which a linear float segment is restricted */
+  Span vspan;
+  if (interp == LINEAR && seq->temptype == T_TFLOAT)
+    span_set(value, value, true, true, T_FLOAT8, T_FLOATSPAN, &vspan);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
@@ -1814,7 +1991,7 @@ tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     /* Each iteration adds between 0 and 2 sequences */
     nseqs += tsegment_restrict_value(inst1, inst2, interp, lower_inc, upper_inc,
-      value, atfunc, &result[nseqs]);
+      value, &vspan, atfunc, &result[nseqs]);
     inst1 = inst2;
     lower_inc = true;
   }
@@ -1882,6 +2059,15 @@ tsequence_at_values_iter(const TSequence *seq, const Set *set,
 
   /* General case */
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  /* The spans of the values to which a linear float segment is restricted */
+  Span *vspans = NULL;
+  if (interp == LINEAR && seq->temptype == T_TFLOAT)
+  {
+    vspans = palloc(sizeof(Span) * set->count);
+    for (int j = 0; j < set->count; j++)
+      span_set(SET_VAL_N(set, j), SET_VAL_N(set, j), true, true, T_FLOAT8,
+        T_FLOATSPAN, &vspans[j]);
+  }
   inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
@@ -1892,10 +2078,13 @@ tsequence_at_values_iter(const TSequence *seq, const Set *set,
     for (int j = 0; j < set->count; j++)
       /* Each iteration adds between 0 and 2 sequences */
       nseqs += tsegment_restrict_value(inst1, inst2, interp, lower_inc,
-        upper_inc, SET_VAL_N(set, j), REST_AT, &result[nseqs]);
+        upper_inc, SET_VAL_N(set, j), vspans ? &vspans[j] : NULL, REST_AT,
+        &result[nseqs]);
     inst1 = inst2;
     lower_inc = true;
   }
+  if (vspans)
+    pfree(vspans);
   if (nseqs > 1)
     tseqarr_sort(result, nseqs);
 
@@ -2099,209 +2288,9 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
     return 1;
   }
 
-  /* If the intersection is a singleton */
-  TimestampTz t1, t2;
-  bool lower_inc1, upper_inc1;
-  if (datum_eq(inter.lower, inter.upper, basetype))
-  {
-    if (datum_eq(start, inter.lower, basetype))
-    {
-      if (atfunc && lower_inc)
-      {
-        instants[0] = (TInstant *) inst1;
-        result[0] = tsequence_make(instants, 1, true, true, interp,
-          NORMALIZE_NO);
-        return 1;
-      }
-      else if (! atfunc) /* MINUS */
-      {
-        instants[0] = (TInstant *) inst1;
-        instants[1] = (TInstant *) inst2;
-        result[0] = tsequence_make(instants, 2, false, upper_inc, interp,
-          NORMALIZE_NO);
-        return 1;
-      }
-    }
-    if (datum_eq(end, inter.upper, basetype))
-    {
-      if (atfunc && upper_inc)
-      {
-        instants[0] = (TInstant *) inst2;
-        result[0] = tsequence_make(instants, 1, true, true, interp,
-          NORMALIZE_NO);
-        return 1;
-      }
-      else if (! atfunc) /* MINUS */
-      {
-        instants[0] = (TInstant *) inst1;
-        instants[1] = (TInstant *) inst2;
-        result[0] = tsequence_make(instants, 2, lower_inc, false, interp,
-          NORMALIZE_NO);
-        return 1;
-      }
-    }
-    if (tfloatsegm_intersection_value(start, end, inter.lower, inst1->t,
-      inst2->t, &t1))
-    {
-      /* To reduce the roundoff errors we project the temporal number to the
-       * timestamp instead of taking the bound value */
-      instants[0] = tsegment_at_timestamptz(inst1, inst2, interp, t1);
-      if (atfunc)
-      {
-        result[0] = tsequence_make(instants, 1, true, true, interp,
-          NORMALIZE_NO);
-        pfree(instants[0]);
-        return 1;
-      }
-      else /* MINUS */
-      {
-        result[0] = tsequence_make(instants, 2, lower_inc, false, interp,
-          NORMALIZE_NO);
-        result[1] = tsequence_make(instants, 2, false, upper_inc, interp,
-          NORMALIZE_NO);
-        pfree(instants[0]);
-        return 2;
-      }
-    }
-    return 0;
-  }
-
-  /* Compute the instants of the intersection */
-  TInstant *inter1 = NULL, *inter2 = NULL, *tofree1 = NULL, *tofree2 = NULL;
-  Datum lower, upper;
-  if (increasing)
-  {
-    lower = inter.lower; upper = inter.upper;
-    lower_inc1 = inter.lower_inc; upper_inc1 = inter.upper_inc;
-  }
-  else
-  {
-    lower = inter.upper; upper = inter.lower;
-    lower_inc1 = inter.upper_inc; upper_inc1 = inter.lower_inc;
-  }
-
-  /* If the start/end value is equal to the lower value of the intersection */
-  int j = 0;
-  if (datum_eq(start, lower, basetype))
-  {
-    inter1 = (TInstant *) inst1; j++;
-  }
-  else if (datum_eq(end, lower, basetype))
-  {
-    inter1 = (TInstant *) inst2; j++;
-  }
-  else if (tfloatsegm_intersection_value(start, end, lower, inst1->t,
-    inst2->t, &t1))
-  {
-    /* To reduce the roundoff errors we project the temporal number to the
-     * timestamp instead of taking the bound value */
-    inter1 = tofree1 = tsegment_at_timestamptz(inst1, inst2, interp, t1);
-    j++;
-  }
-  if (! datum_eq(lower, upper, basetype))
-  {
-    /* If the start/end value is equal to the upper value of the intersection */
-    if (datum_eq(start, upper, basetype))
-    {
-      inter1 = (TInstant *) inst1; j++;
-    }
-    else if (datum_eq(end, upper, basetype))
-    {
-      if (j == 0)
-        inter1 = (TInstant *) inst2;
-      else
-        inter2 = (TInstant *) inst2;
-      j++;
-    }
-    else if (tfloatsegm_intersection_value(start, end, upper, inst1->t,
-      inst2->t, &t2))
-    {
-      /* To reduce the roundoff errors we project the temporal number to the
-       * timestamp instead of taking the bound value */
-      if (j == 0)
-      {
-        inter1 = tofree2 = tsegment_at_timestamptz(inst1, inst2, interp, t2);
-      }
-      else
-      {
-        inter2 = tofree2 = tsegment_at_timestamptz(inst1, inst2, interp, t2);
-      }
-      j++;
-    }
-  }
-
-  assert(j > 0);
-  /* Compute the result */
-  int nseqs = 0;
-  if (atfunc)
-  {
-    instants[0] = inter1;
-    if (j == 1)
-    {
-      int res;
-      if ((inter1->t == inst1->t && lower_inc) ||
-          (inter1->t == inst2->t && upper_inc))
-      {
-        result[0] = tsequence_make(instants, 1, true, true, interp,
-          NORMALIZE_NO);
-        res = 1;
-      }
-      else
-        res = 0;
-      if (tofree1) pfree(tofree1);
-      if (tofree2) pfree(tofree2);
-      return res;
-    }
-    /* j > 1 */
-    instants[1] = inter2;
-    result[nseqs++] = tsequence_make(instants, j, lower_inc1, upper_inc1,
-      interp, NORMALIZE_NO);
-    if (tofree1) pfree(tofree1);
-    if (tofree2) pfree(tofree2);
-    return 1;
-  }
-  else
-  {
-    /* First segment if any */
-    if (j == 1)
-      inter2 = inter1;
-    if (inter1->t == inst1->t)
-    {
-      if (lower_inc && ! lower_inc1)
-      {
-        instants[0] = inter1;
-        result[nseqs++] = tsequence_make(instants, 1, true, true, interp,
-          NORMALIZE_NO);
-      }
-    }
-    else
-    {
-      instants[0] = (TInstant *) inst1;
-      instants[1] = inter1;
-      result[nseqs++] = tsequence_make(instants, 2, lower_inc, ! lower_inc1,
-        interp, NORMALIZE_NO);
-    }
-    /* Second segment if any */
-    if (inter2->t < inst2->t)
-    {
-      instants[0] = (j == 1) ? inter1 : inter2;
-      instants[1] = (TInstant *) inst2;
-      result[nseqs++] = tsequence_make(instants, 2, ! upper_inc1, upper_inc,
-        interp, NORMALIZE_NO);
-    }
-    else
-    {
-      if (upper_inc && ! upper_inc1)
-      {
-        instants[0] = (j == 1) ? inter1 : inter2;
-        result[nseqs++] = tsequence_make(instants, 1, true, true, interp,
-          NORMALIZE_NO);
-      }
-    }
-  }
-  if (tofree1) pfree(tofree1);
-  if (tofree2) pfree(tofree2);
-  return nseqs;
+  /* The segment is linear and not constant, so its base type is float */
+  return tfloatsegm_restrict_span(inst1, inst2, lower_inc, upper_inc, s,
+    atfunc, result);
 }
 
 /**
@@ -2782,13 +2771,15 @@ tsegment_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   assert(inst1->t <= t); assert(t <= inst2->t);
   Datum startvalue = tinstant_value_p(inst1);
   if (inst1->t == t || (interp != LINEAR && t < inst2->t))
-    return tinstant_make(startvalue, inst1->temptype, t);
+    return tinstant_make_intl(startvalue, inst1->temptype, t);
   Datum endvalue = tinstant_value_p(inst2);
   if (t == inst2->t)
-    return tinstant_make(endvalue, inst1->temptype, t);
+    return tinstant_make_intl(endvalue, inst1->temptype, t);
   Datum value = tsegment_value_at_timestamptz(startvalue, endvalue,
     inst1->temptype, inst1->t, inst2->t, t);
-  return tinstant_make_free(value, inst1->temptype, t);
+  TInstant *result = tinstant_make_intl(value, inst1->temptype, t);
+  DATUM_FREE(value, temptype_basetype(inst1->temptype));
+  return result;
 }
 
 /**
@@ -2950,7 +2941,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       }
       else
       {
-        instants[n] = tinstant_make(tinstant_value_p(instants[n - 1]),
+        instants[n] = tinstant_make_intl(tinstant_value_p(instants[n - 1]),
           inst1->temptype, t);
         result[nseqs++] = tsequence_make(instants, n + 1,
           seq->period.lower_inc, false, interp, NORMALIZE_NO);
@@ -2964,7 +2955,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = (interp == LINEAR) ?
         tsegment_at_timestamptz(inst1, inst2, interp, t) :
-        tinstant_make(tinstant_value_p(inst1), inst1->temptype, t);
+        tinstant_make_intl(tinstant_value_p(inst1), inst1->temptype, t);
       result[nseqs++] = tcontseq_make_cut(instants, n + 2,
         seq->period.lower_inc, false, interp);
       pfree(instants[n + 1]);
@@ -3140,7 +3131,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
         {
           /* Take the value of the previous instant */
           value = tinstant_value_p(instants[ninsts - 1]);
-          instants[ninsts] = tinstant_make(value, inst->temptype, inst->t);
+          instants[ninsts] = tinstant_make_intl(value, inst->temptype, inst->t);
           tofree[nfree++] = instants[ninsts++];
         }
         result[nseqs++] = tcontseq_make_cut(instants, ninsts, lower_inc,
@@ -3172,7 +3163,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
         else
           /* Take the value of the previous instant */
           value = tinstant_value_p(instants[ninsts - 1]);
-        instants[ninsts] = tinstant_make(value, inst->temptype, t);
+        instants[ninsts] = tinstant_make_intl(value, inst->temptype, t);
         tofree[nfree] = instants[ninsts++];
         result[nseqs++] = tcontseq_make_cut(instants, ninsts, lower_inc,
           false, interp);
@@ -3277,7 +3268,7 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
   else
   {
     Datum value = tinstant_value_p(instants[ninsts - 1]);
-    instants[ninsts++] = tinstant_make(value, seq->temptype, inter.upper);
+    instants[ninsts++] = tinstant_make_intl(value, seq->temptype, inter.upper);
   }
   result = tcontseq_make_cut(instants, ninsts, inter.lower_inc,
     inter.upper_inc, interp);
@@ -4067,7 +4058,7 @@ tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
     {
       value = strict ?
         tinstant_value_p(instants[ninsts - 1]) : tinstant_value_p(inst);
-      instants[ninsts++] = tofree[nfree++] = tinstant_make(value,
+      instants[ninsts++] = tofree[nfree++] = tinstant_make_intl(value,
         inst->temptype, t);
       break;
     }
@@ -4076,7 +4067,7 @@ tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
       if (interp == STEP)
       {
         value = tinstant_value_p(inst);
-        instants[ninsts++] = tofree[nfree++] = tinstant_make(value,
+        instants[ninsts++] = tofree[nfree++] = tinstant_make_intl(value,
            inst->temptype, t);
       }
       else
@@ -4122,7 +4113,7 @@ tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
       if (interp != LINEAR && datum_ne(tinstant_value_p(instants[ninsts - 2]),
           tinstant_value_p(instants[ninsts - 1]), basetype))
       {
-        instants[ninsts - 1] = tinstant_make(tinstant_value_p(instants[ninsts - 2]),
+        instants[ninsts - 1] = tinstant_make_intl(tinstant_value_p(instants[ninsts - 2]),
           instants[ninsts - 1]->temptype, instants[ninsts - 1]->t);
         tofree[nfree++] = instants[ninsts - 1];
       }
@@ -4242,7 +4233,7 @@ tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
     if (interp == STEP)
     {
       value = tinstant_value_p(inst);
-      instants[0] = tofree[nfree++] = tinstant_make(value, inst->temptype, t);
+      instants[0] = tofree[nfree++] = tinstant_make_intl(value, inst->temptype, t);
     }
     else
     {
@@ -4278,7 +4269,7 @@ tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
           datum_ne(tinstant_value_p(instants[ninsts - 2]),
             tinstant_value_p(instants[ninsts - 1]), basetype))
       {
-        instants[ninsts - 1] = tinstant_make(tinstant_value_p(instants[ninsts - 2]),
+        instants[ninsts - 1] = tinstant_make_intl(tinstant_value_p(instants[ninsts - 2]),
           instants[ninsts - 1]->temptype, instants[ninsts - 1]->t);
         tofree[nfree++] = instants[ninsts - 1];
       }

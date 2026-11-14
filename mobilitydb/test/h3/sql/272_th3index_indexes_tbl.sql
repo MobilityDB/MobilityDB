@@ -125,6 +125,8 @@ INSERT INTO test_th3index_idx(op, no_idx) VALUES ('#&> th3index', (SELECT COUNT(
 INSERT INTO test_th3index_idx(op, no_idx) VALUES ('<< stbox', (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp << t2.b)::text);
 INSERT INTO test_th3index_idx(op, no_idx) VALUES ('&< stbox', (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp &< t2.b)::text);
 INSERT INTO test_th3index_idx(op, no_idx) VALUES ('&& stbox', (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_th3index_idx(op, no_idx) VALUES ('?&& stbox', (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp ?&& t2.b)::text);
+INSERT INTO test_th3index_idx(op, no_idx) VALUES ('%&& stbox', (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp %&& t2.b)::text);
 INSERT INTO test_th3index_idx(op, no_idx) VALUES ('&> stbox', (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp &> t2.b)::text);
 INSERT INTO test_th3index_idx(op, no_idx) VALUES ('>> stbox', (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp >> t2.b)::text);
 INSERT INTO test_th3index_idx(op, no_idx) VALUES ('~= stbox', (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp ~= t2.b)::text);
@@ -248,6 +250,12 @@ WHERE op = '&< stbox';
 UPDATE test_th3index_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp && t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox';
+UPDATE test_th3index_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp ?&& t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_th3index_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp %&& t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_th3index_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp &> t2.b)::text,
   rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -471,6 +479,12 @@ WHERE op = '&< stbox';
 UPDATE test_th3index_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp && t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox';
+UPDATE test_th3index_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp ?&& t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_th3index_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp %&& t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_th3index_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp &> t2.b)::text,
   quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -694,6 +708,12 @@ WHERE op = '&< stbox';
 UPDATE test_th3index_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp && t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp && t2.b')
 WHERE op = '&& stbox';
+UPDATE test_th3index_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp ?&& t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_th3index_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp %&& t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_th3index_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp &> t2.b)::text,
   kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_th3index_idx t1, tbl_th3index_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';

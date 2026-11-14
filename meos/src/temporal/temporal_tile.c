@@ -2354,7 +2354,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
           Datum value = tinstant_value_p(instants[ninsts - 1]);
-          tofree[nfree] = tinstant_make(value, seq->temptype, upper);
+          tofree[nfree] = tinstant_make_intl(value, seq->temptype, upper);
         }
         instants[ninsts++] = tofree[nfree++];
       }
@@ -2785,7 +2785,6 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bin,
  * @param[in] seq Temporal value
  * @param[in] start_bin Value of the start bin
  * @param[in] size Size of the value bins
- * @param[in] count Number of bins
  * @param[in,out] result Array containing the fragments of each bin
  * @param[in,out] nseqs Number of fragments for each bin
  * @param[in] numcols Number of columns in the 2D pointer array. It can be
@@ -2793,7 +2792,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bin,
  */
 static void
 tnumberseq_linear_value_split(const TSequence *seq, Datum start_bin,
-  Datum size, int count, TSequence **result, int *nseqs, int numcols)
+  Datum size, TSequence **result, int *nseqs, int numcols)
 {
   assert(seq); assert(result); assert(nseqs);
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
@@ -2802,7 +2801,6 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bin,
   MeosType spantype = basetype_spantype(basetype);
   Datum value1, bin_value1;
   int bin_no1, seq_no;
-  Span segspan;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -2816,8 +2814,6 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bin,
   }
 
   /* General case */
-  TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
-  int nfree = 0;   /* counter for the instants to free */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   value1 = tinstant_value_p(inst1);
   bin_value1 = datum_bin(value1, size, start_bin, basetype);
@@ -2830,119 +2826,48 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bin,
     Datum bin_value2 = datum_bin(value2, size, start_bin, basetype);
     int bin_no2 = bin_position(bin_value2, size, start_bin, basetype);
 
-    /* Set variables depending on whether the segment is constant, increasing,
-     * or decreasing */
-    Datum min_value, max_value;
-    int first_bin, last_bin, first, last;
-    bool lower_inc1, upper_inc1; /* Lower/upper bound inclusion of the segment */
-    bool lower_inc_def, upper_inc_def; /* Default lower/upper bound inclusion */
     int cmp = datum_cmp(value1, value2, basetype);
-    if (cmp <= 0)
+    if (cmp == 0)
     {
-      /* Both for constant and increasing segments */
-      min_value = value1;
-      max_value = value2;
-      first_bin = bin_no1;
-      last_bin = bin_no2;
-      first = 0;
-      last = 1;
-      lower_inc_def = true;
-      upper_inc_def = false;
-      lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
-      upper_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
+      /* A constant segment lies in one bin */
+      TInstant *bounds[2] = {(TInstant *) inst1, (TInstant *) inst2};
+      seq_no = nseqs[bin_no1]++;
+      result[bin_no1 * numcols + seq_no] = tsequence_make(bounds, 2,
+        (i == 1) ? seq->period.lower_inc : true,
+        (i == seq->count - 1) ? seq->period.upper_inc : false, LINEAR,
+        NORMALIZE_NO);
     }
     else
     {
-      min_value = value2;
-      max_value = value1;
-      first_bin = bin_no2;
-      last_bin = bin_no1;
-      first = 1;
-      last = 0;
-      lower_inc_def = false;
-      upper_inc_def = true;
-      lower_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
-      upper_inc1 = (i == 1) ? seq->period.lower_inc : true;
-    }
-
-    /* Split the segment into bins */
-    span_set(min_value, max_value, lower_inc1, (cmp != 0) ? upper_inc1 : true,
-      basetype, spantype, &segspan);
-    TInstant *bounds[2];
-    bounds[first] = (cmp <= 0) ? (TInstant *) inst1 : (TInstant *) inst2;
-    Datum bin_lower = (cmp <= 0) ? bin_value1 : bin_value2;
-    Datum bin_upper = datum_add(bin_lower, size, basetype);
-    for (int j = first_bin; j <= last_bin; j++)
-    {
-      /* Choose between interpolate or take one of the segment ends */
-      if (datum_lt(min_value, bin_upper, basetype) &&
-          datum_lt(bin_upper, max_value, basetype))
+      /* The fragment of the segment in a bin is its restriction to the
+       * values of the bin, from the bin of its least value to the bin of its
+       * greatest one */
+      bool lower_inc = (i == 1) ? seq->period.lower_inc : true;
+      bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+      int first_bin = (cmp < 0) ? bin_no1 : bin_no2;
+      int last_bin = (cmp < 0) ? bin_no2 : bin_no1;
+      Datum bin_lower = (cmp < 0) ? bin_value1 : bin_value2;
+      for (int j = first_bin; j <= last_bin; j++)
       {
-        TimestampTz t1, t2;
-        /* We are sure there is a unique turning point */
-        tsegment_intersection_value(value1, value2, bin_upper, inst1->temptype,
-          inst1->t, inst2->t, &t1, &t2);
-        /* To reduce the roundoff errors we take the value projected to the
-         * timestamp instead of the bound value */
-        Datum projvalue1 = tsegment_value_at_timestamptz(value1, value2,
-          inst1->temptype, inst1->t, inst2->t, t1);
-        tofree[nfree++] = bounds[last] = 
-          tinstant_make(projvalue1, seq->temptype, t1);
-      }
-      else
-        bounds[last] = (cmp <= 0) ? (TInstant *) inst2 : (TInstant *) inst1;
-      /* Determine the bounds of the resulting sequence */
-      if (j == first_bin || j == last_bin)
-      {
+        Datum bin_upper = datum_add(bin_lower, size, basetype);
         Span binspan;
         span_set(bin_lower, bin_upper, true, false, basetype, spantype,
           &binspan);
-        Span inter;
-        bool found = inter_span_span(&segspan, &binspan, &inter);
-        if (found)
+        TSequence *fragment;
+        if (tfloatsegm_restrict_span(inst1, inst2, lower_inc, upper_inc,
+            &binspan, true, &fragment))
         {
-          /* Do nothing for constant segments */
-          if (cmp < 0)
-          {
-            lower_inc1 = inter.lower_inc;
-            upper_inc1 = inter.upper_inc;
-          }
-          else if (cmp > 0)
-          {
-            lower_inc1 = inter.upper_inc;
-            upper_inc1 = inter.lower_inc;
-          }
+          seq_no = nseqs[j]++;
+          result[j * numcols + seq_no] = fragment;
         }
-        else
-        {
-          lower_inc1 = upper_inc1 = false;
-        }
+        bin_lower = bin_upper;
       }
-      else
-      {
-        /* Sequence bounds are the bin bounds */
-        lower_inc1 = lower_inc_def;
-        upper_inc1 = upper_inc_def;
-      }
-      /* If last bin contains a single instant */
-      int nfrags = (bounds[0]->t == bounds[1]->t) ? 1 : 2;
-      /* We cannot add to last bin if last instant has exclusive bound */
-      if (nfrags == 1 && ! upper_inc1)
-        break;
-      seq_no = nseqs[j]++;
-      result[j * numcols + seq_no] = tsequence_make(bounds, nfrags,
-        (nfrags > 1) ? lower_inc1 : true, (nfrags > 1) ? upper_inc1 : true,
-        LINEAR, NORMALIZE_NO);
-      bounds[first] = bounds[last];
-      bin_lower = bin_upper;
-      bin_upper = datum_add(bin_upper, size, basetype);
     }
     inst1 = inst2;
     value1 = value2;
     bin_value1 = bin_value2;
     bin_no1 = bin_no2;
   }
-  pfree_array((void **) tofree, nfree);
   return;
 }
 
@@ -2986,7 +2911,7 @@ tnumberseq_cont_value_split(const TSequence *seq, Datum start_bin, Datum size,
   /* palloc0 to initialize the counters to 0 */
   int *nseqs = palloc0(sizeof(int) * count);
   if (interp == LINEAR)
-    tnumberseq_linear_value_split(seq, start_bin, size, count, sequences,
+    tnumberseq_linear_value_split(seq, start_bin, size, sequences,
       nseqs, seq->count);
   else
     tnumberseq_step_value_split(seq, start_bin, size, count, sequences,
@@ -3050,7 +2975,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bin, Datum size,
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (linear)
-      tnumberseq_linear_value_split(seq, start_bin, size, count, binseqs,
+      tnumberseq_linear_value_split(seq, start_bin, size, binseqs,
         nseqs, ss->totalcount);
     else
       tnumberseq_step_value_split(seq, start_bin, size, count, binseqs,

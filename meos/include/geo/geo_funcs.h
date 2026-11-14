@@ -373,7 +373,7 @@ extern double convex_motion_nad_exact(const double *b, int nb,
   const double *p0, const double *p1, const double *g, int ng);
 extern bool convex_motion_meet_exact(const double *b, int nb,
   const double *p0, const double *p1, const double *g, int ng);
-extern bool point_motion_dwithin_exact(const double *p0, const double *p1,
+extern int point_motion_dwithin_exact(const double *p0, const double *p1,
   int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
   int64 ta, int64 tb, double d, bool ever);
 extern double point_motion_nad_approx(const double *p0, const double *p1,
@@ -1700,29 +1700,124 @@ point_on_segment_exact(double px, double py, double x1, double y1, double x2,
 }
 
 /*****************************************************************************
+ * The wide number
+ *****************************************************************************/
+
+/**
+ * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
+ * as many 64-bit limbs as it takes, the lowest first, with exact sums,
+ * differences and products of any two
+ */
+typedef struct
+{
+  int sign;         /**< -1, 0 or 1 */
+  int len;          /**< Number of limbs of the magnitude, 0 for the value 0 */
+  int exp;          /**< Weight of the lowest bit of the magnitude */
+  uint64 limb[FLEXIBLE_ARRAY_MEMBER];
+} TowerWide;
+
+/** Number of 64-bit words a #TowerWideArena holds before it takes a block */
+#define TOWER_WIDE_ARENA_WORDS 1024
+
+/**
+ * @brief The memory of the #TowerWide values of one exact evaluation: taken
+ * in order from a buffer of its own, then from blocks taken as it is used up,
+ * and released in one step
+ */
+typedef struct
+{
+  uint64 buf[TOWER_WIDE_ARENA_WORDS];
+  size_t used;      /**< Words taken of the current block */
+  size_t cap;       /**< Words of the current block */
+  uint64 **blocks; /**< The blocks after @p buf */
+  size_t *caps;     /**< The words of each block */
+  int nblocks;      /**< Number of blocks in use, the last the current one */
+  int nkept;        /**< Number of blocks held, those past @p nblocks free */
+  int capblocks;
+} TowerWideArena;
+
+/** @brief A point of a #TowerWideArena that a release returns it to */
+typedef struct
+{
+  int nblocks;
+  size_t used;
+} TowerWideMark;
+
+extern void tower_wide_arena_init(TowerWideArena *ar);
+extern void tower_wide_arena_free(TowerWideArena *ar);
+extern TowerWideMark tower_wide_arena_mark(const TowerWideArena *ar);
+extern void tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m);
+extern TowerWide *tower_wide_of_double(TowerWideArena *ar, double x);
+extern TowerWide *tower_wide_of_int64(TowerWideArena *ar, int64 v);
+extern TowerWide *tower_wide_dup(const TowerWide *a);
+extern TowerWide *tower_wide_signed(TowerWideArena *ar, const TowerWide *a,
+  int sign);
+extern TowerWide *tower_wide_add_signed(TowerWideArena *ar,
+  const TowerWide *a, int sa, const TowerWide *b, int sb);
+extern TowerWide *tower_wide_mul(TowerWideArena *ar, const TowerWide *a,
+  const TowerWide *b);
+extern int tower_wide_cmp(const TowerWide *a, const TowerWide *b);
+extern int tower_wide_to_fixed(const TowerWide *a, int scale, bool up,
+  uint64 *mag, int nlimbs);
+extern int tower_wide_cmp_fixed(TowerWideArena *ar, const TowerWide *mid,
+  int sign, const uint64 *mag, int nlimbs, int exp);
+extern void wide_cross3(TowerWideArena *ar, TowerWide *const *u,
+  TowerWide *const *v, TowerWide **r);
+extern TowerWide *wide_dot3(TowerWideArena *ar, TowerWide *const *u,
+  TowerWide *const *v);
+
+/**
+ * @brief Return the sum of two values, exactly
+ */
+static inline TowerWide *
+tower_wide_add(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  return tower_wide_add_signed(ar, a, 1, b, 1);
+}
+
+/**
+ * @brief Return the difference of two values, exactly
+ */
+static inline TowerWide *
+tower_wide_sub(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  return tower_wide_add_signed(ar, a, 1, b, -1);
+}
+
+/**
+ * @brief Return the negation of a value
+ */
+static inline TowerWide *
+tower_wide_neg(TowerWideArena *ar, const TowerWide *a)
+{
+  return tower_wide_signed(ar, a, -1);
+}
+
+/**
+ * @brief Return the sign of a value, -1, 0 or 1
+ */
+static inline int
+wide_sign(const TowerWide *a)
+{
+  return a->sign;
+}
+
+extern int wide_limbs_divmod(const uint64 *u, int nu, const uint64 *v,
+  int nv, uint64 *q, uint64 *r, int *nr);
+extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
+  bool *exact);
+
+/*****************************************************************************
  * The nearest double of a value read exactly
  *****************************************************************************/
 
-/* A dyadic rational of any size, opaque outside geo_funcs.c */
-typedef struct WideDyadic WideDyadic;
-
-/* The sign of the value a search reads less @p mid */
-typedef int (*NearestSide)(const WideDyadic *mid, const void *arg);
+/* The sign of the value a search reads less @p mid, the values it forms taken
+ * from @p ar, which releases them once it answers */
+typedef int (*NearestSide)(TowerWideArena *ar, const TowerWide *mid,
+  const void *arg);
 
 extern double nearest_double_exact(double c, NearestSide side,
   const void *arg);
-extern int wide_dyadic_cmp_fixed(const WideDyadic *mid, int sign,
-  const uint64 *mag, int nlimbs, int exp);
-extern WideDyadic *wide_dyadic_alloc(void);
-extern void wide_dyadic_set_double(WideDyadic *a, double x);
-extern void wide_dyadic_add(const WideDyadic *a, const WideDyadic *b,
-  WideDyadic *r);
-extern void wide_dyadic_sub(const WideDyadic *a, const WideDyadic *b,
-  WideDyadic *r);
-extern void wide_dyadic_mul(const WideDyadic *a, const WideDyadic *b,
-  WideDyadic *r);
-extern int wide_dyadic_to_fixed(const WideDyadic *a, int scale, bool up,
-  uint64 *mag, int nlimbs);
 
 /* The double nearest the sine and cosine of degrees (geo_trig.c) */
 extern double sind_nearest(double deg);

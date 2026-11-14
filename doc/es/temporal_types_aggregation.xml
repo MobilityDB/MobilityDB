@@ -200,6 +200,10 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				<listitem>
 					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname> y <varname>|=|</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta. Estos operadores trabajan en cuadros delimitadores (es decir, <varname>tstzspan</varname>, <varname>tbox</varname> o <varname>stbox</varname>), no los valores completos.</para>
 				</listitem>
+
+				<listitem>
+					<para><varname>?&amp;&amp;</varname> y <varname>%&amp;&amp;</varname> con el cuadro delimitador del tipo indexado, en cualquier orden (ver <xref linkend="ttype_ever_always_overlaps"/>), que trabajan sobre los valores completos: el índice conserva los valores cuyo cuadro delimitador se superpone al cuadro de la consulta, ya que un valor que está en el cuadro en algún instante tiene un cuadro delimitador así, y luego el operador comprueba cada uno de ellos, por lo que la consulta responde como lo hace sin el índice.</para>
+				</listitem>
 			</itemizedlist>
 		</para>
 

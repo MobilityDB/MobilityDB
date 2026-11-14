@@ -161,6 +161,8 @@ extern long double pointsegm_locate(Datum start, Datum end, Datum point,
 
 extern bool tgeompointsegm_meet(Datum start1, Datum end1, Datum start2,
   Datum end2);
+extern bool tgeompointsegm_crossing(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
 extern int tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);

@@ -27,6 +27,14 @@ SELECT tgeogpoint 'Point(1 1)@2001-01-01' ?<> tgeogpoint 'Point(1 1)@2001-01-01'
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' %= tgeogpoint 'Point(1 1)@2001-01-01';
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' %<> tgeogpoint 'Point(1 1)@2001-01-01';
 
+-- Two points meeting only at a bound of their common period that the period
+-- excludes are never equal
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' ?= tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' %<> tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' ?= tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' %<> tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]' ?= tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]';
+
 -- NULL
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= tgeompoint 'Point(1 1)@2001-01-02';
 
@@ -418,6 +426,14 @@ SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-02]' ?&& stbox '
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&& tgeompoint '[Point(2 0)@2001-01-01, Point(0 2)@2001-01-03]';
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' %&& tgeompoint '[Point(2 0)@2001-01-01, Point(0 2)@2001-01-03]';
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&& tgeompoint '[Point(0 1)@2001-01-01, Point(2 3)@2001-01-03]';
+-- Two temporal points meeting halfway between two microseconds, dated by the
+-- even one, and a third of a microsecond after the start, dated by the start,
+-- an instant at which they differ
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00:00, Point(2 0)@2001-01-01 00:00:00.000003]' #= tgeompoint '[Point(2 0)@2001-01-01 00:00:00, Point(0 0)@2001-01-01 00:00:00.000003]';
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' #= tgeompoint '[Point(-1 0)@2001-01-01, Point(259200000000 0)@2001-01-02]';
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' ?= tgeompoint '[Point(-1 0)@2001-01-01, Point(259200000000 0)@2001-01-02]';
+SELECT tgeompoint '(Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' ?= tgeompoint '(Point(-1 0)@2001-01-01, Point(259200000000 0)@2001-01-02]';
+SELECT tgeompoint '(Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' %<> tgeompoint '(Point(-1 0)@2001-01-01, Point(259200000000 0)@2001-01-02]';
 -- Errors
 SELECT tgeompoint 'SRID=4326;Point(1 1)@2001-01-01' ?&& stbox 'STBOX X((0,0),(2,2))';
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' ?&& stbox 'STBOX X((0,0),(2,2))';
