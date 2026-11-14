@@ -729,10 +729,10 @@ which master's search caps at the largest double and the one search rounds to in
 does. A call costs 4% more for `nearest_double_exact` and the wide root, 5% for the offset filter,
 20 to 33% for `ddb_nearest_root` (the same residuals, the cost of the side itself).
 
-EA6 is open as #3686, four commits on master `ababb81144`: the search read by
+EA6 is merged as #3686 (`7dce0ed93e` on master), four commits: the search read by
 `nearest_double_exact`, then the wide root, the offset filter and the DDBound root as its sides.
 Its receipts are strict CI, cppcheck, valgrind, smoke, the oracle (18 CGAL witnesses with 36
-controls) and speed, 25 of the 26 cells at parity as on EA5; Windows is waived. The other
+controls) and speed, 25 of the 26 cells at parity as on EA5. The other
 searches of Section 4.5 (`point_distance_nearest`, the searches of `point_distance_offset_pair`,
 `point_segment_distance_offset_exact` and their `_inputs` twins, `mec_nearest`) are not in it.
 
