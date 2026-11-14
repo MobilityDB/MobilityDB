@@ -532,44 +532,14 @@ h3_outline_vertex_held(const DggsOutline *o, int k)
   return turn > 0 ? (in && out) : (in || out);
 }
 
-/** @brief Number of entries of #h3_vec_cache, a power of 2 */
-#define H3_VEC_CACHE 512
-
-/** @brief The geodetic positions read last, per thread, by the bits of
- * their degrees */
-static MEOS_TLS struct
-{
-  uint64 lon, lat;
-  double v[3];
-  bool used;
-} h3_vec_cache[H3_VEC_CACHE];
-
 /**
  * @brief Return in @p v the geodetic position of degrees, the vector of
- * decision D6 of the cell walks (#lonlat_vector_nearest)
- * @details The vector is a function of the doubles of the degrees alone and
- * costs some hundred thousand instructions, while a walk reads the vertices
- * a cell shares with its neighbours again and again, so the positions read
- * last are kept by the bits of their degrees and answer again
+ * decision D6 of the cell walks (#dggs_lonlat_vector)
  */
 static void
 h3_lonlat_vector(double lon, double lat, double *v)
 {
-  uint64 a, b;
-  memcpy(&a, &lon, sizeof(uint64));
-  memcpy(&b, &lat, sizeof(uint64));
-  uint64 h = (a ^ (b * UINT64CONST(0x9E3779B97F4A7C15))) *
-    UINT64CONST(0xBF58476D1CE4E5B9);
-  int i = (int) (h >> 55) & (H3_VEC_CACHE - 1);
-  if (! h3_vec_cache[i].used || h3_vec_cache[i].lon != a ||
-      h3_vec_cache[i].lat != b)
-  {
-    lonlat_vector_nearest(lon, lat, h3_vec_cache[i].v);
-    h3_vec_cache[i].lon = a;
-    h3_vec_cache[i].lat = b;
-    h3_vec_cache[i].used = true;
-  }
-  memcpy(v, h3_vec_cache[i].v, 3 * sizeof(double));
+  dggs_lonlat_vector(lon, lat, v);
 }
 
 /**
@@ -648,106 +618,18 @@ h3_outline_vertex_held_geodetic(const DggsOutline *o, int k)
   return turn > 0 ? (in && out) : (in || out);
 }
 
+static const DggsGeodeticOps h3_geodetic_ops;
+
 /**
- * @brief Return true if a geodetic cell holds a direction
- * @details The geodetic twin of #h3_outline_holds_point: the cell is the
- * region of the sphere its outline bounds, each edge the great-circle arc
- * between the geodetic positions of its vertices (#h3_outline_vector),
- * holding its interior and its north and west sides. A direction on an edge
- * or at a vertex belongs to the cell holding it
- * (#h3_outline_edge_held_geodetic, #h3_outline_vertex_held_geodetic); one
- * strictly inside or outside is read by the crossing number in the gnomonic
- * chart about the sum c of the vertices, where every great circle is a
- * line: the chart coordinate of v along a direction e is (v . e) / (v . c),
- * so each comparison is the sign of #sphere_dir_dot_diff_sign, and the side
- * of the line of an edge from a to b is the sign of the triple product
- * (a x b) . p. Every sign is exact, so neighbours reading the same vertices
- * hold each direction once.
+ * @brief Return true if a geodetic cell holds a direction, its boundary
+ * points owned by the rule of H3 (#dggs_outline_holds_dir)
  * @param[in] o Outline of the cell
  * @param[in] p Direction, exact
  */
 static bool
 h3_outline_holds_dir(const DggsOutline *o, const SphereDir *p)
 {
-  int n = o->count;
-  SphereDir *v[MAX_CELL_BNDRY_VERTS + 1] = { NULL };
-  for (int k = 0; k < n; k++)
-  {
-    POINT3D q;
-    h3_outline_vector(o, k, &q);
-    const double d[3] = { q.x, q.y, q.z };
-    v[k] = sphere_dir_make(d);
-  }
-  v[n] = v[0];
-  SphereDir *c = sphere_dir_add(v[0], v[1]);
-  for (int k = 2; k < n; k++)
-  {
-    SphereDir *s = sphere_dir_add(c, v[k]);
-    sphere_dir_free(c);
-    c = s;
-  }
-  bool result = false, decided = false;
-  /* A direction behind the chart lies outside: the cell lies in the open
-   * hemisphere about c */
-  if (sphere_dir_dot_sign(c, p) <= 0)
-    decided = true;
-  /* On an edge, or at one of its ends */
-  for (int k = 0; k < n && ! decided; k++)
-  {
-    SphereDir *ne = sphere_dir_cross(v[k], v[k + 1]);
-    if (sphere_dir_dot_sign(ne, p) == 0 &&
-        sphere_dir_triple_sign(v[k], p, ne) >= 0 &&
-        sphere_dir_triple_sign(p, v[k + 1], ne) >= 0)
-    {
-      decided = true;
-      if (sphere_dir_parallel(v[k], p))
-        result = h3_outline_vertex_held_geodetic(o, k);
-      else if (sphere_dir_parallel(v[k + 1], p))
-        result = h3_outline_vertex_held_geodetic(o, (k + 1) % n);
-      else
-        result = h3_outline_edge_held_geodetic(o, k);
-    }
-    sphere_dir_free(ne);
-  }
-  if (! decided)
-  {
-    /* The axes of the chart: e1 = c x z, or c x x where c lies on the
-     * z axis, and e2 = c x e1; the turn of the frame e1, e2, c fixes the
-     * side of an edge a point to the right of it lies on */
-    const double zd[3] = { 0.0, 0.0, 1.0 }, xd[3] = { 1.0, 0.0, 0.0 };
-    SphereDir *z = sphere_dir_make(zd);
-    SphereDir *e1 = sphere_dir_cross(c, z);
-    if (sphere_dir_parallel(c, z))
-    {
-      SphereDir *x = sphere_dir_make(xd);
-      sphere_dir_free(e1);
-      e1 = sphere_dir_cross(c, x);
-      sphere_dir_free(x);
-    }
-    SphereDir *e2 = sphere_dir_cross(c, e1);
-    int frame = sphere_dir_triple_sign(e1, e2, c);
-    bool inside = false;
-    for (int k = 0; k < n; k++)
-    {
-      /* a above p, and b above p, in the coordinate along e2 */
-      bool ua = sphere_dir_dot_diff_sign(v[k], e2, p, c) > 0;
-      bool ub = sphere_dir_dot_diff_sign(v[k + 1], e2, p, c) > 0;
-      if (ua == ub)
-        continue;
-      /* The edge meets the horizontal of p right of p when the turn of
-       * a, b, p in the chart has the sign of b above a */
-      int up = sphere_dir_dot_diff_sign(v[k + 1], e2, v[k], c);
-      int turn = frame * sphere_dir_triple_sign(v[k], v[k + 1], p);
-      if (turn == up)
-        inside = ! inside;
-    }
-    result = inside;
-    sphere_dir_free(z); sphere_dir_free(e1); sphere_dir_free(e2);
-  }
-  sphere_dir_free(c);
-  for (int k = 0; k < n; k++)
-    sphere_dir_free(v[k]);
-  return result;
+  return dggs_outline_holds_dir(&h3_geodetic_ops, o, p);
 }
 
 /** @brief Outline of the last cell #h3_cell_outline_last read, per thread */
@@ -1188,607 +1070,104 @@ h3_segment_length_deg(double lon1, double lat1, double lon2, double lat2,
 }
 
 /**
- * @brief Return true if the position of a geodetic segment at the offset
- * @p m of @p D has not passed the crossing, m / D <= f, exactly, the
- * comparison itself in @p cmp
- * @details The geodetic twin of #segment_edge_side_at, which the planar
- * search reads the same way. An undecided comparison, beyond the precision
- * #geodetic_arc_fraction_cmp reaches, reads as not passed.
- */
-static bool
-h3_geodetic_before(const double *p0, const double *p1, const double *a,
-  const double *b, int64 m, int64 D, int *cmp)
-{
-  *cmp = geodetic_arc_fraction_cmp(p0, p1, a, b, m, D);
-  return *cmp >= 0;
-}
-
-/**
  * @brief Return the microsecond at which a geodetic segment crosses the
  * great circle of an edge, as the offset from the start of the segment,
- * truncated
- * @details The geodetic twin of #dggs_outline_edge_offset, searched as
- * #segment_edge_cross_offset searches: the position moves at constant
- * angular speed along the great circle of the segment, so it meets the
- * circle of the edge at the fraction f of the segment the angles give, and
- * the crossing is dated by the truncation of f D, the last offset m with
- * m / D <= f, each comparison exact (#h3_geodetic_before). The fraction in
- * doubles @p f is the start of the search only, which gallops from it and
- * halves. The positions are the geodetic vectors of the degrees
- * (#lonlat_vector_nearest).
- * @param[in] x0,y0,x1,y1 Start and end points of the segment, in degrees
- * @param[in] D Duration of the segment in microseconds
- * @param[in] ax,ay,bx,by Vertices of an edge through the crossing, off the
- * great circle of the segment, in degrees
- * @param[in] f Fraction of the segment at the crossing, in doubles
- * @param[out] whole True when the segment meets the circle exactly at the
- * microsecond returned
+ * truncated, its points given in degrees (#dggs_geodetic_edge_offset on
+ * their geodetic positions, #h3_lonlat_vector)
  */
 int64
 h3_geodetic_edge_offset(double x0, double y0, double x1, double y1, int64 D,
   double ax, double ay, double bx, double by, double f, bool *whole)
 {
-  assert(D >= 0); assert(whole);
   double p0[3], p1[3], a[3], b[3];
   h3_lonlat_vector(x0, y0, p0);
   h3_lonlat_vector(x1, y1, p1);
   h3_lonlat_vector(ax, ay, a);
   h3_lonlat_vector(bx, by, b);
-  if (D == 0)
-  {
-    *whole = (geodetic_arc_fraction_cmp(p0, p1, a, b, 0, 1) == 0);
-    return 0;
-  }
-  /* The estimate in doubles, the start of the search only */
-  double est = floor((double) D * f);
-  int64 n = 0;
-  if (isfinite(est) && est > 0.0)
-    n = (est >= (double) D) ? D : llrint(est);
-  /* lo is the last offset known not to have passed the crossing, and locmp
-   * the comparison read there, 3 where none is; hi the first offset known
-   * past it, D + 1 standing for none */
-  int64 lo, hi;
-  int cmp, locmp = 3;
-  if (h3_geodetic_before(p0, p1, a, b, n, D, &cmp))
-  {
-    lo = n;
-    locmp = cmp;
-    int64 step = 1;
-    for (;;)
-    {
-      if (lo == D)
-      {
-        hi = D + 1;
-        break;
-      }
-      int64 c = (step > D - lo) ? D : lo + step;
-      if (h3_geodetic_before(p0, p1, a, b, c, D, &cmp))
-      {
-        lo = c;
-        locmp = cmp;
-        step *= 2;
-      }
-      else
-      {
-        hi = c;
-        break;
-      }
-    }
-  }
-  else
-  {
-    hi = n;
-    int64 step = 1;
-    for (;;)
-    {
-      int64 c = (step >= hi) ? 0 : hi - step;
-      if (c == 0)
-      {
-        lo = 0;
-        break;
-      }
-      if (h3_geodetic_before(p0, p1, a, b, c, D, &cmp))
-      {
-        lo = c;
-        locmp = cmp;
-        break;
-      }
-      hi = c;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    if (h3_geodetic_before(p0, p1, a, b, mid, D, &cmp))
-    {
-      lo = mid;
-      locmp = cmp;
-    }
-    else
-      hi = mid;
-  }
-  if (locmp == 3)
-    locmp = geodetic_arc_fraction_cmp(p0, p1, a, b, lo, D);
-  *whole = (locmp == 0);
-  return lo;
+  return dggs_geodetic_edge_offset(p0, p1, D, a, b, f, whole);
 }
 
-/** @brief A point where a geodetic segment meets an edge of a cell */
-typedef struct
-{
-  SphereDir *x;            /**< Direction of the point, exact */
-  double f;                /**< Its fraction of the segment, in doubles */
-  double ax, ay, bx, by;   /**< An edge through it, off the great circle of
-                                the segment, in degrees */
-} H3ArcCross;
-
-static void
-h3_vec_cross(const double *a, const double *b, double *r)
-{
-  r[0] = a[1] * b[2] - a[2] * b[1];
-  r[1] = a[2] * b[0] - a[0] * b[2];
-  r[2] = a[0] * b[1] - a[1] * b[0];
-}
-
-/**
- * @brief Return the fraction of the arc from @p p0 to @p p1 at the direction
- * @p x, the ratio of the angles, in doubles
- * @details The order of the crossings and the cells they part are read
- * exactly; the fraction only places a crossing in time, where its
- * microsecond is read exactly (#geodetic_arc_fraction_cmp)
- */
-static double
-h3_arc_fraction(const double *p0, const double *p1, const double *x)
-{
-  double c[3], m[3];
-  h3_vec_cross(p0, x, c);
-  h3_vec_cross(p0, p1, m);
-  double ax = atan2(sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]),
-    p0[0] * x[0] + p0[1] * x[1] + p0[2] * x[2]);
-  double am = atan2(sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]),
-    p0[0] * p1[0] + p0[1] * p1[1] + p0[2] * p1[2]);
-  double f = am > 0.0 ? ax / am : 0.0;
-  return f < 0.0 ? 0.0 : (f > 1.0 ? 1.0 : f);
-}
-
-/**
- * @brief Append the points strictly between @p s and the end of a geodetic
- * segment where it meets an edge of an outline
- * @details The segment runs along the great circle of normal m = p0 x p1
- * from p0 to p1; a direction x lies ahead of s on it when (s x x) . m > 0
- * and before p1 when (x x p1) . m > 0. It meets the great circle of the edge
- * from a to b, of normal n, in the direction m x n or its opposite, which
- * lies on the edge when (a x x) . n >= 0 and (x x b) . n >= 0. Where the
- * segment runs along the circle of the edge, the points are the vertices of
- * the edge lying on it. Each point records an edge through it that does not
- * lie on the circle of the segment, which dates it.
- */
-static void
-h3_arc_outline_crossings(const DggsOutline *o, const double *p0,
-  const double *p1, const SphereDir *P1, const SphereDir *M,
-  const SphereDir *s, H3ArcCross **out, int *count, int *size)
-{
-  int n = o->count;
-  double v[MAX_CELL_BNDRY_VERTS][3];
-  SphereDir *V[MAX_CELL_BNDRY_VERTS] = { NULL };
-  for (int k = 0; k < n; k++)
-  {
-    POINT3D q;
-    h3_outline_vector(o, k, &q);
-    v[k][0] = q.x; v[k][1] = q.y; v[k][2] = q.z;
-    V[k] = sphere_dir_make(v[k]);
-  }
-  double m[3];
-  h3_vec_cross(p0, p1, m);
-  for (int k = 0; k < n; k++)
-  {
-    int k1 = (k + 1) % n;
-    SphereDir *ne = sphere_dir_cross(V[k], V[k1]);
-    SphereDir *d = sphere_dir_cross(M, ne);
-    SphereDir *cand[2] = { NULL, NULL };
-    int ends[2] = { -1, -1 };
-    if (sphere_dir_parallel(M, ne))
-    {
-      /* Along the circle of the edge: its vertices, each dated by the edge
-       * of the outline meeting it off this circle */
-      ends[0] = k; ends[1] = k1;
-    }
-    else
-    {
-      cand[0] = d;
-      cand[1] = sphere_dir_neg(d);
-    }
-    for (int j = 0; j < 2; j++)
-    {
-      const SphereDir *x = ends[j] >= 0 ? V[ends[j]] : cand[j];
-      bool keep = sphere_dir_triple_sign(s, x, M) > 0 &&
-        sphere_dir_triple_sign(x, P1, M) > 0;
-      if (keep && ends[j] < 0)
-        keep = sphere_dir_triple_sign(V[k], x, ne) >= 0 &&
-          sphere_dir_triple_sign(x, V[k1], ne) >= 0;
-      if (! keep)
-        continue;
-      if (*count == *size)
-      {
-        *size *= 2;
-        *out = repalloc(*out, sizeof(H3ArcCross) * (size_t) *size);
-      }
-      H3ArcCross *c = &(*out)[(*count)++];
-      double xd[3];
-      int ea = k, eb = k1;
-      if (ends[j] >= 0)
-      {
-        int w = ends[j];
-        xd[0] = v[w][0]; xd[1] = v[w][1]; xd[2] = v[w][2];
-        c->x = sphere_dir_add(V[w], V[w]);
-        /* The other edge of the outline at this vertex */
-        if (w == k)
-        {
-          ea = (k + n - 1) % n; eb = k;
-        }
-        else
-        {
-          ea = k1; eb = (k1 + 1) % n;
-        }
-      }
-      else
-      {
-        double nd[3];
-        h3_vec_cross(v[k], v[k1], nd);
-        h3_vec_cross(m, nd, xd);
-        if (j == 1)
-        {
-          xd[0] = -xd[0]; xd[1] = -xd[1]; xd[2] = -xd[2];
-        }
-        c->x = sphere_dir_add(x, x);
-      }
-      c->f = h3_arc_fraction(p0, p1, xd);
-      c->ax = o->lon[ea]; c->ay = o->lat[ea];
-      c->bx = o->lon[eb]; c->by = o->lat[eb];
-    }
-    sphere_dir_free(ne); sphere_dir_free(d);
-    sphere_dir_free(cand[1]);
-  }
-  for (int k = 0; k < n; k++)
-    sphere_dir_free(V[k]);
-}
-
-/**
- * @brief Return true if a cell is convex on the sphere, every corner of its
- * outline turning left
- */
+/** @brief Return true if a cell is convex on the sphere
+ * (#dggs_outline_convex_geodetic) */
 static bool
 h3_outline_convex_geodetic(const DggsOutline *o)
 {
-  int n = o->count;
-  for (int k = 0; k < n; k++)
-  {
-    POINT3D p, v, q;
-    h3_outline_vector(o, (k + n - 1) % n, &p);
-    h3_outline_vector(o, k, &v);
-    h3_outline_vector(o, (k + 1) % n, &q);
-    if (triple_product_sign_exact(&p, &v, &q) <= 0)
-      return false;
-  }
-  return true;
+  return dggs_outline_convex_geodetic(&h3_geodetic_ops, o);
 }
 
-/**
- * @brief Return the cell among @p cand holding a direction, or the one
- * found around @p cur when none of them does
- */
-static H3Index
-h3_dir_cell(const H3Index *cand, int ncand, H3Index cur,
-  const SphereDir *p)
-{
-  for (int i = 0; i < ncand; i++)
-    if (cand[i] != (H3Index) 0 && h3_cell_holds_dir(cand[i], p))
-      return cand[i];
-  return h3_cell_around(cur, 0.0, 0.0, NULL, p);
-}
-
-/**
- * @brief Find an edge of the cells @p cand holding the start @p p0 of a
- * geodetic segment off the great circle of the segment, its vertices in
- * degrees in @p ex (lon, lat of each), and return true if one is found
- * @details The edge that dates a crossing at the start of the segment
- * (#h3_geodetic_edge_offset): @p p0 lies on its circle, the triple product
- * of its vertices and @p p0 being 0, between its vertices, and the edge
- * does not lie on the circle of the segment, the triple products of the
- * ends of the segment and its vertices not both being 0. The twin of the
- * edge test of #h3_arc_outline_crossings.
- */
+/** @brief The outline of a cell for the geodetic walk, into the caller's
+ * copy (#h3_cell_outline) */
 static bool
-h3_start_edge(const H3Index *cand, int ncand, const double *p0,
-  const double *p1, double *ex)
+h3_geo_outline_copy(uint64 cell, DggsOutline *out)
 {
-  POINT3D q0 = { p0[0], p0[1], p0[2] }, q1 = { p1[0], p1[1], p1[2] };
-  for (int i = 0; i < ncand; i++)
-  {
-    DggsOutline co;
-    if (cand[i] == (H3Index) 0 || ! h3_cell_outline(cand[i], &co))
-      continue;
-    int n = co.count;
-    for (int k = 0; k < n; k++)
-    {
-      int k1 = (k + 1) % n;
-      POINT3D a, b;
-      h3_outline_vector(&co, k, &a);
-      h3_outline_vector(&co, k1, &b);
-      if (triple_product_sign_exact(&a, &b, &q0) != 0 ||
-          (triple_product_sign_exact(&q0, &q1, &a) == 0 &&
-           triple_product_sign_exact(&q0, &q1, &b) == 0))
-        continue;
-      /* Between the vertices: a x p0 and p0 x b point along a x b */
-      const double ad[3] = { a.x, a.y, a.z }, bd[3] = { b.x, b.y, b.z };
-      SphereDir *A = sphere_dir_make(ad), *B = sphere_dir_make(bd);
-      SphereDir *Q = sphere_dir_make(p0), *N = sphere_dir_cross(A, B);
-      bool on = sphere_dir_triple_sign(A, Q, N) >= 0 &&
-        sphere_dir_triple_sign(Q, B, N) >= 0;
-      sphere_dir_free(A); sphere_dir_free(B);
-      sphere_dir_free(Q); sphere_dir_free(N);
-      if (! on)
-        continue;
-      ex[0] = co.lon[k]; ex[1] = co.lat[k];
-      ex[2] = co.lon[k1]; ex[3] = co.lat[k1];
-      return true;
-    }
-  }
-  return false;
+  return h3_cell_outline((H3Index) cell, out);
 }
 
-/**
- * @brief Return the edge through whose interior a geodetic segment leaves a
- * convex cell, -1 when it leaves through none, or -2 when the step is not
- * of that kind
- * @details With m = p0 x p1 and n = a x b the normal of the circle of the
- * edge from a to b, the segment meets that circle in the direction m x n
- * strictly between its ends exactly when p0 lies strictly left of the edge
- * and p1 strictly right of it, and leaves the cell there; that direction
- * lies strictly inside the edge exactly when a lies strictly right of the
- * segment and b strictly left of it. Each side is the exact sign of a
- * triple product of the geodetic positions (#triple_product_sign_exact), and
- * a convex cell is left through one edge at most. Any other step, an end on
- * the circle of an edge, a vertex on the circle of the segment, or a cell
- * that is not convex, is for #h3_segment_cells_geodetic to read.
- */
-static int
-h3_convex_exit(const DggsOutline *o, const double *p0, const double *p1)
+/** @brief The geodetic position of the vertex k of an outline
+ * (#h3_outline_vector) */
+static void
+h3_geo_vector(const DggsOutline *o, int k, double *v)
 {
-  if (! h3_outline_convex_geodetic(o))
-    return -2;
-  POINT3D q0 = { p0[0], p0[1], p0[2] }, q1 = { p1[0], p1[1], p1[2] }, a, b;
-  int n = o->count, found = -1;
-  h3_outline_vector(o, 0, &a);
-  for (int k = 0; k < n; k++, a = b)
-  {
-    h3_outline_vector(o, (k + 1) % n, &b);
-    int e0 = triple_product_sign_exact(&a, &b, &q0);
-    int e1 = triple_product_sign_exact(&a, &b, &q1);
-    if (e0 == 0 || e1 == 0)
-      return -2;
-    if (e0 < 0 || e1 > 0)
-      continue;
-    int sa = triple_product_sign_exact(&q0, &q1, &a);
-    int sb = triple_product_sign_exact(&q0, &q1, &b);
-    if (sa == 0 || sb == 0)
-      return -2;
-    if (sa < 0 && sb > 0)
-    {
-      if (found >= 0)
-        return -2;
-      found = k;
-    }
-  }
-  return found;
+  POINT3D q;
+  h3_outline_vector(o, k, &q);
+  v[0] = q.x; v[1] = q.y; v[2] = q.z;
 }
+
+/** @brief The geodetic cell of a position for the geodetic walk
+ * (#h3_point_cell) */
+static uint64
+h3_geo_point_cell(double lon, double lat, int32 resolution)
+{
+  return h3_point_cell(lon, lat, true, resolution);
+}
+
+/** @brief The cell holding a direction, searched around a cell
+ * (#h3_cell_around) */
+static uint64
+h3_geo_dir_around(uint64 cell, const SphereDir *p)
+{
+  return h3_cell_around((H3Index) cell, 0.0, 0.0, NULL, p);
+}
+
+/** @brief The cell and its neighbours, the disk of radius 1 */
+static int
+h3_geo_neighbours(uint64 cell, uint64 *out, int max)
+{
+  H3Index disk[7] = { 0 };
+  if (max < 7 || gridDisk((H3Index) cell, 1, disk) != E_SUCCESS)
+    return 0;
+  for (int i = 0; i < 7; i++)
+    out[i] = (uint64) disk[i];
+  return 7;
+}
+
+/** @brief The geodetic walk of H3: its outlines, the vectors of decision D6
+ * of their vertices, and its owner rule, a cell holding its north and west
+ * sides (#h3_outline_edge_held_geodetic, #h3_outline_vertex_held_geodetic) */
+static const DggsGeodeticOps h3_geodetic_ops =
+{
+  h3_planar_outline,
+  h3_geo_outline_copy,
+  h3_geo_vector,
+  h3_geo_point_cell,
+  h3_geo_dir_around,
+  h3_geo_neighbours,
+  h3_outline_edge_held_geodetic,
+  h3_outline_vertex_held_geodetic
+};
 
 /**
  * @brief Fill `cells` with every cell a geodetic segment crosses, and
  * `enter` with the fraction of the segment at which it reaches each
- * @details The geodetic twin of #dggs_segment_cells_planar, on the cells
- * bounded by great-circle arcs (#h3_outline_holds_dir). The segment starts
- * in the cell of its first position (#h3_point_cell). In a cell, the next
- * stretch of the segment begins at the first point x1 ahead where it meets
- * an edge of the cell or of a neighbour, and ends at the next one x2, or at
- * the end of the segment: no other cell has an edge crossing the segment
- * inside the cell. The stretch lies in the cell holding the direction
- * x1 + x2, which lies between them on the segment, and the point x1 in the
- * cell holding it, which at a vertex can be a third cell, passed for no
- * length. Every point and every order is decided by exact signs on the
- * geodetic positions of the vertices and of the ends of the segment, as the
- * oracle of the cell walks decides them. Each entry states an edge through
- * its point and which cell holds the point: the cell left, the cell entered,
- * or neither.
- * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
- * @param[in] resolution H3 resolution
- * @param[out] cells,enter,cross Arrays of at least `maxout` entries, the last
- * one possibly NULL
- * @param[in] maxout Capacity of the arrays, at least 1
- * @return Number of cells written, `maxout` when they may not all fit, or 0
- * when the first lookup fails
+ * (#dggs_segment_cells_geodetic on the table of H3)
  */
 static int
 h3_segment_cells_geodetic(double lon1, double lat1, double lon2, double lat2,
   int32 resolution, H3Index *cells, double *enter, DggsEdgeCross *cross,
   int maxout)
 {
-  H3Index cur = h3_point_cell(lon1, lat1, true, resolution);
-  if (cur == (H3Index) 0)
-    return 0;
-  cells[0] = cur; enter[0] = 0.0;
-  int n = 1;
-  double p0[3], p1[3];
-  h3_lonlat_vector(lon1, lat1, p0);
-  h3_lonlat_vector(lon2, lat2, p1);
-  SphereDir *P0 = sphere_dir_make(p0), *P1 = sphere_dir_make(p1);
-  SphereDir *M = sphere_dir_cross(P0, P1);
-  bool degenerate = sphere_dir_parallel(P0, P1);
-  /* Equal or opposite ends span no great circle; a convex cell holding both
-   * ends holds the arc between them */
-  const DggsOutline *o = h3_cell_outline_last(cur);
-  if (degenerate || ! o || (h3_outline_convex_geodetic(o) &&
-      h3_point_cell(lon2, lat2, true, resolution) == cur))
-  {
-    sphere_dir_free(P0); sphere_dir_free(P1); sphere_dir_free(M);
-    return n;
-  }
-  int size = 32, count = 0;
-  H3ArcCross *xs = palloc(sizeof(H3ArcCross) * (size_t) size);
-  SphereDir *s = sphere_dir_add(P0, P0);
-  H3Index cand[7];
-  /* The edge of the last crossing of the common step, whose direction s
-   * stands for once a step of another kind reads it */
-  bool pending = false, at_start = true;
-  double sa[3] = { 0 }, sb[3] = { 0 };
-  double m[3];
-  h3_vec_cross(p0, p1, m);
-  while (true)
-  {
-    /* The common step: a convex cell left through the interior of an edge
-     * (#h3_convex_exit), the next cell the one across it, the crossing held
-     * by the one of the two holding the edge */
-    o = h3_cell_outline_last(cur);
-    int fk = o ? h3_convex_exit(o, p0, p1) : -2;
-    if (fk == -1)
-      break;
-    if (fk >= 0)
-    {
-      int k1 = (fk + 1) % o->count;
-      H3Index next = o->across[fk];
-      if (next == (H3Index) 0)
-        break;
-      if (n == maxout)
-        break;
-      POINT3D a, b;
-      h3_outline_vector(o, fk, &a);
-      h3_outline_vector(o, k1, &b);
-      sa[0] = a.x; sa[1] = a.y; sa[2] = a.z;
-      sb[0] = b.x; sb[1] = b.y; sb[2] = b.z;
-      double nd[3], xd[3];
-      h3_vec_cross(sa, sb, nd);
-      h3_vec_cross(m, nd, xd);
-      cells[n] = next;
-      enter[n] = h3_arc_fraction(p0, p1, xd);
-      if (cross)
-      {
-        DggsEdgeCross *e = &cross[n];
-        e->ax = o->lon[fk]; e->ay = o->lat[fk]; e->oa = 0.0;
-        e->bx = o->lon[k1]; e->by = o->lat[k1]; e->ob = 0.0;
-        e->held_left = h3_outline_edge_held_geodetic(o, fk);
-        e->held_entered = ! e->held_left;
-      }
-      n++;
-      cur = next;
-      pending = true;
-      at_start = false;
-      continue;
-    }
-    if (pending)
-    {
-      /* The direction of the last crossing, m x (a x b), exactly */
-      SphereDir *A = sphere_dir_make(sa), *B = sphere_dir_make(sb);
-      SphereDir *ne = sphere_dir_cross(A, B);
-      sphere_dir_free(s);
-      s = sphere_dir_cross(M, ne);
-      sphere_dir_free(A); sphere_dir_free(B); sphere_dir_free(ne);
-      pending = false;
-    }
-    memset(cand, 0, sizeof(cand));
-    if (gridDisk(cur, 1, cand) != E_SUCCESS)
-      break;
-    count = 0;
-    for (int i = 0; i < 7; i++)
-    {
-      DggsOutline co;
-      if (cand[i] != (H3Index) 0 && h3_cell_outline(cand[i], &co))
-        h3_arc_outline_crossings(&co, p0, p1, P1, M, s, &xs, &count, &size);
-    }
-    /* The first point ahead */
-    int i1 = 0;
-    for (int i = 1; i < count; i++)
-      if (sphere_dir_triple_sign(xs[i].x, xs[i1].x, M) > 0)
-        i1 = i;
-    /* The stretch from the start of the segment: a start on the boundary of
-     * its cell can leave the cell at once, the stretch then lying in the
-     * cell holding the direction between the start and the first point
-     * ahead, entered at the start */
-    if (at_start)
-    {
-      at_start = false;
-      SphereDir *mid0 = sphere_dir_add(P0, count ? xs[i1].x : P1);
-      H3Index first = h3_dir_cell(cand, 7, cur, mid0);
-      sphere_dir_free(mid0);
-      double ex[4];
-      if (first != (H3Index) 0 && first != cur && n < maxout &&
-          h3_start_edge(cand, 7, p0, p1, ex))
-      {
-        cells[n] = first;
-        enter[n] = 0.0;
-        if (cross)
-        {
-          DggsEdgeCross *e = &cross[n];
-          e->ax = ex[0]; e->ay = ex[1]; e->oa = 0.0;
-          e->bx = ex[2]; e->by = ex[3]; e->ob = 0.0;
-          e->held_left = true;
-          e->held_entered = false;
-        }
-        n++;
-        cur = first;
-      }
-    }
-    if (count == 0)
-      break;
-    /* The next point after the first */
-    int i2 = -1;
-    for (int i = 0; i < count; i++)
-      if (sphere_dir_triple_sign(xs[i1].x, xs[i].x, M) > 0 &&
-          (i2 < 0 || sphere_dir_triple_sign(xs[i].x, xs[i2].x, M) > 0))
-        i2 = i;
-    SphereDir *mid = sphere_dir_add(xs[i1].x, i2 >= 0 ? xs[i2].x : P1);
-    H3Index next = h3_dir_cell(cand, 7, cur, mid);
-    H3Index at = h3_dir_cell(cand, 7, cur, xs[i1].x);
-    sphere_dir_free(mid);
-    if (next == (H3Index) 0 || at == (H3Index) 0)
-      break;
-    H3Index step[2] = { at, next };
-    bool full = false;
-    for (int j = 0; j < 2; j++)
-    {
-      H3Index c = step[j];
-      if (c == cur || (j == 1 && c == at))
-        continue;
-      if (n == maxout)
-      {
-        full = true;
-        break;
-      }
-      cells[n] = c;
-      enter[n] = xs[i1].f;
-      if (cross)
-      {
-        DggsEdgeCross *e = &cross[n];
-        e->ax = xs[i1].ax; e->ay = xs[i1].ay; e->oa = 0.0;
-        e->bx = xs[i1].bx; e->by = xs[i1].by; e->ob = 0.0;
-        e->held_left = (at == cur);
-        e->held_entered = (at == c);
-      }
-      n++;
-      cur = c;
-    }
-    sphere_dir_free(s);
-    s = sphere_dir_add(xs[i1].x, xs[i1].x);
-    for (int i = 0; i < count; i++)
-      sphere_dir_free(xs[i].x);
-    if (full)
-      break;
-    cur = next;
-  }
-  sphere_dir_free(s);
-  pfree(xs);
-  sphere_dir_free(P0); sphere_dir_free(P1); sphere_dir_free(M);
-  return n;
+  return dggs_segment_cells_geodetic(&h3_geodetic_ops, lon1, lat1, lon2,
+    lat2, resolution, (uint64 *) cells, enter, cross, maxout);
 }
 
 /**

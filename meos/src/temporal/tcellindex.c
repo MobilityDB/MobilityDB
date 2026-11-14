@@ -3965,3 +3965,792 @@ dggs_segment_cells_planar(const DggsPlanarOps *ops, double lon1, double lat1,
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * The geodetic walk of the cells of any grid on their great-circle outlines
+ *****************************************************************************/
+
+/**
+ * @brief Return in @p v the geodetic position of the vertex k of an outline,
+ * the vector the grid states for it (#DggsGeodeticOps)
+ */
+static void
+dggs_geo_vertex(const DggsGeodeticOps *ops, const DggsOutline *o, int k,
+  POINT3D *v)
+{
+  double d[3];
+  ops->vector(o, k, d);
+  v->x = d[0];
+  v->y = d[1];
+  v->z = d[2];
+}
+
+/** @brief Number of entries of #dggs_vec_cache, a power of 2 */
+#define DGGS_VEC_CACHE 512
+
+/** @brief The geodetic positions read last, per thread, by the bits of
+ * their degrees */
+static MEOS_TLS struct
+{
+  uint64 lon, lat;
+  double v[3];
+  bool used;
+} dggs_vec_cache[DGGS_VEC_CACHE];
+
+/**
+ * @brief Return in @p v the geodetic position of degrees, the vector of
+ * decision D6 of the cell walks (#lonlat_vector_nearest)
+ * @details The vector is a function of the doubles of the degrees alone and
+ * costs some hundred thousand instructions, while a walk reads the vertices
+ * a cell shares with its neighbours again and again, so the positions read
+ * last are kept by the bits of their degrees and answer again
+ */
+void
+dggs_lonlat_vector(double lon, double lat, double *v)
+{
+  uint64 a, b;
+  memcpy(&a, &lon, sizeof(uint64));
+  memcpy(&b, &lat, sizeof(uint64));
+  uint64 h = (a ^ (b * UINT64CONST(0x9E3779B97F4A7C15))) *
+    UINT64CONST(0xBF58476D1CE4E5B9);
+  int i = (int) (h >> 55) & (DGGS_VEC_CACHE - 1);
+  if (! dggs_vec_cache[i].used || dggs_vec_cache[i].lon != a ||
+      dggs_vec_cache[i].lat != b)
+  {
+    lonlat_vector_nearest(lon, lat, dggs_vec_cache[i].v);
+    dggs_vec_cache[i].lon = a;
+    dggs_vec_cache[i].lat = b;
+    dggs_vec_cache[i].used = true;
+  }
+  memcpy(v, dggs_vec_cache[i].v, 3 * sizeof(double));
+}
+
+/**
+ * @brief Return true if a geodetic cell holds a direction
+ * @details The geodetic twin of #dggs_outline_holds_point: the cell is the
+ * region of the sphere its outline bounds, each edge the great-circle arc
+ * between the geodetic positions of its vertices (the vector the grid states for each),
+ * holding its interior and its north and west sides. A direction on an edge
+ * or at a vertex belongs to the cell holding it
+ * (the edge_held and vertex_held of the grid); one
+ * strictly inside or outside is read by the crossing number in the gnomonic
+ * chart about the sum c of the vertices, where every great circle is a
+ * line: the chart coordinate of v along a direction e is (v . e) / (v . c),
+ * so each comparison is the sign of #sphere_dir_dot_diff_sign, and the side
+ * of the line of an edge from a to b is the sign of the triple product
+ * (a x b) . p. Every sign is exact, so neighbours reading the same vertices
+ * hold each direction once.
+ * @param[in] ops Answers of the grid
+ * @param[in] o Outline of the cell
+ * @param[in] p Direction, exact
+ */
+bool
+dggs_outline_holds_dir(const DggsGeodeticOps *ops, const DggsOutline *o,
+  const SphereDir *p)
+{
+  int n = o->count;
+  SphereDir *v[DGGS_OUTLINE_MAX + 1] = { NULL };
+  for (int k = 0; k < n; k++)
+  {
+    double d[3];
+    ops->vector(o, k, d);
+    v[k] = sphere_dir_make(d);
+  }
+  v[n] = v[0];
+  SphereDir *c = sphere_dir_add(v[0], v[1]);
+  for (int k = 2; k < n; k++)
+  {
+    SphereDir *s = sphere_dir_add(c, v[k]);
+    sphere_dir_free(c);
+    c = s;
+  }
+  bool result = false, decided = false;
+  /* A direction behind the chart lies outside: the cell lies in the open
+   * hemisphere about c */
+  if (sphere_dir_dot_sign(c, p) <= 0)
+    decided = true;
+  /* On an edge, or at one of its ends */
+  for (int k = 0; k < n && ! decided; k++)
+  {
+    SphereDir *ne = sphere_dir_cross(v[k], v[k + 1]);
+    if (sphere_dir_dot_sign(ne, p) == 0 &&
+        sphere_dir_triple_sign(v[k], p, ne) >= 0 &&
+        sphere_dir_triple_sign(p, v[k + 1], ne) >= 0)
+    {
+      decided = true;
+      if (sphere_dir_parallel(v[k], p))
+        result = ops->vertex_held(o, k);
+      else if (sphere_dir_parallel(v[k + 1], p))
+        result = ops->vertex_held(o, (k + 1) % n);
+      else
+        result = ops->edge_held(o, k);
+    }
+    sphere_dir_free(ne);
+  }
+  if (! decided)
+  {
+    /* The axes of the chart: e1 = c x z, or c x x where c lies on the
+     * z axis, and e2 = c x e1; the turn of the frame e1, e2, c fixes the
+     * side of an edge a point to the right of it lies on */
+    const double zd[3] = { 0.0, 0.0, 1.0 }, xd[3] = { 1.0, 0.0, 0.0 };
+    SphereDir *z = sphere_dir_make(zd);
+    SphereDir *e1 = sphere_dir_cross(c, z);
+    if (sphere_dir_parallel(c, z))
+    {
+      SphereDir *x = sphere_dir_make(xd);
+      sphere_dir_free(e1);
+      e1 = sphere_dir_cross(c, x);
+      sphere_dir_free(x);
+    }
+    SphereDir *e2 = sphere_dir_cross(c, e1);
+    int frame = sphere_dir_triple_sign(e1, e2, c);
+    bool inside = false;
+    for (int k = 0; k < n; k++)
+    {
+      /* a above p, and b above p, in the coordinate along e2 */
+      bool ua = sphere_dir_dot_diff_sign(v[k], e2, p, c) > 0;
+      bool ub = sphere_dir_dot_diff_sign(v[k + 1], e2, p, c) > 0;
+      if (ua == ub)
+        continue;
+      /* The edge meets the horizontal of p right of p when the turn of
+       * a, b, p in the chart has the sign of b above a */
+      int up = sphere_dir_dot_diff_sign(v[k + 1], e2, v[k], c);
+      int turn = frame * sphere_dir_triple_sign(v[k], v[k + 1], p);
+      if (turn == up)
+        inside = ! inside;
+    }
+    result = inside;
+    sphere_dir_free(z); sphere_dir_free(e1); sphere_dir_free(e2);
+  }
+  sphere_dir_free(c);
+  for (int k = 0; k < n; k++)
+    sphere_dir_free(v[k]);
+  return result;
+}
+
+/**
+ * @brief Return true if a cell holds a direction, by #dggs_outline_holds_dir
+ * on the outline the grid states for it
+ */
+static bool
+dggs_cell_holds_dir(const DggsGeodeticOps *ops, uint64 cell,
+  const SphereDir *p)
+{
+  const DggsOutline *o = ops->outline(cell);
+  return o && dggs_outline_holds_dir(ops, o, p);
+}
+
+/**
+ * @brief Return true if the position of a geodetic segment at the offset
+ * @p m of @p D has not passed the crossing, m / D <= f, exactly, the
+ * comparison itself in @p cmp
+ * @details The geodetic twin of #segment_edge_side_at, which the planar
+ * search reads the same way. An undecided comparison, beyond the precision
+ * #geodetic_arc_fraction_cmp reaches, reads as not passed.
+ */
+static bool
+dggs_geodetic_before(const double *p0, const double *p1, const double *a,
+  const double *b, int64 m, int64 D, int *cmp)
+{
+  *cmp = geodetic_arc_fraction_cmp(p0, p1, a, b, m, D);
+  return *cmp >= 0;
+}
+
+/**
+ * @brief Return the microsecond at which a geodetic segment crosses the
+ * great circle of an edge, as the offset from the start of the segment,
+ * truncated
+ * @details The geodetic twin of #dggs_outline_edge_offset, searched as
+ * #segment_edge_cross_offset searches: the position moves at constant
+ * angular speed along the great circle of the segment, so it meets the
+ * circle of the edge at the fraction f of the segment the angles give, and
+ * the crossing is dated by the truncation of f D, the last offset m with
+ * m / D <= f, each comparison exact (#dggs_geodetic_before). The fraction in
+ * doubles @p f is the start of the search only, which gallops from it and
+ * halves.
+ * @param[in] p0,p1 Geodetic positions of the start and end of the segment
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] a,b Geodetic positions of the vertices of an edge through the
+ * crossing, off the great circle of the segment
+ * @param[in] f Fraction of the segment at the crossing, in doubles
+ * @param[out] whole True when the segment meets the circle exactly at the
+ * microsecond returned
+ */
+int64
+dggs_geodetic_edge_offset(const double *p0, const double *p1, int64 D,
+  const double *a, const double *b, double f, bool *whole)
+{
+  assert(D >= 0); assert(whole);
+  if (D == 0)
+  {
+    *whole = (geodetic_arc_fraction_cmp(p0, p1, a, b, 0, 1) == 0);
+    return 0;
+  }
+  /* The estimate in doubles, the start of the search only */
+  double est = floor((double) D * f);
+  int64 n = 0;
+  if (isfinite(est) && est > 0.0)
+    n = (est >= (double) D) ? D : llrint(est);
+  /* lo is the last offset known not to have passed the crossing, and locmp
+   * the comparison read there, 3 where none is; hi the first offset known
+   * past it, D + 1 standing for none */
+  int64 lo, hi;
+  int cmp, locmp = 3;
+  if (dggs_geodetic_before(p0, p1, a, b, n, D, &cmp))
+  {
+    lo = n;
+    locmp = cmp;
+    int64 step = 1;
+    for (;;)
+    {
+      if (lo == D)
+      {
+        hi = D + 1;
+        break;
+      }
+      int64 c = (step > D - lo) ? D : lo + step;
+      if (dggs_geodetic_before(p0, p1, a, b, c, D, &cmp))
+      {
+        lo = c;
+        locmp = cmp;
+        step *= 2;
+      }
+      else
+      {
+        hi = c;
+        break;
+      }
+    }
+  }
+  else
+  {
+    hi = n;
+    int64 step = 1;
+    for (;;)
+    {
+      int64 c = (step >= hi) ? 0 : hi - step;
+      if (c == 0)
+      {
+        lo = 0;
+        break;
+      }
+      if (dggs_geodetic_before(p0, p1, a, b, c, D, &cmp))
+      {
+        lo = c;
+        locmp = cmp;
+        break;
+      }
+      hi = c;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    int64 mid = lo + (hi - lo) / 2;
+    if (dggs_geodetic_before(p0, p1, a, b, mid, D, &cmp))
+    {
+      lo = mid;
+      locmp = cmp;
+    }
+    else
+      hi = mid;
+  }
+  if (locmp == 3)
+    locmp = geodetic_arc_fraction_cmp(p0, p1, a, b, lo, D);
+  *whole = (locmp == 0);
+  return lo;
+}
+
+/** @brief A point where a geodetic segment meets an edge of a cell */
+typedef struct
+{
+  SphereDir *x;            /**< Direction of the point, exact */
+  double f;                /**< Its fraction of the segment, in doubles */
+  double ax, ay, bx, by;   /**< An edge through it, off the great circle of
+                                the segment, in degrees */
+  double av[3], bv[3];     /**< The geodetic positions of its vertices */
+} DggsArcCross;
+
+static void
+dggs_dvec_cross(const double *a, const double *b, double *r)
+{
+  r[0] = a[1] * b[2] - a[2] * b[1];
+  r[1] = a[2] * b[0] - a[0] * b[2];
+  r[2] = a[0] * b[1] - a[1] * b[0];
+}
+
+/**
+ * @brief Return the fraction of the arc from @p p0 to @p p1 at the direction
+ * @p x, the ratio of the angles, in doubles
+ * @details The order of the crossings and the cells they part are read
+ * exactly; the fraction only places a crossing in time, where its
+ * microsecond is read exactly (#geodetic_arc_fraction_cmp)
+ */
+static double
+dggs_arc_fraction_approx(const double *p0, const double *p1, const double *x)
+{
+  double c[3], m[3];
+  dggs_dvec_cross(p0, x, c);
+  dggs_dvec_cross(p0, p1, m);
+  double ax = atan2(sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]),
+    p0[0] * x[0] + p0[1] * x[1] + p0[2] * x[2]);
+  double am = atan2(sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]),
+    p0[0] * p1[0] + p0[1] * p1[1] + p0[2] * p1[2]);
+  double f = am > 0.0 ? ax / am : 0.0;
+  return f < 0.0 ? 0.0 : (f > 1.0 ? 1.0 : f);
+}
+
+/**
+ * @brief Append the points strictly between @p s and the end of a geodetic
+ * segment where it meets an edge of an outline
+ * @details The segment runs along the great circle of normal m = p0 x p1
+ * from p0 to p1; a direction x lies ahead of s on it when (s x x) . m > 0
+ * and before p1 when (x x p1) . m > 0. It meets the great circle of the edge
+ * from a to b, of normal n, in the direction m x n or its opposite, which
+ * lies on the edge when (a x x) . n >= 0 and (x x b) . n >= 0. Where the
+ * segment runs along the circle of the edge, the points are the vertices of
+ * the edge lying on it. Each point records an edge through it that does not
+ * lie on the circle of the segment, which dates it.
+ */
+static void
+dggs_arc_outline_crossings(const DggsGeodeticOps *ops,
+  const DggsOutline *o, const double *p0,
+  const double *p1, const SphereDir *P1, const SphereDir *M,
+  const SphereDir *s, DggsArcCross **out, int *count, int *size)
+{
+  int n = o->count;
+  double v[DGGS_OUTLINE_MAX][3];
+  SphereDir *V[DGGS_OUTLINE_MAX] = { NULL };
+  for (int k = 0; k < n; k++)
+  {
+    ops->vector(o, k, v[k]);
+    V[k] = sphere_dir_make(v[k]);
+  }
+  double m[3];
+  dggs_dvec_cross(p0, p1, m);
+  for (int k = 0; k < n; k++)
+  {
+    int k1 = (k + 1) % n;
+    SphereDir *ne = sphere_dir_cross(V[k], V[k1]);
+    SphereDir *d = sphere_dir_cross(M, ne);
+    SphereDir *cand[2] = { NULL, NULL };
+    int ends[2] = { -1, -1 };
+    if (sphere_dir_parallel(M, ne))
+    {
+      /* Along the circle of the edge: its vertices, each dated by the edge
+       * of the outline meeting it off this circle */
+      ends[0] = k; ends[1] = k1;
+    }
+    else
+    {
+      cand[0] = d;
+      cand[1] = sphere_dir_neg(d);
+    }
+    for (int j = 0; j < 2; j++)
+    {
+      const SphereDir *x = ends[j] >= 0 ? V[ends[j]] : cand[j];
+      bool keep = sphere_dir_triple_sign(s, x, M) > 0 &&
+        sphere_dir_triple_sign(x, P1, M) > 0;
+      if (keep && ends[j] < 0)
+        keep = sphere_dir_triple_sign(V[k], x, ne) >= 0 &&
+          sphere_dir_triple_sign(x, V[k1], ne) >= 0;
+      if (! keep)
+        continue;
+      if (*count == *size)
+      {
+        *size *= 2;
+        *out = repalloc(*out, sizeof(DggsArcCross) * (size_t) *size);
+      }
+      DggsArcCross *c = &(*out)[(*count)++];
+      double xd[3];
+      int ea = k, eb = k1;
+      if (ends[j] >= 0)
+      {
+        int w = ends[j];
+        xd[0] = v[w][0]; xd[1] = v[w][1]; xd[2] = v[w][2];
+        c->x = sphere_dir_add(V[w], V[w]);
+        /* The other edge of the outline at this vertex */
+        if (w == k)
+        {
+          ea = (k + n - 1) % n; eb = k;
+        }
+        else
+        {
+          ea = k1; eb = (k1 + 1) % n;
+        }
+      }
+      else
+      {
+        double nd[3];
+        dggs_dvec_cross(v[k], v[k1], nd);
+        dggs_dvec_cross(m, nd, xd);
+        if (j == 1)
+        {
+          xd[0] = -xd[0]; xd[1] = -xd[1]; xd[2] = -xd[2];
+        }
+        c->x = sphere_dir_add(x, x);
+      }
+      c->f = dggs_arc_fraction_approx(p0, p1, xd);
+      c->ax = o->lon[ea]; c->ay = o->lat[ea];
+      c->bx = o->lon[eb]; c->by = o->lat[eb];
+      memcpy(c->av, v[ea], 3 * sizeof(double));
+      memcpy(c->bv, v[eb], 3 * sizeof(double));
+    }
+    sphere_dir_free(ne); sphere_dir_free(d);
+    sphere_dir_free(cand[1]);
+  }
+  for (int k = 0; k < n; k++)
+    sphere_dir_free(V[k]);
+}
+
+/**
+ * @brief Return true if a cell is convex on the sphere, every corner of its
+ * outline turning left
+ */
+bool
+dggs_outline_convex_geodetic(const DggsGeodeticOps *ops,
+  const DggsOutline *o)
+{
+  int n = o->count;
+  for (int k = 0; k < n; k++)
+  {
+    POINT3D p, v, q;
+    dggs_geo_vertex(ops, o, (k + n - 1) % n, &p);
+    dggs_geo_vertex(ops, o, k, &v);
+    dggs_geo_vertex(ops, o, (k + 1) % n, &q);
+    if (triple_product_sign_exact(&p, &v, &q) <= 0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the cell among @p cand holding a direction, or the one
+ * found around @p cur when none of them does
+ */
+static uint64
+dggs_dir_cell(const DggsGeodeticOps *ops, const uint64 *cand, int ncand,
+  uint64 cur, const SphereDir *p)
+{
+  for (int i = 0; i < ncand; i++)
+    if (cand[i] != 0 && dggs_cell_holds_dir(ops, cand[i], p))
+      return cand[i];
+  return ops->dir_around(cur, p);
+}
+
+/**
+ * @brief Find an edge of the cells @p cand holding the start @p p0 of a
+ * geodetic segment off the great circle of the segment, its vertices in
+ * degrees in @p ex (lon, lat of each), and return true if one is found
+ * @details The edge that dates a crossing at the start of the segment
+ * (#dggs_geodetic_edge_offset): @p p0 lies on its circle, the triple product
+ * of its vertices and @p p0 being 0, between its vertices, and the edge
+ * does not lie on the circle of the segment, the triple products of the
+ * ends of the segment and its vertices not both being 0. The twin of the
+ * edge test of #dggs_arc_outline_crossings.
+ */
+static bool
+dggs_start_edge(const DggsGeodeticOps *ops, const uint64 *cand,
+  int ncand, const double *p0, const double *p1, double *ex, double *exv)
+{
+  POINT3D q0 = { p0[0], p0[1], p0[2] }, q1 = { p1[0], p1[1], p1[2] };
+  for (int i = 0; i < ncand; i++)
+  {
+    DggsOutline co;
+    if (cand[i] == 0 || ! ops->outline_copy(cand[i], &co))
+      continue;
+    int n = co.count;
+    for (int k = 0; k < n; k++)
+    {
+      int k1 = (k + 1) % n;
+      POINT3D a, b;
+      dggs_geo_vertex(ops, &co, k, &a);
+      dggs_geo_vertex(ops, &co, k1, &b);
+      if (triple_product_sign_exact(&a, &b, &q0) != 0 ||
+          (triple_product_sign_exact(&q0, &q1, &a) == 0 &&
+           triple_product_sign_exact(&q0, &q1, &b) == 0))
+        continue;
+      /* Between the vertices: a x p0 and p0 x b point along a x b */
+      const double ad[3] = { a.x, a.y, a.z }, bd[3] = { b.x, b.y, b.z };
+      SphereDir *A = sphere_dir_make(ad), *B = sphere_dir_make(bd);
+      SphereDir *Q = sphere_dir_make(p0), *N = sphere_dir_cross(A, B);
+      bool on = sphere_dir_triple_sign(A, Q, N) >= 0 &&
+        sphere_dir_triple_sign(Q, B, N) >= 0;
+      sphere_dir_free(A); sphere_dir_free(B);
+      sphere_dir_free(Q); sphere_dir_free(N);
+      if (! on)
+        continue;
+      ex[0] = co.lon[k]; ex[1] = co.lat[k];
+      ex[2] = co.lon[k1]; ex[3] = co.lat[k1];
+      exv[0] = a.x; exv[1] = a.y; exv[2] = a.z;
+      exv[3] = b.x; exv[4] = b.y; exv[5] = b.z;
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @brief Return the edge through whose interior a geodetic segment leaves a
+ * convex cell, -1 when it leaves through none, or -2 when the step is not
+ * of that kind
+ * @details With m = p0 x p1 and n = a x b the normal of the circle of the
+ * edge from a to b, the segment meets that circle in the direction m x n
+ * strictly between its ends exactly when p0 lies strictly left of the edge
+ * and p1 strictly right of it, and leaves the cell there; that direction
+ * lies strictly inside the edge exactly when a lies strictly right of the
+ * segment and b strictly left of it. Each side is the exact sign of a
+ * triple product of the geodetic positions (#triple_product_sign_exact), and
+ * a convex cell is left through one edge at most. Any other step, an end on
+ * the circle of an edge, a vertex on the circle of the segment, or a cell
+ * that is not convex, is for #dggs_segment_cells_geodetic to read.
+ */
+static int
+dggs_convex_exit(const DggsGeodeticOps *ops, const DggsOutline *o,
+  const double *p0, const double *p1)
+{
+  if (! dggs_outline_convex_geodetic(ops, o))
+    return -2;
+  POINT3D q0 = { p0[0], p0[1], p0[2] }, q1 = { p1[0], p1[1], p1[2] }, a, b;
+  int n = o->count, found = -1;
+  dggs_geo_vertex(ops, o, 0, &a);
+  for (int k = 0; k < n; k++, a = b)
+  {
+    dggs_geo_vertex(ops, o, (k + 1) % n, &b);
+    int e0 = triple_product_sign_exact(&a, &b, &q0);
+    int e1 = triple_product_sign_exact(&a, &b, &q1);
+    if (e0 == 0 || e1 == 0)
+      return -2;
+    if (e0 < 0 || e1 > 0)
+      continue;
+    int sa = triple_product_sign_exact(&q0, &q1, &a);
+    int sb = triple_product_sign_exact(&q0, &q1, &b);
+    if (sa == 0 || sb == 0)
+      return -2;
+    if (sa < 0 && sb > 0)
+    {
+      if (found >= 0)
+        return -2;
+      found = k;
+    }
+  }
+  return found;
+}
+
+/**
+ * @brief Fill `cells` with every cell a geodetic segment crosses, and
+ * `enter` with the fraction of the segment at which it reaches each
+ * @details The geodetic twin of #dggs_segment_cells_planar, on the cells
+ * bounded by great-circle arcs (#dggs_outline_holds_dir). The segment starts
+ * in the cell of its first position (the point_cell of the grid). In a cell, the next
+ * stretch of the segment begins at the first point x1 ahead where it meets
+ * an edge of the cell or of a neighbour, and ends at the next one x2, or at
+ * the end of the segment: no other cell has an edge crossing the segment
+ * inside the cell. The stretch lies in the cell holding the direction
+ * x1 + x2, which lies between them on the segment, and the point x1 in the
+ * cell holding it, which at a vertex can be a third cell, passed for no
+ * length. Every point and every order is decided by exact signs on the
+ * geodetic positions of the vertices and of the ends of the segment, as the
+ * oracle of the cell walks decides them. Each entry states an edge through
+ * its point and which cell holds the point: the cell left, the cell entered,
+ * or neither.
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] ops Answers of the grid
+ * @param[in] resolution Resolution or level of the grid
+ * @param[out] cells,enter,cross Arrays of at least `maxout` entries, the last
+ * one possibly NULL
+ * @param[in] maxout Capacity of the arrays, at least 1
+ * @return Number of cells written, `maxout` when they may not all fit, or 0
+ * when the first lookup fails
+ */
+int
+dggs_segment_cells_geodetic(const DggsGeodeticOps *ops, double lon1,
+  double lat1, double lon2, double lat2, int32 resolution, uint64 *cells,
+  double *enter, DggsEdgeCross *cross, int maxout)
+{
+  uint64 cur = ops->point_cell(lon1, lat1, resolution);
+  if (cur == 0)
+    return 0;
+  cells[0] = cur; enter[0] = 0.0;
+  int n = 1;
+  double p0[3], p1[3];
+  dggs_lonlat_vector(lon1, lat1, p0);
+  dggs_lonlat_vector(lon2, lat2, p1);
+  SphereDir *P0 = sphere_dir_make(p0), *P1 = sphere_dir_make(p1);
+  SphereDir *M = sphere_dir_cross(P0, P1);
+  bool degenerate = sphere_dir_parallel(P0, P1);
+  /* Equal or opposite ends span no great circle; a convex cell holding both
+   * ends holds the arc between them */
+  const DggsOutline *o = ops->outline(cur);
+  if (degenerate || ! o || (dggs_outline_convex_geodetic(ops, o) &&
+      ops->point_cell(lon2, lat2, resolution) == cur))
+  {
+    sphere_dir_free(P0); sphere_dir_free(P1); sphere_dir_free(M);
+    return n;
+  }
+  int size = 32, count = 0;
+  DggsArcCross *xs = palloc(sizeof(DggsArcCross) * (size_t) size);
+  SphereDir *s = sphere_dir_add(P0, P0);
+  uint64 cand[DGGS_GEO_NEIGHBOURS];
+  int ncand = 0;
+  /* The edge of the last crossing of the common step, whose direction s
+   * stands for once a step of another kind reads it */
+  bool pending = false, at_start = true;
+  double sa[3] = { 0 }, sb[3] = { 0 };
+  double m[3];
+  dggs_dvec_cross(p0, p1, m);
+  while (true)
+  {
+    /* The common step: a convex cell left through the interior of an edge
+     * (#dggs_convex_exit), the next cell the one across it, the crossing held
+     * by the one of the two holding the edge */
+    o = ops->outline(cur);
+    int fk = o ? dggs_convex_exit(ops, o, p0, p1) : -2;
+    if (fk == -1)
+      break;
+    if (fk >= 0)
+    {
+      int k1 = (fk + 1) % o->count;
+      uint64 next = o->across[fk];
+      if (next == 0)
+        break;
+      if (n == maxout)
+        break;
+      POINT3D a, b;
+      dggs_geo_vertex(ops, o, fk, &a);
+      dggs_geo_vertex(ops, o, k1, &b);
+      sa[0] = a.x; sa[1] = a.y; sa[2] = a.z;
+      sb[0] = b.x; sb[1] = b.y; sb[2] = b.z;
+      double nd[3], xd[3];
+      dggs_dvec_cross(sa, sb, nd);
+      dggs_dvec_cross(m, nd, xd);
+      cells[n] = next;
+      enter[n] = dggs_arc_fraction_approx(p0, p1, xd);
+      if (cross)
+      {
+        DggsEdgeCross *e = &cross[n];
+        e->ax = o->lon[fk]; e->ay = o->lat[fk]; e->oa = 0.0;
+        e->bx = o->lon[k1]; e->by = o->lat[k1]; e->ob = 0.0;
+        memcpy(e->av, sa, 3 * sizeof(double));
+        memcpy(e->bv, sb, 3 * sizeof(double));
+        e->held_left = ops->edge_held(o, fk);
+        e->held_entered = ! e->held_left;
+      }
+      n++;
+      cur = next;
+      pending = true;
+      at_start = false;
+      continue;
+    }
+    if (pending)
+    {
+      /* The direction of the last crossing, m x (a x b), exactly */
+      SphereDir *A = sphere_dir_make(sa), *B = sphere_dir_make(sb);
+      SphereDir *ne = sphere_dir_cross(A, B);
+      sphere_dir_free(s);
+      s = sphere_dir_cross(M, ne);
+      sphere_dir_free(A); sphere_dir_free(B); sphere_dir_free(ne);
+      pending = false;
+    }
+    memset(cand, 0, sizeof(cand));
+    ncand = ops->neighbours(cur, cand, DGGS_GEO_NEIGHBOURS);
+    if (ncand <= 0)
+      break;
+    count = 0;
+    for (int i = 0; i < ncand; i++)
+    {
+      DggsOutline co;
+      if (cand[i] != 0 && ops->outline_copy(cand[i], &co))
+        dggs_arc_outline_crossings(ops, &co, p0, p1, P1, M, s, &xs, &count, &size);
+    }
+    /* The first point ahead */
+    int i1 = 0;
+    for (int i = 1; i < count; i++)
+      if (sphere_dir_triple_sign(xs[i].x, xs[i1].x, M) > 0)
+        i1 = i;
+    /* The stretch from the start of the segment: a start on the boundary of
+     * its cell can leave the cell at once, the stretch then lying in the
+     * cell holding the direction between the start and the first point
+     * ahead, entered at the start */
+    if (at_start)
+    {
+      at_start = false;
+      SphereDir *mid0 = sphere_dir_add(P0, count ? xs[i1].x : P1);
+      uint64 first = dggs_dir_cell(ops, cand, ncand, cur, mid0);
+      sphere_dir_free(mid0);
+      double ex[4], exv[6];
+      if (first != 0 && first != cur && n < maxout &&
+          dggs_start_edge(ops, cand, ncand, p0, p1, ex, exv))
+      {
+        cells[n] = first;
+        enter[n] = 0.0;
+        if (cross)
+        {
+          DggsEdgeCross *e = &cross[n];
+          e->ax = ex[0]; e->ay = ex[1]; e->oa = 0.0;
+          e->bx = ex[2]; e->by = ex[3]; e->ob = 0.0;
+          memcpy(e->av, exv, 3 * sizeof(double));
+          memcpy(e->bv, exv + 3, 3 * sizeof(double));
+          e->held_left = true;
+          e->held_entered = false;
+        }
+        n++;
+        cur = first;
+      }
+    }
+    if (count == 0)
+      break;
+    /* The next point after the first */
+    int i2 = -1;
+    for (int i = 0; i < count; i++)
+      if (sphere_dir_triple_sign(xs[i1].x, xs[i].x, M) > 0 &&
+          (i2 < 0 || sphere_dir_triple_sign(xs[i].x, xs[i2].x, M) > 0))
+        i2 = i;
+    SphereDir *mid = sphere_dir_add(xs[i1].x, i2 >= 0 ? xs[i2].x : P1);
+    uint64 next = dggs_dir_cell(ops, cand, ncand, cur, mid);
+    uint64 at = dggs_dir_cell(ops, cand, ncand, cur, xs[i1].x);
+    sphere_dir_free(mid);
+    if (next == 0 || at == 0)
+      break;
+    const uint64 step[2] = { at, next };
+    bool full = false;
+    for (int j = 0; j < 2; j++)
+    {
+      uint64 c = step[j];
+      if (c == cur || (j == 1 && c == at))
+        continue;
+      if (n == maxout)
+      {
+        full = true;
+        break;
+      }
+      cells[n] = c;
+      enter[n] = xs[i1].f;
+      if (cross)
+      {
+        DggsEdgeCross *e = &cross[n];
+        e->ax = xs[i1].ax; e->ay = xs[i1].ay; e->oa = 0.0;
+        e->bx = xs[i1].bx; e->by = xs[i1].by; e->ob = 0.0;
+        memcpy(e->av, xs[i1].av, 3 * sizeof(double));
+        memcpy(e->bv, xs[i1].bv, 3 * sizeof(double));
+        e->held_left = (at == cur);
+        e->held_entered = (at == c);
+      }
+      n++;
+      cur = c;
+    }
+    sphere_dir_free(s);
+    s = sphere_dir_add(xs[i1].x, xs[i1].x);
+    for (int i = 0; i < count; i++)
+      sphere_dir_free(xs[i].x);
+    if (full)
+      break;
+    cur = next;
+  }
+  sphere_dir_free(s);
+  pfree(xs);
+  sphere_dir_free(P0); sphere_dir_free(P1); sphere_dir_free(M);
+  return n;
+}
+
+/*****************************************************************************/
