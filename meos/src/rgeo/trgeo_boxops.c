@@ -49,6 +49,8 @@
 #include "rgeo/trgeo.h"
 #include "rgeo/trgeo_inst.h"
 #include "rgeo/trgeo_utils.h"
+#include "temporal/bbox_index.h"
+#include "geo/stbox_index.h"
 
 /*****************************************************************************
  * Transform a temporal geometry to a STBox
@@ -811,6 +813,78 @@ trgeometry_split_each_n_stboxes(const Temporal *temp, int elem_count,
       return trgeoseqset_split_each_n_stboxes((TSequenceSet *) temp,
         elem_count, count, geom);
   }
+}
+
+/*****************************************************************************
+ * merge_n_stboxes and merge_each_n_stboxes functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_rgeo_bbox_split
+ * @brief Return an array of N spatiotemporal boxes obtained by merging the
+ * boxes of
+ * the consecutive instants or segments of a temporal rigid geometry, each time
+ * the
+ * consecutive pair whose union adds the least size to theirs
+ * @details The merge twin of #trgeometry_split_n_stboxes, by #bbox_merge_n
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Trgeometry_merge_n_stboxes()
+ */
+STBox *
+trgeometry_merge_n_stboxes(const Temporal *temp, int box_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_positive(box_count))
+    return NULL;
+
+  STBox *result = trgeometry_stboxes(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_STBOX, result, *count, box_count, &stbox_adjust,
+      &stbox_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_bbox_split
+ * @brief Return an array of spatiotemporal boxes obtained by merging the boxes
+ * of the
+ * consecutive instants or segments of a temporal rigid geometry, each time the
+ * consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them
+ * @details The merge twin of #trgeometry_split_each_n_stboxes, by
+ * #bbox_merge_each_n
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Trgeometry_merge_each_n_stboxes()
+ */
+STBox *
+trgeometry_merge_each_n_stboxes(const Temporal *temp, int elem_count,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  STBox *result = trgeometry_stboxes(temp, count);
+  if (result)
+    *count = bbox_merge_each_n(T_STBOX, result, *count, elem_count,
+      &stbox_adjust, &stbox_size);
+  return result;
 }
 /* GENERATED-BOXSPLIT-END trgeometry */
 

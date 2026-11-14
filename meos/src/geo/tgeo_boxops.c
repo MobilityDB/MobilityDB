@@ -57,7 +57,9 @@
 #include <meos_internal_geo.h>
 #include "temporal/temporal.h"
 #include "temporal/temporal_boxops.h"
+#include "temporal/bbox_index.h"
 #include "geo/stbox.h"
+#include "geo/stbox_index.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
@@ -1050,6 +1052,75 @@ tgeo_split_each_n_stboxes(const Temporal *temp, int elem_count, int *count)
         elem_count, count);
   }
 }
+
+/*****************************************************************************
+ * merge_n_stboxes and merge_each_n_stboxes functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_geo_bbox_split
+ * @brief Return an array of N spatiotemporal boxes obtained by merging the
+ * boxes of
+ * the consecutive instants or segments of a temporal geo, each time the
+ * consecutive pair whose union adds the least size to theirs
+ * @details The merge twin of #tgeo_split_n_stboxes, by #bbox_merge_n
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tgeo_merge_n_stboxes()
+ */
+STBox *
+tgeo_merge_n_stboxes(const Temporal *temp, int box_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, NULL);
+  if (! ensure_positive(box_count))
+    return NULL;
+
+  STBox *result = tgeo_stboxes(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_STBOX, result, *count, box_count, &stbox_adjust,
+      &stbox_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_bbox_split
+ * @brief Return an array of spatiotemporal boxes obtained by merging the boxes
+ * of the
+ * consecutive instants or segments of a temporal geo, each time the consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them
+ * @details The merge twin of #tgeo_split_each_n_stboxes, by
+ * #bbox_merge_each_n
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tgeo_merge_each_n_stboxes()
+ */
+STBox *
+tgeo_merge_each_n_stboxes(const Temporal *temp, int elem_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  STBox *result = tgeo_stboxes(temp, count);
+  if (result)
+    *count = bbox_merge_each_n(T_STBOX, result, *count, elem_count,
+      &stbox_adjust, &stbox_size);
+  return result;
+}
 /* GENERATED-BOXSPLIT-END tgeo */
 
 /*****************************************************************************
@@ -1264,7 +1335,9 @@ geo_stboxes(const GSERIALIZED *gs, int *count)
   GBOX *gboxes = geo_gboxes(gs, count);
   assert(gboxes);
   int32_t srid = gserialized_get_srid(gs);
-  STBox *result = palloc(sizeof(STBox) * *count);
+  /* A box is filled for the dimensions of its geometry, so it starts from
+   * zero, as #trgeoinst_set_stbox starts its box */
+  STBox *result = palloc0(sizeof(STBox) * *count);
   for (int i = 0; i < *count; i++)
     gbox_set_stbox(&gboxes[i], srid, &result[i]);
   pfree(gboxes);
@@ -1518,10 +1591,79 @@ geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)
   if (! gboxes)
     return NULL;
   int32_t srid = gserialized_get_srid(gs);
-  STBox *result = palloc(sizeof(STBox) * *count);
+  /* A box is filled for the dimensions of its geometry, so it starts from
+   * zero, as #trgeoinst_set_stbox starts its box */
+  STBox *result = palloc0(sizeof(STBox) * *count);
   for (int i = 0; i < *count; i++)
     gbox_set_stbox(&gboxes[i], srid, &result[i]);
   pfree(gboxes);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_bbox
+ * @brief Return an array of N spatiotemporal boxes obtained by merging the boxes of the
+ * consecutive segments of a (multi)line, each time the consecutive pair whose union
+ * adds the least size to theirs
+ * @details The merge twin of #geo_split_n_stboxes, by #bbox_merge_n
+ * @param[in] gs (multi)line
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Geo_merge_n_stboxes()
+ */
+STBox *
+geo_merge_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_mline_type(gs))
+    return NULL;
+  if (! ensure_positive(box_count))
+    return NULL;
+
+  STBox *result = geo_stboxes(gs, count);
+  if (result)
+    *count = bbox_merge_n(T_STBOX, result, *count, box_count, &stbox_adjust,
+      &stbox_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging the boxes of the
+ * consecutive segments of a (multi)line, each time the consecutive pair whose union
+ * adds the least size to theirs, until a box holds on average a number of
+ * them
+ * @details The merge twin of the function splitting each N elements, by
+ * #bbox_merge_each_n
+ * @param[in] gs (multi)line
+ * @param[in] elem_count Number of input elements merged into an output box
+ * on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Geo_merge_each_n_stboxes()
+ */
+STBox *
+geo_merge_each_n_stboxes(const GSERIALIZED *gs, int elem_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_mline_type(gs))
+    return NULL;
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  STBox *result = geo_stboxes(gs, count);
+  if (result)
+    *count = bbox_merge_each_n(T_STBOX, result, *count, elem_count,
+      &stbox_adjust, &stbox_size);
   return result;
 }
 
@@ -1709,7 +1851,9 @@ geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
   if (! gboxes)
     return NULL;
   int32_t srid = gserialized_get_srid(gs);
-  STBox *result = palloc(sizeof(STBox) * *count);
+  /* A box is filled for the dimensions of its geometry, so it starts from
+   * zero, as #trgeoinst_set_stbox starts its box */
+  STBox *result = palloc0(sizeof(STBox) * *count);
   for (int i = 0; i < *count; i++)
     gbox_set_stbox(&gboxes[i], srid, &result[i]);
   pfree(gboxes);
