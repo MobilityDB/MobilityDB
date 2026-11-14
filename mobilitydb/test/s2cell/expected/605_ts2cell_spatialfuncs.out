@@ -224,12 +224,12 @@ FROM (SELECT ts2cell(tgeompoint
   AS q;
  numinstants | numvalues | ?column? | numvalues 
 -------------+-----------+----------+-----------
-           4 |         2 | t        |         1
+           2 |         1 | t        |         1
 (1 row)
 
 SELECT count(*) AS instants,
   count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
-    geoToS2Cell(valueAtTimestamp(p, t)::geography, z)) AS other_cell,
+    startValue(ts2cell(atTime(p, t), z))) AS other_cell,
   count(DISTINCT p::text) FILTER (WHERE c <> ts2cell(p::tgeogpoint, z))
     AS other_than_geodetic
 FROM (SELECT p, z, ts2cell(p, z) AS c FROM (VALUES
@@ -243,7 +243,7 @@ FROM (SELECT p, z, ts2cell(p, z) AS c FROM (VALUES
     timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
  instants | other_cell | other_than_geodetic 
 ----------+------------+---------------------
-     7200 |          0 |                   4
+     7200 |          0 |                   5
 (1 row)
 
 SELECT numSequences(t), getTime(t) = getTime(p)
@@ -253,7 +253,7 @@ FROM (SELECT p, ts2cell(p, 4) AS t FROM (VALUES (tgeompoint
   AS q;
  numsequences | ?column? 
 --------------+----------
-            2 | t
+           20 | t
 (1 row)
 
 /* Errors */
@@ -374,7 +374,7 @@ SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_
 FROM trip, unnest(ts2cell(tp, 3)) u;
  cells_of_an_instant | cells_holding_time 
 ---------------------+--------------------
-                   1 |                 10
+                   2 |                 10
 (1 row)
 
 WITH trip(tp) AS (
@@ -401,7 +401,7 @@ SELECT count(*) AS fragments,
 FROM trip, LATERAL s2Split(tp, 3) s;
  fragments | fragments_stating_another_value | fragments_stating_another_period 
 -----------+---------------------------------+----------------------------------
-        11 |                               0 |                                0
+        12 |                               0 |                                0
 (1 row)
 
 WITH trip(tp) AS (

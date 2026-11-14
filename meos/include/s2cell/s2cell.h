@@ -41,6 +41,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_s2cell.h>
+#include "temporal/tcellindex.h"  /* DggsOutline, DggsEdgeCross */
 
 /*****************************************************************************
  * fmgr macros
@@ -87,6 +88,21 @@ extern void s2cell_cell_bounding_box(S2CellId cell, double *xmin, double *ymin,
 extern int s2cell_segment_cells(double lon1, double lat1, double lon2,
   double lat2, bool geodetic, uint32_t level, S2CellId *cells, double *enter,
   int maxout);
+
+/* The planar cells: the straight-edged outline of a cell on the vertices of
+ * decision D7 of the cell walks, the owner of each of its boundary points,
+ * the planar cell of a position, and the walk of a planar segment with its
+ * crossings. Bodies in s2cell.c. */
+extern bool s2cell_cell_outline(S2CellId cell, DggsOutline *out);
+extern bool s2cell_outline_edge_held(const DggsOutline *o, int k);
+extern bool s2cell_outline_vertex_held(const DggsOutline *o, int k);
+extern bool s2cell_outline_holds_point(const DggsOutline *o, double x,
+  double y);
+extern S2CellId s2cell_point_cell_planar(double lon, double lat,
+  uint32_t level);
+extern int s2cell_segment_cells_planar(double lon1, double lat1, double lon2,
+  double lat2, uint32_t level, S2CellId *cells, double *enter,
+  DggsEdgeCross *cross, int maxout);
 
 /*****************************************************************************/
 
