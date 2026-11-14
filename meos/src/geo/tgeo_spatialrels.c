@@ -943,7 +943,8 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
   if (tpoint_type(temp->temptype))
   {
     if (! invert)
-      return geo_is_one_point(gs) ? ea_intersects_tgeo_geo(temp, gs, ever) : 0;
+      return geo_is_one_point(gs) ?
+        ea_intersects_tgeo_geo_intl(temp, gs, ever) : 0;
     GSERIALIZED *traj = tpoint_trajectory(temp, UNARY_UNION_NO);
     bool result = geo_traj_relate(gs, traj,
       ever ? "T********" : "T**FF*FF*", false, ever);
@@ -1124,13 +1125,14 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
   {
     /* A point covers a geometry where the geometry is that point */
     if (! invert)
-      return geo_is_one_point(gs) ? ea_intersects_tgeo_geo(temp, gs, ever) : 0;
+      return geo_is_one_point(gs) ?
+        ea_intersects_tgeo_geo_intl(temp, gs, ever) : 0;
     /* A geometry covers a point exactly when it intersects it, both placing
      * the point in the closure of the geometry, so the ever semantics are the
      * ever intersects, and the always semantics hold when the geometry covers
      * the trajectory */
     if (ever)
-      return ea_intersects_tgeo_geo(temp, gs, EVER);
+      return ea_intersects_tgeo_geo_intl(temp, gs, EVER);
     GSERIALIZED *traj = tpoint_trajectory(temp, UNARY_UNION_NO);
     bool result = geo_traj_relate(gs, traj, NULL, true, ALWAYS);
     pfree(traj);
@@ -1315,14 +1317,13 @@ ea_disjoint_seq(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edisjoint_tgeo_geo()
+ * @pre The arguments are valid, as #ea_disjoint_tgeo_geo ensures
  */
 int
-ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_disjoint_tgeo_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) )
-    return -1;
+  assert(ensure_valid_tgeo_geo(temp, gs));
 
   /* tdisjoint is the negation of tintersects = tdwithin with zero
    * distance, with the ever/always quantifier swapped (cf. static
@@ -1331,14 +1332,14 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * geodetic-capable dwithin kernel; the planar trajectory machinery
    * below is not applicable. */
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
-    return INVERT_RESULT(ea_dwithin_tgeo_geo(temp, gs, 0.0, true, ! ever));
+    return INVERT_RESULT(ea_dwithin_tgeo_geo_intl(temp, gs, 0.0, true, ! ever));
 
   int result;
 
   /* ALWAYS */
   if (! ever)
   {
-    return INVERT_RESULT(ea_intersects_tgeo_geo(temp, gs, EVER));
+    return INVERT_RESULT(ea_intersects_tgeo_geo_intl(temp, gs, EVER));
   }
 
   /* EVER */
@@ -1422,6 +1423,32 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   }
   geo_edge_ctx_free(ctx);
   return result;
+}
+
+/**
+ * @ingroup meos_internal_geo_rel_ever
+ * @brief Return 1 if a temporal geometry and a geometry are ever disjoint,
+ * 0 if not, and -1 on error
+ * @details
+ * - A temporal point is *ever* disjoint with a geometry if the trajectory
+ *   of the temporal point is NOT covered by the geometry
+ * - A temporal geometry is *ever* disjoint with a geometry if one of its
+ *   component geometries is disjoint with the geometry
+ * - A temporal geometry and a geometry are *always* disjoint if the traversed
+ *   area of the temporal geometry DO NOT ever intersects the geometry,
+ *   that is, aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
+ * @param[in] temp Temporal geometry
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Edisjoint_tgeo_geo()
+ */
+int
+ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_geo(temp, gs) )
+    return -1;
+  return ea_disjoint_tgeo_geo_intl(temp, gs, ever);
 }
 
 /**
@@ -1524,21 +1551,20 @@ ea_intersects_tgeo_tgeo_box(const Temporal *temp1, const Temporal *temp2)
  * instant in which the two geometries satisfy the relationship
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tgeo_tgeo(), #Aintersects_tgeo_tgeo()
+ * @pre The arguments are valid, as #ea_disjoint_tgeo_tgeo ensures
  */
 int
-ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+ea_disjoint_tgeo_tgeo_intl(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2))
-    return -1;
+  assert(ensure_valid_tgeo_tgeo(temp1, temp2));
 
   /* Operands of different dimensions read the dimensions both have */
   const Temporal *t1, *t2;
   Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
   if (flat)
   {
-    int result = ea_disjoint_tgeo_tgeo(t1, t2, ever);
+    int result = ea_disjoint_tgeo_tgeo_intl(t1, t2, ever);
     pfree(flat);
     return result;
   }
@@ -1552,6 +1578,25 @@ ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
     return ea_tgeo_tpoint_stretch(temp1, temp2, TGEOREL_DISJOINT, ever);
   datum_func2 func = geo_disjoint_fn(temp1->flags, temp2->flags);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
+}
+
+/**
+ * @ingroup meos_internal_geo_rel_ever
+ * @brief Return 1 if the temporal geos ever/always intersect, 0 if not, and
+ * -1 on error or if the temporal geos do not intersect in time
+ * @details Two temporal geometries are ever/always disjoint if there is an
+ * instant in which the two geometries satisfy the relationship
+ * @param[in] temp1,temp2 Temporal geos
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Eintersects_tgeo_tgeo(), #Aintersects_tgeo_tgeo()
+ */
+int
+ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2))
+    return -1;
+  return ea_disjoint_tgeo_tgeo_intl(temp1, temp2, ever);
 }
 
 /**
@@ -1597,14 +1642,13 @@ adisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tgeo_geo()
+ * @pre The arguments are valid, as #ea_intersects_tgeo_geo ensures
  */
 int
-ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_intersects_tgeo_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) )
-    return -1;
+  assert(ensure_valid_tgeo_geo(temp, gs));
 
   /* tintersects is tdwithin with zero distance (cf. static
    * geog_intersects = geog_dwithin(., ., 0.0); same definitional
@@ -1613,11 +1657,11 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * through the geodetic-capable dwithin kernel instead of the planar
    * spatialrel_tgeo_geo trajectory. */
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
-    return ea_dwithin_tgeo_geo(temp, gs, 0.0, true, ever);
+    return ea_dwithin_tgeo_geo_intl(temp, gs, 0.0, true, ever);
 
   /* ALWAYS */
   if (! ever)
-    return INVERT_RESULT(ea_disjoint_tgeo_geo(temp, gs, EVER));
+    return INVERT_RESULT(ea_disjoint_tgeo_geo_intl(temp, gs, EVER));
 
   /* EVER */
 
@@ -1678,6 +1722,30 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
       geo_intersects_fn_geo(temp->flags, gs->gflags), EVER, INVERT_NO);
   return spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_INTERSECTS, INVERT_NO,
     EVER);
+}
+
+/**
+ * @ingroup meos_internal_geo_rel_ever
+ * @brief Return 1 if a temporal geometry ever/always intersects a geometry,
+ * 0 if not, and -1 on error
+ * @details
+ * - A temporal geometry *ever* intersects a geometry if the traversed area or
+ *   the trajectory of the temporal geometry and the geometry intersect
+ * - A temporal geometry *always* intersects a geometry if the traversed area
+ *   or the trajectory of the temporal geometry and the geometry are NOT ever
+ *   disjoint
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Eintersects_tgeo_geo()
+ */
+int
+ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_geo(temp, gs) )
+    return -1;
+  return ea_intersects_tgeo_geo_intl(temp, gs, ever);
 }
 
 /**
@@ -1761,22 +1829,20 @@ aintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  * instant in which the two geometries satisfy the relationship
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tgeo_tgeo(), #Aintersects_tgeo_tgeo()
+ * @pre The arguments are valid, as #ea_intersects_tgeo_tgeo ensures
  */
 int
-ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+ea_intersects_tgeo_tgeo_intl(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2))
-    return -1;
+  assert(ensure_valid_tgeo_tgeo(temp1, temp2));
 
   /* Operands of different dimensions read the dimensions both have */
   const Temporal *t1, *t2;
   Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
   if (flat)
   {
-    int result = ea_intersects_tgeo_tgeo(t1, t2, ever);
+    int result = ea_intersects_tgeo_tgeo_intl(t1, t2, ever);
     pfree(flat);
     return result;
   }
@@ -1787,6 +1853,26 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
     return ea_tgeo_tpoint_stretch(temp1, temp2, TGEOREL_INTERSECTS, ever);
   datum_func2 func = geo_intersects_fn(temp1->flags, temp2->flags);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
+}
+
+/**
+ * @ingroup meos_internal_geo_rel_ever
+ * @brief Return 1 if the temporal geos ever/always intersect, 0 if not, and
+ * -1 on error or if the temporal geos do not intersect in time
+ * @details Two temporal geometries ever/always intersect if there is an
+ * instant in which the two geometries satisfy the relationship
+ * @param[in] temp1,temp2 Temporal geos
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Eintersects_tgeo_tgeo(), #Aintersects_tgeo_tgeo()
+ */
+int
+ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2))
+    return -1;
+  return ea_intersects_tgeo_tgeo_intl(temp1, temp2, ever);
 }
 
 /**
@@ -1837,17 +1923,16 @@ aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Etouches_tpoint_geo()
+ * @pre The arguments are valid, as #ea_touches_tpoint_geo ensures
  */
 int
-ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_touches_tpoint_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) ||
-      /* The validity function ensures that both have the same geodetic flag */
-      ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z_geo(gs) ||
-      ! ensure_has_not_Z(temp->temptype, temp->flags))
-    return -1;
+  assert(ensure_valid_tpoint_geo(temp, gs));
+  assert(ensure_not_geodetic(temp->flags));
+  assert(ensure_has_not_Z_geo(gs));
+  assert(ensure_has_not_Z(temp->temptype, temp->flags));
 
   /* Bounding box test. An empty geometry has no bounding box, so the prefilter
    * cannot decide and the relationship below answers it */
@@ -1902,6 +1987,36 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   }
   pfree(gsbound);
   return result ? 1 : 0;
+}
+
+/**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
+ * @brief Return 1 if a temporal point ever/always touches a geometry,
+ * 0 if not, and -1 on error
+ * @details
+ * A point touches a geometry where it lies on the boundary of the geometry.
+ * - A temporal point *ever* touches a geometry if its trajectory intersects
+ *   the boundary of the geometry
+ * - A temporal point *always* touches a geometry if the restriction of the
+ *   temporal point to the complement of the boundary of the geometry (that is,
+ *   MINUS) is empty.
+ * Note that a geometry whose boundary is empty, such as a point or a
+ * multipoint, is touched by no point, and the result is false.
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Etouches_tpoint_geo()
+ */
+int
+ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) ||
+      /* The validity function ensures that both have the same geodetic flag */
+      ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z_geo(gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
+    return -1;
+  return ea_touches_tpoint_geo_intl(temp, gs, ever);
 }
 
 /**
@@ -1974,17 +2089,15 @@ atouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Etouches_tgeo_geo()
+ * @pre The arguments are valid, as #ea_touches_tgeo_geo ensures
  */
 int
-ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_touches_tgeo_geo_intl(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) ||
-      /* The validity function ensures that both have the same geodetic flag */
-      ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z_geo(gs) ||
-      ! ensure_has_not_Z(temp->temptype, temp->flags))
-    return -1;
+  assert(ensure_valid_tgeo_geo(temp, gs));
+  assert(ensure_not_geodetic(temp->flags));
+  assert(ensure_has_not_Z_geo(gs));
+  assert(ensure_has_not_Z(temp->temptype, temp->flags));
 
   /* Bounding box test. An empty geometry has no bounding box, so the prefilter
    * cannot decide and the relationship below answers it */
@@ -1998,9 +2111,35 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * #ea_touches_tpoint_geo reads; a temporal geometry keeps its value from one
    * of its instants to the next */
   if (tpoint_type(temp->temptype))
-    return ea_touches_tpoint_geo(temp, gs, ever);
+    return ea_touches_tpoint_geo_intl(temp, gs, ever);
   return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ever,
     INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_geo_rel_ever
+ * @brief Return 1 if a temporal geometry ever/always touches a geometry,
+ * 0 if not, and -1 on error
+ * @details
+ * - A temporal geometry *ever* touches a geometry if the there is an instant
+ *   in which they satisfy the relationship
+ * - A temporal geometry *always* touches  a geometry if they satisfy the
+ *   relationship in every instant
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Etouches_tgeo_geo()
+ */
+int
+ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_geo(temp, gs) ||
+      /* The validity function ensures that both have the same geodetic flag */
+      ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z_geo(gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
+    return -1;
+  return ea_touches_tgeo_geo_intl(temp, gs, ever);
 }
 
 /**
@@ -2073,18 +2212,16 @@ atouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  *   trajectory or traversed area of the other.
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Etouches_tgeo_tgeo()
+ * @pre The arguments are valid, as #ea_touches_tgeo_tgeo ensures
  */
 int
-ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+ea_touches_tgeo_tgeo_intl(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
-      /* The validity function ensures that both have the same geodetic flag */
-      ! ensure_not_geodetic(temp1->flags) ||
-      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
-      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
-    return -1;
+  assert(ensure_valid_tgeo_tgeo(temp1, temp2));
+  assert(ensure_not_geodetic(temp1->flags));
+  assert(ensure_has_not_Z(temp1->temptype, temp1->flags));
+  assert(ensure_has_not_Z(temp2->temptype, temp2->flags));
 
   /* Common-time gate, before the box test: the box carries time as a dimension, so two
    * geometries sharing no instant have boxes that do not overlap, and the test below would
@@ -2103,6 +2240,33 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
     return ea_tgeo_tpoint_stretch(temp1, temp2, TGEOREL_TOUCHES, ever);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum_geom_touches,
     ever);
+}
+
+/**
+ * @ingroup meos_internal_geo_rel_ever
+ * @brief Return 1 if a temporal geometry ever/always touches another one,
+ * 0 if not, and -1 on error
+ * @details
+ * - A temporal geometry *ever* touches another one if there is an instant
+ *  in which they satisfy the relationship.
+ * - A temporal geometry *always* touches another one if there is an instant
+ *   in which the boundary of one of the two geometries intersects the
+ *   trajectory or traversed area of the other.
+ * @param[in] temp1,temp2 Temporal geos
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Etouches_tgeo_tgeo()
+ */
+int
+ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+      /* The validity function ensures that both have the same geodetic flag */
+      ! ensure_not_geodetic(temp1->flags) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
+    return -1;
+  return ea_touches_tgeo_tgeo_intl(temp1, temp2, ever);
 }
 
 /**
@@ -2146,15 +2310,14 @@ atouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for geographies only
  * @param[in] ever True for the ever semantics, false for the always semantics
+ * @pre The arguments are valid, as #ea_dwithin_tgeo_geo ensures
  */
 int
-ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
-  bool spheroid, bool ever)
+ea_dwithin_tgeo_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
+  double dist, bool spheroid, bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
-    return -1;
+  assert(ensure_valid_tgeo_geo(temp, gs));
+  assert(ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8));
 
   /* A geodetic value and a geography are always within the distance when
    * their temporal within-distance is always true, which #tdwithin_tgeo_geo
@@ -2209,7 +2372,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   {
     Temporal *point = temporal_from_base_temp(PointerGetDatum(gs),
       temp->temptype, temp);
-    int result = ea_dwithin_tgeo_tgeo(temp, point, dist, spheroid, ever);
+    int result = ea_dwithin_tgeo_tgeo_intl(temp, point, dist, spheroid, ever);
     pfree(point);
     return result;
   }
@@ -2288,6 +2451,28 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
     INVERT, ALWAYS);
   pfree(buffer);
   return result;
+}
+
+/**
+ * @ingroup meos_internal_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geo are ever within the
+ * given distance, 0 if not, -1 on error
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+int
+ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+  bool spheroid, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_geo(temp, gs) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return -1;
+  return ea_dwithin_tgeo_geo_intl(temp, gs, dist, spheroid, ever);
 }
 
 /**
@@ -2637,15 +2822,14 @@ tpointsegm_tdwithin_at(Datum start1, Datum end1, Datum start2, Datum end2,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for geographies only
  * @param[in] ever True for the ever semantics, false for the always semantics
+ * @pre The arguments are valid, as #ea_dwithin_tgeo_tgeo ensures
  */
 int
-ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
-  bool spheroid, bool ever)
+ea_dwithin_tgeo_tgeo_intl(const Temporal *temp1, const Temporal *temp2,
+  double dist, bool spheroid, bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
-    return -1;
+  assert(ensure_valid_tgeo_tgeo(temp1, temp2));
+  assert(ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8));
 
   /* Common-time gate: return -1 (SQL NULL) when the two temporal geos share
    * no time, matching the lifted evaluation below rather than the 0 of a box
@@ -2709,6 +2893,27 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   lfinfo.tpfn_temp = tpoint_type(temp1->temptype) ?
     &tpointsegm_tdwithin_turnpt : NULL;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
+}
+
+/**
+ * @ingroup meos_internal_geo_spatial_rel_ever
+ * @brief Return 1 if two temporal geos are ever/always within a distance,
+ * 0 if not, -1 on error or if the temporal geos do not intersect on time
+ * @param[in] temp1,temp2 Temporal geos
+ * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+int
+ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
+  bool spheroid, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return -1;
+  return ea_dwithin_tgeo_tgeo_intl(temp1, temp2, dist, spheroid, ever);
 }
 
 /**
@@ -2932,17 +3137,17 @@ setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
   switch (pred)
   {
     case SS_EDWITHIN:
-      return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, spheroid, EVER);
+      return ea_dwithin_tgeo_tgeo_intl(temp1, temp2, dist, spheroid, EVER);
     case SS_ADWITHIN:
-      return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, spheroid, ALWAYS);
+      return ea_dwithin_tgeo_tgeo_intl(temp1, temp2, dist, spheroid, ALWAYS);
     case SS_EINTERSECTS:
-      return ea_intersects_tgeo_tgeo(temp1, temp2, EVER);
+      return ea_intersects_tgeo_tgeo_intl(temp1, temp2, EVER);
     case SS_AINTERSECTS:
-      return ea_intersects_tgeo_tgeo(temp1, temp2, ALWAYS);
+      return ea_intersects_tgeo_tgeo_intl(temp1, temp2, ALWAYS);
     case SS_ETOUCHES:
-      return ea_touches_tgeo_tgeo(temp1, temp2, EVER);
+      return ea_touches_tgeo_tgeo_intl(temp1, temp2, EVER);
     case SS_ATOUCHES:
-      return ea_touches_tgeo_tgeo(temp1, temp2, ALWAYS);
+      return ea_touches_tgeo_tgeo_intl(temp1, temp2, ALWAYS);
     case SS_ECONTAINS:
       return ea_contains_tgeo_tgeo(temp1, temp2, EVER);
     case SS_ACONTAINS:
@@ -2953,10 +3158,10 @@ setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
       return ea_covers_tgeo_tgeo(temp1, temp2, ALWAYS);
     case SS_EDISJOINT:
       /* Ever disjoint is the negation of always intersects */
-      return INVERT_RESULT(ea_intersects_tgeo_tgeo(temp1, temp2, ALWAYS));
+      return INVERT_RESULT(ea_intersects_tgeo_tgeo_intl(temp1, temp2, ALWAYS));
     default: /* SS_ADISJOINT: always disjoint is the negation of ever
       intersects */
-      return INVERT_RESULT(ea_intersects_tgeo_tgeo(temp1, temp2, EVER));
+      return INVERT_RESULT(ea_intersects_tgeo_tgeo_intl(temp1, temp2, EVER));
   }
 }
 
@@ -3089,6 +3294,19 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
        pred == SS_ECOVERS || pred == SS_ACOVERS) &&
       (! ensure_not_geodetic(arr1[0]->flags) ||
        ! ensure_has_not_Z(arr1[0]->temptype, arr1[0]->flags)))
+  {
+    pfree(bb1); pfree(bb2);
+    return NULL;
+  }
+  /* Touches is planar and two-dimensional on both sides and the distance is
+   * not negative, as their scalar forms ensure; the pairs below are read by
+   * the internal twins, which test nothing */
+  if (((pred == SS_ETOUCHES || pred == SS_ATOUCHES) &&
+       (! ensure_not_geodetic(arr1[0]->flags) ||
+        ! ensure_has_not_Z(arr1[0]->temptype, arr1[0]->flags) ||
+        ! ensure_has_not_Z(arr2[0]->temptype, arr2[0]->flags))) ||
+      ((pred == SS_EDWITHIN || pred == SS_ADWITHIN) &&
+       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8)))
   {
     pfree(bb1); pfree(bb2);
     return NULL;
