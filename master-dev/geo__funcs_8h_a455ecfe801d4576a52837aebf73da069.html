@@ -391,7 +391,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the double nearest a value that <code>side</code> reads exactly, a tie going to the even double. </p>
-<p >The sign of the value is read exactly at 0; a negative value is the negation of the double nearest its magnitude. That double is the smallest bit pattern whose upper midpoint the magnitude does not pass: a gallop from the candidate <code>c</code> brackets it, then halving the bracket finds it, as <a class="el" href="meos_2src_2geo_2geo__funcs_8c_aa2d9d87849695522fda6d8b9292c00f0.html#aa2d9d87849695522fda6d8b9292c00f0" title="Return the double nearest the square root of n / d &gt;= 0, a tie going to the even double.">tower_wide_nearest_root</a> finds a root. Each side is asked in an arena of the search, whose values it forms are released after it answers </p><dl class="section pre"><dt>Precondition</dt><dd>The value lies strictly between -DBL_MAX and DBL_MAX </dd></dl>
+<p >The sign of the value is read exactly at 0; a negative value is the negation of the double nearest its magnitude, which <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a8c36d1694476b83720273e6d44346902.html#a8c36d1694476b83720273e6d44346902" title="Find the bit pattern of the double nearest a nonnegative value that side places against midpoints,...">nearest_double_search</a> finds from the candidate <code>c</code>, each side asked in an arena of the search, whose values it forms are released after it answers. A magnitude of at least <code>2^1024 - 2^970</code>, the midpoint above the largest double, rounds to infinity </p>
 
 </div>
 </div>
