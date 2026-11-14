@@ -324,7 +324,7 @@ rm -rf build
 		<sect2 xml:id="testing">
 			<title>Testing</title>
 			<para>
-				MobilityDB uses <varname>ctest</varname>, the CMake test driver program, for testing. This program will run the tests and report results.
+				MobilityDB uses <varname>ctest</varname>, the CMake test driver program, for testing. The test files are run by <varname>pg_regress</varname>, the regression test program of PostgreSQL, as a single test of <varname>ctest</varname> named <varname>regress</varname>.
 			</para>
 			<para>
 				To run all the tests
@@ -333,17 +333,20 @@ rm -rf build
 ctest
 </programlisting>
 			<para>
-				To run a given test file
+				To run a given test file, the environment variable <varname>MOBILITYDB_TESTS</varname> gives a regular expression, which selects the tests whose names it matches
 			</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
-ctest -R '021_tbox'
+MOBILITYDB_TESTS='^021_tbox$' ctest -R regress
 </programlisting>
 			<para>
-				To run a set of given test files you can use wildcards
+				To run a set of given test files, give the part of their names they share
 			</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
-ctest -R '022_*'
+MOBILITYDB_TESTS=022_ ctest -R regress
 </programlisting>
+			<para>
+				The differences between the output of the tests that fail and their expected output are written to the file <varname>mobilitydb/test/regress/regression.diffs</varname> of the build directory.
+			</para>
 			<para>
 				The tests run on a temporary PostgreSQL cluster in the directory <varname>tmptest</varname> of the build directory, whose server listens on a Unix-domain socket in a short directory under <varname>/tmp</varname>, since PostgreSQL does not start when the path of the socket exceeds 107 bytes. Another directory for the cluster can be given at configure time with the variable <varname>MOBILITYDB_TEST_TMPDIR</varname>. The cluster is created in the C locale and in UTF-8, unless the variable <varname>MOBILITYDB_TEST_ENCODING</varname> names another encoding, such as <varname>SQL_ASCII</varname>
 			</para>
