@@ -53,6 +53,15 @@ SELECT tstzset '{2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzset value: Missing closing brace
 LINE 1: SELECT tstzset '{2001-01-01, 2001-01-02';
                        ^
+-- A set holds finite timestamps and dates only
+SELECT tstzset '{2001-01-01, infinity}';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tstzset '{2001-01-01, infinity}';
+                       ^
+SELECT dateset '{-infinity, 2001-01-01}';
+ERROR:  The date must be finite
+LINE 1: SELECT dateset '{-infinity, 2001-01-01}';
+                       ^
 -- The UTC designator of RFC 3339, which every OGC Moving Features datetime is
 -- written in, denotes the same instant as the zero offset it abbreviates
 SELECT tstzset '{2001-01-01T00:00:00Z, 2001-01-02T00:00:00Z}' =

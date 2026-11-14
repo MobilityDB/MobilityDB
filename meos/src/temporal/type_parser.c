@@ -466,10 +466,19 @@ timestamp_parse(const char **str)
   char *str1 = palloc(sizeof(char) * (pos + 1));
   strncpy(str1, *str, pos);
   str1[pos] = '\0';
-  /* The last argument is for an unused typmod */
+  /* A failed parse is told by the error number, and the value read must be
+   * finite, since a temporal value holds finite timestamps only; both return
+   * DT_NOEND, which the callers read as a failure. The last argument is for
+   * an unused typmod */
+  int last_errno = meos_errno_reset();
   TimestampTz result = pg_timestamptz_in(str1, -1);
   pfree(str1);
   *str += pos;
+  if (meos_errno())
+    return DT_NOEND;
+  meos_errno_restore(last_errno);
+  if (! ensure_finite_timestamptz(result))
+    return DT_NOEND;
   return result;
 }
 

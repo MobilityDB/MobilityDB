@@ -213,6 +213,8 @@ pose_timestamptz_to_stbox(const Pose *pose, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   STBox box;
   if (! pose_timestamptz_set_stbox(pose, t, &box))
     return NULL;

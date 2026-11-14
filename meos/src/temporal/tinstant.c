@@ -376,7 +376,8 @@ TInstant *
 tinstant_make(Datum value, MeosType temptype, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tinstant_value(value, temptype))
+  if (! ensure_valid_tinstant_value(value, temptype) ||
+      ! ensure_finite_timestamptz(t))
     return NULL;
   return tinstant_make_intl(value, temptype, t);
 }

@@ -1158,6 +1158,8 @@ STBox *
 npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t)
 {
   VALIDATE_NOT_NULL(np, NULL);
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   STBox box;
   if (! npoint_timestamptz_set_stbox(np, t, &box))
     return NULL;

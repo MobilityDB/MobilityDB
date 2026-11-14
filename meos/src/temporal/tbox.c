@@ -250,6 +250,9 @@ tbox_copy(const TBox *box)
 TBox *
 number_timestamptz_to_tbox(Datum value, MeosType basetype, TimestampTz t)
 {
+  /* A box holds a time span of finite timestamps only */
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   Span s, p;
   MeosType spantype = basetype_spantype(basetype);
   span_set(value, value, true, true, basetype, spantype, &s);
@@ -377,6 +380,8 @@ numspan_timestamptz_to_tbox(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NUMSPAN(s, NULL);
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
 
   Datum dt = TimestampTzGetDatum(t);
   Span p;
@@ -555,6 +560,9 @@ timestamptz_set_tbox(TimestampTz t, TBox *box)
 TBox *
 timestamptz_to_tbox(TimestampTz t)
 {
+  /* A box holds a time span of finite timestamps only */
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   TBox *result = palloc(sizeof(TBox));
   timestamptz_set_tbox(t, result);
   return result;
