@@ -82,6 +82,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__constructor_gab39312242d234c2de58a3ef771d3565c.html#gab39312242d234c2de58a3ef771d3565c">temporal_from_base_temp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__constructor_ga576c261cf0fcbd0884249fb0d8163e54.html#ga576c261cf0fcbd0884249fb0d8163e54">tinstant_copy</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__temporal__constructor_ga2afbcce7cee894ca0a4a953479f3f2d8.html#ga2afbcce7cee894ca0a4a953479f3f2d8">tinstant_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__constructor_gadc42014aa2ee10834c3b3337e4b168ca.html#gadc42014aa2ee10834c3b3337e4b168ca">tinstant_make_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__constructor_ga98c18e1337247dc540d6b12630cfdf2a.html#ga98c18e1337247dc540d6b12630cfdf2a">tsequence_copy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__constructor_gaf9ee91a205107ce9040410cb4288210e.html#gaf9ee91a205107ce9040410cb4288210e">tsequence_from_base_tstzset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__constructor_ga4cd18c39ab51f8a571c13eb1be062c7e.html#ga4cd18c39ab51f8a571c13eb1be062c7e">tsequence_from_base_tstzspan</a></td></tr>
@@ -128,11 +129,6 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return a temporal instant from the arguments. </p>
-<p >The memory structure of a temporal instant is as follows </p><div class="fragment"><div class="line">----------------</div>
-<div class="line">( <a class="code hl_struct" href="structTInstant.html">TInstant</a> )_X |</div>
-<div class="line">----------------</div>
-<div class="ttc" id="astructTInstant_html"><div class="ttname"><a href="structTInstant.html">TInstant</a></div><div class="ttdoc">Structure to represent temporal values of instant subtype.</div><div class="ttdef"><b>Definition:</b> meos.h:281</div></div>
-</div><!-- fragment --><p> where the attribute <code>value</code> of type <code>Datum</code> in the struct stores the base value independently of whether it is passed by value or by reference. For values passed by reference, the additional bytes needed are appended at the end of the struct upon creation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Value </td></tr>
