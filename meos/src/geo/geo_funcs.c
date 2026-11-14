@@ -12681,22 +12681,23 @@ typedef struct
   int cap;
   bool unsafe;      /**< A product may have left the range where the
                          arithmetic of expansions is exact */
-  bool wide;        /**< Values are #WideDyadic rather than expansions */
+  bool wide;        /**< Values are #TowerWide rather than expansions */
   bool filter;      /**< Values are doubles carrying a bound on their error,
                          as #ArcsegFilter reads them: one component and
                          the bound in its @p err, so a sign the bound cannot
                          tell marks the arena unsafe */
+  TowerWideArena *warena; /**< The values of a wide arena, NULL otherwise */
 } ArcsegArena;
 
 /* An exact value: an expansion whose last component carries its sign, and a
  * bound on how far it may lie from the value, 0 unless a product's error
- * term underflowed; in a wide arena, a #WideDyadic instead */
+ * term underflowed; in a wide arena, a #TowerWide instead */
 typedef struct
 {
   int n;
   double *e;
   double err;
-  WideDyadic *w;    /**< The value in a wide arena, NULL otherwise */
+  TowerWide *w;     /**< The value in a wide arena, NULL otherwise */
 } ArcsegExact;
 
 static double *
@@ -12731,10 +12732,16 @@ arcseg_arena_free(ArcsegArena *arena)
   arena->blocks = NULL;
   arena->n = arena->cap = arena->used = 0;
   arena->unsafe = false;
+  if (arena->warena)
+  {
+    tower_wide_arena_free(arena->warena);
+    pfree(arena->warena);
+    arena->warena = NULL;
+  }
   return;
 }
 
-/* An empty arena, of expansions or, where @p wide is set, of #WideDyadic */
+/* An empty arena, of expansions or, where @p wide is set, of #TowerWide */
 static void
 arcseg_arena_init(ArcsegArena *arena, bool wide)
 {
@@ -12743,6 +12750,12 @@ arcseg_arena_init(ArcsegArena *arena, bool wide)
   arena->wide = wide;
   arena->filter = false;
   arena->blocks = NULL;
+  arena->warena = NULL;
+  if (wide)
+  {
+    arena->warena = palloc(sizeof(TowerWideArena));
+    tower_wide_arena_init(arena->warena);
+  }
   return;
 }
 
@@ -12866,31 +12879,16 @@ arcseg_x_spent(ArcsegArena *arena)
   return r;
 }
 
-/* A value of a wide arena, its #WideDyadic taken from the arena */
-static ArcsegExact
-arcseg_w_new(ArcsegArena *arena)
+/* A value of a wide arena */
+static inline ArcsegExact
+arcseg_w_value(TowerWide *w)
 {
   ArcsegExact r;
   r.e = NULL;
   r.n = 0;
   r.err = 0.0;
-  r.w = (WideDyadic *) arcseg_arena_alloc(arena,
-    (int) ((sizeof(WideDyadic) + sizeof(double) - 1) / sizeof(double)));
+  r.w = w;
   return r;
-}
-
-/* Whether the sum of two #WideDyadic fits in one, read before it is formed:
- * #wide_dyadic_add aligns both to the lower of their lowest bits and answers
- * zero, raising an error, where they do not fit (#wide_dyadic_aligned) */
-static bool
-arcseg_w_sum_fits(const WideDyadic *a, const WideDyadic *b)
-{
-  if (a->sign == 0 || b->sign == 0)
-    return true;
-  int e = Min(a->exp, b->exp);
-  int na = a->len + (a->exp - e) / 64 + 1;
-  int nb = b->len + (b->exp - e) / 64 + 1;
-  return Max(na, nb) + 1 <= WIDE_DYADIC_LIMBS;
 }
 
 static ArcsegExact
@@ -12907,12 +12905,9 @@ arcseg_x_diff(ArcsegArena *arena, double a, double b)
       arena->unsafe = true;
       return arcseg_x_spent(arena);
     }
-    WideDyadic wa, wb;
-    wide_dyadic_set_double(&wa, a);
-    wide_dyadic_set_double(&wb, b);
-    ArcsegExact r = arcseg_w_new(arena);
-    wide_dyadic_sub(&wa, &wb, r.w);
-    return r;
+    return arcseg_w_value(tower_wide_sub(arena->warena,
+      tower_wide_of_double(arena->warena, a),
+      tower_wide_of_double(arena->warena, b)));
   }
   ArcsegExact r;
   r.w = NULL;
@@ -12940,16 +12935,7 @@ arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
     return arcseg_x_filtered(arena, arcseg_f_add(arcseg_x_as_filter(a),
       arcseg_x_as_filter(b)));
   if (arena->wide)
-  {
-    if (! arcseg_w_sum_fits(a.w, b.w))
-    {
-      arena->unsafe = true;
-      return arcseg_x_spent(arena);
-    }
-    ArcsegExact r = arcseg_w_new(arena);
-    wide_dyadic_add(a.w, b.w, r.w);
-    return r;
-  }
+    return arcseg_w_value(tower_wide_add(arena->warena, a.w, b.w));
   int cap = a.n + b.n;
   double *h = arcseg_arena_alloc(arena, cap);
   ArcsegExact r;
@@ -12971,18 +12957,8 @@ arcseg_x_scale(ArcsegArena *arena, ArcsegExact a, double k)
   if (arena->filter)
     return arcseg_x_filtered(arena, arcseg_f_scale(arcseg_x_as_filter(a), k));
   if (arena->wide)
-  {
-    WideDyadic wk;
-    wide_dyadic_set_double(&wk, k);
-    if (a.w->len + wk.len > WIDE_DYADIC_LIMBS)
-    {
-      arena->unsafe = true;
-      return arcseg_x_spent(arena);
-    }
-    ArcsegExact r = arcseg_w_new(arena);
-    wide_dyadic_mul(a.w, &wk, r.w);
-    return r;
-  }
+    return arcseg_w_value(tower_wide_mul(arena->warena, a.w,
+      tower_wide_of_double(arena->warena, k)));
   /* A power of two scales every component exactly */
   ArcsegExact r;
   r.w = NULL;
@@ -13027,16 +13003,7 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
     return arcseg_x_filtered(arena, arcseg_f_mul(arcseg_x_as_filter(a),
       arcseg_x_as_filter(b)));
   if (arena->wide)
-  {
-    if (a.w->len + b.w->len > WIDE_DYADIC_LIMBS)
-    {
-      arena->unsafe = true;
-      return arcseg_x_spent(arena);
-    }
-    ArcsegExact r = arcseg_w_new(arena);
-    wide_dyadic_mul(a.w, b.w, r.w);
-    return r;
-  }
+    return arcseg_w_value(tower_wide_mul(arena->warena, a.w, b.w));
   double under = 0.0;
   if (a.n > 0 && b.n > 0)
   {
@@ -13301,12 +13268,12 @@ arcseg_signs_exact_ctx(ArcsegArena *arena, double ax, double ay, double bx,
 }
 
 /* The same signs computed exactly, false where neither expansions nor
- * #WideDyadic hold them exactly (#arcseg_x_sign_checked) */
+ * #TowerWide hold them exactly (#arcseg_x_sign_checked) */
 static bool
 arcseg_signs_exact(double ax, double ay, double bx, double by,
   const Edge *arc, ArcsegSigns *sg)
 {
-  /* In expansions, and once more in #WideDyadic where those cannot tell a
+  /* In expansions, and once more in #TowerWide where those cannot tell a
    * sign or leave their exact range, as #tower_pred_run asks a tower */
   bool told = false;
   for (int wide = 0; wide < 2 && ! told; wide++)
@@ -13431,7 +13398,7 @@ static int
 arcseg_line_disc_sign(double ax, double ay, double bx, double by,
   const Edge *arc)
 {
-  /* In expansions, and once more in #WideDyadic where those cannot tell a
+  /* In expansions, and once more in #TowerWide where those cannot tell a
    * sign or leave their exact range, as #tower_pred_run asks a tower */
   for (int wide = 0; wide < 2; wide++)
   {
@@ -13531,13 +13498,13 @@ arcseg_shared_signs_ctx(ArcsegArena *arena, double ax, double ay, double bx,
 }
 
 /* The signs in doubles, and exactly where @p exact and the doubles cannot
- * tell one: false where #WideDyadic cannot hold them either */
+ * tell one: false where #TowerWide cannot hold them either */
 static bool
 arcseg_shared_signs(double ax, double ay, double bx, double by,
   const Edge *arc, bool exact, int *sqa, int *sqb, int *sab, int *s2ab,
   int *sh1, int *sside)
 {
-  /* In expansions, and once more in #WideDyadic where those cannot tell a
+  /* In expansions, and once more in #TowerWide where those cannot tell a
    * sign or leave their exact range, as #tower_pred_run asks a tower */
   bool told = false;
   for (int wide = 0; wide < 2 && ! told; wide++)
@@ -13963,14 +13930,14 @@ arcarc_shared_point_signs_ctx(ArcsegArena *arena, const Edge *p,
  * @param[in] p,q Arcs, of two distinct circles, both holding J
  * @param[in] jx,jy The point they share, an input vertex
  * @param[out] s1,sp,sq The signs
- * @return False where neither expansions nor #WideDyadic hold them
+ * @return False where neither expansions nor #TowerWide hold them
  * exactly (#arcseg_x_sign_checked)
  */
 bool
 arcarc_shared_point_signs(const Edge *p, const Edge *q, double jx, double jy,
   int *s1, int *sp, int *sq)
 {
-  /* In expansions, and once more in #WideDyadic where those cannot tell a
+  /* In expansions, and once more in #TowerWide where those cannot tell a
    * sign or leave their exact range, as #tower_pred_run asks a tower */
   bool told = false;
   for (int wide = 0; wide < 2 && ! told; wide++)
@@ -14155,7 +14122,7 @@ arcarc_meet_exact_ctx(ArcsegArena *arena, const Edge *p, const Edge *q,
  * @param[in] p,q Arcs of two distinct circles
  * @param[out] meet The sign of H; for each sigma = -1, 1 in turn, whether P
  * lies within @p p and within @p q (1 or 0)
- * @return False where neither expansions nor #WideDyadic hold these
+ * @return False where neither expansions nor #TowerWide hold these
  * signs exactly (#arcseg_x_sign_checked)
  */
 bool
@@ -14181,7 +14148,7 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
   }
   p = arcs[0]; q = arcs[1];
   /* In doubles carrying a bound on their error, which tell most signs,
-   * then in expansions, and once more in #WideDyadic where those cannot
+   * then in expansions, and once more in #TowerWide where those cannot
    * tell a sign or leave their exact range, as #tower_pred_run asks a
    * tower */
   bool told = false;
@@ -14273,7 +14240,7 @@ int
 edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
   bool ccw2, bool out2, double vx, double vy)
 {
-  /* In expansions, and once more in #WideDyadic where those cannot tell a
+  /* In expansions, and once more in #TowerWide where those cannot tell a
    * sign or leave their exact range, as #tower_pred_run asks a tower */
   for (int wide = 0; wide < 2; wide++)
   {
