@@ -32,9 +32,12 @@ SET(LOCAL_FILES
   005_span_ops
   007_spanset
   009_spanset_ops
-  011_span_indexes
-  012_spanset_indexes
-  013_set_indexes
+  011_span_gist
+  011_span_spgist
+  012_spanset_gist
+  012_spanset_spgist
+  013_set_gist
+  013_set_spgist
   015_span_aggfuncs
   019_geo_constructors
   021_tbox

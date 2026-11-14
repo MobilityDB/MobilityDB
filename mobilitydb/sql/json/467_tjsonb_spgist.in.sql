@@ -29,63 +29,8 @@
 
 /**
  * @file
- * @brief R-tree GiST and SP-GiST indexes for temporal JSONB
+ * @brief Quad-tree and k-d tree SP-GiST indexes for temporal JSONB
  */
-
-/******************************************************************************/
-
-CREATE FUNCTION tjsonb_gist_consistent(internal, tjsonb, smallint, oid, internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************/
-
--- GENERATED-TEMPOPCLASS-BEGIN tjsonb_rtree_ops — tools/codegen/inherited/generate.py;
--- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
-CREATE OPERATOR CLASS tjsonb_rtree_ops
-  DEFAULT FOR TYPE tjsonb USING gist AS
-  STORAGE tstzspan,
-  -- overlaps
-  OPERATOR  3    && (tjsonb, tstzspan),
-  OPERATOR  3    && (tjsonb, tjsonb),
-  -- same
-  OPERATOR  6    ~= (tjsonb, tstzspan),
-  OPERATOR  6    ~= (tjsonb, tjsonb),
-  -- contains
-  OPERATOR  7    #@> (tjsonb, tstzspan),
-  OPERATOR  7    #@> (tjsonb, tjsonb),
-  -- contained by
-  OPERATOR  8    <@# (tjsonb, tstzspan),
-  OPERATOR  8    <@# (tjsonb, tjsonb),
-  -- adjacent
-  OPERATOR  17    -|- (tjsonb, tstzspan),
-  OPERATOR  17    -|- (tjsonb, tjsonb),
-  -- overlaps or before
-  OPERATOR  28    &<# (tjsonb, tstzspan),
-  OPERATOR  28    &<# (tjsonb, tjsonb),
-  -- strictly before
-  OPERATOR  29    <<# (tjsonb, tstzspan),
-  OPERATOR  29    <<# (tjsonb, tjsonb),
-  -- strictly after
-  OPERATOR  30    #>> (tjsonb, tstzspan),
-  OPERATOR  30    #>> (tjsonb, tjsonb),
-  -- overlaps or after
-  OPERATOR  31    #&> (tjsonb, tstzspan),
-  OPERATOR  31    #&> (tjsonb, tjsonb),
-  -- functions
-  FUNCTION  1 tjsonb_gist_consistent(internal, tjsonb, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
-  FUNCTION  3 tjsonb_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
-  FUNCTION 11 span_gist_sortsupport(internal);
--- GENERATED-TEMPOPCLASS-END tjsonb_rtree_ops
 
 /******************************************************************************/
 
