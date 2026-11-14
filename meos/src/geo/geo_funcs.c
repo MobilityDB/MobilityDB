@@ -32456,27 +32456,21 @@ sum_filter(const double *t, int k, double *sum, double *err)
 }
 
 /**
- * @brief Set a #WideDyadic to the sum of @p k doubles, exactly
+ * @brief Return in @p ar the sum of @p k doubles, exactly
  */
-static void
-wide_dyadic_sum(const double *t, int k, WideDyadic *r)
+static TowerWide *
+tower_wide_sum(TowerWideArena *ar, const double *t, int k)
 {
-  WideDyadic acc, term, next;
-  wide_dyadic_set_double(&acc, 0.0);
+  TowerWide *acc = tower_wide_alloc(ar, 1);
   for (int i = 0; i < k; i++)
-  {
-    wide_dyadic_set_double(&term, t[i]);
-    wide_dyadic_add(&acc, &term, &next);
-    acc = next;
-  }
-  *r = acc;
-  return;
+    acc = tower_wide_add(ar, acc, tower_wide_of_double(ar, t[i]));
+  return acc;
 }
 
 /**
  * @brief Return the sign of the sum of @p k doubles, decided exactly
  * @details The sum in doubles decides where it exceeds the bound on its
- * rounding (#sum_filter), and otherwise the sum is read on #WideDyadic
+ * rounding (#sum_filter), and otherwise the sum is read on #TowerWide
  */
 static int
 sum_sign_exact(const double *t, int k)
@@ -32485,9 +32479,11 @@ sum_sign_exact(const double *t, int k)
   sum_filter(t, k, &sum, &err);
   if (fabs(sum) > err)
     return (sum > 0.0) ? 1 : -1;
-  WideDyadic w;
-  wide_dyadic_sum(t, k, &w);
-  return w.sign;
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
+  int sign = tower_wide_sum(&ar, t, k)->sign;
+  tower_wide_arena_free(&ar);
+  return sign;
 }
 
 /**
@@ -32514,7 +32510,7 @@ sums_nonpositive_exact(const double *t, int n, int k)
  * bound on its error: the error of each sum (#sum_filter) carried through the
  * two products, plus the rounding of the products and of their difference.
  * Otherwise, and wherever the doubles may underflow or overflow, the four
- * sums are read on #WideDyadic and compared by #wide_dyadic_product_cmp
+ * sums are read on #TowerWide and compared by #tower_wide_product_cmp
  */
 static int
 sum_products_sign_exact(const double *p1, const double *e1, const double *p2,
@@ -32534,12 +32530,14 @@ sum_products_sign_exact(const double *p1, const double *e1, const double *p2,
   if (isfinite(err) && fabs(det) > err * (1.0 + 4.0 * DBL_EPSILON) &&
       fabs(det) > 0x1p-900)
     return (det > 0.0) ? 1 : -1;
-  WideDyadic wp1, we1, wp2, we2;
-  wide_dyadic_sum(p1, k, &wp1);
-  wide_dyadic_sum(e1, k, &we1);
-  wide_dyadic_sum(p2, k, &wp2);
-  wide_dyadic_sum(e2, k, &we2);
-  return wide_dyadic_product_cmp(&wp1, &we2, &wp2, &we1);
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
+  const TowerWide *wp1 = tower_wide_sum(&ar, p1, k),
+    *we1 = tower_wide_sum(&ar, e1, k), *wp2 = tower_wide_sum(&ar, p2, k),
+    *we2 = tower_wide_sum(&ar, e2, k);
+  int sign = tower_wide_product_cmp(&ar, wp1, we2, wp2, we1);
+  tower_wide_arena_free(&ar);
+  return sign;
 }
 
 /**
