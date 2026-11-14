@@ -258,6 +258,11 @@ DROP INDEX IF EXISTS tbl_tgeography3D_big_kdtree_idx;
 ANALYZE tbl_tgeometry;
 ANALYZE tbl_tgeometry3D;
 
+SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
+SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' ?&& temp;
+SELECT COUNT(*) FROM tbl_tgeometry WHERE temp %&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
+SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' %&& temp;
+
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeometry_rtree_idx;
@@ -286,6 +291,11 @@ SELECT round(distance, 6) FROM test;
 WITH test AS (
   SELECT temp |=| geography 'SRID=7844;Point(1 1)' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
+SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' ?&& temp;
+SELECT COUNT(*) FROM tbl_tgeometry WHERE temp %&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
+SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' %&& temp;
 DROP INDEX tbl_tgeometry_rtree_idx;
 DROP INDEX tbl_tgeometry3D_rtree_idx;
 
@@ -317,6 +327,11 @@ SELECT round(distance, 6) FROM test;
 WITH test AS (
   SELECT temp |=| geography 'SRID=7844;Point(1 1)' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
+SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' ?&& temp;
+SELECT COUNT(*) FROM tbl_tgeometry WHERE temp %&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
+SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' %&& temp;
 DROP INDEX tbl_tgeometry_quadtree_idx;
 DROP INDEX tbl_tgeometry3D_quadtree_idx;
 

@@ -634,6 +634,21 @@ SELECT aDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tg
 SELECT eDwithin(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02],[Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '[Point(100 100)@2001-01-03, Point(101 100)@2001-01-04]', 2);
 SELECT aDwithin(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02],[Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '[Point(100 100)@2001-01-03, Point(101 100)@2001-01-04]', 2);
 
+-- Two moving points within the distance only at a bound of their common
+-- period that the period excludes are within it at no instant they share,
+-- ever, while over inclusive bounds they are; a point that reaches a
+-- geometry point only at such a bound is likewise never within it. Always
+-- within reads the distance at both bounds, which the instants next to an
+-- excluded bound approach
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)', tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)', 0);
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 0);
+SELECT eDwithin(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '(Point(0 0)@2001-01-01, Point(2 0)@2001-01-02]', 0);
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)', tgeompoint '[Point(3 0)@2001-01-01, Point(1 0)@2001-01-02)', 1);
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(3 0)@2001-01-01, Point(1 0)@2001-01-02]', 1);
+SELECT eDwithin(tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)', geometry 'Point(0 0)', 0);
+SELECT aDwithin(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '(Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 2);
+SELECT aDwithin(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '(Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 1);
+
 -------------------------------------------------------------------------------
 
 -- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere

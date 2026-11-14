@@ -4541,10 +4541,12 @@ cross_product_sign_wide(double ax, double ay, double bx, double by,
  * @param[out] nmin,dmin The least squared distance as @p nmin over @p dmin
  * @param[out] nend0,nend1,dend Squared distances at @p ta and at @p tb, over
  * @p dend
+ * @return Where the least is reached: 0 strictly inside or at both ends, -1
+ * at @p ta alone, 1 at @p tb alone
  * @pre `s0 < s1`, `r0 < r1`, `s0 <= ta <= tb <= s1`, `r0 <= ta <= tb <= r1`,
  * 2D points
  */
-static void
+static int
 point_motion_squares(const double *p0, const double *p1, int64 s0, int64 s1,
   const double *q0, const double *q1, int64 r0, int64 r1, int64 ta, int64 tb,
   TowerWideArena *ar, TowerWide **nmin, TowerWide **dmin, TowerWide **nend0,
@@ -4636,13 +4638,12 @@ point_motion_squares(const double *p0, const double *p1, int64 s0, int64 s1,
     cross = tower_wide_add(ar, sq0, sq1);
     *nmin = tower_wide_mul(ar, cross, cross);
     *dmin = tower_wide_mul(ar, ee, *dend);
+    return 0;
   }
-  else
-  {
-    *nmin = (tower_wide_cmp(*nend0, *nend1) <= 0) ? *nend0 : *nend1;
-    *dmin = *dend;
-  }
-  return;
+  int c = tower_wide_cmp(*nend0, *nend1);
+  *nmin = (c <= 0) ? *nend0 : *nend1;
+  *dmin = *dend;
+  return (c < 0) ? -1 : ((c > 0) ? 1 : 0);
 }
 
 /**
@@ -5882,13 +5883,22 @@ point_motion_dwithin_filter(const double *p0, const double *p1, int64 s0,
 }
 
 /**
- * @brief Return true if two points moving linearly over the interval
- * [ta, tb] are within a distance at some instant of it (@p ever) or at every
- * instant of it, decided exactly over continuous time
- * @details Ever within holds where the least squared distance over the
- * interval is at most `d^2`; always within where both ends are, the squared
- * distance being a convex quadratic in time (#point_motion_squares). The
- * filter #point_motion_dwithin_filter answers where doubles decide it.
+ * @brief Return 1 if two points moving linearly over the interval [ta, tb]
+ * are within a distance at some instant of it (@p ever) or at every instant
+ * of it, 0 if not, decided exactly over continuous time; for the ever
+ * semantics, 2 or 3 where they are within it at the start or at the end
+ * alone
+ * @details The squared distance is a convex quadratic in time
+ * (#point_motion_squares). Always within holds where both ends are within,
+ * the squared distance being continuous, so an end the interval excludes
+ * answers as one it holds. Ever within holds where the least squared
+ * distance over the interval is below `d^2`, or equals it strictly inside or
+ * throughout; where it equals it at one end alone, the other end farther,
+ * the answer is 2 for the start and 3 for the end, the two points being
+ * within over the interval where it holds that end
+ * (#tcont_interval_ends_out). The filter
+ * #point_motion_dwithin_filter answers where doubles decide it: an end it
+ * finds within is strictly within, and so are the instants next to it.
  * @param[in] p0,p1,s0,s1 Segment of the first point and its timestamps
  * @param[in] q0,q1,r0,r1 Segment of the second point and its timestamps
  * @param[in] ta,tb Interval, within both segments
@@ -5896,7 +5906,7 @@ point_motion_dwithin_filter(const double *p0, const double *p1, int64 s0,
  * @param[in] ever True for the ever semantics, false for the always one
  * @pre `s0 < s1`, `r0 < r1`, the interval within both segments, 2D points
  */
-bool
+int
 point_motion_dwithin_exact(const double *p0, const double *p1, int64 s0,
   int64 s1, const double *q0, const double *q1, int64 r0, int64 r1, int64 ta,
   int64 tb, double d, bool ever)
@@ -5904,25 +5914,31 @@ point_motion_dwithin_exact(const double *p0, const double *p1, int64 s0,
   int filter = point_motion_dwithin_filter(p0, p1, s0, s1, q0, q1, r0, r1, ta,
     tb, d, ever);
   if (filter >= 0)
-    return filter == 1;
+    return filter;
   TowerWideArena arena, *ar = &arena;
   tower_wide_arena_init(ar);
   const TowerWide *wd, *dd, *rhs;
   TowerWide *nmin, *dmin, *n0, *n1, *dend;
-  point_motion_squares(p0, p1, s0, s1, q0, q1, r0, r1, ta, tb, ar, &nmin,
-    &dmin, &n0, &n1, &dend);
+  int at = point_motion_squares(p0, p1, s0, s1, q0, q1, r0, r1, ta, tb, ar,
+    &nmin, &dmin, &n0, &n1, &dend);
   wd = tower_wide_of_double(ar, d);
   dd = tower_wide_mul(ar, wd, wd);
-  bool result;
+  int result;
   if (ever)
   {
     rhs = tower_wide_mul(ar, dd, dmin);
-    result = tower_wide_cmp(nmin, rhs) <= 0;
+    int least = tower_wide_cmp(nmin, rhs);
+    /* The least is d^2: 2 or 3 where it is reached at one end alone */
+    if (least != 0)
+      result = (least < 0) ? 1 : 0;
+    else
+      result = (at == 0) ? 1 : ((at < 0) ? 2 : 3);
   }
   else
   {
     rhs = tower_wide_mul(ar, dd, dend);
-    result = tower_wide_cmp(n0, rhs) <= 0 && tower_wide_cmp(n1, rhs) <= 0;
+    result = (tower_wide_cmp(n0, rhs) <= 0 && tower_wide_cmp(n1, rhs) <= 0) ?
+      1 : 0;
   }
   tower_wide_arena_free(ar);
   return result;

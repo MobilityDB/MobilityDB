@@ -116,6 +116,10 @@ CREATE OPERATOR CLASS tnpoint_rtree_ops
   OPERATOR  31    #&> (tnpoint, tstzspan),
   OPERATOR  31    #&> (tnpoint, stbox),
   OPERATOR  31    #&> (tnpoint, tnpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tnpoint, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tnpoint, stbox),
   -- functions
   FUNCTION  1 tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -194,6 +198,10 @@ CREATE OPERATOR CLASS tnpoint_quadtree_ops
   OPERATOR  31    #&> (tnpoint, tstzspan),
   OPERATOR  31    #&> (tnpoint, stbox),
   OPERATOR  31    #&> (tnpoint, tnpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tnpoint, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tnpoint, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -270,6 +278,10 @@ CREATE OPERATOR CLASS tnpoint_kdtree_ops
   OPERATOR  31    #&> (tnpoint, tstzspan),
   OPERATOR  31    #&> (tnpoint, stbox),
   OPERATOR  31    #&> (tnpoint, tnpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tnpoint, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tnpoint, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
@@ -399,7 +411,11 @@ ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, tnpoint),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, tnpoint);
+  OPERATOR  31    #&> (stbox, tnpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tnpoint),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tnpoint);
 
 ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
   -- strictly left
@@ -437,7 +453,11 @@ ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, tnpoint),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, tnpoint);
+  OPERATOR  31    #&> (stbox, tnpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tnpoint),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tnpoint);
 
 ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly left
@@ -475,6 +495,10 @@ ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, tnpoint),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, tnpoint);
+  OPERATOR  31    #&> (stbox, tnpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, tnpoint),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, tnpoint);
 
 /******************************************************************************/

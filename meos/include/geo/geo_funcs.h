@@ -373,7 +373,7 @@ extern double convex_motion_nad_exact(const double *b, int nb,
   const double *p0, const double *p1, const double *g, int ng);
 extern bool convex_motion_meet_exact(const double *b, int nb,
   const double *p0, const double *p1, const double *g, int ng);
-extern bool point_motion_dwithin_exact(const double *p0, const double *p1,
+extern int point_motion_dwithin_exact(const double *p0, const double *p1,
   int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
   int64 ta, int64 tb, double d, bool ever);
 extern double point_motion_nad_approx(const double *p0, const double *p1,

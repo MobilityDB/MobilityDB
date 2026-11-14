@@ -78,6 +78,8 @@ tbox_index_leaf_consistent(const TBox *key, const TBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
       retval = overlaps_tbox_tbox(key, query);
       break;
     case RTContainsStrategyNumber:
@@ -144,6 +146,8 @@ tbox_gist_inner_consistent(const TBox *key, const TBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
       retval = overlaps_tbox_tbox(key, query);
       break;
