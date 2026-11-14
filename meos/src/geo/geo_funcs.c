@@ -3886,6 +3886,146 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
   }
 }
 
+/*****************************************************************************
+ * The one search for the nearest double
+ *****************************************************************************/
+
+/**
+ * @brief The side of a value against the upper midpoint of a double: the sign
+ * of the value less the midpoint from the double of bit pattern @p bits to the
+ * next one, or 2 where the side cannot tell
+ */
+typedef int (*NearestBitsSide)(uint64 bits, void *arg);
+
+/* The bit pattern of infinity, above that of every double */
+#define NEAREST_INF_BITS UINT64CONST(0x7FF0000000000000)
+
+/* True where the side @p s puts the value beyond the upper midpoint of the
+ * double of bit pattern @p bits, a tie being beyond where the last bit of
+ * that double is odd, so a tie goes to the even double */
+static inline bool
+nearest_bits_beyond_sign(int s, uint64 bits)
+{
+  return s > 0 || (s == 0 && (bits & 1) != 0);
+}
+
+/**
+ * @brief Find the bit pattern of the double nearest a nonnegative value that
+ * @p side places against midpoints, a tie going to the even double, returning
+ * false where a side it asks cannot tell or its budget runs out
+ * @details The answer is the smallest bit pattern whose upper midpoint the
+ * value does not pass, infinity standing above the largest double, whose
+ * upper midpoint is `2^1024 - 2^970`. A gallop from the candidate
+ * @p bits brackets it, its first two steps of one double, so that a
+ * candidate a neighbour or two from the answer asks no more sides than a
+ * walk, the steps then doubling, and halving the bracket finds it; a candidate whose own side cannot tell is read from its lower
+ * neighbour, which places the value below it or decides nothing. An exact
+ * side never answers 2 and a budget of 0 sets no limit, so the search always
+ * answers; a side of a filter on doubles answers 2 where it cannot tell, and
+ * its budget bounds the sides it is asked, so that the exact search behind it
+ * answers what the filter cannot
+ * @param[in] bits Bit pattern of the candidate, at most infinity's
+ * @param[in] side,arg The side and its argument
+ * @param[in] budget Largest number of sides asked, 0 for no limit
+ * @param[out] result The bit pattern of the answer where the search answers
+ */
+static inline bool
+nearest_double_search(uint64 bits, NearestBitsSide side,
+  void *arg, int budget, uint64 *result)
+{
+  int asked = 0;
+#define NEAREST_ASK(b, res) \
+  do { \
+    if (budget > 0 && asked++ >= budget) \
+      return false; \
+    int s_ = side((b), arg); \
+    if (s_ == 2) \
+      (res) = 2; \
+    else \
+      (res) = nearest_bits_beyond_sign(s_, (b)) ? 1 : 0; \
+  } while (0)
+  const uint64 max_bits = NEAREST_INF_BITS;
+  uint64 lo, hi, step = 1;
+  int beyond, moves = 0;
+  if (bits > max_bits)
+    bits = max_bits;
+  if (bits == max_bits)
+    beyond = 0;
+  else
+    NEAREST_ASK(bits, beyond);
+  if (beyond == 2)
+  {
+    /* The candidate cannot tell: below its lower midpoint the answer is at
+     * most its lower neighbour, otherwise nothing is decided */
+    if (bits == 0)
+      return false;
+    NEAREST_ASK(bits - 1, beyond);
+    if (beyond != 0)
+      return false;
+    bits -= 1;
+  }
+  if (beyond == 1)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    lo = bits;
+    while (true)
+    {
+      hi = (lo < max_bits - step) ? lo + step : max_bits;
+      if (hi == max_bits)
+        break;
+      NEAREST_ASK(hi, beyond);
+      if (beyond == 2)
+        return false;
+      if (! beyond)
+        break;
+      lo = hi;
+      if (moves++ > 0)
+        step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or below 0 */
+    hi = bits;
+    while (true)
+    {
+      if (hi == 0)
+      {
+        *result = 0;
+        return true;
+      }
+      lo = (hi > step) ? hi - step : 0;
+      NEAREST_ASK(lo, beyond);
+      if (beyond == 2)
+        return false;
+      if (beyond)
+        break;
+      if (lo == 0)
+      {
+        *result = 0;
+        return true;
+      }
+      hi = lo;
+      if (moves++ > 0)
+        step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    uint64 mid = lo + (hi - lo) / 2;
+    NEAREST_ASK(mid, beyond);
+    if (beyond == 2)
+      return false;
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef NEAREST_ASK
+  *result = hi;
+  return true;
+}
+
 /**
  * @brief Return the sign of the squared distance between two points less the
  * square of `a + b1 + b2 + b3`, or 2 where a filter on doubles cannot tell
@@ -4772,103 +4912,94 @@ tower_wide_nearest_root(TowerWideArena *ar, const TowerWide *n,
  * The nearest double of a value read exactly
  *****************************************************************************/
 
-/* True where the value, negated where @p neg is true, lies beyond the
- * midpoint from the double of bit pattern @p bits to the next one, a tie
- * being beyond where the last bit of that double is odd, so a tie goes to
- * the even double, as #tower_wide_root_beyond reads it */
-static bool
-nearest_bits_beyond(TowerWideArena *ar, uint64 bits, bool neg,
-  NearestSide side, const void *arg)
+/* A side read exactly, the arena its values are taken from, and whether the
+ * value searched is its negation */
+typedef struct
 {
-  double lo, up;
-  uint64_t b2 = bits + 1;
+  TowerWideArena *ar;
+  NearestSide side;
+  const void *arg;
+  bool neg;
+} NearestExactSide;
+
+/* The side of the value, negated where it is negative, against the upper
+ * midpoint of the double of bit pattern @p bits, 2^1024 standing for the
+ * double after the largest one */
+static int
+nearest_exact_side(uint64 bits, void *arg)
+{
+  NearestExactSide *e = (NearestExactSide *) arg;
+  TowerWideArena *ar = e->ar;
+  double lo;
   memcpy(&lo, &bits, sizeof(lo));
-  memcpy(&up, &b2, sizeof(up));
   TowerWideMark m = tower_wide_arena_mark(ar);
-  TowerWide *mid = tower_wide_add(ar, tower_wide_of_double(ar, lo),
-    tower_wide_of_double(ar, up));
+  TowerWide *up;
+  if (bits + 1 == NEAREST_INF_BITS)
+  {
+    up = tower_wide_of_int64(ar, 1);
+    up->exp = 1024;
+  }
+  else
+  {
+    double u;
+    uint64 b2 = bits + 1;
+    memcpy(&u, &b2, sizeof(u));
+    up = tower_wide_of_double(ar, u);
+  }
+  TowerWide *mid = tower_wide_add(ar, tower_wide_of_double(ar, lo), up);
   if (mid->sign != 0)
     mid->exp -= 1;
   /* -v beyond mid is v below -mid */
-  if (neg)
+  if (e->neg)
     mid->sign = - mid->sign;
-  int s = side(ar, mid, arg);
+  int s = e->side(ar, mid, e->arg);
   tower_wide_arena_release(ar, m);
-  if (neg)
-    s = - s;
-  return s > 0 || (s == 0 && (bits & 1) != 0);
+  return e->neg ? - s : s;
+}
+
+/* The double nearest a value that @p side reads exactly, its values taken
+ * from @p ar, which is returned to where it was */
+static double
+nearest_double_in(TowerWideArena *ar, double c, NearestSide side,
+  const void *arg)
+{
+  TowerWideMark m = tower_wide_arena_mark(ar);
+  int s0 = side(ar, tower_wide_zero(ar), arg);
+  tower_wide_arena_release(ar, m);
+  if (s0 == 0)
+    return 0.0;
+  NearestExactSide e = {ar, side, arg, s0 < 0};
+  c = fabs(c);
+  if (isnan(c))
+    c = DBL_MAX;
+  uint64 bits, found = 0;
+  memcpy(&bits, &c, sizeof(bits));
+  /* An exact side always answers */
+  (void) nearest_double_search(bits, &nearest_exact_side, &e, 0, &found);
+  double result;
+  memcpy(&result, &found, sizeof(result));
+  return e.neg ? - result : result;
 }
 
 /**
  * @brief Return the double nearest a value that @p side reads exactly, a tie
  * going to the even double
  * @details The sign of the value is read exactly at 0; a negative value is
- * the negation of the double nearest its magnitude. That double is the
- * smallest bit pattern whose upper midpoint the magnitude does not pass: a
- * gallop from the candidate @p c brackets it, then halving the bracket finds
- * it, as #tower_wide_nearest_root finds a root. Each side is asked in an
- * arena of the search, whose values it forms are released after it answers
- * @pre The value lies strictly between -DBL_MAX and DBL_MAX
+ * the negation of the double nearest its magnitude, which
+ * #nearest_double_search finds from the candidate @p c, each side asked in an
+ * arena of the search, whose values it forms are released after it answers.
+ * A magnitude of at least `2^1024 - 2^970`, the midpoint above the largest
+ * double, rounds to infinity
  */
+
 double
 nearest_double_exact(double c, NearestSide side, const void *arg)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  int s0 = side(ar, tower_wide_zero(ar), arg);
-  if (s0 == 0)
-  {
-    tower_wide_arena_free(ar);
-    return 0.0;
-  }
-  bool neg = s0 < 0;
-  c = fabs(c);
-  if (! isfinite(c))
-    c = DBL_MAX;
-  const uint64_t max_bits = 0x7FEFFFFFFFFFFFFFULL;
-  uint64_t bits, lo, hi, step = 1;
-  memcpy(&bits, &c, sizeof(bits));
-  if (nearest_bits_beyond(ar, bits, neg, side, arg))
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    lo = bits;
-    while (true)
-    {
-      hi = (lo < max_bits - step) ? lo + step : max_bits;
-      if (hi == max_bits || ! nearest_bits_beyond(ar, hi, neg, side, arg))
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    hi = bits;
-    while (true)
-    {
-      lo = (hi > step) ? hi - step : 0;
-      if (lo == 0 || nearest_bits_beyond(ar, lo, neg, side, arg))
-        break;
-      hi = lo;
-      step *= 2;
-    }
-    /* The magnitude lies below the upper midpoint of 0 */
-    if (lo == 0 && ! nearest_bits_beyond(ar, 0, neg, side, arg))
-      hi = 0;
-  }
-  while (hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    if (nearest_bits_beyond(ar, mid, neg, side, arg))
-      lo = mid;
-    else
-      hi = mid;
-  }
-  tower_wide_arena_free(ar);
-  double result;
-  memcpy(&result, &hi, sizeof(result));
-  return neg ? - result : result;
+  TowerWideArena arena;
+  tower_wide_arena_init(&arena);
+  double result = nearest_double_in(&arena, c, side, arg);
+  tower_wide_arena_free(&arena);
+  return result;
 }
 
 /* A quotient `n / d`, d > 0 */
