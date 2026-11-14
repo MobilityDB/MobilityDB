@@ -1310,9 +1310,9 @@ whole body is generator-governed by a `span_families` entry:
 
 | class | type | ops | indexes | aggfuncs |
 |---|---|---|---|---|
-| `Set<T>` | `001_set` | `002_set_ops` (regions ✓ via the set axes) | `013_set_indexes` ✓ | shares `015` ✓ |
-| `Span<T>` | `003_span` ✓ | `005_span_ops` ✓ | `011_span_indexes` ✓ | `015_span_aggfuncs` ✓ |
-| `SpanSet<T>` | `007_spanset` ✓ | `009_spanset_ops` ✓ | `012_spanset_indexes` ✓ | shares `015` ✓ |
+| `Set<T>` | `001_set` | `002_set_ops` (regions ✓ via the set axes) | `013_set_gist`·`013_set_spgist` ✓ | shares `015` ✓ |
+| `Span<T>` | `003_span` ✓ | `005_span_ops` ✓ | `011_span_gist`·`011_span_spgist` ✓ | `015_span_aggfuncs` ✓ |
+| `SpanSet<T>` | `007_spanset` ✓ | `009_spanset_ops` ✓ | `012_spanset_gist`·`012_spanset_spgist` ✓ | shares `015` ✓ |
 
 plus the 10 per-family set files that instantiate `Set<T>` for the plug-in base
 types: `geo/050_geoset` · `pose/101_poseset` · `cbuffer/201_cbufferset` ·
@@ -1341,8 +1341,8 @@ flags the per-surface set axes implement as deployment gates.
 ### 9.7 What the `span_families:` axis encodes
 
 One entry per template file (`003_span`, `005_span_ops`, `007_spanset`,
-`009_spanset_ops`, `011_span_indexes`, `012_spanset_indexes`,
-`015_span_aggfuncs`, `013_set_indexes`), rendered by `render_spanfile()`
+`009_spanset_ops`, `011_span_gist`, `011_span_spgist`, `012_spanset_gist`,
+`012_spanset_spgist`, `015_span_aggfuncs`, `013_set_gist`, `013_set_spgist`), rendered by `render_spanfile()`
 (`generate.py`) over the entry's `blocks:`; the region is the whole file body
 from `begin:` to EOF.
 
