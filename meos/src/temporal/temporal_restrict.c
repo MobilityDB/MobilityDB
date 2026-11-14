@@ -2771,13 +2771,15 @@ tsegment_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   assert(inst1->t <= t); assert(t <= inst2->t);
   Datum startvalue = tinstant_value_p(inst1);
   if (inst1->t == t || (interp != LINEAR && t < inst2->t))
-    return tinstant_make(startvalue, inst1->temptype, t);
+    return tinstant_make_intl(startvalue, inst1->temptype, t);
   Datum endvalue = tinstant_value_p(inst2);
   if (t == inst2->t)
-    return tinstant_make(endvalue, inst1->temptype, t);
+    return tinstant_make_intl(endvalue, inst1->temptype, t);
   Datum value = tsegment_value_at_timestamptz(startvalue, endvalue,
     inst1->temptype, inst1->t, inst2->t, t);
-  return tinstant_make_free(value, inst1->temptype, t);
+  TInstant *result = tinstant_make_intl(value, inst1->temptype, t);
+  DATUM_FREE(value, temptype_basetype(inst1->temptype));
+  return result;
 }
 
 /**
@@ -2939,7 +2941,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       }
       else
       {
-        instants[n] = tinstant_make(tinstant_value_p(instants[n - 1]),
+        instants[n] = tinstant_make_intl(tinstant_value_p(instants[n - 1]),
           inst1->temptype, t);
         result[nseqs++] = tsequence_make(instants, n + 1,
           seq->period.lower_inc, false, interp, NORMALIZE_NO);
@@ -2953,7 +2955,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = (interp == LINEAR) ?
         tsegment_at_timestamptz(inst1, inst2, interp, t) :
-        tinstant_make(tinstant_value_p(inst1), inst1->temptype, t);
+        tinstant_make_intl(tinstant_value_p(inst1), inst1->temptype, t);
       result[nseqs++] = tcontseq_make_cut(instants, n + 2,
         seq->period.lower_inc, false, interp);
       pfree(instants[n + 1]);
@@ -3129,7 +3131,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
         {
           /* Take the value of the previous instant */
           value = tinstant_value_p(instants[ninsts - 1]);
-          instants[ninsts] = tinstant_make(value, inst->temptype, inst->t);
+          instants[ninsts] = tinstant_make_intl(value, inst->temptype, inst->t);
           tofree[nfree++] = instants[ninsts++];
         }
         result[nseqs++] = tcontseq_make_cut(instants, ninsts, lower_inc,
@@ -3161,7 +3163,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
         else
           /* Take the value of the previous instant */
           value = tinstant_value_p(instants[ninsts - 1]);
-        instants[ninsts] = tinstant_make(value, inst->temptype, t);
+        instants[ninsts] = tinstant_make_intl(value, inst->temptype, t);
         tofree[nfree] = instants[ninsts++];
         result[nseqs++] = tcontseq_make_cut(instants, ninsts, lower_inc,
           false, interp);
@@ -3266,7 +3268,7 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
   else
   {
     Datum value = tinstant_value_p(instants[ninsts - 1]);
-    instants[ninsts++] = tinstant_make(value, seq->temptype, inter.upper);
+    instants[ninsts++] = tinstant_make_intl(value, seq->temptype, inter.upper);
   }
   result = tcontseq_make_cut(instants, ninsts, inter.lower_inc,
     inter.upper_inc, interp);
@@ -4056,7 +4058,7 @@ tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
     {
       value = strict ?
         tinstant_value_p(instants[ninsts - 1]) : tinstant_value_p(inst);
-      instants[ninsts++] = tofree[nfree++] = tinstant_make(value,
+      instants[ninsts++] = tofree[nfree++] = tinstant_make_intl(value,
         inst->temptype, t);
       break;
     }
@@ -4065,7 +4067,7 @@ tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
       if (interp == STEP)
       {
         value = tinstant_value_p(inst);
-        instants[ninsts++] = tofree[nfree++] = tinstant_make(value,
+        instants[ninsts++] = tofree[nfree++] = tinstant_make_intl(value,
            inst->temptype, t);
       }
       else
@@ -4111,7 +4113,7 @@ tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
       if (interp != LINEAR && datum_ne(tinstant_value_p(instants[ninsts - 2]),
           tinstant_value_p(instants[ninsts - 1]), basetype))
       {
-        instants[ninsts - 1] = tinstant_make(tinstant_value_p(instants[ninsts - 2]),
+        instants[ninsts - 1] = tinstant_make_intl(tinstant_value_p(instants[ninsts - 2]),
           instants[ninsts - 1]->temptype, instants[ninsts - 1]->t);
         tofree[nfree++] = instants[ninsts - 1];
       }
@@ -4231,7 +4233,7 @@ tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
     if (interp == STEP)
     {
       value = tinstant_value_p(inst);
-      instants[0] = tofree[nfree++] = tinstant_make(value, inst->temptype, t);
+      instants[0] = tofree[nfree++] = tinstant_make_intl(value, inst->temptype, t);
     }
     else
     {
@@ -4267,7 +4269,7 @@ tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
           datum_ne(tinstant_value_p(instants[ninsts - 2]),
             tinstant_value_p(instants[ninsts - 1]), basetype))
       {
-        instants[ninsts - 1] = tinstant_make(tinstant_value_p(instants[ninsts - 2]),
+        instants[ninsts - 1] = tinstant_make_intl(tinstant_value_p(instants[ninsts - 2]),
           instants[ninsts - 1]->temptype, instants[ninsts - 1]->t);
         tofree[nfree++] = instants[ninsts - 1];
       }

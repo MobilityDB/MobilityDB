@@ -2178,7 +2178,7 @@ tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
     value2 = tinstant_value_p(inst2);
     TInstant *instants[2];
     instants[0] = (TInstant *) inst1;
-    instants[1] = tinstant_make(value1, seq->temptype, inst2->t);
+    instants[1] = tinstant_make_intl(value1, seq->temptype, inst2->t);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc &&
       datum_eq(value1, value2, basetype) : false;
     result[nseqs++] = tsequence_make(instants, 2, lower_inc, upper_inc, LINEAR,
@@ -2690,7 +2690,7 @@ tsequence_segments_iter(const TSequence *seq, TSequence **result)
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq, i);
     instants[0] = inst1;
     instants[1] = (interp == LINEAR) ? inst2 :
-      tinstant_make(tinstant_value_p(inst1), seq->temptype, inst2->t);
+      tinstant_make_intl(tinstant_value_p(inst1), seq->temptype, inst2->t);
     bool upper_inc;
     if (i == seq->count - 1 && (interp == LINEAR ||
       datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype)))
@@ -3078,7 +3078,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
          * instants copy before it is freed */
         Datum tpvalue1 = tsegment_value_at_timestamptz(start1, end1,
           inst1->temptype, lower, upper, tpt1);
-        instants1[ninsts] = tofree[nfree++] = tinstant_make(tpvalue1,
+        instants1[ninsts] = tofree[nfree++] = tinstant_make_intl(tpvalue1,
           seq1->temptype, tpt1);
         instants2[ninsts++] = tofree[nfree++] = tinstant_make_free(tpvalue1,
           seq2->temptype, tpt1);
@@ -3097,7 +3097,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
       datum_ne(tinstant_value_p(instants1[ninsts - 2]),
         tinstant_value_p(instants1[ninsts - 1]), basetype1))
   {
-    instants1[ninsts - 1] = tinstant_make(tinstant_value_p(instants1[ninsts - 2]),
+    instants1[ninsts - 1] = tinstant_make_intl(tinstant_value_p(instants1[ninsts - 2]),
       instants1[ninsts - 1]->temptype, instants1[ninsts - 1]->t);
     tofree[nfree++] = instants1[ninsts - 1];
   }
@@ -3105,7 +3105,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
       datum_ne(tinstant_value_p(instants2[ninsts - 2]),
         tinstant_value_p(instants2[ninsts - 1]), basetype2))
   {
-    instants2[ninsts - 1] = tinstant_make(tinstant_value_p(instants2[ninsts - 2]),
+    instants2[ninsts - 1] = tinstant_make_intl(tinstant_value_p(instants2[ninsts - 2]),
       instants2[ninsts - 1]->temptype, instants2[ninsts - 1]->t);
     tofree[nfree++] = instants2[ninsts - 1];
   }
