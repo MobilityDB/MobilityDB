@@ -458,7 +458,7 @@ diffs classified:
 2. **The shared primitive** for tfloat (the float locator, `tnumbersegm_intersection`, the
    tfloat turning points), with every walk that uses them switching at once: comparisons,
    distances, ever/always, restrictions. Consistency across the forms of section 4 is part of
-   its witness. MobilityDB #3640, a draft: the float locators agree with the exact nearest
+   its witness. MobilityDB #3640, merged as `b8be143a79`: the float locators agree with the exact nearest
    microsecond on all 533988 float segments of the crossprobe corpus (332138 of 548989 before
    it); five expected outputs move, each row confirmed on exact rationals. Callgrind against
    master `83a67de4ea`, with about half of the segments crossing and with none: the comparisons
@@ -483,8 +483,8 @@ diffs classified:
    circular buffers never covering 50 percent above: a segment with no turning point is read in
    its middle, since the turning point functions of the geodetic within distance and of the
    circular buffers can miss a meeting inside the segment, which step 3 decides exactly.
-   #3640 rewrites the crossing
-   branch of the same walk, so the second of the two to merge rebases over the first. The planar
+   The crossing branch of the same walk
+   is #3640's, so #3650 rebases over it. The planar
    ever within distance of two temporal points, `ea_dwithin_tpoint_tpoint_exact`, reads its
    intervals closed in the same way, and follows as its own pull request.
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
