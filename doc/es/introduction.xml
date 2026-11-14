@@ -323,7 +323,7 @@ rm -rf build
 		<sect2 xml:id="testing">
 			<title>Pruebas</title>
 			<para>
-				MobilityDB utiliza <varname>ctest</varname>, el programa controlador de pruebas de CMake, para realizar pruebas. Este programa ejecutará las pruebas e informará los resultados.
+				MobilityDB utiliza <varname>ctest</varname>, el programa controlador de pruebas de CMake, para realizar pruebas. Los archivos de prueba son ejecutados por <varname>pg_regress</varname>, el programa de pruebas de regresión de PostgreSQL, como una única prueba de <varname>ctest</varname> llamada <varname>regress</varname>.
 			</para>
 			<para>
 				Para ejecutar todas las pruebas
@@ -332,17 +332,20 @@ rm -rf build
 ctest
 </programlisting>
 			<para>
-				Para ejecutar un archivo de prueba dado
+				Para ejecutar un archivo de prueba dado, la variable de entorno <varname>MOBILITYDB_TESTS</varname> indica una expresión regular, que selecciona las pruebas cuyos nombres coinciden con ella
 			</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
-ctest -R '021_tbox'
+MOBILITYDB_TESTS='^021_tbox$' ctest -R regress
 </programlisting>
 			<para>
-				Para ejecutar un conjunto de archivos de prueba determinados se pueden utilizar comodines
+				Para ejecutar un conjunto de archivos de prueba determinados, se indica la parte de sus nombres que comparten
 			</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
-ctest -R '022_*'
+MOBILITYDB_TESTS=022_ ctest -R regress
 </programlisting>
+			<para>
+				Las diferencias entre la salida de las pruebas que fallan y su salida esperada se escriben en el archivo <varname>mobilitydb/test/regress/regression.diffs</varname> del directorio de compilación.
+			</para>
 			<para>
 				Las pruebas se ejecutan en un clúster temporal de PostgreSQL en el directorio <varname>tmptest</varname> del directorio de compilación, cuyo servidor escucha en un socket de dominio Unix en un directorio corto bajo <varname>/tmp</varname>, ya que PostgreSQL no arranca cuando la ruta del socket supera los 107 bytes. Otro directorio para el clúster puede indicarse en la configuración con la variable <varname>MOBILITYDB_TEST_TMPDIR</varname>. El clúster se crea con la configuración regional C y en UTF-8, salvo que la variable <varname>MOBILITYDB_TEST_ENCODING</varname> indique otra codificación, como <varname>SQL_ASCII</varname>
 			</para>
