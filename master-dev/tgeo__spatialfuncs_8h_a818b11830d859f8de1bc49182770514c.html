@@ -135,6 +135,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_ac6195c67da17f391e19944425ebfd741.html#ac6195c67da17f391e19944425ebfd741">tgeogpointsegm_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a28e97f9c943f6a0dd7a9e8f5c38c5dd9.html#a28e97f9c943f6a0dd7a9e8f5c38c5dd9">TGEOM_TO_TGEOG</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a3b89bd63ff5147e033a6446a665777f9.html#a3b89bd63ff5147e033a6446a665777f9">TGEOMP_TO_TGEOGP</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a6ec90c7b1faaa31c220693a4b22b3b7d.html#a6ec90c7b1faaa31c220693a4b22b3b7d">tgeompointsegm_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a522b1ea70c9730183128ea4c97e9c3a4.html#a522b1ea70c9730183128ea4c97e9c3a4">tgeompointsegm_intersection</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="tgeo__spatialfuncs_8h_a818b11830d859f8de1bc49182770514c.html#a818b11830d859f8de1bc49182770514c">tgeompointsegm_meet</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__accessor_ga71a6a07594fe5a2f96a8909d7b200985.html#ga71a6a07594fe5a2f96a8909d7b200985">tpoint_get_coord</a></td></tr>
@@ -184,8 +185,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if two temporal geometry point segments over one period meet strictly inside it, decided exactly on the doubles of their ends. </p>
-<p >The difference of the two points moves linearly from <code>start1 - start2</code> to <code>end1 - end2</code>, so the points meet strictly inside the period where that difference passes through the origin: every coordinate of it changes sign strictly between the two ends, or is zero at both, and the two differences lie on one line through the origin, the cross product of each pair of their coordinates being zero (<a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a>, which reads the differences of the doubles exactly). Nothing is constructed: the meeting is the time parameter both coordinates share, as <a class="el" href="tpoint__spatialfuncs_8c_ac6195c67da17f391e19944425ebfd741.html#ac6195c67da17f391e19944425ebfd741" title="Return 1 or 2 if two temporal geography point segments intersect during the period defined by the out...">tgeogpointsegm_intersection</a> reads the geodetic one </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if two temporal geometry point segments over one period meet strictly inside it, decided exactly on the doubles of their ends (<a class="el" href="tpoint__spatialfuncs_8c_a6687145887b0ab2d82f2c35cb679c5bc.html#a6687145887b0ab2d82f2c35cb679c5bc" title="Return a coordinate of the difference of two temporal geometry point segments that changes sign stric...">pointsegm_meet_coord</a>) </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Values defining the first segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Values defining the second segment </td></tr>
