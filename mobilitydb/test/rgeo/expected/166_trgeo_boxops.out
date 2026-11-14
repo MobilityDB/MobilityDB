@@ -37,4 +37,17 @@ SELECT array_length(splitEachNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0))
             1
 (1 row)
 
+-- A square turning a quarter turn about the origin: at the middle of the
+-- segment its corner (2 2) lies at (0 2.83), so the box of the segment holds
+-- the geometry at every instant of it, not only at its ends
+WITH t(temp) AS (SELECT trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]')
+SELECT (stboxes(temp))[1] @> stbox(valueAtTimestamp(temp, '2001-01-01 12:00')),
+  (splitNStboxes(temp, 1))[1] @> stbox(valueAtTimestamp(temp, '2001-01-01 12:00')),
+  (splitEachNStboxes(temp, 1))[1] @> stbox(valueAtTimestamp(temp, '2001-01-01 12:00'))
+FROM t;
+ ?column? | ?column? | ?column? 
+----------+----------+----------
+ t        | t        | t
+(1 row)
+
 -------------------------------------------------------------------------------
