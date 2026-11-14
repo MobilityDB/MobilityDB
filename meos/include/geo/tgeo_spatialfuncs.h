@@ -166,6 +166,10 @@ extern bool tgeompointsegm_crossing(Datum start1, Datum end1, Datum start2,
 extern int tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);
+extern bool tgeogpointsegm_meet(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper);
+extern bool tgeogpointsegm_crossing(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
 extern int tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);
