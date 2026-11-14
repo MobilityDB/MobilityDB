@@ -37,7 +37,8 @@ SET(LOCAL_FILES
   460_tjsonb_topops
   462_tjsonb_posops
   464_tjsonb_aggfuncs
-  466_tjsonb_indexes
+  466_tjsonb_gist
+  467_tjsonb_spgist
   )
 
 foreach (f ${LOCAL_FILES})

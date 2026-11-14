@@ -3886,6 +3886,146 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
   }
 }
 
+/*****************************************************************************
+ * The one search for the nearest double
+ *****************************************************************************/
+
+/**
+ * @brief The side of a value against the upper midpoint of a double: the sign
+ * of the value less the midpoint from the double of bit pattern @p bits to the
+ * next one, or 2 where the side cannot tell
+ */
+typedef int (*NearestBitsSide)(uint64 bits, void *arg);
+
+/* The bit pattern of infinity, above that of every double */
+#define NEAREST_INF_BITS UINT64CONST(0x7FF0000000000000)
+
+/* True where the side @p s puts the value beyond the upper midpoint of the
+ * double of bit pattern @p bits, a tie being beyond where the last bit of
+ * that double is odd, so a tie goes to the even double */
+static inline bool
+nearest_bits_beyond_sign(int s, uint64 bits)
+{
+  return s > 0 || (s == 0 && (bits & 1) != 0);
+}
+
+/**
+ * @brief Find the bit pattern of the double nearest a nonnegative value that
+ * @p side places against midpoints, a tie going to the even double, returning
+ * false where a side it asks cannot tell or its budget runs out
+ * @details The answer is the smallest bit pattern whose upper midpoint the
+ * value does not pass, infinity standing above the largest double, whose
+ * upper midpoint is `2^1024 - 2^970`. A gallop from the candidate
+ * @p bits brackets it, its first two steps of one double, so that a
+ * candidate a neighbour or two from the answer asks no more sides than a
+ * walk, the steps then doubling, and halving the bracket finds it; a candidate whose own side cannot tell is read from its lower
+ * neighbour, which places the value below it or decides nothing. An exact
+ * side never answers 2 and a budget of 0 sets no limit, so the search always
+ * answers; a side of a filter on doubles answers 2 where it cannot tell, and
+ * its budget bounds the sides it is asked, so that the exact search behind it
+ * answers what the filter cannot
+ * @param[in] bits Bit pattern of the candidate, at most infinity's
+ * @param[in] side,arg The side and its argument
+ * @param[in] budget Largest number of sides asked, 0 for no limit
+ * @param[out] result The bit pattern of the answer where the search answers
+ */
+static inline bool
+nearest_double_search(uint64 bits, NearestBitsSide side,
+  void *arg, int budget, uint64 *result)
+{
+  int asked = 0;
+#define NEAREST_ASK(b, res) \
+  do { \
+    if (budget > 0 && asked++ >= budget) \
+      return false; \
+    int s_ = side((b), arg); \
+    if (s_ == 2) \
+      (res) = 2; \
+    else \
+      (res) = nearest_bits_beyond_sign(s_, (b)) ? 1 : 0; \
+  } while (0)
+  const uint64 max_bits = NEAREST_INF_BITS;
+  uint64 lo, hi, step = 1;
+  int beyond, moves = 0;
+  if (bits > max_bits)
+    bits = max_bits;
+  if (bits == max_bits)
+    beyond = 0;
+  else
+    NEAREST_ASK(bits, beyond);
+  if (beyond == 2)
+  {
+    /* The candidate cannot tell: below its lower midpoint the answer is at
+     * most its lower neighbour, otherwise nothing is decided */
+    if (bits == 0)
+      return false;
+    NEAREST_ASK(bits - 1, beyond);
+    if (beyond != 0)
+      return false;
+    bits -= 1;
+  }
+  if (beyond == 1)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    lo = bits;
+    while (true)
+    {
+      hi = (lo < max_bits - step) ? lo + step : max_bits;
+      if (hi == max_bits)
+        break;
+      NEAREST_ASK(hi, beyond);
+      if (beyond == 2)
+        return false;
+      if (! beyond)
+        break;
+      lo = hi;
+      if (moves++ > 0)
+        step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or below 0 */
+    hi = bits;
+    while (true)
+    {
+      if (hi == 0)
+      {
+        *result = 0;
+        return true;
+      }
+      lo = (hi > step) ? hi - step : 0;
+      NEAREST_ASK(lo, beyond);
+      if (beyond == 2)
+        return false;
+      if (beyond)
+        break;
+      if (lo == 0)
+      {
+        *result = 0;
+        return true;
+      }
+      hi = lo;
+      if (moves++ > 0)
+        step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    uint64 mid = lo + (hi - lo) / 2;
+    NEAREST_ASK(mid, beyond);
+    if (beyond == 2)
+      return false;
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef NEAREST_ASK
+  *result = hi;
+  return true;
+}
+
 /**
  * @brief Return the sign of the squared distance between two points less the
  * square of `a + b1 + b2 + b3`, or 2 where a filter on doubles cannot tell
@@ -3998,6 +4138,54 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
   return false;
 }
 
+/* The number of sides a search of a filter on doubles asks before it leaves
+ * the answer to the exact search behind it */
+#define NEAREST_FILTER_BUDGET 8
+
+/* The squared distance and the radius of #point_distance_offset_filter, and
+ * the candidate whose sides it read last */
+typedef struct
+{
+  double s, lo, lomag, r, rlo;
+  uint64 cbits;     /**< Bit pattern of the candidate, infinity's for none */
+  double c, cd;     /**< The candidate and its lower neighbour */
+  double a, a1;     /**< `r + c` split by #two_sum */
+} OffsetFilterSide;
+
+/**
+ * @brief The side of `sqrt(S) - r - rlo` against the upper midpoint of the
+ * double of bit pattern @p bits, or 2 where the filter cannot tell
+ * @details The sign of `S - (a + a1 + rlo + h)^2`, `r + c` split by #two_sum
+ * into `a + a1` and `h` half the gap from `c` to its upper neighbour, a power
+ * of two, exact for a candidate of at least 2^-900, read by
+ * #point_distance_offset_filter_sign. The upper midpoint of the lower
+ * neighbour of the candidate read last is that candidate's lower midpoint,
+ * `h` the negated half gap below it, so its split of `r + c` serves again
+ */
+static pg_attribute_always_inline int
+point_distance_offset_filter_side(uint64 bits, void *arg)
+{
+  OffsetFilterSide *f = (OffsetFilterSide *) arg;
+  if (bits + 1 == f->cbits)
+    return point_distance_offset_filter_sign(f->s, f->lo, f->lomag, f->a,
+      f->a1, f->rlo, - 0.5 * (f->c - f->cd));
+  double c, cu, cd;
+  uint64 ubits = bits + 1, dbits = bits - 1;
+  memcpy(&c, &bits, sizeof(c));
+  if (! (c >= 0x1p-900) || ! isfinite(c))
+    return 2;
+  memcpy(&cu, &ubits, sizeof(cu));
+  memcpy(&cd, &dbits, sizeof(cd));
+  if (! isfinite(cu))
+    return 2;
+  f->cbits = bits;
+  f->c = c;
+  f->cd = cd;
+  two_sum(f->r, c, &f->a, &f->a1);
+  return point_distance_offset_filter_sign(f->s, f->lo, f->lomag, f->a,
+    f->a1, f->rlo, 0.5 * (cu - c));
+}
+
 /**
  * @brief Answer the distance between two points less a radius on doubles
  * where a filter settles it, returning false where it does not
@@ -4014,10 +4202,10 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
  * the gap to its upper one: `r + c` is split by #two_sum into `a + a1`, and
  * each half gap, a power of two, is exact for a candidate of at least
  * 2^-900, so each side is the sign of `S - (a + a1 + rlo + h)^2`, `rlo` the
- * second double of the radius. The candidate moves to a neighbour while a
- * side certainly says so, at most four times. Any side the filter cannot
- * tell, which every tie is, returns false, and the exact search of
- * #point_distance_offset_exact answers
+ * second double of the radius. The search #nearest_double_search reads
+ * these sides from the candidate, asking at most #NEAREST_FILTER_BUDGET of
+ * them. Any side the filter cannot tell, which every tie is, returns false,
+ * and the exact search of #point_distance_offset_exact answers
  * @param[in] d,e Coordinate differences and the errors of their rounding
  * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r,rlo Radius as the sum of two doubles, positive and @p r below
@@ -4066,42 +4254,17 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
   two_square(r, &rx, &ry);
   double c = ((s - rx) + (lo - ry - rlo * (2.0 * r + rlo))) /
     (sqrt(s + lo) + r + rlo);
-  for (int move = 0; move < 4; move++)
-  {
-    if (! (c >= 0x1p-900) || ! isfinite(c))
-      return false;
-    uint64 bits;
-    memcpy(&bits, &c, sizeof(bits));
-    uint64 ubits = bits + 1, dbits = bits - 1;
-    double cu, cd;
-    memcpy(&cu, &ubits, sizeof(cu));
-    memcpy(&cd, &dbits, sizeof(cd));
-    if (! isfinite(cu))
-      return false;
-    double a, a1;
-    two_sum(r, c, &a, &a1);
-    int su = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
-      0.5 * (cu - c));
-    if (su == 1)
-    {
-      c = cu;
-      continue;
-    }
-    int sd = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
-      - 0.5 * (c - cd));
-    if (sd == -1)
-    {
-      c = cd;
-      continue;
-    }
-    if (su == -1 && sd == 1)
-    {
-      *result = c;
-      return true;
-    }
+  if (! (c >= 0x1p-900) || ! isfinite(c))
     return false;
-  }
-  return false;
+  OffsetFilterSide fs = {s, lo, lomag, r, rlo, NEAREST_INF_BITS, 0.0, 0.0,
+    0.0, 0.0};
+  uint64 bits, found;
+  memcpy(&bits, &c, sizeof(bits));
+  if (! nearest_double_search(bits, &point_distance_offset_filter_side, &fs,
+      NEAREST_FILTER_BUDGET, &found))
+    return false;
+  memcpy(result, &found, sizeof(double));
+  return true;
 }
 
 /**
@@ -4646,43 +4809,125 @@ point_motion_squares(const double *p0, const double *p1, int64 s0, int64 s1,
   return (c < 0) ? -1 : ((c > 0) ? 1 : 0);
 }
 
-/**
- * @brief Return true where the root of `n / d` lies beyond the midpoint from
- * the double @p c to its upper neighbour @p up, infinity standing for 2^1024,
- * a tie being beyond where the last bit of @p c is odd
- */
-static bool
-tower_wide_root_beyond(TowerWideArena *ar, const TowerWide *n,
-  const TowerWide *d, double c, double up)
+static double tower_wide_nearest_root(TowerWideArena *ar,
+  const TowerWide *n, const TowerWide *d);
+
+/*****************************************************************************
+ * The nearest double of a value read exactly
+ *****************************************************************************/
+
+/* A side read exactly, the arena its values are taken from, and whether the
+ * value searched is its negation */
+typedef struct
 {
+  TowerWideArena *ar;
+  NearestSide side;
+  const void *arg;
+  bool neg;
+} NearestExactSide;
+
+/* The side of the value, negated where it is negative, against the upper
+ * midpoint of the double of bit pattern @p bits, 2^1024 standing for the
+ * double after the largest one */
+static int
+nearest_exact_side(uint64 bits, void *arg)
+{
+  NearestExactSide *e = (NearestExactSide *) arg;
+  TowerWideArena *ar = e->ar;
+  double lo;
+  memcpy(&lo, &bits, sizeof(lo));
   TowerWideMark m = tower_wide_arena_mark(ar);
-  TowerWide *wu;
-  if (isinf(up))
+  TowerWide *up;
+  if (bits + 1 == NEAREST_INF_BITS)
   {
-    wu = tower_wide_of_int64(ar, 1);
-    wu->exp = 1024;
+    up = tower_wide_of_int64(ar, 1);
+    up->exp = 1024;
   }
   else
-    wu = tower_wide_of_double(ar, up);
-  TowerWide *mid = tower_wide_add(ar, tower_wide_of_double(ar, c), wu);
+  {
+    double u;
+    uint64 b2 = bits + 1;
+    memcpy(&u, &b2, sizeof(u));
+    up = tower_wide_of_double(ar, u);
+  }
+  TowerWide *mid = tower_wide_add(ar, tower_wide_of_double(ar, lo), up);
   if (mid->sign != 0)
     mid->exp -= 1;
-  int s = tower_wide_cmp(n, tower_wide_mul(ar, tower_wide_mul(ar, mid, mid),
-    d));
+  /* -v beyond mid is v below -mid */
+  if (e->neg)
+    mid->sign = - mid->sign;
+  int s = e->side(ar, mid, e->arg);
   tower_wide_arena_release(ar, m);
-  uint64_t bits;
+  return e->neg ? - s : s;
+}
+
+/* The double nearest a value that @p side reads exactly, its values taken
+ * from @p ar, which is returned to where it was */
+static double
+nearest_double_in(TowerWideArena *ar, double c, NearestSide side,
+  const void *arg)
+{
+  TowerWideMark m = tower_wide_arena_mark(ar);
+  int s0 = side(ar, tower_wide_zero(ar), arg);
+  tower_wide_arena_release(ar, m);
+  if (s0 == 0)
+    return 0.0;
+  NearestExactSide e = {ar, side, arg, s0 < 0};
+  c = fabs(c);
+  if (isnan(c))
+    c = DBL_MAX;
+  uint64 bits, found = 0;
   memcpy(&bits, &c, sizeof(bits));
-  return s > 0 || (s == 0 && (bits & 1) != 0);
+  /* An exact side always answers */
+  (void) nearest_double_search(bits, &nearest_exact_side, &e, 0, &found);
+  double result;
+  memcpy(&result, &found, sizeof(result));
+  return e.neg ? - result : result;
+}
+
+/**
+ * @brief Return the double nearest a value that @p side reads exactly, a tie
+ * going to the even double
+ * @details The sign of the value is read exactly at 0; a negative value is
+ * the negation of the double nearest its magnitude, which
+ * #nearest_double_search finds from the candidate @p c, each side asked in an
+ * arena of the search, whose values it forms are released after it answers.
+ * A magnitude of at least `2^1024 - 2^970`, the midpoint above the largest
+ * double, rounds to infinity
+ */
+
+double
+nearest_double_exact(double c, NearestSide side, const void *arg)
+{
+  TowerWideArena arena;
+  tower_wide_arena_init(&arena);
+  double result = nearest_double_in(&arena, c, side, arg);
+  tower_wide_arena_free(&arena);
+  return result;
+}
+
+/* A root `sqrt(n / d)`, n > 0 and d > 0 */
+typedef struct
+{
+  const TowerWide *n, *d;
+} NearestRoot;
+
+/* The sign of `sqrt(n / d) - mid`, that of `n - mid^2 d` for `mid >= 0` */
+static int
+nearest_root_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
+{
+  const NearestRoot *q = (const NearestRoot *) arg;
+  return tower_wide_cmp(q->n, tower_wide_mul(ar, tower_wide_mul(ar, mid,
+    mid), q->d));
 }
 
 /**
  * @brief Return the double nearest the square root of `n / d >= 0`, a tie
  * going to the even double
- * @details The answer is the smallest bit pattern whose upper midpoint the
- * root does not pass (#tower_wide_root_beyond): a gallop from a candidate
- * read on the leading limbs brackets it, then halving the bracket finds it, as
- * #point_segment_distance_offset_exact finds its answer
+ * @details #nearest_double_exact reads the side of the root from a candidate
+ * formed on the leading limbs of @p n and @p d, in the arena @p ar
  */
+
 static double
 tower_wide_nearest_root(TowerWideArena *ar, const TowerWide *n,
   const TowerWide *d)
@@ -4701,174 +4946,8 @@ tower_wide_nearest_root(TowerWideArena *ar, const TowerWide *n,
   double c = ldexp(sqrt(ratio), ex / 2);
   if (! (c > 0.0))
     c = 0.0;
-  if (isinf(c))
-    c = DBL_MAX;
-  uint64_t bits;
-  memcpy(&bits, &c, sizeof(bits));
-#define WD_BEYOND(bb, res) \
-  do { \
-    double cc, nn; \
-    uint64_t b1 = (bb), b2 = (bb) + 1; \
-    memcpy(&cc, &b1, sizeof(cc)); \
-    memcpy(&nn, &b2, sizeof(nn)); \
-    (res) = tower_wide_root_beyond(ar, n, d, cc, nn); \
-  } while (0)
-  uint64_t lo, hi;
-  bool beyond;
-  WD_BEYOND(bits, beyond);
-  if (beyond)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    uint64_t step = 1;
-    lo = bits;
-    const uint64_t inf_bits = 0x7FF0000000000000ULL;
-    while (true)
-    {
-      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
-      if (hi == inf_bits)
-        break;
-      WD_BEYOND(hi, beyond);
-      if (! beyond)
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    uint64_t step = 1;
-    hi = bits;
-    while (true)
-    {
-      if (hi == 0)
-        return 0.0;
-      lo = (hi > step) ? hi - step : 0;
-      WD_BEYOND(lo, beyond);
-      if (beyond)
-        break;
-      hi = lo;
-      if (lo == 0)
-        return 0.0;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    WD_BEYOND(mid, beyond);
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef WD_BEYOND
-  double result;
-  memcpy(&result, &hi, sizeof(result));
-  return result;
-}
-
-/*****************************************************************************
- * The nearest double of a value read exactly
- *****************************************************************************/
-
-/* True where the value, negated where @p neg is true, lies beyond the
- * midpoint from the double of bit pattern @p bits to the next one, a tie
- * being beyond where the last bit of that double is odd, so a tie goes to
- * the even double, as #tower_wide_root_beyond reads it */
-static bool
-nearest_bits_beyond(TowerWideArena *ar, uint64 bits, bool neg,
-  NearestSide side, const void *arg)
-{
-  double lo, up;
-  uint64_t b2 = bits + 1;
-  memcpy(&lo, &bits, sizeof(lo));
-  memcpy(&up, &b2, sizeof(up));
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  TowerWide *mid = tower_wide_add(ar, tower_wide_of_double(ar, lo),
-    tower_wide_of_double(ar, up));
-  if (mid->sign != 0)
-    mid->exp -= 1;
-  /* -v beyond mid is v below -mid */
-  if (neg)
-    mid->sign = - mid->sign;
-  int s = side(ar, mid, arg);
-  tower_wide_arena_release(ar, m);
-  if (neg)
-    s = - s;
-  return s > 0 || (s == 0 && (bits & 1) != 0);
-}
-
-/**
- * @brief Return the double nearest a value that @p side reads exactly, a tie
- * going to the even double
- * @details The sign of the value is read exactly at 0; a negative value is
- * the negation of the double nearest its magnitude. That double is the
- * smallest bit pattern whose upper midpoint the magnitude does not pass: a
- * gallop from the candidate @p c brackets it, then halving the bracket finds
- * it, as #tower_wide_nearest_root finds a root. Each side is asked in an
- * arena of the search, whose values it forms are released after it answers
- * @pre The value lies strictly between -DBL_MAX and DBL_MAX
- */
-double
-nearest_double_exact(double c, NearestSide side, const void *arg)
-{
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  int s0 = side(ar, tower_wide_zero(ar), arg);
-  if (s0 == 0)
-  {
-    tower_wide_arena_free(ar);
-    return 0.0;
-  }
-  bool neg = s0 < 0;
-  c = fabs(c);
-  if (! isfinite(c))
-    c = DBL_MAX;
-  const uint64_t max_bits = 0x7FEFFFFFFFFFFFFFULL;
-  uint64_t bits, lo, hi, step = 1;
-  memcpy(&bits, &c, sizeof(bits));
-  if (nearest_bits_beyond(ar, bits, neg, side, arg))
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    lo = bits;
-    while (true)
-    {
-      hi = (lo < max_bits - step) ? lo + step : max_bits;
-      if (hi == max_bits || ! nearest_bits_beyond(ar, hi, neg, side, arg))
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    hi = bits;
-    while (true)
-    {
-      lo = (hi > step) ? hi - step : 0;
-      if (lo == 0 || nearest_bits_beyond(ar, lo, neg, side, arg))
-        break;
-      hi = lo;
-      step *= 2;
-    }
-    /* The magnitude lies below the upper midpoint of 0 */
-    if (lo == 0 && ! nearest_bits_beyond(ar, 0, neg, side, arg))
-      hi = 0;
-  }
-  while (hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    if (nearest_bits_beyond(ar, mid, neg, side, arg))
-      lo = mid;
-    else
-      hi = mid;
-  }
-  tower_wide_arena_free(ar);
-  double result;
-  memcpy(&result, &hi, sizeof(result));
-  return neg ? - result : result;
+  NearestRoot q = {n, d};
+  return nearest_double_in(ar, c, &nearest_root_side, &q);
 }
 
 /* A quotient `n / d`, d > 0 */
@@ -8772,18 +8851,86 @@ ddb_triple3_points(const double *a, const double *b, const double *c,
   return;
 }
 
+/* The root of `n / d` that #ddb_nearest_root places, and the candidate whose
+ * residual it formed last */
+typedef struct
+{
+  DDBound n, d;
+  double dv;        /**< `d` in one double */
+  uint64 cbits;     /**< Bit pattern of the candidate, infinity's for none */
+  double c, gd;     /**< The candidate and the gap to its lower neighbour */
+  double rv, rerr;  /**< Its residual `n - c^2 d` and the bound of its error */
+} DDBRootSide;
+
+/**
+ * @brief The side of the root of `n / d` against the upper midpoint of the
+ * double of bit pattern @p bits, or 2 where the bounds cannot tell
+ * @details With `c` that double and `gu` the gap to its upper neighbour, the
+ * root passes the midpoint `c + gu / 2` exactly where the residual
+ * `n - c^2 d`, formed on two doubles with a bound on its error (#ddb_mul,
+ * #ddb_sub), exceeds `d gu (c + gu / 4)`. The upper midpoint of the lower
+ * neighbour of the candidate read last is that candidate's lower midpoint,
+ * passed where its residual exceeds `- d gd (c - gd / 4)`, `gd` the gap below
+ * it, so its residual serves again
+ */
+static pg_attribute_always_inline int
+ddb_nearest_root_side(uint64 bits, void *arg)
+{
+  DDBRootSide *f = (DDBRootSide *) arg;
+  double gap;
+  if (bits + 1 == f->cbits)
+  {
+    gap = - f->gd * (f->c - 0.25 * f->gd) * f->dv;
+  }
+  else
+  {
+    double c, cu, cd;
+    uint64 ubits = bits + 1, dbits = bits - 1;
+    memcpy(&c, &bits, sizeof(c));
+    if (! (c > 0.0 && c < DBL_MAX))
+      return 2;
+    memcpy(&cu, &ubits, sizeof(cu));
+    memcpy(&cd, &dbits, sizeof(cd));
+    if (! (cd > 0.0))
+      return 2;
+    /* The residual n - c^2 d and a bound on its error */
+    DDBound cc;
+    two_product(c, c, &cc.hi, &cc.lo);
+    cc.e = (fabs(cc.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
+    DDBound r = ddb_sub(f->n, ddb_mul(cc, f->d));
+    if (! isfinite(r.hi) || ! isfinite(r.lo) || ! isfinite(r.e))
+      return 2;
+    f->cbits = bits;
+    f->c = c;
+    f->gd = c - cd;
+    f->rv = r.hi + r.lo;
+    f->rerr = r.e + DBL_EPSILON * fabs(f->rv);
+    double gu = cu - c;
+    gap = gu * (c + 0.25 * gu) * f->dv;
+  }
+  /* The sign of the residual less the gap, its bound the error of the
+   * residual and 32 units of rounding of both magnitudes, for the rounding of
+   * the gap, of `d` and of the difference, as
+   * #point_distance_offset_filter_sign bounds its value */
+  double value = f->rv - gap;
+  double bound = f->rerr + 32.0 * DBL_EPSILON * (fabs(f->rv) + fabs(gap));
+  if (value > bound)
+    return 1;
+  if (value < - bound)
+    return -1;
+  return 2;
+}
+
 /**
  * @brief Return true and write in the last argument the double nearest the
  * root of `n / d`, `d` positive, where the bounds place the root strictly
  * inside the rounding cell of one double
  * @details The residual search of #point_distance_nearest, with `d` scaling
- * the gaps: with `c` a candidate, the root lies inside its cell exactly where
- * the residual `n - c^2 d` falls short of `d gu (c + gu / 4)` and exceeds
- * `- d gd (c - gd / 4)`, `gu` and `gd` the gaps from `c` to its upper and
- * lower neighbours. The residual is formed once per candidate on two doubles
- * with a bound on its error (#ddb_mul, #ddb_sub), and a residual beyond
- * either gap moves the candidate to that neighbour. A tie, or a root the
- * bounds cannot place, decides nothing
+ * the gaps: #nearest_double_search reads the sides #ddb_nearest_root_side
+ * forms on residuals bounded in two doubles from the candidate
+ * `sqrt(n / d)` in doubles, which rounds twice and so may be a neighbour of
+ * the answer, asking at most #NEAREST_FILTER_BUDGET of them. A tie, or a
+ * root the bounds cannot place, decides nothing
  */
 static bool
 ddb_nearest_root(DDBound n, DDBound d, double *result)
@@ -8802,53 +8949,17 @@ ddb_nearest_root(DDBound n, DDBound d, double *result)
   /* The bound of d must leave the gaps their meaning */
   if (! (d.e <= 0x1p-60 * dv))
     return false;
-  /* The quotient and the root in doubles round twice, so the candidate may
-   * be a neighbour of the answer: a few steps towards the side the residual
-   * names reach it */
   double c = sqrt((n.hi + n.lo) / dv);
-  for (int step = 0; step < 4; step++)
-  {
-    if (! (c > 0.0 && c < DBL_MAX))
-      return false;
-    uint64_t bits, ubits, dbits;
-    memcpy(&bits, &c, sizeof(bits));
-    ubits = bits + 1;
-    dbits = bits - 1;
-    double cu, cd;
-    memcpy(&cu, &ubits, sizeof(cu));
-    memcpy(&cd, &dbits, sizeof(cd));
-    if (! (cd > 0.0))
-      return false;
-    double gu = cu - c, gd = c - cd;
-    /* The residual n - c^2 d and a bound on its error */
-    DDBound cc;
-    two_product(c, c, &cc.hi, &cc.lo);
-    cc.e = (fabs(cc.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
-    DDBound r = ddb_sub(n, ddb_mul(cc, d));
-    if (! isfinite(r.hi) || ! isfinite(r.lo) || ! isfinite(r.e))
-      return false;
-    double rv = r.hi + r.lo;
-    double rerr = r.e + DBL_EPSILON * fabs(rv);
-    double up = gu * (c + 0.25 * gu) * dv, down = gd * (c - 0.25 * gd) * dv;
-    double near = (fabs(rv) + rerr) * (1.0 + 0x1p-50);
-    if (near < down * (1.0 - 0x1p-48) && near < up * (1.0 - 0x1p-48))
-    {
-      *result = c;
-      return true;
-    }
-    if ((rv - rerr) * (1.0 - 0x1p-50) > up * (1.0 + 0x1p-48))
-    {
-      c = cu;
-      continue;
-    }
-    if (- (rv + rerr) * (1.0 - 0x1p-50) > gd * c * dv * (1.0 + 0x1p-48))
-    {
-      c = cd;
-      continue;
-    }
+  if (! (c > 0.0 && c < DBL_MAX))
     return false;
-  }
-  return false;
+  DDBRootSide f = {n, d, dv, NEAREST_INF_BITS, 0.0, 0.0, 0.0, 0.0};
+  uint64 bits, found;
+  memcpy(&bits, &c, sizeof(bits));
+  if (! nearest_double_search(bits, &ddb_nearest_root_side, &f,
+      NEAREST_FILTER_BUDGET, &found))
+    return false;
+  memcpy(result, &found, sizeof(double));
+  return true;
 }
 
 /*****************************************************************************
