@@ -4312,6 +4312,24 @@ tower_wide_mul(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
   return r;
 }
 
+/* The sign of `a b - c d`, exactly: the signs of the products, then their
+ * magnitudes */
+static int
+tower_wide_product_cmp(TowerWideArena *ar, const TowerWide *a,
+  const TowerWide *b, const TowerWide *c, const TowerWide *d)
+{
+  int s1 = a->sign * b->sign, s2 = c->sign * d->sign;
+  if (s1 != s2)
+    return (s1 > s2) ? 1 : -1;
+  if (s1 == 0)
+    return 0;
+  TowerWideMark m = tower_wide_arena_mark(ar);
+  int result = s1 * tower_wide_cmp_mag(tower_wide_mul(ar, a, b),
+    tower_wide_mul(ar, c, d));
+  tower_wide_arena_release(ar, m);
+  return result;
+}
+
 /**
  * @brief Return the quotient of the 128-bit number `hi 2^64 + lo` by @p d,
  * `hi < d`, and set its remainder, from 32-bit digits (Hacker's Delight,
@@ -10926,62 +10944,87 @@ nearest_lines_side(const WideDyadic *mid, const void *arg)
 }
 
 /**
- * @brief Return true where the nearest points of two segments in 3D lie
- * inside both, setting in @p en and @p nn the values `e . n` and `n . n`, read
- * on #WideDyadic for any finite coordinates
- * @details The differences, `n = u x v` and the dot products have degree at
- * most four in the input doubles, which a #WideDyadic holds for every finite
- * input
+ * @brief Set the three coordinates of `q - p`, exactly, in @p ar
  */
-static bool
-segment_interior_wide_values(const double *a, const double *b, const double *c,
-  const double *d, WideDyadic *en, WideDyadic *nn)
+static void
+wide_diff3(TowerWideArena *ar, const double *q, const double *p,
+  TowerWide **r)
 {
-  WideDyadic u[3], v[3], e[3], n[3], x, y, t1, t2;
+  for (int k = 0; k < 3; k++)
+    r[k] = tower_wide_sub(ar, tower_wide_of_double(ar, q[k]),
+      tower_wide_of_double(ar, p[k]));
+  return;
+}
+
+/**
+ * @brief Set the cross product of two vectors of three #TowerWide, exactly,
+ * in @p ar
+ */
+static void
+wide_cross3(TowerWideArena *ar, TowerWide *const *u, TowerWide *const *v,
+  TowerWide **r)
+{
   for (int k = 0; k < 3; k++)
   {
-    WideDyadic pa, pb, pc, pd;
-    wide_dyadic_set_double(&pa, a[k]); wide_dyadic_set_double(&pb, b[k]);
-    wide_dyadic_set_double(&pc, c[k]); wide_dyadic_set_double(&pd, d[k]);
-    pa.sign = - pa.sign; pc.sign = - pc.sign;
-    wide_dyadic_add(&pb, &pa, &u[k]);
-    wide_dyadic_add(&pd, &pc, &v[k]);
-    pc.sign = - pc.sign;
-    wide_dyadic_add(&pc, &pa, &e[k]);
+    int i = (k + 1) % 3, j = (k + 2) % 3;
+    r[k] = tower_wide_sub(ar, tower_wide_mul(ar, u[i], v[j]),
+      tower_wide_mul(ar, u[j], v[i]));
   }
-  /* n = u x v, and the cross products of e with v and with u */
-  WideDyadic ev[3], eu[3];
-  const WideDyadic *lhs[3] = {u, e, e}, *rhs[3] = {v, v, u};
-  WideDyadic *out[3] = {n, ev, eu};
-  for (int w = 0; w < 3; w++)
-    for (int k = 0; k < 3; k++)
-    {
-      int i = (k + 1) % 3, j = (k + 2) % 3;
-      wide_dyadic_mul(&lhs[w][i], &rhs[w][j], &t1);
-      wide_dyadic_mul(&lhs[w][j], &rhs[w][i], &t2);
-      t2.sign = - t2.sign;
-      wide_dyadic_add(&t1, &t2, &out[w][k]);
-    }
-  /* The dot products of n with itself, with e x v, with e x u and with e */
-  WideDyadic dot[4];
-  const WideDyadic *with[4] = {n, ev, eu, e};
-  for (int w = 0; w < 4; w++)
-  {
-    dot[w].sign = 0; dot[w].len = 0; dot[w].exp = 0;
-    for (int k = 0; k < 3; k++)
-    {
-      wide_dyadic_mul(&n[k], &with[w][k], &x);
-      wide_dyadic_add(&dot[w], &x, &y);
-      dot[w] = y;
-    }
-  }
-  int ss1 = wide_dyadic_cmp(&dot[1], &dot[0]),
-    st1 = wide_dyadic_cmp(&dot[2], &dot[0]);
-  if (! SEGMENT_INSIDE(dot[0].sign, dot[1].sign, ss1, dot[2].sign, st1))
+  return;
+}
+
+/**
+ * @brief Return the dot product of two vectors of three #TowerWide, exactly,
+ * in @p ar
+ */
+static TowerWide *
+wide_dot3(TowerWideArena *ar, TowerWide *const *u, TowerWide *const *v)
+{
+  TowerWide *r = tower_wide_mul(ar, u[0], v[0]);
+  for (int k = 1; k < 3; k++)
+    r = tower_wide_add(ar, r, tower_wide_mul(ar, u[k], v[k]));
+  return r;
+}
+
+/**
+ * @brief Return true where the nearest points of two segments in 3D lie
+ * inside both, setting in @p en and @p nn the values `e . n` and `n . n`, read
+ * on #TowerWide in @p ar for any finite coordinates
+ * @details With `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v`, the
+ * nearest points lie inside both where `n . n`, `(e x v) . n` and
+ * `(e x u) . n` have the signs #SEGMENT_INSIDE reads
+ */
+static bool
+segment_interior_wide_values(TowerWideArena *ar, const double *a,
+  const double *b, const double *c, const double *d, TowerWide **en,
+  TowerWide **nn)
+{
+  TowerWide *u[3], *v[3], *e[3], *n[3], *ev[3], *eu[3];
+  wide_diff3(ar, b, a, u);
+  wide_diff3(ar, d, c, v);
+  wide_diff3(ar, c, a, e);
+  wide_cross3(ar, u, v, n);
+  wide_cross3(ar, e, v, ev);
+  wide_cross3(ar, e, u, eu);
+  const TowerWide *ds = wide_dot3(ar, ev, n), *dt = wide_dot3(ar, eu, n);
+  TowerWide *dnn = wide_dot3(ar, n, n);
+  int ss1 = tower_wide_cmp(ds, dnn), st1 = tower_wide_cmp(dt, dnn);
+  if (! SEGMENT_INSIDE(dnn->sign, ds->sign, ss1, dt->sign, st1))
     return false;
-  *nn = dot[0];
-  *en = dot[3];
+  *nn = dnn;
+  *en = wide_dot3(ar, n, e);
   return true;
+}
+
+/* A #WideDyadic of a #TowerWide, which holds as many limbs */
+static void
+wide_dyadic_of_tower(const TowerWide *a, WideDyadic *r)
+{
+  r->sign = a->sign;
+  r->len = a->len;
+  r->exp = a->exp;
+  memcpy(r->limb, a->limb, sizeof(uint64_t) * (size_t) a->len);
+  return;
 }
 
 /**
@@ -10997,7 +11040,17 @@ segment_interior_wide(const double *a, const double *b, const double *c,
   const double *d, double *result)
 {
   WideDyadic en_v, nn_v, *en = &en_v, *nn = &nn_v;
-  if (! segment_interior_wide_values(a, b, c, d, en, nn))
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
+  TowerWide *wen, *wnn;
+  bool inside = segment_interior_wide_values(&ar, a, b, c, d, &wen, &wnn);
+  if (inside)
+  {
+    wide_dyadic_of_tower(wen, en);
+    wide_dyadic_of_tower(wnn, nn);
+  }
+  tower_wide_arena_free(&ar);
+  if (! inside)
     return false;
   if (en->sign == 0)
   {
@@ -11026,10 +11079,10 @@ static inline void dbl_cross3(const double *a0, const double *a1,
  * @brief Return the sign #segment_interior_offset_sign answers where its
  * evaluation in doubles, then in pairs of doubles, decides it, and 2 otherwise
  * @details The signs placing the nearest points are read first in doubles
- * (#dbl_cross3), one known on the wrong side answering 1. The values #segment_interior_wide_values forms on #WideDyadic,
+ * (#dbl_cross3), one known on the wrong side answering 1. The values #segment_interior_wide_values forms on #TowerWide,
  * with `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v`, formed on pairs
  * of doubles carrying a bound on their error (#DDBound), as
- * #plane_point_offset_sign reads its value ahead of #WideDyadic. The nearest
+ * #plane_point_offset_sign reads its value ahead of #TowerWide. The nearest
  * points lie outside a segment, the answer 1, where one of the signs that
  * place them is known on the wrong side (#SEGMENT_INSIDE); they lie inside
  * both where all are known on the right side, and the answer is then the sign
@@ -11114,7 +11167,7 @@ segment_interior_offset_filter(const double *a, const double *b,
  * doubles, and 1 otherwise
  * @details The sign of `(e . n)^2 - r^2 (n . n)`, as #nearest_lines_side reads
  * it for a midpoint, read first in pairs of doubles
- * (#segment_interior_offset_filter) and on #WideDyadic where they cannot tell
+ * (#segment_interior_offset_filter) and on #TowerWide where they cannot tell
  * (#segment_interior_wide_values). Where the nearest points do not lie inside
  * both, an end of one of the segments is the nearest, which
  * #point_segment_offset_sign answers
@@ -11131,62 +11184,19 @@ segment_interior_offset_sign(const double *a, const double *b, const double *c,
   int sign = segment_interior_offset_filter(a, b, c, d, r);
   if (sign != 2)
     return sign;
-  WideDyadic en, nn, wr, r2;
-  if (! segment_interior_wide_values(a, b, c, d, &en, &nn))
-    return 1;
-  wide_dyadic_set_double(&wr, r);
-  wide_dyadic_mul(&wr, &wr, &r2);
-  return wide_dyadic_product_cmp(&en, &en, &r2, &nn);
-}
-
-/**
- * @brief Set the three coordinates of `q - p`, exactly
- */
-static void
-wide_diff3(const double *q, const double *p, WideDyadic *r)
-{
-  for (int k = 0; k < 3; k++)
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
+  TowerWide *en, *nn;
+  if (! segment_interior_wide_values(&ar, a, b, c, d, &en, &nn))
+    sign = 1;
+  else
   {
-    WideDyadic wq, wp;
-    wide_dyadic_set_double(&wq, q[k]);
-    wide_dyadic_set_double(&wp, p[k]);
-    wide_dyadic_sub(&wq, &wp, &r[k]);
+    const TowerWide *wr = tower_wide_of_double(&ar, r);
+    sign = tower_wide_product_cmp(&ar, en, en, tower_wide_mul(&ar, wr, wr),
+      nn);
   }
-  return;
-}
-
-/**
- * @brief Set the cross product of two vectors of three #WideDyadic, exactly
- */
-static void
-wide_cross3(const WideDyadic *u, const WideDyadic *v, WideDyadic *r)
-{
-  for (int k = 0; k < 3; k++)
-  {
-    int i = (k + 1) % 3, j = (k + 2) % 3;
-    WideDyadic t1, t2;
-    wide_dyadic_mul(&u[i], &v[j], &t1);
-    wide_dyadic_mul(&u[j], &v[i], &t2);
-    wide_dyadic_sub(&t1, &t2, &r[k]);
-  }
-  return;
-}
-
-/**
- * @brief Set the dot product of two vectors of three #WideDyadic, exactly
- */
-static void
-wide_dot3(const WideDyadic *u, const WideDyadic *v, WideDyadic *r)
-{
-  WideDyadic x, y;
-  r->sign = 0; r->len = 0; r->exp = 0;
-  for (int k = 0; k < 3; k++)
-  {
-    wide_dyadic_mul(&u[k], &v[k], &x);
-    wide_dyadic_add(r, &x, &y);
-    *r = y;
-  }
-  return;
+  tower_wide_arena_free(&ar);
+  return sign;
 }
 
 /**
@@ -11197,7 +11207,7 @@ wide_dot3(const WideDyadic *u, const WideDyadic *v, WideDyadic *r)
  * cannot tell its sign, in expansions where every difference is a double held
  * exactly (#triple_product_sign_exact), otherwise in pairs of doubles with a
  * bound on their error (#DDBound), and where that cannot tell, on
- * #WideDyadic. With
+ * #TowerWide. With
  * `a0 = b0 = c0` it is the orientation of four points: 0 exactly where they
  * are coplanar
  * @param[in] a0,a1,b0,b1,c0,c1 Points, three coordinates each
@@ -11322,13 +11332,16 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
   int sign = ddb_sign(det);
   if (sign != 0)
     return sign;
-  WideDyadic wu[3], wv[3], ww[3], wx[3], r;
-  wide_diff3(a1, a0, wu);
-  wide_diff3(b1, b0, wv);
-  wide_diff3(c1, c0, ww);
-  wide_cross3(wv, ww, wx);
-  wide_dot3(wu, wx, &r);
-  return r.sign;
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
+  TowerWide *wu[3], *wv[3], *ww[3], *wx[3];
+  wide_diff3(&ar, a1, a0, wu);
+  wide_diff3(&ar, b1, b0, wv);
+  wide_diff3(&ar, c1, c0, ww);
+  wide_cross3(&ar, wv, ww, wx);
+  sign = wide_dot3(&ar, wu, wx)->sign;
+  tower_wide_arena_free(&ar);
+  return sign;
 }
 
 /**
@@ -11584,7 +11597,7 @@ dbl_cross3(const double *a0, const double *a1, const double *b0,
  * @details The sign of `((b - a) x (c - a)) . ((x1 - x0) x (y1 - y0))`, of
  * degree four, first in doubles with a bound on its error (#dbl_cross3), then
  * in pairs of doubles with a bound on their error (#DDBound), then on
- * #WideDyadic where the bound cannot tell it
+ * #TowerWide where the bound cannot tell it
  * @param[in] a,b,c Three points spanning the plane, three coordinates each
  * @param[in] x0,x1,y0,y1 Points, three coordinates each
  * @return -1, 0 or 1
@@ -11619,15 +11632,18 @@ plane_cross_dot_sign(const double *a, const double *b, const double *c,
   int sign = ddb_sign(dot);
   if (sign != 0)
     return sign;
-  WideDyadic wu[3], wv[3], wn[3], wp[3], wq[3], wm[3], r;
-  wide_diff3(b, a, wu);
-  wide_diff3(c, a, wv);
-  wide_cross3(wu, wv, wn);
-  wide_diff3(x1, x0, wp);
-  wide_diff3(y1, y0, wq);
-  wide_cross3(wp, wq, wm);
-  wide_dot3(wn, wm, &r);
-  return r.sign;
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
+  TowerWide *wu[3], *wv[3], *wn[3], *wp[3], *wq[3], *wm[3];
+  wide_diff3(&ar, b, a, wu);
+  wide_diff3(&ar, c, a, wv);
+  wide_cross3(&ar, wu, wv, wn);
+  wide_diff3(&ar, x1, x0, wp);
+  wide_diff3(&ar, y1, y0, wq);
+  wide_cross3(&ar, wp, wq, wm);
+  sign = wide_dot3(&ar, wn, wm)->sign;
+  tower_wide_arena_free(&ar);
+  return sign;
 }
 
 /**
@@ -11637,7 +11653,7 @@ plane_cross_dot_sign(const double *a, const double *b, const double *c,
  * `(n . (p - a))^2 - d^2 (n . n)`, of degree six, first in doubles with a
  * bound on its error (#dbl_cross3), then in pairs of doubles with a bound on
  * their error (#DDBound), then as a comparison of two products of
- * #WideDyadic of degree at most four (#wide_dyadic_product_cmp)
+ * #TowerWide of degree at most four (#tower_wide_product_cmp)
  * @param[in] a,b,c Three points spanning the plane, not collinear, three
  * coordinates each
  * @param[in] p Point, three coordinates
@@ -11682,16 +11698,19 @@ plane_point_offset_sign(const double *a, const double *b, const double *c,
   int sign = ddb_sign(val);
   if (sign != 0)
     return sign;
-  WideDyadic wu[3], wv[3], ww[3], wn[3], wen, wnn, wd, wd2;
-  wide_diff3(b, a, wu);
-  wide_diff3(c, a, wv);
-  wide_diff3(p, a, ww);
-  wide_cross3(wu, wv, wn);
-  wide_dot3(wn, ww, &wen);
-  wide_dot3(wn, wn, &wnn);
-  wide_dyadic_set_double(&wd, d);
-  wide_dyadic_mul(&wd, &wd, &wd2);
-  return wide_dyadic_product_cmp(&wen, &wen, &wd2, &wnn);
+  TowerWideArena ar;
+  tower_wide_arena_init(&ar);
+  TowerWide *wu[3], *wv[3], *ww[3], *wn[3];
+  wide_diff3(&ar, b, a, wu);
+  wide_diff3(&ar, c, a, wv);
+  wide_diff3(&ar, p, a, ww);
+  wide_cross3(&ar, wu, wv, wn);
+  const TowerWide *wen = wide_dot3(&ar, wn, ww), *wnn = wide_dot3(&ar, wn, wn);
+  const TowerWide *wd = tower_wide_of_double(&ar, d);
+  sign = tower_wide_product_cmp(&ar, wen, wen, tower_wide_mul(&ar, wd, wd),
+    wnn);
+  tower_wide_arena_free(&ar);
+  return sign;
 }
 
 
