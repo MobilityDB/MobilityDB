@@ -62,8 +62,8 @@ the first move is to stop constructing the point, deciding a question about a jo
 of its links where a sign can. Here no sign can in general: `cos` and `sin` of a double are not
 rational, so whether a composed joint lies on one side of a line has no exact rational answer, and
 a question about a composed joint is decided within the band of a constructed point,
-`MEOS_GEOM_TOLERANCE + 4 * DBL_EPSILON * max|coord|`, as `geompoint_route_band` and
-`tnpoint_meeting_band` read it for the points of a route. Where the angles are multiples of a
+`MEOS_GEOM_TOLERANCE + 4 * DBL_EPSILON * max|coord|`, as `geogpoint_meeting_band` reads it for
+the points of two great circles. Where the angles are multiples of a
 quarter turn, `sin` and `cos` are exact only up to the rounding of `M_PI / 2` (its cosine is
 `6.1e-17`, not 0), so even those chains need the band.
 
