@@ -2681,6 +2681,15 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   if (tpoint_motion_exact_applies(temp1, temp2))
     return ea_dwithin_tpoint_tpoint_exact(temp1, temp2, dist, ever);
 
+  /* Two temporal geography points are within the distance 0 where they are
+   * equal, so the ever and always within at the distance 0 are the ever and
+   * always equality, which decide a meeting where the doubles of the ends
+   * prove it (#tgeogpointsegm_meet) */
+  if (dist == 0.0 && temp1->temptype == T_TGEOGPOINT &&
+      temp2->temptype == T_TGEOGPOINT)
+    return ever ? ever_eq_tgeo_tgeo(temp1, temp2) :
+      always_eq_tgeo_tgeo(temp1, temp2);
+
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

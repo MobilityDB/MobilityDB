@@ -3821,6 +3821,20 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
           return lfinfo->ever ? 1 : 0;
         }
       }
+      /* Two geography point segments meet strictly inside where the doubles
+       * of their ends prove it (#tgeogpointsegm_meet), whichever microsecond
+       * dates it, and take one point there */
+      else if (start1->temptype == T_TGEOGPOINT && ! starteq &&
+          tgeogpointsegm_meet(startvalue1, endvalue1, startvalue2, endvalue2,
+            start1->t, end1->t))
+      {
+        if (DatumGetBool(tfunc_base_base(startvalue1, startvalue1, lfinfo)) ==
+            lfinfo->ever)
+        {
+          pfree_array((void **) tofree, nfree);
+          return lfinfo->ever ? 1 : 0;
+        }
+      }
       /* If either the start values differ or the end values are equal,
        * determine whether there is a crossing */
       else if (! starteq ||
