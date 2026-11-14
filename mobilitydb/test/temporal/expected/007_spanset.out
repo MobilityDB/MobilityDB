@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- Tests for span set data type.
+-- File spanset.c
+-------------------------------------------------------------------------------
 SELECT intspanset '{[1,2),[3,4),[5,6)}';
         intspanset        
 --------------------------
@@ -43,6 +47,7 @@ SELECT tstzspanset '{[2001-01-01, 2001-01-02]';
 ERROR:  Could not parse tstzspanset value: Missing closing brace
 LINE 1: SELECT tstzspanset '{[2001-01-01, 2001-01-02]';
                            ^
+-- Output in WKT format
 SELECT asText(floatspanset '{[1.12345678, 2.123456789]}', 6);
          astext         
 ------------------------
@@ -52,6 +57,9 @@ SELECT asText(floatspanset '{[1.12345678, 2.123456789]}', 6);
 /* Errors */
 SELECT asText(floatspanset '{[1.12345678, 2.123456789]}', -6);
 ERROR:  The value cannot be negative: -6
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT spanset(ARRAY [intspan '[1,2)','[3,4)','[5,6)']);
          spanset          
 --------------------------
@@ -81,6 +89,9 @@ SELECT spanset(ARRAY [tstzspan '[2001-01-01, 2001-01-03]', '[2001-01-02,2001-01-
 ERROR:  The spans composing a span set must be increasing: [Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST], [Tue Jan 02 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]
 SELECT spanset('{}'::tstzspan[]);
 ERROR:  The input array cannot be empty
+-------------------------------------------------------------------------------
+-- Conversions
+-------------------------------------------------------------------------------
 SELECT spanset(date '2001-01-01');
           spanset           
 ----------------------------
@@ -182,6 +193,9 @@ SELECT tstzmultirange '{}'::tstzspanset;
 ERROR:  Multirange cannot be empty
 SELECT tstzmultirange '{(,)}'::tstzspanset;
 ERROR:  Range bounds cannot be infinite
+-------------------------------------------------------------------------------
+-- Accessor functions
+-------------------------------------------------------------------------------
 SELECT memSize(intspanset '{[1,2),[3,4),[5,6)}');
  memsize 
 ---------
@@ -371,109 +385,109 @@ SELECT width(floatspanset '{[1,2),[3,4),[5,6)}', true);
 SELECT duration(datespanset '{[2001-01-01,2001-01-01]}');
  duration 
 ----------
- 1 day
+ @ 1 day
 (1 row)
 
 SELECT duration(datespanset '{[2001-01-01,2001-01-02),[2001-01-02,2001-01-03),[2001-01-03,2001-01-04)}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(datespanset '{[2001-01-01,2001-01-02),[2001-01-03,2001-01-04),[2001-01-05,2001-01-06)}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(datespanset '{[2001-01-01,2001-01-01]}', true);
  duration 
 ----------
- 1 day
+ @ 1 day
 (1 row)
 
 SELECT duration(datespanset '{[2001-01-01,2001-01-02),[2001-01-02,2001-01-03),[2001-01-03,2001-01-04)}', true);
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(datespanset '{[2001-01-01,2001-01-02),[2001-01-03,2001-01-04),[2001-01-05,2001-01-06)}', true);
  duration 
 ----------
- 5 days
+ @ 5 days
 (1 row)
 
 SELECT duration(tstzspanset '{[2001-01-01,2001-01-01]}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tstzspanset '{(2001-01-01,2001-01-02),(2001-01-02,2001-01-03),(2001-01-03,2001-01-04)}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001-01-05,2001-01-06)}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tstzspanset '{[2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001-01-05,2001-01-06)}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001-01-05,2001-01-06]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tstzspanset '{[2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001-01-05,2001-01-06]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tstzspanset '{[2001-01-01,2001-01-01]}', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tstzspanset '{(2001-01-01,2001-01-02),(2001-01-02,2001-01-03),(2001-01-03,2001-01-04)}', true);
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001-01-05,2001-01-06)}', true);
  duration 
 ----------
- 5 days
+ @ 5 days
 (1 row)
 
 SELECT duration(tstzspanset '{[2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001-01-05,2001-01-06)}', true);
  duration 
 ----------
- 5 days
+ @ 5 days
 (1 row)
 
 SELECT duration(tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001-01-05,2001-01-06]}', true);
  duration 
 ----------
- 5 days
+ @ 5 days
 (1 row)
 
 SELECT duration(tstzspanset '{[2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001-01-05,2001-01-06]}', true);
  duration 
 ----------
- 5 days
+ @ 5 days
 (1 row)
 
 SELECT numSpans(intspanset '{[1,2),[3,4),[5,6)}');
@@ -746,6 +760,8 @@ SELECT spans(tstzspanset '{[2001-01-01,2001-01-02),(2001-01-03,2001-01-04),(2001
  {"[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)","(Wed Jan 03 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST)","(Fri Jan 05 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST]"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Maximum number of spans in last argument
 SELECT splitNspans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 1);
  splitnspans 
 -------------
@@ -893,6 +909,8 @@ SELECT splitNspans(tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-
 /* Errors */
 SELECT splitNspans(tstzspanset '{[2001-01-01, 2001-01-02)}', -1);
 ERROR:  The value must be strictly positive: -1
+-------------------------------------------------------------------------------
+-- Maximum number of spans in last argument
 SELECT splitEachNspans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 1);
                  spliteachnspans                 
 -------------------------------------------------
@@ -1040,6 +1058,7 @@ SELECT splitEachNspans(tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001
 /* Errors */
 SELECT splitEachNspans(tstzspanset '{[2001-01-01, 2001-01-02)}', -1);
 ERROR:  The value must be strictly positive: -1
+-------------------------------------------------------------------------------
 SELECT numDates(datespanset '{[2001-01-01,2001-01-02)}');
  numdates 
 ----------
@@ -1574,6 +1593,9 @@ SELECT hashExtended(tstzspanset '{[2001-01-01,2001-01-02]}', 1) <> hashExtended(
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT floor(floatspanset '{[1.5,2.5),[3.5,4.5),[5.5,6.5)}');
           floor           
 --------------------------
@@ -1706,3 +1728,4 @@ SELECT shiftScale(tstzspanset '{[2001-01-01,2001-01-02),(2001-01-03,2001-01-04),
  {[Mon Jan 01 00:05:00 2001 PST, Mon Jan 01 00:17:00 2001 PST), (Mon Jan 01 00:29:00 2001 PST, Mon Jan 01 00:41:00 2001 PST), (Mon Jan 01 00:53:00 2001 PST, Mon Jan 01 01:05:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------

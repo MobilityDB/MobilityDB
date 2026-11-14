@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- File span_ops.c
+-- Tests of operators that do not involve indexes for span types.
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
@@ -88,6 +92,7 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t + t2.t IS NOT N
   9801
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
@@ -178,6 +183,7 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t - t2.t IS NOT N
   9702
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
@@ -268,6 +274,7 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t * t2.t IS NOT N
     99
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intspan t2;
  min 
 -----
@@ -341,23 +348,24 @@ SELECT MIN(t1.d <-> t2.d) FROM tbl_datespan t1, tbl_datespan t2;
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzspan t2;
-   min    
-----------
- 00:46:00
+    min    
+-----------
+ @ 46 mins
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_timestamptz t2;
-   min    
-----------
- 00:46:00
+    min    
+-----------
+ @ 46 mins
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_tstzspan t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+ @ 0
 (1 row)
 
+-- The named portable form of the <-> operator tested above
 SELECT spanDistance(1, intspan '[3, 7]');
  spandistance 
 --------------
@@ -388,3 +396,4 @@ SELECT spanDistance(date '2001-01-01', datespan '[2001-01-05, 2001-01-10]');
             4
 (1 row)
 
+-------------------------------------------------------------------------------

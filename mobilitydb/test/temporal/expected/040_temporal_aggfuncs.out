@@ -47,6 +47,7 @@ ERROR:  The temporal values have different value at their common timestamp Mon J
 SELECT merge(seq) FROM (VALUES
 (tfloat '[1@2001-01-01]'),(tfloat '[2@2001-01-01]')) t(seq);
 ERROR:  The temporal values have different value at their common timestamp Mon Jan 01 00:00:00 2001 PST
+-------------------------------------------------------------------------------
 SELECT tand(temp) FROM (VALUES
 (NULL::tbool),(NULL::tbool)) t(temp);
  tand 
@@ -89,6 +90,7 @@ SELECT tcount(temp) FROM (VALUES
  {1@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tmin(temp) FROM (VALUES
 (NULL::tint),(NULL::tint)) t(temp);
  tmin 
@@ -159,6 +161,7 @@ SELECT tavg(temp) FROM (VALUES
  {1@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tmin(temp) FROM (VALUES
 (NULL::tbigint),(NULL::tbigint)) t(temp);
  tmin 
@@ -229,6 +232,7 @@ SELECT tavg(temp) FROM (VALUES
  {1@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tmin(temp) FROM (VALUES
 (NULL::tfloat),(NULL::tfloat)) t(temp);
  tmin 
@@ -313,6 +317,7 @@ SELECT tavg(temp) FROM (VALUES
  {[1e+308@Mon Jan 01 00:00:00 2001 PST, 1e+308@Tue Jan 02 00:00:00 2001 PST, 5e+307@Wed Jan 03 00:00:00 2001 PST], (0@Wed Jan 03 00:00:00 2001 PST, -1e+308@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- A sum at the bound of the integers answers, one beyond raises an error
 SELECT tsum(temp) FROM (VALUES
 ('1000000000@2001-01-01'::tint),('1147483646@2001-01-01'::tint)) t(temp);
                    tsum                    
@@ -339,6 +344,7 @@ ERROR:  bigint out of range
 SELECT tsum(temp) FROM (VALUES
 ('[-5000000000000000000@2001-01-01, -5000000000000000000@2001-01-03]'::tbigint),('[-5000000000000000000@2001-01-02, -5000000000000000000@2001-01-04]'::tbigint)) t(temp);
 ERROR:  bigint out of range
+-------------------------------------------------------------------------------
 SELECT tmin(temp) FROM (VALUES
 (NULL::ttext),(NULL::ttext)) t(temp);
  tmin 
@@ -381,6 +387,7 @@ SELECT tcount(temp) FROM (VALUES
  {1@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT extent(temp) FROM (VALUES
 ('[true@2001-01-01, false@2001-01-03, true@2001-01-05, false@2001-01-07]'::tbool),
 ('[true@2001-01-02, false@2001-01-06]'::tbool)) t(temp);
@@ -413,6 +420,7 @@ SELECT tor(temp) FROM (VALUES
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Sun Jan 07 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT extent(temp) FROM (VALUES
 ('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tint),
 ('[3@2001-01-02, 4@2001-01-06]'::tint)) t(temp);
@@ -461,6 +469,7 @@ SELECT tavg(temp) FROM (VALUES
  Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 2.5@Wed Jan 03 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST, 2.5@Sat Jan 06 00:00:00 2001 PST], (1@Sat Jan 06 00:00:00 2001 PST, 2@Sun Jan 07 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT extent(temp) FROM (VALUES
 ('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tbigint),
 ('[3@2001-01-02, 4@2001-01-06]'::tbigint)) t(temp);
@@ -509,6 +518,7 @@ SELECT tavg(temp) FROM (VALUES
  Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 2.5@Wed Jan 03 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST, 2.5@Sat Jan 06 00:00:00 2001 PST], (1@Sat Jan 06 00:00:00 2001 PST, 2@Sun Jan 07 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT extent(temp) FROM (VALUES
 ('Interp=Step;[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
 ('Interp=Step;[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
@@ -557,6 +567,7 @@ SELECT tavg(temp) FROM (VALUES
  Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 2.5@Wed Jan 03 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST, 2.5@Sat Jan 06 00:00:00 2001 PST], (1@Sat Jan 06 00:00:00 2001 PST, 2@Sun Jan 07 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT extent(temp) FROM (VALUES
 ('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
 ('[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
@@ -605,6 +616,7 @@ SELECT round(tavg(temp), 6) FROM (VALUES
  {[1@Mon Jan 01 00:00:00 2001 PST, 1.5@Tue Jan 02 00:00:00 2001 PST), [2.25@Tue Jan 02 00:00:00 2001 PST, 2.625@Wed Jan 03 00:00:00 2001 PST, 2.375@Fri Jan 05 00:00:00 2001 PST, 2.75@Sat Jan 06 00:00:00 2001 PST], (1.5@Sat Jan 06 00:00:00 2001 PST, 2@Sun Jan 07 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 /* Errors */
 SELECT tsum(temp) FROM ( VALUES
 (tfloat '[1@2001-01-01, 2@2001-01-02]'),
@@ -630,6 +642,7 @@ SELECT tsum(temp) FROM (VALUES
 ('Interp=Step;{[1@2001-01-01, 2@2001-01-03], [1@2001-01-05, 2@2001-01-07]}'::tfloat),
 ('{[3@2001-01-02, 4@2001-01-06]}'::tfloat)) t(temp);
 ERROR:  Cannot aggregate temporal values of different interpolation
+-------------------------------------------------------------------------------
 WITH temp(inst) AS (
   SELECT tint '1@2001-01-01' UNION
   SELECT tint '2@2001-01-02' UNION
@@ -707,6 +720,8 @@ SELECT appendInstant(inst ORDER BY inst) FROM temp;
  ["AA"@Mon Jan 01 00:00:00 2001 PST, "BB"@Tue Jan 02 00:00:00 2001 PST, "CC"@Wed Jan 03 00:00:00 2001 PST, "DD"@Thu Jan 04 00:00:00 2001 PST, "EE"@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
+-- Over a single row every form answers a sequence of one instant, a type
+-- with a distance and a type without alike
 SELECT appendInstant(inst), appendInstant(inst, 'step'),
   appendInstant(inst, 'step', NULL, interval '1 day')
 FROM (VALUES (tint '1@2001-01-01')) t(inst);
@@ -723,6 +738,7 @@ FROM (VALUES (ttext 'AA@2001-01-01')) t(inst);
  ["AA"@Mon Jan 01 00:00:00 2001 PST] | ["AA"@Mon Jan 01 00:00:00 2001 PST] | ["AA"@Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
+-- A type without a distance takes no maximum distance
 SELECT appendInstant(inst, 'step', 1.0, interval '1 day')
 FROM (VALUES (ttext 'AA@2001-01-01')) t(inst);
 ERROR:  function appendinstant(ttext, unknown, numeric, interval) does not exist
@@ -738,6 +754,8 @@ SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
        36168
 (1 row)
 
+-- A gap starts a sequence, and the instants appended to it after the gap
+-- count in the sequence set they build
 WITH temp(inst) AS (
   SELECT tfloat '1@2001-01-01' UNION SELECT tfloat '2@2001-01-02' UNION
   SELECT tfloat '3@2001-01-05' UNION SELECT tfloat '5@2001-01-06' UNION
@@ -777,6 +795,7 @@ SELECT numInstants(appendSequence(inst ORDER BY inst)) FROM temp;
        36900
 (1 row)
 
+-- Coverage
 WITH temp(inst) AS (
   SELECT tint(i, timestamptz '2001-01-01' + i * interval '1 day')
   FROM generate_series(1, 64) AS i )
@@ -813,6 +832,8 @@ ERROR:  Input values must be temporal instants
 SELECT appendInstant(temp, 'linear', 0.0, NULL::interval)
 FROM (VALUES (tint '1@2001-01-01'), (tint '2@2001-01-02')) t(temp);
 ERROR:  The temporal type cannot have linear interpolation
+-------------------------------------------------------------------------------
+-- Interpolation stated
 WITH temp(inst) AS (
   SELECT tint '1@2001-01-01' UNION
   SELECT tint '2@2001-01-02' UNION
@@ -926,6 +947,7 @@ SELECT numInstants(appendSequence(inst ORDER BY inst, 'discrete')) FROM temp;
        36900
 (1 row)
 
+-------------------------------------------------------------------------------
 WITH temp(inst) AS (
   SELECT tint '1@2001-01-01' UNION
   SELECT tint '2@2001-01-02' UNION
@@ -1010,6 +1032,7 @@ SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
  {["AA"@Mon Jan 01 00:00:00 2001 PST, "BB"@Tue Jan 02 00:00:00 2001 PST], ["CC"@Thu Jan 04 00:00:00 2001 PST, "DD"@Fri Jan 05 00:00:00 2001 PST], ["EE"@Sun Jan 07 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 WITH temp(k, seq) AS (
   SELECT 1, tint '[1@2001-01-01, 2@2001-01-02]' UNION
   SELECT 2, tint '[2@2001-01-02, 3@2001-01-03]' UNION
@@ -1146,6 +1169,15 @@ SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
        36168
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The combine function answers what the aggregate answers
+--
+-- A COMBINEFUNC is reached only by a parallel plan, and which rows a worker
+-- receives is not controllable, so a parallel query cannot state a
+-- deterministic expected output. The function is therefore called directly,
+-- which is what makes these the first cases to reach it at all.
+-------------------------------------------------------------------------------
 SELECT extentCombine(tstzspan '[2001-01-01,2001-01-03)',
   tstzspan '[2001-01-05,2001-01-07)');
                         extentcombine                         
@@ -1171,6 +1203,8 @@ SELECT extentCombine(NULL::tstzspan, NULL::tstzspan);
  
 (1 row)
 
+-- The temporal number extent measures a box, whose span type states what the
+-- value dimension holds, so two different ones are a refusal
 SELECT extentCombine(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])',
   tbox 'TBOXINT XT([3,4],[2001-01-03,2001-01-04])');
                                   extentcombine                                  
@@ -1198,6 +1232,10 @@ SELECT extentCombine(NULL::tbox, NULL::tbox);
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A skiplist holding more elements than its initial capacity grows its element
+-- array, and an element placed in the grown space holds no key, so the
+-- aggregate answers the same on memory an earlier aggregate released
 SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
   timestamptz '2001-01-01', timestamptz '2001-01-01' + interval '2999 minutes',
   interval '1 minute') t;
@@ -1214,16 +1252,15 @@ SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
         3000
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A direct call expands a copy of the box it is given
 DROP TABLE IF EXISTS tbl_extent_state;
 NOTICE:  table "tbl_extent_state" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_extent_state(s tstzspan, s0 tstzspan, b tbox, b0 tbox);
-CREATE TABLE
 INSERT INTO tbl_extent_state VALUES (tstzspan '[2001-01-01, 2001-01-02]',
   tstzspan '[2001-01-01, 2001-01-02]',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])');
-INSERT 0 1
 SELECT extentTransition(s, tbool 't@2001-02-01'),
   extentCombine(s, tstzspan '[2001-03-01, 2001-03-02]'),
   extentTransition(b, tfloat '100@2001-02-01'),
@@ -1242,4 +1279,4 @@ SELECT s = s0, b = b0 FROM tbl_extent_state;
 (1 row)
 
 DROP TABLE tbl_extent_state;
-DROP TABLE
+-------------------------------------------------------------------------------

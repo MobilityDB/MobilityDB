@@ -1,0 +1,369 @@
+\getenv srcdir MOBILITYDB_SOURCE_DIR
+CREATE TABLE tbl_bigint (
+    k integer PRIMARY KEY,
+    b bigint
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_bigint.data'
+COPY tbl_bigint (k, b) FROM :'filename';
+CREATE TABLE tbl_bigintset (
+    k integer PRIMARY KEY,
+    b bigintset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_bigintset.data'
+COPY tbl_bigintset (k, b) FROM :'filename';
+CREATE TABLE tbl_bigintspan (
+    k integer PRIMARY KEY,
+    b bigintspan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_bigintspan.data'
+COPY tbl_bigintspan (k, b) FROM :'filename';
+CREATE TABLE tbl_bigintspanset (
+    k integer PRIMARY KEY,
+    b bigintspanset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_bigintspanset.data'
+COPY tbl_bigintspanset (k, b) FROM :'filename';
+CREATE TABLE tbl_bool (
+    k integer PRIMARY KEY,
+    b boolean
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_bool.data'
+COPY tbl_bool (k, b) FROM :'filename';
+CREATE TABLE tbl_date (
+    k integer PRIMARY KEY,
+    d date
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_date.data'
+COPY tbl_date (k, d) FROM :'filename';
+CREATE TABLE tbl_daterange (
+    k integer PRIMARY KEY,
+    d daterange
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_daterange.data'
+COPY tbl_daterange (k, d) FROM :'filename';
+CREATE TABLE tbl_dateset (
+    k integer PRIMARY KEY,
+    d dateset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_dateset.data'
+COPY tbl_dateset (k, d) FROM :'filename';
+CREATE TABLE tbl_datespan (
+    k integer PRIMARY KEY,
+    d datespan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_datespan.data'
+COPY tbl_datespan (k, d) FROM :'filename';
+CREATE TABLE tbl_datespan_big (
+    k integer PRIMARY KEY,
+    d datespan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_datespan_big.data'
+COPY tbl_datespan_big (k, d) FROM :'filename';
+CREATE TABLE tbl_datespanset (
+    k integer PRIMARY KEY,
+    d datespanset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_datespanset.data'
+COPY tbl_datespanset (k, d) FROM :'filename';
+CREATE TABLE tbl_float (
+    k integer PRIMARY KEY,
+    f double precision
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_float.data'
+COPY tbl_float (k, f) FROM :'filename';
+CREATE TABLE tbl_floatset (
+    k integer PRIMARY KEY,
+    f floatset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_floatset.data'
+COPY tbl_floatset (k, f) FROM :'filename';
+CREATE TABLE tbl_floatspan (
+    k integer PRIMARY KEY,
+    f floatspan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_floatspan.data'
+COPY tbl_floatspan (k, f) FROM :'filename';
+CREATE TABLE tbl_floatspan_big (
+    k integer PRIMARY KEY,
+    f floatspan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_floatspan_big.data'
+COPY tbl_floatspan_big (k, f) FROM :'filename';
+CREATE TABLE tbl_floatspanset (
+    k integer PRIMARY KEY,
+    f floatspanset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_floatspanset.data'
+COPY tbl_floatspanset (k, f) FROM :'filename';
+CREATE TABLE tbl_int (
+    k integer PRIMARY KEY,
+    i integer
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_int.data'
+COPY tbl_int (k, i) FROM :'filename';
+CREATE TABLE tbl_interval (
+    k integer PRIMARY KEY,
+    i interval
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_interval.data'
+COPY tbl_interval (k, i) FROM :'filename';
+CREATE TABLE tbl_intspan (
+    k integer PRIMARY KEY,
+    i intspan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_intspan.data'
+COPY tbl_intspan (k, i) FROM :'filename';
+CREATE TABLE tbl_intspan_big (
+    k integer PRIMARY KEY,
+    i intspan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_intspan_big.data'
+COPY tbl_intspan_big (k, i) FROM :'filename';
+CREATE TABLE tbl_intspanset (
+    k integer PRIMARY KEY,
+    i intspanset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_intspanset.data'
+COPY tbl_intspanset (k, i) FROM :'filename';
+CREATE TABLE tbl_tstzset (
+    k integer PRIMARY KEY,
+    t tstzset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tstzset.data'
+COPY tbl_tstzset (k, t) FROM :'filename';
+CREATE TABLE tbl_tstzset_big (
+    k integer PRIMARY KEY,
+    t tstzset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tstzset_big.data'
+COPY tbl_tstzset_big (k, t) FROM :'filename';
+CREATE TABLE tbl_tstzspan (
+    k integer PRIMARY KEY,
+    t tstzspan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tstzspan.data'
+COPY tbl_tstzspan (k, t) FROM :'filename';
+CREATE TABLE tbl_tstzspan_big (
+    k integer PRIMARY KEY,
+    t tstzspan
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tstzspan_big.data'
+COPY tbl_tstzspan_big (k, t) FROM :'filename';
+CREATE TABLE tbl_tstzspanset (
+    k integer PRIMARY KEY,
+    t tstzspanset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tstzspanset.data'
+COPY tbl_tstzspanset (k, t) FROM :'filename';
+CREATE TABLE tbl_tstzspanset_big (
+    k integer PRIMARY KEY,
+    t tstzspanset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tstzspanset_big.data'
+COPY tbl_tstzspanset_big (k, t) FROM :'filename';
+CREATE TABLE tbl_tbool (
+    k integer PRIMARY KEY,
+    temp tbool
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool.data'
+COPY tbl_tbool (k, temp) FROM :'filename';
+CREATE TABLE tbl_tbool_big (
+    k integer PRIMARY KEY,
+    temp tbool
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_big.data'
+COPY tbl_tbool_big (k, temp) FROM :'filename';
+CREATE TABLE tbl_tbool_discseq (
+    k integer PRIMARY KEY,
+    ti tbool(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_discseq.data'
+COPY tbl_tbool_discseq (k, ti) FROM :'filename';
+CREATE TABLE tbl_tbool_inst (
+    k integer PRIMARY KEY,
+    inst tbool(Instant)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_inst.data'
+COPY tbl_tbool_inst (k, inst) FROM :'filename';
+CREATE TABLE tbl_tbool_seqset (
+    k integer PRIMARY KEY,
+    ss tbool(SequenceSet)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_seqset.data'
+COPY tbl_tbool_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tbool_seq (
+    k integer PRIMARY KEY,
+    seq tbool(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_seq.data'
+COPY tbl_tbool_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tboxfloat (
+    k integer PRIMARY KEY,
+    b tbox
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tboxfloat.data'
+COPY tbl_tboxfloat (k, b) FROM :'filename';
+CREATE TABLE tbl_tboxint (
+    k integer PRIMARY KEY,
+    b tbox
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tboxint.data'
+COPY tbl_tboxint (k, b) FROM :'filename';
+CREATE TABLE tbl_text (
+    k integer PRIMARY KEY,
+    t text
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_text.data'
+COPY tbl_text (k, t) FROM :'filename';
+CREATE TABLE tbl_textset (
+    k integer PRIMARY KEY,
+    t textset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_textset.data'
+COPY tbl_textset (k, t) FROM :'filename';
+CREATE TABLE tbl_tfloat (
+    k integer PRIMARY KEY,
+    temp tfloat
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat.data'
+COPY tbl_tfloat (k, temp) FROM :'filename';
+CREATE TABLE tbl_tfloat_big (
+    k integer PRIMARY KEY,
+    temp tfloat
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_big.data'
+COPY tbl_tfloat_big (k, temp) FROM :'filename';
+CREATE TABLE tbl_tfloat_discseq (
+    k integer PRIMARY KEY,
+    ti tfloat(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_discseq.data'
+COPY tbl_tfloat_discseq (k, ti) FROM :'filename';
+CREATE TABLE tbl_tfloat_inst (
+    k integer PRIMARY KEY,
+    inst tfloat(Instant)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_inst.data'
+COPY tbl_tfloat_inst (k, inst) FROM :'filename';
+CREATE TABLE tbl_tfloat_seqset (
+    k integer PRIMARY KEY,
+    ss tfloat(SequenceSet)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_seqset.data'
+COPY tbl_tfloat_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tfloat_seq (
+    k integer PRIMARY KEY,
+    seq tfloat(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_seq.data'
+COPY tbl_tfloat_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tfloat_step_seqset (
+    k integer PRIMARY KEY,
+    ss tfloat
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_step_seqset.data'
+COPY tbl_tfloat_step_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tfloat_step_seq (
+    k integer PRIMARY KEY,
+    seq tfloat
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_step_seq.data'
+COPY tbl_tfloat_step_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_intset (
+    k integer PRIMARY KEY,
+    i intset
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_intset.data'
+COPY tbl_intset (k, i) FROM :'filename';
+CREATE TABLE tbl_timestamptz (
+    k integer PRIMARY KEY,
+    t timestamp with time zone
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_timestamptz.data'
+COPY tbl_timestamptz (k, t) FROM :'filename';
+CREATE TABLE tbl_tint (
+    k integer PRIMARY KEY,
+    temp tint
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint.data'
+COPY tbl_tint (k, temp) FROM :'filename';
+CREATE TABLE tbl_tint_big (
+    k integer PRIMARY KEY,
+    temp tint
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_big.data'
+COPY tbl_tint_big (k, temp) FROM :'filename';
+CREATE TABLE tbl_tint_discseq (
+    k integer PRIMARY KEY,
+    ti tint(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_discseq.data'
+COPY tbl_tint_discseq (k, ti) FROM :'filename';
+CREATE TABLE tbl_tint_inst (
+    k integer PRIMARY KEY,
+    inst tint(Instant)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_inst.data'
+COPY tbl_tint_inst (k, inst) FROM :'filename';
+CREATE TABLE tbl_tint_seqset (
+    k integer PRIMARY KEY,
+    ss tint(SequenceSet)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_seqset.data'
+COPY tbl_tint_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tint_seq (
+    k integer PRIMARY KEY,
+    seq tint(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_seq.data'
+COPY tbl_tint_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tstzrange (
+    k integer PRIMARY KEY,
+    t tstzrange
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tstzrange.data'
+COPY tbl_tstzrange (k, t) FROM :'filename';
+CREATE TABLE tbl_ttext (
+    k integer PRIMARY KEY,
+    temp ttext
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext.data'
+COPY tbl_ttext (k, temp) FROM :'filename';
+CREATE TABLE tbl_ttext_big (
+    k integer PRIMARY KEY,
+    temp ttext
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_big.data'
+COPY tbl_ttext_big (k, temp) FROM :'filename';
+CREATE TABLE tbl_ttext_discseq (
+    k integer PRIMARY KEY,
+    ti ttext(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_discseq.data'
+COPY tbl_ttext_discseq (k, ti) FROM :'filename';
+CREATE TABLE tbl_ttext_inst (
+    k integer PRIMARY KEY,
+    inst ttext(Instant)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_inst.data'
+COPY tbl_ttext_inst (k, inst) FROM :'filename';
+CREATE TABLE tbl_ttext_seqset (
+    k integer PRIMARY KEY,
+    ss ttext(SequenceSet)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_seqset.data'
+COPY tbl_ttext_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_ttext_seq (
+    k integer PRIMARY KEY,
+    seq ttext(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_seq.data'
+COPY tbl_ttext_seq (k, seq) FROM :'filename';
+-- Launch the ANALYZE deamon to avoid that it is launched during the tests
+ANALYZE;
+CREATE TABLE tbl_tbigint_big (
+    k integer PRIMARY KEY,
+    temp tbigint
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbigint_big.data'
+COPY tbl_tbigint_big (k, temp) FROM :'filename';

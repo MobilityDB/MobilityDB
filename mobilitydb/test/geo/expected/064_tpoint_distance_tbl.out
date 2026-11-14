@@ -40,6 +40,7 @@ WHERE t1.temp <-> t2.temp IS NOT NULL;
  3622735.997944
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
 WHERE g <-> temp IS NOT NULL ORDER BY 1 LIMIT 10;
    round    
@@ -82,6 +83,7 @@ WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
  3731547.354944
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom t
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
  count 
@@ -292,6 +294,9 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
    148
 (1 row)
 
+-- SELECT COUNT(*) FROM tbl_tgeogpoint3D,
+-- ( SELECT * FROM tbl_geog3D LIMIT 10 ) t
+-- WHERE shortestLine(g, temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
  count 
@@ -299,3 +304,5 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
    150
 (1 row)
 
+--------------------------------------------------------
+-------------------------------------------------------------------------------

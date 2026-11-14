@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Input
+-------------------------------------------------------------------------------
 SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01';
                   tnpoint                   
 --------------------------------------------
@@ -58,6 +61,7 @@ SELECT tnpoint '  {  [  Npoint(1, 0.2)@2001-01-01 ,  Npoint ( 1 , 0.4 ) @2001-01
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Normalization
 SELECT tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]';
                                                                tnpoint                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -70,6 +74,9 @@ SELECT tnpoint'{[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1,
  {[NPoint(1,0.3)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Input/output in WKT, WKB and HexWKB formats
+-------------------------------------------------------------------------------
 SELECT asText(tnpoint 'NPoint(1, 0.123456789)@2001-01-01', 6);
                      astext                      
 -------------------------------------------------
@@ -106,6 +113,8 @@ SELECT asText(tnpoint 'Interp=Step;{[NPoint(1, 0.123456789)@2001-01-01, NPoint(1
  Interp=Step;{[NPoint(1,0.123457)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.523457)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.123457)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.723457)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.723457)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Maximum decimal digits
 SELECT tnpointFromBinary(asBinary(tnpoint 'Npoint(1, 0.5)@2001-01-01'));
              tnpointfrombinary              
 --------------------------------------------
@@ -214,6 +223,11 @@ SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-
  Interp=Step;{[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Extended forms
+-- A network point takes the SRID of the routes of the ways table, so the
+-- extended forms state it and a stated SRID is refused unless it is that one
+-------------------------------------------------------------------------------
 SELECT asEWKT(tnpoint 'Npoint(1, 0.5)@2001-01-01');
                         asewkt                        
 ------------------------------------------------------
@@ -268,16 +282,19 @@ SELECT tnpointFromEWKT('SRID=5676;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@200
  [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- The extended binary form states the SRID of the network
 SELECT asHexEWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'XDR') LIKE '%0000162C%';
  ?column? 
 ----------
  t
 (1 row)
 
+-- An SRID other than the one of the network is refused, in text and in binary
 SELECT tnpointFromEWKT('SRID=4326;Npoint(1, 0.5)@2001-01-01');
 ERROR:  The SRID of the npoint (5676) does not match the SRID of the tnpoint (4326)
 SELECT tnpointFromHexEWKB(replace(asHexEWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'XDR'), '0000162C', '000010E6'));
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
+-------------------------------------------------------------------------------
 SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01'));
              tnpointfromhexwkb              
 --------------------------------------------
@@ -386,6 +403,9 @@ SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-
  Interp=Step;{[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT tnpoint('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
                  tnpoint                  
 ------------------------------------------
@@ -413,6 +433,9 @@ SELECT tnpointSeqSet(ARRAY[tnpoint '[npoint(1,0)@2012-01-01, npoint(1,1)@2012-02
  {[NPoint(1,0)@Sun Jan 01 00:00:00 2012 PST, NPoint(1,1)@Wed Feb 01 00:00:00 2012 PST], [NPoint(2,0)@Thu Mar 01 00:00:00 2012 PST, NPoint(2,1)@Sun Apr 01 00:00:00 2012 PDT]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT tnpointInst(tnpoint 'Npoint(1, 0.5)@2001-01-01');
                 tnpointinst                 
 --------------------------------------------
@@ -539,12 +562,16 @@ SELECT round(ARRAY[]::tnpoint[], 6);
  
 (1 row)
 
+-- An array of temporal network points rounds to an array of them
 SELECT pg_typeof(round(ARRAY[tnpoint 'NPoint(1, 0.5)@2012-01-01'], 6));
  pg_typeof 
 -----------
  tnpoint[]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Append functions
+-------------------------------------------------------------------------------
 SELECT appendInstant(tnpoint 'Npoint(1, 0.5)@2001-01-01', tnpoint 'Npoint(1, 0.7)@2001-01-02');
                                       appendinstant                                       
 ------------------------------------------------------------------------------------------
@@ -569,6 +596,7 @@ SELECT appendInstant(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-0
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST, NPoint(2,0.7)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-- The box of the appended sequence holds the stretch of route of its last edge
 SELECT stbox(appendInstant(tnpoint '[Npoint(57, 0)@2001-01-01]', tnpoint 'Npoint(57, 0.75)@2001-01-02')) = stbox(tnpoint '[Npoint(57, 0)@2001-01-01, Npoint(57, 0.75)@2001-01-02]');
  ?column? 
 ----------
@@ -580,6 +608,7 @@ SELECT appendInstant(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01
 ERROR:  All network points composing a temporal sequence must have same route identifier
 SELECT appendInstant(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }', tnpoint 'Npoint(1, 0.7)@2001-01-06');
 ERROR:  All network points composing a temporal sequence must have same route identifier
+-------------------------------------------------------------------------------
 SELECT appendSequence(tnpoint '{Npoint(1, 0.2)@2001-01-01, Npoint(2, 0.4)@2001-01-02}', tnpoint '{Npoint(3, 0.6)@2001-01-03}');
                                                             appendsequence                                                            
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -595,6 +624,9 @@ SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-0
 /* Errors */
 SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]', tnpoint '[Npoint(2, 0.6)@2001-01-03]');
 ERROR:  All network points composing a temporal sequence must have same route identifier
+-------------------------------------------------------------------------------
+-- Conversion functions
+-------------------------------------------------------------------------------
 SELECT asText(round(tnpoint 'Npoint(1, 0.5)@2001-01-01'::tgeompoint, 6));
                          astext                          
 ---------------------------------------------------------
@@ -643,6 +675,7 @@ SELECT round((tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, N
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.210519)@Mon Jan 01 01:15:44.194437 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- NULL
 SELECT tgeompoint 'SRID=5676;Point(-1 -1)@2001-01-01'::tnpoint;
  tnpoint 
 ---------
@@ -670,6 +703,9 @@ SELECT tgeompoint 'SRID=5676;{[POINT(62.7866330839742 80.1435561997142)@2001-01-
 /* Errors */
 SELECT tgeompoint 'Point(-1 -1)@2001-01-01'::tnpoint;
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Accessor Functions
+-------------------------------------------------------------------------------
 SELECT tempSubtype(tnpoint 'Npoint(1, 0.5)@2001-01-01');
  tempsubtype 
 -------------
@@ -892,49 +928,49 @@ SELECT timeSpan(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02,
 SELECT duration(tnpoint 'Npoint(1, 0.5)@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tnpoint 'Npoint(1, 0.5)@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT getTimestamp(tnpoint 'Npoint(1, 0.5)@2001-01-01');
@@ -943,6 +979,9 @@ SELECT getTimestamp(tnpoint 'Npoint(1, 0.5)@2001-01-01');
  Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shift and scale functions
+-------------------------------------------------------------------------------
 SELECT shiftTime(tnpoint 'Npoint(1, 0.5)@2001-01-01', '5 min');
                  shifttime                  
 --------------------------------------------
@@ -1015,6 +1054,9 @@ SELECT scaleTime(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Mon Jan 01 06:00:00 2001 PST, NPoint(1,0.5)@Mon Jan 01 12:00:00 2001 PST], [NPoint(2,0.6)@Mon Jan 01 18:00:00 2001 PST, NPoint(2,0.6)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
 SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01' ?= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
@@ -1111,6 +1153,7 @@ SELECT npoint 'Npoint(1, 0.5)' %= tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1
  f
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01' ?<> npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
@@ -1207,6 +1250,9 @@ SELECT npoint 'Npoint(1, 0.5)' %<> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(
  f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessor functions
+-------------------------------------------------------------------------------
 SELECT startValue(tnpoint 'Npoint(1, 0.5)@2001-01-01');
   startvalue   
 ---------------
@@ -1645,6 +1691,9 @@ SELECT timestamps(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-0
  {"Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST","Wed Jan 03 00:00:00 2001 PST","Thu Jan 04 00:00:00 2001 PST","Fri Jan 05 00:00:00 2001 PST"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restriction Functions
+-------------------------------------------------------------------------------
 SELECT atValue(tnpoint 'Npoint(1, 0.5)@2001-01-01', npoint 'Npoint(1, 0.5)');
                   atvalue                   
 --------------------------------------------
@@ -1957,6 +2006,7 @@ SELECT minusTime(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02
  {(NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT beforeTimestamp(tnpoint 'Npoint(1, 0.5)@2001-01-01', timestamptz '2001-01-01');
  beforetimestamp 
 -----------------
@@ -2053,6 +2103,9 @@ SELECT afterTimestamp(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 SELECT insert(
   tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02], [Npoint(1, 0.5)@2001-01-03, Npoint(1, 0.6)@2001-01-04]}',
   tnpoint '{[Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]}');
@@ -2162,6 +2215,9 @@ SELECT deleteTime(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-0
  {(NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+-------------------------------------------------------------------------------
 SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01' = tnpoint 'Npoint(1, 0.5)@2001-01-01';
  ?column? 
 ----------
@@ -2738,6 +2794,10 @@ SELECT tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1
  t
 (1 row)
 
+-------------------------------------------------------------------------------/
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
 SELECT spans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]');
                                                               spans                                                              
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -2756,6 +2816,7 @@ SELECT splitEachNSpans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-
  {"[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]"}
 (1 row)
 
+-- A NULL operand of merge returns the other one
 SELECT merge(tnpoint 'Npoint(1, 0.5)@2001-01-01', NULL::tnpoint) = tnpoint 'Npoint(1, 0.5)@2001-01-01';
  ?column? 
 ----------
@@ -2768,5 +2829,8 @@ SELECT merge(NULL::tnpoint, tnpoint 'Npoint(1, 0.5)@2001-01-01') = tnpoint 'Npoi
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01'::tgeogpoint;
 ERROR:  Only lon/lat coordinate systems are supported

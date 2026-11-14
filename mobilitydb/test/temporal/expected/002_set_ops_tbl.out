@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- File set_ops.c
+-- Tests of operators that do not involve indexes for set types.
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t && t2.t;
  count 
 -------
@@ -28,6 +32,12 @@ SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t <@ t2.t;
     99
 (1 row)
 
+-- A RESTRICTION reduces the constant it compares against to a span, which the
+-- forms above never reach: a clause between two columns is estimated by the
+-- join estimator instead. A set whose bounding box is not a span -- a text set
+-- here, and equally a geometry, cell or pose set -- has no span to be reduced
+-- to, and the estimate falls back to the default. The ordering operators are
+-- the ones a text set declares this estimator for.
 SELECT COUNT(*) FROM tbl_textset WHERE t < textset '{"AAA", "BBB", "CCC"}';
  count 
 -------
@@ -94,6 +104,7 @@ SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t = t2.t;
     99
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
@@ -184,6 +195,7 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t + t2.t IS NOT NUL
   9801
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
@@ -274,6 +286,7 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t - t2.t IS NOT NUL
   9702
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
@@ -364,6 +377,7 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t * t2.t IS NOT NUL
     99
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intset t2;
  min 
 -----
@@ -437,23 +451,25 @@ SELECT MIN(t1.d <-> t2.d) FROM tbl_dateset t1, tbl_dateset t2;
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzset t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+ @ 0
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_timestamptz t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+ @ 0
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_tstzset t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+ @ 0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The named portable form of the <-> operator tested above
 SELECT setDistance(1, intset '{3, 7}');
  setdistance 
 -------------
@@ -484,3 +500,4 @@ SELECT setDistance(date '2001-01-01', dateset '{2001-01-05, 2001-01-10}');
            4
 (1 row)
 
+-------------------------------------------------------------------------------

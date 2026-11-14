@@ -31481,7 +31481,13 @@ lift_point_take(LiftPoint *state, double z, double m)
  * between two of them reads them along the curve that joins them. EVERY
  * vertex and every piece of the array passing through the point is read: a
  * curve may pass through one point of the plane twice at two elevations, and
- * it then determines no single one there
+ * it then determines no single one there.
+ *
+ * The point is a vertex an overlay constructs, so a vertex or a segment passes
+ * through it where it lies within the rounding of its construction, 4 epsilon
+ * of the largest coordinate of the piece and the point (#coordinate_rounding),
+ * a distance decided exactly (#point_segm_within), as #arc_ordinates_at
+ * decides it for an arc
  * @param[in] pa Point array
  * @param[in] circular True where the array reads as arcs rather than segments
  * @param[in] px,py Point
@@ -31492,12 +31498,16 @@ lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
   LiftPoint *state)
 {
   assert(pa); assert(state);
+  const double q[2] = { px, py };
+  double qbig = fmax(fabs(px), fabs(py));
   for (uint32_t i = 0; i < pa->npoints; i++)
   {
     POINT4D p;
     getPoint4d_p(pa, i, &p);
-    if (fabs(p.x - px) <= coordinate_tolerance(p.x, px) &&
-        fabs(p.y - py) <= coordinate_tolerance(p.y, py))
+    const double v[2] = { p.x, p.y };
+    double band = coordinate_rounding(fmax(qbig,
+      fmax(fabs(p.x), fabs(p.y))), 0.0);
+    if (point_segm_within(q, v, v, band))
       lift_point_take(state, p.z, p.m);
   }
 
@@ -31523,10 +31533,18 @@ lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
     POINT4D p0, p1;
     getPoint4d_p(pa, i, &p0);
     getPoint4d_p(pa, i + 1, &p1);
-    if (! point_on_segment(px, py, p0.x, p0.y, p1.x, p1.y))
+    const double s0[2] = { p0.x, p0.y }, s1[2] = { p1.x, p1.y };
+    double band = coordinate_rounding(fmax(qbig,
+      fmax(fmax(fabs(p0.x), fabs(p0.y)), fmax(fabs(p1.x), fabs(p1.y)))), 0.0);
+    /* Outside the box of the segment grown by twice the band, which the
+     * rounding of the grown sides cannot reach into, is past it: where all
+     * but a few segments end */
+    if (px < fmin(p0.x, p1.x) - 2 * band || px > fmax(p0.x, p1.x) + 2 * band ||
+        py < fmin(p0.y, p1.y) - 2 * band || py > fmax(p0.y, p1.y) + 2 * band ||
+        ! point_segm_within(q, s0, s1, band))
       continue;
-    POINT2D q = { px, py }, a = { p0.x, p0.y }, b = { p1.x, p1.y }, closest;
-    double f = (double) closest_point2d_on_segment_ratio(&q, &a, &b, &closest);
+    POINT2D pt = { px, py }, a = { p0.x, p0.y }, b = { p1.x, p1.y }, closest;
+    double f = (double) closest_point2d_on_segment_ratio(&pt, &a, &b, &closest);
     lift_point_take(state, p0.z + f * (p1.z - p0.z), p0.m + f * (p1.m - p0.m));
   }
   return;
@@ -31722,12 +31740,14 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
       state->z = state->m = 0;
       for (int k = 0; k < count; k++)
       {
-        /* The extent is grown by the tolerance the coordinates call for, so a
-         * vertex ON the boundary of one is read rather than ruled out */
+        /* The extent is grown by the band #lift_point_read reads the vertex
+         * within, so a vertex ON the boundary of one is read rather than
+         * ruled out */
         if (hasbox[k])
         {
-          double tol = fmax(coordinate_tolerance(boxes[k].xmin, boxes[k].xmax),
-            coordinate_tolerance(boxes[k].ymin, boxes[k].ymax));
+          double tol = coordinate_rounding(fmax(fmax(fabs(p.x), fabs(p.y)),
+            fmax(fmax(fabs(boxes[k].xmin), fabs(boxes[k].xmax)),
+              fmax(fabs(boxes[k].ymin), fabs(boxes[k].ymax)))), 0.0);
           if (p.x < boxes[k].xmin - tol || p.x > boxes[k].xmax + tol ||
               p.y < boxes[k].ymin - tol || p.y > boxes[k].ymax + tol)
             continue;

@@ -1,12 +1,13 @@
-COPY  tbl_geomset TO STDOUT (FORMAT BINARY);
-COPY 100
+-------------------------------------------------------------------------------
+-- Tests for the geo set data type
+-- File set.c
+-------------------------------------------------------------------------------
+-- Send/receive functions
+\copy tbl_geomset TO 'tbl_geomset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_geomset_tmp;
 NOTICE:  table "tbl_geomset_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_geomset_tmp AS TABLE tbl_geomset WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_geomset_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_geomset_tmp FROM 'tbl_geomset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
  count 
 -------
@@ -14,16 +15,11 @@ SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset_tmp t2 WHERE t1.k = t2.k AND t1
 (1 row)
 
 DROP TABLE tbl_geomset_tmp;
-DROP TABLE
-COPY  tbl_geogset TO STDOUT (FORMAT BINARY);
-COPY 100
+\copy tbl_geogset TO 'tbl_geogset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_geogset_tmp;
 NOTICE:  table "tbl_geogset_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_geogset_tmp AS TABLE tbl_geogset WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_geogset_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_geogset_tmp FROM 'tbl_geogset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
  count 
 -------
@@ -31,7 +27,7 @@ SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1
 (1 row)
 
 DROP TABLE tbl_geogset_tmp;
-DROP TABLE
+-- Input/output from/to WKT, EWKT, WKB, and HexWKB
 SELECT MAX(length(asText(g))) FROM tbl_geomset;
  max 
 -----
@@ -56,6 +52,7 @@ SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
  480
 (1 row)
 
+-- asBinary emits plain WKB (no SRID); a geography defaults to SRID 4326
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
  count 
 -------
@@ -74,6 +71,7 @@ SELECT SRID(geogsetFromBinary(asBinary(geogset '{Point(1 1), Point(2 2)}')));
  4326
 (1 row)
 
+-- asEWKB preserves the SRID
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromEWKB(asEWKB(g)) <> g;
  count 
 -------
@@ -122,12 +120,14 @@ SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexEWKB(asHexEWKB(g)) <> g;
      0
 (1 row)
 
+-- Coverage
 SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));
        astext        
 ---------------------
  {"POINT Z (1 1 1)"}
 (1 row)
 
+-- 3D round trip: Z must survive the plain (non-extended) WKB encoding
 SELECT asText(geomsetFromBinary(asBinary(geomset '{"Point(1 1 1)"}')));
        astext        
 ---------------------
@@ -140,6 +140,8 @@ SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
  {"POINT(1 1)","SRID=5676;POINT(1 1)"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Constructor
 SELECT memSize(setUnion(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
  memsize 
 ---------
@@ -167,6 +169,8 @@ SELECT geogset '{"Polygon empty", "Point(4 5)"}';
 ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT geogset '{"Polygon empty", "Point(4 5)"}';
                        ^
+-------------------------------------------------------------------------------
+-- Cast
 SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
  max 
 -----
@@ -179,15 +183,14 @@ SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST
  152
 (1 row)
 
+-- Coverage of tstzspanset_stbox_slice
 DROP TABLE IF EXISTS test;
 NOTICE:  table "test" does not exist, skipping
-DROP TABLE
 CREATE TABLE test(t) AS
 WITH test(t) AS (
   SELECT span(day, day + interval '1 hour')
   FROM generate_series(timestamptz '2001-01-01', timestamptz '2001-04-01', '1 day') AS day )
 SELECT spanset(array_agg(t)) FROM test;
-SELECT 1
 SELECT t::stbox FROM test;
                                    t                                   
 -----------------------------------------------------------------------
@@ -195,7 +198,8 @@ SELECT t::stbox FROM test;
 (1 row)
 
 DROP TABLE test;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Accessor functions
 SELECT MAX(memSize(g)) FROM tbl_geomset;
  max 
 -----
@@ -268,6 +272,8 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
    5
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
 SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
     min    
 -----------
@@ -280,6 +286,7 @@ SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
  0.027466
 (1 row)
 
+-- Rounding a set leaves the set it reads unchanged
 SELECT asText(g), asText(round(g, 2)), asText(g)
 FROM (VALUES (geomset '{"Point(1.123456789 2.987654321)", "Point(3.333333333 4.444444444)"}')) t(g);
                                 astext                                |                  astext                  |                                astext                                
@@ -294,6 +301,8 @@ FROM (VALUES (geogset '{"Point(1.123456789 2.987654321)", "Point(3.333333333 4.4
  {"POINT(1.123456789 2.987654321)", "POINT(3.333333333 4.444444444)"} | {"POINT(1.12 2.99)", "POINT(3.33 4.44)"} | {"POINT(1.123456789 2.987654321)", "POINT(3.333333333 4.444444444)"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Set_union and unnest functions
 SELECT numValues(setUnion(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
  numvalues 
 -----------
@@ -326,6 +335,8 @@ SELECT COUNT(*) FROM test2 t1, tbl_geogset t2 WHERE t1.k = t2.k AND t1.g <> t2.g
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE cmp(t1.g, t2.g) = -1;
  count 
 -------
@@ -422,12 +433,21 @@ SELECT MAX(hash(g)) FROM tbl_geogset;
  2146662600
 (1 row)
 
+-- PostGIS currently does not provide an extended hash function
+-- SELECT MAX(hashExtended(g, 1)) FROM tbl_geomset;
+-- SELECT MAX(hashExtended(g, 1)) FROM tbl_geogset;
+-------------------------------------------------------------------------------
+-- Aggregation functions
 SELECT numValues(setUnion(g)) FROM tbl_geom_point WHERE NOT ST_IsEmpty(g);
  numvalues 
 -----------
         99
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The value-and-set directions of the difference and the intersection return
+-- a set, which is what the functions behind them build
+-------------------------------------------------------------------------------
 SELECT asText(setMinus(geometry 'Point(1 1)', geomset '{"Point(2 2)"}'));
      astext     
 ----------------
@@ -464,6 +484,10 @@ SELECT asText(setIntersection(geogset '{"Point(1 1)", "Point(2 2)"}', geography 
  {"POINT(1 1)"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Distance
+-------------------------------------------------------------------------------
 SELECT round(setDistance(geometry 'Point(1 1)', geomset '{"Point(4 5)", "Point(10 10)"}')::numeric, 6);
   round   
 ----------
@@ -500,6 +524,8 @@ SELECT round(setDistance(geogset '{"Point(1 1)", "Point(2 2)"}', geography 'Poin
  0.000000
 (1 row)
 
+-------------------------------------------------------------------------------
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
 SELECT round(setDistance(geography 'Point(0 0)', geogset '{"Point(0 1)", "Point(0 2)"}')::numeric, 3);
    round    
 ------------
@@ -536,6 +562,8 @@ SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}', fal
  111195.080
 (1 row)
 
+-- A geo set casts to the collection of its values, as ST_Collect builds it from
+-- them, a set of one point answering a multipoint
 SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Point(2 2)"}'));
         st_astext        
 -------------------------
@@ -567,6 +595,9 @@ SELECT ST_AsText(geomset '{"Point(1 1)", "Point(2 2)"}'::geometry) =
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT asEWKT(geomset '{Point(1 2)}'::geogset);
           asewkt          
 --------------------------

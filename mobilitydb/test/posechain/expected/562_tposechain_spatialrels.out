@@ -1,3 +1,10 @@
+-- Ever/always spatial relationships for temporal pose chains. Every one of
+-- them converts its operands to the temporal pose the chain composes to and
+-- that one to the temporal geometry point of its position, so a chain answers
+-- exactly as that point does. The family declares the matrix its target
+-- declares: eContains/aContains and eCovers/aCovers take the geometry first
+-- only, and eTouches/aTouches have no direction between two chains.
+-- Test for NULL inputs since the functions are STRICT
 SELECT eContains(NULL::geometry, tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01');
  econtains 
 -----------
@@ -22,6 +29,10 @@ SELECT eDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', NULL::
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Every declared cell agrees with the cast written out by hand, on the
+-- default linear interpolation
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]' AS seq1,
          tposechain '[PoseChain(Pose(Point(5 5), 0.2))@2001-01-01, PoseChain(Pose(Point(7 7), 0.2))@2001-01-03]' AS seq2,
@@ -74,6 +85,10 @@ FROM t;
  t         | t          | t          | t          | t         | t         | t         | t        | t          | t          | t          | t          | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A chain is located at the pose its composition gives: the chain below has
+-- its first joint inside the square and composes to Point(10 0), outside it
+-------------------------------------------------------------------------------
 SELECT eIntersects(tposechain 'PoseChain(Pose(Point(1 1), 0), Pose(Point(9 -1), 0))@2001-01-01',
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
  eintersects 
@@ -95,6 +110,10 @@ SELECT eDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0), Pose(Point(9 -1), 0))
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A linear sequence is answered along its trajectory; the step sequence with
+-- the same instants is the control
+-------------------------------------------------------------------------------
 SELECT eIntersects(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]',
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
  eintersects 
@@ -123,6 +142,9 @@ SELECT eDwithin(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseCh
  f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Direct values on single-instant operands
+-------------------------------------------------------------------------------
 SELECT eContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
   tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01');
  econtains 
@@ -158,6 +180,10 @@ SELECT eDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01',
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Under an R-tree index the ever intersects and dwithin answer the rows a
+-- sequential scan gives, from a plan that probes the index
+-------------------------------------------------------------------------------
 CREATE FUNCTION test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
@@ -171,23 +197,16 @@ BEGIN
   RETURN false;
 END;
 $$;
-CREATE FUNCTION
 DROP TABLE IF EXISTS tbl_tposechain_rel;
 NOTICE:  table "tbl_tposechain_rel" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tposechain_rel AS
 SELECT k, tposechain(posechain(ARRAY[pose(ST_Point(k % 10, k / 10), 0),
   pose(ST_Point(1, 0), 0)]), timestamptz '2001-01-01') AS temp
 FROM generate_series(0, 99) AS k;
-SELECT 100
 CREATE INDEX tbl_tposechain_rel_rtree_idx ON tbl_tposechain_rel USING GIST(temp);
-CREATE INDEX
 ANALYZE tbl_tposechain_rel;
-ANALYZE
 SET enable_indexscan = off;
-SET
 SET enable_bitmapscan = off;
-SET
 SELECT COUNT(*) FROM tbl_tposechain_rel
 WHERE eIntersects(temp, geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))');
  count 
@@ -203,11 +222,8 @@ WHERE eDwithin(temp, geometry 'Point(5 5)', 1.5);
 (1 row)
 
 RESET enable_indexscan;
-RESET
 RESET enable_bitmapscan;
-RESET
 SET enable_seqscan = off;
-SET
 SELECT COUNT(*) FROM tbl_tposechain_rel
 WHERE eIntersects(temp, geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))');
  count 
@@ -237,8 +253,6 @@ SELECT test_probes_index('SELECT k FROM tbl_tposechain_rel '
 (1 row)
 
 RESET enable_seqscan;
-RESET
 DROP TABLE tbl_tposechain_rel;
-DROP TABLE
 DROP FUNCTION test_probes_index(text);
-DROP FUNCTION
+-------------------------------------------------------------------------------

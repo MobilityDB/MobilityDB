@@ -1,3 +1,25 @@
+-------------------------------------------------------------------------------
+-- Regression tests for the tpose ever/always spatial-rel surface
+-- (112_tpose_spatialrels.in.sql).
+--
+-- A temporal pose carries a position and an orientation, and these
+-- relationships read the position only: every function converts its pose
+-- operand(s) to a temporal geometry point through the standard
+-- tpose::tgeompoint cast and delegates to the temporal geometry point
+-- ever/always spatial relationship (070_tpoint_spatialrels.in.sql). Each
+-- block checks that the direct tpose overload agrees with the equivalent
+-- manual cast.
+--
+-- The operands below carry the DEFAULT linear interpolation, which the
+-- temporal geometry point target represents, so a sequence is answered
+-- along its trajectory. A step sequence is exercised as a control.
+--
+-- The family declares the matrix its target declares: eContains/aContains
+-- and eCovers/aCovers take the geometry first only, and eTouches/aTouches
+-- have no direction between two poses.
+--
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the functions are STRICT
 SELECT eContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.1)@2001-01-01');
  econtains 
 -----------
@@ -22,6 +44,10 @@ SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2001-01-01', NULL::geometry, 1.0);
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Every declared cell agrees with the cast written out by hand, on the
+-- default linear interpolation
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@2001-01-03]' AS seq1,
          tpose '[Pose(Point(5 5), 0.2)@2001-01-01, Pose(Point(7 7), 0.2)@2001-01-03]' AS seq2,
@@ -74,6 +100,10 @@ FROM t;
  t         | t          | t          | t          | t         | t         | t         | t        | t          | t          | t          | t          | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A linear sequence is answered along its trajectory; the step sequence with
+-- the same instants is the control
+-------------------------------------------------------------------------------
 SELECT eIntersects(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@2001-01-03]',
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
  eintersects 
@@ -102,6 +132,9 @@ SELECT eDwithin(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@
  f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Direct values on single-instant operands
+-------------------------------------------------------------------------------
 SELECT eContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
   tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
  econtains 
@@ -137,6 +170,9 @@ SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2001-01-01',
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A geodetic pose and a geography
 SELECT eIntersects(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 0)');
  eintersects 
 -------------

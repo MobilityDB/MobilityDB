@@ -206,8 +206,9 @@ if command -v pg_config >/dev/null 2>&1; then
     cmake --install build-preflight-pg >/tmp/pf_extinst.log 2>&1 \
       || sudo cmake --install build-preflight-pg >/tmp/pf_extinst.log 2>&1 \
       || { tail -15 /tmp/pf_extinst.log; false; }
-    ( cd build-preflight-pg && ctest --output-on-failure \
-        -R "^(051_stbox|052_tgeo|052_tpoint|053_tgeo_inout|053_tpoint_inout)$" ) \
+    ( cd build-preflight-pg && \
+        MOBILITYDB_TESTS="^(051_stbox|052_tgeo|052_tpoint|053_tgeo_inout|053_tpoint_inout)$" \
+        ctest --output-on-failure -R "^regress$" ) \
       >/tmp/pf_pgregress.log 2>&1 || { tail -50 /tmp/pf_pgregress.log; false; }'
 else
   echo "SKIP: extension pg_regress smoke (no pg_config / PostgreSQL dev env)"

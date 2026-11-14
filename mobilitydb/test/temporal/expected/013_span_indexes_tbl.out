@@ -1,17 +1,16 @@
+-------------------------------------------------------------------------------
+-- File span_ops.c
+-- Tests of operators for span types.
+-------------------------------------------------------------------------------
 ANALYZE tbl_tstzspan_big;
-ANALYZE
 ANALYZE tbl_tstzspanset_big;
-ANALYZE
 DROP INDEX IF EXISTS tbl_tstzspan_big_rtree_idx;
 NOTICE:  index "tbl_tstzspan_big_rtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tstzspanset_big_rtree_idx;
 NOTICE:  index "tbl_tstzspanset_big_rtree_idx" does not exist, skipping
-DROP INDEX
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tstzspan_big_rtree_idx ON tbl_tstzspan_big USING GIST(t);
-CREATE INDEX
 CREATE INDEX tbl_tstzspanset_big_rtree_idx ON tbl_tstzspanset_big USING GIST(t);
-CREATE INDEX
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-01-01';
  count 
 -------
@@ -187,23 +186,16 @@ SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t #&> tstzspan '[2001-01-01, 2001
 (1 row)
 
 DROP INDEX IF EXISTS tbl_tstzspan_big_rtree_idx;
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tstzspanset_big_rtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_tstzspan_test;
 NOTICE:  table "tbl_tstzspan_test" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tstzspan_test AS
 SELECT tstzspan '[2001-01-01,2001-01-02]';
-SELECT 1
 ANALYZE tbl_tstzspan_test;
-ANALYZE
 DELETE FROM tbl_tstzspan_test;
-DELETE 1
 INSERT INTO tbl_tstzspan_test
 SELECT NULL::tstzspan UNION SELECT NULL::tstzspan;
-INSERT 0 1
 ANALYZE tbl_tstzspan_test;
-ANALYZE
 DROP TABLE tbl_tstzspan_test;
-DROP TABLE
+-------------------------------------------------------------------------------

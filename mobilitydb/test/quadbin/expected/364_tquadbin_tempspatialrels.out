@@ -1,3 +1,19 @@
+-------------------------------------------------------------------------------
+-- Regression tests for the tquadbin temporal spatial-rel surface
+-- (364_tquadbin_tempspatialrels.in.sql).
+--
+-- Each function returns a tbool whose value at instant t is the static
+-- spatial relation applied to the boundary of the cell the value holds at t:
+-- take the boundary with cellToBoundary, cast it to tgeometry, and delegate to
+-- the temporal spatial-rel kernel of tgeometry
+-- (072_tgeo_tempspatialrels.in.sql). Each block checks that the direct tquadbin
+-- overload agrees with the equivalent manual chain.
+--
+-- The geometry operand is the boundary of one of the cells, so that the
+-- relations answer over the same ground the cells cover.
+--
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the functions are not STRICT
 SELECT tIntersects(NULL::geometry, tquadbin '480fffffffffffff@2001-01-01');
  tintersects 
 -------------
@@ -10,6 +26,9 @@ SELECT tIntersects(getValue(cellToBoundary(tquadbin '480fffffffffffff@2001-01-01
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tquadbin '{480fffffffffffff@2001-01-01, 481fffffffffffff@2001-01-02}' AS seq1,
          tquadbin '{481fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-02}' AS seq2,
@@ -40,6 +59,9 @@ FROM t;
  t        | t        | t      | t         | t         | t       | t         | t         | t       | t        | t        | t      | t         | t         | t       | t         | t         | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Direct values
+-------------------------------------------------------------------------------
 SELECT tIntersects(tquadbin '{480fffffffffffff@2001-01-01, 481fffffffffffff@2001-01-02}',
   tquadbin '{480fffffffffffff@2001-01-01, 481fffffffffffff@2001-01-02}');
                            tintersects                            
@@ -54,6 +76,10 @@ SELECT tDisjoint(tquadbin '{480fffffffffffff@2001-01-01, 481fffffffffffff@2001-0
  {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT asEWKT(tquadbin '480fffffffffffff@2001-01-01'::tgeogpoint, 6);
                       asewkt                       
 ---------------------------------------------------

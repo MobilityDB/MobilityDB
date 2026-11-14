@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Utility functions
+-------------------------------------------------------------------------------
 SELECT mobilitydbVersion() LIKE 'MobilityDB%';
  ?column? 
 ----------
@@ -10,6 +13,10 @@ SELECT left(mobilitydbFullVersion(), 10) = 'MobilityDB';
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Input/output functions
+-------------------------------------------------------------------------------
+-- Temporal instant
 SELECT tbool 'TRUE@2012-01-01 08:00:00';
              tbool              
 --------------------------------
@@ -107,6 +114,7 @@ SELECT tfloat '2@2012-01-01 08:00:00,';
 ERROR:  Could not parse tfloat value: Extraneous characters at the end
 LINE 1: SELECT tfloat '2@2012-01-01 08:00:00,';
                       ^
+-- A temporal integer holds no value at the maximum of its base type
 SELECT tint '2147483647@2012-01-01 08:00:00';
 ERROR:  integer out of range
 LINE 1: SELECT tint '2147483647@2012-01-01 08:00:00';
@@ -127,6 +135,8 @@ SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
 ERROR:  integer out of range
 LINE 1: SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
                     ^
+-------------------------------------------------------------------------------
+-- Temporal discrete sequence
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';
                                               tbool                                               
 --------------------------------------------------------------------------------------------------
@@ -224,6 +234,8 @@ SELECT tbigint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
 ERROR:  Could not parse tbigint value: Extraneous characters at the end
 LINE 1: SELECT tbigint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},'...
                        ^
+-------------------------------------------------------------------------------
+-- Temporal continuous sequence
 SELECT tbool ' [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ] ';
                                               tbool                                               
 --------------------------------------------------------------------------------------------------
@@ -345,6 +357,8 @@ SELECT ttext 'Interp=Linear;[A@2001-01-01 08:00:00,B@2001-01-01 08:05:00,C@2001-
 ERROR:  The temporal type cannot have linear interpolation
 LINE 1: SELECT ttext 'Interp=Linear;[A@2001-01-01 08:00:00,B@2001-01...
                      ^
+-------------------------------------------------------------------------------
+-- Temporal sequence set
 SELECT tbool '  { [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ],
  [ true@2001-01-01 09:00:00 , false@2001-01-01 09:05:00 , true@2001-01-01 09:06:00 ] } ';
                                                                                                 tbool                                                                                                 
@@ -484,6 +498,9 @@ LINE 1: SELECT tint 'Interp=Linear;{[1@2001-01-01 08:00:00,2@2001-01...
                     ^
 SELECT tfloatSeqSet(tfloat '{1@2001-01-01, 2@2001-01-02}', 'Discrete');
 ERROR:  The temporal sequence set cannot have discrete interpolation
+-------------------------------------------------------------------------------
+-- typmod
+-------------------------------------------------------------------------------
 SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
  format_type 
 -------------
@@ -558,6 +575,7 @@ SELECT tbool(SequenceSet) '{[true@2001-01-01, false@2001-01-02], [true@2001-01-0
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST], [t@Wed Jan 03 00:00:00 2001 PST, f@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- Coverage: Input of Boolean values
 SELECT tbool ' t @2001-01-01';
              tbool              
 --------------------------------
@@ -901,6 +919,9 @@ SELECT ttext(Sequence) '{[1@2001-01-01, 2@2001-01-02], [1@2001-01-03, 2@2001-01-
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT ttext(Sequence) '{[1@2001-01-01, 2@2001-01-02], [1@2001-01-03, 2@2001-01-04]}';
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
+-------------------------------------------------------------------------------
+-- Constructor functions
+-------------------------------------------------------------------------------
 SELECT tbool(true, timestamptz '2012-01-01 08:00:00');
              tbool              
 --------------------------------
@@ -931,6 +952,7 @@ SELECT ttext('AAA', timestamptz '2001-01-01 08:00:00');
  "AAA"@Mon Jan 01 08:00:00 2001 PST
 (1 row)
 
+-- NULL
 SELECT tbool(NULL, timestamptz '2012-01-01 08:00:00');
  tbool 
 -------
@@ -985,6 +1007,7 @@ SELECT ttext('AAA', tstzset '{2012-01-01, 2012-01-02, 2012-01-03}');
  {"AAA"@Sun Jan 01 00:00:00 2012 PST, "AAA"@Mon Jan 02 00:00:00 2012 PST, "AAA"@Tue Jan 03 00:00:00 2012 PST}
 (1 row)
 
+-- NULL
 SELECT tbool(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}');
  tbool 
 -------
@@ -1057,6 +1080,7 @@ SELECT ttext('AAA', tstzspan '[2012-01-01, 2012-01-03]');
  ["AAA"@Sun Jan 01 00:00:00 2012 PST, "AAA"@Tue Jan 03 00:00:00 2012 PST]
 (1 row)
 
+-- NULL
 SELECT tbool(NULL, tstzspan '[2012-01-01, 2012-01-03]');
  tbool 
 -------
@@ -1123,6 +1147,7 @@ SELECT ttext('AAA', tstzspanset '{[2012-01-01, 2012-01-03]}');
  {["AAA"@Sun Jan 01 00:00:00 2012 PST, "AAA"@Tue Jan 03 00:00:00 2012 PST]}
 (1 row)
 
+-- NULL
 SELECT tbool(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}');
  tbool 
 -------
@@ -1153,6 +1178,7 @@ SELECT ttext(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}');
  
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tboolSeq(ARRAY[
 tbool(true, timestamptz '2012-01-01 08:00:00'),
 tbool(true, timestamptz '2012-01-01 08:10:00'),
@@ -1228,6 +1254,7 @@ SELECT tfloatSeq(ARRAY[tfloat '1@2001-01-01', '[1@2001-01-02,1@2001-01-03]'], 'd
 ERROR:  Input values must be temporal instants
 SELECT ttextSeq(ARRAY[ttext 'AA@2001-01-01', '[BB@2001-01-02,BB@2001-01-03]'], 'discrete');
 ERROR:  Input values must be temporal instants
+-------------------------------------------------------------------------------
 SELECT tboolSeq(ARRAY[
 tbool(true, timestamptz '2012-01-01 08:00:00'),
 tbool(true, timestamptz '2012-01-01 08:10:00'),
@@ -1335,6 +1362,7 @@ SELECT tfloatSeq(ARRAY[tfloat '1@2001-01-01', '[1@2001-01-02,1@2001-01-03]']);
 ERROR:  Input values must be temporal instants
 SELECT ttextSeq(ARRAY[ttext 'AA@2001-01-01', '[BB@2001-01-02,BB@2001-01-03]']);
 ERROR:  Input values must be temporal instants
+-------------------------------------------------------------------------------
 SELECT tboolSeqSet(ARRAY[
 tboolSeq(ARRAY[
 tbool(true,  timestamptz '2012-01-01 08:00:00'),
@@ -1486,6 +1514,7 @@ SELECT tfloatSeqSet(ARRAY[tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02]', '[2
 ERROR:  The temporal values must have the same interpolation
 SELECT ttextSeqSet(ARRAY[ttext 'AA@2001-01-01', '[BB@2001-01-02,BB@2001-01-03]']);
 ERROR:  Input values must be temporal sequences
+-------------------------------------------------------------------------------
 SELECT tintSeqSetGaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03', '5@2001-01-05']);
                                                            tintseqsetgaps                                                           
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -1510,6 +1539,7 @@ SELECT tintSeqSetGaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
  {[1@Mon Jan 01 00:00:00 2001 PST], [3@Tue Jan 02 00:00:00 2001 PST, 4@Wed Jan 03 00:00:00 2001 PST], [5@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- NULL
 SELECT tintSeqSetGaps(NULL);
  tintseqsetgaps 
 ----------------
@@ -1540,6 +1570,7 @@ SELECT tbigintSeqSetGaps(ARRAY[tbigint '1@2001-01-01', '3@2001-01-02', '4@2001-0
  {[1@Mon Jan 01 00:00:00 2001 PST], [3@Tue Jan 02 00:00:00 2001 PST, 4@Wed Jan 03 00:00:00 2001 PST], [5@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- NULL
 SELECT tbigintSeqSetGaps(NULL);
  tbigintseqsetgaps 
 -------------------
@@ -1600,6 +1631,9 @@ SELECT tfloatSeqSetGaps(ARRAY[tfloat '1@2001-01-01', '3@2001-01-02', '4@2001-01-
  Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST], [3@Tue Jan 02 00:00:00 2001 PST, 4@Wed Jan 03 00:00:00 2001 PST], [5@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversion functions
+-------------------------------------------------------------------------------
 SELECT tint '1@2001-01-01'::intspan;
  intspan 
 ---------
@@ -1804,6 +1838,7 @@ SELECT tint(tfloat 'Interp=Step;{[1.5@2001-01-01, 1.5@2001-01-02], [2.5@2001-01-
  {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST], [2@Wed Jan 03 00:00:00 2001 PST, 2@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- A value truncates to an integer down to the bounds of the type
 SELECT tint(tfloat '{2147483646.5@2001-01-01, -2147483648.5@2001-01-02}');
                                         tint                                         
 -------------------------------------------------------------------------------------
@@ -1815,6 +1850,8 @@ SELECT tint(tfloat '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]');
 ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
 SELECT tint(tfloat '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}');
 ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
+-- A value outside the range of the integer type is refused, as for the base
+-- type
 SELECT tint(tfloat '2147483648@2001-01-01');
 ERROR:  integer out of range
 SELECT tint(tfloat '{1@2001-01-01, -2147483649@2001-01-02}');
@@ -1849,6 +1886,7 @@ SELECT tbigint(tfloat 'Interp=Step;{[1.5@2001-01-01, 1.5@2001-01-02], [2.5@2001-
  {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST], [2@Wed Jan 03 00:00:00 2001 PST, 2@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- A value truncates to a big integer down to the bounds of the type
 SELECT tbigint(tfloat '{9.2233720368547748e18@2001-01-01, -9223372036854775808@2001-01-02}');
                                                 tbigint                                                
 -------------------------------------------------------------------------------------------------------
@@ -1860,6 +1898,8 @@ SELECT tbigint(tfloat '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]');
 ERROR:  Cannot cast temporal float with linear interpolation to temporal big integer
 SELECT tbigint(tfloat '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}');
 ERROR:  Cannot cast temporal float with linear interpolation to temporal big integer
+-- A value outside the range of the big integer type is refused, as for the
+-- base type
 SELECT tbigint(tfloat '9223372036854775808@2001-01-01');
 ERROR:  bigint out of range
 SELECT tbigint(tfloat '{1@2001-01-01, -1e19@2001-01-02}');
@@ -1868,6 +1908,9 @@ SELECT tbigint(tfloat '-Infinity@2001-01-01');
 ERROR:  The value must be finite
 LINE 1: SELECT tbigint(tfloat '-Infinity@2001-01-01');
                               ^
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT tboolInst(tbool 't@2001-01-01');
            tboolinst            
 --------------------------------
@@ -2160,6 +2203,7 @@ SELECT tfloatInst(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5
 ERROR:  Cannot transform input value to a temporal instant
 SELECT tfloatSeq(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}');
 ERROR:  Cannot transform input value to a temporal sequence
+-- With interpolation
 SELECT tfloatSeq(tfloat '{1@2001-01-01}', 'Linear');
             tfloatseq             
 ----------------------------------
@@ -2268,6 +2312,7 @@ SELECT ttextInst(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2
 ERROR:  Cannot transform input value to a temporal instant
 SELECT ttextSeq(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}');
 ERROR:  Cannot transform input value to a temporal sequence
+-------------------------------------------------------------------------------
 SELECT setInterp(tbool 't@2001-01-01', 'discrete');
             setinterp             
 ----------------------------------
@@ -2441,6 +2486,7 @@ SELECT setInterp(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04
 ERROR:  Cannot transform input value to step interpolation
 SELECT setInterp(tfloat '[1@2001-01-01, 2@2001-01-02]', 'step');
 ERROR:  Cannot transform input value to step interpolation
+-------------------------------------------------------------------------------
 SELECT appendInstant(tbool 't@2001-01-01', tbool 't@2001-01-02');
                           appendinstant                           
 ------------------------------------------------------------------
@@ -2573,6 +2619,7 @@ SELECT appendInstant(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[C
  {["AAA"@Mon Jan 01 00:00:00 2001 PST, "BBB"@Tue Jan 02 00:00:00 2001 PST, "AAA"@Wed Jan 03 00:00:00 2001 PST], ["CCC"@Thu Jan 04 00:00:00 2001 PST, "AAA"@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-- Interpolation given
 SELECT appendInstant(tbool 't@2001-01-01', tbool 't@2001-01-02', 'discrete');
                           appendinstant                           
 ------------------------------------------------------------------
@@ -2682,6 +2729,7 @@ SELECT appendInstant(tfloat '{[1@2001-01-01, 1@2001-01-02]}', tfloat '2@2001-01-
 ERROR:  The temporal values have different value at their common timestamp Tue Jan 02 00:00:00 2001 PST
 SELECT appendInstant(tfloat '[1@2001-01-01, 2@2001-01-03]', tfloat '1@2001-01-02');
 ERROR:  Timestamps for temporal value must be increasing: Wed Jan 03 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST
+-------------------------------------------------------------------------------
 SELECT appendSequence(tfloat '{[1@2001-01-01, 1@2001-01-02)}', tfloat '[2@2001-01-02]');
                                             appendsequence                                            
 ------------------------------------------------------------------------------------------------------
@@ -2707,6 +2755,7 @@ SELECT appendSequence(tfloat '{[1@2001-01-01, 1@2001-01-03]}', tfloat '[2@2001-0
 ERROR:  Timestamps for temporal value must be increasing: Wed Jan 03 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST
 SELECT appendSequence(tfloat '{[1@2001-01-01, 1@2001-01-02]}', tfloat '[2@2001-01-02]');
 ERROR:  The temporal values have different value at their common timestamp Tue Jan 02 00:00:00 2001 PST
+-------------------------------------------------------------------------------
 SELECT merge(tbool 't@2001-01-01', tbool 't@2001-01-02');
                               merge                               
 ------------------------------------------------------------------
@@ -3183,6 +3232,7 @@ SELECT merge(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', tbigint '[2@2
 ERROR:  The temporal values cannot overlap on time: Wed Jan 03 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST
 SELECT merge(tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[1@2001-01-04, 1@2001-01-05]}', tbigint '{[2@2001-01-04, 2@2001-01-05, 1@2001-01-06],[1@2001-01-08, 1@2001-01-09]}');
 ERROR:  The temporal values cannot overlap on time: Fri Jan 05 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST
+-------------------------------------------------------------------------------
 SELECT merge(ARRAY[tint '1@2001-01-01', '1@2001-01-02']);
                               merge                               
 ------------------------------------------------------------------
@@ -3349,6 +3399,7 @@ SELECT merge(ARRAY[tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', '[2@200
 ERROR:  The temporal values cannot overlap on time: Wed Jan 03 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST
 SELECT merge(ARRAY[tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[1@2001-01-04, 1@2001-01-05]}', '{[2@2001-01-04, 2@2001-01-05, 1@2001-01-06],[1@2001-01-08, 1@2001-01-09]}']);
 ERROR:  The temporal values cannot overlap on time: Fri Jan 05 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST
+-------------------------------------------------------------------------------
 SELECT merge(tfloat '1@2001-01-01', tfloat '1@2001-01-01');
              merge              
 --------------------------------
@@ -3391,6 +3442,10 @@ SELECT merge(tfloat '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]
  {[1@Mon Jan 01 00:00:00 2001 PST, 5@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Merging step sequences that meet at a shared timestamp keeps the
+-- inclusive side's value at the seam: splitting a step sequence with
+-- atTime/minusTime at an interior timestamp and merging the pieces back
+-- together must return the original value
 SELECT tint 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]' =
   merge(atTime(tint 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]', tstzspan '[2001-01-01,2001-01-02]'),
     minusTime(tint 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]', tstzspan '[2001-01-01,2001-01-02]'));
@@ -3406,6 +3461,7 @@ SELECT valueAtTimestamp(merge(atTime(tint 'Interp=Step;[1@2001-01-01, 2@2001-01-
                 2
 (1 row)
 
+-- NULL
 SELECT merge(NULL::tfloat, NULL::tfloat);
  merge 
 -------
@@ -3418,13 +3474,12 @@ SELECT merge(tfloat '1@2001-01-01', NULL);
  1@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT merge(NULL, tfloat '1@2001-01-01');
+SELECT merge(NULL, tfloat '1@2001-01-01');/* Errors */
              merge              
 --------------------------------
  1@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-/* Errors */
 SELECT merge(tfloat '1@2001-01-01', tfloat '2@2001-01-01');
 ERROR:  The temporal values have different value at their overlapping instant Mon Jan 01 00:00:00 2001 PST
 SELECT merge(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}', tfloat '{3@2001-01-02, 3@2001-01-03, 4@2001-01-04}');
@@ -3443,6 +3498,9 @@ SELECT merge(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02]', tfloat 'Interp=S
 ERROR:  The temporal values cannot overlap on time: Tue Jan 02 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST
 SELECT merge(tfloat '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}', tfloat '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}');
 ERROR:  The temporal values cannot overlap on time: Tue Jan 02 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST
+-------------------------------------------------------------------------------
+-- Accessor functions
+-------------------------------------------------------------------------------
 SELECT tempSubtype(tbool 't@2001-01-01');
  tempsubtype 
 -------------
@@ -4768,6 +4826,7 @@ SELECT valueN(tfloat '{[1@2001-01-01, 2@2001-01-02),(2@2001-01-02, 3@2001-01-03]
        
 (1 row)
 
+-- NULL
 SELECT valueN(tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]', 4);
  valuen 
 --------
@@ -5195,6 +5254,7 @@ SELECT getTime(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@200
  {[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST], [Thu Jan 04 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Sequences meeting at an instant yield a single span
 SELECT getTime(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02), [3.5@2001-01-02, 3.5@2001-01-03]}');
                             gettime                             
 ----------------------------------------------------------------
@@ -5216,265 +5276,265 @@ SELECT getTime(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02), [3.5@2001-01-02, 3.5@2
 SELECT duration(tbool 't@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tbool '{t@2001-01-01, f@2001-01-02, t@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tbool '[t@2001-01-01, f@2001-01-02, t@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tbool '{[t@2001-01-01, f@2001-01-02, t@2001-01-03],[t@2001-01-04, t@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tint '1@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tbigint '1@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tbigint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tfloat '1.5@2001-01-01', true);
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(ttext 'AAA@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]', true);
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}', true);
  duration 
 ----------
- 4 days
+ @ 4 days
 (1 row)
 
 SELECT duration(tbool 't@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tbool '{t@2001-01-01, f@2001-01-02, t@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tbool '[t@2001-01-01, f@2001-01-02, t@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tbool '{[t@2001-01-01, f@2001-01-02, t@2001-01-03],[t@2001-01-04, t@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tint '1@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tbigint '1@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tbigint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tfloat '1.5@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT duration(ttext 'AAA@2001-01-01');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}');
  duration 
 ----------
- 00:00:00
+ @ 0
 (1 row)
 
 SELECT duration(ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]');
  duration 
 ----------
- 2 days
+ @ 2 days
 (1 row)
 
 SELECT duration(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}');
  duration 
 ----------
- 3 days
+ @ 3 days
 (1 row)
 
 SELECT timeSpan(tbool 't@2001-01-01');
@@ -5960,6 +6020,7 @@ SELECT sequenceN(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2
  ["AAA"@Mon Jan 01 00:00:00 2001 PST, "BBB"@Tue Jan 02 00:00:00 2001 PST, "AAA"@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- NULL
 SELECT sequenceN(tbool '[t@2001-01-01, f@2001-01-02, t@2001-01-03]', 1);
                                             sequencen                                             
 --------------------------------------------------------------------------------------------------
@@ -6793,6 +6854,7 @@ SELECT instantN(tfloat '{[1@2001-01-01, 2@2001-01-02),(2@2001-01-02, 3@2001-01-0
  
 (1 row)
 
+-- NULL
 SELECT instantN(tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]', 4);
  instantn 
 ----------
@@ -7489,6 +7551,7 @@ SELECT timestampN(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@
  Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- NULL
 SELECT timestampN(tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]', 4);
  timestampn 
 ------------
@@ -7711,6 +7774,9 @@ SELECT segmentMinDuration(tfloat '{(1@2001-01-01, 2@2001-01-02, 3@2001-01-05), [
  {(t@Mon Jan 01 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST), [t@Sun Jan 07 00:00:00 2001 PST, t@Mon Jan 08 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shift and scale functions
+-------------------------------------------------------------------------------
 SELECT shiftValue(tfloat '{1@2001-01-01}', 1);
             shiftvalue            
 ----------------------------------
@@ -8167,9 +8233,12 @@ SELECT shiftScaleTime(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[
 
 /* Errors */
 SELECT scaleTime(tfloat '1@2001-01-01', '0');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
 SELECT scaleTime(tfloat '1@2001-01-01', '-1 day');
-ERROR:  The interval must be positive: -1 days
+ERROR:  The interval must be positive: @ 1 day ago
+-------------------------------------------------------------------------------
+-- tsample and tprecision
+-------------------------------------------------------------------------------
 SELECT tsample(tbool '[True@2001-01-01, False@2001-01-02]', interval '12 hours',
 timestamptz '2001-01-01');
                                              tsample                                              
@@ -8201,6 +8270,7 @@ SELECT round(tsample(tfloat '[1@2001-01-01 00:00:00, 2@2001-01-01 12:00:00,
  {1@Mon Jan 01 00:00:00 2001 PST, 2.5@Tue Jan 02 00:00:00 2001 PST, 4@Wed Jan 03 00:00:00 2001 PST, 5@Thu Jan 04 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tprecision(tfloat '{1@2001-01-01 00:00:00, 2@2001-01-01 12:00:00,
 3@2001-01-02 12:00:00, 4@2001-01-03 00:00:00, 5@2001-01-04 00:00:00,
 6@2001-01-04 12:00:00}', '1 day', '2001-01-01');
@@ -8217,6 +8287,9 @@ SELECT round(tprecision(tfloat 'Interp=step;[1@2001-01-01 00:00:00, 2@2001-01-01
  Interp=Step;[1.5@Mon Jan 01 00:00:00 2001 PST, 2.5@Tue Jan 02 00:00:00 2001 PST, 4@Wed Jan 03 00:00:00 2001 PST, 5@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
+-- A bin starting where an exclusive upper bound ends holds no instant of the
+-- sequence, so the result covers the period of its argument and no more. The
+-- closed twin states the bin the exclusive one leaves out.
 SELECT tprecision(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09)', '1 day', '2001-01-01');
                                                                 tprecision                                                                
 ------------------------------------------------------------------------------------------------------------------------------------------
@@ -8229,12 +8302,16 @@ SELECT tprecision(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09]', '1 day', 
  [1.5@Mon Jan 01 00:00:00 2001 PST, 4.5@Thu Jan 04 00:00:00 2001 PST, 4.5@Fri Jan 05 00:00:00 2001 PST, 1.5@Mon Jan 08 00:00:00 2001 PST, 1@Tue Jan 09 00:00:00 2001 PST]
 (1 row)
 
+-- A bin can start before the sequence does, which is every bin holding a
+-- discrete sequence whose instants sit inside it
 SELECT tprecision(tint '{54@2001-02-27 16:21:00, 52@2001-02-27 16:29:00}', '15 minutes', '2001-01-01');
             tprecision             
 -----------------------------------
  {53@Tue Feb 27 16:15:00 2001 PST}
 (1 row)
 
+-- A big integer answers the bin average as its integer twin does, the two named
+-- side by side because the average is a float neither integer type carries
 SELECT tprecision(tint '[-4@2001-01-01, -4@2001-01-03]', interval '1 day');
                                    tprecision                                   
 --------------------------------------------------------------------------------
@@ -8253,6 +8330,8 @@ SELECT tprecision(tbigint '{54@2001-02-27 16:21:00, 52@2001-02-27 16:29:00}', '1
  {53@Tue Feb 27 16:15:00 2001 PST}
 (1 row)
 
+-- The result is a temporal float for every subtype, so the functions of a
+-- temporal float read its averages, an instant included
 SELECT pg_typeof(tprecision(tint '5@2001-01-01 10:00', '1 day')),
   maxValue(tprecision(tint '5@2001-01-01 10:00', '1 day'));
  pg_typeof | maxvalue 
@@ -8278,17 +8357,19 @@ SELECT maxValue(tprecision(tbigint '[1@2001-01-01 00:00, 2@2001-01-01 00:05, 2@2
         2
 (1 row)
 
+-- Which bin ends on the bound follows from the bin width, so the containment
+-- holds over a sweep of widths rather than at one of them
 SELECT d, getTime(tprecision(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09)', d, '2001-01-01'))
   <@ getTime(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09)') AS covered
 FROM (VALUES (interval '1 day'), (interval '2 days'), (interval '4 days'),
   (interval '8 days'), (interval '12 hours')) AS t(d) ORDER BY d;
-    d     | covered 
-----------+---------
- 12:00:00 | t
- 1 day    | t
- 2 days   | t
- 4 days   | t
- 8 days   | t
+     d      | covered 
+------------+---------
+ @ 12 hours | t
+ @ 1 day    | t
+ @ 2 days   | t
+ @ 4 days   | t
+ @ 8 days   | t
 (5 rows)
 
 SELECT round(tprecision(tfloat'[1@2001-01-01 00:00:00, 2@2001-01-01 12:00:00,
@@ -8307,6 +8388,9 @@ SELECT round(tprecision(tfloat '[1@2001-01-01 07:40:30, 2@2001-01-01 07:40:40,
  [1.3485@Mon Jan 01 07:40:00 2001 PST, 1.3636@Mon Jan 01 07:41:00 2001 PST, 1.7121@Mon Jan 01 07:42:00 2001 PST, 2@Mon Jan 01 07:43:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- segmentMinDuration and segmentMaxDuration functions
+-------------------------------------------------------------------------------
 SELECT segmentMinDuration(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', '1 day');
                          segmentminduration                         
 --------------------------------------------------------------------
@@ -8361,8 +8445,10 @@ SELECT segmentMaxDuration(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+\set VERBOSITY terse
 SELECT segmentMaxDuration(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 2);
 ERROR:  function segmentmaxduration(tfloat, integer) does not exist at character 8
+\set VERBOSITY default
 SELECT segmentMaxDuration(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', '1 day');
                                                           segmentmaxduration                                                          
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -8387,6 +8473,11 @@ SELECT segmentMaxDuration(tfloat '1.5@2001-01-01', '1 day');
 ERROR:  Input must be a temporal sequence (set) with continuous interpolation
 SELECT segmentMaxDuration(tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}', '1 day');
 ERROR:  Input must be a temporal sequence (set) with continuous interpolation
+-------------------------------------------------------------------------------
+-- stops function
+-------------------------------------------------------------------------------
+-- A stop that begins at the first instant takes the lower bound of the
+-- sequence, and one that ends at the last instant its upper bound
 SELECT stops(tfloat '(1@2001-01-01, 1.8@2001-01-02, 2@2001-01-03, 10@2001-01-04]', 1.5, '2 days');
                                                 stops                                                 
 ------------------------------------------------------------------------------------------------------
@@ -8399,6 +8490,7 @@ SELECT stops(tfloat '[10@2001-01-01, 1@2001-01-02, 1.8@2001-01-03, 2@2001-01-04)
  {[1@Tue Jan 02 00:00:00 2001 PST, 1.8@Wed Jan 03 00:00:00 2001 PST, 2@Thu Jan 04 00:00:00 2001 PST)}
 (1 row)
 
+-- The form leaving out the distance is the full form with a distance of 0
 SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-03, 2@2001-01-04, 2@2001-01-06]', interval '1 day') =
   stops(tfloat '[1@2001-01-01, 1@2001-01-03, 2@2001-01-04, 2@2001-01-06]', 0.0, interval '1 day') AS same;
  same 
@@ -8406,12 +8498,17 @@ SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-03, 2@2001-01-04, 2@2001-01-06]', 
  t
 (1 row)
 
+-- A stay beginning after the value leaves the range of an earlier instant is
+-- found from its first instant
 SELECT stops(tfloat '[10@2001-01-01, 1@2001-01-02, 1.5@2001-01-05, 1.8@2001-01-09]', 1.5, '5 days');
                                                  stops                                                  
 --------------------------------------------------------------------------------------------------------
  {[1@Tue Jan 02 00:00:00 2001 PST, 1.5@Fri Jan 05 00:00:00 2001 PST, 1.8@Tue Jan 09 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restriction functions
+-------------------------------------------------------------------------------
 SELECT atValue(tbool 't@2001-01-01', true);
             atvalue             
 --------------------------------
@@ -9904,6 +10001,9 @@ SELECT minusSpanset(tfloat '1@2001-01-01', floatspanset '{[0,1),(1,2]}');
  1@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- A crossing is dated by the microsecond nearest to it, at which the segment
+-- takes the value crossed, and one whose nearest microsecond is a bound of
+-- the segment belongs to the bound
 SELECT atSpan(tfloat '[0@2001-01-01, 1@2001-01-02]', floatspan '[0.0000001, 0.9999999]');
                                              atspan                                             
 ------------------------------------------------------------------------------------------------
@@ -12490,6 +12590,7 @@ SELECT atTBox(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-
  Interp=Step;{[1.5@Mon Jan 01 00:00:00 2001 PST, 1.5@Tue Jan 02 00:00:00 2001 PST)}
 (1 row)
 
+-- NULL
 SELECT atTbox(tfloat '[1@2001-01-01, 2@2001-01-02)', tbox 'TBOXFLOAT XT([2,2],[2001-01-02,2001-01-02])');
  attbox 
 --------
@@ -12619,6 +12720,7 @@ SELECT minusTBox(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-
  Interp=Step;{[2.5@Tue Jan 02 00:00:00 2001 PST, 1.5@Wed Jan 03 00:00:00 2001 PST], [3.5@Thu Jan 04 00:00:00 2001 PST, 3.5@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT beforeTimestamp(tbool 't@2001-01-02', timestamptz '2001-01-01');
  beforetimestamp 
 -----------------
@@ -12979,6 +13081,7 @@ SELECT beforeTimestamp(tbool '{[t@2001-01-02, f@2001-01-04, t@2001-01-05],[t@200
  {[t@Tue Jan 02 00:00:00 2001 PST, f@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST], [t@Sun Jan 07 00:00:00 2001 PST, t@Mon Jan 08 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT beforeTimestamp(tint '1@2001-01-02', timestamptz '2001-01-01');
  beforetimestamp 
 -----------------
@@ -14059,6 +14162,7 @@ SELECT beforeTimestamp(tfloat '{[1.5@2001-01-02, 2.5@2001-01-04, 1.5@2001-01-05]
  {[1.5@Tue Jan 02 00:00:00 2001 PST, 2.5@Thu Jan 04 00:00:00 2001 PST, 1.5@Fri Jan 05 00:00:00 2001 PST], [1.5@Sun Jan 07 00:00:00 2001 PST, 1.5@Mon Jan 08 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT beforeTimestamp(ttext 'AAA@2001-01-02', timestamptz '2001-01-01');
  beforetimestamp 
 -----------------
@@ -14419,6 +14523,7 @@ SELECT beforeTimestamp(ttext '{[AAA@2001-01-02, BBB@2001-01-04, AAA@2001-01-05],
  {["AAA"@Tue Jan 02 00:00:00 2001 PST, "BBB"@Thu Jan 04 00:00:00 2001 PST, "AAA"@Fri Jan 05 00:00:00 2001 PST], ["CCC"@Sun Jan 07 00:00:00 2001 PST, "CCC"@Mon Jan 08 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT afterTimestamp(tbool 't@2001-01-02', timestamptz '2001-01-01');
          aftertimestamp         
 --------------------------------
@@ -14779,6 +14884,7 @@ SELECT afterTimestamp(tbool '{[t@2001-01-02, f@2001-01-04, t@2001-01-05],[t@2001
  
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT afterTimestamp(tint '1@2001-01-02', timestamptz '2001-01-01');
          aftertimestamp         
 --------------------------------
@@ -15859,6 +15965,7 @@ SELECT afterTimestamp(tfloat '{[1.5@2001-01-02, 2.5@2001-01-04, 1.5@2001-01-05],
  
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT afterTimestamp(ttext 'AAA@2001-01-02', timestamptz '2001-01-01');
            aftertimestamp           
 ------------------------------------
@@ -16219,6 +16326,9 @@ SELECT afterTimestamp(ttext '{[AAA@2001-01-02, BBB@2001-01-04, AAA@2001-01-05],[
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 SELECT insert(
   tfloat '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04], [5@2001-01-05, 6@2001-01-06]}',
   tfloat '{[2@2001-01-02, 3@2001-01-03], [4@2001-01-04, 5@2001-01-05]}');
@@ -17126,6 +17236,9 @@ SELECT deleteTime(tfloat '[1@2001-01-01, 4@2001-01-04]', tstzspanset '{[2001-01-
  [4@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+--  Value Aggregate Functions
+-------------------------------------------------------------------------------
 SELECT integral(tint '1@2001-01-01');
  integral 
 ----------
@@ -17381,6 +17494,9 @@ SELECT round(twAvg(tfloat '{[1e308@2001-01-01, 1e308@2001-01-02],[-1e308@2001-01
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+-------------------------------------------------------------------------------
 SELECT cmp(tbool 't@2001-01-01', tbool 't@2001-01-01');
  cmp 
 -----
@@ -17489,6 +17605,10 @@ SELECT cmp(tint '[1@2001-01-01, 2@2001-01-02]', '(1@2001-01-01, 2@2001-01-02]');
   -1
 (1 row)
 
+-- A discrete sequence holds one instant where a sequence set holds one
+-- sequence, so a set of another size holds another function of time. The
+-- comparison answers from the two sizes; reading a sequence per instant walks
+-- past a set that holds fewer
 SELECT tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}' = tfloat '{[1@2001-01-01],[2@2001-01-02]}';
  ?column? 
 ----------
@@ -17633,6 +17753,7 @@ SELECT cmp(tbigint '{[1@2001-01-01, 2@2001-01-02]}', 'Interp=Step;{[1@2001-01-01
    0
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tbool 't@2001-01-01' = tbool 't@2001-01-01';
  ?column? 
 ----------
@@ -20213,6 +20334,7 @@ SELECT tfloat '{1@2001-01-01, 1@2001-01-02}' = tfloat '{[1@2001-01-01], [1@2001-
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT hash(tbool 't@2001-01-01');
     hash    
 ------------
@@ -20363,6 +20485,7 @@ SELECT hashExtended(ttext '[AAA@2001-01-01, BBB@2001-01-02]', 1);
  -3056776005406673034
 (1 row)
 
+-- Equal values hash equal; the seed changes the hash
 SELECT hashExtended(tint '1@2001-01-01', 1) = hashExtended(tint '1@2001-01-01', 1);
  ?column? 
 ----------
@@ -20375,6 +20498,16 @@ SELECT hashExtended(tint '1@2001-01-01', 1) <> hashExtended(tint '1@2001-01-01',
  t
 (1 row)
 
+------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- unnest: one row per DISTINCT value, in base type order
+-------------------------------------------------------------------------------
+-- unnest names the distinct values of a temporal value and the time it holds
+-- each. The values are fed in unordered and with repeats, so a row set that
+-- comes back ordered, one row per value, states the order and the
+-- distinctness rather than inheriting them from the input. Only a case that
+-- reads the values can see this: a COUNT over a table cannot.
+-- Discrete sequence, values fed 5, 2, 9, 2
 SELECT (rec).value FROM (SELECT unnest(tint '{5@2001-01-01, 2@2001-01-02,
   9@2001-01-03, 2@2001-01-04}') AS rec) AS t;
  value 
@@ -20384,6 +20517,7 @@ SELECT (rec).value FROM (SELECT unnest(tint '{5@2001-01-01, 2@2001-01-02,
      9
 (3 rows)
 
+-- The repeated value is named once, and carries BOTH of its times
 SELECT (rec).value, (rec).time FROM (SELECT unnest(tint '{5@2001-01-01,
   2@2001-01-02, 9@2001-01-03, 2@2001-01-04}') AS rec) AS t;
  value |                                                             time                                                             
@@ -20393,6 +20527,7 @@ SELECT (rec).value, (rec).time FROM (SELECT unnest(tint '{5@2001-01-01,
      9 | {[Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
 (3 rows)
 
+-- Step sequence, values fed 7, 3, 7, 1 across two composing sequences
 SELECT (rec).value FROM (SELECT unnest(tint 'Interp=Step;{[7@2001-01-01,
   3@2001-01-02], [7@2001-01-03, 1@2001-01-04]}') AS rec) AS t;
  value 
@@ -20402,12 +20537,14 @@ SELECT (rec).value FROM (SELECT unnest(tint 'Interp=Step;{[7@2001-01-01,
      7
 (3 rows)
 
+-- A temporal instant names its single value
 SELECT (rec).value FROM (SELECT unnest(tint '5@2001-01-01') AS rec) AS t;
  value 
 -------
      5
 (1 row)
 
+-- Float ordering is the base type's, not the textual one
 SELECT (rec).value FROM (SELECT unnest(tfloat '{10@2001-01-01, 9.5@2001-01-02,
   10@2001-01-03, 2@2001-01-04}') AS rec) AS t;
  value 
@@ -20417,6 +20554,7 @@ SELECT (rec).value FROM (SELECT unnest(tfloat '{10@2001-01-01, 9.5@2001-01-02,
     10
 (3 rows)
 
+-- Text ordering likewise
 SELECT (rec).value FROM (SELECT unnest(ttext '{BBB@2001-01-01, AAA@2001-01-02,
   BBB@2001-01-03, CCC@2001-01-04}') AS rec) AS t;
  value 
@@ -20426,6 +20564,8 @@ SELECT (rec).value FROM (SELECT unnest(ttext '{BBB@2001-01-01, AAA@2001-01-02,
  CCC
 (3 rows)
 
+-- Boolean ordering puts false before true, and the repeated true carries both
+-- of its times
 SELECT (rec).value, (rec).time FROM (SELECT unnest(tbool '{true@2001-01-01,
   false@2001-01-02, true@2001-01-03}') AS rec) AS t;
  value |                                                             time                                                             
@@ -20434,6 +20574,10 @@ SELECT (rec).value, (rec).time FROM (SELECT unnest(tbool '{true@2001-01-01,
  t     | {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST], [Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
 (2 rows)
 
+-------------------------------------------------------------------------------
+-- Normalization removes an instant exactly where it lies on the line through
+-- its neighbours, so a normalized sequence is its own normal form and a value
+-- read back from its binary form is the value written
 SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
                               tfloat                              
 ------------------------------------------------------------------
@@ -20462,6 +20606,11 @@ FROM s;
            4 |           4 | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A restriction to a time returns its result in normal form, so the value
+-- read back from its binary form is the value the restriction returns. The
+-- value interpolated at 18:00 rounds to 1, which makes the instant at
+-- 2001-01-02 redundant
 WITH s(temp) AS (
   SELECT atTime(tfloat '[1.0000000000000002@2001-01-01, 1@2001-01-02, 1@2001-01-03]',
     tstzspan '[2001-01-01 18:00, 2001-01-03]') )

@@ -1,12 +1,13 @@
-COPY  tbl_jsonbset TO STDOUT (FORMAT BINARY);
-COPY 100
+-------------------------------------------------------------------------------
+-- Tests for the set data type
+-- File set.c
+-------------------------------------------------------------------------------
+-- Send/receive functions
+\copy tbl_jsonbset TO 'tbl_jsonbset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_jsonbset_tmp;
 NOTICE:  table "tbl_jsonbset_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_jsonbset_tmp AS TABLE tbl_jsonbset WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_jsonbset_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_jsonbset_tmp FROM 'tbl_jsonbset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
  count 
 -------
@@ -14,7 +15,7 @@ SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset_tmp t2 WHERE t1.k = t2.k AND 
 (1 row)
 
 DROP TABLE tbl_jsonbset_tmp;
-DROP TABLE
+-- Input/output from/to WKB and HexWKB
 SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromHexWKB(asHexWKB(s)) <> s;
  count 
 -------
@@ -27,12 +28,16 @@ SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromText(asText(s)) <> asText(s)
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Constructor
 SELECT numValues(set(array_agg(DISTINCT jb ORDER BY jb))) FROM tbl_jsonb WHERE jb IS NOT NULL;
  numvalues 
 -----------
        100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Cast
 SELECT COUNT(*) FROM tbl_jsonb WHERE jb::jsonbset IS NOT NULL;
  count 
 -------
@@ -51,6 +56,8 @@ SELECT COUNT(*) FROM tbl_jsonbset WHERE s = (s::textset)::jsonbset;
     99
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
 SELECT MAX(memSize(set(jb))) FROM tbl_jsonb;
  max 
 -----
@@ -117,6 +124,8 @@ SELECT MAX(memSize(t1.s * t2.s)) FROM tbl_jsonbset t1, tbl_jsonbset t2;
  1624
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessor functions
 SELECT MAX(memSize(s)) FROM tbl_jsonbset;
  max  
 ------
@@ -153,6 +162,8 @@ SELECT MIN(array_length(getValues(s), 1)) FROM tbl_jsonbset;
    1
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Set_union and unnest functions
 SELECT numValues(setUnion(jb)) FROM tbl_jsonb;
  numvalues 
 -----------
@@ -169,6 +180,8 @@ SELECT COUNT(*) FROM test2 t1, tbl_jsonbset t2 WHERE t1.k = t2.k AND t1.s <> t2.
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison functions
 SELECT cmp(jsonbset '{"\"a\""}', jsonbset '{"\"z\""}') = -1;
  ?column? 
 ----------
@@ -229,12 +242,18 @@ SELECT MAX(hashExtended(s, 1)) FROM tbl_jsonbset;
  9160053331433996777
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Aggregation functions
 SELECT numValues(setUnion(jb)) FROM tbl_jsonb;
  numvalues 
 -----------
        100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The value-and-set directions of the difference and the intersection return
+-- a set, which is what the functions behind them build
+-------------------------------------------------------------------------------
 SELECT setMinus(jsonb '{"a": 1}', jsonbset '{"{\"b\": 2}"}');
     setminus    
 ----------------
@@ -253,3 +272,4 @@ SELECT setIntersection(jsonbset '{"{\"a\": 1}", "{\"b\": 2}"}', jsonb '{"a": 1}'
  {"{\"a\": 1}"}
 (1 row)
 
+-------------------------------------------------------------------------------

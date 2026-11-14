@@ -1,3 +1,8 @@
+-- Spatial relationships for tquadbin via the cell-boundary geometry.
+-- cell '48a6227affffffff' is a res-10 tile over Brussels with bbox
+-- x[4.219, 4.570], y[50.736, 50.958] (SRID 4326). big_region strictly
+-- contains that bbox; far_region is on another continent (disjoint);
+-- centre_point lies inside the cell. Relationships are known by construction.
 WITH t AS (
   SELECT tquadbin '48a6227affffffff@2001-01-01' AS cell_inst,
          tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-02]' AS cell_seq,
@@ -22,6 +27,7 @@ FROM t;
  t           | t           | t       | t       | t           | t          | t          | [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST] | [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST] | [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- Always variants: constant-cell sequence -> always contained / never far
 WITH t AS (
   SELECT tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-02]' AS cell_seq,
          geometry 'SRID=4326;POLYGON((4.0 50.6, 4.7 50.6, 4.7 51.0, 4.0 51.0, 4.0 50.6))' AS big_region,
@@ -37,3 +43,4 @@ FROM t;
  t                  | t              | t
 (1 row)
 
+-------------------------------------------------------------------------------

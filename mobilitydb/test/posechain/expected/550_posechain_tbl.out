@@ -1,12 +1,12 @@
-COPY  tbl_posechain TO STDOUT (FORMAT BINARY);
-COPY 200
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Send and receive: a binary round trip changes no value
+-------------------------------------------------------------------------------
+\copy tbl_posechain TO 'tbl_posechain' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_posechain_tmp;
 NOTICE:  table "tbl_posechain_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_posechain_tmp AS TABLE tbl_posechain WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_posechain_tmp FROM STDIN (FORMAT BINARY);
-COPY 200
+\copy tbl_posechain_tmp FROM 'tbl_posechain' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain_tmp t2 WHERE t1.k = t2.k AND t1.pc <> t2.pc;
  count 
 -------
@@ -14,7 +14,14 @@ SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain_tmp t2 WHERE t1.k = t2.k AN
 (1 row)
 
 DROP TABLE tbl_posechain_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Text and binary round trips
+-------------------------------------------------------------------------------
+-- The E forms carry the frame and the plain forms do not, so a value read back
+-- from a plain form is the same chain in SRID 0 and equals the original once
+-- the frame is named again.
+-- 17 decimal digits is what a double takes to be written and read back exactly;
+-- at the default of 15 the text forms round 41 of these chains.
 SELECT COUNT(*) FROM tbl_posechain WHERE posechainFromEWKT(asEWKT(pc, 17)) <> pc;
  count 
 -------
@@ -51,6 +58,9 @@ SELECT COUNT(*) FROM tbl_posechain WHERE posechainFromBinary(asEWKB(pc)) <> pc;
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT MIN(numPoses(pc)), MAX(numPoses(pc)) FROM tbl_posechain;
  min | max 
 -----+-----
@@ -63,6 +73,7 @@ SELECT COUNT(*) FROM tbl_posechain WHERE poseN(pc, 1) IS NOT NULL;
    199
 (1 row)
 
+-- A one-link chain composes to the link it holds
 SELECT COUNT(*) FROM tbl_posechain WHERE pose(pc) IS NOT NULL;
  count 
 -------
@@ -75,6 +86,12 @@ SELECT COUNT(*) FROM tbl_posechain WHERE numPoses(pc) = 1 AND pose(pc) <> poseN(
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversions
+-------------------------------------------------------------------------------
+-- A chain reaches a geometry through the pose it composes to, there being no
+-- cast of its own: one topocentric frame sits at the outside of a chain, so
+-- what a chain names in that frame is where its last link lands
 SELECT COUNT(*) FROM tbl_posechain WHERE pose(pc)::geometry IS NOT NULL;
  count 
 -------
@@ -93,6 +110,9 @@ SELECT COUNT(*) FROM tbl_posechain WHERE stbox(pc) IS NOT NULL;
    199
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparisons: the order is total
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain t2 WHERE t1.pc = t2.pc;
  count 
 -------
@@ -124,3 +144,4 @@ WHERE (t1.pc < t2.pc)::int + (t1.pc = t2.pc)::int + (t1.pc > t2.pc)::int <> 1;
      0
 (1 row)
 
+-------------------------------------------------------------------------------

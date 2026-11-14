@@ -1,21 +1,16 @@
-COPY  tbl_tgeompoint TO STDOUT (FORMAT BINARY);
-COPY 100
-COPY  tbl_tgeogpoint TO STDOUT (FORMAT BINARY);
-COPY 100
+--------------------------------------------------------------------------------
+-- Send/receive functions
+--------------------------------------------------------------------------------
+\copy tbl_tgeompoint TO 'tbl_tgeompoint' (FORMAT BINARY);
+\copy tbl_tgeogpoint TO 'tbl_tgeogpoint' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tgeompoint_tmp;
 NOTICE:  table "tbl_tgeompoint_tmp" does not exist, skipping
-DROP TABLE
 DROP TABLE IF EXISTS tbl_tgeogpoint_tmp;
 NOTICE:  table "tbl_tgeogpoint_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tgeompoint_tmp AS TABLE tbl_tgeompoint WITH NO DATA;
-CREATE TABLE AS
 CREATE TABLE tbl_tgeogpoint_tmp AS TABLE tbl_tgeogpoint WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_tgeompoint_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
-COPY  tbl_tgeogpoint_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_tgeompoint_tmp FROM 'tbl_tgeompoint' (FORMAT BINARY);
+\copy tbl_tgeogpoint_tmp FROM 'tbl_tgeogpoint' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 
 -------
@@ -29,9 +24,10 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint_tmp t2 WHERE t1.k = t2.k 
 (1 row)
 
 DROP TABLE tbl_tgeompoint_tmp;
-DROP TABLE
 DROP TABLE tbl_tgeogpoint_tmp;
-DROP TABLE
+------------------------------------------------------------------------------
+-- Transformation functions
+------------------------------------------------------------------------------
 SELECT DISTINCT tempSubtype(tgeompointInst(inst)) FROM tbl_tgeompoint_inst;
  tempsubtype 
 -------------
@@ -128,6 +124,7 @@ SELECT DISTINCT tempSubtype(tgeogpointSeqSet(inst)) FROM tbl_tgeogpoint3D_inst;
  SequenceSet
 (1 row)
 
+------------------------------------------------------------------------------/
 SELECT DISTINCT tempSubtype(tgeompointInst(ti)) FROM tbl_tgeompoint_discseq WHERE numInstants(ti) = 1;
  tempsubtype 
 -------------
@@ -224,6 +221,7 @@ SELECT DISTINCT tempSubtype(tgeogpointSeqSet(ti)) FROM tbl_tgeogpoint3D_discseq;
  SequenceSet
 (1 row)
 
+------------------------------------------------------------------------------/
 SELECT DISTINCT tempSubtype(tgeompointInst(seq)) FROM tbl_tgeompoint_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
@@ -320,6 +318,7 @@ SELECT DISTINCT tempSubtype(tgeogpointSeqSet(seq)) FROM tbl_tgeogpoint3D_seq;
  SequenceSet
 (1 row)
 
+------------------------------------------------------------------------------/
 SELECT DISTINCT tempSubtype(tgeompointInst(ss)) FROM tbl_tgeompoint_seqset WHERE numInstants(ss) = 1;
  tempsubtype 
 -------------
@@ -416,6 +415,7 @@ SELECT DISTINCT tempSubtype(tgeogpointSeqSet(ss)) FROM tbl_tgeogpoint3D_seqset;
  SequenceSet
 (1 row)
 
+------------------------------------------------------------------------------
 SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tgeompoint;
  max 
 -----
@@ -428,6 +428,9 @@ SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min'))
   48
 (1 row)
 
+------------------------------------------------------------------------------
+-- Accessor functions
+------------------------------------------------------------------------------
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeompoint ORDER BY 1;
  tempsubtype 
 -------------
@@ -460,6 +463,7 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
  SequenceSet
 (3 rows)
 
+-- The size of geometries increased a few bytes in PostGIS 3
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE memSize(temp) > 0;
  count 
 -------
@@ -654,75 +658,75 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_tgeogpoint3D_inst;
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tgeompoint;
-   max    
-----------
- 04:16:00
+        max        
+-------------------
+ @ 4 hours 16 mins
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tgeogpoint;
-   max    
-----------
- 03:19:00
+        max        
+-------------------
+ @ 3 hours 19 mins
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tgeompoint3D;
-   max    
-----------
- 03:27:00
+        max        
+-------------------
+ @ 3 hours 27 mins
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tgeogpoint3D;
-   max    
-----------
- 03:53:00
+        max        
+-------------------
+ @ 3 hours 53 mins
 (1 row)
 
 SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeompoint;
-   max    
-----------
- 05:35:00
+        max        
+-------------------
+ @ 5 hours 35 mins
 (1 row)
 
 SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeogpoint;
-   max    
-----------
- 04:47:00
+        max        
+-------------------
+ @ 4 hours 47 mins
 (1 row)
 
 SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeompoint3D;
-   max    
-----------
- 04:34:00
+        max        
+-------------------
+ @ 4 hours 34 mins
 (1 row)
 
 SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeogpoint3D;
-   max    
-----------
- 05:16:00
+        max        
+-------------------
+ @ 5 hours 16 mins
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_tgeompoint;
-   max    
-----------
- 04:16:00
+        max        
+-------------------
+ @ 4 hours 16 mins
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_tgeogpoint;
-   max    
-----------
- 03:19:00
+        max        
+-------------------
+ @ 3 hours 19 mins
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_tgeompoint3D;
-   max    
-----------
- 03:27:00
+        max        
+-------------------
+ @ 3 hours 27 mins
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_tgeogpoint3D;
-   max    
-----------
- 03:53:00
+        max        
+-------------------
+ @ 3 hours 53 mins
 (1 row)
 
 SELECT MAX(numSequences(seq)) FROM tbl_tgeompoint_seq;
@@ -750,75 +754,75 @@ SELECT MAX(numSequences(seq)) FROM tbl_tgeogpoint3D_seq;
 (1 row)
 
 SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeompoint_seq;
-   max    
-----------
- 01:05:00
+       max       
+-----------------
+ @ 1 hour 5 mins
 (1 row)
 
 SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeogpoint_seq;
-   max    
-----------
- 00:51:00
+    max    
+-----------
+ @ 51 mins
 (1 row)
 
 SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeompoint3D_seq;
-   max    
-----------
- 00:53:00
+    max    
+-----------
+ @ 53 mins
 (1 row)
 
 SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeogpoint3D_seq;
-   max    
-----------
- 00:58:00
+    max    
+-----------
+ @ 58 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeompoint_seq;
-   max    
-----------
- 01:05:00
+       max       
+-----------------
+ @ 1 hour 5 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeogpoint_seq;
-   max    
-----------
- 00:51:00
+    max    
+-----------
+ @ 51 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeompoint3D_seq;
-   max    
-----------
- 00:53:00
+    max    
+-----------
+ @ 53 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeogpoint3D_seq;
-   max    
-----------
- 00:58:00
+    max    
+-----------
+ @ 58 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeompoint_seq;
-   max    
-----------
- 01:05:00
+       max       
+-----------------
+ @ 1 hour 5 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeogpoint_seq;
-   max    
-----------
- 00:51:00
+    max    
+-----------
+ @ 51 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeompoint3D_seq;
-   max    
-----------
- 00:53:00
+    max    
+-----------
+ @ 53 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeogpoint3D_seq;
-   max    
-----------
- 00:58:00
+    max    
+-----------
+ @ 58 mins
 (1 row)
 
 SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tgeompoint_seq;
@@ -870,75 +874,75 @@ SELECT MAX(numSequences(ss)) FROM tbl_tgeogpoint3D_seqset;
 (1 row)
 
 SELECT MAX(duration(startSequence(ss))) FROM tbl_tgeompoint_seqset;
-   max    
-----------
- 00:51:00
+    max    
+-----------
+ @ 51 mins
 (1 row)
 
 SELECT MAX(duration(startSequence(ss))) FROM tbl_tgeogpoint_seqset;
-   max    
-----------
- 00:53:00
+    max    
+-----------
+ @ 53 mins
 (1 row)
 
 SELECT MAX(duration(startSequence(ss))) FROM tbl_tgeompoint3D_seqset;
-   max    
-----------
- 00:49:00
+    max    
+-----------
+ @ 49 mins
 (1 row)
 
 SELECT MAX(duration(startSequence(ss))) FROM tbl_tgeogpoint3D_seqset;
-   max    
-----------
- 00:50:00
+    max    
+-----------
+ @ 50 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(ss))) FROM tbl_tgeompoint_seqset;
-   max    
-----------
- 00:51:00
+    max    
+-----------
+ @ 51 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(ss))) FROM tbl_tgeogpoint_seqset;
-   max    
-----------
- 00:54:00
+    max    
+-----------
+ @ 54 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(ss))) FROM tbl_tgeompoint3D_seqset;
-   max    
-----------
- 00:55:00
+    max    
+-----------
+ @ 55 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(ss))) FROM tbl_tgeogpoint3D_seqset;
-   max    
-----------
- 00:49:00
+    max    
+-----------
+ @ 49 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tgeompoint_seqset;
-   max    
-----------
- 00:51:00
+    max    
+-----------
+ @ 51 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tgeogpoint_seqset;
-   max    
-----------
- 00:54:00
+    max    
+-----------
+ @ 54 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tgeompoint3D_seqset;
-   max    
-----------
- 00:55:00
+    max    
+-----------
+ @ 55 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tgeogpoint3D_seqset;
-   max    
-----------
- 00:49:00
+    max    
+-----------
+ @ 49 mins
 (1 row)
 
 SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tgeompoint_seqset;
@@ -1205,6 +1209,9 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint3D;
   52
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shift and scaleTime functions
+-------------------------------------------------------------------------------
 SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeompoint, tbl_interval;
  count 
 -------
@@ -1277,6 +1284,10 @@ SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
   9900
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Granularity modification with tprecision and tsample
+-------------------------------------------------------------------------------
+-- Stop function
 SELECT MAX(numInstants(stops(seq))) FROM tbl_tgeompoint_seq;
  max 
 -----
@@ -1337,6 +1348,9 @@ SELECT MAX(numInstants(stops(ss, 10.0, '1 min'))) FROM tbl_tgeogpoint_seqset;
     
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
  count 
 -------
@@ -1385,6 +1399,9 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp %= startValue(temp);
     39
 (1 row)
 
+------------------------------------------------------------------------------
+-- Restriction functions
+------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
  count 
 -------
@@ -1561,6 +1578,10 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset WHERE temp != merge(atTim
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
+-- Update calls the insert function after calling the minusTime function
 SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
   sum  
 -------
@@ -1573,6 +1594,9 @@ SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeogpoint t1, tbl_tg
  87458
 (1 row)
 
+------------------------------------------------------------------------------
+-- Local aggregate functions
+------------------------------------------------------------------------------
 SELECT MAX(ST_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
  max 
 -----
@@ -1585,6 +1609,9 @@ SELECT MAX(ST_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;
   40
 (1 row)
 
+------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp = t2.temp;
  count 
@@ -1753,3 +1780,4 @@ WHERE t1.temp >= t2.temp;
   5059
 (1 row)
 
+-------------------------------------------------------------------------------

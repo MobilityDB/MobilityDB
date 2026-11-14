@@ -1,19 +1,30 @@
+-------------------------------------------------------------------------------
+-- A point cloud schema stated in SQL
+-------------------------------------------------------------------------------
+-- The schema a pcid names is stated as rows and holds no XML document. The
+-- three dimensions are doubles, which is what the value below carries.
 INSERT INTO pointcloud_schemas (pcid, srid, compression, description) VALUES
   (90, 4326, 'none', 'Three doubles');
-INSERT 0 1
 INSERT INTO pointcloud_dimensions
     (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset, active, description)
   VALUES
   (90, 1, 'X', 'double', 1, 0, true, 'Easting'),
   (90, 2, 'Y', 'double', 1, 0, true, 'Northing'),
   (90, 3, 'Z', 'double', 1, 0, true, 'Elevation');
-INSERT 0 3
+-- The coordinates a value decodes to are the ones the schema states. The text
+-- of a value is its pgPointCloud WKB, whose data the schema lays out, so the
+-- rendered coordinates are what states that the schema resolved.
 SELECT asMFJSON(tpcpoint '015A000000000000000000F03F00000000000000400000000000000840@2024-01-01');
                                                                                                    asmfjson                                                                                                    
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"type":"MovingPCPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"coordinates":[[1,2,3]],"values":[{"pcid":90,"pt":[1,2,3]}],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
 (1 row)
 
+-- A value is BUILT from the schema the rows state, and not only read: the
+-- constructors resolve the schema the way the readers do, so a schema stated
+-- in SQL needs no XML document for a value of it to exist. The coordinates
+-- are read back rather than the text form, which is the stored bytes and
+-- reads alike under a schema that does not describe them.
 SELECT getX(pcpoint(90, 1, 2, 3)), getY(pcpoint(90, 1, 2, 3)),
   getZ(pcpoint(90, 1, 2, 3));
  getx | gety | getz 
@@ -27,6 +38,7 @@ SELECT pcid(pcpoint(90, 1, 2, 3)), SRID(pcpoint(90, 1, 2, 3));
    90 | 4326
 (1 row)
 
+-- A patch of that schema is built from the points of it
 SELECT ST_AsText(geometry(pcpatch(pcpoint(90, 1, 2, 3),
   pcpoint(90, 4, 5, 6))));
            st_astext            
@@ -34,14 +46,16 @@ SELECT ST_AsText(geometry(pcpatch(pcpoint(90, 1, 2, 3),
  MULTIPOINT Z ((1 2 3),(4 5 6))
 (1 row)
 
+-- The number of coordinates is the number of dimensions the schema states
 SELECT pcpoint(90, 1, 2);
 ERROR:  The number of coordinates must be the number of dimensions of the schema 90: 2 vs 3
+-- A schema of more dimensions than the two- and three-argument constructors
+-- reach is given its coordinates as an array, which is the shape pgPointCloud's
+-- own PC_MakePoint takes
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (91, 4326, 'none');
-INSERT 0 1
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (91, 1, 'X', 'double'), (91, 2, 'Y', 'double'),
   (91, 3, 'Z', 'double'), (91, 4, 'Intensity', 'double');
-INSERT 0 4
 SELECT getX(pcpoint(91, ARRAY[1, 2, 3, 40]::float[])),
   getDim(pcpoint(91, ARRAY[1, 2, 3, 40]::float[]), 'Intensity');
  getx | getdim 
@@ -55,41 +69,47 @@ SELECT ST_AsText(geometry(pcpatch(91, ARRAY[1, 2, 3, 40, 4, 5, 6, 50]::float[]))
  MULTIPOINT Z ((1 2 3),(4 5 6))
 (1 row)
 
+-- The coordinates of a patch are a whole number of points
 SELECT pcpatch(91, ARRAY[1, 2, 3]::float[]);
 ERROR:  The number of coordinates must be a whole number of points of the schema 91: 3 is not a multiple of 4
 DELETE FROM pointcloud_schemas WHERE pcid = 91;
-DELETE 1
+-- A schema no row states and no XML document describes builds nothing
 SELECT pcpoint(999, 1, 2, 3);
 ERROR:  No schema registered for pcid 999
+-- A second schema, stated the same way, to build a point of another schema with
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (92, 4326, 'none');
-INSERT 0 1
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (92, 1, 'X', 'double'), (92, 2, 'Y', 'double'), (92, 3, 'Z', 'double');
-INSERT 0 3
+-- The points of a patch are of one schema, which is the schema of the patch
 SELECT pcpatch(pcpoint(90, 1, 2, 3), pcpoint(92, 4, 5, 6));
 ERROR:  Operation on pcpoint values with different schemas: 90 vs 92
 DELETE FROM pointcloud_schemas WHERE pcid = 92;
-DELETE 1
+-- A dimension number is stated once within a schema
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 1, 'W', 'double');
 ERROR:  duplicate key value violates unique constraint "pointcloud_dimensions_pkey"
 DETAIL:  Key (pcid, dim_no)=(90, 1) already exists.
+-- A dimension name is stated once within a schema
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 4, 'X', 'double');
 ERROR:  duplicate key value violates unique constraint "pointcloud_dimensions_pcid_dim_name_key"
 DETAIL:  Key (pcid, dim_name)=(90, X) already exists.
+-- An interpretation is one of those the library states
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 4, 'W', 'float128');
 ERROR:  new row for relation "pointcloud_dimensions" violates check constraint "pointcloud_dimensions_interpretation_check"
 DETAIL:  Failing row contains (90, 4, W, float128, 1, 0, t, null).
+-- A dimension number is stated from one
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 0, 'W', 'double');
 ERROR:  new row for relation "pointcloud_dimensions" violates check constraint "pointcloud_dimensions_dim_no_check"
 DETAIL:  Failing row contains (90, 0, W, double, 1, 0, t, null).
+-- A dimension belongs to a schema that is stated
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (91, 1, 'X', 'double');
 ERROR:  insert or update on table "pointcloud_dimensions" violates foreign key constraint "pointcloud_dimensions_pcid_fkey"
 DETAIL:  Key (pcid)=(91) is not present in table "pointcloud_schemas".
+-- What a pcid names is answered without a value of that schema in hand
 SELECT pointCloudSchemaSRID(90), pointCloudSchemaCompression(90),
   pointCloudSchemaNDims(90);
  pointcloudschemasrid | pointcloudschemacompression | pointcloudschemandims 
@@ -97,8 +117,8 @@ SELECT pointCloudSchemaSRID(90), pointCloudSchemaCompression(90),
                  4326 | none                        |                     3
 (1 row)
 
+-- The lookups answer what the rows state, so an edit is seen
 UPDATE pointcloud_schemas SET compression = 'dimensional' WHERE pcid = 90;
-UPDATE 1
 SELECT pointCloudSchemaCompression(90);
  pointcloudschemacompression 
 -----------------------------
@@ -106,9 +126,8 @@ SELECT pointCloudSchemaCompression(90);
 (1 row)
 
 UPDATE pointcloud_schemas SET compression = 'none' WHERE pcid = 90;
-UPDATE 1
+-- A dimension that holds no value is not counted
 UPDATE pointcloud_dimensions SET active = false WHERE pcid = 90 AND dim_no = 3;
-UPDATE 1
 SELECT pointCloudSchemaNDims(90);
  pointcloudschemandims 
 -----------------------
@@ -116,7 +135,9 @@ SELECT pointCloudSchemaNDims(90);
 (1 row)
 
 UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND dim_no = 3;
-UPDATE 1
+-- A schema pgPointCloud's own catalog states is answered as one the rows
+-- state, since values of it are read through it: pcid 1 of the fixture, three
+-- dimensions under no reference system
 SELECT pointCloudSchemaSRID(1), pointCloudSchemaCompression(1),
   pointCloudSchemaNDims(1);
  pointcloudschemasrid | pointcloudschemacompression | pointcloudschemandims 
@@ -124,6 +145,7 @@ SELECT pointCloudSchemaSRID(1), pointCloudSchemaCompression(1),
                     0 | none                        |                     3
 (1 row)
 
+-- An unregistered pcid answers NULL rather than erroring
 SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
   pointCloudSchemaNDims(999) AS unknown_ndims;
  unknown_srid | unknown_ndims 
@@ -131,8 +153,9 @@ SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
  t            |              
 (1 row)
 
+-- A value is built from the schema its rows state when the statement starts,
+-- a schema already read by an earlier statement included
 UPDATE pointcloud_schemas SET srid = 3857 WHERE pcid = 90;
-UPDATE 1
 SELECT SRID(pcpoint(90, 1, 2, 3)), pointCloudSchemaSRID(90);
  srid | pointcloudschemasrid 
 ------+----------------------
@@ -140,33 +163,39 @@ SELECT SRID(pcpoint(90, 1, 2, 3)), pointCloudSchemaSRID(90);
 (1 row)
 
 UPDATE pointcloud_schemas SET srid = 4326 WHERE pcid = 90;
-UPDATE 1
 SELECT SRID(pcpoint(90, 1, 2, 3));
  srid 
 ------
  4326
 (1 row)
 
+-- The dimensions of a schema go when the schema goes
 DELETE FROM pointcloud_schemas WHERE pcid = 90;
-DELETE 1
 SELECT count(*) FROM pointcloud_dimensions WHERE pcid = 90;
  count 
 -------
      0
 (1 row)
 
+-- and a value of the schema is no longer built
 SELECT pcpoint(90, 1, 2, 3);
 ERROR:  No schema registered for pcid 90
+-------------------------------------------------------------------------------
+-- A point cloud schema stated in SQL is read by pgPointCloud
+-------------------------------------------------------------------------------
+-- The schema is stated in the two tables alone. X and Y are integers a scale
+-- turns into coordinates, and the description of X carries the three
+-- characters an XML document escapes.
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
   (93, 4326, 'none');
-INSERT 0 1
 INSERT INTO pointcloud_dimensions
     (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset, description)
   VALUES
   (93, 1, 'X', 'int32_t', 0.01, 0, 'Easting & <metres>'),
   (93, 2, 'Y', 'int32_t', 0.01, 100, NULL),
   (93, 3, 'Z', 'double', 1, 0, 'Elevation');
-INSERT 0 3
+-- pgPointCloud's catalog holds the schema, with the reference system the
+-- schema row states and a document pgPointCloud accepts
 SELECT pcid, srid, PC_SchemaIsValid(schema) FROM pointcloud_formats
 WHERE pcid = 93;
  pcid | srid | pc_schemaisvalid 
@@ -214,6 +243,10 @@ SELECT schema FROM pointcloud_formats WHERE pcid = 93;
  </pc:PointCloudSchema>
 (1 row)
 
+-- pgPointCloud builds and decodes a value of the schema: the integers it
+-- stores are read back through the scale and the offset of each dimension.
+-- Every dimension is active in the document as in the rows, so the two
+-- extensions count the same dimensions.
 SELECT PC_AsText(PC_MakePoint(93, ARRAY[1.23, 104.56, 7.5]));
              pc_astext              
 ------------------------------------
@@ -240,9 +273,11 @@ SELECT PC_SchemaGetNDims(93), pointCloudSchemaNDims(93);
                  3 |                     3
 (1 row)
 
+-- MobilityDB reads the document as it reads the rows: the document, copied
+-- under a pcid the tables do not state, names the same reference system and
+-- the same dimensions, and a value decodes alike under either pcid
 INSERT INTO pointcloud_formats (pcid, srid, schema)
   SELECT 95, srid, schema FROM pointcloud_formats WHERE pcid = 93;
-INSERT 0 1
 SELECT pointCloudSchemaSRID(95), pointCloudSchemaNDims(95),
   getX(pcpoint(93, 1.23, 104.56, 7.5)), getX(pcpoint(95, 1.23, 104.56, 7.5)),
   getY(pcpoint(93, 1.23, 104.56, 7.5)), getY(pcpoint(95, 1.23, 104.56, 7.5));
@@ -251,43 +286,46 @@ SELECT pointCloudSchemaSRID(95), pointCloudSchemaNDims(95),
                  4326 |                     3 | 1.23 | 1.23 | 104.56 | 104.56
 (1 row)
 
+-- A document inserted into pgPointCloud's catalog for a pcid the tables state
+-- leaves the document the rows write, which is what a restore of a dump does
+-- when the tables are loaded first
 INSERT INTO pointcloud_formats (pcid, srid, schema)
   SELECT 93, 0, schema FROM pointcloud_formats WHERE pcid = 1;
 NOTICE:  The schema of pcid 93 is the one pointcloud_schemas and pointcloud_dimensions state
-INSERT 0 0
 SELECT srid, schema LIKE '%Easting%' FROM pointcloud_formats WHERE pcid = 93;
  srid | ?column? 
 ------+----------
  4326 | t
 (1 row)
 
+-- A value given as its text is decoded alike
 CREATE TABLE tbl_pcformats_point AS
   SELECT PC_MakePoint(93, ARRAY[1.23, 104.56, 7.5])::text AS hex;
-SELECT 1
 SELECT PC_Get(hex::pcpoint, 'X') FROM tbl_pcformats_point;
  pc_get 
 --------
    1.23
 (1 row)
 
+-- Editing a dimension edits the document, so the same stored integer decodes
+-- to the coordinate the edited scale states
 UPDATE pointcloud_dimensions SET dim_scale = 0.1 WHERE pcid = 93 AND dim_no = 1;
-UPDATE 1
 SELECT PC_Get(hex::pcpoint, 'X') FROM tbl_pcformats_point;
  pc_get 
 --------
    12.3
 (1 row)
 
+-- and editing the schema row edits the reference system
 UPDATE pointcloud_schemas SET srid = 3857 WHERE pcid = 93;
-UPDATE 1
 SELECT srid FROM pointcloud_formats WHERE pcid = 93;
  srid 
 ------
  3857
 (1 row)
 
+-- A dimension that holds no value is stated inactive in the document
 UPDATE pointcloud_dimensions SET active = false WHERE pcid = 93 AND dim_no = 3;
-UPDATE 1
 SELECT schema LIKE '%<pc:name>Z</pc:name>%<pc:active>0</pc:active>%'
 FROM pointcloud_formats WHERE pcid = 93;
  ?column? 
@@ -295,9 +333,9 @@ FROM pointcloud_formats WHERE pcid = 93;
  t
 (1 row)
 
+-- and the document and the rows count the same active dimensions
 UPDATE pointcloud_formats SET schema = f.schema FROM pointcloud_formats f
 WHERE pointcloud_formats.pcid = 95 AND f.pcid = 93;
-UPDATE 1
 SELECT pointCloudSchemaNDims(93), pointCloudSchemaNDims(95);
  pointcloudschemandims | pointcloudschemandims 
 -----------------------+-----------------------
@@ -305,12 +343,11 @@ SELECT pointCloudSchemaNDims(93), pointCloudSchemaNDims(95);
 (1 row)
 
 DELETE FROM pointcloud_formats WHERE pcid = 95;
-DELETE 1
 UPDATE pointcloud_dimensions SET active = true WHERE pcid = 93 AND dim_no = 3;
-UPDATE 1
+-- A schema pgPointCloud does not accept has no row in its catalog until it
+-- does: a schema with no dimension, then one with no Y dimension
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
   (94, 4326, 'none');
-INSERT 0 1
 SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
  count 
 -------
@@ -320,7 +357,6 @@ SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation)
   VALUES (94, 1, 'X', 'double');
 WARNING:  schema does not include a Y coordinate
-INSERT 0 1
 SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
  count 
 -------
@@ -329,16 +365,15 @@ SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
 
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation)
   VALUES (94, 2, 'Y', 'double');
-INSERT 0 1
 SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
  count 
 -------
      1
 (1 row)
 
+-- and the row goes when the schema is no longer one it accepts
 DELETE FROM pointcloud_dimensions WHERE pcid = 94 AND dim_no = 2;
 WARNING:  schema does not include a Y coordinate
-DELETE 1
 SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
  count 
 -------
@@ -346,13 +381,11 @@ SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
 (1 row)
 
 DELETE FROM pointcloud_schemas WHERE pcid = 94;
-DELETE 1
+-- A pcid beyond those pgPointCloud names is registered for MobilityDB alone
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
   (70000, 4326, 'none');
-INSERT 0 1
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation)
   VALUES (70000, 1, 'X', 'double'), (70000, 2, 'Y', 'double');
-INSERT 0 2
 SELECT pointCloudSchemaNDims(70000),
   (SELECT count(*) FROM pointcloud_formats WHERE pcid = 70000);
  pointcloudschemandims | count 
@@ -361,12 +394,11 @@ SELECT pointCloudSchemaNDims(70000),
 (1 row)
 
 DELETE FROM pointcloud_schemas WHERE pcid = 70000;
-DELETE 1
+-- Emptying the tables removes the rows they wrote and keeps a schema
+-- registered in pgPointCloud's catalog alone, pcid 1 of the fixture
 BEGIN;
-BEGIN
 TRUNCATE pointcloud_schemas CASCADE;
 NOTICE:  truncate cascades to table "pointcloud_dimensions"
-TRUNCATE TABLE
 SELECT pcid FROM pointcloud_formats ORDER BY pcid;
  pcid 
 ------
@@ -374,9 +406,8 @@ SELECT pcid FROM pointcloud_formats ORDER BY pcid;
 (1 row)
 
 ROLLBACK;
-ROLLBACK
+-- The row goes when the schema goes, and pgPointCloud reads the value no more
 DELETE FROM pointcloud_schemas WHERE pcid = 93;
-DELETE 1
 SELECT count(*) FROM pointcloud_formats WHERE pcid = 93;
  count 
 -------
@@ -386,4 +417,4 @@ SELECT count(*) FROM pointcloud_formats WHERE pcid = 93;
 SELECT PC_Get(hex::pcpoint, 'X') FROM tbl_pcformats_point;
 ERROR:  no entry in "public.pointcloud_formats" for pcid = 93
 DROP TABLE tbl_pcformats_point;
-DROP TABLE
+-------------------------------------------------------------------------------

@@ -1,3 +1,8 @@
+-------------------------------------------------------------------------------
+-- File time_ops.c
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Granularity modification with tprecision
 SELECT MAX(tprecision(t, '15 minutes')) FROM tbl_timestamptz;
              max              
 ------------------------------
@@ -22,6 +27,8 @@ SELECT MAX(lower(tprecision(t, '15 minutes'))) FROM tbl_tstzspanset;
  Sun Dec 30 04:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Selectivity tests of time operators
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t < t2.t;
  count 
 -------
@@ -47,7 +54,6 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t >= t2.t;
 (1 row)
 
 CREATE TABLE tbl_tstzspan_temp AS SELECT k, shift(t, '1 year') AS t FROM tbl_tstzspan;
-SELECT 100
 SELECT COUNT(*) FROM tbl_tstzspan_temp WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
@@ -166,4 +172,4 @@ ERROR:  stats for "tbl_tstzspan_temp" do not exist
 SELECT _mobdb_span_joinsel('tbl_tstzspan_temp'::regclass, 'X', 'tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator);
 ERROR:  attribute "X" does not exist
 DROP TABLE tbl_tstzspan_temp;
-DROP TABLE
+-------------------------------------------------------------------------------

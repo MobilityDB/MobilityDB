@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT round(MAX(maxValue(ST_SetSRID(t1.g, 5676) <-> t2.temp)), 6) FROM tbl_geom_point t1, tbl_tnpoint t2;
    round    
 ------------
@@ -28,3 +29,4 @@ SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp <-> t2.temp IS
    100
 (1 row)
 
+-------------------------------------------------------------------------------

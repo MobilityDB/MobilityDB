@@ -1,12 +1,11 @@
-COPY  tbl_tjsonb TO STDOUT (FORMAT BINARY);
-COPY 100
+--------------------------------------------------------------------------------
+-- Send/receive functions
+--------------------------------------------------------------------------------
+\copy tbl_tjsonb TO 'tbl_tjsonb' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tjsonb_tmp;
 NOTICE:  table "tbl_tjsonb_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tjsonb_tmp AS TABLE tbl_tjsonb WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_tjsonb_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_tjsonb_tmp FROM 'tbl_tjsonb' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 
 -------
@@ -14,7 +13,9 @@ SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb_tmp t2 WHERE t1.k = t2.k AND t1.t
 (1 row)
 
 DROP TABLE tbl_tjsonb_tmp;
-DROP TABLE
+------------------------------------------------------------------------------
+-- Transformation functions
+------------------------------------------------------------------------------
 SELECT DISTINCT tempSubtype(tjsonbInst(inst)) FROM tbl_tjsonb_inst;
  tempsubtype 
 -------------
@@ -39,6 +40,7 @@ SELECT DISTINCT tempSubtype(tjsonbSeqSet(inst)) FROM tbl_tjsonb_inst;
  SequenceSet
 (1 row)
 
+------------------------------------------------------------------------------/
 SELECT DISTINCT tempSubtype(tjsonbInst(seq)) FROM tbl_tjsonb_discseq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
@@ -63,6 +65,7 @@ SELECT DISTINCT tempSubtype(tjsonbSeqSet(seq)) FROM tbl_tjsonb_discseq;
  SequenceSet
 (1 row)
 
+------------------------------------------------------------------------------/
 SELECT DISTINCT tempSubtype(tjsonbInst(seq)) FROM tbl_tjsonb_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
@@ -87,6 +90,7 @@ SELECT DISTINCT tempSubtype(tjsonbSeqSet(seq)) FROM tbl_tjsonb_seq;
  SequenceSet
 (1 row)
 
+------------------------------------------------------------------------------/
 SELECT DISTINCT tempSubtype(tjsonbInst(ss)) FROM tbl_tjsonb_seqset WHERE numInstants(ss) = 1;
  tempsubtype 
 -------------
@@ -111,6 +115,7 @@ SELECT DISTINCT tempSubtype(tjsonbSeqSet(ss)) FROM tbl_tjsonb_seqset;
  SequenceSet
 (1 row)
 
+------------------------------------------------------------------------------
 SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tjsonb;
  max 
 -----
@@ -123,6 +128,9 @@ SELECT MAX(numInstants(appendSequence(temp, tjsonbSeq(shiftTime(endInstant(temp)
   57
 (1 row)
 
+------------------------------------------------------------------------------
+-- Accessor functions
+------------------------------------------------------------------------------
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tjsonb ORDER BY 1;
  tempsubtype 
 -------------
@@ -180,21 +188,21 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_tjsonb_inst;
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tjsonb;
-   max    
-----------
- 04:22:00
+        max        
+-------------------
+ @ 4 hours 22 mins
 (1 row)
 
 SELECT MAX(duration(timeSpan(temp))) FROM tbl_tjsonb;
-   max    
-----------
- 04:42:00
+        max        
+-------------------
+ @ 4 hours 42 mins
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_tjsonb;
-   max    
-----------
- 04:22:00
+        max        
+-------------------
+ @ 4 hours 22 mins
 (1 row)
 
 SELECT MAX(numSequences(seq)) FROM tbl_tjsonb_seq;
@@ -206,19 +214,19 @@ SELECT MAX(numSequences(seq)) FROM tbl_tjsonb_seq;
 SELECT MAX(duration(startSequence(seq))) FROM tbl_tjsonb_seq;
    max    
 ----------
- 01:00:00
+ @ 1 hour
 (1 row)
 
 SELECT MAX(duration(endSequence(seq))) FROM tbl_tjsonb_seq;
    max    
 ----------
- 01:00:00
+ @ 1 hour
 (1 row)
 
 SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tjsonb_seq;
    max    
 ----------
- 01:00:00
+ @ 1 hour
 (1 row)
 
 SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tjsonb_seq;
@@ -234,21 +242,21 @@ SELECT MAX(numSequences(ss)) FROM tbl_tjsonb_seqset;
 (1 row)
 
 SELECT MAX(duration(startSequence(ss))) FROM tbl_tjsonb_seqset;
-   max    
-----------
- 01:03:00
+       max       
+-----------------
+ @ 1 hour 3 mins
 (1 row)
 
 SELECT MAX(duration(endSequence(ss))) FROM tbl_tjsonb_seqset;
-   max    
-----------
- 01:03:00
+       max       
+-----------------
+ @ 1 hour 3 mins
 (1 row)
 
 SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tjsonb_seqset;
-   max    
-----------
- 01:03:00
+       max       
+-----------------
+ @ 1 hour 3 mins
 (1 row)
 
 SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tjsonb_seqset;
@@ -317,6 +325,9 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tjsonb;
   56
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shift and scaleTime functions
+-------------------------------------------------------------------------------
 SELECT COUNT(shiftTime(temp, i)) FROM tbl_tjsonb, tbl_interval;
  count 
 -------
@@ -335,6 +346,8 @@ SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tjsonb, tbl_interval;
   9900
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Granularity modification with tsample
 SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tjsonb_inst;
              max              
 ------------------------------
@@ -383,6 +396,14 @@ SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'step'))) FROM tbl_tj
   20
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Stop function
+-- SELECT MAX(numInstants(stops(seq))) FROM tbl_tjsonb_seq;
+-- SELECT MAX(numInstants(stops(seq, '1 min'))) FROM tbl_tjsonb_seq;
+-- SELECT MAX(numInstants(stops(ss, '1 min'))) FROM tbl_tjsonb_seqset;
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tjsonb WHERE temp ?= startValue(temp);
  count 
 -------
@@ -395,6 +416,9 @@ SELECT COUNT(*) FROM tbl_tjsonb WHERE temp %= startValue(temp);
     33
 (1 row)
 
+------------------------------------------------------------------------------
+-- Restriction functions
+------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tjsonb, tbl_jsonb WHERE temp != merge(atValue(temp, jb), minusValue(temp, jb));
  count 
 -------
@@ -439,12 +463,22 @@ SELECT COUNT(*) FROM tbl_tjsonb, tbl_tstzspanset WHERE temp != merge(atTime(temp
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
+-- Update calls the insert function after calling the minusTime function
 SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.k < t2.k;
   sum  
 -------
  91971
 (1 row)
 
+------------------------------------------------------------------------------
+-- Local aggregate functions
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp = t2.temp;
  count 
 -------
@@ -481,3 +515,4 @@ SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp >= t2.temp;
   5050
 (1 row)
 
+-------------------------------------------------------------------------------

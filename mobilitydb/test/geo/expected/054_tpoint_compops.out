@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Ever/always equal 
+-------------------------------------------------------------------------------
 SELECT geometry 'Point(1 1)' ?= tgeompoint 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -22,6 +25,7 @@ SELECT geometry 'Point(1 1)' %<> tgeompoint 'Point(1 1)@2001-01-01';
  f
 (1 row)
 
+--NULL
 SELECT geometry 'Polygon empty' ?= tgeompoint 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -52,6 +56,7 @@ SELECT geography 'Point(1 1)' %<> tgeogpoint 'Point(1 1)@2001-01-01';
  f
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= tgeompoint 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
@@ -100,6 +105,8 @@ SELECT tgeogpoint 'Point(1 1)@2001-01-01' %<> tgeogpoint 'Point(1 1)@2001-01-01'
  f
 (1 row)
 
+-- Two points meeting only at a bound of their common period that the period
+-- excludes are never equal
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)' ?= tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)';
  ?column? 
 ----------
@@ -130,6 +137,7 @@ SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]' ?= tgeogpoint
  t
 (1 row)
 
+-- NULL
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= tgeompoint 'Point(1 1)@2001-01-02';
  ?column? 
 ----------
@@ -139,10 +147,11 @@ SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= tgeompoint 'Point(1 1)@2001-01-02';
 /* Errors */
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= tgeompoint 'SRID=5676;Point(1 1)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Test index support function for ever/always equal and intersects<Time>
 CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
-CREATE INDEX
 CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
-CREATE INDEX
+-- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
  count 
 -------
@@ -168,13 +177,12 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
 (1 row)
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
-DROP INDEX
 DROP INDEX tbl_tgeogpoint_rtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
+-- Test index support function for ever/always equal and intersects<Time>
 CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
-CREATE INDEX
 CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
-CREATE INDEX
+-- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
  count 
 -------
@@ -200,9 +208,10 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
 (1 row)
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
-DROP INDEX
 DROP INDEX tbl_tgeogpoint_quadtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
+-- Temporal equal
+-------------------------------------------------------------------------------
 SELECT geometry 'Point(1 1)' #= tgeompoint 'Point(1 1)@2001-01-01';
             ?column?            
 --------------------------------
@@ -689,6 +698,7 @@ SELECT tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-0
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT geography 'Point(1 1)' #= tgeogpoint 'Point(1.5 1.5)@2001-01-01';
             ?column?            
 --------------------------------
@@ -1073,6 +1083,9 @@ SELECT tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-0
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal ne
+-------------------------------------------------------------------------------
 SELECT geometry 'Point(1 1)' #<> tgeompoint 'Point(1 1)@2001-01-01';
             ?column?            
 --------------------------------
@@ -1481,6 +1494,7 @@ SELECT tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT geography 'Point(1 1)' #<> tgeogpoint 'Point(1.5 1.5)@2001-01-01';
             ?column?            
 --------------------------------
@@ -1865,6 +1879,8 @@ SELECT tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-0
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Ever and always overlaps: a temporal point and a box, and two temporal points
 SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00, Point(10 10)@2001-01-01 10:00]' ?&& stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
  ?column? 
 ----------
@@ -1913,6 +1929,7 @@ SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-02]' ?&& stbox '
  t
 (1 row)
 
+-- Two temporal points crossing between their instants
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&& tgeompoint '[Point(2 0)@2001-01-01, Point(0 2)@2001-01-03]';
  ?column? 
 ----------
@@ -1931,6 +1948,9 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]' ?&& tgeompoin
  f
 (1 row)
 
+-- Two temporal points meeting halfway between two microseconds, dated by the
+-- even one, and a third of a microsecond after the start, dated by the start,
+-- an instant at which they differ
 SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00:00, Point(2 0)@2001-01-01 00:00:00.000003]' #= tgeompoint '[Point(2 0)@2001-01-01 00:00:00, Point(0 0)@2001-01-01 00:00:00.000003]';
                                                                          ?column?                                                                          
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1961,7 +1981,9 @@ SELECT tgeompoint '(Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' %<> tgeompoin
  f
 (1 row)
 
+-- Errors
 SELECT tgeompoint 'SRID=4326;Point(1 1)@2001-01-01' ?&& stbox 'STBOX X((0,0),(2,2))';
 ERROR:  Operation on mixed SRID
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' ?&& stbox 'STBOX X((0,0),(2,2))';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------

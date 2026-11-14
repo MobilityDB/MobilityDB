@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' << tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -145,6 +146,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
 /* Errors */
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01' << stbox 'SRID=4326;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' >> tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -289,6 +291,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  f
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' &< tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -433,6 +436,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' &> tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -577,6 +581,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' <<| tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -721,6 +726,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  f
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' |>> tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -865,6 +871,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  f
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' &<| tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -1009,6 +1016,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' |&> tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -1153,6 +1161,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' <<# tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -1345,6 +1354,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  f
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' #>> tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -1537,6 +1547,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  f
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' &<# tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -1729,6 +1740,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' #&> tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -1921,6 +1933,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 /* Errors */
 SELECT stbox 'STBOX T([2001-01-01,2001-01-02])' << tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
 ERROR:  The stbox must have X dimension
@@ -1970,3 +1983,4 @@ SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01' #>> stbox 'STBOX X((1.0,1.0
 ERROR:  The stbox must have T dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01' #&> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have T dimension
+-------------------------------------------------------------------------------

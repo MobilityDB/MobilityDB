@@ -1,3 +1,13 @@
+-- Temporal spatial relationships for tpcpatch. A patch reaches the geometry
+-- engine as the multipoint of the positions its points occupy, and answers the
+-- three predicates its Z-carrying values can answer.
+\set square 'geometry ''SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'''
+\set inside 'tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), ''2001-01-01''::timestamptz)'
+\set straddling 'tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), ''2001-01-01''::timestamptz)'
+\set far 'tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), ''2001-01-02''::timestamptz)'
+-------------------------------------------------------------------------------
+-- The geometry a patch reaches the engine as
+-------------------------------------------------------------------------------
 SELECT ST_AsText(geometry(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
            st_astext            
 --------------------------------
@@ -10,84 +20,105 @@ SELECT ST_AsText(pcpatch(pcpoint(1, 1, 1, 1))::geometry);
  MULTIPOINT Z ((1 1 1))
 (1 row)
 
-SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz)::tgeometry);
+SELECT asText(:straddling::tgeometry);
                            astext                            
 -------------------------------------------------------------
  MULTIPOINT Z ((1 1 1),(9 9 9))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-------------------------------------------------------------------------------
+-- tIntersects and tDisjoint are negations of each other
+-------------------------------------------------------------------------------
+SELECT asText(tIntersects(:inside, :square));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz)));
+SELECT asText(tIntersects(:square, :inside));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tIntersects(:far, :square));
              astext             
 --------------------------------
  f@Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDisjoint(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(:inside, :square));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDisjoint(tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(:far, :square));
              astext             
 --------------------------------
  t@Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-- One point of the patch inside the square is enough for the whole patch to
+-- intersect it
+SELECT asText(tIntersects(:straddling, :square));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDisjoint(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(:straddling, :square));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', 0.0));
+-------------------------------------------------------------------------------
+-- tDwithin
+-------------------------------------------------------------------------------
+SELECT asText(tDwithin(:inside, :square, 0.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Point(1 2)', 2.0));
+SELECT asText(tDwithin(:inside, geometry 'SRID=0;Point(1 2)', 2.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Point(1 5)', 2.0));
+SELECT asText(tDwithin(:inside, geometry 'SRID=0;Point(1 5)', 2.0));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), 0.0));
+SELECT asText(tDwithin(:inside, :inside, 0.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-------------------------------------------------------------------------------
+-- A sequence answers instant by instant
+-------------------------------------------------------------------------------
+SELECT asText(tIntersects(tpcpatchSeq(ARRAY[:inside, :far]), :square));
                               astext                              
 ------------------------------------------------------------------
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The matrix of the cast target
+--
+-- A patch reaches the engine as the multipoint of the positions its points
+-- occupy, so the temporal geometry is its cast target and the family declares
+-- every predicate in every direction. Z is one dimension a schema states by
+-- name: a schema declaring X and Y alone answers the planar relationships,
+-- while one carrying Z meets the engine's refusal.
+-------------------------------------------------------------------------------
 INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (8, 0,
 '<?xml version="1.0" encoding="UTF-8"?>
 <pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"
@@ -113,60 +144,65 @@ INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (8, 0,
   </pc:metadata>
 </pc:PointCloudSchema>')
   ON CONFLICT (pcid) DO NOTHING;
-INSERT 0 1
-SELECT asText(tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)));
+\set flatpatch 'tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), ''2001-01-01''::timestamptz)'
+SELECT asText(tContains(:square, :flatpatch));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tCovers(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)));
+SELECT asText(tCovers(:square, :flatpatch));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tTouches(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)));
+SELECT asText(tTouches(:square, :flatpatch));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tTouches(:flatpatch, :square));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)) = tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS tc_agrees,
-       tCovers(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)) = tCovers(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS tcv_agrees,
-       tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))') = tTouches((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))') AS ttc_agrees;
+-- Every new cell agrees with the cast written out by hand
+SELECT tContains(:square, :flatpatch) = tContains(:square, (:flatpatch)::tgeometry) AS tc_agrees,
+       tCovers(:square, :flatpatch) = tCovers(:square, (:flatpatch)::tgeometry) AS tcv_agrees,
+       tTouches(:flatpatch, :square) = tTouches((:flatpatch)::tgeometry, :square) AS ttc_agrees;
  tc_agrees | tcv_agrees | ttc_agrees 
 -----------+------------+------------
  t         | t          | t
 (1 row)
 
 /* Errors: a schema carrying Z in a planar relationship */
-SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
+SELECT tContains(:square, :inside);
 ERROR:  The tgeometry cannot have Z dimension
 CONTEXT:  SQL function "tcontains" statement 1
 /* Errors: a patch is a set of points, so it neither contains nor covers a
    geometry and two patches do not touch */
-SELECT tContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))');
+SELECT tContains(:flatpatch, :square);
 ERROR:  function tcontains(tpcpatch, geometry) does not exist
 LINE 3: SELECT tContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARR...
                ^
 HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
-SELECT tCovers(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz));
+SELECT tCovers(:flatpatch, :flatpatch);
 ERROR:  function tcovers(tpcpatch, tpcpatch) does not exist
 LINE 1: SELECT tCovers(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY...
                ^
 HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
-SELECT tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz));
+SELECT tTouches(:flatpatch, :flatpatch);
 ERROR:  function ttouches(tpcpatch, tpcpatch) does not exist
 LINE 1: SELECT tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRA...
                ^
 HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT ST_AsEWKT(geography(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
              st_asewkt             
 -----------------------------------

@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
 SELECT bins(intspan '[1, 10]', 2) LIMIT 3;
                             bins                            
 ------------------------------------------------------------
@@ -89,7 +92,7 @@ SELECT bins(tstzspan '[2001-01-01, 2001-01-10]', '1 week', '2001-01-01') LIMIT 3
 
 /* Errors */
 SELECT bins(datespan '[2001-01-01, 2001-01-10]', '-1 week') LIMIT 3;
-ERROR:  The interval must be positive: -7 days
+ERROR:  The interval must be positive: @ 7 days ago
 SELECT bins(intspan '[1, 10]', 0);
 ERROR:  The value must be strictly positive: 0
 SELECT bins(bigintspan '[1, 10]', 0::bigint);
@@ -182,7 +185,8 @@ ERROR:  number out of span
 SELECT getBin(2147483646, 3, -2);
 ERROR:  number out of span
 SELECT getBin('2020-01-01', '1 month', timestamptz '2001-06-01');
-ERROR:  Cannot have month intervals: 1 mon
+ERROR:  Cannot have month intervals: @ 1 mon
+-------------------------------------------------------------------------------
 SELECT bins(intspanset '{[1, 10]}', 2) LIMIT 3;
                             bins                            
 ------------------------------------------------------------
@@ -251,6 +255,7 @@ SELECT bins(intspanset '{[1, 10]}', 0);
 ERROR:  The value must be strictly positive: 0
 SELECT bins(floatspanset '{(1, 10)}', 0.0);
 ERROR:  The value must be strictly positive: 0.000000
+-------------------------------------------------------------------------------
 SELECT valueBins(tint '[15@2001-01-15, 25@2001-01-25]', 2);
         valuebins        
 -------------------------
@@ -323,6 +328,7 @@ SELECT timeBins(tfloat '[15@2001-01-15, 25@2001-01-25]', '2 days', '2001-01-01')
  {"[Mon Jan 15 00:00:00 2001 PST, Wed Jan 17 00:00:00 2001 PST)","[Wed Jan 17 00:00:00 2001 PST, Fri Jan 19 00:00:00 2001 PST)","[Fri Jan 19 00:00:00 2001 PST, Sun Jan 21 00:00:00 2001 PST)","[Sun Jan 21 00:00:00 2001 PST, Tue Jan 23 00:00:00 2001 PST)","[Tue Jan 23 00:00:00 2001 PST, Thu Jan 25 00:00:00 2001 PST)","[Thu Jan 25 00:00:00 2001 PST, Sat Jan 27 00:00:00 2001 PST)"}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5) LIMIT 3;
           valuetiles           
 -------------------------------
@@ -400,6 +406,7 @@ SELECT getValueTile(15.5, 2.5, 1.5);
  TBOXFLOAT X([14, 16.5))
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT timeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, '1 week') LIMIT 3;
                                          timetiles                                         
 -------------------------------------------------------------------------------------------
@@ -433,6 +440,7 @@ SELECT getTboxTimeTile(timestamptz '2001-01-15', interval '1 week', '2020-06-15'
  TBOX T([Sun Jan 14 23:00:00 2001 PST, Sun Jan 21 23:00:00 2001 PST))
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5, '1 week') LIMIT 3;
                                        valuetimetiles                                        
 ---------------------------------------------------------------------------------------------
@@ -501,7 +509,7 @@ ERROR:  The value must be strictly positive: 0
 SELECT valueTimeTiles(tbox 'TBOXFLOAT XT([15, 25],[2001-01-15, 2001-01-25])', 0.0, '1 week');
 ERROR:  The value must be strictly positive: 0.000000
 SELECT valueTimeTiles(tbox 'TBOXFLOAT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5, '0 days');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week');
                                    getvaluetimetile                                    
 ---------------------------------------------------------------------------------------
@@ -518,7 +526,10 @@ SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week', 
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 0.0, interval '1 week');
 ERROR:  The value must be strictly positive: 0.000000
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '0 days');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
+-------------------------------------------------------------------------------
+-- valueBoxes
+-------------------------------------------------------------------------------
 SELECT valueBoxes(tint '1@2001-01-01', 2);
                                      valueboxes                                      
 -------------------------------------------------------------------------------------
@@ -658,6 +669,9 @@ SELECT valueBoxes(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0);
 ERROR:  The value must be strictly positive: 0
 SELECT valueBoxes(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.0);
 ERROR:  The value must be strictly positive: 0.000000
+-------------------------------------------------------------------------------
+-- timeBoxes
+-------------------------------------------------------------------------------
 SELECT timeBoxes(tint '1@2001-01-01', '1 week');
                                       timeboxes                                      
 -------------------------------------------------------------------------------------
@@ -742,6 +756,9 @@ SELECT timeBoxes(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-
  {"TBOXFLOAT XT([1.5, 3.5],[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- valueTimeBoxes
+-------------------------------------------------------------------------------
 SELECT valueTimeBoxes(tint '1@2001-01-01', 2, '1 week');
                                    valuetimeboxes                                    
 -------------------------------------------------------------------------------------
@@ -834,7 +851,10 @@ ERROR:  The value must be strictly positive: 0
 SELECT valueTimeBoxes(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.0, '1 week');
 ERROR:  The value must be strictly positive: 0.000000
 SELECT valueTimeBoxes(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5, '0 days');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
+-------------------------------------------------------------------------------
+-- valueSplit
+-------------------------------------------------------------------------------
 SELECT valueSplit(tint '1@2001-01-01', 2);
               valuesplit              
 --------------------------------------
@@ -934,6 +954,9 @@ SELECT valueSplit(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001
  (3.5,"Interp=Step;{[3.5@Thu Jan 04 00:00:00 2001 PST, 3.5@Fri Jan 05 00:00:00 2001 PST]}")
 (3 rows)
 
+-- A bin bound crossed is dated by the microsecond nearest to it, at which the
+-- segment takes the bin bound, and one whose nearest microsecond is a bound of
+-- the segment belongs to the bound
 SELECT number, round(tnumber, 6) FROM valueSplit(tfloat '[1@2001-01-01 00:00:00, 2@2001-01-01 00:00:00.000003]', 0.25);
  number |                                             round                                              
 --------+------------------------------------------------------------------------------------------------
@@ -961,6 +984,9 @@ SELECT valueSplit(tfloat '[2@2001-01-01, 0.9999999999999999@2001-01-02]', 0.5);
  (2,"{[2@Mon Jan 01 00:00:00 2001 PST]}")
 (4 rows)
 
+-------------------------------------------------------------------------------
+-- timeSplit
+-------------------------------------------------------------------------------
 SELECT timeSplit(tbool 't@2001-01-01', '1 week');
                              timesplit                             
 -------------------------------------------------------------------
@@ -1069,6 +1095,8 @@ SELECT timeSplit(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2
  ("Mon Jan 01 00:00:00 2001 PST","{[""AAA""@Mon Jan 01 00:00:00 2001 PST, ""BBB""@Tue Jan 02 00:00:00 2001 PST, ""AAA""@Wed Jan 03 00:00:00 2001 PST], [""CCC""@Thu Jan 04 00:00:00 2001 PST, ""CCC""@Fri Jan 05 00:00:00 2001 PST]}")
 (1 row)
 
+-- Every fragment is the value restricted to its bin, also on segments
+-- crossing many bins
 SELECT count(*) AS fragments,
   count(*) FILTER (WHERE atTime(t.tf, span((s).time,
     (s).time + interval '7 minutes')) <> (s).temp)
@@ -1082,7 +1110,10 @@ FROM (SELECT tfloat '[0.1@2001-01-01, 1000.3@2001-01-03, -77.7@2001-01-09 13:17:
 
 /* Errors */
 SELECT timeSplit(tbool 't@2001-01-01', '-1 week');
-ERROR:  The interval must be positive: -7 days
+ERROR:  The interval must be positive: @ 7 days ago
+-------------------------------------------------------------------------------
+-- valueTimeSplit
+-------------------------------------------------------------------------------
 SELECT valueTimeSplit(tint '1@2001-01-01', 2, '1 week');
                            valuetimesplit                            
 ---------------------------------------------------------------------
@@ -1190,7 +1221,8 @@ ERROR:  The value must be strictly positive: 0
 SELECT valueTimeSplit(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.0, '1 week');
 ERROR:  The value must be strictly positive: 0.000000
 SELECT valueTimeSplit(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5, '0 days');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
+-- Grid arguments named by their dimension
 SELECT bins(bigintspan '[5000000000, 5000000010]', vsize := 4, vorigin := 5000000001);
                                                      bins                                                      
 ---------------------------------------------------------------------------------------------------------------
@@ -1251,6 +1283,11 @@ SELECT tprecision(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', tor
  Interp=Step;[1@Mon Jan 01 00:00:00 2001 PST, 5@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
+-- A value reaching the upper border of a grid: the values 1 to 5 end on the
+-- border 5 of the value bins of size 2 from 1, and the times on the border
+-- 2001-09-03 of the day bins. Under borderInc the bin starting at the border
+-- holds it; without, that bin is left out. A value with an exclusive end
+-- reaches no border and answers alike
 SELECT b, bins(floatspan '[1, 5]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
  b |             bins             
 ---+------------------------------
@@ -1445,6 +1482,11 @@ SELECT b, (valueTimeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2
  f |      3 | Sun Sep 02 00:00:00 2001 PDT | {[3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)}
 (5 rows)
 
+-------------------------------------------------------------------------------
+-- The float bins of a span are counted by the nearest whole number of sizes
+-- between the bins of its bounds, which lie a whole number of sizes apart up
+-- to the rounding of the bins: the values 1 to 2 meet four bins of size 0.3,
+-- the last one starting near 1.8 and holding 2
 SELECT bins(floatspan '[1, 2]', 0.3);
                          bins                          
 -------------------------------------------------------
@@ -1478,5 +1520,8 @@ FROM valueSplit(tfloat '[1@2001-01-01, 2@2001-01-02]', 0.3);
  1.800000 | 1.800000 | 2.000000
 (4 rows)
 
+-------------------------------------------------------------------------------
+-- A tile whose upper bound exceeds the largest double raises an error
 SELECT getValueTile(1.7976931348623157e308, 1.7976931348623157e308, 1.7976931348623157e308);
 ERROR:  value out of range: overflow
+-------------------------------------------------------------------------------
