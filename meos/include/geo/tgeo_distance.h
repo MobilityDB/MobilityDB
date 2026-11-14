@@ -53,10 +53,10 @@ extern bool point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
 
 extern int tgeompointsegm_distance_turnpt(Datum start1, Datum end1,
   Datum start2, Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap);
+  TimestampTz *tps, Datum *values, int cap);
 extern int tgeogpointsegm_distance_turnpt(Datum start1, Datum end1,
   Datum start2, Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap);
+  TimestampTz *tps, Datum *values, int cap);
   
 extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   LiftedFunctionInfo *lfinfo);

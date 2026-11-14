@@ -60,6 +60,87 @@ extern int tnumbersegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, MeosType basetype, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);
 
+/* Exact crossing functions */
+
+extern int tfloatsegm_side(double start, double end, double value,
+  TimestampTz lower, TimestampTz upper, TimestampTz t);
+extern int tnumbersegm_side(double start1, double end1, double start2,
+  double end2, TimestampTz lower, TimestampTz upper, TimestampTz t);
+extern bool tfloatsegm_crossing(double start, double end, double value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t);
+extern bool tnumbersegm_crossing(double start1, double end1, double start2,
+  double end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
+
+/* The durations, 2^52 microseconds, below which the offsets of a crossing
+ * and their halves are doubles exactly */
+#define FLOATSEGM_FILTER_MAXD (INT64CONST(1) << 52)
+
+/**
+ * @brief Return true if the crossing whose offset from the start of a period
+ * of @p d microseconds is computed as @p x lies strictly inside the window of
+ * one interior microsecond, and that microsecond in the last argument
+ * @details The offset @p x is within a relative `5.02 u`, `u = 2^-53`, of
+ * the exact offset `x*` of the crossing, and the period is shorter than
+ * 2^52 microseconds, so that the microseconds and their halves are doubles
+ * exactly. Then `|x - x*|` is below `x 2^-48`, which leaves more than the
+ * rounding of the sum `|x - m| + x 2^-48`, the one inexact operation of the
+ * test, `x - m` being exact where it is at most 1/2. Where that sum is at
+ * most 1/2 for the microsecond `m`, `x*` lies strictly inside
+ * `(m - 1/2, m + 1/2)`: the gap at `m + 1/2` has left its sign at the start
+ * and the gap at `m - 1/2` has not, so `m` is the microsecond
+ * #tfloatsegm_crossing answers, with no tie. The microsecond tried, the
+ * integer part of `x + 1/2`, is interior, an offset whose rounded `x + 1/2`
+ * is below 1, at least `d`, or not a number being refused, as a crossing
+ * whose nearest microsecond may be a bound
+ * @return False where the filter cannot tell, the caller then deciding the
+ * crossing with exact signs
+ */
+static inline bool
+floatsegm_offset_filter(double x, int64 d, int64 *m)
+{
+  /* Not a number fails both comparisons */
+  double y = x + 0.5;
+  if (! (y >= 1.0 && y < (double) d))
+    return false;
+  TimestampTz est = (TimestampTz) y;
+  if (fabs(x - (double) est) + x * 0x1p-48 > 0.5)
+    return false;
+  *m = est;
+  return true;
+}
+
+/**
+ * @brief Return true if the crossing of two float segments whose gaps at the
+ * bounds have opposite signs lies strictly inside the window of one interior
+ * microsecond, decided from its offset computed in doubles, and that
+ * microsecond in the output argument
+ * @details A filter, as the one of #cross_product_sign: the offset of the
+ * crossing is `x* = d a / (a - b)` with `a = start1 - start2` and
+ * `b = end1 - end2` of opposite signs. Over doubles, a difference of two
+ * doubles is exact or within a relative `u = 2^-53`, never in error below
+ * the normal range; `a - b` adds two magnitudes, so its rounded operands and
+ * its rounding keep it within `2u`; the quotient, in `(0, 1]`, and the
+ * product by `d`, exact below 2^52, each add `u` where the offset computed,
+ * `x`, is at least 1/2, the quotient being then normal. So `x` is within
+ * `5.02 u x` of `x*`, which #floatsegm_offset_filter decides. An overflowing
+ * difference makes the offset 0 or not a number, which it refuses
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] d Duration of the segments in microseconds
+ * @param[out] m Microsecond nearest to the crossing, from the start
+ * @return False where the filter cannot tell, the caller then deciding the
+ * crossing with exact signs
+ */
+static inline bool
+floatsegm_crossing_filter(double start1, double end1, double start2,
+  double end2, int64 d, int64 *m)
+{
+  if (d >= FLOATSEGM_FILTER_MAXD)
+    return false;
+  double a = start1 - start2, b = end1 - end2;
+  return floatsegm_offset_filter((a / (a - b)) * (double) d, d, m);
+}
+
 /* Normalization functions */
 
 extern bool tsequence_norm_test(Datum value1, Datum value2, Datum value3,

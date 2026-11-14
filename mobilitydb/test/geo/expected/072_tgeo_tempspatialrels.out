@@ -1209,3 +1209,15 @@ SELECT tDwithin(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 
 /* Errors */
 SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', geography 'SRID=4269;Point(1 1)');
 ERROR:  Operation on mixed SRID
+SELECT tIntersects(tgeometry 'Triangle Z((3 -8 9,-9 -3 -3,-9 8 -8,3 -8 9))@2001-01-01', geometry 'Point(-5 -1 -0.6666666666666666)');
+          tintersects           
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tIntersects(tgeometry 'Triangle Z((5 0 7,6 -3 2,1 -6 6,5 0 7))@2001-01-01', geometry 'Point(4 -3 5)');
+          tintersects           
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+

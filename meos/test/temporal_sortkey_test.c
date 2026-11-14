@@ -166,12 +166,20 @@ tempcorpus_shapes(tempcorpus_in in, const char *prefix, const char *a,
 #undef TEMPCORPUS_ADD
 }
 
+/** Whether MEOS_TEST_SMALL is set, as a run under valgrind sets it, read as
+ * cellcover_test.c reads it for its #nsegments */
+static bool small = false;
+
 /* Build the corpus of a temporal type over every triple of its values and
- * check it */
+ * check it; where MEOS_TEST_SMALL is set, over its first two values only,
+ * which build every shape and reach the same functions on a corpus whose
+ * pairs are 64 times fewer */
 static void
 tempcorpus_family(const char *name, tempcorpus_in in, const char *prefix,
   const char **vals, int nv, bool linear, bool step)
 {
+  if (small && nv > 2)
+    nv = 2;
   for (int a = 0; a < nv; a++)
     for (int b = 0; b < nv; b++)
       for (int c = 0; c < nv; c++)
@@ -189,6 +197,7 @@ int main(void)
   meos_initialize();
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
+  small = (getenv("MEOS_TEST_SMALL") != NULL);
 
   const char *bools[] = {"f", "t"};
   tempcorpus_family("tbool", tbool_in, "", bools, 2, false, true);

@@ -77,3 +77,7 @@ add_test(NAME within_time_unit COMMAND within_time_unit)
 add_executable(simple_traj_unit simple_traj_unit.c)
 target_link_libraries(simple_traj_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME simple_traj_unit COMMAND simple_traj_unit)
+
+add_executable(planar_meet_unit planar_meet_unit.c)
+target_link_libraries(planar_meet_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME planar_meet_unit COMMAND planar_meet_unit)

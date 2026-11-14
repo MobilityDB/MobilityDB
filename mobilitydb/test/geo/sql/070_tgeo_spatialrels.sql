@@ -593,3 +593,6 @@ SELECT aDwithin(tgeography '{Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-01, Polygon(
 SELECT aDwithin(geography 'Polygon((0 0,3 0,3 3,0 3,0 0))', tgeography '{Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-01, Polygon((1 1,2 1,2 2,1 2,1 1))@2001-01-02}', 0);
 SELECT aDwithin(tgeography 'Interp=Step;[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', geography 'Linestring(0 0,0 3)', 1, false);
 
+-- A point that misses a tilted face by less than a unit in the last place, and one on it
+SELECT eIntersects(tgeometry 'Triangle Z((3 -8 9,-9 -3 -3,-9 8 -8,3 -8 9))@2001-01-01', geometry 'Point(-5 -1 -0.6666666666666666)');
+SELECT eIntersects(tgeometry 'Triangle Z((5 0 7,6 -3 2,1 -6 6,5 0 7))@2001-01-01', geometry 'Point(4 -3 5)');

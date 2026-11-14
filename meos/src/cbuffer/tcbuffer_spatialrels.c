@@ -676,6 +676,10 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   lfinfo.ever = ever;
   lfinfo.param[0] = Float8GetDatum(param);
   lfinfo.tpfn_temp = tpfn;
+  /* The containment turning point function states exactly where the
+   * relationship holds inside a segment */
+  if (tpfn == &tcbuffersegm_contains_turnpt)
+    lfinfo.tpfn_temp_bound = &tcbuffersegm_contains_bound;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 

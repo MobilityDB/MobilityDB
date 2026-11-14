@@ -643,7 +643,6 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
       const TInstant *prev = TSEQUENCE_INST_N(seq, i - 1);
       const Npoint *np1 = DatumGetNpointP(tinstant_value_p(prev));
       TimestampTz lower = prev->t;
-      double duration = (double) (inst->t - lower);
       bool forward = np1->pos < np->pos;
       for (int j = 0; j < nfracs; j++)
       {
@@ -651,12 +650,12 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
         if (fracs[k] <= Min(np1->pos, np->pos) ||
             fracs[k] >= Max(np1->pos, np->pos))
           continue;
-        Npoint vertex;
-        npoint_set(np->rid, fracs[k], &vertex);
-        long double fraction = npointsegm_locate(np1, np, &vertex);
-        if (fraction < 0.0)
+        /* The instant dating the passage of the vertex, strictly inside
+         * the segment */
+        TimestampTz t;
+        if (! tfloatsegm_crossing(np1->pos, np->pos, fracs[k], lower,
+            inst->t, &t))
           continue;
-        TimestampTz t = lower + (TimestampTz) (duration * fraction);
         /* A vertex dated at an instant already in the result is not
          * representable at microsecond resolution */
         if (t <= instants[ninsts - 1]->t || t >= inst->t)

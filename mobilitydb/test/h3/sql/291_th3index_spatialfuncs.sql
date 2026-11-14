@@ -222,3 +222,42 @@ GROUP BY res, cut
 ORDER BY res, cut;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Restriction to a geodetic box
+-------------------------------------------------------------------------------
+
+-- A box is read on its bounds, never on the polygon of its corners: the cell
+-- at (45, 45) lies in the box, the cell at (45, 55) lies north of its parallel
+-- of latitude 50, though inside the great circle through its corners
+SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+
+-- A vertex belongs to one of the cells meeting there: a box holding only that
+-- vertex keeps the cell owning it and leaves out its neighbour
+SELECT asText(atStbox(th3index(h3index '8009fffffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+SELECT asText(atStbox(th3index(h3index '8001fffffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+
+-- A sequence keeps the times at which its cell meets the box, and the
+-- restriction to the complement the others
+SELECT asText(atStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+SELECT asText(minusStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+
+-- The overlaps holds where the restriction is not empty, ever, or where the
+-- restriction to the complement is empty, always
+SELECT th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02]' ?&&
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))';
+SELECT th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02]' %&&
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))';
+
+/* Errors */
+SELECT atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,40),(90,50))');
+
+-------------------------------------------------------------------------------
