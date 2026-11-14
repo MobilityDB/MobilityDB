@@ -523,7 +523,7 @@ diffs classified:
    instant. These are the 6848 planar disagreements of the crossprobe corpus, all one
    microsecond early. Every moving coordinate of the difference of the two points crosses zero
    at the one parameter of the meeting, so the crossing of #3640 on one such coordinate dates
-   it to the exact nearest microsecond, with its bound ownership: MobilityDB #3683 (open),
+   it to the exact nearest microsecond, with its bound ownership: MobilityDB #3683, merged as `b32c6db39f`,
    `tgeompointsegm_crossing`, the point twin of `tnumbersegm_crossing`, and the ever and always
    walk deciding a planar meeting in continuous time whichever microsecond dates it; CGAL agrees
    on the 15001 planar crossprobe rows and 9000 meetings near a bound.
