@@ -214,6 +214,36 @@ trgeoinstarr_compute_bbox(const GSERIALIZED *geom, TInstant **instants,
  *****************************************************************************/
 
 /**
+ * @brief Set a spatiotemporal box to the box of the instants first to last
+ * of a temporal rigid geometry sequence
+ * @details The box is the one #trgeoinstarr_compute_bbox gives the sequence,
+ * so a segment where the geometry turns holds the geometry at every instant
+ * of the segment, not only at its ends
+ * @param[in] geom Reference geometry of the sequence
+ * @param[in] seq Temporal sequence
+ * @param[in] first,last Positions of the first and last instants
+ * @param[out] box Spatiotemporal box
+ */
+static void
+trgeoseq_slice_stbox(const GSERIALIZED *geom, const TSequence *seq, int first,
+  int last, STBox *box)
+{
+  assert(geom); assert(seq); assert(box);
+  assert(0 <= first); assert(first <= last); assert(last < seq->count);
+  int count = last - first + 1;
+  const TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i++)
+    instants[i] = TSEQUENCE_INST_N(seq, first + i);
+  /* The box is filled field by field, so it starts from zero, as the loop of
+   * #trgeoinstarr_rotating_stbox starts each of its boxes */
+  memset(box, 0, sizeof(STBox));
+  trgeoinstarr_compute_bbox(geom, (TInstant **) instants, count,
+    MEOS_FLAGS_GET_INTERP(seq->flags), box);
+  pfree(instants);
+  return;
+}
+
+/**
  * @ingroup meos_rgeo_bbox_split
  * @brief Return an array of spatiotemporal boxes from the instants or segments
  * of a temporal rigid geometry
@@ -263,12 +293,7 @@ trgeometry_stboxes(const Temporal *temp, int *count)
       else
       {
         for (int i = 0; i < seq->count - 1; i++)
-        {
-          trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[i]);
-          STBox box;
-          trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i + 1), &box);
-          stbox_expand(&box, &result[i]);
-        }
+          trgeoseq_slice_stbox(geom, seq, i, i + 1, &result[i]);
       }
       *count = nboxes;
       return result;
@@ -289,13 +314,7 @@ trgeometry_stboxes(const Temporal *temp, int *count)
         else
         {
           for (int j = 0; j < seq->count - 1; j++)
-          {
-            trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, j),
-              &result[nboxes]);
-            STBox box;
-            trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, j + 1), &box);
-            stbox_expand(&box, &result[nboxes++]);
-          }
+            trgeoseq_slice_stbox(geom, seq, j, j + 1, &result[nboxes++]);
         }
       }
       *count = nboxes;
@@ -326,12 +345,7 @@ trgeometry_seq_cont_split_n_iter(const TSequence *seq,
   if (nsegs <= box_count)
   {
     for (int i = 0; i < nsegs; i++)
-    {
-      trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[i]);
-      STBox box;
-      trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i + 1), &box);
-      stbox_expand(&box, &result[i]);
-    }
+      trgeoseq_slice_stbox(geom, seq, i, i + 1, &result[i]);
     return nsegs;
   }
   int size = nsegs / box_count;
@@ -342,13 +356,7 @@ trgeometry_seq_cont_split_n_iter(const TSequence *seq,
     int j = i + size;
     if (k < remainder)
       j++;
-    trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[k]);
-    for (int l = i + 1; l <= j; l++)
-    {
-      STBox box;
-      trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, l), &box);
-      stbox_expand(&box, &result[k]);
-    }
+    trgeoseq_slice_stbox(geom, seq, i, j, &result[k]);
     i = j;
   }
   assert(i == nsegs);
@@ -492,18 +500,13 @@ trgeometry_seq_cont_split_each_n_iter(const TSequence *seq,
     tspatialseq_set_stbox(seq, &result[0]);
     return 1;
   }
-  int k = 0;
-  trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, 0), &result[k]);
-  for (int i = 1; i < seq->count; i++)
-  {
-    STBox box;
-    trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &box);
-    stbox_expand(&box, &result[k]);
-    if ((i % elems_per_box == 0) && (i < seq->count - 1))
-      result[++k] = box;
-  }
   int nboxes = (int) ceil((double) (seq->count - 1) / (double) elems_per_box);
-  assert(k + 1 == nboxes);
+  for (int k = 0; k < nboxes; k++)
+  {
+    int first = k * elems_per_box;
+    int last = Min(first + elems_per_box, seq->count - 1);
+    trgeoseq_slice_stbox(geom, seq, first, last, &result[k]);
+  }
   return nboxes;
 }
 
