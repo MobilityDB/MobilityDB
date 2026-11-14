@@ -750,6 +750,11 @@ MeosArray *
 geom_extract_edges(const LWGEOM *geom)
 {
   MeosArray *edges = meos_array_create(sizeof(Edge));
+  /* A geometry yields at most one edge per vertex, so the room for all of
+   * them is taken once rather than doubled ring after ring, each doubling
+   * copying every edge read before (#edge_array_reserve) */
+  if (geom && ! lwgeom_is_empty(geom))
+    edge_array_reserve(edges, lwgeom_count_vertices(geom));
   geom_extract_edges_iter(geom, edges);
   return edges;
 }
