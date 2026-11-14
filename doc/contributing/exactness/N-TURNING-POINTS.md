@@ -259,9 +259,11 @@ A lift declares whether its turning point function can give more than two instan
 (`tpfn_many`: sin, cos and the rigid geometries) and whether it gives their values (`tpfn_value`:
 the rigid geometries), and each reader selects once per walk between two instances of one inline
 walk: the general one, with the stack array of `TPFN_STACK_CAP` instants that grows, and the one of
-every other lift, reading at most two instants and no values. Callgrind, Release: the walks of the
-other families 0.9968 to 1.0000 of master, the temporal distance of rigid geometries 0.977 to
-0.998, and a turning rigid geometry against a multipolygon 1.0009, the lower envelope of its parts.
+every other lift, reading at most two instants and no values. Callgrind, Release, against master
+`ab15a473fa`: the walks of the other families 0.9968 to 1.0000 of master, the temporal distance of
+rigid geometries 0.974 to 0.9996, and a turning rigid geometry against a multipolygon 1.0004,
+whose lower envelope of the parts costs what it costs on master: the excess is handing the walk's
+instants to the shared reader, about 140 instructions a segment and 10 an instant.
 
 ### 6.4 Later, each measured first
 
