@@ -23,7 +23,7 @@ measured value.
 | TT-0 | The conversions of `timestamptz` (MobilityDB #3508), and of `timestamp`, `date`, `interval` and `timetz` (#3661) | MERGED |
 | TT-1 | `time_to_parts`, `time_from_parts`, the microseconds from midnight of a `time` (the owner 2026-11-13: "please make time as North Star as the other time types converters") | MERGED as MobilityDB #3667 |
 | TT-2 | `doc/specs/meos-bindings-algebra.md` v0.2.0: the cast of each of the six types, its counts or parts and its errors | OPEN as MobilityDB #3648 (draft), v0.2.0 its second commit; the `time` section names the functions of #3667 |
-| TT-15 | The zone of a thread naming none: the zone the program names last, by whichever thread, in place of the zone of the machine; a thread naming its own keeps it (the owner 2026-11-14: "yes, open the MEOS PR with last call wins"). A host runs its work on threads it does not choose, so a goroutine, a JVM executor or a test host wrote one timestamp with two offsets; `zone_thread_test` fails 3 of its 5 checks on master, each with the machine's zone | OPEN as MobilityDB #3677 |
+| TT-15 | The zone of a thread naming none: the zone the program names last, by whichever thread, in place of the zone of the machine; a thread naming its own keeps it (the owner 2026-11-14: "yes, open the MEOS PR with last call wins"). A host runs its work on threads it does not choose, so a goroutine, a JVM executor or a test host wrote one timestamp with two offsets; `zone_thread_test` fails 3 of its 5 checks on master, each with the machine's zone | MERGED as MobilityDB #3677 |
 
 ## The bindings
 
