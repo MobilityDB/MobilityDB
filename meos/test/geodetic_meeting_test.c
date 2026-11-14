@@ -35,8 +35,10 @@
  * points they construct along their great circles at the instant lie within
  * the rounding of that construction. The program reads `teq` and `ever_eq` on
  * the pair of the tests of PyMEOS, the same arc in opposite directions, on
- * mirror images across the equator, which meet at 12:00, and on that mirror
- * pair with one end moved by 1e-6 degrees, which never meets.
+ * mirror images across the equator, which meet at 12:00, on mirror images
+ * whose end latitudes are not opposite, which meet at 14:24:00.842439, and
+ * on the first mirror pair with one end moved by 1e-6 degrees, which never
+ * meets.
  *
  * The program can be built as follows
  * @code
@@ -66,6 +68,13 @@ static const struct
    "[Point(10 -3)@2019-09-01, Point(12 3)@2019-09-02]",
    "{[f@2019-09-01 00:00:00+00, t@2019-09-01 12:00:00+00], "
      "(f@2019-09-01 12:00:00+00, f@2019-09-02 00:00:00+00]}"},
+  /* Mirror images across the equator whose end latitudes are not opposite
+   * meet on it at an instant no double states exactly, dated at the
+   * microsecond nearest to it, 14:24:00.842439 in 400-bit MPFR */
+  {"[Point(10 3)@2019-09-01, Point(12 -2)@2019-09-02]",
+   "[Point(10 -3)@2019-09-01, Point(12 2)@2019-09-02]",
+   "{[f@2019-09-01 00:00:00+00, t@2019-09-01 14:24:00.842439+00], "
+     "(f@2019-09-01 14:24:00.842439+00, f@2019-09-02 00:00:00+00]}"},
   /* The mirror pair with one end moved by 1e-6 degrees never meets */
   {"[Point(10 3)@2019-09-01, Point(12 -3)@2019-09-02]",
    "[Point(10 -3)@2019-09-01, Point(12.000001 3)@2019-09-02]",
