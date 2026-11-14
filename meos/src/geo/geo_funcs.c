@@ -2902,7 +2902,7 @@ wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x, bool *exact)
 }
 
 /**
- * @brief Return a value that is not 0 as a double @p m and a power of two
+ * @brief Return a value as a double @p m and a power of two
  * 2^exp whose product is within a relative 2^-63 of its magnitude, from its
  * two highest limbs, so that a caller divides two such values, or scales a
  * quotient, without leaving the doubles
@@ -2910,12 +2910,57 @@ wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x, bool *exact)
 static double
 tower_wide_frexp(const TowerWide *a, int *exp)
 {
+  if (a->sign == 0)
+  {
+    *exp = 0;
+    return 0.0;
+  }
   int i = a->len - 1;
   double m = (double) a->limb[i];
   if (i > 0)
     m += ldexp((double) a->limb[i - 1], -64);
   *exp = a->exp + 64 * i;
   return m;
+}
+
+/**
+ * @brief Return the value of a #TowerWide, rounded, or an infinity or zero
+ * outside the doubles
+ */
+static double
+tower_wide_approx(const TowerWide *a)
+{
+  int e;
+  double m = tower_wide_frexp(a, &e);
+  return a->sign * ldexp(m, e);
+}
+
+/* The value 0 */
+static inline TowerWide *
+tower_wide_zero(TowerWideArena *ar)
+{
+  return tower_wide_alloc(ar, 1);
+}
+
+/* A 64-bit integer, exactly */
+static TowerWide *
+tower_wide_of_int64(TowerWideArena *ar, int64 v)
+{
+  TowerWide *r = tower_wide_alloc(ar, 1);
+  if (v == 0)
+    return r;
+  r->sign = (v < 0) ? -1 : 1;
+  r->limb[0] = (v < 0) ? (uint64) 0 - (uint64) v : (uint64) v;
+  r->len = 1;
+  return r;
+}
+
+/* The sum of a value and a finite double times @p sign, -1 or 1, exactly */
+static inline TowerWide *
+tower_wide_add_double(TowerWideArena *ar, const TowerWide *a, double x,
+  int sign)
+{
+  return tower_wide_add_signed(ar, a, 1, tower_wide_of_double(ar, x), sign);
 }
 
 /**
@@ -4818,10 +4863,10 @@ wide_dyadic_to_fixed(const WideDyadic *a, int scale, bool up, uint64 *mag,
 
 /**
  * @brief Return the sign of the cross product of the vectors B - A and D - C,
- * read on #WideDyadic for any finite coordinates
+ * read on #TowerWide for any finite coordinates
  * @details The four differences are exact, and the sign is that of
  * `(bx - ax)(dy - cy) - (by - ay)(dx - cx)`, a comparison of two products
- * (#wide_dyadic_product_cmp), as #segment_interior_wide reads its signs.
+ * (#tower_wide_product_cmp), as #segment_interior_offset_sign reads its signs.
  * #cross_product_sign_exact calls it where its doubles cannot hold the
  * products exactly
  */
@@ -4830,16 +4875,17 @@ cross_product_sign_wide(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy)
 {
   const double ends[4][2] = {{bx, ax}, {dy, cy}, {by, ay}, {dx, cx}};
-  WideDyadic diff[4];
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  TowerWide *diff[4];
   for (int i = 0; i < 4; i++)
   {
-    WideDyadic hi, lo;
-    wide_dyadic_set_double(&hi, ends[i][0]);
-    wide_dyadic_set_double(&lo, ends[i][1]);
-    lo.sign = - lo.sign;
-    wide_dyadic_add(&hi, &lo, &diff[i]);
+    diff[i] = tower_wide_sub(ar, tower_wide_of_double(ar, ends[i][0]),
+      tower_wide_of_double(ar, ends[i][1]));
   }
-  return wide_dyadic_product_cmp(&diff[0], &diff[1], &diff[2], &diff[3]);
+  int sign = tower_wide_product_cmp(ar, diff[0], diff[1], diff[2], diff[3]);
+  tower_wide_arena_free(ar);
+  return sign;
 }
 
 /**
@@ -6306,102 +6352,75 @@ point_motion_nad_exceeds(const double *p0, const double *p1, int64 s0,
 /*****************************************************************************/
 
 /**
- * @brief Add @p x to the #WideDyadic @p acc, exactly
- */
-static inline void
-wide_dyadic_accumulate(WideDyadic *acc, const WideDyadic *x)
-{
-  WideDyadic sum;
-  wide_dyadic_add(acc, x, &sum);
-  *acc = sum;
-  return;
-}
-
-/**
- * @brief Add the double @p x times @p sign to the #WideDyadic @p acc, exactly
- */
-static inline void
-wide_dyadic_accumulate_double(WideDyadic *acc, double x, int sign)
-{
-  WideDyadic t;
-  wide_dyadic_set_double(&t, x);
-  t.sign *= sign;
-  wide_dyadic_accumulate(acc, &t);
-  return;
-}
-
-/**
  * @brief Return the sign of the shoelace sum of a ring, summed exactly on
- * #WideDyadic
+ * #TowerWide
  * @details The path of #ring_area_sign where a product leaves the doubles or
  * part of it falls below 2^-1074: each product of two doubles is formed
- * exactly (#wide_dyadic_mul) and added with its sign
- * (#wide_dyadic_accumulate), as #wide_dyadic_accumulate_double adds a double;
- * a product spans at most 34 limbs and the sum of every product of doubles
- * at most 67, within #WIDE_DYADIC_LIMBS
+ * exactly (#tower_wide_mul) and added with its sign (#tower_wide_add); a
+ * product spans at most 34 limbs and the sum of every product of doubles at
+ * most 67
  */
 static int
 ring_area_sign_wide(const POINTARRAY *pa)
 {
-  WideDyadic acc, u, v, p;
-  acc.sign = 0; acc.len = 0; acc.exp = 0;
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  const TowerWide *acc, *u, *v;
+  TowerWide *p;
+  acc = tower_wide_zero(ar);
   for (uint32_t i = 0; i + 1 < pa->npoints; i++)
   {
     const POINT2D *a = getPoint2d_cp(pa, i);
     const POINT2D *b = getPoint2d_cp(pa, i + 1);
-    wide_dyadic_set_double(&u, a->x);
-    wide_dyadic_set_double(&v, b->y);
-    wide_dyadic_mul(&u, &v, &p);
-    wide_dyadic_accumulate(&acc, &p);
-    wide_dyadic_set_double(&u, b->x);
-    wide_dyadic_set_double(&v, a->y);
-    wide_dyadic_mul(&u, &v, &p);
-    p.sign = - p.sign;
-    wide_dyadic_accumulate(&acc, &p);
+    u = tower_wide_of_double(ar, a->x);
+    v = tower_wide_of_double(ar, b->y);
+    p = tower_wide_mul(ar, u, v);
+    acc = tower_wide_add(ar, acc, p);
+    u = tower_wide_of_double(ar, b->x);
+    v = tower_wide_of_double(ar, a->y);
+    p = tower_wide_mul(ar, u, v);
+    p->sign = - p->sign;
+    acc = tower_wide_add(ar, acc, p);
   }
-  return acc.sign;
+  int sign = acc->sign;
+  tower_wide_arena_free(ar);
+  return sign;
 }
 
 /**
- * @brief Return the sign of a polynomial in exact sums held as #WideDyadic,
+ * @brief Return the sign of a polynomial in exact sums held as #TowerWide,
  * computed exactly
  * @details The counterpart of #polynomial_sign_exact for sums whose products
  * leave the doubles: every term, its coefficient times its sums
- * (#wide_dyadic_mul), is added to the total (#wide_dyadic_accumulate), whose
- * sign is the exact one at any magnitude the doubles of the sums take
+ * (#tower_wide_mul), is added to the total (#tower_wide_add), whose sign is
+ * the exact one at any magnitude the doubles of the sums take, its values
+ * released from @p ar on return
+ * @param[in] ar Arena of the values
  * @param[in] sums Exact sums the terms refer to
  * @param[in] terms,nterms Terms of the polynomial and their number
  * @return -1, 0, or 1
  */
 static int
-polynomial_sign_wide(const WideDyadic *sums, const PolyTerm *terms,
-  int nterms)
+polynomial_sign_wide(TowerWideArena *ar, TowerWide *const *sums,
+  const PolyTerm *terms, int nterms)
 {
-  WideDyadic acc, prod, next;
-  wide_dyadic_set_double(&acc, 0.0);
+  TowerWideMark m = tower_wide_arena_mark(ar);
+  const TowerWide *acc, *prod;
+  const TowerWide *next;
+  acc = tower_wide_of_double(ar, 0.0);
   for (int i = 0; i < nterms; i++)
   {
-    wide_dyadic_set_double(&prod, terms[i].coef);
+    prod = tower_wide_of_double(ar, terms[i].coef);
     for (int k = 0; k < terms[i].deg; k++)
     {
-      wide_dyadic_mul(&prod, &sums[terms[i].sum[k]], &next);
+      next = tower_wide_mul(ar, prod, sums[terms[i].sum[k]]);
       prod = next;
     }
-    wide_dyadic_accumulate(&acc, &prod);
+    acc = tower_wide_add(ar, acc, prod);
   }
-  return acc.sign;
-}
-
-/**
- * @brief Return the value of a #WideDyadic, rounded, or an infinity or zero
- * outside the doubles
- */
-static double
-wide_dyadic_approx(const WideDyadic *a)
-{
-  int e;
-  double m = wide_dyadic_frexp(a, &e);
-  return a->sign * ldexp(m, e);
+  int sign = acc->sign;
+  tower_wide_arena_release(ar, m);
+  return sign;
 }
 
 /**
@@ -6416,55 +6435,57 @@ wide_dyadic_approx(const WideDyadic *a)
  * discs are within where `q(f) = |w(f)|^2 - L(f)^2 = A f^2 + 2 B f + C` is not
  * positive, with `A = |w1|^2 - dL^2`, `B = w0 . w1 - L0 dL` and
  * `C = |w0|^2 - L0^2`, each a sum of products of the input doubles, held
- * exactly as #point_motion_squares holds its sums. The distance is the sum
- * @p d + @p dlo, exactly, so that the midpoint of two doubles can be one
+ * exactly as #point_motion_squares holds its sums, in @p ar. The distance is
+ * the sum @p d + @p dlo, exactly, so that the midpoint of two doubles can be
+ * one
  */
 static void
 point_motion_dwithin_coeffs(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
-  double rb0, double rb1, double d, double dlo, WideDyadic *A, WideDyadic *B,
-  WideDyadic *C)
+  double rb0, double rb1, double d, double dlo, TowerWideArena *ar,
+  TowerWide **A, TowerWide **B, TowerWide **C)
 {
-  WideDyadic w0, w1, sq, l0, dl;
-  A->sign = 0; A->len = 0; A->exp = 0;
-  B->sign = 0; B->len = 0; B->exp = 0;
-  C->sign = 0; C->len = 0; C->exp = 0;
+  const TowerWide *w0, *w1, *l0, *dl;
+  TowerWide *sq;
+  *A = tower_wide_zero(ar);
+  *B = tower_wide_zero(ar);
+  *C = tower_wide_zero(ar);
   for (int c = 0; c < ndims; c++)
   {
-    w0.sign = 0; w0.len = 0; w0.exp = 0;
-    wide_dyadic_accumulate_double(&w0, a0[c], 1);
-    wide_dyadic_accumulate_double(&w0, b0[c], -1);
-    w1.sign = 0; w1.len = 0; w1.exp = 0;
-    wide_dyadic_accumulate_double(&w1, a1[c], 1);
-    wide_dyadic_accumulate_double(&w1, a0[c], -1);
-    wide_dyadic_accumulate_double(&w1, b1[c], -1);
-    wide_dyadic_accumulate_double(&w1, b0[c], 1);
-    wide_dyadic_mul(&w1, &w1, &sq);
-    wide_dyadic_accumulate(A, &sq);
-    wide_dyadic_mul(&w0, &w1, &sq);
-    wide_dyadic_accumulate(B, &sq);
-    wide_dyadic_mul(&w0, &w0, &sq);
-    wide_dyadic_accumulate(C, &sq);
+    w0 = tower_wide_zero(ar);
+    w0 = tower_wide_add_double(ar, w0, a0[c], 1);
+    w0 = tower_wide_add_double(ar, w0, b0[c], -1);
+    w1 = tower_wide_zero(ar);
+    w1 = tower_wide_add_double(ar, w1, a1[c], 1);
+    w1 = tower_wide_add_double(ar, w1, a0[c], -1);
+    w1 = tower_wide_add_double(ar, w1, b1[c], -1);
+    w1 = tower_wide_add_double(ar, w1, b0[c], 1);
+    sq = tower_wide_mul(ar, w1, w1);
+    *A = tower_wide_add(ar, *A, sq);
+    sq = tower_wide_mul(ar, w0, w1);
+    *B = tower_wide_add(ar, *B, sq);
+    sq = tower_wide_mul(ar, w0, w0);
+    *C = tower_wide_add(ar, *C, sq);
   }
-  l0.sign = 0; l0.len = 0; l0.exp = 0;
-  wide_dyadic_accumulate_double(&l0, ra0, 1);
-  wide_dyadic_accumulate_double(&l0, rb0, 1);
-  wide_dyadic_accumulate_double(&l0, d, 1);
-  wide_dyadic_accumulate_double(&l0, dlo, 1);
-  dl.sign = 0; dl.len = 0; dl.exp = 0;
-  wide_dyadic_accumulate_double(&dl, ra1, 1);
-  wide_dyadic_accumulate_double(&dl, rb1, 1);
-  wide_dyadic_accumulate_double(&dl, ra0, -1);
-  wide_dyadic_accumulate_double(&dl, rb0, -1);
-  wide_dyadic_mul(&dl, &dl, &sq);
-  sq.sign = - sq.sign;
-  wide_dyadic_accumulate(A, &sq);
-  wide_dyadic_mul(&l0, &dl, &sq);
-  sq.sign = - sq.sign;
-  wide_dyadic_accumulate(B, &sq);
-  wide_dyadic_mul(&l0, &l0, &sq);
-  sq.sign = - sq.sign;
-  wide_dyadic_accumulate(C, &sq);
+  l0 = tower_wide_zero(ar);
+  l0 = tower_wide_add_double(ar, l0, ra0, 1);
+  l0 = tower_wide_add_double(ar, l0, rb0, 1);
+  l0 = tower_wide_add_double(ar, l0, d, 1);
+  l0 = tower_wide_add_double(ar, l0, dlo, 1);
+  dl = tower_wide_zero(ar);
+  dl = tower_wide_add_double(ar, dl, ra1, 1);
+  dl = tower_wide_add_double(ar, dl, rb1, 1);
+  dl = tower_wide_add_double(ar, dl, ra0, -1);
+  dl = tower_wide_add_double(ar, dl, rb0, -1);
+  sq = tower_wide_mul(ar, dl, dl);
+  sq->sign = - sq->sign;
+  *A = tower_wide_add(ar, *A, sq);
+  sq = tower_wide_mul(ar, l0, dl);
+  sq->sign = - sq->sign;
+  *B = tower_wide_add(ar, *B, sq);
+  sq = tower_wide_mul(ar, l0, l0);
+  sq->sign = - sq->sign;
+  *C = tower_wide_add(ar, *C, sq);
   return;
 }
 
@@ -6475,11 +6496,12 @@ point_motion_dwithin_coeffs(const double *a0, const double *a1,
  */
 typedef struct
 {
-  WideDyadic A;     /**< A */
-  WideDyadic B2D;   /**< 2 B D */
-  WideDyadic CD2;   /**< C D^2 */
-  WideDyadic BD;    /**< B D, for the vertex test A n + B D */
-  double a, b2d, cd2, bd; /**< The four in doubles (#wide_dyadic_approx) */
+  const TowerWide *A;   /**< A */
+  const TowerWide *B2D; /**< 2 B D */
+  const TowerWide *CD2; /**< C D^2 */
+  const TowerWide *BD;  /**< B D, for the vertex test A n + B D */
+  TowerWideArena *ar;   /**< Arena of the four and of each sign read */
+  double a, b2d, cd2, bd; /**< The four in doubles (#tower_wide_approx) */
   bool approx;      /**< Whether the doubles are set and each lies within
                          2^-51 of its exact value, relatively */
 } DWithinGrid;
@@ -6495,7 +6517,7 @@ typedef struct
  * relatively, and the evaluation rounds at most five times, so the value in
  * doubles lies within `2^-49 M` of the exact one, with `M` the sum of the
  * magnitudes of its terms; a value beyond `2^-47 M` carries the exact sign.
- * The exact sign on #WideDyadic answers the rest, and wherever a double
+ * The exact sign on #TowerWide answers the rest, and wherever a double
  * overflows, or `M` is not a normal double
  */
 static int
@@ -6518,21 +6540,20 @@ dwithin_grid_sign(const DWithinGrid *g, int64 n, bool vertex)
     if (isfinite(v) && isnormal(M) && fabs(v) > 0x1p-47 * M)
       return (v > 0.0) - (v < 0.0);
   }
-  WideDyadic wn, t, acc;
-  wide_dyadic_set_int(&wn, n);
+  TowerWideArena *ar = g->ar;
+  TowerWideMark m = tower_wide_arena_mark(ar);
+  const TowerWide *wn = tower_wide_of_int64(ar, n), *acc;
   if (vertex)
+    acc = tower_wide_add(ar, tower_wide_mul(ar, g->A, wn), g->BD);
+  else
   {
-    wide_dyadic_mul(&g->A, &wn, &t);
-    wide_dyadic_add(&t, &g->BD, &acc);
-    return acc.sign;
+    acc = tower_wide_mul(ar, g->A, tower_wide_mul(ar, wn, wn));
+    acc = tower_wide_add(ar, acc, tower_wide_mul(ar, g->B2D, wn));
+    acc = tower_wide_add(ar, acc, g->CD2);
   }
-  WideDyadic n2;
-  wide_dyadic_mul(&wn, &wn, &n2);
-  wide_dyadic_mul(&g->A, &n2, &acc);
-  wide_dyadic_mul(&g->B2D, &wn, &t);
-  wide_dyadic_accumulate(&acc, &t);
-  wide_dyadic_accumulate(&acc, &g->CD2);
-  return acc.sign;
+  int sign = acc->sign;
+  tower_wide_arena_release(ar, m);
+  return sign;
 }
 
 /**
@@ -6841,10 +6862,11 @@ point_motion_dwithin_period_filter(const double *a0, const double *a1,
   return -1;
 }
 
-static int dwithin_quadratic_period(const WideDyadic *Aq,
-  const WideDyadic *Bq, const WideDyadic *Cq, int64 D, int64 *n1, int64 *n2);
-static void dwithin_grid_set(DWithinGrid *g, const WideDyadic *A,
-  const WideDyadic *B, const WideDyadic *C, int64 D);
+static int dwithin_quadratic_period(TowerWideArena *ar,
+  const TowerWide *Aq, const TowerWide *Bq, const TowerWide *Cq, int64 D,
+  int64 *n1, int64 *n2);
+static void dwithin_grid_set(TowerWideArena *ar, DWithinGrid *g,
+  const TowerWide *A, const TowerWide *B, const TowerWide *C, int64 D);
 static int point_motion_dwithin_period_wide(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
@@ -6930,11 +6952,15 @@ point_motion_dwithin_at_exact(const double *a0, const double *a1,
 {
   assert(D > 0); assert(ndims == 2 || ndims == 3);
   DWithinGrid g;
-  WideDyadic A, B, C;
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  TowerWide *A, *B, *C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
-    &A, &B, &C);
-  dwithin_grid_set(&g, &A, &B, &C, D);
-  return dwithin_grid_sign(&g, n, false) <= 0;
+    ar, &A, &B, &C);
+  dwithin_grid_set(ar, &g, A, B, C, D);
+  bool result = dwithin_grid_sign(&g, n, false) <= 0;
+  tower_wide_arena_free(ar);
+  return result;
 }
 
 /**
@@ -6946,7 +6972,7 @@ point_motion_dwithin_at_exact(const double *a0, const double *a1,
  * negative: the quadratic of #point_motion_dwithin_coeffs with the radius of
  * the second disc negated and a zero distance. Its discriminant `B^2 - A C`
  * is a sign of degree four in the input doubles, read on the exact
- * coefficients by #wide_dyadic_product_cmp: zero where the two roots are one,
+ * coefficients by #tower_wide_product_cmp: zero where the two roots are one,
  * the discs grazing at a single instant
  * @param[in] a0,a1 Centre of the first disc at the start and at the end
  * @param[in] b0,b1 Centre of the second disc at the start and at the end
@@ -6962,11 +6988,15 @@ point_motion_contains_disc_sign(const double *a0, const double *a1,
   double rb0, double rb1, int *asign)
 {
   assert(ndims == 2 || ndims == 3); assert(asign);
-  WideDyadic A, B, C;
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  TowerWide *A, *B, *C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, - rb0, - rb1,
-    0.0, 0.0, &A, &B, &C);
-  *asign = A.sign;
-  return wide_dyadic_product_cmp(&B, &B, &A, &C);
+    0.0, 0.0, ar, &A, &B, &C);
+  *asign = A->sign;
+  int sign = tower_wide_product_cmp(ar, B, B, A, C);
+  tower_wide_arena_free(ar);
+  return sign;
 }
 
 /**
@@ -6981,10 +7011,14 @@ point_motion_dwithin_period_wide(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
   double rb0, double rb1, double d, int64 D, int64 *n1, int64 *n2)
 {
-  WideDyadic A, B, C;
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  TowerWide *A, *B, *C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
-    &A, &B, &C);
-  return dwithin_quadratic_period(&A, &B, &C, D, n1, n2);
+    ar, &A, &B, &C);
+  int result = dwithin_quadratic_period(ar, A, B, C, D, n1, n2);
+  tower_wide_arena_free(ar);
+  return result;
 }
 
 /**
@@ -6998,18 +7032,19 @@ point_motion_dwithin_period_wide(const double *a0, const double *a1,
  * @p n2, each dated as #point_motion_dwithin_period_exact dates it
  */
 static int
-dwithin_quadratic_period(const WideDyadic *Aq, const WideDyadic *Bq,
-  const WideDyadic *Cq, int64 D, int64 *n1, int64 *n2)
+dwithin_quadratic_period(TowerWideArena *ar, const TowerWide *Aq,
+  const TowerWide *Bq, const TowerWide *Cq, int64 D, int64 *n1, int64 *n2)
 {
   DWithinGrid g;
-  WideDyadic B = *Bq, C = *Cq, B2, t, q1;
-  g.A = *Aq;
+  const TowerWide *B = Bq, *C = Cq;
+  const TowerWide *B2, *t, *q1;
+  g.A = Aq;
   /* q(1) = A + 2 B + C */
-  wide_dyadic_set_int(&t, 2);
-  wide_dyadic_mul(&B, &t, &B2);
-  wide_dyadic_add(&g.A, &B2, &q1);
-  wide_dyadic_accumulate(&q1, &C);
-  bool in0 = C.sign <= 0, in1 = q1.sign <= 0;
+  t = tower_wide_of_int64(ar, 2);
+  B2 = tower_wide_mul(ar, B, t);
+  q1 = tower_wide_add(ar, g.A, B2);
+  q1 = tower_wide_add(ar, q1, C);
+  bool in0 = C->sign <= 0, in1 = q1->sign <= 0;
   /* Within at both ends, within throughout, the gap being convex */
   if (in0 && in1)
   {
@@ -7017,12 +7052,12 @@ dwithin_quadratic_period(const WideDyadic *Aq, const WideDyadic *Bq,
     *n2 = D;
     return 2;
   }
-  dwithin_grid_set(&g, Aq, &B, &C, D);
+  dwithin_grid_set(ar, &g, Aq, B, C, D);
   /* Estimates of the roots of A x^2 + 2 B x + C, which only start the
    * searches, the one a difference of close values would form taken from
    * their product C / A */
-  double a = wide_dyadic_approx(&g.A), b = wide_dyadic_approx(&B),
-    c = wide_dyadic_approx(&C);
+  double a = tower_wide_approx(g.A), b = tower_wide_approx(B),
+    c = tower_wide_approx(C);
   double disc = b * b - a * c;
   double sq = (disc > 0.0) ? sqrt(disc) : 0.0;
   double qq = (b >= 0.0) ? -(b + sq) : -(b - sq);
@@ -7049,13 +7084,14 @@ dwithin_quadratic_period(const WideDyadic *Aq, const WideDyadic *Bq,
   /* Within at neither end: within in between only where the parabola is
    * convex, its vertex -B / A lies inside, and its discriminant B^2 - A C is
    * not negative */
-  WideDyadic bb, ac, dw, apb;
-  wide_dyadic_mul(&B, &B, &bb);
-  wide_dyadic_mul(&g.A, &C, &ac);
-  ac.sign = - ac.sign;
-  wide_dyadic_add(&bb, &ac, &dw);
-  wide_dyadic_add(&g.A, &B, &apb);
-  if (g.A.sign <= 0 || B.sign >= 0 || apb.sign <= 0 || dw.sign < 0)
+  const TowerWide *bb, *dw, *apb;
+  TowerWide *ac;
+  bb = tower_wide_mul(ar, B, B);
+  ac = tower_wide_mul(ar, g.A, C);
+  ac->sign = - ac->sign;
+  dw = tower_wide_add(ar, bb, ac);
+  apb = tower_wide_add(ar, g.A, B);
+  if (g.A->sign <= 0 || B->sign >= 0 || apb->sign <= 0 || dw->sign < 0)
     return 0;
   /* The microsecond the vertex truncates to, the last n with A n + B D <= 0,
    * which is 0 < -B D / A < D */
@@ -7081,30 +7117,32 @@ dwithin_quadratic_period(const WideDyadic *Aq, const WideDyadic *Bq,
 
 /**
  * @brief Set the quadratic of #point_motion_dwithin_coeffs read at the whole
- * microseconds of a segment of @p D microseconds (#DWithinGrid)
+ * microseconds of a segment of @p D microseconds (#DWithinGrid), its values
+ * in @p ar
  */
 static void
-dwithin_grid_set(DWithinGrid *g, const WideDyadic *A, const WideDyadic *B,
-  const WideDyadic *C, int64 D)
+dwithin_grid_set(TowerWideArena *ar, DWithinGrid *g, const TowerWide *A,
+  const TowerWide *B, const TowerWide *C, int64 D)
 {
-  WideDyadic t, wD, B2;
-  g->A = *A;
-  wide_dyadic_set_int(&t, 2);
-  wide_dyadic_mul(B, &t, &B2);
-  wide_dyadic_set_int(&wD, D);
-  wide_dyadic_mul(&B2, &wD, &g->B2D);
-  wide_dyadic_mul(C, &wD, &t);
-  wide_dyadic_mul(&t, &wD, &g->CD2);
-  wide_dyadic_mul(B, &wD, &g->BD);
+  const TowerWide *t, *wD, *B2;
+  g->ar = ar;
+  g->A = A;
+  t = tower_wide_of_int64(ar, 2);
+  B2 = tower_wide_mul(ar, B, t);
+  wD = tower_wide_of_int64(ar, D);
+  g->B2D = tower_wide_mul(ar, B2, wD);
+  t = tower_wide_mul(ar, C, wD);
+  g->CD2 = tower_wide_mul(ar, t, wD);
+  g->BD = tower_wide_mul(ar, B, wD);
   /* The doubles of the filter of #dwithin_grid_sign: the top two limbs of
    * each, within 2^-51 of it relatively where the double is normal; one
    * that is not, or that overflows, leaves the filter off */
-  const WideDyadic *w[4] = {&g->A, &g->B2D, &g->CD2, &g->BD};
+  const TowerWide *w[4] = {g->A, g->B2D, g->CD2, g->BD};
   double *v[4] = {&g->a, &g->b2d, &g->cd2, &g->bd};
   g->approx = true;
   for (int i = 0; i < 4; i++)
   {
-    *v[i] = wide_dyadic_approx(w[i]);
+    *v[i] = tower_wide_approx(w[i]);
     if (w[i]->sign != 0 && ! isnormal(*v[i]))
       g->approx = false;
   }
@@ -7126,8 +7164,10 @@ dwithin_grid_set(DWithinGrid *g, const WideDyadic *A, const WideDyadic *B,
 typedef struct
 {
   DWithinGrid qa, qb, qp;   /**< The quadratics at the ends and the line */
-  WideDyadic s0D, s1, l2D;  /**< `D (c0 - a) . u`, `(c1 - c0) . u`, `D |u|^2` */
-  double s0Dd, s1d, l2Dd;   /**< The three in doubles (#wide_dyadic_approx) */
+  const TowerWide *s0D, *s1, *l2D; /**< `D (c0 - a) . u`, `(c1 - c0) . u`,
+                                 `D |u|^2` */
+  TowerWideArena *ar;       /**< Arena of the three and of each sign read */
+  double s0Dd, s1d, l2Dd;   /**< The three in doubles (#tower_wide_approx) */
   bool approx;              /**< Whether each lies within 2^-51 of its exact
                                  value, relatively */
 } SegmWithinGrid;
@@ -7159,18 +7199,172 @@ segm_within_sign(const void *ctx, int64 n)
         return Min(sign, dwithin_grid_sign(&s->qp, n, false));
     }
   }
-  WideDyadic wn, t, sig, rest;
-  wide_dyadic_set_int(&wn, n);
-  wide_dyadic_mul(&s->s1, &wn, &t);
-  wide_dyadic_add(&s->s0D, &t, &sig);
-  if (sig.sign < 0)
-    return sign;
-  WideDyadic negl2 = s->l2D;
-  negl2.sign = - negl2.sign;
-  wide_dyadic_add(&sig, &negl2, &rest);
-  if (rest.sign > 0)
+  TowerWideArena *ar = s->ar;
+  TowerWideMark m = tower_wide_arena_mark(ar);
+  const TowerWide *sig = tower_wide_add(ar, s->s0D, tower_wide_mul(ar, s->s1, tower_wide_of_int64(ar, n)));
+  bool on = sig->sign >= 0 && tower_wide_cmp(sig, s->l2D) <= 0;
+  tower_wide_arena_release(ar, m);
+  if (! on)
     return sign;
   return Min(sign, dwithin_grid_sign(&s->qp, n, false));
+}
+
+/**
+ * @brief Return the answer of #point_motion_segm_dwithin_period_exact for a
+ * segment its filter does not settle, on the exact quadratics in @p ar
+ * @details Kept out of line, as #point_motion_dwithin_period_wide is
+ */
+static pg_noinline int
+segm_dwithin_period_wide(TowerWideArena *ar, const double *c0,
+  const double *c1, double r0, double r1, const double *a, const double *b,
+  double d, int64 D, int64 *n1, int64 *n2)
+{
+  SegmWithinGrid s;
+  s.ar = ar;
+  TowerWide *A, *B, *C;
+  int64 lo[3], hi[3];
+  int k[3];
+  /* The ends */
+  point_motion_dwithin_coeffs(c0, c1, a, a, 2, r0, r1, 0.0, 0.0, d, 0.0, ar,
+    &A, &B, &C);
+  dwithin_grid_set(ar, &s.qa, A, B, C, D);
+  k[0] = dwithin_quadratic_period(ar, A, B, C, D, &lo[0], &hi[0]);
+  point_motion_dwithin_coeffs(c0, c1, b, b, 2, r0, r1, 0.0, 0.0, d, 0.0, ar,
+    &A, &B, &C);
+  dwithin_grid_set(ar, &s.qb, A, B, C, D);
+  k[1] = dwithin_quadratic_period(ar, A, B, C, D, &lo[1], &hi[1]);
+  /* The line: u = b - a, w0 = c0 - a, dc = c1 - c0, each difference exact */
+  const TowerWide *p, *k0, *k1, *l2, *L0, *dL, *sq;
+  TowerWide *u[2], *w0[2], *dc[2], *q, *l2L;
+  for (int i = 0; i < 2; i++)
+  {
+    u[i] = tower_wide_zero(ar);
+    u[i] = tower_wide_add_double(ar, u[i], b[i], 1);
+    u[i] = tower_wide_add_double(ar, u[i], a[i], -1);
+    w0[i] = tower_wide_zero(ar);
+    w0[i] = tower_wide_add_double(ar, w0[i], c0[i], 1);
+    w0[i] = tower_wide_add_double(ar, w0[i], a[i], -1);
+    dc[i] = tower_wide_zero(ar);
+    dc[i] = tower_wide_add_double(ar, dc[i], c1[i], 1);
+    dc[i] = tower_wide_add_double(ar, dc[i], c0[i], -1);
+  }
+  /* k0 = u x w0, k1 = u x dc, l2 = |u|^2 */
+  p = tower_wide_mul(ar, u[0], w0[1]);
+  q = tower_wide_mul(ar, u[1], w0[0]);
+  q->sign = - q->sign;
+  k0 = tower_wide_add(ar, p, q);
+  p = tower_wide_mul(ar, u[0], dc[1]);
+  q = tower_wide_mul(ar, u[1], dc[0]);
+  q->sign = - q->sign;
+  k1 = tower_wide_add(ar, p, q);
+  p = tower_wide_mul(ar, u[0], u[0]);
+  q = tower_wide_mul(ar, u[1], u[1]);
+  l2 = tower_wide_add(ar, p, q);
+  /* L0 = r0 + d, dL = r1 - r0 */
+  L0 = tower_wide_zero(ar);
+  L0 = tower_wide_add_double(ar, L0, r0, 1);
+  L0 = tower_wide_add_double(ar, L0, d, 1);
+  dL = tower_wide_zero(ar);
+  dL = tower_wide_add_double(ar, dL, r1, 1);
+  dL = tower_wide_add_double(ar, dL, r0, -1);
+  /* A = k1^2 - l2 dL^2, B = k0 k1 - l2 L0 dL, C = k0^2 - l2 L0^2 */
+  A = tower_wide_mul(ar, k1, k1);
+  sq = tower_wide_mul(ar, dL, dL);
+  l2L = tower_wide_mul(ar, l2, sq);
+  l2L->sign = - l2L->sign;
+  A = tower_wide_add(ar, A, l2L);
+  B = tower_wide_mul(ar, k0, k1);
+  sq = tower_wide_mul(ar, L0, dL);
+  l2L = tower_wide_mul(ar, l2, sq);
+  l2L->sign = - l2L->sign;
+  B = tower_wide_add(ar, B, l2L);
+  C = tower_wide_mul(ar, k0, k0);
+  sq = tower_wide_mul(ar, L0, L0);
+  l2L = tower_wide_mul(ar, l2, sq);
+  l2L->sign = - l2L->sign;
+  C = tower_wide_add(ar, C, l2L);
+  dwithin_grid_set(ar, &s.qp, A, B, C, D);
+  k[2] = dwithin_quadratic_period(ar, A, B, C, D, &lo[2], &hi[2]);
+  /* The projection: s0 = w0 . u, s1 = dc . u, held times D where read */
+  const TowerWide *s0, *wD;
+  p = tower_wide_mul(ar, w0[0], u[0]);
+  q = tower_wide_mul(ar, w0[1], u[1]);
+  s0 = tower_wide_add(ar, p, q);
+  p = tower_wide_mul(ar, dc[0], u[0]);
+  q = tower_wide_mul(ar, dc[1], u[1]);
+  s.s1 = tower_wide_add(ar, p, q);
+  wD = tower_wide_of_int64(ar, D);
+  s.s0D = tower_wide_mul(ar, s0, wD);
+  s.l2D = tower_wide_mul(ar, l2, wD);
+  /* Their doubles, for the filter of #segm_within_sign */
+  s.s0Dd = tower_wide_approx(s.s0D);
+  s.s1d = tower_wide_approx(s.s1);
+  s.l2Dd = tower_wide_approx(s.l2D);
+  s.approx = (s.s0D->sign == 0 || isnormal(s.s0Dd)) &&
+    (s.s1->sign == 0 || isnormal(s.s1d)) &&
+    (s.l2D->sign == 0 || isnormal(s.l2Dd));
+
+  int sign0 = segm_within_sign(&s, 0), signD = segm_within_sign(&s, D);
+  /* Within at both ends, within throughout, the gap being convex */
+  if (sign0 <= 0 && signD <= 0)
+  {
+    *n1 = 0;
+    *n2 = D;
+    return 2;
+  }
+  /* A whole microsecond within the period, among the bounds of the parts */
+  int64 inside = -1, first_est = D, last_est = 0;
+  for (int i = 0; i < 3 && inside < 0; i++)
+  {
+    if (k[i] == 0)
+      continue;
+    first_est = Min(first_est, lo[i]);
+    last_est = Max(last_est, hi[i]);
+    const int64 cand[4] = {lo[i], lo[i] + 1, hi[i], hi[i] + 1};
+    for (int j = 0; j < 4; j++)
+      if (cand[j] >= 0 && cand[j] <= D && segm_within_sign(&s, cand[j]) <= 0)
+      {
+        inside = cand[j];
+        break;
+      }
+  }
+  if (inside < 0)
+  {
+    /* A period holding no whole microsecond: within of an end, or within
+     * of the line during an instant alone, at its vertex -B / A, A > 0,
+     * where the projection lies on the segment. Where the line holds a whole
+     * microsecond and none of them is within, the projection leaves the
+     * segment wherever the disc is within of the line, and at an end of
+     * the segment the line and that end are as near, so the disc is within
+     * of an end there, which is answered above */
+    for (int i = 0; i < 2; i++)
+      if (k[i] != 0)
+      {
+        *n1 = *n2 = lo[i];
+        return 1;
+      }
+    if (k[2] != 1)
+      return 0;
+    /* (s0 A - s1 B) / A is the projection at the vertex, A > 0 */
+    const TowerWide *vs = tower_wide_sub(ar, tower_wide_mul(ar, s0, A), tower_wide_mul(ar, s.s1, B));
+    if (vs->sign < 0 || tower_wide_cmp(vs, tower_wide_mul(ar, l2, A)) > 0)
+      return 0;
+    *n1 = *n2 = lo[2];
+    return 1;
+  }
+  /* A bound at which the disc comes within dates at the microsecond before
+   * the first one within, unless it is exactly at the distance there */
+  if (sign0 <= 0)
+    *n1 = 0;
+  else
+  {
+    int64 m = grid_sign_first(&s, segm_within_sign, 0, inside,
+      (double) first_est);
+    *n1 = (segm_within_sign(&s, m) == 0) ? m : m - 1;
+  }
+  *n2 = (signD <= 0) ? D :
+    grid_sign_last(&s, segm_within_sign, inside, D, (double) last_est);
+  return (*n1 == *n2) ? 1 : 2;
 }
 
 /**
@@ -7220,158 +7414,14 @@ point_motion_segm_dwithin_period_exact(const double *c0, const double *c1,
         pu[0] * pu[0] + pu[1] * pu[1], a, ev, ev[0] * ev[0] + ev[1] * ev[1],
         2, 0.0, &lo2, &hi2) && lo2 > reach2)
     return 0;
-  SegmWithinGrid s;
-  WideDyadic A, B, C;
-  int64 lo[3], hi[3];
-  int k[3];
-  /* The ends */
-  point_motion_dwithin_coeffs(c0, c1, a, a, 2, r0, r1, 0.0, 0.0, d, 0.0, &A,
-    &B, &C);
-  dwithin_grid_set(&s.qa, &A, &B, &C, D);
-  k[0] = dwithin_quadratic_period(&A, &B, &C, D, &lo[0], &hi[0]);
-  point_motion_dwithin_coeffs(c0, c1, b, b, 2, r0, r1, 0.0, 0.0, d, 0.0, &A,
-    &B, &C);
-  dwithin_grid_set(&s.qb, &A, &B, &C, D);
-  k[1] = dwithin_quadratic_period(&A, &B, &C, D, &lo[1], &hi[1]);
-  /* The line: u = b - a, w0 = c0 - a, dc = c1 - c0, each difference exact */
-  WideDyadic u[2], w0[2], dc[2], p, q, k0, k1, l2, L0, dL, sq, l2L;
-  for (int i = 0; i < 2; i++)
-  {
-    u[i].sign = 0; u[i].len = 0; u[i].exp = 0;
-    wide_dyadic_accumulate_double(&u[i], b[i], 1);
-    wide_dyadic_accumulate_double(&u[i], a[i], -1);
-    w0[i].sign = 0; w0[i].len = 0; w0[i].exp = 0;
-    wide_dyadic_accumulate_double(&w0[i], c0[i], 1);
-    wide_dyadic_accumulate_double(&w0[i], a[i], -1);
-    dc[i].sign = 0; dc[i].len = 0; dc[i].exp = 0;
-    wide_dyadic_accumulate_double(&dc[i], c1[i], 1);
-    wide_dyadic_accumulate_double(&dc[i], c0[i], -1);
-  }
-  /* k0 = u x w0, k1 = u x dc, l2 = |u|^2 */
-  wide_dyadic_mul(&u[0], &w0[1], &p);
-  wide_dyadic_mul(&u[1], &w0[0], &q);
-  q.sign = - q.sign;
-  wide_dyadic_add(&p, &q, &k0);
-  wide_dyadic_mul(&u[0], &dc[1], &p);
-  wide_dyadic_mul(&u[1], &dc[0], &q);
-  q.sign = - q.sign;
-  wide_dyadic_add(&p, &q, &k1);
-  wide_dyadic_mul(&u[0], &u[0], &p);
-  wide_dyadic_mul(&u[1], &u[1], &q);
-  wide_dyadic_add(&p, &q, &l2);
-  /* L0 = r0 + d, dL = r1 - r0 */
-  L0.sign = 0; L0.len = 0; L0.exp = 0;
-  wide_dyadic_accumulate_double(&L0, r0, 1);
-  wide_dyadic_accumulate_double(&L0, d, 1);
-  dL.sign = 0; dL.len = 0; dL.exp = 0;
-  wide_dyadic_accumulate_double(&dL, r1, 1);
-  wide_dyadic_accumulate_double(&dL, r0, -1);
-  /* A = k1^2 - l2 dL^2, B = k0 k1 - l2 L0 dL, C = k0^2 - l2 L0^2 */
-  wide_dyadic_mul(&k1, &k1, &A);
-  wide_dyadic_mul(&dL, &dL, &sq);
-  wide_dyadic_mul(&l2, &sq, &l2L);
-  l2L.sign = - l2L.sign;
-  wide_dyadic_accumulate(&A, &l2L);
-  wide_dyadic_mul(&k0, &k1, &B);
-  wide_dyadic_mul(&L0, &dL, &sq);
-  wide_dyadic_mul(&l2, &sq, &l2L);
-  l2L.sign = - l2L.sign;
-  wide_dyadic_accumulate(&B, &l2L);
-  wide_dyadic_mul(&k0, &k0, &C);
-  wide_dyadic_mul(&L0, &L0, &sq);
-  wide_dyadic_mul(&l2, &sq, &l2L);
-  l2L.sign = - l2L.sign;
-  wide_dyadic_accumulate(&C, &l2L);
-  dwithin_grid_set(&s.qp, &A, &B, &C, D);
-  k[2] = dwithin_quadratic_period(&A, &B, &C, D, &lo[2], &hi[2]);
-  /* The projection: s0 = w0 . u, s1 = dc . u, held times D where read */
-  WideDyadic s0, wD;
-  wide_dyadic_mul(&w0[0], &u[0], &p);
-  wide_dyadic_mul(&w0[1], &u[1], &q);
-  wide_dyadic_add(&p, &q, &s0);
-  wide_dyadic_mul(&dc[0], &u[0], &p);
-  wide_dyadic_mul(&dc[1], &u[1], &q);
-  wide_dyadic_add(&p, &q, &s.s1);
-  wide_dyadic_set_int(&wD, D);
-  wide_dyadic_mul(&s0, &wD, &s.s0D);
-  wide_dyadic_mul(&l2, &wD, &s.l2D);
-  /* Their doubles, for the filter of #segm_within_sign */
-  s.s0Dd = wide_dyadic_approx(&s.s0D);
-  s.s1d = wide_dyadic_approx(&s.s1);
-  s.l2Dd = wide_dyadic_approx(&s.l2D);
-  s.approx = (s.s0D.sign == 0 || isnormal(s.s0Dd)) &&
-    (s.s1.sign == 0 || isnormal(s.s1d)) &&
-    (s.l2D.sign == 0 || isnormal(s.l2Dd));
-
-  int sign0 = segm_within_sign(&s, 0), signD = segm_within_sign(&s, D);
-  /* Within at both ends, within throughout, the gap being convex */
-  if (sign0 <= 0 && signD <= 0)
-  {
-    *n1 = 0;
-    *n2 = D;
-    return 2;
-  }
-  /* A whole microsecond within the period, among the bounds of the parts */
-  int64 inside = -1, first_est = D, last_est = 0;
-  for (int i = 0; i < 3 && inside < 0; i++)
-  {
-    if (k[i] == 0)
-      continue;
-    first_est = Min(first_est, lo[i]);
-    last_est = Max(last_est, hi[i]);
-    const int64 cand[4] = {lo[i], lo[i] + 1, hi[i], hi[i] + 1};
-    for (int j = 0; j < 4; j++)
-      if (cand[j] >= 0 && cand[j] <= D && segm_within_sign(&s, cand[j]) <= 0)
-      {
-        inside = cand[j];
-        break;
-      }
-  }
-  if (inside < 0)
-  {
-    /* A period holding no whole microsecond: within of an end, or within
-     * of the line during an instant alone, at its vertex -B / A, A > 0,
-     * where the projection lies on the segment. Where the line holds a whole
-     * microsecond and none of them is within, the projection leaves the
-     * segment wherever the disc is within of the line, and at an end of
-     * the segment the line and that end are as near, so the disc is within
-     * of an end there, which is answered above */
-    for (int i = 0; i < 2; i++)
-      if (k[i] != 0)
-      {
-        *n1 = *n2 = lo[i];
-        return 1;
-      }
-    if (k[2] != 1)
-      return 0;
-    /* (s0 A - s1 B) / A is the projection at the vertex, A > 0 */
-    WideDyadic va, vb, vs, vr, negl2A;
-    wide_dyadic_mul(&s0, &A, &va);
-    wide_dyadic_mul(&s.s1, &B, &vb);
-    vb.sign = - vb.sign;
-    wide_dyadic_add(&va, &vb, &vs);
-    wide_dyadic_mul(&l2, &A, &negl2A);
-    negl2A.sign = - negl2A.sign;
-    wide_dyadic_add(&vs, &negl2A, &vr);
-    if (vs.sign < 0 || vr.sign > 0)
-      return 0;
-    *n1 = *n2 = lo[2];
-    return 1;
-  }
-  /* A bound at which the disc comes within dates at the microsecond before
-   * the first one within, unless it is exactly at the distance there */
-  if (sign0 <= 0)
-    *n1 = 0;
-  else
-  {
-    int64 m = grid_sign_first(&s, segm_within_sign, 0, inside,
-      (double) first_est);
-    *n1 = (segm_within_sign(&s, m) == 0) ? m : m - 1;
-  }
-  *n2 = (signD <= 0) ? D :
-    grid_sign_last(&s, segm_within_sign, inside, D, (double) last_est);
-  return (*n1 == *n2) ? 1 : 2;
+  TowerWideArena arena;
+  tower_wide_arena_init(&arena);
+  int result = segm_dwithin_period_wide(&arena, c0, c1, r0, r1, a, b, d, D,
+    n1, n2);
+  tower_wide_arena_free(&arena);
+  return result;
 }
+
 
 /**
  * @brief Return true if the centre of a disc moving linearly over a segment
@@ -7387,23 +7437,27 @@ static bool
 motion_point_inside_segms(const double *c0, const double *c1, int64 D,
   int64 n, const Edge *const *edges, int nedges)
 {
-  WideDyadic P[2], wD, wn, t;
-  wide_dyadic_set_int(&wD, D);
-  wide_dyadic_set_int(&wn, n);
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  const TowerWide *wD, *wn, *t;
+  TowerWide *P[2];
+  wD = tower_wide_of_int64(ar, D);
+  wn = tower_wide_of_int64(ar, n);
   for (int i = 0; i < 2; i++)
   {
-    WideDyadic c, dc;
-    c.sign = 0; c.len = 0; c.exp = 0;
-    wide_dyadic_accumulate_double(&c, c0[i], 1);
-    dc.sign = 0; dc.len = 0; dc.exp = 0;
-    wide_dyadic_accumulate_double(&dc, c1[i], 1);
-    wide_dyadic_accumulate_double(&dc, c0[i], -1);
-    wide_dyadic_mul(&c, &wD, &P[i]);
-    wide_dyadic_mul(&dc, &wn, &t);
-    wide_dyadic_accumulate(&P[i], &t);
+    const TowerWide *c, *dc;
+    c = tower_wide_zero(ar);
+    c = tower_wide_add_double(ar, c, c0[i], 1);
+    dc = tower_wide_zero(ar);
+    dc = tower_wide_add_double(ar, dc, c1[i], 1);
+    dc = tower_wide_add_double(ar, dc, c0[i], -1);
+    P[i] = tower_wide_mul(ar, c, wD);
+    t = tower_wide_mul(ar, dc, wn);
+    P[i] = tower_wide_add(ar, P[i], t);
   }
-  WideDyadic negPy = P[1];
-  negPy.sign = - negPy.sign;
+  const TowerWide *negPy = tower_wide_neg(ar, P[1]);
+  /* The values of each edge are released at the next */
+  TowerWideMark m = tower_wide_arena_mark(ar);
   /* A filter: the height `P_y` in doubles, `c0_y D + n (c1_y - c0_y)`,
    * within 2^-50 of the magnitudes it combines, so an edge both of whose
    * ends stand beyond that, on one side of it, crosses no ray, and only
@@ -7416,6 +7470,7 @@ motion_point_inside_segms(const double *c0, const double *c1, int64 D,
   bool inside = false;
   for (int k = 0; k < nedges; k++)
   {
+    tower_wide_arena_release(ar, m);
     const Edge *e = edges[k];
     if (e->etype != EDGE_POLYSEG)
       continue;
@@ -7428,43 +7483,45 @@ motion_point_inside_segms(const double *c0, const double *c1, int64 D,
         continue;
     }
     /* The signs of D a_y - P_y and D b_y - P_y */
-    WideDyadic ay, by, ax, ux, uy, qx, qy, p, q, s;
-    ay.sign = 0; ay.len = 0; ay.exp = 0;
-    wide_dyadic_accumulate_double(&ay, e->y1, 1);
-    by.sign = 0; by.len = 0; by.exp = 0;
-    wide_dyadic_accumulate_double(&by, e->y2, 1);
-    wide_dyadic_mul(&ay, &wD, &q);
-    wide_dyadic_add(&q, &negPy, &p);
-    int sa = p.sign;
-    wide_dyadic_mul(&by, &wD, &q);
-    wide_dyadic_add(&q, &negPy, &p);
-    int sb = p.sign;
+    const TowerWide *ay, *by, *ax, *ux, *uy, *qx, *qy, *p, *s;
+    TowerWide *q;
+    ay = tower_wide_zero(ar);
+    ay = tower_wide_add_double(ar, ay, e->y1, 1);
+    by = tower_wide_zero(ar);
+    by = tower_wide_add_double(ar, by, e->y2, 1);
+    q = tower_wide_mul(ar, ay, wD);
+    p = tower_wide_add(ar, q, negPy);
+    int sa = p->sign;
+    q = tower_wide_mul(ar, by, wD);
+    p = tower_wide_add(ar, q, negPy);
+    int sb = p->sign;
     /* Up: a_y <= p_y < b_y; down: b_y <= p_y < a_y */
     bool up = sa <= 0 && sb > 0, down = sb <= 0 && sa > 0;
     if (! up && ! down)
       continue;
     /* (b - a) x (P - D a) */
-    ux.sign = 0; ux.len = 0; ux.exp = 0;
-    wide_dyadic_accumulate_double(&ux, e->x2, 1);
-    wide_dyadic_accumulate_double(&ux, e->x1, -1);
-    uy.sign = 0; uy.len = 0; uy.exp = 0;
-    wide_dyadic_accumulate_double(&uy, e->y2, 1);
-    wide_dyadic_accumulate_double(&uy, e->y1, -1);
-    ax.sign = 0; ax.len = 0; ax.exp = 0;
-    wide_dyadic_accumulate_double(&ax, e->x1, 1);
-    wide_dyadic_mul(&ax, &wD, &q);
-    q.sign = - q.sign;
-    wide_dyadic_add(&P[0], &q, &qx);
-    wide_dyadic_mul(&ay, &wD, &q);
-    q.sign = - q.sign;
-    wide_dyadic_add(&P[1], &q, &qy);
-    wide_dyadic_mul(&ux, &qy, &p);
-    wide_dyadic_mul(&uy, &qx, &q);
-    q.sign = - q.sign;
-    wide_dyadic_add(&p, &q, &s);
-    if ((up && s.sign > 0) || (down && s.sign < 0))
+    ux = tower_wide_zero(ar);
+    ux = tower_wide_add_double(ar, ux, e->x2, 1);
+    ux = tower_wide_add_double(ar, ux, e->x1, -1);
+    uy = tower_wide_zero(ar);
+    uy = tower_wide_add_double(ar, uy, e->y2, 1);
+    uy = tower_wide_add_double(ar, uy, e->y1, -1);
+    ax = tower_wide_zero(ar);
+    ax = tower_wide_add_double(ar, ax, e->x1, 1);
+    q = tower_wide_mul(ar, ax, wD);
+    q->sign = - q->sign;
+    qx = tower_wide_add(ar, P[0], q);
+    q = tower_wide_mul(ar, ay, wD);
+    q->sign = - q->sign;
+    qy = tower_wide_add(ar, P[1], q);
+    p = tower_wide_mul(ar, ux, qy);
+    q = tower_wide_mul(ar, uy, qx);
+    q->sign = - q->sign;
+    s = tower_wide_add(ar, p, q);
+    if ((up && s->sign > 0) || (down && s->sign < 0))
       inside = ! inside;
   }
+  tower_wide_arena_free(ar);
   return inside;
 }
 
@@ -7604,17 +7661,74 @@ point_motion_dwithin_only_at_end(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
   double rb0, double rb1, double d, bool start)
 {
-  WideDyadic A, B, C, B2, t, q1, apb;
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  TowerWide *A, *B, *C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
-    &A, &B, &C);
+    ar, &A, &B, &C);
+  bool result;
   if (start)
-    return C.sign == 0 && (B.sign > 0 || (B.sign == 0 && A.sign > 0));
-  wide_dyadic_set_int(&t, 2);
-  wide_dyadic_mul(&B, &t, &B2);
-  wide_dyadic_add(&A, &B2, &q1);
-  wide_dyadic_accumulate(&q1, &C);
-  wide_dyadic_add(&A, &B, &apb);
-  return q1.sign == 0 && (apb.sign < 0 || (apb.sign == 0 && A.sign > 0));
+    result = C->sign == 0 && (B->sign > 0 || (B->sign == 0 && A->sign > 0));
+  else
+  {
+    const TowerWide *t = tower_wide_of_int64(ar, 2);
+    const TowerWide *B2 = tower_wide_mul(ar, B, t);
+    const TowerWide *q1 = tower_wide_add(ar, tower_wide_add(ar, A, B2), C);
+    const TowerWide *apb = tower_wide_add(ar, A, B);
+    result = q1->sign == 0 &&
+      (apb->sign < 0 || (apb->sign == 0 && A->sign > 0));
+  }
+  tower_wide_arena_free(ar);
+  return result;
+}
+
+/**
+ * @brief Return the answer of #point_motion_gap_zero_exact past its filter,
+ * on the exact quadratic in @p ar
+ */
+static int
+point_motion_gap_zero_wide(TowerWideArena *ar, const double *a0,
+  const double *a1, const double *b0, const double *b1, int ndims,
+  double ra0, double ra1, double rb0, double rb1, int *s0, int *s1)
+{
+  const TowerWide *B2, *t, *q1, *y;
+  TowerWide *A, *B, *C, *x;
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, 0.0,
+    0.0, ar, &A, &B, &C);
+  t = tower_wide_of_int64(ar, 2);
+  B2 = tower_wide_mul(ar, B, t);
+  q1 = tower_wide_add(ar, A, B2);
+  q1 = tower_wide_add(ar, q1, C);
+  *s0 = C->sign;
+  *s1 = q1->sign;
+  if (A->sign == 0 && B->sign == 0 && C->sign == 0)
+    return 2;
+  if (C->sign * q1->sign < 0)
+    return 1;
+  if (C->sign == 0 && q1->sign == 0)
+    return 0;
+  if (C->sign == 0)
+    /* The other root -2 B / A, inside where -2 B and A + 2 B = q(1) have the
+     * sign of A */
+    return (A->sign != 0 && B2->sign == - A->sign && q1->sign == A->sign) ? 1 : 0;
+  if (q1->sign == 0)
+  {
+    /* The other root C / A, inside where C and A - C have the sign of A */
+    y = tower_wide_sub(ar, A, C);
+    return (A->sign != 0 && C->sign == A->sign && y->sign == A->sign) ? 1 : 0;
+  }
+  if (C->sign < 0)
+    return 0;
+  /* Positive at both ends: a root inside where the vertex of a convex
+   * parabola lies inside and the parabola reaches zero there */
+  x = tower_wide_add(ar, A, B);
+  if (A->sign <= 0 || B->sign >= 0 || x->sign <= 0)
+    return 0;
+  x = tower_wide_mul(ar, B, B);
+  x->sign = - x->sign;
+  y = tower_wide_mul(ar, A, C);
+  y = tower_wide_add(ar, y, x);
+  return (y->sign <= 0) ? 1 : 0;
 }
 
 /**
@@ -7653,45 +7767,12 @@ point_motion_gap_zero_exact(const double *a0, const double *a1,
     *s0 = *s1 = 1;
     return 0;
   }
-  WideDyadic A, B, C, B2, t, q1, x, y;
-  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, 0.0,
-    0.0, &A, &B, &C);
-  wide_dyadic_set_int(&t, 2);
-  wide_dyadic_mul(&B, &t, &B2);
-  wide_dyadic_add(&A, &B2, &q1);
-  wide_dyadic_accumulate(&q1, &C);
-  *s0 = C.sign;
-  *s1 = q1.sign;
-  if (A.sign == 0 && B.sign == 0 && C.sign == 0)
-    return 2;
-  if (C.sign * q1.sign < 0)
-    return 1;
-  if (C.sign == 0 && q1.sign == 0)
-    return 0;
-  if (C.sign == 0)
-    /* The other root -2 B / A, inside where -2 B and A + 2 B = q(1) have the
-     * sign of A */
-    return (A.sign != 0 && B2.sign == - A.sign && q1.sign == A.sign) ? 1 : 0;
-  if (q1.sign == 0)
-  {
-    /* The other root C / A, inside where C and A - C have the sign of A */
-    x = C;
-    x.sign = - x.sign;
-    wide_dyadic_add(&A, &x, &y);
-    return (A.sign != 0 && C.sign == A.sign && y.sign == A.sign) ? 1 : 0;
-  }
-  if (C.sign < 0)
-    return 0;
-  /* Positive at both ends: a root inside where the vertex of a convex
-   * parabola lies inside and the parabola reaches zero there */
-  wide_dyadic_add(&A, &B, &x);
-  if (A.sign <= 0 || B.sign >= 0 || x.sign <= 0)
-    return 0;
-  wide_dyadic_mul(&B, &B, &x);
-  x.sign = - x.sign;
-  wide_dyadic_mul(&A, &C, &y);
-  wide_dyadic_accumulate(&y, &x);
-  return (y.sign <= 0) ? 1 : 0;
+  TowerWideArena arena;
+  tower_wide_arena_init(&arena);
+  int result = point_motion_gap_zero_wide(&arena, a0, a1, b0, b1, ndims, ra0,
+    ra1, rb0, rb1, s0, s1);
+  tower_wide_arena_free(&arena);
+  return result;
 }
 
 /**
@@ -7705,11 +7786,12 @@ point_motion_gap_zero_exact(const double *a0, const double *a1,
  */
 typedef struct
 {
-  WideDyadic A;     /**< A, which no distance changes */
-  WideDyadic B0;    /**< B at the distance 0 */
-  WideDyadic C0;    /**< C at the distance 0 */
-  WideDyadic R1;    /**< The radius at the start, L0 at the distance 0 */
-  WideDyadic DR;    /**< The change of the radius, dL */
+  TowerWide *A;     /**< A, which no distance changes */
+  TowerWide *B0;    /**< B at the distance 0 */
+  TowerWide *C0;    /**< C at the distance 0 */
+  TowerWide *R1;    /**< The radius at the start, L0 at the distance 0 */
+  TowerWide *DR;    /**< The change of the radius, dL */
+  TowerWideArena *ar; /**< Arena of the five and of each sign read */
 } PointMotionGap;
 
 /**
@@ -7721,12 +7803,24 @@ static void
 point_motion_gap_init(PointMotionGap *g, const double *c1, const double *c2,
   const double *p, int ndims, double r1, double r2)
 {
+  g->ar = palloc(sizeof(TowerWideArena));
+  tower_wide_arena_init(g->ar);
+  TowerWideArena *ar = g->ar;
   point_motion_dwithin_coeffs(c1, c2, p, p, ndims, r1, r2, 0.0, 0.0, 0.0,
-    0.0, &g->A, &g->B0, &g->C0);
-  wide_dyadic_set_double(&g->R1, r1);
-  g->DR = g->R1;
-  g->DR.sign = - g->DR.sign;
-  wide_dyadic_accumulate_double(&g->DR, r2, 1);
+    0.0, ar, &g->A, &g->B0, &g->C0);
+  g->R1 = tower_wide_of_double(ar, r1);
+  g->DR = tower_wide_add_double(ar, tower_wide_neg(ar, g->R1), r2, 1);
+  return;
+}
+
+/**
+ * @brief Free the values of #point_motion_gap_init
+ */
+static void
+point_motion_gap_free(PointMotionGap *g)
+{
+  tower_wide_arena_free(g->ar);
+  pfree(g->ar);
   return;
 }
 
@@ -7741,33 +7835,25 @@ point_motion_gap_init(PointMotionGap *g, const double *c1, const double *c2,
 static int
 point_motion_gap_sign_at(const PointMotionGap *g, double d, double dlo)
 {
-  WideDyadic L, t, t2, B, C, B2, q1, apb, bb, ac, v, two;
-  wide_dyadic_set_double(&L, d);
-  wide_dyadic_accumulate_double(&L, dlo, 1);
-  wide_dyadic_mul(&L, &g->DR, &t);
-  t.sign = - t.sign;
-  wide_dyadic_add(&g->B0, &t, &B);
-  wide_dyadic_set_int(&two, 2);
-  wide_dyadic_mul(&g->R1, &two, &t);
-  wide_dyadic_add(&t, &L, &t2);
-  wide_dyadic_mul(&L, &t2, &t);
-  t.sign = - t.sign;
-  wide_dyadic_add(&g->C0, &t, &C);
-  const WideDyadic *A = &g->A;
-  wide_dyadic_mul(&B, &two, &B2);
-  wide_dyadic_add(A, &B2, &q1);
-  wide_dyadic_accumulate(&q1, &C);
-  int sign = (C.sign < q1.sign) ? C.sign : q1.sign;
-  wide_dyadic_add(A, &B, &apb);
-  if (A->sign > 0 && B.sign < 0 && apb.sign > 0)
+  TowerWideArena *ar = g->ar;
+  TowerWideMark m = tower_wide_arena_mark(ar);
+  const TowerWide *L = tower_wide_add_double(ar, tower_wide_of_double(ar, d), dlo, 1);
+  const TowerWide *two = tower_wide_of_int64(ar, 2);
+  const TowerWide *B = tower_wide_sub(ar, g->B0, tower_wide_mul(ar, L, g->DR));
+  TowerWide *C = tower_wide_sub(ar, g->C0, tower_wide_mul(ar, L,
+    tower_wide_add(ar, tower_wide_mul(ar, g->R1, two), L)));
+  const TowerWide *A = g->A;
+  TowerWide *q1 = tower_wide_add(ar, tower_wide_add(ar, A,
+    tower_wide_mul(ar, B, two)), C);
+  int sign = (C->sign < q1->sign) ? C->sign : q1->sign;
+  const TowerWide *apb = tower_wide_add(ar, A, B);
+  if (A->sign > 0 && B->sign < 0 && apb->sign > 0)
   {
-    wide_dyadic_mul(A, &C, &ac);
-    wide_dyadic_mul(&B, &B, &bb);
-    bb.sign = - bb.sign;
-    wide_dyadic_add(&ac, &bb, &v);
-    if (v.sign < sign)
-      sign = v.sign;
+    const TowerWide *v = tower_wide_sub(ar, tower_wide_mul(ar, A, C), tower_wide_mul(ar, B, B));
+    if (v->sign < sign)
+      sign = v->sign;
   }
+  tower_wide_arena_release(ar, m);
   return sign;
 }
 
@@ -7775,24 +7861,28 @@ static int
 point_motion_gap_sign(const double *c1, const double *c2, const double *p,
   int ndims, double r1, double r2, double d, double dlo)
 {
-  WideDyadic A, B, C, B2, t, q1, apb, bb, ac, v;
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  const TowerWide *B2, *t, *apb, *ac, *v;
+  TowerWide *A, *B, *C, *q1, *bb;
   point_motion_dwithin_coeffs(c1, c2, p, p, ndims, r1, r2, 0.0, 0.0, d, dlo,
-    &A, &B, &C);
-  wide_dyadic_set_int(&t, 2);
-  wide_dyadic_mul(&B, &t, &B2);
-  wide_dyadic_add(&A, &B2, &q1);
-  wide_dyadic_accumulate(&q1, &C);
-  int sign = (C.sign < q1.sign) ? C.sign : q1.sign;
-  wide_dyadic_add(&A, &B, &apb);
-  if (A.sign > 0 && B.sign < 0 && apb.sign > 0)
+    ar, &A, &B, &C);
+  t = tower_wide_of_int64(ar, 2);
+  B2 = tower_wide_mul(ar, B, t);
+  q1 = tower_wide_add(ar, A, B2);
+  q1 = tower_wide_add(ar, q1, C);
+  int sign = (C->sign < q1->sign) ? C->sign : q1->sign;
+  apb = tower_wide_add(ar, A, B);
+  if (A->sign > 0 && B->sign < 0 && apb->sign > 0)
   {
-    wide_dyadic_mul(&A, &C, &ac);
-    wide_dyadic_mul(&B, &B, &bb);
-    bb.sign = - bb.sign;
-    wide_dyadic_add(&ac, &bb, &v);
-    if (v.sign < sign)
-      sign = v.sign;
+    ac = tower_wide_mul(ar, A, C);
+    bb = tower_wide_mul(ar, B, B);
+    bb->sign = - bb->sign;
+    v = tower_wide_add(ar, ac, bb);
+    if (v->sign < sign)
+      sign = v->sign;
   }
+  tower_wide_arena_free(ar);
   return sign;
 }
 
@@ -7809,7 +7899,7 @@ point_motion_gap_sign(const double *c1, const double *c2, const double *p,
  * `A C - B^2 = |u|^2 |v|^2 - (u . v)^2 - L0^2 |v|^2 - dL^2 |u|^2 +
  * 2 L0 dL (u . v)`, the terms of the two first products in one coordinate
  * cancelling. Each sign is decided as #polynomial_sign_exact decides it but
- * for the expansions, so that the WideDyadic route of #point_motion_gap_sign
+ * for the expansions, so that the #TowerWide route of #point_motion_gap_sign
  * is read only for the signs the doubles and their pairs leave open
  */
 static int
@@ -8069,8 +8159,8 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
   double c = point_motion_offset_estimate(c1, c2, p, ndims, r1, r2);
   uint64_t bits;
   memcpy(&bits, &c, sizeof(bits));
-  /* The WideDyadic parts of the quadratic, set at the first side the filters
-   * of #point_motion_gap_sign_filter leave open */
+  /* The exact parts of the quadratic, set at the first side the filters of
+   * #point_motion_gap_sign_filter leave open, and freed on return */
   PointMotionGap gap;
   bool gapset = false;
 #define PMO_BEYOND(bb, res) \
@@ -8135,14 +8225,22 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
     while (true)
     {
       if (hi == 0)
+      {
+        if (gapset)
+          point_motion_gap_free(&gap);
         return 0.0;
+      }
       lo = (hi > step) ? hi - step : 0;
       PMO_BEYOND(lo, beyond);
       if (beyond)
         break;
       hi = lo;
       if (lo == 0)
+      {
+        if (gapset)
+          point_motion_gap_free(&gap);
         return 0.0;
+      }
       step *= 2;
     }
   }
@@ -8156,6 +8254,8 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
       hi = mid;
   }
 #undef PMO_BEYOND
+  if (gapset)
+    point_motion_gap_free(&gap);
   double result;
   memcpy(&result, &hi, sizeof(result));
   return result;
@@ -8332,30 +8432,35 @@ point_segment_nearest_microsecond(const double *p, const double *a,
   if (point_segment_dot_sign_inputs(p, a, a, b, ndims) <= 0 ||
       point_segment_dot_sign_inputs(p, b, a, b, ndims) >= 0)
     return false;
-  WideDyadic N, A, t, wD;
-  wide_dyadic_set_int(&N, 0);
-  wide_dyadic_set_int(&A, 0);
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  const TowerWide *N, *A, *t, *wD;
+  N = tower_wide_zero(ar);
+  A = tower_wide_zero(ar);
   for (int i = 0; i < ndims; i++)
   {
-    WideDyadic wa, wb, wp, u, w;
-    wide_dyadic_set_double(&wa, a[i]);
-    wide_dyadic_set_double(&wb, b[i]);
-    wide_dyadic_set_double(&wp, p[i]);
-    wide_dyadic_sub(&wb, &wa, &u);
-    wide_dyadic_sub(&wp, &wa, &w);
-    wide_dyadic_mul(&w, &u, &t);
-    wide_dyadic_accumulate(&N, &t);
-    wide_dyadic_mul(&u, &u, &t);
-    wide_dyadic_accumulate(&A, &t);
+    const TowerWide *wa, *wb, *wp, *u, *w;
+    wa = tower_wide_of_double(ar, a[i]);
+    wb = tower_wide_of_double(ar, b[i]);
+    wp = tower_wide_of_double(ar, p[i]);
+    u = tower_wide_sub(ar, wb, wa);
+    w = tower_wide_sub(ar, wp, wa);
+    t = tower_wide_mul(ar, w, u);
+    N = tower_wide_add(ar, N, t);
+    t = tower_wide_mul(ar, u, u);
+    A = tower_wide_add(ar, A, t);
   }
   DWithinGrid g;
   memset(&g, 0, sizeof(DWithinGrid));
+  g.ar = ar;
   g.A = A;
-  wide_dyadic_set_int(&wD, D);
-  wide_dyadic_mul(&N, &wD, &g.BD);
-  g.BD.sign = - g.BD.sign;
-  double est = wide_dyadic_approx(&N) / wide_dyadic_approx(&A) * (double) D;
+  wD = tower_wide_of_int64(ar, D);
+  TowerWide *BD = tower_wide_mul(ar, N, wD);
+  BD->sign = - BD->sign;
+  g.BD = BD;
+  double est = tower_wide_approx(N) / tower_wide_approx(A) * (double) D;
   *n = dwithin_grid_last(&g, 0, D, est, true);
+  tower_wide_arena_free(ar);
   return *n > 0;
 }
 
@@ -8403,8 +8508,8 @@ linesegm_param_cmp(const double *a, const double *b, const double *p,
  * B, as #linesegm_param reads it, at any finite coordinates
  * @details Where the position is an end, its sign decides it exactly
  * (#linesegm_param_side). Inside, it is the quotient of `(p - a) . (b - a)`
- * by `(b - a) . (b - a)`, both held exactly as #WideDyadic and divided on
- * their leading limbs (#wide_dyadic_frexp), within a relative 2^-62 of it,
+ * by `(b - a) . (b - a)`, both held exactly as #TowerWide and divided on
+ * their leading limbs (#tower_wide_frexp), within a relative 2^-62 of it,
  * where the squared length leaves the doubles #linesegm_param divides by
  * @param[in] a,b The two ends of the segment, distinct
  * @param[in] p The point
@@ -8415,21 +8520,25 @@ linesegm_param_wide(const double *a, const double *b, const double *p)
   int side = linesegm_param_side(a, b, p);
   if (side != 0)
     return (side < 0) ? 0.0 : 1.0;
-  WideDyadic u[2], w[2], v1, v2, t1, t2, dot, len2;
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  const TowerWide *v1, *v2, *t1, *t2, *dot, *len2;
+  TowerWide *u[2], *w[2];
   for (int i = 0; i < 2; i++)
   {
-    wide_dyadic_set_double(&v1, b[i]);
-    wide_dyadic_set_double(&v2, a[i]);
-    wide_dyadic_sub(&v1, &v2, &u[i]);
-    wide_dyadic_set_double(&v1, p[i]);
-    wide_dyadic_sub(&v1, &v2, &w[i]);
+    v1 = tower_wide_of_double(ar, b[i]);
+    v2 = tower_wide_of_double(ar, a[i]);
+    u[i] = tower_wide_sub(ar, v1, v2);
+    v1 = tower_wide_of_double(ar, p[i]);
+    w[i] = tower_wide_sub(ar, v1, v2);
   }
-  wide_dyadic_mul(&w[0], &u[0], &t1); wide_dyadic_mul(&w[1], &u[1], &t2);
-  wide_dyadic_add(&t1, &t2, &dot);
-  wide_dyadic_mul(&u[0], &u[0], &t1); wide_dyadic_mul(&u[1], &u[1], &t2);
-  wide_dyadic_add(&t1, &t2, &len2);
+  t1 = tower_wide_mul(ar, w[0], u[0]); t2 = tower_wide_mul(ar, w[1], u[1]);
+  dot = tower_wide_add(ar, t1, t2);
+  t1 = tower_wide_mul(ar, u[0], u[0]); t2 = tower_wide_mul(ar, u[1], u[1]);
+  len2 = tower_wide_add(ar, t1, t2);
   int en, ed;
-  double mn = wide_dyadic_frexp(&dot, &en), md = wide_dyadic_frexp(&len2, &ed);
+  double mn = tower_wide_frexp(dot, &en), md = tower_wide_frexp(len2, &ed);
+  tower_wide_arena_free(ar);
   double t = ldexp(mn / md, en - ed);
   return (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
 }
@@ -9683,7 +9792,7 @@ point_segment_distance_offset_exact(const double *p, const double *a,
  * @details The value #point_segment_side_sign_inputs decides exactly, with
  * `w = p - a` and `u = b - a`, evaluated on pairs of doubles carrying a bound
  * on their error (#DDBound), as #plane_point_offset_sign reads its value ahead
- * of #WideDyadic and as #point_segment_offset_filter_sign filters the rounding
+ * of #TowerWide and as #point_segment_offset_filter_sign filters the rounding
  * of the same quantity. A value whose bound leaves it on one side of zero has
  * that sign, and a value with no error that is zero is an exact zero
  * @param[in] p,a,b The point and the two ends of the segment
@@ -9871,11 +9980,11 @@ typedef struct
  * #segment_distance_square, the sign of `x v - u y` since both denominators
  * are positive
  * @details Read on the exact sums @p sums (#polynomial_sign_exact), or on
- * @p wsums where it is not NULL (#polynomial_sign_wide)
+ * @p wsums in @p ar where it is not NULL (#polynomial_sign_wide)
  */
 static int
-segment_square_cmp(const ExactSum *sums, const WideDyadic *wsums,
-  const SegmentSquare *s1, const SegmentSquare *s2)
+segment_square_cmp(TowerWideArena *ar, const ExactSum *sums,
+  TowerWide *const *wsums, const SegmentSquare *s1, const SegmentSquare *s2)
 {
   PolyTerm terms[54];
   int n = 0;
@@ -9894,7 +10003,7 @@ segment_square_cmp(const ExactSum *sums, const WideDyadic *wsums,
       }
   }
   if (wsums)
-    return polynomial_sign_wide(wsums, terms, n);
+    return polynomial_sign_wide(ar, wsums, terms, n);
   return polynomial_sign_exact(sums, terms, n);
 }
 
@@ -9914,7 +10023,7 @@ segment_square_cmp(const ExactSum *sums, const WideDyadic *wsums,
  * #point_segment_distance_offset_exact scales them; a product of six scaled
  * values is exact where each has its lowest bit at or above 2^-179, and below
  * 2^6, so none overflows. Where a scaled value has its lowest bit below
- * 2^-179, the sums are held unscaled as #WideDyadic and the polynomials read
+ * 2^-179, the sums are held unscaled as #TowerWide and the polynomials read
  * on them (#polynomial_sign_wide), exact at any magnitude
  * @param[in] pt The point, the start and the end of the other segment, of
  * each of the four distances
@@ -9967,9 +10076,11 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
       }
   }
   /* The exact sums, sum (3 i + j) * ndims + c for coordinate c of difference
-   * j of distance i, scaled in expansions, else unscaled in #WideDyadic */
+   * j of distance i, scaled in expansions, else unscaled in #TowerWide */
   ExactSum sums[36];
-  WideDyadic *wsums = wide ? palloc(sizeof(WideDyadic) * 36) : NULL;
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  TowerWide *wsumv[36], **wsums = wide ? wsumv : NULL;
   for (int i = 0; i < 4; i++)
   {
     if (! (want & (1 << i)))
@@ -9981,10 +10092,10 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
         int idx = (3 * i + j) * ndims + cc;
         if (wide)
         {
-          WideDyadic wv, we;
-          wide_dyadic_set_double(&wv, v);
-          wide_dyadic_set_double(&we, e);
-          wide_dyadic_add(&wv, &we, &wsums[idx]);
+          const TowerWide *wv, *we;
+          wv = tower_wide_of_double(ar, v);
+          we = tower_wide_of_double(ar, e);
+          wsums[idx] = tower_wide_add(ar, wv, we);
         }
         else
         {
@@ -10036,7 +10147,7 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
     if (! (want & (1 << i)))
       continue;
     int cmp = (best < 0) ? -1 :
-      segment_square_cmp(sums, wsums, &sq[i], &sq[best]);
+      segment_square_cmp(ar, sums, wsums, &sq[i], &sq[best]);
     if (cmp < 0)
     {
       best = i;
@@ -10045,8 +10156,7 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
     else if (cmp == 0)
       mask |= 1 << i;
   }
-  if (wsums)
-    pfree(wsums);
+  tower_wide_arena_free(ar);
   return mask;
 }
 
