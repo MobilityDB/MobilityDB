@@ -27,8 +27,8 @@ subtypes:
     # compops/posops/topops are generic. spatialrels delegates to the geo spatial
     # relationships via the cell→boundary tgeometry conversion
     # (quadbin_cell_to_boundary), the cell-index
-    # analogue of th3index 290. GiST/SP-GiST are split (322/323), the canonical
-    # cell-index layout (th3index 272/273), not the combined cbuffer `indexes` form.
+    # analogue of th3index 290. GiST/SP-GiST are in two files (322/323), as in
+    # every family.
     # tempspatialrels (364) is generated separately, from the `impl: cast` entry
     # in manifest.d/tempspatialrel_families.yaml.
     # Its set of base values is indexed beside it, by the box the set stores.
@@ -105,10 +105,9 @@ subtypes:
     # cell, the latitudes its geodesic edges rise to included
     # (607_ts2cell_boxops), so the ever intersects/dwithin relationships get
     # spatial index support: C wrappers with SUPPORT tspatial_supportfn
-    # (ts2cell_spatialrels.c). GiST/SP-GiST are split, the canonical cell-index
-    # layout (th3index 272/273), not the combined cbuffer `indexes` form, whose
-    # template declares a KNN ordering operator this family has no distance
-    # function to back.
+    # (ts2cell_spatialrels.c). GiST/SP-GiST are in two files, as in every family;
+    # its class has no nearest approach distance, so its GiST file declares no
+    # distance function.
     # Its set of base values is indexed beside it, by the box the set stores.
     setindex: true
     files: [compops, posops, topops, spatialrels, gist, spgist]
@@ -131,7 +130,7 @@ subtypes:
     # Its set of base values is indexed beside it, by the box the set stores.
     setindex: true
     setmetric: true
-    files: [compops, posops, topops, indexes]
+    files: [compops, posops, topops, gist, spgist]
 
   # ---- reference families (validate self-regeneration == committed; not new) ----
   # tjsonb's compops surface (base jsonb, eq/ne only, tspatial_supportfn/_sel) is
@@ -147,7 +146,7 @@ subtypes:
     reference: true
     files: [compops]
 
-  # ---- converted families: the combined `indexes` opclass file is now generated ----
+  # ---- converted families: the GiST and SP-GiST opclass files are generated ----
   # These reproduce the cbuffer files byte-for-byte (npoint's non-canonical index
   # doc-comment header is normalised to the shared form). Their other inherited files
   # are still hand-maintained and will be migrated incrementally.
@@ -213,7 +212,7 @@ subtypes:
     # Its set of base values is indexed beside it, by the box the set stores.
     setindex: true
     setmetric: true
-    files: [compops, posops, topops, spatialrels, indexes]
+    files: [compops, posops, topops, spatialrels, gist, spgist]
 
   - temp:  tpose
     # the axes of the tpose index classes and of the (stbox, tpose) members
@@ -250,7 +249,7 @@ subtypes:
     # Its set of base values is indexed beside it, by the box the set stores.
     setindex: true
     setmetric: true
-    files: [compops, topops, posops, distance, spatialrels, indexes]
+    files: [compops, topops, posops, distance, spatialrels, gist, spgist]
 
   - temp:  tposechain
     # the axes of the tposechain index classes and of the (stbox, tposechain) members
@@ -287,7 +286,7 @@ subtypes:
         its position, through the standard tposechain::tpose and
         tpose::tgeompoint casts, and delegates to the temporal geometry point
         ever/always spatial relationship.
-    files: [compops, topops, posops, distance, spatialrels, indexes]
+    files: [compops, topops, posops, distance, spatialrels, gist, spgist]
 
   - temp:  trgeometry
     # the axes of the trgeometry index classes and of the (stbox, trgeometry) members
@@ -316,13 +315,14 @@ subtypes:
     # index, so that entry overrides the conversion expression). The ever/always ones are native C wrappers (170_trgeo_spatialrels)
     # that stay hand-written.
     # rgeo follows the tgeo-aligned layout, where the position files sit at their
-    # tgeo offsets (topops +11 -> 161, posops +12 -> 162, the combined index file
-    # at the gist offset +23 -> 173) rather than the tight scheme's +8 / +9 / +16.
+    # tgeo offsets (topops +11 -> 161, posops +12 -> 162, gist +23 -> 173,
+    # spgist +24 -> 174) rather than the tight scheme's +8 / +9 / +22 / +23.
     positions:
       topops:          11
       posops:          12
-      indexes:         23
-    files: [compops, topops, posops, indexes]
+      gist:            23
+      spgist:          24
+    files: [compops, topops, posops, gist, spgist]
 
   # ---- pointcloud: two temporal types sharing one 50-number band ----
   # The band runs 400 pcset, 410 tpcbox, 420 tpcpoint, 430 tpcpatch, 435+ the
