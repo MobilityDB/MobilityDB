@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geompoint_route_band</title>
+<title>MobilityDB: route_nearest_update</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,10 +81,10 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a4f8434f346428f8dd3e5dbe23d8a9e47.html#a4f8434f346428f8dd3e5dbe23d8a9e47">datum_npoint_round</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a29f35700281bb321ec9ca6d430ca8c5e.html#a29f35700281bb321ec9ca6d430ca8c5e">ensure_route_exists</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a817b620e9f2b13f9d4d6479d943d2f90.html#a817b620e9f2b13f9d4d6479d943d2f90">ensure_srid_ways</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a00a1a84976e5013c84ced1a91b5b05bc.html#a00a1a84976e5013c84ced1a91b5b05bc">ensure_valid_position</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc">ensure_valid_route</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_ga45960847cbdb958dbd708b642b98da05.html#ga45960847cbdb958dbd708b642b98da05">geom_to_nsegment</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_ab8295e7c1e2e035431049f54cb8fd7e8.html#ab8295e7c1e2e035431049f54cb8fd7e8">geompoint_route_band</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__inout_ga7809914b59f6189cd9b2211d6846513a.html#ga7809914b59f6189cd9b2211d6846513a">npoint_as_ewkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__inout_ga8abfc2f48b1f47d428304923547011f9.html#ga8abfc2f48b1f47d428304923547011f9">npoint_as_ewkt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__inout_ga93126a83c68d85423518c21cf7bdd35e.html#ga93126a83c68d85423518c21cf7bdd35e">npoint_as_hexewkb</a></td></tr>
@@ -165,33 +165,86 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__npoint__conversion_gaacc3255d09dae3f59586bd860897b30c.html#gaacc3255d09dae3f59586bd860897b30c">nsegmentarr_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a8efea76e1ca25a2fa9cdf00b0631a318.html#a8efea76e1ca25a2fa9cdf00b0631a318">nsegmentarr_normalize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a79b2f2f0ce64a36aac7f05f83c987041.html#a79b2f2f0ce64a36aac7f05f83c987041">nsegmentarr_sort</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a3c557d8267086cb9c7f93a0794f97f92.html#a3c557d8267086cb9c7f93a0794f97f92">route_nearest_update</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a304adec86bd11085e3dd14c00e1cc5b5.html#a304adec86bd11085e3dd14c00e1cc5b5">route_construction_bound</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_ab346a7a99b9df4a2cf37649cbe9983c0.html#ab346a7a99b9df4a2cf37649cbe9983c0">route_constructs_point</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_aae819d8def8b0aae0df039157d48a44a.html#aae819d8def8b0aae0df039157d48a44a">route_nearest_update</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a6f697ced8078cb52a95e35a6f1ff333f.html#a6f697ced8078cb52a95e35a6f1ff333f">route_stretch_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab8295e7c1e2e035431049f54cb8fd7e8" name="ab8295e7c1e2e035431049f54cb8fd7e8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8295e7c1e2e035431049f54cb8fd7e8">&#9670;&#160;</a></span>geompoint_route_band()</h2>
+<a id="aae819d8def8b0aae0df039157d48a44a" name="aae819d8def8b0aae0df039157d48a44a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae819d8def8b0aae0df039157d48a44a">&#9670;&#160;</a></span>route_nearest_update()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double geompoint_route_band </td>
+          <td class="memname">void route_nearest_update </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td class="paramname"><em>gs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int64&#160;</td>
+          <td class="paramname"><em>gid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tolerance</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64 *&#160;</td>
+          <td class="paramname"><em>min_gid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>min_dist</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>min_pos</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the distance within which a point lies on a route when it is a point MEOS constructs on that route. </p>
-<p >A point at a position along a route is computed in doubles, so it lies off the route by the rounding of its coordinates, and the exact distance between them is almost never zero. The distance is the band of a constructed point the exact computation of MEOS admits, <a class="el" href="geo__funcs_8h_a514d3b7939379dfdc9825187b96341a7.html#a514d3b7939379dfdc9825187b96341a7" title="Tolerance under which planar geometry reads two quantities as the same.">MEOS_GEOM_TOLERANCE</a> plus four units of rounding of the largest coordinate of the point, which no point lying genuinely off the route is within. It is the tolerance of the casts from a geometry to a network point and a network segment, which take no tolerance of their own. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Keep a route as the nearest one to a point where the point is on it and no route read before is nearer. </p>
+<p >The step of <a class="el" href="group__meos__npoint__base__conversion_ga975184e07f2bd12b79070098d745feca.html#ga975184e07f2bd12b79070098d745feca" title="Transform a geometry into a network point located on the route nearest to it within a tolerance.">geompoint_to_npoint</a> that both builds share, the MEOS build for every route of the ways CSV file and the PostgreSQL build for every route the ways table returns, so that the two builds decide with the same arithmetic. The point is on a route within a tolerance, or, for the casts that take none, where the route constructs it (<a class="el" href="meos_2src_2npoint_2npoint_8c_ab346a7a99b9df4a2cf37649cbe9983c0.html#ab346a7a99b9df4a2cf37649cbe9983c0" title="Return true if a point is one that MEOS constructs on a route.">route_constructs_point</a>). Of two equally near routes the one with the least identifier is kept. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gid</td><td>Identifier of the route </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">line</td><td>Geometry of the route </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tolerance</td><td>Maximum distance between the point and the route, read where <code>constructed</code> is false </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True for the casts, which read the point as one the route constructs </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">min_gid,min_dist,min_pos</td><td>Route, distance and position of the nearest route read, <code>min_dist</code> being <code>DBL_MAX</code> before the first one </td></tr>
   </table>
   </dd>
 </dl>

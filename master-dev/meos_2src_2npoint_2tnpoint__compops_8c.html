@@ -83,6 +83,7 @@ $(function() {
 <p>Ever/always and temporal comparisons for temporal network points.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;utils/timestamp.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
@@ -90,6 +91,7 @@ $(function() {
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="temporal__compops_8h_source.html">temporal/temporal_compops.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tgeo__spatialrels_8h_source.html">geo/tgeo_spatialrels.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tnpoint_8h_source.html">npoint/tnpoint.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -169,9 +171,15 @@ Functions</h2></td></tr>
 <tr class="memitem:ga57f5b4529453e204185fd2c745a3fb2c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__comp__temp_ga57f5b4529453e204185fd2c745a3fb2c.html#ga57f5b4529453e204185fd2c745a3fb2c">tne_tnpoint_npoint</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structNpoint.html">Npoint</a> *np)</td></tr>
 <tr class="memdesc:ga57f5b4529453e204185fd2c745a3fb2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal inequality of a temporal network point and a network point.  <a href="group__meos__npoint__comp__temp_ga57f5b4529453e204185fd2c745a3fb2c.html#ga57f5b4529453e204185fd2c745a3fb2c">More...</a><br /></td></tr>
 <tr class="separator:ga57f5b4529453e204185fd2c745a3fb2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff243413f01945ead7c5e58c4f1da72e"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2tnpoint__compops_8c_aff243413f01945ead7c5e58c4f1da72e.html#aff243413f01945ead7c5e58c4f1da72e">tnpoint_meeting_band</a> (const <a class="el" href="structSTBox.html">STBox</a> *box1, const <a class="el" href="structSTBox.html">STBox</a> *box2)</td></tr>
-<tr class="memdesc:aff243413f01945ead7c5e58c4f1da72e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance within which the points the routes of two temporal network points construct at one instant are one place.  <a href="meos_2src_2npoint_2tnpoint__compops_8c_aff243413f01945ead7c5e58c4f1da72e.html#aff243413f01945ead7c5e58c4f1da72e">More...</a><br /></td></tr>
-<tr class="separator:aff243413f01945ead7c5e58c4f1da72e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a405f03a0f3c112881e68d6f08fa8d519"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2tnpoint__compops_8c_a405f03a0f3c112881e68d6f08fa8d519.html#a405f03a0f3c112881e68d6f08fa8d519">tnpoint_meeting_band</a> (double bound1, double bound2)</td></tr>
+<tr class="memdesc:a405f03a0f3c112881e68d6f08fa8d519"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance within which the points the routes of two temporal network points construct at one instant are one place, given the largest bounds of construction of the routes of the two values.  <a href="meos_2src_2npoint_2tnpoint__compops_8c_a405f03a0f3c112881e68d6f08fa8d519.html#a405f03a0f3c112881e68d6f08fa8d519">More...</a><br /></td></tr>
+<tr class="separator:a405f03a0f3c112881e68d6f08fa8d519"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7d459e935459dfbfd007e8153fae8d8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2tnpoint__compops_8c_ae7d459e935459dfbfd007e8153fae8d8.html#ae7d459e935459dfbfd007e8153fae8d8">tnpoint_period_bounds</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, TimestampTz *lower, TimestampTz *<a class="el" href="enum__token__test_8c_ab2eb7df8cd4afb01567cfaca6e750f25.html#ab2eb7df8cd4afb01567cfaca6e750f25">upper</a>, bool *lower_inc, bool *upper_inc)</td></tr>
+<tr class="memdesc:ae7d459e935459dfbfd007e8153fae8d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last arguments the bounds of the bounding period of a temporal network point, read in place.  <a href="meos_2src_2npoint_2tnpoint__compops_8c_ae7d459e935459dfbfd007e8153fae8d8.html#ae7d459e935459dfbfd007e8153fae8d8">More...</a><br /></td></tr>
+<tr class="separator:ae7d459e935459dfbfd007e8153fae8d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a464bce3709022d4cced6d47f576fe0"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2tnpoint__compops_8c_a9a464bce3709022d4cced6d47f576fe0.html#a9a464bce3709022d4cced6d47f576fe0">tnpoint_periods_meet</a> (const <a class="el" href="structTemporal.html">Temporal</a> *<a class="el" href="geodetic__meeting__test_8c_aef5cc2630952520eb1555df93622d239.html#aef5cc2630952520eb1555df93622d239">temp1</a>, const <a class="el" href="structTemporal.html">Temporal</a> *<a class="el" href="geodetic__meeting__test_8c_a6761a26e01f1182df7768d4d87dc2e67.html#a6761a26e01f1182df7768d4d87dc2e67">temp2</a>)</td></tr>
+<tr class="memdesc:a9a464bce3709022d4cced6d47f576fe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the bounding periods of two temporal network points share an instant, as <a class="el" href="group__meos__setspan__topo_ga668d33c15d65b00c9ebc7784ff744ffa.html#ga668d33c15d65b00c9ebc7784ff744ffa" title="Return true if two spans overlap.">overlaps_span_span</a> answers it for the two periods.  <a href="meos_2src_2npoint_2tnpoint__compops_8c_a9a464bce3709022d4cced6d47f576fe0.html#a9a464bce3709022d4cced6d47f576fe0">More...</a><br /></td></tr>
+<tr class="separator:a9a464bce3709022d4cced6d47f576fe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Ever/always and temporal comparisons for temporal network points. </p>
