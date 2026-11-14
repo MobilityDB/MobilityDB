@@ -308,8 +308,9 @@ SELECT eIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(
 -- An empty geometry
 SELECT eIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon empty');
 SELECT aDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon empty');
--- A body that the distance does not read
-/* Errors */ SELECT eIntersects(trgeometry 'Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 2)');
+-- A body that is not convex, which the distance reads as convex pieces: its
+-- side starts on the point
+SELECT eIntersects(trgeometry 'Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 2)');
 /* Errors */ SELECT eIntersects(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 1)');
 -- A body in two dimensions reads a geometry in three dimensions in two
 SELECT eIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 1 7)');

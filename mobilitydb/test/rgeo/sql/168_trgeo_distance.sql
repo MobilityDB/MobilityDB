@@ -331,15 +331,16 @@ SELECT tDistance(
 
 -- A vertex on the line between its neighbors is not a corner of the body:
 -- (1 2) is on the top edge of the square, which is convex. A vertex 1e-13
--- below that line is a corner turning inward, and a body that is not convex
--- is refused
+-- below that line is a corner turning inward, so the body is not convex, and
+-- its distance to the point is that of the edges meeting there, 1e-13 more
+-- than 3: the excess, read in units of 1e-13, is exact in doubles
 
 SELECT tDistance(
   trgeometry 'Polygon((0 0,2 0,2 2,1 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
   geometry 'Point(1 5)');
-SELECT tDistance(
+SELECT round(((maxValue(tDistance(
   trgeometry 'Polygon((0 0,2 0,2 2,1 1.9999999999999,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
-  geometry 'Point(1 5)');
+  geometry 'Point(1 5)')) - 3) * 1e13)::numeric, 3);
 
 -- A body that does not turn is nearest a geometry inside a segment: its
 -- vertex (3 -1) moves from (5 0) to (0 2) while the triangle goes from the
