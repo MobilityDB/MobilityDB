@@ -260,6 +260,72 @@ extern Temporal *dggs_visits_to_temporal(DggsVisit *visits, int count,
   MeosType temptype);
 
 /*****************************************************************************
+ * The planar walk on the straight-edged outlines — shared by every DGGS whose
+ * planar cell is its outline joined by straight edges in longitude and
+ * latitude.
+ *****************************************************************************/
+
+/** @brief Largest number of vertices of an outline, the `MAX_CELL_BNDRY_VERTS`
+ * of the H3 library */
+#define DGGS_OUTLINE_MAX 10
+
+/**
+ * @brief Canonical outline of a cell: its vertices in degrees, in the order
+ * of its ring turning counter-clockwise, which two neighbours state with the
+ * same doubles, and the cell across each edge
+ */
+typedef struct
+{
+  int count;                            /**< Number of vertices */
+  double lon[DGGS_OUTLINE_MAX];         /**< Longitudes in degrees */
+  double lat[DGGS_OUTLINE_MAX];         /**< Latitudes in degrees */
+  uint64 across[DGGS_OUTLINE_MAX];      /**< Cell across the edge from
+                                             vertex k to vertex k + 1 */
+  int pole;                             /**< 1 for the cell around the north
+                                             pole, -1 for the one around the
+                                             south pole, 0 for any other */
+} DggsOutline;
+
+/**
+ * @brief Planar walk of a grid: how it reads the outline of a cell, the cell
+ * of a position, and the owner of each boundary point of a cell
+ */
+typedef struct DggsPlanarOps
+{
+  /** The outline of a cell, NULL when the grid reads none */
+  const DggsOutline *(*outline)(uint64 cell);
+  /** The planar cell of a resolution holding a position, 0 when none */
+  uint64 (*point_cell)(double lon, double lat, int32 resolution);
+  /** Whether a cell holds the edge of its outline from the vertex k */
+  bool (*edge_held)(const DggsOutline *o, int k);
+  /** Whether a cell holds the vertex k of its outline */
+  bool (*vertex_held)(const DggsOutline *o, int k);
+} DggsPlanarOps;
+
+/**
+ * @brief The crossing of a planar walk into a cell: the line of the edge of
+ * the outline crossed, its vertices and the exact offsets of their longitudes
+ * in the chart of the segment, and which of the cells holds the crossing
+ * position, the cell left, the cell entered, or at a vertex possibly neither
+ */
+typedef struct
+{
+  double ax, ay, oa;      /**< First vertex of the edge and its offset */
+  double bx, by, ob;      /**< Second vertex of the edge and its offset */
+  bool held_left;         /**< The cell left holds the crossing position */
+  bool held_entered;      /**< The cell entered holds it */
+} DggsEdgeCross;
+
+extern double dggs_lon_offset(double ref, double lon);
+extern int64 dggs_outline_edge_offset(const DggsOutline *o, int k, double x0,
+  double y0, double x1, double y1, int64 D, bool *whole);
+extern bool dggs_outline_holds_point(const DggsPlanarOps *ops,
+  const DggsOutline *o, double x, double y);
+extern int dggs_segment_cells_planar(const DggsPlanarOps *ops, double lon1,
+  double lat1, double lon2, double lat2, int32 resolution, uint64 *cells,
+  double *enter, DggsEdgeCross *cross, int maxout);
+
+/*****************************************************************************
  * Membership of a temporal cell index in a cell set — shared by every DGGS.
  *
  * The walk reads the values of the temporal value and the set alone, so one

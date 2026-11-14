@@ -74,7 +74,7 @@ static int failures = 0;
 
 /* Read the outlines of cells by #h3_cell_outline, false when one has none */
 static bool
-read_outlines(const H3Index *cells, int ncells, H3Outline *outs, int res)
+read_outlines(const H3Index *cells, int ncells, DggsOutline *outs, int res)
 {
   for (int j = 0; j < ncells; j++)
     if (! h3_cell_outline(cells[j], &outs[j]))
@@ -91,7 +91,7 @@ read_outlines(const H3Index *cells, int ncells, H3Outline *outs, int res)
  * position, and that the point function names it, as #check of
  * quadbin_point_unit.c checks a tile */
 static void
-check_meet(const H3Index *cells, const H3Outline *outs, int ncells,
+check_meet(const H3Index *cells, const DggsOutline *outs, int ncells,
   double lon, double lat, int res, const char *what)
 {
   H3Index holder = 0;
@@ -164,7 +164,7 @@ main(int argc, char **argv)
       {
         if (cells[c] == 0)
           continue;
-        H3Outline o;
+        DggsOutline o;
         if (! h3_cell_outline(cells[c], &o))
         {
           printf("FAIL res %d: no outline for %llx\n", res,
@@ -179,7 +179,7 @@ main(int argc, char **argv)
           int kp = (k + o.count - 1) % o.count;
           H3Index meet[3] = { cells[c], o.across[kp], o.across[k] };
           int nmeet = meet[1] == meet[2] ? 2 : 3;
-          H3Outline outs[3];
+          DggsOutline outs[3];
           if (! read_outlines(meet, nmeet, outs, res))
             continue;
           double x = o.lon[k], y = o.lat[k];
@@ -214,7 +214,7 @@ main(int argc, char **argv)
           for (int j = 0; j < 7; j++)
             if (disk[j] != 0)
               disk[nd++] = disk[j];
-          H3Outline outs[7];
+          DggsOutline outs[7];
           if (read_outlines(disk, nd, outs, res))
             check_meet(disk, outs, nd, x, y, res, "a vertex of the library");
           npos++;
