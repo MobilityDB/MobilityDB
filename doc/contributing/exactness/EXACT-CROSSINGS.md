@@ -519,7 +519,10 @@ diffs classified:
    the doubles of the ends prove it, the band removed: on the equator, on one meridian, a segment
    and its reverse, and a segment and its mirror across the equator; two segments on different
    great circles stay undecided, and [what the exact crossings establish](EXACT-CROSSINGS-INSIGHTS.md)
-   section 7 orders the pull requests that decide them.
+   section 7 orders the pull requests that decide them. The first of them, MobilityDB #3696,
+   merged as `5a1dbe03a2`, builds the correctly rounded `sin`, `cos`, `sinpi`, `cospi` and
+   `atan2` of CORE-MATH, vendored under `core-math/`, into MEOS wherever the compiler has an
+   unsigned 128-bit integer; no source of MEOS calls them yet.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
