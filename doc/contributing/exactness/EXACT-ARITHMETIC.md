@@ -576,8 +576,8 @@ each question's own first tier ahead of it, which costs as the polynomial ladder
 tiers decide; a tie costs about 1.5 times the polynomial ladder's, and is exact for every finite
 double.
 
-**The build, in three steps.** First, the expansions kept compressed, open as #3700 on master
-`14466e19ae` (its receipts strict CI, cppcheck, valgrind, smoke, the oracle on the curve polygons
+**The build, in three steps.** First, the expansions kept compressed, merged as #3700
+(`e69bcee29c` on master; its receipts strict CI, cppcheck, valgrind, smoke, the oracle on the curve polygons
 and points at 2^0, 2^-300 and 2^300 and the buffer of 172 natural areas, and speed, 25 of the 26
 cells at parity as on EA5); `arcseg_arena_room` takes a constant arena and answers whether the
 room fits, each caller taking the room from its own arena. Second, the callers of the polynomial
