@@ -3925,6 +3925,393 @@ wide_limbs_mul(const uint64_t *x, int nx, const uint64_t *y, int ny,
   return;
 }
 
+/*****************************************************************************
+ * The wide number
+ *****************************************************************************/
+
+/* Number of words of the head of a #TowerWide, before its limbs */
+#define TOWER_WIDE_HEAD ((offsetof(TowerWide, limb) + sizeof(uint64_t) - 1) / \
+  sizeof(uint64_t))
+
+/**
+ * @brief Set an empty #TowerWideArena
+ */
+void
+tower_wide_arena_init(TowerWideArena *ar)
+{
+  ar->used = 0;
+  ar->cap = TOWER_WIDE_ARENA_WORDS;
+  ar->blocks = NULL;
+  ar->caps = NULL;
+  ar->nblocks = ar->nkept = ar->capblocks = 0;
+  return;
+}
+
+/**
+ * @brief Free the blocks of a #TowerWideArena, which is then empty
+ */
+void
+tower_wide_arena_free(TowerWideArena *ar)
+{
+  for (int i = 0; i < ar->nkept; i++)
+    pfree(ar->blocks[i]);
+  if (ar->blocks)
+  {
+    pfree(ar->blocks);
+    pfree(ar->caps);
+  }
+  tower_wide_arena_init(ar);
+  return;
+}
+
+/**
+ * @brief Return the point a #TowerWideArena has reached, which
+ * #tower_wide_arena_release returns it to
+ */
+TowerWideMark
+tower_wide_arena_mark(const TowerWideArena *ar)
+{
+  TowerWideMark m;
+  m.nblocks = ar->nblocks;
+  m.used = ar->used;
+  return m;
+}
+
+/**
+ * @brief Return a #TowerWideArena to a point it reached, every value taken
+ * after it being released; the blocks are kept for the values taken next
+ */
+void
+tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m)
+{
+  ar->nblocks = m.nblocks;
+  ar->cap = m.nblocks ? ar->caps[m.nblocks - 1] : TOWER_WIDE_ARENA_WORDS;
+  ar->used = m.used;
+  return;
+}
+
+/* Make the current block of an arena a block of at least @p words free:
+ * the next block held where it is large enough, and otherwise a new one of
+ * twice the words of the current block, the held ones past it freed */
+static pg_noinline void
+tower_wide_arena_grow(TowerWideArena *ar, size_t words)
+{
+  if (ar->nblocks == ar->nkept || ar->caps[ar->nblocks] < words)
+  {
+    for (int i = ar->nblocks; i < ar->nkept; i++)
+      pfree(ar->blocks[i]);
+    ar->nkept = ar->nblocks;
+    if (ar->nkept == ar->capblocks)
+    {
+      ar->capblocks = ar->capblocks ? 2 * ar->capblocks : 8;
+      ar->blocks = ar->blocks ?
+        repalloc(ar->blocks, sizeof(uint64_t *) * ar->capblocks) :
+        palloc(sizeof(uint64_t *) * ar->capblocks);
+      ar->caps = ar->caps ?
+        repalloc(ar->caps, sizeof(size_t) * ar->capblocks) :
+        palloc(sizeof(size_t) * ar->capblocks);
+    }
+    size_t cap = Max(2 * ar->cap, 2 * words);
+    ar->blocks[ar->nkept] = palloc(sizeof(uint64_t) * cap);
+    ar->caps[ar->nkept] = cap;
+    ar->nkept++;
+  }
+  ar->cap = ar->caps[ar->nblocks];
+  ar->nblocks++;
+  ar->used = 0;
+  return;
+}
+
+/* A value 0 of an arena with room for @p n limbs */
+static inline TowerWide *
+tower_wide_alloc(TowerWideArena *ar, int n)
+{
+  size_t words = TOWER_WIDE_HEAD + (size_t) Max(n, 1);
+  if (unlikely(ar->used + words > ar->cap))
+    tower_wide_arena_grow(ar, words);
+  uint64_t *base = ar->nblocks ? ar->blocks[ar->nblocks - 1] : ar->buf;
+  TowerWide *r = (TowerWide *) (base + ar->used);
+  ar->used += words;
+  r->sign = 0;
+  r->len = 0;
+  r->exp = 0;
+  return r;
+}
+
+/* Drop the zero limbs at both ends of a value, those at the bottom raising
+ * its exponent */
+static void
+tower_wide_normalize(TowerWide *a)
+{
+  while (a->len > 0 && a->limb[a->len - 1] == 0)
+    a->len--;
+  if (a->len == 0)
+  {
+    a->sign = 0;
+    a->exp = 0;
+    return;
+  }
+  int z = 0;
+  while (a->limb[z] == 0)
+    z++;
+  if (z > 0)
+  {
+    memmove(a->limb, a->limb + z, (size_t) (a->len - z) * sizeof(uint64_t));
+    a->len -= z;
+    a->exp += 64 * z;
+  }
+  return;
+}
+
+/* A finite double, exactly: its integer mantissa times the weight of its
+ * lowest bit */
+static TowerWide *
+tower_wide_of_double(TowerWideArena *ar, double x)
+{
+  TowerWide *r = tower_wide_alloc(ar, 1);
+  if (x == 0.0)
+    return r;
+  uint64_t bits;
+  memcpy(&bits, &x, sizeof(bits));
+  int e = (int) ((bits >> 52) & 0x7FF);
+  uint64_t m = bits & 0xFFFFFFFFFFFFFULL;
+  if (e)
+  {
+    m |= 1ULL << 52;
+    r->exp = e - 1075;
+  }
+  else
+    r->exp = -1074;
+  r->sign = (bits >> 63) ? -1 : 1;
+  r->limb[0] = m;
+  r->len = 1;
+  return r;
+}
+
+/* A copy of a value, @p sign times it */
+static TowerWide *
+tower_wide_signed(TowerWideArena *ar, const TowerWide *a, int sign)
+{
+  TowerWide *r = tower_wide_alloc(ar, a->len);
+  memcpy(r->limb, a->limb, sizeof(uint64_t) * (size_t) a->len);
+  r->len = a->len;
+  r->exp = a->exp;
+  r->sign = a->sign * sign;
+  return r;
+}
+
+/* The negation of a value */
+static inline TowerWide *
+tower_wide_neg(TowerWideArena *ar, const TowerWide *a)
+{
+  return tower_wide_signed(ar, a, -1);
+}
+
+/* Limb @p i of the magnitude of a value moved up by @p ls limbs and @p bs
+ * bits, bs below 64 */
+static inline uint64_t
+tower_wide_read(const TowerWide *a, int ls, int bs, int i)
+{
+  int j = i - ls;
+  uint64_t v = 0;
+  if ((unsigned) j < (unsigned) a->len)
+    v = a->limb[j] << bs;
+  if (bs && (unsigned) (j - 1) < (unsigned) a->len)
+    v |= a->limb[j - 1] >> (64 - bs);
+  return v;
+}
+
+/* Limb @p i of the magnitude of a value read at the weight 2^e of its
+ * lowest bit, e not above its exponent */
+static inline uint64_t
+tower_wide_limb_at(const TowerWide *a, int e, int i)
+{
+  int s = a->exp - e;
+  return tower_wide_read(a, s >> 6, s & 63, i);
+}
+
+/* The weight of the bit above the highest one of a value that is not 0 */
+static inline int
+tower_wide_top(const TowerWide *a)
+{
+  return a->exp + 64 * (a->len - 1) +
+    pg_leftmost_one_pos64(a->limb[a->len - 1]) + 1;
+}
+
+/* -1, 0 or 1 as the magnitude of @p a is below, equal to or above that of
+ * @p b: their highest bits, then their limbs read at the lower of their
+ * lowest bits */
+static int
+tower_wide_cmp_mag(const TowerWide *a, const TowerWide *b)
+{
+  if (a->sign == 0 || b->sign == 0)
+    return (a->sign != 0) - (b->sign != 0);
+  int ta = tower_wide_top(a), tb = tower_wide_top(b);
+  if (ta != tb)
+    return (ta > tb) ? 1 : -1;
+  int e = Min(a->exp, b->exp);
+  for (int i = (ta - e + 63) / 64; i >= 0; i--)
+  {
+    uint64_t x = tower_wide_limb_at(a, e, i), y = tower_wide_limb_at(b, e, i);
+    if (x != y)
+      return (x > y) ? 1 : -1;
+  }
+  return 0;
+}
+
+/* -1, 0 or 1 as @p a is below, equal to or above @p b */
+static int
+tower_wide_cmp(const TowerWide *a, const TowerWide *b)
+{
+  if (a->sign != b->sign)
+    return (a->sign > b->sign) ? 1 : -1;
+  if (a->sign == 0)
+    return 0;
+  return a->sign * tower_wide_cmp_mag(a, b);
+}
+
+/* `sa a + sb b`, @p sa and @p sb each -1 or 1, exactly: the magnitudes are
+ * read at the lower of their lowest bits as they are added, or the second
+ * subtracted from the first, a borrow out of the highest limb telling that
+ * the second is the larger, the difference then negated */
+static TowerWide *
+tower_wide_add_signed(TowerWideArena *ar, const TowerWide *a, int sa,
+  const TowerWide *b, int sb)
+{
+  int xa = a->sign * sa, xb = b->sign * sb;
+  if (xa == 0)
+    return tower_wide_signed(ar, b, sb);
+  if (xb == 0)
+    return tower_wide_signed(ar, a, sa);
+  int e = Min(a->exp, b->exp);
+  int n = (Max(tower_wide_top(a), tower_wide_top(b)) - e + 63) / 64;
+  TowerWide *r = tower_wide_alloc(ar, n + 1);
+  int da = a->exp - e, db = b->exp - e;
+  int la = da >> 6, ba = da & 63, lb = db >> 6, bb = db & 63;
+  r->exp = e;
+  if (xa == xb)
+  {
+    uint64_t carry = 0;
+    for (int i = 0; i < n; i++)
+    {
+      uint64_t x = tower_wide_read(a, la, ba, i),
+        y = tower_wide_read(b, lb, bb, i);
+      uint64_t s = x + y;
+      uint64_t c1 = s < x;
+      r->limb[i] = s + carry;
+      carry = c1 + (r->limb[i] < s);
+    }
+    r->limb[n] = carry;
+    r->len = n + 1;
+    r->sign = xa;
+  }
+  else
+  {
+    uint64_t borrow = 0;
+    for (int i = 0; i < n; i++)
+    {
+      uint64_t x = tower_wide_read(a, la, ba, i),
+        y = tower_wide_read(b, lb, bb, i);
+      uint64_t d = x - y;
+      uint64_t b1 = x < y;
+      r->limb[i] = d - borrow;
+      borrow = b1 + (d < borrow);
+    }
+    r->len = n;
+    r->sign = xa;
+    if (borrow)
+    {
+      /* The difference was taken modulo 2^(64 n): its negation is the
+       * magnitude, of the sign of the second */
+      uint64_t c = 1;
+      for (int i = 0; i < n; i++)
+      {
+        r->limb[i] = ~r->limb[i] + c;
+        c = c && r->limb[i] == 0;
+      }
+      r->sign = xb;
+    }
+  }
+  tower_wide_normalize(r);
+  return r;
+}
+
+/* The sum of two values, exactly */
+static inline TowerWide *
+tower_wide_add(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  return tower_wide_add_signed(ar, a, 1, b, 1);
+}
+
+/* The difference of two values, exactly */
+static inline TowerWide *
+tower_wide_sub(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  return tower_wide_add_signed(ar, a, 1, b, -1);
+}
+
+/* The product of a value that is not 0 and one limb @p m that is not 0,
+ * times @p sign and the weight 2^e: one product of 64 bits a limb */
+static TowerWide *
+tower_wide_mul_limb(TowerWideArena *ar, const TowerWide *a, uint64_t m,
+  int sign, int e)
+{
+  TowerWide *r = tower_wide_alloc(ar, a->len + 1);
+  r->sign = a->sign * sign;
+  r->exp = a->exp + e;
+  if (a->len == 1)
+  {
+    /* One product of 128 bits, either half possibly 0 */
+    uint64_t hi, lo;
+    wide_mul64(a->limb[0], m, &hi, &lo);
+    if (lo == 0)
+    {
+      r->limb[0] = hi;
+      r->len = 1;
+      r->exp += 64;
+    }
+    else
+    {
+      r->limb[0] = lo;
+      r->limb[1] = hi;
+      r->len = hi ? 2 : 1;
+    }
+    return r;
+  }
+  uint64_t carry = 0;
+  for (int i = 0; i < a->len; i++)
+  {
+    uint64_t hi, lo;
+    wide_mul64(a->limb[i], m, &hi, &lo);
+    lo += carry;
+    carry = hi + (lo < carry);
+    r->limb[i] = lo;
+  }
+  r->limb[a->len] = carry;
+  r->len = a->len + 1;
+  tower_wide_normalize(r);
+  return r;
+}
+
+/* The product of two values, exactly, a factor of one limb read as one */
+static TowerWide *
+tower_wide_mul(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  if (a->sign == 0 || b->sign == 0)
+    return tower_wide_alloc(ar, 1);
+  if (b->len == 1)
+    return tower_wide_mul_limb(ar, a, b->limb[0], b->sign, b->exp);
+  if (a->len == 1)
+    return tower_wide_mul_limb(ar, b, a->limb[0], a->sign, a->exp);
+  TowerWide *r = tower_wide_alloc(ar, a->len + b->len);
+  wide_limbs_mul(a->limb, a->len, b->limb, b->len, r->limb);
+  r->len = a->len + b->len;
+  r->sign = a->sign * b->sign;
+  r->exp = a->exp + b->exp;
+  tower_wide_normalize(r);
+  return r;
+}
+
 /**
  * @brief Set the product of two #WideDyadic, exactly
  * @note The result is not one of the operands
@@ -13900,21 +14287,11 @@ meet_val(ArcsegArena *arena, double v)
 #define TOWER_MAXDEPTH 4
 #define TOWER_SIZE (1 << TOWER_MAXDEPTH)
 
-/* A dyadic rational `sign * magnitude * 2^exp` as #WideDyadic holds one, with
- * as many limbs as the value takes: the numbers of a tower spread over a number
- * of bits that grows with the squarings of its recursion, which no capacity
- * fixed beforehand bounds for any finite coordinates */
-typedef struct
-{
-  int sign;
-  int len;
-  int exp;
-  uint64_t limb[];
-} TowerWide;
-
 /* The arithmetic the numbers of a tower are computed in: expansions in
- * @p arena, or #TowerWide where @p wide is set, each kept in @p blocks until
- * the context is freed */
+ * @p arena, or #TowerWide in @p warena where @p wide is set: the numbers of
+ * a tower spread over a number of bits that grows with the squarings of its
+ * recursion, which no capacity fixed beforehand bounds for any finite
+ * coordinates, so each takes the limbs it holds */
 typedef struct
 {
   ArcsegArena arena;
@@ -13923,9 +14300,7 @@ typedef struct
                             the bound cannot tell marking the arena unsafe */
   bool dd;             /**< Pairs of doubles carrying a bound on their error
                             (#DDBound), as @p filter */
-  TowerWide **blocks;
-  int nblocks;
-  int capblocks;
+  TowerWideArena warena;
 } TowerCtx;
 
 /* A value of the arithmetic of a #TowerCtx, the whole union zeroed where it
@@ -13963,8 +14338,7 @@ tower_ctx_init(TowerCtx *ctx, bool wide)
   ctx->wide = wide;
   ctx->filter = false;
   ctx->dd = false;
-  ctx->blocks = NULL;
-  ctx->nblocks = ctx->capblocks = 0;
+  tower_wide_arena_init(&ctx->warena);
   return;
 }
 
@@ -13972,12 +14346,7 @@ static void
 tower_ctx_free(TowerCtx *ctx)
 {
   arcseg_arena_free(&ctx->arena);
-  for (int i = 0; i < ctx->nblocks; i++)
-    pfree(ctx->blocks[i]);
-  if (ctx->blocks)
-    pfree(ctx->blocks);
-  ctx->blocks = NULL;
-  ctx->nblocks = ctx->capblocks = 0;
+  tower_wide_arena_free(&ctx->warena);
   return;
 }
 
@@ -13986,168 +14355,6 @@ static inline bool
 tower_ctx_unsafe(const TowerCtx *ctx)
 {
   return ! ctx->wide && ctx->arena.unsafe;
-}
-
-/* A number of a context of @p n limbs */
-static TowerWide *
-tower_wide_alloc(TowerCtx *ctx, int n)
-{
-  if (ctx->nblocks == ctx->capblocks)
-  {
-    ctx->capblocks = ctx->capblocks ? 2 * ctx->capblocks : 64;
-    ctx->blocks = ctx->blocks ?
-      repalloc(ctx->blocks, sizeof(TowerWide *) * ctx->capblocks) :
-      palloc(sizeof(TowerWide *) * ctx->capblocks);
-  }
-  TowerWide *r = palloc(offsetof(TowerWide, limb) +
-    sizeof(uint64_t) * (size_t) Max(n, 1));
-  ctx->blocks[ctx->nblocks++] = r;
-  r->sign = 0;
-  r->len = 0;
-  r->exp = 0;
-  return r;
-}
-
-/* Drop the zero limbs at both ends, as #wide_dyadic_normalize does */
-static void
-tower_wide_normalize(TowerWide *a)
-{
-  while (a->len > 0 && a->limb[a->len - 1] == 0)
-    a->len--;
-  if (a->len == 0)
-  {
-    a->sign = 0;
-    a->exp = 0;
-    return;
-  }
-  int z = 0;
-  while (a->limb[z] == 0)
-    z++;
-  if (z > 0)
-  {
-    memmove(a->limb, a->limb + z, (size_t) (a->len - z) * sizeof(uint64_t));
-    a->len -= z;
-    a->exp += 64 * z;
-  }
-  return;
-}
-
-/* A finite double, exactly (#wide_dyadic_set_double) */
-static TowerWide *
-tower_wide_of_double(TowerCtx *ctx, double x)
-{
-  TowerWide *r = tower_wide_alloc(ctx, 1);
-  if (x == 0.0)
-    return r;
-  uint64_t bits;
-  memcpy(&bits, &x, sizeof(bits));
-  int e = (int) ((bits >> 52) & 0x7FF);
-  uint64_t m = bits & 0xFFFFFFFFFFFFFULL;
-  if (e)
-  {
-    m |= 1ULL << 52;
-    r->exp = e - 1075;
-  }
-  else
-    r->exp = -1074;
-  r->sign = (bits >> 63) ? -1 : 1;
-  r->limb[0] = m;
-  r->len = 1;
-  return r;
-}
-
-/* The magnitude of @p a at the weight @p e, at most its own, in @p n limbs
- * (#wide_dyadic_aligned) */
-static void
-tower_wide_aligned(const TowerWide *a, int e, uint64_t *out, int n)
-{
-  memset(out, 0, (size_t) n * sizeof(uint64_t));
-  if (a->sign == 0)
-    return;
-  int s = a->exp - e, ls = s / 64, bs = s % 64;
-  for (int i = 0; i < a->len; i++)
-  {
-    out[i + ls] |= a->limb[i] << bs;
-    if (bs)
-      out[i + ls + 1] |= a->limb[i] >> (64 - bs);
-  }
-  return;
-}
-
-/* The sum of two numbers, exactly (#wide_dyadic_add) */
-static TowerWide *
-tower_wide_add(TowerCtx *ctx, const TowerWide *a, const TowerWide *b)
-{
-  if (a->sign == 0 || b->sign == 0)
-  {
-    const TowerWide *c = (a->sign == 0) ? b : a;
-    TowerWide *r = tower_wide_alloc(ctx, c->len);
-    memcpy(r, c, offsetof(TowerWide, limb) +
-      sizeof(uint64_t) * (size_t) c->len);
-    return r;
-  }
-  int e = (a->exp < b->exp) ? a->exp : b->exp;
-  int nx = a->len + (a->exp - e) / 64 + 1, ny = b->len + (b->exp - e) / 64 + 1;
-  int n = (nx > ny) ? nx : ny;
-  TowerWide *r = tower_wide_alloc(ctx, n + 1);
-  uint64_t *x = palloc(sizeof(uint64_t) * 2 * (size_t) n), *y = x + n;
-  tower_wide_aligned(a, e, x, n);
-  tower_wide_aligned(b, e, y, n);
-  r->exp = e;
-  if (a->sign == b->sign)
-  {
-    uint64_t carry = 0;
-    for (int i = 0; i < n; i++)
-    {
-      uint64_t s = x[i] + y[i];
-      uint64_t c1 = s < x[i];
-      r->limb[i] = s + carry;
-      carry = c1 + (r->limb[i] < s);
-    }
-    r->limb[n] = carry;
-    r->len = n + 1;
-    r->sign = a->sign;
-  }
-  else
-  {
-    /* The larger magnitude less the smaller, with the sign of the larger */
-    int cmp = 0;
-    for (int i = n - 1; i >= 0 && cmp == 0; i--)
-      if (x[i] != y[i])
-        cmp = (x[i] > y[i]) ? 1 : -1;
-    if (cmp != 0)
-    {
-      const uint64_t *big = (cmp > 0) ? x : y, *small = (cmp > 0) ? y : x;
-      uint64_t borrow = 0;
-      for (int i = 0; i < n; i++)
-      {
-        uint64_t d = big[i] - small[i];
-        uint64_t b1 = big[i] < small[i];
-        r->limb[i] = d - borrow;
-        borrow = b1 + (d < borrow);
-      }
-      r->len = n;
-      r->sign = (cmp > 0) ? a->sign : b->sign;
-    }
-  }
-  pfree(x);
-  tower_wide_normalize(r);
-  return r;
-}
-
-/* The product of two numbers, exactly (#wide_dyadic_mul) */
-static TowerWide *
-tower_wide_mul(TowerCtx *ctx, const TowerWide *a, const TowerWide *b)
-{
-  if (a->sign == 0 || b->sign == 0)
-    return tower_wide_alloc(ctx, 1);
-  TowerWide *r = tower_wide_alloc(ctx, a->len + b->len);
-  wide_limbs_mul(a->limb, a->len, b->limb, b->len, r->limb);
-  r->len = a->len + b->len;
-  r->sign = a->sign * b->sign;
-  r->exp = a->exp + b->exp;
-  tower_wide_normalize(r);
-  return r;
 }
 
 /* The difference of two doubles, exactly */
@@ -14174,8 +14381,8 @@ tx_diff(TowerCtx *ctx, double a, double b)
     r.x = arcseg_x_diff(&ctx->arena, a, b);
     return r;
   }
-  r.w = tower_wide_add(ctx, tower_wide_of_double(ctx, a),
-    tower_wide_of_double(ctx, - b));
+  r.w = tower_wide_sub(&ctx->warena, tower_wide_of_double(&ctx->warena, a),
+    tower_wide_of_double(&ctx->warena, b));
   return r;
 }
 
@@ -14218,7 +14425,7 @@ tx_add(TowerCtx *ctx, TowerX a, TowerX b)
     r.x = arcseg_x_add(&ctx->arena, a.x, b.x);
     return r;
   }
-  r.w = tower_wide_add(ctx, a.w, b.w);
+  r.w = tower_wide_add(&ctx->warena, a.w, b.w);
   return r;
 }
 
@@ -14246,20 +14453,21 @@ tx_scale(TowerCtx *ctx, TowerX a, double k)
   }
   int e;
   frexp(k, &e);
-  r.w = tower_wide_alloc(ctx, a.w->len);
-  memcpy(r.w, a.w, offsetof(TowerWide, limb) +
-    sizeof(uint64_t) * (size_t) a.w->len);
+  r.w = tower_wide_signed(&ctx->warena, a.w, (k < 0.0) ? -1 : 1);
   if (r.w->sign != 0)
-  {
     r.w->exp += e - 1;
-    r.w->sign *= (k < 0.0) ? -1 : 1;
-  }
   return r;
 }
 
 static pg_attribute_always_inline TowerX
 tx_sub(TowerCtx *ctx, TowerX a, TowerX b)
 {
+  if (ctx->wide && ! ctx->filter && ! ctx->dd)
+  {
+    TowerX r = {0};
+    r.w = tower_wide_sub(&ctx->warena, a.w, b.w);
+    return r;
+  }
   return tx_add(ctx, a, tx_scale(ctx, b, -1.0));
 }
 
@@ -14288,7 +14496,7 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
     r.x = arcseg_x_mul(&ctx->arena, a.x, b.x);
     return r;
   }
-  r.w = tower_wide_mul(ctx, a.w, b.w);
+  r.w = tower_wide_mul(&ctx->warena, a.w, b.w);
   return r;
 }
 
@@ -14638,8 +14846,13 @@ static bool
 tower_same_k(TowerCtx *ctx, const TowerX *x, const TowerX *y, int k)
 {
   for (int m = 0; m < (1 << k); m++)
-    if (tx_sign(ctx, tx_sub(ctx, x[m], y[m])) != 0)
+  {
+    /* Two exact values are compared without forming their difference */
+    if (ctx->wide && ! ctx->filter && ! ctx->dd ?
+        tower_wide_cmp(x[m].w, y[m].w) != 0 :
+        tx_sign(ctx, tx_sub(ctx, x[m], y[m])) != 0)
       return false;
+  }
   return true;
 }
 
@@ -14980,7 +15193,7 @@ tangent_point_round(const TangentPoint *tp, double *x, double *y)
  * answer, or 2 where it is not told there */
 typedef int (*TowerPred)(TowerCtx *ctx, const void *arg);
 
-/* The answer of a question in expansions, and in #WideDyadic where those
+/* The answer of a question in expansions, and in #TowerWide where those
  * leave their exact range, the question building its points again */
 static int
 tower_pred_run(TowerPred fn, const void *arg)

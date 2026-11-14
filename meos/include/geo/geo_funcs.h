@@ -1700,6 +1700,55 @@ point_on_segment_exact(double px, double py, double x1, double y1, double x2,
 }
 
 /*****************************************************************************
+ * The wide number
+ *****************************************************************************/
+
+/**
+ * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
+ * as many 64-bit limbs as it takes, the lowest first, with exact sums,
+ * differences and products of any two
+ */
+typedef struct
+{
+  int sign;         /**< -1, 0 or 1 */
+  int len;          /**< Number of limbs of the magnitude, 0 for the value 0 */
+  int exp;          /**< Weight of the lowest bit of the magnitude */
+  uint64 limb[FLEXIBLE_ARRAY_MEMBER];
+} TowerWide;
+
+/** Number of 64-bit words a #TowerWideArena holds before it takes a block */
+#define TOWER_WIDE_ARENA_WORDS 1024
+
+/**
+ * @brief The memory of the #TowerWide values of one exact evaluation: taken
+ * in order from a buffer of its own, then from blocks taken as it is used up,
+ * and released in one step
+ */
+typedef struct
+{
+  uint64 buf[TOWER_WIDE_ARENA_WORDS];
+  size_t used;      /**< Words taken of the current block */
+  size_t cap;       /**< Words of the current block */
+  uint64 **blocks; /**< The blocks after @p buf */
+  size_t *caps;     /**< The words of each block */
+  int nblocks;      /**< Number of blocks in use, the last the current one */
+  int nkept;        /**< Number of blocks held, those past @p nblocks free */
+  int capblocks;
+} TowerWideArena;
+
+/** @brief A point of a #TowerWideArena that a release returns it to */
+typedef struct
+{
+  int nblocks;
+  size_t used;
+} TowerWideMark;
+
+extern void tower_wide_arena_init(TowerWideArena *ar);
+extern void tower_wide_arena_free(TowerWideArena *ar);
+extern TowerWideMark tower_wide_arena_mark(const TowerWideArena *ar);
+extern void tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m);
+
+/*****************************************************************************
  * The nearest double of a value read exactly
  *****************************************************************************/
 
