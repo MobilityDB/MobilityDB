@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v1.1.0 |
+| Version | v1.2.0 |
 | Scope | The numbers a MEOS or MobilityDB value holds, the answer to an operation whose result exceeds them, and the class of the error it raises |
 | Reference | `meos/include/temporal/temporal.h` (`ensure_finite`, `ensure_finite_result`), `meos/src/geo/geo_funcs.c` (`ensure_finite_geo`), `meos/src/temporal/meos_error.c` (`meos_errcode_sqlstate`) |
 
@@ -222,7 +222,9 @@ reports the error to the error handler of the program with `meos_error`. The
 default handler ends the program. In PostgreSQL the error is raised as an
 `ERROR`, so no error value ever reaches a query. Where the handler returns,
 as the one `meos_initialize_noexit_error_handler` installs does, the function
-returns its error value and `meos_errno()` holds the error code.
+returns its error value and `meos_errno()` holds the error code. MEOS records
+the code before it calls the handler, so `meos_errno()` holds it whatever
+handler the program installs, the one of a binding included.
 
 Each function states its error value in its `@errval` tag:
 

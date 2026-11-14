@@ -494,6 +494,11 @@ meos_error(int errlevel, int errcode, const char *format, ...)
   /* TODO: maybe check if the error message was truncated */
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
+  /* Record the number of an error whatever handler reports it, since a parse
+   * reads that one occurred through #meos_errno and a host's handler need not
+   * record it */
+  if (errlevel >= ERROR)
+    meos_errno_set(errcode);
   /* Execute the error handler function (acquire-load, paired with the
    * release-store in meos_initialize_error_handler — restore #815) */
   void (*handler)(int, int, const char *) =
