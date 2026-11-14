@@ -696,6 +696,269 @@ geogpointsegm_mirrored(const POINT4D *p, bool hasz)
     (! hasz || (p[2].z == p[0].z && p[3].z == p[1].z));
 }
 
+#if MEOS_CORE_MATH
+/* The correctly rounded trigonometry vendored under core-math/ */
+extern double cr_sinpi(double x);
+extern double cr_cospi(double x);
+extern double cr_atan2(double y, double x);
+
+/**
+ * @brief A double and a bound on its distance to the real number it computes
+ * @details The bounds follow those of #polynomial_sign_pairs: with
+ * u = DBL_EPSILON / 2, a rounding of a result c moves it by at most u |c|, and
+ * each bound is inflated by 1 + 16 DBL_EPSILON for its own rounding. A
+ * result whose magnitude is below 2^-900 or not finite, where underflow could
+ * lose its error, makes the evaluation decline
+ */
+typedef struct
+{
+  double v;   /**< Computed value */
+  double e;   /**< Bound on its distance to the exact value */
+} BoundedDouble;
+
+#define BD_U (DBL_EPSILON / 2.0)
+#define BD_INFLATE (1.0 + 16.0 * DBL_EPSILON)
+
+/**
+ * @brief Return true if a computed value keeps its error bound
+ */
+static bool
+bd_valid(BoundedDouble a)
+{
+  return isfinite(a.v) && isfinite(a.e) &&
+    (a.v == 0.0 || fabs(a.v) >= 0x1p-900);
+}
+
+/**
+ * @brief Return the sum of two bounded doubles
+ */
+static BoundedDouble
+bd_add(BoundedDouble a, BoundedDouble b)
+{
+  BoundedDouble r;
+  r.v = a.v + b.v;
+  r.e = (a.e + b.e + BD_U * fabs(r.v)) * BD_INFLATE;
+  return r;
+}
+
+/**
+ * @brief Return the difference of two bounded doubles
+ */
+static BoundedDouble
+bd_sub(BoundedDouble a, BoundedDouble b)
+{
+  b.v = - b.v;
+  return bd_add(a, b);
+}
+
+/**
+ * @brief Return the product of two bounded doubles
+ */
+static BoundedDouble
+bd_mul(BoundedDouble a, BoundedDouble b)
+{
+  BoundedDouble r;
+  r.v = a.v * b.v;
+  r.e = (fabs(a.v) * b.e + fabs(b.v) * a.e + a.e * b.e +
+    BD_U * fabs(r.v)) * BD_INFLATE;
+  return r;
+}
+
+/**
+ * @brief Return the quotient of two bounded doubles, the error unbounded
+ * where the divisor may be zero
+ */
+static BoundedDouble
+bd_div(BoundedDouble a, BoundedDouble b)
+{
+  BoundedDouble r;
+  r.v = a.v / b.v;
+  double lo = fabs(b.v) - b.e;
+  r.e = (lo > 0.0) ?
+    ((a.e + fabs(r.v) * b.e) / lo + BD_U * fabs(r.v)) * BD_INFLATE :
+    INFINITY;
+  return r;
+}
+
+/**
+ * @brief Return the square root of a bounded double, the error unbounded
+ * where the argument may be zero or negative
+ * @details |sqrt(x) - sqrt(y)| <= |x - y| / sqrt(min(x, y))
+ */
+static BoundedDouble
+bd_sqrt(BoundedDouble a)
+{
+  BoundedDouble r;
+  double lo = a.v - a.e;
+  r.v = sqrt(a.v);
+  r.e = (lo > 0.0) ?
+    (a.e / sqrt(lo) + BD_U * r.v) * BD_INFLATE : INFINITY;
+  return r;
+}
+
+/**
+ * @brief Return the angle of a vector of bounded coordinates, the error
+ * unbounded where the vector may be zero or cross the cut of the angle
+ * @details The gradient of the angle is (-y, x) / (x^2 + y^2), so over the
+ * box of the vector, whose norm is at least lo, the angle moves by at most
+ * (|y| ex + |x| ey) / lo^2, |x| and |y| taken at their largest in the box;
+ * #cr_atan2 rounds it correctly
+ */
+static BoundedDouble
+bd_atan2(BoundedDouble y, BoundedDouble x)
+{
+  BoundedDouble r;
+  r.v = cr_atan2(y.v, x.v);
+  double lo = hypot(x.v, y.v) * (1.0 - 4.0 * DBL_EPSILON) - (x.e + y.e);
+  bool cut = fabs(y.v) <= y.e && x.v - x.e <= 0.0;
+  r.e = (lo > 0.0 && ! cut) ?
+    (((fabs(y.v) + y.e) * x.e + (fabs(x.v) + x.e) * y.e) / (lo * lo) +
+      BD_U * fabs(r.v)) * BD_INFLATE : INFINITY;
+  return r;
+}
+
+/**
+ * @brief Set the sine and the cosine of an angle given in degrees, known
+ * within an absolute error
+ * @details The angle is reduced to [0, 45] degrees by the subtractions from
+ * 360, 180 and 90 degrees, each exact by Sterbenz's lemma in the range where
+ * it is taken, so that the error of the angle stays the given one. #cr_sinpi
+ * and #cr_cospi round correctly the sine and the cosine of pi times the
+ * reduced angle divided by 180, which is within u of itself, so that each
+ * moves by at most pi / 180 times the error of the angle more. A reduced
+ * angle near 0 keeps the relative accuracy of a small sine, which an angle
+ * near 90 or 180 degrees divided by 180 loses. The bounded twin of the
+ * trigonometry #geogsegm_circle reads in doubles from the ends of a segment
+ * @param[in] deg,lo Angle in degrees, between -360 and 360, as the sum of
+ * a double and a correction much smaller than it
+ * @param[in] err Bound on the distance of the sum to the exact angle
+ * @param[out] s,c Sine and cosine
+ */
+static void
+bd_sincos_deg(double deg, double lo, double err, BoundedDouble *s,
+  BoundedDouble *c)
+{
+  double a = fabs(deg), ssign = (deg < 0.0) ? -1.0 : 1.0, csign = 1.0;
+  bool swap = false;
+  if (deg < 0.0)
+    lo = - lo;
+  if (a > 180.0)
+  {
+    a = 360.0 - a;
+    lo = - lo;
+    ssign = - ssign;
+  }
+  if (a > 90.0)
+  {
+    a = 180.0 - a;
+    lo = - lo;
+    csign = - csign;
+  }
+  if (a > 45.0)
+  {
+    a = 90.0 - a;
+    lo = - lo;
+    swap = true;
+  }
+  /* The correction is added after the reduction, the sum rounded once */
+  a += lo;
+  double x = a / 180.0;
+  double ex = ((err + BD_U * fabs(a)) / 180.0 + BD_U * fabs(x)) *
+    BD_INFLATE;
+  double sv = cr_sinpi(x), cv = cr_cospi(x);
+  double se = (3.15 * ex + BD_U * fabs(sv)) * BD_INFLATE;
+  double ce = (3.15 * ex + BD_U * fabs(cv)) * BD_INFLATE;
+  s->v = ssign * (swap ? cv : sv);
+  s->e = swap ? ce : se;
+  c->v = csign * (swap ? sv : cv);
+  c->e = swap ? se : ce;
+}
+
+/**
+ * @brief Return true if the microsecond nearest to the meeting of a geography
+ * point segment and its mirror across the equator is proved, set in the
+ * output argument
+ * @details The first segment moves along the great circle of its ends A and B
+ * at a constant angular speed (#GeogSegmPair), its mirror at the mirror
+ * position, so the two meet where the first crosses the equator. With sa and
+ * sb the sines of the end latitudes and om the angle between the ends, its
+ * position at the angle t from A along the circle, sin(om - t) A + sin(t) B
+ * over sin(om), is on the equator where
+ * tan t = sin(om) sa / (cos(om) sa - sb), so at the parameter t / om. The
+ * parameter is computed with its error bound from the correctly rounded
+ * trigonometry of core-math/ (#BoundedDouble), om from the haversine of the
+ * ends and its complement, sums of positive terms that keep their relative
+ * accuracy for ends very near each other or nearly antipodal. A transcendental
+ * offset is no tie, so the nearest microsecond is proved as
+ * #floatsegm_offset_filter proves it, where the bound keeps the offset away
+ * from the middle of two microseconds; elsewhere it is not stated
+ * @param[in] p Ends: the start and the end of the first segment, then those
+ * of the second
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Microsecond nearest to the meeting, set where it is proved,
+ * a bound where the meeting belongs to it
+ * @return False where the date is not proved or where it is a bound
+ */
+static bool
+geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
+  TimestampTz upper, TimestampTz *t)
+{
+  int64 d = upper - lower;
+  if (d >= FLOATSEGM_FILTER_MAXD)
+    return false;
+  /* The sines and cosines of the end latitudes, of half their difference and
+   * of half their sum, rounded once, and of half the difference of the
+   * longitudes, held exactly (#two_diff), so that its cosine near 90
+   * degrees, the ends nearly antipodal, keeps its relative accuracy */
+  double dlat = p[1].y - p[0].y, slat = p[0].y + p[1].y, dlon, dlonlo;
+  two_diff(p[1].x, p[0].x, &dlon, &dlonlo);
+  BoundedDouble sa, ca, sb, cb, sh, ch, sq, cq, sd, cd;
+  bd_sincos_deg(p[0].y, 0.0, 0.0, &sa, &ca);
+  bd_sincos_deg(p[1].y, 0.0, 0.0, &sb, &cb);
+  bd_sincos_deg(dlat / 2.0, 0.0, BD_U * fabs(dlat) / 2.0, &sh, &ch);
+  bd_sincos_deg(slat / 2.0, 0.0, BD_U * fabs(slat) / 2.0, &sq, &cq);
+  bd_sincos_deg(dlon / 2.0, dlonlo / 2.0, 0.0, &sd, &cd);
+  /* The haversine of the angle om between the ends and its complement,
+   * hav = sin^2(om / 2) and 1 - hav = cos^2(om / 2), each a sum of positive
+   * terms, so that both keep their relative accuracy where om is near 0 or
+   * near 180 degrees */
+  BoundedDouble cacb = bd_mul(ca, cb);
+  BoundedDouble hav = bd_add(bd_mul(sh, sh), bd_mul(cacb, bd_mul(sd, sd)));
+  BoundedDouble comp = bd_add(bd_mul(sq, sq), bd_mul(cacb, bd_mul(cd, cd)));
+  BoundedDouble rh = bd_sqrt(hav), rc = bd_sqrt(comp);
+  BoundedDouble two = { 2.0, 0.0 };
+  BoundedDouble om = bd_mul(two, bd_atan2(rh, rc));
+  BoundedDouble sinom = bd_mul(two, bd_mul(rh, rc));
+  /* cos(om) sa - sb, which cancels where the ends are near each other or
+   * nearly antipodal, in the form that does not: with cos(om) = 1 - 2 hav and
+   * sa - sb = -2 cos(Q / 2) sin(P / 2), P and Q the difference and the sum of
+   * the end latitudes, it is -2 (cq sh + hav sa) for om up to 90 degrees;
+   * with cos(om) = 2 (1 - hav) - 1 and sa + sb = 2 sin(Q / 2) cos(P / 2), it
+   * is 2 ((1 - hav) sa - sq ch) beyond */
+  BoundedDouble half = bd_add(bd_mul(cq, sh), bd_mul(hav, sa));
+  if (hav.v > 0.5)
+    half = bd_sub(bd_mul(sq, ch), bd_mul(comp, sa));
+  BoundedDouble mtwo = { -2.0, 0.0 };
+  BoundedDouble ang = bd_atan2(bd_mul(sinom, sa), bd_mul(mtwo, half));
+  BoundedDouble dur = { (double) d, 0.0 };
+  BoundedDouble x = bd_mul(bd_div(ang, om), dur);
+  if (! bd_valid(hav) || ! bd_valid(comp) || ! bd_valid(om) ||
+      ! bd_valid(ang) || ! bd_valid(x))
+    return false;
+  /* The offset lies within x.e of x.v; not a number fails both comparisons */
+  double y = x.v + 0.5;
+  if (! (y >= 0.0 && y < (double) d + 1.0))
+    return false;
+  TimestampTz est = (TimestampTz) y;
+  if (fabs(x.v - (double) est) + x.e * BD_INFLATE >= 0.5)
+    return false;
+  /* A meeting whose nearest microsecond is a bound belongs to the bound,
+   * which dates it */
+  *t = lower + est;
+  return (est > 0 && est < d);
+}
+#endif /* MEOS_CORE_MATH */
+
 /**
  * @brief Return true if two temporal geography point segments meet strictly
  * inside their period, proved on the doubles of their ends, setting in the
@@ -742,13 +1005,19 @@ geogpointsegm_meeting(Datum start1, Datum end1, Datum start2, Datum end2,
    * it. A first segment whose end latitude is the opposite of its start one
    * crosses it at its middle, the rotation by a half turn about the axis
    * through the point of the equator at the middle longitude exchanging its
-   * ends; elsewhere the instant is not dated */
-  if (geogpointsegm_mirrored(p, hasz))
+   * ends; a pair on one meridian moves linearly in latitude and is dated
+   * below; elsewhere the instant is dated where its bound proves it
+   * (#geogpointsegm_mirror_date) */
+  if (geogpointsegm_mirrored(p, hasz) && p[1].x != p[0].x)
   {
     *meet = true;
     if (p[1].y == - p[0].y)
       return tnumbersegm_crossing(0.0, 1.0, 1.0, 0.0, lower, upper, t);
+#if MEOS_CORE_MATH
+    return geogpointsegm_mirror_date(p, lower, upper, t);
+#else
     return false;
+#endif /* MEOS_CORE_MATH */
   }
   double s1[2], e1[2], s2[2], e2[2];
   int n = geogpointsegm_linear(p, hasz, s1, e1, s2, e2);
