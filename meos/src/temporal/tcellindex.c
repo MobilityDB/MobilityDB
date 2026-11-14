@@ -743,7 +743,11 @@ always_overlaps_stbox_tcellindex(const STBox *box, const Temporal *temp)
  * containing that border leaves the cell out, as #tile_dim_count leaves out
  * the tile starting at the upper bound of a box, and the cover ends with an
  * exclusive bound on the cell held before it. A last instant alone in its
- * sequence holds its cell without entering it, and stays.
+ * sequence holds its cell without entering it, and stays, but where the
+ * sequence before ends within the microsecond before it: the cells between
+ * the two were crossed between two microseconds and hold none, so the
+ * trajectory enters the cell at its last instant, which is left out, the
+ * cell before held up to that instant.
  * @param[in] cover Cover of a trajectory, freed when the result differs
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
@@ -758,8 +762,43 @@ tcellindex_cover_border(Temporal *cover, bool border_inc)
     (const TSequenceSet *) cover : NULL;
   const TSequence *seq = ss ? TSEQUENCESET_SEQ_N(ss, ss->count - 1) :
     (const TSequence *) cover;
-  if (seq->count < 2 || ! seq->period.upper_inc)
+  if (! seq->period.upper_inc)
     return cover;
+  if (seq->count < 2)
+  {
+    /* A last instant alone in its sequence, after a sequence ending within
+     * the microsecond before it: that sequence runs on to the instant,
+     * exclusive, and the instant is left out */
+    if (! ss || ss->count < 2)
+      return cover;
+    const TSequence *before = TSEQUENCESET_SEQ_N(ss, ss->count - 2);
+    TimestampTz t = TSEQUENCE_INST_N(seq, 0)->t;
+    TimestampTz u = DatumGetTimestampTz(before->period.upper);
+    if (before->period.upper_inc ? t - u > 1 : t > u)
+      return cover;
+    int count = before->count;
+    TInstant **insts = palloc(sizeof(TInstant *) * (count + 1));
+    for (int i = 0; i < count; i++)
+      insts[i] = (TInstant *) TSEQUENCE_INST_N(before, i);
+    TInstant *end = tinstant_make(
+      tinstant_value_p(TSEQUENCE_INST_N(before, count - 1)), seq->temptype, t);
+    insts[count] = end;
+    TSequence *run = tsequence_make(insts, count + 1,
+      before->period.lower_inc, false, MEOS_FLAGS_GET_INTERP(seq->flags),
+      NORMALIZE);
+    pfree(end); pfree(insts);
+    TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+    for (int i = 0; i < ss->count - 2; i++)
+      sequences[i] = (TSequence *) TSEQUENCESET_SEQ_N(ss, i);
+    sequences[ss->count - 2] = run;
+    Temporal *result = (ss->count == 2) ? (Temporal *) run :
+      (Temporal *) tsequenceset_make(sequences, ss->count - 1, NORMALIZE);
+    if (ss->count > 2)
+      pfree(run);
+    pfree(sequences);
+    pfree(cover);
+    return result;
+  }
   const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
   const TInstant *prev = TSEQUENCE_INST_N(seq, seq->count - 2);
   Datum held = tinstant_value_p(prev);
@@ -2860,6 +2899,15 @@ dggs_visits_to_temporal(DggsVisit *visits, int count, MeosType temptype)
     if ((v.lower == v.upper && ! (v.lower_inc && v.upper_inc)) ||
         (v.upper - v.lower == 1 && ! v.lower_inc && ! v.upper_inc))
       continue;
+    /* The visits of one cell that visits holding no microsecond separate
+     * are one period, as #build_runs of the oracle of the cell walks joins
+     * the stretches of one cell */
+    if (n > 0 && visits[n - 1].cell == v.cell)
+    {
+      visits[n - 1].upper = v.upper;
+      visits[n - 1].upper_inc = v.upper_inc;
+      continue;
+    }
     while (n > 0 && visits[n - 1].upper == v.lower &&
       visits[n - 1].upper_inc && v.lower_inc)
     {
@@ -3498,12 +3546,19 @@ dggs_chart_at_vertex(const DggsPlanarOps *ops, uint64 cell, double x,
   if (! dggs_chart_at_lon(ops, cell, x, c))
     return false;
   for (int k = 0; k < c->o.count; k++)
-    if (c->o.lon[k] == x && c->o.lat[k] == y)
+  {
+    /* A vertex on the antimeridian lies at 180 and at -180, and a grid may
+     * state it on the side of each cell, so the two outlines state it 360
+     * apart; the difference of two longitudes of at most 180 in magnitude
+     * is exact, and so is the offset it adds */
+    double d = x - c->o.lon[k];
+    if (c->o.lat[k] == y && (d == 0.0 || d == 360.0 || d == -360.0))
     {
-      c->s = off - c->xo[k];
+      c->s = (off + d) - c->xo[k];
       *vertex = k;
       return true;
     }
+  }
   return false;
 }
 
@@ -3690,6 +3745,55 @@ dggs_crossing_line_param(const DggsCrossing *cr, double x0, double y0,
 #define DGGS_WALK_SAME_PARAM 6
 
 /**
+ * @brief Put in a walk the owner of a vertex it passes through, when the
+ * owner is none of the cells the walk passes there, and return the number of
+ * cells of the walk
+ * @details The walk passes a vertex from the cell it leaves to the cells it
+ * heads into, at one parameter, while more cells may meet at the vertex: four
+ * S2 cells meet at a corner, and a trip through the corner from one cell to
+ * the opposite one touches the two others there alone. The cell holding the
+ * vertex (`point_cell`) holds the instant the trip lies there, so where it is
+ * none of the cells of the passage, the cell left included, it is put in the
+ * walk at the start of the passage, at the same crossing, as a crossing
+ * through a corner of a tile reaches the tile holding the corner first
+ * (#tpointseq_to_tquadbin): it holds the crossing position, and the cell
+ * after it does not.
+ * @param[in] ops Planar walk of the grid
+ * @param[in] resolution Resolution of the cells
+ * @param[in] vx,vy The vertex, in degrees
+ * @param[in] start Index of the first cell of the passage
+ * @param[in] n Number of cells of the walk
+ * @param[in,out] cells,enter,cross The walk
+ * @param[in] maxout Capacity of the arrays
+ */
+static int
+dggs_walk_vertex_owner(const DggsPlanarOps *ops, int32 resolution, double vx,
+  double vy, int start, int n, uint64 *cells, double *enter,
+  DggsEdgeCross *cross, int maxout)
+{
+  if (start < 1 || start >= n || n >= maxout)
+    return n;
+  uint64 owner = ops->point_cell(vx, vy, resolution);
+  if (owner == 0)
+    return n;
+  for (int i = start - 1; i < n; i++)
+    if (cells[i] == owner)
+      return n;
+  size_t m = (size_t) (n - start);
+  memmove(&cells[start + 1], &cells[start], m * sizeof(uint64));
+  memmove(&enter[start + 1], &enter[start], m * sizeof(double));
+  cells[start] = owner;
+  if (cross)
+  {
+    memmove(&cross[start + 1], &cross[start], m * sizeof(DggsEdgeCross));
+    cross[start].held_left = false;
+    cross[start].held_entered = true;
+    cross[start + 1].held_left = true;
+  }
+  return n + 1;
+}
+
+/**
  * @brief Fill `cells` with every cell a planar segment crosses, and `enter`
  * with the segment parameter at which it reaches each
  * @details The walk of a planar segment on the straight-edged outlines of a
@@ -3723,18 +3827,60 @@ dggs_segment_cells_planar(const DggsPlanarOps *ops, double lon1, double lat1,
   int n = 1;
   if (lon1 == lon2 && lat1 == lat2)
     return n;
-  DggsChart chart;
-  if (! dggs_chart_at_lon(ops, cur, lon1, &chart))
-    return n;
-  if (dggs_chart_convex(&chart) &&
-      ops->point_cell(lon2, lat2, resolution) == cur)
-    return n;
-
   DggsCrossing t, exit;
   memset(&t, 0, sizeof(DggsCrossing));
   bool started = false;
   uint64 prev = (uint64) 0;
+  /* The cell the segment lies in just after its start, where the grid
+   * states one other than the cell holding the start: the segment enters it
+   * at its start, the line of the crossing the parallel through the start,
+   * and the cell holding the start holds the start */
+  uint64 s = ops->start_cell ?
+    ops->start_cell(lon1, lat1, lon2, lat2, resolution) : 0;
+  if (s != 0 && s != cur && n < maxout)
+  {
+    t.ax = t.bx = lon1;
+    t.ay = t.by = lat1;
+    t.oa = 0.0;
+    t.ob = 360.0;
+    cells[n] = s;
+    enter[n] = 0.0;
+    if (cross)
+    {
+      DggsEdgeCross *x = &cross[n];
+      x->ax = t.ax; x->ay = t.ay; x->oa = t.oa;
+      x->bx = t.bx; x->by = t.by; x->ob = t.ob;
+      x->held_left = true;
+      x->held_entered = false;
+    }
+    n++;
+    prev = cur;
+    cur = s;
+    started = true;
+  }
+  DggsChart chart;
+  if (! dggs_chart_at_lon(ops, cur, lon1, &chart))
+    return n;
+  /* A convex cell holding both ends holds the segment, where both ends lie
+   * in one copy of its ring: a cell apart from a pole spans less than 180
+   * degrees of longitude and its copies lie 360 apart, so two positions of
+   * different copies lie more than 180 degrees apart */
+  if (! started && fabs(lon2 - lon1) < 180.0 && dggs_chart_convex(&chart) &&
+      ops->point_cell(lon2, lat2, resolution) == cur)
+  {
+    /* The segment reaches its end from the cell the reversed segment lies
+     * in just after its start, where the grid states one */
+    uint64 e = ops->start_cell ?
+      ops->start_cell(lon2, lat2, lon1, lat1, resolution) : 0;
+    if (e == 0 || e == cur)
+      return n;
+  }
+
   int same = 0;
+  /* The passage at one parameter the walk is in: its first cell, and the
+   * vertex it passes through, if any */
+  int pass_start = 0, vertex_start = -1;
+  double pvx = 0.0, pvy = 0.0;
   while (n < maxout &&
       dggs_chart_exit(&chart, lon1, lat1, lon2, lat2, started ? &t : NULL,
         &exit))
@@ -3749,6 +3895,23 @@ dggs_segment_cells_planar(const DggsPlanarOps *ops, double lon1, double lat1,
     same = at_t ? same + 1 : 0;
     if (same > DGGS_WALK_SAME_PARAM)
       break;
+    if (! at_t)
+    {
+      /* The passage before ends here */
+      if (vertex_start >= 0)
+        n = dggs_walk_vertex_owner(ops, resolution, pvx, pvy, vertex_start,
+          n, cells, enter, cross, maxout);
+      vertex_start = -1;
+      pass_start = n;
+      if (n >= maxout)
+        break;
+    }
+    if (exit.vertex && vertex_start < 0)
+    {
+      vertex_start = pass_start;
+      pvx = vx;
+      pvy = vy;
+    }
     uint64 next;
     if (! exit.vertex)
       next = chart.o.across[k];
@@ -3795,6 +3958,9 @@ dggs_segment_cells_planar(const DggsPlanarOps *ops, double lon1, double lat1,
     t = exit;
     started = true;
   }
+  if (vertex_start >= 0)
+    n = dggs_walk_vertex_owner(ops, resolution, pvx, pvy, vertex_start, n,
+      cells, enter, cross, maxout);
   return n;
 }
 
