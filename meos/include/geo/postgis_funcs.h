@@ -84,6 +84,12 @@ extern LWGEOM *box3d_to_lwgeom(BOX3D *box);
 
 extern bool geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel);
+extern bool geom_intersects3d_intl(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2);
+extern bool geom_dwithin2d_intl(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  double dist);
+extern bool geom_dwithin3d_intl(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  double dist);
 extern double geom_distance2d_disc(const double *c, double r,
   const GSERIALIZED *gs);
 extern double geom_distance2d_disc_witness(const double *c, double r,

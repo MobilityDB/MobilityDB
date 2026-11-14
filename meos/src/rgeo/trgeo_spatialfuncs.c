@@ -56,6 +56,7 @@
 #include <meos_internal_geo.h>
 #include <meos_rgeo.h>
 #include "geo/geo_funcs.h"
+#include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "rgeo/trgeo.h"
@@ -249,7 +250,7 @@ body_meets_target(const GSERIALIZED *body, const GSERIALIZED *target,
   const STBox *excl, const STBox *box3d)
 {
   bool meets = box3d ?
-    body_vertex_in_box(body, box3d) || geom_dwithin3d(body, target, 0.0) :
+    body_vertex_in_box(body, box3d) || geom_dwithin3d_intl(body, target, 0.0) :
     geom_intersects2d(body, target);
   if (! meets)
     return false;
