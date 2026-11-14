@@ -552,6 +552,17 @@ dist_piece_at(const DistEvents *ev, int *from, double t)
  * proof.  At the start of each piece, the closest part is the one that is
  * closest just after it.  Each change is a corner of the distance, a local
  * maximum, whose time is the root, not where two interpolations cross.
+ *
+ * The comparison just after a time reads the terms of the Taylor series of
+ * the difference there, within its tolerance, see #distfun_sign_after(),
+ * while the crossings read the signs between the roots.  Where two distances
+ * meet with the same slope, as where the nearest point of one part leaves a
+ * vertex it shares with another part for its edge, the value of the
+ * difference at the root can be a rounding error above the tolerance, so
+ * the comparison keeps the closest part while the crossing of another part
+ * is at that time.  Such a part is the closest just after the time.  A part
+ * that was the closest at a time does not become it again at that time, thus
+ * the time advances after at most as many changes as there are parts.
  * @param[in] ev Events and pieces of the walks of the parts, which cover
  * [0, 1]
  * @return False if a function is not in the family or a root isolation fails
@@ -565,6 +576,10 @@ dist_envelope(const DistEvents *ev, int nparts, DistActive **active,
   *active = palloc(sizeof(DistActive) * size);
   *corners = palloc(sizeof(double) * csize);
   *nactive = *ncorners = 0;
+  /* The parts that were the closest at t, and the part whose crossing is at
+   * t */
+  bool *taken = palloc0(sizeof(bool) * nparts);
+  int force = -1;
   double t = 0.0;
   int cur = -1;
   bool ok = true;
@@ -580,14 +595,20 @@ dist_envelope(const DistEvents *ev, int nparts, DistActive **active,
         end = fmin(end, t1);
     }
     /* The closest part just after t */
-    int best = (cur >= 0) ? cur : 0;
+    int best = (force >= 0) ? force : ((cur >= 0) ? cur : 0);
     for (int k = 0; k < nparts && ok; k++)
-      if (k != best && dist_piece_cmp(&ev[k].pc[at[k]], &ev[best].pc[at[best]],
-          t, end, &ok) < 0)
+      if (k != best && ! taken[k] && dist_piece_cmp(&ev[k].pc[at[k]],
+          &ev[best].pc[at[best]], t, end, &ok) < 0)
         best = k;
     if (! ok)
       break;
-    if (best != cur)
+    if (best != cur && *nactive > 0 && (*active)[*nactive - 1].t0 == t)
+    {
+      /* The closest part changes again at t */
+      (*active)[*nactive - 1].part = best;
+      cur = best;
+    }
+    else if (best != cur)
     {
       if (cur >= 0)
       {
@@ -614,6 +635,7 @@ dist_envelope(const DistEvents *ev, int nparts, DistActive **active,
      * before the end of the pieces */
     const DistPiece *pc = &ev[cur].pc[at[cur]];
     double tnext = end;
+    force = -1;
     if (! pc->zero)
       for (int k = 0; k < nparts; k++)
       {
@@ -634,12 +656,28 @@ dist_envelope(const DistEvents *ev, int nparts, DistActive **active,
           ok = false;
           break;
         }
-        if (rc == 1 && root < tnext)
+        if (rc == 1 && root <= t)
+        {
+          if (! taken[k] && force < 0)
+            force = k;
+        }
+        else if (rc == 1 && root < tnext)
           tnext = root;
       }
+    if (! ok)
+      break;
+    if (force >= 0)
+    {
+      /* The part whose crossing is at t is the closest just after t */
+      taken[cur] = taken[force] = true;
+      continue;
+    }
+    for (int k = 0; k < nparts; k++)
+      taken[k] = false;
     t = tnext;
   }
   pfree(at);
+  pfree(taken);
   if (! ok)
   {
     pfree(*active);

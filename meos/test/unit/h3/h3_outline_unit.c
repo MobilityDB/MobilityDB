@@ -57,7 +57,7 @@
 
 /* Index of a vertex of an outline within SHARED degrees of a position, or -1 */
 static int
-outline_near(const H3Outline *o, double lon, double lat)
+outline_near(const DggsOutline *o, double lon, double lat)
 {
   for (int k = 0; k < o->count; k++)
     if (fabs(o->lon[k] - lon) < SHARED && fabs(o->lat[k] - lat) < SHARED)
@@ -108,7 +108,7 @@ main(int argc, char **argv)
         if (cells[c] == 0)
           continue;
         ncells++;
-        H3Outline o;
+        DggsOutline o;
         if (! h3_cell_outline(cells[c], &o))
         {
           printf("FAIL res %d: no outline for %llx\n", res,
@@ -118,7 +118,7 @@ main(int argc, char **argv)
         }
         for (int k = 0; k < o.count; k++)
         {
-          H3Outline n;
+          DggsOutline n;
           if (! h3_cell_outline(o.across[k], &n))
           {
             printf("FAIL res %d: no outline for %llx\n", res,
