@@ -713,6 +713,29 @@ controls) and speed, 25 of the 26 cells at parity; no speed cell reaches tier 3.
 `nearest_double_exact` stands for the search: `wide_dyadic_nearest_root`, `ddb_nearest_root` and
 the candidate moves of `point_distance_offset_filter` become side functions it reads.
 
+Measured (2026-11-14, master `eccb946b5d`, `claude-kits` `ea6-kit`, branch
+`meas/ea6-nearest-differential`): the one search is `nearest_double_search`, a gallop and halving
+over bit patterns whose side gives the sign of the value against the upper midpoint of a double,
+or 2 where a filter on doubles cannot tell, its first two steps of one double and its top
+infinity. `nearest_double_exact` reads it with its signature and `NearestSide` unchanged; the
+root of a wide quotient (`tower_wide_nearest_root`, as EA5 named it), `ddb_nearest_root` and the
+offset filter are its sides, the two filters asking at most eight sides and keeping the candidate
+they read last. Each of the four answered both ways on the calls of the speed cells, the 17 ED24
+witnesses, the S2 covers, the unit tests, 12 000 pairs of planar temporal points and the offset
+distances (94 925, 94 539, 9 127 and 3 801 calls) answers alike and decides and declines alike;
+over 53 000 ties, near ties and magnitudes from 2^-1074 past the largest double, judged by MPFR,
+no answer is wrong. The one difference is a value past the midpoint above the largest double,
+which master's search caps at the largest double and the one search rounds to infinity, as MPFR
+does. A call costs 4% more for `nearest_double_exact` and the wide root, 5% for the offset filter,
+20 to 33% for `ddb_nearest_root` (the same residuals, the cost of the side itself).
+
+EA6 is open as #3686, four commits on master `ababb81144`: the search read by
+`nearest_double_exact`, then the wide root, the offset filter and the DDBound root as its sides.
+Its receipts are strict CI, cppcheck, valgrind, smoke, the oracle (18 CGAL witnesses with 36
+controls) and speed, 25 of the 26 cells at parity as on EA5; Windows is waived. The other
+searches of Section 4.5 (`point_distance_nearest`, the searches of `point_distance_offset_pair`,
+`point_segment_distance_offset_exact` and their `_inputs` twins, `mec_nearest`) are not in it.
+
 ### EA7. Every sign with every tier
 
 The gaps of Section 4.4 close on the one ladder: tier 2 where it is missing (after EA2), tier 3
