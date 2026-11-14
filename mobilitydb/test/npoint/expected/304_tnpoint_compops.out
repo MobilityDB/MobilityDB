@@ -331,6 +331,12 @@ SELECT tnpoint 'Npoint(0, 0.676259981511564)@2001-01-01' ?&& tnpoint 'Npoint(1, 
  f
 (1 row)
 
+SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01' ?&& tnpoint 'Npoint(1, 0.50000000000001)@2001-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tnpoint '[Npoint(0, 0.6)@2001-01-01, Npoint(0, 0.676259981511564)@2001-01-02, Npoint(0, 0.7)@2001-01-03]' ?&& tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.3501533481390591)@2001-01-02, Npoint(1, 0.4)@2001-01-03]';
  ?column? 
 ----------

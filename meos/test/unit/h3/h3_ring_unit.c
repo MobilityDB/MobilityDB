@@ -34,7 +34,7 @@
  * @details Each row of h3_ring_rows.inc states the microsecond, truncated, at
  * which a segment crosses the line of an edge of a cell's outline, and
  * whether it lies on the line exactly there, as CGAL::Gmpq computes them on
- * the outline the H3 library gives the cell. #h3_outline_edge_offset must
+ * the outline the H3 library gives the cell. #dggs_outline_edge_offset must
  * answer both. On the rows of kind 1 the parameter computed in doubles,
  * `floor(D c0 / (c0 - c1))` on the two cross products, dates another
  * microsecond; on the rows of kind 2, across the antimeridian, reading the
@@ -80,7 +80,7 @@ near_lon(double ref, double lon)
 
 /* The microsecond dated in doubles, and whether it reads as exact */
 static int64
-offset_in_doubles(const H3Outline *o, const RingRow *r, int *whole)
+offset_in_doubles(const DggsOutline *o, const RingRow *r, int *whole)
 {
   int k1 = (r->k + 1) % o->count;
   double ax = near_lon(r->x0, o->lon[r->k]), ay = o->lat[r->k];
@@ -110,7 +110,7 @@ main(void)
   for (int i = 0; i < nrows; i++)
   {
     const RingRow *r = &rows[i];
-    H3Outline o;
+    DggsOutline o;
     if (! h3_cell_outline(r->cell, &o))
     {
       printf("FAIL row %d: no outline\n", i);
@@ -118,7 +118,7 @@ main(void)
       continue;
     }
     bool whole;
-    int64 n = h3_outline_edge_offset(&o, r->k, r->x0, r->y0, r->x1, r->y1,
+    int64 n = dggs_outline_edge_offset(&o, r->k, r->x0, r->y0, r->x1, r->y1,
       r->D, &whole);
     if (n != r->n || whole != (r->whole != 0))
     {

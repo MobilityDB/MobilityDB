@@ -708,6 +708,28 @@ int main(void)
   free(pip_wkt);
   meos_errno_reset();
 
+  /* An arc of radius 1 at magnitude 1e5 sweeping 1e-3 and rising from Z 1 to
+   * 3, crossed by a line along its radius at Z 9. The crossing lies on both,
+   * which determine two elevations there, so the answer carries none: the
+   * arc reads its own crossing within the rounding of the construction */
+  GSERIALIZED *lift_arc = geom_in("CIRCULARSTRING Z ("
+    "100000.92106099401 60000.389418342311 1, "
+    "100000.9208661697 60000.389878824106 2, "
+    "100000.92067111519 60000.390339208439 3)", -1);
+  GSERIALIZED *lift_line = geom_in("LINESTRING Z ("
+    "100000.92004264702 60000.389258946787 9, "
+    "100000.92188457424 60000.390038243982 9)", -1);
+  assert(lift_arc != NULL);
+  assert(lift_line != NULL);
+  GSERIALIZED *lift_res = geom_intersection2d(lift_arc, lift_line);
+  assert(lift_res != NULL);
+  char *lift_wkt = geo_as_text(lift_res, 17, &size_out);
+  printf("geom_intersection2d(a flat arc rising from Z 1 to 3, a line across "
+    "it at Z 9): %s\n", lift_wkt);
+  assert(strncmp(lift_wkt, "POINT(", 6) == 0);
+  free(lift_wkt); free(lift_res); free(lift_arc); free(lift_line);
+  meos_errno_reset();
+
   /* The box of an arc takes its size from the arc. A semicircle through
    * (0 0), (s s) and (2s 0) is 2s wide and s high, and it holds its own middle
    * vertex (s s), so it intersects that point at every s. A box read off the

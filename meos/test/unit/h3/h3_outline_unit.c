@@ -36,7 +36,8 @@
  * the neighbour's outline within SHARED degrees, must be that vertex with the
  * same doubles, the extra vertices of the edges crossing a face of the
  * icosahedron included; the cell across each edge must be a neighbour whose
- * outline has an edge across to the cell. The extra vertices appear at the
+ * outline has an edge across to the cell and holds both ends of the edge,
+ * which a cell across another edge does not. The extra vertices appear at the
  * odd resolutions only, and the test fails if none is met there, so that the
  * case they are read for is exercised.
  */
@@ -57,7 +58,7 @@
 
 /* Index of a vertex of an outline within SHARED degrees of a position, or -1 */
 static int
-outline_near(const H3Outline *o, double lon, double lat)
+outline_near(const DggsOutline *o, double lon, double lat)
 {
   for (int k = 0; k < o->count; k++)
     if (fabs(o->lon[k] - lon) < SHARED && fabs(o->lat[k] - lat) < SHARED)
@@ -108,7 +109,7 @@ main(int argc, char **argv)
         if (cells[c] == 0)
           continue;
         ncells++;
-        H3Outline o;
+        DggsOutline o;
         if (! h3_cell_outline(cells[c], &o))
         {
           printf("FAIL res %d: no outline for %llx\n", res,
@@ -118,7 +119,7 @@ main(int argc, char **argv)
         }
         for (int k = 0; k < o.count; k++)
         {
-          H3Outline n;
+          DggsOutline n;
           if (! h3_cell_outline(o.across[k], &n))
           {
             printf("FAIL res %d: no outline for %llx\n", res,
@@ -142,7 +143,14 @@ main(int argc, char **argv)
             int i = e % o.count;
             int j = outline_near(&n, o.lon[i], o.lat[i]);
             if (j < 0)
+            {
+              printf("FAIL res %d: %llx is across an edge of %llx whose "
+                "end %d it does not hold\n", res,
+                (unsigned long long) o.across[k],
+                (unsigned long long) cells[c], i);
+              failures++;
               continue;
+            }
             shared++;
             if (! outline_named(cells[c], o.lon[i], o.lat[i]))
               extra++;

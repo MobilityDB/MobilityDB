@@ -82,8 +82,12 @@ geo_to_s2cell_cell(const GSERIALIZED *point, int32 level)
       ! ensure_srid_is_latlong(gserialized_get_srid(point)) ||
       ! ensure_valid_cell_resolution(T_TS2CELL, level))
     return (S2CellId) 0;
+  /* A geodetic point lies in the cell of S2, a planar one in the cell its
+   * straight-edged outline bounds (#s2cell_point_cell_planar) */
   const POINT2D *p = GSERIALIZED_POINT2D_P(point);
-  return s2cell_point_to_cell(p->x, p->y, (uint32_t) level);
+  return FLAGS_GET_GEODETIC(point->gflags) ?
+    s2cell_point_to_cell(p->x, p->y, (uint32_t) level) :
+    s2cell_point_cell_planar(p->x, p->y, (uint32_t) level);
 }
 
 /*****************************************************************************

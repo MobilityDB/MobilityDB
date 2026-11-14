@@ -339,7 +339,7 @@ tpointseq_linear_to_th3index(const TSequence *seq, int32 resolution)
   int maxout = 64;
   H3Index *cells = palloc(sizeof(H3Index) * (size_t) maxout);
   double *enter = palloc(sizeof(double) * (size_t) maxout);
-  H3EdgeCross *cross = palloc(sizeof(H3EdgeCross) * (size_t) maxout);
+  DggsEdgeCross *cross = palloc(sizeof(DggsEdgeCross) * (size_t) maxout);
   for (int i = 0; i + 1 < seq->count; i++)
   {
     const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
@@ -353,7 +353,7 @@ tpointseq_linear_to_th3index(const TSequence *seq, int32 resolution)
       maxout *= 2;
       cells = repalloc(cells, sizeof(H3Index) * (size_t) maxout);
       enter = repalloc(enter, sizeof(double) * (size_t) maxout);
-      cross = repalloc(cross, sizeof(H3EdgeCross) * (size_t) maxout);
+      cross = repalloc(cross, sizeof(DggsEdgeCross) * (size_t) maxout);
     }
     /* A segment starts in the cell the previous one ends in */
     for (int k = 0; k < ncells; k++)
@@ -372,7 +372,7 @@ tpointseq_linear_to_th3index(const TSequence *seq, int32 resolution)
       bool whole = true, held_left = false, held_entered = true;
       if (k > 0)
       {
-        const H3EdgeCross *x = &cross[k];
+        const DggsEdgeCross *x = &cross[k];
         int64 D = inst2->t - inst1->t;
         tenter += geodetic ?
           h3_geodetic_edge_offset(p1->x, p1->y, p2->x, p2->y, D, x->ax,
