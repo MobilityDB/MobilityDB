@@ -27064,6 +27064,71 @@ point_in_rings_exact(const POINT2D *pt, POINTARRAY * const *rings,
 }
 
 /**
+ * @brief Return 1 if a point moved by a translation lies in the interior of
+ * the area some rings bound, 0 if it lies outside it, and -1 if it lies on one
+ * of the rings
+ * @details The point is `q = (px + tx, py + ty)`, each sum exact and not
+ * rounded. The rings are read as #point_in_rings_exact reads them: a ray cast
+ * to the right at the height of `q` crosses an edge A B by the half-open
+ * rule, and the side of the edge `q` lies on is the sign of the cross product
+ * of `B - A` and `q - A`, both read exactly (#offset_x_cmp,
+ * #polynomial_sign_exact)
+ * @param[in] px,py The point
+ * @param[in] tx,ty The translation
+ * @param[in] rings,nrings Rings and their number
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int
+translated_point_in_rings_exact(double px, double py, double tx, double ty,
+  POINTARRAY * const *rings, uint32_t nrings)
+{
+  assert(rings);
+  bool inside = false;
+  for (uint32_t r = 0; r < nrings; r++)
+  {
+    const POINTARRAY *pa = rings[r];
+    for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+    {
+      const POINT2D *a = getPoint2d_cp(pa, i);
+      const POINT2D *b = getPoint2d_cp(pa, i + 1);
+      /* Signs of `ay - qy` and `by - qy` */
+      int sa = - offset_x_cmp(py, ty, a->y);
+      int sb = - offset_x_cmp(py, ty, b->y);
+      bool up = sa <= 0 && sb > 0;
+      bool down = sb <= 0 && sa > 0;
+      if (! up && ! down)
+      {
+        /* An edge the ray does not cross carries the point at its start or,
+         * lying at the point's height, between its two ends */
+        int xa = - offset_x_cmp(px, tx, a->x);
+        if (sa == 0 && xa == 0)
+          return -1;
+        if (sa == 0 && sb == 0 && xa * (- offset_x_cmp(px, tx, b->x)) <= 0)
+          return -1;
+        continue;
+      }
+      ExactSum sums[4];
+      const double t0[2] = {b->x, - a->x}, t1[3] = {py, ty, - a->y};
+      const double t2[2] = {b->y, - a->y}, t3[3] = {px, tx, - a->x};
+      exact_sum_set(&sums[0], t0, 2);
+      exact_sum_set(&sums[1], t1, 3);
+      exact_sum_set(&sums[2], t2, 2);
+      exact_sum_set(&sums[3], t3, 3);
+      PolyTerm terms[2] = {
+        {.coef = 1.0, .deg = 2, .sum = {0, 1}},
+        {.coef = -1.0, .deg = 2, .sum = {2, 3}}};
+      int side = polynomial_sign_exact(sums, terms, 2);
+      if (side == 0)
+        return -1;
+      if ((up && side > 0) || (down && side < 0))
+        inside = ! inside;
+    }
+  }
+  return inside ? 1 : 0;
+}
+
+/**
  * @brief Return the sign of the turn from the ray v->u to the ray v->d
  */
 static inline int
