@@ -72,23 +72,39 @@
 
 /**
  * @brief Set the body of the reference geometry of a temporal rigid geometry
- * @details The walk needs a convex body.  A polygon that is not convex or has
- * holes gives an error, also where the walk is not necessary, so that the
- * distance functions accept the same values in all cases.
- * @return False, with an error, if the reference geometry is not a convex
- * polygon without holes
+ * as the pieces of its exact convex cover (#distrefpoly_cover)
+ * @details The walk needs a convex body.  A convex polygon without holes is
+ * its only piece.  Any other polygon is covered by convex pieces whose
+ * vertices are its own, with disjoint interiors and its area as their union,
+ * holes excluded: its distance to an operand is the least of the distances of
+ * its pieces, 0 exactly where a piece meets the operand.
+ * @return False, with an error, if the reference geometry has a ring of
+ * fewer than three vertices or a spike, or rings that bound no area
  */
 static bool
-dist_ref_body(const GSERIALIZED *ref_gs, DistRefPoly *rp)
+dist_ref_body(const GSERIALIZED *ref_gs, DistRefPoly **pieces, int *npieces)
 {
   LWGEOM *geom = lwgeom_from_gserialized(ref_gs);
-  bool result = distrefpoly_set(rp, lwgeom_as_lwpoly(geom));
+  bool result = distrefpoly_cover(lwgeom_as_lwpoly(geom), pieces, npieces);
   lwgeom_free(geom);
   if (! result)
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The distance of a temporal rigid geometry needs a reference geometry "
-      "that is a convex polygon without holes");
+      "that is a polygon whose rings bound an area");
   return result;
+}
+
+/**
+ * @brief Free the pieces of a body that #dist_ref_body() sets
+ */
+static void
+dist_ref_body_free(DistRefPoly *pieces, int npieces)
+{
+  if (! pieces)
+    return;
+  for (int i = 0; i < npieces; i++)
+    distrefpoly_free(&pieces[i]);
+  pfree(pieces);
 }
 
 /**
@@ -267,7 +283,9 @@ dist_parts_add_all(const LWGEOM *geom, DistPart *parts, int *n,
 typedef struct
 {
   const GSERIALIZED *ref1;   /**< Reference geometry of the first operand */
-  DistRefPoly body1;         /**< Body of the first operand */
+  DistRefPoly *body1;        /**< Convex pieces of the body of the first
+                                  operand, see #dist_ref_body() */
+  int nbody1;                /**< Number of pieces, 1 for a convex body */
   const GSERIALIZED *gs;     /**< Static geometry @nullable */
   LWGEOM *geom;              /**< Static geometry, which @p polys read */
   DistPart *parts;           /**< Parts of the static geometry */
@@ -275,14 +293,21 @@ typedef struct
   const LWPOLY **polys;      /**< Polygons of the static geometry read by
                                   the segments of their rings */
   int npolys;                /**< Number of such polygons */
-  double *refxy;             /**< Vertices of the reference geometry of the
-                                  first operand, x, y pairs, the first not
+  double *refxy;             /**< Vertices of the rings of the reference
+                                  geometry of the first operand, the outer one
+                                  first, x, y pairs, the first of a ring not
                                   repeated, for a static geometry */
   int nref;                  /**< Number of vertices */
+  double **piecexy;          /**< Vertices of each piece of the first body,
+                                  x, y pairs, for a static geometry; those of
+                                  @p refxy for a convex body */
+  int *npiece;               /**< Number of vertices of each piece */
   const GSERIALIZED *ref2;   /**< Reference geometry of a temporal rigid
                                   geometry, or NULL for a temporal point */
-  DistRefPoly body2;         /**< Body of a temporal point or temporal rigid
-                                  geometry */
+  DistRefPoly *body2;        /**< Convex pieces of the body of a temporal
+                                  rigid geometry, or the point of a temporal
+                                  point */
+  int nbody2;                /**< Number of pieces */
   double level;              /**< Distance whose crossings are events, or a
                                   negative value, see distwalk_segm() */
 } DistOps;
@@ -331,10 +356,10 @@ dist_inside(const DistOps *ops, const Pose *pose)
  * @brief Return the nearest approach of the first operand, translating from
  * the pose @p pose1 to the pose @p pose2 at the angle 0, and the static
  * geometry of @p ops, the double nearest its exact value
- * @details The least of the nearest approaches to the parts
- * (#convex_motion_nad_exact), or 0 where the body at @p pose1 has a vertex
- * in a polygon read by its rings (#dist_inside()).  A body that enters such
- * a polygon meets one of its rings, whose segments are parts.
+ * @details The least of the nearest approaches of the pieces of the body to
+ * the parts (#convex_motion_nad_exact), or 0 where the body at @p pose1 has a
+ * vertex in a polygon read by its rings (#dist_inside()).  A body that enters
+ * such a polygon meets one of its rings, whose segments are parts.
  */
 static double
 dist_parts_nad(const DistOps *ops, const Pose *pose1, const Pose *pose2)
@@ -342,9 +367,11 @@ dist_parts_nad(const DistOps *ops, const Pose *pose1, const Pose *pose2)
   if (dist_inside(ops, pose1))
     return 0.0;
   double result = DBL_MAX;
-  for (int i = 0; i < ops->nparts; i++)
-    result = fmin(result, convex_motion_nad_exact(ops->refxy, ops->nref,
-      pose1->data, pose2->data, ops->parts[i].xy, ops->parts[i].npts));
+  for (int p = 0; p < ops->nbody1; p++)
+    for (int i = 0; i < ops->nparts; i++)
+      result = fmin(result, convex_motion_nad_exact(ops->piecexy[p],
+        ops->npiece[p], pose1->data, pose2->data, ops->parts[i].xy,
+        ops->parts[i].npts));
   return result;
 }
 
@@ -762,8 +789,10 @@ dist_active(const DistActive *active, int nactive, int k, double t)
 typedef struct
 {
   const DistOps *ops;        /**< Operands */
-  const DistRefPoly *rb;     /**< Body of the second operand, or NULL for a
-                                  static geometry of several parts */
+  const DistRefPoly *rb;     /**< Pieces of the body of the second operand,
+                                  or NULL for a static geometry of several
+                                  parts */
+  int nrb;                   /**< Number of pieces of @p rb */
   const DistMotion *mb;      /**< Motion of a static second operand, or NULL
                                   for a temporal one */
   bool exact;                /**< True if the value at an end of a segment is
@@ -778,23 +807,34 @@ typedef struct
   int size;                  /**< Number of instants the arrays hold */
   TimestampTz *ts;           /**< Instants of the last segment walked */
   double *ds;                /**< Distances at these instants */
-  int nparts;                /**< Number of parts walked, 0 if @p rb is
-                                  walked */
-  DistPair *pcf;             /**< Closest feature of each part */
-  DistEvents *pev;           /**< Events and pieces of each part */
+  int nparts;                /**< Number of pairs walked, a piece of the first
+                                  body and a part of the static geometry or a
+                                  piece of @p rb, 0 if one pair is, see
+                                  #dist_lift_parts() */
+  DistPair *pcf;             /**< Closest feature of each pair */
+  DistEvents *pev;           /**< Events and pieces of each pair */
   int nsegs;                 /**< Number of segments walked */
   bool failed;               /**< True if the walk of a segment failed */
+  bool refused;              /**< True if a segment is one the lower envelope
+                                  of pairs does not read, see
+                                  #dist_lift_parts() */
 } DistLift;
 
 /**
- * @brief Set the walk over the segments of a sequence
+ * @brief Set the walk over the segments of a sequence, which
+ * #dist_lift_free() frees
+ * @details One pair of convex bodies is walked alone.  Several pairs, the
+ * pieces of the first body against the parts of a static geometry or the
+ * pieces of the second body, are walked each, and their lower envelope gives
+ * the distance, see #dist_lift_parts().
  */
 static void
 dist_lift_init(DistLift *lift, const DistOps *ops, const DistRefPoly *rb,
-  const DistMotion *mb, bool exact)
+  int nrb, const DistMotion *mb, bool exact)
 {
   lift->ops = ops;
   lift->rb = rb;
+  lift->nrb = nrb;
   lift->mb = mb;
   lift->exact = exact;
   lift->cf.kind = DISTPAIR_NONE;
@@ -806,8 +846,9 @@ dist_lift_init(DistLift *lift, const DistOps *ops, const DistRefPoly *rb,
   lift->ts = palloc(sizeof(TimestampTz) * lift->size);
   lift->ds = palloc(sizeof(double) * lift->size);
   lift->nsegs = 0;
-  lift->failed = false;
-  lift->nparts = rb ? 0 : ops->nparts;
+  lift->failed = lift->refused = false;
+  int npairs = ops->nbody1 * (rb ? nrb : ops->nparts);
+  lift->nparts = (rb && npairs == 1) ? 0 : npairs;
   lift->pcf = NULL;
   lift->pev = NULL;
   if (lift->nparts)
@@ -873,6 +914,28 @@ dist_lift_append(DistLift *lift, TimestampTz t, double dist)
 }
 
 /**
+ * @brief Set in @p mb the motion of the second operand of the walk in a
+ * segment, from @p start2 to @p end2, a pose or a point, or at rest
+ * @details The motion of #dist_segmotion() for the values at the ends of a
+ * segment of the lift.
+ */
+static void
+dist_lift_motion2(const DistLift *lift, Datum start2, Datum end2,
+  DistMotion *mb)
+{
+  if (lift->mb)
+    *mb = *lift->mb;
+  else if (lift->ops->ref2)
+    distmotion_from_pose(mb, DatumGetPoseP(start2), DatumGetPoseP(end2));
+  else
+  {
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(DatumGetGserializedP(start2));
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(DatumGetGserializedP(end2));
+    distmotion_set(mb, p1->x, p1->y, 0.0, p2->x, p2->y, 0.0);
+  }
+}
+
+/**
  * @brief Add to the instants of the segment walked those of the walk of the
  * closest features between the first operand, moving with @p ma, and the body
  * of the second one, and return false if the walk fails
@@ -887,22 +950,13 @@ dist_lift_walk(DistLift *lift, const DistMotion *ma, Datum start1,
 {
   const DistOps *ops = lift->ops;
   DistMotion mb;
-  if (lift->mb)
-    mb = *lift->mb;
-  else if (ops->ref2)
-    distmotion_from_pose(&mb, DatumGetPoseP(start2), DatumGetPoseP(end2));
-  else
-  {
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(DatumGetGserializedP(start2));
-    const POINT2D *p2 = GSERIALIZED_POINT2D_P(DatumGetGserializedP(end2));
-    distmotion_set(&mb, p1->x, p1->y, 0.0, p2->x, p2->y, 0.0);
-  }
+  dist_lift_motion2(lift, start2, end2, &mb);
   DistSegm dseg;
   distsegm_set(&dseg, ma, &mb);
   lift->events.count = 0;
-  if (distwalk_segm(&dseg, &ops->body1, lift->rb,
-      distwalk_ftol(&dseg, &ops->body1, lift->rb), ops->level, &lift->cf,
-      &lift->events) != DISTWALK_OK)
+  if (distwalk_segm(&dseg, &ops->body1[0], &lift->rb[0],
+      distwalk_ftol(&dseg, &ops->body1[0], &lift->rb[0]), ops->level,
+      &lift->cf, &lift->events) != DISTWALK_OK)
     return false;
   for (int j = 0; j < lift->events.count; j++)
   {
@@ -919,30 +973,49 @@ dist_lift_walk(DistLift *lift, const DistMotion *ma, Datum start1,
 
 /**
  * @brief Add to the instants of the segment walked those of the least of the
- * distances to the parts of a static geometry, the first operand moving with
- * @p ma, and return false if a walk or the envelope fails
- * @details The walk of each part keeps its pieces, and the lower envelope of
- * the pieces (#dist_envelope) gives the intervals in which each part is the
- * closest and the corners between them, the instants where two parts are at
- * the same distance.  The instants are the events of each part while it is
- * the closest and the corners, in time order, each at its nearest
- * microsecond (#dist_event_time).  The value at a corner is the one of the
- * part that was closest before it, equal to the one that is closest after it.
+ * distances of several pairs, the first operand moving with @p ma, and
+ * return false if a walk or the envelope fails
+ * @details The walks of #dist_lift_walk(), one for each pair of a piece of
+ * the first body and a part of a static geometry, or a piece of the body of
+ * the second operand, which goes from @p start2 to @p end2.  The walk of each
+ * pair keeps its pieces, and the lower envelope of the pieces
+ * (#dist_envelope) gives the intervals in which each pair is the closest and
+ * the corners between them, the instants where two pairs are at the same
+ * distance.  The instants are the events of each pair while it is the
+ * closest and the corners, in time order, each at its nearest microsecond
+ * (#dist_event_time).  The value at a corner is the one of the pair that was
+ * closest before it, equal to the one that is closest after it.  At an end of
+ * the segment, the value is the distance between the operands placed there
+ * (#dist_values) where the walk is exact, as in #dist_lift_walk().
  */
 static bool
-dist_lift_parts(DistLift *lift, const DistMotion *ma, TimestampTz lower,
-  TimestampTz upper)
+dist_lift_parts(DistLift *lift, const DistMotion *ma, Datum start1,
+  Datum end1, Datum start2, Datum end2, TimestampTz lower, TimestampTz upper)
 {
   const DistOps *ops = lift->ops;
   int nparts = lift->nparts;
+  int n2 = lift->rb ? lift->nrb : ops->nparts;
   DistEvents *ev = lift->pev;
+  DistMotion mb;
+  if (lift->rb)
+    dist_lift_motion2(lift, start2, end2, &mb);
+  /* The functions the envelope compares have the frequency of one turning
+   * body (trgeo_distance.txt); two bodies turning in one segment give three,
+   * which its solver family does not hold, so the segment is refused */
+  if (lift->rb && ma->w != 0.0 && mb.w != 0.0)
+  {
+    lift->refused = true;
+    return false;
+  }
   for (int k = 0; k < nparts; k++)
   {
+    const DistRefPoly *ra = &ops->body1[k / n2];
+    const DistRefPoly *rb = lift->rb ? &lift->rb[k % n2] :
+      &ops->parts[k % n2].body;
     DistSegm dseg;
-    distsegm_set(&dseg, ma, &ops->parts[k].motion);
+    distsegm_set(&dseg, ma, lift->rb ? &mb : &ops->parts[k % n2].motion);
     ev[k].count = ev[k].npc = 0;
-    if (distwalk_segm(&dseg, &ops->body1, &ops->parts[k].body,
-        distwalk_ftol(&dseg, &ops->body1, &ops->parts[k].body), ops->level,
+    if (distwalk_segm(&dseg, ra, rb, distwalk_ftol(&dseg, ra, rb), ops->level,
         &lift->pcf[k], &ev[k]) != DISTWALK_OK)
       return false;
   }
@@ -983,6 +1056,10 @@ dist_lift_parts(DistLift *lift, const DistMotion *ma, TimestampTz lower,
       dist = ev[kmin].ev[next[kmin]++].dist;
     else
       break;
+    if (lift->exact && tmin <= 0.0)
+      dist = dist_values(ops, start1, start2);
+    else if (lift->exact && tmin >= 1.0)
+      dist = dist_values(ops, end1, end2);
     dist_lift_append(lift, dist_event_time(lower, upper, tmin), dist);
   }
   pfree(next); pfree(active); pfree(corners);
@@ -1032,12 +1109,20 @@ dist_lift_segm(DistLift *lift, Datum start1, Datum end1, Datum start2,
     lift->count = 0;
     lift->lower = lower;
     lift->upper = upper;
-    bool ok = lift->nparts ? dist_lift_parts(lift, &ma, lower, upper) :
+    bool ok = lift->nparts ?
+      dist_lift_parts(lift, &ma, start1, end1, start2, end2, lower, upper) :
       dist_lift_walk(lift, &ma, start1, end1, start2, end2, lower, upper);
     if (! ok)
     {
       lift->count = -1;
       lift->failed = true;
+      if (lift->refused)
+      {
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+          "The temporal distance of two temporal rigid geometries that turn "
+          "in the same segment is not supported where a body is not convex");
+        return 0;
+      }
       if (lift->nparts)
       {
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
@@ -1132,16 +1217,18 @@ dist_lift_base_value(Datum value1, Datum value)
  * is a sequence set with one sequence [t_i, t_{i+1}) for each segment, and a
  * last sequence with the last instant if the period includes it.  Else the
  * result is one sequence.
+ * @param[in] rb,nrb Pieces of the body of the second operand, or NULL for a
+ * static geometry of several parts, see #dist_lift_init()
  * @param[in] exact True if the value at an end of a segment is the distance
  * of the operands placed there, see #dist_lift_segm()
  */
 static Temporal *
 dist_lift_seq(const DistOps *ops, const TSequence *seq1,
-  const TSequence *seq2, const DistRefPoly *rb, const DistMotion *mb,
+  const TSequence *seq2, const DistRefPoly *rb, int nrb, const DistMotion *mb,
   bool exact)
 {
   DistLift lift;
-  dist_lift_init(&lift, ops, rb, mb, exact);
+  dist_lift_init(&lift, ops, rb, nrb, mb, exact);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.argtype[0] = temptype_basetype(seq1->temptype);
@@ -1258,10 +1345,11 @@ dist2d_seq_exact_values(const DistOps *ops, TSequence *dist,
 static bool
 dist_parts_meet(const DistOps *ops, const Pose *pose1, const Pose *pose2)
 {
-  for (int j = 0; j < ops->nparts; j++)
-    if (convex_motion_meet_exact(ops->refxy, ops->nref, pose1->data,
-        pose2->data, ops->parts[j].xy, ops->parts[j].npts))
-      return true;
+  for (int p = 0; p < ops->nbody1; p++)
+    for (int j = 0; j < ops->nparts; j++)
+      if (convex_motion_meet_exact(ops->piecexy[p], ops->npiece[p],
+          pose1->data, pose2->data, ops->parts[j].xy, ops->parts[j].npts))
+        return true;
   return dist_inside(ops, pose1);
 }
 
@@ -1422,14 +1510,15 @@ dist_seq(const DistOps *ops, const TSequence *seq1, const TSequence *seq2)
       seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
   }
   if (seq2)
-    return dist_lift_seq(ops, seq1, seq2, &ops->body2, NULL, true);
+    return dist_lift_seq(ops, seq1, seq2, ops->body2, ops->nbody2, NULL,
+      true);
 
   /* The least of the distances to the parts has the values of the walk,
    * which dist2d_seq_exact_values() sets to the distance to the geometry */
   bool parts = ops->nparts > 1;
   TSequence *result = (TSequence *) dist_lift_seq(ops, seq1, NULL,
-    parts ? NULL : &ops->parts[0].body, parts ? NULL : &ops->parts[0].motion,
-    ! parts);
+    parts ? NULL : &ops->parts[0].body, 1,
+    parts ? NULL : &ops->parts[0].motion, ! parts);
   if (result && parts)
     result = dist2d_seq_exact_values(ops, result, seq1);
   if (! result)
@@ -1515,7 +1604,7 @@ dist_geo_ops_set(DistOps *ops, const Temporal *temp, const GSERIALIZED *gs,
   ops->ref1 = trgeometry_geom_p(temp);
   ops->gs = gs;
   ops->level = level;
-  if (! dist_ref_body(ops->ref1, &ops->body1))
+  if (! dist_ref_body(ops->ref1, &ops->body1, &ops->nbody1))
     return false;
   ops->geom = lwgeom_from_gserialized(gs);
   /* The number of parts is at most the number of points, and so is the
@@ -1529,17 +1618,50 @@ dist_geo_ops_set(DistOps *ops, const Temporal *temp, const GSERIALIZED *gs,
     dist_parts_free(ops->parts, ops->nparts);
     pfree(ops->polys);
     lwgeom_free(ops->geom);
-    distrefpoly_free(&ops->body1);
+    dist_ref_body_free(ops->body1, ops->nbody1);
     return false;
   }
-  /* The reference geometry is a polygon, see dist_ref_body() */
+  /* The reference geometry is a polygon, see dist_ref_body(): the vertices
+   * of its rings, the outer one first */
   LWGEOM *ref = lwgeom_from_gserialized(ops->ref1);
-  const POINTARRAY *ring = lwgeom_as_lwpoly(ref)->rings[0];
-  DistPart body;
-  dist_part_points(&body, ring, 0, (int) ring->npoints - 1);
+  const LWPOLY *poly = lwgeom_as_lwpoly(ref);
+  int total = 0;
+  for (uint32_t r = 0; r < poly->nrings; r++)
+    total += (int) poly->rings[r]->npoints - 1;
+  ops->refxy = palloc(sizeof(double) * 2 * total);
+  ops->nref = 0;
+  for (uint32_t r = 0; r < poly->nrings; r++)
+  {
+    DistPart ring;
+    dist_part_points(&ring, poly->rings[r], 0,
+      (int) poly->rings[r]->npoints - 1);
+    memcpy(&ops->refxy[2 * ops->nref], ring.xy,
+      sizeof(double) * 2 * ring.npts);
+    ops->nref += ring.npts;
+    pfree(ring.xy);
+  }
   lwgeom_free(ref);
-  ops->refxy = body.xy;
-  ops->nref = body.npts;
+  /* The vertices of each piece: those of the reference geometry for a
+   * convex body, its only piece; else those of each piece, input vertices */
+  ops->piecexy = palloc(sizeof(double *) * ops->nbody1);
+  ops->npiece = palloc(sizeof(int) * ops->nbody1);
+  if (ops->nbody1 == 1)
+  {
+    ops->piecexy[0] = ops->refxy;
+    ops->npiece[0] = ops->nref;
+  }
+  else
+    for (int p = 0; p < ops->nbody1; p++)
+    {
+      const DistRefPoly *pc = &ops->body1[p];
+      ops->piecexy[p] = palloc(sizeof(double) * 2 * pc->nvert);
+      ops->npiece[p] = pc->nvert;
+      for (int k = 0; k < pc->nvert; k++)
+      {
+        ops->piecexy[p][2 * k] = pc->verts[k].x;
+        ops->piecexy[p][2 * k + 1] = pc->verts[k].y;
+      }
+    }
   return true;
 }
 
@@ -1549,11 +1671,16 @@ dist_geo_ops_set(DistOps *ops, const Temporal *temp, const GSERIALIZED *gs,
 static void
 dist_geo_ops_free(DistOps *ops)
 {
+  if (ops->nbody1 > 1)
+    for (int p = 0; p < ops->nbody1; p++)
+      pfree(ops->piecexy[p]);
+  pfree(ops->piecexy);
+  pfree(ops->npiece);
   pfree(ops->refxy);
   dist_parts_free(ops->parts, ops->nparts);
   pfree(ops->polys);
   lwgeom_free(ops->geom);
-  distrefpoly_free(&ops->body1);
+  dist_ref_body_free(ops->body1, ops->nbody1);
 }
 
 /**
@@ -1602,18 +1729,22 @@ tdistance_trgeometry_temporal(const Temporal *temp1, const Temporal *temp2,
   ops.ref1 = trgeometry_geom_p(temp1);
   ops.ref2 = (temp2->temptype == T_TRGEOMETRY) ? trgeometry_geom_p(temp2) : NULL;
   ops.level = level;
-  if (! dist_ref_body(ops.ref1, &ops.body1))
+  if (! dist_ref_body(ops.ref1, &ops.body1, &ops.nbody1))
     return NULL;
   if (ops.ref2)
   {
-    if (! dist_ref_body(ops.ref2, &ops.body2))
+    if (! dist_ref_body(ops.ref2, &ops.body2, &ops.nbody2))
     {
-      distrefpoly_free(&ops.body1);
+      dist_ref_body_free(ops.body1, ops.nbody1);
       return NULL;
     }
   }
   else
-    distrefpoly_set_point(&ops.body2);
+  {
+    ops.body2 = palloc(sizeof(DistRefPoly));
+    ops.nbody2 = 1;
+    distrefpoly_set_point(ops.body2);
+  }
 
   /* The two values must have the same timestamps.  The synchronization does
    * not add the times at which they cross, which the walk finds. */
@@ -1629,8 +1760,8 @@ tdistance_trgeometry_temporal(const Temporal *temp1, const Temporal *temp2,
       last_errno);
     pfree(sync1); pfree(sync2);
   }
-  distrefpoly_free(&ops.body1);
-  distrefpoly_free(&ops.body2);
+  dist_ref_body_free(ops.body1, ops.nbody1);
+  dist_ref_body_free(ops.body2, ops.nbody2);
   return result;
 }
 
@@ -1732,11 +1863,17 @@ dist_ever_seq(const DistOps *ops, const TSequence *seq1,
     return 0;
   }
 
+  /* Every pair of a piece of each body is walked, each with the closest
+   * feature it ends a segment with */
+  int npairs = ops->nbody1 * ops->nbody2;
   DistEvents events;
   distevents_init(&events);
-  DistPair cf;
-  cf.kind = DISTPAIR_NONE;
-  cf.i = cf.j = 0;
+  DistPair *cf = palloc(sizeof(DistPair) * npairs);
+  for (int p = 0; p < npairs; p++)
+  {
+    cf[p].kind = DISTPAIR_NONE;
+    cf[p].i = cf[p].j = 0;
+  }
   int result = 0;
   for (int i = 0; i < seq1->count - 1 && result == 0; i++)
   {
@@ -1745,27 +1882,32 @@ dist_ever_seq(const DistOps *ops, const TSequence *seq1,
     dist_segmotion(&mb, seq2, i, true);
     DistSegm dseg;
     distsegm_set(&dseg, &ma, &mb);
-    if (dist_segm_apart(&dseg, &ops->body1, &ops->body2, dist))
+    for (int p = 0; p < npairs && result == 0; p++)
     {
-      /* The closest feature at the start of the next segment is unknown */
-      cf.kind = DISTPAIR_NONE;
-      continue;
+      const DistRefPoly *ra = &ops->body1[p / ops->nbody2];
+      const DistRefPoly *rb = &ops->body2[p % ops->nbody2];
+      if (dist_segm_apart(&dseg, ra, rb, dist))
+      {
+        /* The closest feature at the start of the next segment is unknown */
+        cf[p].kind = DISTPAIR_NONE;
+        continue;
+      }
+      events.count = 0;
+      if (distwalk_segm(&dseg, ra, rb, distwalk_ftol(&dseg, ra, rb),
+          ops->level, &cf[p], &events) != DISTWALK_OK)
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "The temporal distance of a temporal rigid geometry failed at "
+          "segment %d", i);
+        result = -1;
+        break;
+      }
+      for (int j = 0; j < events.count && result == 0; j++)
+        if (events.ev[j].dist <= dist)
+          result = 1;
     }
-    events.count = 0;
-    if (distwalk_segm(&dseg, &ops->body1, &ops->body2,
-        distwalk_ftol(&dseg, &ops->body1, &ops->body2), ops->level, &cf,
-        &events) != DISTWALK_OK)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "The temporal distance of a temporal rigid geometry failed at "
-        "segment %d", i);
-      result = -1;
-      break;
-    }
-    for (int j = 0; j < events.count && result == 0; j++)
-      if (events.ev[j].dist <= dist)
-        result = 1;
   }
+  pfree(cf);
   distevents_free(&events);
   /* With a linear and a step operand, the last instant is a value of its own,
    * see #dist_lift_seq() */
@@ -1816,23 +1958,29 @@ dist_ever_seq_geo(const DistOps *ops, const TSequence *seq, double dist)
       return 1;
     DistMotion ma;
     dist_segmotion(&ma, seq, i, true);
-    for (int k = 0; k < ops->nparts; k++)
+    /* Each piece of the body against each part */
+    bool walk = false;
+    for (int k = 0; k < ops->nparts * ops->nbody1 && ! walk; k++)
     {
+      int part = k % ops->nparts, piece = k / ops->nparts;
       DistSegm dseg;
-      distsegm_set(&dseg, &ma, &ops->parts[k].motion);
-      if (dist_segm_apart(&dseg, &ops->body1, &ops->parts[k].body, dist))
+      distsegm_set(&dseg, &ma, &ops->parts[part].motion);
+      if (dist_segm_apart(&dseg, &ops->body1[piece], &ops->parts[part].body,
+          dist))
         continue;
       if (! still)
       {
-        turns = true;
-        break;
+        turns = walk = true;
+        continue;
       }
       /* At the distance 0 the question is whether they meet */
       if (dist == 0.0 ?
-          convex_motion_meet_exact(ops->refxy, ops->nref, pose1->data,
-            pose2->data, ops->parts[k].xy, ops->parts[k].npts) :
-          convex_motion_nad_exact(ops->refxy, ops->nref, pose1->data,
-            pose2->data, ops->parts[k].xy, ops->parts[k].npts) <= dist)
+          convex_motion_meet_exact(ops->piecexy[piece], ops->npiece[piece],
+            pose1->data, pose2->data, ops->parts[part].xy,
+            ops->parts[part].npts) :
+          convex_motion_nad_exact(ops->piecexy[piece], ops->npiece[piece],
+            pose1->data, pose2->data, ops->parts[part].xy,
+            ops->parts[part].npts) <= dist)
         return 1;
     }
   }
@@ -1976,7 +2124,8 @@ typedef struct
 {
   const DistOps *ops;          /**< Operands */
   double dist;                 /**< Distance */
-  DistPair cf;                 /**< Closest feature at the instant @p cft */
+  DistPair *cf;                /**< Closest feature of each pair of pieces of
+                                    the two bodies at the instant @p cft */
   TimestampTz cft;             /**< Instant of @p cf */
   const TSequence *seq1;       /**< Sequences of @p cf */
   const TSequence *seq2;
@@ -2027,31 +2176,39 @@ trgeometry_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2
     distmotion_from_pose(&mb, p2, q2);
     DistSegm dseg;
     distsegm_set(&dseg, &ma, &mb);
-    if (dist_segm_apart(&dseg, &dw->ops->body1, &dw->ops->body2, dw->dist))
-      /* The closest feature at the start of the next interval is unknown */
-      dw->cf.kind = DISTPAIR_NONE;
-    else
+    /* The closest features at the end of the last interval walked start the
+     * walk of the interval that follows it in the same two sequences */
+    const DistOps *ops = dw->ops;
+    int npairs = ops->nbody1 * ops->nbody2;
+    bool follows = (dw->cft == lower && dw->seq1 == seq1 && dw->seq2 == seq2);
+    for (int p = 0; p < npairs && ! result; p++)
     {
-      /* The closest feature at the end of the last interval walked starts the
-       * walk of the interval that follows it in the same two sequences */
-      if (dw->cft != lower || dw->seq1 != seq1 || dw->seq2 != seq2)
-        dw->cf.kind = DISTPAIR_NONE;
+      const DistRefPoly *ra = &ops->body1[p / ops->nbody2];
+      const DistRefPoly *rb = &ops->body2[p % ops->nbody2];
+      if (! follows)
+        dw->cf[p].kind = DISTPAIR_NONE;
+      if (dist_segm_apart(&dseg, ra, rb, dw->dist))
+      {
+        /* The closest feature at the start of the next interval is unknown */
+        dw->cf[p].kind = DISTPAIR_NONE;
+        continue;
+      }
       dw->events.count = 0;
-      if (distwalk_segm(&dseg, &dw->ops->body1, &dw->ops->body2,
-          distwalk_ftol(&dseg, &dw->ops->body1, &dw->ops->body2),
-          dw->ops->level, &dw->cf, &dw->events) != DISTWALK_OK)
+      if (distwalk_segm(&dseg, ra, rb, distwalk_ftol(&dseg, ra, rb),
+          ops->level, &dw->cf[p], &dw->events) != DISTWALK_OK)
       {
         dw->failed = true;
         result = true;
+        break;
       }
-      else
-      {
-        dw->cft = upper;
-        dw->seq1 = seq1;
-        dw->seq2 = seq2;
-        for (int i = 0; i < dw->events.count && ! result; i++)
-          result = dw->events.ev[i].dist <= dw->dist;
-      }
+      for (int i = 0; i < dw->events.count && ! result; i++)
+        result = dw->events.ev[i].dist <= dw->dist;
+    }
+    if (! dw->failed)
+    {
+      dw->cft = upper;
+      dw->seq1 = seq1;
+      dw->seq2 = seq2;
     }
     /* The poses at the end of the interval start the next one */
     dist_pose_cache_set(&dw->cache1, seq1, k1, upper, q1, alloc3);
@@ -2091,11 +2248,11 @@ edwithin_trgeometry_trgeometry_intl(const Temporal *temp1, const Temporal *temp2
   ops.ref1 = trgeometry_geom_p(temp1);
   ops.ref2 = trgeometry_geom_p(temp2);
   ops.level = -1.0;
-  if (! dist_ref_body(ops.ref1, &ops.body1))
+  if (! dist_ref_body(ops.ref1, &ops.body1, &ops.nbody1))
     return -1;
-  if (! dist_ref_body(ops.ref2, &ops.body2))
+  if (! dist_ref_body(ops.ref2, &ops.body2, &ops.nbody2))
   {
-    distrefpoly_free(&ops.body1);
+    dist_ref_body_free(ops.body1, ops.nbody1);
     return -1;
   }
 
@@ -2108,7 +2265,13 @@ edwithin_trgeometry_trgeometry_intl(const Temporal *temp1, const Temporal *temp2
     memset(&dw, 0, sizeof(DistEverWalk));
     dw.ops = &ops;
     dw.dist = dist;
-    dw.cf.kind = DISTPAIR_NONE;
+    int npairs = ops.nbody1 * ops.nbody2;
+    dw.cf = palloc(sizeof(DistPair) * npairs);
+    for (int p = 0; p < npairs; p++)
+    {
+      dw.cf[p].kind = DISTPAIR_NONE;
+      dw.cf[p].i = dw.cf[p].j = 0;
+    }
     dw.cft = DT_NOBEGIN;
     distevents_init(&dw.events);
     bool shared;
@@ -2117,8 +2280,9 @@ edwithin_trgeometry_trgeometry_intl(const Temporal *temp1, const Temporal *temp2
     dist_pose_cache_set(&dw.cache1, NULL, 0, 0, NULL, false);
     dist_pose_cache_set(&dw.cache2, NULL, 0, 0, NULL, false);
     distevents_free(&dw.events);
-    distrefpoly_free(&ops.body1);
-    distrefpoly_free(&ops.body2);
+    pfree(dw.cf);
+    dist_ref_body_free(ops.body1, ops.nbody1);
+    dist_ref_body_free(ops.body2, ops.nbody2);
     if (dw.failed)
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
@@ -2151,8 +2315,8 @@ edwithin_trgeometry_trgeometry_intl(const Temporal *temp1, const Temporal *temp2
     }
     pfree(sync1); pfree(sync2);
   }
-  distrefpoly_free(&ops.body1);
-  distrefpoly_free(&ops.body2);
+  dist_ref_body_free(ops.body1, ops.nbody1);
+  dist_ref_body_free(ops.body2, ops.nbody2);
   return result;
 }
 
