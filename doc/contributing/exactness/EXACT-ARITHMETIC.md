@@ -641,7 +641,7 @@ it is the polynomial ladder's own first tier, so it leaves with that ladder, whi
 not in EA4. The pull request moves the other readers and then removes `pair_mul` and `pair_add`
 once nothing reads them, its speed cells judging `pair_mid_sign`.
 
-The pull request is #3675 (branch `refactor/one-pair-type`, on master `ab15a473fa`): the five
+EA4 is merged as #3675 (`ea113cd069` on master): the five
 readers read `DDBound`, then `pair_mul` and `pair_add` leave. Its receipts are strict CI,
 cppcheck, valgrind, smoke, the oracle (the 17 ED24 witnesses and `buffer_natural_1313`, with their
 controls, against CGAL) and speed: against GEOS alone the buffer reads 0.94, 0.90, 0.57 and 0.72
@@ -698,7 +698,8 @@ them; the sign tails of `geo_funcs.c`; `square_products_wide` and `wide_product`
 `WideDyadic` readers family by family; then `WideDyadic` and `WIDE_LIMBS` leave and the two
 `wide_sign` become one. Products go through `wide_mul64`, so the code builds with MSVC.
 
-The pull request is #3676 (branch `refactor/one-wide-number`, on master `ab15a473fa`), in nine
+The pull request is #3676 (branch `refactor/one-wide-number`, head `983782e477` on master
+`b8be143a79`, after #3675), in nine
 commits: the arena; division and square root; the sign tails; the square products; the arcs, the
 linear sums, the moving discs and gaps, and the nearest double with the motion distances and the
 degrees, a family each; then `WideDyadic` leaves, `WIDE_LIMBS` leaving with its last reader in
