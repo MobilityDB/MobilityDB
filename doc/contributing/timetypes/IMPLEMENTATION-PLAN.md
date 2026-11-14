@@ -59,3 +59,21 @@ every handler, so each binding reads one error per failed call. The task
 opens with an audit of each binding against that rule, its first row the
 root package of GoMEOS (TT-16, `(value, error)` as v0.2.0, the root calling
 the generated `functions` package).
+
+The root package of GoMEOS retires for the generated `types` package (the
+owner 2026-11-14: "a please"), whose methods answer `(value, error)` through
+`functions`. Porting the root's tests onto `types` measures what each object
+generator reads of the catalog's object model; the same approach in every
+binding (the owner 2026-11-14: "please aim at having an identical approach for
+all bindings each time you work on something") makes each generator read what
+MEOS.js's `codegen/ObjectGenerator.ts` reads:
+
+| Catalog field | MEOS.js | MEOS.NET | GoMEOS |
+|---|---|---|---|
+| `classes.<C>.methods` | read | read | read |
+| `classes.<C>.operators` (one name, several operand types) | read: one method testing its arguments (`dispatcher`) | read: C# overloads | not read: `TBool` has no `EverEq`, `Teq`, `Tand`, `Tnot` |
+| `returnInstantiations`, `answersReceiver` (the class a member answers) | read | not read | not read: `TFloat.ToTint` answers a `Temporal`, which writes no text |
+| `shape.arrayReturn` (a counted array answered) | read | the flat layer marshals arrays | not read: `TFloat.Values` answers an `unsafe.Pointer` |
+
+PyMEOS and JMEOS read no object model: their object layers are written by
+hand, rows of this task beside GoMEOS's.
