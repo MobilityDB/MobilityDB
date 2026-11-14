@@ -7642,7 +7642,7 @@ SELECT asText(cellToParent(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 5))
 SELECT asText(ts2CellToToken(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
 SELECT count(*) AS instants,
   count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
-    geoToS2Cell(valueAtTimestamp(p, t)::geography, z)) AS other_cell,
+    startValue(ts2cell(atTime(p, t), z))) AS other_cell,
   count(DISTINCT p::text) FILTER (WHERE c <> ts2cell(p::tgeogpoint, z))
     AS other_than_geodetic
 FROM (SELECT p, z, ts2cell(p, z) AS c FROM (VALUES
