@@ -23,5 +23,6 @@ var searchData=
   ['h3index_5fops_2ec_20',['h3index_ops.c',['../h3index__ops_8c.html',1,'']]],
   ['h3index_5fsets_2ec_21',['h3index_sets.c',['../mobilitydb_2src_2h3_2h3index__sets_8c.html',1,'(Global Namespace)'],['../meos_2src_2h3_2h3index__sets_8c.html',1,'(Global Namespace)']]],
   ['h3index_5fsets_2eh_22',['h3index_sets.h',['../h3index__sets_8h.html',1,'']]],
-  ['hexwkb_5finput_5ferror_5ftest_2ec_23',['hexwkb_input_error_test.c',['../hexwkb__input__error__test_8c.html',1,'']]]
+  ['handler_5ferrno_5ftest_2ec_23',['handler_errno_test.c',['../handler__errno__test_8c.html',1,'']]],
+  ['hexwkb_5finput_5ferror_5ftest_2ec_24',['hexwkb_input_error_test.c',['../hexwkb__input__error__test_8c.html',1,'']]]
 ];
