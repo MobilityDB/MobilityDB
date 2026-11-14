@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.3.0 |
+| Version | v0.4.0 |
 | Scope | The values a binding of MEOS holds, the functions it calls on them, and the casts that connect them to the types of its host language |
 | Reference | `meos/include/meos.h` (`timestamptz_to_unix_us`, `timestamp_to_unix_us`, `date_to_unix_days`, `interval_to_parts` and their inverses), `pgtypes/pg_time.h` (`time_to_parts`, `timetz_to_parts` and their inverses), `meos/src/temporal/span.c`, `meos/test/unix_epoch_test.c`; the MEOS-API catalog (`typeEncodings`, `bindingScope`) |
 
@@ -118,8 +118,11 @@ also the count of a valid `timestamptz`, so a binding reads the error from
 
 A host timestamp counting units coarser than a microsecond scales the count
 and states the direction it drops the finer units in: MobilityNebula carries a
-`timestamptz` as NebulaStream's milliseconds from the Unix epoch, the
-microseconds below a millisecond dropped toward the past.
+`timestamptz` as NebulaStream's milliseconds from the Unix epoch, and
+JavaScript as a `Date`, the microseconds below a millisecond dropped toward
+the past in both. A host whose number does not hold every 64-bit integer
+exactly (JavaScript's `number`, exact up to 2^53) carries the count, and every
+other integer of 64 bits, as its integer of 64 bits (JavaScript's `bigint`).
 
 ### 5.2 `timestamp`
 
@@ -188,10 +191,11 @@ offset of a time zone. A binding reads and builds it through
 | `00:00:00.000001` | `0` | `0` | `1` |
 
 A host duration counting time alone (Python's `timedelta`, Java's `Duration`,
-Go's `time.Duration`) states an `interval` whose months are zero; a cast to it
-of an `interval` with months is an error of the binding, raised before any
-conversion. A host type with a calendar part (Java's `Period`) takes the months
-and days. `interval_to_parts` of an infinite `interval`, and
+Go's `time.Duration`, .NET's `TimeSpan`) states an `interval` whose months are
+zero; a cast to it of an `interval` with months is an error of the binding,
+raised before any conversion. A host type with a calendar part (Java's
+`Period`) takes the months and days. A host without a duration type
+(JavaScript) casts the parts. `interval_to_parts` of an infinite `interval`, and
 `interval_from_parts` of the parts of one (`INT32_MAX, INT32_MAX, INT64_MAX`,
 `INT32_MIN, INT32_MIN, INT64_MIN`), raise `MEOS_ERR_DATETIME_OUT_OF_RANGE`.
 
@@ -211,9 +215,10 @@ and from the time of its host through `time_to_parts` and `time_from_parts`:
 A count outside a day (`-1`, `86400000001`) raises
 `MEOS_ERR_DATETIME_OUT_OF_RANGE`; `time_from_parts` answers `INT64_MAX` on an
 error, which no valid time holds. A host time ending a day before `24:00:00`
-(Python's `time`, Java's `LocalTime`, and Go's `time.Time` on 0000-01-01, the
-clock `time.Parse` answers) cannot state `24:00:00`, and a cast of it is an
-error of the binding.
+(Python's `time`, Java's `LocalTime`, .NET's `TimeOnly`, and Go's `time.Time` on
+0000-01-01, the clock `time.Parse` answers) cannot state `24:00:00`, and a cast
+of it is an error of the binding. A host without a time type (JavaScript)
+holds the microseconds, `24:00:00` among them.
 
 ### 5.6 `timetz`
 
@@ -231,7 +236,9 @@ whose offset is in seconds east of UTC, as ISO 8601 and the hosts state it:
 `timetz_from_parts` of a time outside a day (`-1`, `86400000001`) or an offset
 beyond 16:00:00 (`57601`) raises `MEOS_ERR_DATETIME_OUT_OF_RANGE`. Java's
 `OffsetTime` and Go's `time.Time` on 0000-01-01 in a zone of a fixed offset
-hold a time with an offset; a host without one casts the parts.
+hold a time with an offset; a host without one casts the parts: .NET as the
+pair of a `TimeOnly` and its offset, JavaScript as its microseconds and its
+offset in seconds.
 
 ### 5.7 The time zone of a thread
 
@@ -277,6 +284,7 @@ types of its host.
 | v0.1.0 | The closed algebra, the text of a value, the three rules of a cast, the cast of `timestamptz`, the types out of binding scope |
 | v0.2.0 | The casts of `timestamp`, `date`, `interval`, `time` and `timetz` |
 | v0.3.0 | The width of a discrete span, Go's host types of `time` and `timetz`, the time zone of a thread |
+| v0.4.0 | The host types of .NET and JavaScript, the integers of 64 bits of a host whose number holds 2^53 |
 
 A minor version adds what MEOS and the catalog newly guarantee; a major
 version changes a rule a binding follows.
