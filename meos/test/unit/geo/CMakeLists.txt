@@ -51,6 +51,10 @@ add_executable(cross3_overflow_unit cross3_overflow_unit.c)
 target_link_libraries(cross3_overflow_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME cross3_overflow_unit COMMAND cross3_overflow_unit)
 
+add_executable(incircle_range_unit incircle_range_unit.c)
+target_link_libraries(incircle_range_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME incircle_range_unit COMMAND incircle_range_unit)
+
 add_executable(ray_cast_unit ray_cast_unit.c)
 target_link_libraries(ray_cast_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME ray_cast_unit COMMAND ray_cast_unit)
