@@ -1622,35 +1622,6 @@ ddb_sign_known(DDBound x)
 }
 
 /**
- * @brief Set the product of two pairs of doubles as a pair, within
- * 2^-104 of the magnitude of the product of their larger parts and of the
- * cross terms
- */
-static pg_attribute_always_inline void
-pair_mul(double ah, double al, double bh, double bl, double *rh, double *rl)
-{
-  double p, e;
-  two_product(ah, bh, &p, &e);
-  e += ah * bl + al * bh;
-  *rh = p + e;
-  *rl = e - (*rh - p);
-}
-
-/**
- * @brief Set the sum of two pairs of doubles as a pair, within 2^-104 of the
- * sum of the magnitudes of the operands
- */
-static pg_attribute_always_inline void
-pair_add(double ah, double al, double bh, double bl, double *rh, double *rl)
-{
-  double s, e;
-  two_sum(ah, bh, &s, &e);
-  e += al + bl;
-  *rh = s + e;
-  *rl = e - (*rh - s);
-}
-
-/**
  * @brief Return the sign of `q - m^2 l` at a midpoint `m` given as a pair,
  * where its evaluation on two doubles with a bound carries it, 0 otherwise
  * @details `q` and `l` carry their bounds (#DDBound), and the midpoint is a
