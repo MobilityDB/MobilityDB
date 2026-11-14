@@ -82,11 +82,12 @@ geo_to_s2cell_cell(const GSERIALIZED *point, int32 level)
       ! ensure_srid_is_latlong(gserialized_get_srid(point)) ||
       ! ensure_valid_cell_resolution(T_TS2CELL, level))
     return (S2CellId) 0;
-  /* A geodetic point lies in the cell of S2, a planar one in the cell its
+  /* A geodetic point lies in the cell its great-circle outline bounds
+   * (#s2cell_point_cell_geodetic), a planar one in the cell its
    * straight-edged outline bounds (#s2cell_point_cell_planar) */
   const POINT2D *p = GSERIALIZED_POINT2D_P(point);
   return FLAGS_GET_GEODETIC(point->gflags) ?
-    s2cell_point_to_cell(p->x, p->y, (uint32_t) level) :
+    s2cell_point_cell_geodetic(p->x, p->y, (uint32_t) level) :
     s2cell_point_cell_planar(p->x, p->y, (uint32_t) level);
 }
 
@@ -286,7 +287,7 @@ segment_to_cells_into(double lon1, double lat1, double lon2, double lat2,
   }
   for (int k = 0; k < ncells; k++)
     s2cell_buf_push(out, cells[k]);
-  s2cell_buf_push(out, s2cell_point_to_cell(lon2, lat2, (uint32_t) level));
+  s2cell_buf_push(out, s2cell_point_cell_geodetic(lon2, lat2, (uint32_t) level));
   pfree(cells); pfree(enter);
 }
 
@@ -299,7 +300,7 @@ pointarray_to_cells_into(const POINTARRAY *pa, int32 level, s2cell_buf *out)
   if (pa == NULL || pa->npoints == 0)
     return;
   const POINT2D *p = getPoint2d_cp(pa, 0);
-  s2cell_buf_push(out, s2cell_point_to_cell(p->x, p->y, (uint32_t) level));
+  s2cell_buf_push(out, s2cell_point_cell_geodetic(p->x, p->y, (uint32_t) level));
   for (uint32_t i = 0; i + 1 < pa->npoints && ! out->overflow; i++)
   {
     const POINT2D *p0 = getPoint2d_cp(pa, i);
@@ -427,7 +428,7 @@ lwgeom_to_cells_into(LWGEOM *geom, int32 level, s2cell_buf *out)
     case POINTTYPE:
     {
       const POINT2D *p = getPoint2d_cp(((const LWPOINT *) geom)->point, 0);
-      s2cell_buf_push(out, s2cell_point_to_cell(p->x, p->y,
+      s2cell_buf_push(out, s2cell_point_cell_geodetic(p->x, p->y,
         (uint32_t) level));
       break;
     }
