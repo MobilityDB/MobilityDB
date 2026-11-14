@@ -45,6 +45,7 @@
 
 /* General functions */
 
+extern bool ensure_valid_tinstant_value(Datum value, MeosType temptype);
 extern void tinstant_set(TInstant *inst, Datum value, TimestampTz t);
 extern double tnumberinst_double(const TInstant *inst);
 

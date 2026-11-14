@@ -1939,7 +1939,7 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bin,
           tinstant_value_p(end) : startvalue;
         Datum value = tsegment_value_at_timestamptz(startvalue, endvalue,
           start->temptype, start->t, end->t, lower);
-        result[ninsts++] = tinstant_make(value, seq->temptype, lower);
+        result[ninsts++] = tinstant_make_intl(value, seq->temptype, lower);
         DATUM_FREE(value, basetype);
         /* Advance the bin */
         lower += tunits;

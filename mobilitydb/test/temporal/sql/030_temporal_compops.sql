@@ -1862,6 +1862,36 @@ SELECT tfloat '{(1@2001-01-01, 5@2001-01-05), [7@2001-01-07, 9@2001-01-09]}' ?= 
 SELECT tfloat '{(1@2001-01-01, 5@2001-01-05), [7@2001-01-07, 9@2001-01-09]}' ?<> 3.0;
 SELECT tfloat '{(1@2001-01-01, 5@2001-01-05), [7@2001-01-07, 9@2001-01-09]}' %<> 1.0;
 
+-- Two temporal values compare over the instants of their common period: the
+-- values they tend to at a bound that the period excludes are no values they
+-- take, and they take values right after a lower bound that it excludes
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' ?= tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' %<> tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[0@2001-01-01, 2@2001-01-02)' ?= tfloat '[1@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' ?= tfloat '[3@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 3@2001-01-02)' ?= tfloat '[0@2001-01-01, 3@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' ?= tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '(2@2001-01-01, 1@2001-01-02]' ?= tfloat '(2@2001-01-01, 3@2001-01-02]';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' ?<= tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' %> tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[0@2001-01-01, 2@2001-01-02)' ?>= tfloat '[1@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[0@2001-01-01, 2@2001-01-02)' %< tfloat '[1@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '(1@2001-01-03, 3@2001-01-05)' ?< tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-05]';
+SELECT tfloat '(1@2001-01-03, 3@2001-01-05)' %>= tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-05]';
+SELECT tfloat '(1@2001-01-03, 3@2001-01-05)' ?> tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-05]';
+-- The same holds when the period includes the bound: the values they meet at
+-- are taken there
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' ?= tfloat '[0@2001-01-01, 2@2001-01-02]';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' %<> tfloat '[0@2001-01-01, 2@2001-01-02]';
+-- A step sequence takes the value of an instant from that instant on, so the
+-- value it holds before it meets the other value only at the limit
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02]' ?= tfloat '[0@2001-01-01, 1@2001-01-02]';
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02]' %<> tfloat '[0@2001-01-01, 1@2001-01-02]';
+SELECT tfloat '[0@2001-01-01, 1@2001-01-02]' ?>= tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02]';
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 1@2001-01-02)' ?= tfloat 'Interp=Step;[2@2001-01-01, 1@2001-01-02]';
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 1@2001-01-02)' %<> tfloat 'Interp=Step;[2@2001-01-01, 1@2001-01-02]';
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 1@2001-01-02]' ?= tfloat 'Interp=Step;[2@2001-01-01, 1@2001-01-02]';
+
 -- Two temporal values compare over the instants they share: a piece of one
 -- lying where the other has no value decides neither quantifier
 SELECT tint '{[1@2001-01-01, 1@2001-01-02], [1@2001-01-05, 1@2001-01-06]}' %=

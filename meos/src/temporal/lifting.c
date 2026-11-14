@@ -3575,6 +3575,39 @@ eafunc_tdiscseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
 }
 
 /**
+ * @brief Return the lifted function applied to the values that two
+ * synchronized segments take at a timestamp, or the answer that decides
+ * neither quantifier when the segments do not take values there
+ * @param[in] startvalue1,endvalue1 Values defining the first segment
+ * @param[in] startvalue2,endvalue2 Values defining the second segment
+ * @param[in] start,end Instants whose timestamps define the segments
+ * @param[in] t Timestamp
+ * @param[in] lower_inc True when the segments take the start timestamp
+ * @param[in] lfinfo Information about the lifted function
+ * @note The middle of a piece shorter than two microseconds is its start,
+ * which is as finely as the time type resolves a piece, as for
+ * #eafunc_midpoint_decides
+ */
+static bool
+eafunc_segments_at(Datum startvalue1, Datum endvalue1, Datum startvalue2,
+  Datum endvalue2, const TInstant *start, const TInstant *end, TimestampTz t,
+  bool lower_inc, LiftedFunctionInfo *lfinfo)
+{
+  assert(start); assert(end); assert(start->t <= t); assert(t < end->t);
+  if (t == start->t && ! lower_inc)
+    return ! lfinfo->ever;
+  MeosType basetype = temptype_basetype(start->temptype);
+  Datum value1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
+    start->temptype, start->t, end->t, t);
+  Datum value2 = tsegment_value_at_timestamptz(startvalue2, endvalue2,
+    start->temptype, start->t, end->t, t);
+  bool result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
+  DATUM_FREE(value1, basetype);
+  DATUM_FREE(value2, basetype);
+  return result;
+}
+
+/**
  * @brief Synchronize two temporal values and apply to them a lifted function
  * @details This function is applied for functions with instantaneous
  * discontinuities and when at least one temporal value has linear
@@ -3614,6 +3647,11 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   MeosType basetype = temptype_basetype(seq1->temptype);
+  /* Whether the values of two linear sequences are equal at the start of
+   * the segment, as read for a comparison */
+  bool linear = (interp1 == LINEAR && interp2 == LINEAR);
+  bool prevendeq = linear && ! lfinfo->tpfn_temp &&
+    datum_eq(tinstant_value_p(start1), tinstant_value_p(start2), basetype);
   bool res;
   while (i < seq1->count && j < seq2->count)
   {
@@ -3649,29 +3687,112 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
       end1 = tsegment_at_timestamptz(start1, end1, interp1, end2->t);
       tofree[nfree++] = end1;
     }
-    /* Compute the function at the end instant */
+    /* Values that the segments tend to at the end instant. A step segment
+     * jumps there and the period may exclude it, so the end instant is read
+     * only where the sequences take it, as the start of the next segment or
+     * as the final instant below */
     Datum endvalue1 = (interp1 == LINEAR) ? tinstant_value_p(end1) : startvalue1;
     Datum endvalue2 = (interp2 == LINEAR) ? tinstant_value_p(end2) : startvalue2;
-    res = DatumGetBool(tfunc_base_base(endvalue1, endvalue2, lfinfo));
-    if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+    /* Read the function right before the end instant and, when the period
+     * excludes the start instant, right after it, where the segments take
+     * values whichever bounds the period excludes */
+    TimestampTz tpt1, tpt2;
+    int cross = 0;
+    if (lfinfo->tpfn_temp)
     {
-      pfree_array((void **) tofree, nfree);
-      return lfinfo->ever ? 1 : 0;
+      /* The function changes only at the bounds of the period [tpt1, tpt2]
+       * that the turning point function returns, so it is read in the middle
+       * of the pieces of the segment between them and the segment bounds,
+       * the whole segment without a turning point */
+      TimestampTz tpi[2];
+      cross = lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2,
+        endvalue2, lfinfo->param[0], start1->t, end1->t, tpi, NULL, 2);
+      assert(cross <= 2);
+      bool decides;
+      if (lfinfo->tpfn_temp_bound)
+      {
+        /* A lift with a bound function states with its turning point
+         * function the period where the predicate holds inside the segment,
+         * a touch at one instant or an interval: it holds inside the segment
+         * where the period meets its interior, and fails there where the
+         * period does not cover it */
+        if (cross == 1)
+          tpi[1] = tpi[0];
+        bool holds = cross && (tpi[0] < tpi[1] ||
+          (tpi[0] > start1->t && tpi[0] < end1->t));
+        bool fails = ! cross || tpi[0] > start1->t || tpi[1] < end1->t;
+        decides = lfinfo->ever ? holds : fails;
+        cross = 0;
+      }
+      else if (cross == 0)
+        decides = eafunc_segments_at(startvalue1, endvalue1, startvalue2,
+          endvalue2, start1, end1, start1->t + (end1->t - start1->t) / 2,
+          lower_inc, lfinfo) == lfinfo->ever;
+      else
+      {
+        tpt1 = tpi[0];
+        tpt2 = (cross > 1) ? tpi[1] : tpt1;
+        TimestampTz first = end1->t, last = start1->t;
+        if (start1->t < tpt2 && tpt2 < end1->t)
+          first = last = tpt2;
+        if (start1->t < tpt1 && tpt1 < end1->t)
+        {
+          first = tpt1;
+          if (last == start1->t)
+            last = tpt1;
+        }
+        TimestampTz before = last + (end1->t - last) / 2;
+        decides = (! lower_inc && eafunc_segments_at(startvalue1, endvalue1,
+            startvalue2, endvalue2, start1, end1,
+            start1->t + (first - start1->t) / 2, lower_inc, lfinfo) ==
+            lfinfo->ever) ||
+          eafunc_segments_at(startvalue1, endvalue1, startvalue2, endvalue2,
+            start1, end1, before, lower_inc, lfinfo) == lfinfo->ever;
+        /* The crossing below reads only tpt1 where the middle of the period
+         * [tpt1, tpt2] is the timestamp read right before the end */
+        if (tpt1 + (tpt2 - tpt1) / 2 == before)
+          tpt2 = tpt1;
+      }
+      if (decides)
+      {
+        pfree_array((void **) tofree, nfree);
+        return lfinfo->ever ? 1 : 0;
+      }
     }
-    /* If either the start values or the end values are equal, determine
-     * whether there is a crossing and if there is one compute the value at
-     * the crossing; a lift with a bound function reads its period wherever
-     * the values start */
-    if (datum_ne(startvalue1, startvalue2, basetype) ||
-        datum_eq(endvalue1, endvalue2, basetype) || lfinfo->tpfn_temp_bound)
+    else
     {
+      /* The function compares the two values, and their gap, linear over
+       * the segment, keeps one sign between a bound where it is zero and the
+       * other bound. The segments therefore compare right after the start as
+       * at the start where they differ there and as at the end otherwise,
+       * and symmetrically right before the end, which is the start instant
+       * read above where the period takes it and the end values are equal.
+       * Two linear segments start with the end values of the segments
+       * before them, so their end values are compared at every segment, and
+       * those of other segments only where a read depends on them */
+      bool starteq = linear ? prevendeq :
+        datum_eq(startvalue1, startvalue2, basetype);
+      bool endknown = linear || ! lower_inc;
+      bool endeq = endknown && datum_eq(endvalue1, endvalue2, basetype);
+      prevendeq = endeq;
+      if ((lower_inc && ! endeq &&
+            DatumGetBool(tfunc_base_base(endvalue1, endvalue2, lfinfo)) ==
+              lfinfo->ever &&
+            (endknown || ! datum_eq(endvalue1, endvalue2, basetype))) ||
+          (! lower_inc && (DatumGetBool(tfunc_base_base(
+              starteq ? endvalue1 : startvalue1,
+              starteq ? endvalue2 : startvalue2, lfinfo)) == lfinfo->ever ||
+            DatumGetBool(tfunc_base_base(endeq ? startvalue1 : endvalue1,
+              endeq ? startvalue2 : endvalue2, lfinfo)) == lfinfo->ever)))
+      {
+        pfree_array((void **) tofree, nfree);
+        return lfinfo->ever ? 1 : 0;
+      }
       /* Two float segments cross strictly inside, in continuous time, where
        * their gap has opposite signs at the bounds, comparisons of the
        * doubles, whichever microsecond dates the crossing, and take one
-       * value there. Right after the start they compare as at the start
-       * where they differ there */
-      if (! lfinfo->tpfn_temp && start1->temptype == T_TFLOAT &&
-          start2->temptype == T_TFLOAT)
+       * value there */
+      if (start1->temptype == T_TFLOAT)
       {
         double s1 = DatumGetFloat8(startvalue1);
         double s2 = DatumGetFloat8(startvalue2);
@@ -3679,89 +3800,60 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
         double e2 = DatumGetFloat8(endvalue2);
         int sstart = (s1 > s2) - (s1 < s2);
         int send = (e1 > e2) - (e1 < e2);
-        for (int k = 0; k < 2; k++)
-        {
-          if (sstart == 0 || (k == 0 && sstart != - send))
-            continue;
-          res = DatumGetBool(tfunc_base_base(startvalue1,
-            (k == 0) ? startvalue1 : startvalue2, lfinfo));
-          if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
-          {
-            pfree_array((void **) tofree, nfree);
-            return lfinfo->ever ? 1 : 0;
-          }
-        }
-        start1 = end1; start2 = end2;
-        lower_inc = true;
-        continue;
-      }
-      /* The interval of the segment during which the predicate holds, one at
-       * most, a touch at one instant being the interval of that instant */
-      TimestampTz tpi[2];
-      int cross;
-      if (lfinfo->tpfn_temp)
-      {
-        cross = lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2,
-          endvalue2, lfinfo->param[0], start1->t, end1->t, tpi, NULL, 2);
-        assert(cross <= 2);
-        if (cross == 1)
-          tpi[1] = tpi[0];
-      }
-      else
-        cross = tsegment_intersection(startvalue1, endvalue1, startvalue2,
-          endvalue2, start1->temptype, start1->t, end1->t, &tpi[0], &tpi[1]);
-      if (lfinfo->tpfn_temp_bound)
-      {
-        /* A lift with a bound function states with its turning point
-         * function the period where the predicate holds inside the segment,
-         * a touch at one instant or an interval, whose ends are read above:
-         * it holds inside the segment where the period meets its interior,
-         * and fails there where the period does not cover it */
-        bool holds = cross && (tpi[0] < tpi[1] ||
-          (tpi[0] > start1->t && tpi[0] < end1->t));
-        bool fails = ! cross || tpi[0] > start1->t || tpi[1] < end1->t;
-        if ((lfinfo->ever && holds) || (! lfinfo->ever && fails))
+        if (sstart != 0 && sstart == - send &&
+            DatumGetBool(tfunc_base_base(startvalue1, startvalue1,
+              lfinfo)) == lfinfo->ever)
         {
           pfree_array((void **) tofree, nfree);
           return lfinfo->ever ? 1 : 0;
         }
       }
-      else if (cross)
+      /* If either the start values differ or the end values are equal,
+       * determine whether there is a crossing */
+      else if (! starteq ||
+          (endknown ? endeq : datum_eq(endvalue1, endvalue2, basetype)))
+        cross = tsegment_intersection(startvalue1, endvalue1, startvalue2,
+          endvalue2, start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
+    }
+    /* If there is a crossing compute the function at it */
+    if (cross)
+    {
+      /* The predicate may hold only strictly inside the turning-point
+       * interval (t1, t2) -- for a within-distance predicate over a
+       * trajectory crossing the values are within the band between t1 and
+       * t2 but exactly on the band at the bounds, whose value rounded to
+       * the microsecond can fall just outside. Evaluate at the midpoint,
+       * where the predicate holds robustly, in addition to the bound t1. */
+      TimestampTz tpts[2];
+      int ntpts = 0;
+      tpts[ntpts++] = tpt1;
+      if (tpt2 != tpt1)
+        tpts[ntpts++] = tpt1 + (tpt2 - tpt1) / 2;
+      for (int k = 0; k < ntpts; k++)
       {
-        TimestampTz tpt1 = tpi[0], tpt2 = tpi[1];
-        /* The predicate may hold only strictly inside the turning-point
-         * interval (t1, t2) -- for a within-distance predicate over a
-         * trajectory crossing the values are within the band between t1 and
-         * t2 but exactly on the band at the bounds, whose value rounded to
-         * the microsecond can fall just outside. Evaluate at the midpoint,
-         * where the predicate holds robustly, in addition to the bound t1. */
-        TimestampTz tpts[2];
-        int ntpts = 0;
-        tpts[ntpts++] = tpt1;
-        if (tpt2 != tpt1)
-          tpts[ntpts++] = tpt1 + (tpt2 - tpt1) / 2;
-        for (int k = 0; k < ntpts; k++)
+        /* A crossing at a bound of the segment is read where the sequences
+         * take that bound, as above */
+        if (tpts[k] <= start1->t || tpts[k] >= end1->t)
+          continue;
+        Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
+          start1->temptype, start1->t, end1->t, tpts[k]);
+        /* Two point segments meeting at the crossing construct two points
+         * apart by their rounding where the meeting falls between two
+         * microseconds; the crossing is a meeting their intersection
+         * decides (#tgeompointsegm_meet, #tgeogpointsegm_intersection), so
+         * the function reads the one point they meet at */
+        Datum tpvalue2 =
+          (! lfinfo->tpfn_temp && tpoint_type(start1->temptype)) ?
+          datum_copy(tpvalue1, temptype_basetype(seq1->temptype)) :
+          tsegment_value_at_timestamptz(startvalue2, endvalue2,
+            start2->temptype, start2->t, end2->t, tpts[k]);
+        res = DatumGetBool(tfunc_base_base(tpvalue1, tpvalue2, lfinfo));
+        DATUM_FREE(tpvalue1, temptype_basetype(seq1->temptype));
+        DATUM_FREE(tpvalue2, temptype_basetype(seq1->temptype));
+        if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
         {
-          Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
-            start1->temptype, start1->t, end1->t, tpts[k]);
-          /* Two point segments meeting at the crossing construct two points
-           * apart by their rounding where the meeting falls between two
-           * microseconds; the crossing is a meeting their intersection
-           * decides (#tgeompointsegm_meet, #tgeogpointsegm_intersection), so
-           * the function reads the one point they meet at */
-          Datum tpvalue2 =
-            (! lfinfo->tpfn_temp && tpoint_type(start1->temptype)) ?
-            datum_copy(tpvalue1, temptype_basetype(seq1->temptype)) :
-            tsegment_value_at_timestamptz(startvalue2, endvalue2,
-              start2->temptype, start2->t, end2->t, tpts[k]);
-          res = DatumGetBool(tfunc_base_base(tpvalue1, tpvalue2, lfinfo));
-          DATUM_FREE(tpvalue1, temptype_basetype(seq1->temptype));
-          DATUM_FREE(tpvalue2, temptype_basetype(seq1->temptype));
-          if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
-          {
-            pfree_array((void **) tofree, nfree);
-            return lfinfo->ever ? 1 : 0;
-          }
+          pfree_array((void **) tofree, nfree);
+          return lfinfo->ever ? 1 : 0;
         }
       }
     }
@@ -3811,7 +3903,12 @@ eafunc_tstepseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   TimestampTz lower = DatumGetTimestampTz(inter->lower);
-  TimestampTz upper = DatumGetTimestampTz(inter->upper);
+  /* The last timestamp read, a whole number of microseconds: the sequences
+   * take the values of their instants at the upper bound only when the
+   * period includes it, and up to it the values read at the instants before,
+   * whose first is the lower bound */
+  TimestampTz upper = DatumGetTimestampTz(inter->upper) -
+    (inter->upper_inc ? 0 : 1);
   int i = 0, j = 0, nfree = 0;
   if (inst1->t < lower)
   {

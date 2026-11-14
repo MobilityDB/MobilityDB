@@ -570,6 +570,12 @@ SELECT eDwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tge
 -- Trajectories far apart at both shared endpoints that meet only strictly
 -- between the vertices
 SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]', tgeompoint '[Point(5 -100)@2001-01-01, Point(5 100)@2001-01-02]', 1);
+-- Geodetic points within the distance only at a bound of their common period
+-- that the period excludes, or apart right after a lower bound that it
+-- excludes
+SELECT eDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)', tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)', 0);
+SELECT eDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 0);
+SELECT aDwithin(tgeogpoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeogpoint '(Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 100000);
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'Interp=Step;[Point(5 0)@2001-01-01, Point(3 2)@2001-01-02]', 1);
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2001-01-01, Point(2 2)@2001-01-02]', 1);
 

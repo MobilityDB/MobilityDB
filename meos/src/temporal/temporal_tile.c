@@ -2354,7 +2354,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
           Datum value = tinstant_value_p(instants[ninsts - 1]);
-          tofree[nfree] = tinstant_make(value, seq->temptype, upper);
+          tofree[nfree] = tinstant_make_intl(value, seq->temptype, upper);
         }
         instants[ninsts++] = tofree[nfree++];
       }
