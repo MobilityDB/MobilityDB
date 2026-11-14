@@ -78,8 +78,9 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   twin, the set-set join included. Branch `perf/ea-spatialrels-intl` rewrites `5777307bcc` there,
   the calls of `ea_dwithin_tgeo_geo` in `ea_disjoint_tgeo_geo` and `ea_intersects_tgeo_geo`, those
   of `ea_dwithin_tgeo_tgeo` in `setset_ea_exact`, and the signatures of the two functions, which
-  their twins carry above them. Head `bd061f86ac` on master `8ed17f5485` holds the strict,
-  cppcheck and speed receipts.
+  their twins carry above them. MobilityDB #3701, head `2bfc161bdf` on master `11ceffccf4`, with
+  the strict, cppcheck, valgrind and speed receipts and the CGAL oracle agreeing on 20000 of 20000
+  rows through `edwithin_tgeo_tgeo` and through the set-set join.
   It rests on the route validation the owner asked for first ("validate the routes at the ways
   readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
   each route as a planar line in the SRID of the network when the ways readers read it.
