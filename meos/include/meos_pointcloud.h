@@ -391,6 +391,8 @@ extern TPCBox *tpointcloud_to_tpcbox(const Temporal *temp);
 extern TPCBox *tpointcloud_tpcboxes(const Temporal *temp, int *count);
 extern TPCBox *tpointcloud_split_n_tpcboxes(const Temporal *temp, int box_count, int *count);
 extern TPCBox *tpointcloud_split_each_n_tpcboxes(const Temporal *temp, int elem_count, int *count);
+extern TPCBox *tpointcloud_merge_n_tpcboxes(const Temporal *temp, int box_count, int *count);
+extern TPCBox *tpointcloud_merge_each_n_tpcboxes(const Temporal *temp, int elem_count, int *count);
 
 /* Accessors */
 
