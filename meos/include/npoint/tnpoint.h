@@ -87,6 +87,7 @@ extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,
 /* Collinear functions */
 
 extern bool srid_matches_ways(int32_t srid);
+extern bool ensure_srid_ways(int32_t srid);
 extern bool npoint_collinear(const Npoint *np1, const Npoint *np2,
   const Npoint *np3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
   bool constructed);
@@ -100,10 +101,15 @@ extern long double npointsegm_locate(const Npoint *start, const Npoint *end,
 
 /* General functions */
 
-extern double geompoint_route_band(const GSERIALIZED *gs);
+extern double route_construction_bound(const LWLINE *line);
+extern bool route_constructs_point(const GSERIALIZED *line,
+  const GSERIALIZED *gs);
 extern void route_nearest_update(const GSERIALIZED *gs, int64 gid,
-  const GSERIALIZED *line, double tolerance, int64 *min_gid,
+  const GSERIALIZED *line, double tolerance, bool constructed, int64 *min_gid,
   double *min_dist, double *min_pos);
+extern Npoint *geompoint_to_npoint_cast(const GSERIALIZED *gs);
+extern Npoint *geompoint_route_npoint(const GSERIALIZED *gs, double tolerance,
+  bool constructed);
 extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
 extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
 extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
@@ -132,13 +138,20 @@ extern Datum datum_npoint_round(Datum npoint, Datum size);
 /* Conversion functions */
 
 extern const LWLINE *route_line(int64 rid);
+extern const LWLINE *route_line_bound(int64 rid, double *bound);
 extern void route_point_at(const POINTARRAY *pa, double length,
   double fraction, POINT4D *pt);
 extern double *route_vertex_positions(const POINTARRAY *pa, int *count);
-extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
-extern TSequence *tnpointseq_tgeompointseq_disc(const TSequence *is);
-extern TSequence *tnpointseq_tgeompointseq_cont(const TSequence *seq);
-extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ss);
+extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst,
+  double *bound);
+extern TSequence *tnpointseq_tgeompointseq_disc(const TSequence *seq,
+  double *bound);
+extern TSequence *tnpointseq_tgeompointseq_cont(const TSequence *seq,
+  double *bound);
+extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ss,
+  double *bound);
+extern Temporal *tnpoint_tgeompoint_bound(const Temporal *temp,
+  double *bound);
 
 extern TInstant *tgeompointinst_tnpointinst(const TInstant *inst);
 extern TSequence *tgeompointseq_tnpointseq(const TSequence *seq);

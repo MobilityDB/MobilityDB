@@ -87,6 +87,9 @@ SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01' ?&& stbox 'STBOX X((0,0),(1,1))';
 SELECT tnpoint 'Npoint(0, 0.676259981511564)@2001-01-01' ?&& tnpoint 'Npoint(1, 0.3501533481390591)@2001-01-01';
 SELECT tnpoint 'Npoint(0, 0.676259981511564)@2001-01-01' ?= tnpoint 'Npoint(1, 0.3501533481390591)@2001-01-01';
 SELECT tnpoint 'Npoint(0, 0.676259981511564)@2001-01-01' ?&& tnpoint 'Npoint(1, 0.36)@2001-01-01';
+-- Two positions of route 1 a hundred-millionth of a millionth of its length
+-- apart are two places of the map
+SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01' ?&& tnpoint 'Npoint(1, 0.50000000000001)@2001-01-01';
 -- Passing the crossing together, and an hour apart
 SELECT tnpoint '[Npoint(0, 0.6)@2001-01-01, Npoint(0, 0.676259981511564)@2001-01-02, Npoint(0, 0.7)@2001-01-03]' ?&& tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.3501533481390591)@2001-01-02, Npoint(1, 0.4)@2001-01-03]';
 SELECT tnpoint '[Npoint(0, 0.6)@2001-01-01, Npoint(0, 0.676259981511564)@2001-01-02, Npoint(0, 0.7)@2001-01-03]' ?&& tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.3501533481390591)@2001-01-02 01:00, Npoint(1, 0.4)@2001-01-03]';

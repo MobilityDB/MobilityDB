@@ -1120,6 +1120,101 @@ cross_product_sign_offset(double ax, double ay, double bx, double by,
 }
 
 /**
+ * @brief Return a bound on the rounding of one coordinate of a point
+ * constructed on a segment
+ * @details A point at a position along a route is constructed on one of its
+ * segments AB as liblwgeom's interpolate_point4d computes it, each coordinate
+ * `a + (b - a) * f` with `f` in [0, 1], in three roundings. With the unit
+ * roundoff `u = DBL_EPSILON / 2`, the computed coordinate lies within
+ * `u * |a + (b - a) * f| + 2u * |(b - a) * f|`, up to terms in u squared, of
+ * the coordinate of the point of AB at `f`, which is at most
+ * `u * (max(|a|, |b|) + 2 |b - a|)`. An error of `f` moves the point along
+ * AB, never off it. The factor `1 + 8 DBL_EPSILON` covers the terms in u
+ * squared and the rounding of the bound itself. The bound is that of the
+ * SEGMENT, not of the point: a point near the origin constructed on a long
+ * segment carries the rounding of the segment's coordinates
+ * @param[in] a,b Coordinates of the ends of the segment
+ */
+double
+segment_construction_bound(double a, double b)
+{
+  return 0.5 * DBL_EPSILON * (Max(fabs(a), fabs(b)) + 2.0 * fabs(b - a)) *
+    (1.0 + 8.0 * DBL_EPSILON);
+}
+
+/**
+ * @brief Return the side of the line of a segment AB on which the point
+ * `(px + ox, py + oy)` lies, exactly, for doubles and exact offsets
+ * @details The sign of `(bx - ax) * (py + oy - ay) - (by - ay) *
+ * (px + ox - ax)`, each difference an exact sum of doubles read through
+ * #polynomial_sign_exact, whose filter in doubles decides first
+ */
+static int
+segment_side_offset(double ax, double ay, double bx, double by, double px,
+  double py, double ox, double oy)
+{
+  ExactSum sums[4];
+  const double t0[2] = {bx, - ax}, t1[3] = {py, oy, - ay};
+  const double t2[2] = {by, - ay}, t3[3] = {px, ox, - ax};
+  exact_sum_set(&sums[0], t0, 2);
+  exact_sum_set(&sums[1], t1, 3);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  PolyTerm terms[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 1}},
+    {.coef = -1.0, .deg = 2, .sum = {2, 3}}};
+  return polynomial_sign_exact(sums, terms, 2);
+}
+
+/**
+ * @brief Return true if a segment meets the box of a point widened by two
+ * half-widths, `[px - ex, px + ex] x [py - ey, py + ey]`, decided exactly
+ * @details The segment meets the box where their extents meet and the four
+ * corners of the box do not all lie strictly on one side of the line of the
+ * segment. The corners are not doubles, so each comparison reads the point
+ * and the half-widths as exact sums (#offset_x_cmp, #segment_side_offset).
+ * The box with its corners rounded outwards to doubles holds it, so a segment
+ * missing that box, read by #cross_product_sign on the doubles, misses it,
+ * which settles most segments without an exact sum
+ * @param[in] ax,ay,bx,by Ends of the segment
+ * @param[in] px,py Point
+ * @param[in] ex,ey Half-widths of the box, non-negative doubles
+ */
+bool
+segment_meets_point_box(double ax, double ay, double bx, double by,
+  double px, double py, double ex, double ey)
+{
+  assert(ex >= 0.0); assert(ey >= 0.0);
+  /* The box with its corners rounded outwards, which holds the exact box */
+  double xmin = nextafter(px - ex, - HUGE_VAL);
+  double xmax = nextafter(px + ex, HUGE_VAL);
+  double ymin = nextafter(py - ey, - HUGE_VAL);
+  double ymax = nextafter(py + ey, HUGE_VAL);
+  if (Max(ax, bx) < xmin || Min(ax, bx) > xmax ||
+      Max(ay, by) < ymin || Min(ay, by) > ymax)
+    return false;
+  int s1 = cross_product_sign(ax, ay, bx, by, ax, ay, xmin, ymin);
+  int s2 = cross_product_sign(ax, ay, bx, by, ax, ay, xmax, ymin);
+  int s3 = cross_product_sign(ax, ay, bx, by, ax, ay, xmax, ymax);
+  int s4 = cross_product_sign(ax, ay, bx, by, ax, ay, xmin, ymax);
+  if ((s1 > 0 && s2 > 0 && s3 > 0 && s4 > 0) ||
+      (s1 < 0 && s2 < 0 && s3 < 0 && s4 < 0))
+    return false;
+  /* The exact box: its extents, then the sides of its four corners */
+  if (offset_x_cmp(px, - ex, Max(ax, bx)) > 0 ||
+      offset_x_cmp(px, ex, Min(ax, bx)) < 0 ||
+      offset_x_cmp(py, - ey, Max(ay, by)) > 0 ||
+      offset_x_cmp(py, ey, Min(ay, by)) < 0)
+    return false;
+  s1 = segment_side_offset(ax, ay, bx, by, px, py, - ex, - ey);
+  s2 = segment_side_offset(ax, ay, bx, by, px, py, ex, - ey);
+  s3 = segment_side_offset(ax, ay, bx, by, px, py, ex, ey);
+  s4 = segment_side_offset(ax, ay, bx, by, px, py, - ex, ey);
+  return ! ((s1 > 0 && s2 > 0 && s3 > 0 && s4 > 0) ||
+    (s1 < 0 && s2 < 0 && s3 < 0 && s4 < 0));
+}
+
+/**
  * @brief Return the sign of `x + o - p`, exactly, for doubles x and p and an
  * exact offset o
  */
@@ -5852,6 +5947,10 @@ point_motion_filter_exceeds(double lo, double hi)
  * - The difference of the two positions is then within
  *   `6 g6 M + u (2 + 6 g6) M <= 7 g7 M <= 2^-47 M = e` of the exact `A`, per
  *   coordinate, and likewise `C`.
+ * - At an end of the interval that is an instant of both segments, the two
+ *   positions are input vertices and their difference one subtraction,
+ *   within `u` of its own magnitude per coordinate, so the sum of its
+ *   squares is within `g4 <= 2^-49` of its computed value, whatever `M`.
  * - A product of two such coordinates is within `e (|a| + |c| + e)` of the
  *   exact one, `a` and `c` the computed coordinates; a sum of two products
  *   is within `g2` of its terms' magnitudes, and a sum of two squares
@@ -5898,19 +5997,29 @@ point_motion_dwithin_filter(const double *p0, const double *p1, int64 s0,
   double dp = (double) (s1 - s0), dq = (double) (r1 - r0);
   double la = (double) (ta - s0) / dp, lb = (double) (tb - s0) / dp;
   double ma = (double) (ta - r0) / dq, mb = (double) (tb - r0) / dq;
+  /* An end of the interval that is an instant of both segments has as its
+   * positions two input vertices, so its difference is one subtraction,
+   * within 2^-52 of its own magnitude per coordinate, not within e */
+  const double *pa = (ta == s0) ? p0 : ((ta == s1) ? p1 : NULL);
+  const double *qa = (ta == r0) ? q0 : ((ta == r1) ? q1 : NULL);
+  const double *pb = (tb == s0) ? p0 : ((tb == s1) ? p1 : NULL);
+  const double *qb = (tb == r0) ? q0 : ((tb == r1) ? q1 : NULL);
+  bool vertex_a = pa && qa, vertex_b = pb && qb;
   double A[2], C[2], B[2];
   for (int c = 0; c < 2; c++)
   {
     double up = p1[c] - p0[c], uq = q1[c] - q0[c];
-    A[c] = (p0[c] + up * la) - (q0[c] + uq * ma);
-    C[c] = (p0[c] + up * lb) - (q0[c] + uq * mb);
+    A[c] = vertex_a ? pa[c] - qa[c] : (p0[c] + up * la) - (q0[c] + uq * ma);
+    C[c] = vertex_b ? pb[c] - qb[c] : (p0[c] + up * lb) - (q0[c] + uq * mb);
     B[c] = C[c] - A[c];
   }
   double ax = fabs(A[0]), ay = fabs(A[1]), cx = fabs(C[0]), cy = fabs(C[1]);
   double n0 = A[0] * A[0] + A[1] * A[1];
   double n1 = C[0] * C[0] + C[1] * C[1];
-  double bn0 = sl * (e * (2.0 * (ax + ay) + 2.0 * e) + 0x1p-51 * n0);
-  double bn1 = sl * (e * (2.0 * (cx + cy) + 2.0 * e) + 0x1p-51 * n1);
+  double bn0 = vertex_a ? sl * 0x1p-49 * n0 :
+    sl * (e * (2.0 * (ax + ay) + 2.0 * e) + 0x1p-51 * n0);
+  double bn1 = vertex_b ? sl * 0x1p-49 * n1 :
+    sl * (e * (2.0 * (cx + cy) + 2.0 * e) + 0x1p-51 * n1);
   double dd = d * d, bdd = sl * 0x1p-52 * dd;
   double dd_lo = dd - bdd, dd_hi = dd + bdd;
   if (! ever)

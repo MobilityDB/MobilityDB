@@ -700,9 +700,8 @@ PG_FUNCTION_INFO_V1(Geompoint_to_npoint);
  * @ingroup mobilitydb_npoint_base_conversion
  * @brief Convert a geometry into a network point located on the route
  * nearest to it within a tolerance
- * @details The cast, which takes no tolerance, finds the route on which the
- * point lies up to the rounding of a point computed on it,
- * #geompoint_route_band.
+ * @details The cast, which takes no tolerance, finds the route that
+ * constructs the point, #route_constructs_point.
  * @sqlfn npoint()
  * @sqlop @p ::
  */
@@ -710,9 +709,9 @@ Datum
 Geompoint_to_npoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  double tolerance = (PG_NARGS() > 1) ? PG_GETARG_FLOAT8(1) :
-    geompoint_route_band(gs);
-  Npoint *result = geompoint_to_npoint(gs, tolerance);
+  Npoint *result = (PG_NARGS() > 1) ?
+    geompoint_to_npoint(gs, PG_GETARG_FLOAT8(1)) :
+    geompoint_to_npoint_cast(gs);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_NPOINT_P(result);

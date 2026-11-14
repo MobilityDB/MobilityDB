@@ -74,7 +74,9 @@ typedef struct
                                points of the geometry it is read from, which
                                it is released with */
   double length;          /**< Length of the route */
-  int32 prev;             /**< Previous entry holding a geometry, in the
+  double bound;           /**< Bound of the construction of a point on the
+                               route, read with the line */
+  int32 prev;            /**< Previous entry holding a geometry, in the
                                order of their use */
   int32 next;             /**< Next entry holding a geometry */
 } WaysCacheEntry;
@@ -278,6 +280,8 @@ ways_cache_set_geom(WaysCache *cache, int32 pos, GSERIALIZED *geom)
 {
   cache->entries[pos].the_geom = geom;
   cache->entries[pos].the_line = (LWLINE *) lwgeom_from_gserialized(geom);
+  cache->entries[pos].bound =
+    route_construction_bound(cache->entries[pos].the_line);
   cache->geombytes += VARSIZE(geom);
   ways_cache_push(cache, pos);
   ways_cache_evict(cache);
@@ -298,6 +302,7 @@ ways_cache_add(WaysCache *cache, const ways_record *rec)
   entry->the_geom = NULL;
   entry->the_line = NULL;
   entry->length = rec->length;
+  entry->bound = 0.0;
   entry->prev = entry->next = WAYS_CACHE_NONE;
   ways_cache_slot_set(cache, pos);
   ways_cache_set_geom(cache, pos, rec->the_geom);
@@ -410,6 +415,7 @@ ways_cache_lookup(WaysCache *cache, int64 gid, bool any_gid,
   rec->the_geom = entry->the_geom;
   rec->the_line = entry->the_line;
   rec->length = entry->length;
+  rec->bound = entry->bound;
   return true;
 }
 
