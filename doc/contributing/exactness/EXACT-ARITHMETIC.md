@@ -763,8 +763,9 @@ outside that range, as `cross_product_sign_exact` reads `cross_product_sign_wide
 stage decides only where every nonzero difference lies from 2^-240 to 2^250. Judged by GMP on
 every scale from 2^-1070 to 2^1020 and on 198 447 configurations of mixed magnitudes, 599 919
 rows, none is wrong; CGAL's circular-arc judge agrees with the head on 38 584 pairs of a curve
-polygon and a point at 2^0, 2^-300 and 2^300. It is open as #3694, test first, its receipts
-strict CI, cppcheck, valgrind, smoke, the oracle and speed.
+polygon and a point at 2^0, 2^-300 and 2^300. It is merged as #3694 (`23f24644e0` on master),
+test first, its receipts strict CI, cppcheck, valgrind, smoke, the oracle and speed. What EA7
+leaves is tier 2 where Section 4.4 finds none, after EA2.
 
 ### EA8. The double nearest a transcendental value
 
