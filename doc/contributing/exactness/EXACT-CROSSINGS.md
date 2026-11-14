@@ -461,9 +461,9 @@ diffs classified:
    its witness. MobilityDB #3640, a draft: the float locators agree with the exact nearest
    microsecond on all 533988 float segments of the crossprobe corpus (332138 of 548989 before
    it); five expected outputs move, each row confirmed on exact rationals. Callgrind against
-   master `b942d52758`, with about half of the segments crossing and with none: the comparisons
+   master `83a67de4ea`, with about half of the segments crossing and with none: the comparisons
    with a float 0.971 and 0.935, `#=` with a float 0.659 and 0.934, `#=` of two temporal floats
-   0.936 and 0.965, atSpan 0.984 and 0.996, atValue 0.969 and 1.000, sin and cos 0.990 and
+   0.935 and 0.965, atSpan 0.984 and 0.996, atValue 0.969 and 1.000, sin and cos 0.990 and
    0.998, abs 0.994 and 0.986, the distance of two temporal floats 0.992 and 0.988, every walk at
    or below master.
    The value split it switches counts its bins by MobilityDB #3641, merged as `31764297c1`:
@@ -489,8 +489,8 @@ diffs classified:
    intervals closed in the same way, and follows as its own pull request.
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
    turning points, through the same primitive with the exact polynomial sign.
-   The turning points of the containment of two circular buffers come first, MobilityDB #3671, a
-   draft: `tcbuffersegm_contains_turnpt` decides a segment over which the clearance vanishes, a
+   The turning points of the containment of two circular buffers come first, MobilityDB #3671,
+   merged as `83a67de4ea`: `tcbuffersegm_contains_turnpt` decides a segment over which the clearance vanishes, a
    touch inside a segment and a point on the boundary at an end exactly, where the squared
    clearance alone hides the sign of the difference of the radii and reads a double root as none
    or as two. CGAL, with exact square roots, agrees with every
@@ -513,6 +513,15 @@ diffs classified:
    and random pairs). The GEODETIC case stays this step's: its band, `geogpoint_meeting_band`,
    goes with it, since a band at a point the engine constructs is removed by no longer
    constructing the point (the open question of #3656).
+   A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
+   `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
+   `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
+   fraction within `MEOS_EPSILON` of a bound, so a meeting decided true near a bound reads no
+   instant. These are the 6848 planar disagreements of the crossprobe corpus, all one
+   microsecond early. Every moving coordinate of the difference of the two points crosses zero
+   at the one parameter of the meeting, so the crossing of #3640 on one such coordinate dates
+   it to the exact nearest microsecond, with its bound ownership; that dating follows #3640 as
+   its own pull request.
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
 5. **The raster grid walks** of `raster_quadbin.c`: `tpointseq_raster_point_traverse` dates each
    line of the grid a trip crosses as `inst1->t + (TimestampTz) (dt * s)` and reads the value at
