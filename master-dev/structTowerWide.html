@@ -75,20 +75,30 @@ $(function() {
   <div class="headertitle"><div class="title">TowerWide Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>A dyadic rational <code>sign * magnitude * 2^exp</code>, the magnitude held in as many 64-bit limbs as it takes, the lowest first, with exact sums, differences and products of any two.  
+ <a href="structTowerWide.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="geo__funcs_8h_source.html">geo_funcs.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a9a3816bc77825e0f3751ed5ebc090446"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTowerWide_a9a3816bc77825e0f3751ed5ebc090446.html#a9a3816bc77825e0f3751ed5ebc090446">exp</a></td></tr>
+<tr class="memdesc:a9a3816bc77825e0f3751ed5ebc090446"><td class="mdescLeft">&#160;</td><td class="mdescRight">Weight of the lowest bit of the magnitude.  <a href="structTowerWide_a9a3816bc77825e0f3751ed5ebc090446.html#a9a3816bc77825e0f3751ed5ebc090446">More...</a><br /></td></tr>
 <tr class="separator:a9a3816bc77825e0f3751ed5ebc090446"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc5b6e4c067b60370e685df2e9be6b8c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTowerWide_abc5b6e4c067b60370e685df2e9be6b8c.html#abc5b6e4c067b60370e685df2e9be6b8c">len</a></td></tr>
+<tr class="memdesc:abc5b6e4c067b60370e685df2e9be6b8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of limbs of the magnitude, 0 for the value 0.  <a href="structTowerWide_abc5b6e4c067b60370e685df2e9be6b8c.html#abc5b6e4c067b60370e685df2e9be6b8c">More...</a><br /></td></tr>
 <tr class="separator:abc5b6e4c067b60370e685df2e9be6b8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03d7ddc1fd2370d6be522a8ef9490cd3"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTowerWide_a03d7ddc1fd2370d6be522a8ef9490cd3.html#a03d7ddc1fd2370d6be522a8ef9490cd3">limb</a> []</td></tr>
-<tr class="separator:a03d7ddc1fd2370d6be522a8ef9490cd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdc126405fadbb5fdab80bb88bc0e952"><td class="memItemLeft" align="right" valign="top">uint64&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTowerWide_abdc126405fadbb5fdab80bb88bc0e952.html#abdc126405fadbb5fdab80bb88bc0e952">limb</a> [FLEXIBLE_ARRAY_MEMBER]</td></tr>
+<tr class="separator:abdc126405fadbb5fdab80bb88bc0e952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc3f8f309f2a1fffb01319350332cb5e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTowerWide_afc3f8f309f2a1fffb01319350332cb5e.html#afc3f8f309f2a1fffb01319350332cb5e">sign</a></td></tr>
+<tr class="memdesc:afc3f8f309f2a1fffb01319350332cb5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">-1, 0 or 1  <a href="structTowerWide_afc3f8f309f2a1fffb01319350332cb5e.html#afc3f8f309f2a1fffb01319350332cb5e">More...</a><br /></td></tr>
 <tr class="separator:afc3f8f309f2a1fffb01319350332cb5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
-<li>meos/src/geo/<a class="el" href="meos_2src_2geo_2geo__funcs_8c.html">geo_funcs.c</a></li>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >A dyadic rational <code>sign * magnitude * 2^exp</code>, the magnitude held in as many 64-bit limbs as it takes, the lowest first, with exact sums, differences and products of any two. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>meos/include/geo/<a class="el" href="geo__funcs_8h_source.html">geo_funcs.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
