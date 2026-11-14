@@ -888,13 +888,6 @@ fix_atan2_bound(const uint32_t *y, const uint32_t *x, uint32_t *r, int L,
   pfree(t);
 }
 
-/* The sign of an exact value */
-static inline int
-wide_sign(const TowerWide *a)
-{
-  return a->sign;
-}
-
 /**
  * @brief Return floor(log2 |a|) of a #TowerWide that is not 0, the weight of
  * its highest bit
