@@ -486,7 +486,10 @@ diffs classified:
    The crossing branch of the same walk
    is #3640's, so #3650 rebases over it. The planar
    ever within distance of two temporal points, `ea_dwithin_tpoint_tpoint_exact`, reads its
-   intervals closed in the same way, and follows as its own pull request.
+   intervals closed in the same way: MobilityDB #3680 (open) answers the ever within at
+   instants the two share, an interval whose least squared distance is the square of the
+   distance at one end alone being within where the sequences hold that end; CGAL agrees on
+   40000 random pairs with frequent meetings at an excluded bound.
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
    turning points, through the same primitive with the exact polynomial sign.
    The turning points of the containment of two circular buffers come first, MobilityDB #3671,
