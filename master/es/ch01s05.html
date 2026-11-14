@@ -116,20 +116,22 @@ rm -rf build
 </pre><p>
 				e inicie el proceso de construcción como se mencionó anteriormente.
 			</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="testing"></a>Pruebas</h3></div></div></div><p>
-				MobilityDB utiliza <code class="varname">ctest</code>, el programa controlador de pruebas de CMake, para realizar pruebas. Este programa ejecutará las pruebas e informará los resultados.
+				MobilityDB utiliza <code class="varname">ctest</code>, el programa controlador de pruebas de CMake, para realizar pruebas. Los archivos de prueba son ejecutados por <code class="varname">pg_regress</code>, el programa de pruebas de regresión de PostgreSQL, como una única prueba de <code class="varname">ctest</code> llamada <code class="varname">regress</code>.
 			</p><p>
 				Para ejecutar todas las pruebas
 			</p><pre class="programlisting">
 ctest
 </pre><p>
-				Para ejecutar un archivo de prueba dado
+				Para ejecutar un archivo de prueba dado, la variable de entorno <code class="varname">MOBILITYDB_TESTS</code> indica una expresión regular, que selecciona las pruebas cuyos nombres coinciden con ella
 			</p><pre class="programlisting">
-ctest -R '021_tbox'
+MOBILITYDB_TESTS='^021_tbox$' ctest -R regress
 </pre><p>
-				Para ejecutar un conjunto de archivos de prueba determinados se pueden utilizar comodines
+				Para ejecutar un conjunto de archivos de prueba determinados, se indica la parte de sus nombres que comparten
 			</p><pre class="programlisting">
-ctest -R '022_*'
+MOBILITYDB_TESTS=022_ ctest -R regress
 </pre><p>
+				Las diferencias entre la salida de las pruebas que fallan y su salida esperada se escriben en el archivo <code class="varname">mobilitydb/test/regress/regression.diffs</code> del directorio de compilación.
+			</p><p>
 				Las pruebas se ejecutan en un clúster temporal de PostgreSQL en el directorio <code class="varname">tmptest</code> del directorio de compilación, cuyo servidor escucha en un socket de dominio Unix en un directorio corto bajo <code class="varname">/tmp</code>, ya que PostgreSQL no arranca cuando la ruta del socket supera los 107 bytes. Otro directorio para el clúster puede indicarse en la configuración con la variable <code class="varname">MOBILITYDB_TEST_TMPDIR</code>. El clúster se crea con la configuración regional C y en UTF-8, salvo que la variable <code class="varname">MOBILITYDB_TEST_ENCODING</code> indique otra codificación, como <code class="varname">SQL_ASCII</code>
 			</p><pre class="programlisting">
 cmake -DMOBILITYDB_TEST_TMPDIR=/tmp/mobilitydb-test ..
