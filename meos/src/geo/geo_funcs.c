@@ -6106,42 +6106,6 @@ ring_area_sign_wide(const POINTARRAY *pa)
 }
 
 /**
- * @brief Return the sign of a polynomial in exact sums held as #TowerWide,
- * computed exactly
- * @details The counterpart of #polynomial_sign_exact for sums whose products
- * leave the doubles: every term, its coefficient times its sums
- * (#tower_wide_mul), is added to the total (#tower_wide_add), whose sign is
- * the exact one at any magnitude the doubles of the sums take, its values
- * released from @p ar on return
- * @param[in] ar Arena of the values
- * @param[in] sums Exact sums the terms refer to
- * @param[in] terms,nterms Terms of the polynomial and their number
- * @return -1, 0, or 1
- */
-static int
-polynomial_sign_wide(TowerWideArena *ar, TowerWide *const *sums,
-  const PolyTerm *terms, int nterms)
-{
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  const TowerWide *acc, *prod;
-  const TowerWide *next;
-  acc = tower_wide_of_double(ar, 0.0);
-  for (int i = 0; i < nterms; i++)
-  {
-    prod = tower_wide_of_double(ar, terms[i].coef);
-    for (int k = 0; k < terms[i].deg; k++)
-    {
-      next = tower_wide_mul(ar, prod, sums[terms[i].sum[k]]);
-      prod = next;
-    }
-    acc = tower_wide_add(ar, acc, prod);
-  }
-  int sign = acc->sign;
-  tower_wide_arena_release(ar, m);
-  return sign;
-}
-
-/**
  * @brief Set the coefficients of the quadratic whose sign says whether two
  * discs moving linearly over a segment are within a distance, exactly
  * @details Over the fraction f in [0, 1] of the segment the centres stand
@@ -9729,12 +9693,11 @@ typedef struct
  * @brief Return the sign of `x / y - u / v` for two squares of
  * #segment_distance_square, the sign of `x v - u y` since both denominators
  * are positive
- * @details Read on the exact sums @p sums (#polynomial_sign_exact), or on
- * @p wsums in @p ar where it is not NULL (#polynomial_sign_wide)
+ * @details Read on the exact sums @p sums (#polynomial_sign_exact)
  */
 static int
-segment_square_cmp(TowerWideArena *ar, const ExactSum *sums,
-  TowerWide *const *wsums, const SegmentSquare *s1, const SegmentSquare *s2)
+segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
+  const SegmentSquare *s2)
 {
   PolyTerm terms[54];
   int n = 0;
@@ -9752,8 +9715,6 @@ segment_square_cmp(TowerWideArena *ar, const ExactSum *sums,
           sizeof(int) * y->den[j].deg);
       }
   }
-  if (wsums)
-    return polynomial_sign_wide(ar, wsums, terms, n);
   return polynomial_sign_exact(sums, terms, n);
 }
 
@@ -9770,11 +9731,10 @@ segment_square_cmp(TowerWideArena *ar, const ExactSum *sums,
  * of a polynomial of degree at most 6 (#polynomial_sign_exact). The
  * differences and the errors of their rounding are scaled by the power of two
  * that brings the largest into [1, 2), which changes no sign, as
- * #point_segment_distance_offset_exact scales them; a product of six scaled
- * values is exact where each has its lowest bit at or above 2^-179, and below
- * 2^6, so none overflows. Where a scaled value has its lowest bit below
- * 2^-179, the sums are held unscaled as #TowerWide and the polynomials read
- * on them (#polynomial_sign_wide), exact at any magnitude
+ * #point_segment_distance_offset_exact scales them, which keeps the filters
+ * of #polynomial_sign_exact in their range. Where a scaled value has its
+ * lowest bit below 2^-179, the sums are held unscaled; #polynomial_sign_exact
+ * is exact for any finite sums either way
  * @param[in] pt The point, the start and the end of the other segment, of
  * each of the four distances
  * @param[in] near Where the nearest point of each lies: 0 the start, 1 the
@@ -9826,11 +9786,8 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
       }
   }
   /* The exact sums, sum (3 i + j) * ndims + c for coordinate c of difference
-   * j of distance i, scaled in expansions, else unscaled in #TowerWide */
+   * j of distance i, scaled, else unscaled */
   ExactSum sums[36];
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *wsumv[36], **wsums = wide ? wsumv : NULL;
   for (int i = 0; i < 4; i++)
   {
     if (! (want & (1 << i)))
@@ -9840,18 +9797,9 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
       {
         double v = dv[i][j][cc], e = ev[i][j][cc];
         int idx = (3 * i + j) * ndims + cc;
-        if (wide)
-        {
-          const TowerWide *wv, *we;
-          wv = tower_wide_of_double(ar, v);
-          we = tower_wide_of_double(ar, e);
-          wsums[idx] = tower_wide_add(ar, wv, we);
-        }
-        else
-        {
-          const double t[2] = {v * f1 * f2, e * f1 * f2};
-          exact_sum_set(&sums[idx], t, 2);
-        }
+        const double t[2] = {wide ? v : v * f1 * f2,
+          wide ? e : e * f1 * f2};
+        exact_sum_set(&sums[idx], t, 2);
       }
   }
   /* The square of each distance */
@@ -9897,7 +9845,7 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
     if (! (want & (1 << i)))
       continue;
     int cmp = (best < 0) ? -1 :
-      segment_square_cmp(ar, sums, wsums, &sq[i], &sq[best]);
+      segment_square_cmp(sums, &sq[i], &sq[best]);
     if (cmp < 0)
     {
       best = i;
@@ -9906,7 +9854,6 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
     else if (cmp == 0)
       mask |= 1 << i;
   }
-  tower_wide_arena_free(ar);
   return mask;
 }
 
