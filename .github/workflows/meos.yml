@@ -12,6 +12,8 @@ on:
       - 'pgtypes/**'
       - 'postgis/**'
       - 'tools/codegen/gen_smoketest/**'
+      - 'tools/scripts/check_vendored_undefined.py'
+      - 'tools/scripts/check_meos_only_files.py'
       - 'CMakeLists.txt'
     branches-ignore:
       - gh-pages
@@ -25,6 +27,8 @@ on:
       - 'pgtypes/**'
       - 'postgis/**'
       - 'tools/codegen/gen_smoketest/**'
+      - 'tools/scripts/check_vendored_undefined.py'
+      - 'tools/scripts/check_meos_only_files.py'
       - 'CMakeLists.txt'
     branches-ignore:
       - gh-pages
@@ -75,6 +79,13 @@ jobs:
           e=$(nm -D --defined-only /usr/local/lib/libmeos.so | grep -cE ' (GEOS|initGEOS|finishGEOS)' || true)
           echo "$e GEOS function(s) exported by libmeos"
           test "$n" -eq 0 && test "$e" -eq 0
+
+      # GDAL loads librttopo, which exports many names of liblwgeom over
+      # structures of its own: a function the vendored headers declare and no
+      # vendored source defines is left undefined by the library and binds to
+      # librttopo's at load time, so the library must call none.
+      - name: Check that the library calls no vendored liblwgeom function left undefined
+        run: python3 tools/scripts/check_vendored_undefined.py /usr/local/lib/libmeos.so
 
       - name: Compile and run 01_hello_world.c
         run: |
