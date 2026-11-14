@@ -1495,8 +1495,8 @@ span_families:
     - {stmt: "\n/*****************************************************************************/"}
     sep: "\n"
     order: [tstz]
-- family: span_indexes
-  file: mobilitydb/sql/temporal/011_span_indexes.in.sql
+- family: span_gist
+  file: mobilitydb/sql/temporal/011_span_gist.in.sql
   reference: true
   begin: "/******************************************************************************\n * R-tree GiST indexes\n"
   order: [int, bigint, float, date, tstz]
@@ -1571,7 +1571,22 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "CREATE OPERATOR CLASS {sp}_rtree_ops\n  DEFAULT FOR TYPE {sp} USING gist AS\n  -- overlaps\n  OPERATOR  3    && ({sp}, {sp}),\n  OPERATOR  3    && ({sp}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({sp}, {v}),\n  OPERATOR  7    @> ({sp}, {sp}),\n  OPERATOR  7    @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({sp}, {sp}),\n  OPERATOR  8    <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {v}),\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.interval_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.interval_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.interval_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({sp}, {v}),\n  OPERATOR  28    &<# ({sp}, {sp}),\n  OPERATOR  28    &<# ({sp}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({sp}, {v}),\n  OPERATOR  29    <<# ({sp}, {sp}),\n  OPERATOR  29    <<# ({sp}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({sp}, {v}),\n  OPERATOR  30    #>> ({sp}, {sp}),\n  OPERATOR  30    #>> ({sp}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({sp}, {v}),\n  OPERATOR  31    #&> ({sp}, {sp}),\n  OPERATOR  31    #&> ({sp}, {ss}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {sp}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal),\n  FUNCTION  9  span_gist_fetch(internal),\n  FUNCTION 11  span_gist_sortsupport(internal);"}
-    - {stmt: "\n/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+- family: span_spgist
+  file: mobilitydb/sql/temporal/011_span_spgist.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Quad-tree SP-GiST indexes\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - group:
+    - {stmt: "/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
     sep: "\n"
     order: [tstz]
   - lit: "\nCREATE FUNCTION intspan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Intspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bigintspan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Bigintspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION floatspan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Floatspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION datespan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Datespan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION tstzspan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Tstzspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
@@ -1643,8 +1658,8 @@ span_families:
     - {stmt: "\n/******************************************************************************/\n"}
     sep: "\n"
     order: [tstz]
-- family: spanset_indexes
-  file: mobilitydb/sql/temporal/012_spanset_indexes.in.sql
+- family: spanset_gist
+  file: mobilitydb/sql/temporal/012_spanset_gist.in.sql
   reference: true
   begin: "/******************************************************************************\n * R-tree GiST indexes\n"
   order: [int, bigint, float, date, tstz]
@@ -1683,7 +1698,22 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "CREATE OPERATOR CLASS {ss}_rtree_ops\n  DEFAULT FOR TYPE {ss} USING gist AS\n  STORAGE {sp},\n  -- overlaps\n  OPERATOR  3    && ({ss}, {sp}),\n  OPERATOR  3    && ({ss}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({ss}, {v}),\n  OPERATOR  7    @> ({ss}, {sp}),\n  OPERATOR  7    @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({ss}, {sp}),\n  OPERATOR  8    <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {v}),\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.interval_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.interval_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.interval_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({ss}, {v}),\n  OPERATOR  28    &<# ({ss}, {sp}),\n  OPERATOR  28    &<# ({ss}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({ss}, {v}),\n  OPERATOR  29    <<# ({ss}, {sp}),\n  OPERATOR  29    <<# ({ss}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({ss}, {v}),\n  OPERATOR  30    #>> ({ss}, {sp}),\n  OPERATOR  30    #>> ({ss}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({ss}, {v}),\n  OPERATOR  31    #&> ({ss}, {sp}),\n  OPERATOR  31    #&> ({ss}, {ss}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {ss}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  spanset_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION 11  span_gist_sortsupport(internal);"}
-    - {stmt: "\n/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+- family: spanset_spgist
+  file: mobilitydb/sql/temporal/012_spanset_spgist.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Quad-tree SP-GiST indexes\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - group:
+    - {stmt: "/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
     - {stmt: "\nCREATE FUNCTION spanset_spgist_compress(internal)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_spgist_compress'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     sep: "\n"
     order: [tstz]
@@ -1787,8 +1817,8 @@ span_families:
   - group:
     - {stmt: "CREATE AGGREGATE spansetUnion({ss}) (\n  SFUNC = spansetUnionTransition,\n  STYPE = internal,\n  COMBINEFUNC = spansetUnionCombine,\n  FINALFUNC = spansetUnionFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = spansetstate_serialize,\n  DESERIALFUNC = spansetstate_deserialize,\n  PARALLEL = safe\n);"}
   - lit: "\n/*****************************************************************************/\n"
-- family: set_indexes
-  file: mobilitydb/sql/temporal/013_set_indexes.in.sql
+- family: set_gist
+  file: mobilitydb/sql/temporal/013_set_gist.in.sql
   reference: true
   begin: "/******************************************************************************\n * R-tree GiST indexes\n"
   order: [int, bigint, float, date, tstz]
@@ -1852,7 +1882,22 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "CREATE OPERATOR CLASS {vs}_rtree_ops\n  DEFAULT FOR TYPE {vs} USING gist AS\n  STORAGE {sp},\n  -- overlaps\n  OPERATOR  3    && ({vs}, {vs}),\n  -- contains\n  OPERATOR  7    @> ({vs}, {v}),\n  OPERATOR  7    @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8    <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.interval_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.interval_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({vs}, {v}),\n  OPERATOR  28    &<# ({vs}, {vs}),\n  -- strictly before\n  OPERATOR  29    <<# ({vs}, {v}),\n  OPERATOR  29    <<# ({vs}, {vs}),\n  -- strictly after\n  OPERATOR  30    #>> ({vs}, {v}),\n  OPERATOR  30    #>> ({vs}, {vs}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({vs}, {v}),\n  OPERATOR  31    #&> ({vs}, {vs}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {vs}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  set_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION 11  span_gist_sortsupport(internal);"}
-    - {stmt: "\n/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+- family: set_spgist
+  file: mobilitydb/sql/temporal/013_set_spgist.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Quad-tree SP-GiST indexes\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - group:
+    - {stmt: "/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
     sep: "\n"
     order: [tstz]
   - lit: "\nCREATE FUNCTION intset_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Intspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bigintset_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Bigintspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION floatset_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Floatspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION set_spgist_compress(internal)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_spgist_compress'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
