@@ -4138,6 +4138,54 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
   return false;
 }
 
+/* The number of sides a search of a filter on doubles asks before it leaves
+ * the answer to the exact search behind it */
+#define NEAREST_FILTER_BUDGET 8
+
+/* The squared distance and the radius of #point_distance_offset_filter, and
+ * the candidate whose sides it read last */
+typedef struct
+{
+  double s, lo, lomag, r, rlo;
+  uint64 cbits;     /**< Bit pattern of the candidate, infinity's for none */
+  double c, cd;     /**< The candidate and its lower neighbour */
+  double a, a1;     /**< `r + c` split by #two_sum */
+} OffsetFilterSide;
+
+/**
+ * @brief The side of `sqrt(S) - r - rlo` against the upper midpoint of the
+ * double of bit pattern @p bits, or 2 where the filter cannot tell
+ * @details The sign of `S - (a + a1 + rlo + h)^2`, `r + c` split by #two_sum
+ * into `a + a1` and `h` half the gap from `c` to its upper neighbour, a power
+ * of two, exact for a candidate of at least 2^-900, read by
+ * #point_distance_offset_filter_sign. The upper midpoint of the lower
+ * neighbour of the candidate read last is that candidate's lower midpoint,
+ * `h` the negated half gap below it, so its split of `r + c` serves again
+ */
+static pg_attribute_always_inline int
+point_distance_offset_filter_side(uint64 bits, void *arg)
+{
+  OffsetFilterSide *f = (OffsetFilterSide *) arg;
+  if (bits + 1 == f->cbits)
+    return point_distance_offset_filter_sign(f->s, f->lo, f->lomag, f->a,
+      f->a1, f->rlo, - 0.5 * (f->c - f->cd));
+  double c, cu, cd;
+  uint64 ubits = bits + 1, dbits = bits - 1;
+  memcpy(&c, &bits, sizeof(c));
+  if (! (c >= 0x1p-900) || ! isfinite(c))
+    return 2;
+  memcpy(&cu, &ubits, sizeof(cu));
+  memcpy(&cd, &dbits, sizeof(cd));
+  if (! isfinite(cu))
+    return 2;
+  f->cbits = bits;
+  f->c = c;
+  f->cd = cd;
+  two_sum(f->r, c, &f->a, &f->a1);
+  return point_distance_offset_filter_sign(f->s, f->lo, f->lomag, f->a,
+    f->a1, f->rlo, 0.5 * (cu - c));
+}
+
 /**
  * @brief Answer the distance between two points less a radius on doubles
  * where a filter settles it, returning false where it does not
@@ -4154,10 +4202,10 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
  * the gap to its upper one: `r + c` is split by #two_sum into `a + a1`, and
  * each half gap, a power of two, is exact for a candidate of at least
  * 2^-900, so each side is the sign of `S - (a + a1 + rlo + h)^2`, `rlo` the
- * second double of the radius. The candidate moves to a neighbour while a
- * side certainly says so, at most four times. Any side the filter cannot
- * tell, which every tie is, returns false, and the exact search of
- * #point_distance_offset_exact answers
+ * second double of the radius. The search #nearest_double_search reads
+ * these sides from the candidate, asking at most #NEAREST_FILTER_BUDGET of
+ * them. Any side the filter cannot tell, which every tie is, returns false,
+ * and the exact search of #point_distance_offset_exact answers
  * @param[in] d,e Coordinate differences and the errors of their rounding
  * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r,rlo Radius as the sum of two doubles, positive and @p r below
@@ -4206,42 +4254,17 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
   two_square(r, &rx, &ry);
   double c = ((s - rx) + (lo - ry - rlo * (2.0 * r + rlo))) /
     (sqrt(s + lo) + r + rlo);
-  for (int move = 0; move < 4; move++)
-  {
-    if (! (c >= 0x1p-900) || ! isfinite(c))
-      return false;
-    uint64 bits;
-    memcpy(&bits, &c, sizeof(bits));
-    uint64 ubits = bits + 1, dbits = bits - 1;
-    double cu, cd;
-    memcpy(&cu, &ubits, sizeof(cu));
-    memcpy(&cd, &dbits, sizeof(cd));
-    if (! isfinite(cu))
-      return false;
-    double a, a1;
-    two_sum(r, c, &a, &a1);
-    int su = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
-      0.5 * (cu - c));
-    if (su == 1)
-    {
-      c = cu;
-      continue;
-    }
-    int sd = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
-      - 0.5 * (c - cd));
-    if (sd == -1)
-    {
-      c = cd;
-      continue;
-    }
-    if (su == -1 && sd == 1)
-    {
-      *result = c;
-      return true;
-    }
+  if (! (c >= 0x1p-900) || ! isfinite(c))
     return false;
-  }
-  return false;
+  OffsetFilterSide fs = {s, lo, lomag, r, rlo, NEAREST_INF_BITS, 0.0, 0.0,
+    0.0, 0.0};
+  uint64 bits, found;
+  memcpy(&bits, &c, sizeof(bits));
+  if (! nearest_double_search(bits, &point_distance_offset_filter_side, &fs,
+      NEAREST_FILTER_BUDGET, &found))
+    return false;
+  memcpy(result, &found, sizeof(double));
+  return true;
 }
 
 /**
