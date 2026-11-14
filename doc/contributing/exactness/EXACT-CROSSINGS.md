@@ -486,7 +486,7 @@ diffs classified:
    The crossing branch of the same walk
    is #3640's, so #3650 rebases over it. The planar
    ever within distance of two temporal points, `ea_dwithin_tpoint_tpoint_exact`, reads its
-   intervals closed in the same way: MobilityDB #3680 (open) answers the ever within at
+   intervals closed in the same way: MobilityDB #3680, merged as `3057291650`, answers the ever within at
    instants the two share, an interval whose least squared distance is the square of the
    distance at one end alone being within where the sequences hold that end; CGAL agrees on
    40000 random pairs with frequent meetings at an excluded bound.
