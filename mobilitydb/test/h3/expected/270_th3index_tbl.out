@@ -1,12 +1,12 @@
-COPY  tbl_th3index TO STDOUT (FORMAT BINARY);
-COPY 100
+-- Table-based tests for the th3index type, exercised over tbl_th3index.
+-------------------------------------------------------------------------------
+-- Send / receive
+-------------------------------------------------------------------------------
+\copy tbl_th3index TO 'tbl_th3index' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_th3index_tmp;
 NOTICE:  table "tbl_th3index_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_th3index_tmp AS TABLE tbl_th3index WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_th3index_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_th3index_tmp FROM 'tbl_th3index' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 
 -------
@@ -14,7 +14,9 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index_tmp t2 WHERE t1.k = t2.k AND 
 (1 row)
 
 DROP TABLE tbl_th3index_tmp;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT SUM(numInstants(temp)) FROM tbl_th3index;
  sum  
 ------
@@ -69,6 +71,9 @@ SELECT COUNT(*) FROM tbl_th3index WHERE memSize(temp) > 0;
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restrictions
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_th3index WHERE atTime(temp, getTime(temp)) IS NOT NULL;
  count 
 -------
@@ -81,6 +86,9 @@ SELECT COUNT(*) FROM tbl_th3index WHERE minusTime(temp, getTime(temp)) IS NULL;
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.temp = t2.temp;
  count 
 -------
@@ -93,6 +101,13 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.temp <> t2.temp;
   9900
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- MF-JSON output of the temporal H3 cells built from real AIS data, that is,
+-- the cells covering the recorded vessel positions
+-- Every query below reports the rows whose output is not valid JSON, and must
+-- thus report zero
+-------------------------------------------------------------------------------
 WITH ais(mmsi, temp) AS (
   SELECT mmsi,
     th3indexSeq(array_agg(th3index(latLngToCell(geom, 10), t) ORDER BY t))
@@ -103,3 +118,4 @@ SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
      0
 (1 row)
 
+-------------------------------------------------------------------------------

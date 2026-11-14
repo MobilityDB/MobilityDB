@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Temporal equal
+-------------------------------------------------------------------------------
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01' #= geometry 'Polygon((1 1,2 2,3 1,1 1))';
             ?column?            
 --------------------------------
@@ -142,6 +145,9 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal not equal
+-------------------------------------------------------------------------------
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01' #<> geometry 'Polygon((1 1,2 2,3 1,1 1))';
             ?column?            
 --------------------------------
@@ -286,6 +292,7 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- An empty geometry has no point, so it equals no value
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]' #= geometry 'Polygon empty';
                              ?column?                             
 ------------------------------------------------------------------
@@ -313,6 +320,9 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01,
 /* Errors */
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01' #= trgeometry 'SRID=3812;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------/
+-------------------------------------------------------------------------------
+-- Ever and always overlaps: a value and a spatiotemporal box
 SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00, Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&& stbox 'STBOX XT(((8,0),(10,2)),[2001-01-01 00:00, 2001-01-01 10:00])';
  ?column? 
 ----------

@@ -1,3 +1,8 @@
+-- Oriented envelope and convex hull
+-- Both are placed on the vertices of a geometry whose every edge is a segment,
+-- which for such a geometry are the whole of it
+-------------------------------------------------------------------------------
+-- The envelope of a point is that point, of two points the segment they span
 SELECT ST_AsText(round(orientedEnvelope(geometry 'Point(1 2)'), 6));
  st_astext  
 ------------
@@ -10,6 +15,7 @@ SELECT ST_AsText(round(orientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
  LINESTRING(0 0,10 0)
 (1 row)
 
+-- A rectangle is its own envelope, whatever angle it is written at
 SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,10 0,10 5,0 5,0 0))'), 6));
             st_astext             
 ----------------------------------
@@ -22,6 +28,10 @@ SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0
  POLYGON((0 0,3 4,-1 7,-4 3,0 0))
 (1 row)
 
+-- An arc reaches past the points that define it, and is enclosed by reading
+-- how far its circle reaches in each direction. The envelope of a circle of
+-- radius 2 is the square of side 4 about it, of area 16; a rectangle placed on
+-- the points of that circle has area 8 and leaves a third of it outside
 SELECT ST_AsText(orientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
             st_astext             
 ----------------------------------
@@ -34,6 +44,7 @@ SELECT round(ST_Area(orientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,
  16.000000
 (1 row)
 
+-- The hull of a point is that point, and of collinear points their segment
 SELECT ST_AsText(round(convexHull(geometry 'Point(1 2)'), 6));
  st_astext  
 ------------
@@ -46,6 +57,8 @@ SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
  LINESTRING(0 0,2 2)
 (1 row)
 
+-- A point off the line of two others by less than the rounding of their cross
+-- product in doubles is a vertex of their hull
 SELECT GeometryType(convexHull(geometry
   'Multipoint(0.5 0.5,12.000000000000036 12.000000000000037,24 24)'));
  geometrytype 
@@ -53,18 +66,22 @@ SELECT GeometryType(convexHull(geometry
  POLYGON
 (1 row)
 
+-- A point inside the hull of the others does not reach its boundary
 SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
              st_astext              
 ------------------------------------
  POLYGON((0 0,0 10,10 10,10 0,0 0))
 (1 row)
 
+-- The hull of a concave polygon closes over the notch
 SELECT ST_AsText(round(convexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
              st_astext              
 ------------------------------------
  POLYGON((0 0,0 10,10 10,10 0,0 0))
 (1 row)
 
+-- The hull of a geometry carrying an arc carries that arc, where a hull placed
+-- on the three points defining a semicircular arc leaves the whole arc outside
 SELECT ST_AsText(convexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
                              st_astext                              
 --------------------------------------------------------------------
@@ -77,18 +94,24 @@ SELECT ST_AsText(convexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 
  CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0 0,2 2,4 0),CIRCULARSTRING(4 0,2 -2,0 0)))
 (1 row)
 
+-- An arc bulging into the rectangle its ends close reaches past no point, so
+-- the hull is that rectangle
 SELECT ST_AsText(convexHull(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,1 1,2 0),(2 0,2 10,0 10,0 0)))'));
             st_astext             
 ----------------------------------
  POLYGON((0 0,0 10,2 10,2 0,0 0))
 (1 row)
 
+-- The two vertices of a degenerate hull keep the order of the geometry, an
+-- arc whose points are collinear as a line does
 SELECT ST_AsText(convexHull(geometry 'Circularstring(2 0,1 0,0 0)'));
       st_astext      
 ---------------------
  LINESTRING(2 0,0 0)
 (1 row)
 
+-- A nearly straight arc turns the way its three points do, which their
+-- coordinates decide exactly: its hull is the arc and its chord
 SELECT ST_AsText(round(convexHull(geometry 'Circularstring('
   '0.918269344974626 -0.03255093347490989,'
   '1.5722791133724234 -0.5984970332108608,'
@@ -98,6 +121,9 @@ SELECT ST_AsText(round(convexHull(geometry 'Circularstring('
  CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(5.161358 -3.704299,1.572279 -0.598497,0.918269 -0.032551),(0.918269 -0.032551,5.161358 -3.704299)))
 (1 row)
 
+-- Two arcs are joined by their outer common tangent, which touches the
+-- circles of radii 1 and 2 eleven apart at (1 - 1/11, sqrt(120)/11) and
+-- (12 - 2/11, 2 sqrt(120)/11)
 SELECT ST_AsText(round(convexHull(geometry
   'Multicurve(Circularstring(0 0,1 1,2 0),Circularstring(10 0,12 2,14 0))'),
   6));
@@ -106,6 +132,8 @@ SELECT ST_AsText(round(convexHull(geometry
  CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0 0,0.261451 0.6742,0.909091 0.995859),(0.909091 0.995859,11.818182 1.991718),CIRCULARSTRING(11.818182 1.991718,13.3484 1.477098,14 0),(14 0,0 0)))
 (1 row)
 
+-- A circle given in five arcs, whose circles lie a rounding apart, is the
+-- hull of itself
 SELECT GeometryType(h), ST_AsText(h) LIKE '%NaN%'
 FROM (SELECT convexHull(geometry 'Curvepolygon(Circularstring('
   '66.56284822756567 -78.56850234445656,63.22639155760828 -68.29994457883014,'
@@ -119,6 +147,12 @@ FROM (SELECT convexHull(geometry 'Curvepolygon(Circularstring('
  CURVEPOLYGON | f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Simple geometries
+-- A geometry is simple when it has no point at which it crosses or touches
+-- itself, which is read from the segments the geometry is made of
+-------------------------------------------------------------------------------
+-- A point is always simple, a multipoint is simple when it repeats no point
 SELECT isSimple(geometry 'Point(1 2)');
  issimple 
 ----------
@@ -137,6 +171,7 @@ SELECT isSimple(geometry 'Multipoint(0 0,1 1,0 0)');
  f
 (1 row)
 
+-- A line that crosses itself is not simple, one that only closes is
 SELECT isSimple(geometry 'Linestring(0 0,10 10,10 0,0 10)');
  issimple 
 ----------
@@ -149,6 +184,7 @@ SELECT isSimple(geometry 'Linestring(0 0,10 0,10 10,0 0)');
  t
 (1 row)
 
+-- Two lines of a multiline may meet at a point that ends both, not elsewhere
 SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(10 0,10 10))');
  issimple 
 ----------
@@ -161,6 +197,7 @@ SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(5 -5,5 5))');
  f
 (1 row)
 
+-- An areal geometry is simple when each of its rings is
 SELECT isSimple(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))');
  issimple 
 ----------
@@ -179,6 +216,7 @@ SELECT isSimple(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),(2 2,4 2,4 4,2 4,2 2
  t
 (1 row)
 
+-- A collection is simple when each of its components is
 SELECT isSimple(geometry 'Geometrycollection(Point(0 0),Linestring(1 1,2 2))');
  issimple 
 ----------
@@ -191,6 +229,8 @@ SELECT isSimple(geometry 'Geometrycollection(Point(0 0),Linestring(0 0,10 10,10 
  f
 (1 row)
 
+-- An arc meets itself along an arc rather than at a point, and a geometry
+-- carrying one is answered natively, as PostGIS answers it
 SELECT isSimple(geometry 'Circularstring(0 0,2 2,4 0)') =
   ST_IsSimple(geometry 'Circularstring(0 0,2 2,4 0)');
  ?column? 
@@ -205,6 +245,12 @@ SELECT isSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))') =
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- buffer
+-- A buffer is bounded by the offsets of the geometry and by the joins and caps
+-- between them, and a circular arc is kept as an arc rather than sampled
+-------------------------------------------------------------------------------
+-- The buffer of a point is a disk, of a negative or zero distance nothing
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
                   st_astext                  
 ---------------------------------------------
@@ -223,6 +269,7 @@ SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
  POLYGON EMPTY
 (1 row)
 
+-- The two offsets of a line, closed by a cap at each end
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
                                                                                    st_astext                                                                                    
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -241,6 +288,9 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square
  CURVEPOLYGON(COMPOUNDCURVE((0 1,0 1)))
 (1 row)
 
+-- A line from far away to a unit square holds, within half the root of two, a
+-- point at half that distance from its long edge, and not one a thousand times
+-- as far
 SELECT contains(b, ST_Point(2 ^ 39, 2 ^ 39)) AS near,
   contains(b, ST_Point(2 ^ 39, 2 ^ 39 + 1024)) AS far
 FROM (SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 40, 2 ^ 40), ST_Point(1, 0),
@@ -250,14 +300,21 @@ FROM (SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 40, 2 ^ 40), ST_Point(1, 0),
  t    | f
 (1 row)
 
+-- From further away the distance falls below the rounding of the
+-- coordinates, no ring written in doubles holds the line, and the buffer is
+-- declined
 SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 60, 2 ^ 60), ST_Point(1, 0),
   ST_Point(1, 1), ST_Point(0, 1)]), sqrt(0.5));
 ERROR:  The buffer of the geometry is not supported: 010200000004000000000000000000B043000000000000B043000000000000F03F0000000000000000000000000000F03F000000000000F03F0000000000000000000000000000F03F
+-- A vessel moored in place: written in doubles, two neighbouring arcs of its
+-- buffer cross again beside the vertex they share, so no ring written in
+-- doubles keeps the shape of the buffer, and it is declined
 SELECT buffer(geometry 'Linestring(12.272387 57.059013,12.272383 57.059013,
   12.272383 57.059020,12.272385 57.059018,12.272387 57.059015,
   12.272387 57.059007,12.272385 57.059010,12.272385 57.059012)',
   4.9999999873762135e-07);
 ERROR:  The buffer of the geometry is not supported: 0102000000080000000BB6114F768B2840F984ECBC8D874C4005F9D9C8758B2840F984ECBC8D874C4005F9D9C8758B2840ABE7A4F78D874C4088D7F50B768B28400BF0DDE68D874C400BB6114F768B28409A7CB3CD8D874C400BB6114F768B2840179E978A8D874C4088D7F50B768B28408811C2A38D874C4088D7F50B768B2840290989B48D874C40
+-- The outer side of a turn is filled by the join the style names
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
                                                              st_astext                                                              
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -270,6 +327,7 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mi
  CURVEPOLYGON(COMPOUNDCURVE((0 1,9 1,9 10),CIRCULARSTRING(9 10,10 11,11 10),(11 10,11 0,10 0,10 -1,0 -1),CIRCULARSTRING(0 -1,-1 0,0 1)))
 (1 row)
 
+-- A polygon grows outwards and its holes inwards
 SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
                                               st_astext                                              
 -----------------------------------------------------------------------------------------------------
@@ -282,6 +340,8 @@ SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
  CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1,9 9,1 9,1 1)))
 (1 row)
 
+-- A hole narrower than twice the distance closes, one exactly that wide
+-- shrinks to a point and closes too, a wider one survives
 SELECT h, round(ST_Area(buffer(ST_MakePolygon(
     ST_MakeLine(ARRAY[ST_Point(6400000, 6400000), ST_Point(6400010, 6400000),
       ST_Point(6400010, 6400010), ST_Point(6400000, 6400010), ST_Point(6400000, 6400000)]),
@@ -296,6 +356,8 @@ FROM unnest(ARRAY[0.0005, 0.001, 0.002]) AS h;
   0.002 | 100.039999
 (3 rows)
 
+-- Round joins: the buffer of a square, and of one whose hole as wide as twice
+-- the distance shrinks to a point, are of area 140 + pi, read on their arcs
 SELECT round(area(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1))::numeric, 6);
    round    
 ------------
@@ -309,6 +371,7 @@ SELECT round(area(buffer(geometry
  143.141593
 (1 row)
 
+-- A circular string keeps its arcs, and so does the buffer of one
 SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
                                                                                                   st_astext                                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -321,6 +384,7 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
  CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
 (1 row)
 
+-- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
  st_geometrytype 
 -----------------
@@ -333,6 +397,9 @@ SELECT ST_GeometryType(buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))
  ST_MultiSurface
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Intersection matrix
+-------------------------------------------------------------------------------
 SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)');
   relate   
 -----------
@@ -357,6 +424,9 @@ SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', geometry 'Polygon((0 0,
  2FF11F212
 (1 row)
 
+-- The members of a multipolygon may share a boundary edge, and that edge lies
+-- in the interior of what they cover together, as it does when the same region
+-- is written as one polygon
 SELECT relate(geometry 'Multipolygon(((0 0,0 1,1 1,0 0)),((0 0,1 1,1 0,0 0)))',
   geometry 'Linestring(0 0,2 2)');
   relate   
@@ -370,6 +440,7 @@ SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', geometry 'Linestring(0 
  1F2001102
 (1 row)
 
+-- A TIN covers what its triangles cover written any other way
 SELECT relate(geometry 'Tin Z (((0 0 0,0 1 0,1 1 0,0 0 0)),((0 0 0,1 1 0,1 0 0,0 0 0)))',
   geometry 'Linestring(0 0,2 2)');
   relate   
@@ -377,6 +448,10 @@ SELECT relate(geometry 'Tin Z (((0 0 0,0 1 0,1 1 0,0 0 0)),((0 0 0,1 1 0,1 0 0,0
  1F2001102
 (1 row)
 
+-- A polyhedral surface covers what its faces cover.  The unit cube is the case
+-- that says so about a watertight solid: four of its six faces stand
+-- perpendicular to the plane, so each projects to a ring enclosing no area, and
+-- what the cube covers is the unit square the row above answers for
 SELECT relate(geometry 'Polyhedralsurface Z (
   ((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),
   ((0 0 0,0 0 1,0 1 1,0 1 0,0 0 0)),
@@ -390,12 +465,22 @@ SELECT relate(geometry 'Polyhedralsurface Z (
  1F2001102
 (1 row)
 
+-- A pattern is matched against that matrix
 SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
  st_relate 
 -----------
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Spatial relationships
+-- Each answers as the PostGIS function of the same name with the prefix ST_ on
+-- the same pair, read in both orders: a point inside, on the boundary of and
+-- outside a square, a line crossing it, a square inside it, a square sharing an
+-- edge, an edge of it, a multipoint across it, a square overlapping it and an
+-- empty geometry
+-------------------------------------------------------------------------------
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
   (2, geometry 'Point(2 2)'),
@@ -424,6 +509,8 @@ FROM pairs;
    121 |        0 |      0 |        0 |          0 |       0 |      0 |       0 |      0
 (1 row)
 
+-- How many of the pairs each relationship holds for, so that agreement is not
+-- the agreement of two functions answering false throughout
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
   (2, geometry 'Point(2 2)'),
@@ -451,6 +538,7 @@ FROM pairs;
        15 |     23 |       63 |         58 |      26 |     11 |      72 |     15
 (1 row)
 
+-- Equality reads the points, so two lines with different vertices are equal
 SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 0)');
  geoequals 
 -----------
@@ -463,6 +551,8 @@ SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,3 0)')
  f
 (1 row)
 
+-- A relationship over two geometries with Z is tested in 3D, as the PostGIS
+-- functions with the prefix ST_3D; over a geometry with Z and one without, in 2D
 SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)'),
   ST_3DIntersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
  intersects | st_3dintersects 
@@ -496,6 +586,7 @@ SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0)', 1.5);
  t
 (1 row)
 
+-- A distance is compared with the exact one, whatever double that rounds to
 SELECT dwithin(geometry 'Point(0 0)', geometry 'Point(2 3)', 3.605551275463989),
   dwithin(geometry 'Point(0 0)', geometry 'Point(2 3)', 3.6055512754639896),
   dwithin(geometry 'Point(0 0)', geometry 'Point(1 2)', 2.23606797749979);
@@ -608,16 +699,23 @@ SELECT dwithin(geometry 'Point(3 3)', geometry 'Triangle((0 0 5,4 0 5,0 3 5,0 0 
  f       | t
 (1 row)
 
+-- A temporal point within reach of an arc with Z by their boxes reaches the error of its 3D distance
 SELECT eDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]', geometry 'CircularString(5 0 2,3 4 2,0 5 2)', 100);
 ERROR:  lw_dist3d_distribute_bruteforce: Unsupported geometry type: CircularString
+-- The containment family has no 3D form, so a geometry with Z is refused
 SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');
 ERROR:  The geometry cannot have Z dimension
 SELECT covers(geometry 'Point(2 2)', geometry 'Point(2 2 1)');
 ERROR:  The geometry cannot have Z dimension
 SELECT touches(geometry 'Point(2 2 1)', geometry 'Point(2 2)');
 ERROR:  The geometry cannot have Z dimension
+-- Two geometries in different reference systems are refused
 SELECT intersects(geometry 'SRID=3857;Point(1 1)', geometry 'SRID=4326;Point(1 1)');
 ERROR:  Operation on mixed SRID
+-- A geography intersects as ST_Intersects, and is within a distance on the
+-- spheroid by default and on the sphere when the last argument is false: one
+-- degree of meridian at the equator measures 110574 m on the spheroid and
+-- 111195 m on the sphere
 SELECT intersects(geography 'Linestring(0 0,2 2)', geography 'Linestring(0 2,2 0)'),
   ST_Intersects(geography 'Linestring(0 0,2 2)', geography 'Linestring(0 2,2 0)');
  intersects | st_intersects 
@@ -645,6 +743,13 @@ SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false),
  f       | f
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Measures and distances
+-- Each answers as the PostGIS function of the same name with the prefix ST_ on
+-- the same geometries as the relationships above, the measures on each and the
+-- distances on every ordered pair, compared to nine decimals
+-------------------------------------------------------------------------------
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
   (2, geometry 'Point(2 2)'),
@@ -670,6 +775,10 @@ SELECT
     0 |         0 |        0 |        0 |           0 |            0
 (1 row)
 
+-- The area, the length and the perimeter are read on the serialized form of
+-- every geometry but one holding a curve, and are exactly the PostGIS ones, the
+-- length of a geometry with Z being in 3D and the one of a surface 0; the
+-- geometry of a 3D box is a solid, whose serialized form carries extended flags
 WITH g(geom) AS (VALUES
   (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))'),
   (geometry 'MultiPolygon(((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1)),((5 5,6 5,6 6,5 5)))'),
@@ -707,6 +816,13 @@ SELECT length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))'),
       0 |         0
 (1 row)
 
+-- A surface bounded by circular arcs is measured on its arcs, against the
+-- closed form of each area: a disc, a disc less its concentric half, a half
+-- disc and a quarter disc closed by straight sides, a square whose bottom side
+-- bulges in and top side out by the same half disc, a disc beside a triangle,
+-- and a disc at projected coordinates. ST_Area replaces each quarter circle by
+-- 32 segments, and reads less on all but the square, whose two half discs lose
+-- the same area
 WITH g(name, geom, exact) AS (VALUES
   ('disc', geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))', pi()),
   ('annulus', geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0),'
@@ -735,6 +851,7 @@ FROM g;
  projected disc | t          | t
 (7 rows)
 
+-- The measures above are not all zero: the total of each over the same values
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
   (2, geometry 'Point(2 2)'),
@@ -758,6 +875,8 @@ SELECT
  41.000000 | 48.000000 | 94.302994 |  489.147389
 (1 row)
 
+-- Two geometries with Z are measured in 3D, as the PostGIS functions with the
+-- prefix ST_3D, and a geometry with Z and one without are refused
 SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4 12)'),
   ST_3DDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4 12)');
  distance | st_3ddistance 
@@ -790,6 +909,9 @@ SELECT maxDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
            5
 (1 row)
 
+-- A geometry collection of points, lines and polygons, nested ones included,
+-- is at the distance of the same members written as a multi-geometry, the
+-- double nearest the exact distance
 SELECT distance(geometry 'Linestring(-2.083 0.759,-0.097 4.264)',
     geometry 'GeometryCollection(Point(2.579 -3.924),Point(1.665 -1.556))') =
     float8 '4.4053069132581442',
@@ -822,6 +944,8 @@ SELECT distance(geometry 'Linestring(2.468 1.602,3.627 -0.441)',
  t
 (1 row)
 
+-- A geography is measured on the spheroid by default and on the sphere when
+-- the last argument is false, as the PostGIS functions over geographies
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric),
   round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
     round    |    round    
@@ -829,6 +953,10 @@ SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric),
  12308778361 | 12308778361
 (1 row)
 
+-- On the sphere the area is the one the great circles bound, R^2 times the sum
+-- of the angles less (n - 2) pi, 12364031798 square meters for this square
+-- on the sphere of radius 6371008.7714 m; ST_Area over a geography on the
+-- sphere answers an approximation of it, 0.67 percent smaller here
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric),
   round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric);
     round    |    round    
@@ -885,6 +1013,13 @@ SELECT ST_AsText(round(shortestLine(geography 'Point(0 0)', geography 'Linestrin
  LINESTRING(0 0,1 0) | LINESTRING(0 0,1 0)
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Accessors and lines
+-- Each answers as the PostGIS function of the same name with the prefix ST_ on
+-- the same geometries as above, the number of points as ST_NPoints, and the
+-- line functions on an open line, a closed line and a line repeating a vertex
+-------------------------------------------------------------------------------
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
   (2, geometry 'Point(2 2)'),
@@ -928,6 +1063,9 @@ SELECT
            0 |         0 |      0
 (1 row)
 
+-- The boundary of an empty geometry is the empty geometry of the dimension of
+-- a boundary, as ST_Boundary answers it; ST_Boundary refuses a compound curve
+-- and a multisurface, whose boundaries are answered here alone
 WITH e(geom) AS (VALUES (geometry 'Point empty'), (geometry 'Linestring empty'),
   (geometry 'Polygon empty'), (geometry 'MultiPolygon empty'))
 SELECT ST_AsText(geom), ST_AsText(boundary(geom)), ST_AsText(ST_Boundary(geom)) FROM e;
@@ -951,6 +1089,9 @@ SELECT ST_AsText(boundary(geometry 'MultiSurface empty'));
  GEOMETRYCOLLECTION EMPTY
 (1 row)
 
+-- The answers above are not empty: the boundary of the square, the second
+-- point of the multipoint, a point at a quarter of the open line and the part
+-- of it between a quarter and four fifths of its length
 SELECT ST_AsText(boundary(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
             st_astext            
 ---------------------------------
@@ -987,6 +1128,13 @@ SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)'
                1
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Constructors
+-- A collection takes its type from the types of the geometries alone, as
+-- ST_Collect gives it, a single point included, and a line joins the points
+-- and lines of an array, as ST_MakeLine joins them; an empty array answers NULL
+-------------------------------------------------------------------------------
 WITH a(arr) AS (VALUES
   (ARRAY[geometry 'Point(1 1)']),
   (ARRAY[geometry 'Linestring(0 0,1 1)']),
@@ -1022,6 +1170,13 @@ SELECT makeLine(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=4326;Point
 ERROR:  Operation on mixed SRID
 SELECT collect(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=3812;Point(3 3)']);
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Output and transformation
+-- Each answers as the PostGIS function of the same name with the prefix ST_,
+-- the GeoJSON naming the reference system its options ask for, and a
+-- geography is transformed only into a lon/lat coordinate system
+-------------------------------------------------------------------------------
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
   (2, geometry 'Point(2 2)'),
@@ -1230,6 +1385,13 @@ ERROR:  geo_segmentize: maximum segment length must be positive
 SELECT asGeoJSON(geometry 'CircularString(0 0,1 1,2 0)');
 ERROR:  lwgeom_to_geojson: 'CircularString' geometry type not supported
 CONTEXT:  SQL function "asgeojson" statement 1
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A point is located on the serialized form of a (multi)polygon, as the
+-- interval tree of PostGIS locates it: inside, on the boundary of a ring, in a
+-- hole, in a polygon lying in the hole of another, on a repeated vertex, and an
+-- empty point, against every relationship that asks for the location
+-------------------------------------------------------------------------------
 WITH g(a, b) AS (VALUES
   (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1.5 1.5)'),
   (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1 1.5)'),
@@ -1257,6 +1419,8 @@ FROM g;
         0 |      0 |          0 |             0 |       0 |          0 |          3 |         4
 (1 row)
 
+-- The distance of a point and a line or a polygon is read on the serialized
+-- form of the line or the polygon, and is exactly the PostGIS one in both orders
 WITH g(a, b) AS (VALUES
   (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1.5 1.5)'),
   (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1.2 1.7)'),
@@ -1277,6 +1441,13 @@ FROM g;
   0 |  0 |    2 |        6
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Clustering
+-- The array forms answer as the PostGIS window functions ST_ClusterKMeans and
+-- ST_ClusterDBSCAN over the rows in the order of the array, and as the
+-- aggregates ST_ClusterIntersecting and ST_ClusterWithin, an empty geometry
+-- answering -1 in k-means and a noise point NULL in DBSCAN
+-------------------------------------------------------------------------------
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Point(0 0)'), (2, geometry 'Point(1 0)'), (3, geometry 'Point(0 1)'),
   (4, geometry 'Point(10 10)'), (5, geometry 'Point(11 10)'), (6, geometry 'Point(10 11)'),
@@ -1319,3 +1490,4 @@ SELECT clusterDBSCAN(ARRAY[geometry 'Point(0 0)'], -1, 2);
 ERROR:  Tolerance must be a positive number, got -1
 SELECT clusterWithin(ARRAY[geometry 'SRID=4326;Point(0 0)', geometry 'SRID=3812;Point(1 1)'], 1);
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------

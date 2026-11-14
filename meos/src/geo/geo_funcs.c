@@ -1120,6 +1120,101 @@ cross_product_sign_offset(double ax, double ay, double bx, double by,
 }
 
 /**
+ * @brief Return a bound on the rounding of one coordinate of a point
+ * constructed on a segment
+ * @details A point at a position along a route is constructed on one of its
+ * segments AB as liblwgeom's interpolate_point4d computes it, each coordinate
+ * `a + (b - a) * f` with `f` in [0, 1], in three roundings. With the unit
+ * roundoff `u = DBL_EPSILON / 2`, the computed coordinate lies within
+ * `u * |a + (b - a) * f| + 2u * |(b - a) * f|`, up to terms in u squared, of
+ * the coordinate of the point of AB at `f`, which is at most
+ * `u * (max(|a|, |b|) + 2 |b - a|)`. An error of `f` moves the point along
+ * AB, never off it. The factor `1 + 8 DBL_EPSILON` covers the terms in u
+ * squared and the rounding of the bound itself. The bound is that of the
+ * SEGMENT, not of the point: a point near the origin constructed on a long
+ * segment carries the rounding of the segment's coordinates
+ * @param[in] a,b Coordinates of the ends of the segment
+ */
+double
+segment_construction_bound(double a, double b)
+{
+  return 0.5 * DBL_EPSILON * (Max(fabs(a), fabs(b)) + 2.0 * fabs(b - a)) *
+    (1.0 + 8.0 * DBL_EPSILON);
+}
+
+/**
+ * @brief Return the side of the line of a segment AB on which the point
+ * `(px + ox, py + oy)` lies, exactly, for doubles and exact offsets
+ * @details The sign of `(bx - ax) * (py + oy - ay) - (by - ay) *
+ * (px + ox - ax)`, each difference an exact sum of doubles read through
+ * #polynomial_sign_exact, whose filter in doubles decides first
+ */
+static int
+segment_side_offset(double ax, double ay, double bx, double by, double px,
+  double py, double ox, double oy)
+{
+  ExactSum sums[4];
+  const double t0[2] = {bx, - ax}, t1[3] = {py, oy, - ay};
+  const double t2[2] = {by, - ay}, t3[3] = {px, ox, - ax};
+  exact_sum_set(&sums[0], t0, 2);
+  exact_sum_set(&sums[1], t1, 3);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  PolyTerm terms[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 1}},
+    {.coef = -1.0, .deg = 2, .sum = {2, 3}}};
+  return polynomial_sign_exact(sums, terms, 2);
+}
+
+/**
+ * @brief Return true if a segment meets the box of a point widened by two
+ * half-widths, `[px - ex, px + ex] x [py - ey, py + ey]`, decided exactly
+ * @details The segment meets the box where their extents meet and the four
+ * corners of the box do not all lie strictly on one side of the line of the
+ * segment. The corners are not doubles, so each comparison reads the point
+ * and the half-widths as exact sums (#offset_x_cmp, #segment_side_offset).
+ * The box with its corners rounded outwards to doubles holds it, so a segment
+ * missing that box, read by #cross_product_sign on the doubles, misses it,
+ * which settles most segments without an exact sum
+ * @param[in] ax,ay,bx,by Ends of the segment
+ * @param[in] px,py Point
+ * @param[in] ex,ey Half-widths of the box, non-negative doubles
+ */
+bool
+segment_meets_point_box(double ax, double ay, double bx, double by,
+  double px, double py, double ex, double ey)
+{
+  assert(ex >= 0.0); assert(ey >= 0.0);
+  /* The box with its corners rounded outwards, which holds the exact box */
+  double xmin = nextafter(px - ex, - HUGE_VAL);
+  double xmax = nextafter(px + ex, HUGE_VAL);
+  double ymin = nextafter(py - ey, - HUGE_VAL);
+  double ymax = nextafter(py + ey, HUGE_VAL);
+  if (Max(ax, bx) < xmin || Min(ax, bx) > xmax ||
+      Max(ay, by) < ymin || Min(ay, by) > ymax)
+    return false;
+  int s1 = cross_product_sign(ax, ay, bx, by, ax, ay, xmin, ymin);
+  int s2 = cross_product_sign(ax, ay, bx, by, ax, ay, xmax, ymin);
+  int s3 = cross_product_sign(ax, ay, bx, by, ax, ay, xmax, ymax);
+  int s4 = cross_product_sign(ax, ay, bx, by, ax, ay, xmin, ymax);
+  if ((s1 > 0 && s2 > 0 && s3 > 0 && s4 > 0) ||
+      (s1 < 0 && s2 < 0 && s3 < 0 && s4 < 0))
+    return false;
+  /* The exact box: its extents, then the sides of its four corners */
+  if (offset_x_cmp(px, - ex, Max(ax, bx)) > 0 ||
+      offset_x_cmp(px, ex, Min(ax, bx)) < 0 ||
+      offset_x_cmp(py, - ey, Max(ay, by)) > 0 ||
+      offset_x_cmp(py, ey, Min(ay, by)) < 0)
+    return false;
+  s1 = segment_side_offset(ax, ay, bx, by, px, py, - ex, - ey);
+  s2 = segment_side_offset(ax, ay, bx, by, px, py, ex, - ey);
+  s3 = segment_side_offset(ax, ay, bx, by, px, py, ex, ey);
+  s4 = segment_side_offset(ax, ay, bx, by, px, py, - ex, ey);
+  return ! ((s1 > 0 && s2 > 0 && s3 > 0 && s4 > 0) ||
+    (s1 < 0 && s2 < 0 && s3 < 0 && s4 < 0));
+}
+
+/**
  * @brief Return the sign of `x + o - p`, exactly, for doubles x and p and an
  * exact offset o
  */
@@ -5852,6 +5947,10 @@ point_motion_filter_exceeds(double lo, double hi)
  * - The difference of the two positions is then within
  *   `6 g6 M + u (2 + 6 g6) M <= 7 g7 M <= 2^-47 M = e` of the exact `A`, per
  *   coordinate, and likewise `C`.
+ * - At an end of the interval that is an instant of both segments, the two
+ *   positions are input vertices and their difference one subtraction,
+ *   within `u` of its own magnitude per coordinate, so the sum of its
+ *   squares is within `g4 <= 2^-49` of its computed value, whatever `M`.
  * - A product of two such coordinates is within `e (|a| + |c| + e)` of the
  *   exact one, `a` and `c` the computed coordinates; a sum of two products
  *   is within `g2` of its terms' magnitudes, and a sum of two squares
@@ -5898,19 +5997,29 @@ point_motion_dwithin_filter(const double *p0, const double *p1, int64 s0,
   double dp = (double) (s1 - s0), dq = (double) (r1 - r0);
   double la = (double) (ta - s0) / dp, lb = (double) (tb - s0) / dp;
   double ma = (double) (ta - r0) / dq, mb = (double) (tb - r0) / dq;
+  /* An end of the interval that is an instant of both segments has as its
+   * positions two input vertices, so its difference is one subtraction,
+   * within 2^-52 of its own magnitude per coordinate, not within e */
+  const double *pa = (ta == s0) ? p0 : ((ta == s1) ? p1 : NULL);
+  const double *qa = (ta == r0) ? q0 : ((ta == r1) ? q1 : NULL);
+  const double *pb = (tb == s0) ? p0 : ((tb == s1) ? p1 : NULL);
+  const double *qb = (tb == r0) ? q0 : ((tb == r1) ? q1 : NULL);
+  bool vertex_a = pa && qa, vertex_b = pb && qb;
   double A[2], C[2], B[2];
   for (int c = 0; c < 2; c++)
   {
     double up = p1[c] - p0[c], uq = q1[c] - q0[c];
-    A[c] = (p0[c] + up * la) - (q0[c] + uq * ma);
-    C[c] = (p0[c] + up * lb) - (q0[c] + uq * mb);
+    A[c] = vertex_a ? pa[c] - qa[c] : (p0[c] + up * la) - (q0[c] + uq * ma);
+    C[c] = vertex_b ? pb[c] - qb[c] : (p0[c] + up * lb) - (q0[c] + uq * mb);
     B[c] = C[c] - A[c];
   }
   double ax = fabs(A[0]), ay = fabs(A[1]), cx = fabs(C[0]), cy = fabs(C[1]);
   double n0 = A[0] * A[0] + A[1] * A[1];
   double n1 = C[0] * C[0] + C[1] * C[1];
-  double bn0 = sl * (e * (2.0 * (ax + ay) + 2.0 * e) + 0x1p-51 * n0);
-  double bn1 = sl * (e * (2.0 * (cx + cy) + 2.0 * e) + 0x1p-51 * n1);
+  double bn0 = vertex_a ? sl * 0x1p-49 * n0 :
+    sl * (e * (2.0 * (ax + ay) + 2.0 * e) + 0x1p-51 * n0);
+  double bn1 = vertex_b ? sl * 0x1p-49 * n1 :
+    sl * (e * (2.0 * (cx + cy) + 2.0 * e) + 0x1p-51 * n1);
   double dd = d * d, bdd = sl * 0x1p-52 * dd;
   double dd_lo = dd - bdd, dd_hi = dd + bdd;
   if (! ever)
@@ -12212,14 +12321,57 @@ triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
 }
 
 /**
+ * @brief Return the sign of the incircle determinant of four points, read on
+ * #TowerWide for any finite coordinates
+ * @details The differences A - D, B - D and C - D are exact, and the
+ * determinant is the sum of each lift `|P - D|^2` times the cross product of
+ * the other two points taken from D, as #incircle_sign_exact forms it on
+ * expansions. #incircle_sign_exact calls it where a product of four of its
+ * components could overflow or underflow the doubles, as
+ * #cross_product_sign_exact calls #cross_product_sign_wide
+ */
+static int
+incircle_sign_wide(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  const double from[6] = {ax, ay, bx, by, cx, cy};
+  const double to[6] = {dx, dy, dx, dy, dx, dy};
+  TowerWideArena arena, *ar = &arena;
+  tower_wide_arena_init(ar);
+  const TowerWide *v[6];
+  for (int i = 0; i < 6; i++)
+    v[i] = tower_wide_sub(ar, tower_wide_of_double(ar, from[i]),
+      tower_wide_of_double(ar, to[i]));
+  static const int cu[3] = {2, 4, 0}, cv[3] = {4, 0, 2};
+  const TowerWide *det = tower_wide_of_double(ar, 0.0);
+  for (int k = 0; k < 3; k++)
+  {
+    const TowerWide *lift = tower_wide_add(ar,
+      tower_wide_mul(ar, v[2 * k], v[2 * k]),
+      tower_wide_mul(ar, v[2 * k + 1], v[2 * k + 1]));
+    int u = cu[k], w = cv[k];
+    const TowerWide *cross = tower_wide_sub(ar,
+      tower_wide_mul(ar, v[u], v[w + 1]), tower_wide_mul(ar, v[w], v[u + 1]));
+    det = tower_wide_add(ar, det, tower_wide_mul(ar, lift, cross));
+  }
+  int sign = det->sign;
+  tower_wide_arena_free(ar);
+  return sign;
+}
+
+/**
  * @brief Return the sign of the incircle determinant of four points, computed
  * exactly from their coordinates
  * @details Each coordinate difference is its rounded value plus the error of
  * the rounding (#two_diff), the three lifts and the three cross products are
  * formed from those as expansions, and the three terms are added, so the last
- * component of the sum carries the sign of the determinant
- * @note Exact where no product of coordinate differences overflows or
- * underflows
+ * component of the sum carries the sign of the determinant. Every product of
+ * the expansions is a product of four components of the differences, exact
+ * where the lowest set bits of the four reach that of the least subnormal and
+ * the product stays below the largest double: each component of at least
+ * 2^-268 in its lowest bit and below 2^250 keeps every product, lift, cross
+ * product and term in range. Otherwise the sign is read on #TowerWide
+ * (#incircle_sign_wide), exact for any finite coordinates.
  */
 static int
 incircle_sign_exact(double ax, double ay, double bx, double by, double cx,
@@ -12239,6 +12391,13 @@ incircle_sign_exact(double ax, double ay, double bx, double by, double cx,
       v[i][vl[i]++] = y;
     if (x != 0.0 || vl[i] == 0)
       v[i][vl[i]++] = x;
+    for (int j = 0; j < vl[i]; j++)
+    {
+      double c = v[i][j];
+      if (c != 0.0 && (! (fabs(c) < 0x1p250) ||
+          double_lowest_set_bit(c) < -268))
+        return incircle_sign_wide(ax, ay, bx, by, cx, cy, dx, dy);
+    }
   }
   double pa[8], pb[8], scratch[16], part[4];
   /* The lifts |A - D|^2, |B - D|^2, |C - D|^2 */
@@ -12338,7 +12497,9 @@ incircle_sign_filter(double ax, double ay, double bx, double by, double cx,
  * @details Positive where D lies inside the circle through A, B and C taken
  * counterclockwise, negative where it lies outside, and 0 exactly where the
  * four points lie on one circle. The determinant is evaluated in double and
- * read against Shewchuk's bound for it, formed from its own terms; where it
+ * read against Shewchuk's bound for it, formed from its own terms, where
+ * every nonzero coordinate difference lies from 2^-240 to 2^250, so that no
+ * product of two underflows; where it
  * cannot tell, the evaluation in pairs of doubles of #incircle_sign_filter
  * is read against its own bound. Both are filters, never tolerances, since
  * where neither can tell the exact sign is computed (#incircle_sign_exact)
@@ -12361,9 +12522,18 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
     (fabs(cdxady) + fabs(adxcdy)) * blift +
     (fabs(adxbdy) + fabs(bdxady)) * clift;
   double bound = (10.0 + 96.0 * DBL_EPSILON) * DBL_EPSILON * permanent;
-  if (det > bound)
+  /* The bound holds where no product underflows: each nonzero difference of
+   * at least 2^-240 keeps every product of two normal, and a later product
+   * that underflows errs by far less than the bound, of at least 2^-1012 */
+  const double diff[6] = {adx, ady, bdx, bdy, cdx, cdy};
+  bool in_range = true;
+  for (int i = 0; i < 6; i++)
+    if (diff[i] != 0.0 && ! (fabs(diff[i]) >= 0x1p-240 &&
+        fabs(diff[i]) < 0x1p250))
+      in_range = false;
+  if (in_range && det > bound)
     return 1;
-  if (det < - bound)
+  if (in_range && det < - bound)
     return -1;
   int sign = incircle_sign_filter(ax, ay, bx, by, cx, cy, dx, dy);
   if (sign != 2)
@@ -12573,6 +12743,31 @@ arcseg_arena_alloc(ArcsegArena *arena, int ndoubles)
   double *block = palloc(sizeof(double) * ndoubles);
   arena->blocks[arena->n++] = block;
   return block;
+}
+
+/**
+ * @brief Return true where the buffer of an arena holds room for
+ * @p ndoubles past the values it holds
+ * @details A sum or a product is formed in that room, at
+ * `arena->buf + arena->used`, with its scratch, as #polynomial_sign_stack
+ * lays out a term, and its compressed result, written at the start of the
+ * room, is all the arena keeps (#arcseg_arena_keep): the scratch, and the
+ * components compression merges, cost no room after it
+ */
+static inline bool
+arcseg_arena_room(const ArcsegArena *arena, int ndoubles)
+{
+  return arena->used + ndoubles <= ARCSEG_ARENA_SIZE;
+}
+
+/**
+ * @brief Keep the first @p ndoubles of the room #arcseg_arena_room found
+ */
+static inline void
+arcseg_arena_keep(ArcsegArena *arena, int ndoubles)
+{
+  arena->used += Max(ndoubles, 1);
+  return;
 }
 
 static void
@@ -12790,12 +12985,25 @@ arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
   if (arena->wide)
     return arcseg_w_value(tower_wide_add(arena->warena, a.w, b.w));
   int cap = a.n + b.n;
-  double *h = arcseg_arena_alloc(arena, cap);
   ArcsegExact r;
   r.w = NULL;
-  r.e = arcseg_arena_alloc(arena, cap);
+  double *room = arcseg_arena_room(arena, 2 * cap) ?
+    arena->buf + arena->used : NULL;
+  double *h;
+  if (room)
+  {
+    r.e = room;
+    h = room + cap;
+  }
+  else
+  {
+    h = arcseg_arena_alloc(arena, cap);
+    r.e = arcseg_arena_alloc(arena, cap);
+  }
   int hlen = expansion_sum(a.n, a.e, b.n, b.e, h, r.e);
   r.n = compress_expansion(hlen, h, r.e);
+  if (room)
+    arcseg_arena_keep(arena, r.n);
   r.err = (a.err + b.err) * (1.0 + 0x1p-50);
   return r;
 }
@@ -12873,13 +13081,27 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
       under = (double) a.n * (double) b.n * 0x1p-1072;
   }
   int cap = 2 * a.n * b.n;
-  double *h = arcseg_arena_alloc(arena, cap);
-  double *part = arcseg_arena_alloc(arena, 2 * a.n);
   ArcsegExact r;
-  r.e = arcseg_arena_alloc(arena, cap);
   r.w = NULL;
+  double *room = arcseg_arena_room(arena, 2 * cap + 2 * a.n) ?
+    arena->buf + arena->used : NULL;
+  double *h, *part;
+  if (room)
+  {
+    r.e = room;
+    h = room + cap;
+    part = h + cap;
+  }
+  else
+  {
+    h = arcseg_arena_alloc(arena, cap);
+    part = arcseg_arena_alloc(arena, 2 * a.n);
+    r.e = arcseg_arena_alloc(arena, cap);
+  }
   int hlen = expansion_product(a.n, a.e, b.n, b.e, h, r.e, part);
   r.n = compress_expansion(hlen, h, r.e);
+  if (room)
+    arcseg_arena_keep(arena, r.n);
   r.err = 0.0;
   /* The bound is computed in doubles, which below the normal range round
    * to the nearest multiple of 2^-1074 and so may round it to zero: each of
@@ -27064,6 +27286,71 @@ point_in_rings_exact(const POINT2D *pt, POINTARRAY * const *rings,
 }
 
 /**
+ * @brief Return 1 if a point moved by a translation lies in the interior of
+ * the area some rings bound, 0 if it lies outside it, and -1 if it lies on one
+ * of the rings
+ * @details The point is `q = (px + tx, py + ty)`, each sum exact and not
+ * rounded. The rings are read as #point_in_rings_exact reads them: a ray cast
+ * to the right at the height of `q` crosses an edge A B by the half-open
+ * rule, and the side of the edge `q` lies on is the sign of the cross product
+ * of `B - A` and `q - A`, both read exactly (#offset_x_cmp,
+ * #polynomial_sign_exact)
+ * @param[in] px,py The point
+ * @param[in] tx,ty The translation
+ * @param[in] rings,nrings Rings and their number
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int
+translated_point_in_rings_exact(double px, double py, double tx, double ty,
+  POINTARRAY * const *rings, uint32_t nrings)
+{
+  assert(rings);
+  bool inside = false;
+  for (uint32_t r = 0; r < nrings; r++)
+  {
+    const POINTARRAY *pa = rings[r];
+    for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+    {
+      const POINT2D *a = getPoint2d_cp(pa, i);
+      const POINT2D *b = getPoint2d_cp(pa, i + 1);
+      /* Signs of `ay - qy` and `by - qy` */
+      int sa = - offset_x_cmp(py, ty, a->y);
+      int sb = - offset_x_cmp(py, ty, b->y);
+      bool up = sa <= 0 && sb > 0;
+      bool down = sb <= 0 && sa > 0;
+      if (! up && ! down)
+      {
+        /* An edge the ray does not cross carries the point at its start or,
+         * lying at the point's height, between its two ends */
+        int xa = - offset_x_cmp(px, tx, a->x);
+        if (sa == 0 && xa == 0)
+          return -1;
+        if (sa == 0 && sb == 0 && xa * (- offset_x_cmp(px, tx, b->x)) <= 0)
+          return -1;
+        continue;
+      }
+      ExactSum sums[4];
+      const double t0[2] = {b->x, - a->x}, t1[3] = {py, ty, - a->y};
+      const double t2[2] = {b->y, - a->y}, t3[3] = {px, tx, - a->x};
+      exact_sum_set(&sums[0], t0, 2);
+      exact_sum_set(&sums[1], t1, 3);
+      exact_sum_set(&sums[2], t2, 2);
+      exact_sum_set(&sums[3], t3, 3);
+      PolyTerm terms[2] = {
+        {.coef = 1.0, .deg = 2, .sum = {0, 1}},
+        {.coef = -1.0, .deg = 2, .sum = {2, 3}}};
+      int side = polynomial_sign_exact(sums, terms, 2);
+      if (side == 0)
+        return -1;
+      if ((up && side > 0) || (down && side < 0))
+        inside = ! inside;
+    }
+  }
+  return inside ? 1 : 0;
+}
+
+/**
  * @brief Return the sign of the turn from the ray v->u to the ray v->d
  */
 static inline int
@@ -31246,7 +31533,13 @@ lift_point_take(LiftPoint *state, double z, double m)
  * between two of them reads them along the curve that joins them. EVERY
  * vertex and every piece of the array passing through the point is read: a
  * curve may pass through one point of the plane twice at two elevations, and
- * it then determines no single one there
+ * it then determines no single one there.
+ *
+ * The point is a vertex an overlay constructs, so a vertex or a segment passes
+ * through it where it lies within the rounding of its construction, 4 epsilon
+ * of the largest coordinate of the piece and the point (#coordinate_rounding),
+ * a distance decided exactly (#point_segm_within), as #arc_ordinates_at
+ * decides it for an arc
  * @param[in] pa Point array
  * @param[in] circular True where the array reads as arcs rather than segments
  * @param[in] px,py Point
@@ -31257,12 +31550,16 @@ lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
   LiftPoint *state)
 {
   assert(pa); assert(state);
+  const double q[2] = { px, py };
+  double qbig = fmax(fabs(px), fabs(py));
   for (uint32_t i = 0; i < pa->npoints; i++)
   {
     POINT4D p;
     getPoint4d_p(pa, i, &p);
-    if (fabs(p.x - px) <= coordinate_tolerance(p.x, px) &&
-        fabs(p.y - py) <= coordinate_tolerance(p.y, py))
+    const double v[2] = { p.x, p.y };
+    double band = coordinate_rounding(fmax(qbig,
+      fmax(fabs(p.x), fabs(p.y))), 0.0);
+    if (point_segm_within(q, v, v, band))
       lift_point_take(state, p.z, p.m);
   }
 
@@ -31288,10 +31585,18 @@ lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
     POINT4D p0, p1;
     getPoint4d_p(pa, i, &p0);
     getPoint4d_p(pa, i + 1, &p1);
-    if (! point_on_segment(px, py, p0.x, p0.y, p1.x, p1.y))
+    const double s0[2] = { p0.x, p0.y }, s1[2] = { p1.x, p1.y };
+    double band = coordinate_rounding(fmax(qbig,
+      fmax(fmax(fabs(p0.x), fabs(p0.y)), fmax(fabs(p1.x), fabs(p1.y)))), 0.0);
+    /* Outside the box of the segment grown by twice the band, which the
+     * rounding of the grown sides cannot reach into, is past it: where all
+     * but a few segments end */
+    if (px < fmin(p0.x, p1.x) - 2 * band || px > fmax(p0.x, p1.x) + 2 * band ||
+        py < fmin(p0.y, p1.y) - 2 * band || py > fmax(p0.y, p1.y) + 2 * band ||
+        ! point_segm_within(q, s0, s1, band))
       continue;
-    POINT2D q = { px, py }, a = { p0.x, p0.y }, b = { p1.x, p1.y }, closest;
-    double f = (double) closest_point2d_on_segment_ratio(&q, &a, &b, &closest);
+    POINT2D pt = { px, py }, a = { p0.x, p0.y }, b = { p1.x, p1.y }, closest;
+    double f = (double) closest_point2d_on_segment_ratio(&pt, &a, &b, &closest);
     lift_point_take(state, p0.z + f * (p1.z - p0.z), p0.m + f * (p1.m - p0.m));
   }
   return;
@@ -31487,12 +31792,14 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
       state->z = state->m = 0;
       for (int k = 0; k < count; k++)
       {
-        /* The extent is grown by the tolerance the coordinates call for, so a
-         * vertex ON the boundary of one is read rather than ruled out */
+        /* The extent is grown by the band #lift_point_read reads the vertex
+         * within, so a vertex ON the boundary of one is read rather than
+         * ruled out */
         if (hasbox[k])
         {
-          double tol = fmax(coordinate_tolerance(boxes[k].xmin, boxes[k].xmax),
-            coordinate_tolerance(boxes[k].ymin, boxes[k].ymax));
+          double tol = coordinate_rounding(fmax(fmax(fabs(p.x), fabs(p.y)),
+            fmax(fmax(fabs(boxes[k].xmin), fabs(boxes[k].xmax)),
+              fmax(fabs(boxes[k].ymin), fabs(boxes[k].ymax)))), 0.0);
           if (p.x < boxes[k].xmin - tol || p.x > boxes[k].xmax + tol ||
               p.y < boxes[k].ymin - tol || p.y > boxes[k].ymax + tol)
             continue;

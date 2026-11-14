@@ -117,16 +117,41 @@ SELECT round(nearestApproachDistance(
 SELECT round(tDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
   geometry 'MultiPolygon(((-3 3,-2 3,-2 4,-3 4,-3 3)),((2 -0.5,3 -0.5,3 0.5,2 0.5,2 -0.5)))'), 6);
--- A static polygon that is not convex, or has holes, is refused
-SELECT tDistance(
+-- A static polygon that is not convex or has holes: the distance to its
+-- rings, and 0 while the body has a point in it
+SELECT round(tDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
-  geometry 'Polygon((0 3,4 3,4 7,2 4,0 7,0 3))');
-SELECT tDistance(
+  geometry 'Polygon((0 3,4 3,4 7,2 4,0 7,0 3))'), 6);
+SELECT round(tDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
-  geometry 'Polygon((0 3,4 3,4 7,0 7,0 3),(1 4,2 4,2 5,1 5,1 4))');
-SELECT tDistance(
+  geometry 'Polygon((0 3,4 3,4 7,0 7,0 3),(1 4,2 4,2 5,1 5,1 4))'), 6);
+SELECT round(tDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
-  geometry 'Polygon((0 3,3 3,2 3,2 5,0 5,0 3))');
+  geometry 'Polygon((0 3,3 3,2 3,2 5,0 5,0 3))'), 6);
+-- A square through the cavity of a U, translating, then turning
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-20 0),0)@2001-01-01, Pose(Point(20 0),0)@2001-01-02]',
+  geometry 'Polygon((-10 -10,10 -10,10 10,5 10,5 -5,-5 -5,-5 10,-10 10,-10 -10))'), 6);
+SELECT tDwithin(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-20 0),0)@2001-01-01, Pose(Point(20 0),0)@2001-01-02]',
+  geometry 'Polygon((-10 -10,10 -10,10 10,5 10,5 -5,-5 -5,-5 10,-10 10,-10 -10))', 1);
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-20 3),0)@2001-01-01, Pose(Point(20 3),2)@2001-01-02]',
+  geometry 'Polygon((-10 -10,10 -10,10 10,5 10,5 -5,-5 -5,-5 10,-10 10,-10 -10))')::numeric, 6);
+-- A square turning across the hole of a polygon, inside its area, and in the
+-- hole
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-40 0),0)@2001-01-01, Pose(Point(40 0),1)@2001-01-02]',
+  geometry 'Polygon((-100 -100,100 -100,100 100,-100 100,-100 -100),(-10 -10,10 -10,10 10,-10 10,-10 -10))'), 6);
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-40.1 50.3),0)@2001-01-01, Pose(Point(40.7 50.9),0)@2001-01-02]',
+  geometry 'Polygon((-100 -100,100 -100,100 100,-100 100,-100 -100),(-10 -10,10 -10,10 10,-10 10,-10 -10))'), 6);
+SELECT eDwithin(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-40 50),0)@2001-01-01, Pose(Point(40 50),1.5)@2001-01-02]',
+  geometry 'Polygon((-100 -100,100 -100,100 100,-100 100,-100 -100),(-10 -10,10 -10,10 10,-10 10,-10 -10))', 3);
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));Pose(Point(0 0),0)@2001-01-01',
+  geometry 'Polygon((-100 -100,100 -100,100 100,-100 100,-100 -100),(-10 -10,10 -10,10 10,-10 10,-10 -10))'), 6);
 
 -- Temporal points: a moving point, and a point with step interpolation,
 -- whose distance jumps at each instant

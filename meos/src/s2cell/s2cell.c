@@ -912,6 +912,332 @@ s2cell_cell_vertex_held(S2CellId cell, int k)
 }
 
 /*****************************************************************************
+ * The planar cells: their straight-edged outlines
+ *****************************************************************************/
+
+/**
+ * @brief Return the cell of a level holding a pole, the north one when
+ * @p north
+ * @details At level 0 the cell of face 2 or 5 holds the pole inside it;
+ * from level 1 the pole is a corner of the cells meeting there, the centre
+ * `u = v = 0` of the face, and the cell holding it is the one whose low
+ * corner it is, the leaf index 2^29 on both axes (#s2cell_cell_vertex_held)
+ */
+static S2CellId
+s2cell_pole_cell(bool north, uint32_t level)
+{
+  uint32_t half = level == 0 ? 0 : (1u << (S2_MAX_LEVEL - 1));
+  S2CellId result;
+  s2cell_from_face_ij(north ? 2 : 5, half, half, level, &result);
+  return result;
+}
+
+/**
+ * @brief Return in the last argument the planar outline of an S2 cell,
+ * false when its neighbours are not read
+ * @details The vertices are those of #s2cell_cell_vertices, the exact
+ * corners of the cube (decision D7), joined by straight edges in longitude
+ * and latitude, and the cell across each edge is the one
+ * #s2cell_edge_neighbors states in the order of the edges. A corner at a
+ * pole, where both edges meeting there run along meridians, reads as two
+ * vertices on the pole latitude at the longitudes of those meridians, the
+ * vertices before and after it, and the edge between them, along the pole
+ * latitude, lies across from no cell. The cell of level 0 of the faces 2
+ * and 5 holds a pole, and is the region between its ring and that pole.
+ * @param[in] cell S2 cell
+ * @param[out] out Outline
+ */
+bool
+s2cell_cell_outline(S2CellId cell, DggsOutline *out)
+{
+  int count;
+  S2CellId *nb = s2cell_edge_neighbors(cell, &count);
+  if (! nb)
+    return false;
+  double lon[4], lat[4];
+  s2cell_cell_vertices(cell, lon, lat);
+  uint32_t face = s2cell_get_face(cell);
+  out->cell = cell;
+  out->pole = (s2cell_get_resolution(cell) != 0 || (face != 2 && face != 5)) ?
+    0 : (face == 2 ? 1 : -1);
+  int n = 0;
+  for (int k = 0; k < 4; k++)
+  {
+    if (lat[k] == 90.0 || lat[k] == -90.0)
+    {
+      out->lon[n] = lon[(k + 3) % 4];
+      out->lat[n] = lat[k];
+      out->across[n++] = 0;
+      out->lon[n] = lon[(k + 1) % 4];
+    }
+    else
+      out->lon[n] = lon[k];
+    out->lat[n] = lat[k];
+    out->across[n++] = nb[k];
+  }
+  out->count = n;
+  pfree(nb);
+  return true;
+}
+
+/**
+ * @brief Return the index of the first of the two vertices on the pole
+ * latitude of an outline, or -1 when it has no corner at a pole
+ */
+static int
+s2cell_outline_pole_vertex(const DggsOutline *o)
+{
+  if (o->count != 5)
+    return -1;
+  for (int k = 0; k < 4; k++)
+    if ((o->lat[k] == 90.0 || o->lat[k] == -90.0) && o->lat[k + 1] == o->lat[k])
+      return k;
+  return -1;
+}
+
+/**
+ * @brief Return true if an S2 cell holds the edge of its planar outline from
+ * the vertex k to the vertex k + 1
+ * @details The edge of the ring it reads (#s2cell_cell_edge_held); the edge
+ * along the pole latitude is the pole, held as the corner there is
+ * (#s2cell_cell_vertex_held)
+ */
+bool
+s2cell_outline_edge_held(const DggsOutline *o, int k)
+{
+  int p = s2cell_outline_pole_vertex(o);
+  if (p < 0 || k < p)
+    return s2cell_cell_edge_held(k);
+  if (k == p)
+    return s2cell_cell_vertex_held(o->cell, p);
+  return s2cell_cell_edge_held(k - 1);
+}
+
+/**
+ * @brief Return true if an S2 cell holds the vertex k of its planar outline
+ * @details The corner of the ring it reads (#s2cell_cell_vertex_held); both
+ * vertices on the pole latitude read the corner at the pole
+ */
+bool
+s2cell_outline_vertex_held(const DggsOutline *o, int k)
+{
+  int p = s2cell_outline_pole_vertex(o);
+  if (p < 0 || k < p)
+    return s2cell_cell_vertex_held(o->cell, k);
+  if (k <= p + 1)
+    return s2cell_cell_vertex_held(o->cell, p);
+  return s2cell_cell_vertex_held(o->cell, k - 1);
+}
+
+/** @brief Outline of the last cell #s2cell_cell_outline_last read, per
+ * thread */
+static MEOS_TLS DggsOutline s2_last_outline;
+/** @brief Cell of #s2_last_outline, or 0 when none */
+static MEOS_TLS S2CellId s2_last_outline_cell = 0;
+
+/**
+ * @brief Return the planar outline of a cell, or NULL when it is not read
+ * @details As #h3_cell_outline_last keeps the outline of the last H3 cell:
+ * consecutive positions of a trajectory mostly lie in one cell
+ */
+static const DggsOutline *
+s2cell_cell_outline_last(uint64 cell)
+{
+  if (s2_last_outline_cell != cell)
+  {
+    s2_last_outline_cell = 0;
+    if (! s2cell_cell_outline(cell, &s2_last_outline))
+      return NULL;
+    s2_last_outline_cell = cell;
+  }
+  return &s2_last_outline;
+}
+
+/** @brief The planar cell of a position for the planar walk,
+ * #s2cell_point_cell_planar */
+static uint64
+s2cell_planar_point_cell(double lon, double lat, int32 level)
+{
+  return s2cell_point_cell_planar(lon, lat, level);
+}
+
+/**
+ * @brief Return the cell a planar segment starting at a pole lies in just
+ * after its start, or 0 when it starts at no pole or runs along its latitude
+ * @details A position on a pole latitude is the pole, held by one cell
+ * (#s2cell_pole_cell), while a segment leaving the pole lies first in the
+ * cell whose edge along the pole latitude holds the longitude of its start:
+ * from level 1 four cells meet at a pole, each spanning 90 degrees of
+ * longitude there between two meridians. A start on one of those meridians
+ * lies in the cell on the side the segment heads to in longitude, and a
+ * segment running down the meridian lies in the cell holding that edge
+ * (#s2cell_outline_edge_held). Each comparison is exact, the longitude of the
+ * start read against those of the vertices through exact offsets of 360.
+ * The outline turns counter-clockwise, so its edge along the pole latitude
+ * runs west at the north pole and east at the south one.
+ */
+static uint64
+s2cell_planar_start_cell(double lon1, double lat1, double lon2, double lat2,
+  int32 level)
+{
+  if ((lat1 != 90.0 && lat1 != -90.0) || level == 0 || lat2 == lat1)
+    return 0;
+  bool north = lat1 > 0;
+  uint32_t size = 1u << (S2_MAX_LEVEL - level);
+  uint32_t half = 1u << (S2_MAX_LEVEL - 1);
+  int dx = (lon2 > lon1) - (lon2 < lon1);
+  for (int a = 0; a < 4; a++)
+  {
+    S2CellId cell;
+    s2cell_from_face_ij(north ? 2 : 5, (a & 1) ? half - size : half,
+      (a & 2) ? half - size : half, (uint32_t) level, &cell);
+    const DggsOutline *o = s2cell_cell_outline_last(cell);
+    int p = o ? s2cell_outline_pole_vertex(o) : -1;
+    if (p < 0)
+      continue;
+    int n = o->count, before = (p + n - 1) % n, after = (p + 1) % n;
+    /* The west and east ends of the edge along the pole latitude, and the
+     * edges down the meridians there */
+    double w = north ? o->lon[p + 1] : o->lon[p];
+    double e = north ? o->lon[p] : o->lon[p + 1];
+    int mw = north ? after : before, me = north ? before : after;
+    double oe = dggs_lon_offset(w, e);
+    /* The offset putting the start in [w, w + 360) */
+    double os = 360.0 * floor((lon1 - w) / 360.0);
+    while (offset_x_cmp(w, os, lon1) > 0)
+      os -= 360.0;
+    while (offset_x_cmp(w, os + 360.0, lon1) <= 0)
+      os += 360.0;
+    int cw = offset_x_cmp(w, os, lon1), ce = offset_x_cmp(e, oe + os, lon1);
+    if (cw < 0 && ce > 0)
+      return cell;
+    if (cw == 0 && (dx > 0 || (dx == 0 && s2cell_outline_edge_held(o, mw))))
+      return cell;
+    if (ce == 0 && (dx < 0 || (dx == 0 && s2cell_outline_edge_held(o, me))))
+      return cell;
+  }
+  return 0;
+}
+
+/** @brief The planar walk of S2: its outlines and its owner rule, a cell
+ * holding its low-i and low-j edges and the corner between them
+ * (#s2cell_outline_edge_held, #s2cell_outline_vertex_held), and the cell a
+ * segment leaving a pole lies in (#s2cell_planar_start_cell) */
+static const DggsPlanarOps s2cell_planar_ops =
+{
+  s2cell_cell_outline_last,
+  s2cell_planar_point_cell,
+  s2cell_outline_edge_held,
+  s2cell_outline_vertex_held,
+  s2cell_planar_start_cell
+};
+
+/**
+ * @brief Return true if an S2 cell holds a position of the plane of
+ * longitude and latitude
+ * @details The region its planar outline bounds, with the boundary points it
+ * owns (#dggs_outline_holds_point); a position on a pole latitude is the
+ * pole, held by the cell whose held corner it is (#s2cell_pole_cell)
+ * @param[in] o Outline of the cell
+ * @param[in] x,y Longitude and latitude of the position, in degrees
+ */
+bool
+s2cell_outline_holds_point(const DggsOutline *o, double x, double y)
+{
+  if (y == 90.0 || y == -90.0)
+    return o->cell == s2cell_pole_cell(y > 0, s2cell_get_resolution(o->cell));
+  return dggs_outline_holds_point(&s2cell_planar_ops, o, x, y);
+}
+
+/** @brief Number of rings of edge neighbours around the estimate the owner
+ * of a position is looked for in, as #H3_POINT_CELL_RINGS for H3 */
+#define S2_POINT_CELL_RINGS 16
+
+/**
+ * @brief Return the planar S2 cell of a level holding a position, or 0 when
+ * none is found
+ * @details A planar cell is its straight-edged outline
+ * (#s2cell_outline_holds_point), which departs from the cell of S2, whose
+ * edges are great-circle arcs and no straight lines in longitude and
+ * latitude. The cell of S2 holding the position (#s2cell_point_to_cell) is
+ * the estimate, and the cells around it, ring by ring of edge neighbours,
+ * are asked in turn until one holds the position, as #h3_point_cell looks
+ * for the planar H3 cell. A position on a pole latitude is the pole.
+ * @param[in] lon,lat Longitude and latitude of the position, in degrees
+ * @param[in] level S2 level
+ */
+S2CellId
+s2cell_point_cell_planar(double lon, double lat, uint32_t level)
+{
+  if (lat == 90.0 || lat == -90.0)
+    return s2cell_pole_cell(lat > 0, level);
+  S2CellId c0 = s2cell_point_to_cell(lon, lat, level);
+  if (c0 == 0)
+    return c0;
+  const DggsOutline *o = s2cell_cell_outline_last(c0);
+  if (o && s2cell_outline_holds_point(o, lon, lat))
+    return c0;
+  /* The rings, each the edge neighbours of the one before not seen yet */
+  int size = 64, nseen = 1, ring_lo = 0;
+  S2CellId *seen = palloc(sizeof(S2CellId) * (size_t) size);
+  seen[0] = c0;
+  S2CellId result = 0;
+  for (int r = 1; r <= S2_POINT_CELL_RINGS && ! result; r++)
+  {
+    int ring_hi = nseen;
+    for (int a = ring_lo; a < ring_hi && ! result; a++)
+    {
+      int count;
+      S2CellId *nb = s2cell_edge_neighbors(seen[a], &count);
+      if (! nb)
+        continue;
+      for (int b = 0; b < count && ! result; b++)
+      {
+        bool known = false;
+        for (int s = 0; s < nseen && ! known; s++)
+          known = seen[s] == nb[b];
+        if (known)
+          continue;
+        if (nseen == size)
+        {
+          size *= 2;
+          seen = repalloc(seen, sizeof(S2CellId) * (size_t) size);
+        }
+        seen[nseen++] = nb[b];
+        o = s2cell_cell_outline_last(nb[b]);
+        if (o && s2cell_outline_holds_point(o, lon, lat))
+          result = nb[b];
+      }
+      pfree(nb);
+    }
+    ring_lo = ring_hi;
+  }
+  pfree(seen);
+  return result;
+}
+
+/**
+ * @brief Fill `cells` with every planar S2 cell a planar segment crosses,
+ * `enter` with the segment parameter at which it reaches each, and `cross`
+ * with each crossing, by the walk on the straight-edged outlines
+ * (#dggs_segment_cells_planar)
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] level S2 level
+ * @param[out] cells,enter,cross Arrays of at least `maxout` entries, the
+ * last one possibly NULL
+ * @param[in] maxout Capacity of the arrays, at least 1
+ * @return Number of cells written, or 0 when the first lookup fails
+ */
+int
+s2cell_segment_cells_planar(double lon1, double lat1, double lon2,
+  double lat2, uint32_t level, S2CellId *cells, double *enter,
+  DggsEdgeCross *cross, int maxout)
+{
+  return dggs_segment_cells_planar(&s2cell_planar_ops, lon1, lat1, lon2,
+    lat2, level, cells, enter, cross, maxout);
+}
+
+/*****************************************************************************
  * Cells crossed by a segment
  *****************************************************************************/
 
@@ -1000,66 +1326,31 @@ s2cell_cell_edge_normals(S2CellId cell, double *normals)
   return;
 }
 /**
- * @brief Path a segment follows between its two endpoints
- * @details A planar point moves along the straight line in longitude and
- * latitude, a geodetic one along the great circle through its endpoints, as
- * `pointsegm_interpolate` places a temporal point between two instants.
- */
-typedef struct
-{
-  bool geodetic;          /**< True when the path is a great circle */
-  DggsLine line;          /**< Planar path: its straight line */
-  DggsArc arc;            /**< Geodetic path: its great circle */
-} S2SegmentPath;
-
-/**
- * @brief Initialize the path a segment follows, and return whether its two
- * endpoints state one
- */
-static bool
-s2cell_segment_path_init(double lon1, double lat1, double lon2, double lat2,
-  bool geodetic, S2SegmentPath *path)
-{
-  path->geodetic = geodetic;
-  if (! geodetic)
-    return dggs_line_init(lon1, lat1, lon2, lat2, &path->line);
-  return dggs_arc_init(lon1, lat1, lon2, lat2, &path->arc);
-}
-
-/**
- * @brief Return where the path of a segment leaves a cell, and in the last
- * argument the edge of the cell boundary it crosses there
+ * @brief Return where the great circle of a geodetic segment leaves a cell,
+ * and in the last argument the edge of the cell boundary it crosses there
  * @details An S2 cell is convex: each of its edges lies on a line of constant
  * `u` or `v` of its cube face, which the gnomonic projection of the face maps
  * to a great circle through the origin, so the cell is the intersection of
- * the four hemispheres those circles bound. A geodetic path therefore leaves
- * where its own great circle first leaves one of them, found in closed form
- * by #dggs_arc_hemisphere_exit_param. A planar path is a straight line in
- * longitude and latitude, which a cell edge is not, so its exit is searched
- * for along it by #dggs_line_exit_param. The exit lies strictly ahead of
- * `tmin`, or at `tmin` for a path on the boundary there and heading out, and
- * never on an edge the path entered the cell through.
+ * the four hemispheres those circles bound. The path therefore leaves where
+ * its own great circle first leaves one of them, found in closed form by
+ * #dggs_arc_normals_exit_param. The exit lies strictly ahead of `tmin`, or
+ * at `tmin` for a path on the boundary there and heading out, and never on
+ * an edge the path entered the cell through.
  * @param[in] cell Cell
  * @param[in] entry Mask of the edges of the cell the path entered it through
- * @param[in] path Path of the segment
+ * @param[in] arc Great circle of the segment
  * @param[in] tmin Parameter at which the path entered the cell
  * @param[out] edge Edge of the cell boundary crossed at the exit
  * @return the path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */
 static double
-s2cell_cell_exit_param(S2CellId cell, uint32 entry,
-  const S2SegmentPath *path, double tmin, int *edge)
+s2cell_cell_exit_param(S2CellId cell, uint32 entry, const DggsArc *arc,
+  double tmin, int *edge)
 {
   double normals[12];
   s2cell_cell_edge_normals(cell, normals);
-  if (path->geodetic)
-    return dggs_arc_normals_exit_param(&path->arc, normals, 4, tmin, entry,
-      edge);
-  /* A cube face states the plane of an edge THROUGH THE CENTRE of the
-   * sphere, exactly, so its height needs no position to be read from */
-  return dggs_line_normals_exit_param(&path->line, normals, NULL, 4, tmin,
-    entry, edge);
+  return dggs_arc_normals_exit_param(arc, normals, 4, tmin, entry, edge);
 }
 
 /**
@@ -1088,10 +1379,11 @@ s2cell_cell_exit_param(S2CellId cell, uint32 entry,
  * corner of four tiles passes one of the two side tiles for no length.
  *
  * The walk follows the path the point moves along: the straight line in
- * longitude and latitude of a planar point, the great circle of a geodetic
- * one. A geodetic crossing is found on the sphere, where a path across the
- * antimeridian, over a pole or from one cube face to the next is an arc like
- * any other.
+ * longitude and latitude of a planar point, walked on the straight-edged
+ * outlines of the cells by exact signs (#s2cell_segment_cells_planar), the
+ * great circle of a geodetic one. A geodetic crossing is found on the
+ * sphere, where a path across the antimeridian, over a pole or from one cube
+ * face to the next is an arc like any other.
  * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
  * @param[in] geodetic True when the segment is geodetic
  * @param[in] level S2 level
@@ -1108,23 +1400,23 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
   assert(cells); assert(enter);
   if (maxout < 1)
     return 0;
+  if (! geodetic)
+    return s2cell_segment_cells_planar(lon1, lat1, lon2, lat2, level, cells,
+      enter, NULL, maxout);
   S2CellId cur = s2cell_point_to_cell(lon1, lat1, level);
   if (cur == (S2CellId) 0)
     return 0;
   cells[0] = cur; enter[0] = 0.0;
   int n = 1;
 
-  S2SegmentPath path;
-  if (! s2cell_segment_path_init(lon1, lat1, lon2, lat2, geodetic, &path))
+  DggsArc arc;
+  if (! dggs_arc_init(lon1, lat1, lon2, lat2, &arc))
     return n;
   /* A cell is convex on the sphere, so a geodetic path whose far endpoint
    * lies in the cell of its near one never leaves it and there is no boundary
    * to find. That is the common case wherever the positions are closer
-   * together than a cell is wide. The straight line in longitude and latitude
-   * of a planar point is no great circle, and a cell is not convex for it, so
-   * that path can leave the cell and come back and its walk runs whatever
-   * cell its far endpoint lies in */
-  if (geodetic && s2cell_point_to_cell(lon2, lat2, level) == cur)
+   * together than a cell is wide */
+  if (s2cell_point_to_cell(lon2, lat2, level) == cur)
     return n;
 
   double t = 0.0;
@@ -1139,13 +1431,11 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
         pfree(nb);
       break;
     }
-    /* A geodetic path is a great circle and a cell is convex for it, so it
-     * leaves through the edge it came in by only at the parameter it came in
-     * at, and the edge is held out of the search. A planar path is no great
-     * circle and a cell is not convex for it: such a path leaves a cell and
-     * comes back, through that very edge, and the search keeps it */
+    /* A great circle leaves a convex cell through the edge it came in by
+     * only at the parameter it came in at, so the edge is held out of the
+     * search */
     uint32 entry = 0;
-    if (path.geodetic && prev != (S2CellId) 0)
+    if (prev != (S2CellId) 0)
       for (int k = 0; k < 4; k++)
         if (nb[k] == prev)
         {
@@ -1153,7 +1443,7 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
           break;
         }
     int edge = -1;
-    double texit = s2cell_cell_exit_param(cur, entry, &path, t, &edge);
+    double texit = s2cell_cell_exit_param(cur, entry, &arc, t, &edge);
     if (texit > 1.0 || edge < 0)
     {
       pfree(nb);

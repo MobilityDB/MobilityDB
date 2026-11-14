@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- Tests for set data type.
+-- File set.c
+-------------------------------------------------------------------------------
 SELECT intset '{1,2,3}';
   intset   
 -----------
@@ -49,6 +53,8 @@ SELECT tstzset '{2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzset value: Missing closing brace
 LINE 1: SELECT tstzset '{2001-01-01, 2001-01-02';
                        ^
+-- The UTC designator of RFC 3339, which every OGC Moving Features datetime is
+-- written in, denotes the same instant as the zero offset it abbreviates
 SELECT tstzset '{2001-01-01T00:00:00Z, 2001-01-02T00:00:00Z}' =
   tstzset '{2001-01-01 00:00:00+00, 2001-01-02 00:00:00+00}';
  ?column? 
@@ -56,6 +62,7 @@ SELECT tstzset '{2001-01-01T00:00:00Z, 2001-01-02T00:00:00Z}' =
  t
 (1 row)
 
+-- Output in WKT format
 SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
         astext        
 ----------------------
@@ -65,6 +72,9 @@ SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
 /* Errors */
 SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
 ERROR:  The value cannot be negative: -6
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT set(ARRAY [date '2001-01-01', '2001-01-02', '2001-01-03']);
                  set                  
 --------------------------------------
@@ -111,6 +121,9 @@ SELECT set(ARRAY[geometry 'Point(1 1)', 'Point empty']);
 ERROR:  Only non-empty geometries accepted
 SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Conversion functions
+-------------------------------------------------------------------------------
 SELECT set(date '2001-01-01');
      set      
 --------------
@@ -135,6 +148,9 @@ SELECT timestamptz '2001-01-01'::tstzset;
  {"Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT memSize(dateset '{2001-01-01}');
  memsize 
 ---------
@@ -189,6 +205,8 @@ SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}');
  {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)","[9, 10)","[10, 11)"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Maximum number of spans in last argument
 SELECT splitNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
  splitnspans 
 -------------
@@ -260,6 +278,7 @@ SELECT splitNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
 ERROR:  The value must be strictly positive: -1
 SELECT splitNspans(tstzset '{2001-01-01, 2001-01-03}', 0);
 ERROR:  The value must be strictly positive: 0
+-------------------------------------------------------------------------------
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
                                         spliteachnspans                                         
 ------------------------------------------------------------------------------------------------
@@ -323,6 +342,7 @@ SELECT splitEachNspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}
 /* Errors */
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
 ERROR:  The value must be strictly positive: -1
+-------------------------------------------------------------------------------
 SELECT numValues(dateset '{2001-01-01}');
  numvalues 
 -----------
@@ -617,6 +637,9 @@ SELECT hashExtended(tstzset '{2001-01-01,2001-01-02}', 1) <> hashExtended(tstzse
  f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformations
+-------------------------------------------------------------------------------
 SELECT shift(intset '{1}', 4);
  shift 
 -------
@@ -767,3 +790,4 @@ SELECT text 'XXX' || textset '{"aaa", "bbb", "ccc"}';
  {"XXXaaa", "XXXbbb", "XXXccc"}
 (1 row)
 
+-------------------------------------------------------------------------------

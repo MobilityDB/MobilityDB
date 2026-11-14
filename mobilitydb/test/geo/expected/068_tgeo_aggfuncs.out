@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT extent(temp) FROM (VALUES
 (NULL::tgeometry),('Point(1 1)@2001-01-01'::tgeometry),(NULL::tgeometry)) t(temp);
                                         extent                                        
@@ -28,6 +29,7 @@ SELECT extent(temp) FROM (VALUES
   (tgeometry 'Point(1 1 1)@2001-01-01'),
   (tgeometry 'Point(1 1)@2001-01-01')) t(temp);
 ERROR:  The arguments must be of the same dimensionality
+-------------------------------------------------------------------------------
 WITH temp(inst) AS (
   SELECT tgeometry 'Point(1 1)@2001-01-01' UNION
   SELECT tgeometry 'Point(2 2)@2001-01-02' UNION
@@ -86,6 +88,7 @@ WITH temp(inst) AS (
   SELECT tgeometry 'Point(5 5)@2001-01-05'  )
 SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
 ERROR:  The temporal values have different value at their common timestamp Mon Jan 01 00:00:00 2001 PST
+-------------------------------------------------------------------------------
 WITH temp(inst) AS (
   SELECT tgeometry 'Point(1 1)@2001-01-01' UNION
   SELECT tgeometry 'Point(2 2)@2001-01-02' UNION
@@ -133,6 +136,7 @@ SELECT numInstants(appendInstant(inst ORDER BY inst, 'discrete')) FROM temp;
        36168
 (1 row)
 
+-------------------------------------------------------------------------------
 WITH temp(inst) AS (
   SELECT tgeometry 'Point(1 1)@2001-01-01' UNION
   SELECT tgeometry 'Point(2 2)@2001-01-02' UNION
@@ -157,6 +161,7 @@ SELECT asText(appendInstant(inst, NULL, sqrt(3), '1 day' ORDER BY inst)) FROM te
  {[POINT Z (1 1 1)@Mon Jan 01 00:00:00 2001 PST, POINT Z (2 2 2)@Tue Jan 02 00:00:00 2001 PST], [POINT Z (2 2 2)@Thu Jan 04 00:00:00 2001 PST], [POINT Z (5 5 5)@Fri Jan 05 00:00:00 2001 PST], [POINT Z (7 7 7)@Sun Jan 07 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 WITH temp1(k, inst) AS (
   SELECT 1, tgeometry 'Point(1 1)@2001-01-01' UNION
   SELECT 2, tgeometry 'Point(2 2)@2001-01-02' UNION
@@ -209,3 +214,4 @@ SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
        36168
 (1 row)
 
+-------------------------------------------------------------------------------

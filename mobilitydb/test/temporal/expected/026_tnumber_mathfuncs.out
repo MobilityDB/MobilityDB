@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Temporal addition
+-------------------------------------------------------------------------------
 SELECT 1 + tint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -159,6 +162,7 @@ SELECT tint '{[1@2001-01-01], [2147483646@2001-01-02]}' + 1;
 ERROR:  integer out of range
 SELECT 2147483647 - tint '[0@2001-01-01, 1@2001-01-02]';
 ERROR:  integer out of range
+-------------------------------------------------------------------------------
 SELECT 1 + tbigint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -303,6 +307,7 @@ SELECT tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@200
  {[2@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST], [6@Thu Jan 04 00:00:00 2001 PST, 6@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT 1.5 + tfloat '1.5@2001-01-01';
             ?column?            
 --------------------------------
@@ -459,6 +464,7 @@ SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 1@2001-01-05]' + tfloat 'Interp=Step
  {[2.5@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST, 2.5@Thu Jan 04 00:00:00 2001 PST), [3.5@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- NULL
 SELECT tfloat '{[1@2001-01-01, 2@2001-01-02),(1@2001-01-03, 2@2001-01-04]}' + tfloat '(1@2001-01-02, 2@2001-01-03)';
  ?column? 
 ----------
@@ -483,6 +489,9 @@ SELECT tfloat '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}' + t
  {[2@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST], [4@Wed Jan 03 00:00:00 2001 PST, 5@Thu Jan 04 00:00:00 2001 PST), [6@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal subtraction
+-------------------------------------------------------------------------------
 SELECT 1 - tint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -627,6 +636,7 @@ SELECT tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-0
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT 1 - tbigint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -771,6 +781,7 @@ SELECT tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@200
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT 1.5 - tfloat '1.5@2001-01-01';
             ?column?            
 --------------------------------
@@ -915,6 +926,9 @@ SELECT tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal multiplication
+-------------------------------------------------------------------------------
 SELECT 1 * tint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -1059,6 +1073,7 @@ SELECT tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-0
  {[1@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST], [9@Thu Jan 04 00:00:00 2001 PST, 9@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT 1 * tbigint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -1203,6 +1218,7 @@ SELECT tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@200
  {[1@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST], [9@Thu Jan 04 00:00:00 2001 PST, 9@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT 1 * tfloat '1.5@2001-01-01';
              ?column?             
 ----------------------------------
@@ -1347,6 +1363,8 @@ SELECT tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04
  {[2.25@Mon Jan 01 00:00:00 2001 PST, 6.25@Tue Jan 02 00:00:00 2001 PST, 2.25@Wed Jan 03 00:00:00 2001 PST], [12.25@Thu Jan 04 00:00:00 2001 PST, 12.25@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Coverage: turning point materialized at the interior minimum of two sequences
+-- that cross zero produces a three-instant sequence instead of a straight line
 SELECT tfloat '[1@2001-01-01, -1@2001-01-03]' * tfloat '[1@2001-01-01, -1@2001-01-03]';
                                              ?column?                                             
 --------------------------------------------------------------------------------------------------
@@ -1359,6 +1377,9 @@ SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' * tfloat '[3@2001-01-01, 1@2001-01-
  [3@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- A temporal float with step interpolation keeps its jumps when combined with
+-- one with linear interpolation, whichever of the two is the first operand, so
+-- addition and multiplication commute across the two interpolations
 SELECT tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]' + tfloat '[1@2001-01-01, 3@2001-01-03]';
                                                                ?column?                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -1397,6 +1418,7 @@ SELECT tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]' * tfloat 
  t
 (1 row)
 
+-- A step value holding over many instants of the linear operand
 SELECT tfloat 'Interp=Step;[2@2001-01-01, 2@2001-01-05]' + tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04, 1@2001-01-05]';
                                                                              ?column?                                                                             
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1409,6 +1431,9 @@ SELECT tfloat 'Interp=Step;{[2@2001-01-01, 4@2001-01-02, 4@2001-01-03], [1@2001-
  {[3@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST), [6@Tue Jan 02 00:00:00 2001 PST, 7@Wed Jan 03 00:00:00 2001 PST], [1@Thu Jan 04 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Temporal division
+-------------------------------------------------------------------------------
 SELECT 1 / tint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -1559,6 +1584,7 @@ SELECT tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-0
  {[1@Mon Jan 01 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST], [1@Thu Jan 04 00:00:00 2001 PST, 1@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT 1 / tbigint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -1709,6 +1735,7 @@ SELECT tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@200
  {[1@Mon Jan 01 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST], [1@Thu Jan 04 00:00:00 2001 PST, 1@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(1.5 / tfloat '1.5@2001-01-01', 2);
              round              
 --------------------------------
@@ -1878,6 +1905,7 @@ SELECT tint '[-1@2001-01-01, 1@2001-01-02]' / tint '[0@2001-01-01, 1@2001-01-02]
 ERROR:  Division by zero
 SELECT tfloat '[-1@2001-01-01, 1@2001-01-02]' / tfloat '[-1@2001-01-01, 1@2001-01-02]';
 ERROR:  Division by zero
+-------------------------------------------------------------------------------
 SELECT floor(tfloat '1.5@2001-01-01');
              floor              
 --------------------------------
@@ -1926,6 +1954,7 @@ SELECT ceil(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-
  Interp=Step;{[2@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST], [4@Thu Jan 04 00:00:00 2001 PST, 4@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(tfloat '1.5@2001-01-01',0);
              round              
 --------------------------------
@@ -2040,6 +2069,7 @@ SELECT round(radians(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[
  {[0.03@Mon Jan 01 00:00:00 2001 PST, 0.04@Tue Jan 02 00:00:00 2001 PST, 0.03@Wed Jan 03 00:00:00 2001 PST], [0.06@Thu Jan 04 00:00:00 2001 PST, 0.06@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(deltaValue(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}'), 6);
                                                round                                                
 ----------------------------------------------------------------------------------------------------
@@ -2058,6 +2088,8 @@ SELECT round(deltaValue(tfloat '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2
  Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, -1@Tue Jan 02 00:00:00 2001 PST, -1@Wed Jan 03 00:00:00 2001 PST), [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST)}
 (1 row)
 
+-- A big integer answers as its integer twin does. A rising pair alone cannot
+-- witness the base type, so a falling one and one crossing zero stand beside it
 SELECT deltaValue(tint '[5@2001-01-01, 2@2001-01-02]');
                              deltavalue                             
 --------------------------------------------------------------------
@@ -2082,6 +2114,7 @@ SELECT deltaValue(tbigint '[-3000000000@2001-01-01, 4000000000@2001-01-02]');
  [7000000000@Mon Jan 01 00:00:00 2001 PST, 7000000000@Tue Jan 02 00:00:00 2001 PST)
 (1 row)
 
+-- A difference at the bound of the integers answers, one beyond raises an error
 SELECT deltaValue(tint '[2147483646@2001-01-01, -2@2001-01-02]');
                                       deltavalue                                      
 --------------------------------------------------------------------------------------
@@ -2106,6 +2139,7 @@ SELECT deltaValue(tbigint '[-9223372036854775808@2001-01-01, 1@2001-01-02]');
 ERROR:  bigint out of range
 SELECT deltaValue(tbigint '{[1@2001-01-01, 2@2001-01-02], [-9223372036854775808@2001-01-03, 1@2001-01-04]}');
 ERROR:  bigint out of range
+-- The result takes the temporal type of the argument
 SELECT pg_typeof(deltaValue(tint '[5@2001-01-01, 2@2001-01-02]'));
  pg_typeof 
 -----------
@@ -2143,6 +2177,7 @@ SELECT round(deltaValue(tfloat '{[1@2001-01-01],[2@2001-01-02]}'));
  
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT trend(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
                                                trend                                                
 ----------------------------------------------------------------------------------------------------
@@ -2193,6 +2228,7 @@ SELECT trend(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@
  {[1@Mon Jan 01 00:00:00 2001 PST, -1@Tue Jan 02 00:00:00 2001 PST, -1@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(derivative(tfloat '1@2001-01-01'), 6);
 ERROR:  The temporal value must have linear interpolation
 SELECT round(derivative(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}'), 6);
@@ -2209,6 +2245,7 @@ SELECT round(derivative(tfloat '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2
  Interp=Step;{[0.000012@Mon Jan 01 00:00:00 2001 PST, 0.000012@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- NULL
 SELECT round(derivative(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]'), 6);
 ERROR:  The temporal value must have linear interpolation
 SELECT round(derivative(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}'), 6);
@@ -2219,6 +2256,7 @@ SELECT round(derivative(tfloat '{[1@2001-01-01],[2@2001-01-02]}'));
  
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(ln(tfloat '1@2001-01-01'), 6);
              round              
 --------------------------------
@@ -2361,6 +2399,8 @@ SELECT round(tan(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]'), 6);
 ERROR:  Cannot take the tangent of pi/2 plus a multiple of pi
 SELECT round(tan(tfloat '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}'), 6);
 ERROR:  Cannot take the tangent of pi/2 plus a multiple of pi
+-- The tangent is undefined at pi/2 plus a multiple of pi: a segment reaching a
+-- pole raises an error, while a segment within a branch is densified
 SELECT round(tan(tfloat '[0@2001-01-01, 3@2001-01-02]'), 6);
 ERROR:  Cannot take the tangent of pi/2 plus a multiple of pi
 SELECT round(tan(tfloat 'Interp=Step;[0@2001-01-01, 3@2001-01-02]'), 6);
@@ -2375,18 +2415,22 @@ SELECT numInstants(tan(tfloat '[-1@2001-01-01, 1@2001-01-02]')) > 2;
  t
 (1 row)
 
+-- A pole in the gap between two sequences is not reached
 SELECT numSequences(tan(tfloat '{[1@2001-01-01, 1.5@2001-01-02], [1.6@2001-01-03, 2@2001-01-04]}'));
  numsequences 
 --------------
             2
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT abs(tfloat '[-1@2001-01-01,1@2001-01-02]');
                                                abs                                                
 --------------------------------------------------------------------------------------------------
  [1@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 12:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- A big integer answers as its integer twin does, the two named side by side
+-- because the value is read through the base type the temporal type declares
 SELECT abs(tint '{-2@2001-01-01, 5@2001-01-02, -7@2001-01-03}');
                                                abs                                                
 --------------------------------------------------------------------------------------------------
@@ -2405,6 +2449,7 @@ SELECT abs(tbigint '-9223372036854775806@2001-01-01');
  9223372036854775806@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- The result takes the temporal type of the argument
 SELECT pg_typeof(abs(tint '{-2@2001-01-01, 5@2001-01-02}'));
  pg_typeof 
 -----------
@@ -2424,12 +2469,15 @@ SELECT abs(tint '-2147483647@2001-01-01');
 ERROR:  integer out of range
 SELECT abs(tbigint '-9223372036854775807@2001-01-01');
 ERROR:  bigint out of range
+-- The most negative value of each integer type has no positive counterpart
 SELECT abs(tint '-2147483648@2001-01-01');
 ERROR:  Integer out of range
 SELECT abs(tbigint '-9223372036854775808@2001-01-01');
 ERROR:  Bigint out of range
 SELECT abs(tint '{-2147483648@2001-01-01, 5@2001-01-02}');
 ERROR:  Integer out of range
+-------------------------------------------------------------------------------
+-- An arithmetic result inside the range of the base type is answered
 SELECT tint '2147483645@2001-01-01' + 1;
                 ?column?                 
 -----------------------------------------
@@ -2467,11 +2515,15 @@ SELECT tbigint '9223372036854775806@2001-01-01' * 2;
 ERROR:  bigint out of range
 SELECT tfloat '1e300@2001-01-01' * 1e300;
 ERROR:  value out of range: overflow
+-------------------------------------------------------------------------------
+-- The exponential beyond the largest double raises an error
 SELECT exp(tfloat '[1@2001-01-01, 1000@2001-01-02]');
 ERROR:  value out of range: overflow
+-- The turning point where e^d - 1 exceeds the largest double, d = 720
 SELECT round(exp(tfloat '[-740@2001-01-01, -20@2001-01-02]') * 1e12, 6);
                                                           round                                                           
 --------------------------------------------------------------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 2.862713@Mon Jan 01 23:46:50.489854 2001 PST, 2061.153622@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------

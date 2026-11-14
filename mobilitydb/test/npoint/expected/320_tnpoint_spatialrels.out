@@ -1,3 +1,26 @@
+-------------------------------------------------------------------------------
+-- Regression tests for the tnpoint ever/always spatial-rel surface
+-- (320_tnpoint_spatialrels.in.sql).
+--
+-- A temporal network point has no free-space geometry of its own: every
+-- function here converts its tnpoint operand(s) to a temporal geometry
+-- point via the standard tnpoint::tgeompoint cast (the point resolved
+-- along its route) and delegates to the temporal geometry point
+-- ever/always spatial relationship (070_tpoint_spatialrels.in.sql). Each
+-- block checks that the direct tnpoint overload agrees with the
+-- equivalent manual cast, which is how these relationships had to be
+-- expressed before this file existed.
+--
+-- The operands below carry the DEFAULT linear interpolation, which the
+-- temporal geometry point target represents, so a sequence is answered
+-- along its route. A step sequence is exercised as a control.
+--
+-- The family declares the matrix its target declares: tContains and
+-- tCovers take the geometry first only, and tTouches has no direction
+-- between two network points.
+--
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the functions are STRICT
 SELECT eContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2001-01-01');
  econtains 
 -----------
@@ -22,6 +45,10 @@ SELECT tContains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Every declared cell agrees with the cast written out by hand, on the
+-- default linear interpolation
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]' AS seq1,
          tnpoint '[Npoint(2, 0.0)@2001-01-01, Npoint(2, 1)@2001-01-03]' AS seq2,
@@ -74,6 +101,10 @@ FROM t;
  t         | t          | t          | t          | t         | t         | t         | t        | t          | t          | t          | t          | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A linear sequence is answered along its route; the step sequence with the
+-- same instants is the control
+-------------------------------------------------------------------------------
 SELECT eIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
   geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
  eintersects 
@@ -102,6 +133,9 @@ SELECT aDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]'
  f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Direct values on single-instant operands
+-------------------------------------------------------------------------------
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint 'Npoint(1, 0.1)@2001-01-01');
  econtains 
@@ -138,3 +172,4 @@ SELECT eIntersects(
  f
 (1 row)
 
+-------------------------------------------------------------------------------

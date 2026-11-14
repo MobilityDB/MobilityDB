@@ -1,3 +1,24 @@
+-------------------------------------------------------------------------------
+-- Regression tests for the tnpoint temporal spatial-rel surface
+-- (322_tnpoint_tempspatialrels.in.sql).
+--
+-- Each function returns a tbool whose value at instant t is the static
+-- spatial relation applied to the network point resolved at t: cast the
+-- tnpoint to tgeompoint and delegate to the temporal spatial-rel kernel the
+-- geo family owns (072_tgeo_tempspatialrels.in.sql). A network point resolves
+-- to a position, so tgeompoint is the cast target its geometry names; the
+-- block below checks that each direct tnpoint overload agrees with the longer
+-- manual chain (::tgeompoint::tgeometry) that reaches the same kernel.
+--
+-- The family declares the matrix its target declares: tContains and tCovers
+-- take the geometry first only, and tTouches has no direction between two
+-- tnpoints, because a moving point neither contains nor covers a geometry and
+-- two moving points do not touch. The equivalence block below keeps its
+-- sequences 'Interp=Step;...' so the longer chain it compares against, which
+-- reaches tgeometry, can carry them.
+--
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the functions are not STRICT
 SELECT tContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2001-01-01');
  tcontains 
 -----------
@@ -10,6 +31,9 @@ SELECT tContains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]' AS seq1,
          tnpoint 'Interp=Step;[Npoint(2, 0.0)@2001-01-01, Npoint(2, 1)@2001-01-03]' AS seq2,
@@ -29,6 +53,10 @@ FROM t;
  t         | t          | t          | t        | t          | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Direct values (not just cast-equivalence), matching the documented
+-- manual-cast examples this file's functions now make direct
+-------------------------------------------------------------------------------
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
                             tcontains                             
@@ -51,6 +79,10 @@ SELECT tDwithin(
  [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Linear interpolation, which the tgeompoint target carries
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.9)@2001-01-03]' AS lin1,
          tnpoint '[Npoint(1, 0.9)@2001-01-01, Npoint(1, 0.1)@2001-01-03]' AS lin2,
@@ -67,6 +99,7 @@ FROM t;
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]} | {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]} | {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]} | {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 23:34:46.100158 2001 PST], (t@Mon Jan 01 23:34:46.100158 2001 PST, t@Tue Jan 02 00:25:13.899841 2001 PST], (f@Tue Jan 02 00:25:13.899841 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- The answer is the one the network point's own tgeompoint gives
 WITH t AS (
   SELECT tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.9)@2001-01-03]' AS lin1,
          geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))' AS region
@@ -80,6 +113,8 @@ FROM t;
  t         | t
 (1 row)
 
+-- A moving point neither contains nor covers a geometry, and two of them do
+-- not touch, so those five signatures are not declared
 SELECT to_regprocedure('tContains(tnpoint, geometry)') IS NULL AS tcontains_absent,
        to_regprocedure('tCovers(tnpoint, geometry)') IS NULL AS tcovers_absent,
        to_regprocedure('tTouches(tnpoint, tnpoint)') IS NULL AS ttouches_absent,
@@ -89,3 +124,4 @@ SELECT to_regprocedure('tContains(tnpoint, geometry)') IS NULL AS tcontains_abse
  t                | t              | t               | t
 (1 row)
 
+-------------------------------------------------------------------------------

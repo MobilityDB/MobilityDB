@@ -1,3 +1,10 @@
+-- Comparison ops: ever/always + temporal eq/ne on th3index.
+-- No h3_adapter.c dependency (the operators route through
+-- eacomp_temporal_* / tcomp_temporal_* which are purely generic).
+-------------------------------------------------------------------------------
+-- eEqual / ?= : at least one instant equals the probe
+-------------------------------------------------------------------------------
+-- (h3index, th3index)
 SELECT eEqual(590464338553208831::h3index,
   th3index '831c02fffffffff@2001-01-01');
  eequal 
@@ -12,18 +19,21 @@ SELECT 590464338553208831::h3index ?=
  t
 (1 row)
 
+-- Cell not present in the trajectory → false
 SELECT 612544986753269759::h3index ?= th3index '831c02fffffffff@2001-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
+-- (th3index, bigint) — same as above, commuted
 SELECT th3index '831c02fffffffff@2001-01-01' ?= 590464338553208831::h3index;
  ?column? 
 ----------
  t
 (1 row)
 
+-- (th3index, th3index)
 SELECT th3index '831c02fffffffff@2001-01-01'
   ?= th3index '831c02fffffffff@2001-01-01';
  ?column? 
@@ -31,6 +41,7 @@ SELECT th3index '831c02fffffffff@2001-01-01'
  t
 (1 row)
 
+-- A mid-trajectory match — ?= is ever-equal, returns true on any instant match
 SELECT th3index
   '[831c02fffffffff@2001-01-01, 880326b885fffff@2001-01-05]'
   ?= 612544986753269759::h3index;
@@ -39,12 +50,17 @@ SELECT th3index
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- aEqual / %= : every instant equals the probe
+-------------------------------------------------------------------------------
+-- Constant trajectory — always equal
 SELECT th3index '831c02fffffffff@2001-01-01' %= 590464338553208831::h3index;
  ?column? 
 ----------
  t
 (1 row)
 
+-- Mixed trajectory — not always
 SELECT th3index
   '{831c02fffffffff@2001-01-01, 880326b885fffff@2001-01-02}'
   %= 590464338553208831::h3index;
@@ -53,6 +69,7 @@ SELECT th3index
  f
 (1 row)
 
+-- Two identical trajectories — always equal
 SELECT th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-02]'
   %= th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-02]';
  ?column? 
@@ -60,6 +77,10 @@ SELECT th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-02]'
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- eNotEqual / ?<> and aNotEqual / %<>
+-------------------------------------------------------------------------------
+-- Trajectory has at least one instant ≠ probe
 SELECT th3index
   '{831c02fffffffff@2001-01-01, 880326b885fffff@2001-01-02}'
   ?<> 590464338553208831::h3index;
@@ -68,12 +89,14 @@ SELECT th3index
  t
 (1 row)
 
+-- Trajectory is always different from the probe
 SELECT th3index '831c02fffffffff@2001-01-01' %<> 612544986753269759::h3index;
  ?column? 
 ----------
  t
 (1 row)
 
+-- A trajectory can't be both ever-equal AND always-not-equal
 SELECT NOT (
   (th3index '831c02fffffffff@2001-01-01' ?= 590464338553208831::h3index)
   AND
@@ -83,6 +106,9 @@ SELECT NOT (
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- temporal_teq / #= : tbool result
+-------------------------------------------------------------------------------
 SELECT th3index '831c02fffffffff@2001-01-01' #= 590464338553208831::h3index;
             ?column?            
 --------------------------------
@@ -95,6 +121,7 @@ SELECT th3index '831c02fffffffff@2001-01-01' #= 612544986753269759::h3index;
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Sequence: returns a tbool with per-instant truth
 SELECT th3index
   '[831c02fffffffff@2001-01-01, 880326b885fffff@2001-01-02]'
   #= 590464338553208831::h3index;
@@ -103,6 +130,7 @@ SELECT th3index
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- Two temporals — pointwise equality over the shared time axis
 SELECT th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]'
   #= th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-02]';
                              ?column?                             
@@ -110,6 +138,9 @@ SELECT th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]'
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- temporal_tne / #<>
+-------------------------------------------------------------------------------
 SELECT th3index '831c02fffffffff@2001-01-01' #<> 590464338553208831::h3index;
             ?column?            
 --------------------------------
@@ -122,3 +153,4 @@ SELECT th3index '831c02fffffffff@2001-01-01' #<> 612544986753269759::h3index;
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------

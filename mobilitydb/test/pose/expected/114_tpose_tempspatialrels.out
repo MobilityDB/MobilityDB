@@ -1,3 +1,23 @@
+-------------------------------------------------------------------------------
+-- Regression tests for the tpose temporal spatial-rel surface
+-- (114_tpose_tempspatialrels.in.sql).
+--
+-- Each function returns a tbool whose value at instant t is the static
+-- spatial relation applied to the position the pose holds at t: cast the
+-- tpose to tgeompoint and delegate to the temporal spatial-rel kernel the geo
+-- family owns (072_tgeo_tempspatialrels.in.sql). A pose holds a position, so
+-- tgeompoint is the cast target its geometry names; the block below checks
+-- that each direct tpose overload agrees with the longer manual chain
+-- (::tgeompoint::tgeometry) that reaches the same kernel, which is what makes
+-- the shorter route a pure gain rather than a different answer.
+--
+-- The family declares the matrix its target declares: tContains and tCovers
+-- take the geometry first only, and tTouches has no direction between two
+-- tposes, because a moving point neither contains nor covers a geometry and
+-- two moving points do not touch.
+--
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the functions are not STRICT
 SELECT tContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.2)@2001-01-01');
  tcontains 
 -----------
@@ -10,6 +30,9 @@ SELECT tContains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', NULL::tpose);
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]' AS seq1,
          tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' AS seq2,
@@ -36,6 +59,9 @@ FROM t;
  t         | t          | t          | t          | t         | t         | t         | t        | t          | t          | t          | t          | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Direct values
+-------------------------------------------------------------------------------
 SELECT tContains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))',
   tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]');
                             tcontains                             
@@ -58,6 +84,10 @@ SELECT tDwithin(
  [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Linear interpolation, which the tgeompoint target carries
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(4 4), 0.4)@2001-01-03]' AS lin1,
          tpose '[Pose(Point(4 4), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' AS lin2,
@@ -75,6 +105,7 @@ FROM t;
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 16:00:00 2001 PST], (f@Mon Jan 01 16:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]} | {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 16:00:00 2001 PST], (f@Mon Jan 01 16:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]} | {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 16:00:00 2001 PST], (t@Mon Jan 01 16:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]} | {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 03:18:49.350596 2001 PST], (f@Tue Jan 02 03:18:49.350596 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]} | {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 18:20:35.324701 2001 PST], (t@Mon Jan 01 18:20:35.324701 2001 PST, t@Tue Jan 02 05:39:24.675298 2001 PST], (f@Tue Jan 02 05:39:24.675298 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- The answer is the one the pose's own tgeompoint gives, turning points and all
 WITH t AS (
   SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(4 4), 0.4)@2001-01-03]' AS lin1,
          geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))' AS region
@@ -88,6 +119,8 @@ FROM t;
  t         | t
 (1 row)
 
+-- A moving point neither contains nor covers a geometry, and two of them do
+-- not touch, so those five signatures are not declared
 SELECT to_regprocedure('tContains(tpose, geometry)') IS NULL AS tcontains_absent,
        to_regprocedure('tCovers(tpose, geometry)') IS NULL AS tcovers_absent,
        to_regprocedure('tTouches(tpose, tpose)') IS NULL AS ttouches_absent,
@@ -97,6 +130,9 @@ SELECT to_regprocedure('tContains(tpose, geometry)') IS NULL AS tcontains_absent
  t                | t              | t               | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A geodetic pose and a geography
 SELECT asText(tDwithin(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 0)', 1000));
                                                                                           astext                                                                                           
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

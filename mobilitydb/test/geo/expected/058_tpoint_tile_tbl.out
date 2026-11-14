@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
 SELECT spaceTiles(b, 2.5, geometry 'Point(10 10)'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
              spacetiles             | count 
 ------------------------------------+-------
@@ -30,6 +33,7 @@ SELECT spaceTimeTiles(b, 2.5, interval '1 week', 'Point(10 10)', '2001-06-01'), 
  (1,"STBOX XT(((52.5,60),(55,62.5)),[Thu Jan 04 23:00:00 2001 PST, Thu Jan 11 23:00:00 2001 PST))") |     1
 (3 rows)
 
+-- 2D
 SELECT extent(getSpaceTile(g, 2.5)) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL) t1;
           extent          
@@ -44,6 +48,7 @@ SELECT extent(getSpaceTile(g, 2.5, geometry 'Point(10 10)')) FROM
  STBOX X((0,0),(100,100))
 (1 row)
 
+-- 3D
 SELECT extent(getSpaceTile(g, 2.5)) FROM
 (SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL) t1;
              extent             
@@ -58,6 +63,7 @@ SELECT extent(getSpaceTile(g, 2.5, geometry 'Point(10 10 10)')) FROM
  STBOX Z((0,0,0),(100,100,100))
 (1 row)
 
+-- Time
 SELECT extent(getStboxTimeTile(t, interval '2 days')) FROM
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL) t2;
                                 extent                                 
@@ -72,6 +78,7 @@ SELECT extent(getStboxTimeTile(t, interval '2 days', '2001-06-01')) FROM
  STBOX T([Sat Dec 30 23:00:00 2000 PST, Thu Dec 27 23:00:00 2001 PST))
 (1 row)
 
+-- 2D
 SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days')) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL) t2;
@@ -88,6 +95,7 @@ SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days', geometry 'Point(10 
  STBOX XT(((17.5,5),(100,97.5)),[Sat Dec 30 23:00:00 2000 PST, Thu Dec 27 23:00:00 2001 PST))
 (1 row)
 
+-- 3D
 SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days')) FROM
 (SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL) t2;
@@ -104,3 +112,4 @@ SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days', geometry 'Point(10 
  STBOX ZT(((10,2.5,2.5),(80,97.5,67.5)),[Sat Dec 30 23:00:00 2000 PST, Thu Dec 27 23:00:00 2001 PST))
 (1 row)
 
+-------------------------------------------------------------------------------

@@ -1,3 +1,11 @@
+-----------------------------------------------------------------------------
+-- Bulk spatial-relationship tests over temporal QUADBIN cells (tquadbin/tquadbin).
+-- The geometry-operand overloads are covered by the scalar test
+-- 362_tquadbin_spatialrels.
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-- Contains
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eContains(t1.temp, t2.temp);
  count 
 -------
@@ -16,6 +24,9 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tContains(t1.temp, t
    100
 (1 row)
 
+-----------------------------------------------------------------------------
+-- Covers
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eCovers(t1.temp, t2.temp);
  count 
 -------
@@ -34,6 +45,9 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tCovers(t1.temp, t2.
    100
 (1 row)
 
+-----------------------------------------------------------------------------
+-- Disjoint
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eDisjoint(t1.temp, t2.temp);
  count 
 -------
@@ -52,6 +66,9 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tDisjoint(t1.temp, t
    100
 (1 row)
 
+-----------------------------------------------------------------------------
+-- Intersects
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eIntersects(t1.temp, t2.temp);
  count 
 -------
@@ -70,6 +87,9 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tIntersects(t1.temp,
    100
 (1 row)
 
+-----------------------------------------------------------------------------
+-- Touches
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eTouches(t1.temp, t2.temp);
  count 
 -------
@@ -88,6 +108,9 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tTouches(t1.temp, t2
    100
 (1 row)
 
+-----------------------------------------------------------------------------
+-- Dwithin
+-----------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eDwithin(t1.temp, t2.temp, 0.05);
  count 
 -------
@@ -106,3 +129,4 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tDwithin(t1.temp, t2
    100
 (1 row)
 
+-----------------------------------------------------------------------------

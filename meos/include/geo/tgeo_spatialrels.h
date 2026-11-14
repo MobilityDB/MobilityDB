@@ -110,27 +110,45 @@ extern int ea_disjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
 extern int ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
+extern int ea_disjoint_tgeo_geo_intl(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
 extern int ea_disjoint_tgeo_tgeo(const Temporal *temp, const Temporal *temp2,
   bool ever);
+extern int ea_disjoint_tgeo_tgeo_intl(const Temporal *temp,
+  const Temporal *temp2, bool ever);
 
 extern int ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, 
   bool ever);
 extern int ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
+extern int ea_intersects_tgeo_geo_intl(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
 extern int ea_intersects_tgeo_tgeo(const Temporal *temp, const Temporal *temp2,
   bool ever);
+extern int ea_intersects_tgeo_tgeo_intl(const Temporal *temp,
+  const Temporal *temp2, bool ever);
 
 extern int ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
+extern int ea_touches_tpoint_geo_intl(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
 extern int ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_touches_tgeo_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
 extern int ea_touches_tgeo_tgeo(const Temporal *temp, const Temporal *temp2,
   bool ever);
+extern int ea_touches_tgeo_tgeo_intl(const Temporal *temp,
+  const Temporal *temp2, bool ever);
 
 extern int ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   double dist, bool spheroid, bool ever);
+extern int ea_dwithin_tgeo_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
+  double dist, bool spheroid, bool ever);
 extern int ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   double dist, bool spheroid, bool ever);
+extern int ea_dwithin_tgeo_tgeo_intl(const Temporal *temp1,
+  const Temporal *temp2, double dist, bool spheroid, bool ever);
 
 extern int ea_spatialrel_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs, datum_func2 func, bool ever, bool invert);

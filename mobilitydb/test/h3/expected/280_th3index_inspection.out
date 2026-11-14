@@ -1,3 +1,13 @@
+-- §1.2 Index Inspection — five unary lifts.
+--
+-- Test cells (decimal of the h3-pg fixture hex values):
+--   590464338553208831 = 0x831c02fffffffff = res 3 hexagon
+--   590464201114255359 = 0x831c00fffffffff = res 3 pentagon
+--   612544986753269759 = 0x880326b885fffff = res 8 hexagon
+--   0                  = invalid
+-------------------------------------------------------------------------------
+-- getResolution
+-------------------------------------------------------------------------------
 SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
          getresolution          
 --------------------------------
@@ -10,6 +20,7 @@ SELECT getResolution(th3index '880326b885fffff@2001-01-01');
  8@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- All four temporal subtypes
 SELECT getResolution(th3index
   '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
                           getresolution                           
@@ -32,6 +43,9 @@ SELECT getResolution(th3index
  {[3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST], [8@Wed Jan 03 00:00:00 2001 PST, 8@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- th3GetBaseCellNumber
+-------------------------------------------------------------------------------
 SELECT th3GetBaseCellNumber(th3index '831c02fffffffff@2001-01-01');
       th3getbasecellnumber       
 ---------------------------------
@@ -57,6 +71,9 @@ SELECT th3GetBaseCellNumber(th3index
  [14@Mon Jan 01 00:00:00 2001 PST, 14@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- isValidCell
+-------------------------------------------------------------------------------
 SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
           isvalidcell           
 --------------------------------
@@ -75,6 +92,7 @@ SELECT isValidCell(th3index '0@2001-01-01');
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Mixed valid + invalid in a sequence
 SELECT isValidCell(th3index
   '{831c02fffffffff@2001-01-01, 0@2001-01-02, 831c00fffffffff@2001-01-03}');
                                            isvalidcell                                            
@@ -82,6 +100,11 @@ SELECT isValidCell(th3index
  {t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- th3IsResClassIii
+-------------------------------------------------------------------------------
+-- Class III alternates with resolution: even = class II, odd = class III.
+-- res 3 cells are class III (true); res 8 cells are class II (false).
 SELECT th3IsResClassIii(th3index '831c02fffffffff@2001-01-01');
         th3isresclassiii        
 --------------------------------
@@ -101,6 +124,9 @@ SELECT th3IsResClassIii(th3index
  {t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- th3IsPentagon
+-------------------------------------------------------------------------------
 SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
          th3ispentagon          
 --------------------------------
@@ -120,3 +146,4 @@ SELECT th3IsPentagon(th3index
  {f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------

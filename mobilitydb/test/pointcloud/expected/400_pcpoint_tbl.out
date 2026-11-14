@@ -1,3 +1,13 @@
+-- Table-level tests for the static pcpoint / pcpatch types and the
+-- pcpointset / pcpatchset set types.  Every query collapses to a single
+-- scalar (COUNT, MIN, MAX, bool_and, etc.) so the diff is human-readable.
+-- Note: pgpointcloud's static pcpoint / pcpatch do not expose binary
+-- send/receive functions or B-tree comparison operators, so the
+-- COPY BINARY round-trip and `=`/`<>`/`<` patterns used by the
+-- temporal types are not exercised here.
+-------------------------------------------------------------------------------
+-- pcid uniformity — every row in the datagen tables must use pcid = 1.
+-------------------------------------------------------------------------------
 SELECT bool_and(pcid(pt) = 1) FROM tbl_pcpoint;
  bool_and 
 ----------
@@ -10,6 +20,9 @@ SELECT bool_and(pcid(pa) = 1) FROM tbl_pcpatch;
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Coordinate accessors range-check.
+-------------------------------------------------------------------------------
 SELECT bool_and(getX(pt) BETWEEN -100 AND 100) FROM tbl_pcpoint;
  bool_and 
 ----------
@@ -28,6 +41,9 @@ SELECT bool_and(getZ(pt) BETWEEN    0 AND 100) FROM tbl_pcpoint;
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Set types — basic invariants.
+-------------------------------------------------------------------------------
 SELECT bool_and(numValues(s) BETWEEN 1 AND 10)
 FROM tbl_pcpointset WHERE s IS NOT NULL;
  bool_and 
@@ -54,6 +70,9 @@ SELECT COUNT(*) FROM tbl_pcpatchset WHERE s IS NULL;
     25
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Set types — input/output from/to WKT, EWKT, WKB, EWKB, HexWKB, and HexEWKB.
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_pcpointset
 WHERE s IS NOT NULL AND pcpointsetFromText(asText(s)) <> s;
  count 
@@ -166,6 +185,11 @@ WHERE s IS NOT NULL AND pcpatchsetFromHexWKB(asHexEWKB(s)) <> s;
      0
 (1 row)
 
+-- The extended form carries the SRID the plain one omits, and a round trip
+-- holds either way, so only a comparison of the two forms sees it. The fixture
+-- registers its only schema with SRID 0, where the two forms agree by
+-- definition, so a schema carrying an SRID is what makes the question
+-- answerable.
 SELECT COUNT(*) FROM tbl_pcpointset
 WHERE s IS NOT NULL AND asEWKB(s) = asBinary(s);
  count 
@@ -182,7 +206,8 @@ WHERE s IS NOT NULL AND asEWKB(s) = asBinary(s);
 
 INSERT INTO pointcloud_formats (pcid, srid, schema)
 SELECT 3, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
-INSERT 0 1
+-- Of a schema carrying an SRID: the extended form is the four bytes of the
+-- SRID longer, differs from the plain one, and both still round-trip.
 WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0),
   pcpoint(3, 2.0, 2.0, 2.0)]) AS s)
 SELECT asEWKB(s) <> asBinary(s) AS differ,
@@ -195,6 +220,8 @@ FROM t;
  t      |           4 | t               | t
 (1 row)
 
+-- The extended text states the SRID of the schema, reads back, and a stated
+-- SRID other than that one is refused in the text and in the binary form
 WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0),
   pcpoint(3, 2.0, 2.0, 2.0)]) AS s)
 SELECT left(asEWKT(s), 10) AS prefix, pcpointsetFromEWKT(asEWKT(s)) = s AS ewkt_roundtrips
@@ -211,4 +238,4 @@ WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0)]) AS s)
 SELECT pcpointsetFromHexEWKB(replace(asHexEWKB(s, 'XDR'), '000010E6', '00000F11')) FROM t;
 ERROR:  The SRID of the WKB (3857) does not match the SRID of the pcpointset (4326)
 DELETE FROM pointcloud_formats WHERE pcid = 3;
-DELETE 1
+-------------------------------------------------------------------------------

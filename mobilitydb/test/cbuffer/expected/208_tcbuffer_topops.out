@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT round(stbox(cbuffer 'Cbuffer(Point(1 1),0.5)'), 6);
             round             
 ------------------------------
@@ -40,6 +41,7 @@ SELECT round(stbox(tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point
  STBOX XT(((0.3,0.3),(3.5,3.5)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' && tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -232,6 +234,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' @> tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -424,6 +427,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' <@ tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -616,6 +620,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' ~= tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -808,6 +813,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tstzspan '[2001-01-01,2001-01-02]' -|- tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01';
  ?column? 
 ----------
@@ -1000,7 +1006,10 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2
  f
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tcbuffer WHERE temp && stbox 'SRID=3812;STBOX X((0,0),(50,50))';
+-------------------------------------------------------------------------------
+-- Selectivity tests
+-------------------------------------------------------------------------------
+  SELECT COUNT(*) FROM tbl_tcbuffer WHERE temp && stbox 'SRID=3812;STBOX X((0,0),(50,50))';
  count 
 -------
     69
@@ -1012,3 +1021,4 @@ SELECT COUNT(*) FROM tbl_tcbuffer WHERE temp && tcbuffer 'SRID=3812;[Cbuffer(Poi
      9
 (1 row)
 
+-------------------------------------------------------------------------------

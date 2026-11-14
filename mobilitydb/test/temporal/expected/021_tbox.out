@@ -1,46 +1,49 @@
-SELECT tbox 'TBOXINT XT([1, 1],[2001-01-01,2001-01-02])';
+-------------------------------------------------------------------------------
+-- Tbox
+-------------------------------------------------------------------------------
+SELECT tbox 'TBOXINT XT([1, 1],[2001-01-01,2001-01-02])'; -- Both X and T dimensions
                                       tbox                                       
 ---------------------------------------------------------------------------------
  TBOXINT XT([1, 2),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT tbox 'TBOXBIGINT XT([1, 1],[2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXBIGINT XT([1, 1],[2001-01-01,2001-01-02])'; -- Both X and T dimensions
                                         tbox                                        
 ------------------------------------------------------------------------------------
  TBOXBIGINT XT([1, 2),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT tbox 'TBOXFLOAT XT([1.0, 1.0],[2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXFLOAT XT([1.0, 1.0],[2001-01-01,2001-01-02])'; -- Both X and T dimensions
                                        tbox                                        
 -----------------------------------------------------------------------------------
  TBOXFLOAT XT([1, 1],[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT tbox 'TBOXINT X([1, 1])';
+SELECT tbox 'TBOXINT X([1, 1])'; -- Only X dimension
        tbox        
 -------------------
  TBOXINT X([1, 2))
 (1 row)
 
-SELECT tbox 'TBOXBIGINT X([1, 1])';
+SELECT tbox 'TBOXBIGINT X([1, 1])'; -- Only X dimension
          tbox         
 ----------------------
  TBOXBIGINT X([1, 2))
 (1 row)
 
-SELECT tbox 'TBOXFLOAT X([1.0, 1.0])';
+SELECT tbox 'TBOXFLOAT X([1.0, 1.0])'; -- Only X dimension
         tbox         
 ---------------------
  TBOXFLOAT X([1, 1])
 (1 row)
 
-SELECT tbox 'TBOX T([2001-01-01,2001-01-02])';
+SELECT tbox 'TBOX T([2001-01-01,2001-01-02])'; -- Only T dimension
                                  tbox                                 
 ----------------------------------------------------------------------
  TBOX T([Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT tbox 'TBOXINT XT([1,2][2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXINT XT([1,2][2001-01-01,2001-01-02])'; -- Optional comma
                                       tbox                                       
 ---------------------------------------------------------------------------------
  TBOXINT XT([1, 3),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
@@ -103,15 +106,12 @@ SELECT tbox 'TBOXFLOAT X((2,2001-01-02),(1,2001-01-01))XXXX';
 ERROR:  invalid input syntax for type double precision: "2001-01-02"
 LINE 1: SELECT tbox 'TBOXFLOAT X((2,2001-01-02),(1,2001-01-01))XXXX'...
                     ^
-COPY  tbl_tboxfloat TO STDOUT (FORMAT BINARY);
-COPY 100
+-- Send/receive functions
+\copy tbl_tboxfloat TO 'tbl_tboxfloat' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tboxfloat_tmp;
 NOTICE:  table "tbl_tboxfloat_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tboxfloat_tmp AS TABLE tbl_tboxfloat WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_tboxfloat_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_tboxfloat_tmp FROM 'tbl_tboxfloat' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
  count 
 -------
@@ -119,16 +119,11 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat_tmp t2 WHERE t1.k = t2.k AN
 (1 row)
 
 DROP TABLE tbl_tboxfloat_tmp;
-DROP TABLE
-COPY  tbl_tboxint TO STDOUT (FORMAT BINARY);
-COPY 100
+\copy tbl_tboxint TO 'tbl_tboxint' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tboxint_tmp;
 NOTICE:  table "tbl_tboxint_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_tboxint_tmp AS TABLE tbl_tboxint WITH NO DATA;
-CREATE TABLE AS
-COPY  tbl_tboxint_tmp FROM STDIN (FORMAT BINARY);
-COPY 100
+\copy tbl_tboxint_tmp FROM 'tbl_tboxint' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
  count 
 -------
@@ -136,7 +131,8 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint_tmp t2 WHERE t1.k = t2.k AND t1
 (1 row)
 
 DROP TABLE tbl_tboxint_tmp;
-DROP TABLE
+-- Input/output from/to WKT, WKB and HexWKB
+-- Maximum decimal digits
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789],[2001-01-01,2001-01-02])', 6);
                                              astext                                              
 -------------------------------------------------------------------------------------------------
@@ -185,6 +181,9 @@ SELECT COUNT(*) FROM tbl_tboxfloat WHERE tboxFromText(asText(b)) <> asText(b)::t
      0
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT tbox(floatspan '[1,2]', timestamptz '2001-01-01');
                                        tbox                                        
 -----------------------------------------------------------------------------------
@@ -238,6 +237,9 @@ SELECT tbox(float 'NaN', timestamptz '2001-01-01');
 ERROR:  The value must be finite
 SELECT tbox(float 'NaN', tstzspan '[2001-01-01,2001-01-02]');
 ERROR:  The value must be finite
+-------------------------------------------------------------------------------
+-- Conversions
+-------------------------------------------------------------------------------
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])'::floatspan;
  floatspan 
 -----------
@@ -422,6 +424,7 @@ SELECT tbox 'TBOXINT T([2001-01-01, 2001-01-02))'::floatspan;
 ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXBIGINT T([2001-01-01, 2001-01-02))'::bigintspan;
 ERROR:  The tbox must have X dimension
+-------------------------------------------------------------------------------
 SELECT MIN(Xmin(temp::tbox)) FROM tbl_tint;
  min 
 -----
@@ -434,6 +437,7 @@ SELECT round(MIN(Xmin(temp::tbox)),6) FROM tbl_tfloat;
  1.029263
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan)), 6) FROM tbl_tboxfloat;
   round   
 ----------
@@ -441,11 +445,14 @@ SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan)), 6) FROM tbl_tboxflo
 (1 row)
 
 SELECT MAX(duration(b::tstzspan)) FROM tbl_tboxint;
-   max    
-----------
- 00:10:00
+    max    
+-----------
+ @ 10 mins
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessor functions
+-------------------------------------------------------------------------------
 SELECT hasX(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
  hasx 
 ------
@@ -614,6 +621,8 @@ SELECT Xmax(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])');
     2
 (1 row)
 
+-- A big integer bound above 2^53 has no exact float, so the double accessor
+-- refuses it rather than answering a neighbouring value; bigintspan reads it
 SELECT Xmin(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])');
 ERROR:  The big integer bound of the box is not representable as a double. Received: 9007199254740993. Read it from bigintspan(box) instead
 SELECT Xmax(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])');
@@ -642,6 +651,7 @@ SELECT Tmax(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])');
  Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT MIN(xmin(b)) FROM tbl_tboxint;
  min 
 -----
@@ -690,6 +700,9 @@ SELECT MAX(tmax(b)) FROM tbl_tboxfloat;
  Sat Dec 22 20:22:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 1);
                                        round                                       
 -----------------------------------------------------------------------------------
@@ -743,7 +756,7 @@ SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', '1 hour
 
 /* Errors */
 SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', '-1 hour');
-ERROR:  The interval must be positive: -01:00:00
+ERROR:  The interval must be positive: @ 1 hour ago
 SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 1.0, 2.0);
                                   shiftscalevalue                                  
 -----------------------------------------------------------------------------------
@@ -770,7 +783,7 @@ SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', '-
 
 /* Errors */
 SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', interval '-1 day', interval '-1 day');
-ERROR:  The interval must be positive: -1 days
+ERROR:  The interval must be positive: @ 1 day ago
 SELECT shiftValue(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])', 1::bigint);
                                      shiftvalue                                     
 ------------------------------------------------------------------------------------
@@ -813,12 +826,16 @@ SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 2.0);
  TBOXFLOAT XT([-1, 4],[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+-- A float box takes an integer value of either width, converting it to the
+-- double the box stores. A binary integer/float dispatch reads the bigint Datum
+-- as a double instead, which reinterprets its bits
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 2::bigint);
                                     expandvalue                                     
 ------------------------------------------------------------------------------------
  TBOXFLOAT XT([-1, 4],[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+-- The two integer widths do not mix, and each message names the value it got
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])', 2::bigint);
 ERROR:  Invalid value to expand box: 2
 SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])', 2);
@@ -835,6 +852,7 @@ SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', interv
  TBOXFLOAT XT([1, 2],[Mon Jan 01 12:00:00 2001 PST, Mon Jan 01 12:00:00 2001 PST])
 (1 row)
 
+-- NULL
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])', -1);
  expandvalue 
 -------------
@@ -900,6 +918,9 @@ SELECT round(tbox 'TBOXFLOAT XT([1.123456789,2.123456789],[2001-01-01,2001-01-02
 
 SELECT round(tbox 'TBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The tbox must have X dimension
+-------------------------------------------------------------------------------
+-- Topological operators
+-------------------------------------------------------------------------------
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])' && tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])';
  ?column? 
 ----------
@@ -936,6 +957,8 @@ SELECT tstzspan '[2001-01-01,2001-01-02]'::tbox -|- tstzspan '[2001-01-02, 2001-
  t
 (1 row)
 
+-- Adjacency reads every dimension the boxes share: a value bound they share
+-- while their periods lie apart leaves them apart
 SELECT tbox 'TBOXFLOAT XT([1,5],[2001-01-01,2001-01-05])' -|- tbox 'TBOXFLOAT XT([5,9],[2001-06-01,2001-06-05])';
  ?column? 
 ----------
@@ -966,6 +989,7 @@ SELECT tbox 'TBOXFLOAT X([1,5])' -|- tbox 'TBOXFLOAT X([3,9])';
  f
 (1 row)
 
+-- The portable spelling of each operator above answers the same
 SELECT tboxOverlaps(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
  tboxoverlaps 
 --------------
@@ -1007,6 +1031,7 @@ SELECT tbox 'TBOXFLOAT X([1,2])' -|- tbox 'TBOX T([2001-01-01,2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' ~= tbox 'TBOX T([2001-01-01,2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b && t2.b;
  count 
 -------
@@ -1067,6 +1092,9 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b ~= t2.b;
     99
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Position operators
+-------------------------------------------------------------------------------
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])' << tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])';
  ?column? 
 ----------
@@ -1132,6 +1160,7 @@ SELECT tbox 'TBOXFLOAT X([1,2])' #>> tbox 'TBOX T([2001-01-01,2001-01-02])';
 ERROR:  The tbox must have T dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' #&> tbox 'TBOX T([2001-01-01,2001-01-02])';
 ERROR:  The tbox must have T dimension
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b << t2.b;
  count 
 -------
@@ -1228,6 +1257,11 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b #&> t2.b;
   4950
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Operators of a span and a temporal box
+-------------------------------------------------------------------------------
+-- A span answers the operators of a temporal box as its own box does: a number
+-- span on the value dimension, a timestamptz span on the time dimension
 SELECT intspan '[1,5)' && tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
  ?column? 
 ----------
@@ -1366,6 +1400,7 @@ SELECT floatspan '[8,9)' -|- tbox 'TBOXFLOAT XT([3,8),[2001-01-01,2001-01-02])';
  t
 (1 row)
 
+-- The portable spelling of each operator answers the same
 SELECT tboxOverlaps(intspan '[1,5)', tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])');
  tboxoverlaps 
 --------------
@@ -1378,6 +1413,8 @@ SELECT tboxOverbefore(tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])', tstzspan
  t
 (1 row)
 
+-- A span of another number than the box, or a box without the span's
+-- dimension, is refused as two such boxes are
 SELECT floatspan '[1,5)' && tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
 ERROR:  Operation on mixed span types: floatspan and intspan
 SELECT intspan '[1,5)' && tbox 'TBOX T([2001-01-01,2001-01-02])';
@@ -1386,6 +1423,8 @@ SELECT intspan '[1,5)' << tbox 'TBOX T([2001-01-01,2001-01-02])';
 ERROR:  The tbox must have X dimension
 SELECT tstzspan '[2001-01-01,2001-01-03]' <<# tbox 'TBOXINT X([3,8))';
 ERROR:  The tbox must have T dimension
+-- Over the tables, each operator answers what it answers on the box of the
+-- span, for pairs answering true and pairs answering false
 SELECT COUNT(*) FILTER (WHERE (t1.i && t2.b) <> (t1.i::tbox && t2.b)),
   COUNT(*) FILTER (WHERE t1.i && t2.b), COUNT(*) FILTER (WHERE NOT (t1.i && t2.b))
 FROM tbl_intspan t1, tbl_tboxint t2;
@@ -1602,6 +1641,7 @@ FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
      0 |  4950 |  4851
 (1 row)
 
+-- ... and the planner estimates them over a span column and a box column
 SELECT COUNT(*) FROM tbl_intspan WHERE i && tbox 'TBOXINT X([10,20))';
  count 
 -------
@@ -1626,6 +1666,9 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_tboxint t2 WHERE t1.i && t2.b;
    532
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Set operators
+-------------------------------------------------------------------------------
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])' + tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])';
                                      ?column?                                      
 -----------------------------------------------------------------------------------
@@ -1667,6 +1710,7 @@ SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])' + tbox 'TBOXFLOAT 
 ERROR:  Result of box union would not be contiguous
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])' + tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-03, 2001-01-04])';
 ERROR:  Result of box union would not be contiguous
+-------------------------------------------------------------------------------
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])' * tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])';
                                      ?column?                                      
 -----------------------------------------------------------------------------------
@@ -1733,6 +1777,7 @@ SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])' * tbox 'TBOXFLOAT 
  
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b && t2.b;
  max 
 -----
@@ -1757,6 +1802,9 @@ SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
  108.64587
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Extent aggregation
+-------------------------------------------------------------------------------
 WITH test(box) AS (
   SELECT NULL::tbox UNION ALL SELECT tbox 'TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])' UNION ALL
   SELECT NULL::tbox UNION ALL SELECT tbox 'TBOXFLOAT XT([1,3],[2001-01-01,2001-01-03])' )
@@ -1766,11 +1814,17 @@ SELECT extent(box) FROM test;
  TBOXFLOAT XT([1, 3],[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
+-- The span type states what a box measures, so an extent spanning two of them
+-- states a quantity nothing reads, exactly as the + operator on the same pair
+-- already answers
 WITH test(box) AS (
   SELECT tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])' UNION ALL
   SELECT tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])' )
 SELECT extent(box) FROM test;
 ERROR:  Operation on mixed span types: intspan and floatspan
+-- Both machinery functions of the aggregate answer on the same terms as the
+-- operator. The combine is reached by a parallel plan alone, so it is called
+-- directly here
 SELECT extentTransition(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
 ERROR:  Operation on mixed span types: intspan and floatspan
 SELECT extentCombine(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
@@ -1787,6 +1841,8 @@ SELECT extentCombine(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
  TBOXFLOAT X([1, 4])
 (1 row)
 
+-- A box carrying no value span states no span type, so it is comparable with
+-- any box, and a null side leaves the other untouched
 SELECT extentCombine(NULL, tbox 'TBOXFLOAT X([3,4])');
     extentcombine    
 ---------------------
@@ -1799,12 +1855,16 @@ SELECT extentCombine(tbox 'TBOXFLOAT X([1,2])', NULL);
  TBOXFLOAT X([1, 2])
 (1 row)
 
+-- Which dimensions a box holds is the second question, asked after the first
 SELECT extentTransition(tbox 'TBOXFLOAT X([1,2])',
   tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
 ERROR:  The boxes must be of the same dimensionality
 SELECT extentCombine(tbox 'TBOXFLOAT X([1,2])',
   tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
 ERROR:  The boxes must be of the same dimensionality
+-------------------------------------------------------------------------------
+-- Comparison functions
+-------------------------------------------------------------------------------
 SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2001-01-02,2001-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-02, 2001-01-02])');
  cmp 
 -----
@@ -1871,6 +1931,7 @@ SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', tbox 'TBOXFLO
    1
 (1 row)
 
+-- Boxes of different dimensions or value types are ordered by them first
 SELECT cmp(tbox 'TBOXFLOAT XT([0,0],[2001-01-02,2001-01-02])', tbox 'TBOXFLOAT X([1,1])');
  cmp 
 -----
@@ -1925,6 +1986,7 @@ SELECT tbox 'TBOXFLOAT XT([1.0,1.0],[2001-01-02,2001-01-02])' = floatspan '[1, 2
  f
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 GROUP BY cmp(t1.b, t2.b) ORDER BY 1;
  cmp | count 
 -----+-------
@@ -2015,6 +2077,7 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b >= t2.b;
   4950
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT hash(tbox 'TBOXFLOAT X([1.0,1.0])');
    hash    
 -----------
@@ -2051,11 +2114,13 @@ SELECT hashExtended(tbox 'TBOXFLOAT XT([1.0,1.0],[2001-01-02,2001-01-02])', 1);
  -492679394656565984
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Nearest approach ordering answered by the indexes
+-------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tboxfloat_rtree_idx;
 NOTICE:  index "tbl_tboxfloat_rtree_idx" does not exist, skipping
-DROP INDEX
 CREATE INDEX tbl_tboxfloat_rtree_idx ON tbl_tboxfloat USING GIST(b);
-CREATE INDEX
 WITH test AS (
   SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
   FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
@@ -2068,12 +2133,9 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 DROP INDEX tbl_tboxfloat_rtree_idx;
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tboxfloat_quadtree_idx;
 NOTICE:  index "tbl_tboxfloat_quadtree_idx" does not exist, skipping
-DROP INDEX
 CREATE INDEX tbl_tboxfloat_quadtree_idx ON tbl_tboxfloat USING SPGIST(b);
-CREATE INDEX
 WITH test AS (
   SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
   FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
@@ -2086,12 +2148,9 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 DROP INDEX tbl_tboxfloat_quadtree_idx;
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tboxfloat_kdtree_idx;
 NOTICE:  index "tbl_tboxfloat_kdtree_idx" does not exist, skipping
-DROP INDEX
 CREATE INDEX tbl_tboxfloat_kdtree_idx ON tbl_tboxfloat USING SPGIST(b tbox_kdtree_ops);
-CREATE INDEX
 WITH test AS (
   SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
   FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
@@ -2104,6 +2163,8 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 DROP INDEX tbl_tboxfloat_kdtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
+-- A bound beyond the largest double raises an error
 SELECT expandValue(tbox 'TBOXFLOAT XT([-1.7e308,1.7e308],[2001-01-01,2001-01-02])', 1.7976931348623157e308);
 ERROR:  value out of range: overflow
+-------------------------------------------------------------------------------

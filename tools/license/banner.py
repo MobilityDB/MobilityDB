@@ -64,7 +64,7 @@ NAMES = ("CMakeLists.txt",)
 # Vendored trees carry the notices of their upstream. A file there is
 # MobilityDB's when it declares so by carrying this banner: its banner is
 # refreshed, and no file there ever receives one
-VENDORED = ("pgtypes/", "postgis/", "h3-pg/", "pointcloud-pg/")
+VENDORED = ("pgtypes/", "postgis/", "h3-pg/", "pointcloud-pg/", "core-math/")
 # The files of the first-party trees that state another project's licence
 OTHER_PROJECTS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
   "..", "scripts", "license_other_projects.txt")
@@ -239,9 +239,10 @@ def other_projects():
 def test(path):
     """Return true for a SQL test, which carries no banner
 
-    As in PostgreSQL and PostGIS, the licence of the repository covers the
-    tests. A banner at the top of each test is 27 lines to restamp every year
-    in several hundred files, which every tool reading the tests skips.
+    pg_regress echoes every line of a test into its output, so a banner would
+    be copied into each expected file, and a change of its year would make
+    every test fail until those files were regenerated. As in PostgreSQL and
+    PostGIS, the licence of the repository covers the tests.
     """
     return fnmatch.fnmatch(path, "mobilitydb/test/*/sql/*.sql")
 

@@ -1,3 +1,15 @@
+-- Static s2cellset SQL type: parser, output, constructor, accessors, the cast
+-- from a single cell, set operations, and the btree opclass.
+--
+-- Every cell here is at level 29, whose level bit sits at position 2, so the
+-- literals end in 4, c and 14. A token ending in 8 sets bit 3, which is odd
+-- and encodes no level, and the type rejects it.
+-------------------------------------------------------------------------------
+-- Input and output
+--
+-- A set prints its elements in ascending identifier order, which is Hilbert
+-- order, and duplicates collapse.
+-------------------------------------------------------------------------------
 SELECT s2cellset '{47c3c444c000000c, 47c3c444c0000004}';
                 s2cellset                 
 ------------------------------------------
@@ -10,6 +22,8 @@ SELECT s2cellset '{47c3c444c0000004, 47c3c444c0000004}';
  {"47c3c444c0000004"}
 (1 row)
 
+-- The text and binary forms: EWKT, EWKB and HexEWKB state the SRID 4326 of a
+-- cell, and every form reads back
 SELECT asEWKT(s2cellset '{47c3c444c000000c, 47c3c444c0000004}');
                        asewkt                       
 ----------------------------------------------------
@@ -64,6 +78,7 @@ SELECT s2cellsetFromHexEWKB(asHexEWKB(s2cellset '{47c3c444c000000c}'))
  t
 (1 row)
 
+-- A cell states SRID 4326, so another SRID is refused in every input form
 SELECT s2cellsetFromEWKT('SRID=3857;{47c3c444c000000c}');
 ERROR:  The SRID 3857 cannot be stated for the s2cell
 SELECT s2cellsetFromHexEWKB(replace(asHexEWKB(s2cellset '{47c3c444c000000c}', 'XDR'),
@@ -73,6 +88,9 @@ SELECT s2cell '47c3c444c0000008';
 ERROR:  s2cell value "47c3c444c0000008" does not encode a valid S2 cell
 LINE 1: SELECT s2cell '47c3c444c0000008';
                       ^
+-------------------------------------------------------------------------------
+-- Constructor and accessors
+-------------------------------------------------------------------------------
 SELECT set(ARRAY[s2cell '47c3c444c000000c', s2cell '47c3c444c0000004']);
                    set                    
 ------------------------------------------
@@ -109,6 +127,9 @@ SELECT valueN(s2cellset '{47c3c444c000000c, 47c3c444c0000004}', 3);
  
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The cast from a single cell, and set membership
+-------------------------------------------------------------------------------
 SELECT (s2cell '47c3c444c0000004')::s2cellset;
       s2cellset       
 ----------------------
@@ -133,6 +154,9 @@ SELECT s2cellset '{47c3c444c0000004}' @> s2cell '47c3c444c0000004';
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Set operations
+-------------------------------------------------------------------------------
 SELECT s2cellset '{47c3c444c0000004}' + s2cellset '{47c3c444c000000c}';
                  ?column?                 
 ------------------------------------------
@@ -163,6 +187,9 @@ SELECT s2cellset '{47c3c444c0000004}' && s2cellset '{47c3c444c0000014}';
  f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparison, which the btree operator class carries
+-------------------------------------------------------------------------------
 SELECT s2cellset '{47c3c444c0000004}' = s2cellset '{47c3c444c0000004}';
  ?column? 
 ----------
@@ -175,3 +202,4 @@ SELECT s2cellset '{47c3c444c0000004}' < s2cellset '{47c3c444c000000c}';
  t
 (1 row)
 
+-------------------------------------------------------------------------------

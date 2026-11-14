@@ -57,7 +57,7 @@
 
 /* Index of the vertex of an outline with these doubles, or -1 */
 static int
-outline_vertex(const H3Outline *o, double lon, double lat)
+outline_vertex(const DggsOutline *o, double lon, double lat)
 {
   for (int k = 0; k < o->count; k++)
     if (o->lon[k] == lon && o->lat[k] == lat)
@@ -67,7 +67,7 @@ outline_vertex(const H3Outline *o, double lon, double lat)
 
 /* Whether the outline lies away from the poles and the antimeridian */
 static bool
-outline_plain(const H3Outline *o)
+outline_plain(const DggsOutline *o)
 {
   for (int k = 0; k < o->count; k++)
     if (o->lat[k] > 60.0 || o->lat[k] < -60.0 || o->lon[k] > 170.0 ||
@@ -107,7 +107,7 @@ main(int argc, char **argv)
       {
         if (cells[c] == 0)
           continue;
-        H3Outline o;
+        DggsOutline o;
         if (! h3_cell_outline(cells[c], &o))
         {
           printf("FAIL res %d: no outline for %llx\n", res,
@@ -148,7 +148,7 @@ main(int argc, char **argv)
             }
           }
           /* The edge, read by the cell across it in the other sense */
-          H3Outline n;
+          DggsOutline n;
           if (! h3_cell_outline(o.across[k], &n))
           {
             printf("FAIL res %d: no outline for %llx\n", res,
@@ -218,7 +218,7 @@ main(int argc, char **argv)
           int gholders = h3_outline_vertex_held_geodetic(&o, k);
           for (int j = 1; j < nmeet; j++)
           {
-            H3Outline n;
+            DggsOutline n;
             int m;
             if (! h3_cell_outline(meet[j], &n) ||
                 (m = outline_vertex(&n, o.lon[k], o.lat[k])) < 0)

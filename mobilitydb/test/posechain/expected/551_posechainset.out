@@ -1,3 +1,11 @@
+-------------------------------------------------------------------------------
+-- Tests for the pose chain set type
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Input/output
+-- A set holds its values ordered and without duplicates, and the frame of the
+-- set is the frame its chains agree on.
+-------------------------------------------------------------------------------
 SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))"}');
                         asewkt                         
 -------------------------------------------------------
@@ -10,6 +18,7 @@ SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(P
  {"PoseChain(Pose(POINT(0 0),0))", "PoseChain(Pose(POINT(1 0),0))"}
 (1 row)
 
+-- Duplicates collapse and the values come out ordered
 SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}');
                                asewkt                               
 --------------------------------------------------------------------
@@ -28,6 +37,7 @@ SELECT asEWKT(posechainset '{"SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 
  SRID=4326;{"PoseChain(GeodPose(POINT Z (8 47 0),1,0,0,0))"}
 (1 row)
 
+-- Text and binary representations round trip
 SELECT asEWKT(posechainsetFromEWKT(asEWKT(posechainset '{"PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 0), 0.25))"}')));
                           asewkt                           
 -----------------------------------------------------------
@@ -41,6 +51,7 @@ SELECT posechainsetFromBinary(asBinary(posechainset '{"PoseChain(Pose(Point(1 2)
  t
 (1 row)
 
+-- EWKB is the representation that carries the frame; plain WKB does not
 SELECT posechainsetFromEWKB(asEWKB(posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0))"}')) =
   posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0))"}';
  ?column? 
@@ -62,6 +73,11 @@ SELECT posechainsetFromHexEWKB(asHexEWKB(posechainset '{"SRID=3812;PoseChain(Pos
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Errors
+-- The chains of a set share one frame and one dimension, as the links of a
+-- chain do.
+-------------------------------------------------------------------------------
 SELECT posechainset '{"SRID=3812;PoseChain(Pose(Point(0 0), 0))", "SRID=4326;PoseChain(Pose(Point(1 1), 0))"}';
 ERROR:  Operation on mixed SRID
 LINE 1: SELECT posechainset '{"SRID=3812;PoseChain(Pose(Point(0 0), ...
@@ -74,6 +90,9 @@ SELECT posechainset '{}';
 ERROR:  Could not parse posechain value: Missing prefix 'PoseChain'
 LINE 1: SELECT posechainset '{}';
                             ^
+-------------------------------------------------------------------------------
+-- Constructors and conversions
+-------------------------------------------------------------------------------
 SELECT asEWKT(set(posechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 0), 0.25))'));
                           asewkt                           
 -----------------------------------------------------------
@@ -93,6 +112,7 @@ SELECT asEWKT(set(ARRAY[posechain 'PoseChain(Pose(Point(0 0), 0))',
  {"PoseChain(Pose(POINT(0 0),0))", "PoseChain(Pose(POINT(1 0),0))"}
 (1 row)
 
+-- The box of a set spans every joint of every chain it holds
 SELECT round(stbox(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))", "PoseChain(Pose(Point(1 5), 0))"}'), 6);
          round         
 -----------------------
@@ -105,12 +125,18 @@ SELECT round((posechainset '{"PoseChain(Pose(Point(0 0), 0))"}')::stbox, 6);
  STBOX X((0,0),(0,0))
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformations
+-------------------------------------------------------------------------------
 SELECT asEWKT(round(posechainset '{"PoseChain(Pose(Point(1.123456789 2.123456789), 0.5))"}', 3));
                    asewkt                    
 ---------------------------------------------
  {"PoseChain(Pose(POINT(1.123 2.123),0.5))"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
 SELECT memSize(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}') > 0;
  ?column? 
 ----------
@@ -141,6 +167,7 @@ SELECT asEWKT(valueN(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain
  PoseChain(Pose(POINT(1 0),0))
 (1 row)
 
+-- Out of range yields NULL
 SELECT valueN(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}', 99);
  valuen 
 --------
@@ -153,6 +180,9 @@ SELECT asEWKT(getValues(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseCh
  {"PoseChain(Pose(POINT(0 0),0))","PoseChain(Pose(POINT(1 0),0))"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Spatial reference system
+-------------------------------------------------------------------------------
 SELECT SRID(posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2), 0.5))"}');
  srid 
 ------
@@ -165,12 +195,16 @@ SELECT SRID(setSRID(posechainset '{"PoseChain(Pose(Point(1 2), 0.5))"}', 3812));
  3812
 (1 row)
 
+-- Transforming and transforming back returns the values it started from
 SELECT asEWKT(round(transform(transform(posechainset '{"SRID=4326;PoseChain(Pose(Point(8 47), 0.5))"}', 3812), 4326), 6));
                      asewkt                     
 ------------------------------------------------
  SRID=4326;{"PoseChain(Pose(POINT(8 47),0.5))"}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- unnest: SETOF expansion
+-------------------------------------------------------------------------------
 SELECT COUNT(*) = numValues(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(2 0), 0))"}')
 FROM unnest(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(2 0), 0))"}');
  ?column? 
@@ -178,6 +212,9 @@ FROM unnest(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Poi
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- setUnion aggregate
+-------------------------------------------------------------------------------
 SELECT setUnion(v) = posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}'
 FROM (VALUES (posechain 'PoseChain(Pose(Point(0 0), 0))'),
              (posechain 'PoseChain(Pose(Point(1 0), 0))'),
@@ -196,6 +233,9 @@ FROM (VALUES (posechainset '{"PoseChain(Pose(Point(0 0), 0))"}'),
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Comparisons, btree and hash
+-------------------------------------------------------------------------------
 SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' = posechainset '{"PoseChain(Pose(Point(0 0), 0))"}';
  ?column? 
 ----------
@@ -236,15 +276,12 @@ SELECT hashExtended(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}', 1) =
 
 DROP TABLE IF EXISTS tbl_posechainset_test;
 NOTICE:  table "tbl_posechainset_test" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_posechainset_test(k int, s posechainset);
-CREATE TABLE
 INSERT INTO tbl_posechainset_test VALUES
   (1, posechainset '{"PoseChain(Pose(Point(0 0), 0))"}'),
   (2, posechainset '{"PoseChain(Pose(Point(1 0), 0))"}'),
   (3, posechainset '{"PoseChain(Pose(Point(0 0), 0))"}'),
   (4, posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}');
-INSERT 0 4
 SELECT COUNT(DISTINCT s) FROM tbl_posechainset_test;
  count 
 -------
@@ -252,7 +289,9 @@ SELECT COUNT(DISTINCT s) FROM tbl_posechainset_test;
 (1 row)
 
 DROP TABLE tbl_posechainset_test;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Set operations
+-------------------------------------------------------------------------------
 SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}' @> posechain 'PoseChain(Pose(Point(1 0), 0))';
  ?column? 
 ----------
@@ -307,9 +346,11 @@ SELECT asEWKT(posechain 'PoseChain(Pose(Point(1 0), 0))' * posechainset '{"PoseC
  {"PoseChain(Pose(POINT(1 0),0))"}
 (1 row)
 
+-- Mixing frames in a set operation is an error, as it is between two chains
 SELECT posechainset '{"SRID=3812;PoseChain(Pose(Point(0 0), 0))"}' @> posechain 'SRID=4326;PoseChain(Pose(Point(0 0), 0))';
  ?column? 
 ----------
  f
 (1 row)
 
+-------------------------------------------------------------------------------

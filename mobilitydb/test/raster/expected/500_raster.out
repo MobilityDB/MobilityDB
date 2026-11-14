@@ -1,7 +1,18 @@
+-- Pin timezone and datestyle so the tfloat text output is identical across
+-- all CI environments (Ubuntu UTC, macOS PST, Windows EST, …).
 SET timezone = 'UTC';
-SET
 SET datestyle = 'ISO, MDY';
-SET
+-- A 3x3 synthetic raster (SRID 4326, 1° pixels) used throughout this file.
+-- Row 1 (lat 2–3): pixel values 10, 20, 30  (left → right)
+-- Row 2 (lat 1–2): pixel values 40, 50, 60
+-- Row 3 (lat 0–1): pixel values 70, 80, 90
+-------------------------------------------------------------------------------
+-- rasterValue — basic usage
+-------------------------------------------------------------------------------
+-- Three non-collinear instants, all inside the raster.
+-- POINT(0.5 2.5) → pixel(row=1,col=1) = 10
+-- POINT(2.5 2.5) → pixel(row=1,col=3) = 30
+-- POINT(0.5 0.5) → pixel(row=3,col=1) = 70
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -22,6 +33,8 @@ FROM rast;
  Interp=Step;[10@2001-01-01 00:00:00+00, 20@2001-01-01 06:00:00+00, 30@2001-01-01 18:00:00+00, 50@2001-01-02 06:00:00+00, 70@2001-01-02 18:00:00+00, 70@2001-01-03 00:00:00+00]
 (1 row)
 
+-- One instant outside the raster extent is silently dropped.
+-- POINT(0.5 2.5) → 10; POINT(5.5 5.5) outside → dropped; POINT(0.5 0.5) → 70
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -42,6 +55,9 @@ FROM rast;
  Interp=Step;{[10@2001-01-01 00:00:00+00, 20@2001-01-01 02:24:00+00, 20@2001-01-01 04:00:00+00), [30@2001-01-02 12:00:00+00, 50@2001-01-02 16:47:59.999999+00, 70@2001-01-02 21:36:00+00, 70@2001-01-03 00:00:00+00]}
 (1 row)
 
+-- An instant on a nodata pixel is dropped, as one outside the extent is: the
+-- band declares -9999 as its nodata value and pixel(row=1,col=2) holds it.
+-- POINT(0.5 2.5) → 10; POINT(1.5 2.5) → nodata → dropped; POINT(0.5 0.5) → 70
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -62,6 +78,7 @@ FROM rast;
  Interp=Step;{[10@2001-01-01 00:00:00+00, 10@2001-01-01 12:00:00+00), [50@2001-01-02 06:00:00+00, 40@2001-01-02 12:00:00+00, 70@2001-01-02 18:00:00+00, 70@2001-01-03 00:00:00+00]}
 (1 row)
 
+-- All instants outside the raster → NULL.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -82,6 +99,9 @@ FROM rast;
  
 (1 row)
 
+-- Single-instant trajectory.
+-- POINT(1.5 1.5) → pixel(row=2,col=2) = 50 (non-collinear issue does not
+-- apply to a single instant; the instant set format {v@t} is returned).
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -101,6 +121,10 @@ FROM rast;
  {50@2001-01-01 00:00:00+00}
 (1 row)
 
+-- A trajectory that moves between its instants passes over the pixels between
+-- them, and their values belong to the answer: the diagonal below crosses
+-- pixel(row=2,col=2) = 50 between its two instants, and each value holds until
+-- the trip reaches a pixel holding another.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -121,6 +145,8 @@ FROM rast;
  Interp=Step;[10@2001-01-01 00:00:00+00, 50@2001-01-01 12:00:00+00, 90@2001-01-02 12:00:00+00, 90@2001-01-03 00:00:00+00]
 (1 row)
 
+-- The same three positions stated as an instant set say nothing between them,
+-- so the answer holds one value per instant.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -141,6 +167,8 @@ FROM rast;
  {10@2001-01-01 00:00:00+00, 50@2001-01-02 00:00:00+00, 90@2001-01-03 00:00:00+00}
 (1 row)
 
+-- A trip crossing a nodata pixel answers one sequence per visit: the band
+-- declares -9999 as its nodata value and pixel(row=1,col=2) holds it.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -161,6 +189,9 @@ FROM rast;
  Interp=Step;{[10@2001-01-01 00:00:00+00, 10@2001-01-01 12:00:00+00), [30@2001-01-02 12:00:00+00, 30@2001-01-03 00:00:00+00]}
 (1 row)
 
+-- A trip reads each value from the instant it reaches the pixel holding it:
+-- the row below crosses x = 1 at 14:46:09.230769 and x = 2 at 09:13:50.769230
+-- on the next day.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -181,6 +212,8 @@ FROM rast;
  Interp=Step;[10@2001-01-01 00:00:00+00, 20@2001-01-01 14:46:09.230769+00, 30@2001-01-02 09:13:50.76923+00, 30@2001-01-03 00:00:00+00]
 (1 row)
 
+-- A trip clipping the corner of a pixel over a short chord holds its value:
+-- the step below passes through pixel(row=3,col=1) = 70 between 40 and 80.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -201,6 +234,10 @@ FROM rast;
  Interp=Step;[40@2001-01-01 00:00:00+00, 70@2001-01-01 08:00:00+00, 80@2001-01-01 15:59:59.999999+00, 80@2001-01-02 00:00:00+00]
 (1 row)
 
+-- A trip reaches a pixel at the instant a geometric restriction reaches its
+-- edge. The trip below moves at 1 m/s from x = 600020 and crosses the column
+-- line x = 600300 of a raster with 100 m pixels at 08:04:40 exactly, the
+-- instant atGeometry answers for the same line.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -223,6 +260,8 @@ FROM rast, trip;
  Interp=Step;[-9@2025-01-01 08:00:00+00, -10@2025-01-01 08:01:20+00, -12@2025-01-01 08:03:00+00, -14@2025-01-01 08:04:40+00, -14@2025-01-01 08:06:00+00] | 2025-01-01 08:04:40+00
 (1 row)
 
+-- On a skewed grid the column lines are oblique, and the trip reaches the
+-- pixel it enters at the instant it leaves the polygon of the pixel before.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -243,6 +282,8 @@ FROM rast, trip;
  Interp=Step;[1@2001-01-01 00:00:00+00, 2@2001-01-01 17:32:18.461538+00, 3@2001-01-02 12:00:00+00, 3@2001-01-03 00:00:00+00] | 2001-01-01 17:32:18.461538+00
 (1 row)
 
+-- A single segment crossing pixels that alternate between a value and nodata
+-- answers one sequence per visit, six here.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -263,6 +304,10 @@ FROM rast;
  Interp=Step;{[1@2001-01-01 00:00:00+00, 1@2001-01-01 12:00:00+00), [2@2001-01-02 11:59:59.999999+00, 2@2001-01-03 12:00:00+00), [3@2001-01-04 12:00:00+00, 3@2001-01-05 12:00:00+00), [4@2001-01-06 12:00:00+00, 4@2001-01-07 12:00:00+00), [5@2001-01-08 12:00:00+00, 5@2001-01-09 12:00:00+00), [6@2001-01-10 12:00:00+00, 6@2001-01-11 12:00:00+00)}
 (1 row)
 
+-- A position over a nodata pixel answers the nodata value when the caller
+-- keeps it, as ST_Value answers it with exclude_nodata_value false, so a trip
+-- crossing the nodata pixel(row=1,col=2) answers one sequence rather than
+-- one per visit.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -288,6 +333,12 @@ FROM rast;
  {10@2001-01-01 00:00:00+00, -9999@2001-01-02 00:00:00+00} | t               | Interp=Step;[10@2001-01-01 00:00:00+00, -9999@2001-01-01 12:00:00+00, 30@2001-01-02 12:00:00+00, 30@2001-01-03 00:00:00+00]
 (1 row)
 
+-- A position read by bilinear interpolation answers what ST_Value answers with
+-- resample bilinear, the name read without regard to case. The four pixels
+-- around POINT(0.75 2.25) hold 10, 20, 40 and 50, weighted 9, 3, 3 and 1
+-- sixteenths, so it answers 20 where the pixel it falls in holds 10, and
+-- those around POINT(1.25 1.75) weighted the other way answer 40 where the
+-- pixel it falls in holds 50.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -317,6 +368,12 @@ FROM rast, trip;
  {20@2001-01-01 00:00:00+00, 40@2001-01-02 00:00:00+00} | {10@2001-01-01 00:00:00+00, 50@2001-01-02 00:00:00+00} | t            | t                | t
 (1 row)
 
+-- A raster loaded as tiles is read along a trip by merging the reads of its
+-- tiles: a position lies in a pixel of one tile, so the merge answers the read
+-- of the whole raster. The trips run along both diagonals, along a tile edge,
+-- out of the raster and back, through tile corners, at their instants alone
+-- and to an exclusive upper bound, inside a tile and on a tile edge, over tiles
+-- of 1x1 and of 2x2 pixels.
 WITH r AS (
   SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0,
     4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
@@ -350,6 +407,9 @@ FROM merged JOIN whole USING (id);
     18 |       18
 (1 row)
 
+-- A trip ending on the edge of a raster under an exclusive upper bound reaches
+-- the raster at the instant it excludes, and holds no value of it; under a
+-- closed bound it holds the value of the edge pixel at that instant.
 WITH r AS (
   SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0,
     0.0, 4326), '8BUI'::text, 0, NULL), 1, 1, 1, ARRAY[[2]]::double precision[][]) AS rast
@@ -375,6 +435,9 @@ SELECT rasterTileValue(tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01,
                | Interp=Step;[20@2001-01-02 00:00:00+00]
 (1 row)
 
+-- Tiles valid over successive half-open periods are read along a trip one
+-- period at a time and the reads merged: here the trip crosses from one tile
+-- into the other at 12:00, where a period also starts.
 WITH tiles(quadbin, period, tile) AS (
   SELECT quadbinTileToCell(x, 0, 1), p.period,
     raquet(decode(repeat(lpad(to_hex(p.v + x), 2, '0'), 4), 'hex'), 2, 2,
@@ -396,6 +459,8 @@ WHERE period && timeSpan(tp);
  Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-01 06:00:00+00, 51@2001-01-01 12:00:00+00, 51@2001-01-02 00:00:00+00]
 (1 row)
 
+-- The reads of a trip cut at half-open periods, one of them ending where the
+-- trip crosses into the next pixel, merge into the read of the whole trip.
 WITH r AS (
   SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 1, 0.0, 1.0, 1.0, -1.0, 0.0,
     0.0, 4326), '8BUI'::text, 0, NULL), 1, 1, 1,
@@ -414,6 +479,12 @@ FROM r, trip;
  t
 (1 row)
 
+-- A bilinear value along a trip that moves between its instants is a
+-- polynomial of degree two in time over each half-pixel square it crosses.
+-- Along a grid axis it is linear, so the answer is the value itself at every
+-- instant: the trip runs along the row of pixels 10, 20, 30 at y = 2.25, a
+-- quarter pixel below their centres, and reads what ST_Value reads at the
+-- positions of eleven instants, between the crossings as well as at them.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -441,6 +512,15 @@ GROUP BY r, t;
  [15.625@2001-01-01 00:00:00+00, 17.5@2001-01-02 00:00:00+00, 37.5@2001-01-10 00:00:00+00, 35.625@2001-01-11 00:00:00+00] | t
 (1 row)
 
+-- Across a grid axis the value reaches an extremum inside a half-pixel
+-- square where its four pixels do not lie on a plane, and the answer holds it
+-- beside the instants of the trip and the lines it crosses, linear between
+-- those, as the product of two temporal floats holds its extremum. Between
+-- the centres of the four pixels the value is 10 + 10u + 10v - 20uv, so the
+-- trip, moving by u = s and v = 0.4s, reads 10 + 14s - 8s^2, whose maximum
+-- 16.125 it reaches at s = 0.875, past the pixel edge it crosses at s = 0.5.
+-- Every instant of the answer reads what ST_Value reads at the position of
+-- the trip then.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -469,6 +549,10 @@ FROM val;
  [10@2001-01-01 00:00:00+00, 15@2001-01-02 00:00:00+00, 16.125@2001-01-02 18:00:00+00, 16@2001-01-03 00:00:00+00] | t          | 16.125000
 (1 row)
 
+-- Across a pixel edge the value jumps where a pixel read there holds nodata,
+-- which takes the value of the pixel the position falls in, and a new
+-- sequence starts at the instant the trip crosses the edge. A nodata pixel
+-- the trip passes over carries no value.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -490,6 +574,7 @@ FROM rast;
  {[10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00, 17.5@2001-01-04 00:00:00+00), [18.75@2001-01-04 00:00:00+00, 25@2001-01-06 00:00:00+00, 26.25@2001-01-08 00:00:00+00), [27.5@2001-01-08 00:00:00+00, 30@2001-01-10 00:00:00+00, 30@2001-01-11 00:00:00+00]} | [40@2001-01-04 00:00:00+00, 40@2001-01-08 00:00:00+00)
 (1 row)
 
+-- A read the raster does not know is refused rather than taken for another.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -500,6 +585,8 @@ SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r, 1,
   true, 'cubic')
 FROM rast;
 ERROR:  Unknown resample type: cubic
+-- A trip over a Raquet tile is read the same way, the tile grid being the
+-- pixels of its QUADBIN cell.
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;[Point(45.0 75.0)@2024-01-01,
   Point(135.0 75.0)@2024-01-02]',
   decode('01020304', 'hex'), 2, 2, quadbin '4817ffffffffffff', 'uint8', 0.0,
@@ -509,6 +596,7 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;[Point(45.0 75.0)@2024-01-01
  Interp=Step;[1@2024-01-01 00:00:00+00, 2@2024-01-01 12:00:00+00, 2@2024-01-02 00:00:00+00]
 (1 row)
 
+-- A band the raster does not have is an error, in either direction.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -527,6 +615,8 @@ WITH rast AS (
 SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r, 0)
 FROM rast;
 ERROR:  Raster has no band 0, it has 1
+-- A raster and a trajectory in different reference systems state their
+-- positions in different units, which is an error and not an empty answer.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -536,11 +626,15 @@ WITH rast AS (
 SELECT rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01}', r)
 FROM rast;
 ERROR:  Operation on mixed SRID
+-- A band stored outside the database is read from its file, so a file that
+-- cannot be opened leaves the band without pixels to read, which is an error
+-- and not an empty answer: no value, never and always would each state
+-- something about a band nobody read. The band of this 3x3 raster names the
+-- file no_such_raster.tif, which does not exist.
 CREATE TEMP TABLE tbl_outdb AS
 SELECT ('0100000100000000000000f03f000000000000f0bf0000000000000000'
   '000000000000084000000000000000000000000000000000e6100000030003008a'
   '00000000006e6f5f737563685f7261737465722e74696600')::raster AS r;
-SELECT 1
 SELECT ST_BandPath(r, 1) AS band_path FROM tbl_outdb;
      band_path      
 --------------------
@@ -571,7 +665,9 @@ SELECT aRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
 FROM tbl_outdb;
 ERROR:  rt_band_load_offline_data: Cannot open offline raster: no_such_raster.tif
 DROP TABLE tbl_outdb;
-DROP TABLE
+-- The sampling reads the grid the geotransform states, in whatever reference
+-- system the pair agrees on: the same raster shape in EPSG:3857 answers what it
+-- answers in EPSG:4326, so nothing in the walk assumes lon/lat.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -592,6 +688,9 @@ FROM rast;
  {50@2001-01-01 00:00:00+00, 60@2001-01-02 00:00:00+00}
 (1 row)
 
+-- A skewed grid is a different grid: the same two positions fall in different
+-- pixels once the geotransform carries a skew, so this cannot pass by reading
+-- the unskewed answer. The two rows below are the refuting pair.
 WITH plain AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -624,6 +723,13 @@ SELECT rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01,
  {50@2001-01-01 00:00:00+00, 60@2001-01-02 00:00:00+00} | {40@2001-01-01 00:00:00+00, 50@2001-01-02 00:00:00+00}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- atRasterValue / minusRasterValue / eRasterValue / aRasterValue
+-------------------------------------------------------------------------------
+-- Shared fixture: 3x3 raster, pixel values 10..90 (row-major).
+-- traj1: three instants sampling values 10, 50, 70.
+-- traj2: two instants sampling values 10, 70.
+-- atRasterValue([40,90]): value 10 dropped, 50 and 70 kept.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -645,6 +751,7 @@ FROM rast;
  {[POINT(1 2)@2001-01-01 12:00:00+00, POINT(1.5 1.5)@2001-01-02 00:00:00+00, POINT(0.5 0.5)@2001-01-03 00:00:00+00]}
 (1 row)
 
+-- minusRasterValue([40,90]): values 50 and 70 dropped, 10 kept.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -666,6 +773,8 @@ FROM rast;
  {[POINT(0.5 2.5)@2001-01-01 00:00:00+00, POINT(1 2)@2001-01-01 12:00:00+00)}
 (1 row)
 
+-- eRasterValue([70,90]): traj2 samples 10 and 70; 70 in range → true.
+-- eRasterValue([80,90]): neither 10 nor 70 in [80,90] → false.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -689,6 +798,8 @@ FROM rast;
  t      | f
 (1 row)
 
+-- aRasterValue([70,90]): traj2 has 10 not in range → false.
+-- aRasterValue([0,100]): all values in range → true.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -712,6 +823,13 @@ FROM rast;
  f       | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The tiles a trajectory covers
+--
+-- The QUADBIN cells a trajectory holds at a zoom are the values of its
+-- temporal quadbin cell, the join key of a Raquet table
+-------------------------------------------------------------------------------
+-- Three distinct longitudes at zoom 3 produce three distinct QUADBIN cells.
 SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
   Point(0.0 45.0)@2024-01-02, Point(60.0 45.0)@2024-01-03}', 3))) AS num_distinct_tiles;
@@ -720,6 +838,7 @@ SELECT numValues(getValues(tquadbin(
                   3
 (1 row)
 
+-- Two instants in the same tile → deduplicated to 1 cell.
 SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
     Point(-61.0 44.0)@2024-01-02}', 3))) AS num_distinct_tiles;
@@ -728,6 +847,10 @@ SELECT numValues(getValues(tquadbin(
                   1
 (1 row)
 
+-- A trajectory that moves between its instants covers the tiles it crosses on
+-- the way: at zoom 3 a tile spans 45 degrees of longitude, so a trip from
+-- 10E to 170E crosses four of them, and the same path sampled every 20 degrees
+-- answers the same four.
 SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;[Point(10.0 10.0)@2024-01-01,
     Point(170.0 10.0)@2024-01-02]', 3))) AS num_crossed_tiles;
@@ -747,6 +870,11 @@ SELECT numValues(getValues(tquadbin(
                  4
 (1 row)
 
+-- A diagonal crossing leaves a tile through a corner, over a chord that any
+-- sampling step long enough to be economical steps across. At zoom 5 a tile
+-- spans 11.25 degrees of longitude, so a trip from (10,10) to (40,40) spans four
+-- tile columns and four Mercator rows, and a monotone path across a four by
+-- four span visits four plus four minus one of them.
 SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;[Point(10.0 10.0)@2024-01-01,
     Point(40.0 40.0)@2024-01-02]', 5))) AS num_diagonal_tiles;
@@ -755,6 +883,9 @@ SELECT numValues(getValues(tquadbin(
                   7
 (1 row)
 
+-- A trajectory that states nothing between its instants covers the tiles
+-- holding them: the two instants below sit in two tiles, while the path
+-- between them crosses four.
 SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{Point(10.0 10.0)@2024-01-01,
     Point(170.0 10.0)@2024-01-02}', 3))) AS num_instant_tiles;
@@ -763,6 +894,12 @@ SELECT numValues(getValues(tquadbin(
                  2
 (1 row)
 
+-- The cover reaches every zoom of the QUADBIN grid. At zoom 20 a tile spans
+-- 360 / 2^20 degrees of longitude, so a trip along latitude 0.00005 from
+-- longitude 0.0001 to 0.0021 runs from tile column
+-- floor(180.0001 / 360 * 2^20) = 524288 to floor(180.0021 / 360 * 2^20) =
+-- 524294 within one row, seven tiles, and at zoom 26 the cover holds tiles of
+-- that zoom.
 SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;[Point(0.0001 0.00005)@2024-01-01,
     Point(0.0021 0.00005)@2024-01-02]', 20))) AS num_zoom20_tiles;
@@ -779,8 +916,13 @@ SELECT numValues(getValues(tquadbin(
                 1
 (1 row)
 
+-- A zoom beyond the grid raises an error.
 SELECT getValues(tquadbin(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 27));
 ERROR:  The resolution must be between 0 and 26
+-- A trajectory states nothing across the gap between two of its sequences, so
+-- the cover crosses no tile there: at zoom 3 the sequence from 10E to 20E
+-- lies in one tile and the one from 160E to 170E in another, while the tiles
+-- between them, from 45E to 135E, are covered by no sequence.
 SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{[Point(10.0 10.0)@2024-01-01, Point(20.0 10.0)@2024-01-02],
     [Point(160.0 10.0)@2024-01-03, Point(170.0 10.0)@2024-01-04]}', 3)))
@@ -790,6 +932,17 @@ SELECT numValues(getValues(tquadbin(
              2
 (1 row)
 
+-------------------------------------------------------------------------------
+-- rasterTileValueQuadbin
+-------------------------------------------------------------------------------
+-- A 2x2 UINT8 chip for tile (x=1, y=0, zoom=1): lon 0..180 degrees, lat 0..85 degrees.
+-- Mercator midpoint ~= 66.5 degrees separates row 0 (upper) from row 1 (lower).
+-- Pixel layout (row-major):  [1, 2]   row 0 (lat > 66.5 degrees)
+--                            [3, 4]   row 1 (lat < 66.5 degrees)
+-- POINT(45  75) → col=0, row=0 → 1
+-- POINT(135 75) → col=1, row=0 → 2
+-- POINT(45  10) → col=0, row=1 → 3
+-- POINT(-45 75) → lon outside 0..180 → dropped
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01,
   Point(135.0 75.0)@2024-01-02, Point(45.0 10.0)@2024-01-03, Point(-45.0 75.0)@2024-01-04}',
   '\x01020304'::bytea,         -- 4 UINT8 pixels: 1,2,3,4
@@ -802,6 +955,9 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01
  {1@2024-01-01 00:00:00+00, 2@2024-01-02 00:00:00+00, 3@2024-01-03 00:00:00+00}
 (1 row)
 
+-- A tile key that is not a cell of the QUADBIN grid is no quadbin, so no tile
+-- is read or built from it: the Morton code of tile (1,0,1) without the bits
+-- below zoom 1 set to one.
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01}',
   '\x01020304'::bytea, 2::integer, 2::integer, quadbin '4814000000000000',
   'UINT8', 0.0, false);
@@ -812,6 +968,9 @@ SELECT raquet('\x01'::bytea, 1, 1, quadbin '4814000000000000', 'UINT8');
 ERROR:  quadbin value "4814000000000000" does not encode a valid quadbin index
 LINE 1: SELECT raquet('\x01'::bytea, 1, 1, quadbin '4814000000000000...
                                                    ^
+-- A pixel array too small for the declared width/height raises an error
+-- rather than sampling past the end of the buffer. Point(45 10) maps to
+-- col=0, row=1 (byte offset 2), which is past the 2 bytes actually supplied.
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
   '\x0102'::bytea,             -- 2 bytes, but a 2x2 UINT8 tile needs 4
   2::integer,                  -- width
@@ -819,6 +978,10 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01
   quadbin '4817ffffffffffff', -- quadbin_tile_to_cell(1,0,1)
   'UINT8', 0.0, false);
 ERROR:  The pixel array has 2 bytes but 4 are required for a 2 x 2 tile
+-- The dimensions reach the tile as an unsigned 16-bit width and height. A
+-- value outside that range raises an error rather than wrapping to a tile of
+-- another size: 65538 would otherwise sample a 2 pixel wide tile, and -1 a
+-- 65535 pixel wide one.
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
   '\x01020304'::bytea, 65538::integer, 2::integer,
   quadbin '4817ffffffffffff', 'UINT8', 0.0, false);
@@ -831,6 +994,11 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01
   '\x01020304'::bytea, 0::integer, 2::integer,
   quadbin '4817ffffffffffff', 'UINT8', 0.0, false);
 ERROR:  The width and height of a raquet tile must be positive
+-------------------------------------------------------------------------------
+-- raquet type: construction, WKB round-trip, and typed sampling
+-------------------------------------------------------------------------------
+-- The typed rasterTileValue(tgeompoint, raquet) yields the same result as the
+-- untyped rasterTileValueQuadbin(bytea, ...) path on the same 2x2 chip.
 WITH t(traj) AS (
   SELECT tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01, Point(135.0 75.0)@2024-01-02, Point(45.0 10.0)@2024-01-03, Point(-45.0 75.0)@2024-01-04}' )
 SELECT rasterTileValue(traj,
@@ -844,6 +1012,18 @@ FROM t;
  t
 (1 row)
 
+-- rasterTileValue(tgeompoint, raquet[]) samples a trajectory from every tile
+-- covering it. The three tiles below carry the same 2x2 pixel array; what
+-- distinguishes them is the ground they cover:
+--   west  = zoom 1 tile (0,0), lon [-180, 0)
+--   east  = zoom 1 tile (1,0), lon [0, 180)
+--   fine  = zoom 2 tile (2,0), lon [0, 90), lat (66.51, 85.05]
+-- The trajectory visits Point(-45 75) in west only, Point(45 75) in east and
+-- in fine, which overlap there, and Point(135 75) in east only.
+-- Two tiles of the same zoom partition the plane, so a trajectory crossing
+-- from one into the other is sampled from both, with no instant contributed
+-- twice. The merged result therefore covers every instant that either tile
+-- covers alone.
 WITH t AS (
   SELECT tgeompoint 'SRID=4326;{Point(-45.0 75.0)@2024-01-01,
     Point(45.0 75.0)@2024-01-02, Point(135.0 75.0)@2024-01-03}' AS traj,
@@ -859,6 +1039,9 @@ FROM t;
  {2@2024-01-01 00:00:00+00} | {1@2024-01-02 00:00:00+00, 2@2024-01-03 00:00:00+00} | {2@2024-01-01 00:00:00+00, 1@2024-01-02 00:00:00+00, 2@2024-01-03 00:00:00+00}
 (1 row)
 
+-- Tiles of different zoom levels overlap. Where both sample the same instant
+-- the value of the tile of higher zoom is kept, that being the one carrying
+-- the finer resolution, and the outcome does not depend on the array order.
 WITH t AS (
   SELECT tgeompoint 'SRID=4326;{Point(-45.0 75.0)@2024-01-01, Point(45.0 75.0)@2024-01-02, Point(135.0 75.0)@2024-01-03}' AS traj,
     raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8') AS east,
@@ -873,6 +1056,10 @@ FROM t;
  {4@2024-01-02 00:00:00+00} | {4@2024-01-02 00:00:00+00, 2@2024-01-03 00:00:00+00} | {4@2024-01-02 00:00:00+00, 2@2024-01-03 00:00:00+00}
 (1 row)
 
+-- A moving trip is read from every tile it crosses, each from the instant it
+-- reaches it: west until lon 0, then fine, whose pixels 7 and 8 replace the
+-- values of east where the two overlap, then east beyond lon 90. The answer
+-- does not depend on the array order.
 WITH t AS (
   SELECT tgeompoint 'SRID=4326;[Point(-45.0 75.0)@2024-01-01,
     Point(135.0 75.0)@2024-01-03]' AS traj,
@@ -891,6 +1078,8 @@ FROM t;
  Interp=Step;{[2@2024-01-01 00:00:00+00, 7@2024-01-01 12:00:00+00, 8@2024-01-02 00:00:00+00, 2@2024-01-02 12:00:00+00, 2@2024-01-03 00:00:00+00]} | t          | t
 (1 row)
 
+-- A one-element array agrees with the scalar form, and an array of tiles that
+-- the trajectory never enters returns NULL.
 WITH t AS (
   SELECT tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02}' AS traj,
     raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8') AS east,
@@ -905,9 +1094,13 @@ FROM t;
  t                       | t
 (1 row)
 
+-- An empty array is rejected.
 SELECT rasterTileValue(tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02}',
   ARRAY[]::raquet[]);
 ERROR:  The input array cannot be empty
+-- The HexWKB text representation round-trips through the raquet type's input
+-- and output functions (raquet::text uses raquet_out, text::raquet uses
+-- raquet_in).
 SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8')::text::raquet::text
      = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8')::text
        AS hexwkb_roundtrip_ok;
@@ -916,14 +1109,16 @@ SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8')::t
  t
 (1 row)
 
+-- The constructor rejects a pixel array too small for the given dimensions.
 SELECT raquet('\x0102'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
 ERROR:  The pixel array has 2 bytes but 4 are required for a 2 x 2 tile
+-- A raquet large enough to be TOASTed (64 x 64 UINT8 = 4096 pixel bytes) must
+-- survive a store-and-read-back cycle: reading the stored value detoasts it, so
+-- its HexWKB output equals that of the same tile constructed inline.
 CREATE TEMP TABLE raquet_toast (rq raquet);
-CREATE TABLE
 INSERT INTO raquet_toast
   VALUES (raquet(decode(repeat('01', 4096), 'hex'), 64, 64,
     quadbin '4817ffffffffffff', 'UINT8'));
-INSERT 0 1
 SELECT (
   SELECT rq FROM raquet_toast)::text = 
     raquet(decode(repeat('01', 4096), 'hex'), 64, 64, 
@@ -933,8 +1128,15 @@ SELECT (
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- raquetRead: GDAL ingest of an in-memory raster file (bytea)
+-------------------------------------------------------------------------------
+-- raquetRead decodes through GDAL, whose drivers PostGIS disables by default
+-- (postgis.gdal_enabled_drivers); enable them for the in-memory ingest.
 SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
-SET
+-- GDAL decodes a 2 x 2 UINT8 GeoTIFF supplied as bytea (through its /vsimem/
+-- virtual filesystem) into the same raquet tile that the constructor builds
+-- from the identical row-major pixel bytes 01 02 03 04.
 SELECT raquetRead(
          decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'),
          quadbin '4817ffffffffffff')::text
@@ -945,6 +1147,13 @@ SELECT raquetRead(
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- raquetRead: derive the QUADBIN cell from the raster georeferencing
+-------------------------------------------------------------------------------
+-- Omitting the quadbin argument reads the tile identifier from the raster's
+-- EPSG:3857 geotransform. This GeoTIFF georeferences Web-Mercator tile (1, 0)
+-- at zoom 1, whose QUADBIN cell is 4817ffffffffffff, so raquetRead(bytes)
+-- yields the same tile as raquetRead(bytes, quadbin '4817ffffffffffff').
 WITH t(bytes) AS (VALUES (decode('49492a00080000000f0000010300010000000200000001010300010000000200000002010300010000000800000003010300010000000100000006010300010000000100000011010400010000006b0100001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000e830c0003000000c200000082840c0006000000da000000af870300200000000a010000b1870200210000004a0100000000000093107c45f81b634193107c45f81b63410000000000000000000000000000000000000000000000000000000000000000000000000000000093107c45f81b734100000000000000000100010000000700000400000100010001040000010001000204b187190000000108b187070019000608000001008e23000c00000100110f040c000001002923574753203834202f2050736575646f2d4d65726361746f727c5747532038347c0001020304', 'hex')))
 SELECT raquetRead(bytes)::text
      = raquetRead(bytes, quadbin '4817ffffffffffff')::text
@@ -955,15 +1164,29 @@ FROM t;
  t
 (1 row)
 
+-- A raster with no Web-Mercator georeferencing has no derivable tile: this
+-- 2 x 2 GeoTIFF carries no geotransform, so omitting the quadbin is an error.
 SELECT raquetRead(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
 ERROR:  Raster has no geotransform; cannot derive its QUADBIN cell: in-memory raster
+-- A raster off the tile grid has no derivable tile either, however little it
+-- sits off by: this GeoTIFF is the tile (1, 0) one above moved ten metres
+-- east, so its extent is square and its zoom is exactly 1, and only its
+-- origin is off. The tile index it states is 1.0000004990640468, which is no
+-- tile, and deriving one would answer tile (1, 0) for ground the tile does
+-- not cover.
 SELECT raquetRead(decode('49492a00080000000f0000010300010000000200000001010300010000000200000002010300010000000800000003010300010000000100000006010300010000000100000011010400010000006b0100001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000e830c0003000000c200000082840c0006000000da000000af870300200000000a010000b1870200210000004a0100000000000093107c45f81b634193107c45f81b63410000000000000000000000000000000000000000000000000000000000000000000000000000244093107c45f81b734100000000000000000100010000000700000400000100010001040000010001000204b187190000000108b187070019000608000001008e23000c00000100110f040c000001002923574753203834202f2050736575646f2d4d65726361746f727c5747532038347c0001020304', 'hex'));
 ERROR:  Raster origin is not aligned to the QUADBIN tile grid
+-------------------------------------------------------------------------------
+-- The file forms of rasterValue, its restrictions and predicates, and
+-- raquetRead: a raster file on the server read through GDAL
+-------------------------------------------------------------------------------
+-- A raster file on the server is read where PostGIS allows a band stored
+-- outside the database to be read. The 3x3 raster of the examples and the
+-- 2 x 2 GeoTIFF above are written to files in the data directory, which a
+-- relative path names.
 SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
-SET
 SET postgis.enable_outdb_rasters = true;
-SET
 SELECT lo_from_bytea(424242, ST_AsGDALRaster(ST_SetValues(ST_AddBand(
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
   '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
@@ -1007,6 +1230,9 @@ SELECT lo_unlink(424243) AS unlinked;
         1
 (1 row)
 
+-- The file forms answer what the raster forms answer over the same raster.
+-- A string literal in the second position names a file, text being the
+-- preferred type of an untyped literal.
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1035,6 +1261,7 @@ FROM rast, trip;
  Interp=Step;[10@2001-01-01 00:00:00+00, 20@2001-01-01 06:00:00+00, 30@2001-01-01 18:00:00+00, 50@2001-01-02 06:00:00+00, 70@2001-01-02 18:00:00+00, 70@2001-01-03 00:00:00+00] | t          | t       | t          | t         | t           | t           | t
 (1 row)
 
+-- raquetRead reads the file into the tile it decodes from the same bytes
 SELECT raquetRead('raquet_file_form.tif'::text, quadbin '4817ffffffffffff')::text
      = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8')::text
        AS file_form_equals_constructor;
@@ -1043,27 +1270,31 @@ SELECT raquetRead('raquet_file_form.tif'::text, quadbin '4817ffffffffffff')::tex
  t
 (1 row)
 
+-- The setting PostGIS states for a band stored outside the database decides
+-- a file read, and so do the GDAL drivers it enables.
 SET postgis.enable_outdb_rasters = false;
-SET
 SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
   'raster_file_forms.tif'::text);
 ERROR:  Reading the raster file raster_file_forms.tif on the server is disabled by postgis.enable_outdb_rasters
 SELECT raquetRead('raquet_file_form.tif'::text, quadbin '4817ffffffffffff');
 ERROR:  Reading the raster file raquet_file_form.tif on the server is disabled by postgis.enable_outdb_rasters
 SET postgis.enable_outdb_rasters = true;
-SET
 SET postgis.gdal_enabled_drivers = 'DISABLE_ALL';
-SET
 SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
   'raster_file_forms.tif'::text);
 ERROR:  Cannot read the raster file raster_file_forms.tif: postgis.gdal_enabled_drivers disables every GDAL driver
 SET postgis.gdal_enabled_drivers = 'GTiff';
-SET
 SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
   '/vsicurl/https://example.org/raster.tif'::text);
 ERROR:  Cannot read the raster file /vsicurl/https://example.org/raster.tif: postgis.gdal_enabled_drivers does not enable VSICURL
 SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
-SET
+-------------------------------------------------------------------------------
+-- raquet (Hex)WKB round trip
+--
+-- The tile carries its pixels and its QUADBIN georeferencing in one value, so
+-- it round-trips through a portable byte string with no spatial extension
+-- involved, exactly as the sibling h3index cell does.
+-------------------------------------------------------------------------------
 SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
          quadbin '4817ffffffffffff', 'UINT8')))
        = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
@@ -1081,6 +1312,7 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x0102030405060708'::bytea, 2, 2,
  t
 (1 row)
 
+-- The endianness argument is accepted on both output forms.
 SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
          quadbin '4817ffffffffffff', 'UINT8'), 'XDR'))
        = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
@@ -1097,6 +1329,13 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- raster (Hex)WKB round trip
+--
+-- A raster round-trips through its Well-Known Binary in either byte order,
+-- with bands of one, two, four and eight bytes a pixel, and PostGIS reads the
+-- big-endian form back to the same raster.
+-------------------------------------------------------------------------------
 WITH rast AS (
   SELECT ST_AddBand(ST_AddBand(ST_AddBand(ST_AddBand(
     ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.5, 0.25, 3857),
@@ -1120,8 +1359,14 @@ FROM rast;
  t   | t   | t       | t          | t                 | t                 |              1 |              0 | t
 (1 row)
 
+-- A string shorter than the raster it states is refused, not read past its end.
 SELECT rasterFromHexWKB('0100');
 ERROR:  rt_raster_from_wkb: wkb size (2) < min size (61)
+-------------------------------------------------------------------------------
+-- raquet accessors
+-------------------------------------------------------------------------------
+-- The accessors read back the georeferencing and layout the tile carries, so a
+-- packaged tile needs none of the loose columns it was built from.
 SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile), bandNoDataValue(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
         'UINT8') AS tile) t;
@@ -1130,6 +1375,7 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
  4817ffffffffffff |     2 |      2 | uint8         |                
 (1 row)
 
+-- Every pixel type name round-trips through the constructor and bandPixelType.
 SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', 'UINT8')),
        bandPixelType(raquet('\x0102'::bytea, 1, 1, quadbin '4817ffffffffffff', 'INT16')),
        bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff', 'INT32')),
@@ -1149,6 +1395,8 @@ SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', 'UI
  uint8         | int16         | int32         | float32       | float64       | int8          | uint16        | uint32        | int64         | uint64        | float16
 (1 row)
 
+-- The pixel size of a type is the one the specification gives it, so a band of
+-- one pixel is exactly as many bytes wide.
 SELECT raquet('\x0102030405060708'::bytea, 2, 1, quadbin '4817ffffffffffff',
   'UINT32') IS NOT NULL AS uint32_two_pixels,
        raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'INT8')
@@ -1160,6 +1408,9 @@ SELECT raquet('\x0102030405060708'::bytea, 2, 1, quadbin '4817ffffffffffff',
  t                 | t               | t
 (1 row)
 
+-- The pixel type name is read without regard to case, so the lower-case
+-- spelling the RaQuet specification gives a tile's type field is accepted as
+-- it stands. The name reported back keeps the documented upper case.
 SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   'uint8'));
  bandpixeltype 
@@ -1181,6 +1432,9 @@ SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8')
  t
 (1 row)
 
+-- A pixel type is also accepted under the name PostGIS raster gives it, so the
+-- band type an ST_BandPixelType call reports passes into the constructor as it
+-- stands. The tile reports the name of the RaQuet specification.
 SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', '8BUI')),
        bandPixelType(raquet('\x0102'::bytea, 1, 1, quadbin '4817ffffffffffff', '16BSI')),
        bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff', '32BF')),
@@ -1194,6 +1448,7 @@ SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', '8B
  uint8         | int16         | float32       | float64       | float16       | int64
 (1 row)
 
+-- The band type of a PostGIS raster carries into the constructor unchanged.
 SELECT bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff',
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '32BF'), 1)));
  bandpixeltype 
@@ -1201,6 +1456,7 @@ SELECT bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff
  float32
 (1 row)
 
+-- The two spellings name the same tile.
 SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '8BUI')
        = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
  ?column? 
@@ -1208,6 +1464,8 @@ SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '8BUI')
  t
 (1 row)
 
+-- A PostGIS pixel type bounded to less than a byte names a uint8 band, since
+-- PostGIS stores one a byte a pixel.
 SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '1BB')),
        bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '2BUI')),
        bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '4BUI'));
@@ -1216,6 +1474,7 @@ SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff
  uint8         | uint8         | uint8
 (1 row)
 
+-- The bound is the only thing such a name adds, so the tile is the uint8 one.
 SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '4BUI')
        = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
  ?column? 
@@ -1223,6 +1482,7 @@ SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '4BUI')
  t
 (1 row)
 
+-- A band type ST_BandPixelType reports for such a type carries in as it stands.
 SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '4BUI'), 1)));
  bandpixeltype 
@@ -1230,8 +1490,10 @@ SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff
  uint8
 (1 row)
 
+-- An unknown name is still rejected, whatever its case.
 SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint12');
 ERROR:  Unknown pixel type "uint12": use uint8, int16, int32, float32, float64, int8, uint16, uint32, int64, uint64, or float16, or the name PostGIS raster gives one of them
+-- The nodata value supplied to the constructor is the one reported back.
 SELECT bandHasNoDataValue(tile), bandNoDataValue(tile)
 FROM (SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8',
   -9999.0) AS tile) t;
@@ -1240,6 +1502,8 @@ FROM (SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8',
  t                  |           -9999
 (1 row)
 
+-- A tile built without a nodata value states none, so its nodata value is NULL
+-- rather than a number, and the constructor given that NULL rebuilds the tile.
 SELECT bandHasNoDataValue(tile), bandNoDataValue(tile),
   raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
     bandPixelType(tile), bandNoDataValue(tile)) = tile AS round_trips
@@ -1250,6 +1514,8 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
  f                  |                 | t
 (1 row)
 
+-- The pixel bytes are returned in the layout the constructor accepts, so a
+-- tile rebuilt from its own accessors equals the tile it came from.
 SELECT pixels(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   'UINT8'));
    pixels   
@@ -1266,6 +1532,7 @@ FROM (SELECT raquet('\x0102030405060708'::bytea, 2, 2,
  t
 (1 row)
 
+-- A wider pixel type returns the whole band, not the pixel count.
 SELECT length(pixels(raquet('\x0102030405060708'::bytea, 2, 1,
   quadbin '4817ffffffffffff', 'FLOAT32')));
  length 
@@ -1273,6 +1540,10 @@ SELECT length(pixels(raquet('\x0102030405060708'::bytea, 2, 1,
       8
 (1 row)
 
+-------------------------------------------------------------------------------
+-- raquet comparison
+-------------------------------------------------------------------------------
+-- Tiles agreeing on cell, layout and pixels are equal; any difference orders.
 SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') =
        raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') AS eq,
        raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') <>
@@ -1282,6 +1553,8 @@ SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') =
  t  | t
 (1 row)
 
+-- The ordering is on the QUADBIN cell first, then pixel type, width, height and
+-- finally the pixel bytes.
 SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') <
        raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') AS lt_pixels,
        raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') <=
@@ -1295,6 +1568,7 @@ SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') <
  t         | t        | t         | t
 (1 row)
 
+-- cmp returns the three-way comparison the btree operator class uses.
 SELECT cmp(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8'),
            raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')) AS lt,
        cmp(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8'),
@@ -1306,6 +1580,7 @@ SELECT cmp(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8'),
  -1 |  0 |  1
 (1 row)
 
+-- Sorting and deduplication go through the btree and hash operator classes.
 WITH tiles(tile) AS (VALUES
   (raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')),
   (raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')),
@@ -1320,6 +1595,7 @@ FROM tiles;
      3 |              2 | t
 (1 row)
 
+-- Equal tiles hash equally, and the seeded hash varies with the seed.
 SELECT hash(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
          'UINT8')) =
        hash(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
@@ -1333,6 +1609,12 @@ SELECT hash(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
  t                        | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- raquet conversion to stbox
+-------------------------------------------------------------------------------
+-- The footprint of a tile is the lon/lat envelope of its QUADBIN cell, so the
+-- cast carries the tile extent without the pixels. The latitude bound is the
+-- Web-Mercator limit, a transcendental value, so the box is rounded.
 SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2,
   quadbin '4817ffffffffffff', 'UINT8')), 6);
                   round                   
@@ -1340,6 +1622,7 @@ SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2,
  SRID=4326;STBOX X((0,0),(180,85.051129))
 (1 row)
 
+-- The cast form and the function form agree.
 SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
          'UINT8')::stbox =
        stbox(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
@@ -1349,6 +1632,8 @@ SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
  t
 (1 row)
 
+-- The footprint depends only on the QUADBIN cell: tiles differing in pixels,
+-- dimensions or pixel type share it.
 SELECT stbox(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
          'UINT8')) =
        stbox(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
@@ -1358,6 +1643,8 @@ SELECT stbox(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
  t
 (1 row)
 
+-- Distinct cells give distinct footprints, and the tile is contained in its
+-- own footprint envelope.
 WITH t(a, b) AS (VALUES (
   raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', 'UINT8'),
   raquet('\x01'::bytea, 1, 1, quadbin '48333fffffffffff', 'UINT8')))
@@ -1369,25 +1656,28 @@ FROM t;
  t                                  | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- raquet spatial indexing through the tile footprint
+-------------------------------------------------------------------------------
 CREATE TABLE test_raquet_tiles (id integer, tile raquet);
-CREATE TABLE
 INSERT INTO test_raquet_tiles
 SELECT g, raquet('\x01020304'::bytea, 2, 2, c, 'UINT8')
 FROM (VALUES
   (1, quadbin '4817ffffffffffff'), (2, quadbin '48333fffffffffff'),
   (3, quadbin '48363fffffffffff'), (4, quadbin '48367fffffffffff')) v(g, c);
-INSERT 0 4
+-- The footprint is indexable with the stbox operator classes, so a tile table
+-- is searched by spatial overlap rather than by an equality test on the cell.
 CREATE INDEX test_raquet_tiles_gist ON test_raquet_tiles USING gist (stbox(tile));
-CREATE INDEX
 CREATE INDEX test_raquet_tiles_spgist ON test_raquet_tiles
   USING spgist (stbox(tile));
-CREATE INDEX
+-- The extent of a set of tiles composes the footprint with the stbox extent.
 SELECT round(extent(stbox(tile)), 6) FROM test_raquet_tiles;
                    round                    
 --------------------------------------------
  SRID=4326;STBOX X((-90,0),(180,85.051129))
 (1 row)
 
+-- Tiles are selected by overlap with a region of interest.
 SELECT count(*) FROM test_raquet_tiles
 WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(30,30))';
  count 
@@ -1396,7 +1686,10 @@ WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(30,30))';
 (1 row)
 
 DROP TABLE test_raquet_tiles;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- numBands
+-------------------------------------------------------------------------------
+-- A single-band raster reports 1 band; adding a second band reports 2.
 WITH rast1 AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1413,6 +1706,12 @@ SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
              1 |             2
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Shape of a raster
+-------------------------------------------------------------------------------
+-- The shape of a raster is the one PostGIS reads from the same grid: a banded
+-- raster in EPSG:4326, and a band-free one in EPSG:3857 whose grid is skewed,
+-- so no two of its nine numbers coincide.
 WITH rast(r) AS (VALUES
   (ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
     '32BF'::text, 0.0::float8, NULL::float8)),
@@ -1431,6 +1730,13 @@ FROM rast;
      3 |      2 | 3857 |         10 |         20 |    1.5 |     -2 |   0.5 |  0.25 | t
 (2 rows)
 
+-------------------------------------------------------------------------------
+-- Bands of a raster
+-------------------------------------------------------------------------------
+-- A band reports its pixel type under the name the RaQuet specification gives
+-- it, the name a raquet tile of that type reports, and its nodata value as
+-- PostGIS reports it: the value the band states, and NULL for a band stating
+-- none.
 WITH rast(r) AS (VALUES
   (ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
     '32BF'::text, 0.0::float8, NULL::float8)),
@@ -1446,6 +1752,8 @@ FROM rast;
  int16         | 16BSI        | t                  |           -9999 | t
 (2 rows)
 
+-- The band is named by its number, so the second band of a raster answers for
+-- itself, and a band the raster does not have is an error.
 WITH rast AS (
   SELECT ST_AddBand(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0,
     0.0, 0.0, 4326), '32BF'::text, 0.0::float8, NULL::float8),
@@ -1462,6 +1770,13 @@ WITH rast AS (
     4326), '32BF'::text, 0.0::float8, NULL::float8) AS r)
 SELECT bandNoDataValue(r, 2) FROM rast;
 ERROR:  Raster has no band 2, it has 1
+-------------------------------------------------------------------------------
+-- reclass
+-------------------------------------------------------------------------------
+-- A band of values becomes a band of classes. The 3x3 band below holds
+-- 10, 20, 30 / 40, 50, 60 / 70, 80, 90, and a range written plainly is HALF
+-- OPEN AT THE TOP: 0-50 takes 10, 20, 30 and 40 but NOT 50, which falls in
+-- neither range and is left unmapped.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1478,6 +1793,8 @@ FROM (SELECT ST_SummaryStats(reclass(r, 1, '0-50:1, 51-100:2', '32BF', -9999))
  8 |    12 |  1 |  2
 (1 row)
 
+-- A closing bracket includes the high bound, so [50-100] takes the 50 the
+-- plain form dropped and every pixel is mapped.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1494,6 +1811,8 @@ FROM (SELECT ST_SummaryStats(
  9 |    14
 (1 row)
 
+-- A band the raster does not have, and an expression stating no mapping, are
+-- both errors.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1508,6 +1827,13 @@ WITH rast AS (
 )
 SELECT reclass(r, 1, '0-50', '32BF') FROM rast;
 ERROR:  A mapping states a source and a destination around one colon: 0-50
+-------------------------------------------------------------------------------
+-- clip
+-------------------------------------------------------------------------------
+-- A raster keeps the pixels a geometry covers, the others answering nodata.
+-- The polygon's edges fall on pixel edges and cover the upper left 2x2 pixels
+-- of the band holding 10, 20, 30 / 40, 50, 60 / 70, 80, 90, so the answer is
+-- unambiguous; PostGIS's ST_Clip is the oracle, with and without cropping.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1530,6 +1856,8 @@ FROM rast, g;
  {{10,20},{40,50}} | {{10,20,NULL},{40,50,NULL},{NULL,NULL,NULL}} | t                  | t
 (1 row)
 
+-- A geometry in another reference system is refused rather than read as if
+-- its coordinates were the raster's.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1538,6 +1866,12 @@ WITH rast AS (
 SELECT clip(r, ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 3857))
 FROM rast;
 ERROR:  Operation on mixed SRID
+-- A pixel the geometry touches is kept where the caller asks for it, where
+-- otherwise only a pixel whose centre the geometry covers is. The triangle
+-- below covers the centre of the pixel holding 10 alone and touches the ones
+-- holding 20 and 40, and spans two pixels each way, since the mask it is burnt
+-- into rounds the extent of the geometry to whole pixels; PostGIS's ST_Clip is
+-- the oracle, with and without touched.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1560,6 +1894,10 @@ FROM rast, g;
  {{10,NULL,NULL},{NULL,NULL,NULL},{NULL,NULL,NULL}} | {{10,20,NULL},{40,NULL,NULL},{NULL,NULL,NULL}} | t                  | t
 (1 row)
 
+-- A clip keeps the bands it names, in the order it names them, and states the
+-- nodata value of the pixels the geometry does not cover, one for every band
+-- or one per band. PostGIS's ST_Clip over the bands ST_Band extracts is the
+-- oracle, and a NULL array of bands keeps every band.
 WITH rast AS (
   SELECT ST_SetValues(ST_SetValues(
     ST_AddBand(ST_AddBand(
@@ -1592,6 +1930,8 @@ FROM rast, g, LATERAL (
         1 | t               | t                    |           -1 |            -2 |            -1 | t
 (1 row)
 
+-- A band the raster does not have, an empty array of bands and a NULL element
+-- are refused rather than read as some other band.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1618,6 +1958,13 @@ SELECT clip(r, ARRAY[1], ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326)
   ARRAY[NULL]::float8[])
 FROM rast;
 ERROR:  null array element not allowed in this context
+-------------------------------------------------------------------------------
+-- transform and rescale
+-------------------------------------------------------------------------------
+-- A raster carried into another reference system states the same coverage
+-- read through that system. PostGIS's ST_Transform is the oracle, on the grid
+-- and on the values alike, for the default nearest neighbour and for bilinear
+-- resampling named without regard to case.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1639,6 +1986,9 @@ FROM rast;
  3857 | t               | t                 | t
 (1 row)
 
+-- Halving the pixel size doubles the width and the height. ST_Rescale is the
+-- oracle, for a Y scale stated negative as the geotransform states it and
+-- positive as PostGIS users write it.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1662,6 +2012,7 @@ FROM rast;
  6 | 6 | t                        | t                          | t                        | t
 (1 row)
 
+-- A reprojection needs a target system.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1669,6 +2020,10 @@ WITH rast AS (
 )
 SELECT transform(r, 0) FROM rast;
 ERROR:  The target of a reprojection cannot be an unknown SRID
+-- A pixel size stated for the result fixes its grid, as ST_Transform reads it,
+-- and a raster to align to hands over its reference system, its pixel size,
+-- its grid origin and its skew, so every pixel of the result coincides with a
+-- pixel of its grid. PostGIS's ST_Transform is the oracle for both.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1704,6 +2059,7 @@ FROM pair;
  150000 | -150000 | t                      | t                        |      -50000 |      350000 |         100000 | t                       | t
 (1 row)
 
+-- A raster to align to standing in no reference system states no target.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1712,6 +2068,8 @@ WITH rast AS (
 SELECT transform(r, ST_MakeEmptyRaster(1, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0))
 FROM rast;
 ERROR:  The target of a reprojection cannot be an unknown SRID
+-- A pixel size giving the result more than 65535 columns or rows, the most a
+-- raster holds, states no raster: a pixel of 1 metre over 3 degrees.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1721,6 +2079,16 @@ SELECT transform(r, 3857, 'NearestNeighbour'::text, 0.125::float8,
   1.0::float8, -1.0::float8)
 FROM rast;
 ERROR:  rt_raster_new: Dimensions requested exceed the maximum (65535 x 65535) permitted for a raster
+-------------------------------------------------------------------------------
+-- transformPipeline
+-------------------------------------------------------------------------------
+-- A raster carried through a coordinate operation states the coverage the
+-- operation maps. The UTM zone 31N projection on the WGS84 ellipsoid is the
+-- operation GDAL derives from EPSG:4326 to EPSG:32631, so the pipeline answers
+-- as transform to that system does, on the grid and on the values, and its
+-- inverse answers as transform back. An operation named by its authority code
+-- answers as the PROJ string it stands for: the EPSG conversion 16031 is
+-- '+proj=utm +zone=31', which states no ellipsoid and so reads PROJ's default.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1771,6 +2139,8 @@ FROM inv;
  4326 | t                 | t
 (1 row)
 
+-- A raster wider than it is high tells the axes apart, on the grid and on the
+-- values.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1792,6 +2162,8 @@ FROM fwd;
  4 | 2 | t                 | t
 (1 row)
 
+-- A coordinate reference system is not an operation, an operation must be one
+-- PROJ reads, and a raster standing in no system cannot be carried by one.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1817,6 +2189,12 @@ SELECT transformPipeline(
     '32BF'::text, 0.0::float8, NULL::float8),
   'urn:ogc:def:coordinateOperation:EPSG::16031', 32631);
 ERROR:  The raster states no SRID to reproject from
+-------------------------------------------------------------------------------
+-- summaryStats
+-------------------------------------------------------------------------------
+-- What a band's pixels amount to, taken in one pass, is the record PostGIS's
+-- ST_SummaryStats answers: with the nodata pixel in the centre left out, and
+-- counted as the value it holds.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1837,6 +2215,8 @@ FROM (SELECT summaryStats(r) AS s,
      8 | 400 |   50 | 27.386128 |  10 |  90 | t          | t
 (1 row)
 
+-- A band whose every pixel is nodata, beside what ST_SummaryStats answers for
+-- it, and a band the raster does not have.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1857,6 +2237,9 @@ WITH rast AS (
 )
 SELECT summaryStats(r, 2) FROM rast;
 ERROR:  The raster has no band 2, it has 1
+-- The accessors read the fields of the record, each answering the field it
+-- names; over a band whose every pixel is nodata the count is 0 and the other
+-- accessors answer NULL, as the record states no statistic.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1896,6 +2279,7 @@ NOTICE:  All pixels of band have the NODATA value
                  0 |                 |                  |                    |                 |                
 (1 row)
 
+-- The accessors read the record of the aggregate as they read that of a band.
 WITH tiles AS (
   SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
     '32BF'::text, 1.0::float8, -9999.0::float8) AS r
@@ -1910,6 +2294,15 @@ FROM (SELECT summaryStatsAgg(r, 1, true) AS s FROM tiles) t;
                  8 |              16 |                2 |                  1 |               1 |               3
 (1 row)
 
+-------------------------------------------------------------------------------
+-- dumpAsPolygons
+-------------------------------------------------------------------------------
+-- A band states a value per pixel; its polygons state the regions those values
+-- cover, one per group of pixels sharing a value, as PostGIS's
+-- ST_DumpAsPolygons answers them. The band holds three regions and a nodata
+-- pixel. Each polygon carries the reference system of the raster where
+-- ST_DumpAsPolygons states none, so the comparison sets it on PostGIS's
+-- answer, and a full join shows a region either answer lacks.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1934,6 +2327,9 @@ ORDER BY o.val;
    3 | 4326 |    2 | t
 (3 rows)
 
+-- With the nodata pixels counted, the nodata pixel is a region of its own, as
+-- ST_DumpAsPolygons counts it; a band whose every pixel is nodata covers
+-- nothing, which both answer with no polygon.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1955,6 +2351,7 @@ SELECT (SELECT count(*) FROM rast, dumpAsPolygons(r, 1, false)) AS regions,
        4 |               4 |             0 |                     0
 (1 row)
 
+-- A band the raster does not have is an error.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -1962,6 +2359,12 @@ WITH rast AS (
 )
 SELECT count(*) FROM rast, dumpAsPolygons(r, 2);
 ERROR:  The raster has no band 2, it has 1
+-------------------------------------------------------------------------------
+-- Argument names
+-------------------------------------------------------------------------------
+-- A raster function takes the names of the arguments of its PostGIS
+-- counterpart, so a call naming them reads the same with or without the ST_
+-- prefix.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1989,6 +2392,11 @@ FROM rast;
  t                  | t             | t             | t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- raster conversion to stbox
+-------------------------------------------------------------------------------
+-- The extent of an axis-aligned raster runs from its origin over its scaled
+-- size, and the cast form agrees with the function form.
 WITH rast AS (
   SELECT ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
 )
@@ -1998,6 +2406,8 @@ SELECT stbox(r) AS box, stbox(r) = r::stbox AS cast_agrees FROM rast;
  SRID=4326;STBOX X((0,0),(3,3)) | t
 (1 row)
 
+-- The extent bears the rotation of the geotransform, so a skewed grid reaches
+-- past the box its scale alone would give and the two disagree.
 WITH plain AS (
   SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
 ), skewed AS (
@@ -2012,6 +2422,7 @@ SELECT stbox((SELECT r FROM plain)) AS plain_box,
  SRID=4326;STBOX X((0,0),(2,2)) | SRID=4326;STBOX X((0,0),(4,2)) | t
 (1 row)
 
+-- The box states the reference system the raster is in, not a fixed one.
 SELECT stbox(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857))
   AS box_in_3857;
           box_in_3857           
@@ -2019,6 +2430,8 @@ SELECT stbox(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857))
  SRID=3857;STBOX X((0,0),(2,2))
 (1 row)
 
+-- The footprint carries the stbox operators, so a raster column is searched by
+-- spatial overlap.
 SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &&
        stbox 'SRID=4326;STBOX X((1,1),(2,2))' AS overlaps_region;
  overlaps_region 
@@ -2026,6 +2439,12 @@ SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &&
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Arithmetic of rasters
+-------------------------------------------------------------------------------
+-- The normalized difference of two unsigned 16-bit bands is the ratio itself,
+-- since the result is a 64-bit float band: a negative difference, a ratio
+-- between zero and one, and the 0 where the two bands agree are kept.
 WITH bands AS (
   SELECT
     ST_SetValues(ST_AddBand(
@@ -2049,6 +2468,7 @@ FROM bands;
  64BF      | {{0.5,-0.5,0},{0.6,-0.5,0.5},{-0.5,-1,1}} | {{2000,-1000,0},{3000,-2000,4000},{-200,-1,65535}} | {{3000000,750000,4000000},{4000000,3000000,12000000},{30000,0,0}}
 (1 row)
 
+-- The function forms answer what the operators answer.
 WITH bands AS (
   SELECT
     ST_SetValues(ST_AddBand(
@@ -2077,6 +2497,9 @@ FROM bands;
  t          | t          | t          | t
 (1 row)
 
+-- A raster and a number, the number on either side; an integer literal is
+-- read as the float it stands for. The nodata pixel stays nodata, with the
+-- nodata value of the raster.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -2101,6 +2524,8 @@ FROM rast;
  {{0,NULL,20},{30,40,50},{60,70,80}} | {{90,NULL,70},{60,50,40},{30,20,10}} | {{5,NULL,15},{20,25,30},{35,40,45}} | {{252,NULL,84},{63,50.4,42},{36,31.5,28}} | {{20,NULL,60},{80,100,120},{140,160,180}} |  -9999
 (1 row)
 
+-- A derived raster is read along a trajectory as any raster is: the depth
+-- minus the draught of a vessel.
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -2122,6 +2547,8 @@ FROM rast;
  Interp=Step;[1.5@2001-01-01 00:00:00+00, 11.5@2001-01-01 06:00:00+00, 21.5@2001-01-01 18:00:00+00, 41.5@2001-01-02 06:00:00+00, 61.5@2001-01-02 18:00:00+00, 61.5@2001-01-03 00:00:00+00]
 (1 row)
 
+-- Two rasters are operated over the pixels they share: the grid one pixel to
+-- the east shares two columns, and grids sharing no pixel have no result.
 WITH rast AS (
   SELECT ST_AddBand(
       ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -2142,6 +2569,7 @@ FROM rast;
  (1,3,2,3,1,-1,0,0,4326,1) | {{3,3},{3,3},{3,3}} | t
 (1 row)
 
+-- A division by zero is an error, whether the divisor is a number or a pixel.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -2156,6 +2584,8 @@ WITH rast AS (
 )
 SELECT r / (r - r) FROM rast;
 ERROR:  Division by zero
+-- Rasters on different grids, in different reference systems or with
+-- different numbers of bands are not operated.
 SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
     '32BF'::text, 1.0::float8, NULL::float8) +
@@ -2178,6 +2608,12 @@ SELECT ST_AddBand(
     '32BF'::text, 1.0::float8, NULL::float8),
     '32BF'::text, 1.0::float8, NULL::float8);
 ERROR:  The rasters have 1 and 2 bands
+-------------------------------------------------------------------------------
+-- Terrain of rasters
+-------------------------------------------------------------------------------
+-- The ruggedness and the topographic position of each pixel from its eight
+-- neighbours; the nodata pixel stays nodata, and a nodata neighbour takes the
+-- value of the pixel it surrounds.
 WITH dem AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2193,6 +2629,8 @@ FROM dem;
  {{3.75,3.75,5,1.875},{5,7.5,NULL,3.75},{5,8.125,8.125,3.125},{2.5,5.625,5.625,3.75}} | {{-3.75,0,-1.25,0.625},{-3.75,1.25,NULL,2.5},{-3.75,0.625,-0.625,1.875},{-1.25,1.875,1.875,3.75}} | 32BF
 (1 row)
 
+-- Interpolating the nodata pixel first gives it the mean of its neighbours
+-- weighted by the inverse of their distances, 35.
 WITH dem AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2208,6 +2646,9 @@ FROM dem;
  {{3.75,5.625,5.625,2.5},{5,8.75,8.75,5},{5,8.75,8.75,5},{2.5,5.625,5.625,3.75}} | {{-3.75,-1.875,-1.875,1.25},{-3.75,0,0,3.75},{-3.75,0,0,3.75},{-1.25,1.875,1.875,3.75}}
 (1 row)
 
+-- Every function answers what PostGIS answers over the same raster, but the
+-- slope in radians: PostGIS compares the units in upper case to 'rad', so its
+-- radians are degrees.
 WITH dem AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2238,6 +2679,8 @@ FROM dem;
  t             | t             | t           | t                  | t   | t
 (1 row)
 
+-- A plane rising by 1 for each pixel to the east: 45 degrees, 100 percent,
+-- and pi/4 radians, where PostGIS answers 45.
 WITH plane AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -2255,6 +2698,8 @@ FROM plane;
       45 |     100 | t                  |              45
 (1 row)
 
+-- A custom extent decides the grid of the result, and one left NULL is the
+-- extent of the raster.
 WITH dem AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2274,6 +2719,8 @@ FROM dem;
  (1,3,2,2,1,-1,0,0,3857,1) | {{7.5,NULL},{8.125,8.125}} | t
 (1 row)
 
+-- Units, a pixel type or a band the raster does not have, a zero scale and a
+-- custom extent on another grid are refused.
 SELECT slope(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
   0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), units => 'furlongs');
 ERROR:  Unknown units of a slope: furlongs
@@ -2290,6 +2737,11 @@ SELECT tpi(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
   0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1,
   ST_MakeEmptyRaster(2, 2, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326));
 ERROR:  The rasters (pixel corner coordinates) are not aligned
+-------------------------------------------------------------------------------
+-- Statistics over a neighbourhood
+-------------------------------------------------------------------------------
+-- The mean of the 3x3 neighbourhood of each pixel, whose nodata pixels and
+-- those outside the raster are skipped.
 WITH dem AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2305,6 +2757,9 @@ FROM dem;
  {{17.500000,20.000000,32.000000,38.333333},{20.000000,23.750000,35.000000,41.000000},{25.000000,29.375000,40.625000,47.000000},{27.500000,32.500000,42.500000,47.500000}}
 (1 row)
 
+-- Every statistic, over every neighbourhood up to 2 pixels on each side, is
+-- the raster PostGIS answers by ST_MapAlgebra with its 4ma callback, byte for
+-- byte.
 WITH dem AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2330,6 +2785,9 @@ GROUP BY stat ORDER BY stat;
  SUM    |     9 |    9
 (6 rows)
 
+-- A neighbourhood whose distance is zero along one axis only is the pixel
+-- alone, as for PostGIS, which reads it through the same iterator; the sum of
+-- the nodata pixel is 0.
 WITH dem AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2345,6 +2803,8 @@ FROM dem;
  {{10,20,30,40},{15,25,0,45},{20,30,40,50},{25,35,45,55}}
 (1 row)
 
+-- A pixel type left NULL is the one of the band, every extent type but CUSTOM
+-- is the extent of the raster, and CUSTOM takes the grid of its extent.
 WITH dem AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2367,6 +2827,7 @@ FROM dem;
  32BF      | (0,4,4,4,1,-1,0,0,3857,1) | (1,3,2,2,1,-1,0,0,3857,1) | {{190,280},{235,325}}
 (1 row)
 
+-- A band stating no nodata value lends its minimum value to the result.
 WITH plane AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -2383,6 +2844,9 @@ FROM plane;
  -3.4028235e+38 | {{1,2,2},{1,2,2},{1,2,2}}
 (1 row)
 
+-- A statistic, an extent type, a pixel type or a band the raster does not
+-- have, a negative distance, CUSTOM without an extent and a custom extent on
+-- another grid are refused.
 SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
   0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1, 'DISTINCT');
 ERROR:  Unknown statistic of a neighbourhood: DISTINCT
@@ -2410,6 +2874,11 @@ SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
   customextent => ST_MakeEmptyRaster(2, 2, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0,
   4326));
 ERROR:  The rasters (pixel corner coordinates) are not aligned
+-------------------------------------------------------------------------------
+-- Value count of rasters
+-------------------------------------------------------------------------------
+-- The rows of every distinct value of a band, with nodata left out and kept,
+-- rounded to tenths, and of the values searched.
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -2448,6 +2917,7 @@ ORDER BY 1, 2;
  tenths      |     3.000000 |     1
 (15 rows)
 
+-- Every form answers what PostGIS answers over the same raster.
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -2485,6 +2955,7 @@ FROM rast;
  t          | t                   | t            | t                | t           | t                  | t
 (1 row)
 
+-- The share of each value, and of one value.
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -2504,6 +2975,8 @@ ORDER BY 1;
  3.000000 |   0.125 |            0.5
 (4 rows)
 
+-- A band stating that every pixel is nodata answers no row where nodata is
+-- left out, and the nodata value over every pixel where it is kept.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
@@ -2519,9 +2992,16 @@ FROM rast;
                     0 | {"(-9999,4)"}    |               0
 (1 row)
 
+-- A band the raster does not have is an error, where PostGIS answers NULL.
 SELECT * FROM valueCount(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0,
   -1.0, 0.0, 0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 2);
 ERROR:  The raster has no band 2, it has 1
+-------------------------------------------------------------------------------
+-- Alignment of rasters
+-------------------------------------------------------------------------------
+-- Whether two rasters lie on the same grid, and why not, as PostGIS answers:
+-- the grid one pixel to the east is aligned, the one half a pixel to the east
+-- and the one with another scale are not.
 WITH r AS (SELECT
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
   ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1,
@@ -2540,6 +3020,8 @@ FROM r;
  t     | f        | The rasters are aligned | The rasters (pixel corner coordinates) are not aligned | The rasters have different scales on the X axis | t
 (1 row)
 
+-- The aggregate over a column of tiles, under its canonical name and its
+-- bare one; an aggregate over no raster answers NULL.
 WITH r AS (SELECT
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
   ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1,
@@ -2562,6 +3044,8 @@ NOTICE:  The rasters (pixel corner coordinates) are not aligned
  t       | f          | t         | t          | t
 (1 row)
 
+-- A NULL raster of the column is skipped, as setUnion skips a NULL set,
+-- where PostGIS answers NULL; a column of NULL rasters answers NULL.
 WITH r AS (SELECT
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
   ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1)
@@ -2578,6 +3062,7 @@ FROM r;
  t            | t            | t
 (1 row)
 
+-- Two reference systems are refused, where PostGIS answers false.
 SELECT sameAlignment(
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857));
@@ -2586,13 +3071,18 @@ SELECT sameAlignment(x) FROM (VALUES
   (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)),
   (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857))) t(x);
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Pixels as points and values as arrays
+-------------------------------------------------------------------------------
+-- A 3x2 raster over 2x1 unit pixels from (10, 20): a 32BF band holding 1.5,
+-- nodata, 3 / 4, 5, 6 with -9999 as its nodata value, and an 8BUI band
+-- holding 7 without one.
 CREATE TEMP TABLE tbl_pixels AS
 SELECT ST_SetValues(ST_AddBand(ST_AddBand(
     ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0, 3857),
     '32BF'::text, 0.0::float8, -9999.0::float8),
     '8BUI'::text, 7.0::float8, NULL::float8), 1, 1, 1,
     ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r;
-SELECT 1
 SELECT ST_AsText(geom), val, x, y FROM tbl_pixels, pixelAsPoints(r);
   st_astext   | val | x | y 
 --------------+-----+---+---
@@ -2617,6 +3107,9 @@ SELECT d.* FROM tbl_pixels, dumpValues(r) d;
      2 | {{7,7,7},{7,7,7}}
 (2 rows)
 
+-- Every pixel and every array is the one PostGIS answers, the points byte
+-- for byte, over each band, keeping or leaving out the nodata pixels, and
+-- the arrays in the order of the bands asked for.
 SELECT b, e,
   (SELECT array_agg(ROW(ST_AsHEXEWKB(geom), val, x, y)::text ORDER BY y, x)
     FROM pixelAsPoints(r, b, e)) =
@@ -2637,6 +3130,7 @@ ORDER BY b, e;
  2 | t | t      | t    | t
 (4 rows)
 
+-- The corner of a pixel of a skewed raster carries the skew.
 SELECT ST_AsText(geom), val, x, y FROM pixelAsPoints(ST_AddBand(
   ST_MakeEmptyRaster(2, 1, 0.0, 0.0, 1.0, -1.0, 0.5, 0.0, 3857), '8BUI'::text,
   1.0::float8, NULL::float8));
@@ -2646,16 +3140,22 @@ SELECT ST_AsText(geom), val, x, y FROM pixelAsPoints(ST_AddBand(
  POINT(1 0) |   1 | 2 | 1
 (2 rows)
 
+-- A band the raster does not have is refused, where PostGIS answers no row.
 SELECT count(*) FROM tbl_pixels, pixelAsPoints(r, 3);
 ERROR:  The raster has no band 3, it has 2
 SELECT dumpValues(r, 3) FROM tbl_pixels;
 ERROR:  The raster has no band 3, it has 2
 SELECT count(*) FROM tbl_pixels, dumpValues(r, ARRAY[3]);
 ERROR:  The raster has no band 3, it has 2
+-- A NULL band number is refused, where PostGIS skips it.
 SELECT count(*) FROM tbl_pixels, dumpValues(r, ARRAY[1, NULL]);
 ERROR:  null array element not allowed in this context
 DROP TABLE tbl_pixels;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- Union of rasters
+-------------------------------------------------------------------------------
+-- Three tiles: the second overlaps the first one pixel east and one south,
+-- the third holds one band and touches the second at one pixel.
 CREATE TEMP TABLE tbl_union_tiles AS
 SELECT 1 AS id, ST_SetValues(ST_SetValues(ST_AddBand(ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857),
@@ -2676,7 +3176,6 @@ SELECT 3, ST_SetValues(ST_AddBand(
     ST_MakeEmptyRaster(2, 2, 3.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857),
     '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
     ARRAY[[2, 4], [6, 8]]::double precision[][]);
-SELECT 3
 SELECT ST_DumpValues(rasterUnion(r, 'MAX' ORDER BY id), 1) AS max,
   ST_DumpValues(rasterUnion(r, 'MEAN' ORDER BY id), 1) AS mean
 FROM tbl_union_tiles;
@@ -2685,6 +3184,7 @@ FROM tbl_union_tiles;
  {{1,2,3,2,4},{4,5,6,6,8},{7,8,9,NULL,NULL},{NULL,5,5,5,NULL}} | {{1,2,3,2,4},{4,5,5.5,5.5,8},{7,6.5,7,NULL,NULL},{NULL,5,5,5,NULL}}
 (1 row)
 
+-- The example of the manual: the mean of two overlapping tiles.
 WITH tiles AS (
   SELECT 1 AS id, ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
     0.0, 0.0, 3857), '32BF'::text, 1.0::float8, -9999.0::float8) AS r
@@ -2697,6 +3197,8 @@ SELECT ST_DumpValues(rasterUnion(r, 'MEAN' ORDER BY id), 1) FROM tiles;
  {{1,1,NULL},{1,2,3},{NULL,3,3}}
 (1 row)
 
+-- Every pixel operation, over every band or over the first one, is the
+-- raster PostGIS's ST_Union answers, byte for byte, regardless of case.
 SELECT t,
   ST_AsHexWKB(rasterUnion(r, t ORDER BY id)) =
     ST_AsHexWKB(ST_Union(r, t ORDER BY id)) AS every_band,
@@ -2720,6 +3222,7 @@ GROUP BY t ORDER BY t;
  SUM   | t          | t     | t
 (8 rows)
 
+-- Without a pixel operation, LAST; without a band, every band.
 SELECT ST_AsHexWKB(rasterUnion(r ORDER BY id)) =
     ST_AsHexWKB(ST_Union(r ORDER BY id)) AS every_band,
   ST_AsHexWKB(rasterUnion(r, 1 ORDER BY id)) =
@@ -2734,6 +3237,7 @@ FROM tbl_union_tiles;
  t          | t     | t
 (1 row)
 
+-- A NULL raster is skipped, and a group of no raster answers NULL.
 SELECT ST_AsHexWKB(rasterUnion(r, 'SUM' ORDER BY id)) =
     ST_AsHexWKB(ST_Union(r, 'SUM' ORDER BY id) FILTER (WHERE r IS NOT NULL))
     AS null_skipped,
@@ -2745,20 +3249,18 @@ FROM (SELECT id, r FROM tbl_union_tiles UNION ALL SELECT 4, NULL) t;
  t            | t        | t
 (1 row)
 
+-- The states of parallel workers are combined into the union of every
+-- raster, which an operation independent of the order of the rasters answers
+-- whatever the plan.
 SET parallel_setup_cost = 0;
-SET
 SET parallel_tuple_cost = 0;
-SET
 SET min_parallel_table_scan_size = 0;
-SET
 SET max_parallel_workers_per_gather = 2;
-SET
 CREATE TABLE tbl_union_many AS
 SELECT i, ST_AddBand(ST_MakeEmptyRaster(2, 2, (i % 10)::float8,
     (i / 10)::float8, 1.0, -1.0, 0.0, 0.0, 3857), '32BF'::text,
     (i % 7)::float8, -9999.0::float8) AS r
 FROM generate_series(1, 200) i;
-SELECT 200
 EXPLAIN (COSTS OFF) SELECT rasterUnion(r, 'SUM') FROM tbl_union_many;
                       QUERY PLAN                       
 -------------------------------------------------------
@@ -2789,15 +3291,12 @@ FROM tbl_union_many;
 (1 row)
 
 RESET parallel_setup_cost;
-RESET
 RESET parallel_tuple_cost;
-RESET
 RESET min_parallel_table_scan_size;
-RESET
 RESET max_parallel_workers_per_gather;
-RESET
 DROP TABLE tbl_union_many;
-DROP TABLE
+-- A pixel operation outside those named, a band a raster lacks, a negative
+-- band, two reference systems and two grids are refused.
 SELECT rasterUnion(r, 'BOGUS') FROM tbl_union_tiles;
 ERROR:  Unknown union type: BOGUS
 SELECT rasterUnion(r, 2) FROM tbl_union_tiles;
@@ -2816,6 +3315,10 @@ SELECT rasterUnion(r) FROM (VALUES
   (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.5, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
     '32BF'::text, 1.0::float8, NULL::float8))) t(r);
 ERROR:  The rasters (pixel corner coordinates) are not aligned
+-------------------------------------------------------------------------------
+-- Summary statistics of many rasters
+-------------------------------------------------------------------------------
+-- What the pixels of a band amount to over the tiles of the union.
 SELECT (s).count, (s).sum, round((s).mean::numeric, 6) AS mean,
   round((s).stddev::numeric, 6) AS stddev, (s).min, (s).max
 FROM (SELECT summaryStatsAgg(r, 1, true ORDER BY id) AS s
@@ -2834,6 +3337,7 @@ FROM (SELECT summaryStatsAgg(r, 2, false ORDER BY id) AS s
     18 | 459 | 25.500000 | 30.554596 |   1 |  90
 (1 row)
 
+-- The example of the manual: the statistics of two overlapping tiles.
 WITH tiles AS (
   SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0,
     3857), '32BF'::text, 1.0::float8, -9999.0::float8) AS r
@@ -2846,6 +3350,9 @@ SELECT (summaryStatsAgg(r, 1, true)).* FROM tiles;
      8 |  16 |    2 |      1 |   1 |   3
 (1 row)
 
+-- Every band, leaving nodata out or counting it, is the record PostGIS's
+-- ST_SummaryStatsAgg answers reading every pixel, and so is the form without
+-- a band.
 SELECT b, e, summaryStatsAgg(r, b, e ORDER BY id) =
     ST_SummaryStatsAgg(r, b, e, 1.0 ORDER BY id) AS postgis
 FROM tbl_union_tiles,
@@ -2868,6 +3375,7 @@ FROM tbl_union_tiles;
  t
 (1 row)
 
+-- Over one raster, the statistics of summaryStats.
 SELECT t.id, summaryStatsAgg(t.r, 1, true) = (SELECT summaryStats(u.r, 1,
     true) FROM tbl_union_tiles u WHERE u.id = t.id) AS one
 FROM tbl_union_tiles t GROUP BY t.id ORDER BY t.id;
@@ -2878,6 +3386,8 @@ FROM tbl_union_tiles t GROUP BY t.id ORDER BY t.id;
   3 | t
 (3 rows)
 
+-- A NULL raster is skipped, a group of no raster answers NULL, and a band
+-- whose every pixel is nodata counts none, as for PostGIS.
 SELECT summaryStatsAgg(r, 1, true ORDER BY id) =
     ST_SummaryStatsAgg(r, 1, true, 1.0 ORDER BY id) AS null_skipped
 FROM (SELECT id, r FROM tbl_union_tiles UNION ALL SELECT 4, NULL) t;
@@ -2902,20 +3412,18 @@ NOTICE:  All pixels of band have the NODATA value
      0 |     |      |        |     |    
 (1 row)
 
+-- The states of parallel workers are combined into the statistics of every
+-- pixel: the count, sum, smallest and largest value are those of PostGIS,
+-- and the mean and the standard deviation agree to ten decimals.
 SET parallel_setup_cost = 0;
-SET
 SET parallel_tuple_cost = 0;
-SET
 SET min_parallel_table_scan_size = 0;
-SET
 SET max_parallel_workers_per_gather = 2;
-SET
 CREATE TABLE tbl_stats_many AS
 SELECT i, ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0,
     -1.0, 0.0, 0.0, 3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1,
     1, ARRAY[[i % 7, i % 5], [i % 3, -9999]]::double precision[][]) AS r
 FROM generate_series(1, 200) i;
-SELECT 200
 EXPLAIN (COSTS OFF) SELECT summaryStatsAgg(r, 1, true) FROM tbl_stats_many;
                       QUERY PLAN                       
 -------------------------------------------------------
@@ -2940,21 +3448,22 @@ FROM s, p;
 (1 row)
 
 RESET parallel_setup_cost;
-RESET
 RESET parallel_tuple_cost;
-RESET
 RESET min_parallel_table_scan_size;
-RESET
 RESET max_parallel_workers_per_gather;
-RESET
 DROP TABLE tbl_stats_many;
-DROP TABLE
+-- A band a raster lacks is refused, where PostGIS skips the raster, and so
+-- is a band below 1.
 SELECT summaryStatsAgg(r, 2, true) FROM tbl_union_tiles;
 ERROR:  The raster has no band 2, it has 1
 SELECT summaryStatsAgg(r, 0, true) FROM tbl_union_tiles;
 ERROR:  The band of the statistics starts at 1
 DROP TABLE tbl_union_tiles;
-DROP TABLE
+-------------------------------------------------------------------------------
+-- A raster built from its pixels and its georeferencing
+-------------------------------------------------------------------------------
+-- makeEmptyRaster, addBand and setValues answer the raster PostGIS answers,
+-- byte for byte.
 SELECT asHexWKB(makeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.1, 0.2, 3857))
   = asHexWKB(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.1, 0.2, 3857));
  ?column? 
@@ -3014,6 +3523,8 @@ FROM r;
  t        | t        | t        | t
 (1 row)
 
+-- Flags wider and taller than the values are read over the block of the
+-- values, the first flags of each of its rows, a NULL flag setting its value.
 WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0,
   0.0, 0.0, 3857), '16BSI'::text, 5, -1) AS r)
 SELECT
@@ -3031,6 +3542,8 @@ FROM r;
  t        | {{1,2,5},{5,5,5},{5,5,5}} | {{1,5,5},{3,4,5},{5,5,5}}
 (1 row)
 
+-- The pixels holding the nodata value keep it, and a band stating no nodata
+-- value takes the least value of its type for a NULL.
 WITH r AS (SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0,
   1.0, -1.0, 0.0, 0.0, 3857), '16BSI'::text, 5, -1), 1, 1, 1,
   ARRAY[-1]::float8[]) AS r)
@@ -3047,6 +3560,7 @@ FROM r;
  t        | {{NULL,9}} | {{-128,3}}
 (1 row)
 
+-- A block reaching beyond the raster sets the pixels it shares with it.
 WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
   0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
 SELECT dumpValues(setValues(r, 1, 2, 2, ARRAY[[1, 2], [3, 4]]), 1) FROM r;
@@ -3055,6 +3569,8 @@ SELECT dumpValues(setValues(r, 1, 2, 2, ARRAY[[1, 2], [3, 4]]), 1) FROM r;
  {{0,0},{0,1}}
 (1 row)
 
+-- The pixels of a band, row by row, each in the bytes of its type,
+-- little-endian beyond one byte.
 WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
   0.0, 0.0, 3857), '16BSI'::text, 0) AS r)
 SELECT pixels(setValues(r, 1, 1, 1, ARRAY[[1, -2], [300, -32768]])),
@@ -3069,6 +3585,8 @@ FROM r;
  \x0100feff2c010080 | \x0000c03f000000c00000803ef9021550 | \x9a9999999999b93f00000000000000809c7500883ce4377e0000000000000840 | \x09090909
 (1 row)
 
+-- A raster built from the pixels and the georeferencing of another is that
+-- raster, for every pixel type, with or without a nodata value.
 WITH r AS (
   SELECT t, ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 2, 10.5, -4.0, 0.5,
     -0.25, 0.01, 0.02, 3857), t, 1, nd), 1, 1, 1,
@@ -3095,6 +3613,7 @@ FROM r ORDER BY t;
  8BUI  | t
 (11 rows)
 
+-- The pixel type is read under the name bandPixelType answers as well.
 WITH r AS (SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0,
   1.0, -1.0, 0.0, 0.0, 3857), '32BUI'::text, 0), 1, 1, 1,
   ARRAY[4294967295, 7]::float8[]) AS r)
@@ -3106,6 +3625,8 @@ FROM r;
  uint32        | t
 (1 row)
 
+-- A band bounding a pixel to less than a byte is named uint8, so it is rebuilt
+-- as 8BUI with the same bytes.
 WITH r AS (SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 1, 0.0, 1.0,
   1.0, -1.0, 0.0, 0.0, 3857), '4BUI'::text, 0), 1, 1, 1,
   ARRAY[1, 15, 7]::float8[]) AS r)
@@ -3125,6 +3646,8 @@ SELECT bandHasNoDataValue(raster('\x0102'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0,
  f                  |               2
 (1 row)
 
+-- A band whose every pixel holds the nodata value is stated as such, as
+-- PostGIS states it.
 SELECT asHexWKB(raster('\x0505'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
   3857, '8BUI', 5)) = asHexWKB(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0,
   1.0, -1.0, 0.0, 0.0, 3857), '8BUI'::text, 5, 5));
@@ -3149,6 +3672,7 @@ SELECT raster('\x0102'::bytea, NULL, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
  t        | t
 (1 row)
 
+-- A null raster counts no value, in every form
 SELECT (SELECT count(*) FROM valueCount(NULL::raster)),
   (SELECT count(*) FROM valueCount(NULL::raster, 1, ARRAY[1.0]::float[])),
   (SELECT count(*) FROM valueCount(NULL::raster, ARRAY[1.0]::float[])),
@@ -3160,6 +3684,7 @@ SELECT (SELECT count(*) FROM valueCount(NULL::raster)),
      0 |     0 |     0 |     0 |     0 |     0
 (1 row)
 
+-- What no raster states is refused.
 SELECT raster('\x010203'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
   '8BUI');
 ERROR:  A 2 x 1 raster band of type 8BUI has 2 bytes, not 3
@@ -3215,6 +3740,7 @@ WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
   0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
 SELECT pixels(r, 2) FROM r;
 ERROR:  The raster has no band 2, it has 1
+-- The examples the manual states
 SELECT dumpValues(raster('\x0100feff2c010080'::bytea, 2, 2, 0, 2, 1, -1, 0, 0,
   3857, '16BSI'), 1);
       dumpvalues       

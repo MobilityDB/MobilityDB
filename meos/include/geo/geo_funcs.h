@@ -264,6 +264,9 @@ extern int cross_product_sign_offset(double ax, double ay, double bx,
   double by, double cx, double cy, double dx, double dy, double oab,
   double ocd);
 extern int offset_x_cmp(double x, double o, double p);
+extern double segment_construction_bound(double a, double b);
+extern bool segment_meets_point_box(double ax, double ay, double bx,
+  double by, double px, double py, double ex, double ey);
 extern int64 segment_edge_cross_offset(double x0, double y0, double x1,
   double y1, int64 D, double ax, double ay, double oa, double bx, double by,
   double ob, bool *whole);
@@ -373,6 +376,8 @@ extern double convex_motion_nad_exact(const double *b, int nb,
   const double *p0, const double *p1, const double *g, int ng);
 extern bool convex_motion_meet_exact(const double *b, int nb,
   const double *p0, const double *p1, const double *g, int ng);
+extern int translated_point_in_rings_exact(double px, double py, double tx,
+  double ty, POINTARRAY * const *rings, uint32_t nrings);
 extern int point_motion_dwithin_exact(const double *p0, const double *p1,
   int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
   int64 ta, int64 tb, double d, bool ever);

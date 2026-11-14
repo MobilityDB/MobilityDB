@@ -730,6 +730,24 @@ int main(void)
   free(lift_wkt); free(lift_res); free(lift_arc); free(lift_line);
   meos_errno_reset();
 
+  /* Two parallel lines 1e-13 apart, at Z 1 and Z 5. Neither passes within the
+   * rounding of a construction, 4 epsilon of 2, of a vertex of the other, so
+   * each vertex of the union takes the elevation of its own line */
+  GSERIALIZED *lift_low = geom_in("LINESTRING Z (0 0 1, 1 0 1)", -1);
+  GSERIALIZED *lift_high = geom_in("LINESTRING Z (0.5 1e-13 5, 2 1e-13 5)",
+    -1);
+  assert(lift_low != NULL);
+  assert(lift_high != NULL);
+  GSERIALIZED *lift_un = geom_union2d(lift_low, lift_high);
+  assert(lift_un != NULL);
+  char *lift_un_wkt = geo_as_text(lift_un, 17, &size_out);
+  printf("geom_union2d(a line at Z 1, a parallel one 1e-13 away at Z 5): %s\n",
+    lift_un_wkt);
+  assert(strcmp(lift_un_wkt,
+    "MULTILINESTRING Z ((0 0 1,1 0 1),(0.5 1e-13 5,2 1e-13 5))") == 0);
+  free(lift_un_wkt); free(lift_un); free(lift_low); free(lift_high);
+  meos_errno_reset();
+
   /* The box of an arc takes its size from the arc. A semicircle through
    * (0 0), (s s) and (2s 0) is 2s wide and s high, and it holds its own middle
    * vertex (s s), so it intersects that point at every s. A box read off the

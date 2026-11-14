@@ -1,0 +1,399 @@
+\getenv srcdir MOBILITYDB_SOURCE_DIR
+CREATE TABLE tbl_geogset (
+    k integer PRIMARY KEY,
+    g geogset
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geogset.data'
+COPY tbl_geogset (k, g) FROM :'filename';
+CREATE TABLE tbl_geomset (
+    k integer PRIMARY KEY,
+    g geomset
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geomset.data'
+COPY tbl_geomset (k, g) FROM :'filename';
+CREATE TABLE tbl_stbox (
+    k integer PRIMARY KEY,
+    b stbox
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_stbox.data'
+COPY tbl_stbox (k, b) FROM :'filename';
+CREATE TABLE tbl_stbox3d (
+    k integer PRIMARY KEY,
+    b stbox
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_stbox3d.data'
+COPY tbl_stbox3d (k, b) FROM :'filename';
+CREATE TABLE tbl_geodstbox3D (
+    k integer PRIMARY KEY,
+    b stbox
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geodstbox3D.data'
+COPY tbl_geodstbox3D (k, b) FROM :'filename';
+CREATE TABLE tbl_geog (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog.data'
+COPY tbl_geog (k, g) FROM :'filename';
+CREATE TABLE tbl_geog3d (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog3d.data'
+COPY tbl_geog3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_linestring (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_linestring.data'
+COPY tbl_geog_linestring (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_linestring3d (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_linestring3d.data'
+COPY tbl_geog_linestring3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_multilinestring (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_multilinestring.data'
+COPY tbl_geog_multilinestring (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_multilinestring3d (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_multilinestring3d.data'
+COPY tbl_geog_multilinestring3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_multipoint (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_multipoint.data'
+COPY tbl_geog_multipoint (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_multipoint3d (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_multipoint3d.data'
+COPY tbl_geog_multipoint3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_multipolygon (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_multipolygon.data'
+COPY tbl_geog_multipolygon (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_multipolygon3d (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_multipolygon3d.data'
+COPY tbl_geog_multipolygon3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_point (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_point.data'
+COPY tbl_geog_point (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_point3d (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_point3d.data'
+COPY tbl_geog_point3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_polygon (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_polygon.data'
+COPY tbl_geog_polygon (k, g) FROM :'filename';
+CREATE TABLE tbl_geog_polygon3d (
+    k integer PRIMARY KEY,
+    g geography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geog_polygon3d.data'
+COPY tbl_geog_polygon3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geom (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom.data'
+COPY tbl_geom (k, g) FROM :'filename';
+CREATE TABLE tbl_geom3d (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom3d.data'
+COPY tbl_geom3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_linestring (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_linestring.data'
+COPY tbl_geom_linestring (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_linestring3d (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_linestring3d.data'
+COPY tbl_geom_linestring3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_multilinestring (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_multilinestring.data'
+COPY tbl_geom_multilinestring (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_multilinestring3d (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_multilinestring3d.data'
+COPY tbl_geom_multilinestring3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_multipoint (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_multipoint.data'
+COPY tbl_geom_multipoint (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_multipoint3d (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_multipoint3d.data'
+COPY tbl_geom_multipoint3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_multipolygon (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_multipolygon.data'
+COPY tbl_geom_multipolygon (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_multipolygon3d (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_multipolygon3d.data'
+COPY tbl_geom_multipolygon3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_point (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_point.data'
+COPY tbl_geom_point (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_point3d (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_point3d.data'
+COPY tbl_geom_point3d (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_polygon (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_polygon.data'
+COPY tbl_geom_polygon (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_polygon3d (
+    k integer PRIMARY KEY,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_polygon3d.data'
+COPY tbl_geom_polygon3d (k, g) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint (
+    k integer PRIMARY KEY,
+    temp tgeogpoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint.data'
+COPY tbl_tgeogpoint (k, temp) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint3d (
+    k integer PRIMARY KEY,
+    temp tgeogpoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d.data'
+COPY tbl_tgeogpoint3d (k, temp) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint3d_big (
+    k integer PRIMARY KEY,
+    temp tgeogpoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_big.data'
+COPY tbl_tgeogpoint3d_big (k, temp) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint3d_discseq (
+    k integer PRIMARY KEY,
+    ti tgeogpoint(Sequence,PointZ)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_discseq.data'
+COPY tbl_tgeogpoint3d_discseq (k, ti) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint3d_inst (
+    k integer PRIMARY KEY,
+    inst tgeogpoint(Instant,PointZ)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_inst.data'
+COPY tbl_tgeogpoint3d_inst (k, inst) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint3d_seqset (
+    k integer PRIMARY KEY,
+    ss tgeogpoint(SequenceSet,PointZ)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_seqset.data'
+COPY tbl_tgeogpoint3d_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint3d_seq (
+    k integer PRIMARY KEY,
+    seq tgeogpoint(Sequence,PointZ)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_seq.data'
+COPY tbl_tgeogpoint3d_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint3d_step_seqset (
+    k integer PRIMARY KEY,
+    ss tgeogpoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_step_seqset.data'
+COPY tbl_tgeogpoint3d_step_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint3d_step_seq (
+    k integer PRIMARY KEY,
+    seq tgeogpoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_step_seq.data'
+COPY tbl_tgeogpoint3d_step_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint_discseq (
+    k integer PRIMARY KEY,
+    ti tgeogpoint(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_discseq.data'
+COPY tbl_tgeogpoint_discseq (k, ti) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint_inst (
+    k integer PRIMARY KEY,
+    inst tgeogpoint(Instant)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_inst.data'
+COPY tbl_tgeogpoint_inst (k, inst) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint_seqset (
+    k integer PRIMARY KEY,
+    ss tgeogpoint(SequenceSet)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_seqset.data'
+COPY tbl_tgeogpoint_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint_seq (
+    k integer PRIMARY KEY,
+    seq tgeogpoint(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_seq.data'
+COPY tbl_tgeogpoint_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint_step_seqset (
+    k integer PRIMARY KEY,
+    ss tgeogpoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_step_seqset.data'
+COPY tbl_tgeogpoint_step_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tgeogpoint_step_seq (
+    k integer PRIMARY KEY,
+    seq tgeogpoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_step_seq.data'
+COPY tbl_tgeogpoint_step_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tgeompoint (
+    k integer PRIMARY KEY,
+    temp tgeompoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint.data'
+COPY tbl_tgeompoint (k, temp) FROM :'filename';
+CREATE TABLE tbl_tgeompoint3d (
+    k integer PRIMARY KEY,
+    temp tgeompoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d.data'
+COPY tbl_tgeompoint3d (k, temp) FROM :'filename';
+CREATE TABLE tbl_tgeompoint3d_big (
+    k integer PRIMARY KEY,
+    temp tgeompoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_big.data'
+COPY tbl_tgeompoint3d_big (k, temp) FROM :'filename';
+CREATE TABLE tbl_tgeompoint3d_discseq (
+    k integer PRIMARY KEY,
+    ti tgeompoint(Sequence,PointZ)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_discseq.data'
+COPY tbl_tgeompoint3d_discseq (k, ti) FROM :'filename';
+CREATE TABLE tbl_tgeompoint3d_inst (
+    k integer PRIMARY KEY,
+    inst tgeompoint(Instant,PointZ)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_inst.data'
+COPY tbl_tgeompoint3d_inst (k, inst) FROM :'filename';
+CREATE TABLE tbl_tgeompoint3d_seqset (
+    k integer PRIMARY KEY,
+    ss tgeompoint(SequenceSet,PointZ)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_seqset.data'
+COPY tbl_tgeompoint3d_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tgeompoint3d_seq (
+    k integer PRIMARY KEY,
+    seq tgeompoint(Sequence,PointZ)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_seq.data'
+COPY tbl_tgeompoint3d_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tgeompoint3d_step_seqset (
+    k integer PRIMARY KEY,
+    ss tgeompoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_step_seqset.data'
+COPY tbl_tgeompoint3d_step_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tgeompoint3d_step_seq (
+    k integer PRIMARY KEY,
+    seq tgeompoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_step_seq.data'
+COPY tbl_tgeompoint3d_step_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tgeompoint_discseq (
+    k integer PRIMARY KEY,
+    ti tgeompoint(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_discseq.data'
+COPY tbl_tgeompoint_discseq (k, ti) FROM :'filename';
+CREATE TABLE tbl_tgeompoint_inst (
+    k integer PRIMARY KEY,
+    inst tgeompoint(Instant)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_inst.data'
+COPY tbl_tgeompoint_inst (k, inst) FROM :'filename';
+CREATE TABLE tbl_tgeompoint_seqset (
+    k integer PRIMARY KEY,
+    ss tgeompoint(SequenceSet)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_seqset.data'
+COPY tbl_tgeompoint_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tgeompoint_seq (
+    k integer PRIMARY KEY,
+    seq tgeompoint(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_seq.data'
+COPY tbl_tgeompoint_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_tgeompoint_step_seqset (
+    k integer PRIMARY KEY,
+    ss tgeompoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_step_seqset.data'
+COPY tbl_tgeompoint_step_seqset (k, ss) FROM :'filename';
+CREATE TABLE tbl_tgeompoint_step_seq (
+    k integer PRIMARY KEY,
+    seq tgeompoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_step_seq.data'
+COPY tbl_tgeompoint_step_seq (k, seq) FROM :'filename';
+CREATE TABLE tbl_geom_circularstring (
+    k integer,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_circularstring.data'
+COPY tbl_geom_circularstring (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_compoundcurve (
+    k integer,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_compoundcurve.data'
+COPY tbl_geom_compoundcurve (k, g) FROM :'filename';
+CREATE TABLE tbl_geom_curvepolygon (
+    k integer,
+    g geometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geom_curvepolygon.data'
+COPY tbl_geom_curvepolygon (k, g) FROM :'filename';
+-- Launch the ANALYZE deamon to avoid that it is launched during the tests
+ANALYZE;
