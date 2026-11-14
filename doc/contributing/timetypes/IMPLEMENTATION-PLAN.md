@@ -1,0 +1,46 @@
+<!--
+  MobilityDB — The time types in every binding: implementation plan
+  Copyright(c) MobilityDB Contributors
+
+  This documentation is licensed under a Creative Commons Attribution-Share
+  Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+-->
+
+# The time types in every binding: the implementation plan
+
+[Back to the index](00-INDEX.md) · [Assessment](ASSESSMENT.md)
+
+Each binding casts every time type it holds through its MEOS conversion, in one pull request per
+repository, each a cast of the six types or of those the binding has. A row states the binding,
+the casts it changes, the types it gains a cast for, and its state. A task measures each note of
+[the assessment](ASSESSMENT.md) it fixes before the fix, and its pull request states the
+measured value.
+
+## MEOS and the specification
+
+| Row | Task | State |
+|---|---|---|
+| TT-0 | The conversions of `timestamptz` (MobilityDB #3508), and of `timestamp`, `date`, `interval` and `timetz` (#3661) | MERGED |
+| TT-1 | `time_to_parts`, `time_from_parts`, the microseconds from midnight of a `time` (the owner 2026-11-13: "please make time as North Star as the other time types converters") | MERGED as MobilityDB #3667 |
+| TT-2 | `doc/specs/meos-bindings-algebra.md` v0.2.0: the cast of each of the six types, its counts or parts and its errors | OPEN as MobilityDB #3648 (draft), v0.2.0 its second commit; the `time` section names the functions of #3667 |
+| TT-15 | The zone of a thread naming none: the zone the program names last, by whichever thread, in place of the zone of the machine; a thread naming its own keeps it (the owner 2026-11-14: "yes, open the MEOS PR with last call wins"). A host runs its work on threads it does not choose, so a goroutine, a JVM executor or a test host wrote one timestamp with two offsets; `zone_thread_test` fails 3 of its 5 checks on master, each with the machine's zone | MERGED as MobilityDB #3677 |
+| TT-17 | `meos_error` records the number of an error before it calls the handler, so `meos_errno` reads it under the handler of a host, which raises the error in its own language and records no number. A reader learning of a failed parse from `meos_errno` (`basetype_in`, and the casts of §5.1 of the specification) read 0 under the handler of a binding: `tbool_in("xyz@2001-01-01")` and `floatspan_in("[1, xyz]")` returned a value together with their error, `tint_in("xyz@2001-01-01")` raised a second error; `handler_errno_test` fails its 9 cases on master | receipts running, branch `fix/meos-errno-any-handler` |
+| TT-18 | A timestamp or a date entering a time set, span, span set, temporal value or the time span of a box is finite, as `doc/specs/meos-finite-values.md` states for a `tstzspan`, a `tstzset` and a temporal value (the owner 2026-11-14: "yet the pinned MEOS accepted tstzspan '[-infinity, 2001-01-01]'. -> IMHO this is an error -> please fix ASAP !"); a bare `timestamptz` or `date` keeps its infinities, as in PostgreSQL, and a predicate over one answers. On master 19 of 21 routes let an infinity in, accepting it or returning NULL without an error; `infinite_time_refusal_test` fails 44 of its 56 cases on master | receipts running, branch `fix/timestamp-inputs-refuse-infinity`, stacked on TT-17, whose `meos_errno` its readers rely on |
+
+## The bindings
+
+| Row | Binding | Task | State |
+|---|---|---|---|
+| TT-3 | JMEOS | `utils.TimestampTzConverter` through the four conversions of the epochs, generated as native calls by `FunctionsGenerator`, an instant with a fraction of a microsecond refused; `utils.ConversionUtils` `LocalDateTime`, `OffsetDateTime` and `Duration` through them and `interval_to_parts`/`interval_from_parts`; `LocalDate` through `date_to_unix_days`/`unix_days_to_date` in place of the three copies of `dateset`, `datespan`, `datespanset`; new casts of `LocalTime` and `OffsetTime` through the `time` and `timetz` pairs (the owner 2026-11-13: "IMHO they are the same topic") | MERGED as JMEOS #238 |
+| TT-4 | JMEOS `tools/codegen_jvm.py` | the `MeosSqlRuntime` it generates for Flink SQL and Spark SQL: `Instant`, `LocalDate` and `Duration` through the casts of TT-3, in place of its own constants and ISO text | MERGED as JMEOS #239; MobilitySpark and MobilityFlink pass with it, their `extent(tquadbin)` expecting the poles the cell walks reach (MobilitySpark #102, MobilityFlink #103, both merged) |
+| TT-5 | PyMEOS-CFFI | `builder/templates/functions.py`: `datetime`, `date` and `timedelta` through the generated wrappers of the MEOS conversions, an interval with months refused by a `timedelta`; new casts of the naive `datetime`, `time` and the `time` with `tzinfo`; `builder/build_header.py` keeps the signatures naming `TimeTzADT`, which `pg_time.h` defines and installs | MERGED as PyMEOS-CFFI #63, after the refresh #62, which holds the conversions of #3661 and #3667 |
+| TT-6 | PyMEOS | `dateset`, `datespan`, `datespanset` `shift_scale`: a `timedelta` with a part below a day refused, not floored | MERGED as PyMEOS #115; beside it #116 (`DateSpanSet.to_span` imports `DateSpan` from its own module) and #117 (the committed mixins of the cell types regenerated) merged |
+| TT-7 | GoMEOS | the twelve casts of `time.Time` and `time.Duration` with the six types, each the generated wrapper of the MEOS conversion and the Go constructor, returning the error of a refused value, in a template `tools/codegen.py` copies beside the generated wrappers, as PyMEOS-CFFI copies `builder/templates/functions.py` | the surface refreshed from the catalog of master MERGED as GoMEOS #50 (its 10 conversion wrappers, and `trgeometry_out` with its digits, without which GoMEOS does not build against master); the casts MERGED as GoMEOS #51, their examples passing with the process zone Europe/Brussels |
+| TT-16 | GoMEOS | the root package (`datetime_utils.go` and every hand-written call) checks the MEOS error of each call, in one pull request (the owner 2026-11-14: "IMHO error should be tackled in a single PR"); `datetime_utils.go` casts through TT-7 in it, since a refused value read without its error is a zero | after TT-7 |
+| TT-8 | MEOS.NET | `MEOSConvert.g.cs` (generated by `tools/objectgen.py`): `DateTime`, `DateOnly` through the MEOS conversions in place of text, a tick below a microsecond refused; new casts of `TimeSpan`, `TimeOnly` | the surface refreshed from the catalog of master MERGED as MEOS.NET #67 (the conversions of `timestamp`, `date`, `interval`, `time` and `timetz`); the casts of `DateTime` and `DateOnly` MERGED as MEOS.NET #68, a `DateTime` of unspecified kind read in the zone of the MEOS session, a MEOS `timestamp` given its own cast where the object layer read it as a `timestamptz` (measured on main: the seventh digit of a tick dropped, an unspecified moment an hour off on a Europe/Brussels machine); the casts of `TimeSpan`, `TimeOnly` and a `TimeOnly` with its offset MERGED as MEOS.NET #69 (the owner 2026-11-14: "make all bindings to the exactly equal functionality"), the casts of the six types public as JMEOS's `ConversionUtils` and GoMEOS's casts are, the object layer's signatures unchanged |
+| TT-9 | MEOS.js | a cast of `Date` and of the counts as `bigint` through the MEOS conversions; `interval` through its parts in place of the C wrappers reading a month as 30 days | the surface refreshed from the catalog of master MERGED as MEOS.js #60 (main's WebAssembly module did not build against master, `trgeometry_out` taking its digits); every integer of 64 bits a `bigint` and every one of 32 bits a `number` MERGED as MEOS.js #61 (the owner 2026-11-14: "yes, apply the 64-bit rule to all"), a TimestampTz of 2^53 + 1 microseconds crossing unrounded; the casts MERGED as MEOS.js #62: a timestamptz and a `Date` floored to the millisecond, as MobilityNebula reads its milliseconds, an interval, a time and a time with time zone as their parts, the three C wrappers gone |
+| TT-10 | meos-rs | `chrono` types through the MEOS conversions; `stbox.tmax`, `create_interval` and the `contains` of the date spans measured and fixed with them | waits for the choice of its FFI design with David (IO-S8 of MobilityDB #3353) |
+| TT-11 | MobilityDuck | `time_util.hpp` through the MEOS conversions, the infinities of DuckDB mapped to those of MEOS, which refuses them where they enter a value (TT-18), as it refuses its own; new casts of DuckDB's `TIME` and `TIMETZ` | the casts on branch `fix/time-casts-through-meos`, its test asserting no value holding an infinity; the refusals asserted once MobilityDuck's MEOS holds TT-18 |
+| TT-12 | MobilityNebula | `MEOSWrapper.cpp` and the hand-written operators through the casts of the kernel runtime, in place of the text of whole seconds; the milliseconds of NebulaStream stated exactly, an instant below a millisecond or before 1970 refused | after TT-5 |
+| TT-13 | MobilityFlink, MobilityKafka, MobilitySpark | the benchmarks' timestamps through the casts of JMEOS | after TT-4 |
+| TT-14 | MobilityAPI-Python | none of its own: it holds MEOS values only through PyMEOS (`mobilityapi/wire.py` decodes them with `pymeos`) and passes every other time to MobilityDB as SQL text, which PostgreSQL's input functions read; its casts are PyMEOS's | follows TT-5 and TT-6 |
