@@ -698,6 +698,17 @@ them; the sign tails of `geo_funcs.c`; `square_products_wide` and `wide_product`
 `WideDyadic` readers family by family; then `WideDyadic` and `WIDE_LIMBS` leave and the two
 `wide_sign` become one. Products go through `wide_mul64`, so the code builds with MSVC.
 
+The pull request is #3676 (branch `refactor/one-wide-number`, on master `ab15a473fa`), in nine
+commits: the arena; division and square root; the sign tails; the square products; the arcs, the
+linear sums, the moving discs and gaps, and the nearest double with the motion distances and the
+degrees, a family each; then `WideDyadic` leaves, `WIDE_LIMBS` leaving with its last reader in
+the square products. Every wide answer agrees with GMP or MPFR on the recorded calls and hard
+cases (619 089 roots and quotients, 1820 corner degrees, 630 000 arcs, sums and discs); the 178
+doubled corners of `s2_corner_unit` read the same bits for 135.5M instructions against 407.4M; a
+longitude through the enclosure costs 200K against 1.11M, a latitude 212K against 1.41M. Its
+receipts are strict CI, cppcheck, valgrind, smoke, the oracle (18 CGAL witnesses with their
+controls) and speed, 25 of the 26 cells at parity; no speed cell reaches tier 3.
+
 ### EA6. One search for the nearest double
 
 `nearest_double_exact` stands for the search: `wide_dyadic_nearest_root`, `ddb_nearest_root` and
