@@ -41,7 +41,9 @@
  * points by 2^e leaves its sign unchanged; every scale from 2^-1020 to 2^1020
  * keeps each coordinate an exact double, and the rows of a scale whose
  * products of four differences overflow or underflow the doubles answer as
- * those of 2^0.
+ * those of 2^0. The last row, four points in general position whose sign GMP
+ * reads as 1, has a determinant whose evaluation in doubles, near 2^-268,
+ * rounds to the least subnormal with its bound underflowing to 0.
  */
 
 #include <math.h>
@@ -97,6 +99,10 @@ main(void)
     {{3, 1, 1, 3, -1, 1, 1, -1}, 0, "circle of radius 2, D on it"},
     {{3, 1, 1, 3, -1, 1, 1, 0}, 1, "circle of radius 2, D inside"},
     {{3, 1, 1, 3, -1, 1, 4, 4}, -1, "circle of radius 2, D outside"},
+    {{-0x1.8bc4371b17886p-3, -0x1.70ee6326e1dccp-2, -0x1.4ec56e529d8acp-4,
+      -0x1.b165f5bf62cbfp-2, -0x1.8906c63f120d9p-2, 0x1.fa43edc7f487ep-2,
+      0x1.76166246ec2ccp-2, -0x1.828cc4bf05198p-2}, 1,
+      "general position, the permanent underflowing near 2^-268"},
   };
   int nrows = (int) (sizeof(rows) / sizeof(rows[0]));
   for (int e = -1020; e <= 1020; e += 4)
