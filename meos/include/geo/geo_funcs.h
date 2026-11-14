@@ -1747,6 +1747,52 @@ extern void tower_wide_arena_init(TowerWideArena *ar);
 extern void tower_wide_arena_free(TowerWideArena *ar);
 extern TowerWideMark tower_wide_arena_mark(const TowerWideArena *ar);
 extern void tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m);
+extern TowerWide *tower_wide_of_double(TowerWideArena *ar, double x);
+extern TowerWide *tower_wide_of_int64(TowerWideArena *ar, int64 v);
+extern TowerWide *tower_wide_dup(const TowerWide *a);
+extern TowerWide *tower_wide_signed(TowerWideArena *ar, const TowerWide *a,
+  int sign);
+extern TowerWide *tower_wide_add_signed(TowerWideArena *ar,
+  const TowerWide *a, int sa, const TowerWide *b, int sb);
+extern TowerWide *tower_wide_mul(TowerWideArena *ar, const TowerWide *a,
+  const TowerWide *b);
+extern int tower_wide_cmp(const TowerWide *a, const TowerWide *b);
+extern int tower_wide_to_fixed(const TowerWide *a, int scale, bool up,
+  uint64 *mag, int nlimbs);
+extern int tower_wide_cmp_fixed(TowerWideArena *ar, const TowerWide *mid,
+  int sign, const uint64 *mag, int nlimbs, int exp);
+extern void wide_cross3(TowerWideArena *ar, TowerWide *const *u,
+  TowerWide *const *v, TowerWide **r);
+extern TowerWide *wide_dot3(TowerWideArena *ar, TowerWide *const *u,
+  TowerWide *const *v);
+
+/**
+ * @brief Return the sum of two values, exactly
+ */
+static inline TowerWide *
+tower_wide_add(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  return tower_wide_add_signed(ar, a, 1, b, 1);
+}
+
+/**
+ * @brief Return the difference of two values, exactly
+ */
+static inline TowerWide *
+tower_wide_sub(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+{
+  return tower_wide_add_signed(ar, a, 1, b, -1);
+}
+
+/**
+ * @brief Return the negation of a value
+ */
+static inline TowerWide *
+tower_wide_neg(TowerWideArena *ar, const TowerWide *a)
+{
+  return tower_wide_signed(ar, a, -1);
+}
+
 extern int wide_limbs_divmod(const uint64 *u, int nu, const uint64 *v,
   int nv, uint64 *q, uint64 *r, int *nr);
 extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
@@ -1759,8 +1805,10 @@ extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
 /* A dyadic rational of any size, opaque outside geo_funcs.c */
 typedef struct WideDyadic WideDyadic;
 
-/* The sign of the value a search reads less @p mid */
-typedef int (*NearestSide)(const WideDyadic *mid, const void *arg);
+/* The sign of the value a search reads less @p mid, the values it forms taken
+ * from @p ar, which releases them once it answers */
+typedef int (*NearestSide)(TowerWideArena *ar, const TowerWide *mid,
+  const void *arg);
 
 extern double nearest_double_exact(double c, NearestSide side,
   const void *arg);
