@@ -4696,6 +4696,11 @@ dggs_segment_cells_geodetic(const DggsGeodeticOps *ops, double lon1,
         }
         n++;
         cur = first;
+        /* The points ahead are those of the cell entered and of its
+         * neighbours, read again from the start */
+        for (int i = 0; i < count; i++)
+          sphere_dir_free(xs[i].x);
+        continue;
       }
     }
     if (count == 0)
