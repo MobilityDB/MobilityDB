@@ -580,13 +580,25 @@ double.
 (`e69bcee29c` on master; its receipts strict CI, cppcheck, valgrind, smoke, the oracle on the curve polygons
 and points at 2^0, 2^-300 and 2^300 and the buffer of 172 natural areas, and speed, 25 of the 26
 cells at parity as on EA5); `arcseg_arena_room` takes a constant arena and answers whether the
-room fits, each caller taking the room from its own arena. Second, the callers of the polynomial
-ladder move onto the expression ladder, each with its own first tier ahead, a differential first,
-family by family; on master `23f24644e0` they are 51 calls of `polynomial_sign_exact` and one of
-`polynomial_sign_wide` in 26 functions, `cert_seg_arc_interior_far` (10),
-`segment_interior_distance` (5), `cert_x_minus_ksqrt` (4), `cert_arc_far_exact` and
-`arr_arc_centre_y_side` (3 each) the most, and `polynomial_sign_exact`, its stack and its wide
-form leave with the last of them. Third, the ladder kept takes a name of the arithmetic.
+room fits, each caller taking the room from its own arena. Second, the polynomial ladder past its
+filters: its 51 calls of `polynomial_sign_exact` and one of `polynomial_sign_wide` in 26
+functions (master `23f24644e0`) all reach two functions, so those two move and the callers stay.
+`polynomial_sign_exact` keeps `polynomial_sign_filter` and reads the expression ladder from its
+expansions on (`polynomial_sign_pred`, run by `tower_pred_run_expansions`, the tail
+`tower_pred_run` shares), each sum formed when a term first reads it, and is exact for any
+finite sums; `polynomial_sign_stack`, the evaluation on the heap and `polynomial_sign_wide`
+leave, `segment_square_least` holding its sums unscaled where scaling loses bits. Measured
+(branch `meas/ea1-poly-differential`): master's form and this one answer alike on the 104 043
+calls of the unit tests, the dwithin walk, the S2 covers and the buffers; on 100 000
+polynomials in sums from 2^-1000 to 2^1000, a third of them ties and a third one unit off one,
+GMP agrees with this one on every polynomial and with master's on 59 211, master's failing
+only where a product leaves its range (none to 2^20, 66 of 50 000 to 2^100). A call costs
+441 to 435 instructions on the buffer, where the filters decide, 2664 to 3938 on the S2 corners
+and 935 to 1279 on the dwithin walk, which reach the expansions. It is open as #3709, its
+receipts strict CI, cppcheck, valgrind, smoke, the oracle (18 CGAL witnesses) and speed, 25 of
+the 26 cells at parity as on EA5; strict CI's `meos/test` step found that the first form of the
+predicate read sums its caller leaves unset, and the predicate forms a sum only when a term
+reads it. Third, the ladder kept takes a name of the arithmetic.
 
 ### EA2. Tier 2 for the signs of degree six
 
