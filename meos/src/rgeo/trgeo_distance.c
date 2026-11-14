@@ -31,7 +31,8 @@
  * @file
  * @brief Distance functions for temporal rigid geometries
  * @details The temporal distance comes from the closest-feature walk of
- * trgeo_distwalk.c, which needs convex bodies.  See
+ * trgeo_distwalk.c, which needs convex bodies, and is the turning point
+ * function of a lift of lifting.c over the segments of a sequence.  See
  * meos/src/rgeo/trgeo_distance.txt for the algorithm.
  */
 
@@ -388,47 +389,6 @@ dist_instant(const DistOps *ops, const TInstant *inst1, const TInstant *inst2)
   return dist_values(ops, tinstant_value_p(inst1), tinstant_value_p(inst2));
 }
 
-/**
- * @brief Return a copy of the value of segment @p i of a sequence at @p t
- * @details With step interpolation, the value is the one of instant @p i
- * during the whole segment, its end included, since the segment gives the
- * piece [t_i, t_{i+1}) of the result.  With linear interpolation, the value
- * is the one #tsequence_value_at_timestamptz() gives.
- */
-static Datum
-dist_segvalue(const TSequence *seq, int i, TimestampTz t)
-{
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
-  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
-    return tinstant_value(inst1);
-  const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-  return tsegment_value_at_timestamptz(tinstant_value_p(inst1),
-    tinstant_value_p(inst2), seq->temptype, inst1->t, inst2->t, t);
-}
-
-/**
- * @brief Return the distance between the operands at the instant @p t of
- * segment @p i
- * @details @p seq2 is NULL for a static geometry.
- */
-static double
-dist_segm_at(const DistOps *ops, const TSequence *seq1, const TSequence *seq2,
-  int i, TimestampTz t)
-{
-  Datum value1 = dist_segvalue(seq1, i, t);
-  double result;
-  if (! seq2)
-    result = dist_placed(ops, DatumGetPoseP(value1), NULL, NULL);
-  else
-  {
-    Datum value2 = dist_segvalue(seq2, i, t);
-    result = dist_values(ops, value1, value2);
-    pfree(DatumGetPointer(value2));
-  }
-  pfree(DatumGetPointer(value1));
-  return result;
-}
-
 /*****************************************************************************
  * Distance of a sequence
  *****************************************************************************/
@@ -458,156 +418,19 @@ dist_segmotion(DistMotion *m, const TSequence *seq, int i, bool ispose)
 }
 
 /**
- * @brief Return the instants of the events of a walk in segment @p i
- * @details An event at the end of the segment is at the instant i + 1.
+ * @brief Return the instant of an event at the fraction @p ratio of the
+ * segment from @p lower to @p upper
+ * @details An event at the end of the segment is at @p upper.
  */
 static TimestampTz
-dist_event_time(const TSequence *seq, int i, double ratio)
+dist_event_time(TimestampTz lower, TimestampTz upper, double ratio)
 {
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
-  const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
   if (ratio <= 0.0)
-    return inst1->t;
+    return lower;
   if (ratio >= 1.0)
-    return inst2->t;
+    return upper;
   /* The nearest microsecond */
-  return inst1->t + (TimestampTz) llround((double) (inst2->t - inst1->t) *
-    ratio);
-}
-
-/**
- * @brief Add an instant to an array of instants
- * @details Two events at the same timestamp become one instant with the
- * smaller distance.  This happens at the end of a segment, which is also the
- * start of the next one, and for two events closer than one microsecond.
- */
-static void
-dist_append(TInstant ***insts, int *count, int *size, double dist,
-  TimestampTz t)
-{
-  if (*count > 0 && (*insts)[*count - 1]->t >= t)
-  {
-    if (dist < DatumGetFloat8(tinstant_value_p((*insts)[*count - 1])))
-    {
-      pfree((*insts)[*count - 1]);
-      (*insts)[*count - 1] = tinstant_make(Float8GetDatum(dist), T_TFLOAT,
-        t);
-    }
-    return;
-  }
-  if (*count == *size)
-  {
-    *size *= 2;
-    *insts = repalloc(*insts, sizeof(TInstant *) * *size);
-  }
-  (*insts)[(*count)++] = tinstant_make(Float8GetDatum(dist), T_TFLOAT, t);
-}
-
-/**
- * @brief Return the temporal distance between the first operand @p seq1 and
- * the body @p rb over the segments of @p seq1
- * @details If @p seq2 is NULL, @p rb is static with the motion @p mb.  Else
- * @p seq2 gives the motion of @p rb and has the same timestamps as
- * @p seq1.  A sequence with step interpolation keeps its value during each
- * segment.
- *
- * If one sequence has linear interpolation and the other has step
- * interpolation, the distance jumps at each instant.  Then the result is a
- * sequence set with one sequence [t_i, t_{i+1}) for each segment, and a last
- * sequence with the last instant, as for the other temporal types.  Else the
- * result is one sequence.
- *
- * The walk gives the instants of the result.  At an instant of the operands,
- * the value is the distance between the operands placed there, see
- * #dist_placed(), as #tsequence_value_at_timestamptz() places them.  An
- * event inside a segment is at a time that is not a microsecond, and its
- * value is the one of the walk at that time: zero where the bodies meet,
- * @p level where the distance crosses it, and the value of the function of
- * the feature at an extremum.  The instant of such an event is the nearest
- * microsecond, see #dist_event_time(), where the value of the bodies placed
- * differs from the value at the event.
- *
- * The result is not normalized, see dist_normalize().
- *
- * A failure of the walk raises an error.  It is not a property of the data
- * but a defect.
- */
-static Temporal *
-dist_walk_seq(const DistOps *ops, const TSequence *seq1,
-  const TSequence *seq2, const DistRefPoly *rb, const DistMotion *mb)
-{
-  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
-  bool jumps = seq2 && (linear1 != MEOS_FLAGS_LINEAR_INTERP(seq2->flags));
-  DistEvents events;
-  distevents_init(&events);
-  int size = seq1->count * 4, count = 0, npieces = 0;
-  TInstant **insts = palloc(sizeof(TInstant *) * size);
-  TSequence **pieces = jumps ?
-    palloc(sizeof(TSequence *) * seq1->count) : NULL;
-  DistPair cf;
-  cf.kind = DISTPAIR_NONE;
-  cf.i = cf.j = 0;
-
-  for (int i = 0; i < seq1->count - 1; i++)
-  {
-    DistMotion ma, mbi;
-    dist_segmotion(&ma, seq1, i, true);
-    if (seq2)
-      dist_segmotion(&mbi, seq2, i, ops->ref2 != NULL);
-    else
-      mbi = *mb;
-    DistSegm dseg;
-    distsegm_set(&dseg, &ma, &mbi);
-    events.count = 0;
-    int rc = distwalk_segm(&dseg, &ops->body1, rb,
-      distwalk_ftol(&dseg, &ops->body1, rb), ops->level, &cf, &events);
-    if (rc != DISTWALK_OK)
-    {
-      distevents_free(&events);
-      pfree_array((void **) insts, count);
-      if (pieces)
-        pfree_array((void **) pieces, npieces);
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "The temporal distance of a temporal rigid geometry failed at "
-        "segment %d", i);
-      return NULL;
-    }
-    for (int j = 0; j < events.count; j++)
-    {
-      double ratio = events.ev[j].t;
-      TimestampTz t = dist_event_time(seq1, i, ratio);
-      double dist = events.ev[j].dist;
-      if (ratio <= 0.0 || ratio >= 1.0)
-        dist = dist_segm_at(ops, seq1, seq2, i, t);
-      dist_append(&insts, &count, &size, dist, t);
-    }
-    if (jumps)
-    {
-      /* The segment gives the sequence [t_i, t_{i+1}) */
-      pieces[npieces++] = tsequence_make(insts, count,
-        (i == 0) ? seq1->period.lower_inc : true, false, LINEAR,
-        NORMALIZE_NO);
-      pfree_array((void **) insts, count);
-      insts = palloc(sizeof(TInstant *) * size);
-      count = 0;
-    }
-  }
-  distevents_free(&events);
-
-  if (! jumps)
-    return (Temporal *) tsequence_make_free(insts, count,
-      seq1->period.lower_inc, seq1->period.upper_inc, LINEAR, NORMALIZE_NO);
-
-  pfree(insts);
-  if (seq1->period.upper_inc)
-  {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq2, seq2->count - 1);
-    TInstant *last = tinstant_make(Float8GetDatum(dist_instant(ops, inst1,
-      inst2)), T_TFLOAT, inst1->t);
-    pieces[npieces++] = tinstant_to_tsequence_free(last, LINEAR);
-  }
-  return (Temporal *) tsequenceset_make_free(pieces, npieces, NORMALIZE_NO);
+  return lower + (TimestampTz) llround((double) (upper - lower) * ratio);
 }
 
 /*****************************************************************************
@@ -839,119 +662,455 @@ dist_active(const DistActive *active, int nactive, int k, double t)
 }
 
 /**
- * @brief Return the temporal distance between a temporal rigid geometry and
- * the static geometry of several parts of @p ops
- * @details In each segment, the walk of each part gives its events and its
- * pieces, and #dist_envelope() the intervals in which each part is the
- * closest.  The result has the events of each part in its intervals, its
- * extrema and its crossings of the level, and a corner at each change of the
- * closest part, at the nearest microsecond, see #dist_event_time().  Then
- * #dist2d_seq_exact_values() gives the value of each instant.
- *
- * A failure of a walk or of the envelope raises an error.  It is not a
- * property of the data but a defect.
+ * @brief Walk of the closest features over the segments of a sequence, the
+ * parameter of the turning point functions of the lift of the temporal
+ * distance (#dist_lift_temp_turnpt, #dist_lift_base_turnpt)
+ * @details The closest feature at the end of a segment is the one at the
+ * start of the next one.  The walk keeps the instants and distances of the
+ * last segment it walked, which a second call for that segment, made with an
+ * array that holds them all, reads without walking it again.  For a static
+ * geometry of several parts, the walk of each part keeps its pieces, and the
+ * instants are those of the lower envelope, see #dist_lift_parts().
  */
-static TSequence *
-dist_parts_seq(const DistOps *ops, const TSequence *seq1)
+typedef struct
 {
-  int nparts = ops->nparts;
-  DistEvents *ev = palloc(sizeof(DistEvents) * nparts);
-  DistPair *cf = palloc(sizeof(DistPair) * nparts);
+  const DistOps *ops;        /**< Operands */
+  const DistRefPoly *rb;     /**< Body of the second operand, or NULL for a
+                                  static geometry of several parts */
+  const DistMotion *mb;      /**< Motion of a static second operand, or NULL
+                                  for a temporal one */
+  bool exact;                /**< True if the value at an end of a segment is
+                                  the distance of the operands placed there */
+  DistPair cf;               /**< Closest feature at the end of the last
+                                  segment walked */
+  DistEvents events;         /**< Events of the last segment walked */
+  TimestampTz lower;         /**< Start of the last segment walked */
+  TimestampTz upper;         /**< End of the last segment walked */
+  int count;                 /**< Number of instants of the last segment
+                                  walked, or -1 if none is */
+  int size;                  /**< Number of instants the arrays hold */
+  TimestampTz *ts;           /**< Instants of the last segment walked */
+  double *ds;                /**< Distances at these instants */
+  int nparts;                /**< Number of parts walked, 0 if @p rb is
+                                  walked */
+  DistPair *pcf;             /**< Closest feature of each part */
+  DistEvents *pev;           /**< Events and pieces of each part */
+  int nsegs;                 /**< Number of segments walked */
+  bool failed;               /**< True if the walk of a segment failed */
+} DistLift;
+
+/**
+ * @brief Set the walk over the segments of a sequence
+ */
+static void
+dist_lift_init(DistLift *lift, const DistOps *ops, const DistRefPoly *rb,
+  const DistMotion *mb, bool exact)
+{
+  lift->ops = ops;
+  lift->rb = rb;
+  lift->mb = mb;
+  lift->exact = exact;
+  lift->cf.kind = DISTPAIR_NONE;
+  lift->cf.i = lift->cf.j = 0;
+  distevents_init(&lift->events);
+  lift->lower = lift->upper = 0;
+  lift->count = -1;
+  lift->size = 16;
+  lift->ts = palloc(sizeof(TimestampTz) * lift->size);
+  lift->ds = palloc(sizeof(double) * lift->size);
+  lift->nsegs = 0;
+  lift->failed = false;
+  lift->nparts = rb ? 0 : ops->nparts;
+  lift->pcf = NULL;
+  lift->pev = NULL;
+  if (lift->nparts)
+  {
+    lift->pcf = palloc(sizeof(DistPair) * lift->nparts);
+    lift->pev = palloc(sizeof(DistEvents) * lift->nparts);
+    for (int k = 0; k < lift->nparts; k++)
+    {
+      lift->pcf[k].kind = DISTPAIR_NONE;
+      lift->pcf[k].i = lift->pcf[k].j = 0;
+      distevents_init(&lift->pev[k]);
+      distevents_keep_pieces(&lift->pev[k]);
+    }
+  }
+}
+
+/**
+ * @brief Free the walk over the segments of a sequence
+ */
+static void
+dist_lift_free(DistLift *lift)
+{
+  distevents_free(&lift->events);
+  pfree(lift->ts);
+  pfree(lift->ds);
+  if (lift->nparts)
+  {
+    for (int k = 0; k < lift->nparts; k++)
+      distevents_free(&lift->pev[k]);
+    pfree(lift->pcf);
+    pfree(lift->pev);
+  }
+}
+
+/**
+ * @brief Add an instant to the instants of the segment walked
+ * @details Two events at the same timestamp become one instant with the
+ * smaller distance.  This happens for two events closer than one
+ * microsecond, and for an event inside the segment that is closer than half
+ * a microsecond to one of its ends.  The lift merges in the same way the end
+ * of a segment and the start of the next one (#datum_min_float8).
+ */
+static pg_attribute_always_inline void
+dist_lift_append(DistLift *lift, TimestampTz t, double dist)
+{
+  if (lift->count > 0 && lift->ts[lift->count - 1] >= t)
+  {
+    if (dist < lift->ds[lift->count - 1])
+    {
+      lift->ts[lift->count - 1] = t;
+      lift->ds[lift->count - 1] = dist;
+    }
+    return;
+  }
+  if (lift->count == lift->size)
+  {
+    lift->size *= 2;
+    lift->ts = repalloc(lift->ts, sizeof(TimestampTz) * lift->size);
+    lift->ds = repalloc(lift->ds, sizeof(double) * lift->size);
+  }
+  lift->ts[lift->count] = t;
+  lift->ds[lift->count++] = dist;
+}
+
+/**
+ * @brief Add to the instants of the segment walked those of the walk of the
+ * closest features between the first operand, moving with @p ma, and the body
+ * of the second one, and return false if the walk fails
+ * @details The second operand goes from @p start2 to @p end2, a pose or a
+ * point, unless it is static.  At an end of the segment, the value is the
+ * distance between the operands placed there (#dist_values) where the walk is
+ * exact, and the value of the walk there otherwise.
+ */
+static bool
+dist_lift_walk(DistLift *lift, const DistMotion *ma, Datum start1,
+  Datum end1, Datum start2, Datum end2, TimestampTz lower, TimestampTz upper)
+{
+  const DistOps *ops = lift->ops;
+  DistMotion mb;
+  if (lift->mb)
+    mb = *lift->mb;
+  else if (ops->ref2)
+    distmotion_from_pose(&mb, DatumGetPoseP(start2), DatumGetPoseP(end2));
+  else
+  {
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(DatumGetGserializedP(start2));
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(DatumGetGserializedP(end2));
+    distmotion_set(&mb, p1->x, p1->y, 0.0, p2->x, p2->y, 0.0);
+  }
+  DistSegm dseg;
+  distsegm_set(&dseg, ma, &mb);
+  lift->events.count = 0;
+  if (distwalk_segm(&dseg, &ops->body1, lift->rb,
+      distwalk_ftol(&dseg, &ops->body1, lift->rb), ops->level, &lift->cf,
+      &lift->events) != DISTWALK_OK)
+    return false;
+  for (int j = 0; j < lift->events.count; j++)
+  {
+    double ratio = lift->events.ev[j].t;
+    double dist = lift->events.ev[j].dist;
+    if (lift->exact && ratio <= 0.0)
+      dist = dist_values(ops, start1, start2);
+    else if (lift->exact && ratio >= 1.0)
+      dist = dist_values(ops, end1, end2);
+    dist_lift_append(lift, dist_event_time(lower, upper, ratio), dist);
+  }
+  return true;
+}
+
+/**
+ * @brief Add to the instants of the segment walked those of the least of the
+ * distances to the parts of a static geometry, the first operand moving with
+ * @p ma, and return false if a walk or the envelope fails
+ * @details The walk of each part keeps its pieces, and the lower envelope of
+ * the pieces (#dist_envelope) gives the intervals in which each part is the
+ * closest and the corners between them, the instants where two parts are at
+ * the same distance.  The instants are the events of each part while it is
+ * the closest and the corners, in time order, each at its nearest
+ * microsecond (#dist_event_time).  The value at a corner is the one of the
+ * part that was closest before it, equal to the one that is closest after it.
+ */
+static bool
+dist_lift_parts(DistLift *lift, const DistMotion *ma, TimestampTz lower,
+  TimestampTz upper)
+{
+  const DistOps *ops = lift->ops;
+  int nparts = lift->nparts;
+  DistEvents *ev = lift->pev;
   for (int k = 0; k < nparts; k++)
   {
-    distevents_init(&ev[k]);
-    distevents_keep_pieces(&ev[k]);
-    cf[k].kind = DISTPAIR_NONE;
-    cf[k].i = cf[k].j = 0;
+    DistSegm dseg;
+    distsegm_set(&dseg, ma, &ops->parts[k].motion);
+    ev[k].count = ev[k].npc = 0;
+    if (distwalk_segm(&dseg, &ops->body1, &ops->parts[k].body,
+        distwalk_ftol(&dseg, &ops->body1, &ops->parts[k].body), ops->level,
+        &lift->pcf[k], &ev[k]) != DISTWALK_OK)
+      return false;
   }
-  int size = seq1->count * 4, count = 0;
-  TInstant **insts = palloc(sizeof(TInstant *) * size);
-  bool ok = true;
-  for (int i = 0; i < seq1->count - 1 && ok; i++)
+  DistActive *active = NULL;
+  double *corners = NULL;
+  int nactive, ncorners;
+  if (! dist_envelope(ev, nparts, &active, &nactive, &corners, &ncorners))
+    return false;
+  /* A merge of the sorted events of each part and of the sorted corners */
+  int *next = palloc0(sizeof(int) * nparts);
+  int nc = 0;
+  while (true)
+  {
+    double tmin = 2.0, dist = 0.0;
+    int kmin = -1;
+    for (int k = 0; k < nparts; k++)
+    {
+      while (next[k] < ev[k].count && ! dist_active(active, nactive, k,
+          ev[k].ev[next[k]].t))
+        next[k]++;
+      if (next[k] < ev[k].count && ev[k].ev[next[k]].t < tmin)
+      {
+        tmin = ev[k].ev[next[k]].t;
+        kmin = k;
+      }
+    }
+    if (nc < ncorners && corners[nc] < tmin)
+    {
+      tmin = corners[nc++];
+      int a = 0;
+      while (a < nactive - 1 && active[a].t1 < tmin)
+        a++;
+      int from = 0;
+      dist = distpiece_dist(dist_piece_at(&ev[active[a].part], &from, tmin),
+        tmin);
+    }
+    else if (kmin >= 0)
+      dist = ev[kmin].ev[next[kmin]++].dist;
+    else
+      break;
+    dist_lift_append(lift, dist_event_time(lower, upper, tmin), dist);
+  }
+  pfree(next); pfree(active); pfree(corners);
+  return true;
+}
+
+/**
+ * @brief Write in @p tps and @p values the instants of the temporal distance
+ * in a segment, its two ends included, at most @p cap of them, and return
+ * how many there are
+ * @details The segment goes from @p lower to @p upper, the first operand from
+ * the pose @p start1 to @p end1 and the second one from @p start2 to @p end2,
+ * a pose or a point, which a static operand does not read.  A sequence with
+ * step interpolation keeps its value during the segment, so that the values
+ * it receives are equal.
+ *
+ * The walk of the closest features (#distwalk_segm) gives the events of the
+ * segment, from its start to its end, see #dist_lift_walk(), and for a
+ * static geometry of several parts, the lower envelope of the walks of the
+ * parts gives them, see #dist_lift_parts().  An event inside a
+ * segment is at a time that is not a microsecond, and its value is the one
+ * of the walk at that time: zero where the bodies meet, the distance level of
+ * the operands where the distance crosses it, and the value of the function
+ * of the feature at an extremum.  The instant of such an event is the nearest
+ * microsecond (#dist_event_time), where the value of the bodies placed
+ * differs from the value at the event.
+ *
+ * A failure of the walk raises an error, gives no instant and marks the
+ * walk as failed, so that the lift answers NULL (#dist_lift_seq) and no
+ * later segment is walked.  It is not a property of the data but a defect.
+ * The readers call the function on the segments in their order, so that the
+ * number of segments walked before is the index of the segment.
+ */
+static int
+dist_lift_segm(DistLift *lift, Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *tps,
+  Datum *values, int cap)
+{
+  assert(lift); assert(tps); assert(values); assert(cap >= 2);
+  assert(lower < upper);
+  if (lift->failed)
+    return 0;
+  if (lift->count < 0 || lift->lower != lower || lift->upper != upper)
   {
     DistMotion ma;
-    dist_segmotion(&ma, seq1, i, true);
-    for (int k = 0; k < nparts && ok; k++)
+    distmotion_from_pose(&ma, DatumGetPoseP(start1), DatumGetPoseP(end1));
+    lift->count = 0;
+    lift->lower = lower;
+    lift->upper = upper;
+    bool ok = lift->nparts ? dist_lift_parts(lift, &ma, lower, upper) :
+      dist_lift_walk(lift, &ma, start1, end1, start2, end2, lower, upper);
+    if (! ok)
     {
-      DistSegm dseg;
-      distsegm_set(&dseg, &ma, &ops->parts[k].motion);
-      ev[k].count = ev[k].npc = 0;
-      ok = (distwalk_segm(&dseg, &ops->body1, &ops->parts[k].body,
-        distwalk_ftol(&dseg, &ops->body1, &ops->parts[k].body), ops->level,
-        &cf[k], &ev[k]) == DISTWALK_OK);
-    }
-    DistActive *active = NULL;
-    double *corners = NULL;
-    int nactive, ncorners;
-    if (! ok || ! dist_envelope(ev, nparts, &active, &nactive, &corners,
-        &ncorners))
-    {
-      ok = false;
-      break;
-    }
-    /* The events of the closest parts and the corners, in time order: a
-     * merge of the sorted events of each part and of the sorted corners */
-    int *next = palloc0(sizeof(int) * nparts);
-    int nc = 0;
-    while (true)
-    {
-      double tmin = 2.0, dist = 0.0;
-      int kmin = -1;
-      for (int k = 0; k < nparts; k++)
+      lift->count = -1;
+      lift->failed = true;
+      if (lift->nparts)
       {
-        while (next[k] < ev[k].count && ! dist_active(active, nactive, k,
-            ev[k].ev[next[k]].t))
-          next[k]++;
-        if (next[k] < ev[k].count && ev[k].ev[next[k]].t < tmin)
-        {
-          tmin = ev[k].ev[next[k]].t;
-          kmin = k;
-        }
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "The temporal distance of a temporal rigid geometry failed");
+        return 0;
       }
-      if (nc < ncorners && corners[nc] < tmin)
-      {
-        /* The value at a corner is the one of the part that was closest
-         * before it, equal to the one that is closest after it */
-        tmin = corners[nc++];
-        int a = 0;
-        while (a < nactive - 1 && active[a].t1 < tmin)
-          a++;
-        int from = 0;
-        dist = distpiece_dist(dist_piece_at(&ev[active[a].part], &from, tmin),
-          tmin);
-      }
-      else if (kmin >= 0)
-        dist = ev[kmin].ev[next[kmin]++].dist;
-      else
-        break;
-      dist_append(&insts, &count, &size, dist,
-        dist_event_time(seq1, i, tmin));
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "The temporal distance of a temporal rigid geometry failed at "
+        "segment %d", lift->nsegs);
+      return 0;
     }
-    pfree(next); pfree(active); pfree(corners);
+    lift->nsegs++;
   }
-  for (int k = 0; k < nparts; k++)
-    distevents_free(&ev[k]);
-  pfree(ev); pfree(cf);
-  if (! ok)
+  for (int k = 0; k < lift->count && k < cap; k++)
   {
-    pfree_array((void **) insts, count);
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-      "The temporal distance of a temporal rigid geometry failed");
-    return NULL;
+    tps[k] = lift->ts[k];
+    values[k] = Float8GetDatum(lift->ds[k]);
   }
-  return tsequence_make_free(insts, count, seq1->period.lower_inc,
-    seq1->period.upper_inc, LINEAR, NORMALIZE_NO);
+  return lift->count;
+}
+
+/**
+ * @brief Turning point function of the lift of the temporal distance between
+ * a temporal rigid geometry and a temporal point or temporal rigid geometry,
+ * see #dist_lift_segm()
+ * @param[in] param Walk over the segments (#DistLift)
+ */
+static int
+dist_lift_temp_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum param, TimestampTz lower, TimestampTz upper, TimestampTz *tps,
+  Datum *values, int cap)
+{
+  return dist_lift_segm((DistLift *) DatumGetPointer(param), start1, end1,
+    start2, end2, lower, upper, tps, values, cap);
+}
+
+/**
+ * @brief Turning point function of the lift of the temporal distance between
+ * a temporal rigid geometry and a part of a static geometry, see
+ * #dist_lift_segm()
+ * @param[in] value Walk over the segments (#DistLift), the base value of the
+ * lift
+ */
+static int
+dist_lift_base_turnpt(Datum start, Datum end, Datum value, TimestampTz lower,
+  TimestampTz upper, TimestampTz *tps, Datum *values, int cap)
+{
+  return dist_lift_segm((DistLift *) DatumGetPointer(value), start, end,
+    value, value, lower, upper, tps, values, cap);
+}
+
+/**
+ * @brief Return the distance between a pose of the first operand and a value
+ * of the second one, the function of the lift of the temporal distance to a
+ * temporal point or temporal rigid geometry (#dist_values)
+ * @param[in] param Walk over the segments (#DistLift)
+ */
+static Datum
+dist_lift_temp_value(Datum value1, Datum value2, Datum param)
+{
+  const DistLift *lift = (const DistLift *) DatumGetPointer(param);
+  return Float8GetDatum(dist_values(lift->ops, value1, value2));
+}
+
+/**
+ * @brief Return the distance between a pose of the first operand and the
+ * static geometry, the function of the lift of the temporal distance to a
+ * static geometry (#dist_values)
+ * @details The lift reads it only at an instant that ends no segment, since
+ * its turning point function writes the ends of every segment.
+ * @param[in] value Walk over the segments (#DistLift)
+ */
+static Datum
+dist_lift_base_value(Datum value1, Datum value)
+{
+  const DistLift *lift = (const DistLift *) DatumGetPointer(value);
+  return Float8GetDatum(dist_values(lift->ops, value1, value));
+}
+
+/**
+ * @brief Return the temporal distance between the first operand @p seq1 and
+ * the body @p rb over the segments of @p seq1, through the lifting
+ * @details If @p seq2 is NULL, @p rb is static with the motion @p mb.  Else
+ * @p seq2 gives the motion of @p rb and has the same timestamps as
+ * @p seq1.
+ *
+ * The turning point function of the lift (#dist_lift_segm) writes every
+ * instant of each segment with its value, its ends included, and the lift
+ * keeps them all, so that the result is not normalized, see
+ * dist_normalize().  If one sequence has linear interpolation and the other
+ * has step interpolation, the distance jumps at each instant, and the result
+ * is a sequence set with one sequence [t_i, t_{i+1}) for each segment, and a
+ * last sequence with the last instant if the period includes it.  Else the
+ * result is one sequence.
+ * @param[in] exact True if the value at an end of a segment is the distance
+ * of the operands placed there, see #dist_lift_segm()
+ */
+static Temporal *
+dist_lift_seq(const DistOps *ops, const TSequence *seq1,
+  const TSequence *seq2, const DistRefPoly *rb, const DistMotion *mb,
+  bool exact)
+{
+  DistLift lift;
+  dist_lift_init(&lift, ops, rb, mb, exact);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.argtype[0] = temptype_basetype(seq1->temptype);
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = true;
+  lfinfo.tpfn_many = true;
+  lfinfo.tpfn_value = true;
+  lfinfo.tpfn_ends = true;
+  lfinfo.tpfn_merge = &datum_min_float8;
+  lfinfo.reskeep = true;
+  lfinfo.ressegs = true;
+  Temporal *result;
+  if (seq2)
+  {
+    lfinfo.func = (varfunc) &dist_lift_temp_value;
+    lfinfo.numparam = 1;
+    lfinfo.param[0] = PointerGetDatum(&lift);
+    lfinfo.argtype[1] = temptype_basetype(seq2->temptype);
+    lfinfo.tpfn_temp = &dist_lift_temp_turnpt;
+    result = tfunc_tcontseq_tcontseq(seq1, seq2, &lfinfo);
+    /* With a linear and a step sequence, the result is a sequence set even
+     * when it has one sequence */
+    if (result && result->subtype == TSEQUENCE &&
+        MEOS_FLAGS_LINEAR_INTERP(seq1->flags) !=
+        MEOS_FLAGS_LINEAR_INTERP(seq2->flags))
+      result = (Temporal *) tsequence_to_tsequenceset_free(
+        (TSequence *) result);
+  }
+  else
+  {
+    lfinfo.func = (varfunc) &dist_lift_base_value;
+    lfinfo.argtype[1] = T_GEOMETRY;
+    lfinfo.tpfn_base = &dist_lift_base_turnpt;
+    result = tfunc_temporal_base((const Temporal *) seq1,
+      PointerGetDatum(&lift), &lfinfo);
+  }
+  /* A failed walk makes the answer NULL, whether or not the error handler
+   * records the error that the walk raised */
+  if (lift.failed && result)
+  {
+    pfree(result);
+    result = NULL;
+  }
+  dist_lift_free(&lift);
+  return result;
 }
 
 /**
  * @brief Set the value of each instant of @p dist to the exact distance
  * between the rigid geometry @p seq and the static geometry of @p ops
- * @details The least of the distances to the parts, #dist_parts_seq(), has
- * its corners at the nearest microsecond of the instants where two parts are
- * at the same distance, and the value of the walk at its other events.  The
- * function computes the distance at each instant, see #dist_pose_geo().  Then
- * the result is exact at each instant, as for one part, see
- * #dist_walk_seq().
+ * @details The least of the distances to the parts has its corners at the
+ * nearest microsecond of the instants where two parts are at the same
+ * distance, and the value of the walk at its other events, see
+ * #dist_lift_parts().  The function computes the distance at each instant,
+ * see #dist_pose_geo().  Then the result is exact at each instant, as for one
+ * part, see #dist_lift_segm().
  *
  * An instant whose value is exactly the distance level of @p ops keeps it.
  * Such a value comes from the crossing of the level by the part that is
@@ -1172,18 +1331,16 @@ dist_seq(const DistOps *ops, const TSequence *seq1, const TSequence *seq2)
       seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
   }
   if (seq2)
-    return dist_walk_seq(ops, seq1, seq2, &ops->body2, NULL);
+    return dist_lift_seq(ops, seq1, seq2, &ops->body2, NULL, true);
 
-  TSequence *result;
-  if (ops->nparts == 1)
-    result = (TSequence *) dist_walk_seq(ops, seq1, NULL, &ops->parts[0].body,
-      &ops->parts[0].motion);
-  else
-  {
-    result = dist_parts_seq(ops, seq1);
-    if (result)
-      result = dist2d_seq_exact_values(ops, result, seq1);
-  }
+  /* The least of the distances to the parts has the values of the walk,
+   * which dist2d_seq_exact_values() sets to the distance to the geometry */
+  bool parts = ops->nparts > 1;
+  TSequence *result = (TSequence *) dist_lift_seq(ops, seq1, NULL,
+    parts ? NULL : &ops->parts[0].body, parts ? NULL : &ops->parts[0].motion,
+    ! parts);
+  if (result && parts)
+    result = dist2d_seq_exact_values(ops, result, seq1);
   if (! result)
     return NULL;
   if (ops->refxy)
@@ -1496,7 +1653,7 @@ dist_ever_seq(const DistOps *ops, const TSequence *seq1,
   }
   distevents_free(&events);
   /* With a linear and a step operand, the last instant is a value of its own,
-   * see #dist_walk_seq() */
+   * see #dist_lift_seq() */
   if (result == 0 && linear1 != linear2 && seq1->period.upper_inc &&
       dist_instant(ops, TSEQUENCE_INST_N(seq1, seq1->count - 1),
         TSEQUENCE_INST_N(seq2, seq2->count - 1)) <= dist)

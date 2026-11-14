@@ -424,6 +424,20 @@ A contact where the distance touches zero is an extremum, thus it is an
 instant of the result.  Two instants at the same timestamp become one
 instant with the smaller value.  An event goes to the nearest microsecond.
 
+The lifting of MEOS builds the result of a sequence with linear
+interpolation, as it builds every temporal distance: the walk over one
+segment is the turning point function of the lift (dist_lift_segm), which
+gives the instants of the segment, its two ends included, each with its
+value, and the lift takes these values in place of evaluating the distance
+at the microsecond of an instant (tpfn_value, tpfn_ends).  The lift merges
+the end of a segment and the start of the next one into the instant with
+the smaller value (tpfn_merge), keeps every instant (reskeep) and, with a
+linear and a step operand, one sequence for each segment (ressegs).  The
+closest feature at the end of a segment is the one the walk starts from in
+the next segment.  For a static geometry of several parts, the turning point
+function walks every part in the segment and gives the instants of their
+lower envelope (dist_lift_parts), see below.
+
 The internal result is not normalized.  The normalization of MEOS removes
 an instant whose value is within MEOS_EPSILON (1e-6) of the line through
 its neighbors, and such an instant can be the minimum or a crossing of a

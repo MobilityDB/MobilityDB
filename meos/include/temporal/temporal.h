@@ -308,16 +308,21 @@ typedef int (*tpfunc_unary)(Datum, Datum, TimestampTz, TimestampTz,
   TimestampTz *, int);
 
 /* Definition of a turning point function for a temporal and a base types,
- * writing and counting its instants as a #tpfunc_unary does */
+ * writing and counting its instants as a #tpfunc_unary does. When the array
+ * of values it receives is not NULL, it writes there, beside each instant,
+ * the value of the lifted function computed at the exact time of which the
+ * instant is the nearest microsecond, which the readers take in place of
+ * evaluating the function at the instant (field tpfn_value of
+ * LiftedFunctionInfo) */
 typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
-  TimestampTz *, int);
+  TimestampTz *, Datum *, int);
 
 /* Definition of a turning point function for two temporal types, writing and
- * counting its instants as a #tpfunc_unary does. The instants of a predicate
- * are the interval of a segment during which it holds: its enter and exit
- * instants, or the one instant of a touch */
+ * counting its instants and their values as a #tpfunc_base does. The
+ * instants of a predicate are the interval of a segment during which it
+ * holds: its enter and exit instants, or the one instant of a touch */
 typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
-  TimestampTz, TimestampTz *, int);
+  TimestampTz, TimestampTz *, Datum *, int);
 
 /* Capacity of the array a caller of a turning point function holds on its
  * stack, which it replaces by a larger one only when the function counts more

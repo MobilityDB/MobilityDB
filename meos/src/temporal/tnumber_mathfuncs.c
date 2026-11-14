@@ -67,12 +67,15 @@
  * The function only return an intersection at the middle, that is, it
  * it returns false if the timestamp found is not at a bound
  * @note This function is called only when both sequences are linear
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  */
 int
 tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   double x1 = DatumGetFloat8(start1);
   double x2 = DatumGetFloat8(end1);
@@ -755,9 +758,11 @@ static TSequence *
 tnumberseq_linear_abs(const TSequence *seq)
 {
   assert(seq);
-  assert(tnumber_type(seq->temptype));
+  /* A temporal number with linear interpolation is a temporal float, whose
+   * doubles are read once per instant, the end value of a segment being the
+   * start value of the next */
+  assert(seq->temptype == T_TFLOAT);
   const TInstant *inst1;
-  MeosType basetype = temptype_basetype(seq->temptype);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -770,21 +775,25 @@ tnumberseq_linear_abs(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   instants[0] = tnumberinst_abs(inst1);
-  double dvalue1 = datum_double(tinstant_value_p(inst1), basetype);
+  double dvalue1 = DatumGetFloat8(tinstant_value_p(inst1));
   int ninsts = 1;
-  Datum dzero = (basetype == T_INT4) ? Int32GetDatum(0) : Float8GetDatum(0);
+  Datum dzero = Float8GetDatum(0.0);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value_p(inst2);
-    double dvalue2 = datum_double(value2, basetype);
-    /* Add the instant when the segment has value equal to zero */
+    double dvalue2 = DatumGetFloat8(tinstant_value_p(inst2));
+    /* Add the instant dating the crossing of zero strictly inside the
+     * segment, read by the filter of #tfloatsegm_crossing where it tells */
     if ((dvalue1 < 0 && dvalue2 > 0) || (dvalue1 > 0 && dvalue2 < 0))
     {
-      double ratio = fabs(dvalue1) / (fabs(dvalue1) + fabs(dvalue2));
-      double duration = (double) (inst2->t - inst1->t);
-      TimestampTz t = inst1->t + (TimestampTz) (duration * ratio);
-      if (t != inst1->t && t != inst2->t)
+      int64 m;
+      TimestampTz t;
+      if (floatsegm_crossing_filter(dvalue1, dvalue2, 0.0, 0.0,
+          inst2->t - inst1->t, &m))
+        instants[ninsts++] = tinstant_make(dzero, seq->temptype,
+          inst1->t + m);
+      else if (tfloatsegm_crossing(dvalue1, dvalue2, 0.0, inst1->t, inst2->t,
+          &t))
         instants[ninsts++] = tinstant_make(dzero, seq->temptype, t);
     }
     instants[ninsts++] = tnumberinst_abs(inst2);
@@ -1437,8 +1446,9 @@ datum_sin(Datum d)
  * cos(theta) = 0) and offset 0 for cos (where sin(theta) = 0). This writes in
  * @p tps, in ascending time order and up to @p cap of them, the timestamps of
  * every such extremum STRICTLY inside the segment, and returns their count,
- * which may exceed @p cap. The locations are analytic, so the result is EXACT
- * rather than adaptively approximated.
+ * which may exceed @p cap. Each extremum is the crossing of the segment with
+ * the double nearest to (k + @p offset) * pi, dated by the microsecond nearest
+ * to it, which #tfloatsegm_crossing decides exactly.
  */
 static int
 tfloatseg_trig_extrema(double v1, double v2, TimestampTz lower,
@@ -1460,16 +1470,31 @@ tfloatseg_trig_extrema(double v1, double v2, TimestampTz lower,
   long kfrom = (dv > 0) ? kmin : kmax;
   long kto   = (dv > 0) ? kmax : kmin;
   long kstep = (dv > 0) ? 1 : -1;
+  /* The crossing of theta lies at the offset d (theta - v1) / (v2 - v1),
+   * computed from the factor q = d / (v2 - v1) read once per segment: the
+   * two differences, the quotient and the product each round within a
+   * relative u = 2^-53, where q and the offset are normal, a difference
+   * being exact below the normal range, so the offset is within 4.01 u of
+   * the exact one, which #floatsegm_offset_filter decides; an overflowing
+   * difference makes q 0 or the offset infinite, which it refuses */
+  int64 d = upper - lower;
+  double dd = d;
+  double q = dd / dv;
+  bool filter = d < FLOATSEGM_FILTER_MAXD && fabs(q) >= 0x1p-1000;
   for (long k = kfrom; (kstep > 0) ? (k <= kto) : (k >= kto); k += kstep)
   {
     double theta = (k + offset) * M_PI;
     if (theta <= lo || theta >= hi)
       continue;
-    double frac = (theta - v1) / dv;
-    TimestampTz t = lower +
-      (TimestampTz) llround(frac * (double) (upper - lower));
-    /* Keep strictly interior, strictly increasing timestamps (dedup ties). */
-    if (t > lower && t < upper && (n == 0 || t > last))
+    /* The instant dating the crossing of theta, strictly interior; keep
+     * strictly increasing timestamps (dedup ties) */
+    TimestampTz t;
+    int64 m;
+    if (filter && floatsegm_offset_filter((theta - v1) * q, d, &m))
+      t = lower + m;
+    else if (! tfloatsegm_crossing(v1, v2, theta, lower, upper, &t))
+      continue;
+    if (n == 0 || t > last)
     {
       if (n < cap)
         tps[n] = t;
@@ -1527,6 +1552,7 @@ tfloat_sin(const Temporal *temp)
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloatseg_sin_turnpt : NULL;
+  lfinfo.tpfn_many = true;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1565,6 +1591,7 @@ tfloat_cos(const Temporal *temp)
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloatseg_cos_turnpt : NULL;
+  lfinfo.tpfn_many = true;
   return tfunc_temporal(temp, &lfinfo);
 }
 

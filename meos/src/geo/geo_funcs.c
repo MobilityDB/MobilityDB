@@ -1465,59 +1465,179 @@ two_sum(double a, double b, double *x, double *y)
 }
 
 /**
- * @brief Set the product of two pairs of doubles as a pair, within
- * 2^-104 of the magnitude of the product of their larger parts and of the
- * cross terms
+ * @brief A value held as the unevaluated sum of two doubles, with a bound on
+ * its distance to the exact value it stands for, the filter of the 3D interior distance
+ * @details The sum is formed by the error-free transforms #two_diff,
+ * #two_product and #two_sum, so it carries about 104 bits on every platform
+ * and under every emulator that rounds a double and a fused multiply-add
+ * correctly
+ */
+typedef struct
+{
+  double hi;  /**< The value, rounded */
+  double lo;  /**< What the rounding leaves out */
+  double e;   /**< A bound on the error of hi + lo */
+} DDBound;
+
+/* The relative rounding of one operation on two-double values, with a wide
+ * margin, and an absolute term for a product that underflows */
+#define DDB_EPS 0x1p-100
+#define DDB_TINY 0x1p-1060
+/* The least magnitude of a product of two doubles that #two_product splits
+ * exactly: below it the part that rounding leaves out may itself round */
+#define DDB_EXACT_PRODUCT 0x1p-969
+
+/**
+ * @brief Set the three coordinates of `q - p`, exact as two doubles
  */
 static pg_attribute_always_inline void
-pair_mul(double ah, double al, double bh, double bl, double *rh, double *rl)
+ddb_diff3(const double *q, const double *p, DDBound *r)
 {
-  double p, e;
-  two_product(ah, bh, &p, &e);
-  e += ah * bl + al * bh;
-  *rh = p + e;
-  *rl = e - (*rh - p);
+  for (int c = 0; c < 3; c++)
+  {
+    two_diff(q[c], p[c], &r[c].hi, &r[c].lo);
+    r[c].e = 0.0;
+  }
+  return;
 }
 
 /**
- * @brief Set the sum of two pairs of doubles as a pair, within 2^-104 of the
- * sum of the magnitudes of the operands
+ * @brief Return true if a bounded value is exactly zero: both doubles zero and
+ * no error
  */
-static pg_attribute_always_inline void
-pair_add(double ah, double al, double bh, double bl, double *rh, double *rl)
+static pg_attribute_always_inline bool
+ddb_is_zero(DDBound a)
 {
-  double s, e;
-  two_sum(ah, bh, &s, &e);
-  e += al + bl;
-  *rh = s + e;
-  *rl = e - (*rh - s);
+  return a.hi == 0.0 && a.lo == 0.0 && a.e == 0.0;
+}
+
+/**
+ * @brief Return true if a bounded value is a double held exactly
+ */
+static pg_attribute_always_inline bool
+ddb_is_double(DDBound a)
+{
+  return a.lo == 0.0 && a.e == 0.0;
+}
+
+/**
+ * @brief Return the product of two bounded values, with its bound
+ * @details A product with an exact zero is an exact zero, and the product of
+ * two doubles held exactly is exact as two doubles (#two_product)
+ */
+static pg_attribute_always_inline DDBound
+ddb_mul(DDBound a, DDBound b)
+{
+  DDBound r;
+  if (ddb_is_zero(a) || ddb_is_zero(b))
+  {
+    r.hi = r.lo = r.e = 0.0;
+    return r;
+  }
+  if (ddb_is_double(a) && ddb_is_double(b))
+  {
+    two_product(a.hi, b.hi, &r.hi, &r.lo);
+    /* A product that underflows is not split exactly */
+    r.e = (fabs(r.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
+    return r;
+  }
+  double p, pe;
+  two_product(a.hi, b.hi, &p, &pe);
+  pe += a.hi * b.lo + a.lo * b.hi;
+  two_sum(p, pe, &r.hi, &r.lo);
+  double ma = fabs(a.hi) + fabs(a.lo), mb = fabs(b.hi) + fabs(b.lo);
+  r.e = ma * b.e + mb * a.e + a.e * b.e + fabs(a.lo * b.lo) +
+    DDB_EPS * fabs(p) + DDB_TINY;
+  return r;
+}
+
+/**
+ * @brief Return the sum of two bounded values, with its bound
+ */
+static pg_attribute_always_inline DDBound
+ddb_add(DDBound a, DDBound b)
+{
+  /* A sum with an exact zero is the other term, and the sum of two doubles
+   * held exactly is exact as two doubles (#two_sum) */
+  if (ddb_is_zero(b))
+    return a;
+  if (ddb_is_zero(a))
+    return b;
+  double s, se;
+  two_sum(a.hi, b.hi, &s, &se);
+  DDBound r;
+  if (ddb_is_double(a) && ddb_is_double(b))
+  {
+    r.hi = s;
+    r.lo = se;
+    r.e = 0.0;
+    return r;
+  }
+  se += a.lo + b.lo;
+  two_sum(s, se, &r.hi, &r.lo);
+  r.e = a.e + b.e + DDB_EPS * (fabs(a.hi) + fabs(b.hi)) + DDB_TINY;
+  return r;
+}
+
+/**
+ * @brief Return the difference of two bounded values, with its bound
+ */
+static pg_attribute_always_inline DDBound
+ddb_sub(DDBound a, DDBound b)
+{
+  b.hi = - b.hi;
+  b.lo = - b.lo;
+  return ddb_add(a, b);
+}
+
+/**
+ * @brief Return the sign of a bounded value where the bound decides it: 1 or
+ * -1, or 0 where the value may lie on either side of zero
+ * @details The bound is itself computed in doubles, hence the margin; a value
+ * that is not finite decides nothing
+ */
+static pg_attribute_always_inline int
+ddb_sign(DDBound a)
+{
+  double bound = a.e * (1.0 + 1e-6) + DDB_TINY;
+  double mag = fabs(a.hi) - fabs(a.lo);
+  if (! isfinite(a.hi) || ! isfinite(a.lo) || ! isfinite(bound))
+    return 0;
+  if (mag <= bound)
+    return 0;
+  return (a.hi > 0.0) ? 1 : -1;
+}
+
+/**
+ * @brief Return the sign of a bounded value where its bound decides it, 0 for
+ * an exact zero, and 2 where the bound cannot tell
+ */
+static pg_attribute_always_inline int
+ddb_sign_known(DDBound x)
+{
+  if (ddb_is_zero(x))
+    return 0;
+  int sign = ddb_sign(x);
+  return (sign != 0) ? sign : 2;
 }
 
 /**
  * @brief Return the sign of `q - m^2 l` at a midpoint `m` given as a pair,
- * where its evaluation in pairs of doubles carries it, 0 otherwise
- * @details `q` and `l` are pairs within @p eq and @p el of the values they
- * stand for; the products and the difference each err by 2^-104 of the
- * magnitudes they combine, which `2^-96` covers, and a value below 2^-960,
- * whose products could underflow, is not told
- * @param[in] q,eq The value and a bound on its error
- * @param[in] l,el The factor of the squared midpoint and a bound on its error
+ * where its evaluation on two doubles with a bound carries it, 0 otherwise
+ * @details `q` and `l` carry their bounds (#DDBound), and the midpoint is a
+ * pair within 2^-104 of its magnitude of the value it stands for, the bound it
+ * is given here; each product and difference adds its own bound (#ddb_mul,
+ * #ddb_sub), and the sign is told where the value lies beyond that bound
+ * (#ddb_sign)
+ * @param[in] q The value, with its bound
+ * @param[in] l The factor of the squared midpoint, with its bound
  * @param[in] mh,ml The midpoint as a pair
  */
 static pg_attribute_always_inline int
-pair_mid_sign(const double *q, double eq, const double *l, double el,
-  double mh, double ml)
+pair_mid_sign(DDBound q, DDBound l, double mh, double ml)
 {
-  double m2h, m2l, ph, pl, vh, vl;
-  pair_mul(mh, ml, mh, ml, &m2h, &m2l);
-  pair_mul(m2h, m2l, l[0], l[1], &ph, &pl);
-  pair_add(q[0], q[1], - ph, - pl, &vh, &vl);
-  double m2 = fabs(m2h), aq = fabs(q[0]), al = fabs(l[0]);
-  double bound = (eq + m2 * el + 0x1p-96 * (aq + m2 * al) + 0x1p-960) *
-    (1.0 + 16.0 * DBL_EPSILON);
-  if (! isfinite(vh) || ! isfinite(bound))
-    return 0;
-  return (vh > bound) ? 1 : ((vh < - bound) ? -1 : 0);
+  DDBound m = {mh, ml, 0x1p-104 * fabs(mh)};
+  return ddb_sign(ddb_sub(q, ddb_mul(ddb_mul(m, m), l)));
 }
 
 /**
@@ -2768,33 +2888,27 @@ static int
 point_distance_offset_pair_side_sign(const double *p, const double *q,
   int ndims, double r, double rlo, double c, double g)
 {
-  /* In pairs of doubles first, as #segment_interior_mid_sign reads its own: the
-   * differences of the coordinates exact as pairs (#two_diff), the squared
-   * distance and the square of `r + rlo + c + g/2` within 2^-104 of their
-   * operands at each of about ten steps, so the value lies within 2^-96 of the
-   * squared distance plus the square, where that sum lies inside 2^-900 and
-   * 2^900 and half the gap is exact */
+  /* On two doubles with a bound first (#DDBound), as #segment_interior_mid_sign
+   * reads its own: the differences of the coordinates exact as two doubles
+   * (#two_diff), the radius `r + rlo` and the candidate exact, half the gap
+   * exact where it is; each product and sum adds its bound (#ddb_mul,
+   * #ddb_add), and the sign is told where the value lies beyond it */
   double hg = g / 2.0;
   if (hg * 2.0 == g)
   {
-    double sh = 0.0, sl = 0.0, mag = 0.0;
+    DDBound sq = {0.0, 0.0, 0.0};
     for (int i = 0; i < ndims; i++)
     {
-      double dh, dl, qh, ql;
-      two_diff(q[i], p[i], &dh, &dl);
-      pair_mul(dh, dl, dh, dl, &qh, &ql);
-      pair_add(sh, sl, qh, ql, &sh, &sl);
-      mag += dh * dh;
+      DDBound d;
+      two_diff(q[i], p[i], &d.hi, &d.lo);
+      d.e = 0.0;
+      sq = ddb_add(sq, ddb_mul(d, d));
     }
-    double th, tl, t2h, t2l, vh, vl;
-    pair_add(r, rlo, c, 0.0, &th, &tl);
-    pair_add(th, tl, hg, 0.0, &th, &tl);
-    pair_mul(th, tl, th, tl, &t2h, &t2l);
-    pair_add(sh, sl, - t2h, - t2l, &vh, &vl);
-    mag += th * th;
-    double bound = 0x1p-96 * mag;
-    if (mag >= 0x1p-900 && mag <= 0x1p900 && isfinite(vh) && fabs(vh) > bound)
-      return (vh > 0.0) ? 1 : -1;
+    DDBound rad = {r, rlo, 0.0}, cand = {c, 0.0, 0.0}, half = {hg, 0.0, 0.0};
+    DDBound t = ddb_add(ddb_add(rad, cand), half);
+    int sign = ddb_sign(ddb_sub(sq, ddb_mul(t, t)));
+    if (sign != 0)
+      return sign;
   }
   double left[19], right[19], factor[19];
   int n = 0;
@@ -8204,132 +8318,6 @@ point_segment_offset_filter(const double *dw, const double *ew,
 }
 
 /**
- * @brief A value held as the unevaluated sum of two doubles, with a bound on
- * its distance to the exact value it stands for, the filter of the 3D interior distance
- * @details The sum is formed by the error-free transforms #two_diff,
- * #two_product and #two_sum, so it carries about 104 bits on every platform
- * and under every emulator that rounds a double and a fused multiply-add
- * correctly
- */
-typedef struct
-{
-  double hi;  /**< The value, rounded */
-  double lo;  /**< What the rounding leaves out */
-  double e;   /**< A bound on the error of hi + lo */
-} DDBound;
-
-/* The relative rounding of one operation on two-double values, with a wide
- * margin, and an absolute term for a product that underflows */
-#define DDB_EPS 0x1p-100
-#define DDB_TINY 0x1p-1060
-/* The least magnitude of a product of two doubles that #two_product splits
- * exactly: below it the part that rounding leaves out may itself round */
-#define DDB_EXACT_PRODUCT 0x1p-969
-
-/**
- * @brief Set the three coordinates of `q - p`, exact as two doubles
- */
-static pg_attribute_always_inline void
-ddb_diff3(const double *q, const double *p, DDBound *r)
-{
-  for (int c = 0; c < 3; c++)
-  {
-    two_diff(q[c], p[c], &r[c].hi, &r[c].lo);
-    r[c].e = 0.0;
-  }
-  return;
-}
-
-/**
- * @brief Return true if a bounded value is exactly zero: both doubles zero and
- * no error
- */
-static pg_attribute_always_inline bool
-ddb_is_zero(DDBound a)
-{
-  return a.hi == 0.0 && a.lo == 0.0 && a.e == 0.0;
-}
-
-/**
- * @brief Return true if a bounded value is a double held exactly
- */
-static pg_attribute_always_inline bool
-ddb_is_double(DDBound a)
-{
-  return a.lo == 0.0 && a.e == 0.0;
-}
-
-/**
- * @brief Return the product of two bounded values, with its bound
- * @details A product with an exact zero is an exact zero, and the product of
- * two doubles held exactly is exact as two doubles (#two_product)
- */
-static pg_attribute_always_inline DDBound
-ddb_mul(DDBound a, DDBound b)
-{
-  DDBound r;
-  if (ddb_is_zero(a) || ddb_is_zero(b))
-  {
-    r.hi = r.lo = r.e = 0.0;
-    return r;
-  }
-  if (ddb_is_double(a) && ddb_is_double(b))
-  {
-    two_product(a.hi, b.hi, &r.hi, &r.lo);
-    /* A product that underflows is not split exactly */
-    r.e = (fabs(r.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
-    return r;
-  }
-  double p, pe;
-  two_product(a.hi, b.hi, &p, &pe);
-  pe += a.hi * b.lo + a.lo * b.hi;
-  two_sum(p, pe, &r.hi, &r.lo);
-  double ma = fabs(a.hi) + fabs(a.lo), mb = fabs(b.hi) + fabs(b.lo);
-  r.e = ma * b.e + mb * a.e + a.e * b.e + fabs(a.lo * b.lo) +
-    DDB_EPS * fabs(p) + DDB_TINY;
-  return r;
-}
-
-/**
- * @brief Return the sum of two bounded values, with its bound
- */
-static pg_attribute_always_inline DDBound
-ddb_add(DDBound a, DDBound b)
-{
-  /* A sum with an exact zero is the other term, and the sum of two doubles
-   * held exactly is exact as two doubles (#two_sum) */
-  if (ddb_is_zero(b))
-    return a;
-  if (ddb_is_zero(a))
-    return b;
-  double s, se;
-  two_sum(a.hi, b.hi, &s, &se);
-  DDBound r;
-  if (ddb_is_double(a) && ddb_is_double(b))
-  {
-    r.hi = s;
-    r.lo = se;
-    r.e = 0.0;
-    return r;
-  }
-  se += a.lo + b.lo;
-  two_sum(s, se, &r.hi, &r.lo);
-  r.e = a.e + b.e + DDB_EPS * (fabs(a.hi) + fabs(b.hi)) + DDB_TINY;
-  return r;
-}
-
-/**
- * @brief Return the difference of two bounded values, with its bound
- */
-static pg_attribute_always_inline DDBound
-ddb_sub(DDBound a, DDBound b)
-{
-  b.hi = - b.hi;
-  b.lo = - b.lo;
-  return ddb_add(a, b);
-}
-
-/**
  * @brief Return the dot product of two vectors of three bounded values
  * @details Where every component is a double held exactly, each product is
  * exact as two doubles (#two_product), as in #ddb_cross3, and only the sums
@@ -8491,24 +8479,6 @@ ddb_triple3_points(const double *a, const double *b, const double *c,
   r->lo += rest;
   r->e = ((clen == 2) ? 0.0 : DDB_EPS * fabs(r->hi) + DDB_TINY) + under;
   return;
-}
-
-/**
- * @brief Return the sign of a bounded value where the bound decides it: 1 or
- * -1, or 0 where the value may lie on either side of zero
- * @details The bound is itself computed in doubles, hence the margin; a value
- * that is not finite decides nothing
- */
-static pg_attribute_always_inline int
-ddb_sign(DDBound a)
-{
-  double bound = a.e * (1.0 + 1e-6) + DDB_TINY;
-  double mag = fabs(a.hi) - fabs(a.lo);
-  if (! isfinite(a.hi) || ! isfinite(a.lo) || ! isfinite(bound))
-    return 0;
-  if (mag <= bound)
-    return 0;
-  return (a.hi > 0.0) ? 1 : -1;
 }
 
 /**
@@ -9044,37 +9014,27 @@ point_segment_distance_offset_exact(const double *p, const double *a,
     return 0.0;
   double rs = r * f1 * f2;
 
-  /* The squared cross product Q and the squared length L in pairs of doubles,
-   * each scaled sum two doubles and so a pair exactly, which tell every
-   * midpoint the search asks but those nearest the answer
+  /* The squared cross product Q and the squared length L on two doubles
+   * with a bound (#DDBound), each scaled sum two doubles and so held exactly,
+   * which tell every midpoint the search asks but those nearest the answer
    * (#pair_mid_sign) */
-  double Wp[3][2], Up[3][2], Q[2] = {0.0, 0.0}, L[2] = {0.0, 0.0};
-  double magq = 0.0, magl = 0.0;
+  DDBound W[3], U[3], Q = {0.0, 0.0, 0.0}, L = {0.0, 0.0, 0.0};
   for (int i = 0; i < ndims; i++)
   {
     const ExactSum *sumw = &sums[i], *sumu = &sums[ndims + i];
-    two_sum(sumw->e[sumw->n - 1], (sumw->n > 1) ? sumw->e[0] : 0.0, &Wp[i][0],
-      &Wp[i][1]);
-    two_sum(sumu->e[sumu->n - 1], (sumu->n > 1) ? sumu->e[0] : 0.0, &Up[i][0],
-      &Up[i][1]);
-    double th, tl;
-    pair_mul(Up[i][0], Up[i][1], Up[i][0], Up[i][1], &th, &tl);
-    pair_add(L[0], L[1], th, tl, &L[0], &L[1]);
-    magl += fabs(th);
+    two_sum(sumw->e[sumw->n - 1], (sumw->n > 1) ? sumw->e[0] : 0.0, &W[i].hi,
+      &W[i].lo);
+    two_sum(sumu->e[sumu->n - 1], (sumu->n > 1) ? sumu->e[0] : 0.0, &U[i].hi,
+      &U[i].lo);
+    W[i].e = U[i].e = 0.0;
+    L = ddb_add(L, ddb_mul(U[i], U[i]));
   }
   for (int i = 0; i < ndims; i++)
     for (int j = i + 1; j < ndims; j++)
     {
-      double ph, pl, qh, ql, xh, xl;
-      pair_mul(Wp[i][0], Wp[i][1], Up[j][0], Up[j][1], &ph, &pl);
-      pair_mul(Wp[j][0], Wp[j][1], Up[i][0], Up[i][1], &qh, &ql);
-      pair_add(ph, pl, - qh, - ql, &xh, &xl);
-      double mx = fabs(ph) + fabs(qh);
-      pair_mul(xh, xl, xh, xl, &ph, &pl);
-      pair_add(Q[0], Q[1], ph, pl, &Q[0], &Q[1]);
-      magq += mx * mx;
+      DDBound x = ddb_sub(ddb_mul(W[i], U[j]), ddb_mul(W[j], U[i]));
+      Q = ddb_add(Q, ddb_mul(x, x));
     }
-  double eq = 0x1p-96 * magq, el = 0x1p-96 * magl;
 
   /* First candidate, from the rounded cross product over the rounded length */
   double cross2 = 0.0, len2 = 0.0;
@@ -9121,7 +9081,7 @@ point_segment_distance_offset_exact(const double *p, const double *a,
     double s1, e1, mh, e2; \
     two_sum(rs, cc * f1 * f2, &s1, &e1); \
     two_sum(s1, hh, &mh, &e2); \
-    int sign = pair_mid_sign(Q, eq, L, el, mh, e1 + e2); \
+    int sign = pair_mid_sign(Q, L, mh, e1 + e2); \
     (res) = (sign != 0) ? (sign > 0) : \
       point_segment_beyond(sums, ndims, rs, cc * f1 * f2, hh, \
         (b1 & 1) != 0); \
@@ -10409,19 +10369,6 @@ segment_interior_wide(const double *a, const double *b, const double *c,
   return true;
 }
 
-/**
- * @brief Return the sign of a bounded value where its bound decides it, 0 for
- * an exact zero, and 2 where the bound cannot tell
- */
-static pg_attribute_always_inline int
-ddb_sign_known(DDBound x)
-{
-  if (ddb_is_zero(x))
-    return 0;
-  int sign = ddb_sign(x);
-  return (sign != 0) ? sign : 2;
-}
-
 static inline void dbl_cross3(const double *a0, const double *a1,
   const double *b0, const double *b1, double *x, double *mx);
 
@@ -11100,48 +11047,36 @@ plane_point_offset_sign(const double *a, const double *b, const double *c,
 
 /**
  * @brief Return the sign of `(e . n)^2 - m^2 (n . n)` at a midpoint `m` given
- * as a pair, where its evaluation in pairs of doubles carries it, 0 otherwise
- * @param[in] en,een `e . n` as a pair and a bound on its error
- * @param[in] nn,enn `n . n` as a pair and a bound on its error
+ * as a pair, held exactly, where its evaluation on two doubles with a bound
+ * carries it, 0 otherwise
+ * @details Each product and difference adds its bound to those `e . n` and
+ * `n . n` carry (#ddb_mul, #ddb_sub), and the sign is told where the value
+ * lies beyond it (#ddb_sign)
+ * @param[in] en `e . n`, with its bound
+ * @param[in] nn `n . n`, with its bound
  * @param[in] mh,ml The midpoint as a pair
  */
 static pg_attribute_always_inline int
-segment_interior_mid_sign(const double *en, double een, const double *nn,
-  double enn, double mh, double ml)
+segment_interior_mid_sign(DDBound en, DDBound nn, double mh, double ml)
 {
-  double e2h, e2l, m2h, m2l, qh, ql, vh, vl;
-  pair_mul(en[0], en[1], en[0], en[1], &e2h, &e2l);
-  pair_mul(mh, ml, mh, ml, &m2h, &m2l);
-  pair_mul(m2h, m2l, nn[0], nn[1], &qh, &ql);
-  pair_add(e2h, e2l, - qh, - ql, &vh, &vl);
-  double ae = fabs(en[0]), m2 = fabs(m2h), an = fabs(nn[0]);
-  /* Values whose products of the pairs could underflow are not told */
-  if (ae * ae < 0x1p-900 || m2 * an < 0x1p-900)
-    return 0;
-  double bound = (2.0 * ae * een + een * een + m2 * enn +
-    0x1p-96 * (ae * ae + m2 * an)) * (1.0 + 16.0 * DBL_EPSILON);
-  if (! isfinite(vh) || ! isfinite(bound))
-    return 0;
-  return (vh > bound) ? 1 : ((vh < - bound) ? -1 : 0);
+  DDBound m = {mh, ml, 0.0};
+  return ddb_sign(ddb_sub(ddb_mul(en, en), ddb_mul(ddb_mul(m, m), nn)));
 }
 
-/* The values of #segment_interior_distance in pairs of doubles, each with a
- * bound on its error: e . n, n . n, (e x v) . n and (e x u) . n */
+/* The values of #segment_interior_distance on two doubles, each with its
+ * bound (#DDBound): e . n, n . n, (e x v) . n and (e x u) . n */
 typedef struct
 {
-  double en[2], nn[2], ns[2], nt[2];
-  double een, enn, ens, ent;
+  DDBound en, nn, ns, nt;
 } SegmentPairs;
 
 /**
- * @brief Evaluate in pairs of doubles the values that place and round the
- * distance of the lines of two segments, from the differences `u`, `v` and
- * `e`, each a pair
- * @details The cross products
- * `n = u x v`, `e x v` and `e x u` and the dot products are formed as pairs,
- * each product and sum within 2^-104 of the magnitudes it combines, which the
- * bounds `2^-96` times the magnitude of each value cover with room for the
- * depth of its evaluation
+ * @brief Evaluate on two doubles with a bound the values that place and round
+ * the distance of the lines of two segments, from the differences `u`, `v` and
+ * `e`, each a pair held exactly
+ * @details The cross products `n = u x v`, `e x v` and `e x u` and the dot
+ * products are formed by #ddb_mul, #ddb_add and #ddb_sub, each value carrying
+ * the bound of its evaluation (#DDBound)
  */
 static void
 segment_interior_pairs_from(double U[3][2], double V[3][2], double Ev[3][2],
@@ -11150,40 +11085,32 @@ segment_interior_pairs_from(double U[3][2], double V[3][2], double Ev[3][2],
   /* The cross products of u and v, and where the signs are asked, of e and v
    * and of e and u */
   const double (*lhs[3])[2] = {U, Ev, Ev}, (*rhs[3])[2] = {V, V, U};
-  double X[3][3][2], mag[3][3];
+  DDBound X[3][3];
   int nw = signs ? 3 : 1;
   for (int w = 0; w < nw; w++)
     for (int k = 0; k < 3; k++)
     {
       int i = (k + 1) % 3, j = (k + 2) % 3;
-      double ph, pl, qh, ql;
-      pair_mul(lhs[w][i][0], lhs[w][i][1], rhs[w][j][0], rhs[w][j][1], &ph,
-        &pl);
-      pair_mul(lhs[w][j][0], lhs[w][j][1], rhs[w][i][0], rhs[w][i][1], &qh,
-        &ql);
-      pair_add(ph, pl, - qh, - ql, &X[w][k][0], &X[w][k][1]);
-      mag[w][k] = fabs(ph) + fabs(qh);
+      DDBound li = {lhs[w][i][0], lhs[w][i][1], 0.0},
+        rj = {rhs[w][j][0], rhs[w][j][1], 0.0},
+        lj = {lhs[w][j][0], lhs[w][j][1], 0.0},
+        ri = {rhs[w][i][0], rhs[w][i][1], 0.0};
+      X[w][k] = ddb_sub(ddb_mul(li, rj), ddb_mul(lj, ri));
     }
   /* The dot products of n with e, with itself, and where the signs are asked,
    * with e x v and with e x u */
-  double *out[4] = {pv->en, pv->nn, pv->ns, pv->nt};
-  double *err[4] = {&pv->een, &pv->enn, &pv->ens, &pv->ent};
+  DDBound *out[4] = {&pv->en, &pv->nn, &pv->ns, &pv->nt};
   int nd = signs ? 4 : 2;
   for (int d = 0; d < nd; d++)
   {
-    double m = 0.0;
-    out[d][0] = out[d][1] = 0.0;
+    DDBound acc = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; k++)
     {
-      const double *x = (d == 0) ? Ev[k] : (d == 1) ? X[0][k] : X[d - 1][k];
-      double mx = (d == 0) ? fabs(Ev[k][0]) : (d == 1) ? mag[0][k] :
-        mag[d - 1][k];
-      double ph, pl;
-      pair_mul(x[0], x[1], X[0][k][0], X[0][k][1], &ph, &pl);
-      pair_add(out[d][0], out[d][1], ph, pl, &out[d][0], &out[d][1]);
-      m += mx * mag[0][k];
+      DDBound ek = {Ev[k][0], Ev[k][1], 0.0};
+      DDBound x = (d == 0) ? ek : (d == 1) ? X[0][k] : X[d - 1][k];
+      acc = ddb_add(acc, ddb_mul(x, X[0][k]));
     }
-    *err[d] = 0x1p-96 * m;
+    *out[d] = acc;
   }
   return;
 }
@@ -11212,27 +11139,19 @@ segment_interior_pairs(const ExactSum *sums, SegmentPairs *pv)
 }
 
 /* The sign of a value of #segment_interior_pairs where its bound tells it, 0
- * otherwise */
+ * otherwise (#ddb_sign) */
 static inline int
-segment_pair_sign(const double *v, double err)
+segment_pair_sign(DDBound v)
 {
-  if (! isfinite(v[0]) || ! isfinite(err))
-    return 0;
-  return (v[0] > err) ? 1 : ((v[0] < - err) ? -1 : 0);
+  return ddb_sign(v);
 }
 
 /* The sign of the difference of two values of #segment_interior_pairs where
- * its bound tells it, 0 otherwise */
+ * its bound tells it, 0 otherwise (#ddb_sub, #ddb_sign) */
 static inline int
-segment_pair_diff_sign(const double *a, double ea, const double *b,
-  double eb)
+segment_pair_diff_sign(DDBound a, DDBound b)
 {
-  double h, l;
-  pair_add(a[0], a[1], - b[0], - b[1], &h, &l);
-  double bound = (ea + eb + 0x1p-100 * (fabs(a[0]) + fabs(b[0]))) *
-    (1.0 + 16.0 * DBL_EPSILON);
-  const double v[2] = {h, l};
-  return segment_pair_sign(v, bound);
+  return ddb_sign(ddb_sub(a, b));
 }
 
 /**
@@ -11255,21 +11174,19 @@ segment_interior_certify_pairs(const SegmentPairs *pv, double f, double g,
   /* A scale that is no double, beyond 2^1023, leaves it to the search */
   if (! (f > 0.0) || ! isfinite(f) || ! (g > 0.0) || ! isfinite(g))
     return false;
-  const double *en = pv->en, *nn = pv->nn;
-  double een = pv->een, enn = pv->enn;
-  if (! (fabs(en[0]) > 0x1p-400) || ! (nn[0] > 0x1p-400) ||
-      ! (fabs(en[0]) > 2.0 * een) || ! (nn[0] > 2.0 * enn))
+  DDBound en = pv->en, nn = pv->nn;
+  if (! (fabs(en.hi) > 0x1p-400) || ! (nn.hi > 0x1p-400) ||
+      ! (fabs(en.hi) > 2.0 * en.e) || ! (nn.hi > 2.0 * nn.e))
     return false;
-  double c = fabs(en[0]) / sqrt(nn[0]) * g;
+  double c = fabs(en.hi) / sqrt(nn.hi) * g;
   if (! (c > 0x1p-900) || ! isfinite(c))
     return false;
   double cd = nextafter(c, 0.0), cu = nextafter(c, INFINITY);
   if (! isfinite(cu))
     return false;
   double cs = c * f;
-  if (segment_interior_mid_sign(en, een, nn, enn, cs, - (c - cd) / 2.0 * f)
-        > 0 &&
-      segment_interior_mid_sign(en, een, nn, enn, cs, (cu - c) / 2.0 * f) < 0)
+  if (segment_interior_mid_sign(en, nn, cs, - (c - cd) / 2.0 * f) > 0 &&
+      segment_interior_mid_sign(en, nn, cs, (cu - c) / 2.0 * f) < 0)
   {
     *result = c;
     return true;
@@ -11390,11 +11307,11 @@ segment_interior_distance(const double *a, const double *b, const double *c,
       have_fv = true;
       if (! inside)
       {
-        const int pq[5] = {segment_pair_sign(fv.nn, fv.enn),
-          segment_pair_sign(fv.ns, fv.ens),
-          segment_pair_diff_sign(fv.ns, fv.ens, fv.nn, fv.enn),
-          segment_pair_sign(fv.nt, fv.ent),
-          segment_pair_diff_sign(fv.nt, fv.ent, fv.nn, fv.enn)};
+        const int pq[5] = {segment_pair_sign(fv.nn),
+          segment_pair_sign(fv.ns),
+          segment_pair_diff_sign(fv.ns, fv.nn),
+          segment_pair_sign(fv.nt),
+          segment_pair_diff_sign(fv.nt, fv.nn)};
         if (pq[0] < 0 || pq[1] < 0 || pq[2] > 0 || pq[3] < 0 || pq[4] > 0)
           return false;
         inside = SEGMENT_INSIDE(pq[0], pq[1], pq[2], pq[3], pq[4]);
@@ -11447,11 +11364,11 @@ segment_interior_distance(const double *a, const double *b, const double *c,
     pscale = f1 * f2;
     if (! inside)
     {
-      const int pq[5] = {segment_pair_sign(pv.nn, pv.enn),
-        segment_pair_sign(pv.ns, pv.ens),
-        segment_pair_diff_sign(pv.ns, pv.ens, pv.nn, pv.enn),
-        segment_pair_sign(pv.nt, pv.ent),
-        segment_pair_diff_sign(pv.nt, pv.ent, pv.nn, pv.enn)};
+      const int pq[5] = {segment_pair_sign(pv.nn),
+        segment_pair_sign(pv.ns),
+        segment_pair_diff_sign(pv.ns, pv.nn),
+        segment_pair_sign(pv.nt),
+        segment_pair_diff_sign(pv.nt, pv.nn)};
       if (pq[0] < 0 || pq[1] < 0 || pq[2] > 0 || pq[3] < 0 || pq[4] > 0)
         return false;
       inside = SEGMENT_INSIDE(pq[0], pq[1], pq[2], pq[3], pq[4]);
@@ -11567,8 +11484,7 @@ segment_interior_distance(const double *a, const double *b, const double *c,
      * clear of the distance by more than its bound */ \
     double hp = isinf(nx) ? ldexp(1.0, 970) * pscale : \
       (nx - cc) / 2.0 * pscale; \
-    int sign = segment_interior_mid_sign(pv.en, pv.een, pv.nn, pv.enn, \
-      cc * pscale, hp); \
+    int sign = segment_interior_mid_sign(pv.en, pv.nn, cc * pscale, hp); \
     if (sign == 0) \
     { \
       const double mt[2] = {cc * f1 * f2, hh}; \
@@ -11983,83 +11899,48 @@ incircle_sign_exact(double ax, double ay, double bx, double by, double cx,
 }
 
 /**
- * @brief Set the sum of two products of doubles as a pair of doubles, its
- * rounded value and the rest, and the sum of the magnitudes of the products
- * @details The products are exact as their rounded values and their errors
- * (#two_product), the rounded values are added exactly (#two_sum), and the
- * errors are added to the error of that sum, two roundings that together lie
- * within 3.01 u^2 times the magnitude, u being DBL_EPSILON / 2
- */
-static inline void
-incircle_pair(double a, double b, double c, double d, double *h, double *l,
-  double *mag)
-{
-  double p, pe, q, qe, s, se;
-  two_product(a, b, &p, &pe);
-  two_product(c, d, &q, &qe);
-  two_sum(p, q, &s, &se);
-  two_sum(s, se + (pe + qe), h, l);
-  *mag = fabs(p) + fabs(q);
-}
-
-/**
  * @brief Return the sign of the incircle determinant of four points where its
- * evaluation in pairs of doubles carries it, and 2 where it cannot tell
+ * evaluation on two doubles with a bound carries it, 0 for an exact zero, and
+ * 2 where it cannot tell
  * @details The second filter between the one of #incircle_sign and
  * #incircle_sign_exact, for four points whose coordinate differences from D
- * are exact doubles, as those of nearby points are (Sterbenz). Each lift and
- * each cross product is a pair of doubles within 3.01 u^2 of its magnitude
- * (#incircle_pair), u being DBL_EPSILON / 2; each term, the product of two
- * pairs, is a pair within 14.1 u^2 of the product of their magnitudes; and
- * the sum of the three terms is a pair within 26.2 u^2 of the permanent, the
- * sum of those products. Where the pair stands clear of 128 u^2 times the
- * permanent as computed, its sign is the determinant's. Where a difference
- * is not exact, or lies outside 2^-200 to 2^200, which keeps every product
- * and every error of a product a normal double, it declines. Mirrors
+ * are exact doubles, as those of nearby points are (Sterbenz). Each lift, each
+ * cross product, each term and their sum carry the bound of their evaluation
+ * (#DDBound, #ddb_mul, #ddb_add, #ddb_sub), and the sign is told where the
+ * determinant lies beyond it (#ddb_sign_known). Where a difference is not
+ * exact, or lies outside 2^-200 to 2^200, it declines. Mirrors
  * #point_motion_dwithin_filter, the second filter of a distance
  */
 static int
 incircle_sign_filter(double ax, double ay, double bx, double by, double cx,
   double cy, double dx, double dy)
 {
-  /* The differences A - D, B - D and C - D, x then y */
+  /* The differences A - D, B - D and C - D, x then y, each a double held
+   * exactly */
   const double from[6] = {ax, ay, bx, by, cx, cy};
   const double to[6] = {dx, dy, dx, dy, dx, dy};
-  double v[6];
+  DDBound v[6];
   for (int i = 0; i < 6; i++)
   {
     double err;
-    two_diff(from[i], to[i], &v[i], &err);
-    double m = fabs(v[i]);
+    two_diff(from[i], to[i], &v[i].hi, &err);
+    double m = fabs(v[i].hi);
     if (err != 0.0 || (m != 0.0 && (m < 0x1p-200 || m > 0x1p200)))
       return 2;
+    v[i].lo = v[i].e = 0.0;
   }
   /* Each lift times the cross product of the other two points */
   static const int cu[3] = {2, 4, 0}, cv[3] = {4, 0, 2};
-  double th[3], tl[3], permanent = 0.0;
+  DDBound det = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; k++)
   {
-    double lh, ll, lmag, ch, cl, cmag;
-    incircle_pair(v[2 * k], v[2 * k], v[2 * k + 1], v[2 * k + 1], &lh, &ll,
-      &lmag);
+    DDBound lift = ddb_add(ddb_mul(v[2 * k], v[2 * k]),
+      ddb_mul(v[2 * k + 1], v[2 * k + 1]));
     int u = cu[k], w = cv[k];
-    incircle_pair(v[u], v[w + 1], - v[w], v[u + 1], &ch, &cl, &cmag);
-    double p, pe;
-    two_product(lh, ch, &p, &pe);
-    two_sum(p, (pe + lh * cl) + ll * ch, &th[k], &tl[k]);
-    permanent += lmag * cmag;
+    DDBound cross = ddb_sub(ddb_mul(v[u], v[w + 1]), ddb_mul(v[w], v[u + 1]));
+    det = ddb_add(det, ddb_mul(lift, cross));
   }
-  /* The sum of the three terms */
-  double s1, e1, s2, e2;
-  two_sum(th[0], th[1], &s1, &e1);
-  two_sum(s1, th[2], &s2, &e2);
-  double det = s2 + ((((e1 + e2) + tl[0]) + tl[1]) + tl[2]);
-  double bound = 32.0 * DBL_EPSILON * DBL_EPSILON * permanent;
-  if (det > bound)
-    return 1;
-  if (det < - bound)
-    return -1;
-  return 2;
+  return ddb_sign_known(det);
 }
 
 /**
