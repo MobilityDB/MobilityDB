@@ -628,9 +628,12 @@ tier, 364 and 359 on the 2 970 random faces, 190 and 185 on the 2 022 real faces
 first tiers decide. The wide number on its arena (EA5) is the cheaper exact tier of this sign,
 by 1.82 times on its ties, where EA1 measured the wide number before its arena: the case for
 EA2 for this sign is spent, and `plane_point_offset_sign` keeps `DyadicWide`.
-`segment_interior_offset_sign` and `plane_cross_dot_sign` are not measured; their wide tiers read
-the same arena, and each moves only where its own differential shows the expression ladder the
-cheaper.
+`segment_interior_offset_sign`, measured the same way, its filter then the question of
+`segment_interior_wide_values` and its sign written once on the expression ladder, answers alike
+on its 3 260 calls of those corpora, at 4573 and 7695 instructions a call on the 72 refuting
+faces (1.68 times), 1619 and 1610 on the 961 random ones and 787 and 800 on the 2 227 real
+ones: it keeps `DyadicWide` too. `plane_cross_dot_sign` is not measured; it moves only where its
+own differential shows the expression ladder the cheaper.
 
 ### EA3. The arithmetic in its own file
 
