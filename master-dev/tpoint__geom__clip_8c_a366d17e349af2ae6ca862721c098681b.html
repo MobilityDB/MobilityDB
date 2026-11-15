@@ -164,7 +164,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if every part of a geometry bounds a region. </p>
-<p >A ring enclosing no area bounds no region: what it contributes is the linework it traces, one dimension lower. <a class="el" href="geo__funcs_8h_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc" title="Return the edges of a geometry in a dynamic array.">geom_extract_edges</a> already says which of the two every ring of every part is &ndash; a ring of no area yields LINE edges where one bounding a region yields POLY ones &ndash; so reading that classification is what keeps this answer and the engine's own from disagreeing about a part. It also needs no tolerance of its own: the one that decides a ring lives in the extraction, where it is an area read against the extent the ring occupies rather than a length </p>
+<p >See <a class="el" href="geo__funcs_8h_a1e27bbdbb4723a3eea328db411f1eaeb.html#a1e27bbdbb4723a3eea328db411f1eaeb" title="Return true if every part of a geometry bounds a region.">geom_every_part_bounds_area</a> </p>
 
 </div>
 </div>
