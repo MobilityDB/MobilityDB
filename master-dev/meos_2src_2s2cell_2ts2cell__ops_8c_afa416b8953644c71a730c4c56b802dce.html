@@ -96,7 +96,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__s2cell__conversion_ga1af992cd1bc54d1110347df3ab54c2dd.html#ga1af992cd1bc54d1110347df3ab54c2dd">tpoint_s2cell_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2ts2cell__ops_8c_a0267f0889c32eb3b4691d3812996b5ab.html#a0267f0889c32eb3b4691d3812996b5ab">tpoint_to_ts2cell</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2ts2cell__ops_8c_a481803065e565276ea113ed9a38f478d.html#a481803065e565276ea113ed9a38f478d">tpointinst_point2d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2ts2cell__ops_8c_ade22afa9a78c0592a9aef579020bbf97.html#ade22afa9a78c0592a9aef579020bbf97">tpointseq_planar_to_ts2cell</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2ts2cell__ops_8c_a431a47b22e1aaa9076ac9a9c8df05c52.html#a431a47b22e1aaa9076ac9a9c8df05c52">tpointseq_linear_to_ts2cell</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2s2cell_2ts2cell__ops_8c_afa416b8953644c71a730c4c56b802dce.html#afa416b8953644c71a730c4c56b802dce">tpointseq_to_ts2cell</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2ts2cell__ops_8c_a30b7e8d627f0e813c59ae9116bb691bd.html#a30b7e8d627f0e813c59ae9116bb691bd">tpointseqset_to_ts2cell</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__s2cell_ga89712fa55620acaa5c0affc0dce461d5.html#ga89712fa55620acaa5c0affc0dce461d5">ts2cell_cell_to_token</a></td></tr>
@@ -142,7 +142,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the temporal S2 cell of a temporal point sequence at a level, or NULL when its positions are not in a lon/lat reference system. </p>
-<p >A sequence stating nothing between its instants, discrete or stepwise, holds the cells of its instants. A linear sequence moves between two instants along the great circle of a geodetic point, or the straight line in longitude and latitude of a planar one, and each segment is traversed cell by cell, so the result holds every cell the trajectory crosses and each of its instants marks the time the trajectory enters that cell. The last cell holds to the end of the trajectory. A planar sequence answers a sequence set where a crossing instant belongs to the cell it leaves (<a class="el" href="meos_2src_2s2cell_2ts2cell__ops_8c_ade22afa9a78c0592a9aef579020bbf97.html#ade22afa9a78c0592a9aef579020bbf97" title="Return the temporal S2 cell of a linear temporal planar point sequence at a level,...">tpointseq_planar_to_ts2cell</a>). </p>
+<p >A sequence stating nothing between its instants, discrete or stepwise, holds the cells of its instants. A linear sequence moves between two instants along the great circle of a geodetic point, or the straight line in longitude and latitude of a planar one, and each segment is traversed cell by cell, so the result holds every cell the trajectory crosses, each crossing instant held by the cell holding the crossing position; it is a sequence set where that is the cell left (<a class="el" href="meos_2src_2s2cell_2ts2cell__ops_8c_a431a47b22e1aaa9076ac9a9c8df05c52.html#a431a47b22e1aaa9076ac9a9c8df05c52" title="Return the temporal S2 cell of a linear temporal point sequence at a level, starting in a cell.">tpointseq_linear_to_ts2cell</a>). The last cell holds to the end of the trajectory. </p>
 
 </div>
 </div>

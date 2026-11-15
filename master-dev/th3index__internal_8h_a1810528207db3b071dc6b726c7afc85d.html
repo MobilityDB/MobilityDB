@@ -219,17 +219,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the microsecond at which a geodetic segment crosses the great circle of an edge, as the offset from the start of the segment, truncated. </p>
-<p >The geodetic twin of <a class="el" href="tcellindex_8h_ad456af7c031c8de4e047da2ab4dbcd9e.html#ad456af7c031c8de4e047da2ab4dbcd9e" title="Return the microsecond at which a segment crosses the line of the edge of an outline from the vertex ...">dggs_outline_edge_offset</a>, searched as <a class="el" href="geo__funcs_8h_a8b276da5f5186ded3195cb5691d54e5c.html#a8b276da5f5186ded3195cb5691d54e5c" title="Return the microsecond at which a segment crosses the line of an edge whose x coordinates carry exact...">segment_edge_cross_offset</a> searches: the position moves at constant angular speed along the great circle of the segment, so it meets the circle of the edge at the fraction f of the segment the angles give, and the crossing is dated by the truncation of f D, the last offset m with m / D &lt;= f, each comparison exact (<a class="el" href="meos_2src_2h3_2h3__geo_8c_a96657f592f89b299e525161414540008.html#a96657f592f89b299e525161414540008" title="Return true if the position of a geodetic segment at the offset m of D has not passed the crossing,...">h3_geodetic_before</a>). The fraction in doubles <code>f</code> is the start of the search only, which gallops from it and halves. The positions are the geodetic vectors of the degrees (<a class="el" href="geo__funcs_8h_aa599d938f53c1ecdabbff5b51993ac32.html#aa599d938f53c1ecdabbff5b51993ac32" title="Return in v the geodetic position of a longitude and a latitude in degrees: the doubles nearest cos(l...">lonlat_vector_nearest</a>). </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">x0,y0,x1,y1</td><td>Start and end points of the segment, in degrees </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">D</td><td>Duration of the segment in microseconds </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ax,ay,bx,by</td><td>Vertices of an edge through the crossing, off the great circle of the segment, in degrees </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">f</td><td>Fraction of the segment at the crossing, in doubles </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">whole</td><td>True when the segment meets the circle exactly at the microsecond returned </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Return the microsecond at which a geodetic segment crosses the great circle of an edge, as the offset from the start of the segment, truncated, its points given in degrees (<a class="el" href="tcellindex_8h_aa68fe9f3141556737a8e38f834524d7b.html#aa68fe9f3141556737a8e38f834524d7b" title="Return the microsecond at which a geodetic segment crosses the great circle of an edge,...">dggs_geodetic_edge_offset</a> on their geodetic positions, <a class="el" href="meos_2src_2h3_2h3__geo_8c_afcae9c38749b75ce555d90f093b36598.html#afcae9c38749b75ce555d90f093b36598" title="Return in v the geodetic position of degrees, the vector of decision D6 of the cell walks (dggs_lonla...">h3_lonlat_vector</a>) </p>
 
 </div>
 </div>

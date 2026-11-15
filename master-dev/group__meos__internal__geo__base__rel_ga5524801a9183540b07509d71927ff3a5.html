@@ -80,9 +80,12 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__geo__base__rel_ga5524801a9183540b07509d71927ff3a5.html#ga5524801a9183540b07509d71927ff3a5">geom_dwithin2d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__rel_gae0452b5679d846f596ce69062c663b68.html#gae0452b5679d846f596ce69062c663b68">geom_dwithin2d_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__rel_ga97d6dccbceb645b95d8e9b339e701c2e.html#ga97d6dccbceb645b95d8e9b339e701c2e">geom_dwithin3d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__rel_ga8755902f062bb46a6d815108ac201484.html#ga8755902f062bb46a6d815108ac201484">geom_dwithin3d_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__rel_gaa785f0800293d68a7883434ba9684544.html#gaa785f0800293d68a7883434ba9684544">geom_intersects2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__rel_ga92ee6e2f8934c05d5c25127ea0213f8b.html#ga92ee6e2f8934c05d5c25127ea0213f8b">geom_intersects3d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__rel_ga88e107826fb48ae9d78295b5c4c96a47.html#ga88e107826fb48ae9d78295b5c4c96a47">geom_intersects3d_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__rel_ga48db7a31d804d6a03631bd26b9d52f52.html#ga48db7a31d804d6a03631bd26b9d52f52">geom_spatialrel</a></td></tr>
         </table>
       </div>
@@ -121,7 +124,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if two geometries are within a distance. </p>
-<p >Two geometries are answered exactly: the answer is that of their exact distance, whatever double that distance rounds to. Those of straight edges are read by the walk of the distance (<a class="el" href="postgis__funcs_8c_a517cbb37c9e96ddced05564eee5c914b.html#a517cbb37c9e96ddced05564eee5c914b" title="Return true if two geometries of straight edges are within a distance, exactly, in 2D.">geom_dwithin2d_exact</a>), and those carrying an arc, a triangle, a TIN or a polyhedral surface, or held in a collection, edge by edge (<a class="el" href="postgis__funcs_8c_a8def6a160f7eae40ab7a641f28450139.html#a8def6a160f7eae40ab7a641f28450139" title="Answer whether two geometries carrying arcs are within a distance, exactly.">geom_dwithin_curves</a>) </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The answer is that of <a class="el" href="group__meos__internal__geo__base__rel_gae0452b5679d846f596ce69062c663b68.html#gae0452b5679d846f596ce69062c663b68" title="Return true if two geometries are within a distance.">geom_dwithin2d_intl</a> once the arguments are valid </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dist</td><td>Distance </td></tr>
