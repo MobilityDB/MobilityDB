@@ -462,7 +462,7 @@ distevents_add_piece(DistEvents *events, double t0, double t1,
   p->zero = (f == NULL);
   p->len = len;
   if (f)
-    p->f = *f;
+    distfun_copy(&p->f, f);
   else
     distfun_init(&p->f);
 }
