@@ -27,7 +27,9 @@ var searchData=
   ['meos_5fschema_5fhook_2eh_24',['meos_schema_hook.h',['../meos__schema__hook_8h.html',1,'']]],
   ['meos_5ftls_2eh_25',['meos_tls.h',['../meos__tls_8h.html',1,'']]],
   ['meos_5ftransform_2eh_26',['meos_transform.h',['../meos__transform_8h.html',1,'']]],
-  ['merge_5ftest_2ec_27',['merge_test.c',['../merge__test_8c.html',1,'']]],
-  ['merge_5fvalidity_5ftest_2ec_28',['merge_validity_test.c',['../merge__validity__test_8c.html',1,'']]],
-  ['minus_5flast_5finstant_5ftest_2ec_29',['minus_last_instant_test.c',['../minus__last__instant__test_8c.html',1,'']]]
+  ['mercator_5flat_5frows_2einc_27',['mercator_lat_rows.inc',['../mercator__lat__rows_8inc.html',1,'']]],
+  ['mercator_5flat_5funit_2ec_28',['mercator_lat_unit.c',['../mercator__lat__unit_8c.html',1,'']]],
+  ['merge_5ftest_2ec_29',['merge_test.c',['../merge__test_8c.html',1,'']]],
+  ['merge_5fvalidity_5ftest_2ec_30',['merge_validity_test.c',['../merge__validity__test_8c.html',1,'']]],
+  ['minus_5flast_5finstant_5ftest_2ec_31',['minus_last_instant_test.c',['../minus__last__instant__test_8c.html',1,'']]]
 ];

@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less it, and an enclosure of their magnitude, the twin of <a class="el" href="structTrigProduct.html">TrigProduct</a>.  
+<p>The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, and an enclosure of their magnitude, the twin of <a class="el" href="structTrigProduct.html">TrigProduct</a>.  
  <a href="structDegreeAngle.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -98,9 +98,15 @@ Data Fields</h2></td></tr>
 <tr class="separator:a8b434c5b9f7cb8706aa6e7ee0727d73c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5247a69eae6fae712e435f31bb73e16"><td class="memItemLeft" align="right" valign="top">uint64 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_ab5247a69eae6fae712e435f31bb73e16.html#ab5247a69eae6fae712e435f31bb73e16">lo64</a></td></tr>
 <tr class="separator:ab5247a69eae6fae712e435f31bb73e16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88c1fbb1248764ed7edffdd1362bc8ea"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_a88c1fbb1248764ed7edffdd1362bc8ea.html#a88c1fbb1248764ed7edffdd1362bc8ea">mercator</a></td></tr>
+<tr class="memdesc:a88c1fbb1248764ed7edffdd1362bc8ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">The angle is atan(sinh(pi r)), not s and c.  <a href="structDegreeAngle_a88c1fbb1248764ed7edffdd1362bc8ea.html#a88c1fbb1248764ed7edffdd1362bc8ea">More...</a><br /></td></tr>
+<tr class="separator:a88c1fbb1248764ed7edffdd1362bc8ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a676e6fa779e17d37ab8a93206e93ea49"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_a676e6fa779e17d37ab8a93206e93ea49.html#a676e6fa779e17d37ab8a93206e93ea49">n64</a></td></tr>
 <tr class="memdesc:a676e6fa779e17d37ab8a93206e93ea49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of 64-bit limbs of each bound.  <a href="structDegreeAngle_a676e6fa779e17d37ab8a93206e93ea49.html#a676e6fa779e17d37ab8a93206e93ea49">More...</a><br /></td></tr>
 <tr class="separator:a676e6fa779e17d37ab8a93206e93ea49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12973a802c78a9da598385765c9ccefa"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_a12973a802c78a9da598385765c9ccefa.html#a12973a802c78a9da598385765c9ccefa">r</a></td></tr>
+<tr class="memdesc:a12973a802c78a9da598385765c9ccefa"><td class="mdescLeft">&#160;</td><td class="mdescRight">The row of a Mercator angle, 0 &lt; r &lt;= 1.  <a href="structDegreeAngle_a12973a802c78a9da598385765c9ccefa.html#a12973a802c78a9da598385765c9ccefa">More...</a><br /></td></tr>
+<tr class="separator:a12973a802c78a9da598385765c9ccefa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a727d8b98237433ff0ce6f500482a1206"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_a727d8b98237433ff0ce6f500482a1206.html#a727d8b98237433ff0ce6f500482a1206">root</a></td></tr>
 <tr class="memdesc:a727d8b98237433ff0ce6f500482a1206"><td class="mdescLeft">&#160;</td><td class="mdescRight">The angle is atan2(s, c)  <a href="structDegreeAngle_a727d8b98237433ff0ce6f500482a1206.html#a727d8b98237433ff0ce6f500482a1206">More...</a><br /></td></tr>
 <tr class="separator:a727d8b98237433ff0ce6f500482a1206"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -111,7 +117,7 @@ Data Fields</h2></td></tr>
 <tr class="separator:a3b4b8ebc17ba024670d48f49c4dc1a23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less it, and an enclosure of their magnitude, the twin of <a class="el" href="structTrigProduct.html">TrigProduct</a>. </p>
+<div class="textblock"><p >The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, and an enclosure of their magnitude, the twin of <a class="el" href="structTrigProduct.html">TrigProduct</a>. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/src/geo/<a class="el" href="geo__trig_8c.html">geo_trig.c</a></li>
 </ul>
