@@ -89,10 +89,9 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   declared in the internal header `geo/postgis_funcs.h`, which the functions a lifted walk reads
   at each instant and the placed body of a rigid geometry read; `contains_set_value` asserts its
   set as `contains_span_value` does. The box predicates `span_contains`, `stbox_contains`,
-  `tbox_contains` and `tpcbox_contains` already assert their validation. MobilityDB #3706, branch
-  `perf/base-rels-intl`, head `8dd5b64290` on master `2f89e4e629`, with the strict, cppcheck,
-  valgrind and speed receipts and CGAL agreeing on 1953 of 1953 rows of circular arcs and 1886 of
-  1886 rows of planar faces.
+  `tbox_contains` and `tpcbox_contains` already assert their validation. Four receipts (strict,
+  cppcheck, valgrind, speed) and CGAL agreeing on 1953 of 1953 rows of circular arcs and 1886 of
+  1886 rows of planar faces. MERGED as MobilityDB #3706 (`5c5c726682`).
   It rests on the route validation the owner asked for first ("validate the routes at the ways
   readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
   each route as a planar line in the SRID of the network when the ways readers read it.
