@@ -48,3 +48,8 @@ target_include_directories(s2_geog_cover_unit PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(s2_geog_cover_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME s2_geog_cover_unit COMMAND s2_geog_cover_unit)
+
+add_executable(s2_cover_unit s2_cover_unit.c)
+target_include_directories(s2_cover_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(s2_cover_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME s2_cover_unit COMMAND s2_cover_unit)
