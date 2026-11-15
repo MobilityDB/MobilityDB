@@ -161,4 +161,7 @@ add_test(
   NAME regress
   COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/regress.cmake"
   )
-set_tests_properties(regress PROPERTIES DEPENDS build)
+# The suite is one test of ctest, so the timeout ctest gives a test by default,
+# 1500 seconds, would be that of all the tests together, which a debug build
+# exceeds. Two hours leave room for it and still stop a suite that hangs.
+set_tests_properties(regress PROPERTIES DEPENDS build TIMEOUT 7200)
