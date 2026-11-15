@@ -125,7 +125,7 @@ SELECT 622236750694711295::bigint = h3index '8a2a1072b59ffff';
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_h3index_test;
-CREATE TABLE tbl_h3index_test(k int, c h3index);
+CREATE TEMP TABLE tbl_h3index_test(k int, c h3index);
 INSERT INTO tbl_h3index_test VALUES
   (1, h3index '8a2a1072b59ffff'),
   (2, h3index '831c02fffffffff'),

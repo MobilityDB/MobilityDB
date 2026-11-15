@@ -158,16 +158,27 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
   {
     case T_TIMESTAMPTZ:
     {
+      /* A failed parse is told by the error number, as for T_BOOL, and the
+       * value read must be finite, since a set, a span and a temporal value
+       * hold finite timestamps only */
+      int last_errno = meos_errno_reset();
       TimestampTz t = pg_timestamptz_in((char *) str, -1);
-      if (t == DT_NOEND)
+      if (meos_errno())
+        return false;
+      meos_errno_restore(last_errno);
+      if (! ensure_finite_timestamptz(t))
         return false;
       *result = TimestampTzGetDatum(t);
       return true;
     }
     case T_DATE:
     {
+      int last_errno = meos_errno_reset();
       DateADT d = pg_date_in((char *) str);
-      if (d == DATEVAL_NOEND)
+      if (meos_errno())
+        return false;
+      meos_errno_restore(last_errno);
+      if (! ensure_finite_date(d))
         return false;
       *result = DateADTGetDatum(d);
       return true;
@@ -2127,6 +2138,11 @@ date_from_wkb_state(meos_wkb_parse_state *s)
 {
   int32_t d = 0;
   read_wkb_value(s, &d, MEOS_WKB_DATE_SIZE);
+  /* A date that is not finite is refused, since a set, a span and a temporal
+   * value hold finite dates only, and the reader stops as for a short
+   * buffer */
+  if (! ensure_finite_date((DateADT) d))
+    s->error = true;
   return (DateADT) d;
 }
 
@@ -2138,6 +2154,11 @@ timestamp_from_wkb_state(meos_wkb_parse_state *s)
 {
   int64_t t = 0;
   read_wkb_value(s, &t, MEOS_WKB_TIMESTAMP_SIZE);
+  /* A timestamp that is not finite is refused, since a set, a span and a
+   * temporal value hold finite timestamps only, and the reader stops as for
+   * a short buffer */
+  if (! ensure_finite_timestamptz((TimestampTz) t))
+    s->error = true;
   return (TimestampTz) t;
 }
 

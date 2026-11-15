@@ -49,7 +49,7 @@ SELECT asEWKT(scale(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[
 
 -- A stored value keeps its coordinates after being scaled and moved
 DROP TABLE IF EXISTS tbl_transf_arg;
-CREATE TABLE tbl_transf_arg(temp tgeometry);
+CREATE TEMP TABLE tbl_transf_arg(temp tgeometry);
 INSERT INTO tbl_transf_arg VALUES
   (tgeometry '[Linestring(1 1,2 2)@2001-01-01, Linestring(1 1,3 3)@2001-01-02]');
 SELECT asEWKT(scale(temp, geometry 'POINT(2 2)')) FROM tbl_transf_arg;

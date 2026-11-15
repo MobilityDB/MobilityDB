@@ -23,6 +23,19 @@ SELECT tstzspan '[2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzspan value: Missing closing bracket/parenthesis
 LINE 1: SELECT tstzspan '[2001-01-01, 2001-01-02';
                         ^
+-- A span holds finite timestamps and dates only
+SELECT tstzspan '[-infinity, 2001-01-01]';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tstzspan '[-infinity, 2001-01-01]';
+                        ^
+SELECT tstzspan '[2001-01-01, infinity]';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tstzspan '[2001-01-01, infinity]';
+                        ^
+SELECT datespan '[2001-01-01, infinity)';
+ERROR:  The date must be finite
+LINE 1: SELECT datespan '[2001-01-01, infinity)';
+                        ^
 -- The UTC designator of RFC 3339, which every OGC Moving Features datetime is
 -- written in, denotes the same instant as the zero offset it abbreviates
 SELECT tstzspan '[2001-01-01T00:00:00Z, 2001-01-02T00:00:00Z]' =
@@ -69,6 +82,17 @@ SELECT span(timestamptz '2001-01-01', '2001-01-01');
 ERROR:  Span cannot be empty
 SELECT span(timestamptz '2001-01-02', '2001-01-01');
 ERROR:  Span lower bound must be less than or equal to span upper bound
+SELECT span(timestamptz '-infinity', '2001-01-01');
+ERROR:  The timestamp must be finite
+SELECT timestamptz 'infinity'::tstzspan;
+ERROR:  The timestamp must be finite
+-- A predicate over an infinite timestamp answers
+SELECT tstzspan '[2001-01-01, 2001-01-02]' @> timestamptz 'infinity';
+ ?column? 
+----------
+ f
+(1 row)
+
 -------------------------------------------------------------------------------
 -- Conversion
 -------------------------------------------------------------------------------

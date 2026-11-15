@@ -8,7 +8,7 @@ NOTICE:  index "tbl_th3index_kdtree_idx" does not exist, skipping
 -----------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_th3index_ops;
 NOTICE:  table "test_th3index_ops" does not exist, skipping
-CREATE TABLE test_th3index_ops(
+CREATE TEMP TABLE test_th3index_ops(
   op char(3),
   leftarg text,
   rightarg text,

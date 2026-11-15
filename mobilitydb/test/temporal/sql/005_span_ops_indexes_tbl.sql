@@ -23,7 +23,7 @@ DROP INDEX IF EXISTS tbl_tstzspan_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_spanops;
-CREATE TABLE test_spanops(
+CREATE TEMP TABLE test_spanops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

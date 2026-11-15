@@ -1,13 +1,9 @@
-CREATE TABLE test AS
+CREATE TEMP TABLE test AS
 SELECT NULL::tgeompoint FROM generate_series(1, 10);
 ANALYZE test;
 DROP TABLE test;
 
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tgeompoint3D_big;
-ANALYZE tbl_tgeogpoint3D_big;
-
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_rtree_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_rtree_idx;
 
@@ -260,10 +256,6 @@ DROP INDEX IF EXISTS tbl_tgeompoint3D_big_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_kdtree_idx;
 
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tgeompoint;
-ANALYZE tbl_tgeompoint3D;
-
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeompoint_rtree_idx;
@@ -337,7 +329,7 @@ DROP INDEX tbl_tgeompoint3D_quadtree_idx;
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
 
-CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tgeompoint3D_big_allthesame_quadtree_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tgeompoint3D_big_allthesame;
 
@@ -354,7 +346,7 @@ DROP TABLE tbl_tgeompoint3D_big_allthesame;
 -- values is what builds such a node.
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tgeompoint_allthesame AS
+CREATE TEMP TABLE tbl_tgeompoint_allthesame AS
   SELECT k, tgeompoint 'Point(5 5)@2001-01-01' AS temp
   FROM generate_series(1, 1000) k;
 CREATE INDEX tbl_tgeompoint_allthesame_quadtree_idx ON tbl_tgeompoint_allthesame
@@ -379,12 +371,12 @@ DROP TABLE tbl_tgeompoint_allthesame;
 -- instant and the scan prunes the page that holds it. Several sizes are built
 -- because which node ends on that bound follows from how the pages split.
 
-CREATE FUNCTION gist_bound_inc_disagreements() RETURNS bigint AS $$
+CREATE FUNCTION pg_temp.gist_bound_inc_disagreements() RETURNS bigint AS $$
 DECLARE n int; s bigint; i bigint; bad bigint := 0;
 BEGIN
   FOREACH n IN ARRAY ARRAY[200, 300, 400, 800, 1200] LOOP
     DROP TABLE IF EXISTS tbl_gist_bound_inc;
-    EXECUTE format($f$CREATE TABLE tbl_gist_bound_inc AS
+    EXECUTE format($f$CREATE TEMP TABLE tbl_gist_bound_inc AS
       SELECT i AS k, tgeompoint(format('[Point(%%s %%s)@%%s, Point(%%s %%s)@%%s)',
         i %% 97, (i * 7) %% 89,
         timestamptz '2001-01-01' + (i || ' minutes')::interval,
@@ -413,9 +405,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT gist_bound_inc_disagreements() AS sizes_where_the_index_disagrees;
+SELECT pg_temp.gist_bound_inc_disagreements() AS sizes_where_the_index_disagrees;
 
-DROP FUNCTION gist_bound_inc_disagreements();
+DROP FUNCTION pg_temp.gist_bound_inc_disagreements();
 DROP TABLE tbl_gist_bound_inc;
 
 -------------------------------------------------------------------------------
@@ -429,13 +421,13 @@ DROP TABLE tbl_gist_bound_inc;
 -- it. The answer of each operator class is compared with the sequential scan.
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION spgist_shared_bound_disagreements(opclass text)
+CREATE FUNCTION pg_temp.spgist_shared_bound_disagreements(opclass text)
 RETURNS bigint AS $$
 DECLARE scan int; s bigint; i bigint; bad bigint := 0;
   t timestamptz := timestamptz '2001-01-01';
 BEGIN
   DROP TABLE IF EXISTS tbl_spgist_shared_bound;
-  CREATE TABLE tbl_spgist_shared_bound AS
+  CREATE TEMP TABLE tbl_spgist_shared_bound AS
     SELECT k, CASE WHEN k % 10 = 0
       THEN tgeompoint(format('Point(%s %s)@%s', k % 89, k % 83,
         t + interval '100 s'))
@@ -465,12 +457,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT spgist_shared_bound_disagreements('tgeompoint_quadtree_ops')
+SELECT pg_temp.spgist_shared_bound_disagreements('tgeompoint_quadtree_ops')
   AS quadtree_answers_the_index_misses;
-SELECT spgist_shared_bound_disagreements('tgeompoint_kdtree_ops')
+SELECT pg_temp.spgist_shared_bound_disagreements('tgeompoint_kdtree_ops')
   AS kdtree_answers_the_index_misses;
 
-DROP FUNCTION spgist_shared_bound_disagreements(text);
+DROP FUNCTION pg_temp.spgist_shared_bound_disagreements(text);
 
 -------------------------------------------------------------------------------
 -- An index over boxes of several structures answers as the sequential scan:
@@ -482,7 +474,7 @@ DROP FUNCTION spgist_shared_bound_disagreements(text);
 -- from the scan
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION index_structures(tbl text, typ text, opclasses text[],
+CREATE FUNCTION pg_temp.index_structures(tbl text, typ text, opclasses text[],
   queries text[], ops text[])
 RETURNS TABLE(opclass text, uses_index boolean, errors int,
   disagreements int) AS $$
@@ -539,45 +531,45 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
+CREATE FUNCTION pg_temp.day_of(d int) RETURNS timestamptz AS $$
   SELECT timestamptz '2001-01-01' + d * interval '1 day'
 $$ LANGUAGE sql IMMUTABLE;
 
-CREATE TABLE tbl_index_structures AS
+CREATE TEMP TABLE tbl_index_structures AS
   SELECT k, CASE k % 7
     WHEN 0 THEN stbox(format('SRID=3857;STBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
-      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 1 THEN stbox(format('SRID=5676;STBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
-      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 2 THEN stbox(format('SRID=4326;GEODSTBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
-      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 3 THEN stbox(format('SRID=3857;STBOX X((%s,%s),(%s,%s))',
       k % 50, k % 47, k % 50 + 2, k % 47 + 2))
     WHEN 4 THEN stbox(format('SRID=3857;STBOX ZT(((%s,%s,%s),(%s,%s,%s)),[%s, %s])',
       k % 50, k % 47, k % 43, k % 50 + 2, k % 47 + 2, k % 43 + 2,
-      day_of(k % 40), day_of(k % 40 + 2)))
+      pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 5 THEN stbox(format('SRID=3857;STBOX Z((%s,%s,%s),(%s,%s,%s))',
       k % 50, k % 47, k % 43, k % 50 + 2, k % 47 + 2, k % 43 + 2))
-    ELSE stbox(format('STBOX T([%s, %s])', day_of(k % 40), day_of(k % 40 + 2)))
+    ELSE stbox(format('STBOX T([%s, %s])', pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     END AS b
   FROM generate_series(1, 4000) AS k;
 
-SELECT * FROM index_structures('tbl_index_structures', 'stbox',
+SELECT * FROM pg_temp.index_structures('tbl_index_structures', 'stbox',
   ARRAY['gist(b stbox_rtree_ops)', 'spgist(b stbox_quadtree_ops)',
     'spgist(b stbox_kdtree_ops)'],
-  ARRAY[format('SRID=3857;STBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
-    format('SRID=5676;STBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
-    format('SRID=4326;GEODSTBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
+  ARRAY[format('SRID=3857;STBOX XT(((10,10),(20,20)),[%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19)),
+    format('SRID=5676;STBOX XT(((10,10),(20,20)),[%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19)),
+    format('SRID=4326;GEODSTBOX XT(((10,10),(20,20)),[%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19)),
     'SRID=3857;STBOX X((10,10),(20,20))',
-    format('SRID=3857;STBOX ZT(((10,10,10),(20,20,20)),[%s, %s])', day_of(9), day_of(19)),
+    format('SRID=3857;STBOX ZT(((10,10,10),(20,20,20)),[%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19)),
     'SRID=3857;STBOX Z((10,10,10),(20,20,20))',
-    format('STBOX T([%s, %s])', day_of(9), day_of(19))],
+    format('STBOX T([%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19))],
   ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>', '<<|', '&<|',
     '|>>', '|&>', '<</', '&</', '/>>', '/&>', '<<#', '&<#', '#>>', '#&>',
     '|=|']);
 
 DROP TABLE tbl_index_structures;
-DROP FUNCTION day_of(int);
-DROP FUNCTION index_structures(text, text, text[], text[], text[]);
+DROP FUNCTION pg_temp.day_of(int);
+DROP FUNCTION pg_temp.index_structures(text, text, text[], text[], text[]);
 
 -------------------------------------------------------------------------------

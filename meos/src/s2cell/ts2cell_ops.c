@@ -318,18 +318,24 @@ ts2cell_visit_append(DggsVisit **visits, int *count, int *size,
 }
 
 /**
- * @brief Return the temporal S2 cell of a linear temporal planar point
- * sequence at a level, starting in a cell
- * @details As #tpointseq_linear_to_th3index walks the planar H3 cells: each
- * segment is walked on the straight-edged outlines of the cells
- * (#s2cell_segment_cells_planar), and each crossing is dated as the
- * restriction of a trajectory to a region dates it, by the truncation of its
- * exact parameter on the input doubles (#segment_edge_cross_offset); the
- * cell holding the crossing position holds the microsecond where the
- * trajectory lies on the edge exactly then
+ * @brief Return the temporal S2 cell of a linear temporal point sequence at
+ * a level, starting in a cell
+ * @details As #tpointseq_linear_to_th3index walks the H3 cells: each segment
+ * of a planar point is walked on the straight-edged outlines of the cells
+ * (#s2cell_segment_cells_planar), and each crossing dated by the truncation
+ * of its exact parameter on the input doubles (#segment_edge_cross_offset);
+ * each segment of a geodetic point is walked on the great-circle outlines
+ * (#s2cell_segment_cells_geodetic), and each crossing dated by the
+ * truncation of its exact fraction at constant angular speed on the
+ * geodetic positions (#dggs_geodetic_edge_offset). The cell holding the
+ * crossing position holds the microsecond where the trajectory lies on the
+ * edge exactly then, as the restriction of a trajectory to a region dates
+ * it.
+ * @param[in] geodetic True when the sequence is geodetic
  */
 static Temporal *
-tpointseq_planar_to_ts2cell(const TSequence *seq, int32 level, S2CellId cell)
+tpointseq_linear_to_ts2cell(const TSequence *seq, int32 level, S2CellId cell,
+  bool geodetic)
 {
   int vsize = seq->count + 1, nvisits = 1;
   DggsVisit *visits = palloc(sizeof(DggsVisit) * (size_t) vsize);
@@ -348,8 +354,11 @@ tpointseq_planar_to_ts2cell(const TSequence *seq, int32 level, S2CellId cell)
     const POINT2D *p1 = tpointinst_point2d(inst1);
     const POINT2D *p2 = tpointinst_point2d(inst2);
     int ncells;
-    while ((ncells = s2cell_segment_cells_planar(p1->x, p1->y, p2->x, p2->y,
-        (uint32_t) level, cells, enter, cross, maxout)) == maxout)
+    while ((ncells = (geodetic ?
+        s2cell_segment_cells_geodetic(p1->x, p1->y, p2->x, p2->y,
+          (uint32_t) level, cells, enter, cross, maxout) :
+        s2cell_segment_cells_planar(p1->x, p1->y, p2->x, p2->y,
+          (uint32_t) level, cells, enter, cross, maxout))) == maxout)
     {
       maxout *= 2;
       cells = repalloc(cells, sizeof(S2CellId) * (size_t) maxout);
@@ -366,9 +375,18 @@ tpointseq_planar_to_ts2cell(const TSequence *seq, int32 level, S2CellId cell)
       if (k > 0)
       {
         const DggsEdgeCross *x = &cross[k];
-        tenter += segment_edge_cross_offset(p1->x, p1->y, p2->x, p2->y,
-          inst2->t - inst1->t, x->ax, x->ay, x->oa, x->bx, x->by, x->ob,
-          &whole);
+        int64 D = inst2->t - inst1->t;
+        if (geodetic)
+        {
+          double v1[3], v2[3];
+          dggs_lonlat_vector(p1->x, p1->y, v1);
+          dggs_lonlat_vector(p2->x, p2->y, v2);
+          tenter += dggs_geodetic_edge_offset(v1, v2, D, x->av, x->bv,
+            enter[k], &whole);
+        }
+        else
+          tenter += segment_edge_cross_offset(p1->x, p1->y, p2->x, p2->y, D,
+            x->ax, x->ay, x->oa, x->bx, x->by, x->ob, &whole);
         held_left = x->held_left;
         held_entered = x->held_entered;
       }
@@ -378,8 +396,9 @@ tpointseq_planar_to_ts2cell(const TSequence *seq, int32 level, S2CellId cell)
     }
     /* The endpoint's own cell, which holds it, closes the segment when the
      * traversal stopped short of it */
-    S2CellId endcell = s2cell_point_cell_planar(p2->x, p2->y,
-      (uint32_t) level);
+    S2CellId endcell = geodetic ?
+      s2cell_point_cell_geodetic(p2->x, p2->y, (uint32_t) level) :
+      s2cell_point_cell_planar(p2->x, p2->y, (uint32_t) level);
     if (endcell != 0 && endcell != last)
     {
       ts2cell_visit_append(&visits, &nvisits, &vsize, endcell, inst2->t,
@@ -416,10 +435,10 @@ tpointseq_planar_to_ts2cell(const TSequence *seq, int32 level, S2CellId cell)
  * two instants along the great circle of a geodetic point, or the straight
  * line in longitude and latitude of a planar one, and each segment is
  * traversed cell by cell, so the result holds every cell the trajectory
- * crosses and each of its instants marks the time the trajectory enters that
- * cell. The last cell holds to the end of the trajectory. A planar sequence
- * answers a sequence set where a crossing instant belongs to the cell it
- * leaves (#tpointseq_planar_to_ts2cell).
+ * crosses, each crossing instant held by the cell holding the crossing
+ * position; it is a sequence set where that is the cell left
+ * (#tpointseq_linear_to_ts2cell). The last cell holds to the end of the
+ * trajectory.
  */
 static Temporal *
 tpointseq_to_ts2cell(const TSequence *seq, int32 level)
@@ -434,7 +453,6 @@ tpointseq_to_ts2cell(const TSequence *seq, int32 level)
   int size = seq->count + 1, count = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * (size_t) size);
   ts2cell_entry_append(&instants, &count, &size, cell, inst->t);
-  S2CellId last = cell;
 
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
@@ -445,80 +463,15 @@ tpointseq_to_ts2cell(const TSequence *seq, int32 level)
       inst = TSEQUENCE_INST_N(seq, i);
       const POINT2D *p = tpointinst_point2d(inst);
       ts2cell_entry_append(&instants, &count, &size, geodetic ?
-        s2cell_point_to_cell(p->x, p->y, (uint32_t) level) :
+        s2cell_point_cell_geodetic(p->x, p->y, (uint32_t) level) :
         s2cell_point_cell_planar(p->x, p->y, (uint32_t) level), inst->t);
     }
     return (Temporal *) tsequence_make_free(instants, count,
       seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
   }
-  if (! geodetic)
-  {
-    pfree(instants[0]);
-    pfree(instants);
-    return tpointseq_planar_to_ts2cell(seq, level, cell);
-  }
-
-  /* The walk writes one entry per cell a segment crosses, into arrays that
-   * grow until the whole segment fits, so no segment is cut short */
-  int maxout = 64;
-  S2CellId *cells = palloc(sizeof(S2CellId) * (size_t) maxout);
-  double *enter = palloc(sizeof(double) * (size_t) maxout);
-  for (int i = 0; i + 1 < seq->count; i++)
-  {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    const POINT2D *p1 = tpointinst_point2d(inst1);
-    const POINT2D *p2 = tpointinst_point2d(inst2);
-    int ncells;
-    while ((ncells = s2cell_segment_cells(p1->x, p1->y, p2->x, p2->y,
-        true, (uint32_t) level, cells, enter, maxout)) == maxout)
-    {
-      maxout *= 2;
-      cells = repalloc(cells, sizeof(S2CellId) * (size_t) maxout);
-      enter = repalloc(enter, sizeof(double) * (size_t) maxout);
-    }
-    /* A segment starts in the cell the previous one ends in */
-    for (int k = 0; k < ncells; k++)
-    {
-      if (cells[k] == last)
-        continue;
-      /* A crossing the last microsecond of the segment holds is the end of
-       * the segment at the resolution a timestamp states, so it enters at
-       * that instant, as the clip of a segment by a geometry states a
-       * parameter of 1 as the instant of the second position. A cell is then
-       * entered at the same instant however the segment is cut */
-      TimestampTz tenter = inst1->t +
-        (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]);
-      if (inst2->t - tenter <= 1)
-        tenter = inst2->t;
-      ts2cell_entry_append(&instants, &count, &size, cells[k], tenter);
-      last = cells[k];
-    }
-    /* The endpoint's own cell closes the segment when the traversal stopped
-     * short of it, as for an endpoint lying on a cell boundary within the
-     * rounding of the crossing */
-    S2CellId endcell = s2cell_point_to_cell(p2->x, p2->y, (uint32_t) level);
-    if (endcell != (S2CellId) 0 && endcell != last)
-    {
-      ts2cell_entry_append(&instants, &count, &size, endcell, inst2->t);
-      last = endcell;
-    }
-  }
-  pfree(cells); pfree(enter);
-
-  /* The last cell holds to the end of the trajectory, which the closing
-   * instant states, since a sequence reaches no further than its last
-   * instant. Under an exclusive upper bound, a cell the trajectory reaches at
-   * its end is held for no time and is no part of the value */
-  TimestampTz tend = TSEQUENCE_INST_N(seq, seq->count - 1)->t;
-  if (! seq->period.upper_inc)
-    while (count > 1 && instants[count - 1]->t >= tend)
-      pfree(instants[--count]);
-  if (instants[count - 1]->t < tend)
-    ts2cell_entry_append(&instants, &count, &size,
-      DatumGetS2Cell(tinstant_value_p(instants[count - 1])), tend);
-  return (Temporal *) tsequence_make_free(instants, count,
-    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+  pfree(instants[0]);
+  pfree(instants);
+  return tpointseq_linear_to_ts2cell(seq, level, cell, geodetic);
 }
 
 /**

@@ -27,7 +27,7 @@ DROP INDEX IF EXISTS tbl_tstzspanset_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_spansupport;
-CREATE TABLE test_spansupport(
+CREATE TEMP TABLE test_spansupport(
   func TEXT,
   leftarg TEXT,
   rightarg TEXT,

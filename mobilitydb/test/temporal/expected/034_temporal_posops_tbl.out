@@ -26,7 +26,7 @@ NOTICE:  index "tbl_ttext_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_posops;
 NOTICE:  table "test_posops" does not exist, skipping
-CREATE TABLE test_posops(
+CREATE TEMP TABLE test_posops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

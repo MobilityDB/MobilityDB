@@ -547,7 +547,7 @@ geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (gserialized_is_empty(gs))
+  if (gserialized_is_empty(gs) || ! ensure_finite_timestamptz(t))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
@@ -1050,6 +1050,9 @@ timestamptz_set_stbox(TimestampTz t, STBox *result)
 STBox *
 timestamptz_to_stbox(TimestampTz t)
 {
+  /* A box holds a time span of finite timestamps only */
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   STBox *result = palloc(sizeof(STBox));
   timestamptz_set_stbox(t, result);
   return result;

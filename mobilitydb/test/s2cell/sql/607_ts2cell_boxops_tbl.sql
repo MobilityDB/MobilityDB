@@ -7,7 +7,7 @@ DROP INDEX IF EXISTS tbl_ts2cell_kdtree_idx;
 -----------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_ts2cell_ops;
-CREATE TABLE test_ts2cell_ops(
+CREATE TEMP TABLE test_ts2cell_ops(
   op char(3),
   leftarg text,
   rightarg text,

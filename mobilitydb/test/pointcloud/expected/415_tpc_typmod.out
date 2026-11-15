@@ -32,7 +32,7 @@ LINE 1: SELECT NULL::tpcpoint(1, 2);
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_typmod;
 NOTICE:  table "tbl_typmod" does not exist, skipping
-CREATE TABLE tbl_typmod (
+CREATE TEMP TABLE tbl_typmod (
   trj1 tpcpoint(1),
   trj2 tpcpoint(2),
   pat1 tpcpatch(1),

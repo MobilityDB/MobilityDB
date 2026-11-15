@@ -13,6 +13,9 @@ SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
 /* Errors */
 SELECT tstzset '2001-01-01, 2001-01-02';
 SELECT tstzset '{2001-01-01, 2001-01-02';
+-- A set holds finite timestamps and dates only
+SELECT tstzset '{2001-01-01, infinity}';
+SELECT dateset '{-infinity, 2001-01-01}';
 
 -- The UTC designator of RFC 3339, which every OGC Moving Features datetime is
 -- written in, denotes the same instant as the zero offset it abbreviates

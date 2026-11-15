@@ -53,3 +53,6 @@ CREATE TABLE tbl_tquadbin_seqset (
 );
 \set filename :srcdir '/mobilitydb/test/quadbin/data/tbl_tquadbin_seqset.data'
 COPY tbl_tquadbin_seqset (k, ss) FROM :'filename';
+ANALYZE tbl_quadbin, tbl_quadbinset, tbl_stbox_quadbin, tbl_tquadbin,
+  tbl_tquadbin_big, tbl_tquadbin_discseq, tbl_tquadbin_inst, tbl_tquadbin_seq,
+  tbl_tquadbin_seqset;

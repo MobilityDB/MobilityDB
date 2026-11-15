@@ -18,7 +18,7 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <= t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t > t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t >= t2.t;
 
-CREATE TABLE tbl_tstzspan_temp AS SELECT k, shift(t, '1 year') AS t FROM tbl_tstzspan;
+CREATE TEMP TABLE tbl_tstzspan_temp AS SELECT k, shift(t, '1 year') AS t FROM tbl_tstzspan;
 SELECT COUNT(*) FROM tbl_tstzspan_temp WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_temp t2 WHERE t1.t && t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_temp t2 WHERE t1.t @> t2.t;

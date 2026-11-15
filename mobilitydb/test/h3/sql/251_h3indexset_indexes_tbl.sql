@@ -4,7 +4,7 @@
 -- rows a sequential scan gives, from a plan that probes the index.
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION test_probes_index(query text)
+CREATE FUNCTION pg_temp.test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
   line text;
@@ -21,7 +21,7 @@ $$;
 DROP TABLE IF EXISTS tbl_h3indexset_idx;
 -- The sets and the union of every two consecutive ones, so that sets of
 -- distinct rows overlap and contain one another
-CREATE TABLE tbl_h3indexset_idx AS
+CREATE TEMP TABLE tbl_h3indexset_idx AS
 WITH src AS (
 SELECT k, s FROM tbl_h3indexset)
 SELECT k, s FROM src
@@ -30,7 +30,7 @@ SELECT t1.k + 100000, t1.s + t2.s FROM src t1, src t2 WHERE t2.k = t1.k + 1;
 ANALYZE tbl_h3indexset_idx;
 
 DROP TABLE IF EXISTS test_h3indexset_idx;
-CREATE TABLE test_h3indexset_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+CREATE TEMP TABLE test_h3indexset_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
   kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
   kdtree_probe boolean);
 
@@ -48,19 +48,19 @@ SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
 UPDATE test_h3indexset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s')
 WHERE op = '&&';
 UPDATE test_h3indexset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s')
 WHERE op = '=';
 UPDATE test_h3indexset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s')
 WHERE op = '@> set';
 UPDATE test_h3indexset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s')
 WHERE op = '<@';
 UPDATE test_h3indexset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v)::text,
-  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v')
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v')
 WHERE op = '@> value';
 RESET enable_seqscan;
 RESET enable_hashjoin;
@@ -76,19 +76,19 @@ SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
 UPDATE test_h3indexset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s')
 WHERE op = '&&';
 UPDATE test_h3indexset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s')
 WHERE op = '=';
 UPDATE test_h3indexset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s')
 WHERE op = '@> set';
 UPDATE test_h3indexset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s')
 WHERE op = '<@';
 UPDATE test_h3indexset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v)::text,
-  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v')
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v')
 WHERE op = '@> value';
 RESET enable_seqscan;
 RESET enable_hashjoin;
@@ -104,19 +104,19 @@ SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
 UPDATE test_h3indexset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s && t2.s')
 WHERE op = '&&';
 UPDATE test_h3indexset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s = t2.s')
 WHERE op = '=';
 UPDATE test_h3indexset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s @> t2.s')
 WHERE op = '@> set';
 UPDATE test_h3indexset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, tbl_h3indexset_idx t2 WHERE t1.s <@ t2.s')
 WHERE op = '<@';
 UPDATE test_h3indexset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v)::text,
-  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v')
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_h3indexset_idx t1, (SELECT startValue(s) AS v FROM tbl_h3indexset_idx) t2 WHERE t1.s @> t2.v')
 WHERE op = '@> value';
 RESET enable_seqscan;
 RESET enable_hashjoin;
@@ -135,6 +135,6 @@ ORDER BY op;
 
 DROP TABLE test_h3indexset_idx;
 DROP TABLE tbl_h3indexset_idx;
-DROP FUNCTION test_probes_index(text);
+DROP FUNCTION pg_temp.test_probes_index(text);
 
 -------------------------------------------------------------------------------

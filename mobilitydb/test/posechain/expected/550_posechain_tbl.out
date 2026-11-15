@@ -5,7 +5,7 @@
 \copy tbl_posechain TO 'tbl_posechain' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_posechain_tmp;
 NOTICE:  table "tbl_posechain_tmp" does not exist, skipping
-CREATE TABLE tbl_posechain_tmp AS TABLE tbl_posechain WITH NO DATA;
+CREATE TEMP TABLE tbl_posechain_tmp AS TABLE tbl_posechain WITH NO DATA;
 \copy tbl_posechain_tmp FROM 'tbl_posechain' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain_tmp t2 WHERE t1.k = t2.k AND t1.pc <> t2.pc;
  count 

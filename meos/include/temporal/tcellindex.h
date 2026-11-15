@@ -320,6 +320,8 @@ typedef struct
   double bx, by, ob;      /**< Second vertex of the edge and its offset */
   bool held_left;         /**< The cell left holds the crossing position */
   bool held_entered;      /**< The cell entered holds it */
+  double av[3], bv[3];    /**< Geodetic positions of the vertices, read by
+                              the geodetic walk only */
 } DggsEdgeCross;
 
 extern double dggs_lon_offset(double ref, double lon);
@@ -330,6 +332,50 @@ extern bool dggs_outline_holds_point(const DggsPlanarOps *ops,
 extern int dggs_segment_cells_planar(const DggsPlanarOps *ops, double lon1,
   double lat1, double lon2, double lat2, int32 resolution, uint64 *cells,
   double *enter, DggsEdgeCross *cross, int maxout);
+
+/** @brief Capacity of the neighbours #DggsGeodeticOps names for a cell */
+#define DGGS_GEO_NEIGHBOURS 12
+
+struct SphereDir;
+
+/**
+ * @brief The answers a grid gives the geodetic walk of its cells
+ * (#dggs_segment_cells_geodetic): its outlines on the sphere, bounded by
+ * great-circle arcs, the vector of each vertex, the cell of a position, its
+ * owner rule and the neighbours of a cell
+ */
+typedef struct
+{
+  /** The outline of a cell, NULL on an error; it may be overwritten by the
+   * next call */
+  const DggsOutline *(*outline)(uint64 cell);
+  /** The outline of a cell, into the caller's copy */
+  bool (*outline_copy)(uint64 cell, DggsOutline *out);
+  /** The geodetic position of the vertex k of an outline */
+  void (*vector)(const DggsOutline *o, int k, double *v);
+  /** The cell holding a geodetic position given in degrees, 0 on an error */
+  uint64 (*point_cell)(double lon, double lat, int32 resolution);
+  /** The cell holding a direction, searched around a cell */
+  uint64 (*dir_around)(uint64 cell, const struct SphereDir *p);
+  /** The cell and the cells sharing a boundary point with it, at most
+   * @p max, unused entries 0; the number of entries written */
+  int (*neighbours)(uint64 cell, uint64 *out, int max);
+  /** Whether a cell holds the edge of its outline from the vertex k */
+  bool (*edge_held)(const DggsOutline *o, int k);
+  /** Whether a cell holds the vertex k of its outline */
+  bool (*vertex_held)(const DggsOutline *o, int k);
+} DggsGeodeticOps;
+
+extern void dggs_lonlat_vector(double lon, double lat, double *v);
+extern bool dggs_outline_holds_dir(const DggsGeodeticOps *ops,
+  const DggsOutline *o, const struct SphereDir *p);
+extern bool dggs_outline_convex_geodetic(const DggsGeodeticOps *ops,
+  const DggsOutline *o);
+extern int64 dggs_geodetic_edge_offset(const double *p0, const double *p1,
+  int64 D, const double *a, const double *b, double f, bool *whole);
+extern int dggs_segment_cells_geodetic(const DggsGeodeticOps *ops,
+  double lon1, double lat1, double lon2, double lat2, int32 resolution,
+  uint64 *cells, double *enter, DggsEdgeCross *cross, int maxout);
 
 /*****************************************************************************
  * Membership of a temporal cell index in a cell set — shared by every DGGS.

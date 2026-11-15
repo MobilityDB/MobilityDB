@@ -485,6 +485,8 @@ SpanSet *
 value_spanset(Datum value, MeosType basetype)
 {
   assert(span_basetype(basetype));
+  if (! ensure_finite_span_value(value, basetype))
+    return NULL;
   MeosType spantype = basetype_spantype(basetype);
   Span s;
   span_set(value, value, true, true, basetype, spantype, &s);

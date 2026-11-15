@@ -104,6 +104,16 @@ extern int s2cell_segment_cells_planar(double lon1, double lat1, double lon2,
   double lat2, uint32_t level, S2CellId *cells, double *enter,
   DggsEdgeCross *cross, int maxout);
 
+/* The geodetic cells: the outline of a cell on the points of the cube of
+ * decision D7, bounded by great-circle arcs, the geodetic cell of a position
+ * and the walk of a geodetic segment with its crossings. Bodies in
+ * s2cell.c. */
+extern S2CellId s2cell_point_cell_geodetic(double lon, double lat,
+  uint32_t level);
+extern int s2cell_segment_cells_geodetic(double lon1, double lat1,
+  double lon2, double lat2, uint32_t level, S2CellId *cells, double *enter,
+  DggsEdgeCross *cross, int maxout);
+
 /*****************************************************************************/
 
 #endif /* __S2CELL_H__ */

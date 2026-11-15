@@ -106,7 +106,7 @@ SELECT eDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01',
 -- sequential scan gives, from a plan that probes the index
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION test_probes_index(query text)
+CREATE FUNCTION pg_temp.test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
   line text;
@@ -121,7 +121,7 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tposechain_rel;
-CREATE TABLE tbl_tposechain_rel AS
+CREATE TEMP TABLE tbl_tposechain_rel AS
 SELECT k, tposechain(posechain(ARRAY[pose(ST_Point(k % 10, k / 10), 0),
   pose(ST_Point(1, 0), 0)]), timestamptz '2001-01-01') AS temp
 FROM generate_series(0, 99) AS k;
@@ -142,13 +142,13 @@ SELECT COUNT(*) FROM tbl_tposechain_rel
 WHERE eIntersects(temp, geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))');
 SELECT COUNT(*) FROM tbl_tposechain_rel
 WHERE eDwithin(temp, geometry 'Point(5 5)', 1.5);
-SELECT test_probes_index('SELECT k FROM tbl_tposechain_rel '
+SELECT pg_temp.test_probes_index('SELECT k FROM tbl_tposechain_rel '
   'WHERE eIntersects(temp, geometry ''Polygon((0 0,0 3,3 3,3 0,0 0))'')');
-SELECT test_probes_index('SELECT k FROM tbl_tposechain_rel '
+SELECT pg_temp.test_probes_index('SELECT k FROM tbl_tposechain_rel '
   'WHERE eDwithin(temp, geometry ''Point(5 5)'', 1.5)');
 RESET enable_seqscan;
 
 DROP TABLE tbl_tposechain_rel;
-DROP FUNCTION test_probes_index(text);
+DROP FUNCTION pg_temp.test_probes_index(text);
 
 -------------------------------------------------------------------------------
