@@ -885,7 +885,8 @@ zooms 0 to 14, 3000 random rows a zoom from 15 to 26), the formula of the base r
 and the head none, the bounded pairs deciding every row; the 2 124 rows of |r| at most 2^-900 reach
 the enclosure, and the head answers all of them. The limit of the grid moves with it, from
 85.0511287798066 to 85.05112877980659. A row read first costs 13.6 thousand instructions and a row
-read again 64, `quadbin_row_latitude` keeping the rows read last per thread. It is open as #3722.
+read again 64, `quadbin_row_latitude` keeping the rows read last per thread. It is merged as
+#3722 (`d6eeed48a3` on master); its judge, corpora and probes are `ea8m/` of the oracle kit.
 Left to the cell walks: the two `atan(sinh)` sites of `raster_quadbin.c`, which their raster walk
 rewrites.
 
