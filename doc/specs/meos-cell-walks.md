@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.5.0 |
+| Version | v0.6.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split and the QUADBIN, S2 and H3 cells, and how the instant a trajectory crosses from one cell to the next is dated |
 | Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices, owner and outline), `meos/src/s2cell/ts2cell_ops.c` (S2 cells of a trajectory), `meos/src/temporal/tcellindex.c` (the walk the grids share) |
 
@@ -60,8 +60,8 @@ icosahedron can turn back at its extra vertex.
 Each decision is an exact sign computed on the input doubles, never a
 comparison within a tolerance, so two neighbouring cells read every shared
 point identically and no point is held by none or by two. The tiles of a box
-grid, the QUADBIN cells, the planar and geodetic H3 cells and the planar S2
-cells of a position and of a trajectory follow the rule. For H3, two
+grid, the QUADBIN cells and the planar and geodetic H3 and S2 cells of a
+position and of a trajectory follow the rule. For H3, two
 neighbours state their shared vertex with the same doubles: the outline of a
 cell is read from the vertex index of the library, and the extra vertex of
 an edge crossing a face of the icosahedron from the directed edge leaving
@@ -180,6 +180,15 @@ pole being stated at any of them.
   trigonometry in doubles and can name a neighbour of that cell for a
   position within its rounding of an edge.
 
+### Geodetic S2
+
+- **A geodetic cell is the convex spherical quadrilateral** of the points of
+  the cube at its corners (section 4), joined by the great-circle arcs of its
+  edges, holding its interior and the edges and corner of section 3.
+- **The cell of a position** of a `geography` or a `tgeogpoint` is the cell
+  whose outline holds its geodetic position (section 4), decided by exact
+  signs on the geodetic positions.
+
 ## 6. The cells of a trajectory
 
 A cell holds exactly the microseconds whose exact position lies in it. The
@@ -257,6 +266,21 @@ SELECT numInstants(th3index(tgeogpoint
 -- 6
 ```
 
+The geodetic S2 cells of a trajectory are walked on the outlines of section
+5 in the same way, at constant angular speed along the great circle of each
+segment. A trip from cube face 0 to cube face 1 at level 4 holds 19 cells,
+each one sequence of two instants, beginning in the cell of its first
+position and ending in the cell of its last:
+
+```sql
+SELECT numValues(getValues(t)), numInstants(t),
+  startValue(t) = geoToS2Cell(geography 'Point(1 1)', 4),
+  endValue(t) = geoToS2Cell(geography 'Point(60 -40)', 4)
+FROM (SELECT ts2cell(tgeogpoint
+  '[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4) AS t) AS q;
+-- 19 | 38 | t | t
+```
+
 The restriction of a temporal point to a box and its split by a space grid
 follow the same rule: each instant belongs to exactly one tile, and a box
 holds exactly the instants whose position lies in it.
@@ -273,16 +297,12 @@ number with corrections of wording.
 | v0.3.0 | The geodetic H3 cell of a position and the geodetic H3 cells of a trajectory, walked on great-circle outlines and dated at constant angular speed |
 | v0.4.0 | The vertices of an S2 cell, the exact corners of the cube, a corner on the antimeridian or at a pole taking the longitude its cell gives it |
 | v0.5.0 | The planar S2 cell of a position and the planar S2 cells of a trajectory, walked and dated on the straight-edged outlines |
+| v0.6.0 | The geodetic S2 cell of a position and the geodetic S2 cells of a trajectory, walked on great-circle outlines and dated at constant angular speed |
 
 ## 8. Out of scope
 
-Future: the rule extends to these, each added here with its version (the
-owners of section 3 and the vertices of section 4 for S2 are in MEOS
-already; the cells of a position and of a trajectory read them from these
-versions):
+Future: the rule extends to these, each added here with its version:
 
-- the geodetic walk of S2, its crossings dated on the great-circle arc at
-  constant angular speed;
 - the vertices of an H3 cell computed from H3's own formula, so that every
   build of the library reads the same outline;
 - the raster values along a trajectory, read pixel by pixel by the same rule.
