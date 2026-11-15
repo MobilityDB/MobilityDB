@@ -3166,6 +3166,29 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
         continue;
       }
     }
+    /* The point twin of the float case: a point segment meets the value
+     * strictly inside, in continuous time, where it meets the segment
+     * standing still at the value, as the doubles of the ends prove it
+     * (#tgeompointsegm_meet, #tgeogpointsegm_meet), whichever microsecond
+     * dates the meeting, and elsewhere it differs from the value at every
+     * instant inside. Away from the meeting the segment differs from the
+     * value as its bound value other than the value does, the functions of a
+     * point and a value comparing them for equality */
+    if (seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT)
+    {
+      bool meet = (seq->temptype == T_TGEOMPOINT) ?
+        tgeompointsegm_meet(startvalue, endvalue, value, value) :
+        tgeogpointsegm_meet(startvalue, endvalue, value, value, start->t,
+          end->t);
+      Datum other = datum_eq(startvalue, value, basetype) ? endvalue :
+        startvalue;
+      if ((meet && eafunc_value_decides(value, value, lfinfo, &result)) ||
+          eafunc_value_decides(other, value, lfinfo, &result))
+        return result;
+      start = end;
+      lower_inc = true;
+      continue;
+    }
     /* Determine whether the segment crosses the value. The crossing is
      * strictly inside the segment, since the function answers 0 when the
      * value is the one of a bound, so the segment takes the value there

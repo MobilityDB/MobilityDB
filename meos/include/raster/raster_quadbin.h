@@ -119,6 +119,10 @@ typedef struct RasterGridOps
   raster_cross_fn cross;   /**< Parameter at which a segment reaches a grid
                                  line, NULL to solve it from the grid
                                  coordinates of the endpoints */
+  const double *affine;     /**< Geotransform of a grid that is its affine
+                                 map, read exactly: the pixel of a position
+                                 and the crossing of a grid line decided on
+                                 its doubles; NULL for another grid */
   void *ctx;                /**< State of the engine, passed to the callbacks */
   int width;                /**< Number of columns of the grid */
   int height;               /**< Number of rows of the grid */
