@@ -50,7 +50,10 @@
  * geography refuses a curve, as the value or a member of a collection.
  * Finally, it verifies that #tpoint_to_geomeas and #tpoint_tfloat_to_geomeas
  * report a null point or measure and answer the geometry with M measure of a
- * point, its M encoding the time or the measure.
+ * point, its M encoding the time or the measure. And it verifies that
+ * #line_locate_point answers -1.0 with no error for an empty line or point,
+ * which have no position to locate, as `doc/specs/meos-empty-geometries.md`
+ * states.
  *
  * The program can be build as follows
  * @code
@@ -336,6 +339,26 @@ int main(void)
     rtouches, meos_errno());
   assert(rtouches == 1 && meos_errno() == 0);
   free(tgg1); free(tgg2); free(tgm1); free(tgm2);
+
+  /* An empty line or point has no position to locate: the location answers
+   * -1.0 and raises nothing, while a line and a point locate the fraction */
+  GSERIALIZED *lline = geom_in("Linestring(0 0,4 0,4 3)", -1);
+  GSERIALIZED *lpoint = geom_in("Point(4 4)", -1);
+  GSERIALIZED *eline = geom_in("Linestring empty", -1);
+  GSERIALIZED *epoint = geom_in("Point empty", -1);
+  double frac = line_locate_point(eline, lpoint);
+  printf("line_locate_point(Linestring empty, Point(4 4)): %g, errno %d\n",
+    frac, meos_errno());
+  assert(frac == -1.0 && meos_errno() == 0);
+  frac = line_locate_point(lline, epoint);
+  printf("line_locate_point(line, Point empty): %g, errno %d\n", frac,
+    meos_errno());
+  assert(frac == -1.0 && meos_errno() == 0);
+  frac = line_locate_point(lline, lpoint);
+  printf("line_locate_point(line, Point(4 4)): %g, errno %d\n", frac,
+    meos_errno());
+  assert(frac == 1.0 && meos_errno() == 0);
+  free(lline); free(lpoint); free(eline); free(epoint);
 
   /* Finalize MEOS */
   meos_finalize();
