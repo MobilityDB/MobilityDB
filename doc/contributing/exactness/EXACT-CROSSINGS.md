@@ -529,7 +529,10 @@ diffs classified:
    without an instant within 2^-47 of the period of a tie. By the owner's ruling of 2026-11-14,
    a pair neither proved to meet nor separated keeps its answer, so the certified separation of
    two segments goes with the refusal of the undecided pairs, the measured last step of the
-   section 7 order.
+   section 7 order. MobilityDB #3714, merged as `d89ea6519b`, meets two segments at the middle of their period
+   where a half turn exchanging the ends of each proves it, about the axis through a point of
+   the equator or about the axis of the poles, on one great circle or on two; an MPFR judge at
+   2400 bits reading no family agrees on 5437 pairs.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
