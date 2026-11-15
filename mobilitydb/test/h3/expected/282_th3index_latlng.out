@@ -76,14 +76,15 @@ SELECT getResolution(th3index(
 -- floating-point geometry whose low digits vary across build configurations,
 -- so the test asserts the build-stable invariants: the densified sequence
 -- preserves the endpoint cells (equal to the direct per-point conversion) and
--- inserts the intermediate cells the path traverses.
-WITH densified AS (
+-- inserts the intermediate cells the path traverses. The path is materialized
+-- so that it is computed once and not for each column.
+WITH densified AS MATERIALIZED (
   SELECT th3index(
     tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
-    9) AS t
+    7) AS t
 )
-SELECT startValue(t) = latLngToCell(geometry 'SRID=4326;POINT(-73.96 40.78)', 9) AS start_cell_preserved,
-       endValue(t)   = latLngToCell(geometry 'SRID=4326;POINT(2.35 48.86)', 9)   AS end_cell_preserved,
+SELECT startValue(t) = latLngToCell(geometry 'SRID=4326;POINT(-73.96 40.78)', 7) AS start_cell_preserved,
+       endValue(t)   = latLngToCell(geometry 'SRID=4326;POINT(2.35 48.86)', 7)   AS end_cell_preserved,
        numValues(getValues(t)) > 1000 AS path_densified
 FROM densified;
  start_cell_preserved | end_cell_preserved | path_densified 
