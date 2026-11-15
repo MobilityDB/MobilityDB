@@ -6093,6 +6093,7 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
   ops->point = bilinear ? &raster_value_bilinear : NULL;
   ops->data = bilinear ? &raster_value_data : NULL;
   ops->cross = &raster_value_cross;
+  ops->affine = state->gt;
   ops->ctx = state;
   ops->width = (int) rt_raster_get_width(raster);
   ops->height = (int) rt_raster_get_height(raster);

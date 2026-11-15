@@ -285,6 +285,10 @@ extern bool segment_meets_point_box(double ax, double ay, double bx,
 extern int64 segment_edge_cross_offset(double x0, double y0, double x1,
   double y1, int64 D, double ax, double ay, double oa, double bx, double by,
   double ob, bool *whole);
+extern int64 segment_grid_line_cross_offset(double x0, double y0, double x1,
+  double y1, int64 D, const double *gt, int axis, double k, bool *whole);
+extern int grid_line_side(double x, double y, const double *gt, int axis,
+  double k);
 extern int segment_edge_cross_cmp(double x0, double y0, double x1, double y1,
   double ax, double ay, double oa, double bx, double by, double ob,
   double cx, double cy, double oc, double dx, double dy, double od);
