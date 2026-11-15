@@ -533,6 +533,11 @@ diffs classified:
    where a half turn exchanging the ends of each proves it, about the axis through a point of
    the equator or about the axis of the poles, on one great circle or on two; an MPFR judge at
    2400 bits reading no family agrees on 5437 pairs.
+   MobilityDB #3733 (open) meets a point segment and a point value as the segment standing still
+   at that value: tsegment_intersection_value reads a planar point through
+   tgeompointsegm_crossing and a geography point through tgeogpointsegm_crossing, so no band of
+   MEOS_EPSILON locates a point on a segment, and the ever walk against a value decides a point
+   in continuous time; CGAL and MPFR agree on 3000 planar and 3000 geodetic pairs in both forms.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
