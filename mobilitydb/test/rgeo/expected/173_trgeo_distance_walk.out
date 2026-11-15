@@ -59,25 +59,37 @@ SELECT round(tDistance(
  Interp=Step;[4.472136@Mon Jan 01 00:00:00 2001 PST, 4.476715@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
--- A body that is not convex is refused, also with step interpolation, so that
--- the distance functions accept the same values in all cases
-SELECT tDistance(
+-- A body that is not convex, read as convex pieces, its cavity passing over
+-- the point, also with step interpolation and at one instant
+SELECT round(tDistance(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
-  geometry 'Point(7 3)');
-ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes
+  geometry 'Point(7 3)'), 6);
+                                                                                                                 round                                                                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [3@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 07:12:00 2001 PST, 0@Mon Jan 01 08:48:00 2001 PST, 1.1094@Mon Jan 01 12:00:00 2001 PST, 0@Mon Jan 01 15:12:00 2001 PST, 0@Mon Jan 01 16:48:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT round(tDistance(
   trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Point(7 3)'), 6);
-ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes
+                                    round                                     
+------------------------------------------------------------------------------
+ Interp=Step;[3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT nearestApproachInstant(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));Pose(Point(0 0),0)@2001-01-01',
   geometry 'Point(7 3)');
-ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes
--- A ring with a spike is not convex: the end of the spike changes the distance
+                                                                                                                                            nearestapproachinstant                                                                                                                                            
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 010300000001000000060000000000000000000000000000000000000000000000000010400000000000000000000000000000104000000000000010400000000000000040000000000000F03F0000000000000000000000000000104000000000000000000000000000000000;POSE (010100000000000000000000000000000000000000, 0)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+-- A ring with a spike bounds no area there and is refused
 SELECT tDistance(
   trgeometry 'Polygon((0 0,3 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
   geometry 'Point(4 0)');
-ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes
+ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a polygon whose rings bound an area
 -- A polygon with thousands of vertices that turns.  The walk takes about one
 -- step for each vertex that it passes.  A vertex points to the point during
 -- the turn, thus the nearest approach distance is sqrt(1.5^2 + 0.2^2) - 1.
@@ -296,6 +308,64 @@ SELECT round(tDistance(
              round              
 --------------------------------
  9@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+-- A body that is not convex or has holes, read as convex pieces of its own
+-- vertices: a U beside a point, around a point in its cavity, which its hull
+-- would hold, and a square with a hole turning around the point at its center
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));Pose(Point(0 0),0)@2001-01-01',
+  geometry 'Point(7 3)');
+           tdistance            
+--------------------------------
+ 3@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),0)@2001-01-02]',
+  geometry 'Point(2 3)'), 6);
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ [1.1094@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 08:00:00 2001 PST, 0@Mon Jan 01 12:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-5 -5,5 -5,5 5,-5 5,-5 -5),(-2 -2,2 -2,2 2,-2 2,-2 -2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5)@2001-01-02]',
+  geometry 'Point(0 0)'), 6);
+                              round                               
+------------------------------------------------------------------
+ [2@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));Pose(Point(0 0),0)@2001-01-01',
+  tgeompoint 'Point(2 3)@2001-01-01'), 6);
+                round                
+-------------------------------------
+ 1.1094@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+-- Two bodies, one not convex: every pair of pieces is walked, and two bodies
+-- turning in one segment give a temporal distance the lower envelope does
+-- not read yet, while their ever-within predicate is answered
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(2 3),0)@2001-01-01, Pose(Point(2 8),0)@2001-01-02]'), 6);
+                                                         round                                                         
+-----------------------------------------------------------------------------------------------------------------------
+ [0.416025@Mon Jan 01 00:00:00 2001 PST, 1.802776@Mon Jan 01 12:00:00 2001 PST, 3.807887@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]',
+  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]');
+ERROR:  The temporal distance of two temporal rigid geometries that turn in the same segment is not supported where a body is not convex
+SELECT eDwithin(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]',
+  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]', 100);
+ edwithin 
+----------
+ t
 (1 row)
 
 -- Temporal points: a moving point, and a point with step interpolation,

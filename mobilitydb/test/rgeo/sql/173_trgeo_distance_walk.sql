@@ -32,18 +32,18 @@ SELECT round(tDistance(
   trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0.5)@2001-01-02]',
   geometry 'Point(5 3)'), 6);
 
--- A body that is not convex is refused, also with step interpolation, so that
--- the distance functions accept the same values in all cases
-SELECT tDistance(
+-- A body that is not convex, read as convex pieces, its cavity passing over
+-- the point, also with step interpolation and at one instant
+SELECT round(tDistance(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
-  geometry 'Point(7 3)');
+  geometry 'Point(7 3)'), 6);
 SELECT round(tDistance(
   trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Point(7 3)'), 6);
 SELECT nearestApproachInstant(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));Pose(Point(0 0),0)@2001-01-01',
   geometry 'Point(7 3)');
--- A ring with a spike is not convex: the end of the spike changes the distance
+-- A ring with a spike bounds no area there and is refused
 SELECT tDistance(
   trgeometry 'Polygon((0 0,3 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
   geometry 'Point(4 0)');
@@ -152,6 +152,33 @@ SELECT eDwithin(
 SELECT round(tDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));Pose(Point(0 0),0)@2001-01-01',
   geometry 'Polygon((-100 -100,100 -100,100 100,-100 100,-100 -100),(-10 -10,10 -10,10 10,-10 10,-10 -10))'), 6);
+-- A body that is not convex or has holes, read as convex pieces of its own
+-- vertices: a U beside a point, around a point in its cavity, which its hull
+-- would hold, and a square with a hole turning around the point at its center
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));Pose(Point(0 0),0)@2001-01-01',
+  geometry 'Point(7 3)');
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),0)@2001-01-02]',
+  geometry 'Point(2 3)'), 6);
+SELECT round(tDistance(
+  trgeometry 'Polygon((-5 -5,5 -5,5 5,-5 5,-5 -5),(-2 -2,2 -2,2 2,-2 2,-2 -2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5)@2001-01-02]',
+  geometry 'Point(0 0)'), 6);
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));Pose(Point(0 0),0)@2001-01-01',
+  tgeompoint 'Point(2 3)@2001-01-01'), 6);
+-- Two bodies, one not convex: every pair of pieces is walked, and two bodies
+-- turning in one segment give a temporal distance the lower envelope does
+-- not read yet, while their ever-within predicate is answered
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(2 3),0)@2001-01-01, Pose(Point(2 8),0)@2001-01-02]'), 6);
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]',
+  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]');
+SELECT eDwithin(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]',
+  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]', 100);
 
 -- Temporal points: a moving point, and a point with step interpolation,
 -- whose distance jumps at each instant

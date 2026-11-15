@@ -139,6 +139,8 @@ extern void distrefpoly_set_segment(DistRefPoly *rp, double x1, double y1,
   double x2, double y2, double *cx, double *cy);
 extern void distrefpoly_set_point(DistRefPoly *rp);
 extern void distrefpoly_free(DistRefPoly *rp);
+extern bool distrefpoly_cover(const LWPOLY *poly, DistRefPoly **pieces,
+  int *npieces);
 
 /*****************************************************************************
  * Functions of the walk
