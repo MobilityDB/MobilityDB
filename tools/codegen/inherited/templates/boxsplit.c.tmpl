@@ -550,3 +550,70 @@ static int
         elem_count, count{CTXPASS});
   }
 }
+
+/*****************************************************************************
+ * merge_n_{BOXES} and merge_each_n_{BOXES} functions
+ *****************************************************************************/
+
+/**
+ * @ingroup {GROUP}
+ * @brief Return an array of N {NOUNBOXES} obtained by merging the boxes of
+ * the consecutive instants or segments of a {NOUN}, each time the
+ * consecutive pair whose union adds the least size to theirs
+ * @details The merge twin of #{PFX}_split_n_{BOXES}, by #bbox_merge_n
+ * @param[in] temp Temporal value
+ * @param[in] {NCOUNT} Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #{CSTEM}_merge_n_{BOXES}()
+ */
+{CTYPE} *
+{PFX}_merge_n_{BOXES}(const Temporal *temp, int {NCOUNT}, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  {VALIDATE}(temp, NULL);
+  if (! ensure_positive({NCOUNT}))
+    return NULL;
+
+  {CTYPE} *result = {PFX}_{BOXES}(temp, count);
+  if (result)
+    *count = bbox_merge_n({MBOXTYPE}, result, *count, {NCOUNT}, &{MADJUST},
+      &{MSIZE});
+  return result;
+}
+
+/**
+ * @ingroup {GROUP}
+ * @brief Return an array of {NOUNBOXES} obtained by merging the boxes of the
+ * consecutive instants or segments of a {NOUN}, each time the consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them
+ * @details The merge twin of #{PFX}_split_each_n_{BOXES}, by
+ * #bbox_merge_each_n
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #{CSTEM}_merge_each_n_{BOXES}()
+ */
+{CTYPE} *
+{PFX}_merge_each_n_{BOXES}(const Temporal *temp, int elem_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  {VALIDATE}(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  {CTYPE} *result = {PFX}_{BOXES}(temp, count);
+  if (result)
+    *count = bbox_merge_each_n({MBOXTYPE}, result, *count, elem_count,
+      &{MADJUST}, &{MSIZE});
+  return result;
+}

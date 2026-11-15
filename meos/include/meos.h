@@ -845,9 +845,13 @@ extern uint8_t *spanset_sortkey(const SpanSet *ss, size_t *size);
 /* Split functions */
 
 extern Span *set_spans(const Set *s, int *count);
+extern Span *set_merge_each_n_spans(const Set *s, int elems_per_span, int *count);
+extern Span *set_merge_n_spans(const Set *s, int span_count, int *count);
 extern Span *set_split_each_n_spans(const Set *s, int elems_per_span, int *count);
 extern Span *set_split_n_spans(const Set *s, int span_count, int *count);
 extern Span *spanset_spans(const SpanSet *ss, int *count);
+extern Span *spanset_merge_each_n_spans(const SpanSet *ss, int elems_per_span, int *count);
+extern Span *spanset_merge_n_spans(const SpanSet *ss, int span_count, int *count);
 extern Span *spanset_split_each_n_spans(const SpanSet *ss, int elems_per_span, int *count);
 extern Span *spanset_split_n_spans(const SpanSet *ss, int span_count, int *count);
 
@@ -1924,8 +1928,12 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 /* Split functions */
 
 extern Span *temporal_spans(const Temporal *temp, int *count);
+extern Span *temporal_merge_each_n_spans(const Temporal *temp, int elem_count, int *count);
+extern Span *temporal_merge_n_spans(const Temporal *temp, int span_count, int *count);
 extern Span *temporal_split_each_n_spans(const Temporal *temp, int elem_count, int *count);
 extern Span *temporal_split_n_spans(const Temporal *temp, int span_count, int *count);
+extern TBox *tnumber_merge_each_n_tboxes(const Temporal *temp, int elem_count, int *count);
+extern TBox *tnumber_merge_n_tboxes(const Temporal *temp, int box_count, int *count);
 extern TBox *tnumber_split_each_n_tboxes(const Temporal *temp, int elem_count, int *count);
 extern TBox *tnumber_split_n_tboxes(const Temporal *temp, int box_count, int *count);
 extern TBox *tnumber_tboxes(const Temporal *temp, int *count);

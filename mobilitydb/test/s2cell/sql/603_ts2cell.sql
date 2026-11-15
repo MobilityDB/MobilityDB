@@ -139,6 +139,8 @@ SELECT ts2cellFromHexWKB(replace(asHexWKB(ts2cell '47c3c@2001-01-01', 'XDR'),
 SELECT spans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]');
 SELECT splitNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
 SELECT splitEachNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
+SELECT mergeNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
+SELECT mergeEachNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
 
 -------------------------------------------------------------------------------
 -- Comparisons

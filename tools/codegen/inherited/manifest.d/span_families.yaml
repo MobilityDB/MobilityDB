@@ -70,6 +70,18 @@ span_families:
   - {sig: "splitEachNSpans(dateset, {v})", ret: "datespan[]", sym: Set_split_each_n_spans, only: [int]}
   - {sig: "splitEachNSpans(tstzset, {v})", ret: "tstzspan[]", sym: Set_split_each_n_spans, only: [int]}
   - lit: "\n"
+  - {sig: "mergeNSpans({vs}, {v})", ret: "{sp}[]", sym: Set_merge_n_spans, only: [int]}
+  - {sig: "mergeNSpans(bigintset, {v})", ret: "bigintspan[]", sym: Set_merge_n_spans, only: [int]}
+  - {sig: "mergeNSpans(floatset, {v})", ret: "floatspan[]", sym: Set_merge_n_spans, only: [int]}
+  - {sig: "mergeNSpans(dateset, {v})", ret: "datespan[]", sym: Set_merge_n_spans, only: [int]}
+  - {sig: "mergeNSpans(tstzset, {v})", ret: "tstzspan[]", sym: Set_merge_n_spans, only: [int]}
+  - lit: "\n"
+  - {sig: "mergeEachNSpans({vs}, {v})", ret: "{sp}[]", sym: Set_merge_each_n_spans, only: [int]}
+  - {sig: "mergeEachNSpans(bigintset, {v})", ret: "bigintspan[]", sym: Set_merge_each_n_spans, only: [int]}
+  - {sig: "mergeEachNSpans(floatset, {v})", ret: "floatspan[]", sym: Set_merge_each_n_spans, only: [int]}
+  - {sig: "mergeEachNSpans(dateset, {v})", ret: "datespan[]", sym: Set_merge_each_n_spans, only: [int]}
+  - {sig: "mergeEachNSpans(tstzset, {v})", ret: "tstzspan[]", sym: Set_merge_each_n_spans, only: [int]}
+  - lit: "\n"
   - {sig: "{sp}(floatspan)", ret: "{sp}", sym: Floatspan_to_intspan, only: [int]}
   - {sig: "floatspan({sp})", ret: "floatspan", sym: Intspan_to_floatspan, only: [int]}
   - lit: "\n"
@@ -324,6 +336,18 @@ span_families:
   - {sig: "splitEachNSpans(floatspanset, {v})", ret: "floatspan[]", sym: Spanset_split_each_n_spans, only: [int]}
   - {sig: "splitEachNSpans(datespanset, {v})", ret: "datespan[]", sym: Spanset_split_each_n_spans, only: [int]}
   - {sig: "splitEachNSpans(tstzspanset, {v})", ret: "tstzspan[]", sym: Spanset_split_each_n_spans, only: [int]}
+  - lit: "\n"
+  - {sig: "mergeNSpans({ss}, {v})", ret: "{sp}[]", sym: Spanset_merge_n_spans, only: [int]}
+  - {sig: "mergeNSpans(bigintspanset, {v})", ret: "bigintspan[]", sym: Spanset_merge_n_spans, only: [int]}
+  - {sig: "mergeNSpans(floatspanset, {v})", ret: "floatspan[]", sym: Spanset_merge_n_spans, only: [int]}
+  - {sig: "mergeNSpans(datespanset, {v})", ret: "datespan[]", sym: Spanset_merge_n_spans, only: [int]}
+  - {sig: "mergeNSpans(tstzspanset, {v})", ret: "tstzspan[]", sym: Spanset_merge_n_spans, only: [int]}
+  - lit: "\n"
+  - {sig: "mergeEachNSpans({ss}, {v})", ret: "{sp}[]", sym: Spanset_merge_each_n_spans, only: [int]}
+  - {sig: "mergeEachNSpans(bigintspanset, {v})", ret: "bigintspan[]", sym: Spanset_merge_each_n_spans, only: [int]}
+  - {sig: "mergeEachNSpans(floatspanset, {v})", ret: "floatspan[]", sym: Spanset_merge_each_n_spans, only: [int]}
+  - {sig: "mergeEachNSpans(datespanset, {v})", ret: "datespan[]", sym: Spanset_merge_each_n_spans, only: [int]}
+  - {sig: "mergeEachNSpans(tstzspanset, {v})", ret: "tstzspan[]", sym: Spanset_merge_each_n_spans, only: [int]}
   - lit: "\n/******************************************************************************\n * Comparison operators\n ******************************************************************************/\n\n"
   - {sig: "eq({ss}, {ss})", ret: "boolean", sym: Spanset_eq}
   - lit: "\n"

@@ -361,6 +361,50 @@ Set_split_each_n_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Set_merge_n_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_merge_n_spans);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Return an array of N spans obtained by merging the boxes of the
+ * elements of a set, each time the consecutive pair whose union adds the least
+ * size to theirs
+ * @sqlfn mergeNSpans()
+ */
+Datum
+Set_merge_n_spans(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int span_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = set_merge_n_spans(s, span_count, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Set_merge_each_n_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_merge_each_n_spans);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Return an array of spans obtained by merging the boxes of the elements
+ * of a set, each time the consecutive pair whose union adds the least size to
+ * theirs, until a box holds on average a given number of them
+ * @sqlfn mergeEachNSpans()
+ */
+Datum
+Set_merge_each_n_spans(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int elem_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = set_merge_each_n_spans(s, elem_count, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 PGDLLEXPORT Datum Intspan_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intspan_to_floatspan);
 /**

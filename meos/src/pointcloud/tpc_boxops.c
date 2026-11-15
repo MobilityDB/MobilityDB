@@ -58,6 +58,8 @@
 #include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal_boxops.h"  /* tsequence_set_bbox_slice */
+#include "temporal/bbox_index.h"  /* bbox_merge_n */
+#include "geo/stbox_index.h"  /* stbox_adjust, stbox_size */
 #include "temporal/meos_catalog.h"  /* T_TPCPOINT */
 #include <utils/timestamp.h>   /* TimestampTzGetDatum */
 #include "pointcloud/meos_schema_hook.h"
@@ -1313,6 +1315,78 @@ tpointcloud_split_each_n_tpcboxes(const Temporal *temp, int elem_count,
       return tpointcloudseqset_split_each_n_tpcboxes((TSequenceSet *) temp,
         elem_count, count);
   }
+}
+
+/*****************************************************************************
+ * merge_n_tpcboxes and merge_each_n_tpcboxes functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_bbox_split
+ * @brief Return an array of N point cloud boxes obtained by merging the boxes
+ * of
+ * the consecutive instants or segments of a temporal point cloud value, each
+ * time the
+ * consecutive pair whose union adds the least size to theirs
+ * @details The merge twin of #tpointcloud_split_n_tpcboxes, by #bbox_merge_n
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tpointcloud_merge_n_tpcboxes()
+ */
+TPCBox *
+tpointcloud_merge_n_tpcboxes(const Temporal *temp, int box_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  if (! ensure_positive(box_count))
+    return NULL;
+
+  TPCBox *result = tpointcloud_tpcboxes(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_TPCBOX, result, *count, box_count, &stbox_adjust,
+      &stbox_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_bbox_split
+ * @brief Return an array of point cloud boxes obtained by merging the boxes of
+ * the
+ * consecutive instants or segments of a temporal point cloud value, each time
+ * the consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them
+ * @details The merge twin of #tpointcloud_split_each_n_tpcboxes, by
+ * #bbox_merge_each_n
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tpointcloud_merge_each_n_tpcboxes()
+ */
+TPCBox *
+tpointcloud_merge_each_n_tpcboxes(const Temporal *temp, int elem_count,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  TPCBox *result = tpointcloud_tpcboxes(temp, count);
+  if (result)
+    *count = bbox_merge_each_n(T_TPCBOX, result, *count, elem_count,
+      &stbox_adjust, &stbox_size);
+  return result;
 }
 /* GENERATED-BOXSPLIT-END tpointcloud */
 
