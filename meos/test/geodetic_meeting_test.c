@@ -31,14 +31,17 @@
  * @file
  * @brief A simple program that tests the meeting of two temporal geography
  * points
- * @details Two temporal geography points meet on a segment where the two
- * points they construct along their great circles at the instant lie within
- * the rounding of that construction. The program reads `teq` and `ever_eq` on
- * the pair of the tests of PyMEOS, the same arc in opposite directions, on
- * mirror images across the equator, which meet at 12:00, on mirror images
- * whose end latitudes are not opposite, which meet at 14:24:00.842439, and
- * on the first mirror pair with one end moved by 1e-6 degrees, which never
- * meets.
+ * @details Two temporal geography points meet on a segment where the doubles
+ * of their ends prove it. The program reads `teq` and `ever_eq` on the pair
+ * of the tests of PyMEOS, the same arc in opposite directions, on mirror
+ * images across the equator, which meet at 12:00, on mirror images whose end
+ * latitudes are not opposite, which meet at 14:24:00.842439, on the first
+ * mirror pair with one end moved by 1e-6 degrees, which never meets, on a
+ * meridian segment and an equator segment on two great circles, each
+ * exchanged by the half turn about the axis through Point(10 0), which meet
+ * there at 12:00, on two segments that cross the north pole at the middle,
+ * which meet there at 12:00, and on the meridian and equator pair with one
+ * end moved by 1e-6 degrees, which never meets.
  *
  * The program can be built as follows
  * @code
@@ -78,6 +81,24 @@ static const struct
   /* The mirror pair with one end moved by 1e-6 degrees never meets */
   {"[Point(10 3)@2019-09-01, Point(12 -3)@2019-09-02]",
    "[Point(10 -3)@2019-09-01, Point(12.000001 3)@2019-09-02]",
+   "[f@2019-09-01 00:00:00+00, f@2019-09-02 00:00:00+00]"},
+  /* A meridian segment and an equator segment, on two great circles, meet
+   * at the middle at Point(10 0), the half turn about its axis exchanging
+   * the ends of each */
+  {"[Point(10 3)@2019-09-01, Point(10 -3)@2019-09-02]",
+   "[Point(8 0)@2019-09-01, Point(12 0)@2019-09-02]",
+   "{[f@2019-09-01 00:00:00+00, t@2019-09-01 12:00:00+00], "
+     "(f@2019-09-01 12:00:00+00, f@2019-09-02 00:00:00+00]}"},
+  /* Two segments whose ends lie half a turn of longitude apart on one
+   * parallel cross the north pole at the middle */
+  {"[Point(10 80)@2019-09-01, Point(-170 80)@2019-09-02]",
+   "[Point(50 85)@2019-09-01, Point(-130 85)@2019-09-02]",
+   "{[f@2019-09-01 00:00:00+00, t@2019-09-01 12:00:00+00], "
+     "(f@2019-09-01 12:00:00+00, f@2019-09-02 00:00:00+00]}"},
+  /* The meridian and equator pair with one end moved by 1e-6 degrees never
+   * meets */
+  {"[Point(10 3)@2019-09-01, Point(10 -3)@2019-09-02]",
+   "[Point(8 0)@2019-09-01, Point(12.000001 0)@2019-09-02]",
    "[f@2019-09-01 00:00:00+00, f@2019-09-02 00:00:00+00]"},
 };
 
