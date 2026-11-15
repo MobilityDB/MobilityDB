@@ -95,6 +95,15 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   It rests on the route validation the owner asked for first ("validate the routes at the ways
   readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
   each route as a planar line in the SRID of the network when the ways readers read it.
+- **The external functions that only asserted their arguments test them**, outside the plan, by
+  the decision of the owner on 2026-11-15 ("go with all this work"): a scan of every external
+  function of `meos/src` taking a pointer lists those whose arguments no guard tests within three
+  calls, and each family's fix is one PR with a witness under `meos/test` that a Release build of
+  master ends in a crash. The ever and always comparisons of two temporal JSONB, MERGED as
+  MobilityDB #3716 (`7fcf4c6049`); the text functions validating once with internal twins for the
+  walks, MobilityDB #3717; the extended hash of a pose, MobilityDB #3718; the geometry of an array
+  of circular buffers, MobilityDB #3719. The expandable array, the setup setters and the window of
+  the moving aggregates follow, each on its own branch.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
