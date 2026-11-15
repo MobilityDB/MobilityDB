@@ -1921,6 +1921,7 @@ ttextseq_from_base_tstzspan(const text *txt, const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tsequence_from_base_tstzspan(PointerGetDatum(txt), T_TTEXT, s, STEP);
 }
 
