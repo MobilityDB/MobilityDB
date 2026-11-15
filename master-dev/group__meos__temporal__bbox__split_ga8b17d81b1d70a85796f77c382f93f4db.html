@@ -80,9 +80,9 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__split_ga897c2bf721d6d5a26ecc72da6cb3b5b6.html#ga897c2bf721d6d5a26ecc72da6cb3b5b6">temporal_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__split_gaae089bba7b97c82b445ac166684b1f6a.html#gaae089bba7b97c82b445ac166684b1f6a">temporal_split_each_n_spans</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__split_ga97cd5664236404bab725c80bb7fba8d3.html#ga97cd5664236404bab725c80bb7fba8d3">temporal_split_each_n_spans</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__temporal__bbox__split_ga8b17d81b1d70a85796f77c382f93f4db.html#ga8b17d81b1d70a85796f77c382f93f4db">temporal_split_n_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__split_ga968ff791a1917acf666bc0c53788a1d9.html#ga968ff791a1917acf666bc0c53788a1d9">tnumber_split_each_n_tboxes</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__split_ga120201e3a7c9f23ed0ce9288ede0cddd.html#ga120201e3a7c9f23ed0ce9288ede0cddd">tnumber_split_each_n_tboxes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__split_ga83b2a4dbda0ef7bd44e2353a2ab56d91.html#ga83b2a4dbda0ef7bd44e2353a2ab56d91">tnumber_split_n_tboxes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__split_ga934c9d9dfc3b3ae9971280616a902afe.html#ga934c9d9dfc3b3ae9971280616a902afe">tnumber_tboxes</a></td></tr>
         </table>
@@ -121,18 +121,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return an array of N spans obtained from the instants or segments of a temporal value. </p>
+<p>Return an array of N spans obtained by merging consecutive instants or segments of a temporal value. </p>
 <p >The choice between instants or segments depends, respectively, on whether the interpolation is discrete or continuous. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">span_count</td><td>Number of spans </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of values of the output array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">span_count</td><td>Number of boxes </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>If the number of instants or segments is &lt;= <code>span_count</code>, the result contains one span per instant or segment. Otherwise, consecutive instants or segments are combined into a single span in the result to reach the number of spans </dd>
-<dd>
-On error return NULL @csqlfn <a class="el" href="group__mobilitydb__temporal__bbox__split_gaee69188b384ab3ef3e5041cc5ddf170b.html#gaee69188b384ab3ef3e5041cc5ddf170b" title="Return an array of N spans from the instants or segments of a temporal value.">Temporal_split_n_spans()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__temporal__bbox__split_gaee69188b384ab3ef3e5041cc5ddf170b.html#gaee69188b384ab3ef3e5041cc5ddf170b" title="Return an array of N spans from the instants or segments of a temporal value.">Temporal_split_n_spans()</a> </dd></dl>
 
 </div>
 </div>
