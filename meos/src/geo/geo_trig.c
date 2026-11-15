@@ -572,14 +572,14 @@ trig_product_enclose(TrigProduct *p, int bits)
  * @note The product is irrational, so it is never the dyadic @p mid
  */
 static int
-trig_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
+trig_side(DyadicWideArena *ar, const DyadicWide *mid, const void *arg)
 {
   TrigProduct *p = *(TrigProduct * const *) arg;
   while (true)
   {
     /* The product lies between sign * lo and sign * hi */
-    int clo = tower_wide_cmp_fixed(ar, mid, p->sign, p->lo64, p->n64, p->exp);
-    int chi = tower_wide_cmp_fixed(ar, mid, p->sign, p->hi64, p->n64, p->exp);
+    int clo = dyadic_wide_cmp_fixed(ar, mid, p->sign, p->lo64, p->n64, p->exp);
+    int chi = dyadic_wide_cmp_fixed(ar, mid, p->sign, p->hi64, p->n64, p->exp);
     if (p->sign > 0)
     {
       if (clo < 0)
@@ -889,11 +889,11 @@ fix_atan2_bound(const uint32_t *y, const uint32_t *x, uint32_t *r, int L,
 }
 
 /**
- * @brief Return floor(log2 |a|) of a #TowerWide that is not 0, the weight of
+ * @brief Return floor(log2 |a|) of a #DyadicWide that is not 0, the weight of
  * its highest bit
  */
 static int
-wide_log2(const TowerWide *a)
+wide_log2(const DyadicWide *a)
 {
   return a->exp + 64 * (a->len - 1) +
     pg_leftmost_one_pos64(a->limb[a->len - 1]);
@@ -909,7 +909,7 @@ wide_log2(const TowerWide *a)
  * bound rounded outward, and s itself read at that scale where @p root
  */
 static void
-fix_atan2_enclose_root(const TowerWide *s, bool root, const TowerWide *c,
+fix_atan2_enclose_root(const DyadicWide *s, bool root, const DyadicWide *c,
   uint32_t *lo, uint32_t *hi, int L, int K)
 {
   int ss = wide_sign(s), sc = wide_sign(c);
@@ -924,7 +924,7 @@ fix_atan2_enclose_root(const TowerWide *s, bool root, const TowerWide *c,
   {
     /* 0: s down, 1: s up, 2: |c| down, 3: |c| up */
     v[k] = palloc(L * sizeof(uint32_t));
-    int sg = tower_wide_to_fixed(k < 2 ? s : c,
+    int sg = dyadic_wide_to_fixed(k < 2 ? s : c,
       k < 2 && ! root ? 2 * scale : scale, k % 2 == 1, buf, n64);
     assert(sg != 2);
     if (k >= 2)
@@ -966,7 +966,7 @@ fix_atan2_enclose_root(const TowerWide *s, bool root, const TowerWide *c,
  * s >= 0 and c, not both 0 (#fix_atan2_enclose_root)
  */
 static void
-fix_atan2_enclose(const TowerWide *s, const TowerWide *c, uint32_t *lo,
+fix_atan2_enclose(const DyadicWide *s, const DyadicWide *c, uint32_t *lo,
   uint32_t *hi, int L, int K)
 {
   fix_atan2_enclose_root(s, false, c, lo, hi, L, K);
@@ -974,17 +974,17 @@ fix_atan2_enclose(const TowerWide *s, const TowerWide *c, uint32_t *lo,
 
 /* Whether the three components of an exact vector are 0 */
 static bool
-wide_vec_is_zero(TowerWide *const *a)
+wide_vec_is_zero(DyadicWide *const *a)
 {
   return wide_sign(a[0]) == 0 && wide_sign(a[1]) == 0 && wide_sign(a[2]) == 0;
 }
 
 /* The three components of a vector of doubles, exactly */
 static void
-wide_vec_of_double(TowerWideArena *ar, const double *v, TowerWide **r)
+wide_vec_of_double(DyadicWideArena *ar, const double *v, DyadicWide **r)
 {
   for (int i = 0; i < 3; i++)
-    r[i] = tower_wide_of_double(ar, v[i]);
+    r[i] = dyadic_wide_of_double(ar, v[i]);
 }
 
 /*****************************************************************************
@@ -999,20 +999,20 @@ wide_vec_of_double(TowerWideArena *ar, const double *v, TowerWide **r)
  *****************************************************************************/
 
 /** @brief A direction in space whose components are exact dyadic values,
- * each allocated on its own (#tower_wide_dup) */
+ * each allocated on its own (#dyadic_wide_dup) */
 struct SphereDir
 {
-  TowerWide *c[3];
+  DyadicWide *c[3];
 };
 
 /* A direction of the three components of an exact vector, copied out of
  * their arena */
 static SphereDir *
-sphere_dir_of(TowerWide *const *v)
+sphere_dir_of(DyadicWide *const *v)
 {
   SphereDir *r = palloc(sizeof(SphereDir));
   for (int i = 0; i < 3; i++)
-    r->c[i] = tower_wide_dup(v[i]);
+    r->c[i] = dyadic_wide_dup(v[i]);
   return r;
 }
 
@@ -1022,12 +1022,12 @@ sphere_dir_of(TowerWide *const *v)
 SphereDir *
 sphere_dir_make(const double *v)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *w[3];
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *w[3];
   wide_vec_of_double(&ar, v, w);
   SphereDir *r = sphere_dir_of(w);
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return r;
 }
 
@@ -1037,12 +1037,12 @@ sphere_dir_make(const double *v)
 SphereDir *
 sphere_dir_cross(const SphereDir *a, const SphereDir *b)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *w[3];
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *w[3];
   wide_cross3(&ar, a->c, b->c, w);
   SphereDir *r = sphere_dir_of(w);
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return r;
 }
 
@@ -1052,13 +1052,13 @@ sphere_dir_cross(const SphereDir *a, const SphereDir *b)
 SphereDir *
 sphere_dir_add(const SphereDir *a, const SphereDir *b)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *w[3];
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *w[3];
   for (int i = 0; i < 3; i++)
-    w[i] = tower_wide_add(&ar, a->c[i], b->c[i]);
+    w[i] = dyadic_wide_add(&ar, a->c[i], b->c[i]);
   SphereDir *r = sphere_dir_of(w);
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return r;
 }
 
@@ -1071,7 +1071,7 @@ sphere_dir_neg(const SphereDir *a)
   SphereDir *r = palloc(sizeof(SphereDir));
   for (int i = 0; i < 3; i++)
   {
-    r->c[i] = tower_wide_dup(a->c[i]);
+    r->c[i] = dyadic_wide_dup(a->c[i]);
     r->c[i]->sign = - r->c[i]->sign;
   }
   return r;
@@ -1096,10 +1096,10 @@ sphere_dir_free(SphereDir *a)
 int
 sphere_dir_dot_sign(const SphereDir *a, const SphereDir *b)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
   int result = wide_sign(wide_dot3(&ar, a->c, b->c));
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return result;
 }
 
@@ -1110,12 +1110,12 @@ int
 sphere_dir_triple_sign(const SphereDir *a, const SphereDir *b,
   const SphereDir *c)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *n[3];
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *n[3];
   wide_cross3(&ar, a->c, b->c, n);
   int result = wide_sign(wide_dot3(&ar, n, c->c));
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return result;
 }
 
@@ -1129,15 +1129,15 @@ int
 sphere_dir_dot_diff_sign(const SphereDir *a, const SphereDir *b,
   const SphereDir *c, const SphereDir *d)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  const TowerWide *ab = wide_dot3(&ar, a->c, b->c),
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  const DyadicWide *ab = wide_dot3(&ar, a->c, b->c),
     *cd = wide_dot3(&ar, c->c, d->c);
-  const TowerWide *ad = wide_dot3(&ar, a->c, d->c),
+  const DyadicWide *ad = wide_dot3(&ar, a->c, d->c),
     *cb = wide_dot3(&ar, c->c, b->c);
-  int result = tower_wide_cmp(tower_wide_mul(&ar, ab, cd),
-    tower_wide_mul(&ar, ad, cb));
-  tower_wide_arena_free(&ar);
+  int result = dyadic_wide_cmp(dyadic_wide_mul(&ar, ab, cd),
+    dyadic_wide_mul(&ar, ad, cb));
+  dyadic_wide_arena_free(&ar);
   return result;
 }
 
@@ -1148,12 +1148,12 @@ sphere_dir_dot_diff_sign(const SphereDir *a, const SphereDir *b,
 bool
 sphere_dir_parallel(const SphereDir *a, const SphereDir *b)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *n[3];
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *n[3];
   wide_cross3(&ar, a->c, b->c, n);
   bool result = wide_vec_is_zero(n);
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return result;
 }
 
@@ -1173,7 +1173,7 @@ fraction_cmp_rational(int64 fn, int64 fd, int64 num, int64 den)
  * @details f = angle(p0, x) / angle(p0, p1), x the direction (p0 x p1) x
  * (a x b) or its opposite, whichever lies ahead of p0 on the arc, each angle
  * atan2(|u x v|, u . v) of exact vectors: every product is read exactly in
- * #TowerWide and each angle enclosed (#fix_atan2_enclose) at a precision
+ * #DyadicWide and each angle enclosed (#fix_atan2_enclose) at a precision
  * raised until f - num/den lies clear of 0. It is 0 exactly where x lies
  * along p0 (f = 0), along p1 (f = 1), or along p0 + p1 with |p0| = |p1|
  * (f = 1/2), as the geodetic oracle of the cell walks decides a crossing
@@ -1186,14 +1186,14 @@ int
 geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   const double *a, const double *b, int64 num, int64 den)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *P0[3], *P1[3], *A[3], *B[3];
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  DyadicWide *P0[3], *P1[3], *A[3], *B[3];
   wide_vec_of_double(ar, p0, P0);
   wide_vec_of_double(ar, p1, P1);
   wide_vec_of_double(ar, a, A);
   wide_vec_of_double(ar, b, B);
-  TowerWide *M[3], *N[3], *X[3], *C[3], *Y[3], *S[3];
+  DyadicWide *M[3], *N[3], *X[3], *C[3], *Y[3], *S[3];
   wide_cross3(ar, P0, P1, M);
   wide_cross3(ar, A, B, N);
   wide_cross3(ar, M, N, X);
@@ -1201,7 +1201,7 @@ geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   wide_cross3(ar, P0, X, C);
   if (wide_sign(wide_dot3(ar, C, M)) < 0)
     for (int i = 0; i < 3; i++)
-      X[i] = tower_wide_neg(ar, X[i]);
+      X[i] = dyadic_wide_neg(ar, X[i]);
   int result = 2;
   /* The exact fractions */
   wide_cross3(ar, X, P0, Y);
@@ -1209,10 +1209,10 @@ geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   wide_cross3(ar, X, P1, Y);
   bool at1 = wide_vec_is_zero(Y);
   for (int i = 0; i < 3; i++)
-    S[i] = tower_wide_add(ar, P0[i], P1[i]);
+    S[i] = dyadic_wide_add(ar, P0[i], P1[i]);
   wide_cross3(ar, X, S, Y);
   bool athalf = wide_vec_is_zero(Y) &&
-    tower_wide_cmp(wide_dot3(ar, P0, P0), wide_dot3(ar, P1, P1)) == 0;
+    dyadic_wide_cmp(wide_dot3(ar, P0, P0), wide_dot3(ar, P1, P1)) == 0;
   if (at0)
     result = fraction_cmp_rational(0, 1, num, den);
   else if (at1)
@@ -1222,9 +1222,9 @@ geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   else
   {
     /* theta = atan2(|m|, p0 . p1), phi = atan2(|p0 x x|, p0 . x) */
-    const TowerWide *s1 = wide_dot3(ar, M, M), *c1 = wide_dot3(ar, P0, P1);
+    const DyadicWide *s1 = wide_dot3(ar, M, M), *c1 = wide_dot3(ar, P0, P1);
     wide_cross3(ar, P0, X, C);
-    const TowerWide *s2 = wide_dot3(ar, C, C), *c2 = wide_dot3(ar, P0, X);
+    const DyadicWide *s2 = wide_dot3(ar, C, C), *c2 = wide_dot3(ar, P0, X);
     for (int K = ANGLE_FIRST_BITS; K <= ANGLE_LAST_BITS && result == 2;
         K *= 2)
     {
@@ -1250,7 +1250,7 @@ geodetic_arc_fraction_cmp(const double *p0, const double *p1,
       pfree(tl); pfree(th); pfree(pl); pfree(ph); pfree(lhs); pfree(rhs);
     }
   }
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
@@ -1310,10 +1310,10 @@ int64_magnitude(int64 x)
 }
 
 /* The magnitude of an int64, exactly, 2^63 included */
-static TowerWide *
-wide_of_magnitude(TowerWideArena *ar, int64 x)
+static DyadicWide *
+wide_of_magnitude(DyadicWideArena *ar, int64 x)
 {
-  TowerWide *r = tower_wide_of_int64(ar, x);
+  DyadicWide *r = dyadic_wide_of_int64(ar, x);
   if (r->sign < 0)
     r->sign = 1;
   return r;
@@ -1323,7 +1323,7 @@ wide_of_magnitude(TowerWideArena *ar, int64 x)
  * it, and an enclosure of their magnitude, the twin of #TrigProduct */
 typedef struct
 {
-  const TowerWide *s, *c;   /**< The angle atan2(sqrt(s), c) */
+  const DyadicWide *s, *c;   /**< The angle atan2(sqrt(s), c) */
   bool root;                /**< The angle is atan2(s, c) */
   bool complement;          /**< The degrees are 90 less the angle */
   int sign;                 /**< Sign of the degrees, -1 or 1 */
@@ -1417,13 +1417,13 @@ degree_angle_enclose(DegreeAngle *p, int bits)
  * rational ones being answered before, so they are never the dyadic @p mid
  */
 static int
-degree_angle_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
+degree_angle_side(DyadicWideArena *ar, const DyadicWide *mid, const void *arg)
 {
   DegreeAngle *p = *(DegreeAngle * const *) arg;
   while (true)
   {
-    int clo = tower_wide_cmp_fixed(ar, mid, p->sign, p->lo64, p->n64, p->exp);
-    int chi = tower_wide_cmp_fixed(ar, mid, p->sign, p->hi64, p->n64, p->exp);
+    int clo = dyadic_wide_cmp_fixed(ar, mid, p->sign, p->lo64, p->n64, p->exp);
+    int chi = dyadic_wide_cmp_fixed(ar, mid, p->sign, p->hi64, p->n64, p->exp);
     if (p->sign > 0)
     {
       if (clo < 0)
@@ -1492,17 +1492,17 @@ vector_lon_nearest(const int64 *v)
   if (ddb_vector_lon_nearest(v, &first))
     return first;
   /* The angle is atan2(|y|, x), signed as y */
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
   DegreeAngle p;
   memset(&p, 0, sizeof(p));
   p.s = wide_of_magnitude(&ar, y);
   p.root = true;
-  p.c = tower_wide_of_int64(&ar, x);
+  p.c = dyadic_wide_of_int64(&ar, x);
   p.sign = y > 0 ? 1 : -1;
   double result = degree_angle_nearest(&p, atan2((double) y, (double) x) *
     (180.0 / M_PI));
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return result;
 }
 
@@ -1535,20 +1535,20 @@ vector_lat_nearest(const int64 *v)
   double result;
   if (ddb_vector_lat_nearest(v, &result))
     return result;
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *X = tower_wide_of_int64(ar, x),
-    *Y = tower_wide_of_int64(ar, y);
-  const TowerWide *AZ = wide_of_magnitude(ar, z);
-  const TowerWide *ZZ = tower_wide_mul(ar, AZ, AZ);
-  const TowerWide *RR = tower_wide_add(ar, tower_wide_mul(ar, X, X), tower_wide_mul(ar, Y, Y));
-  const TowerWide *three = tower_wide_of_int64(ar, 3);
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *X = dyadic_wide_of_int64(ar, x),
+    *Y = dyadic_wide_of_int64(ar, y);
+  const DyadicWide *AZ = wide_of_magnitude(ar, z);
+  const DyadicWide *ZZ = dyadic_wide_mul(ar, AZ, AZ);
+  const DyadicWide *RR = dyadic_wide_add(ar, dyadic_wide_mul(ar, X, X), dyadic_wide_mul(ar, Y, Y));
+  const DyadicWide *three = dyadic_wide_of_int64(ar, 3);
   bool rational = true;
-  if (tower_wide_cmp(ZZ, RR) == 0)
+  if (dyadic_wide_cmp(ZZ, RR) == 0)
     result = 45.0 * sz;
-  else if (tower_wide_cmp(ZZ, tower_wide_mul(ar, three, RR)) == 0)
+  else if (dyadic_wide_cmp(ZZ, dyadic_wide_mul(ar, three, RR)) == 0)
     result = 60.0 * sz;
-  else if (tower_wide_cmp(tower_wide_mul(ar, three, ZZ), RR) == 0)
+  else if (dyadic_wide_cmp(dyadic_wide_mul(ar, three, ZZ), RR) == 0)
     result = 30.0 * sz;
   else
     rational = false;
@@ -1565,22 +1565,22 @@ vector_lat_nearest(const int64 *v)
       (double) y * (double) y)) * (180.0 / M_PI);
     result = degree_angle_nearest(&p, approx);
   }
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
 /** @brief A quotient of two exact values, for #rational_side */
 typedef struct
 {
-  const TowerWide *n, *d;
+  const DyadicWide *n, *d;
 } RationalQuotient;
 
 /* The sign of n / d - mid, d > 0, that of n - mid d */
 static int
-rational_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
+rational_side(DyadicWideArena *ar, const DyadicWide *mid, const void *arg)
 {
   const RationalQuotient *q = (const RationalQuotient *) arg;
-  return tower_wide_cmp(q->n, tower_wide_mul(ar, mid, q->d));
+  return dyadic_wide_cmp(q->n, dyadic_wide_mul(ar, mid, q->d));
 }
 
 /**
@@ -1592,12 +1592,12 @@ rational_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
 double
 rational_nearest(int64 num, int64 den)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  RationalQuotient q = { tower_wide_of_int64(&ar, num),
-    tower_wide_of_int64(&ar, den) };
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  RationalQuotient q = { dyadic_wide_of_int64(&ar, num),
+    dyadic_wide_of_int64(&ar, den) };
   double result = nearest_double_exact((double) num / (double) den,
     rational_side, &q);
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return result;
 }

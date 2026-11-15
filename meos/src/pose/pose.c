@@ -3099,11 +3099,14 @@ pose_hash(const Pose *pose)
  * @param[in] seed Seed
  * csqlfn hash_extended
  * @csqlfn #Pose_hash_extended()
+ * @errval UINT64_MAX
  */
 uint64
 pose_hash_extended(const Pose *pose, uint64 seed)
 {
-  /* PostGIS currently does not provide an extended hash function, */
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, UINT64_MAX);
+  /* PostGIS provides no extended hash function */
   return DatumGetUInt64(hash_any_extended(
     (unsigned char *) VARDATA_ANY(pose), VARSIZE_ANY_EXHDR(pose), seed));
 }

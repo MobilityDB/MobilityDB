@@ -3903,7 +3903,13 @@
 						<para><link linkend="tpcpoint_spans"><varname>spans</varname></link>: Devuelve el arreglo de lapsos de tiempo de los segmentos de un tpcpoint</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpoint_tpcboxes"><varname>tpcboxes</varname></link>: Devuelve el arreglo de cajas de nube de puntos de los instantes o segmentos de un tpcpoint</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpoint_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Devuelve los lapsos de tiempo de un tpcpoint dividido en un número dado de contenedores, o con un número dado de segmentos por contenedor</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_splitNTpcboxes"><varname>splitNTpcboxes</varname>, <varname>splitEachNTpcboxes</varname></link>: Devuelve las cajas de nube de puntos de un tpcpoint dividido en un número dado de contenedores, o con un número dado de instantes o segmentos por contenedor</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -4096,7 +4102,13 @@
 						<para><link linkend="tpcpatch_spans"><varname>spans</varname></link>: Devuelve el arreglo de lapsos de tiempo de los segmentos de un tpcpatch</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpatch_tpcboxes"><varname>tpcboxes</varname></link>: Devuelve el arreglo de cajas de nube de puntos de los instantes o segmentos de un tpcpatch</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpatch_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Devuelve los lapsos de tiempo de un tpcpatch dividido en un número dado de contenedores, o con un número dado de segmentos por contenedor</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_splitNTpcboxes"><varname>splitNTpcboxes</varname>, <varname>splitEachNTpcboxes</varname></link>: Devuelve las cajas de nube de puntos de un tpcpatch dividido en un número dado de contenedores, o con un número dado de instantes o segmentos por contenedor</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

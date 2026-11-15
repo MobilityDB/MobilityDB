@@ -244,7 +244,7 @@ two_product_exact(double a, double b)
  * and the parts are summed into an expansion (#grow_expansion), whose largest
  * component carries the exact sign, wherever no product overflows or leaves
  * part of itself below 2^-1074 and no sum overflows; elsewhere the sum is
- * taken on #TowerWide (#ring_area_sign_wide).
+ * taken on #DyadicWide (#ring_area_sign_wide).
  */
 int
 ring_area_sign(const POINTARRAY *pa)
@@ -750,6 +750,11 @@ MeosArray *
 geom_extract_edges(const LWGEOM *geom)
 {
   MeosArray *edges = meos_array_create(sizeof(Edge));
+  /* A geometry yields at most one edge per vertex, so the room for all of
+   * them is taken once rather than doubled ring after ring, each doubling
+   * copying every edge read before (#edge_array_reserve) */
+  if (geom && ! lwgeom_is_empty(geom))
+    edge_array_reserve(edges, lwgeom_count_vertices(geom));
   geom_extract_edges_iter(geom, edges);
   return edges;
 }
@@ -1006,7 +1011,7 @@ cross_product_expansion(double ax, double ay, double bx, double by,
  * coordinates beyond 2^510 are first brought below it, where no product of
  * two differences overflows. Where that scaling would round a coordinate
  * below the normal range, or a product of the differences could underflow,
- * the sign is read on #TowerWide (#cross_product_sign_wide), exact for any
+ * the sign is read on #DyadicWide (#cross_product_sign_wide), exact for any
  * finite coordinates.
  * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
  */
@@ -2012,7 +2017,7 @@ polynomial_sign_filter(const ExactSum *sums, const PolyTerm *terms,
   return polynomial_sign_pairs(sums, terms, nterms);
 }
 
-static int polynomial_sign_tower(const ExactSum *sums,
+static int polynomial_sign_dyadic(const ExactSum *sums,
   const PolyTerm *terms, int nterms);
 
 /**
@@ -2020,8 +2025,8 @@ static int polynomial_sign_tower(const ExactSum *sums,
  * @details The polynomial is first evaluated in doubles together with a bound
  * on the error of every operation, then in pairs of doubles against its own
  * bound (#polynomial_sign_filter); where neither tells, the sign is read on
- * the expression ladder from its expansions on (#polynomial_sign_tower), in
- * expansions and in #TowerWide where those leave their exact range, so it is
+ * the expression ladder from its expansions on (#polynomial_sign_dyadic), in
+ * expansions and in #DyadicWide where those leave their exact range, so it is
  * exact for any finite sums
  * @param[in] sums Exact sums the terms refer to
  * @param[in] terms,nterms Terms of the polynomial and their number
@@ -2034,7 +2039,7 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   int sign = polynomial_sign_filter(sums, terms, nterms);
   if (sign != 2)
     return sign;
-  return polynomial_sign_tower(sums, terms, nterms);
+  return polynomial_sign_dyadic(sums, terms, nterms);
 }
 
 /**
@@ -2215,18 +2220,18 @@ wide_limbs_mul(const uint64 *x, int nx, const uint64 *y, int ny,
  * The wide number
  *****************************************************************************/
 
-/* Number of words of the head of a #TowerWide, before its limbs */
-#define TOWER_WIDE_HEAD ((offsetof(TowerWide, limb) + sizeof(uint64) - 1) / \
+/* Number of words of the head of a #DyadicWide, before its limbs */
+#define DYADIC_WIDE_HEAD ((offsetof(DyadicWide, limb) + sizeof(uint64) - 1) / \
   sizeof(uint64))
 
 /**
- * @brief Set an empty #TowerWideArena
+ * @brief Set an empty #DyadicWideArena
  */
 void
-tower_wide_arena_init(TowerWideArena *ar)
+dyadic_wide_arena_init(DyadicWideArena *ar)
 {
   ar->used = 0;
-  ar->cap = TOWER_WIDE_ARENA_WORDS;
+  ar->cap = DYADIC_WIDE_ARENA_WORDS;
   ar->blocks = NULL;
   ar->caps = NULL;
   ar->nblocks = ar->nkept = ar->capblocks = 0;
@@ -2234,10 +2239,10 @@ tower_wide_arena_init(TowerWideArena *ar)
 }
 
 /**
- * @brief Free the blocks of a #TowerWideArena, which is then empty
+ * @brief Free the blocks of a #DyadicWideArena, which is then empty
  */
 void
-tower_wide_arena_free(TowerWideArena *ar)
+dyadic_wide_arena_free(DyadicWideArena *ar)
 {
   for (int i = 0; i < ar->nkept; i++)
     pfree(ar->blocks[i]);
@@ -2246,32 +2251,32 @@ tower_wide_arena_free(TowerWideArena *ar)
     pfree(ar->blocks);
     pfree(ar->caps);
   }
-  tower_wide_arena_init(ar);
+  dyadic_wide_arena_init(ar);
   return;
 }
 
 /**
- * @brief Return the point a #TowerWideArena has reached, which
- * #tower_wide_arena_release returns it to
+ * @brief Return the point a #DyadicWideArena has reached, which
+ * #dyadic_wide_arena_release returns it to
  */
-TowerWideMark
-tower_wide_arena_mark(const TowerWideArena *ar)
+DyadicWideMark
+dyadic_wide_arena_mark(const DyadicWideArena *ar)
 {
-  TowerWideMark m;
+  DyadicWideMark m;
   m.nblocks = ar->nblocks;
   m.used = ar->used;
   return m;
 }
 
 /**
- * @brief Return a #TowerWideArena to a point it reached, every value taken
+ * @brief Return a #DyadicWideArena to a point it reached, every value taken
  * after it being released; the blocks are kept for the values taken next
  */
 void
-tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m)
+dyadic_wide_arena_release(DyadicWideArena *ar, DyadicWideMark m)
 {
   ar->nblocks = m.nblocks;
-  ar->cap = m.nblocks ? ar->caps[m.nblocks - 1] : TOWER_WIDE_ARENA_WORDS;
+  ar->cap = m.nblocks ? ar->caps[m.nblocks - 1] : DYADIC_WIDE_ARENA_WORDS;
   ar->used = m.used;
   return;
 }
@@ -2280,7 +2285,7 @@ tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m)
  * the next block held where it is large enough, and otherwise a new one of
  * twice the words of the current block, the held ones past it freed */
 static pg_noinline void
-tower_wide_arena_grow(TowerWideArena *ar, size_t words)
+dyadic_wide_arena_grow(DyadicWideArena *ar, size_t words)
 {
   if (ar->nblocks == ar->nkept || ar->caps[ar->nblocks] < words)
   {
@@ -2309,14 +2314,14 @@ tower_wide_arena_grow(TowerWideArena *ar, size_t words)
 }
 
 /* A value 0 of an arena with room for @p n limbs */
-static inline TowerWide *
-tower_wide_alloc(TowerWideArena *ar, int n)
+static inline DyadicWide *
+dyadic_wide_alloc(DyadicWideArena *ar, int n)
 {
-  size_t words = TOWER_WIDE_HEAD + (size_t) Max(n, 1);
+  size_t words = DYADIC_WIDE_HEAD + (size_t) Max(n, 1);
   if (unlikely(ar->used + words > ar->cap))
-    tower_wide_arena_grow(ar, words);
+    dyadic_wide_arena_grow(ar, words);
   uint64 *base = ar->nblocks ? ar->blocks[ar->nblocks - 1] : ar->buf;
-  TowerWide *r = (TowerWide *) (base + ar->used);
+  DyadicWide *r = (DyadicWide *) (base + ar->used);
   ar->used += words;
   r->sign = 0;
   r->len = 0;
@@ -2327,7 +2332,7 @@ tower_wide_alloc(TowerWideArena *ar, int n)
 /* Drop the zero limbs at both ends of a value, those at the bottom raising
  * its exponent */
 static void
-tower_wide_normalize(TowerWide *a)
+dyadic_wide_normalize(DyadicWide *a)
 {
   while (a->len > 0 && a->limb[a->len - 1] == 0)
     a->len--;
@@ -2353,10 +2358,10 @@ tower_wide_normalize(TowerWide *a)
  * @brief Return a finite double, exactly: its integer mantissa times the
  * weight of its lowest bit
  */
-TowerWide *
-tower_wide_of_double(TowerWideArena *ar, double x)
+DyadicWide *
+dyadic_wide_of_double(DyadicWideArena *ar, double x)
 {
-  TowerWide *r = tower_wide_alloc(ar, 1);
+  DyadicWide *r = dyadic_wide_alloc(ar, 1);
   if (x == 0.0)
     return r;
   uint64 bits;
@@ -2379,10 +2384,10 @@ tower_wide_of_double(TowerWideArena *ar, double x)
 /**
  * @brief Return a copy of a value, @p sign times it
  */
-TowerWide *
-tower_wide_signed(TowerWideArena *ar, const TowerWide *a, int sign)
+DyadicWide *
+dyadic_wide_signed(DyadicWideArena *ar, const DyadicWide *a, int sign)
 {
-  TowerWide *r = tower_wide_alloc(ar, a->len);
+  DyadicWide *r = dyadic_wide_alloc(ar, a->len);
   memcpy(r->limb, a->limb, sizeof(uint64) * (size_t) a->len);
   r->len = a->len;
   r->exp = a->exp;
@@ -2394,7 +2399,7 @@ tower_wide_signed(TowerWideArena *ar, const TowerWide *a, int sign)
 /* Limb @p i of the magnitude of a value moved up by @p ls limbs and @p bs
  * bits, bs below 64 */
 static inline uint64
-tower_wide_read(const TowerWide *a, int ls, int bs, int i)
+dyadic_wide_read(const DyadicWide *a, int ls, int bs, int i)
 {
   int j = i - ls;
   uint64 v = 0;
@@ -2408,15 +2413,15 @@ tower_wide_read(const TowerWide *a, int ls, int bs, int i)
 /* Limb @p i of the magnitude of a value read at the weight 2^e of its
  * lowest bit, e not above its exponent */
 static inline uint64
-tower_wide_limb_at(const TowerWide *a, int e, int i)
+dyadic_wide_limb_at(const DyadicWide *a, int e, int i)
 {
   int s = a->exp - e;
-  return tower_wide_read(a, s >> 6, s & 63, i);
+  return dyadic_wide_read(a, s >> 6, s & 63, i);
 }
 
 /* The weight of the bit above the highest one of a value that is not 0 */
 static inline int
-tower_wide_top(const TowerWide *a)
+dyadic_wide_top(const DyadicWide *a)
 {
   return a->exp + 64 * (a->len - 1) +
     pg_leftmost_one_pos64(a->limb[a->len - 1]) + 1;
@@ -2426,17 +2431,17 @@ tower_wide_top(const TowerWide *a)
  * @p b: their highest bits, then their limbs read at the lower of their
  * lowest bits */
 static int
-tower_wide_cmp_mag(const TowerWide *a, const TowerWide *b)
+dyadic_wide_cmp_mag(const DyadicWide *a, const DyadicWide *b)
 {
   if (a->sign == 0 || b->sign == 0)
     return (a->sign != 0) - (b->sign != 0);
-  int ta = tower_wide_top(a), tb = tower_wide_top(b);
+  int ta = dyadic_wide_top(a), tb = dyadic_wide_top(b);
   if (ta != tb)
     return (ta > tb) ? 1 : -1;
   int e = Min(a->exp, b->exp);
   for (int i = (ta - e + 63) / 64; i >= 0; i--)
   {
-    uint64 x = tower_wide_limb_at(a, e, i), y = tower_wide_limb_at(b, e, i);
+    uint64 x = dyadic_wide_limb_at(a, e, i), y = dyadic_wide_limb_at(b, e, i);
     if (x != y)
       return (x > y) ? 1 : -1;
   }
@@ -2447,13 +2452,13 @@ tower_wide_cmp_mag(const TowerWide *a, const TowerWide *b)
  * @brief Return -1, 0 or 1 as @p a is below, equal to or above @p b
  */
 int
-tower_wide_cmp(const TowerWide *a, const TowerWide *b)
+dyadic_wide_cmp(const DyadicWide *a, const DyadicWide *b)
 {
   if (a->sign != b->sign)
     return (a->sign > b->sign) ? 1 : -1;
   if (a->sign == 0)
     return 0;
-  return a->sign * tower_wide_cmp_mag(a, b);
+  return a->sign * dyadic_wide_cmp_mag(a, b);
 }
 
 /**
@@ -2463,18 +2468,18 @@ tower_wide_cmp(const TowerWide *a, const TowerWide *b)
  * highest limb telling that the second is the larger, the difference then
  * negated
  */
-TowerWide *
-tower_wide_add_signed(TowerWideArena *ar, const TowerWide *a, int sa,
-  const TowerWide *b, int sb)
+DyadicWide *
+dyadic_wide_add_signed(DyadicWideArena *ar, const DyadicWide *a, int sa,
+  const DyadicWide *b, int sb)
 {
   int xa = a->sign * sa, xb = b->sign * sb;
   if (xa == 0)
-    return tower_wide_signed(ar, b, sb);
+    return dyadic_wide_signed(ar, b, sb);
   if (xb == 0)
-    return tower_wide_signed(ar, a, sa);
+    return dyadic_wide_signed(ar, a, sa);
   int e = Min(a->exp, b->exp);
-  int n = (Max(tower_wide_top(a), tower_wide_top(b)) - e + 63) / 64;
-  TowerWide *r = tower_wide_alloc(ar, n + 1);
+  int n = (Max(dyadic_wide_top(a), dyadic_wide_top(b)) - e + 63) / 64;
+  DyadicWide *r = dyadic_wide_alloc(ar, n + 1);
   int da = a->exp - e, db = b->exp - e;
   int la = da >> 6, ba = da & 63, lb = db >> 6, bb = db & 63;
   r->exp = e;
@@ -2483,8 +2488,8 @@ tower_wide_add_signed(TowerWideArena *ar, const TowerWide *a, int sa,
     uint64 carry = 0;
     for (int i = 0; i < n; i++)
     {
-      uint64 x = tower_wide_read(a, la, ba, i),
-        y = tower_wide_read(b, lb, bb, i);
+      uint64 x = dyadic_wide_read(a, la, ba, i),
+        y = dyadic_wide_read(b, lb, bb, i);
       uint64 s = x + y;
       uint64 c1 = s < x;
       r->limb[i] = s + carry;
@@ -2499,8 +2504,8 @@ tower_wide_add_signed(TowerWideArena *ar, const TowerWide *a, int sa,
     uint64 borrow = 0;
     for (int i = 0; i < n; i++)
     {
-      uint64 x = tower_wide_read(a, la, ba, i),
-        y = tower_wide_read(b, lb, bb, i);
+      uint64 x = dyadic_wide_read(a, la, ba, i),
+        y = dyadic_wide_read(b, lb, bb, i);
       uint64 d = x - y;
       uint64 b1 = x < y;
       r->limb[i] = d - borrow;
@@ -2521,18 +2526,18 @@ tower_wide_add_signed(TowerWideArena *ar, const TowerWide *a, int sa,
       r->sign = xb;
     }
   }
-  tower_wide_normalize(r);
+  dyadic_wide_normalize(r);
   return r;
 }
 
 
 /* The product of a value that is not 0 and one limb @p m that is not 0,
  * times @p sign and the weight 2^e: one product of 64 bits a limb */
-static TowerWide *
-tower_wide_mul_limb(TowerWideArena *ar, const TowerWide *a, uint64 m,
+static DyadicWide *
+dyadic_wide_mul_limb(DyadicWideArena *ar, const DyadicWide *a, uint64 m,
   int sign, int e)
 {
-  TowerWide *r = tower_wide_alloc(ar, a->len + 1);
+  DyadicWide *r = dyadic_wide_alloc(ar, a->len + 1);
   r->sign = a->sign * sign;
   r->exp = a->exp + e;
   if (a->len == 1)
@@ -2565,7 +2570,7 @@ tower_wide_mul_limb(TowerWideArena *ar, const TowerWide *a, uint64 m,
   }
   r->limb[a->len] = carry;
   r->len = a->len + 1;
-  tower_wide_normalize(r);
+  dyadic_wide_normalize(r);
   return r;
 }
 
@@ -2573,39 +2578,39 @@ tower_wide_mul_limb(TowerWideArena *ar, const TowerWide *a, uint64 m,
  * @brief Return the product of two values, exactly, a factor of one limb
  * read as one
  */
-TowerWide *
-tower_wide_mul(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+DyadicWide *
+dyadic_wide_mul(DyadicWideArena *ar, const DyadicWide *a, const DyadicWide *b)
 {
   if (a->sign == 0 || b->sign == 0)
-    return tower_wide_alloc(ar, 1);
+    return dyadic_wide_alloc(ar, 1);
   if (b->len == 1)
-    return tower_wide_mul_limb(ar, a, b->limb[0], b->sign, b->exp);
+    return dyadic_wide_mul_limb(ar, a, b->limb[0], b->sign, b->exp);
   if (a->len == 1)
-    return tower_wide_mul_limb(ar, b, a->limb[0], a->sign, a->exp);
-  TowerWide *r = tower_wide_alloc(ar, a->len + b->len);
+    return dyadic_wide_mul_limb(ar, b, a->limb[0], a->sign, a->exp);
+  DyadicWide *r = dyadic_wide_alloc(ar, a->len + b->len);
   wide_limbs_mul(a->limb, a->len, b->limb, b->len, r->limb);
   r->len = a->len + b->len;
   r->sign = a->sign * b->sign;
   r->exp = a->exp + b->exp;
-  tower_wide_normalize(r);
+  dyadic_wide_normalize(r);
   return r;
 }
 
 /* The sign of `a b - c d`, exactly: the signs of the products, then their
  * magnitudes */
 static int
-tower_wide_product_cmp(TowerWideArena *ar, const TowerWide *a,
-  const TowerWide *b, const TowerWide *c, const TowerWide *d)
+dyadic_wide_product_cmp(DyadicWideArena *ar, const DyadicWide *a,
+  const DyadicWide *b, const DyadicWide *c, const DyadicWide *d)
 {
   int s1 = a->sign * b->sign, s2 = c->sign * d->sign;
   if (s1 != s2)
     return (s1 > s2) ? 1 : -1;
   if (s1 == 0)
     return 0;
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  int result = s1 * tower_wide_cmp_mag(tower_wide_mul(ar, a, b),
-    tower_wide_mul(ar, c, d));
-  tower_wide_arena_release(ar, m);
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
+  int result = s1 * dyadic_wide_cmp_mag(dyadic_wide_mul(ar, a, b),
+    dyadic_wide_mul(ar, c, d));
+  dyadic_wide_arena_release(ar, m);
   return result;
 }
 
@@ -2879,7 +2884,7 @@ wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x, bool *exact)
  * quotient, without leaving the doubles
  */
 static double
-tower_wide_frexp(const TowerWide *a, int *exp)
+dyadic_wide_frexp(const DyadicWide *a, int *exp)
 {
   if (a->sign == 0)
   {
@@ -2895,31 +2900,31 @@ tower_wide_frexp(const TowerWide *a, int *exp)
 }
 
 /**
- * @brief Return the value of a #TowerWide, rounded, or an infinity or zero
+ * @brief Return the value of a #DyadicWide, rounded, or an infinity or zero
  * outside the doubles
  */
 static double
-tower_wide_approx(const TowerWide *a)
+dyadic_wide_approx(const DyadicWide *a)
 {
   int e;
-  double m = tower_wide_frexp(a, &e);
+  double m = dyadic_wide_frexp(a, &e);
   return a->sign * ldexp(m, e);
 }
 
 /* The value 0 */
-static inline TowerWide *
-tower_wide_zero(TowerWideArena *ar)
+static inline DyadicWide *
+dyadic_wide_zero(DyadicWideArena *ar)
 {
-  return tower_wide_alloc(ar, 1);
+  return dyadic_wide_alloc(ar, 1);
 }
 
 /**
  * @brief Return a 64-bit integer, exactly
  */
-TowerWide *
-tower_wide_of_int64(TowerWideArena *ar, int64 v)
+DyadicWide *
+dyadic_wide_of_int64(DyadicWideArena *ar, int64 v)
 {
-  TowerWide *r = tower_wide_alloc(ar, 1);
+  DyadicWide *r = dyadic_wide_alloc(ar, 1);
   if (v == 0)
     return r;
   r->sign = (v < 0) ? -1 : 1;
@@ -2932,12 +2937,12 @@ tower_wide_of_int64(TowerWideArena *ar, int64 v)
  * @brief Return a copy of a value allocated on its own, freed by pfree, for
  * a value kept past its arena
  */
-TowerWide *
-tower_wide_dup(const TowerWide *a)
+DyadicWide *
+dyadic_wide_dup(const DyadicWide *a)
 {
-  TowerWide *r = palloc(offsetof(TowerWide, limb) +
+  DyadicWide *r = palloc(offsetof(DyadicWide, limb) +
     sizeof(uint64) * (size_t) Max(a->len, 1));
-  memcpy(r, a, offsetof(TowerWide, limb) +
+  memcpy(r, a, offsetof(DyadicWide, limb) +
     sizeof(uint64) * (size_t) a->len);
   return r;
 }
@@ -2946,7 +2951,7 @@ tower_wide_dup(const TowerWide *a)
  * @brief Write the magnitude of a value as a fixed-point integer and return
  * its sign
  * @details `mag` receives floor(|a| 2^scale), or its ceiling where @p up,
- * in @p nlimbs 64-bit limbs, the lowest first, as #tower_wide_cmp_fixed
+ * in @p nlimbs 64-bit limbs, the lowest first, as #dyadic_wide_cmp_fixed
  * reads one
  * @param[in] a The value
  * @param[in] scale The power of 2 the magnitude is scaled by
@@ -2958,7 +2963,7 @@ tower_wide_dup(const TowerWide *a)
  * nothing is truncated
  */
 int
-tower_wide_to_fixed(const TowerWide *a, int scale, bool up, uint64 *mag,
+dyadic_wide_to_fixed(const DyadicWide *a, int scale, bool up, uint64 *mag,
   int nlimbs)
 {
   memset(mag, 0, nlimbs * sizeof(uint64));
@@ -3008,31 +3013,31 @@ tower_wide_to_fixed(const TowerWide *a, int scale, bool up, uint64 *mag,
  * @param[in] sign Sign of the fixed-point value, -1 or 1; a zero @p mag is
  * the value 0 whatever @p sign says
  * @param[in] mag Its magnitude, @p nlimbs 64-bit limbs, the lowest first, as
- * a #TowerWide holds its magnitude
+ * a #DyadicWide holds its magnitude
  * @param[in] nlimbs Number of limbs of @p mag
  * @param[in] exp Weight of the lowest bit of @p mag
  */
 int
-tower_wide_cmp_fixed(TowerWideArena *ar, const TowerWide *mid, int sign,
+dyadic_wide_cmp_fixed(DyadicWideArena *ar, const DyadicWide *mid, int sign,
   const uint64 *mag, int nlimbs, int exp)
 {
   assert(nlimbs >= 0);
   assert(sign == -1 || sign == 1);
-  TowerWide *v = tower_wide_alloc(ar, nlimbs);
+  DyadicWide *v = dyadic_wide_alloc(ar, nlimbs);
   memcpy(v->limb, mag, sizeof(uint64) * (size_t) nlimbs);
   v->len = nlimbs;
   v->exp = exp;
   v->sign = sign;
-  tower_wide_normalize(v);
-  return tower_wide_cmp(mid, v);
+  dyadic_wide_normalize(v);
+  return dyadic_wide_cmp(mid, v);
 }
 
 /* The sum of a value and a finite double times @p sign, -1 or 1, exactly */
-static inline TowerWide *
-tower_wide_add_double(TowerWideArena *ar, const TowerWide *a, double x,
+static inline DyadicWide *
+dyadic_wide_add_double(DyadicWideArena *ar, const DyadicWide *a, double x,
   int sign)
 {
-  return tower_wide_add_signed(ar, a, 1, tower_wide_of_double(ar, x), sign);
+  return dyadic_wide_add_signed(ar, a, 1, dyadic_wide_of_double(ar, x), sign);
 }
 
 /**
@@ -3040,7 +3045,7 @@ tower_wide_add_double(TowerWideArena *ar, const TowerWide *a, double x,
  * two from 1/4 to 2 or its negation, computed exactly
  * @details A finite double is an integer mantissa of at most 53 bits times a
  * power of two, so a product of two is the product of their mantissas times
- * the product of their lowest bits and of the multiplier, which #TowerWide
+ * the product of their lowest bits and of the multiplier, which #DyadicWide
  * holds exactly whatever the magnitudes of the products, where an expansion
  * loses the low bits of a product below 2^-1074 and overflows past the
  * largest double. #square_products_sign calls it where
@@ -3049,22 +3054,22 @@ tower_wide_add_double(TowerWideArena *ar, const TowerWide *a, double x,
  * @param[in] left,right,factor Products, as two factors and a multiplier
  * @param[in] n Number of products
  */
-static TowerWide *
-square_products_wide(TowerWideArena *ar, const double *left,
+static DyadicWide *
+square_products_wide(DyadicWideArena *ar, const double *left,
   const double *right, const double *factor, int n)
 {
-  TowerWide *acc = tower_wide_alloc(ar, 1);
+  DyadicWide *acc = dyadic_wide_alloc(ar, 1);
   for (int j = 0; j < n; j++)
   {
     if (left[j] == 0.0 || right[j] == 0.0)
       continue;
-    TowerWide *p = tower_wide_mul(ar, tower_wide_of_double(ar, left[j]),
-      tower_wide_of_double(ar, right[j]));
+    DyadicWide *p = dyadic_wide_mul(ar, dyadic_wide_of_double(ar, left[j]),
+      dyadic_wide_of_double(ar, right[j]));
     /* The multiplier moves the lowest bit and may negate */
     if (factor[j] < 0.0)
       p->sign = - p->sign;
     p->exp += double_pow2_exponent(factor[j]);
-    acc = tower_wide_add(ar, acc, p);
+    acc = dyadic_wide_add(ar, acc, p);
   }
   return acc;
 }
@@ -3120,10 +3125,10 @@ square_products_sign(const double *left, const double *right,
 {
   if (! square_products_exact(left, right, factor, n))
   {
-    TowerWideArena ar;
-    tower_wide_arena_init(&ar);
+    DyadicWideArena ar;
+    dyadic_wide_arena_init(&ar);
     int sign = wide_sign(square_products_wide(&ar, left, right, factor, n));
-    tower_wide_arena_free(&ar);
+    dyadic_wide_arena_free(&ar);
     return sign;
   }
   double buf1[40], buf2[40];
@@ -3236,10 +3241,10 @@ point_distance_square_sign_given(const double *d, const double *e, int ndims,
   int n = point_distance_square_terms(d, e, ndims, t, nt, left, right, factor);
   if (! exact)
   {
-    TowerWideArena ar;
-    tower_wide_arena_init(&ar);
+    DyadicWideArena ar;
+    dyadic_wide_arena_init(&ar);
     int sign = wide_sign(square_products_wide(&ar, left, right, factor, n));
-    tower_wide_arena_free(&ar);
+    dyadic_wide_arena_free(&ar);
     return sign;
   }
   double buf1[40], buf2[40];
@@ -3797,16 +3802,16 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
   left[n] = r; right[n] = r; factor[n++] = -1.0;
   left[n] = r; right[n] = rlo; factor[n++] = -2.0;
   left[n] = rlo; right[n] = rlo; factor[n++] = -1.0;
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  const TowerWide *acc = square_products_wide(&ar, left, right, factor, n);
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  const DyadicWide *acc = square_products_wide(&ar, left, right, factor, n);
   /* (S - r^2) / (sqrt(S) + r), its numerator m * 2^exp and its denominator
    * read on the halves of the differences scaled by 2^-hexp, which brings the
    * largest into [1/2, 1), so that their squares neither overflow nor vanish;
    * the radius scales below 2, as sqrt(S) exceeds it */
   int exp, hexp;
-  double m = tower_wide_frexp(acc, &exp);
-  tower_wide_arena_free(&ar);
+  double m = dyadic_wide_frexp(acc, &exp);
+  dyadic_wide_arena_free(&ar);
   double h[3], maxh = 0.0;
   for (int i = 0; i < ndims; i++)
   {
@@ -4405,12 +4410,13 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
     }
     else
     {
-      TowerWideArena ar;
-      tower_wide_arena_init(&ar);
-      const TowerWide *acc = square_products_wide(&ar, left, right, factor, n);
+      DyadicWideArena ar;
+      dyadic_wide_arena_init(&ar);
+      const DyadicWide *acc = square_products_wide(&ar, left, right, factor,
+        n);
       int exp = 0;
-      double m = (wide_sign(acc) > 0) ? tower_wide_frexp(acc, &exp) : 0.0;
-      tower_wide_arena_free(&ar);
+      double m = (wide_sign(acc) > 0) ? dyadic_wide_frexp(acc, &exp) : 0.0;
+      dyadic_wide_arena_free(&ar);
       if (m == 0.0)
         return 0.0;
       c = ldexp(m / (sqrt(sum) + rs + rlos), exp - k);
@@ -4634,11 +4640,11 @@ point_segment_beyond(ExactSum *sums, int ndims, double r, double c, double h,
 
 /**
  * @brief Return the sign of the cross product of the vectors B - A and D - C,
- * read on #TowerWide for any finite coordinates
+ * read on #DyadicWide for any finite coordinates
  * @details The four differences are exact, and the sign is that of
  * `(bx - ax)(dy - cy) - (by - ay)(dx - cx)`, a comparison of two products
- * (#tower_wide_product_cmp), as #segment_interior_offset_sign reads its signs.
- * #cross_product_sign_exact calls it where its doubles cannot hold the
+ * (#dyadic_wide_product_cmp), as #segment_interior_offset_sign reads its
+ * signs. #cross_product_sign_exact calls it where its doubles cannot hold the
  * products exactly
  */
 static int
@@ -4646,16 +4652,16 @@ cross_product_sign_wide(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy)
 {
   const double ends[4][2] = {{bx, ax}, {dy, cy}, {by, ay}, {dx, cx}};
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *diff[4];
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  DyadicWide *diff[4];
   for (int i = 0; i < 4; i++)
   {
-    diff[i] = tower_wide_sub(ar, tower_wide_of_double(ar, ends[i][0]),
-      tower_wide_of_double(ar, ends[i][1]));
+    diff[i] = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, ends[i][0]),
+      dyadic_wide_of_double(ar, ends[i][1]));
   }
-  int sign = tower_wide_product_cmp(ar, diff[0], diff[1], diff[2], diff[3]);
-  tower_wide_arena_free(ar);
+  int sign = dyadic_wide_product_cmp(ar, diff[0], diff[1], diff[2], diff[3]);
+  dyadic_wide_arena_free(ar);
   return sign;
 }
 
@@ -4690,105 +4696,105 @@ cross_product_sign_wide(double ax, double ay, double bx, double by,
 static int
 point_motion_squares(const double *p0, const double *p1, int64 s0, int64 s1,
   const double *q0, const double *q1, int64 r0, int64 r1, int64 ta, int64 tb,
-  TowerWideArena *ar, TowerWide **nmin, TowerWide **dmin, TowerWide **nend0,
-  TowerWide **nend1, TowerWide **dend)
+  DyadicWideArena *ar, DyadicWide **nmin, DyadicWide **dmin,
+  DyadicWide **nend0, DyadicWide **nend1, DyadicWide **dend)
 {
   int64 dp = s1 - s0, dq = r1 - r0, a = ta - s0, b = ta - r0;
-  const TowerWide *Ka, *Kb, *t1;
-  TowerWide *Dp, *Dq, *k[4], *t2, *acc, *sum;
-  Dp = tower_wide_of_int64(ar, dp);
-  Dq = tower_wide_of_int64(ar, dq);
+  const DyadicWide *Ka, *Kb, *t1;
+  DyadicWide *Dp, *Dq, *k[4], *t2, *acc, *sum;
+  Dp = dyadic_wide_of_int64(ar, dp);
+  Dq = dyadic_wide_of_int64(ar, dq);
   /* The coefficients of p0, p1, q0, q1 in V0 */
-  Ka = tower_wide_of_int64(ar, dp - a);
-  k[0] = tower_wide_mul(ar, Dq, Ka);
-  Ka = tower_wide_of_int64(ar, a);
-  k[1] = tower_wide_mul(ar, Dq, Ka);
-  Kb = tower_wide_of_int64(ar, b - dq);
-  k[2] = tower_wide_mul(ar, Dp, Kb);
-  Kb = tower_wide_of_int64(ar, - b);
-  k[3] = tower_wide_mul(ar, Dp, Kb);
-  TowerWide *v[2], *e[2];
+  Ka = dyadic_wide_of_int64(ar, dp - a);
+  k[0] = dyadic_wide_mul(ar, Dq, Ka);
+  Ka = dyadic_wide_of_int64(ar, a);
+  k[1] = dyadic_wide_mul(ar, Dq, Ka);
+  Kb = dyadic_wide_of_int64(ar, b - dq);
+  k[2] = dyadic_wide_mul(ar, Dp, Kb);
+  Kb = dyadic_wide_of_int64(ar, - b);
+  k[3] = dyadic_wide_mul(ar, Dp, Kb);
+  DyadicWide *v[2], *e[2];
   for (int c = 0; c < 2; c++)
   {
     const double val[4] = {p0[c], p1[c], q0[c], q1[c]};
     /* V0 */
-    acc = tower_wide_zero(ar);
+    acc = dyadic_wide_zero(ar);
     for (int i = 0; i < 4; i++)
     {
-      t1 = tower_wide_of_double(ar, val[i]);
-      t2 = tower_wide_mul(ar, k[i], t1);
-      sum = tower_wide_add(ar, acc, t2);
+      t1 = dyadic_wide_of_double(ar, val[i]);
+      t2 = dyadic_wide_mul(ar, k[i], t1);
+      sum = dyadic_wide_add(ar, acc, t2);
       acc = sum;
     }
     v[c] = acc;
     /* E: Dq p1 - Dq p0 - Dp q1 + Dp q0 */
-    acc = tower_wide_zero(ar);
+    acc = dyadic_wide_zero(ar);
     for (int i = 0; i < 4; i++)
     {
-      t1 = tower_wide_of_double(ar, val[i]);
-      const TowerWide *f = (i < 2) ? Dq : Dp;
-      t2 = tower_wide_mul(ar, f, t1);
+      t1 = dyadic_wide_of_double(ar, val[i]);
+      const DyadicWide *f = (i < 2) ? Dq : Dp;
+      t2 = dyadic_wide_mul(ar, f, t1);
       /* p0 and q1 enter negated */
       if (i == 0 || i == 3)
         t2->sign = - t2->sign;
-      sum = tower_wide_add(ar, acc, t2);
+      sum = dyadic_wide_add(ar, acc, t2);
       acc = sum;
     }
     e[c] = acc;
   }
   /* The common denominator of the squared distances at the ends */
-  const TowerWide *dpdq;
-  dpdq = tower_wide_mul(ar, Dp, Dq);
-  *dend = tower_wide_mul(ar, dpdq, dpdq);
+  const DyadicWide *dpdq;
+  dpdq = dyadic_wide_mul(ar, Dp, Dq);
+  *dend = dyadic_wide_mul(ar, dpdq, dpdq);
   /* |V0|^2 and |V0 + L E|^2 */
-  const TowerWide *L, *sq0;
-  TowerWide *v1[2], *sq1;
-  L = tower_wide_of_int64(ar, tb - ta);
+  const DyadicWide *L, *sq0;
+  DyadicWide *v1[2], *sq1;
+  L = dyadic_wide_of_int64(ar, tb - ta);
   for (int c = 0; c < 2; c++)
   {
-    t1 = tower_wide_mul(ar, L, e[c]);
-    v1[c] = tower_wide_add(ar, v[c], t1);
+    t1 = dyadic_wide_mul(ar, L, e[c]);
+    v1[c] = dyadic_wide_add(ar, v[c], t1);
   }
-  sq0 = tower_wide_mul(ar, v[0], v[0]);
-  sq1 = tower_wide_mul(ar, v[1], v[1]);
-  *nend0 = tower_wide_add(ar, sq0, sq1);
-  sq0 = tower_wide_mul(ar, v1[0], v1[0]);
-  sq1 = tower_wide_mul(ar, v1[1], v1[1]);
-  *nend1 = tower_wide_add(ar, sq0, sq1);
+  sq0 = dyadic_wide_mul(ar, v[0], v[0]);
+  sq1 = dyadic_wide_mul(ar, v[1], v[1]);
+  *nend0 = dyadic_wide_add(ar, sq0, sq1);
+  sq0 = dyadic_wide_mul(ar, v1[0], v1[0]);
+  sq1 = dyadic_wide_mul(ar, v1[1], v1[1]);
+  *nend1 = dyadic_wide_add(ar, sq0, sq1);
   /* |E|^2 and V0 . E */
-  const TowerWide *ee, *ve;
-  sq0 = tower_wide_mul(ar, e[0], e[0]);
-  sq1 = tower_wide_mul(ar, e[1], e[1]);
-  ee = tower_wide_add(ar, sq0, sq1);
-  sq0 = tower_wide_mul(ar, v[0], e[0]);
-  sq1 = tower_wide_mul(ar, v[1], e[1]);
-  ve = tower_wide_add(ar, sq0, sq1);
+  const DyadicWide *ee, *ve;
+  sq0 = dyadic_wide_mul(ar, e[0], e[0]);
+  sq1 = dyadic_wide_mul(ar, e[1], e[1]);
+  ee = dyadic_wide_add(ar, sq0, sq1);
+  sq0 = dyadic_wide_mul(ar, v[0], e[0]);
+  sq1 = dyadic_wide_mul(ar, v[1], e[1]);
+  ve = dyadic_wide_add(ar, sq0, sq1);
   /* The foot lies inside where V0 . E < 0 and -V0 . E < L |E|^2 */
   bool inside = false;
   if (ee->sign > 0 && ve->sign < 0)
   {
-    t1 = tower_wide_mul(ar, L, ee);
-    inside = tower_wide_cmp(tower_wide_neg(ar, ve), t1) < 0;
+    t1 = dyadic_wide_mul(ar, L, ee);
+    inside = dyadic_wide_cmp(dyadic_wide_neg(ar, ve), t1) < 0;
   }
   if (inside)
   {
-    const TowerWide *cross;
-    sq0 = tower_wide_mul(ar, v[0], e[1]);
-    sq1 = tower_wide_mul(ar, v[1], e[0]);
+    const DyadicWide *cross;
+    sq0 = dyadic_wide_mul(ar, v[0], e[1]);
+    sq1 = dyadic_wide_mul(ar, v[1], e[0]);
     sq1->sign = - sq1->sign;
-    cross = tower_wide_add(ar, sq0, sq1);
-    *nmin = tower_wide_mul(ar, cross, cross);
-    *dmin = tower_wide_mul(ar, ee, *dend);
+    cross = dyadic_wide_add(ar, sq0, sq1);
+    *nmin = dyadic_wide_mul(ar, cross, cross);
+    *dmin = dyadic_wide_mul(ar, ee, *dend);
     return 0;
   }
-  int c = tower_wide_cmp(*nend0, *nend1);
+  int c = dyadic_wide_cmp(*nend0, *nend1);
   *nmin = (c <= 0) ? *nend0 : *nend1;
   *dmin = *dend;
   return (c < 0) ? -1 : ((c > 0) ? 1 : 0);
 }
 
-static double tower_wide_nearest_root(TowerWideArena *ar,
-  const TowerWide *n, const TowerWide *d);
+static double dyadic_wide_nearest_root(DyadicWideArena *ar,
+  const DyadicWide *n, const DyadicWide *d);
 
 /*****************************************************************************
  * The nearest double of a value read exactly
@@ -4798,7 +4804,7 @@ static double tower_wide_nearest_root(TowerWideArena *ar,
  * value searched is its negation */
 typedef struct
 {
-  TowerWideArena *ar;
+  DyadicWideArena *ar;
   NearestSide side;
   const void *arg;
   bool neg;
@@ -4811,14 +4817,14 @@ static int
 nearest_exact_side(uint64 bits, void *arg)
 {
   NearestExactSide *e = (NearestExactSide *) arg;
-  TowerWideArena *ar = e->ar;
+  DyadicWideArena *ar = e->ar;
   double lo;
   memcpy(&lo, &bits, sizeof(lo));
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  TowerWide *up;
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
+  DyadicWide *up;
   if (bits + 1 == NEAREST_INF_BITS)
   {
-    up = tower_wide_of_int64(ar, 1);
+    up = dyadic_wide_of_int64(ar, 1);
     up->exp = 1024;
   }
   else
@@ -4826,28 +4832,28 @@ nearest_exact_side(uint64 bits, void *arg)
     double u;
     uint64 b2 = bits + 1;
     memcpy(&u, &b2, sizeof(u));
-    up = tower_wide_of_double(ar, u);
+    up = dyadic_wide_of_double(ar, u);
   }
-  TowerWide *mid = tower_wide_add(ar, tower_wide_of_double(ar, lo), up);
+  DyadicWide *mid = dyadic_wide_add(ar, dyadic_wide_of_double(ar, lo), up);
   if (mid->sign != 0)
     mid->exp -= 1;
   /* -v beyond mid is v below -mid */
   if (e->neg)
     mid->sign = - mid->sign;
   int s = e->side(ar, mid, e->arg);
-  tower_wide_arena_release(ar, m);
+  dyadic_wide_arena_release(ar, m);
   return e->neg ? - s : s;
 }
 
 /* The double nearest a value that @p side reads exactly, its values taken
  * from @p ar, which is returned to where it was */
 static double
-nearest_double_in(TowerWideArena *ar, double c, NearestSide side,
+nearest_double_in(DyadicWideArena *ar, double c, NearestSide side,
   const void *arg)
 {
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  int s0 = side(ar, tower_wide_zero(ar), arg);
-  tower_wide_arena_release(ar, m);
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
+  int s0 = side(ar, dyadic_wide_zero(ar), arg);
+  dyadic_wide_arena_release(ar, m);
   if (s0 == 0)
     return 0.0;
   NearestExactSide e = {ar, side, arg, s0 < 0};
@@ -4877,25 +4883,25 @@ nearest_double_in(TowerWideArena *ar, double c, NearestSide side,
 double
 nearest_double_exact(double c, NearestSide side, const void *arg)
 {
-  TowerWideArena arena;
-  tower_wide_arena_init(&arena);
+  DyadicWideArena arena;
+  dyadic_wide_arena_init(&arena);
   double result = nearest_double_in(&arena, c, side, arg);
-  tower_wide_arena_free(&arena);
+  dyadic_wide_arena_free(&arena);
   return result;
 }
 
 /* A root `sqrt(n / d)`, n > 0 and d > 0 */
 typedef struct
 {
-  const TowerWide *n, *d;
+  const DyadicWide *n, *d;
 } NearestRoot;
 
 /* The sign of `sqrt(n / d) - mid`, that of `n - mid^2 d` for `mid >= 0` */
 static int
-nearest_root_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
+nearest_root_side(DyadicWideArena *ar, const DyadicWide *mid, const void *arg)
 {
   const NearestRoot *q = (const NearestRoot *) arg;
-  return tower_wide_cmp(q->n, tower_wide_mul(ar, tower_wide_mul(ar, mid,
+  return dyadic_wide_cmp(q->n, dyadic_wide_mul(ar, dyadic_wide_mul(ar, mid,
     mid), q->d));
 }
 
@@ -4907,13 +4913,13 @@ nearest_root_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
  */
 
 static double
-tower_wide_nearest_root(TowerWideArena *ar, const TowerWide *n,
-  const TowerWide *d)
+dyadic_wide_nearest_root(DyadicWideArena *ar, const DyadicWide *n,
+  const DyadicWide *d)
 {
   if (n->sign <= 0)
     return 0.0;
   int en, ed;
-  double mn = tower_wide_frexp(n, &en), md = tower_wide_frexp(d, &ed);
+  double mn = dyadic_wide_frexp(n, &en), md = dyadic_wide_frexp(d, &ed);
   double ratio = mn / md;
   int ex = en - ed;
   if (ex % 2 != 0)
@@ -4931,49 +4937,49 @@ tower_wide_nearest_root(TowerWideArena *ar, const TowerWide *n,
 /* A quotient `n / d`, d > 0 */
 typedef struct
 {
-  const TowerWide *n, *d;
+  const DyadicWide *n, *d;
 } NearestQuotient;
 
 /* The sign of `n / d - mid`, that of `n - mid d` */
 static int
-nearest_quotient_side(TowerWideArena *ar, const TowerWide *mid,
+nearest_quotient_side(DyadicWideArena *ar, const DyadicWide *mid,
   const void *arg)
 {
   const NearestQuotient *q = (const NearestQuotient *) arg;
-  return tower_wide_sub(ar, q->n, tower_wide_mul(ar, mid, q->d))->sign;
+  return dyadic_wide_sub(ar, q->n, dyadic_wide_mul(ar, mid, q->d))->sign;
 }
 
 /* A value `c + b / sqrt(s)`, s > 0 */
 typedef struct
 {
-  const TowerWide *c, *b, *s;
+  const DyadicWide *c, *b, *s;
 } NearestOffsetRoot;
 
 /* The sign of `c + b / sqrt(s) - mid`, that of `b - a sqrt(s)` with
  * `a = mid - c`, read on squares where both sides have one sign */
 static int
-nearest_offset_root_side(TowerWideArena *ar, const TowerWide *mid,
+nearest_offset_root_side(DyadicWideArena *ar, const DyadicWide *mid,
   const void *arg)
 {
   const NearestOffsetRoot *v = (const NearestOffsetRoot *) arg;
-  const TowerWide *a = tower_wide_sub(ar, mid, v->c);
+  const DyadicWide *a = dyadic_wide_sub(ar, mid, v->c);
   int sa = a->sign, sb = v->b->sign;
   if (sa <= 0 && sb >= 0)
     return (sa == 0 && sb == 0) ? 0 : 1;
   if (sa >= 0 && sb <= 0)
     return -1;
   /* Both of one sign: compare b^2 with a^2 s */
-  TowerWide *diff = tower_wide_sub(ar, tower_wide_mul(ar, v->b, v->b),
-    tower_wide_mul(ar, tower_wide_mul(ar, a, a), v->s));
+  DyadicWide *diff = dyadic_wide_sub(ar, dyadic_wide_mul(ar, v->b, v->b),
+    dyadic_wide_mul(ar, dyadic_wide_mul(ar, a, a), v->s));
   return (sb > 0) ? diff->sign : - diff->sign;
 }
 
 /* The double nearest `n / d`, d > 0 */
 static double
-tower_wide_nearest_quotient(const TowerWide *n, const TowerWide *d)
+dyadic_wide_nearest_quotient(const DyadicWide *n, const DyadicWide *d)
 {
   int en, ed;
-  double mn = tower_wide_frexp(n, &en), md = tower_wide_frexp(d, &ed);
+  double mn = dyadic_wide_frexp(n, &en), md = dyadic_wide_frexp(d, &ed);
   double c = ldexp(mn / md, en - ed);
   NearestQuotient q = {n, d};
   return nearest_double_exact(c, &nearest_quotient_side, &q);
@@ -4981,18 +4987,18 @@ tower_wide_nearest_quotient(const TowerWide *n, const TowerWide *d)
 
 /* The double nearest `c + b / sqrt(s)`, s > 0 */
 static double
-tower_wide_nearest_offset_root(TowerWideArena *ar, double c,
-  const TowerWide *b, const TowerWide *s)
+dyadic_wide_nearest_offset_root(DyadicWideArena *ar, double c,
+  const DyadicWide *b, const DyadicWide *s)
 {
   int eb, es;
-  double mb = tower_wide_frexp(b, &eb), ms = tower_wide_frexp(s, &es);
+  double mb = dyadic_wide_frexp(b, &eb), ms = dyadic_wide_frexp(s, &es);
   if (es % 2 != 0)
   {
     ms *= 2.0;
     es -= 1;
   }
   double guess = c + b->sign * ldexp(mb / sqrt(ms), eb - es / 2);
-  NearestOffsetRoot v = {tower_wide_of_double(ar, c), b, s};
+  NearestOffsetRoot v = {dyadic_wide_of_double(ar, c), b, s};
   return nearest_double_exact(guess, &nearest_offset_root_side, &v);
 }
 
@@ -5011,7 +5017,7 @@ tower_wide_nearest_offset_root(TowerWideArena *ar, double c,
  * Either way each coordinate is `c + b / sqrt(s)`, with `b` and `s` of degree
  * two in the input doubles, decided by exact signs of squares; no root is
  * taken in doubles. Every test has degree at most four, held exactly in
- * #TowerWide for every finite input
+ * #DyadicWide for every finite input
  * @param[in] c Centre
  * @param[in] r Radius, 0 for a point
  * @param[in] a,b Ends of the segment
@@ -5022,90 +5028,90 @@ void
 point_segment_shortestline_exact(const double *c, double r, const double *a,
   const double *b, double *sx, double *sy, double *ex, double *ey)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *wcx, *wcy, *ux, *uy, *wx, *wy, *t2, *n;
-  const TowerWide *wax, *way, *wbx, *wby, *t1;
-  const TowerWide *d;
-  wcx = tower_wide_of_double(ar, c[0]); wcy = tower_wide_of_double(ar, c[1]);
-  wax = tower_wide_of_double(ar, a[0]); way = tower_wide_of_double(ar, a[1]);
-  wbx = tower_wide_of_double(ar, b[0]); wby = tower_wide_of_double(ar, b[1]);
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *wcx, *wcy, *ux, *uy, *wx, *wy, *t2, *n;
+  const DyadicWide *wax, *way, *wbx, *wby, *t1;
+  const DyadicWide *d;
+  wcx = dyadic_wide_of_double(ar, c[0]); wcy = dyadic_wide_of_double(ar, c[1]);
+  wax = dyadic_wide_of_double(ar, a[0]); way = dyadic_wide_of_double(ar, a[1]);
+  wbx = dyadic_wide_of_double(ar, b[0]); wby = dyadic_wide_of_double(ar, b[1]);
   /* u = b - a, w = c - a, N = w.u, D = u.u, all exact */
-  ux = tower_wide_sub(ar, wbx, wax); uy = tower_wide_sub(ar, wby, way);
-  wx = tower_wide_sub(ar, wcx, wax); wy = tower_wide_sub(ar, wcy, way);
-  t1 = tower_wide_mul(ar, wx, ux); t2 = tower_wide_mul(ar, wy, uy);
-  n = tower_wide_add(ar, t1, t2);
-  t1 = tower_wide_mul(ar, ux, ux); t2 = tower_wide_mul(ar, uy, uy);
-  d = tower_wide_add(ar, t1, t2);
+  ux = dyadic_wide_sub(ar, wbx, wax); uy = dyadic_wide_sub(ar, wby, way);
+  wx = dyadic_wide_sub(ar, wcx, wax); wy = dyadic_wide_sub(ar, wcy, way);
+  t1 = dyadic_wide_mul(ar, wx, ux); t2 = dyadic_wide_mul(ar, wy, uy);
+  n = dyadic_wide_add(ar, t1, t2);
+  t1 = dyadic_wide_mul(ar, ux, ux); t2 = dyadic_wide_mul(ar, uy, uy);
+  d = dyadic_wide_add(ar, t1, t2);
   /* Q = (qxn, qyn) / den */
-  const TowerWide *qxn, *qyn, *den;
+  const DyadicWide *qxn, *qyn, *den;
   bool foot = false;
   if (d->sign == 0 || n->sign <= 0)
   {
     qxn = wax; qyn = way;
-    den = tower_wide_of_double(ar, 1.0);
+    den = dyadic_wide_of_double(ar, 1.0);
   }
-  else if (tower_wide_cmp(n, d) >= 0)
+  else if (dyadic_wide_cmp(n, d) >= 0)
   {
     qxn = wbx; qyn = wby;
-    den = tower_wide_of_double(ar, 1.0);
+    den = dyadic_wide_of_double(ar, 1.0);
   }
   else
   {
-    t1 = tower_wide_mul(ar, wax, d); t2 = tower_wide_mul(ar, ux, n);
-    qxn = tower_wide_add(ar, t1, t2);
-    t1 = tower_wide_mul(ar, way, d); t2 = tower_wide_mul(ar, uy, n);
-    qyn = tower_wide_add(ar, t1, t2);
+    t1 = dyadic_wide_mul(ar, wax, d); t2 = dyadic_wide_mul(ar, ux, n);
+    qxn = dyadic_wide_add(ar, t1, t2);
+    t1 = dyadic_wide_mul(ar, way, d); t2 = dyadic_wide_mul(ar, uy, n);
+    qyn = dyadic_wide_add(ar, t1, t2);
     den = d;
     foot = true;
   }
-  *ex = tower_wide_nearest_quotient(qxn, den);
-  *ey = tower_wide_nearest_quotient(qyn, den);
+  *ex = dyadic_wide_nearest_quotient(qxn, den);
+  *ey = dyadic_wide_nearest_quotient(qyn, den);
   if (r == 0.0)
   {
     *sx = c[0]; *sy = c[1];
-    tower_wide_arena_free(ar);
+    dyadic_wide_arena_free(ar);
     return;
   }
   /* The direction from c to Q, (dx, dy) / sqrt(s), and the square it is
    * compared with: at the foot (-uy, ux) X / D, |Q - c|^2 = X^2 / D, against
    * r^2 as X^2 against r^2 D; at an end Q - c, against r^2 */
-  const TowerWide *dx, *dy, *lhs, *rhs, *wr, *bx, *by;
-  const TowerWide *s;
-  wr = tower_wide_of_double(ar, r);
-  t1 = tower_wide_mul(ar, wr, wr);
+  const DyadicWide *dx, *dy, *lhs, *rhs, *wr, *bx, *by;
+  const DyadicWide *s;
+  wr = dyadic_wide_of_double(ar, r);
+  t1 = dyadic_wide_mul(ar, wr, wr);
   if (foot)
   {
-    const TowerWide *x;
-    TowerWide *t3;
-    t2 = tower_wide_mul(ar, wx, uy); t3 = tower_wide_mul(ar, wy, ux);
+    const DyadicWide *x;
+    DyadicWide *t3;
+    t2 = dyadic_wide_mul(ar, wx, uy); t3 = dyadic_wide_mul(ar, wy, ux);
     t3->sign = - t3->sign;
-    x = tower_wide_add(ar, t2, t3);
-    dx = tower_wide_signed(ar, uy, - x->sign);
-    dy = tower_wide_signed(ar, ux, x->sign);
+    x = dyadic_wide_add(ar, t2, t3);
+    dx = dyadic_wide_signed(ar, uy, - x->sign);
+    dy = dyadic_wide_signed(ar, ux, x->sign);
     s = d;
-    lhs = tower_wide_mul(ar, x, x);
-    rhs = tower_wide_mul(ar, t1, d);
+    lhs = dyadic_wide_mul(ar, x, x);
+    rhs = dyadic_wide_mul(ar, t1, d);
   }
   else
   {
-    dx = tower_wide_sub(ar, qxn, wcx); dy = tower_wide_sub(ar, qyn, wcy);
-    t2 = tower_wide_mul(ar, dx, dx); lhs = tower_wide_mul(ar, dy, dy);
-    s = tower_wide_add(ar, t2, lhs);
+    dx = dyadic_wide_sub(ar, qxn, wcx); dy = dyadic_wide_sub(ar, qyn, wcy);
+    t2 = dyadic_wide_mul(ar, dx, dx); lhs = dyadic_wide_mul(ar, dy, dy);
+    s = dyadic_wide_add(ar, t2, lhs);
     lhs = s;
     rhs = t1;
   }
-  if (tower_wide_cmp(lhs, rhs) <= 0)
+  if (dyadic_wide_cmp(lhs, rhs) <= 0)
   {
     /* The disc meets the segment: the line collapses to Q */
     *sx = *ex; *sy = *ey;
-    tower_wide_arena_free(ar);
+    dyadic_wide_arena_free(ar);
     return;
   }
-  bx = tower_wide_mul(ar, wr, dx); by = tower_wide_mul(ar, wr, dy);
-  *sx = tower_wide_nearest_offset_root(ar, c[0], bx, s);
-  *sy = tower_wide_nearest_offset_root(ar, c[1], by, s);
-  tower_wide_arena_free(ar);
+  bx = dyadic_wide_mul(ar, wr, dx); by = dyadic_wide_mul(ar, wr, dy);
+  *sx = dyadic_wide_nearest_offset_root(ar, c[0], bx, s);
+  *sy = dyadic_wide_nearest_offset_root(ar, c[1], by, s);
+  dyadic_wide_arena_free(ar);
   return;
 }
 
@@ -5125,23 +5131,23 @@ point_motion_nad_exact(const double *p0, const double *p1, int64 s0,
   int64 s1, const double *q0, const double *q1, int64 r0, int64 r1, int64 ta,
   int64 tb)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *nmin, *dmin, *n0, *n1, *dend;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  DyadicWide *nmin, *dmin, *n0, *n1, *dend;
   point_motion_squares(p0, p1, s0, s1, q0, q1, r0, r1, ta, tb, ar, &nmin,
     &dmin, &n0, &n1, &dend);
-  double result = tower_wide_nearest_root(ar, nmin, dmin);
-  tower_wide_arena_free(ar);
+  double result = dyadic_wide_nearest_root(ar, nmin, dmin);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
 /**
  * @brief A point of the plane whose coordinates are held exactly, see
- * #TowerWide
+ * #DyadicWide
  */
 typedef struct
 {
-  TowerWide *x, *y;
+  DyadicWide *x, *y;
 } WidePoint;
 
 /**
@@ -5149,11 +5155,11 @@ typedef struct
  * (@p bx, @p by), exactly
  */
 static void
-wide_point_sum(TowerWideArena *ar, WidePoint *p, double ax, double ay,
+wide_point_sum(DyadicWideArena *ar, WidePoint *p, double ax, double ay,
   double bx, double by, int sign)
 {
-  p->x = tower_wide_add_double(ar, tower_wide_of_double(ar, ax), bx, sign);
-  p->y = tower_wide_add_double(ar, tower_wide_of_double(ar, ay), by, sign);
+  p->x = dyadic_wide_add_double(ar, dyadic_wide_of_double(ar, ax), bx, sign);
+  p->y = dyadic_wide_add_double(ar, dyadic_wide_of_double(ar, ay), by, sign);
   return;
 }
 
@@ -5161,16 +5167,17 @@ wide_point_sum(TowerWideArena *ar, WidePoint *p, double ax, double ay,
  * @brief Return the sign of the cross product `(b - a) x (c - a)`, exactly
  */
 static int
-wide_point_orient(TowerWideArena *ar, const WidePoint *a, const WidePoint *b,
+wide_point_orient(DyadicWideArena *ar, const WidePoint *a, const WidePoint *b,
   const WidePoint *c)
 {
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  const TowerWide *ux = tower_wide_sub(ar, b->x, a->x),
-    *uy = tower_wide_sub(ar, b->y, a->y), *vx = tower_wide_sub(ar, c->x, a->x),
-    *vy = tower_wide_sub(ar, c->y, a->y);
-  int result = tower_wide_cmp(tower_wide_mul(ar, ux, vy),
-    tower_wide_mul(ar, uy, vx));
-  tower_wide_arena_release(ar, m);
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
+  const DyadicWide *ux = dyadic_wide_sub(ar, b->x, a->x),
+    *uy = dyadic_wide_sub(ar, b->y, a->y),
+    *vx = dyadic_wide_sub(ar, c->x, a->x),
+    *vy = dyadic_wide_sub(ar, c->y, a->y);
+  int result = dyadic_wide_cmp(dyadic_wide_mul(ar, ux, vy),
+    dyadic_wide_mul(ar, uy, vx));
+  dyadic_wide_arena_release(ar, m);
   return result;
 }
 
@@ -5182,8 +5189,8 @@ static bool
 wide_point_between(const WidePoint *a, const WidePoint *b,
   const WidePoint *c)
 {
-  return tower_wide_cmp(c->x, a->x) * tower_wide_cmp(c->x, b->x) <= 0 &&
-    tower_wide_cmp(c->y, a->y) * tower_wide_cmp(c->y, b->y) <= 0;
+  return dyadic_wide_cmp(c->x, a->x) * dyadic_wide_cmp(c->x, b->x) <= 0 &&
+    dyadic_wide_cmp(c->y, a->y) * dyadic_wide_cmp(c->y, b->y) <= 0;
 }
 
 /**
@@ -5192,7 +5199,7 @@ wide_point_between(const WidePoint *a, const WidePoint *b,
  * @details A segment whose two ends are equal is a point
  */
 static bool
-wide_segment_meet(TowerWideArena *ar, const WidePoint *a, const WidePoint *b,
+wide_segment_meet(DyadicWideArena *ar, const WidePoint *a, const WidePoint *b,
   const WidePoint *c, const WidePoint *d)
 {
   int o1 = wide_point_orient(ar, a, b, c), o2 = wide_point_orient(ar, a, b, d);
@@ -5215,36 +5222,36 @@ wide_segment_meet(TowerWideArena *ar, const WidePoint *a, const WidePoint *b,
  * exact coordinates
  */
 static void
-wide_point_segment_square(TowerWideArena *ar, const WidePoint *p,
-  const WidePoint *a, const WidePoint *b, TowerWide **n, TowerWide **d)
+wide_point_segment_square(DyadicWideArena *ar, const WidePoint *p,
+  const WidePoint *a, const WidePoint *b, DyadicWide **n, DyadicWide **d)
 {
-  const TowerWide *ux, *uy, *wx, *wy, *t1, *t2, *dot;
-  TowerWide *len2;
-  ux = tower_wide_sub(ar, b->x, a->x); uy = tower_wide_sub(ar, b->y, a->y);
-  wx = tower_wide_sub(ar, p->x, a->x); wy = tower_wide_sub(ar, p->y, a->y);
-  t1 = tower_wide_mul(ar, wx, ux); t2 = tower_wide_mul(ar, wy, uy);
-  dot = tower_wide_add(ar, t1, t2);
-  t1 = tower_wide_mul(ar, ux, ux); t2 = tower_wide_mul(ar, uy, uy);
-  len2 = tower_wide_add(ar, t1, t2);
-  if (len2->sign != 0 && dot->sign > 0 && tower_wide_cmp(dot, len2) >= 0)
+  const DyadicWide *ux, *uy, *wx, *wy, *t1, *t2, *dot;
+  DyadicWide *len2;
+  ux = dyadic_wide_sub(ar, b->x, a->x); uy = dyadic_wide_sub(ar, b->y, a->y);
+  wx = dyadic_wide_sub(ar, p->x, a->x); wy = dyadic_wide_sub(ar, p->y, a->y);
+  t1 = dyadic_wide_mul(ar, wx, ux); t2 = dyadic_wide_mul(ar, wy, uy);
+  dot = dyadic_wide_add(ar, t1, t2);
+  t1 = dyadic_wide_mul(ar, ux, ux); t2 = dyadic_wide_mul(ar, uy, uy);
+  len2 = dyadic_wide_add(ar, t1, t2);
+  if (len2->sign != 0 && dot->sign > 0 && dyadic_wide_cmp(dot, len2) >= 0)
   {
     /* The nearest point is the end b */
-    wx = tower_wide_sub(ar, p->x, b->x); wy = tower_wide_sub(ar, p->y, b->y);
+    wx = dyadic_wide_sub(ar, p->x, b->x); wy = dyadic_wide_sub(ar, p->y, b->y);
   }
   else if (len2->sign != 0 && dot->sign > 0)
   {
     /* The nearest point is the foot of the perpendicular */
-    const TowerWide *x;
-    t1 = tower_wide_mul(ar, wx, uy); t2 = tower_wide_mul(ar, wy, ux);
-    x = tower_wide_sub(ar, t1, t2);
-    *n = tower_wide_mul(ar, x, x);
+    const DyadicWide *x;
+    t1 = dyadic_wide_mul(ar, wx, uy); t2 = dyadic_wide_mul(ar, wy, ux);
+    x = dyadic_wide_sub(ar, t1, t2);
+    *n = dyadic_wide_mul(ar, x, x);
     *d = len2;
     return;
   }
   /* The nearest point is an end, at the offset (wx, wy) */
-  t1 = tower_wide_mul(ar, wx, wx); t2 = tower_wide_mul(ar, wy, wy);
-  *n = tower_wide_add(ar, t1, t2);
-  *d = tower_wide_of_double(ar, 1.0);
+  t1 = dyadic_wide_mul(ar, wx, wx); t2 = dyadic_wide_mul(ar, wy, wy);
+  *n = dyadic_wide_add(ar, t1, t2);
+  *d = dyadic_wide_of_double(ar, 1.0);
   return;
 }
 
@@ -5252,18 +5259,18 @@ wide_point_segment_square(TowerWideArena *ar, const WidePoint *p,
  * @brief Return the double nearest the distance of the point @p p to the
  * closed segment from @p a to @p b
  * @details The exact square of #wide_point_segment_square, answered as the
- * double nearest its root (#tower_wide_nearest_root), as
+ * double nearest its root (#dyadic_wide_nearest_root), as
  * #point_segment_shortestline_exact reads it
  */
 static double
-wide_point_segment_distance(TowerWideArena *ar, const WidePoint *p,
+wide_point_segment_distance(DyadicWideArena *ar, const WidePoint *p,
   const WidePoint *a, const WidePoint *b)
 {
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  TowerWide *n, *d;
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
+  DyadicWide *n, *d;
   wide_point_segment_square(ar, p, a, b, &n, &d);
-  double result = tower_wide_nearest_root(ar, n, d);
-  tower_wide_arena_release(ar, m);
+  double result = dyadic_wide_nearest_root(ar, n, d);
+  dyadic_wide_arena_release(ar, m);
   return result;
 }
 
@@ -5272,11 +5279,11 @@ wide_point_segment_distance(TowerWideArena *ar, const WidePoint *p,
  * #wide_point_sum sets a sum
  */
 static void
-wide_point_scaled(TowerWideArena *ar, WidePoint *r, double x, double y,
-  const TowerWide *k)
+wide_point_scaled(DyadicWideArena *ar, WidePoint *r, double x, double y,
+  const DyadicWide *k)
 {
-  r->x = tower_wide_mul(ar, tower_wide_of_double(ar, x), k);
-  r->y = tower_wide_mul(ar, tower_wide_of_double(ar, y), k);
+  r->x = dyadic_wide_mul(ar, dyadic_wide_of_double(ar, x), k);
+  r->y = dyadic_wide_mul(ar, dyadic_wide_of_double(ar, y), k);
   return;
 }
 
@@ -5289,18 +5296,18 @@ wide_point_scaled(TowerWideArena *ar, WidePoint *r, double x, double y,
  * none is formed between the instants
  */
 static void
-point_motion_at_scaled(TowerWideArena *ar, const double *p0,
-  const double *p1, int64 s0, int64 s1, int64 t, WidePoint *q, TowerWide **D)
+point_motion_at_scaled(DyadicWideArena *ar, const double *p0,
+  const double *p1, int64 s0, int64 s1, int64 t, WidePoint *q, DyadicWide **D)
 {
-  const TowerWide *K0, *K1;
+  const DyadicWide *K0, *K1;
   WidePoint q0, q1;
-  *D = tower_wide_of_int64(ar, s1 - s0);
-  K0 = tower_wide_of_int64(ar, s1 - t);
-  K1 = tower_wide_of_int64(ar, t - s0);
+  *D = dyadic_wide_of_int64(ar, s1 - s0);
+  K0 = dyadic_wide_of_int64(ar, s1 - t);
+  K1 = dyadic_wide_of_int64(ar, t - s0);
   wide_point_scaled(ar, &q0, p0[0], p0[1], K0);
   wide_point_scaled(ar, &q1, p1[0], p1[1], K1);
-  q->x = tower_wide_add(ar, q0.x, q1.x);
-  q->y = tower_wide_add(ar, q0.y, q1.y);
+  q->x = dyadic_wide_add(ar, q0.x, q1.x);
+  q->y = dyadic_wide_add(ar, q0.y, q1.y);
   return;
 }
 
@@ -5311,7 +5318,7 @@ point_motion_at_scaled(TowerWideArena *ar, const double *p0,
  * @details The point at @p t is `Q / D` (#point_motion_at_scaled), and its
  * distance to a segment `[a, b]` that of `Q` to `[D a, D b]` over `D`: the
  * exact square `n / d` of #wide_point_segment_square divided by `D^2`,
- * answered as the double nearest its root (#tower_wide_nearest_root).
+ * answered as the double nearest its root (#dyadic_wide_nearest_root).
  * Rounding to the nearest is monotone, so the least of those doubles is the
  * double nearest the least distance. The interior of a polygon is not read
  * here (#point_motion_in_polygon_at)
@@ -5327,19 +5334,19 @@ point_motion_edges_distance_at(const double *p0, const double *p1, int64 s0,
 {
   assert(p0); assert(p1); assert(edges); assert(nedges > 0);
   assert(s0 < s1); assert(s0 <= t); assert(t <= s1);
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *D2;
-  TowerWide *D, *n, *d;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *D2;
+  DyadicWide *D, *n, *d;
   WidePoint q, a, b;
   point_motion_at_scaled(ar, p0, p1, s0, s1, t, &q, &D);
-  D2 = tower_wide_mul(ar, D, D);
+  D2 = dyadic_wide_mul(ar, D, D);
   /* The values of each edge are released at the next */
-  TowerWideMark m = tower_wide_arena_mark(ar);
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
   double best = DBL_MAX;
   for (int i = 0; i < nedges && best > 0.0; i++)
   {
-    tower_wide_arena_release(ar, m);
+    dyadic_wide_arena_release(ar, m);
     const Edge *e = edges[i];
     assert(e->etype == EDGE_POINT || e->etype == EDGE_LINESEG ||
       e->etype == EDGE_POLYSEG);
@@ -5350,11 +5357,11 @@ point_motion_edges_distance_at(const double *p0, const double *p1, int64 s0,
       wide_point_scaled(ar, &b, e->x2, e->y2, D);
     wide_point_segment_square(ar, &q, &a, &b, &n, &d);
     double v = (n->sign == 0) ? 0.0 :
-      tower_wide_nearest_root(ar, n, tower_wide_mul(ar, d, D2));
+      dyadic_wide_nearest_root(ar, n, dyadic_wide_mul(ar, d, D2));
     if (v < best)
       best = v;
   }
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return best;
 }
 
@@ -5378,30 +5385,30 @@ point_motion_in_polygon_at(const double *p0, const double *p1, int64 s0,
 {
   assert(p0); assert(p1); assert(edges);
   assert(s0 < s1); assert(s0 <= t); assert(t <= s1);
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *D;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  DyadicWide *D;
   WidePoint q, a, b;
   point_motion_at_scaled(ar, p0, p1, s0, s1, t, &q, &D);
   /* The values of each edge are released at the next */
-  TowerWideMark m = tower_wide_arena_mark(ar);
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
   bool inside = false;
   for (int i = 0; i < nedges; i++)
   {
-    tower_wide_arena_release(ar, m);
+    dyadic_wide_arena_release(ar, m);
     const Edge *e = edges[i];
     if (e->etype != EDGE_POLYSEG)
       continue;
     wide_point_scaled(ar, &a, e->x1, e->y1, D);
     wide_point_scaled(ar, &b, e->x2, e->y2, D);
-    bool above1 = tower_wide_cmp(a.y, q.y) > 0;
-    bool above2 = tower_wide_cmp(b.y, q.y) > 0;
+    bool above1 = dyadic_wide_cmp(a.y, q.y) > 0;
+    bool above2 = dyadic_wide_cmp(b.y, q.y) > 0;
     if (above1 == above2)
       continue;
     int s = wide_point_orient(ar, &a, &b, &q);
     inside ^= (e->y2 > e->y1) ? (s > 0) : (s < 0);
   }
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return inside;
 }
 
@@ -5414,7 +5421,7 @@ point_motion_in_polygon_at(const double *p0, const double *p1, int64 s0,
  * nearest their distance, as #segment_distance_exact answers it
  */
 static double
-wide_segment_distance(TowerWideArena *ar, const WidePoint *a,
+wide_segment_distance(DyadicWideArena *ar, const WidePoint *a,
   const WidePoint *b, const WidePoint *c, const WidePoint *d)
 {
   if (wide_segment_meet(ar, a, b, c, d))
@@ -5430,7 +5437,7 @@ wide_segment_distance(TowerWideArena *ar, const WidePoint *a,
  * the @p n vertices @p poly, in either orientation
  */
 static bool
-wide_point_in_convex(TowerWideArena *ar, const WidePoint *q,
+wide_point_in_convex(DyadicWideArena *ar, const WidePoint *q,
   const WidePoint *poly, int n)
 {
   bool pos = false, neg = false;
@@ -5508,8 +5515,8 @@ convex_motion_nad_exact(const double *b, int nb, const double *p0,
 {
   assert(b); assert(p0); assert(p1); assert(g); assert(nb > 0);
   assert(ng > 0);
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
   WidePoint *b0 = palloc(sizeof(WidePoint) * nb);
   WidePoint *b1 = palloc(sizeof(WidePoint) * nb);
   WidePoint *bref = palloc(sizeof(WidePoint) * nb);
@@ -5555,7 +5562,7 @@ convex_motion_nad_exact(const double *b, int nb, const double *p0,
         &bref[(i + 1) % nb]));
 
   pfree(b0); pfree(b1); pfree(bref); pfree(gref); pfree(g0); pfree(g1);
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
@@ -5595,10 +5602,10 @@ sum_point_set(SumPoint *p, double ax, double ay, double bx, double by,
  * @brief Set the #WidePoint of the same coordinates as @p p
  */
 static void
-sum_point_wide(TowerWideArena *ar, const SumPoint *p, WidePoint *w)
+sum_point_wide(DyadicWideArena *ar, const SumPoint *p, WidePoint *w)
 {
-  w->x = tower_wide_add_double(ar, tower_wide_of_double(ar, p->x), p->ex, 1);
-  w->y = tower_wide_add_double(ar, tower_wide_of_double(ar, p->y), p->ey, 1);
+  w->x = dyadic_wide_add_double(ar, dyadic_wide_of_double(ar, p->x), p->ex, 1);
+  w->y = dyadic_wide_add_double(ar, dyadic_wide_of_double(ar, p->y), p->ey, 1);
 }
 
 /**
@@ -5632,14 +5639,14 @@ sum_point_orient(const SumPoint *a, const SumPoint *b, const SumPoint *c)
     u2 * (fabs(l) + fabs(r) + fabs(o));
   if (fabs(o) > bound * (1.0 + SUM_FILTER_SLACK) + SUM_FILTER_TINY)
     return (o > 0.0) ? 1 : -1;
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
   WidePoint wa, wb, wc;
   sum_point_wide(ar, a, &wa);
   sum_point_wide(ar, b, &wb);
   sum_point_wide(ar, c, &wc);
   int result = wide_point_orient(ar, &wa, &wb, &wc);
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
@@ -5650,14 +5657,14 @@ sum_point_orient(const SumPoint *a, const SumPoint *b, const SumPoint *c)
 static bool
 sum_point_between(const SumPoint *a, const SumPoint *b, const SumPoint *c)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
   WidePoint wa, wb, wc;
   sum_point_wide(ar, a, &wa);
   sum_point_wide(ar, b, &wb);
   sum_point_wide(ar, c, &wc);
   bool result = wide_point_between(&wa, &wb, &wc);
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
@@ -5986,19 +5993,19 @@ point_motion_dwithin_exact(const double *p0, const double *p1, int64 s0,
     tb, d, ever);
   if (filter >= 0)
     return filter;
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *wd, *dd, *rhs;
-  TowerWide *nmin, *dmin, *n0, *n1, *dend;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *wd, *dd, *rhs;
+  DyadicWide *nmin, *dmin, *n0, *n1, *dend;
   int at = point_motion_squares(p0, p1, s0, s1, q0, q1, r0, r1, ta, tb, ar,
     &nmin, &dmin, &n0, &n1, &dend);
-  wd = tower_wide_of_double(ar, d);
-  dd = tower_wide_mul(ar, wd, wd);
+  wd = dyadic_wide_of_double(ar, d);
+  dd = dyadic_wide_mul(ar, wd, wd);
   int result;
   if (ever)
   {
-    rhs = tower_wide_mul(ar, dd, dmin);
-    int least = tower_wide_cmp(nmin, rhs);
+    rhs = dyadic_wide_mul(ar, dd, dmin);
+    int least = dyadic_wide_cmp(nmin, rhs);
     /* The least is d^2: 2 or 3 where it is reached at one end alone */
     if (least != 0)
       result = (least < 0) ? 1 : 0;
@@ -6007,11 +6014,11 @@ point_motion_dwithin_exact(const double *p0, const double *p1, int64 s0,
   }
   else
   {
-    rhs = tower_wide_mul(ar, dd, dend);
-    result = (tower_wide_cmp(n0, rhs) <= 0 && tower_wide_cmp(n1, rhs) <= 0) ?
+    rhs = dyadic_wide_mul(ar, dd, dend);
+    result = (dyadic_wide_cmp(n0, rhs) <= 0 && dyadic_wide_cmp(n1, rhs) <= 0) ?
       1 : 0;
   }
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
@@ -6071,37 +6078,37 @@ point_motion_nad_exceeds(const double *p0, const double *p1, int64 s0,
 
 /**
  * @brief Return the sign of the shoelace sum of a ring, summed exactly on
- * #TowerWide
+ * #DyadicWide
  * @details The path of #ring_area_sign where a product leaves the doubles or
  * part of it falls below 2^-1074: each product of two doubles is formed
- * exactly (#tower_wide_mul) and added with its sign (#tower_wide_add); a
+ * exactly (#dyadic_wide_mul) and added with its sign (#dyadic_wide_add); a
  * product spans at most 34 limbs and the sum of every product of doubles at
  * most 67
  */
 static int
 ring_area_sign_wide(const POINTARRAY *pa)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *acc, *u, *v;
-  TowerWide *p;
-  acc = tower_wide_zero(ar);
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *acc, *u, *v;
+  DyadicWide *p;
+  acc = dyadic_wide_zero(ar);
   for (uint32_t i = 0; i + 1 < pa->npoints; i++)
   {
     const POINT2D *a = getPoint2d_cp(pa, i);
     const POINT2D *b = getPoint2d_cp(pa, i + 1);
-    u = tower_wide_of_double(ar, a->x);
-    v = tower_wide_of_double(ar, b->y);
-    p = tower_wide_mul(ar, u, v);
-    acc = tower_wide_add(ar, acc, p);
-    u = tower_wide_of_double(ar, b->x);
-    v = tower_wide_of_double(ar, a->y);
-    p = tower_wide_mul(ar, u, v);
+    u = dyadic_wide_of_double(ar, a->x);
+    v = dyadic_wide_of_double(ar, b->y);
+    p = dyadic_wide_mul(ar, u, v);
+    acc = dyadic_wide_add(ar, acc, p);
+    u = dyadic_wide_of_double(ar, b->x);
+    v = dyadic_wide_of_double(ar, a->y);
+    p = dyadic_wide_mul(ar, u, v);
     p->sign = - p->sign;
-    acc = tower_wide_add(ar, acc, p);
+    acc = dyadic_wide_add(ar, acc, p);
   }
   int sign = acc->sign;
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return sign;
 }
 
@@ -6124,50 +6131,50 @@ ring_area_sign_wide(const POINTARRAY *pa)
 static void
 point_motion_dwithin_coeffs(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
-  double rb0, double rb1, double d, double dlo, TowerWideArena *ar,
-  TowerWide **A, TowerWide **B, TowerWide **C)
+  double rb0, double rb1, double d, double dlo, DyadicWideArena *ar,
+  DyadicWide **A, DyadicWide **B, DyadicWide **C)
 {
-  const TowerWide *w0, *w1, *l0, *dl;
-  TowerWide *sq;
-  *A = tower_wide_zero(ar);
-  *B = tower_wide_zero(ar);
-  *C = tower_wide_zero(ar);
+  const DyadicWide *w0, *w1, *l0, *dl;
+  DyadicWide *sq;
+  *A = dyadic_wide_zero(ar);
+  *B = dyadic_wide_zero(ar);
+  *C = dyadic_wide_zero(ar);
   for (int c = 0; c < ndims; c++)
   {
-    w0 = tower_wide_zero(ar);
-    w0 = tower_wide_add_double(ar, w0, a0[c], 1);
-    w0 = tower_wide_add_double(ar, w0, b0[c], -1);
-    w1 = tower_wide_zero(ar);
-    w1 = tower_wide_add_double(ar, w1, a1[c], 1);
-    w1 = tower_wide_add_double(ar, w1, a0[c], -1);
-    w1 = tower_wide_add_double(ar, w1, b1[c], -1);
-    w1 = tower_wide_add_double(ar, w1, b0[c], 1);
-    sq = tower_wide_mul(ar, w1, w1);
-    *A = tower_wide_add(ar, *A, sq);
-    sq = tower_wide_mul(ar, w0, w1);
-    *B = tower_wide_add(ar, *B, sq);
-    sq = tower_wide_mul(ar, w0, w0);
-    *C = tower_wide_add(ar, *C, sq);
+    w0 = dyadic_wide_zero(ar);
+    w0 = dyadic_wide_add_double(ar, w0, a0[c], 1);
+    w0 = dyadic_wide_add_double(ar, w0, b0[c], -1);
+    w1 = dyadic_wide_zero(ar);
+    w1 = dyadic_wide_add_double(ar, w1, a1[c], 1);
+    w1 = dyadic_wide_add_double(ar, w1, a0[c], -1);
+    w1 = dyadic_wide_add_double(ar, w1, b1[c], -1);
+    w1 = dyadic_wide_add_double(ar, w1, b0[c], 1);
+    sq = dyadic_wide_mul(ar, w1, w1);
+    *A = dyadic_wide_add(ar, *A, sq);
+    sq = dyadic_wide_mul(ar, w0, w1);
+    *B = dyadic_wide_add(ar, *B, sq);
+    sq = dyadic_wide_mul(ar, w0, w0);
+    *C = dyadic_wide_add(ar, *C, sq);
   }
-  l0 = tower_wide_zero(ar);
-  l0 = tower_wide_add_double(ar, l0, ra0, 1);
-  l0 = tower_wide_add_double(ar, l0, rb0, 1);
-  l0 = tower_wide_add_double(ar, l0, d, 1);
-  l0 = tower_wide_add_double(ar, l0, dlo, 1);
-  dl = tower_wide_zero(ar);
-  dl = tower_wide_add_double(ar, dl, ra1, 1);
-  dl = tower_wide_add_double(ar, dl, rb1, 1);
-  dl = tower_wide_add_double(ar, dl, ra0, -1);
-  dl = tower_wide_add_double(ar, dl, rb0, -1);
-  sq = tower_wide_mul(ar, dl, dl);
+  l0 = dyadic_wide_zero(ar);
+  l0 = dyadic_wide_add_double(ar, l0, ra0, 1);
+  l0 = dyadic_wide_add_double(ar, l0, rb0, 1);
+  l0 = dyadic_wide_add_double(ar, l0, d, 1);
+  l0 = dyadic_wide_add_double(ar, l0, dlo, 1);
+  dl = dyadic_wide_zero(ar);
+  dl = dyadic_wide_add_double(ar, dl, ra1, 1);
+  dl = dyadic_wide_add_double(ar, dl, rb1, 1);
+  dl = dyadic_wide_add_double(ar, dl, ra0, -1);
+  dl = dyadic_wide_add_double(ar, dl, rb0, -1);
+  sq = dyadic_wide_mul(ar, dl, dl);
   sq->sign = - sq->sign;
-  *A = tower_wide_add(ar, *A, sq);
-  sq = tower_wide_mul(ar, l0, dl);
+  *A = dyadic_wide_add(ar, *A, sq);
+  sq = dyadic_wide_mul(ar, l0, dl);
   sq->sign = - sq->sign;
-  *B = tower_wide_add(ar, *B, sq);
-  sq = tower_wide_mul(ar, l0, l0);
+  *B = dyadic_wide_add(ar, *B, sq);
+  sq = dyadic_wide_mul(ar, l0, l0);
   sq->sign = - sq->sign;
-  *C = tower_wide_add(ar, *C, sq);
+  *C = dyadic_wide_add(ar, *C, sq);
   return;
 }
 
@@ -6178,12 +6185,12 @@ point_motion_dwithin_coeffs(const double *a0, const double *a1,
  */
 typedef struct
 {
-  const TowerWide *A;   /**< A */
-  const TowerWide *B2D; /**< 2 B D */
-  const TowerWide *CD2; /**< C D^2 */
-  const TowerWide *BD;  /**< B D, for the vertex test A n + B D */
-  TowerWideArena *ar;   /**< Arena of the four and of each sign read */
-  double a, b2d, cd2, bd; /**< The four in doubles (#tower_wide_approx) */
+  const DyadicWide *A;   /**< A */
+  const DyadicWide *B2D; /**< 2 B D */
+  const DyadicWide *CD2; /**< C D^2 */
+  const DyadicWide *BD;  /**< B D, for the vertex test A n + B D */
+  DyadicWideArena *ar;   /**< Arena of the four and of each sign read */
+  double a, b2d, cd2, bd; /**< The four in doubles (#dyadic_wide_approx) */
   bool approx;      /**< Whether the doubles are set and each lies within
                          2^-51 of its exact value, relatively */
 } DWithinGrid;
@@ -6199,7 +6206,7 @@ typedef struct
  * relatively, and the evaluation rounds at most five times, so the value in
  * doubles lies within `2^-49 M` of the exact one, with `M` the sum of the
  * magnitudes of its terms; a value beyond `2^-47 M` carries the exact sign.
- * The exact sign on #TowerWide answers the rest, and wherever a double
+ * The exact sign on #DyadicWide answers the rest, and wherever a double
  * overflows, or `M` is not a normal double
  */
 static int
@@ -6222,19 +6229,19 @@ dwithin_grid_sign(const DWithinGrid *g, int64 n, bool vertex)
     if (isfinite(v) && isnormal(M) && fabs(v) > 0x1p-47 * M)
       return (v > 0.0) - (v < 0.0);
   }
-  TowerWideArena *ar = g->ar;
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  const TowerWide *wn = tower_wide_of_int64(ar, n), *acc;
+  DyadicWideArena *ar = g->ar;
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
+  const DyadicWide *wn = dyadic_wide_of_int64(ar, n), *acc;
   if (vertex)
-    acc = tower_wide_add(ar, tower_wide_mul(ar, g->A, wn), g->BD);
+    acc = dyadic_wide_add(ar, dyadic_wide_mul(ar, g->A, wn), g->BD);
   else
   {
-    acc = tower_wide_mul(ar, g->A, tower_wide_mul(ar, wn, wn));
-    acc = tower_wide_add(ar, acc, tower_wide_mul(ar, g->B2D, wn));
-    acc = tower_wide_add(ar, acc, g->CD2);
+    acc = dyadic_wide_mul(ar, g->A, dyadic_wide_mul(ar, wn, wn));
+    acc = dyadic_wide_add(ar, acc, dyadic_wide_mul(ar, g->B2D, wn));
+    acc = dyadic_wide_add(ar, acc, g->CD2);
   }
   int sign = acc->sign;
-  tower_wide_arena_release(ar, m);
+  dyadic_wide_arena_release(ar, m);
   return sign;
 }
 
@@ -6262,7 +6269,7 @@ typedef int (*GridSignFn)(const void *ctx, int64 n);
  * reads is not positive, that sign being not positive at @p lo, positive at
  * @p hi and changing once in between
  * @details A gallop from the estimate @p est brackets the answer, then halving
- * the bracket finds it, as #tower_wide_nearest_root finds its answer
+ * the bracket finds it, as #dyadic_wide_nearest_root finds its answer
  */
 static int64
 grid_sign_last(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
@@ -6544,11 +6551,11 @@ point_motion_dwithin_period_filter(const double *a0, const double *a1,
   return -1;
 }
 
-static int dwithin_quadratic_period(TowerWideArena *ar,
-  const TowerWide *Aq, const TowerWide *Bq, const TowerWide *Cq, int64 D,
+static int dwithin_quadratic_period(DyadicWideArena *ar,
+  const DyadicWide *Aq, const DyadicWide *Bq, const DyadicWide *Cq, int64 D,
   int64 *n1, int64 *n2);
-static void dwithin_grid_set(TowerWideArena *ar, DWithinGrid *g,
-  const TowerWide *A, const TowerWide *B, const TowerWide *C, int64 D);
+static void dwithin_grid_set(DyadicWideArena *ar, DWithinGrid *g,
+  const DyadicWide *A, const DyadicWide *B, const DyadicWide *C, int64 D);
 static int point_motion_dwithin_period_wide(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
@@ -6634,14 +6641,14 @@ point_motion_dwithin_at_exact(const double *a0, const double *a1,
 {
   assert(D > 0); assert(ndims == 2 || ndims == 3);
   DWithinGrid g;
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *A, *B, *C;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  DyadicWide *A, *B, *C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
     ar, &A, &B, &C);
   dwithin_grid_set(ar, &g, A, B, C, D);
   bool result = dwithin_grid_sign(&g, n, false) <= 0;
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
@@ -6654,7 +6661,7 @@ point_motion_dwithin_at_exact(const double *a0, const double *a1,
  * negative: the quadratic of #point_motion_dwithin_coeffs with the radius of
  * the second disc negated and a zero distance. Its discriminant `B^2 - A C`
  * is a sign of degree four in the input doubles, read on the exact
- * coefficients by #tower_wide_product_cmp: zero where the two roots are one,
+ * coefficients by #dyadic_wide_product_cmp: zero where the two roots are one,
  * the discs grazing at a single instant
  * @param[in] a0,a1 Centre of the first disc at the start and at the end
  * @param[in] b0,b1 Centre of the second disc at the start and at the end
@@ -6670,14 +6677,14 @@ point_motion_contains_disc_sign(const double *a0, const double *a1,
   double rb0, double rb1, int *asign)
 {
   assert(ndims == 2 || ndims == 3); assert(asign);
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *A, *B, *C;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  DyadicWide *A, *B, *C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, - rb0, - rb1,
     0.0, 0.0, ar, &A, &B, &C);
   *asign = A->sign;
-  int sign = tower_wide_product_cmp(ar, B, B, A, C);
-  tower_wide_arena_free(ar);
+  int sign = dyadic_wide_product_cmp(ar, B, B, A, C);
+  dyadic_wide_arena_free(ar);
   return sign;
 }
 
@@ -6693,13 +6700,13 @@ point_motion_dwithin_period_wide(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
   double rb0, double rb1, double d, int64 D, int64 *n1, int64 *n2)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *A, *B, *C;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  DyadicWide *A, *B, *C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
     ar, &A, &B, &C);
   int result = dwithin_quadratic_period(ar, A, B, C, D, n1, n2);
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
@@ -6714,18 +6721,18 @@ point_motion_dwithin_period_wide(const double *a0, const double *a1,
  * @p n2, each dated as #point_motion_dwithin_period_exact dates it
  */
 static int
-dwithin_quadratic_period(TowerWideArena *ar, const TowerWide *Aq,
-  const TowerWide *Bq, const TowerWide *Cq, int64 D, int64 *n1, int64 *n2)
+dwithin_quadratic_period(DyadicWideArena *ar, const DyadicWide *Aq,
+  const DyadicWide *Bq, const DyadicWide *Cq, int64 D, int64 *n1, int64 *n2)
 {
   DWithinGrid g;
-  const TowerWide *B = Bq, *C = Cq;
-  const TowerWide *B2, *t, *q1;
+  const DyadicWide *B = Bq, *C = Cq;
+  const DyadicWide *B2, *t, *q1;
   g.A = Aq;
   /* q(1) = A + 2 B + C */
-  t = tower_wide_of_int64(ar, 2);
-  B2 = tower_wide_mul(ar, B, t);
-  q1 = tower_wide_add(ar, g.A, B2);
-  q1 = tower_wide_add(ar, q1, C);
+  t = dyadic_wide_of_int64(ar, 2);
+  B2 = dyadic_wide_mul(ar, B, t);
+  q1 = dyadic_wide_add(ar, g.A, B2);
+  q1 = dyadic_wide_add(ar, q1, C);
   bool in0 = C->sign <= 0, in1 = q1->sign <= 0;
   /* Within at both ends, within throughout, the gap being convex */
   if (in0 && in1)
@@ -6738,8 +6745,8 @@ dwithin_quadratic_period(TowerWideArena *ar, const TowerWide *Aq,
   /* Estimates of the roots of A x^2 + 2 B x + C, which only start the
    * searches, the one a difference of close values would form taken from
    * their product C / A */
-  double a = tower_wide_approx(g.A), b = tower_wide_approx(B),
-    c = tower_wide_approx(C);
+  double a = dyadic_wide_approx(g.A), b = dyadic_wide_approx(B),
+    c = dyadic_wide_approx(C);
   double disc = b * b - a * c;
   double sq = (disc > 0.0) ? sqrt(disc) : 0.0;
   double qq = (b >= 0.0) ? -(b + sq) : -(b - sq);
@@ -6766,13 +6773,13 @@ dwithin_quadratic_period(TowerWideArena *ar, const TowerWide *Aq,
   /* Within at neither end: within in between only where the parabola is
    * convex, its vertex -B / A lies inside, and its discriminant B^2 - A C is
    * not negative */
-  const TowerWide *bb, *dw, *apb;
-  TowerWide *ac;
-  bb = tower_wide_mul(ar, B, B);
-  ac = tower_wide_mul(ar, g.A, C);
+  const DyadicWide *bb, *dw, *apb;
+  DyadicWide *ac;
+  bb = dyadic_wide_mul(ar, B, B);
+  ac = dyadic_wide_mul(ar, g.A, C);
   ac->sign = - ac->sign;
-  dw = tower_wide_add(ar, bb, ac);
-  apb = tower_wide_add(ar, g.A, B);
+  dw = dyadic_wide_add(ar, bb, ac);
+  apb = dyadic_wide_add(ar, g.A, B);
   if (g.A->sign <= 0 || B->sign >= 0 || apb->sign <= 0 || dw->sign < 0)
     return 0;
   /* The microsecond the vertex truncates to, the last n with A n + B D <= 0,
@@ -6803,28 +6810,28 @@ dwithin_quadratic_period(TowerWideArena *ar, const TowerWide *Aq,
  * in @p ar
  */
 static void
-dwithin_grid_set(TowerWideArena *ar, DWithinGrid *g, const TowerWide *A,
-  const TowerWide *B, const TowerWide *C, int64 D)
+dwithin_grid_set(DyadicWideArena *ar, DWithinGrid *g, const DyadicWide *A,
+  const DyadicWide *B, const DyadicWide *C, int64 D)
 {
-  const TowerWide *t, *wD, *B2;
+  const DyadicWide *t, *wD, *B2;
   g->ar = ar;
   g->A = A;
-  t = tower_wide_of_int64(ar, 2);
-  B2 = tower_wide_mul(ar, B, t);
-  wD = tower_wide_of_int64(ar, D);
-  g->B2D = tower_wide_mul(ar, B2, wD);
-  t = tower_wide_mul(ar, C, wD);
-  g->CD2 = tower_wide_mul(ar, t, wD);
-  g->BD = tower_wide_mul(ar, B, wD);
+  t = dyadic_wide_of_int64(ar, 2);
+  B2 = dyadic_wide_mul(ar, B, t);
+  wD = dyadic_wide_of_int64(ar, D);
+  g->B2D = dyadic_wide_mul(ar, B2, wD);
+  t = dyadic_wide_mul(ar, C, wD);
+  g->CD2 = dyadic_wide_mul(ar, t, wD);
+  g->BD = dyadic_wide_mul(ar, B, wD);
   /* The doubles of the filter of #dwithin_grid_sign: the top two limbs of
    * each, within 2^-51 of it relatively where the double is normal; one
    * that is not, or that overflows, leaves the filter off */
-  const TowerWide *w[4] = {g->A, g->B2D, g->CD2, g->BD};
+  const DyadicWide *w[4] = {g->A, g->B2D, g->CD2, g->BD};
   double *v[4] = {&g->a, &g->b2d, &g->cd2, &g->bd};
   g->approx = true;
   for (int i = 0; i < 4; i++)
   {
-    *v[i] = tower_wide_approx(w[i]);
+    *v[i] = dyadic_wide_approx(w[i]);
     if (w[i]->sign != 0 && ! isnormal(*v[i]))
       g->approx = false;
   }
@@ -6846,10 +6853,10 @@ dwithin_grid_set(TowerWideArena *ar, DWithinGrid *g, const TowerWide *A,
 typedef struct
 {
   DWithinGrid qa, qb, qp;   /**< The quadratics at the ends and the line */
-  const TowerWide *s0D, *s1, *l2D; /**< `D (c0 - a) . u`, `(c1 - c0) . u`,
+  const DyadicWide *s0D, *s1, *l2D; /**< `D (c0 - a) . u`, `(c1 - c0) . u`,
                                  `D |u|^2` */
-  TowerWideArena *ar;       /**< Arena of the three and of each sign read */
-  double s0Dd, s1d, l2Dd;   /**< The three in doubles (#tower_wide_approx) */
+  DyadicWideArena *ar;       /**< Arena of the three and of each sign read */
+  double s0Dd, s1d, l2Dd;   /**< The three in doubles (#dyadic_wide_approx) */
   bool approx;              /**< Whether each lies within 2^-51 of its exact
                                  value, relatively */
 } SegmWithinGrid;
@@ -6881,11 +6888,11 @@ segm_within_sign(const void *ctx, int64 n)
         return Min(sign, dwithin_grid_sign(&s->qp, n, false));
     }
   }
-  TowerWideArena *ar = s->ar;
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  const TowerWide *sig = tower_wide_add(ar, s->s0D, tower_wide_mul(ar, s->s1, tower_wide_of_int64(ar, n)));
-  bool on = sig->sign >= 0 && tower_wide_cmp(sig, s->l2D) <= 0;
-  tower_wide_arena_release(ar, m);
+  DyadicWideArena *ar = s->ar;
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
+  const DyadicWide *sig = dyadic_wide_add(ar, s->s0D, dyadic_wide_mul(ar, s->s1, dyadic_wide_of_int64(ar, n)));
+  bool on = sig->sign >= 0 && dyadic_wide_cmp(sig, s->l2D) <= 0;
+  dyadic_wide_arena_release(ar, m);
   if (! on)
     return sign;
   return Min(sign, dwithin_grid_sign(&s->qp, n, false));
@@ -6897,13 +6904,13 @@ segm_within_sign(const void *ctx, int64 n)
  * @details Kept out of line, as #point_motion_dwithin_period_wide is
  */
 static pg_noinline int
-segm_dwithin_period_wide(TowerWideArena *ar, const double *c0,
+segm_dwithin_period_wide(DyadicWideArena *ar, const double *c0,
   const double *c1, double r0, double r1, const double *a, const double *b,
   double d, int64 D, int64 *n1, int64 *n2)
 {
   SegmWithinGrid s;
   s.ar = ar;
-  TowerWide *A, *B, *C;
+  DyadicWide *A, *B, *C;
   int64 lo[3], hi[3];
   int k[3];
   /* The ends */
@@ -6916,72 +6923,72 @@ segm_dwithin_period_wide(TowerWideArena *ar, const double *c0,
   dwithin_grid_set(ar, &s.qb, A, B, C, D);
   k[1] = dwithin_quadratic_period(ar, A, B, C, D, &lo[1], &hi[1]);
   /* The line: u = b - a, w0 = c0 - a, dc = c1 - c0, each difference exact */
-  const TowerWide *p, *k0, *k1, *l2, *L0, *dL, *sq;
-  TowerWide *u[2], *w0[2], *dc[2], *q, *l2L;
+  const DyadicWide *p, *k0, *k1, *l2, *L0, *dL, *sq;
+  DyadicWide *u[2], *w0[2], *dc[2], *q, *l2L;
   for (int i = 0; i < 2; i++)
   {
-    u[i] = tower_wide_zero(ar);
-    u[i] = tower_wide_add_double(ar, u[i], b[i], 1);
-    u[i] = tower_wide_add_double(ar, u[i], a[i], -1);
-    w0[i] = tower_wide_zero(ar);
-    w0[i] = tower_wide_add_double(ar, w0[i], c0[i], 1);
-    w0[i] = tower_wide_add_double(ar, w0[i], a[i], -1);
-    dc[i] = tower_wide_zero(ar);
-    dc[i] = tower_wide_add_double(ar, dc[i], c1[i], 1);
-    dc[i] = tower_wide_add_double(ar, dc[i], c0[i], -1);
+    u[i] = dyadic_wide_zero(ar);
+    u[i] = dyadic_wide_add_double(ar, u[i], b[i], 1);
+    u[i] = dyadic_wide_add_double(ar, u[i], a[i], -1);
+    w0[i] = dyadic_wide_zero(ar);
+    w0[i] = dyadic_wide_add_double(ar, w0[i], c0[i], 1);
+    w0[i] = dyadic_wide_add_double(ar, w0[i], a[i], -1);
+    dc[i] = dyadic_wide_zero(ar);
+    dc[i] = dyadic_wide_add_double(ar, dc[i], c1[i], 1);
+    dc[i] = dyadic_wide_add_double(ar, dc[i], c0[i], -1);
   }
   /* k0 = u x w0, k1 = u x dc, l2 = |u|^2 */
-  p = tower_wide_mul(ar, u[0], w0[1]);
-  q = tower_wide_mul(ar, u[1], w0[0]);
+  p = dyadic_wide_mul(ar, u[0], w0[1]);
+  q = dyadic_wide_mul(ar, u[1], w0[0]);
   q->sign = - q->sign;
-  k0 = tower_wide_add(ar, p, q);
-  p = tower_wide_mul(ar, u[0], dc[1]);
-  q = tower_wide_mul(ar, u[1], dc[0]);
+  k0 = dyadic_wide_add(ar, p, q);
+  p = dyadic_wide_mul(ar, u[0], dc[1]);
+  q = dyadic_wide_mul(ar, u[1], dc[0]);
   q->sign = - q->sign;
-  k1 = tower_wide_add(ar, p, q);
-  p = tower_wide_mul(ar, u[0], u[0]);
-  q = tower_wide_mul(ar, u[1], u[1]);
-  l2 = tower_wide_add(ar, p, q);
+  k1 = dyadic_wide_add(ar, p, q);
+  p = dyadic_wide_mul(ar, u[0], u[0]);
+  q = dyadic_wide_mul(ar, u[1], u[1]);
+  l2 = dyadic_wide_add(ar, p, q);
   /* L0 = r0 + d, dL = r1 - r0 */
-  L0 = tower_wide_zero(ar);
-  L0 = tower_wide_add_double(ar, L0, r0, 1);
-  L0 = tower_wide_add_double(ar, L0, d, 1);
-  dL = tower_wide_zero(ar);
-  dL = tower_wide_add_double(ar, dL, r1, 1);
-  dL = tower_wide_add_double(ar, dL, r0, -1);
+  L0 = dyadic_wide_zero(ar);
+  L0 = dyadic_wide_add_double(ar, L0, r0, 1);
+  L0 = dyadic_wide_add_double(ar, L0, d, 1);
+  dL = dyadic_wide_zero(ar);
+  dL = dyadic_wide_add_double(ar, dL, r1, 1);
+  dL = dyadic_wide_add_double(ar, dL, r0, -1);
   /* A = k1^2 - l2 dL^2, B = k0 k1 - l2 L0 dL, C = k0^2 - l2 L0^2 */
-  A = tower_wide_mul(ar, k1, k1);
-  sq = tower_wide_mul(ar, dL, dL);
-  l2L = tower_wide_mul(ar, l2, sq);
+  A = dyadic_wide_mul(ar, k1, k1);
+  sq = dyadic_wide_mul(ar, dL, dL);
+  l2L = dyadic_wide_mul(ar, l2, sq);
   l2L->sign = - l2L->sign;
-  A = tower_wide_add(ar, A, l2L);
-  B = tower_wide_mul(ar, k0, k1);
-  sq = tower_wide_mul(ar, L0, dL);
-  l2L = tower_wide_mul(ar, l2, sq);
+  A = dyadic_wide_add(ar, A, l2L);
+  B = dyadic_wide_mul(ar, k0, k1);
+  sq = dyadic_wide_mul(ar, L0, dL);
+  l2L = dyadic_wide_mul(ar, l2, sq);
   l2L->sign = - l2L->sign;
-  B = tower_wide_add(ar, B, l2L);
-  C = tower_wide_mul(ar, k0, k0);
-  sq = tower_wide_mul(ar, L0, L0);
-  l2L = tower_wide_mul(ar, l2, sq);
+  B = dyadic_wide_add(ar, B, l2L);
+  C = dyadic_wide_mul(ar, k0, k0);
+  sq = dyadic_wide_mul(ar, L0, L0);
+  l2L = dyadic_wide_mul(ar, l2, sq);
   l2L->sign = - l2L->sign;
-  C = tower_wide_add(ar, C, l2L);
+  C = dyadic_wide_add(ar, C, l2L);
   dwithin_grid_set(ar, &s.qp, A, B, C, D);
   k[2] = dwithin_quadratic_period(ar, A, B, C, D, &lo[2], &hi[2]);
   /* The projection: s0 = w0 . u, s1 = dc . u, held times D where read */
-  const TowerWide *s0, *wD;
-  p = tower_wide_mul(ar, w0[0], u[0]);
-  q = tower_wide_mul(ar, w0[1], u[1]);
-  s0 = tower_wide_add(ar, p, q);
-  p = tower_wide_mul(ar, dc[0], u[0]);
-  q = tower_wide_mul(ar, dc[1], u[1]);
-  s.s1 = tower_wide_add(ar, p, q);
-  wD = tower_wide_of_int64(ar, D);
-  s.s0D = tower_wide_mul(ar, s0, wD);
-  s.l2D = tower_wide_mul(ar, l2, wD);
+  const DyadicWide *s0, *wD;
+  p = dyadic_wide_mul(ar, w0[0], u[0]);
+  q = dyadic_wide_mul(ar, w0[1], u[1]);
+  s0 = dyadic_wide_add(ar, p, q);
+  p = dyadic_wide_mul(ar, dc[0], u[0]);
+  q = dyadic_wide_mul(ar, dc[1], u[1]);
+  s.s1 = dyadic_wide_add(ar, p, q);
+  wD = dyadic_wide_of_int64(ar, D);
+  s.s0D = dyadic_wide_mul(ar, s0, wD);
+  s.l2D = dyadic_wide_mul(ar, l2, wD);
   /* Their doubles, for the filter of #segm_within_sign */
-  s.s0Dd = tower_wide_approx(s.s0D);
-  s.s1d = tower_wide_approx(s.s1);
-  s.l2Dd = tower_wide_approx(s.l2D);
+  s.s0Dd = dyadic_wide_approx(s.s0D);
+  s.s1d = dyadic_wide_approx(s.s1);
+  s.l2Dd = dyadic_wide_approx(s.l2D);
   s.approx = (s.s0D->sign == 0 || isnormal(s.s0Dd)) &&
     (s.s1->sign == 0 || isnormal(s.s1d)) &&
     (s.l2D->sign == 0 || isnormal(s.l2Dd));
@@ -7028,8 +7035,8 @@ segm_dwithin_period_wide(TowerWideArena *ar, const double *c0,
     if (k[2] != 1)
       return 0;
     /* (s0 A - s1 B) / A is the projection at the vertex, A > 0 */
-    const TowerWide *vs = tower_wide_sub(ar, tower_wide_mul(ar, s0, A), tower_wide_mul(ar, s.s1, B));
-    if (vs->sign < 0 || tower_wide_cmp(vs, tower_wide_mul(ar, l2, A)) > 0)
+    const DyadicWide *vs = dyadic_wide_sub(ar, dyadic_wide_mul(ar, s0, A), dyadic_wide_mul(ar, s.s1, B));
+    if (vs->sign < 0 || dyadic_wide_cmp(vs, dyadic_wide_mul(ar, l2, A)) > 0)
       return 0;
     *n1 = *n2 = lo[2];
     return 1;
@@ -7096,11 +7103,11 @@ point_motion_segm_dwithin_period_exact(const double *c0, const double *c1,
         pu[0] * pu[0] + pu[1] * pu[1], a, ev, ev[0] * ev[0] + ev[1] * ev[1],
         2, 0.0, &lo2, &hi2) && lo2 > reach2)
     return 0;
-  TowerWideArena arena;
-  tower_wide_arena_init(&arena);
+  DyadicWideArena arena;
+  dyadic_wide_arena_init(&arena);
   int result = segm_dwithin_period_wide(&arena, c0, c1, r0, r1, a, b, d, D,
     n1, n2);
-  tower_wide_arena_free(&arena);
+  dyadic_wide_arena_free(&arena);
   return result;
 }
 
@@ -7119,27 +7126,27 @@ static bool
 motion_point_inside_segms(const double *c0, const double *c1, int64 D,
   int64 n, const Edge *const *edges, int nedges)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *wD, *wn, *t;
-  TowerWide *P[2];
-  wD = tower_wide_of_int64(ar, D);
-  wn = tower_wide_of_int64(ar, n);
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *wD, *wn, *t;
+  DyadicWide *P[2];
+  wD = dyadic_wide_of_int64(ar, D);
+  wn = dyadic_wide_of_int64(ar, n);
   for (int i = 0; i < 2; i++)
   {
-    const TowerWide *c, *dc;
-    c = tower_wide_zero(ar);
-    c = tower_wide_add_double(ar, c, c0[i], 1);
-    dc = tower_wide_zero(ar);
-    dc = tower_wide_add_double(ar, dc, c1[i], 1);
-    dc = tower_wide_add_double(ar, dc, c0[i], -1);
-    P[i] = tower_wide_mul(ar, c, wD);
-    t = tower_wide_mul(ar, dc, wn);
-    P[i] = tower_wide_add(ar, P[i], t);
+    const DyadicWide *c, *dc;
+    c = dyadic_wide_zero(ar);
+    c = dyadic_wide_add_double(ar, c, c0[i], 1);
+    dc = dyadic_wide_zero(ar);
+    dc = dyadic_wide_add_double(ar, dc, c1[i], 1);
+    dc = dyadic_wide_add_double(ar, dc, c0[i], -1);
+    P[i] = dyadic_wide_mul(ar, c, wD);
+    t = dyadic_wide_mul(ar, dc, wn);
+    P[i] = dyadic_wide_add(ar, P[i], t);
   }
-  const TowerWide *negPy = tower_wide_neg(ar, P[1]);
+  const DyadicWide *negPy = dyadic_wide_neg(ar, P[1]);
   /* The values of each edge are released at the next */
-  TowerWideMark m = tower_wide_arena_mark(ar);
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
   /* A filter: the height `P_y` in doubles, `c0_y D + n (c1_y - c0_y)`,
    * within 2^-50 of the magnitudes it combines, so an edge both of whose
    * ends stand beyond that, on one side of it, crosses no ray, and only
@@ -7152,7 +7159,7 @@ motion_point_inside_segms(const double *c0, const double *c1, int64 D,
   bool inside = false;
   for (int k = 0; k < nedges; k++)
   {
-    tower_wide_arena_release(ar, m);
+    dyadic_wide_arena_release(ar, m);
     const Edge *e = edges[k];
     if (e->etype != EDGE_POLYSEG)
       continue;
@@ -7165,45 +7172,45 @@ motion_point_inside_segms(const double *c0, const double *c1, int64 D,
         continue;
     }
     /* The signs of D a_y - P_y and D b_y - P_y */
-    const TowerWide *ay, *by, *ax, *ux, *uy, *qx, *qy, *p, *s;
-    TowerWide *q;
-    ay = tower_wide_zero(ar);
-    ay = tower_wide_add_double(ar, ay, e->y1, 1);
-    by = tower_wide_zero(ar);
-    by = tower_wide_add_double(ar, by, e->y2, 1);
-    q = tower_wide_mul(ar, ay, wD);
-    p = tower_wide_add(ar, q, negPy);
+    const DyadicWide *ay, *by, *ax, *ux, *uy, *qx, *qy, *p, *s;
+    DyadicWide *q;
+    ay = dyadic_wide_zero(ar);
+    ay = dyadic_wide_add_double(ar, ay, e->y1, 1);
+    by = dyadic_wide_zero(ar);
+    by = dyadic_wide_add_double(ar, by, e->y2, 1);
+    q = dyadic_wide_mul(ar, ay, wD);
+    p = dyadic_wide_add(ar, q, negPy);
     int sa = p->sign;
-    q = tower_wide_mul(ar, by, wD);
-    p = tower_wide_add(ar, q, negPy);
+    q = dyadic_wide_mul(ar, by, wD);
+    p = dyadic_wide_add(ar, q, negPy);
     int sb = p->sign;
     /* Up: a_y <= p_y < b_y; down: b_y <= p_y < a_y */
     bool up = sa <= 0 && sb > 0, down = sb <= 0 && sa > 0;
     if (! up && ! down)
       continue;
     /* (b - a) x (P - D a) */
-    ux = tower_wide_zero(ar);
-    ux = tower_wide_add_double(ar, ux, e->x2, 1);
-    ux = tower_wide_add_double(ar, ux, e->x1, -1);
-    uy = tower_wide_zero(ar);
-    uy = tower_wide_add_double(ar, uy, e->y2, 1);
-    uy = tower_wide_add_double(ar, uy, e->y1, -1);
-    ax = tower_wide_zero(ar);
-    ax = tower_wide_add_double(ar, ax, e->x1, 1);
-    q = tower_wide_mul(ar, ax, wD);
+    ux = dyadic_wide_zero(ar);
+    ux = dyadic_wide_add_double(ar, ux, e->x2, 1);
+    ux = dyadic_wide_add_double(ar, ux, e->x1, -1);
+    uy = dyadic_wide_zero(ar);
+    uy = dyadic_wide_add_double(ar, uy, e->y2, 1);
+    uy = dyadic_wide_add_double(ar, uy, e->y1, -1);
+    ax = dyadic_wide_zero(ar);
+    ax = dyadic_wide_add_double(ar, ax, e->x1, 1);
+    q = dyadic_wide_mul(ar, ax, wD);
     q->sign = - q->sign;
-    qx = tower_wide_add(ar, P[0], q);
-    q = tower_wide_mul(ar, ay, wD);
+    qx = dyadic_wide_add(ar, P[0], q);
+    q = dyadic_wide_mul(ar, ay, wD);
     q->sign = - q->sign;
-    qy = tower_wide_add(ar, P[1], q);
-    p = tower_wide_mul(ar, ux, qy);
-    q = tower_wide_mul(ar, uy, qx);
+    qy = dyadic_wide_add(ar, P[1], q);
+    p = dyadic_wide_mul(ar, ux, qy);
+    q = dyadic_wide_mul(ar, uy, qx);
     q->sign = - q->sign;
-    s = tower_wide_add(ar, p, q);
+    s = dyadic_wide_add(ar, p, q);
     if ((up && s->sign > 0) || (down && s->sign < 0))
       inside = ! inside;
   }
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return inside;
 }
 
@@ -7343,9 +7350,9 @@ point_motion_dwithin_only_at_end(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
   double rb0, double rb1, double d, bool start)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  TowerWide *A, *B, *C;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  DyadicWide *A, *B, *C;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
     ar, &A, &B, &C);
   bool result;
@@ -7353,14 +7360,14 @@ point_motion_dwithin_only_at_end(const double *a0, const double *a1,
     result = C->sign == 0 && (B->sign > 0 || (B->sign == 0 && A->sign > 0));
   else
   {
-    const TowerWide *t = tower_wide_of_int64(ar, 2);
-    const TowerWide *B2 = tower_wide_mul(ar, B, t);
-    const TowerWide *q1 = tower_wide_add(ar, tower_wide_add(ar, A, B2), C);
-    const TowerWide *apb = tower_wide_add(ar, A, B);
+    const DyadicWide *t = dyadic_wide_of_int64(ar, 2);
+    const DyadicWide *B2 = dyadic_wide_mul(ar, B, t);
+    const DyadicWide *q1 = dyadic_wide_add(ar, dyadic_wide_add(ar, A, B2), C);
+    const DyadicWide *apb = dyadic_wide_add(ar, A, B);
     result = q1->sign == 0 &&
       (apb->sign < 0 || (apb->sign == 0 && A->sign > 0));
   }
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return result;
 }
 
@@ -7369,18 +7376,18 @@ point_motion_dwithin_only_at_end(const double *a0, const double *a1,
  * on the exact quadratic in @p ar
  */
 static int
-point_motion_gap_zero_wide(TowerWideArena *ar, const double *a0,
+point_motion_gap_zero_wide(DyadicWideArena *ar, const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, int *s0, int *s1)
 {
-  const TowerWide *B2, *t, *q1, *y;
-  TowerWide *A, *B, *C, *x;
+  const DyadicWide *B2, *t, *q1, *y;
+  DyadicWide *A, *B, *C, *x;
   point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, 0.0,
     0.0, ar, &A, &B, &C);
-  t = tower_wide_of_int64(ar, 2);
-  B2 = tower_wide_mul(ar, B, t);
-  q1 = tower_wide_add(ar, A, B2);
-  q1 = tower_wide_add(ar, q1, C);
+  t = dyadic_wide_of_int64(ar, 2);
+  B2 = dyadic_wide_mul(ar, B, t);
+  q1 = dyadic_wide_add(ar, A, B2);
+  q1 = dyadic_wide_add(ar, q1, C);
   *s0 = C->sign;
   *s1 = q1->sign;
   if (A->sign == 0 && B->sign == 0 && C->sign == 0)
@@ -7396,20 +7403,20 @@ point_motion_gap_zero_wide(TowerWideArena *ar, const double *a0,
   if (q1->sign == 0)
   {
     /* The other root C / A, inside where C and A - C have the sign of A */
-    y = tower_wide_sub(ar, A, C);
+    y = dyadic_wide_sub(ar, A, C);
     return (A->sign != 0 && C->sign == A->sign && y->sign == A->sign) ? 1 : 0;
   }
   if (C->sign < 0)
     return 0;
   /* Positive at both ends: a root inside where the vertex of a convex
    * parabola lies inside and the parabola reaches zero there */
-  x = tower_wide_add(ar, A, B);
+  x = dyadic_wide_add(ar, A, B);
   if (A->sign <= 0 || B->sign >= 0 || x->sign <= 0)
     return 0;
-  x = tower_wide_mul(ar, B, B);
+  x = dyadic_wide_mul(ar, B, B);
   x->sign = - x->sign;
-  y = tower_wide_mul(ar, A, C);
-  y = tower_wide_add(ar, y, x);
+  y = dyadic_wide_mul(ar, A, C);
+  y = dyadic_wide_add(ar, y, x);
   return (y->sign <= 0) ? 1 : 0;
 }
 
@@ -7449,11 +7456,11 @@ point_motion_gap_zero_exact(const double *a0, const double *a1,
     *s0 = *s1 = 1;
     return 0;
   }
-  TowerWideArena arena;
-  tower_wide_arena_init(&arena);
+  DyadicWideArena arena;
+  dyadic_wide_arena_init(&arena);
   int result = point_motion_gap_zero_wide(&arena, a0, a1, b0, b1, ndims, ra0,
     ra1, rb0, rb1, s0, s1);
-  tower_wide_arena_free(&arena);
+  dyadic_wide_arena_free(&arena);
   return result;
 }
 
@@ -7468,12 +7475,12 @@ point_motion_gap_zero_exact(const double *a0, const double *a1,
  */
 typedef struct
 {
-  TowerWide *A;     /**< A, which no distance changes */
-  TowerWide *B0;    /**< B at the distance 0 */
-  TowerWide *C0;    /**< C at the distance 0 */
-  TowerWide *R1;    /**< The radius at the start, L0 at the distance 0 */
-  TowerWide *DR;    /**< The change of the radius, dL */
-  TowerWideArena *ar; /**< Arena of the five and of each sign read */
+  DyadicWide *A;     /**< A, which no distance changes */
+  DyadicWide *B0;    /**< B at the distance 0 */
+  DyadicWide *C0;    /**< C at the distance 0 */
+  DyadicWide *R1;    /**< The radius at the start, L0 at the distance 0 */
+  DyadicWide *DR;    /**< The change of the radius, dL */
+  DyadicWideArena *ar; /**< Arena of the five and of each sign read */
 } PointMotionGap;
 
 /**
@@ -7485,13 +7492,13 @@ static void
 point_motion_gap_init(PointMotionGap *g, const double *c1, const double *c2,
   const double *p, int ndims, double r1, double r2)
 {
-  g->ar = palloc(sizeof(TowerWideArena));
-  tower_wide_arena_init(g->ar);
-  TowerWideArena *ar = g->ar;
+  g->ar = palloc(sizeof(DyadicWideArena));
+  dyadic_wide_arena_init(g->ar);
+  DyadicWideArena *ar = g->ar;
   point_motion_dwithin_coeffs(c1, c2, p, p, ndims, r1, r2, 0.0, 0.0, 0.0,
     0.0, ar, &g->A, &g->B0, &g->C0);
-  g->R1 = tower_wide_of_double(ar, r1);
-  g->DR = tower_wide_add_double(ar, tower_wide_neg(ar, g->R1), r2, 1);
+  g->R1 = dyadic_wide_of_double(ar, r1);
+  g->DR = dyadic_wide_add_double(ar, dyadic_wide_neg(ar, g->R1), r2, 1);
   return;
 }
 
@@ -7501,7 +7508,7 @@ point_motion_gap_init(PointMotionGap *g, const double *c1, const double *c2,
 static void
 point_motion_gap_free(PointMotionGap *g)
 {
-  tower_wide_arena_free(g->ar);
+  dyadic_wide_arena_free(g->ar);
   pfree(g->ar);
   return;
 }
@@ -7517,25 +7524,26 @@ point_motion_gap_free(PointMotionGap *g)
 static int
 point_motion_gap_sign_at(const PointMotionGap *g, double d, double dlo)
 {
-  TowerWideArena *ar = g->ar;
-  TowerWideMark m = tower_wide_arena_mark(ar);
-  const TowerWide *L = tower_wide_add_double(ar, tower_wide_of_double(ar, d), dlo, 1);
-  const TowerWide *two = tower_wide_of_int64(ar, 2);
-  const TowerWide *B = tower_wide_sub(ar, g->B0, tower_wide_mul(ar, L, g->DR));
-  TowerWide *C = tower_wide_sub(ar, g->C0, tower_wide_mul(ar, L,
-    tower_wide_add(ar, tower_wide_mul(ar, g->R1, two), L)));
-  const TowerWide *A = g->A;
-  TowerWide *q1 = tower_wide_add(ar, tower_wide_add(ar, A,
-    tower_wide_mul(ar, B, two)), C);
+  DyadicWideArena *ar = g->ar;
+  DyadicWideMark m = dyadic_wide_arena_mark(ar);
+  const DyadicWide *L = dyadic_wide_add_double(ar, dyadic_wide_of_double(ar, d), dlo, 1);
+  const DyadicWide *two = dyadic_wide_of_int64(ar, 2);
+  const DyadicWide *B = dyadic_wide_sub(ar, g->B0,
+    dyadic_wide_mul(ar, L, g->DR));
+  DyadicWide *C = dyadic_wide_sub(ar, g->C0, dyadic_wide_mul(ar, L,
+    dyadic_wide_add(ar, dyadic_wide_mul(ar, g->R1, two), L)));
+  const DyadicWide *A = g->A;
+  DyadicWide *q1 = dyadic_wide_add(ar, dyadic_wide_add(ar, A,
+    dyadic_wide_mul(ar, B, two)), C);
   int sign = (C->sign < q1->sign) ? C->sign : q1->sign;
-  const TowerWide *apb = tower_wide_add(ar, A, B);
+  const DyadicWide *apb = dyadic_wide_add(ar, A, B);
   if (A->sign > 0 && B->sign < 0 && apb->sign > 0)
   {
-    const TowerWide *v = tower_wide_sub(ar, tower_wide_mul(ar, A, C), tower_wide_mul(ar, B, B));
+    const DyadicWide *v = dyadic_wide_sub(ar, dyadic_wide_mul(ar, A, C), dyadic_wide_mul(ar, B, B));
     if (v->sign < sign)
       sign = v->sign;
   }
-  tower_wide_arena_release(ar, m);
+  dyadic_wide_arena_release(ar, m);
   return sign;
 }
 
@@ -7543,28 +7551,28 @@ static int
 point_motion_gap_sign(const double *c1, const double *c2, const double *p,
   int ndims, double r1, double r2, double d, double dlo)
 {
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *B2, *t, *apb, *ac, *v;
-  TowerWide *A, *B, *C, *q1, *bb;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *B2, *t, *apb, *ac, *v;
+  DyadicWide *A, *B, *C, *q1, *bb;
   point_motion_dwithin_coeffs(c1, c2, p, p, ndims, r1, r2, 0.0, 0.0, d, dlo,
     ar, &A, &B, &C);
-  t = tower_wide_of_int64(ar, 2);
-  B2 = tower_wide_mul(ar, B, t);
-  q1 = tower_wide_add(ar, A, B2);
-  q1 = tower_wide_add(ar, q1, C);
+  t = dyadic_wide_of_int64(ar, 2);
+  B2 = dyadic_wide_mul(ar, B, t);
+  q1 = dyadic_wide_add(ar, A, B2);
+  q1 = dyadic_wide_add(ar, q1, C);
   int sign = (C->sign < q1->sign) ? C->sign : q1->sign;
-  apb = tower_wide_add(ar, A, B);
+  apb = dyadic_wide_add(ar, A, B);
   if (A->sign > 0 && B->sign < 0 && apb->sign > 0)
   {
-    ac = tower_wide_mul(ar, A, C);
-    bb = tower_wide_mul(ar, B, B);
+    ac = dyadic_wide_mul(ar, A, C);
+    bb = dyadic_wide_mul(ar, B, B);
     bb->sign = - bb->sign;
-    v = tower_wide_add(ar, ac, bb);
+    v = dyadic_wide_add(ar, ac, bb);
     if (v->sign < sign)
       sign = v->sign;
   }
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return sign;
 }
 
@@ -7581,7 +7589,7 @@ point_motion_gap_sign(const double *c1, const double *c2, const double *p,
  * `A C - B^2 = |u|^2 |v|^2 - (u . v)^2 - L0^2 |v|^2 - dL^2 |u|^2 +
  * 2 L0 dL (u . v)`, the terms of the two first products in one coordinate
  * cancelling. Each sign is decided as #polynomial_sign_exact decides it but
- * for the expansions, so that the #TowerWide route of #point_motion_gap_sign
+ * for the expansions, so that the #DyadicWide route of #point_motion_gap_sign
  * is read only for the signs the doubles and their pairs leave open
  */
 static int
@@ -7815,7 +7823,7 @@ point_motion_point_offset_bounds(const double *c1, const double *c2,
  * least does not pass, the midpoint being the sum of the double and half the
  * gap to the next one, and a tie going to the even double, found by a gallop
  * from the double estimate of its closed form and halving the bracket, as
- * #tower_wide_nearest_root finds its answer, so no root of a rounded value
+ * #dyadic_wide_nearest_root finds its answer, so no root of a rounded value
  * decides it
  * @param[in] c1,c2 Centre of the disc at the start and at the end
  * @param[in] p The point
@@ -7958,7 +7966,7 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
  * are each a sum of products of two input doubles, which
  * #square_products_wide forms as #point_distance_offset_side_sign sets its
  * terms, and the two products are compared on their exact values
- * (#tower_wide_product_cmp)
+ * (#dyadic_wide_product_cmp)
  * @param[in] p,a,b The point and the two ends of the segment
  * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r Radius
@@ -7971,8 +7979,8 @@ point_segment_side_sign_inputs(const double *p, const double *a,
 {
   /* At most 15 products, each of a weight from 1/4 to 2 */
   double left[15], right[15], factor[15];
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
   /* w . w - m^2 */
   int n = 0;
   for (int i = 0; i < ndims; i++)
@@ -7987,7 +7995,7 @@ point_segment_side_sign_inputs(const double *p, const double *a,
   left[n] = r; right[n] = c; factor[n++] = -2.0;
   left[n] = r; right[n] = g; factor[n++] = -1.0;
   left[n] = c; right[n] = g; factor[n++] = -1.0;
-  const TowerWide *wm = square_products_wide(&ar, left, right, factor, n);
+  const DyadicWide *wm = square_products_wide(&ar, left, right, factor, n);
   /* u . u */
   n = 0;
   for (int i = 0; i < ndims; i++)
@@ -7996,7 +8004,7 @@ point_segment_side_sign_inputs(const double *p, const double *a,
     left[n] = b[i]; right[n] = a[i]; factor[n++] = -2.0;
     left[n] = a[i]; right[n] = a[i]; factor[n++] = 1.0;
   }
-  const TowerWide *len = square_products_wide(&ar, left, right, factor, n);
+  const DyadicWide *len = square_products_wide(&ar, left, right, factor, n);
   /* w . u */
   n = 0;
   for (int i = 0; i < ndims; i++)
@@ -8006,11 +8014,11 @@ point_segment_side_sign_inputs(const double *p, const double *a,
     left[n] = a[i]; right[n] = b[i]; factor[n++] = -1.0;
     left[n] = a[i]; right[n] = a[i]; factor[n++] = 1.0;
   }
-  const TowerWide *dot = square_products_wide(&ar, left, right, factor, n);
+  const DyadicWide *dot = square_products_wide(&ar, left, right, factor, n);
   /* The square of the dot product is not negative; the other product carries
-   * the signs of its factors (#tower_wide_product_cmp) */
-  int sign = tower_wide_product_cmp(&ar, len, wm, dot, dot);
-  tower_wide_arena_free(&ar);
+   * the signs of its factors (#dyadic_wide_product_cmp) */
+  int sign = dyadic_wide_product_cmp(&ar, len, wm, dot, dot);
+  dyadic_wide_arena_free(&ar);
   return sign;
 }
 
@@ -8114,35 +8122,35 @@ point_segment_nearest_microsecond(const double *p, const double *a,
   if (point_segment_dot_sign_inputs(p, a, a, b, ndims) <= 0 ||
       point_segment_dot_sign_inputs(p, b, a, b, ndims) >= 0)
     return false;
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *N, *A, *t, *wD;
-  N = tower_wide_zero(ar);
-  A = tower_wide_zero(ar);
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *N, *A, *t, *wD;
+  N = dyadic_wide_zero(ar);
+  A = dyadic_wide_zero(ar);
   for (int i = 0; i < ndims; i++)
   {
-    const TowerWide *wa, *wb, *wp, *u, *w;
-    wa = tower_wide_of_double(ar, a[i]);
-    wb = tower_wide_of_double(ar, b[i]);
-    wp = tower_wide_of_double(ar, p[i]);
-    u = tower_wide_sub(ar, wb, wa);
-    w = tower_wide_sub(ar, wp, wa);
-    t = tower_wide_mul(ar, w, u);
-    N = tower_wide_add(ar, N, t);
-    t = tower_wide_mul(ar, u, u);
-    A = tower_wide_add(ar, A, t);
+    const DyadicWide *wa, *wb, *wp, *u, *w;
+    wa = dyadic_wide_of_double(ar, a[i]);
+    wb = dyadic_wide_of_double(ar, b[i]);
+    wp = dyadic_wide_of_double(ar, p[i]);
+    u = dyadic_wide_sub(ar, wb, wa);
+    w = dyadic_wide_sub(ar, wp, wa);
+    t = dyadic_wide_mul(ar, w, u);
+    N = dyadic_wide_add(ar, N, t);
+    t = dyadic_wide_mul(ar, u, u);
+    A = dyadic_wide_add(ar, A, t);
   }
   DWithinGrid g;
   memset(&g, 0, sizeof(DWithinGrid));
   g.ar = ar;
   g.A = A;
-  wD = tower_wide_of_int64(ar, D);
-  TowerWide *BD = tower_wide_mul(ar, N, wD);
+  wD = dyadic_wide_of_int64(ar, D);
+  DyadicWide *BD = dyadic_wide_mul(ar, N, wD);
   BD->sign = - BD->sign;
   g.BD = BD;
-  double est = tower_wide_approx(N) / tower_wide_approx(A) * (double) D;
+  double est = dyadic_wide_approx(N) / dyadic_wide_approx(A) * (double) D;
   *n = dwithin_grid_last(&g, 0, D, est, true);
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return *n > 0;
 }
 
@@ -8190,8 +8198,8 @@ linesegm_param_cmp(const double *a, const double *b, const double *p,
  * B, as #linesegm_param reads it, at any finite coordinates
  * @details Where the position is an end, its sign decides it exactly
  * (#linesegm_param_side). Inside, it is the quotient of `(p - a) . (b - a)`
- * by `(b - a) . (b - a)`, both held exactly as #TowerWide and divided on
- * their leading limbs (#tower_wide_frexp), within a relative 2^-62 of it,
+ * by `(b - a) . (b - a)`, both held exactly as #DyadicWide and divided on
+ * their leading limbs (#dyadic_wide_frexp), within a relative 2^-62 of it,
  * where the squared length leaves the doubles #linesegm_param divides by
  * @param[in] a,b The two ends of the segment, distinct
  * @param[in] p The point
@@ -8202,25 +8210,25 @@ linesegm_param_wide(const double *a, const double *b, const double *p)
   int side = linesegm_param_side(a, b, p);
   if (side != 0)
     return (side < 0) ? 0.0 : 1.0;
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *v1, *v2, *t1, *t2, *dot, *len2;
-  TowerWide *u[2], *w[2];
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *v1, *v2, *t1, *t2, *dot, *len2;
+  DyadicWide *u[2], *w[2];
   for (int i = 0; i < 2; i++)
   {
-    v1 = tower_wide_of_double(ar, b[i]);
-    v2 = tower_wide_of_double(ar, a[i]);
-    u[i] = tower_wide_sub(ar, v1, v2);
-    v1 = tower_wide_of_double(ar, p[i]);
-    w[i] = tower_wide_sub(ar, v1, v2);
+    v1 = dyadic_wide_of_double(ar, b[i]);
+    v2 = dyadic_wide_of_double(ar, a[i]);
+    u[i] = dyadic_wide_sub(ar, v1, v2);
+    v1 = dyadic_wide_of_double(ar, p[i]);
+    w[i] = dyadic_wide_sub(ar, v1, v2);
   }
-  t1 = tower_wide_mul(ar, w[0], u[0]); t2 = tower_wide_mul(ar, w[1], u[1]);
-  dot = tower_wide_add(ar, t1, t2);
-  t1 = tower_wide_mul(ar, u[0], u[0]); t2 = tower_wide_mul(ar, u[1], u[1]);
-  len2 = tower_wide_add(ar, t1, t2);
+  t1 = dyadic_wide_mul(ar, w[0], u[0]); t2 = dyadic_wide_mul(ar, w[1], u[1]);
+  dot = dyadic_wide_add(ar, t1, t2);
+  t1 = dyadic_wide_mul(ar, u[0], u[0]); t2 = dyadic_wide_mul(ar, u[1], u[1]);
+  len2 = dyadic_wide_add(ar, t1, t2);
   int en, ed;
-  double mn = tower_wide_frexp(dot, &en), md = tower_wide_frexp(len2, &ed);
-  tower_wide_arena_free(ar);
+  double mn = dyadic_wide_frexp(dot, &en), md = dyadic_wide_frexp(len2, &ed);
+  dyadic_wide_arena_free(ar);
   double t = ldexp(mn / md, en - ed);
   return (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
 }
@@ -9506,7 +9514,7 @@ point_segment_distance_offset_exact(const double *p, const double *a,
  * @details The value #point_segment_side_sign_inputs decides exactly, with
  * `w = p - a` and `u = b - a`, evaluated on pairs of doubles carrying a bound
  * on their error (#DDBound), as #plane_point_offset_sign reads its value ahead
- * of #TowerWide and as #point_segment_offset_filter_sign filters the rounding
+ * of #DyadicWide and as #point_segment_offset_filter_sign filters the rounding
  * of the same quantity. A value whose bound leaves it on one side of zero has
  * that sign, and a value with no error that is zero is an exact zero
  * @param[in] p,a,b The point and the two ends of the segment
@@ -10601,87 +10609,87 @@ segment_interior_range(const double *a, const double *b, const double *c,
 /* The value `|e . n| / sqrt(n . n)` that #nearest_double_exact searches */
 typedef struct
 {
-  const TowerWide *en, *nn;
+  const DyadicWide *en, *nn;
 } NearestLines;
 
 /* The sign of `|e . n| / sqrt(n . n) - mid`, that of
  * `(e . n)^2 - mid^2 (n . n)` for a midpoint not negative */
 static int
-nearest_lines_side(TowerWideArena *ar, const TowerWide *mid, const void *arg)
+nearest_lines_side(DyadicWideArena *ar, const DyadicWide *mid, const void *arg)
 {
   const NearestLines *v = (const NearestLines *) arg;
   if (mid->sign < 0)
     return 1;
-  return tower_wide_product_cmp(ar, v->en, v->en, tower_wide_mul(ar, mid, mid),
-    v->nn);
+  return dyadic_wide_product_cmp(ar, v->en, v->en,
+    dyadic_wide_mul(ar, mid, mid), v->nn);
 }
 
 /**
  * @brief Set the three coordinates of `q - p`, exactly, in @p ar
  */
 static void
-wide_diff3(TowerWideArena *ar, const double *q, const double *p,
-  TowerWide **r)
+wide_diff3(DyadicWideArena *ar, const double *q, const double *p,
+  DyadicWide **r)
 {
   for (int k = 0; k < 3; k++)
-    r[k] = tower_wide_sub(ar, tower_wide_of_double(ar, q[k]),
-      tower_wide_of_double(ar, p[k]));
+    r[k] = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, q[k]),
+      dyadic_wide_of_double(ar, p[k]));
   return;
 }
 
 /**
- * @brief Set the cross product of two vectors of three #TowerWide, exactly,
+ * @brief Set the cross product of two vectors of three #DyadicWide, exactly,
  * in @p ar
  */
 void
-wide_cross3(TowerWideArena *ar, TowerWide *const *u, TowerWide *const *v,
-  TowerWide **r)
+wide_cross3(DyadicWideArena *ar, DyadicWide *const *u, DyadicWide *const *v,
+  DyadicWide **r)
 {
   for (int k = 0; k < 3; k++)
   {
     int i = (k + 1) % 3, j = (k + 2) % 3;
-    r[k] = tower_wide_sub(ar, tower_wide_mul(ar, u[i], v[j]),
-      tower_wide_mul(ar, u[j], v[i]));
+    r[k] = dyadic_wide_sub(ar, dyadic_wide_mul(ar, u[i], v[j]),
+      dyadic_wide_mul(ar, u[j], v[i]));
   }
   return;
 }
 
 /**
- * @brief Return the dot product of two vectors of three #TowerWide, exactly,
+ * @brief Return the dot product of two vectors of three #DyadicWide, exactly,
  * in @p ar
  */
-TowerWide *
-wide_dot3(TowerWideArena *ar, TowerWide *const *u, TowerWide *const *v)
+DyadicWide *
+wide_dot3(DyadicWideArena *ar, DyadicWide *const *u, DyadicWide *const *v)
 {
-  TowerWide *r = tower_wide_mul(ar, u[0], v[0]);
+  DyadicWide *r = dyadic_wide_mul(ar, u[0], v[0]);
   for (int k = 1; k < 3; k++)
-    r = tower_wide_add(ar, r, tower_wide_mul(ar, u[k], v[k]));
+    r = dyadic_wide_add(ar, r, dyadic_wide_mul(ar, u[k], v[k]));
   return r;
 }
 
 /**
  * @brief Return true where the nearest points of two segments in 3D lie
  * inside both, setting in @p en and @p nn the values `e . n` and `n . n`, read
- * on #TowerWide in @p ar for any finite coordinates
+ * on #DyadicWide in @p ar for any finite coordinates
  * @details With `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v`, the
  * nearest points lie inside both where `n . n`, `(e x v) . n` and
  * `(e x u) . n` have the signs #SEGMENT_INSIDE reads
  */
 static bool
-segment_interior_wide_values(TowerWideArena *ar, const double *a,
-  const double *b, const double *c, const double *d, TowerWide **en,
-  TowerWide **nn)
+segment_interior_wide_values(DyadicWideArena *ar, const double *a,
+  const double *b, const double *c, const double *d, DyadicWide **en,
+  DyadicWide **nn)
 {
-  TowerWide *u[3], *v[3], *e[3], *n[3], *ev[3], *eu[3];
+  DyadicWide *u[3], *v[3], *e[3], *n[3], *ev[3], *eu[3];
   wide_diff3(ar, b, a, u);
   wide_diff3(ar, d, c, v);
   wide_diff3(ar, c, a, e);
   wide_cross3(ar, u, v, n);
   wide_cross3(ar, e, v, ev);
   wide_cross3(ar, e, u, eu);
-  const TowerWide *ds = wide_dot3(ar, ev, n), *dt = wide_dot3(ar, eu, n);
-  TowerWide *dnn = wide_dot3(ar, n, n);
-  int ss1 = tower_wide_cmp(ds, dnn), st1 = tower_wide_cmp(dt, dnn);
+  const DyadicWide *ds = wide_dot3(ar, ev, n), *dt = wide_dot3(ar, eu, n);
+  DyadicWide *dnn = wide_dot3(ar, n, n);
+  int ss1 = dyadic_wide_cmp(ds, dnn), st1 = dyadic_wide_cmp(dt, dnn);
   if (! SEGMENT_INSIDE(dnn->sign, ds->sign, ss1, dt->sign, st1))
     return false;
   *nn = dnn;
@@ -10692,31 +10700,31 @@ segment_interior_wide_values(TowerWideArena *ar, const double *a,
 /**
  * @brief Return true where the nearest points of two segments in 3D lie
  * inside both, setting in @p result the double nearest their distance, read
- * on #TowerWide for any finite coordinates
+ * on #DyadicWide for any finite coordinates
  * @details The values of #segment_interior_wide_values, and the rounding
  * compares `(e . n)^2` with `mid^2 (n . n)`, degree six, as a comparison of
- * two products (#tower_wide_product_cmp)
+ * two products (#dyadic_wide_product_cmp)
  */
 static bool
 segment_interior_wide(const double *a, const double *b, const double *c,
   const double *d, double *result)
 {
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *en, *nn;
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *en, *nn;
   if (! segment_interior_wide_values(&ar, a, b, c, d, &en, &nn))
   {
-    tower_wide_arena_free(&ar);
+    dyadic_wide_arena_free(&ar);
     return false;
   }
   if (en->sign == 0)
   {
     *result = 0.0;
-    tower_wide_arena_free(&ar);
+    dyadic_wide_arena_free(&ar);
     return true;
   }
   int ee, en2;
-  double me = tower_wide_frexp(en, &ee), mn = tower_wide_frexp(nn, &en2);
+  double me = dyadic_wide_frexp(en, &ee), mn = dyadic_wide_frexp(nn, &en2);
   double ratio = me * me / mn;
   int ex = 2 * ee - en2;
   if (ex % 2 != 0)
@@ -10727,7 +10735,7 @@ segment_interior_wide(const double *a, const double *b, const double *c,
   double guess = ldexp(sqrt(ratio), ex / 2);
   NearestLines lines = {en, nn};
   *result = nearest_double_exact(guess, &nearest_lines_side, &lines);
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return true;
 }
 
@@ -10738,10 +10746,10 @@ static inline void dbl_cross3(const double *a0, const double *a1,
  * @brief Return the sign #segment_interior_offset_sign answers where its
  * evaluation in doubles, then in pairs of doubles, decides it, and 2 otherwise
  * @details The signs placing the nearest points are read first in doubles
- * (#dbl_cross3), one known on the wrong side answering 1. The values #segment_interior_wide_values forms on #TowerWide,
+ * (#dbl_cross3), one known on the wrong side answering 1. The values #segment_interior_wide_values forms on #DyadicWide,
  * with `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v`, formed on pairs
  * of doubles carrying a bound on their error (#DDBound), as
- * #plane_point_offset_sign reads its value ahead of #TowerWide. The nearest
+ * #plane_point_offset_sign reads its value ahead of #DyadicWide. The nearest
  * points lie outside a segment, the answer 1, where one of the signs that
  * place them is known on the wrong side (#SEGMENT_INSIDE); they lie inside
  * both where all are known on the right side, and the answer is then the sign
@@ -10826,7 +10834,7 @@ segment_interior_offset_filter(const double *a, const double *b,
  * doubles, and 1 otherwise
  * @details The sign of `(e . n)^2 - r^2 (n . n)`, as #nearest_lines_side reads
  * it for a midpoint, read first in pairs of doubles
- * (#segment_interior_offset_filter) and on #TowerWide where they cannot tell
+ * (#segment_interior_offset_filter) and on #DyadicWide where they cannot tell
  * (#segment_interior_wide_values). Where the nearest points do not lie inside
  * both, an end of one of the segments is the nearest, which
  * #point_segment_offset_sign answers
@@ -10843,18 +10851,18 @@ segment_interior_offset_sign(const double *a, const double *b, const double *c,
   int sign = segment_interior_offset_filter(a, b, c, d, r);
   if (sign != 2)
     return sign;
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *en, *nn;
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *en, *nn;
   if (! segment_interior_wide_values(&ar, a, b, c, d, &en, &nn))
     sign = 1;
   else
   {
-    const TowerWide *wr = tower_wide_of_double(&ar, r);
-    sign = tower_wide_product_cmp(&ar, en, en, tower_wide_mul(&ar, wr, wr),
+    const DyadicWide *wr = dyadic_wide_of_double(&ar, r);
+    sign = dyadic_wide_product_cmp(&ar, en, en, dyadic_wide_mul(&ar, wr, wr),
       nn);
   }
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return sign;
 }
 
@@ -10866,7 +10874,7 @@ segment_interior_offset_sign(const double *a, const double *b, const double *c,
  * cannot tell its sign, in expansions where every difference is a double held
  * exactly (#triple_product_sign_exact), otherwise in pairs of doubles with a
  * bound on their error (#DDBound), and where that cannot tell, on
- * #TowerWide. With
+ * #DyadicWide. With
  * `a0 = b0 = c0` it is the orientation of four points: 0 exactly where they
  * are coplanar
  * @param[in] a0,a1,b0,b1,c0,c1 Points, three coordinates each
@@ -10991,15 +10999,15 @@ vector_triple_sign(const double *a0, const double *a1, const double *b0,
   int sign = ddb_sign(det);
   if (sign != 0)
     return sign;
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *wu[3], *wv[3], *ww[3], *wx[3];
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *wu[3], *wv[3], *ww[3], *wx[3];
   wide_diff3(&ar, a1, a0, wu);
   wide_diff3(&ar, b1, b0, wv);
   wide_diff3(&ar, c1, c0, ww);
   wide_cross3(&ar, wv, ww, wx);
   sign = wide_dot3(&ar, wu, wx)->sign;
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return sign;
 }
 
@@ -11256,7 +11264,7 @@ dbl_cross3(const double *a0, const double *a1, const double *b0,
  * @details The sign of `((b - a) x (c - a)) . ((x1 - x0) x (y1 - y0))`, of
  * degree four, first in doubles with a bound on its error (#dbl_cross3), then
  * in pairs of doubles with a bound on their error (#DDBound), then on
- * #TowerWide where the bound cannot tell it
+ * #DyadicWide where the bound cannot tell it
  * @param[in] a,b,c Three points spanning the plane, three coordinates each
  * @param[in] x0,x1,y0,y1 Points, three coordinates each
  * @return -1, 0 or 1
@@ -11291,9 +11299,9 @@ plane_cross_dot_sign(const double *a, const double *b, const double *c,
   int sign = ddb_sign(dot);
   if (sign != 0)
     return sign;
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *wu[3], *wv[3], *wn[3], *wp[3], *wq[3], *wm[3];
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *wu[3], *wv[3], *wn[3], *wp[3], *wq[3], *wm[3];
   wide_diff3(&ar, b, a, wu);
   wide_diff3(&ar, c, a, wv);
   wide_cross3(&ar, wu, wv, wn);
@@ -11301,7 +11309,7 @@ plane_cross_dot_sign(const double *a, const double *b, const double *c,
   wide_diff3(&ar, y1, y0, wq);
   wide_cross3(&ar, wp, wq, wm);
   sign = wide_dot3(&ar, wn, wm)->sign;
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return sign;
 }
 
@@ -11312,7 +11320,7 @@ plane_cross_dot_sign(const double *a, const double *b, const double *c,
  * `(n . (p - a))^2 - d^2 (n . n)`, of degree six, first in doubles with a
  * bound on its error (#dbl_cross3), then in pairs of doubles with a bound on
  * their error (#DDBound), then as a comparison of two products of
- * #TowerWide of degree at most four (#tower_wide_product_cmp)
+ * #DyadicWide of degree at most four (#dyadic_wide_product_cmp)
  * @param[in] a,b,c Three points spanning the plane, not collinear, three
  * coordinates each
  * @param[in] p Point, three coordinates
@@ -11357,18 +11365,19 @@ plane_point_offset_sign(const double *a, const double *b, const double *c,
   int sign = ddb_sign(val);
   if (sign != 0)
     return sign;
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  TowerWide *wu[3], *wv[3], *ww[3], *wn[3];
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  DyadicWide *wu[3], *wv[3], *ww[3], *wn[3];
   wide_diff3(&ar, b, a, wu);
   wide_diff3(&ar, c, a, wv);
   wide_diff3(&ar, p, a, ww);
   wide_cross3(&ar, wu, wv, wn);
-  const TowerWide *wen = wide_dot3(&ar, wn, ww), *wnn = wide_dot3(&ar, wn, wn);
-  const TowerWide *wd = tower_wide_of_double(&ar, d);
-  sign = tower_wide_product_cmp(&ar, wen, wen, tower_wide_mul(&ar, wd, wd),
+  const DyadicWide *wen = wide_dot3(&ar, wn, ww),
+    *wnn = wide_dot3(&ar, wn, wn);
+  const DyadicWide *wd = dyadic_wide_of_double(&ar, d);
+  sign = dyadic_wide_product_cmp(&ar, wen, wen, dyadic_wide_mul(&ar, wd, wd),
     wnn);
-  tower_wide_arena_free(&ar);
+  dyadic_wide_arena_free(&ar);
   return sign;
 }
 
@@ -11538,7 +11547,7 @@ segment_interior_certify_pairs(const SegmentPairs *pv, double f, double g,
  * not positive, a polynomial of degree six, found by a gallop from the
  * rounded quotient, as #point_segment_distance_offset_exact finds its answer.
  * Where a difference overflows or the scaling leaves a product of six
- * outside the doubles, the values are read on #TowerWide
+ * outside the doubles, the values are read on #DyadicWide
  * (#segment_interior_wide)
  * @param[in] a,b The two ends of the first segment, three coordinates each
  * @param[in] c,d The two ends of the second segment, three coordinates each
@@ -11792,7 +11801,7 @@ segment_interior_distance(const double *a, const double *b, const double *c,
   /* The answer is the smallest bit pattern that is not beyond: gallop from the
    * candidate to bracket it, then halve the bracket. A candidate or a half
    * gap scaled below 2^-179 leaves a product of six outside the doubles, and
-   * the values are then read on #TowerWide */
+   * the values are then read on #DyadicWide */
   bool wide = false;
 #define SI_BEYOND(bb, res) \
   do { \
@@ -11971,7 +11980,7 @@ segment_distance_unscaled(const double *a, const double *b, const double *c,
  * scaled, by the largest power of two keeping the smallest nonzero one
  * normal, since a difference of two such coordinates can exceed the largest
  * double; where no such power brings it below 2^1022, 0 is returned, and the
- * kernels read the coordinates as they are, on #TowerWide where their
+ * kernels read the coordinates as they are, on #DyadicWide where their
  * differences overflow (#segment_interior_wide)
  * @param[in] pts The four ends, @p ndims coordinates each
  * @param[in] ndims Number of coordinates, 2 or 3
@@ -12046,7 +12055,7 @@ segment_distance_exact(const double *a, const double *b, const double *c,
         big = v;
     }
   /* The 2D kernels are exact for any finite coordinates on their own: the
-   * orientations of #linesegm_intersect read #TowerWide where their products
+   * orientations of #linesegm_intersect read #DyadicWide where their products
    * leave the doubles, and #point_segment_distance_offset_exact scales its
    * differences or reads its input coordinates. A common scale would push
    * the coordinates near 1 of a pair also holding coordinates near the largest
@@ -12152,7 +12161,7 @@ triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
 
 /**
  * @brief Return the sign of the incircle determinant of four points, read on
- * #TowerWide for any finite coordinates
+ * #DyadicWide for any finite coordinates
  * @details The differences A - D, B - D and C - D are exact, and the
  * determinant is the sum of each lift `|P - D|^2` times the cross product of
  * the other two points taken from D, as #incircle_sign_exact forms it on
@@ -12166,26 +12175,27 @@ incircle_sign_wide(double ax, double ay, double bx, double by, double cx,
 {
   const double from[6] = {ax, ay, bx, by, cx, cy};
   const double to[6] = {dx, dy, dx, dy, dx, dy};
-  TowerWideArena arena, *ar = &arena;
-  tower_wide_arena_init(ar);
-  const TowerWide *v[6];
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *v[6];
   for (int i = 0; i < 6; i++)
-    v[i] = tower_wide_sub(ar, tower_wide_of_double(ar, from[i]),
-      tower_wide_of_double(ar, to[i]));
+    v[i] = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, from[i]),
+      dyadic_wide_of_double(ar, to[i]));
   static const int cu[3] = {2, 4, 0}, cv[3] = {4, 0, 2};
-  const TowerWide *det = tower_wide_of_double(ar, 0.0);
+  const DyadicWide *det = dyadic_wide_of_double(ar, 0.0);
   for (int k = 0; k < 3; k++)
   {
-    const TowerWide *lift = tower_wide_add(ar,
-      tower_wide_mul(ar, v[2 * k], v[2 * k]),
-      tower_wide_mul(ar, v[2 * k + 1], v[2 * k + 1]));
+    const DyadicWide *lift = dyadic_wide_add(ar,
+      dyadic_wide_mul(ar, v[2 * k], v[2 * k]),
+      dyadic_wide_mul(ar, v[2 * k + 1], v[2 * k + 1]));
     int u = cu[k], w = cv[k];
-    const TowerWide *cross = tower_wide_sub(ar,
-      tower_wide_mul(ar, v[u], v[w + 1]), tower_wide_mul(ar, v[w], v[u + 1]));
-    det = tower_wide_add(ar, det, tower_wide_mul(ar, lift, cross));
+    const DyadicWide *cross = dyadic_wide_sub(ar,
+      dyadic_wide_mul(ar, v[u], v[w + 1]),
+      dyadic_wide_mul(ar, v[w], v[u + 1]));
+    det = dyadic_wide_add(ar, det, dyadic_wide_mul(ar, lift, cross));
   }
   int sign = det->sign;
-  tower_wide_arena_free(ar);
+  dyadic_wide_arena_free(ar);
   return sign;
 }
 
@@ -12200,7 +12210,7 @@ incircle_sign_wide(double ax, double ay, double bx, double by, double cx,
  * where the lowest set bits of the four reach that of the least subnormal and
  * the product stays below the largest double: each component of at least
  * 2^-268 in its lowest bit and below 2^250 keeps every product, lift, cross
- * product and term in range. Otherwise the sign is read on #TowerWide
+ * product and term in range. Otherwise the sign is read on #DyadicWide
  * (#incircle_sign_wide), exact for any finite coordinates.
  */
 static int
@@ -12534,23 +12544,23 @@ typedef struct
   int cap;
   bool unsafe;      /**< A product may have left the range where the
                          arithmetic of expansions is exact */
-  bool wide;        /**< Values are #TowerWide rather than expansions */
+  bool wide;        /**< Values are #DyadicWide rather than expansions */
   bool filter;      /**< Values are doubles carrying a bound on their error,
                          as #ArcsegFilter reads them: one component and
                          the bound in its @p err, so a sign the bound cannot
                          tell marks the arena unsafe */
-  TowerWideArena *warena; /**< The values of a wide arena, NULL otherwise */
+  DyadicWideArena *warena; /**< The values of a wide arena, NULL otherwise */
 } ArcsegArena;
 
 /* An exact value: an expansion whose last component carries its sign, and a
  * bound on how far it may lie from the value, 0 unless a product's error
- * term underflowed; in a wide arena, a #TowerWide instead */
+ * term underflowed; in a wide arena, a #DyadicWide instead */
 typedef struct
 {
   int n;
   double *e;
   double err;
-  TowerWide *w;     /**< The value in a wide arena, NULL otherwise */
+  DyadicWide *w;     /**< The value in a wide arena, NULL otherwise */
 } ArcsegExact;
 
 static double *
@@ -12612,14 +12622,14 @@ arcseg_arena_free(ArcsegArena *arena)
   arena->unsafe = false;
   if (arena->warena)
   {
-    tower_wide_arena_free(arena->warena);
+    dyadic_wide_arena_free(arena->warena);
     pfree(arena->warena);
     arena->warena = NULL;
   }
   return;
 }
 
-/* An empty arena, of expansions or, where @p wide is set, of #TowerWide */
+/* An empty arena, of expansions or, where @p wide is set, of #DyadicWide */
 static void
 arcseg_arena_init(ArcsegArena *arena, bool wide)
 {
@@ -12631,8 +12641,8 @@ arcseg_arena_init(ArcsegArena *arena, bool wide)
   arena->warena = NULL;
   if (wide)
   {
-    arena->warena = palloc(sizeof(TowerWideArena));
-    tower_wide_arena_init(arena->warena);
+    arena->warena = palloc(sizeof(DyadicWideArena));
+    dyadic_wide_arena_init(arena->warena);
   }
   return;
 }
@@ -12744,7 +12754,7 @@ arcseg_f_sign(ArcsegFilter a)
  * arena is discarded, and an expansion holding a component that overflowed
  * keeps every component of the values it is added to or multiplied by,
  * compression merging none of them, so that each later sum or product
- * would cost more than the last (#tx_spent) */
+ * would cost more than the last (#dx_spent) */
 static ArcsegExact
 arcseg_x_spent(ArcsegArena *arena)
 {
@@ -12759,7 +12769,7 @@ arcseg_x_spent(ArcsegArena *arena)
 
 /* A value of a wide arena */
 static inline ArcsegExact
-arcseg_w_value(TowerWide *w)
+arcseg_w_value(DyadicWide *w)
 {
   ArcsegExact r;
   r.e = NULL;
@@ -12783,9 +12793,9 @@ arcseg_x_diff(ArcsegArena *arena, double a, double b)
       arena->unsafe = true;
       return arcseg_x_spent(arena);
     }
-    return arcseg_w_value(tower_wide_sub(arena->warena,
-      tower_wide_of_double(arena->warena, a),
-      tower_wide_of_double(arena->warena, b)));
+    return arcseg_w_value(dyadic_wide_sub(arena->warena,
+      dyadic_wide_of_double(arena->warena, a),
+      dyadic_wide_of_double(arena->warena, b)));
   }
   ArcsegExact r;
   r.w = NULL;
@@ -12813,7 +12823,7 @@ arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
     return arcseg_x_filtered(arena, arcseg_f_add(arcseg_x_as_filter(a),
       arcseg_x_as_filter(b)));
   if (arena->wide)
-    return arcseg_w_value(tower_wide_add(arena->warena, a.w, b.w));
+    return arcseg_w_value(dyadic_wide_add(arena->warena, a.w, b.w));
   int cap = a.n + b.n;
   ArcsegExact r;
   r.w = NULL;
@@ -12848,8 +12858,8 @@ arcseg_x_scale(ArcsegArena *arena, ArcsegExact a, double k)
   if (arena->filter)
     return arcseg_x_filtered(arena, arcseg_f_scale(arcseg_x_as_filter(a), k));
   if (arena->wide)
-    return arcseg_w_value(tower_wide_mul(arena->warena, a.w,
-      tower_wide_of_double(arena->warena, k)));
+    return arcseg_w_value(dyadic_wide_mul(arena->warena, a.w,
+      dyadic_wide_of_double(arena->warena, k)));
   /* A power of two scales every component exactly */
   ArcsegExact r;
   r.w = NULL;
@@ -12894,7 +12904,7 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
     return arcseg_x_filtered(arena, arcseg_f_mul(arcseg_x_as_filter(a),
       arcseg_x_as_filter(b)));
   if (arena->wide)
-    return arcseg_w_value(tower_wide_mul(arena->warena, a.w, b.w));
+    return arcseg_w_value(dyadic_wide_mul(arena->warena, a.w, b.w));
   double under = 0.0;
   if (a.n > 0 && b.n > 0)
   {
@@ -13173,13 +13183,13 @@ arcseg_signs_exact_ctx(ArcsegArena *arena, double ax, double ay, double bx,
 }
 
 /* The same signs computed exactly, false where neither expansions nor
- * #TowerWide hold them exactly (#arcseg_x_sign_checked) */
+ * #DyadicWide hold them exactly (#arcseg_x_sign_checked) */
 static bool
 arcseg_signs_exact(double ax, double ay, double bx, double by,
   const Edge *arc, ArcsegSigns *sg)
 {
-  /* In expansions, and once more in #TowerWide where those cannot tell a
-   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  /* In expansions, and once more in #DyadicWide where those cannot tell a
+   * sign or leave their exact range, as #dyadic_pred_run asks a tower */
   bool told = false;
   for (int wide = 0; wide < 2 && ! told; wide++)
   {
@@ -13303,8 +13313,8 @@ static int
 arcseg_line_disc_sign(double ax, double ay, double bx, double by,
   const Edge *arc)
 {
-  /* In expansions, and once more in #TowerWide where those cannot tell a
-   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  /* In expansions, and once more in #DyadicWide where those cannot tell a
+   * sign or leave their exact range, as #dyadic_pred_run asks a tower */
   for (int wide = 0; wide < 2; wide++)
   {
     ArcsegArena arena;
@@ -13403,14 +13413,14 @@ arcseg_shared_signs_ctx(ArcsegArena *arena, double ax, double ay, double bx,
 }
 
 /* The signs in doubles, and exactly where @p exact and the doubles cannot
- * tell one: false where #TowerWide cannot hold them either */
+ * tell one: false where #DyadicWide cannot hold them either */
 static bool
 arcseg_shared_signs(double ax, double ay, double bx, double by,
   const Edge *arc, bool exact, int *sqa, int *sqb, int *sab, int *s2ab,
   int *sh1, int *sside)
 {
-  /* In expansions, and once more in #TowerWide where those cannot tell a
-   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  /* In expansions, and once more in #DyadicWide where those cannot tell a
+   * sign or leave their exact range, as #dyadic_pred_run asks a tower */
   bool told = false;
   for (int wide = 0; wide < 2 && ! told; wide++)
   {
@@ -13835,15 +13845,15 @@ arcarc_shared_point_signs_ctx(ArcsegArena *arena, const Edge *p,
  * @param[in] p,q Arcs, of two distinct circles, both holding J
  * @param[in] jx,jy The point they share, an input vertex
  * @param[out] s1,sp,sq The signs
- * @return False where neither expansions nor #TowerWide hold them
+ * @return False where neither expansions nor #DyadicWide hold them
  * exactly (#arcseg_x_sign_checked)
  */
 bool
 arcarc_shared_point_signs(const Edge *p, const Edge *q, double jx, double jy,
   int *s1, int *sp, int *sq)
 {
-  /* In expansions, and once more in #TowerWide where those cannot tell a
-   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  /* In expansions, and once more in #DyadicWide where those cannot tell a
+   * sign or leave their exact range, as #dyadic_pred_run asks a tower */
   bool told = false;
   for (int wide = 0; wide < 2 && ! told; wide++)
   {
@@ -14027,7 +14037,7 @@ arcarc_meet_exact_ctx(ArcsegArena *arena, const Edge *p, const Edge *q,
  * @param[in] p,q Arcs of two distinct circles
  * @param[out] meet The sign of H; for each sigma = -1, 1 in turn, whether P
  * lies within @p p and within @p q (1 or 0)
- * @return False where neither expansions nor #TowerWide hold these
+ * @return False where neither expansions nor #DyadicWide hold these
  * signs exactly (#arcseg_x_sign_checked)
  */
 bool
@@ -14053,8 +14063,8 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
   }
   p = arcs[0]; q = arcs[1];
   /* In doubles carrying a bound on their error, which tell most signs,
-   * then in expansions, and once more in #TowerWide where those cannot
-   * tell a sign or leave their exact range, as #tower_pred_run asks a
+   * then in expansions, and once more in #DyadicWide where those cannot
+   * tell a sign or leave their exact range, as #dyadic_pred_run asks a
    * tower */
   bool told = false;
   for (int pass = 0; pass < 3 && ! told; pass++)
@@ -14145,8 +14155,8 @@ int
 edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
   bool ccw2, bool out2, double vx, double vy)
 {
-  /* In expansions, and once more in #TowerWide where those cannot tell a
-   * sign or leave their exact range, as #tower_pred_run asks a tower */
+  /* In expansions, and once more in #DyadicWide where those cannot tell a
+   * sign or leave their exact range, as #dyadic_pred_run asks a tower */
   for (int wide = 0; wide < 2; wide++)
   {
     ArcsegArena arena;
@@ -14302,14 +14312,14 @@ meet_val(ArcsegArena *arena, double v)
  * exactly as expansions, and where a product of
  * expansions leaves the range where they are exact -- their components span
  * the exponents of doubles, which the squarings of the recursion outgrow --
- * as #TowerWide, the points of the question built again from what defines
- * them (#TowerCtx).
+ * as #DyadicWide, the points of the question built again from what defines
+ * them (#DyadicCtx).
  */
 #define TOWER_MAXDEPTH 4
 #define TOWER_SIZE (1 << TOWER_MAXDEPTH)
 
 /* The arithmetic the numbers of a tower are computed in: expansions in
- * @p arena, or #TowerWide in @p warena where @p wide is set: the numbers of
+ * @p arena, or #DyadicWide in @p warena where @p wide is set: the numbers of
  * a tower spread over a number of bits that grows with the squarings of its
  * recursion, which no capacity fixed beforehand bounds for any finite
  * coordinates, so each takes the limbs it holds */
@@ -14321,23 +14331,23 @@ typedef struct
                             the bound cannot tell marking the arena unsafe */
   bool dd;             /**< Pairs of doubles carrying a bound on their error
                             (#DDBound), as @p filter */
-  TowerWideArena warena;
-} TowerCtx;
+  DyadicWideArena warena;
+} DyadicCtx;
 
-/* A value of the arithmetic of a #TowerCtx, the whole union zeroed where it
+/* A value of the arithmetic of a #DyadicCtx, the whole union zeroed where it
  * is formed so that a copy reads no byte left unset */
 typedef union
 {
   ArcsegExact x;
-  TowerWide *w;
+  DyadicWide *w;
   ArcsegFilter f;
   DDBound d;
-} TowerX;
+} DyadicX;
 
 /* A number of a tower, its coefficients by the products of the roots */
 typedef struct
 {
-  TowerX c[TOWER_SIZE];
+  DyadicX c[TOWER_SIZE];
 } TowerNum;
 
 /* A tower: the numbers whose square roots it adds, h[i] a number of the i
@@ -14353,36 +14363,36 @@ typedef struct
 } Tower;
 
 static void
-tower_ctx_init(TowerCtx *ctx, bool wide)
+dyadic_ctx_init(DyadicCtx *ctx, bool wide)
 {
   arcseg_arena_init(&ctx->arena, false);
   ctx->wide = wide;
   ctx->filter = false;
   ctx->dd = false;
-  tower_wide_arena_init(&ctx->warena);
+  dyadic_wide_arena_init(&ctx->warena);
   return;
 }
 
 static void
-tower_ctx_free(TowerCtx *ctx)
+dyadic_ctx_free(DyadicCtx *ctx)
 {
   arcseg_arena_free(&ctx->arena);
-  tower_wide_arena_free(&ctx->warena);
+  dyadic_wide_arena_free(&ctx->warena);
   return;
 }
 
 /* Whether the answers of the arithmetic of the expansions may not be exact */
 static inline bool
-tower_ctx_unsafe(const TowerCtx *ctx)
+dyadic_ctx_unsafe(const DyadicCtx *ctx)
 {
   return ! ctx->wide && ctx->arena.unsafe;
 }
 
 /* The difference of two doubles, exactly */
-static pg_attribute_always_inline TowerX
-tx_diff(TowerCtx *ctx, double a, double b)
+static pg_attribute_always_inline DyadicX
+dx_diff(DyadicCtx *ctx, double a, double b)
 {
-  TowerX r = {0};
+  DyadicX r = {0};
   if (ctx->filter)
   {
     /* The rounding error of the difference, exactly (two-sum) */
@@ -14402,33 +14412,33 @@ tx_diff(TowerCtx *ctx, double a, double b)
     r.x = arcseg_x_diff(&ctx->arena, a, b);
     return r;
   }
-  r.w = tower_wide_sub(&ctx->warena, tower_wide_of_double(&ctx->warena, a),
-    tower_wide_of_double(&ctx->warena, b));
+  r.w = dyadic_wide_sub(&ctx->warena, dyadic_wide_of_double(&ctx->warena, a),
+    dyadic_wide_of_double(&ctx->warena, b));
   return r;
 }
 
-static inline TowerX
-tx_val(TowerCtx *ctx, double v)
+static inline DyadicX
+dx_val(DyadicCtx *ctx, double v)
 {
-  return tx_diff(ctx, v, 0.0);
+  return dx_diff(ctx, v, 0.0);
 }
 
 /* Whether the expansions of a tower have left their exact range, so that
  * nothing more is computed in them: every answer of a context that is
- * unsafe is discarded (#tower_ctx_unsafe, #tower_pred_run), and an
+ * unsafe is discarded (#dyadic_ctx_unsafe, #dyadic_pred_run), and an
  * expansion holding a component that overflowed keeps every component of
  * the values it is added to or multiplied by, compression merging none of
  * them, so that each later sum or product costs more than the last */
 static inline bool
-tx_spent(const TowerCtx *ctx)
+dx_spent(const DyadicCtx *ctx)
 {
-  return ! ctx->filter && ! ctx->dd && tower_ctx_unsafe(ctx);
+  return ! ctx->filter && ! ctx->dd && dyadic_ctx_unsafe(ctx);
 }
 
-static pg_attribute_always_inline TowerX
-tx_add(TowerCtx *ctx, TowerX a, TowerX b)
+static pg_attribute_always_inline DyadicX
+dx_add(DyadicCtx *ctx, DyadicX a, DyadicX b)
 {
-  TowerX r = {0};
+  DyadicX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_add(a.f, b.f);
@@ -14441,20 +14451,20 @@ tx_add(TowerCtx *ctx, TowerX a, TowerX b)
   }
   if (! ctx->wide)
   {
-    if (tx_spent(ctx))
+    if (dx_spent(ctx))
       return a;
     r.x = arcseg_x_add(&ctx->arena, a.x, b.x);
     return r;
   }
-  r.w = tower_wide_add(&ctx->warena, a.w, b.w);
+  r.w = dyadic_wide_add(&ctx->warena, a.w, b.w);
   return r;
 }
 
 /* Multiplied by a power of two, possibly negative, exactly */
-static pg_attribute_always_inline TowerX
-tx_scale(TowerCtx *ctx, TowerX a, double k)
+static pg_attribute_always_inline DyadicX
+dx_scale(DyadicCtx *ctx, DyadicX a, double k)
 {
-  TowerX r = {0};
+  DyadicX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_scale(a.f, k);
@@ -14474,32 +14484,32 @@ tx_scale(TowerCtx *ctx, TowerX a, double k)
   }
   int e;
   frexp(k, &e);
-  r.w = tower_wide_signed(&ctx->warena, a.w, (k < 0.0) ? -1 : 1);
+  r.w = dyadic_wide_signed(&ctx->warena, a.w, (k < 0.0) ? -1 : 1);
   if (r.w->sign != 0)
     r.w->exp += e - 1;
   return r;
 }
 
-static pg_attribute_always_inline TowerX
-tx_sub(TowerCtx *ctx, TowerX a, TowerX b)
+static pg_attribute_always_inline DyadicX
+dx_sub(DyadicCtx *ctx, DyadicX a, DyadicX b)
 {
   if (ctx->wide && ! ctx->filter && ! ctx->dd)
   {
-    TowerX r = {0};
-    r.w = tower_wide_sub(&ctx->warena, a.w, b.w);
+    DyadicX r = {0};
+    r.w = dyadic_wide_sub(&ctx->warena, a.w, b.w);
     return r;
   }
-  return tx_add(ctx, a, tx_scale(ctx, b, -1.0));
+  return dx_add(ctx, a, dx_scale(ctx, b, -1.0));
 }
 
-static pg_attribute_always_inline TowerX
-tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
+static pg_attribute_always_inline DyadicX
+dx_mul(DyadicCtx *ctx, DyadicX a, DyadicX b)
 {
-  TowerX r = {0};
+  DyadicX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_mul(a.f, b.f);
-    /* A product that underflows to 0 is not the exact zero #tx_sign reads */
+    /* A product that underflows to 0 is not the exact zero #dx_sign reads */
     if (r.f.v == 0.0 && r.f.e == 0.0 && (a.f.v != 0.0 || a.f.e != 0.0) &&
         (b.f.v != 0.0 || b.f.e != 0.0))
       r.f.e = DBL_MIN;
@@ -14512,18 +14522,18 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
   }
   if (! ctx->wide)
   {
-    if (tx_spent(ctx))
+    if (dx_spent(ctx))
       return a;
     r.x = arcseg_x_mul(&ctx->arena, a.x, b.x);
     return r;
   }
-  r.w = tower_wide_mul(&ctx->warena, a.w, b.w);
+  r.w = dyadic_wide_mul(&ctx->warena, a.w, b.w);
   return r;
 }
 
 /* Whether a value is zero, read off its representation */
 static pg_attribute_always_inline bool
-tx_zero(const TowerCtx *ctx, TowerX a)
+dx_zero(const DyadicCtx *ctx, DyadicX a)
 {
   if (ctx->filter)
     return a.f.v == 0.0 && a.f.e == 0.0;
@@ -14540,7 +14550,7 @@ tx_zero(const TowerCtx *ctx, TowerX a)
 /* The sign of a value, the arena recording where an expansion may not
  * carry it (#arcseg_x_sign_checked) */
 static int
-tx_sign(TowerCtx *ctx, TowerX a)
+dx_sign(DyadicCtx *ctx, DyadicX a)
 {
   if (ctx->filter)
   {
@@ -14572,7 +14582,7 @@ tx_sign(TowerCtx *ctx, TowerX a)
 
 /* A value as a double and a bound on its error */
 static ArcsegFilter
-tx_filter(const TowerCtx *ctx, TowerX a)
+dx_filter(const DyadicCtx *ctx, DyadicX a)
 {
   ArcsegFilter r;
   if (ctx->filter)
@@ -14617,82 +14627,82 @@ tx_filter(const TowerCtx *ctx, TowerX a)
 
 /* Whether a number of k roots is zero in every coefficient */
 static bool
-tower_zero_k(const TowerCtx *ctx, const TowerX *x, int k)
+tower_zero_k(const DyadicCtx *ctx, const DyadicX *x, int k)
 {
   for (int m = 0; m < (1 << k); m++)
-    if (! tx_zero(ctx, x[m]))
+    if (! dx_zero(ctx, x[m]))
       return false;
   return true;
 }
 
 /* A number of k roots that is the value v */
 static void
-tower_set(TowerCtx *ctx, TowerX v, int k, TowerX *out)
+tower_set(DyadicCtx *ctx, DyadicX v, int k, DyadicX *out)
 {
   out[0] = v;
   for (int m = 1; m < (1 << k); m++)
-    out[m] = tx_val(ctx, 0.0);
+    out[m] = dx_val(ctx, 0.0);
   return;
 }
 
 static void
-tower_add_k(TowerCtx *ctx, const TowerX *x, const TowerX *y, int k,
-  TowerX *out)
+tower_add_k(DyadicCtx *ctx, const DyadicX *x, const DyadicX *y, int k,
+  DyadicX *out)
 {
   for (int m = 0; m < (1 << k); m++)
-    out[m] = tx_add(ctx, x[m], y[m]);
+    out[m] = dx_add(ctx, x[m], y[m]);
   return;
 }
 
 static void
-tower_sub_k(TowerCtx *ctx, const TowerX *x, const TowerX *y, int k,
-  TowerX *out)
+tower_sub_k(DyadicCtx *ctx, const DyadicX *x, const DyadicX *y, int k,
+  DyadicX *out)
 {
   for (int m = 0; m < (1 << k); m++)
-    out[m] = tx_sub(ctx, x[m], y[m]);
+    out[m] = dx_sub(ctx, x[m], y[m]);
   return;
 }
 
 /* Multiplied by a power of two, possibly negative */
 static void
-tower_scale_k(TowerCtx *ctx, const TowerX *x, double s, int k, TowerX *out)
+tower_scale_k(DyadicCtx *ctx, const DyadicX *x, double s, int k, DyadicX *out)
 {
   for (int m = 0; m < (1 << k); m++)
-    out[m] = tx_scale(ctx, x[m], s);
+    out[m] = dx_scale(ctx, x[m], s);
   return;
 }
 
 /* Multiplied by a value, the first coefficient written before the others
  * as #tower_set writes it */
 static void
-tower_mulx_k(TowerCtx *ctx, const TowerX *x, TowerX v, int k, TowerX *out)
+tower_mulx_k(DyadicCtx *ctx, const DyadicX *x, DyadicX v, int k, DyadicX *out)
 {
-  out[0] = tx_mul(ctx, x[0], v);
+  out[0] = dx_mul(ctx, x[0], v);
   for (int m = 1; m < (1 << k); m++)
-    out[m] = tx_mul(ctx, x[m], v);
+    out[m] = dx_mul(ctx, x[m], v);
   return;
 }
 
 /* The product of two numbers of k roots of a tower:
  * (a1 + b1 r)(a2 + b2 r) = (a1 a2 + b1 b2 h) + (a1 b2 + b1 a2) r */
 static void
-tower_mul_k(TowerCtx *ctx, const Tower *t, const TowerX *x, const TowerX *y,
-  int k, TowerX *out)
+tower_mul_k(DyadicCtx *ctx, const Tower *t, const DyadicX *x, const DyadicX *y,
+  int k, DyadicX *out)
 {
   if (k == 0)
   {
-    out[0] = tx_mul(ctx, x[0], y[0]);
+    out[0] = dx_mul(ctx, x[0], y[0]);
     return;
   }
   int half = 1 << (k - 1);
   bool xb = ! tower_zero_k(ctx, x + half, k - 1);
   bool yb = ! tower_zero_k(ctx, y + half, k - 1);
-  TowerX p[TOWER_SIZE / 2], q[TOWER_SIZE / 2], r1[TOWER_SIZE / 2],
+  DyadicX p[TOWER_SIZE / 2], q[TOWER_SIZE / 2], r1[TOWER_SIZE / 2],
     r2[TOWER_SIZE / 2];
   tower_mul_k(ctx, t, x, y, k - 1, p);
   if (xb && yb)
   {
-    TowerX bb[TOWER_SIZE / 2];
+    DyadicX bb[TOWER_SIZE / 2];
     tower_mul_k(ctx, t, x + half, y + half, k - 1, bb);
     tower_mul_k(ctx, t, bb, t->h[k - 1].c, k - 1, q);
     tower_add_k(ctx, p, q, k - 1, p);
@@ -14704,11 +14714,11 @@ tower_mul_k(TowerCtx *ctx, const Tower *t, const TowerX *x, const TowerX *y,
   if (xb && yb)
     tower_add_k(ctx, r1, r2, k - 1, r1);
   else if (xb)
-    memcpy(r1, r2, sizeof(TowerX) * half);
+    memcpy(r1, r2, sizeof(DyadicX) * half);
   else if (! yb)
-    tower_set(ctx, tx_val(ctx, 0.0), k - 1, r1);
-  memcpy(out, p, sizeof(TowerX) * half);
-  memcpy(out + half, r1, sizeof(TowerX) * half);
+    tower_set(ctx, dx_val(ctx, 0.0), k - 1, r1);
+  memcpy(out, p, sizeof(DyadicX) * half);
+  memcpy(out + half, r1, sizeof(DyadicX) * half);
   return;
 }
 
@@ -14769,7 +14779,7 @@ tower_dd_sqrt(DDBound h)
 /* A number of k roots of a tower as a pair of doubles and a bound on its
  * error, in the arithmetic of a context whose values are such pairs */
 static DDBound
-tower_dd_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
+tower_dd_k(const DyadicCtx *ctx, const Tower *t, const DyadicX *x, int k)
 {
   if (k == 0)
     return x[0].d;
@@ -14784,10 +14794,10 @@ tower_dd_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
 
 /* A number of k roots of a tower as a double and a bound on its error */
 static ArcsegFilter
-tower_filter_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
+tower_filter_k(const DyadicCtx *ctx, const Tower *t, const DyadicX *x, int k)
 {
   if (k == 0)
-    return tx_filter(ctx, x[0]);
+    return dx_filter(ctx, x[0]);
   int half = 1 << (k - 1);
   ArcsegFilter a = tower_filter_k(ctx, t, x, k - 1);
   if (tower_zero_k(ctx, x + half, k - 1))
@@ -14801,10 +14811,10 @@ tower_filter_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
  * and otherwise of a + b sqrt(h) from the signs of a, b, h and
  * a^2 - b^2 h, each a number of the roots below */
 static int
-tower_sign_k(TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
+tower_sign_k(DyadicCtx *ctx, const Tower *t, const DyadicX *x, int k)
 {
   if (k == 0)
-    return tx_sign(ctx, x[0]);
+    return dx_sign(ctx, x[0]);
   int s;
   if (ctx->dd)
   {
@@ -14831,7 +14841,7 @@ tower_sign_k(TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
     return sa;
   if (sa == 0 || sa == sb)
     return sb;
-  TowerX aa[TOWER_SIZE / 2], bb[TOWER_SIZE / 2];
+  DyadicX aa[TOWER_SIZE / 2], bb[TOWER_SIZE / 2];
   tower_mul_k(ctx, t, x, x, k - 1, aa);
   tower_mul_k(ctx, t, x + half, x + half, k - 1, bb);
   tower_mul_k(ctx, t, bb, t->h[k - 1].c, k - 1, bb);
@@ -14843,12 +14853,12 @@ tower_sign_k(TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
  * map[i] there: its coefficient m moves to the product of the roots map[i]
  * over the bits i of m */
 static void
-tower_map(TowerCtx *ctx, const TowerX *x, int k, const int *map, int depth,
-  TowerX *out)
+tower_map(DyadicCtx *ctx, const DyadicX *x, int k, const int *map, int depth,
+  DyadicX *out)
 {
-  TowerX tmp[TOWER_SIZE];
+  DyadicX tmp[TOWER_SIZE];
   for (int m = 0; m < (1 << depth); m++)
-    tmp[m] = tx_val(ctx, 0.0);
+    tmp[m] = dx_val(ctx, 0.0);
   for (int m = 0; m < (1 << k); m++)
   {
     int mm = 0;
@@ -14857,21 +14867,21 @@ tower_map(TowerCtx *ctx, const TowerX *x, int k, const int *map, int depth,
         mm |= 1 << map[i];
     tmp[mm] = x[m];
   }
-  memcpy(out, tmp, sizeof(TowerX) * (1 << depth));
+  memcpy(out, tmp, sizeof(DyadicX) * (1 << depth));
   return;
 }
 
 /* Whether two numbers of k roots carry equal coefficients, decided
  * exactly: then they are one number */
 static bool
-tower_same_k(TowerCtx *ctx, const TowerX *x, const TowerX *y, int k)
+tower_same_k(DyadicCtx *ctx, const DyadicX *x, const DyadicX *y, int k)
 {
   for (int m = 0; m < (1 << k); m++)
   {
     /* Two exact values are compared without forming their difference */
     if (ctx->wide && ! ctx->filter && ! ctx->dd ?
-        tower_wide_cmp(x[m].w, y[m].w) != 0 :
-        tx_sign(ctx, tx_sub(ctx, x[m], y[m])) != 0)
+        dyadic_wide_cmp(x[m].w, y[m].w) != 0 :
+        dx_sign(ctx, dx_sub(ctx, x[m], y[m])) != 0)
       return false;
   }
   return true;
@@ -14895,12 +14905,12 @@ tangent_same_pair(const TangentPoint *a, const TangentPoint *b)
  * @p t2 stands in @p t. False where @p t would hold more than
  * #TOWER_MAXDEPTH roots */
 static bool
-tower_merge(TowerCtx *ctx, Tower *t, const Tower *t2, int *map)
+tower_merge(DyadicCtx *ctx, Tower *t, const Tower *t2, int *map)
 {
   static const int ident[TOWER_MAXDEPTH] = {0, 1, 2, 3};
   for (int i = 0; i < t2->depth; i++)
   {
-    TowerX h[TOWER_SIZE];
+    DyadicX h[TOWER_SIZE];
     tower_map(ctx, t2->h[i].c, i, map, t->depth, h);
     int j = 0;
     for (; j < t->depth; j++)
@@ -14908,7 +14918,7 @@ tower_merge(TowerCtx *ctx, Tower *t, const Tower *t2, int *map)
       /* The roots of two tangents of one pair of circles */
       if (t->key[j] && t2->key[i] && tangent_same_pair(t->key[j], t2->key[i]))
         break;
-      TowerX hj[TOWER_SIZE];
+      DyadicX hj[TOWER_SIZE];
       tower_map(ctx, t->h[j].c, j, ident, t->depth, hj);
       if (tower_same_k(ctx, h, hj, t->depth))
         break;
@@ -14917,7 +14927,7 @@ tower_merge(TowerCtx *ctx, Tower *t, const Tower *t2, int *map)
     {
       if (t->depth == TOWER_MAXDEPTH)
         return false;
-      memcpy(t->h[j].c, h, sizeof(TowerX) * (1 << j));
+      memcpy(t->h[j].c, h, sizeof(DyadicX) * (1 << j));
       t->key[j] = t2->key[i];
       t->depth++;
     }
@@ -14939,13 +14949,13 @@ typedef struct
 
 /* A point given by doubles */
 static void
-tower_point_xy(TowerCtx *ctx, double px, double py, double ox, double oy,
+tower_point_xy(DyadicCtx *ctx, double px, double py, double ox, double oy,
   TowerPoint *out)
 {
   out->t.depth = 0;
-  out->x.c[0] = tx_diff(ctx, px, ox);
-  out->y.c[0] = tx_diff(ctx, py, oy);
-  out->w.c[0] = tx_val(ctx, 1.0);
+  out->x.c[0] = dx_diff(ctx, px, ox);
+  out->y.c[0] = dx_diff(ctx, py, oy);
+  out->w.c[0] = dx_val(ctx, 1.0);
   return;
 }
 
@@ -14960,26 +14970,26 @@ tower_point_xy(TowerCtx *ctx, double px, double py, double ox, double oy,
  * has the one root sqrt(E)
  */
 static void
-tower_point_tangent(TowerCtx *ctx, const TangentPoint *tp, double ox,
+tower_point_tangent(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   double oy, TowerPoint *out)
 {
-  TowerX dx = tx_diff(ctx, tp->c2x, tp->c1x);
-  TowerX dy = tx_diff(ctx, tp->c2y, tp->c1y);
-  TowerX dr = tx_diff(ctx, tp->r1, tp->r2);
-  TowerX d2 = tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy));
-  TowerX rk = tx_val(ctx, tp->k ? tp->r2 : tp->r1);
-  TowerX rkdr = tx_mul(ctx, rk, dr);
-  TowerX srk = tx_scale(ctx, rk, (double) tp->side);
+  DyadicX dx = dx_diff(ctx, tp->c2x, tp->c1x);
+  DyadicX dy = dx_diff(ctx, tp->c2y, tp->c1y);
+  DyadicX dr = dx_diff(ctx, tp->r1, tp->r2);
+  DyadicX d2 = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
+  DyadicX rk = dx_val(ctx, tp->k ? tp->r2 : tp->r1);
+  DyadicX rkdr = dx_mul(ctx, rk, dr);
+  DyadicX srk = dx_scale(ctx, rk, (double) tp->side);
   out->t.depth = 1;
   out->t.key[0] = tp;
-  out->t.h[0].c[0] = tx_sub(ctx, d2, tx_mul(ctx, dr, dr));
+  out->t.h[0].c[0] = dx_sub(ctx, d2, dx_mul(ctx, dr, dr));
   /* Ck d^2 + rk (r1 - r2) d + side rk sqrt(E) rot(d), over d^2 */
-  out->x.c[0] = tx_add(ctx, tx_mul(ctx,
-    tx_diff(ctx, tp->k ? tp->c2x : tp->c1x, ox), d2), tx_mul(ctx, rkdr, dx));
-  out->x.c[1] = tx_scale(ctx, tx_mul(ctx, srk, dy), -1.0);
-  out->y.c[0] = tx_add(ctx, tx_mul(ctx,
-    tx_diff(ctx, tp->k ? tp->c2y : tp->c1y, oy), d2), tx_mul(ctx, rkdr, dy));
-  out->y.c[1] = tx_mul(ctx, srk, dx);
+  out->x.c[0] = dx_add(ctx, dx_mul(ctx,
+    dx_diff(ctx, tp->k ? tp->c2x : tp->c1x, ox), d2), dx_mul(ctx, rkdr, dx));
+  out->x.c[1] = dx_scale(ctx, dx_mul(ctx, srk, dy), -1.0);
+  out->y.c[0] = dx_add(ctx, dx_mul(ctx,
+    dx_diff(ctx, tp->k ? tp->c2y : tp->c1y, oy), d2), dx_mul(ctx, rkdr, dy));
+  out->y.c[1] = dx_mul(ctx, srk, dx);
   tower_set(ctx, d2, 1, out->w.c);
   return;
 }
@@ -14993,30 +15003,30 @@ tower_point_tangent(TowerCtx *ctx, const TangentPoint *tp, double ox,
  * points #arcarc_meet_exact places for two centred arcs
  */
 static int
-tower_point_circles(TowerCtx *ctx, double c1x, double c1y, double r1,
+tower_point_circles(DyadicCtx *ctx, double c1x, double c1y, double r1,
   double c2x, double c2y, double r2, int sigma, double ox, double oy,
   TowerPoint *out)
 {
-  TowerX dx = tx_diff(ctx, c2x, c1x), dy = tx_diff(ctx, c2y, c1y);
-  TowerX dd = tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy));
-  TowerX a = tx_val(ctx, r1), b = tx_val(ctx, r2);
-  TowerX g = tx_sub(ctx, tx_add(ctx, dd, tx_mul(ctx, a, a)),
-    tx_mul(ctx, b, b));
-  TowerX h = tx_sub(ctx, tx_scale(ctx, tx_mul(ctx, tx_mul(ctx, a, a), dd),
-    4.0), tx_mul(ctx, g, g));
-  int sh = tx_sign(ctx, h);
+  DyadicX dx = dx_diff(ctx, c2x, c1x), dy = dx_diff(ctx, c2y, c1y);
+  DyadicX dd = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
+  DyadicX a = dx_val(ctx, r1), b = dx_val(ctx, r2);
+  DyadicX g = dx_sub(ctx, dx_add(ctx, dd, dx_mul(ctx, a, a)),
+    dx_mul(ctx, b, b));
+  DyadicX h = dx_sub(ctx, dx_scale(ctx, dx_mul(ctx, dx_mul(ctx, a, a), dd),
+    4.0), dx_mul(ctx, g, g));
+  int sh = dx_sign(ctx, h);
   if (sh < 0)
     return sh;
-  TowerX w = tx_scale(ctx, dd, 2.0);
+  DyadicX w = dx_scale(ctx, dd, 2.0);
   out->t.depth = 1;
   out->t.key[0] = NULL;
   out->t.h[0].c[0] = h;
-  out->x.c[0] = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, c1x, ox), w),
-    tx_mul(ctx, g, dx));
-  out->x.c[1] = tx_scale(ctx, dy, (double) - sigma);
-  out->y.c[0] = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, c1y, oy), w),
-    tx_mul(ctx, g, dy));
-  out->y.c[1] = tx_scale(ctx, dx, (double) sigma);
+  out->x.c[0] = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, c1x, ox), w),
+    dx_mul(ctx, g, dx));
+  out->x.c[1] = dx_scale(ctx, dy, (double) - sigma);
+  out->y.c[0] = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, c1y, oy), w),
+    dx_mul(ctx, g, dy));
+  out->y.c[1] = dx_scale(ctx, dx, (double) sigma);
   tower_set(ctx, w, 1, out->w.c);
   return sh;
 }
@@ -15025,8 +15035,8 @@ tower_point_circles(TowerCtx *ctx, double c1x, double c1y, double r1,
  * their roots: xyw[i][0..2] the x, y and w of point i. False where it would
  * hold more than #TOWER_MAXDEPTH roots */
 static bool
-tower_points_read(TowerCtx *ctx, const TowerPoint *const *pts, int n,
-  Tower *t, TowerX (*xyw)[3][TOWER_SIZE])
+tower_points_read(DyadicCtx *ctx, const TowerPoint *const *pts, int n,
+  Tower *t, DyadicX (*xyw)[3][TOWER_SIZE])
 {
   int map[8][TOWER_MAXDEPTH];
   assert(n <= 8);
@@ -15048,16 +15058,16 @@ tower_points_read(TowerCtx *ctx, const TowerPoint *const *pts, int n,
  * Q1: the cross product of the two lines in homogeneous coordinates. False
  * where its tower would hold too many roots */
 static bool
-tower_point_lines(TowerCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
+tower_point_lines(DyadicCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
   const TowerPoint *q0, const TowerPoint *q1, TowerPoint *out)
 {
   const TowerPoint *pts[4] = {p0, p1, q0, q1};
-  TowerX c[4][3][TOWER_SIZE];
+  DyadicX c[4][3][TOWER_SIZE];
   if (! tower_points_read(ctx, pts, 4, &out->t, c))
     return false;
   const Tower *t = &out->t;
   int k = t->depth;
-  TowerX l[2][3][TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
+  DyadicX l[2][3][TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
   for (int j = 0; j < 2; j++)
     for (int r = 0; r < 3; r++)
     {
@@ -15067,7 +15077,7 @@ tower_point_lines(TowerCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
       tower_mul_k(ctx, t, c[2 * j][r2], c[2 * j + 1][r1], k, v);
       tower_sub_k(ctx, u, v, k, l[j][r]);
     }
-  TowerX *o[3] = {out->x.c, out->y.c, out->w.c};
+  DyadicX *o[3] = {out->x.c, out->y.c, out->w.c};
   for (int r = 0; r < 3; r++)
   {
     int r1 = (r + 1) % 3, r2 = (r + 2) % 3;
@@ -15091,22 +15101,22 @@ tower_point_lines(TowerCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
  * the line with sqrt(D) above it. Sigma 1 is the farther along P0 -> P1
  */
 static int
-tower_point_line_circle(TowerCtx *ctx, const TowerPoint *p0,
+tower_point_line_circle(DyadicCtx *ctx, const TowerPoint *p0,
   const TowerPoint *p1, double cx, double cy, double r, int sigma, double ox,
   double oy, TowerPoint *out)
 {
   const TowerPoint *pts[2] = {p0, p1};
-  TowerX c[2][3][TOWER_SIZE];
+  DyadicX c[2][3][TOWER_SIZE];
   Tower t;
   if (! tower_points_read(ctx, pts, 2, &t, c) || t.depth == TOWER_MAXDEPTH)
     return 2;
   int k = t.depth;
-  TowerX ux[TOWER_SIZE], uy[TOWER_SIZE], vx[TOWER_SIZE], vy[TOWER_SIZE],
+  DyadicX ux[TOWER_SIZE], uy[TOWER_SIZE], vx[TOWER_SIZE], vy[TOWER_SIZE],
     a[TOWER_SIZE], b[TOWER_SIZE];
   /* U = P0 - C w0 */
-  tower_mulx_k(ctx, c[0][2], tx_diff(ctx, cx, ox), k, a);
+  tower_mulx_k(ctx, c[0][2], dx_diff(ctx, cx, ox), k, a);
   tower_sub_k(ctx, c[0][0], a, k, ux);
-  tower_mulx_k(ctx, c[0][2], tx_diff(ctx, cy, oy), k, a);
+  tower_mulx_k(ctx, c[0][2], dx_diff(ctx, cy, oy), k, a);
   tower_sub_k(ctx, c[0][1], a, k, uy);
   /* V = P1 w0 - P0 w1 */
   tower_mul_k(ctx, &t, c[1][0], c[0][2], k, a);
@@ -15115,7 +15125,7 @@ tower_point_line_circle(TowerCtx *ctx, const TowerPoint *p0,
   tower_mul_k(ctx, &t, c[1][1], c[0][2], k, a);
   tower_mul_k(ctx, &t, c[0][1], c[1][2], k, b);
   tower_sub_k(ctx, a, b, k, vy);
-  TowerX vv[TOWER_SIZE], vu[TOWER_SIZE], uu[TOWER_SIZE], d[TOWER_SIZE];
+  DyadicX vv[TOWER_SIZE], vu[TOWER_SIZE], uu[TOWER_SIZE], d[TOWER_SIZE];
   tower_mul_k(ctx, &t, vx, vx, k, a);
   tower_mul_k(ctx, &t, vy, vy, k, b);
   tower_add_k(ctx, a, b, k, vv);
@@ -15126,28 +15136,28 @@ tower_point_line_circle(TowerCtx *ctx, const TowerPoint *p0,
   tower_mul_k(ctx, &t, uy, uy, k, b);
   tower_add_k(ctx, a, b, k, uu);
   /* U.U - r^2 w0^2 */
-  TowerX rr = tx_val(ctx, r);
+  DyadicX rr = dx_val(ctx, r);
   tower_mul_k(ctx, &t, c[0][2], c[0][2], k, a);
-  tower_mulx_k(ctx, a, tx_mul(ctx, rr, rr), k, a);
+  tower_mulx_k(ctx, a, dx_mul(ctx, rr, rr), k, a);
   tower_sub_k(ctx, uu, a, k, uu);
   tower_mul_k(ctx, &t, vu, vu, k, a);
   tower_mul_k(ctx, &t, vv, uu, k, b);
   tower_sub_k(ctx, a, b, k, d);
   int disc = tower_sign_k(ctx, &t, d, k);
   int sw1 = tower_sign_k(ctx, &t, c[1][2], k);
-  if (tower_ctx_unsafe(ctx) || sw1 == 0)
+  if (dyadic_ctx_unsafe(ctx) || sw1 == 0)
     return 2;
   if (disc < 0)
     return disc;
   out->t = t;
-  memcpy(out->t.h[k].c, d, sizeof(TowerX) * (1 << k));
+  memcpy(out->t.h[k].c, d, sizeof(DyadicX) * (1 << k));
   out->t.key[k] = NULL;
   out->t.depth = k + 1;
   int half = 1 << k;
   double s = (double) (sigma * sw1);
   /* x = x0 (V.V) - (V.U) Vx + s Vx sqrt(D) */
-  TowerX *o[2] = {out->x.c, out->y.c};
-  TowerX *vc[2] = {vx, vy};
+  DyadicX *o[2] = {out->x.c, out->y.c};
+  DyadicX *vc[2] = {vx, vy};
   for (int j = 0; j < 2; j++)
   {
     tower_mul_k(ctx, &t, c[0][j], vv, k, a);
@@ -15156,7 +15166,7 @@ tower_point_line_circle(TowerCtx *ctx, const TowerPoint *p0,
     tower_scale_k(ctx, vc[j], s, k, o[j] + half);
   }
   tower_mul_k(ctx, &t, c[0][2], vv, k, out->w.c);
-  tower_set(ctx, tx_val(ctx, 0.0), k, out->w.c + half);
+  tower_set(ctx, dx_val(ctx, 0.0), k, out->w.c + half);
   return disc;
 }
 
@@ -15164,17 +15174,17 @@ tower_point_line_circle(TowerCtx *ctx, const TowerPoint *p0,
  * counterclockwise: the determinant of their homogeneous coordinates times
  * the signs of their w; 2 where it is not told */
 static int
-tower_orient(TowerCtx *ctx, const TowerPoint *p, const TowerPoint *q,
+tower_orient(DyadicCtx *ctx, const TowerPoint *p, const TowerPoint *q,
   const TowerPoint *r)
 {
   const TowerPoint *pts[3] = {p, q, r};
-  TowerX c[3][3][TOWER_SIZE];
+  DyadicX c[3][3][TOWER_SIZE];
   Tower t;
   if (! tower_points_read(ctx, pts, 3, &t, c))
     return 2;
   int k = t.depth;
-  TowerX det[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE], m[TOWER_SIZE];
-  tower_set(ctx, tx_val(ctx, 0.0), k, det);
+  DyadicX det[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE], m[TOWER_SIZE];
+  tower_set(ctx, dx_val(ctx, 0.0), k, det);
   for (int i = 0; i < 3; i++)
   {
     /* p . (q x r) */
@@ -15188,7 +15198,7 @@ tower_orient(TowerCtx *ctx, const TowerPoint *p, const TowerPoint *q,
   int s = tower_sign_k(ctx, &t, det, k);
   for (int i = 0; i < 3 && s != 0; i++)
     s *= tower_sign_k(ctx, &t, c[i][2], k);
-  return tower_ctx_unsafe(ctx) ? 2 : s;
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
 }
 
 /*****************************************************************************
@@ -15212,49 +15222,49 @@ tangent_point_round(const TangentPoint *tp, double *x, double *y)
 
 /* A question about meetings, answered in the arithmetic of @p ctx: its
  * answer, or 2 where it is not told there */
-typedef int (*TowerPred)(TowerCtx *ctx, const void *arg);
+typedef int (*DyadicPred)(DyadicCtx *ctx, const void *arg);
 
-/* The answer of a question in expansions, and in #TowerWide where those
+/* The answer of a question in expansions, and in #DyadicWide where those
  * leave their exact range, the question building its points again: the
- * tiers of #tower_pred_run past its filters, for a question whose own
+ * tiers of #dyadic_pred_run past its filters, for a question whose own
  * filters read the first tiers */
 static int
-tower_pred_run_expansions(TowerPred fn, const void *arg)
+dyadic_pred_run_expansions(DyadicPred fn, const void *arg)
 {
-  TowerCtx ctx;
-  tower_ctx_init(&ctx, false);
+  DyadicCtx ctx;
+  dyadic_ctx_init(&ctx, false);
   int r = fn(&ctx, arg);
   bool again = (r == 2) || ctx.arena.unsafe;
-  tower_ctx_free(&ctx);
+  dyadic_ctx_free(&ctx);
   if (! again)
     return r;
-  tower_ctx_init(&ctx, true);
+  dyadic_ctx_init(&ctx, true);
   r = fn(&ctx, arg);
-  tower_ctx_free(&ctx);
+  dyadic_ctx_free(&ctx);
   return r;
 }
 
 /* The answer of a question in doubles, then in pairs of doubles, each
- * carrying a bound on its error, then in expansions and in #TowerWide where
- * those leave their exact range (#tower_pred_run_expansions) */
+ * carrying a bound on its error, then in expansions and in #DyadicWide where
+ * those leave their exact range (#dyadic_pred_run_expansions) */
 static int
-tower_pred_run(TowerPred fn, const void *arg)
+dyadic_pred_run(DyadicPred fn, const void *arg)
 {
-  TowerCtx ctx;
+  DyadicCtx ctx;
   int r = 2;
   bool again = true;
   for (int pass = 0; pass < 2 && again; pass++)
   {
-    tower_ctx_init(&ctx, false);
+    dyadic_ctx_init(&ctx, false);
     ctx.filter = (pass == 0);
     ctx.dd = (pass == 1);
     r = fn(&ctx, arg);
     again = (r == 2) || ctx.arena.unsafe;
-    tower_ctx_free(&ctx);
+    dyadic_ctx_free(&ctx);
   }
   if (! again)
     return r;
-  return tower_pred_run_expansions(fn, arg);
+  return dyadic_pred_run_expansions(fn, arg);
 }
 
 /* A polynomial in exact sums, the question #polynomial_sign_pred reads */
@@ -15270,56 +15280,56 @@ typedef struct
 #define POLY_SIGN_STACK_SUMS 64
 
 /* The sign of a polynomial in exact sums, written once in the arithmetic of
- * a #TowerCtx, as #point_arc_within_pred writes its question: each sum a
+ * a #DyadicCtx, as #point_arc_within_pred writes its question: each sum a
  * term reads is the sum of its components, formed once, each term its
  * coefficient times its sums, and the sign that of the total, or 2 where the
  * tier of @p ctx cannot tell. A sum no term reads is never read, since a
  * caller sets only the sums of its question (#segment_square_least) */
 static int
-polynomial_sign_pred(TowerCtx *ctx, const void *varg)
+polynomial_sign_pred(DyadicCtx *ctx, const void *varg)
 {
   const PolySignArg *a = (const PolySignArg *) varg;
   int nsums = 0;
   for (int i = 0; i < a->nterms; i++)
     for (int k = 0; k < a->terms[i].deg; k++)
       nsums = Max(nsums, a->terms[i].sum[k] + 1);
-  TowerX stack[POLY_SIGN_STACK_SUMS];
+  DyadicX stack[POLY_SIGN_STACK_SUMS];
   bool formed_stack[POLY_SIGN_STACK_SUMS];
-  TowerX *sums = stack;
+  DyadicX *sums = stack;
   bool *formed = formed_stack;
   if (nsums > POLY_SIGN_STACK_SUMS)
   {
-    sums = palloc(sizeof(TowerX) * nsums);
+    sums = palloc(sizeof(DyadicX) * nsums);
     formed = palloc(sizeof(bool) * nsums);
   }
   memset(formed, 0, sizeof(bool) * nsums);
-  TowerX total = tx_val(ctx, 0.0);
+  DyadicX total = dx_val(ctx, 0.0);
   for (int i = 0; i < a->nterms; i++)
   {
-    TowerX t = tx_val(ctx, a->terms[i].coef);
+    DyadicX t = dx_val(ctx, a->terms[i].coef);
     for (int k = 0; k < a->terms[i].deg; k++)
     {
       int j = a->terms[i].sum[k];
       if (! formed[j])
       {
         const ExactSum *e = &a->sums[j];
-        TowerX v = tx_val(ctx, e->e[0]);
+        DyadicX v = dx_val(ctx, e->e[0]);
         for (int c = 1; c < e->n; c++)
-          v = tx_add(ctx, v, tx_val(ctx, e->e[c]));
+          v = dx_add(ctx, v, dx_val(ctx, e->e[c]));
         sums[j] = v;
         formed[j] = true;
       }
-      t = tx_mul(ctx, t, sums[j]);
+      t = dx_mul(ctx, t, sums[j]);
     }
-    total = tx_add(ctx, total, t);
+    total = dx_add(ctx, total, t);
   }
-  int sign = tx_sign(ctx, total);
+  int sign = dx_sign(ctx, total);
   if (sums != stack)
   {
     pfree(sums);
     pfree(formed);
   }
-  return tower_ctx_unsafe(ctx) ? 2 : sign;
+  return dyadic_ctx_unsafe(ctx) ? 2 : sign;
 }
 
 /**
@@ -15328,16 +15338,16 @@ polynomial_sign_pred(TowerCtx *ctx, const void *varg)
  * @details #polynomial_sign_exact reads it where its own filters cannot tell
  */
 static int
-polynomial_sign_tower(const ExactSum *sums, const PolyTerm *terms,
+polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
   int nterms)
 {
   PolySignArg arg = {sums, terms, nterms};
-  return tower_pred_run_expansions(polynomial_sign_pred, &arg);
+  return dyadic_pred_run_expansions(polynomial_sign_pred, &arg);
 }
 
 /* The two ends of a segment between tangent points */
 static void
-towerseg_ends(TowerCtx *ctx, const Edge *s, double ox, double oy,
+towerseg_ends(DyadicCtx *ctx, const Edge *s, double ox, double oy,
   TowerPoint *p0, TowerPoint *p1)
 {
   if (s->from)
@@ -15362,7 +15372,7 @@ towerseg_ends(TowerCtx *ctx, const Edge *s, double ox, double oy,
  * and the meeting of such a segment with the circle of a centred arc
  */
 static int
-meet_tower_build(TowerCtx *ctx, const MeetPoint *m, double ox, double oy,
+meet_tower_build(DyadicCtx *ctx, const MeetPoint *m, double ox, double oy,
   TowerPoint *out)
 {
   switch (m->kind)
@@ -15401,17 +15411,17 @@ meet_tower_build(TowerCtx *ctx, const MeetPoint *m, double ox, double oy,
 
 /* The sign of (B - A) . (D - C), the points of one tower question */
 static int
-tower_dot(TowerCtx *ctx, const TowerPoint *a, const TowerPoint *b,
+tower_dot(DyadicCtx *ctx, const TowerPoint *a, const TowerPoint *b,
   const TowerPoint *c, const TowerPoint *d)
 {
   const TowerPoint *pts[4] = {a, b, c, d};
-  TowerX v[4][3][TOWER_SIZE];
+  DyadicX v[4][3][TOWER_SIZE];
   Tower t;
   if (! tower_points_read(ctx, pts, 4, &t, v))
     return 2;
   int k = t.depth;
-  TowerX s[TOWER_SIZE], u[TOWER_SIZE], w[TOWER_SIZE], z[TOWER_SIZE];
-  tower_set(ctx, tx_val(ctx, 0.0), k, s);
+  DyadicX s[TOWER_SIZE], u[TOWER_SIZE], w[TOWER_SIZE], z[TOWER_SIZE];
+  tower_set(ctx, dx_val(ctx, 0.0), k, s);
   for (int j = 0; j < 2; j++)
   {
     /* (B wA - A wB) and (D wC - C wD), the vectors times wA wB and wC wD */
@@ -15427,28 +15437,28 @@ tower_dot(TowerCtx *ctx, const TowerPoint *a, const TowerPoint *b,
   int sign = tower_sign_k(ctx, &t, s, k);
   for (int i = 0; i < 4 && sign != 0; i++)
     sign *= tower_sign_k(ctx, &t, v[i][2], k);
-  return tower_ctx_unsafe(ctx) ? 2 : sign;
+  return dyadic_ctx_unsafe(ctx) ? 2 : sign;
 }
 
 /* Whether two points of tower questions are one point: 1, 0, or 2 where it
  * is not told */
 static int
-tower_same_point(TowerCtx *ctx, const TowerPoint *a, const TowerPoint *b)
+tower_same_point(DyadicCtx *ctx, const TowerPoint *a, const TowerPoint *b)
 {
   const TowerPoint *pts[2] = {a, b};
-  TowerX v[2][3][TOWER_SIZE];
+  DyadicX v[2][3][TOWER_SIZE];
   Tower t;
   if (! tower_points_read(ctx, pts, 2, &t, v))
     return 2;
   int k = t.depth;
-  TowerX u[TOWER_SIZE], w[TOWER_SIZE];
+  DyadicX u[TOWER_SIZE], w[TOWER_SIZE];
   for (int j = 0; j < 2; j++)
   {
     tower_mul_k(ctx, &t, v[0][j], v[1][2], k, u);
     tower_mul_k(ctx, &t, v[1][j], v[0][2], k, w);
     tower_sub_k(ctx, u, w, k, u);
     int s = tower_sign_k(ctx, &t, u, k);
-    if (tower_ctx_unsafe(ctx))
+    if (dyadic_ctx_unsafe(ctx))
       return 2;
     if (s != 0)
       return 0;
@@ -15460,7 +15470,7 @@ tower_same_point(TowerCtx *ctx, const TowerPoint *a, const TowerPoint *b)
  * 1 at its end, -1 strictly between them, -2 beyond them, 2 where it is not
  * told */
 static int
-tower_on_segment(TowerCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
+tower_on_segment(DyadicCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
   const TowerPoint *x)
 {
   int s0 = tower_dot(ctx, p0, x, p0, p1);
@@ -15482,13 +15492,13 @@ tower_on_segment(TowerCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
  * coordinates; the two radii from the centre to the ends of the arc are A and
  * B, times w. A distance to an arc is then the difference of square roots of
  * such values, whose sign the tower reads (#tower_sign_k) through the tiers of
- * #tower_pred_run, so that it holds for any finite coordinates.
+ * #dyadic_pred_run, so that it holds for any finite coordinates.
  *****************************************************************************/
 
 /* The circle of an arc, whose sweep runs counterclockwise from A to B */
 typedef struct
 {
-  TowerX cx, cy, w, r2, ax, ay, bx, by;
+  DyadicX cx, cy, w, r2, ax, ay, bx, by;
   int sab;           /**< Sign of A x B, 0 for a half circle */
 } TowerArc;
 
@@ -15496,61 +15506,61 @@ typedef struct
  * centre is M + N / D, as #arcarc_centre_exact forms it, D = 2 a x b; the arc
  * turns counterclockwise where a x b is negative */
 static void
-tower_arc_read(TowerCtx *ctx, const ExactArc *arc, double ox, double oy,
+tower_arc_read(DyadicCtx *ctx, const ExactArc *arc, double ox, double oy,
   TowerArc *out)
 {
   if (arc->half)
   {
-    out->w = tx_val(ctx, 2.0);
-    out->cx = tx_add(ctx, tx_diff(ctx, arc->s[0], ox),
-      tx_diff(ctx, arc->e[0], ox));
-    out->cy = tx_add(ctx, tx_diff(ctx, arc->s[1], oy),
-      tx_diff(ctx, arc->e[1], oy));
-    out->ax = tx_diff(ctx, arc->s[0], arc->e[0]);
-    out->ay = tx_diff(ctx, arc->s[1], arc->e[1]);
-    out->bx = tx_diff(ctx, arc->e[0], arc->s[0]);
-    out->by = tx_diff(ctx, arc->e[1], arc->s[1]);
-    out->r2 = tx_add(ctx, tx_mul(ctx, out->ax, out->ax),
-      tx_mul(ctx, out->ay, out->ay));
+    out->w = dx_val(ctx, 2.0);
+    out->cx = dx_add(ctx, dx_diff(ctx, arc->s[0], ox),
+      dx_diff(ctx, arc->e[0], ox));
+    out->cy = dx_add(ctx, dx_diff(ctx, arc->s[1], oy),
+      dx_diff(ctx, arc->e[1], oy));
+    out->ax = dx_diff(ctx, arc->s[0], arc->e[0]);
+    out->ay = dx_diff(ctx, arc->s[1], arc->e[1]);
+    out->bx = dx_diff(ctx, arc->e[0], arc->s[0]);
+    out->by = dx_diff(ctx, arc->e[1], arc->s[1]);
+    out->r2 = dx_add(ctx, dx_mul(ctx, out->ax, out->ax),
+      dx_mul(ctx, out->ay, out->ay));
     out->sab = 0;
     return;
   }
-  TowerX ax = tx_diff(ctx, arc->s[0], arc->m[0]);
-  TowerX ay = tx_diff(ctx, arc->s[1], arc->m[1]);
-  TowerX bx = tx_diff(ctx, arc->e[0], arc->m[0]);
-  TowerX by = tx_diff(ctx, arc->e[1], arc->m[1]);
-  TowerX a2 = tx_add(ctx, tx_mul(ctx, ax, ax), tx_mul(ctx, ay, ay));
-  TowerX b2 = tx_add(ctx, tx_mul(ctx, bx, bx), tx_mul(ctx, by, by));
-  TowerX nx = tx_sub(ctx, tx_mul(ctx, a2, by), tx_mul(ctx, b2, ay));
-  TowerX ny = tx_sub(ctx, tx_mul(ctx, b2, ax), tx_mul(ctx, a2, bx));
-  TowerX d = tx_scale(ctx, tx_sub(ctx, tx_mul(ctx, ax, by),
-    tx_mul(ctx, ay, bx)), 2.0);
-  int sd = tx_sign(ctx, d);
+  DyadicX ax = dx_diff(ctx, arc->s[0], arc->m[0]);
+  DyadicX ay = dx_diff(ctx, arc->s[1], arc->m[1]);
+  DyadicX bx = dx_diff(ctx, arc->e[0], arc->m[0]);
+  DyadicX by = dx_diff(ctx, arc->e[1], arc->m[1]);
+  DyadicX a2 = dx_add(ctx, dx_mul(ctx, ax, ax), dx_mul(ctx, ay, ay));
+  DyadicX b2 = dx_add(ctx, dx_mul(ctx, bx, bx), dx_mul(ctx, by, by));
+  DyadicX nx = dx_sub(ctx, dx_mul(ctx, a2, by), dx_mul(ctx, b2, ay));
+  DyadicX ny = dx_sub(ctx, dx_mul(ctx, b2, ax), dx_mul(ctx, a2, bx));
+  DyadicX d = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, ax, by),
+    dx_mul(ctx, ay, bx)), 2.0);
+  int sd = dx_sign(ctx, d);
   /* With w = |D|, the sign carried through N */
   double k = (sd < 0) ? -1.0 : 1.0;
-  nx = tx_scale(ctx, nx, k);
-  ny = tx_scale(ctx, ny, k);
-  out->w = tx_scale(ctx, d, k);
-  out->cx = tx_add(ctx, tx_mul(ctx, out->w, tx_diff(ctx, arc->m[0], ox)), nx);
-  out->cy = tx_add(ctx, tx_mul(ctx, out->w, tx_diff(ctx, arc->m[1], oy)), ny);
-  TowerX rax = tx_sub(ctx, tx_mul(ctx, out->w, ax), nx);
-  TowerX ray = tx_sub(ctx, tx_mul(ctx, out->w, ay), ny);
-  TowerX rbx = tx_sub(ctx, tx_mul(ctx, out->w, bx), nx);
-  TowerX rby = tx_sub(ctx, tx_mul(ctx, out->w, by), ny);
-  out->r2 = tx_add(ctx, tx_mul(ctx, rax, rax), tx_mul(ctx, ray, ray));
+  nx = dx_scale(ctx, nx, k);
+  ny = dx_scale(ctx, ny, k);
+  out->w = dx_scale(ctx, d, k);
+  out->cx = dx_add(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->m[0], ox)), nx);
+  out->cy = dx_add(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->m[1], oy)), ny);
+  DyadicX rax = dx_sub(ctx, dx_mul(ctx, out->w, ax), nx);
+  DyadicX ray = dx_sub(ctx, dx_mul(ctx, out->w, ay), ny);
+  DyadicX rbx = dx_sub(ctx, dx_mul(ctx, out->w, bx), nx);
+  DyadicX rby = dx_sub(ctx, dx_mul(ctx, out->w, by), ny);
+  out->r2 = dx_add(ctx, dx_mul(ctx, rax, rax), dx_mul(ctx, ray, ray));
   /* Clockwise the arc is the sweep from E to S */
   out->ax = (sd < 0) ? rax : rbx;
   out->ay = (sd < 0) ? ray : rby;
   out->bx = (sd < 0) ? rbx : rax;
   out->by = (sd < 0) ? rby : ray;
-  out->sab = tx_sign(ctx, tx_sub(ctx, tx_mul(ctx, out->ax, out->by),
-    tx_mul(ctx, out->ay, out->bx)));
+  out->sab = dx_sign(ctx, dx_sub(ctx, dx_mul(ctx, out->ax, out->by),
+    dx_mul(ctx, out->ay, out->bx)));
   return;
 }
 
 /* The tower of the n square roots of values */
 static void
-tower_of_roots(TowerCtx *ctx, Tower *t, const TowerX *h, int n)
+tower_of_roots(DyadicCtx *ctx, Tower *t, const DyadicX *h, int n)
 {
   t->depth = n;
   for (int i = 0; i < n; i++)
@@ -15564,10 +15574,10 @@ tower_of_roots(TowerCtx *ctx, Tower *t, const TowerX *h, int n)
 /* Whether the direction u, a vector of k roots of a tower taken from the centre
  * of an arc, points into the sweep of the arc, its two ends included */
 static bool
-tower_arc_holds(TowerCtx *ctx, const Tower *t, int k, const TowerArc *arc,
-  const TowerX *ux, const TowerX *uy)
+tower_arc_holds(DyadicCtx *ctx, const Tower *t, int k, const TowerArc *arc,
+  const DyadicX *ux, const DyadicX *uy)
 {
-  TowerX p[TOWER_SIZE], q[TOWER_SIZE], r[TOWER_SIZE];
+  DyadicX p[TOWER_SIZE], q[TOWER_SIZE], r[TOWER_SIZE];
   tower_mulx_k(ctx, uy, arc->ax, k, p);
   tower_mulx_k(ctx, ux, arc->ay, k, q);
   tower_sub_k(ctx, p, q, k, r);
@@ -15583,7 +15593,7 @@ tower_arc_holds(TowerCtx *ctx, const Tower *t, int k, const TowerArc *arc,
 
 /* As #tower_arc_holds for a direction with no root */
 static bool
-tower_arc_holds_xy(TowerCtx *ctx, const TowerArc *arc, TowerX ux, TowerX uy)
+tower_arc_holds_xy(DyadicCtx *ctx, const TowerArc *arc, DyadicX ux, DyadicX uy)
 {
   Tower t;
   t.depth = 0;
@@ -15593,10 +15603,11 @@ tower_arc_holds_xy(TowerCtx *ctx, const TowerArc *arc, TowerX ux, TowerX uy)
 /* Whether x, the difference of the two sides of a distance of a witness, and
  * its opposite, the two taking @p dist away, are both not positive */
 static bool
-tower_gap_within(TowerCtx *ctx, const Tower *t, const TowerX *x, TowerX dist)
+tower_gap_within(DyadicCtx *ctx, const Tower *t, const DyadicX *x,
+  DyadicX dist)
 {
   int k = t->depth;
-  TowerX p[TOWER_SIZE], q[TOWER_SIZE], neg[TOWER_SIZE];
+  DyadicX p[TOWER_SIZE], q[TOWER_SIZE], neg[TOWER_SIZE];
   tower_set(ctx, dist, k, q);
   tower_sub_k(ctx, x, q, k, p);
   if (tower_sign_k(ctx, t, p, k) > 0)
@@ -15618,25 +15629,25 @@ typedef struct
  * and with U = |P - C|^2 w^2, | sqrt(U) - sqrt(r^2 w^2) | is the distance
  * times w */
 static int
-point_arc_within_pred(TowerCtx *ctx, const void *varg)
+point_arc_within_pred(DyadicCtx *ctx, const void *varg)
 {
   const ArcWithinArg *o = varg;
   TowerArc arc;
   tower_arc_read(ctx, o->p, o->a[0], o->a[1], &arc);
-  TowerX ux = tx_scale(ctx, arc.cx, -1.0), uy = tx_scale(ctx, arc.cy, -1.0);
+  DyadicX ux = dx_scale(ctx, arc.cx, -1.0), uy = dx_scale(ctx, arc.cy, -1.0);
   bool holds = tower_arc_holds_xy(ctx, &arc, ux, uy);
-  if (tower_ctx_unsafe(ctx))
+  if (dyadic_ctx_unsafe(ctx))
     return 2;
   if (! holds)
     return 0;
-  TowerX h[2] = {tx_add(ctx, tx_mul(ctx, ux, ux), tx_mul(ctx, uy, uy)), arc.r2};
+  DyadicX h[2] = {dx_add(ctx, dx_mul(ctx, ux, ux), dx_mul(ctx, uy, uy)), arc.r2};
   Tower t;
   tower_of_roots(ctx, &t, h, 2);
-  TowerX x[4] = {tx_val(ctx, 0.0), tx_val(ctx, 1.0), tx_val(ctx, -1.0),
-    tx_val(ctx, 0.0)};
+  DyadicX x[4] = {dx_val(ctx, 0.0), dx_val(ctx, 1.0), dx_val(ctx, -1.0),
+    dx_val(ctx, 0.0)};
   bool within = tower_gap_within(ctx, &t, x,
-    tx_mul(ctx, tx_val(ctx, o->dist), arc.w));
-  return tower_ctx_unsafe(ctx) ? 2 : (within ? 1 : 0);
+    dx_mul(ctx, dx_val(ctx, o->dist), arc.w));
+  return dyadic_ctx_unsafe(ctx) ? 2 : (within ? 1 : 0);
 }
 
 /* The range of coordinates and radii where the squares and the products of a
@@ -15819,7 +15830,7 @@ point_arc_within_exact(const double *p, const ExactArc *arc, double dist)
       point_segm_within(p, arc->e, arc->e, dist))
     return true;
   ArcWithinArg arg = {p, NULL, arc, NULL, dist};
-  return tower_pred_run(point_arc_within_pred, &arg) == 1;
+  return dyadic_pred_run(point_arc_within_pred, &arg) == 1;
 }
 
 /* Whether a segment A B and an arc meet, or lie within a distance at points
@@ -15831,65 +15842,65 @@ point_arc_within_exact(const double *p, const ExactArc *arc, double dist)
  * are the only pair of a positive least distance: with X = c x v its distance
  * is | |X| - sqrt(L) sqrt(r^2 w^2) | / (w sqrt(L)) */
 static int
-arcsegm_within_pred(TowerCtx *ctx, const void *varg)
+arcsegm_within_pred(DyadicCtx *ctx, const void *varg)
 {
   const ArcWithinArg *o = varg;
   TowerArc arc;
   tower_arc_read(ctx, o->p, o->a[0], o->a[1], &arc);
-  TowerX vx = tx_diff(ctx, o->b[0], o->a[0]);
-  TowerX vy = tx_diff(ctx, o->b[1], o->a[1]);
-  TowerX l = tx_add(ctx, tx_mul(ctx, vx, vx), tx_mul(ctx, vy, vy));
-  TowerX tn = tx_add(ctx, tx_mul(ctx, arc.cx, vx), tx_mul(ctx, arc.cy, vy));
-  TowerX wl = tx_mul(ctx, arc.w, l);
-  TowerX c2 = tx_sub(ctx, tx_add(ctx, tx_mul(ctx, arc.cx, arc.cx),
-    tx_mul(ctx, arc.cy, arc.cy)), arc.r2);
-  TowerX disc = tx_sub(ctx, tx_mul(ctx, tn, tn), tx_mul(ctx, l, c2));
-  if (tx_sign(ctx, disc) >= 0)
+  DyadicX vx = dx_diff(ctx, o->b[0], o->a[0]);
+  DyadicX vy = dx_diff(ctx, o->b[1], o->a[1]);
+  DyadicX l = dx_add(ctx, dx_mul(ctx, vx, vx), dx_mul(ctx, vy, vy));
+  DyadicX tn = dx_add(ctx, dx_mul(ctx, arc.cx, vx), dx_mul(ctx, arc.cy, vy));
+  DyadicX wl = dx_mul(ctx, arc.w, l);
+  DyadicX c2 = dx_sub(ctx, dx_add(ctx, dx_mul(ctx, arc.cx, arc.cx),
+    dx_mul(ctx, arc.cy, arc.cy)), arc.r2);
+  DyadicX disc = dx_sub(ctx, dx_mul(ctx, tn, tn), dx_mul(ctx, l, c2));
+  if (dx_sign(ctx, disc) >= 0)
   {
     Tower t;
     tower_of_roots(ctx, &t, &disc, 1);
-    TowerX lcx = tx_mul(ctx, l, arc.cx), lcy = tx_mul(ctx, l, arc.cy);
+    DyadicX lcx = dx_mul(ctx, l, arc.cx), lcy = dx_mul(ctx, l, arc.cy);
     for (int i = 0; i < 2; i++)
     {
       double sigma = i ? 1.0 : -1.0;
-      TowerX lo[2] = {tn, tx_val(ctx, sigma)};
-      TowerX hi[2] = {tx_sub(ctx, wl, tn), tx_val(ctx, - sigma)};
+      DyadicX lo[2] = {tn, dx_val(ctx, sigma)};
+      DyadicX hi[2] = {dx_sub(ctx, wl, tn), dx_val(ctx, - sigma)};
       if (tower_sign_k(ctx, &t, lo, 1) < 0 || tower_sign_k(ctx, &t, hi, 1) < 0)
         continue;
-      TowerX ux[2] = {tx_sub(ctx, tx_mul(ctx, tn, vx), lcx),
-        tx_scale(ctx, vx, sigma)};
-      TowerX uy[2] = {tx_sub(ctx, tx_mul(ctx, tn, vy), lcy),
-        tx_scale(ctx, vy, sigma)};
+      DyadicX ux[2] = {dx_sub(ctx, dx_mul(ctx, tn, vx), lcx),
+        dx_scale(ctx, vx, sigma)};
+      DyadicX uy[2] = {dx_sub(ctx, dx_mul(ctx, tn, vy), lcy),
+        dx_scale(ctx, vy, sigma)};
       if (tower_arc_holds(ctx, &t, 1, &arc, ux, uy))
-        return tower_ctx_unsafe(ctx) ? 2 : 1;
+        return dyadic_ctx_unsafe(ctx) ? 2 : 1;
     }
   }
-  if (tower_ctx_unsafe(ctx))
+  if (dyadic_ctx_unsafe(ctx))
     return 2;
-  TowerX x = tx_sub(ctx, tx_mul(ctx, arc.cx, vy), tx_mul(ctx, arc.cy, vx));
-  int sx = tx_sign(ctx, x);
-  if (sx == 0 || tx_sign(ctx, tn) <= 0 ||
-      tx_sign(ctx, tx_sub(ctx, wl, tn)) <= 0)
-    return tower_ctx_unsafe(ctx) ? 2 : 0;
+  DyadicX x = dx_sub(ctx, dx_mul(ctx, arc.cx, vy), dx_mul(ctx, arc.cy, vx));
+  int sx = dx_sign(ctx, x);
+  if (sx == 0 || dx_sign(ctx, tn) <= 0 ||
+      dx_sign(ctx, dx_sub(ctx, wl, tn)) <= 0)
+    return dyadic_ctx_unsafe(ctx) ? 2 : 0;
   double k = (double) sx;
   /* From the centre to the line, the quarter turn of v on the side of X */
-  if (! tower_arc_holds_xy(ctx, &arc, tx_scale(ctx, vy, - k),
-      tx_scale(ctx, vx, k)))
-    return tower_ctx_unsafe(ctx) ? 2 : 0;
-  TowerX h[2] = {l, arc.r2};
+  if (! tower_arc_holds_xy(ctx, &arc, dx_scale(ctx, vy, - k),
+      dx_scale(ctx, vx, k)))
+    return dyadic_ctx_unsafe(ctx) ? 2 : 0;
+  DyadicX h[2] = {l, arc.r2};
   Tower t;
   tower_of_roots(ctx, &t, h, 2);
   /* | |X| - sqrt(L) sqrt(R) | against the distance times w sqrt(L), which
    * #tower_gap_within reads as a value of no root: each side is taken over
    * sqrt(L) by keeping the root in the coefficients */
-  TowerX dw = tx_mul(ctx, tx_val(ctx, o->dist), arc.w);
-  TowerX p1[4] = {tx_scale(ctx, x, k), tx_scale(ctx, dw, -1.0),
-    tx_val(ctx, 0.0), tx_val(ctx, -1.0)};
-  TowerX p2[4] = {tx_scale(ctx, x, - k), tx_scale(ctx, dw, -1.0),
-    tx_val(ctx, 0.0), tx_val(ctx, 1.0)};
+  DyadicX dw = dx_mul(ctx, dx_val(ctx, o->dist), arc.w);
+  DyadicX p1[4] = {dx_scale(ctx, x, k), dx_scale(ctx, dw, -1.0),
+    dx_val(ctx, 0.0), dx_val(ctx, -1.0)};
+  DyadicX p2[4] = {dx_scale(ctx, x, - k), dx_scale(ctx, dw, -1.0),
+    dx_val(ctx, 0.0), dx_val(ctx, 1.0)};
   bool within = tower_sign_k(ctx, &t, p1, 2) <= 0 &&
     tower_sign_k(ctx, &t, p2, 2) <= 0;
-  return tower_ctx_unsafe(ctx) ? 2 : (within ? 1 : 0);
+  return dyadic_ctx_unsafe(ctx) ? 2 : (within ? 1 : 0);
 }
 
 /**
@@ -15926,7 +15937,7 @@ arcsegm_within_exact(const double *a, const double *b, const ExactArc *arc,
       point_arc_within_exact(b, arc, dist))
     return true;
   ArcWithinArg arg = {a, b, arc, NULL, dist};
-  return tower_pred_run(arcsegm_within_pred, &arg) == 1;
+  return dyadic_pred_run(arcsegm_within_pred, &arg) == 1;
 }
 
 /* Whether two arcs of distinct circles meet, or lie within a distance at points
@@ -15938,68 +15949,68 @@ arcsegm_within_exact(const double *a, const double *b, const ExactArc *arc,
  * facing sides for two circles apart, on the same side for one inside the
  * other. The distance times L is | sqrt(Q) + s1 sqrt(R1) + s2 sqrt(R2) | */
 static int
-arcarc_within_pred(TowerCtx *ctx, const void *varg)
+arcarc_within_pred(DyadicCtx *ctx, const void *varg)
 {
   const ArcWithinArg *o = varg;
   TowerArc c1, c2;
   double ox = o->p->s[0], oy = o->p->s[1];
   tower_arc_read(ctx, o->p, ox, oy, &c1);
   tower_arc_read(ctx, o->q, ox, oy, &c2);
-  TowerX l = tx_mul(ctx, c1.w, c2.w);
-  TowerX dx = tx_sub(ctx, tx_mul(ctx, c1.w, c2.cx), tx_mul(ctx, c2.w, c1.cx));
-  TowerX dy = tx_sub(ctx, tx_mul(ctx, c1.w, c2.cy), tx_mul(ctx, c2.w, c1.cy));
-  TowerX qq = tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy));
+  DyadicX l = dx_mul(ctx, c1.w, c2.w);
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, c1.w, c2.cx), dx_mul(ctx, c2.w, c1.cx));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, c1.w, c2.cy), dx_mul(ctx, c2.w, c1.cy));
+  DyadicX qq = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
   /* One centre: the ends of the arcs decide */
-  if (tx_sign(ctx, qq) == 0)
-    return tower_ctx_unsafe(ctx) ? 2 : 0;
-  TowerX r1 = tx_mul(ctx, c1.r2, tx_mul(ctx, c2.w, c2.w));
-  TowerX r2 = tx_mul(ctx, c2.r2, tx_mul(ctx, c1.w, c1.w));
-  TowerX g = tx_sub(ctx, tx_add(ctx, qq, r1), r2);
-  TowerX hh = tx_sub(ctx, tx_scale(ctx, tx_mul(ctx, r1, qq), 4.0),
-    tx_mul(ctx, g, g));
-  if (tx_sign(ctx, hh) >= 0)
+  if (dx_sign(ctx, qq) == 0)
+    return dyadic_ctx_unsafe(ctx) ? 2 : 0;
+  DyadicX r1 = dx_mul(ctx, c1.r2, dx_mul(ctx, c2.w, c2.w));
+  DyadicX r2 = dx_mul(ctx, c2.r2, dx_mul(ctx, c1.w, c1.w));
+  DyadicX g = dx_sub(ctx, dx_add(ctx, qq, r1), r2);
+  DyadicX hh = dx_sub(ctx, dx_scale(ctx, dx_mul(ctx, r1, qq), 4.0),
+    dx_mul(ctx, g, g));
+  if (dx_sign(ctx, hh) >= 0)
   {
     Tower t;
     tower_of_roots(ctx, &t, &hh, 1);
-    TowerX g2 = tx_sub(ctx, g, tx_scale(ctx, qq, 2.0));
+    DyadicX g2 = dx_sub(ctx, g, dx_scale(ctx, qq, 2.0));
     for (int i = 0; i < 2; i++)
     {
       double sigma = i ? 1.0 : -1.0;
-      TowerX rx = tx_scale(ctx, dy, - sigma), ry = tx_scale(ctx, dx, sigma);
-      TowerX u1x[2] = {tx_mul(ctx, g, dx), rx}, u1y[2] = {tx_mul(ctx, g, dy), ry};
-      TowerX u2x[2] = {tx_mul(ctx, g2, dx), rx},
-        u2y[2] = {tx_mul(ctx, g2, dy), ry};
+      DyadicX rx = dx_scale(ctx, dy, - sigma), ry = dx_scale(ctx, dx, sigma);
+      DyadicX u1x[2] = {dx_mul(ctx, g, dx), rx}, u1y[2] = {dx_mul(ctx, g, dy), ry};
+      DyadicX u2x[2] = {dx_mul(ctx, g2, dx), rx},
+        u2y[2] = {dx_mul(ctx, g2, dy), ry};
       if (tower_arc_holds(ctx, &t, 1, &c1, u1x, u1y) &&
           tower_arc_holds(ctx, &t, 1, &c2, u2x, u2y))
-        return tower_ctx_unsafe(ctx) ? 2 : 1;
+        return dyadic_ctx_unsafe(ctx) ? 2 : 1;
     }
   }
-  if (tower_ctx_unsafe(ctx))
+  if (dyadic_ctx_unsafe(ctx))
     return 2;
   /* The sides of the two points along d, and the signs of the two radii */
   static const double sides[3][4] = {{1, -1, -1, -1}, {1, 1, -1, 1},
     {-1, -1, 1, -1}};
-  TowerX h[3] = {qq, r1, r2};
+  DyadicX h[3] = {qq, r1, r2};
   Tower t;
   tower_of_roots(ctx, &t, h, 3);
-  TowerX dl = tx_mul(ctx, tx_val(ctx, o->dist), l);
+  DyadicX dl = dx_mul(ctx, dx_val(ctx, o->dist), l);
   for (int i = 0; i < 3; i++)
   {
     const double *c = sides[i];
-    if (! tower_arc_holds_xy(ctx, &c1, tx_scale(ctx, dx, c[0]),
-          tx_scale(ctx, dy, c[0])) ||
-        ! tower_arc_holds_xy(ctx, &c2, tx_scale(ctx, dx, c[1]),
-          tx_scale(ctx, dy, c[1])))
+    if (! tower_arc_holds_xy(ctx, &c1, dx_scale(ctx, dx, c[0]),
+          dx_scale(ctx, dy, c[0])) ||
+        ! tower_arc_holds_xy(ctx, &c2, dx_scale(ctx, dx, c[1]),
+          dx_scale(ctx, dy, c[1])))
       continue;
-    TowerX x[8];
-    tower_set(ctx, tx_val(ctx, 0.0), 3, x);
-    x[1] = tx_val(ctx, 1.0);
-    x[2] = tx_val(ctx, c[2]);
-    x[4] = tx_val(ctx, c[3]);
+    DyadicX x[8];
+    tower_set(ctx, dx_val(ctx, 0.0), 3, x);
+    x[1] = dx_val(ctx, 1.0);
+    x[2] = dx_val(ctx, c[2]);
+    x[4] = dx_val(ctx, c[3]);
     if (tower_gap_within(ctx, &t, x, dl))
-      return tower_ctx_unsafe(ctx) ? 2 : 1;
+      return dyadic_ctx_unsafe(ctx) ? 2 : 1;
   }
-  return tower_ctx_unsafe(ctx) ? 2 : 0;
+  return dyadic_ctx_unsafe(ctx) ? 2 : 0;
 }
 
 /**
@@ -16031,7 +16042,7 @@ arcarc_within_exact(const ExactArc *p, const ExactArc *q, double dist)
       point_arc_within_exact(q->e, p, dist))
     return true;
   ArcWithinArg arg = {NULL, NULL, p, q, dist};
-  return tower_pred_run(arcarc_within_pred, &arg) == 1;
+  return dyadic_pred_run(arcarc_within_pred, &arg) == 1;
 }
 
 /* The side of the line A B a point moved off it lies on: the point stands
@@ -16071,22 +16082,22 @@ point_segm_ray_parity(const double *p, const double *a, const double *b)
  * of the radius less the square of the distance from the point to the
  * centre, times w^2, positive inside */
 static int
-point_arc_circle_side_pred(TowerCtx *ctx, const void *varg)
+point_arc_circle_side_pred(DyadicCtx *ctx, const void *varg)
 {
   const ArcWithinArg *o = varg;
   TowerArc arc;
   tower_arc_read(ctx, o->p, o->a[0], o->a[1], &arc);
-  int s = tx_sign(ctx, tx_sub(ctx, arc.r2, tx_add(ctx,
-    tx_mul(ctx, arc.cx, arc.cx), tx_mul(ctx, arc.cy, arc.cy))));
+  int s = dx_sign(ctx, dx_sub(ctx, arc.r2, dx_add(ctx,
+    dx_mul(ctx, arc.cx, arc.cx), dx_mul(ctx, arc.cy, arc.cy))));
   if (s == 0)
   {
     /* Moved along the radius from the centre, whose first coordinates are
      * those of - c, so the first of them not zero gives the side */
-    s = tx_sign(ctx, arc.cx);
+    s = dx_sign(ctx, arc.cx);
     if (s == 0)
-      s = tx_sign(ctx, arc.cy);
+      s = dx_sign(ctx, arc.cy);
   }
-  return tower_ctx_unsafe(ctx) ? 2 : s;
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
 }
 
 /**
@@ -16108,7 +16119,7 @@ point_arc_ray_parity(const double *p, const ExactArc *arc)
   if (point_line_side_moved(p, arc->s, arc->e) != side)
     return parity;
   ArcWithinArg arg = {p, NULL, arc, NULL, 0.0};
-  return (tower_pred_run(point_arc_circle_side_pred, &arg) > 0) ? ! parity :
+  return (dyadic_pred_run(point_arc_circle_side_pred, &arg) > 0) ? ! parity :
     parity;
 }
 
@@ -16140,7 +16151,7 @@ towerseg_end_meet(MeetPoint *m, const Edge *e, int end)
 
 /* Two segments between tangent points */
 static int
-towerseg_meet_segs(TowerCtx *ctx, const Edge *p, const Edge *q,
+towerseg_meet_segs(DyadicCtx *ctx, const Edge *p, const Edge *q,
   TowerMeet *out)
 {
   double ox = p->x1, oy = p->y1;
@@ -16232,7 +16243,7 @@ towerseg_meet_segs(TowerCtx *ctx, const Edge *p, const Edge *q,
 
 /* A segment between tangent points and the circle of a centred arc */
 static int
-towerseg_meet_circle(TowerCtx *ctx, const Edge *p, const Edge *q,
+towerseg_meet_circle(DyadicCtx *ctx, const Edge *p, const Edge *q,
   TowerMeet *out)
 {
   double ox = p->x1, oy = p->y1;
@@ -16278,7 +16289,7 @@ towerseg_meet_circle(TowerCtx *ctx, const Edge *p, const Edge *q,
 }
 
 static int
-towerseg_meet_pred(TowerCtx *ctx, const void *arg)
+towerseg_meet_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowersegMeetArg *a = arg;
   int n = a->q->centred ? towerseg_meet_circle(ctx, a->p, a->q, a->out) :
@@ -16308,7 +16319,7 @@ towerseg_meet(const Edge *p, const Edge *q, TowerMeet out[2])
 {
   assert(p); assert(q); assert(out);
   TowersegMeetArg arg = {p, q, out};
-  int r = tower_pred_run(towerseg_meet_pred, &arg);
+  int r = dyadic_pred_run(towerseg_meet_pred, &arg);
   return (r == 2) ? -2 : ((r == 3) ? 2 : r);
 }
 
@@ -16320,7 +16331,7 @@ typedef struct
 } TowerOrderArg;
 
 static int
-meets_order_tower_pred(TowerCtx *ctx, const void *arg)
+meets_order_tower_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowerOrderArg *o = arg;
   const Edge *e = o->e;
@@ -16356,18 +16367,18 @@ meets_order_tower_pred(TowerCtx *ctx, const void *arg)
    * each, the side of the radius (-1, 0) its radius stands on, then the cross
    * product of the two radii, in the sense the circle turns */
   const TowerPoint *pts[2] = {&pa, &pb};
-  TowerX v[2][3][TOWER_SIZE];
+  DyadicX v[2][3][TOWER_SIZE];
   Tower t;
   if (! tower_points_read(ctx, pts, 2, &t, v))
     return 2;
   int k = t.depth, turn = o->ccw ? 1 : -1, cls[2];
-  TowerX rx[2][TOWER_SIZE], ry[2][TOWER_SIZE], u[TOWER_SIZE];
+  DyadicX rx[2][TOWER_SIZE], ry[2][TOWER_SIZE], u[TOWER_SIZE];
   for (int i = 0; i < 2; i++)
   {
     /* The radius times w: P - C w */
-    tower_mulx_k(ctx, v[i][2], tx_diff(ctx, e->cx, ox), k, u);
+    tower_mulx_k(ctx, v[i][2], dx_diff(ctx, e->cx, ox), k, u);
     tower_sub_k(ctx, v[i][0], u, k, rx[i]);
-    tower_mulx_k(ctx, v[i][2], tx_diff(ctx, e->cy, oy), k, u);
+    tower_mulx_k(ctx, v[i][2], dx_diff(ctx, e->cy, oy), k, u);
     tower_sub_k(ctx, v[i][1], u, k, ry[i]);
     int sw = tower_sign_k(ctx, &t, v[i][2], k);
     /* (-1, 0) x V = -Vy */
@@ -16377,17 +16388,17 @@ meets_order_tower_pred(TowerCtx *ctx, const void *arg)
     else
       cls[i] = (side > 0) ? 0 : 1;
   }
-  if (tower_ctx_unsafe(ctx))
+  if (dyadic_ctx_unsafe(ctx))
     return 2;
   if (cls[0] != cls[1])
     return (cls[0] < cls[1]) ? -1 : 1;
-  TowerX a[TOWER_SIZE], b[TOWER_SIZE];
+  DyadicX a[TOWER_SIZE], b[TOWER_SIZE];
   tower_mul_k(ctx, &t, rx[0], ry[1], k, a);
   tower_mul_k(ctx, &t, ry[0], rx[1], k, b);
   tower_sub_k(ctx, a, b, k, a);
   int s = tower_sign_k(ctx, &t, a, k) * tower_sign_k(ctx, &t, v[0][2], k) *
     tower_sign_k(ctx, &t, v[1][2], k) * turn;
-  if (tower_ctx_unsafe(ctx))
+  if (dyadic_ctx_unsafe(ctx))
     return 2;
   return (s > 0) ? -1 : ((s < 0) ? 1 : 0);
 }
@@ -16408,7 +16419,7 @@ meets_order_tower(const Edge *e, bool ccw, const MeetPoint *a,
 {
   assert(e); assert(a); assert(b);
   TowerOrderArg arg = {e, ccw, a, b};
-  return tower_pred_run(meets_order_tower_pred, &arg);
+  return dyadic_pred_run(meets_order_tower_pred, &arg);
 }
 
 typedef struct
@@ -16418,7 +16429,7 @@ typedef struct
 } TowerSideArg;
 
 static int
-towerseg_side_pred(TowerCtx *ctx, const void *arg)
+towerseg_side_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowerSideArg *o = arg;
   TowerPoint e0, e1, p;
@@ -16462,7 +16473,7 @@ towerseg_side(const Edge *s, double px, double py)
       return (t->k == 0) ? sg : - sg;
   }
   TowerSideArg arg = {s, px, py};
-  return tower_pred_run(towerseg_side_pred, &arg);
+  return dyadic_pred_run(towerseg_side_pred, &arg);
 }
 
 typedef struct
@@ -16472,7 +16483,7 @@ typedef struct
 } TowerYArg;
 
 static int
-meet_point_y_side_pred(TowerCtx *ctx, const void *arg)
+meet_point_y_side_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowerYArg *o = arg;
   TowerPoint p;
@@ -16480,7 +16491,7 @@ meet_point_y_side_pred(TowerCtx *ctx, const void *arg)
     return 2;
   int s = tower_sign_k(ctx, &p.t, p.y.c, p.t.depth) *
     tower_sign_k(ctx, &p.t, p.w.c, p.t.depth);
-  return tower_ctx_unsafe(ctx) ? 2 : s;
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
 }
 
 /**
@@ -16493,7 +16504,7 @@ meet_point_y_side(const MeetPoint *m, double py)
 {
   assert(m);
   TowerYArg arg = {m, py};
-  return tower_pred_run(meet_point_y_side_pred, &arg);
+  return dyadic_pred_run(meet_point_y_side_pred, &arg);
 }
 
 typedef struct
@@ -16503,7 +16514,7 @@ typedef struct
 } TowerXSideArg;
 
 static int
-meet_point_x_side_pred(TowerCtx *ctx, const void *arg)
+meet_point_x_side_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowerXSideArg *o = arg;
   TowerPoint p;
@@ -16511,11 +16522,11 @@ meet_point_x_side_pred(TowerCtx *ctx, const void *arg)
     return 2;
   /* (X - d w) w, X taken from ox */
   int k = p.t.depth;
-  TowerX u[TOWER_SIZE];
-  tower_mulx_k(ctx, p.w.c, tx_diff(ctx, o->d, 0.0), k, u);
+  DyadicX u[TOWER_SIZE];
+  tower_mulx_k(ctx, p.w.c, dx_diff(ctx, o->d, 0.0), k, u);
   tower_sub_k(ctx, p.x.c, u, k, u);
   int s = tower_sign_k(ctx, &p.t, u, k) * tower_sign_k(ctx, &p.t, p.w.c, k);
-  return tower_ctx_unsafe(ctx) ? 2 : s;
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
 }
 
 /**
@@ -16530,7 +16541,7 @@ meet_point_x_side(const MeetPoint *m, double ox, double d)
 {
   assert(m);
   TowerXSideArg arg = {m, ox, d};
-  return tower_pred_run(meet_point_x_side_pred, &arg);
+  return dyadic_pred_run(meet_point_x_side_pred, &arg);
 }
 
 typedef struct
@@ -16539,7 +16550,7 @@ typedef struct
 } TowerXArg;
 
 static int
-meets_x_cmp_pred(TowerCtx *ctx, const void *arg)
+meets_x_cmp_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowerXArg *o = arg;
   TowerPoint pa, pb;
@@ -16550,18 +16561,18 @@ meets_x_cmp_pred(TowerCtx *ctx, const void *arg)
   /* Xa wb - Xb wa, read in the tower of both, as #meets_order_tower reads
    * the cross product of two radii */
   const TowerPoint *pts[2] = {&pa, &pb};
-  TowerX v[2][3][TOWER_SIZE];
+  DyadicX v[2][3][TOWER_SIZE];
   Tower t;
   if (! tower_points_read(ctx, pts, 2, &t, v))
     return 2;
   int k = t.depth;
-  TowerX u[TOWER_SIZE], w[TOWER_SIZE];
+  DyadicX u[TOWER_SIZE], w[TOWER_SIZE];
   tower_mul_k(ctx, &t, v[0][0], v[1][2], k, u);
   tower_mul_k(ctx, &t, v[1][0], v[0][2], k, w);
   tower_sub_k(ctx, u, w, k, u);
   int s = tower_sign_k(ctx, &t, u, k) * tower_sign_k(ctx, &t, v[0][2], k) *
     tower_sign_k(ctx, &t, v[1][2], k);
-  return tower_ctx_unsafe(ctx) ? 2 : s;
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
 }
 
 /**
@@ -16576,7 +16587,7 @@ meets_x_cmp(const MeetPoint *a, const MeetPoint *b)
 {
   assert(a); assert(b);
   TowerXArg arg = {a, b};
-  return tower_pred_run(meets_x_cmp_pred, &arg);
+  return dyadic_pred_run(meets_x_cmp_pred, &arg);
 }
 
 /* A quotient of two filtered values, and a bound on its error, the divisor
@@ -16624,22 +16635,22 @@ tower_key_double(uint64_t key)
  * of the doubles, each step decided exactly by the sign of
  * num - (m - org) den. False where a sign is not told */
 static bool
-tower_bisect(TowerCtx *ctx, const Tower *t, const TowerX *num,
-  const TowerX *den, int k, double org, double *lo, double *hi)
+tower_bisect(DyadicCtx *ctx, const Tower *t, const DyadicX *num,
+  const DyadicX *den, int k, double org, double *lo, double *hi)
 {
   int sd = tower_sign_k(ctx, t, den, k);
-  if (sd == 0 || tower_ctx_unsafe(ctx))
+  if (sd == 0 || dyadic_ctx_unsafe(ctx))
     return false;
   uint64_t klo = tower_double_key(*lo), khi = tower_double_key(*hi);
-  TowerX md[TOWER_SIZE];
+  DyadicX md[TOWER_SIZE];
   while (khi - klo > 1)
   {
     uint64_t kmid = klo + (khi - klo) / 2;
     double m = tower_key_double(kmid);
-    tower_mulx_k(ctx, den, tx_diff(ctx, m, org), k, md);
+    tower_mulx_k(ctx, den, dx_diff(ctx, m, org), k, md);
     tower_sub_k(ctx, num, md, k, md);
     int s = tower_sign_k(ctx, t, md, k) * sd;
-    if (tower_ctx_unsafe(ctx))
+    if (dyadic_ctx_unsafe(ctx))
       return false;
     if (s == 0)
     {
@@ -16682,7 +16693,7 @@ meet_point_origin(const MeetPoint *m, double *ox, double *oy)
 }
 
 static int
-meet_point_bounds_pred(TowerCtx *ctx, const void *arg)
+meet_point_bounds_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowerBoundsArg *o = arg;
   TowerPoint p;
@@ -16691,11 +16702,11 @@ meet_point_bounds_pred(TowerCtx *ctx, const void *arg)
   if (! isfinite(org[0]) || ! isfinite(org[1]))
     org[0] = org[1] = 0.0;
   if (meet_tower_build(ctx, o->m, org[0], org[1], &p) != 1 ||
-      tower_ctx_unsafe(ctx))
+      dyadic_ctx_unsafe(ctx))
     return 2;
   int k = p.t.depth;
   ArcsegFilter fw = tower_filter_k(ctx, &p.t, p.w.c, k);
-  const TowerX *num[2] = {p.x.c, p.y.c};
+  const DyadicX *num[2] = {p.x.c, p.y.c};
   double *val[2] = {o->x, o->y};
   for (int j = 0; j < 2; j++)
   {
@@ -17254,7 +17265,7 @@ meet_point_bounds(const MeetPoint *m, double *x, double *y, double box[4])
   if (m->kind == MEET_ARCARC && equal_circles_bounds(m, x, y, box))
     return true;
   TowerBoundsArg arg = {m, x, y, box};
-  return tower_pred_run(meet_point_bounds_pred, &arg) == 1;
+  return dyadic_pred_run(meet_point_bounds_pred, &arg) == 1;
 }
 
 typedef struct
@@ -17263,7 +17274,7 @@ typedef struct
 } TowerSameArg;
 
 static int
-meets_same_point_pred(TowerCtx *ctx, const void *arg)
+meets_same_point_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowerSameArg *o = arg;
   TowerPoint pa, pb;
@@ -17282,7 +17293,7 @@ meets_same_point(const MeetPoint *a, const MeetPoint *b)
 {
   assert(a); assert(b);
   TowerSameArg arg = {a, b};
-  return tower_pred_run(meets_same_point_pred, &arg);
+  return dyadic_pred_run(meets_same_point_pred, &arg);
 }
 
 /* The direction a centred arc leaves a point of it in, as a vector of the
@@ -17291,24 +17302,24 @@ meets_same_point(const MeetPoint *a, const MeetPoint *b)
  * arc arrives at the point. A segment's own is read off its ends
  * (#edges_turn_cmp_meet) */
 static void
-tower_edge_direction(TowerCtx *ctx, const Edge *e, bool ccw, bool out,
-  const Tower *t, const TowerX (*pc)[TOWER_SIZE], double ox, double oy,
-  TowerX *dx, TowerX *dy)
+tower_edge_direction(DyadicCtx *ctx, const Edge *e, bool ccw, bool out,
+  const Tower *t, const DyadicX (*pc)[TOWER_SIZE], double ox, double oy,
+  DyadicX *dx, DyadicX *dy)
 {
   int k = t->depth;
-  TowerX u[TOWER_SIZE];
+  DyadicX u[TOWER_SIZE];
   if (! e)
   {
-    tower_set(ctx, tx_val(ctx, 1.0), k, dx);
-    tower_set(ctx, tx_val(ctx, 0.0), k, dy);
+    tower_set(ctx, dx_val(ctx, 1.0), k, dx);
+    tower_set(ctx, dx_val(ctx, 0.0), k, dy);
     return;
   }
   {
     /* (P - C w) times the sign of w */
-    TowerX vx[TOWER_SIZE], vy[TOWER_SIZE];
-    tower_mulx_k(ctx, pc[2], tx_diff(ctx, e->cx, ox), k, u);
+    DyadicX vx[TOWER_SIZE], vy[TOWER_SIZE];
+    tower_mulx_k(ctx, pc[2], dx_diff(ctx, e->cx, ox), k, u);
     tower_sub_k(ctx, pc[0], u, k, vx);
-    tower_mulx_k(ctx, pc[2], tx_diff(ctx, e->cy, oy), k, u);
+    tower_mulx_k(ctx, pc[2], dx_diff(ctx, e->cy, oy), k, u);
     tower_sub_k(ctx, pc[1], u, k, vy);
     double sw = (double) tower_sign_k(ctx, t, pc[2], k);
     /* Counterclockwise the radius (x, y) turns to (-y, x) */
@@ -17331,7 +17342,7 @@ typedef struct
 } TowerTurnArg;
 
 static int
-edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
+edges_turn_cmp_meet_pred(DyadicCtx *ctx, const void *arg)
 {
   const TowerTurnArg *o = arg;
   double ox = o->e1 ? o->e1->x1 : (o->e2 ? o->e2->x1 : 0.0);
@@ -17352,21 +17363,21 @@ edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
       pts[npts++] = &s0[i];
       pts[npts++] = &s1[i];
     }
-  TowerX v[5][3][TOWER_SIZE];
+  DyadicX v[5][3][TOWER_SIZE];
   Tower t;
   if (! tower_points_read(ctx, pts, npts, &t, v))
     return 2;
   int k = t.depth;
-  TowerX dx[2][TOWER_SIZE], dy[2][TOWER_SIZE];
+  DyadicX dx[2][TOWER_SIZE], dy[2][TOWER_SIZE];
   bool ccw[2] = {o->ccw1, o->ccw2}, out[2] = {o->out1, o->out2};
   for (int i = 0; i < 2; i++)
   {
     if (segat[i] >= 0)
     {
       /* (E1 w0 - E0 w1) times the sign of w0 w1 */
-      TowerX a[TOWER_SIZE], b[TOWER_SIZE];
-      const TowerX (*e0)[TOWER_SIZE] = v[segat[i]];
-      const TowerX (*e1)[TOWER_SIZE] = v[segat[i] + 1];
+      DyadicX a[TOWER_SIZE], b[TOWER_SIZE];
+      const DyadicX (*e0)[TOWER_SIZE] = v[segat[i]];
+      const DyadicX (*e1)[TOWER_SIZE] = v[segat[i] + 1];
       double sw = (double) (tower_sign_k(ctx, &t, e0[2], k) *
         tower_sign_k(ctx, &t, e1[2], k));
       for (int j = 0; j < 2; j++)
@@ -17379,7 +17390,7 @@ edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
     }
     else
       tower_edge_direction(ctx, es[i], ccw[i], out[i], &t,
-        (const TowerX (*)[TOWER_SIZE]) v[0], ox, oy, dx[i], dy[i]);
+        (const DyadicX (*)[TOWER_SIZE]) v[0], ox, oy, dx[i], dy[i]);
   }
   int sx[2], sy[2], h[2];
   for (int i = 0; i < 2; i++)
@@ -17388,16 +17399,16 @@ edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
     sy[i] = tower_sign_k(ctx, &t, dy[i], k);
     h[i] = edge_direction_half_plane(sx[i], sy[i]);
   }
-  if (tower_ctx_unsafe(ctx) || h[0] == 2 || h[1] == 2)
+  if (dyadic_ctx_unsafe(ctx) || h[0] == 2 || h[1] == 2)
     return 2;
   if (h[0] != h[1])
     return h[0] < h[1] ? -1 : 1;
-  TowerX a[TOWER_SIZE], b[TOWER_SIZE];
+  DyadicX a[TOWER_SIZE], b[TOWER_SIZE];
   tower_mul_k(ctx, &t, dx[0], dy[1], k, a);
   tower_mul_k(ctx, &t, dy[0], dx[1], k, b);
   tower_sub_k(ctx, a, b, k, a);
   int s = tower_sign_k(ctx, &t, a, k);
-  if (tower_ctx_unsafe(ctx))
+  if (dyadic_ctx_unsafe(ctx))
     return 2;
   if (s != 0)
     return s > 0 ? -1 : 1;
@@ -17447,7 +17458,7 @@ edges_turn_cmp_meet(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
 {
   assert(at);
   TowerTurnArg arg = {e1, e2, ccw1, out1, ccw2, out2, at};
-  return tower_pred_run(edges_turn_cmp_meet_pred, &arg);
+  return dyadic_pred_run(edges_turn_cmp_meet_pred, &arg);
 }
 
 /**
@@ -18832,7 +18843,7 @@ hull_at_origin(const HullAt *f, double *ox, double *oy)
  */
 typedef struct
 {
-  TowerX px, py, w, rw;
+  DyadicX px, py, w, rw;
 } HullExact;
 
 /**
@@ -18846,48 +18857,48 @@ typedef struct
  * given
  */
 static void
-hull_exact(TowerCtx *ctx, const HullAt *f, double ox, double oy,
+hull_exact(DyadicCtx *ctx, const HullAt *f, double ox, double oy,
   HullExact *out)
 {
   const Edge *e = f->arc;
   if (! e)
   {
-    out->px = tx_diff(ctx, f->x, ox);
-    out->py = tx_diff(ctx, f->y, oy);
-    out->w = tx_val(ctx, 1.0);
-    out->rw = tx_val(ctx, 0.0);
+    out->px = dx_diff(ctx, f->x, ox);
+    out->py = dx_diff(ctx, f->y, oy);
+    out->w = dx_val(ctx, 1.0);
+    out->rw = dx_val(ctx, 0.0);
     return;
   }
   if (e->centred)
   {
-    TowerX r = tx_val(ctx, e->radius);
-    out->px = tx_diff(ctx, e->cx, ox);
-    out->py = tx_diff(ctx, e->cy, oy);
-    out->w = tx_val(ctx, 1.0);
-    out->rw = tx_mul(ctx, r, r);
+    DyadicX r = dx_val(ctx, e->radius);
+    out->px = dx_diff(ctx, e->cx, ox);
+    out->py = dx_diff(ctx, e->cy, oy);
+    out->w = dx_val(ctx, 1.0);
+    out->rw = dx_mul(ctx, r, r);
     return;
   }
-  TowerX nx = tx_diff(ctx, e->ex, e->sx), ny = tx_diff(ctx, e->ey, e->sy);
-  TowerX kx = nx, ky = ny;
+  DyadicX nx = dx_diff(ctx, e->ex, e->sx), ny = dx_diff(ctx, e->ey, e->sy);
+  DyadicX kx = nx, ky = ny;
   if (e->diameter)
-    out->w = tx_val(ctx, 2.0);
+    out->w = dx_val(ctx, 2.0);
   else
   {
-    TowerX mx = tx_diff(ctx, e->mx, e->sx), my = tx_diff(ctx, e->my, e->sy);
-    TowerX mm = tx_add(ctx, tx_mul(ctx, mx, mx), tx_mul(ctx, my, my));
-    TowerX nn = tx_add(ctx, tx_mul(ctx, nx, nx), tx_mul(ctx, ny, ny));
+    DyadicX mx = dx_diff(ctx, e->mx, e->sx), my = dx_diff(ctx, e->my, e->sy);
+    DyadicX mm = dx_add(ctx, dx_mul(ctx, mx, mx), dx_mul(ctx, my, my));
+    DyadicX nn = dx_add(ctx, dx_mul(ctx, nx, nx), dx_mul(ctx, ny, ny));
     double turn = (double) cross_product_sign(e->sx, e->sy, e->mx, e->my,
       e->sx, e->sy, e->ex, e->ey);
-    kx = tx_scale(ctx, tx_sub(ctx, tx_mul(ctx, mm, ny), tx_mul(ctx, nn, my)),
+    kx = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, mm, ny), dx_mul(ctx, nn, my)),
       turn);
-    ky = tx_scale(ctx, tx_sub(ctx, tx_mul(ctx, nn, mx), tx_mul(ctx, mm, nx)),
+    ky = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, nn, mx), dx_mul(ctx, mm, nx)),
       turn);
-    out->w = tx_scale(ctx, tx_sub(ctx, tx_mul(ctx, mx, ny),
-      tx_mul(ctx, my, nx)), 2.0 * turn);
+    out->w = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, mx, ny),
+      dx_mul(ctx, my, nx)), 2.0 * turn);
   }
-  out->px = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, e->sx, ox), out->w), kx);
-  out->py = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, e->sy, oy), out->w), ky);
-  out->rw = tx_add(ctx, tx_mul(ctx, kx, kx), tx_mul(ctx, ky, ky));
+  out->px = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, e->sx, ox), out->w), kx);
+  out->py = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, e->sy, oy), out->w), ky);
+  out->rw = dx_add(ctx, dx_mul(ctx, kx, kx), dx_mul(ctx, ky, ky));
   return;
 }
 
@@ -18916,8 +18927,8 @@ hull_filter_set(const HullAt *f, HullFilter *out)
     out->r.v = out->r.e = 0.0;
     return;
   }
-  TowerCtx ctx;
-  tower_ctx_init(&ctx, false);
+  DyadicCtx ctx;
+  dyadic_ctx_init(&ctx, false);
   ctx.filter = true;
   HullExact e;
   hull_exact(&ctx, f, out->ox, out->oy, &e);
@@ -18925,7 +18936,7 @@ hull_filter_set(const HullAt *f, HullFilter *out)
   out->py = e.py.f;
   out->w = e.w.f;
   out->r = tower_f_sqrt(e.rw.f);
-  tower_ctx_free(&ctx);
+  dyadic_ctx_free(&ctx);
   return;
 }
 
@@ -18946,7 +18957,7 @@ hull_filter_from(const HullFilter *f, double ox, double oy, ArcsegFilter *px,
 
 /**
  * @brief Return the sign of a value in doubles with a bound on its error, an
- * exact zero being zero (#tx_sign), or 2 where the bound does not tell it
+ * exact zero being zero (#dx_sign), or 2 where the bound does not tell it
  */
 static int
 hull_filter_sign(ArcsegFilter a)
@@ -19177,7 +19188,7 @@ typedef struct
  *
  * Every decision is the exact sign of a number of a tower of square roots
  * (#TowerNum), read in doubles carrying a bound on their error and formed again
- * exactly where the bound cannot tell (#tower_pred_run). The circle through
+ * exactly where the bound cannot tell (#dyadic_pred_run). The circle through
  * three points has a rational centre and a rational square of its radius, so
  * its radius is the root of a rational, and the outer common tangent of two
  * circles adds the root of E = |C2 - C1|^2 - (r1 - r2)^2. No decision reads
@@ -19226,11 +19237,11 @@ hull_at_same(const HullAt *f, const HullAt *g)
  * return where the root stands
  */
 static int
-hull_tower_root(Tower *t, const TowerX *h)
+hull_tower_root(Tower *t, const DyadicX *h)
 {
   int k = t->depth;
   assert(k < TOWER_MAXDEPTH);
-  memcpy(t->h[k].c, h, sizeof(TowerX) * (1 << k));
+  memcpy(t->h[k].c, h, sizeof(DyadicX) * (1 << k));
   t->key[k] = NULL;
   t->depth = k + 1;
   return k;
@@ -19241,12 +19252,12 @@ hull_tower_root(Tower *t, const TowerX *h)
  * times w^2, and return where it stands, -1 for a point
  */
 static int
-hull_tower_radius(TowerCtx *ctx, Tower *t, const HullAt *f,
+hull_tower_radius(DyadicCtx *ctx, Tower *t, const HullAt *f,
   const HullExact *e)
 {
   if (! f->arc)
     return -1;
-  TowerX h[TOWER_SIZE];
+  DyadicX h[TOWER_SIZE];
   tower_set(ctx, e->rw, t->depth, h);
   return hull_tower_root(t, h);
 }
@@ -19256,25 +19267,25 @@ hull_tower_radius(TowerCtx *ctx, Tower *t, const HullAt *f,
  * normal of an edge, or the end of an arc less its centre, times w
  */
 static void
-hull_dir_vector(TowerCtx *ctx, const HullDir *d, TowerX *vx, TowerX *vy)
+hull_dir_vector(DyadicCtx *ctx, const HullDir *d, DyadicX *vx, DyadicX *vy)
 {
   if (d->kind == HULL_DIR_AXIS)
   {
-    *vx = tx_val(ctx, d->a.x);
-    *vy = tx_val(ctx, d->a.y);
+    *vx = dx_val(ctx, d->a.x);
+    *vy = dx_val(ctx, d->a.y);
   }
   else if (d->kind == HULL_DIR_EDGE)
   {
-    *vx = tx_diff(ctx, d->b.y, d->a.y);
-    *vy = tx_diff(ctx, d->a.x, d->b.x);
+    *vx = dx_diff(ctx, d->b.y, d->a.y);
+    *vy = dx_diff(ctx, d->a.x, d->b.x);
   }
   else
   {
     /* The centre from the end of the arc is (px, py) / w */
     HullExact e;
     hull_exact(ctx, &d->a, d->a.x, d->a.y, &e);
-    *vx = tx_scale(ctx, e.px, -1.0);
-    *vy = tx_scale(ctx, e.py, -1.0);
+    *vx = dx_scale(ctx, e.px, -1.0);
+    *vy = dx_scale(ctx, e.py, -1.0);
   }
   return;
 }
@@ -19299,11 +19310,11 @@ hull_dir_vector(TowerCtx *ctx, const HullDir *d, TowerX *vx, TowerX *vy)
  * for none @nullable
  */
 static void
-hull_dir_tower(TowerCtx *ctx, const HullDir *d, double ox, double oy,
-  Tower *t, TowerX *nx, TowerX *ny, TowerX *len, int *ra)
+hull_dir_tower(DyadicCtx *ctx, const HullDir *d, double ox, double oy,
+  Tower *t, DyadicX *nx, DyadicX *ny, DyadicX *len, int *ra)
 {
-  TowerX zero = tx_val(ctx, 0.0);
-  TowerX h[TOWER_SIZE];
+  DyadicX zero = dx_val(ctx, 0.0);
+  DyadicX h[TOWER_SIZE];
   tower_set(ctx, zero, TOWER_MAXDEPTH, nx);
   tower_set(ctx, zero, TOWER_MAXDEPTH, ny);
   if (len)
@@ -19317,18 +19328,18 @@ hull_dir_tower(TowerCtx *ctx, const HullDir *d, double ox, double oy,
       return;
     if (d->kind == HULL_DIR_AXIS)
     {
-      len[0] = tx_val(ctx, 1.0);
+      len[0] = dx_val(ctx, 1.0);
       return;
     }
-    tower_set(ctx, tx_add(ctx, tx_mul(ctx, nx[0], nx[0]),
-      tx_mul(ctx, ny[0], ny[0])), t->depth, h);
-    len[1 << hull_tower_root(t, h)] = tx_val(ctx, 1.0);
+    tower_set(ctx, dx_add(ctx, dx_mul(ctx, nx[0], nx[0]),
+      dx_mul(ctx, ny[0], ny[0])), t->depth, h);
+    len[1 << hull_tower_root(t, h)] = dx_val(ctx, 1.0);
     return;
   }
   HullExact ea, eb;
   hull_exact(ctx, &d->a, ox, oy, &ea);
   hull_exact(ctx, &d->b, ox, oy, &eb);
-  TowerX rho[TOWER_SIZE];
+  DyadicX rho[TOWER_SIZE];
   tower_set(ctx, zero, TOWER_MAXDEPTH, rho);
   int i = hull_tower_radius(ctx, t, &d->a, &ea);
   if (i >= 0)
@@ -19337,12 +19348,12 @@ hull_dir_tower(TowerCtx *ctx, const HullDir *d, double ox, double oy,
     *ra = i;
   i = hull_tower_radius(ctx, t, &d->b, &eb);
   if (i >= 0)
-    rho[1 << i] = tx_scale(ctx, ea.w, -1.0);
-  TowerX dx = tx_sub(ctx, tx_mul(ctx, eb.px, ea.w), tx_mul(ctx, ea.px, eb.w));
-  TowerX dy = tx_sub(ctx, tx_mul(ctx, eb.py, ea.w), tx_mul(ctx, ea.py, eb.w));
-  TowerX dd = tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy));
+    rho[1 << i] = dx_scale(ctx, ea.w, -1.0);
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, eb.px, ea.w), dx_mul(ctx, ea.px, eb.w));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, eb.py, ea.w), dx_mul(ctx, ea.py, eb.w));
+  DyadicX dd = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
   int k = t->depth;
-  TowerX rr[TOWER_SIZE];
+  DyadicX rr[TOWER_SIZE];
   tower_mul_k(ctx, t, rho, rho, k, rr);
   tower_set(ctx, dd, k, h);
   tower_sub_k(ctx, h, rr, k, h);
@@ -19351,7 +19362,7 @@ hull_dir_tower(TowerCtx *ctx, const HullDir *d, double ox, double oy,
   tower_mulx_k(ctx, rho, dx, k, nx);
   tower_mulx_k(ctx, rho, dy, k, ny);
   nx[1 << ie] = dy;
-  ny[1 << ie] = tx_scale(ctx, dx, -1.0);
+  ny[1 << ie] = dx_scale(ctx, dx, -1.0);
   if (len)
     len[0] = dd;
   return;
@@ -19409,15 +19420,15 @@ hull_shared_point(const HullAt *x, const HullAt *f, const HullDir *d,
  * root (#hull_exact)
  */
 static bool
-hull_shared_tangent(TowerCtx *ctx, const HullExact *ex, const HullExact *ef)
+hull_shared_tangent(DyadicCtx *ctx, const HullExact *ex, const HullExact *ef)
 {
-  TowerX cross = tx_sub(ctx, tx_mul(ctx, ex->px, ef->py),
-    tx_mul(ctx, ex->py, ef->px));
-  if (tx_sign(ctx, cross) != 0)
+  DyadicX cross = dx_sub(ctx, dx_mul(ctx, ex->px, ef->py),
+    dx_mul(ctx, ex->py, ef->px));
+  if (dx_sign(ctx, cross) != 0)
     return false;
-  TowerX dot = tx_add(ctx, tx_mul(ctx, ex->px, ef->px),
-    tx_mul(ctx, ex->py, ef->py));
-  return tx_sign(ctx, dot) > 0;
+  DyadicX dot = dx_add(ctx, dx_mul(ctx, ex->px, ef->px),
+    dx_mul(ctx, ex->py, ef->py));
+  return dx_sign(ctx, dot) > 0;
 }
 
 /**
@@ -19437,7 +19448,7 @@ hull_shared_tangent(TowerCtx *ctx, const HullExact *ex, const HullExact *ef)
  * leaves one arc for the next along their common tangent
  */
 static int
-hull_reach_sign(TowerCtx *ctx, const HullAt *x, const HullAt *f,
+hull_reach_sign(DyadicCtx *ctx, const HullAt *x, const HullAt *f,
   const HullDir *d)
 {
   double qx, qy;
@@ -19449,7 +19460,7 @@ hull_reach_sign(TowerCtx *ctx, const HullAt *x, const HullAt *f,
     hull_exact(ctx, f, qx, qy, &cf);
     int result = hull_shared_tangent(ctx, &cx, &cf) ? 0 :
       ((d->a.arc == x->arc) ? 1 : -1);
-    return tower_ctx_unsafe(ctx) ? 2 : result;
+    return dyadic_ctx_unsafe(ctx) ? 2 : result;
   }
   /* A point Q and an arc carrying the input point P, along the normal n of
    * the edge from one to the other: Q . n = P . n, which the circle reaches
@@ -19464,15 +19475,15 @@ hull_reach_sign(TowerCtx *ctx, const HullAt *x, const HullAt *f,
     {
       HullExact ca;
       hull_exact(ctx, arc, pe->x, pe->y, &ca);
-      TowerX nx, ny;
+      DyadicX nx, ny;
       hull_dir_vector(ctx, d, &nx, &ny);
       /* (px, py) / w is C - P */
-      bool touch = tx_sign(ctx, tx_sub(ctx, tx_mul(ctx, ca.px, ny),
-        tx_mul(ctx, ca.py, nx))) == 0 &&
-        tx_sign(ctx, tx_add(ctx, tx_mul(ctx, ca.px, nx),
-          tx_mul(ctx, ca.py, ny))) < 0;
+      bool touch = dx_sign(ctx, dx_sub(ctx, dx_mul(ctx, ca.px, ny),
+        dx_mul(ctx, ca.py, nx))) == 0 &&
+        dx_sign(ctx, dx_add(ctx, dx_mul(ctx, ca.px, nx),
+          dx_mul(ctx, ca.py, ny))) < 0;
       int result = touch ? 0 : (x->arc ? -1 : 1);
-      return tower_ctx_unsafe(ctx) ? 2 : result;
+      return dyadic_ctx_unsafe(ctx) ? 2 : result;
     }
   }
   /* Two arcs carrying the ends P_X and P_F of the edge, along its normal n:
@@ -19497,36 +19508,36 @@ hull_reach_sign(TowerCtx *ctx, const HullAt *x, const HullAt *f,
       HullExact cx, cf;
       hull_exact(ctx, x, pxe->x, pxe->y, &cx);
       hull_exact(ctx, f, pfe->x, pfe->y, &cf);
-      TowerX nx, ny;
+      DyadicX nx, ny;
       hull_dir_vector(ctx, d, &nx, &ny);
-      TowerX dotx = tx_add(ctx, tx_mul(ctx, cx.px, nx),
-        tx_mul(ctx, cx.py, ny));
-      TowerX dotf = tx_add(ctx, tx_mul(ctx, cf.px, nx),
-        tx_mul(ctx, cf.py, ny));
-      if (tx_sign(ctx, dotx) < 0 && tx_sign(ctx, dotf) < 0)
+      DyadicX dotx = dx_add(ctx, dx_mul(ctx, cx.px, nx),
+        dx_mul(ctx, cx.py, ny));
+      DyadicX dotf = dx_add(ctx, dx_mul(ctx, cf.px, nx),
+        dx_mul(ctx, cf.py, ny));
+      if (dx_sign(ctx, dotx) < 0 && dx_sign(ctx, dotf) < 0)
       {
-        TowerX crx = tx_sub(ctx, tx_mul(ctx, cx.px, ny),
-          tx_mul(ctx, cx.py, nx));
-        TowerX crf = tx_sub(ctx, tx_mul(ctx, cf.px, ny),
-          tx_mul(ctx, cf.py, nx));
-        TowerX a = tx_mul(ctx, tx_mul(ctx, crf, crf), cx.w);
-        TowerX b = tx_mul(ctx, tx_mul(ctx, crx, crx), cf.w);
+        DyadicX crx = dx_sub(ctx, dx_mul(ctx, cx.px, ny),
+          dx_mul(ctx, cx.py, nx));
+        DyadicX crf = dx_sub(ctx, dx_mul(ctx, cf.px, ny),
+          dx_mul(ctx, cf.py, nx));
+        DyadicX a = dx_mul(ctx, dx_mul(ctx, crf, crf), cx.w);
+        DyadicX b = dx_mul(ctx, dx_mul(ctx, crx, crx), cf.w);
         Tower t;
         t.depth = 0;
-        TowerX h[TOWER_SIZE], u[TOWER_SIZE];
+        DyadicX h[TOWER_SIZE], u[TOWER_SIZE];
         tower_set(ctx, cx.rw, t.depth, h);
         int ix = hull_tower_root(&t, h);
         tower_set(ctx, cf.rw, t.depth, h);
         int i = hull_tower_root(&t, h);
-        tower_set(ctx, tx_add(ctx, tx_mul(ctx, nx, nx), tx_mul(ctx, ny, ny)),
+        tower_set(ctx, dx_add(ctx, dx_mul(ctx, nx, nx), dx_mul(ctx, ny, ny)),
           t.depth, h);
         int in = hull_tower_root(&t, h);
-        tower_set(ctx, tx_sub(ctx, tx_mul(ctx, b, dotf),
-          tx_mul(ctx, a, dotx)), TOWER_MAXDEPTH, u);
+        tower_set(ctx, dx_sub(ctx, dx_mul(ctx, b, dotf),
+          dx_mul(ctx, a, dotx)), TOWER_MAXDEPTH, u);
         u[(1 << ix) | (1 << in)] = a;
-        u[(1 << i) | (1 << in)] = tx_scale(ctx, b, -1.0);
+        u[(1 << i) | (1 << in)] = dx_scale(ctx, b, -1.0);
         int result = tower_sign_k(ctx, &t, u, t.depth);
-        return tower_ctx_unsafe(ctx) ? 2 : result;
+        return dyadic_ctx_unsafe(ctx) ? 2 : result;
       }
     }
   }
@@ -19536,11 +19547,11 @@ hull_reach_sign(TowerCtx *ctx, const HullAt *x, const HullAt *f,
   HullExact ex, ef;
   hull_exact(ctx, x, ox, oy, &ex);
   hull_exact(ctx, f, ox, oy, &ef);
-  TowerX dx = tx_sub(ctx, tx_mul(ctx, ef.px, ex.w), tx_mul(ctx, ex.px, ef.w));
-  TowerX dy = tx_sub(ctx, tx_mul(ctx, ef.py, ex.w), tx_mul(ctx, ex.py, ef.w));
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, ef.px, ex.w), dx_mul(ctx, ex.px, ef.w));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, ef.py, ex.w), dx_mul(ctx, ex.py, ef.w));
   Tower t;
   t.depth = 0;
-  TowerX nx[TOWER_SIZE], ny[TOWER_SIZE], len[TOWER_SIZE], rho[TOWER_SIZE],
+  DyadicX nx[TOWER_SIZE], ny[TOWER_SIZE], len[TOWER_SIZE], rho[TOWER_SIZE],
     u[TOWER_SIZE], v[TOWER_SIZE];
   int ix;
   hull_dir_tower(ctx, d, ox, oy, &t, nx, ny, len, &ix);
@@ -19549,18 +19560,18 @@ hull_reach_sign(TowerCtx *ctx, const HullAt *x, const HullAt *f,
     ix = hull_tower_radius(ctx, &t, x, &ex);
   int i = hull_tower_radius(ctx, &t, f, &ef);
   int k = t.depth;
-  tower_set(ctx, tx_val(ctx, 0.0), TOWER_MAXDEPTH, rho);
+  tower_set(ctx, dx_val(ctx, 0.0), TOWER_MAXDEPTH, rho);
   if (i >= 0)
     rho[1 << i] = ex.w;
   if (ix >= 0)
-    rho[1 << ix] = tx_scale(ctx, ef.w, -1.0);
+    rho[1 << ix] = dx_scale(ctx, ef.w, -1.0);
   tower_mulx_k(ctx, nx, dx, k, u);
   tower_mulx_k(ctx, ny, dy, k, v);
   tower_add_k(ctx, u, v, k, u);
   tower_mul_k(ctx, &t, rho, len, k, v);
   tower_add_k(ctx, u, v, k, u);
   int result = tower_sign_k(ctx, &t, u, k);
-  return tower_ctx_unsafe(ctx) ? 2 : result;
+  return dyadic_ctx_unsafe(ctx) ? 2 : result;
 }
 
 /**
@@ -19573,7 +19584,7 @@ typedef struct
 } HullReachArg;
 
 static int
-hull_reach_pred(TowerCtx *ctx, const void *arg)
+hull_reach_pred(DyadicCtx *ctx, const void *arg)
 {
   const HullReachArg *a = arg;
   return hull_reach_sign(ctx, a->x, a->f, a->d);
@@ -19603,11 +19614,11 @@ typedef struct
  * @param[in] dx,dy D times w_X w_F
  */
 static int
-hull_passes_centre(TowerCtx *ctx, const HullPassArg *a, double ox, double oy,
-  TowerX dx, TowerX dy)
+hull_passes_centre(DyadicCtx *ctx, const HullPassArg *a, double ox, double oy,
+  DyadicX dx, DyadicX dy)
 {
   Tower t;
-  TowerX nx[TOWER_SIZE], ny[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
+  DyadicX nx[TOWER_SIZE], ny[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
   int first = (a->from->kind == HULL_DIR_TANGENT &&
     a->to->kind != HULL_DIR_TANGENT) ? 1 : 0;
   for (int i = 0; i < 2; i++)
@@ -19621,9 +19632,9 @@ hull_passes_centre(TowerCtx *ctx, const HullPassArg *a, double ox, double oy,
     tower_sub_k(ctx, u, v, k, u);
     int s = tower_sign_k(ctx, &t, u, k) * (j ? -1 : 1);
     if (s <= 0)
-      return tower_ctx_unsafe(ctx) ? 2 : 0;
+      return dyadic_ctx_unsafe(ctx) ? 2 : 0;
   }
-  return tower_ctx_unsafe(ctx) ? 2 : 1;
+  return dyadic_ctx_unsafe(ctx) ? 2 : 1;
 }
 
 /**
@@ -19640,7 +19651,7 @@ hull_passes_centre(TowerCtx *ctx, const HullPassArg *a, double ox, double oy,
  * product
  */
 static int
-hull_passes_pred(TowerCtx *ctx, const void *arg)
+hull_passes_pred(DyadicCtx *ctx, const void *arg)
 {
   const HullPassArg *a = arg;
   int s = hull_reach_sign(ctx, a->x, a->f, a->to);
@@ -19650,17 +19661,17 @@ hull_passes_pred(TowerCtx *ctx, const void *arg)
    * centre lies before that direction */
   if (a->from->kind == HULL_DIR_TANGENT && hull_at_same(&a->from->a, a->f) &&
       hull_at_same(&a->from->b, a->x))
-    return tower_ctx_unsafe(ctx) ? 2 : 0;
+    return dyadic_ctx_unsafe(ctx) ? 2 : 0;
 
   double ox, oy;
   hull_at_origin(a->x, &ox, &oy);
   HullExact ex, ef;
   hull_exact(ctx, a->x, ox, oy, &ex);
   hull_exact(ctx, a->f, ox, oy, &ef);
-  TowerX dx = tx_sub(ctx, tx_mul(ctx, ef.px, ex.w), tx_mul(ctx, ex.px, ef.w));
-  TowerX dy = tx_sub(ctx, tx_mul(ctx, ef.py, ex.w), tx_mul(ctx, ex.py, ef.w));
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, ef.px, ex.w), dx_mul(ctx, ex.px, ef.w));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, ef.py, ex.w), dx_mul(ctx, ex.py, ef.w));
   Tower t;
-  TowerX h[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
+  DyadicX h[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
 
   /* J is not empty: rho = (r_X - r_F) w_X w_F is negative, or
    * |D|^2 - rho^2 is positive. Two distinct circles through an input point
@@ -19674,28 +19685,28 @@ hull_passes_pred(TowerCtx *ctx, const void *arg)
     hull_exact(ctx, a->x, qx, qy, &cx);
     hull_exact(ctx, a->f, qx, qy, &cf);
     if (hull_shared_tangent(ctx, &cx, &cf) &&
-        tx_sign(ctx, tx_sub(ctx, tx_mul(ctx, cx.rw, tx_mul(ctx, cf.w, cf.w)),
-          tx_mul(ctx, cf.rw, tx_mul(ctx, cx.w, cx.w)))) >= 0)
-      return tower_ctx_unsafe(ctx) ? 2 : 0;
+        dx_sign(ctx, dx_sub(ctx, dx_mul(ctx, cx.rw, dx_mul(ctx, cf.w, cf.w)),
+          dx_mul(ctx, cf.rw, dx_mul(ctx, cx.w, cx.w)))) >= 0)
+      return dyadic_ctx_unsafe(ctx) ? 2 : 0;
     return hull_passes_centre(ctx, a, ox, oy, dx, dy);
   }
   t.depth = 0;
   int ix = hull_tower_radius(ctx, &t, a->x, &ex);
   int i = hull_tower_radius(ctx, &t, a->f, &ef);
   int k = t.depth;
-  tower_set(ctx, tx_val(ctx, 0.0), TOWER_MAXDEPTH, h);
+  tower_set(ctx, dx_val(ctx, 0.0), TOWER_MAXDEPTH, h);
   if (ix >= 0)
     h[1 << ix] = ef.w;
   if (i >= 0)
-    h[1 << i] = tx_scale(ctx, ex.w, -1.0);
+    h[1 << i] = dx_scale(ctx, ex.w, -1.0);
   if (tower_sign_k(ctx, &t, h, k) >= 0)
   {
     tower_mul_k(ctx, &t, h, h, k, u);
-    tower_set(ctx, tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy)), k,
+    tower_set(ctx, dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy)), k,
       v);
     tower_sub_k(ctx, v, u, k, v);
     if (tower_sign_k(ctx, &t, v, k) <= 0)
-      return tower_ctx_unsafe(ctx) ? 2 : 0;
+      return dyadic_ctx_unsafe(ctx) ? 2 : 0;
   }
 
   return hull_passes_centre(ctx, a, ox, oy, dx, dy);
@@ -19804,25 +19815,25 @@ hull_passes_filter(const HullFilter *x, const HullFilter *f,
  * up to (0, 1) excluded, 1 for the rest
  */
 static int
-hull_dir_half(TowerCtx *ctx, TowerX vx, TowerX vy)
+hull_dir_half(DyadicCtx *ctx, DyadicX vx, DyadicX vy)
 {
-  int s = tx_sign(ctx, vx);
+  int s = dx_sign(ctx, vx);
   if (s != 0)
     return (s > 0) ? 0 : 1;
-  return (tx_sign(ctx, vy) < 0) ? 0 : 1;
+  return (dx_sign(ctx, vy) < 0) ? 0 : 1;
 }
 
 static int
-hull_dir_order_pred(TowerCtx *ctx, const void *arg)
+hull_dir_order_pred(DyadicCtx *ctx, const void *arg)
 {
   const HullDir *const *d = arg;
-  TowerX ux, uy, vx, vy;
+  DyadicX ux, uy, vx, vy;
   hull_dir_vector(ctx, d[0], &ux, &uy);
   hull_dir_vector(ctx, d[1], &vx, &vy);
   int hu = hull_dir_half(ctx, ux, uy), hv = hull_dir_half(ctx, vx, vy);
   int result = (hu != hv) ? ((hu < hv) ? -1 : 1) :
-    - tx_sign(ctx, tx_sub(ctx, tx_mul(ctx, ux, vy), tx_mul(ctx, uy, vx)));
-  return tower_ctx_unsafe(ctx) ? 2 : result;
+    - dx_sign(ctx, dx_sub(ctx, dx_mul(ctx, ux, vy), dx_mul(ctx, uy, vx)));
+  return dyadic_ctx_unsafe(ctx) ? 2 : result;
 }
 
 /**
@@ -19833,7 +19844,7 @@ static int
 hull_dir_order(const HullDir *u, const HullDir *v)
 {
   const HullDir *d[2] = {u, v};
-  return tower_pred_run(hull_dir_order_pred, d);
+  return dyadic_pred_run(hull_dir_order_pred, d);
 }
 
 /**
@@ -19860,10 +19871,10 @@ typedef struct
 static void
 hull_event_filter(HullEvent *e)
 {
-  TowerCtx ctx;
-  tower_ctx_init(&ctx, false);
+  DyadicCtx ctx;
+  dyadic_ctx_init(&ctx, false);
   ctx.filter = true;
-  TowerX vx, vy;
+  DyadicX vx, vy;
   hull_dir_vector(&ctx, &e->dir, &vx, &vy);
   e->vx = vx.f;
   e->vy = vy.f;
@@ -19875,7 +19886,7 @@ hull_event_filter(HullEvent *e)
   else
     e->len = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(e->vx, e->vx),
       arcseg_f_mul(e->vy, e->vy)));
-  tower_ctx_free(&ctx);
+  dyadic_ctx_free(&ctx);
   return;
 }
 
@@ -19953,14 +19964,14 @@ hull_event_cmp(const HullEvent *ea, const HullEvent *eb)
  * @brief Return a value as a double, setting @p loose where it is read in
  * doubles or pairs of doubles carrying a bound on its error and that bound
  * exceeds 64 epsilons of it
- * @details A value formed exactly is rounded once (#tx_filter); one read
+ * @details A value formed exactly is rounded once (#dx_filter); one read
  * within 64 epsilons builds a point of the boundary to a few roundings, as
  * the exact one does
  */
 static double
-hull_read(const TowerCtx *ctx, TowerX x, bool *loose)
+hull_read(const DyadicCtx *ctx, DyadicX x, bool *loose)
 {
-  ArcsegFilter f = tx_filter(ctx, x);
+  ArcsegFilter f = dx_filter(ctx, x);
   if ((ctx->filter || ctx->dd) && ! (f.e <= 64.0 * DBL_EPSILON * fabs(f.v)))
     *loose = true;
   return f.v;
@@ -19971,19 +19982,19 @@ hull_read(const TowerCtx *ctx, TowerX x, bool *loose)
  * context, and return true where a value it reads is loose (#hull_read)
  */
 static bool
-hull_tangent_unit_in(TowerCtx *ctx, const HullDir *d, bool shared, double ox,
+hull_tangent_unit_in(DyadicCtx *ctx, const HullDir *d, bool shared, double ox,
   double oy, double *ux, double *uy)
 {
   bool loose = false;
   HullExact ea, eb;
   hull_exact(ctx, &d->a, ox, oy, &ea);
   hull_exact(ctx, &d->b, ox, oy, &eb);
-  TowerX dx = tx_sub(ctx, tx_mul(ctx, eb.px, ea.w),
-    tx_mul(ctx, ea.px, eb.w));
-  TowerX dy = tx_sub(ctx, tx_mul(ctx, eb.py, ea.w),
-    tx_mul(ctx, ea.py, eb.w));
-  TowerX ua = tx_mul(ctx, ea.rw, tx_mul(ctx, eb.w, eb.w));
-  TowerX ub = tx_mul(ctx, eb.rw, tx_mul(ctx, ea.w, ea.w));
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, eb.px, ea.w),
+    dx_mul(ctx, ea.px, eb.w));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, eb.py, ea.w),
+    dx_mul(ctx, ea.py, eb.w));
+  DyadicX ua = dx_mul(ctx, ea.rw, dx_mul(ctx, eb.w, eb.w));
+  DyadicX ub = dx_mul(ctx, eb.rw, dx_mul(ctx, ea.w, ea.w));
   double va = hull_read(ctx, ua, &loose), vb = hull_read(ctx, ub, &loose);
   double vx = hull_read(ctx, dx, &loose), vy = hull_read(ctx, dy, &loose);
   double den = sqrt(va) + sqrt(vb);
@@ -19993,7 +20004,7 @@ hull_tangent_unit_in(TowerCtx *ctx, const HullDir *d, bool shared, double ox,
   double rho = 0.0;
   if (den > 0.0)
   {
-    ArcsegFilter q = tx_filter(ctx, tx_sub(ctx, ua, ub));
+    ArcsegFilter q = dx_filter(ctx, dx_sub(ctx, ua, ub));
     if ((ctx->filter || ctx->dd) &&
         ! (q.e <= 64.0 * DBL_EPSILON * den * hypot(vx, vy)))
       loose = true;
@@ -20002,21 +20013,21 @@ hull_tangent_unit_in(TowerCtx *ctx, const HullDir *d, bool shared, double ox,
   double a, e, s = 2.0 * sqrt(va) * sqrt(vb);
   if (shared)
   {
-    TowerX ww = tx_mul(ctx, ea.w, eb.w);
-    a = -2.0 * hull_read(ctx, tx_mul(ctx, ww, tx_add(ctx,
-      tx_mul(ctx, ea.px, eb.px), tx_mul(ctx, ea.py, eb.py))), &loose);
-    double c = hull_read(ctx, tx_mul(ctx, ww, tx_sub(ctx,
-      tx_mul(ctx, ea.px, eb.py), tx_mul(ctx, ea.py, eb.px))), &loose);
+    DyadicX ww = dx_mul(ctx, ea.w, eb.w);
+    a = -2.0 * hull_read(ctx, dx_mul(ctx, ww, dx_add(ctx,
+      dx_mul(ctx, ea.px, eb.px), dx_mul(ctx, ea.py, eb.py))), &loose);
+    double c = hull_read(ctx, dx_mul(ctx, ww, dx_sub(ctx,
+      dx_mul(ctx, ea.px, eb.py), dx_mul(ctx, ea.py, eb.px))), &loose);
     e = (a >= 0.0) ? a + s : -4.0 * c * c / (a - s);
   }
   else
   {
-    TowerX ta = tx_sub(ctx, tx_add(ctx, tx_mul(ctx, dx, dx),
-      tx_mul(ctx, dy, dy)), tx_add(ctx, ua, ub));
+    DyadicX ta = dx_sub(ctx, dx_add(ctx, dx_mul(ctx, dx, dx),
+      dx_mul(ctx, dy, dy)), dx_add(ctx, ua, ub));
     a = hull_read(ctx, ta, &loose);
     e = (a >= 0.0) ? a + s :
-      hull_read(ctx, tx_sub(ctx, tx_mul(ctx, ta, ta),
-        tx_scale(ctx, tx_mul(ctx, ua, ub), 4.0)), &loose) / (a - s);
+      hull_read(ctx, dx_sub(ctx, dx_mul(ctx, ta, ta),
+        dx_scale(ctx, dx_mul(ctx, ua, ub), 4.0)), &loose) / (a - s);
   }
   double se = sqrt(fmax(e, 0.0));
   double nx = rho * vx + se * vy, ny = rho * vy - se * vx;
@@ -20053,14 +20064,14 @@ hull_tangent_unit(const HullDir *d, double *ux, double *uy)
   bool shared = hull_shared_point(&d->a, &d->b, d, &ox, &oy);
   if (! shared)
     hull_at_origin(&d->a, &ox, &oy);
-  TowerCtx ctx;
+  DyadicCtx ctx;
   for (int pass = 0; pass < 3; pass++)
   {
-    tower_ctx_init(&ctx, false);
+    dyadic_ctx_init(&ctx, false);
     ctx.filter = (pass == 0);
     ctx.dd = (pass == 1);
     bool loose = hull_tangent_unit_in(&ctx, d, shared, ox, oy, ux, uy);
-    tower_ctx_free(&ctx);
+    dyadic_ctx_free(&ctx);
     if (! loose)
       break;
   }
@@ -20084,12 +20095,12 @@ hull_circle_round(const Edge *arc, double *cx, double *cy, double *r)
   HullAt f = {arc, 0.0, 0.0};
   double ox, oy;
   hull_at_origin(&f, &ox, &oy);
-  TowerCtx ctx;
+  DyadicCtx ctx;
   /* In doubles, then in pairs of doubles, carrying bounds on their errors
    * first (#hull_read) */
   for (int pass = 0; pass < 3; pass++)
   {
-    tower_ctx_init(&ctx, false);
+    dyadic_ctx_init(&ctx, false);
     ctx.filter = (pass == 0);
     ctx.dd = (pass == 1);
     bool loose = false;
@@ -20099,7 +20110,7 @@ hull_circle_round(const Edge *arc, double *cx, double *cy, double *r)
     *cx = ox + hull_read(&ctx, e.px, &loose) / w;
     *cy = oy + hull_read(&ctx, e.py, &loose) / w;
     *r = sqrt(hull_read(&ctx, e.rw, &loose)) / w;
-    tower_ctx_free(&ctx);
+    dyadic_ctx_free(&ctx);
     if (! loose)
       break;
   }
@@ -20375,7 +20386,7 @@ hull_walk(const POINT2D *hull, uint32_t nhull, const Edge **arcs, int narcs,
       continue;
     HullAt f = {arcs[j], 0.0, 0.0};
     HullReachArg ra = {&x, &f, &down};
-    if (tower_pred_run(hull_reach_pred, &ra) > 0)
+    if (dyadic_pred_run(hull_reach_pred, &ra) > 0)
       x = f;
   }
   double px = x.arc ? x.arc->cx : x.x;
@@ -20433,12 +20444,12 @@ hull_walk(const POINT2D *hull, uint32_t nhull, const Edge **arcs, int narcs,
         {
           /* Only how far F reaches at the end of the interval is untold */
           HullReachArg ra = {&x, &f, found ? &tangent : to};
-          r = (tower_pred_run(hull_reach_pred, &ra) > 0) ? 1 : 0;
+          r = (dyadic_pred_run(hull_reach_pred, &ra) > 0) ? 1 : 0;
         }
         else if (r == 2)
         {
           HullPassArg pa = {&x, &f, &from, found ? &tangent : to};
-          r = tower_pred_run(hull_passes_pred, &pa);
+          r = dyadic_pred_run(hull_passes_pred, &pa);
         }
         if (r == 1)
         {
@@ -32583,19 +32594,19 @@ sum_filter(const double *t, int k, double *sum, double *err)
 /**
  * @brief Return in @p ar the sum of @p k doubles, exactly
  */
-static TowerWide *
-tower_wide_sum(TowerWideArena *ar, const double *t, int k)
+static DyadicWide *
+dyadic_wide_sum(DyadicWideArena *ar, const double *t, int k)
 {
-  TowerWide *acc = tower_wide_alloc(ar, 1);
+  DyadicWide *acc = dyadic_wide_alloc(ar, 1);
   for (int i = 0; i < k; i++)
-    acc = tower_wide_add(ar, acc, tower_wide_of_double(ar, t[i]));
+    acc = dyadic_wide_add(ar, acc, dyadic_wide_of_double(ar, t[i]));
   return acc;
 }
 
 /**
  * @brief Return the sign of the sum of @p k doubles, decided exactly
  * @details The sum in doubles decides where it exceeds the bound on its
- * rounding (#sum_filter), and otherwise the sum is read on #TowerWide
+ * rounding (#sum_filter), and otherwise the sum is read on #DyadicWide
  */
 static int
 sum_sign_exact(const double *t, int k)
@@ -32604,10 +32615,10 @@ sum_sign_exact(const double *t, int k)
   sum_filter(t, k, &sum, &err);
   if (fabs(sum) > err)
     return (sum > 0.0) ? 1 : -1;
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  int sign = tower_wide_sum(&ar, t, k)->sign;
-  tower_wide_arena_free(&ar);
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  int sign = dyadic_wide_sum(&ar, t, k)->sign;
+  dyadic_wide_arena_free(&ar);
   return sign;
 }
 
@@ -32635,7 +32646,7 @@ sums_nonpositive_exact(const double *t, int n, int k)
  * bound on its error: the error of each sum (#sum_filter) carried through the
  * two products, plus the rounding of the products and of their difference.
  * Otherwise, and wherever the doubles may underflow or overflow, the four
- * sums are read on #TowerWide and compared by #tower_wide_product_cmp
+ * sums are read on #DyadicWide and compared by #dyadic_wide_product_cmp
  */
 static int
 sum_products_sign_exact(const double *p1, const double *e1, const double *p2,
@@ -32655,13 +32666,13 @@ sum_products_sign_exact(const double *p1, const double *e1, const double *p2,
   if (isfinite(err) && fabs(det) > err * (1.0 + 4.0 * DBL_EPSILON) &&
       fabs(det) > 0x1p-900)
     return (det > 0.0) ? 1 : -1;
-  TowerWideArena ar;
-  tower_wide_arena_init(&ar);
-  const TowerWide *wp1 = tower_wide_sum(&ar, p1, k),
-    *we1 = tower_wide_sum(&ar, e1, k), *wp2 = tower_wide_sum(&ar, p2, k),
-    *we2 = tower_wide_sum(&ar, e2, k);
-  int sign = tower_wide_product_cmp(&ar, wp1, we2, wp2, we1);
-  tower_wide_arena_free(&ar);
+  DyadicWideArena ar;
+  dyadic_wide_arena_init(&ar);
+  const DyadicWide *wp1 = dyadic_wide_sum(&ar, p1, k),
+    *we1 = dyadic_wide_sum(&ar, e1, k), *wp2 = dyadic_wide_sum(&ar, p2, k),
+    *we2 = dyadic_wide_sum(&ar, e2, k);
+  int sign = dyadic_wide_product_cmp(&ar, wp1, we2, wp2, we1);
+  dyadic_wide_arena_free(&ar);
   return sign;
 }
 

@@ -202,6 +202,10 @@
  *   @ingroup meos_pointcloud_bbox
  *   @brief Position functions for temporal point clouds
  *
+ *   @defgroup meos_pointcloud_bbox_split Split functions
+ *   @ingroup meos_pointcloud_bbox
+ *   @brief Split functions for temporal point clouds
+ *
  * @defgroup meos_pointcloud_agg Aggregate functions
  * @ingroup meos_pointcloud
  * @brief Aggregate functions for temporal pgpointcloud types
@@ -230,6 +234,10 @@
  *   @defgroup meos_internal_pointcloud_inout Input and output functions
  *   @ingroup meos_internal_pointcloud
  *   @brief Input and output functions for temporal pgpointcloud types
+ *
+ *   @defgroup meos_internal_pointcloud_bbox Bounding box functions
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Bounding box functions for temporal pgpointcloud types
  *
  *   @defgroup meos_internal_pointcloud_base_accessor Accessor functions
  *   @ingroup meos_internal_pointcloud

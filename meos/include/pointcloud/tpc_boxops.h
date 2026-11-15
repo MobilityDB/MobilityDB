@@ -80,4 +80,12 @@ extern Temporal *tpcpatch_restrict_tpcbox_fine(const Temporal *temp,
 
 /*****************************************************************************/
 
+extern TPCBox *tpointcloudinst_tpcboxes(const TInstant *inst);
+extern TPCBox *tpointcloudseq_tpcboxes(const TSequence *seq, int *count);
+extern TPCBox *tpointcloudseqset_tpcboxes(const TSequenceSet *ss, int *count);
+extern TPCBox *tpointcloudseq_split_n_tpcboxes(const TSequence *seq, int box_count, int *count);
+extern TPCBox *tpointcloudseqset_split_n_tpcboxes(const TSequenceSet *ss, int box_count, int *count);
+extern TPCBox *tpointcloudseq_split_each_n_tpcboxes(const TSequence *seq, int elem_count, int *count);
+extern TPCBox *tpointcloudseqset_split_each_n_tpcboxes(const TSequenceSet *ss, int elem_count, int *count);
+
 #endif /* __TPC_BOXOPS_H__ */
