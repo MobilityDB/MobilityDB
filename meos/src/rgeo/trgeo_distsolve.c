@@ -363,6 +363,25 @@ distfun_init(DistFun *f)
 }
 
 /**
+ * @brief Set @p dst to @p src
+ * @details Copies the polynomial part and the terms @p src has, not the
+ * whole array of #DISTFUN_MAXTERMS terms, as #distfun_init() sets only what
+ * a function reads: a function of the walk has at most three terms of the
+ * twelve the array holds.
+ */
+void
+distfun_copy(DistFun *dst, const DistFun *src)
+{
+  assert(dst); assert(src);
+  dst->nterm = src->nterm;
+  dst->c2 = src->c2;
+  dst->c1 = src->c1;
+  dst->c0 = src->c0;
+  for (int i = 0; i < src->nterm; i++)
+    dst->term[i] = src->term[i];
+}
+
+/**
  * @brief Add (A1*t + A0)*cos(w*t + g) + (B1*t + B0)*sin(w*t + g) to @p f
  * @details The phase g is given by its cosine @p cg and its sine @p sg, both
  * multiplied by one factor, which then multiplies the term.  A caller that
@@ -498,46 +517,73 @@ distfun_add_fun(DistFun *f, const DistFun *g, double s)
 
 /**
  * @brief Set @p sq to the square of @p f
- * @details For f = p + A*cos(w*t) + B*sin(w*t), with p, A and B affine,
+ * @details For f = p + SUM_i [A_i*cos(w_i*t) + B_i*sin(w_i*t)], with p, A_i
+ * and B_i affine, the square is p^2, plus 2*p times each term, plus the
+ * products of the terms.  The square of the term of the frequency u is
  * @code
- * f^2 = p^2 + (A^2 + B^2)/2 + 2*p*A*cos(w*t) + 2*p*B*sin(w*t)
- *     + (A^2 - B^2)/2 * cos(2*w*t) + A*B * sin(2*w*t)
+ * (A^2 + B^2)/2 + (A^2 - B^2)/2 * cos(2*u*t) + A*B * sin(2*u*t)
  * @endcode
- * which has quadratic coefficients and the frequencies w and 2w.  The
- * functions of the walk against a body at rest have one frequency, the
- * rotation of the moving body, and an affine polynomial part.
- * @return False if @p f has more than one term, a quadratic polynomial part
- * or quadratic coefficients
+ * and twice the product of the terms of two frequencies u and v is
+ * @code
+ * (A_u*A_v + B_u*B_v) * cos((u - v)*t) + (A_u*A_v - B_u*B_v) * cos((u + v)*t)
+ * + (A_u*B_v + B_u*A_v) * sin((u + v)*t) + (B_u*A_v - A_u*B_v) * sin((u - v)*t)
+ * @endcode
+ * The result has quadratic coefficients and the frequencies of @p f, their
+ * doubles, and the sums and differences of every two of them, each term
+ * going to the term of its frequency, see #distfun_add_cs2().  A function of
+ * the walk against a body at rest has one frequency, w, whose square has the
+ * frequencies w and 2w; a function of the walk of two bodies that turn has
+ * the frequencies wA, wB and wA - wB.
+ * @return False if @p f has a quadratic polynomial part or quadratic
+ * coefficients, or if the square has more than #DISTFUN_MAXTERMS terms
  */
 bool
 distfun_square(const DistFun *f, DistFun *sq)
 {
   assert(f); assert(sq);
   distfun_init(sq);
-  if (f->nterm > 1 || f->c2 != 0.0)
+  if (f->c2 != 0.0)
     return false;
+  for (int i = 0; i < f->nterm; i++)
+    if (f->term[i].a2 != 0.0 || f->term[i].b2 != 0.0)
+      return false;
   double p1 = f->c1, p0 = f->c0;
   /* p^2 */
   distfun_add_poly(sq, p1 * p1, 2.0 * p1 * p0, p0 * p0);
-  if (f->nterm == 0)
-    return true;
-  const DistFunTerm *k = &f->term[0];
-  if (k->a2 != 0.0 || k->b2 != 0.0)
-    return false;
-  double a1 = k->a1, a0 = k->a0, b1 = k->b1, b0 = k->b0, w = k->w;
-  /* A^2 and B^2, A*B, p*A and p*B as quadratics */
-  double aa2 = a1 * a1, aa1 = 2.0 * a1 * a0, aa0 = a0 * a0;
-  double bb2 = b1 * b1, bb1 = 2.0 * b1 * b0, bb0 = b0 * b0;
-  double ab2 = a1 * b1, ab1 = a1 * b0 + a0 * b1, ab0 = a0 * b0;
-  double pa2 = p1 * a1, pa1 = p1 * a0 + p0 * a1, pa0 = p0 * a0;
-  double pb2 = p1 * b1, pb1 = p1 * b0 + p0 * b1, pb0 = p0 * b0;
-  distfun_add_poly(sq, 0.5 * (aa2 + bb2), 0.5 * (aa1 + bb1),
-    0.5 * (aa0 + bb0));
-  if (! distfun_add_cs2(sq, w, 1.0, 0.0, 2.0 * pa2, 2.0 * pa1, 2.0 * pa0,
-      2.0 * pb2, 2.0 * pb1, 2.0 * pb0))
-    return false;
-  return distfun_add_cs2(sq, 2.0 * w, 1.0, 0.0, 0.5 * (aa2 - bb2),
-    0.5 * (aa1 - bb1), 0.5 * (aa0 - bb0), ab2, ab1, ab0);
+  for (int i = 0; i < f->nterm; i++)
+  {
+    const DistFunTerm *u = &f->term[i];
+    double a1 = u->a1, a0 = u->a0, b1 = u->b1, b0 = u->b0, w = u->w;
+    /* A^2 and B^2, A*B, p*A and p*B as quadratics */
+    double aa2 = a1 * a1, aa1 = 2.0 * a1 * a0, aa0 = a0 * a0;
+    double bb2 = b1 * b1, bb1 = 2.0 * b1 * b0, bb0 = b0 * b0;
+    double ab2 = a1 * b1, ab1 = a1 * b0 + a0 * b1, ab0 = a0 * b0;
+    double pa2 = p1 * a1, pa1 = p1 * a0 + p0 * a1, pa0 = p0 * a0;
+    double pb2 = p1 * b1, pb1 = p1 * b0 + p0 * b1, pb0 = p0 * b0;
+    distfun_add_poly(sq, 0.5 * (aa2 + bb2), 0.5 * (aa1 + bb1),
+      0.5 * (aa0 + bb0));
+    if (! distfun_add_cs2(sq, w, 1.0, 0.0, 2.0 * pa2, 2.0 * pa1, 2.0 * pa0,
+          2.0 * pb2, 2.0 * pb1, 2.0 * pb0) ||
+        ! distfun_add_cs2(sq, 2.0 * w, 1.0, 0.0, 0.5 * (aa2 - bb2),
+          0.5 * (aa1 - bb1), 0.5 * (aa0 - bb0), ab2, ab1, ab0))
+      return false;
+    for (int j = i + 1; j < f->nterm; j++)
+    {
+      const DistFunTerm *v = &f->term[j];
+      /* A_u*A_v, B_u*B_v, A_u*B_v and B_u*A_v as quadratics */
+      double c1 = v->a1, c0 = v->a0, d1 = v->b1, d0 = v->b0;
+      double ac2 = a1 * c1, ac1 = a1 * c0 + a0 * c1, ac0 = a0 * c0;
+      double bd2 = b1 * d1, bd1 = b1 * d0 + b0 * d1, bd0 = b0 * d0;
+      double ad2 = a1 * d1, ad1 = a1 * d0 + a0 * d1, ad0 = a0 * d0;
+      double bc2 = b1 * c1, bc1 = b1 * c0 + b0 * c1, bc0 = b0 * c0;
+      if (! distfun_add_cs2(sq, w - v->w, 1.0, 0.0, ac2 + bd2, ac1 + bd1,
+            ac0 + bd0, bc2 - ad2, bc1 - ad1, bc0 - ad0) ||
+          ! distfun_add_cs2(sq, w + v->w, 1.0, 0.0, ac2 - bd2, ac1 - bd1,
+            ac0 - bd0, ad2 + bc2, ad1 + bc1, ad0 + bc0))
+        return false;
+    }
+  }
+  return true;
 }
 
 /*****************************************************************************
@@ -710,7 +756,8 @@ distfun_roots(const DistFun *f, double level, double lo, double hi,
 {
   assert(f); assert(roots); assert(maxroots > 0); assert(lo < hi);
 
-  DistFun g = *f;
+  DistFun g;
+  distfun_copy(&g, f);
   g.c0 -= level;
 
   if (! isfinite(g.c2) || ! isfinite(g.c1) || ! isfinite(g.c0))

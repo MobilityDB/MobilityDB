@@ -167,15 +167,19 @@ SELECT round(tDistance(
 SELECT round(tDistance(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));Pose(Point(0 0),0)@2001-01-01',
   tgeompoint 'Point(2 3)@2001-01-01'), 6);
--- Two bodies, one not convex: every pair of pieces is walked, and two bodies
--- turning in one segment give a temporal distance the lower envelope does
--- not read yet, while their ever-within predicate is answered
+-- Two bodies, one not convex: every pair of pieces is walked, the bodies
+-- translating, both turning at the same rate, and turning the opposite way
+-- with the square in the notch of the U, where the closest pair of pieces
+-- changes from one arm to the other
 SELECT round(tDistance(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
   trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(2 3),0)@2001-01-01, Pose(Point(2 8),0)@2001-01-02]'), 6);
-SELECT tDistance(
+SELECT round(tDistance(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]',
-  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]');
+  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]'), 6);
+SELECT round(tDistance(
+  trgeometry 'Polygon((-2 -2,2 -2,2 2,0 -1,-2 2,-2 -2));[Pose(Point(0 0),-0.2)@2001-01-01, Pose(Point(0 0),0.2)@2001-01-02]',
+  trgeometry 'Polygon((-0.3 -0.3,0.3 -0.3,0.3 0.3,-0.3 0.3,-0.3 -0.3));[Pose(Point(0 0.8),0.5)@2001-01-01, Pose(Point(0 0.8),-0.5)@2001-01-02]'), 6);
 SELECT eDwithin(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]',
   trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]', 100);
