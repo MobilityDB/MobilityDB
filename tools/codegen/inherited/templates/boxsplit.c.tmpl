@@ -1,0 +1,552 @@
+/**
+ * @ingroup {IGROUP}
+ * @brief Return a singleton array of {NOUNBOXES} from a
+ * {NOUN} instant
+ * @param[in] inst Temporal instant
+ */
+{CTYPE} *
+{INST}_{BOXES}(const TInstant *inst{CTXDECL})
+{
+  assert(inst); assert({TYPEP}(inst->temptype));
+  /* One bounding box per instant */
+  {CTYPE} *result = palloc(sizeof({CTYPE}));
+  {INSTSET}((const Temporal *) inst, inst, &result[0]);
+  return result;
+}
+
+/**
+ * @brief Return an array of {NOUNBOXES} from the instants
+ * of a {NOUN} sequence with discrete interpolation
+ * @param[in] seq Temporal sequence
+ */
+static {CTYPE} *
+{SEQ}_disc_{BOXES}(const TSequence *seq{CTXDECL})
+{
+  assert(seq); assert({TYPEP}(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  /* One bounding box per instant */
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    {INSTSET}((const Temporal *) seq, TSEQUENCE_INST_N(seq, i), &result[i]);
+  return result;
+}
+
+/**
+ * @brief Return an array of {NOUNBOXES} from the segments of a
+ * {NOUN} sequence with continuous interpolation (iterator function)
+ * @param[in] seq Temporal sequence
+ * @param[out] result Array of boxes
+ * @return Number of elements in the ouput array
+ */
+static int
+{SEQ}_cont_{BOXES}_iter(const TSequence *seq, {CTYPE} *result{CTXDECL})
+{
+  assert(seq); assert(result); assert({TYPEP}(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    {SLICE}(seq, 0, 0, &result[0]);
+    return 1;
+  }
+
+  /* One bounding box per segment */
+  for (int i = 0; i < seq->count - 1; i++)
+    {SLICE}(seq, i, i + 1, &result[i]);
+  return seq->count - 1;
+}
+
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of {NOUNBOXES} from the instants or segments
+ * of a {NOUN} sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[out] count Number of elements in the output array
+ */
+{CTYPE} *
+{SEQ}_{BOXES}(const TSequence *seq, int *count{CTXDECL})
+{
+  assert(seq); assert(count); assert({TYPEP}(seq->temptype));
+
+  /* Discrete case */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+  {
+    *count = seq->count;
+    return {SEQ}_disc_{BOXES}(seq{CTXPASS});
+  }
+
+  /* Continuous case */
+  int nboxes = (seq->count == 1) ? 1 : seq->count - 1;
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * nboxes);
+  *count = {SEQ}_cont_{BOXES}_iter(seq, result{CTXPASS});
+  return result;
+}
+
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of {NOUNBOXES} from the segments of a
+ * {NOUN} sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[out] count Number of elements in the output array
+ */
+{CTYPE} *
+{SEQSET}_{BOXES}(const TSequenceSet *ss, int *count{CTXDECL})
+{
+  assert(ss); assert(count); assert({TYPEP}(ss->temptype));
+
+  /* One bounding box per segment */
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * ss->totalcount);
+  int nboxes = 0;
+  for (int i = 0; i < ss->count; i++)
+    nboxes += {SEQ}_cont_{BOXES}_iter(TSEQUENCESET_SEQ_N(ss, i),
+      &result[nboxes]{CTXPASS});
+  assert(nboxes <= ss->totalcount);
+  *count = nboxes;
+  return result;
+}
+
+/**
+ * @ingroup {GROUP}
+ * @brief Return an array of {NOUNBOXES} from the instants or segments
+ * of a {NOUN}
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] temp {NOUNCAP}
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #{CSTEM}_{BOXES}()
+ */
+{CTYPE} *
+{PFX}_{BOXES}(const Temporal *temp, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  {VALIDATE}(temp, NULL);
+
+{CTXINIT}  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
+    case TSEQUENCE:
+      return {SEQ}_{BOXES}((TSequence *) temp, count{CTXPASS});
+    default: /* TSEQUENCESET */
+      return {SEQSET}_{BOXES}((TSequenceSet *) temp, count{CTXPASS});
+  }
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return an array of N {NOUNBOXES} from the instants
+ * of a {NOUN} sequence with discrete interpolation
+ * @param[in] seq Temporal sequence
+ * @param[in] {NCOUNT} Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+static {CTYPE} *
+{SEQ}_disc_split_n_{BOXES}(const TSequence *seq, int {NCOUNT}, int *count{CTXDECL})
+{
+  assert(seq); assert(count); assert({TYPEP}(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert({NCOUNT} > 0);
+
+  /* One bounding box per instant */
+  if (seq->count <= {NCOUNT})
+  {
+    *count = seq->count;
+    return {SEQ}_disc_{BOXES}(seq{CTXPASS});
+  }
+
+  /* One bounding box per several consecutive instants */
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * {NCOUNT});
+  /* Minimum number of input instants merged together in an output box */
+  int size = seq->count / {NCOUNT};
+  /* Number of output boxes that result from merging (size + 1) instants */
+  int remainder = seq->count % {NCOUNT};
+  int i = 0; /* Loop variable for input instants */
+  for (int k = 0; k < {NCOUNT}; k++)
+  {
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    {INSTSET}((const Temporal *) seq, TSEQUENCE_INST_N(seq, i), &result[k]);
+    for (int l = i + 1; l < j; l++)
+    {
+      {CTYPE} box;
+      {INSTSET}((const Temporal *) seq, TSEQUENCE_INST_N(seq, l), &box);
+      {EXPAND}(&box, &result[k]);
+    }
+    i = j;
+  }
+  assert(i == seq->count);
+  *count = {NCOUNT};
+  return result;
+}
+
+/**
+ * @brief Return an array of N {NOUNBOXES} from the segments of a 
+ * {NOUN} sequence with continuous interpolation (iterator function)
+ * @param[in] seq {NOUNCAP}
+ * @param[in] {NCOUNT} Number of boxes
+ * @param[out] result Array of boxes
+ */
+static int
+{SEQ}_cont_split_n_{BOXES}_iter(const TSequence *seq, int {NCOUNT},
+  {CTYPE} *result{CTXDECL})
+{
+  assert(seq); assert(result); assert({TYPEP}(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  assert({NCOUNT} > 0);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    {SLICE}(seq, 0, 0, &result[0]);
+    return 1;
+  }
+
+  /* One bounding box per segment */
+  int nsegs = seq->count - 1;
+  if (nsegs <= {NCOUNT})
+    return {SEQ}_cont_{BOXES}_iter(seq, result{CTXPASS});
+
+  /* One bounding box per several consecutive segments */
+  /* Minimum number of input segments merged together in an output box */
+  int size = nsegs / {NCOUNT};
+  /* Number of output boxes that result from merging (size + 1) segments */
+  int remainder = nsegs % {NCOUNT};
+  int i = 0; /* Loop variable for input segments */
+  for (int k = 0; k < {NCOUNT}; k++)
+  {
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    {SLICE}(seq, i, j, &result[k]);
+    i = j;
+  }
+  assert(i == nsegs);
+  return {NCOUNT};
+}
+
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of N {NOUNBOXES} from the instants or
+ * segments of a {NOUN} sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[in] {NCOUNT} Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @return If `seq->count <= {NCOUNT}`, the result contains one box
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single box in the result to reach the given number of
+ * boxes.
+ */
+{CTYPE} *
+{SEQ}_split_n_{BOXES}(const TSequence *seq, int {NCOUNT}, int *count{CTXDECL})
+{
+  assert(seq); assert(count); assert({TYPEP}(seq->temptype));
+  assert({NCOUNT} > 0);
+
+  /* Discrete case */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return {SEQ}_disc_split_n_{BOXES}(seq, {NCOUNT}, count{CTXPASS});
+
+  /* Continuous case */
+  int nboxes = (seq->count <= {NCOUNT}) ?
+    (seq->count == 1 ? 1 : seq->count - 1) : {NCOUNT};
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * nboxes);
+  *count = {SEQ}_cont_split_n_{BOXES}_iter(seq, {NCOUNT}, result{CTXPASS});
+  return result;
+}
+
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of N {NOUNBOXES} from the segments of a
+ * {NOUN} sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[in] {NCOUNT} Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @return If `ss->totalcount <= {NCOUNT}`, the result contains one box per
+ * segment. Otherwise, consecutive input segments are combined into a single box in
+ * the result to reach the given number of boxes.
+ */
+{CTYPE} *
+{SEQSET}_split_n_{BOXES}(const TSequenceSet *ss, int {NCOUNT}, int *count{CTXDECL})
+{
+  assert(ss); assert(count); assert({TYPEP}(ss->temptype));
+  assert({NCOUNT} > 0);
+
+  /* One bounding box per segment */
+  int nboxes = (ss->totalcount <= {NCOUNT}) ? ss->totalcount : {NCOUNT};
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * nboxes);
+  if (ss->totalcount <= {NCOUNT})
+    return {SEQSET}_{BOXES}(ss, count{CTXPASS});
+
+  /* Number of bounding boxes per composing sequence determined from the
+   * proportion of seq->count and ss->totalcount */
+  if (ss->count <= {NCOUNT})
+  {
+    int nboxes1 = 0;
+    for (int i = 0; i < ss->count; i++)
+    {
+      bool end = false;
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      int nboxes_seq = (int) ({NCOUNT} * seq->count * 1.0 / ss->totalcount);
+      if (! nboxes_seq)
+        nboxes_seq = 1;
+      if (nboxes_seq + nboxes1 >= {NCOUNT})
+      {
+        end = true;
+        nboxes_seq = {NCOUNT} - nboxes1;
+      }
+      nboxes1 += {SEQ}_cont_split_n_{BOXES}_iter(seq, nboxes_seq,
+        &result[nboxes1]{CTXPASS});
+      if (end)
+        break;
+    }
+    assert(nboxes1 <= {NCOUNT});
+    *count = nboxes1;
+    return result;
+  }
+
+  /* Merge consecutive sequences to reach the maximum number of boxes */
+  /* Minimum number of sequences merged together in an output box */
+  int size = ss->count / {NCOUNT};
+  /* Number of output boxes that result from merging (size + 1) sequences */
+  int remainder = ss->count % {NCOUNT};
+  int i = 0; /* Loop variable for input sequences */
+  for (int k = 0; k < {NCOUNT}; k++)
+  {
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    {SEQ}_cont_split_n_{BOXES}_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
+      &result[k]{CTXPASS});
+    for (int l = i + 1; l < j; l++)
+    {
+      {CTYPE} box;
+      {SEQ}_cont_split_n_{BOXES}_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box{CTXPASS});
+      {EXPAND}(&box, &result[k]);
+    }
+    i = j;
+  }
+  assert(i == ss->count);
+  *count = {NCOUNT};
+  return result;
+}
+
+/**
+ * @ingroup {GROUP}
+ * @brief Return an array of N {NOUNBOXES} obtained by merging
+ * consecutive instants or segments of a {NOUN}
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] temp {NOUNCAP}
+ * @param[in] {NCOUNT} Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @errval NULL
+ * @csqlfn #{CSTEM}_split_n_{BOXES}()
+ */
+{CTYPE} *
+{PFX}_split_n_{BOXES}(const Temporal *temp, int {NCOUNT}, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  {VALIDATE}(temp, NULL);
+  if (! ensure_positive({NCOUNT}))
+    return NULL;
+
+{CTXINIT}  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
+    case TSEQUENCE:
+      return {SEQ}_split_n_{BOXES}((TSequence *) temp, {NCOUNT}, count{CTXPASS});
+    default: /* TSEQUENCESET */
+      return {SEQSET}_split_n_{BOXES}((TSequenceSet *) temp, {NCOUNT},
+        count{CTXPASS});
+  }
+}
+
+/*****************************************************************************
+ * split_each_n_{BOXES} function
+ *****************************************************************************/
+
+/**
+ * @brief Return an array of {NOUNBOXES} obtained by merging
+ * consecutive instants of a {NOUN} sequence with discrete interpolation
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input instants merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+static {CTYPE} *
+{SEQ}_disc_split_each_n_{BOXES}(const TSequence *seq, int elem_count,
+  int *count{CTXDECL})
+{
+  assert(seq); assert(count); assert({TYPEP}(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(elem_count > 0);
+
+  int nboxes = ceil((double) seq->count / (double) elem_count);
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * nboxes);
+  int k = 0;
+  for (int i = 0; i < seq->count; ++i)
+  {
+    if (i % elem_count == 0)
+      {INSTSET}((const Temporal *) seq, TSEQUENCE_INST_N(seq, i), &result[k++]);
+    else
+    {
+      {CTYPE} box;
+      {INSTSET}((const Temporal *) seq, TSEQUENCE_INST_N(seq, i), &box);
+      {EXPAND}(&box, &result[k - 1]);
+    }
+  }
+  assert(k == nboxes);
+  *count = k;
+  return result;
+}
+
+/**
+ * @brief Return an array of {NOUNBOXES} obtained by merging
+ * consecutive segments of a {NOUN} sequence (iterator function)
+ * @details The sequence has continuous interpolation.
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input segments merged into an output box
+ * @param[out] result Array of boxes
+ * @return Number of elements in the output array
+ */
+static int
+{SEQ}_cont_split_each_n_{BOXES}_iter(const TSequence *seq,
+  int elem_count, {CTYPE} *result{CTXDECL})
+{
+  assert(seq); assert(result); assert({TYPEP}(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  assert(elem_count > 0);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    {SEQBOX}(seq, &result[0]);
+    return 1;
+  }
+
+  /* General case */
+  int nboxes = ceil((double) (seq->count - 1) / (double) elem_count);
+  for (int k = 0; k < nboxes; k++)
+  {
+    int first = k * elem_count;
+    int last = Min(first + elem_count, seq->count - 1);
+    {SLICE}(seq, first, last, &result[k]);
+  }
+  return nboxes;
+}
+
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of {NOUNBOXES} obtained by merging
+ * consecutive instants or segments of a {NOUN} sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+{CTYPE} *
+{SEQ}_split_each_n_{BOXES}(const TSequence *seq, int elem_count,
+  int *count{CTXDECL})
+{
+  assert(seq); assert(count); assert({TYPEP}(seq->temptype));
+  assert(elem_count > 0);
+
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return {SEQ}_disc_split_each_n_{BOXES}(seq, elem_count, count{CTXPASS});
+
+  /* Number of instants or segments */
+  int nelems = (seq->count == 1) ? 1 : seq->count - 1;
+  int nboxes = ceil((double) nelems / (double) elem_count);
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * nboxes);
+  *count = {SEQ}_cont_split_each_n_{BOXES}_iter(seq, elem_count,
+    result{CTXPASS});
+  return result;
+}
+
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of {NOUNBOXES} obtained by merging
+ * consecutive segments of a {NOUN} sequence set 
+ * @param[in] ss Temporal sequence set
+ * @param[in] elem_count Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+{CTYPE} *
+{SEQSET}_split_each_n_{BOXES}(const TSequenceSet *ss, int elem_count,
+  int *count{CTXDECL})
+{
+  assert(ss); assert(count); assert({TYPEP}(ss->temptype));
+  assert(elem_count > 0);
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return {SEQ}_split_each_n_{BOXES}(TSEQUENCESET_SEQ_N(ss, 0),
+      elem_count, count{CTXPASS});
+
+  /* Iterate for every composing sequence */
+  int nboxes = 0;
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * ss->totalcount);
+  for (int i = 0; i < ss->count; ++i)
+    nboxes += {SEQ}_cont_split_each_n_{BOXES}_iter(
+      TSEQUENCESET_SEQ_N(ss, i), elem_count, &result[nboxes]{CTXPASS});
+  *count = nboxes;
+  return result;
+}
+
+/**
+ * @ingroup {GROUP}
+ * @brief Return an array of {NOUNBOXES} obtained by merging
+ * consecutive instants or segments of a {NOUN}
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #{CSTEM}_split_each_n_{BOXES}()
+ */
+{CTYPE} *
+{PFX}_split_each_n_{BOXES}(const Temporal *temp, int elem_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  {VALIDATE}(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+{CTXINIT}  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
+    case TSEQUENCE:
+      return {SEQ}_split_each_n_{BOXES}((TSequence *) temp, elem_count,
+        count{CTXPASS});
+    default: /* TSEQUENCESET */
+      return {SEQSET}_split_each_n_{BOXES}((TSequenceSet *) temp,
+        elem_count, count{CTXPASS});
+  }
+}

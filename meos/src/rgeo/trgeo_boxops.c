@@ -243,14 +243,128 @@ trgeoseq_slice_stbox(const GSERIALIZED *geom, const TSequence *seq, int first,
   return;
 }
 
+/* GENERATED-BOXSPLIT-BEGIN trgeometry — tools/codegen/inherited/generate.py from templates/boxsplit.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxsplit.yaml and re-run. */
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return a singleton array of spatiotemporal boxes from a
+ * temporal rigid geometry instant
+ * @param[in] inst Temporal instant
+ */
+STBox *
+trgeoinst_stboxes(const TInstant *inst, const GSERIALIZED *geom)
+{
+  assert(inst); assert(tspatial_type(inst->temptype));
+  /* One bounding box per instant */
+  STBox *result = palloc(sizeof(STBox));
+  trgeoinst_set_stbox(geom, inst, &result[0]);
+  return result;
+}
+
+/**
+ * @brief Return an array of spatiotemporal boxes from the instants
+ * of a temporal rigid geometry sequence with discrete interpolation
+ * @param[in] seq Temporal sequence
+ */
+static STBox *
+trgeoseq_disc_stboxes(const TSequence *seq, const GSERIALIZED *geom)
+{
+  assert(seq); assert(tspatial_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  /* One bounding box per instant */
+  STBox *result = palloc(sizeof(STBox) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[i]);
+  return result;
+}
+
+/**
+ * @brief Return an array of spatiotemporal boxes from the segments of a
+ * temporal rigid geometry sequence with continuous interpolation (iterator
+ * function)
+ * @param[in] seq Temporal sequence
+ * @param[out] result Array of boxes
+ * @return Number of elements in the ouput array
+ */
+static int
+trgeoseq_cont_stboxes_iter(const TSequence *seq, STBox *result,
+  const GSERIALIZED *geom)
+{
+  assert(seq); assert(result); assert(tspatial_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    trgeoseq_slice_stbox(geom, seq, 0, 0, &result[0]);
+    return 1;
+  }
+
+  /* One bounding box per segment */
+  for (int i = 0; i < seq->count - 1; i++)
+    trgeoseq_slice_stbox(geom, seq, i, i + 1, &result[i]);
+  return seq->count - 1;
+}
+
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal rigid geometry sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[out] count Number of elements in the output array
+ */
+STBox *
+trgeoseq_stboxes(const TSequence *seq, int *count, const GSERIALIZED *geom)
+{
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
+
+  /* Discrete case */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+  {
+    *count = seq->count;
+    return trgeoseq_disc_stboxes(seq, geom);
+  }
+
+  /* Continuous case */
+  int nboxes = (seq->count == 1) ? 1 : seq->count - 1;
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  *count = trgeoseq_cont_stboxes_iter(seq, result, geom);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes from the segments of a
+ * temporal rigid geometry sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[out] count Number of elements in the output array
+ */
+STBox *
+trgeoseqset_stboxes(const TSequenceSet *ss, int *count, const GSERIALIZED *geom)
+{
+  assert(ss); assert(count); assert(tspatial_type(ss->temptype));
+
+  /* One bounding box per segment */
+  STBox *result = palloc(sizeof(STBox) * ss->totalcount);
+  int nboxes = 0;
+  for (int i = 0; i < ss->count; i++)
+    nboxes += trgeoseq_cont_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i),
+      &result[nboxes], geom);
+  assert(nboxes <= ss->totalcount);
+  *count = nboxes;
+  return result;
+}
+
 /**
  * @ingroup meos_rgeo_bbox_split
  * @brief Return an array of spatiotemporal boxes from the instants or segments
  * of a temporal rigid geometry
- * @details The choice depends on whether the interpolation is discrete or
- * continuous.
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal rigid geometry
- * @param[out] count Number of elements in the output array
+ * @param[out] count Number of values of the output array
  * @errval NULL
  * @csqlfn #Trgeometry_stboxes()
  */
@@ -264,93 +378,103 @@ trgeometry_stboxes(const Temporal *temp, int *count)
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   const GSERIALIZED *geom = trgeometry_geom_p(temp);
+  assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-    {
       *count = 1;
-      STBox *result = palloc(sizeof(STBox));
-      trgeoinst_set_stbox(geom, (TInstant *) temp, result);
-      return result;
-    }
+      return trgeoinst_stboxes((TInstant *) temp, geom);
     case TSEQUENCE:
-    {
-      const TSequence *seq = (const TSequence *) temp;
-      if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
-      {
-        *count = seq->count;
-        STBox *result = palloc(sizeof(STBox) * seq->count);
-        for (int i = 0; i < seq->count; i++)
-          trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[i]);
-        return result;
-      }
-      int nboxes = (seq->count == 1) ? 1 : seq->count - 1;
-      STBox *result = palloc(sizeof(STBox) * nboxes);
-      if (seq->count == 1)
-      {
-        trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, 0), &result[0]);
-      }
-      else
-      {
-        for (int i = 0; i < seq->count - 1; i++)
-          trgeoseq_slice_stbox(geom, seq, i, i + 1, &result[i]);
-      }
-      *count = nboxes;
-      return result;
-    }
+      return trgeoseq_stboxes((TSequence *) temp, count, geom);
     default: /* TSEQUENCESET */
-    {
-      const TSequenceSet *ss = (const TSequenceSet *) temp;
-      STBox *result = palloc(sizeof(STBox) * ss->totalcount);
-      int nboxes = 0;
-      for (int i = 0; i < ss->count; i++)
-      {
-        const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-        if (seq->count == 1)
-        {
-          trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, 0),
-            &result[nboxes++]);
-        }
-        else
-        {
-          for (int j = 0; j < seq->count - 1; j++)
-            trgeoseq_slice_stbox(geom, seq, j, j + 1, &result[nboxes++]);
-        }
-      }
-      *count = nboxes;
-      return result;
-    }
+      return trgeoseqset_stboxes((TSequenceSet *) temp, count, geom);
   }
 }
 
-/*****************************************************************************
- * split_n_stboxes function
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
- * @brief Iterator for continuous-interpolation sequences: split into at most
- * box_count boxes for a temporal rigid geometry sequence
+ * @brief Return an array of N spatiotemporal boxes from the instants
+ * of a temporal rigid geometry sequence with discrete interpolation
+ * @param[in] seq Temporal sequence
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+static STBox *
+trgeoseq_disc_split_n_stboxes(const TSequence *seq, int box_count, int *count,
+  const GSERIALIZED *geom)
+{
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(box_count > 0);
+
+  /* One bounding box per instant */
+  if (seq->count <= box_count)
+  {
+    *count = seq->count;
+    return trgeoseq_disc_stboxes(seq, geom);
+  }
+
+  /* One bounding box per several consecutive instants */
+  STBox *result = palloc(sizeof(STBox) * box_count);
+  /* Minimum number of input instants merged together in an output box */
+  int size = seq->count / box_count;
+  /* Number of output boxes that result from merging (size + 1) instants */
+  int remainder = seq->count % box_count;
+  int i = 0; /* Loop variable for input instants */
+  for (int k = 0; k < box_count; k++)
+  {
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[k]);
+    for (int l = i + 1; l < j; l++)
+    {
+      STBox box;
+      trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, l), &box);
+      stbox_expand(&box, &result[k]);
+    }
+    i = j;
+  }
+  assert(i == seq->count);
+  *count = box_count;
+  return result;
+}
+
+/**
+ * @brief Return an array of N spatiotemporal boxes from the segments of a 
+ * temporal rigid geometry sequence with continuous interpolation (iterator
+ * function)
+ * @param[in] seq Temporal rigid geometry
+ * @param[in] box_count Number of boxes
+ * @param[out] result Array of boxes
  */
 static int
-trgeometry_seq_cont_split_n_iter(const TSequence *seq,
-  const GSERIALIZED *geom, int box_count, STBox *result)
+trgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
+  STBox *result, const GSERIALIZED *geom)
 {
-  assert(seq); assert(result);
+  assert(seq); assert(result); assert(tspatial_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  assert(box_count > 0);
+
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, 0), &result[0]);
+    trgeoseq_slice_stbox(geom, seq, 0, 0, &result[0]);
     return 1;
   }
+
+  /* One bounding box per segment */
   int nsegs = seq->count - 1;
   if (nsegs <= box_count)
-  {
-    for (int i = 0; i < nsegs; i++)
-      trgeoseq_slice_stbox(geom, seq, i, i + 1, &result[i]);
-    return nsegs;
-  }
+    return trgeoseq_cont_stboxes_iter(seq, result, geom);
+
+  /* One bounding box per several consecutive segments */
+  /* Minimum number of input segments merged together in an output box */
   int size = nsegs / box_count;
+  /* Number of output boxes that result from merging (size + 1) segments */
   int remainder = nsegs % box_count;
-  int i = 0;
+  int i = 0; /* Loop variable for input segments */
   for (int k = 0; k < box_count; k++)
   {
     int j = i + size;
@@ -364,9 +488,123 @@ trgeometry_seq_cont_split_n_iter(const TSequence *seq,
 }
 
 /**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of N spatiotemporal boxes from the instants or
+ * segments of a temporal rigid geometry sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @return If `seq->count <= box_count`, the result contains one box
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single box in the result to reach the given number of
+ * boxes.
+ */
+STBox *
+trgeoseq_split_n_stboxes(const TSequence *seq, int box_count, int *count,
+  const GSERIALIZED *geom)
+{
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
+  assert(box_count > 0);
+
+  /* Discrete case */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return trgeoseq_disc_split_n_stboxes(seq, box_count, count, geom);
+
+  /* Continuous case */
+  int nboxes = (seq->count <= box_count) ?
+    (seq->count == 1 ? 1 : seq->count - 1) : box_count;
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  *count = trgeoseq_cont_split_n_stboxes_iter(seq, box_count, result, geom);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of N spatiotemporal boxes from the segments of a
+ * temporal rigid geometry sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @return If `ss->totalcount <= box_count`, the result contains one box per
+ * segment. Otherwise, consecutive input segments are combined into a single box
+ * in
+ * the result to reach the given number of boxes.
+ */
+STBox *
+trgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count,
+  const GSERIALIZED *geom)
+{
+  assert(ss); assert(count); assert(tspatial_type(ss->temptype));
+  assert(box_count > 0);
+
+  /* One bounding box per segment */
+  int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  if (ss->totalcount <= box_count)
+    return trgeoseqset_stboxes(ss, count, geom);
+
+  /* Number of bounding boxes per composing sequence determined from the
+   * proportion of seq->count and ss->totalcount */
+  if (ss->count <= box_count)
+  {
+    int nboxes1 = 0;
+    for (int i = 0; i < ss->count; i++)
+    {
+      bool end = false;
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      int nboxes_seq = (int) (box_count * seq->count * 1.0 / ss->totalcount);
+      if (! nboxes_seq)
+        nboxes_seq = 1;
+      if (nboxes_seq + nboxes1 >= box_count)
+      {
+        end = true;
+        nboxes_seq = box_count - nboxes1;
+      }
+      nboxes1 += trgeoseq_cont_split_n_stboxes_iter(seq, nboxes_seq,
+        &result[nboxes1], geom);
+      if (end)
+        break;
+    }
+    assert(nboxes1 <= box_count);
+    *count = nboxes1;
+    return result;
+  }
+
+  /* Merge consecutive sequences to reach the maximum number of boxes */
+  /* Minimum number of sequences merged together in an output box */
+  int size = ss->count / box_count;
+  /* Number of output boxes that result from merging (size + 1) sequences */
+  int remainder = ss->count % box_count;
+  int i = 0; /* Loop variable for input sequences */
+  for (int k = 0; k < box_count; k++)
+  {
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    trgeoseq_cont_split_n_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
+      &result[k], geom);
+    for (int l = i + 1; l < j; l++)
+    {
+      STBox box;
+      trgeoseq_cont_split_n_stboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box,
+        geom);
+      stbox_expand(&box, &result[k]);
+    }
+    i = j;
+  }
+  assert(i == ss->count);
+  *count = box_count;
+  return result;
+}
+
+/**
  * @ingroup meos_rgeo_bbox_split
  * @brief Return an array of N spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal rigid geometry
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal rigid geometry
  * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
@@ -385,100 +623,18 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
     return NULL;
 
   const GSERIALIZED *geom = trgeometry_geom_p(temp);
+  assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return trgeometry_stboxes(temp, count);
+      *count = 1;
+      return trgeoinst_stboxes((TInstant *) temp, geom);
     case TSEQUENCE:
-    {
-      const TSequence *seq = (const TSequence *) temp;
-      if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
-      {
-        if (seq->count <= box_count)
-          return trgeometry_stboxes(temp, count);
-        int size = seq->count / box_count;
-        int remainder = seq->count % box_count;
-        STBox *result = palloc(sizeof(STBox) * box_count);
-        int i = 0;
-        for (int k = 0; k < box_count; k++)
-        {
-          int j = i + size;
-          if (k < remainder)
-            j++;
-          trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[k]);
-          for (int l = i + 1; l < j; l++)
-          {
-            STBox box;
-            trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, l), &box);
-            stbox_expand(&box, &result[k]);
-          }
-          i = j;
-        }
-        assert(i == seq->count);
-        *count = box_count;
-        return result;
-      }
-      int nboxes = (seq->count <= box_count) ?
-        (seq->count == 1 ? 1 : seq->count - 1) : box_count;
-      STBox *result = palloc(sizeof(STBox) * nboxes);
-      *count = trgeometry_seq_cont_split_n_iter(seq, geom, box_count, result);
-      return result;
-    }
+      return trgeoseq_split_n_stboxes((TSequence *) temp, box_count, count,
+        geom);
     default: /* TSEQUENCESET */
-    {
-      const TSequenceSet *ss = (const TSequenceSet *) temp;
-      if (ss->totalcount <= box_count)
-        return trgeometry_stboxes(temp, count);
-      int nboxes = box_count;
-      STBox *result = palloc(sizeof(STBox) * nboxes);
-      if (ss->count <= box_count)
-      {
-        int nboxes1 = 0;
-        for (int i = 0; i < ss->count; i++)
-        {
-          bool end = false;
-          const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-          int nboxes_seq = (int) (box_count * seq->count * 1.0 /
-            ss->totalcount);
-          if (! nboxes_seq)
-            nboxes_seq = 1;
-          if (nboxes_seq + nboxes1 >= box_count)
-          {
-            end = true;
-            nboxes_seq = box_count - nboxes1;
-          }
-          nboxes1 += trgeometry_seq_cont_split_n_iter(seq, geom, nboxes_seq,
-            &result[nboxes1]);
-          if (end)
-            break;
-        }
-        assert(nboxes1 <= box_count);
-        *count = nboxes1;
-        return result;
-      }
-      int size = ss->count / box_count;
-      int remainder = ss->count % box_count;
-      int i = 0;
-      for (int k = 0; k < box_count; k++)
-      {
-        int j = i + size;
-        if (k < remainder)
-          j++;
-        trgeometry_seq_cont_split_n_iter(TSEQUENCESET_SEQ_N(ss, i), geom, 1,
-          &result[k]);
-        for (int l = i + 1; l < j; l++)
-        {
-          STBox box;
-          trgeometry_seq_cont_split_n_iter(TSEQUENCESET_SEQ_N(ss, l), geom, 1,
-            &box);
-          stbox_expand(&box, &result[k]);
-        }
-        i = j;
-      }
-      assert(i == ss->count);
-      *count = box_count;
-      return result;
-    }
+      return trgeoseqset_split_n_stboxes((TSequenceSet *) temp, box_count,
+        count, geom);
   }
 }
 
@@ -487,41 +643,150 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
  *****************************************************************************/
 
 /**
- * @brief Iterator for continuous-interpolation sequences: merge each
- * elems_per_box consecutive segments into one box for a trgeo sequence
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive instants of a temporal rigid geometry sequence with discrete
+ * interpolation
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input instants merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+static STBox *
+trgeoseq_disc_split_each_n_stboxes(const TSequence *seq, int elem_count,
+  int *count, const GSERIALIZED *geom)
+{
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(elem_count > 0);
+
+  int nboxes = ceil((double) seq->count / (double) elem_count);
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  int k = 0;
+  for (int i = 0; i < seq->count; ++i)
+  {
+    if (i % elem_count == 0)
+      trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[k++]);
+    else
+    {
+      STBox box;
+      trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &box);
+      stbox_expand(&box, &result[k - 1]);
+    }
+  }
+  assert(k == nboxes);
+  *count = k;
+  return result;
+}
+
+/**
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive segments of a temporal rigid geometry sequence (iterator
+ * function)
+ * @details The sequence has continuous interpolation.
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input segments merged into an output box
+ * @param[out] result Array of boxes
+ * @return Number of elements in the output array
  */
 static int
-trgeometry_seq_cont_split_each_n_iter(const TSequence *seq,
-  const GSERIALIZED *geom, int elems_per_box, STBox *result)
+trgeoseq_cont_split_each_n_stboxes_iter(const TSequence *seq,
+  int elem_count, STBox *result, const GSERIALIZED *geom)
 {
-  assert(seq); assert(result);
+  assert(seq); assert(result); assert(tspatial_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  assert(elem_count > 0);
+
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     tspatialseq_set_stbox(seq, &result[0]);
     return 1;
   }
-  int nboxes = (int) ceil((double) (seq->count - 1) / (double) elems_per_box);
+
+  /* General case */
+  int nboxes = ceil((double) (seq->count - 1) / (double) elem_count);
   for (int k = 0; k < nboxes; k++)
   {
-    int first = k * elems_per_box;
-    int last = Min(first + elems_per_box, seq->count - 1);
+    int first = k * elem_count;
+    int last = Min(first + elem_count, seq->count - 1);
     trgeoseq_slice_stbox(geom, seq, first, last, &result[k]);
   }
   return nboxes;
 }
 
 /**
- * @ingroup meos_rgeo_bbox_split
- * @brief Return an array of spatiotemporal boxes obtained by merging each N
- * consecutive instants or segments of a temporal rigid geometry
- * @param[in] temp Temporal rigid geometry
- * @param[in] elems_per_box Number of input elements merged per output box
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal rigid geometry sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input segments merged into an output box
  * @param[out] count Number of elements in the output array
+ */
+STBox *
+trgeoseq_split_each_n_stboxes(const TSequence *seq, int elem_count,
+  int *count, const GSERIALIZED *geom)
+{
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
+  assert(elem_count > 0);
+
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return trgeoseq_disc_split_each_n_stboxes(seq, elem_count, count, geom);
+
+  /* Number of instants or segments */
+  int nelems = (seq->count == 1) ? 1 : seq->count - 1;
+  int nboxes = ceil((double) nelems / (double) elem_count);
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  *count = trgeoseq_cont_split_each_n_stboxes_iter(seq, elem_count,
+    result, geom);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive segments of a temporal rigid geometry sequence set 
+ * @param[in] ss Temporal sequence set
+ * @param[in] elem_count Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+STBox *
+trgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elem_count,
+  int *count, const GSERIALIZED *geom)
+{
+  assert(ss); assert(count); assert(tspatial_type(ss->temptype));
+  assert(elem_count > 0);
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return trgeoseq_split_each_n_stboxes(TSEQUENCESET_SEQ_N(ss, 0),
+      elem_count, count, geom);
+
+  /* Iterate for every composing sequence */
+  int nboxes = 0;
+  STBox *result = palloc(sizeof(STBox) * ss->totalcount);
+  for (int i = 0; i < ss->count; ++i)
+    nboxes += trgeoseq_cont_split_each_n_stboxes_iter(
+      TSEQUENCESET_SEQ_N(ss, i), elem_count, &result[nboxes], geom);
+  *count = nboxes;
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_bbox_split
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal rigid geometry
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
  * @errval NULL
  * @csqlfn #Trgeometry_split_each_n_stboxes()
  */
 STBox *
-trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
+trgeometry_split_each_n_stboxes(const Temporal *temp, int elem_count,
   int *count)
 {
   /* The out parameter is defined even when a later check fails */
@@ -529,57 +794,24 @@ trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_positive(elems_per_box))
+  if (! ensure_positive(elem_count))
     return NULL;
 
   const GSERIALIZED *geom = trgeometry_geom_p(temp);
+  assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
       *count = 1;
-      return tspatial_to_stbox(temp);
+      return trgeoinst_stboxes((TInstant *) temp, geom);
     case TSEQUENCE:
-    {
-      const TSequence *seq = (const TSequence *) temp;
-      if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
-      {
-        int nboxes = (int) ceil((double) seq->count / (double) elems_per_box);
-        STBox *result = palloc(sizeof(STBox) * nboxes);
-        int k = 0;
-        for (int i = 0; i < seq->count; i++)
-        {
-          if (i % elems_per_box == 0)
-            trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &result[k++]);
-          else
-          {
-            STBox box;
-            trgeoinst_set_stbox(geom, TSEQUENCE_INST_N(seq, i), &box);
-            stbox_expand(&box, &result[k - 1]);
-          }
-        }
-        assert(k == nboxes);
-        *count = k;
-        return result;
-      }
-      int nelems = (seq->count == 1) ? 1 : seq->count - 1;
-      int nboxes = (int) ceil((double) nelems / (double) elems_per_box);
-      STBox *result = palloc(sizeof(STBox) * nboxes);
-      *count = trgeometry_seq_cont_split_each_n_iter(seq, geom, elems_per_box,
-        result);
-      return result;
-    }
+      return trgeoseq_split_each_n_stboxes((TSequence *) temp, elem_count,
+        count, geom);
     default: /* TSEQUENCESET */
-    {
-      const TSequenceSet *ss = (const TSequenceSet *) temp;
-      int nboxes = 0;
-      STBox *result = palloc(sizeof(STBox) * ss->totalcount);
-      for (int i = 0; i < ss->count; i++)
-        nboxes += trgeometry_seq_cont_split_each_n_iter(TSEQUENCESET_SEQ_N(ss, i),
-          geom, elems_per_box, &result[nboxes]);
-      *count = nboxes;
-      return result;
-    }
+      return trgeoseqset_split_each_n_stboxes((TSequenceSet *) temp,
+        elem_count, count, geom);
   }
 }
+/* GENERATED-BOXSPLIT-END trgeometry */
 
 /*****************************************************************************/

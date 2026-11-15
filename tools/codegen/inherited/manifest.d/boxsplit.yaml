@@ -1,0 +1,150 @@
+# ---------------------------------------------------------------------------
+# Box splitter axis (C generator). The functions returning the boxes of the
+# instants or segments of a temporal value, and splitting them into N boxes or
+# into boxes of N elements each, are the same for every temporal type and box,
+# so each row renders them from templates/boxsplit.c.tmpl into the region
+# between its GENERATED-BOXSPLIT markers in `file`. A row states:
+#   CTYPE, BOXES            the C type of its boxes and the suffix naming them;
+#   INST, SEQ, SEQSET, PFX  the prefixes of its instant, sequence, sequence set
+#                           and public functions;
+#   TYPEP, VALIDATE         the predicate its internal functions assert and the
+#                           macro its public functions validate with;
+#   EXPAND                  the function growing a box to include another;
+#   NCOUNT                  the name of the count parameter of a split into N;
+#   NOUN, NOUNCAP, NOUNBOXES, GROUP, IGROUP, CSTEM  the nouns of its comments,
+#                           its public and internal doxygen groups and the stem
+#                           of its SQL wrappers;
+#   calls                   for each primitive the template calls, the C
+#                           expression it stands for, {0}, {1}, ... being the
+#                           arguments of the call, the first of them the value
+#                           the box is read from.
+# ---------------------------------------------------------------------------
+boxsplit:
+  rows:
+  - row: tgeo
+    file: meos/src/geo/tgeo_boxops.c
+    CTYPE: STBox
+    BOXES: stboxes
+    INST: tgeoinst
+    SEQ: tgeoseq
+    SEQSET: tgeoseqset
+    PFX: tgeo
+    TYPEP: tspatial_type
+    EXPAND: stbox_expand
+    VALIDATE: VALIDATE_TSPATIAL
+    NOUN: temporal geo
+    NOUNCAP: Temporal geo
+    NOUNBOXES: spatiotemporal boxes
+    GROUP: meos_geo_bbox_split
+    IGROUP: meos_internal_geo_bbox
+    CSTEM: Tgeo
+    NCOUNT: box_count
+    CTXDECL: ''
+    CTXPASS: ''
+    CTXINIT: ''
+    calls:
+      INSTSET: tspatialinst_set_stbox({1}, {2})
+      SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})
+      SEQBOX: tspatialseq_set_stbox({0}, {1})
+  - row: tnumber
+    file: meos/src/temporal/temporal_boxops.c
+    CTYPE: TBox
+    BOXES: tboxes
+    INST: tnumberinst
+    SEQ: tnumberseq
+    SEQSET: tnumberseqset
+    PFX: tnumber
+    TYPEP: tnumber_type
+    EXPAND: tbox_expand
+    VALIDATE: VALIDATE_TNUMBER
+    NOUN: temporal number
+    NOUNCAP: Temporal number
+    NOUNBOXES: temporal boxes
+    GROUP: meos_temporal_bbox_split
+    IGROUP: meos_internal_temporal_bbox
+    CSTEM: Tnumber
+    NCOUNT: box_count
+    CTXDECL: ''
+    CTXPASS: ''
+    CTXINIT: ''
+    calls:
+      INSTSET: tnumberinst_set_tbox({1}, {2})
+      SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})
+      SEQBOX: tnumberseq_set_tbox({0}, {1})
+  - row: temporal
+    file: meos/src/temporal/temporal_boxops.c
+    CTYPE: Span
+    BOXES: spans
+    INST: tinstant
+    SEQ: tsequence
+    SEQSET: tsequenceset
+    PFX: temporal
+    TYPEP: temporal_type
+    EXPAND: span_expand
+    VALIDATE: VALIDATE_NOT_NULL
+    NOUN: temporal value
+    NOUNCAP: Temporal value
+    NOUNBOXES: spans
+    GROUP: meos_temporal_bbox_split
+    IGROUP: meos_internal_temporal_bbox
+    CSTEM: Temporal
+    NCOUNT: span_count
+    CTXDECL: ''
+    CTXPASS: ''
+    CTXINIT: ''
+    calls:
+      INSTSET: tinstant_set_span({1}, {2})
+      SLICE: tsequence_set_tstzspan_slice({0}, {1}, {2}, {3})
+      SEQBOX: '*({1}) = ({0})->period'
+  - row: trgeometry
+    file: meos/src/rgeo/trgeo_boxops.c
+    CTYPE: STBox
+    BOXES: stboxes
+    INST: trgeoinst
+    SEQ: trgeoseq
+    SEQSET: trgeoseqset
+    PFX: trgeometry
+    TYPEP: tspatial_type
+    EXPAND: stbox_expand
+    VALIDATE: VALIDATE_TRGEOMETRY
+    NOUN: temporal rigid geometry
+    NOUNCAP: Temporal rigid geometry
+    NOUNBOXES: spatiotemporal boxes
+    GROUP: meos_rgeo_bbox_split
+    IGROUP: meos_internal_geo_bbox
+    CSTEM: Trgeometry
+    NCOUNT: box_count
+    CTXDECL: ', const GSERIALIZED *geom'
+    CTXPASS: ', geom'
+    CTXINIT: '  const GSERIALIZED *geom = trgeometry_geom_p(temp);
+
+      '
+    calls:
+      INSTSET: trgeoinst_set_stbox(geom, {1}, {2})
+      SLICE: trgeoseq_slice_stbox(geom, {0}, {1}, {2}, {3})
+      SEQBOX: tspatialseq_set_stbox({0}, {1})
+  - row: tpointcloud
+    file: meos/src/pointcloud/tpc_boxops.c
+    CTYPE: TPCBox
+    BOXES: tpcboxes
+    INST: tpointcloudinst
+    SEQ: tpointcloudseq
+    SEQSET: tpointcloudseqset
+    PFX: tpointcloud
+    TYPEP: tpointcloud_temptype
+    EXPAND: tpcbox_expand
+    VALIDATE: VALIDATE_TPOINTCLOUD
+    NOUN: temporal point cloud value
+    NOUNCAP: Temporal point cloud value
+    NOUNBOXES: point cloud boxes
+    GROUP: meos_pointcloud_bbox_split
+    IGROUP: meos_internal_pointcloud_bbox
+    CSTEM: Tpointcloud
+    NCOUNT: box_count
+    CTXDECL: ''
+    CTXPASS: ''
+    CTXINIT: ''
+    calls:
+      INSTSET: tpointcloudinst_set_tpcbox({1}, {2})
+      SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})
+      SEQBOX: tsequence_set_bbox_slice({0}, 0, 0, {1})
