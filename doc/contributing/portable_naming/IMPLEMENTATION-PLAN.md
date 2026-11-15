@@ -101,9 +101,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   calls, and each family's fix is one PR with a witness under `meos/test` that a Release build of
   master ends in a crash. The ever and always comparisons of two temporal JSONB, MERGED as
   MobilityDB #3716 (`7fcf4c6049`); the text functions validating once with internal twins for the
-  walks, MobilityDB #3717; the extended hash of a pose, MobilityDB #3718; the geometry of an array
-  of circular buffers, MobilityDB #3719. The expandable array, the setup setters and the window of
-  the moving aggregates follow, each on its own branch.
+  walks, MERGED as MobilityDB #3717 (`96d3099a2b`); the extended hash of a pose, MERGED as
+  MobilityDB #3718 (`535317679d`); the geometry of an array of circular buffers, MERGED as
+  MobilityDB #3719 (`fbcfc79d43`); the setters of the styles and the CSV files, MERGED as
+  MobilityDB #3720 (`3d16da56a5`). The expandable array and the window of the moving aggregates
+  follow, each on its own branch.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
