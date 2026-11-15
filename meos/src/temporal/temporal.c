@@ -632,6 +632,36 @@ ensure_positive_duration(const Interval *duration)
   return false;
 }
 
+/**
+ * @brief Return true if an interval is the window of an aggregate: none of its
+ * fields is negative and they are not all zero, so that adding it moves every
+ * timestamp forward
+ * @details A window may hold months, which #positive_duration refuses for the
+ * size of a tile, since a month moves a timestamp forward whatever its length
+ */
+bool
+positive_window(const Interval *interv)
+{
+  return interv->month >= 0 && interv->day >= 0 && interv->time >= 0 &&
+    (interv->month > 0 || interv->day > 0 || interv->time > 0);
+}
+
+/**
+ * @brief Ensure that an interval is the window of an aggregate, as
+ * #ensure_positive_duration ensures the duration of a tile
+ */
+bool
+ensure_positive_window(const Interval *interv)
+{
+  if (positive_window(interv))
+    return true;
+  char *str = pg_interval_out(interv);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The window must be positive with no negative field: %s", str);
+  pfree(str);
+  return false;
+}
+
 /*****************************************************************************
  * Reference geometry of the temporal types that carry one
  *****************************************************************************/

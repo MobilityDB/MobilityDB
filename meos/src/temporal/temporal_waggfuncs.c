@@ -546,6 +546,7 @@ SkipList *
 temporal_wagg_transfn(SkipList *state, const Temporal *temp,
   const Interval *interv, datum_func2 func, bool min, bool crossings)
 {
+  assert(temp); assert(interv); assert(positive_window(interv));
   if (temp->subtype != TINSTANT && ! MEOS_FLAGS_DISCRETE_INTERP(temp->flags) &&
       temp->temptype == T_TFLOAT && func == &datum_sum_float8)
   {
@@ -572,6 +573,7 @@ temporal_wagg_transform_transfn(SkipList *state, const Temporal *temp,
   const Interval *interv, datum_func2 func,
   TSequence ** (*transform)(const Temporal *, const Interval *, int *))
 {
+  assert(temp); assert(interv); assert(positive_window(interv));
   int count;
   TSequence **sequences = transform(temp, interv, &count);
   SkipList *result = tcontseq_tagg_transfn(state, sequences[0], func, false);
@@ -586,11 +588,14 @@ temporal_wagg_transform_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tint_wmin_transfn()
  * @csqlaggfn #wMinTransition()
+ * @errval NULL
  */
 SkipList *
 tint_wmin_transfn(SkipList *state, const Temporal *temp,
@@ -602,6 +607,9 @@ tint_wmin_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_min_int32,
     GET_MIN, CROSSINGS);
 }
@@ -609,11 +617,14 @@ tint_wmin_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wmin_transfn()
  * @csqlaggfn #wMinTransition()
+ * @errval NULL
  */
 SkipList *
 tbigint_wmin_transfn(SkipList *state, const Temporal *temp,
@@ -625,6 +636,9 @@ tbigint_wmin_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TBIGINT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_min_int64,
     GET_MIN, CROSSINGS);
 }
@@ -632,11 +646,14 @@ tbigint_wmin_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wmin_transfn()
  * @csqlaggfn #wMinTransition()
+ * @errval NULL
  */
 SkipList *
 tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
@@ -648,6 +665,9 @@ tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_min_float8,
     GET_MIN, CROSSINGS);
 }
@@ -655,11 +675,14 @@ tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tint_wmax_transfn()
  * @csqlaggfn #wMaxTransition()
+ * @errval NULL
  */
 SkipList *
 tint_wmax_transfn(SkipList *state, const Temporal *temp,
@@ -671,6 +694,9 @@ tint_wmax_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_max_int32,
     GET_MAX, CROSSINGS);
 }
@@ -678,11 +704,14 @@ tint_wmax_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wmax_transfn()
  * @csqlaggfn #wMaxTransition()
+ * @errval NULL
  */
 SkipList *
 tbigint_wmax_transfn(SkipList *state, const Temporal *temp,
@@ -694,6 +723,9 @@ tbigint_wmax_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TBIGINT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_max_int64,
     GET_MAX, CROSSINGS);
 }
@@ -701,11 +733,14 @@ tbigint_wmax_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wmax_transfn()
  * @csqlaggfn #wMaxTransition()
+ * @errval NULL
  */
 SkipList *
 tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
@@ -717,6 +752,9 @@ tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_max_float8,
     GET_MAX, CROSSINGS);
 }
@@ -724,11 +762,14 @@ tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tint_wsum_transfn()
  * @csqlaggfn #wSumTransition()
+ * @errval NULL
  */
 SkipList *
 tint_wsum_transfn(SkipList *state, const Temporal *temp,
@@ -740,6 +781,9 @@ tint_wsum_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_sum_int32,
     GET_MIN, CROSSINGS_NO);
 }
@@ -747,11 +791,14 @@ tint_wsum_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wsum_transfn()
  * @csqlaggfn #wSumTransition()
+ * @errval NULL
  */
 SkipList *
 tbigint_wsum_transfn(SkipList *state, const Temporal *temp,
@@ -763,6 +810,9 @@ tbigint_wsum_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TBIGINT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_sum_int64,
     GET_MIN, CROSSINGS_NO);
 }
@@ -770,11 +820,14 @@ tbigint_wsum_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wsum_transfn()
  * @csqlaggfn #wSumTransition()
+ * @errval NULL
  */
 SkipList *
 tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
@@ -786,6 +839,9 @@ tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_sum_float8,
     GET_MIN, CROSSINGS_NO);
 }
@@ -793,11 +849,14 @@ tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal average of temporal numbers
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tnumber_wavg_transfn()
  * @csqlaggfn #wAvgTransition()
+ * @errval NULL
  */
 SkipList *
 tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
@@ -809,6 +868,9 @@ tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_tnumber_type(temp->temptype))
     return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return
   temporal_wagg_transform_transfn(state, temp, interv, &datum_sum_double2,
     &tnumber_transform_wavg);
@@ -818,11 +880,14 @@ tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count of temporal values over a
  * moving window
+ * @details The interval is the window, none of its fields negative and not
+ * all of them zero (#positive_window)
  * @param[in,out] state Current aggregate state @nullable
  * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Temporal_wcount_transfn()
  * @csqlaggfn #wCountTransition()
+ * @errval NULL
  */
 SkipList *
 temporal_wcount_transfn(SkipList *state, const Temporal *temp,
@@ -831,6 +896,10 @@ temporal_wcount_transfn(SkipList *state, const Temporal *temp,
   /* Null temporal: return state */
   if (! temp)
     return state;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_positive_window(interv))
+    return NULL;
   return
   temporal_wagg_transform_transfn(state, temp, interv, &datum_sum_int32,
     &temporal_transform_wcount);
