@@ -594,7 +594,7 @@ polynomials in sums from 2^-1000 to 2^1000, a third of them ties and a third one
 GMP agrees with this one on every polynomial and with master's on 59 211, master's failing
 only where a product leaves its range (none to 2^20, 66 of 50 000 to 2^100). A call costs
 441 to 435 instructions on the buffer, where the filters decide, 2664 to 3938 on the S2 corners
-and 935 to 1279 on the dwithin walk, which reach the expansions. It is open as #3709, its
+and 935 to 1279 on the dwithin walk, which reach the expansions. It is merged as #3709 (`fc64ae3893` on master), its
 receipts strict CI, cppcheck, valgrind, smoke, the oracle (18 CGAL witnesses) and speed, 25 of
 the 26 cells at parity as on EA5; strict CI's `meos/test` step found that the first form of the
 predicate read sums its caller leaves unset, and the predicate forms a sum only when a term
