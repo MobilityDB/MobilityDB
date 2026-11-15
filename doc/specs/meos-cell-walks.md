@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.4.0 |
+| Version | v0.5.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split and the QUADBIN, S2 and H3 cells, and how the instant a trajectory crosses from one cell to the next is dated |
-| Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices and owner) |
+| Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices, owner and outline), `meos/src/s2cell/ts2cell_ops.c` (S2 cells of a trajectory), `meos/src/temporal/tcellindex.c` (the walk the grids share) |
 
 ## 1. Scope and intent
 
@@ -60,9 +60,8 @@ icosahedron can turn back at its extra vertex.
 Each decision is an exact sign computed on the input doubles, never a
 comparison within a tolerance, so two neighbouring cells read every shared
 point identically and no point is held by none or by two. The tiles of a box
-grid, the QUADBIN cells and the planar and geodetic H3 cells of a position
-and of a trajectory follow the rule; the S2 cells follow it from the version
-section 8 lists. For H3, two
+grid, the QUADBIN cells, the planar and geodetic H3 cells and the planar S2
+cells of a position and of a trajectory follow the rule. For H3, two
 neighbours state their shared vertex with the same doubles: the outline of a
 cell is read from the vertex index of the library, and the extra vertex of
 an edge crossing a face of the icosahedron from the directed edge leaving
@@ -158,6 +157,18 @@ pole being stated at any of them.
   -- t | f | t
   ```
 
+### Planar S2
+
+- **A planar cell is its outline**: its four vertices (section 4) joined by
+  straight lines in longitude and latitude, holding its interior, its low-i
+  and low-j edges and the corner between them (section 3). A corner at a pole
+  reads as two vertices on the latitude of the pole, at the longitudes of the
+  two meridians meeting there, and a position on that latitude is the pole,
+  held by the cell whose held corner it is. The cells of level 0 of the faces
+  2 and 5 are the regions between their rings and the poles.
+- **The cell of a position** of a `geometry` or a `tgeompoint` is the cell
+  whose outline holds it, decided by exact signs on the input coordinates.
+
 ### Geodetic H3
 
 - **A geodetic cell is the region its outline bounds on the sphere**, each
@@ -218,6 +229,22 @@ FROM ring;
 --  (85c4e06bfffffff@Mon Jan 01 00:00:00 2001 PST, 85c4e06bfffffff@Wed Jan 03 00:00:00 2001 PST]}
 ```
 
+The planar S2 cells of a trajectory are walked on the outlines of section 5,
+each crossing dated by the truncation of its exact parameter. The outline of
+face 2 at level 0 has its four corners on the latitude 35.26, so the parallel
+44.5 stays in it, one cell from the first instant to the last, as the great
+circle between the same positions stays in face 2:
+
+```sql
+SELECT numInstants(t), numValues(getValues(t)), startValue(t) = endValue(t),
+  numValues(getValues(ts2cell(tgeogpoint
+    '[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 0)))
+FROM (SELECT ts2cell(tgeompoint
+  'SRID=4326;[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 0) AS t)
+  AS q;
+-- 2 | 1 | t | 1
+```
+
 The geodetic H3 cells of a trajectory are walked on the regions of section 5,
 the position moving at constant angular speed along the great circle of its
 segment, so a crossing is dated by the truncation of its exact fraction of
@@ -245,6 +272,7 @@ number with corrections of wording.
 | v0.2.0 | The planar H3 cell of a position and the planar H3 cells of a trajectory, walked and dated on the outlines |
 | v0.3.0 | The geodetic H3 cell of a position and the geodetic H3 cells of a trajectory, walked on great-circle outlines and dated at constant angular speed |
 | v0.4.0 | The vertices of an S2 cell, the exact corners of the cube, a corner on the antimeridian or at a pole taking the longitude its cell gives it |
+| v0.5.0 | The planar S2 cell of a position and the planar S2 cells of a trajectory, walked and dated on the straight-edged outlines |
 
 ## 8. Out of scope
 
@@ -255,7 +283,6 @@ versions):
 
 - the geodetic walk of S2, its crossings dated on the great-circle arc at
   constant angular speed;
-- the S2 walk and point function;
 - the vertices of an H3 cell computed from H3's own formula, so that every
   build of the library reads the same outline;
 - the raster values along a trajectory, read pixel by pixel by the same rule.
