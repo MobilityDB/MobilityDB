@@ -111,7 +111,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   bindings in `doc/specs/meos-empty-geometries.md`, by the owner's request ("this should be
   explicitly added as a document or section in a user .md documentation"), MERGED as
   MobilityDB #3721 (`79306e3b04`). By that rule, `line_locate_point` answers no fraction for an
-  empty line or point, MERGED as MobilityDB #3736 (`4d15aca7a5`).
+  empty line or point, MERGED as MobilityDB #3736 (`4d15aca7a5`). The moving aggregates split a
+  step sequence exclusively into its runs, as the cell walks split a value, OPEN as MobilityDB
+  #3740 (`96419f70bb`); `geopoint_eq` asserts the reference system and the geodetic flag of the
+  points it compares, OPEN as MobilityDB #3739 (`ba8346315b`): CGAL agrees with every row of its
+  relate and linear union corpora (manifest `~/cpwork/contract/geopoint.manifest`).
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
