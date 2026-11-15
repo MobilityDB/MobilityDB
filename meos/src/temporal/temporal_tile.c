@@ -743,6 +743,9 @@ spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc,
 Span *
 intspan_bins(const Span *s, int vsize, int vorigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPAN(s, NULL);
   return span_bins(s, Int32GetDatum(vsize), Int32GetDatum(vorigin), border_inc,
@@ -764,6 +767,9 @@ Span *
 bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, bool border_inc,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPAN(s, NULL);
   return span_bins(s, Int64GetDatum(vsize), Int64GetDatum(vorigin), border_inc,
@@ -785,6 +791,9 @@ Span *
 floatspan_bins(const Span *s, double vsize, double vorigin, bool border_inc,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
   if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
@@ -808,6 +817,9 @@ Span *
 datespan_bins(const Span *s, const Interval *duration, DateADT torigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
@@ -830,6 +842,9 @@ Span *
 tstzspan_bins(const Span *s, const Interval *duration, TimestampTz torigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
@@ -854,6 +869,9 @@ Span *
 intspanset_bins(const SpanSet *ss, int vsize, int vorigin, bool border_inc,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPANSET(ss, NULL);
   return spanset_bins(ss, Int32GetDatum(vsize), Int32GetDatum(vorigin),
@@ -875,6 +893,9 @@ Span *
 bigintspanset_bins(const SpanSet *ss, int64 vsize, int64 vorigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPANSET(ss, NULL);
   return spanset_bins(ss, Int64GetDatum(vsize), Int64GetDatum(vorigin),
@@ -896,6 +917,9 @@ Span *
 floatspanset_bins(const SpanSet *ss, double vsize, double vorigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
   if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
@@ -919,6 +943,9 @@ Span *
 datespanset_bins(const SpanSet *ss, const Interval *duration,
   DateADT torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPANSET(ss, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
@@ -941,6 +968,9 @@ Span *
 tstzspanset_bins(const SpanSet *ss, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
@@ -2573,6 +2603,7 @@ temporal_time_split(const Temporal *temp, const Interval *duration,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
+  VALIDATE_NOT_NULL(bins, NULL);
   if (! ensure_positive_duration(duration))
     return NULL;
 
