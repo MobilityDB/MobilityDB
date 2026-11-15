@@ -28,7 +28,7 @@ holds the rulings of the owner on the time types and points here for the work.
 | Note | What it states |
 |---|---|
 | [Assessment](ASSESSMENT.md) | The MEOS conversions of the six types, and every cast of every binding: its mechanism, what it gets wrong and the types it has no cast for |
-| [Implementation plan](IMPLEMENTATION-PLAN.md) | The pull request that makes each binding cast through MEOS, in order, and its state |
+| [Implementation plan](IMPLEMENTATION-PLAN.md) | The pull request that makes each binding cast through MEOS, in order, and its state; MobilityNebula on one line (rows NL); the errors across the bindings |
 
 ## Where things stand
 

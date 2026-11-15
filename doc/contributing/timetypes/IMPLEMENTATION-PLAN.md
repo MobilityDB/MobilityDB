@@ -41,9 +41,44 @@ measured value.
 | TT-9 | MEOS.js | a cast of `Date` and of the counts as `bigint` through the MEOS conversions; `interval` through its parts in place of the C wrappers reading a month as 30 days | the surface refreshed from the catalog of master MERGED as MEOS.js #60 (main's WebAssembly module did not build against master, `trgeometry_out` taking its digits); every integer of 64 bits a `bigint` and every one of 32 bits a `number` MERGED as MEOS.js #61 (the owner 2026-11-14: "yes, apply the 64-bit rule to all"), a TimestampTz of 2^53 + 1 microseconds crossing unrounded; the casts MERGED as MEOS.js #62: a timestamptz and a `Date` floored to the millisecond, as MobilityNebula reads its milliseconds, an interval, a time and a time with time zone as their parts, the three C wrappers gone |
 | TT-10 | meos-rs | `chrono` types through the MEOS conversions; `stbox.tmax`, `create_interval` and the `contains` of the date spans measured and fixed with them | on both FFI designs, which stay open for the choice with David (IO-S8 of MobilityDB #3353): each refreshed to MobilityDB `5297c3b9f5` and given the same casts commit, pushed to `bump/meos-1.4` (`24392eb8fa`) and `bump/meos-1.4-bindgen` (`349edc6dcb`); `create_interval` wrote a day as `(0, 1, 86400000000)`, two days, and seven examples of the shifts and scales encoded it; the `contains` of the date spans passed the days from year 1 and that of the timestamp spans called `contains_span_date`, so `[2023-01-01, 2023-01-15)` answered false for 2023-01-05; 26 unit and 108 doc tests pass on each; the pull request opens with the chosen design |
 | TT-11 | MobilityDuck | `time_util.hpp` through the MEOS conversions, the infinities of DuckDB mapped to those of MEOS, which refuses them where they enter a value (TT-18), as it refuses its own. DuckDB's `TIME`, `TIMETZ` and `TIMESTAMP` take no cast: MobilityDuck projects MobilityDB's SQL surface, and none of the 65, 30 and 29 public functions of the catalog taking or answering `Timestamp`, `TimeADT` and `TimeTzADT` carries an SQL function, DuckDB's own types serving as PostgreSQL's serve MobilityDB | MERGED as MobilityDuck #564, its test asserting no value holding an infinity; the refusals asserted once MobilityDuck's MEOS holds TT-18 (the open refresh MobilityDuck #563 pins `2f89e4e629`, before it) |
-| TT-12 | MobilityNebula | `MEOSWrapper.cpp` and the hand-written operators through the casts of the kernel runtime, in place of the text of whole seconds; the milliseconds of NebulaStream stated exactly, an instant below a millisecond or before 1970 refused | after TT-5 |
+| TT-12 | MobilityNebula | `MEOSWrapper.cpp` and the hand-written operators through the casts of the kernel runtime, in place of the text of whole seconds; the milliseconds of NebulaStream stated exactly, an instant below a millisecond or before 1970 refused | on `next` (NL below), the generated kernels cast every `timestamptz` through `MeosRuntime::timestamptz`, which calls `unix_us_to_timestamptz` and `timestamptz_to_unix_us` (MobilityNebula #242); `Meos::convertSecondsToTimestamp` and `Meos::convertEpochToTimestamp` of `nes-plugins/MEOS/MEOSWrapper.cpp`, the text of whole seconds, have no caller there and go in their own pull request into `next`; `main` is frozen (NL-0) |
 | TT-13 | MobilityFlink, MobilityKafka, MobilitySpark | the benchmarks' timestamps through the casts of JMEOS | after TT-4 |
 | TT-14 | MobilityAPI-Python | none of its own: it holds MEOS values only through PyMEOS (`mobilityapi/wire.py` decodes them with `pymeos`) and passes every other time to MobilityDB as SQL text, which PostgreSQL's input functions read; its casts are PyMEOS's | follows TT-5 and TT-6 |
+
+## MobilityNebula on one line
+
+The owner 2026-11-15: "we need to fix this next vs main problem. IMHO no other
+binding has this duplication". MobilityNebula holds two lines with no common
+commit: `main`, NebulaStream's files of July 2025 committed as a new history,
+with the MEOS surface written into the engine's directories, and `next`,
+NebulaStream's main with its history, the MEOS types and functions a plugin
+generated from the catalog (`nes-plugins/MEOS`, MobilityNebula #242). As every
+other binding stands on its host unchanged and adds a layer generated from
+MEOS, MobilityNebula keeps `next`: what MEOS answers goes into the generated
+plugin, what the engine lacks goes to NebulaStream as a pull request and is
+carried on `next` while NebulaStream lacks it, and the tests, queries and
+data of `main` move unchanged. Each row is one pull request into `next`, on a
+fork branch of any machine; a row names its branch once it has one.
+
+| Row | What `main` holds | On `next` | State |
+|---|---|---|---|
+| NL-0 | the line itself | `main` takes no pull request; MobilityNebula #243 closed (its compiler cache moves to NL-11) | DONE 2026-11-15 |
+| NL-1 | arrays of MEOS values (#227) | `FunctionLayer.nes_type` maps `T[]` to the type `T_ARRAY`, `TypeLayer.array_source` writes it and the table of the types registers it: 1091 functions over 8364 signatures, from 1079 over 8149; `meos_arrays.test` and `meos_timestamps.test` per row over trips read from text, the expected rows libmeos's. The `timestamptz` of #228 is already on `next` (TT-12) | branch `feat/next-timestamps-arrays`, built and tested before its pull request |
+| NL-2 | the aggregates generated from the catalog (#221, #222) | the engine: the parser builds an aggregate the `AggregationLogicalFunctionRegistry` holds by its name (NebulaStream's parser builds COUNT, AVG, MAX, MIN, SUM and MEDIAN only) and the registry's arguments carry the query's literals, a pull request to NebulaStream carried on `next`; then the plugin: the `AggregateLayer` of the generator over the catalog's `aggregates`, its runtime, and `main`'s `meos_aggregates.test` with the queries of `meos_arrays.test` and `meos_timestamps.test` over `mergeAgg`, `extent` and `setUnionAgg`. The hand-written `tools/codegen/aggregation-descriptor.json` of #209 does not move: an aggregate it lists and the catalog lacks is a tag missing in MEOS | after NL-1 |
+| NL-3 | the reachability filter (#229) | the plugin, generated, with `meos_reachability_filter.test` | after NL-2 |
+| NL-4 | the operands of AND and OR checked as inferred (#235), the ON condition of a join built as a WHERE condition (#236) | engine fixes: pull requests to NebulaStream, carried on `next` | |
+| NL-5 | CROSS JOIN UNNEST (#230) | engine, as NL-4, with `meos_unnest.test` | after NL-1 |
+| NL-6 | a stream joined with a table of VALUES (#231) | engine, as NL-4, with `meos_inline_table_join.test` | |
+| NL-7 | COUNT(DISTINCT x) (#233) | engine, as NL-4; ESTEBAN-WORKSTATION holds unpushed drafts `feat/count-distinct` and `feat/aggregate-filter` on `next`, read first | |
+| NL-8 | a watermark allowing a lateness (#224) | engine, as NL-4 | |
+| NL-9 | session windows (#225) | engine, as NL-4, with `meos_session_aggregates.test` | after NL-2 |
+| NL-10 | the BerlinMOD and SNCB queries and data (`Queries/`, `Input/`, `Tests/`, #207), the streaming-parity harness (`tools/streaming_parity`, #208), every system test of `main` not yet on `next` | moved unchanged | after NL-2 to NL-9 |
+| NL-11 | the local build (#243) | `tools/codegen/build_local.sh` running `next`'s Container Build steps in the Nix devShell, one compiler cache for every worktree | |
+| NL-12 | the switch | its acceptance: each system test of `main` runs on `next` with `main`'s answers, and each pull request of `main` since #199 maps to a row above; then `main`'s head is tagged, `main` renamed to `legacy/main` and `next` to `main` (GitHub moves the default branch and the open pull requests with a rename), its workflows and README stating one line. The owner's go is asked before the renames | after NL-1 to NL-11 |
+
+The one line merges NebulaStream's main; a change NebulaStream holds replaces
+its carried copy at that merge, and the target is an engine identical to
+NebulaStream's.
 
 ## After the time types: errors across the bindings
 
