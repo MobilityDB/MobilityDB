@@ -1972,8 +1972,6 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
   return 2;
 }
 
-/** Number of doubles of the arena in which #polynomial_sign_stack forms each
- * term, and of each of its two buffers of the total */
 /**
  * @brief Return the sign of a polynomial in exact sums where its filters
  * carry it, and 2 where they cannot tell
@@ -12668,8 +12666,8 @@ arcseg_arena_alloc(ArcsegArena *arena, int ndoubles)
  * @brief Return true where the buffer of an arena holds room for
  * @p ndoubles past the values it holds
  * @details A sum or a product is formed in that room, at
- * `arena->buf + arena->used`, with its scratch, as #polynomial_sign_stack
- * lays out a term, and its compressed result, written at the start of the
+ * `arena->buf + arena->used`, with its scratch (#arcseg_x_add,
+ * #arcseg_x_mul), and its compressed result, written at the start of the
  * room, is all the arena keeps (#arcseg_arena_keep): the scratch, and the
  * components compression merges, cost no room after it
  */
