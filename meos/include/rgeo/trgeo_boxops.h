@@ -58,4 +58,12 @@ extern void trgeoinstarr_compute_bbox(const GSERIALIZED *geom,
 
 /*****************************************************************************/
 
+extern STBox *trgeoinst_stboxes(const TInstant *inst, const GSERIALIZED *geom);
+extern STBox *trgeoseq_stboxes(const TSequence *seq, int *count, const GSERIALIZED *geom);
+extern STBox *trgeoseqset_stboxes(const TSequenceSet *ss, int *count, const GSERIALIZED *geom);
+extern STBox *trgeoseq_split_n_stboxes(const TSequence *seq, int box_count, int *count, const GSERIALIZED *geom);
+extern STBox *trgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count, const GSERIALIZED *geom);
+extern STBox *trgeoseq_split_each_n_stboxes(const TSequence *seq, int elem_count, int *count, const GSERIALIZED *geom);
+extern STBox *trgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elem_count, int *count, const GSERIALIZED *geom);
+
 #endif /* __TRGEO_BOXOPS_H__ */

@@ -57,8 +57,9 @@
 #define MAXZOOM 10
 
 /* The latitude limit of Web Mercator, the bound of the grid beyond which the
- * first and the last rows extend to the poles */
-#define LIMIT 85.051128779806604
+ * first and the last rows extend to the poles: the double nearest
+ * atan(sinh(pi)) in degrees */
+#define LIMIT 85.05112877980659
 
 /* The longest planar walk of a test segment, from the centre of a tile to a
  * bound of another tile of the same column or row */

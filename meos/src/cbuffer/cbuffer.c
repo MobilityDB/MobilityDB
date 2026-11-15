@@ -725,13 +725,20 @@ geom_to_cbuffer(const GSERIALIZED *gs)
 /**
  * @ingroup meos_cbuffer_base_conversion
  * @brief Return a geometry converted from an array of circular buffers
+ * @details Tests its arguments as #cbufferarr_round does; a single buffer
+ * answers its own geometry
  * @param[in] cbarr Array of circular buffers
  * @param[in] count Number of elements in the input array
+ * @errval NULL
  */
 GSERIALIZED *
 cbufferarr_to_geom(const Cbuffer **cbarr, int count)
 {
-  assert(cbarr); assert(count > 1);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cbarr, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
   /* SRID of the first element of the array */
   int32_t srid = cbuffer_srid(cbarr[0]);

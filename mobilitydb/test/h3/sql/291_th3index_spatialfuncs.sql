@@ -194,15 +194,16 @@ FROM steps, generate_series(1, 19) AS i;
 -- every step meets. The dilation absorbs the departure at the resolutions
 -- whose shortest cell edge exceeds it; a step cut in three before its cover
 -- is walked departs by a ninth as much. The instants of the cut are uneven in
--- time, so that the sequence keeps them.
+-- time, so that the sequence keeps them. The covers are materialized so that
+-- the cover of a step is computed once and not for each of its regions.
 WITH origin(o) AS (
   SELECT ST_Transform(geometry 'SRID=4326;POINT(16 59)', 25832)),
 steps AS (
   SELECT h, o AS a, ST_Translate(o, 30900 * cosd(h), 30900 * sind(h)) AS b
   FROM origin, generate_series(0, 345, 15) AS h),
-cases AS (
-  SELECT r AS res, cut,
-    transform(CASE WHEN cut = 1 THEN
+covers AS MATERIALIZED (
+  SELECT a, b, r AS res, cut,
+    getValues(th3index(transform(CASE WHEN cut = 1 THEN
       format('[%s@2026-01-01 08:00:00+00, %s@2026-01-01 09:00:00+00]',
         ST_AsEWKT(a), ST_AsEWKT(b))
     ELSE
@@ -210,13 +211,15 @@ cases AS (
         '%s@2026-01-01 08:40:00+00, %s@2026-01-01 09:00:00+00]',
         ST_AsEWKT(a), ST_AsEWKT(ST_LineInterpolatePoint(ST_MakeLine(a, b), 1 / 3.0)),
         ST_AsEWKT(ST_LineInterpolatePoint(ST_MakeLine(a, b), 2 / 3.0)), ST_AsEWKT(b))
-    END::tgeompoint, 4326) AS trip,
+    END::tgeompoint, 4326), r)) AS cells
+  FROM steps, generate_series(7, 12) AS r, (VALUES (1), (3)) AS cc(cut)),
+cases AS (
+  SELECT res, cut, cells,
     ST_Transform(ST_Expand(ST_LineInterpolatePoint(ST_MakeLine(a, b), i / 20.0), 0.5),
       4326) AS region
-  FROM steps, generate_series(1, 19) AS i, generate_series(7, 12) AS r,
-    (VALUES (1), (3)) AS cc(cut))
+  FROM covers, generate_series(1, 19) AS i)
 SELECT res, cut, count(*) AS cases,
-  bool_and(getValues(th3index(trip, res)) && gridDisk(geoToH3IndexSet(region, res), 1)) AS dilated
+  bool_and(cells && gridDisk(geoToH3IndexSet(region, res), 1)) AS dilated
 FROM cases
 GROUP BY res, cut
 ORDER BY res, cut;

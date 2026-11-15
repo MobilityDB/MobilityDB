@@ -67,6 +67,11 @@
  * to #jsonbset_set_lax and #tjsonb_set_lax, and that the lax form treats a null
  * value as its treatment states.
  *
+ * It verifies that the ever and always comparisons of two temporal JSONB,
+ * #ever_eq_tjsonb_tjsonb, #ever_ne_tjsonb_tjsonb, #always_eq_tjsonb_tjsonb and
+ * #always_ne_tjsonb_tjsonb, report a null value and a value of another type
+ * by answering -1 and setting #meos_errno, and compare two temporal JSONB.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o json_validity_test json_validity_test.c -L/usr/local/lib -lmeos
@@ -445,6 +450,39 @@ int main(void)
     "tjsonb_set_lax(tjsonb, {units}, NULL, delete_key)");
   free(t);
   free(mph); free(delete_key);
+
+  /* The ever and always comparisons of two temporal JSONB report a null value
+   * and a value of another type by answering -1, and compare two temporal
+   * JSONB */
+  int (*eacomps[])(const Temporal *, const Temporal *) = {
+    ever_eq_tjsonb_tjsonb, ever_ne_tjsonb_tjsonb, always_eq_tjsonb_tjsonb,
+    always_ne_tjsonb_tjsonb };
+  const char *eanames[] = { "ever_eq_tjsonb_tjsonb", "ever_ne_tjsonb_tjsonb",
+    "always_eq_tjsonb_tjsonb", "always_ne_tjsonb_tjsonb" };
+  /* The answers for the value against itself, then against another value */
+  int eaself[] = { 1, 0, 1, 0 }, eaother[] = { 0, 1, 0, 1 };
+  for (int i = 0; i < 4; i++)
+  {
+    int r = eacomps[i](NULL, tjsonb);
+    printf("%s(NULL, tjsonb): %d, errno %d\n", eanames[i], r, meos_errno());
+    assert(r == -1); assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+    meos_errno_reset();
+    r = eacomps[i](tjsonb, NULL);
+    printf("%s(tjsonb, NULL): %d, errno %d\n", eanames[i], r, meos_errno());
+    assert(r == -1); assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+    meos_errno_reset();
+    r = eacomps[i](tjsonb, tint);
+    printf("%s(tjsonb, 1@2001-01-01): %d, errno %d\n", eanames[i], r,
+      meos_errno());
+    assert(r == -1); assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+    meos_errno_reset();
+    r = eacomps[i](tjsonb, tjsonb);
+    printf("%s(tjsonb, tjsonb): %d, errno %d\n", eanames[i], r, meos_errno());
+    assert(r == eaself[i]); assert(meos_errno() == 0);
+    r = eacomps[i](tjsonb, tjsonbb);
+    printf("%s(tjsonb, tjsonbb): %d, errno %d\n", eanames[i], r, meos_errno());
+    assert(r == eaother[i]); assert(meos_errno() == 0);
+  }
 
   free(tobj); free(tobjtxt); free(tarr); free(sobj); free(sarr); free(key);
   free(tjsonb); free(tjson); free(jsonbset); free(tjsonbb); free(tint);

@@ -1281,6 +1281,20 @@ SELECT spans(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::times
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="tpcpoint_tpcboxes">
+					<indexterm significance="normal"><primary><varname>tpcboxes</varname></primary></indexterm>
+					<para>Return the array of point cloud boxes of the instants or segments of a tpcpoint</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcboxes(tpcpoint) → tpcbox[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]));
+-- {"TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-01, 2024-01-02]), 1)","TPCBOX(ZT(((2,2,2),(3,3,3)),[2024-01-02, 2024-01-03]), 1)"}
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="tpcpoint_splitNSpans">
 					<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
@@ -1294,6 +1308,26 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2024-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
 -- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_splitNTpcboxes">
+					<indexterm significance="normal"><primary><varname>splitNTpcboxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>splitEachNTpcboxes</varname></primary></indexterm>
+					<para>Return the point cloud boxes of a tpcpoint split into a given number of bins, or with a given number of instants or segments per bin</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+splitNTpcboxes(tpcpoint,integer) → tpcbox[]
+splitEachNTpcboxes(tpcpoint,integer) → tpcbox[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT splitNTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
+-- {"TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-01, 2024-01-02]), 1)","TPCBOX(ZT(((2,2,2),(3,3,3)),[2024-01-02, 2024-01-03]), 1)"}
+SELECT splitEachNTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
+-- {"TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-01, 2024-01-03]), 1)"}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -2227,6 +2261,22 @@ SELECT spans(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="tpcpatch_tpcboxes">
+					<indexterm significance="normal"><primary><varname>tpcboxes</varname></primary></indexterm>
+					<para>Return the array of point cloud boxes of the instants or segments of a tpcpatch</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcboxes(tpcpatch) → tpcbox[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]));
+-- {"TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-01, 2024-01-02]), 1)","TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-02, 2024-01-03]), 1)"}
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="tpcpatch_splitNSpans">
 					<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
@@ -2242,6 +2292,30 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
 -- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_splitNTpcboxes">
+					<indexterm significance="normal"><primary><varname>splitNTpcboxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>splitEachNTpcboxes</varname></primary></indexterm>
+					<para>Return the point cloud boxes of a tpcpatch split into a given number of bins, or with a given number of instants or segments per bin</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+splitNTpcboxes(tpcpatch,integer) → tpcbox[]
+splitEachNTpcboxes(tpcpatch,integer) → tpcbox[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT splitNTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
+-- {"TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-01, 2024-01-02]), 1)","TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-02, 2024-01-03]), 1)"}
+SELECT splitEachNTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
+-- {"TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-01, 2024-01-03]), 1)"}
 </programlisting>
 				</listitem>
 			</itemizedlist>

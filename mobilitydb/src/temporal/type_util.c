@@ -426,6 +426,25 @@ stboxarr_to_array(STBox *boxarr, int count)
   return result;
 }
 
+#if POINTCLOUD
+/**
+ * @brief Return a C array of temporal point cloud boxes converted into a
+ * PostgreSQL array
+ */
+ArrayType *
+tpcboxarr_to_array(TPCBox *boxarr, int count)
+{
+  assert(count > 0);
+  TPCBox **boxes = palloc(sizeof(TPCBox *) * count);
+  for (int i = 0; i < count; i++)
+    boxes[i] = &boxarr[i];
+  ArrayType *result = construct_array((Datum *) boxes, count,
+    meostype_oid(T_TPCBOX), sizeof(TPCBox), false, 'd');
+  pfree(boxes);
+  return result;
+}
+#endif /* POINTCLOUD */
+
 /**
  * @brief Return a C array of temporal values converted into a PostgreSQL array
  */

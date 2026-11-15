@@ -465,7 +465,7 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
         Span in;
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
           T_FLOAT8, T_FLOATSPAN, &in);
-        meos_array_add(intervals, &in);
+        meos_array_add_intl(intervals, &in);
       }
     }
     return;
@@ -494,7 +494,7 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
       Span in;
       span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
     }
   }
   return;
@@ -550,7 +550,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
     else
       span_set(Float8GetDatum(r.t0), Float8GetDatum(r.t1), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-    meos_array_add(intervals, &in);
+    meos_array_add_intl(intervals, &in);
   }
 
   /* Full collinear segment */
@@ -575,7 +575,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
       {
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
           T_FLOAT8, T_FLOATSPAN, &in);
-        meos_array_add(intervals, &in);
+        meos_array_add_intl(intervals, &in);
         return;
       }
     }
@@ -624,7 +624,7 @@ intervals_from_arcs(const POINT2D *a, const POINT2D *b, Edge **edges,
     {
       span_set(Float8GetDatum(t[k]), Float8GetDatum(t[k]), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
     }
   }
   return;
@@ -741,7 +741,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       {
         double t = r.t0;
         if (t >= -MEOS_GEOM_TOLERANCE && t <= 1.0 + MEOS_GEOM_TOLERANCE)
-          meos_array_add(events, &t);
+          meos_array_add_intl(events, &t);
       }
     }
     else
@@ -751,14 +751,14 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       int n = arcsegm_intersect(ax, ay, rx, ry, e, t);
       for (int k = 0; k < n; k++)
         if (t[k] >= -MEOS_GEOM_TOLERANCE && t[k] <= 1.0 + MEOS_GEOM_TOLERANCE)
-          meos_array_add(events, &t[k]);
+          meos_array_add_intl(events, &t[k]);
     }
   }
 
   /* Add endpoints */
   double t0 = 0.0, t1 = 1.0;
-  meos_array_add(events, &t0);
-  meos_array_add(events, &t1);
+  meos_array_add_intl(events, &t0);
+  meos_array_add_intl(events, &t1);
 
   /* Sort */
   qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
@@ -797,7 +797,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
       bounded[i] = bounded[i + 1] = true;
     }
   }
@@ -821,7 +821,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     Span in;
     span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
       T_FLOAT8, T_FLOATSPAN, &in);
-    meos_array_add(intervals, &in);
+    meos_array_add_intl(intervals, &in);
   }
   pfree(bounded);
   return;
@@ -923,7 +923,7 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
   Span s;
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-  meos_array_add(periods, &s);
+  meos_array_add_intl(periods, &s);
   return;
 }
 
@@ -1033,7 +1033,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
           inst1->t : inst1->t + (TimestampTz) (duration * lower);
         span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
       else
       {
@@ -1043,7 +1043,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
           inst2->t : inst1->t + (TimestampTz) (duration * upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
     }
     
@@ -1211,7 +1211,7 @@ geo_every_part_bounds_area(const GSERIALIZED *gs)
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   MeosArray *edges = geom_extract_edges(geom);
   /* A geometry drawing nothing at all bounds no region either */
-  bool result = edges && meos_array_count(edges) > 0;
+  bool result = edges && meos_array_count_intl(edges) > 0;
   if (edges)
   {
     for (uint32_t i = 0; result && i < edges->count; i++)
@@ -1358,7 +1358,7 @@ arc_pieces(const Edge *arc, const Span *intervarr, int count, bool inside,
       {
         POINT2D touch;
         arc_parameter_point(arc, s0, &touch.x, &touch.y);
-        meos_array_add(touches, &touch);
+        meos_array_add_intl(touches, &touch);
       }
       continue;
     }
@@ -1376,9 +1376,9 @@ arc_pieces(const Edge *arc, const Span *intervarr, int count, bool inside,
     {
       piece[2].x = arc->x2; piece[2].y = arc->y2;
     }
-    meos_array_add(out, &piece[0]);
-    meos_array_add(out, &piece[1]);
-    meos_array_add(out, &piece[2]);
+    meos_array_add_intl(out, &piece[0]);
+    meos_array_add_intl(out, &piece[1]);
+    meos_array_add_intl(out, &piece[2]);
   }
   return;
 }
@@ -1499,7 +1499,7 @@ intervals_from_arc_subject(const Edge *arc, Edge **edges, int nedges,
       Span sp;
       span_set(Float8GetDatum(lo), Float8GetDatum(hi), true, true, T_FLOAT8,
         T_FLOATSPAN, &sp);
-      meos_array_add(intervals, &sp);
+      meos_array_add_intl(intervals, &sp);
     }
   }
   /* The points the arc merely meets, kept where no stretch already holds one */
@@ -1518,7 +1518,7 @@ intervals_from_arc_subject(const Edge *arc, Edge **edges, int nedges,
       Span sp;
       span_set(Float8GetDatum(meets[k]), Float8GetDatum(meets[k]), true, true,
         T_FLOAT8, T_FLOATSPAN, &sp);
-      meos_array_add(intervals, &sp);
+      meos_array_add_intl(intervals, &sp);
     }
   }
   pfree(cuts); pfree(meets);
@@ -1769,7 +1769,7 @@ segment_pieces(const POINT2D *a, const POINT2D *b, const Span *intervarr,
         POINT2D touch;
         touch.x = a->x + s0 * (b->x - a->x);
         touch.y = a->y + s0 * (b->y - a->y);
-        meos_array_add(touches, &touch);
+        meos_array_add_intl(touches, &touch);
       }
       continue;
     }
@@ -1778,8 +1778,8 @@ segment_pieces(const POINT2D *a, const POINT2D *b, const Span *intervarr,
     piece[0].y = a->y + s0 * (b->y - a->y);
     piece[1].x = a->x + s1 * (b->x - a->x);
     piece[1].y = a->y + s1 * (b->y - a->y);
-    meos_array_add(out, &piece[0]);
-    meos_array_add(out, &piece[1]);
+    meos_array_add_intl(out, &piece[0]);
+    meos_array_add_intl(out, &piece[1]);
   }
   return;
 }
@@ -2634,7 +2634,7 @@ add_within_root(double t, MeosArray *ev)
   if (t > -MEOS_GEOM_TOLERANCE && t < 1.0 + MEOS_GEOM_TOLERANCE)
   {
     if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
-    meos_array_add(ev, &t);
+    meos_array_add_intl(ev, &t);
   }
 }
 
@@ -2773,8 +2773,8 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
   }
   /* Add the segment endpoints */
   double t0 = 0.0, t1 = 1.0;
-  meos_array_add(events, &t0);
-  meos_array_add(events, &t1);
+  meos_array_add_intl(events, &t0);
+  meos_array_add_intl(events, &t1);
 
   /* Sort and deduplicate the candidates */
   qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
@@ -2799,7 +2799,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
     }
   }
 
@@ -2822,7 +2822,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
       Span in;
       span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
     }
   }
   return;
@@ -2845,7 +2845,7 @@ tpointinst_dwithin_edges(const TInstant *inst, Edge **edges, int nedges,
   Span s;
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-  meos_array_add(periods, &s);
+  meos_array_add_intl(periods, &s);
   return;
 }
 
@@ -2917,7 +2917,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
         span_set(TimestampTzGetDatum(inst1->t + exact_lo[j]),
           TimestampTzGetDatum(inst1->t + exact_hi[j]), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
       inst1 = inst2;
       a = b;
@@ -2967,7 +2967,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
           inst1->t : inst1->t + (TimestampTz) (duration * lower);
         span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
       else
       {
@@ -2977,7 +2977,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
           inst2->t : inst1->t + (TimestampTz) (duration * upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
     }
 

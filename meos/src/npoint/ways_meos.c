@@ -69,12 +69,16 @@ static char *WAYS_CSV_COPY = NULL;
  * @brief Set the location of the ways CSV file used to resolve npoint route
  * geometries
  * @details The function keeps a copy of the path and frees the copy it kept
- * for an earlier call, as #meos_set_spatial_ref_sys_csv does.
+ * for an earlier call, as #meos_set_spatial_ref_sys_csv does. A null path is
+ * refused and the path kept before stays in use.
  * @param[in] path Full path to the ways CSV file
  */
 void
 meos_set_ways_csv(const char *path)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_null(path))
+    return;
   char *copy = malloc(strlen(path) + 1);
   if (! copy)
   {

@@ -2144,7 +2144,7 @@ buffer_intersections_add(MeosArray *array, double x, double y)
   POINT2D new;
   new.x = x;
   new.y = y;
-  meos_array_add(array, &new);
+  meos_array_add_intl(array, &new);
 }
 
 /**
@@ -2164,7 +2164,7 @@ buffer_add_intersection_point(MeosArray *points, double x, double y)
   POINT2D point;
   point.x = x;
   point.y = y;
-  meos_array_add(points, &point);
+  meos_array_add_intl(points, &point);
 }
 
 /**
@@ -2469,6 +2469,8 @@ typedef struct
   int32_t next;    /**< Next node in the same bucket, -1 at the end of a chain */
   double x;        /**< The node itself, which the index never rounds */
   double y;
+  double ci;       /**< Cell the node stands in along x */
+  double cj;       /**< Cell the node stands in along y */
 } BufferNodeEnd;
 
 /**
@@ -2512,6 +2514,9 @@ buffer_node_byx_cmp(const BufferNodeByX *n1, const BufferNodeByX *n2)
 #define ST_DEFINE
 #include "port/sort_template.h"
 
+/** Tolerances a cell of a node index spans along each axis */
+#define BUFFER_NODE_CELL_TOLERANCES 16.0
+
 /**
  * @brief The ends of a ring's boundary pieces, read by the node they sit at
  * @details Chaining a ring asks, once per step, which unused piece continues
@@ -2527,10 +2532,13 @@ buffer_node_byx_cmp(const BufferNodeByX *n1, const BufferNodeByX *n2)
  * for that the way #relate_edges_init sizes the edge index: from the WIDEST
  * tolerance anything in the array is compared at, never from
  * @p MEOS_GEOM_TOLERANCE, which at projected coordinates is thousands of times
- * too small. A cell is therefore as wide as the largest tolerance any pair of
- * these ends reads, so two ends #buffer_points_equal accepts differ by no more
- * than a cell along each axis and lie in the same cell or in one touching it.
- * Reading the nine cells around a node is exhaustive.
+ * too small. Two ends #buffer_points_equal accepts differ by no more than
+ * that WIDEST TOLERANCE along each axis, so reading every cell the square of
+ * that half-width around a node touches is exhaustive. A cell is
+ * #BUFFER_NODE_CELL_TOLERANCES such tolerances wide, so that square nearly
+ * always lies in the one cell the node stands in: a node is read from one
+ * bucket rather than nine, and the ends a cell gathers beyond the tolerance
+ * cost a comparison each.
  */
 typedef struct
 {
@@ -2538,7 +2546,8 @@ typedef struct
   int32_t *cells;       /**< First end of a bucket, -1 where it holds none */
   uint32_t ncells;      /**< Buckets, a power of two so the hash masks */
   uint32_t nends;       /**< Ends held, twice the pieces */
-  double cell;          /**< Side of a cell, never below the tolerance */
+  double tol;           /**< Widest tolerance two ends are compared at */
+  double cell;          /**< Side of a cell, a fixed number of tolerances */
   uint32_t *cand;       /**< Scratch the candidates of one node are read into */
   uint32_t *stamp;      /**< Generation a piece was last gathered in */
   uint32_t gen;         /**< Generation of the node being read */
@@ -2592,8 +2601,9 @@ buffer_node_index_add(BufferNodeIndex *ix, uint32_t id, POINT2D p)
   ix->ends[at].id = id;
   ix->ends[at].x = p.x;
   ix->ends[at].y = p.y;
-  uint32_t b = buffer_node_bucket(ix, buffer_node_cell(p.x, ix->cell),
-    buffer_node_cell(p.y, ix->cell));
+  ix->ends[at].ci = buffer_node_cell(p.x, ix->cell);
+  ix->ends[at].cj = buffer_node_cell(p.y, ix->cell);
+  uint32_t b = buffer_node_bucket(ix, ix->ends[at].ci, ix->ends[at].cj);
   ix->ends[at].next = ix->cells[b];
   ix->cells[b] = (int32_t) at;
   return;
@@ -2612,7 +2622,8 @@ buffer_node_index_alloc(BufferNodeIndex *ix, uint32_t nids, uint32_t nnodes,
   double scale)
 {
   assert(ix);
-  ix->cell = buffer_node_tolerance(scale, scale);
+  ix->tol = buffer_node_tolerance(scale, scale);
+  ix->cell = BUFFER_NODE_CELL_TOLERANCES * ix->tol;
   ix->ncells = 16;
   while (ix->ncells < 2 * nnodes)
     ix->ncells *= 2;
@@ -2707,8 +2718,9 @@ buffer_node_index_free(BufferNodeIndex *ix)
 /**
  * @brief Return the pieces that can meet a node, in the order a walk over
  * every piece reaches them
- * @details The candidates are gathered from the nine cells around the node and
- * reported in ASCENDING PIECE ORDER, which is the order the pieces stand in.
+ * @details The candidates are gathered from every cell touched by the square
+ * around the node whose half-width is the widest tolerance, and reported in
+ * ASCENDING PIECE ORDER, which is the order the pieces stand in.
  * #buffer_find_connected_piece keeps the FIRST of several candidates that tie,
  * so any other order decides a tie differently and chains another ring.
  * @param[in,out] ix Index to read
@@ -2722,11 +2734,19 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
   assert(ix); assert(ncand);
   double ci = buffer_node_cell(point.x, ix->cell);
   double cj = buffer_node_cell(point.y, ix->cell);
+  /* Rounding to nearest is monotone, so an end within the tolerance of the
+   * node stands in a cell from that of the node moved back by the tolerance
+   * to that of the node moved on by it, the node's own cell or one touching
+   * it, a cell being wider than the tolerance */
+  int i0 = (buffer_node_cell(point.x - ix->tol, ix->cell) < ci) ? -1 : 0;
+  int i1 = (buffer_node_cell(point.x + ix->tol, ix->cell) > ci) ? 1 : 0;
+  int j0 = (buffer_node_cell(point.y - ix->tol, ix->cell) < cj) ? -1 : 0;
+  int j1 = (buffer_node_cell(point.y + ix->tol, ix->cell) > cj) ? 1 : 0;
   uint32_t n = 0;
   ix->gen++;
-  for (int di = -1; di <= 1; di++)
+  for (int di = i0; di <= i1; di++)
   {
-    for (int dj = -1; dj <= 1; dj++)
+    for (int dj = j0; dj <= j1; dj++)
     {
       uint32_t b = buffer_node_bucket(ix, ci + di, cj + dj);
       for (int32_t at = ix->cells[b]; at >= 0; at = ix->ends[at].next)
@@ -2736,11 +2756,11 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
          * whatever cells collide into it, so a piece is reported once */
         if (ix->stamp[end->id] == ix->gen)
           continue;
-        /* The buckets bound which ends the walk sees; an end is kept only
-         * where the cell it truly sits in is one of the nine */
-        double ei = buffer_node_cell(end->x, ix->cell) - ci;
-        double ej = buffer_node_cell(end->y, ix->cell) - cj;
-        if (ei < -1.0 || ei > 1.0 || ej < -1.0 || ej > 1.0)
+        /* A bucket gathers whatever cells collide into it, so an end is
+         * kept only where the cell it truly sits in is one of those read */
+        double ei = end->ci - ci;
+        double ej = end->cj - cj;
+        if (ei < i0 || ei > i1 || ej < j0 || ej > j1)
           continue;
         ix->stamp[end->id] = ix->gen;
         /* Ascending order, by insertion: a node holds two ends where the
@@ -2769,8 +2789,8 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
  * The nodes are read out of a node index rather than all of them. Its cell
  * is sized from the largest coordinate of any point, and the tolerance grows
  * with the coordinate, so no tolerance a point reads is wider than a cell and
- * the nine cells around a point hold every node within it; the test itself
- * decides each node the index gathers.
+ * the cells #buffer_node_index_at reads hold every node within it; the test
+ * itself decides each node the index gathers.
  * @param[in] points Points, in the order they are found
  * @param[in,out] nodes Array the nodes are added to, empty on entry
  */
@@ -2803,7 +2823,7 @@ buffer_intersections_add_all(const MeosArray *points, MeosArray *nodes)
     if (found)
       continue;
     buffer_node_index_add(&ix, (uint32_t) nodes->count, pts[i]);
-    meos_array_add(nodes, (void *) &pts[i]);
+    meos_array_add_intl(nodes, (void *) &pts[i]);
   }
   buffer_node_index_free(&ix);
   return;
@@ -3002,7 +3022,7 @@ buffer_pieces_add_unique(MeosArray *pieces, Edge *piece)
 {
   assert(pieces); assert(piece);
   if (! buffer_piece_array_contains(pieces, piece))
-    meos_array_add(pieces, piece);
+    meos_array_add_intl(pieces, piece);
 }
 
 /**
@@ -3177,7 +3197,7 @@ buffer_split_segment(const Edge *piece, const MeosArray *intersections,
     split.y1 = p1.y;
     split.x2 = p2.x;
     split.y2 = p2.y;
-    meos_array_add(result, &split);
+    meos_array_add_intl(result, &split);
   }
   pfree(points);
 }
@@ -3253,7 +3273,7 @@ buffer_split_arc(const Edge *piece, const MeosArray *intersections,
     split.theta0 = theta_start;
     split.theta1 = theta_end;
     split.ccw = piece->ccw;
-    meos_array_add(result, &split);
+    meos_array_add_intl(result, &split);
   }
   pfree(points);
 }
@@ -3308,9 +3328,9 @@ buffer_pieces_from_edges(const MeosArray *edges, MeosArray *pieces)
       continue;
     Edge piece;
     buffer_piece_from_edge(edge, &piece);
-    meos_array_add(pieces, &piece);
+    meos_array_add_intl(pieces, &piece);
   }
-  return meos_array_count(pieces) > 0;
+  return meos_array_count_intl(pieces) > 0;
 }
 
 /**
@@ -3337,6 +3357,11 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
   MeosArray *result)
 {
   assert(pieces); assert(intersections); assert(result);
+  /* Each piece yields itself, and each intersection splits about two pieces
+   * once: the room is taken in one step (#edge_array_reserve) rather than
+   * doubled from the array's first sixteen slots, each doubling copying every
+   * piece split before */
+  edge_array_reserve(result, pieces->count + 2 * (size_t) intersections->count);
   /* Every piece is split at the same intersections, so they are indexed once
    * for all of them rather than scanned once per piece */
   BufferNodeIndex ix;
@@ -3674,7 +3699,7 @@ buffer_resolve_coincident_piece(Edge *piece, BufferLocator *owner,
   bool owner_left = (side == 0);
   kept.answer_left = (side == 0 || side == 1) ?
     (same_side || owner_first ? owner_left : ! owner_left) : false;
-  meos_array_add(result, &kept);
+  meos_array_add_intl(result, &kept);
   return true;
 }
 
@@ -3857,13 +3882,13 @@ buffer_add_selected_piece(MeosArray *result, const Edge *piece,
   kept.answer_left = false;
   if (deferred)
   {
-    BufferSideAsk ask = { meos_array_count(result), own, inverted, rings,
+    BufferSideAsk ask = { meos_array_count_intl(result), own, inverted, rings,
       ring };
-    meos_array_add(deferred, &ask);
+    meos_array_add_intl(deferred, &ask);
   }
   else
     kept.answer_left = buffer_piece_answer_left(&kept.e, own, inverted);
-  meos_array_add(result, &kept);
+  meos_array_add_intl(result, &kept);
 }
 
 /**
@@ -3995,7 +4020,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
       buffer_pieces_add_unique(bnd_a, piece);
       if (! buffer_resolve_coincident_piece(piece, loc_a, loc_b, true, oper,
             result))
-        meos_array_add(boundary, piece);
+        meos_array_add_intl(boundary, piece);
     }
   }
   /* Pieces belonging to B */
@@ -4023,7 +4048,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
       }
       if (! buffer_resolve_coincident_piece(piece, loc_b, loc_a, false, oper,
             result))
-        meos_array_add(boundary, piece);
+        meos_array_add_intl(boundary, piece);
     }
   }
   pfree(locations);
@@ -4325,7 +4350,7 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, BufferNodeIndex *ix,
    * imposing one leaves every start vertex where it was */
   bool want_left = oriented.answer_left;
   buffer_append_piece_to_curve(curve, srid, &oriented.e);
-  meos_array_add(ordered, &oriented);
+  meos_array_add_intl(ordered, &oriented);
   used[start_index] = true;
   POINT2D start = buffer_piece_start(&oriented.e);
   POINT2D current = buffer_piece_end(&oriented.e);
@@ -4357,7 +4382,7 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, BufferNodeIndex *ix,
     if (reverse)
       buffer_piece_reverse(&oriented.e);
     buffer_append_piece_to_curve(curve, srid, &oriented.e);
-    meos_array_add(ordered, &oriented);
+    meos_array_add_intl(ordered, &oriented);
     used[(uint32_t) index] = true;
     current = buffer_piece_end(&oriented.e);
     if (! buffer_piece_end_direction(&oriented.e, false, &from_dx, &from_dy))
@@ -4408,7 +4433,7 @@ buffer_rings_add_loops(LWCOMPOUND *ring, MeosArray *ordered, int32_t srid,
       /* The pieces from the one starting on node k close a loop */
       MeosArray *loop = meos_array_create(sizeof(BufferSelected));
       for (uint32_t m = k; m < depth; m++)
-        meos_array_add(loop,
+        meos_array_add_intl(loop,
           meos_array_get_intl(ordered, stack[m]));
       loops[nloops++] = loop;
       depth = k;
@@ -4427,7 +4452,7 @@ buffer_rings_add_loops(LWCOMPOUND *ring, MeosArray *ordered, int32_t srid,
     info.pieces = ordered;
     info.parent = -1;
     info.shell = -1;
-    meos_array_add(rings, &info);
+    meos_array_add_intl(rings, &info);
   }
   else
   {
@@ -4445,7 +4470,7 @@ buffer_rings_add_loops(LWCOMPOUND *ring, MeosArray *ordered, int32_t srid,
       info.pieces = loops[l];
       info.parent = -1;
       info.shell = -1;
-      meos_array_add(rings, &info);
+      meos_array_add_intl(rings, &info);
     }
   }
   pfree(loops); pfree(stack); pfree(nodes);
@@ -4957,7 +4982,7 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
   }
   /* Transfer the classification information into the generic array */
   for (uint32_t i = 0; i < count; i++)
-    meos_array_add(classified, &info[i]);
+    meos_array_add_intl(classified, &info[i]);
   pfree(contains); pfree(info);
   return true;
 }
@@ -5067,7 +5092,7 @@ buffer_reverse_ring_pieces(const MeosArray *pieces)
     }
     Edge piece = *source;
     buffer_piece_reverse(&piece);
-    meos_array_add(reversed, &piece);
+    meos_array_add_intl(reversed, &piece);
   }
   return reversed;
 }
@@ -5480,7 +5505,7 @@ static LWGEOM *
 buffer_nodes_geometry(const MeosArray *nodes, int32_t srid)
 {
   assert(nodes);
-  uint32_t count = meos_array_count(nodes);
+  uint32_t count = meos_array_count_intl(nodes);
   if (count == 0)
     return lwpoint_as_lwgeom(lwpoint_construct_empty(srid, 0, 0));
   if (count == 1)
@@ -5538,7 +5563,7 @@ static LWGEOM *
 buffer_shared_geometry(const MeosArray *pieces, int32_t srid)
 {
   assert(pieces);
-  uint32_t count = meos_array_count(pieces);
+  uint32_t count = meos_array_count_intl(pieces);
   if (count == 0)
     return NULL;
   LWGEOM **curves = palloc(sizeof(LWGEOM *) * count);
@@ -5824,21 +5849,21 @@ static void
 buffer_frame_where_read(MeosArray *selected, const MeosArray *deferred)
 {
   assert(selected); assert(deferred);
-  uint32_t count = meos_array_count(selected);
-  if (count == 0 || meos_array_count(deferred) == 0)
+  uint32_t count = meos_array_count_intl(selected);
+  if (count == 0 || meos_array_count_intl(deferred) == 0)
     return;
   /* The side of a few pieces is read for every one of them, which costs less
    * than grouping them to find the ones the walk consults */
   if (count < BUFFER_FRAME_MIN_PIECES)
   {
-    for (int d = 0; d < meos_array_count(deferred); d++)
+    for (int d = 0; d < meos_array_count_intl(deferred); d++)
     {
       const BufferSideAsk *ask =
         (const BufferSideAsk *) meos_array_get_intl(deferred, d);
       if (ask->rings && ask->ring >= 0)
         ask->rings->nasks[ask->ring]++;
     }
-    for (int d = 0; d < meos_array_count(deferred); d++)
+    for (int d = 0; d < meos_array_count_intl(deferred); d++)
     {
       const BufferSideAsk *ask =
         (const BufferSideAsk *) meos_array_get_intl(deferred, d);
@@ -5886,7 +5911,7 @@ buffer_frame_where_read(MeosArray *selected, const MeosArray *deferred)
   for (uint32_t i = 0; i < count; i++)
     if (branching[i])
       branching[buffer_piece_root(parent, i)] = true;
-  for (int d = 0; d < meos_array_count(deferred); d++)
+  for (int d = 0; d < meos_array_count_intl(deferred); d++)
   {
     const BufferSideAsk *ask =
       (const BufferSideAsk *) meos_array_get_intl(deferred, d);
@@ -5894,7 +5919,7 @@ buffer_frame_where_read(MeosArray *selected, const MeosArray *deferred)
         ask->ring >= 0)
       ask->rings->nasks[ask->ring]++;
   }
-  for (int d = 0; d < meos_array_count(deferred); d++)
+  for (int d = 0; d < meos_array_count_intl(deferred); d++)
   {
     const BufferSideAsk *ask =
       (const BufferSideAsk *) meos_array_get_intl(deferred, d);
@@ -5977,7 +6002,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   /* A boundary intersection reported with no discrete node is a
    * coincident/overlapping-boundary case, deferred to the next topology
    * layer */
-  if (! collected || (crossing && meos_array_count(intersections) == 0))
+  if (! collected || (crossing && meos_array_count_intl(intersections) == 0))
   {
     meos_array_destroy(intersections);
     meos_array_destroy(edges_a); meos_array_destroy(edges_b);
@@ -6012,8 +6037,8 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   BufferLocator loc_a, loc_b;
   /* Each piece of one boundary asks at least one point of the other, and a
    * coincident piece asks up to eight more of both */
-  int points_a = (int) meos_array_count(split_b);
-  int points_b = (int) meos_array_count(split_a);
+  int points_a = (int) meos_array_count_intl(split_b);
+  int points_b = (int) meos_array_count_intl(split_a);
   buffer_locator_make_edges(&loc_a, geom1, edges_a, points_a);
   buffer_locator_make_edges(&loc_b, geom2, edges_b, points_b);
   MeosArray *deferred = meos_array_create(sizeof(BufferSideAsk));
@@ -6036,8 +6061,8 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
     by_ring ? &rings_a : NULL, ring_a, by_ring ? &rings_b : NULL, ring_b);
   /* A union of two surfaces that only touch keeps every piece and walks none
    * of them, so it reads no side */
-  if (! crossing || oper != CL_UNION || meos_array_count(selected) !=
-      meos_array_count(split_a) + meos_array_count(split_b))
+  if (! crossing || oper != CL_UNION || meos_array_count_intl(selected) !=
+      meos_array_count_intl(split_a) + meos_array_count_intl(split_b))
     buffer_frame_where_read(selected, deferred);
   meos_array_destroy(deferred);
   if (by_ring)
@@ -6065,8 +6090,8 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
    * boundaries is exactly what a DIFFERENCE does where the clip lies inside
    * the subject, and what an INTERSECTION does where the subject lies inside
    * the clip */
-  if (crossing && oper == CL_UNION && meos_array_count(selected) ==
-      meos_array_count(split_a) + meos_array_count(split_b))
+  if (crossing && oper == CL_UNION && meos_array_count_intl(selected) ==
+      meos_array_count_intl(split_a) + meos_array_count_intl(split_b))
   {
     *touching = true;
     meos_array_destroy(selected); meos_array_destroy(boundary);
@@ -6079,7 +6104,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   }
 
   /* We reject unresolved coincident pieces here */
-  if (meos_array_count(boundary) > 0)
+  if (meos_array_count_intl(boundary) > 0)
   {
     meos_array_destroy(selected); meos_array_destroy(boundary);
     meos_array_destroy(shared);
@@ -6119,12 +6144,12 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
    * the other, which is a region rather than a meeting, so it is left to the
    * caller */
   int32_t srid = lwgeom_get_srid(geom1);
-  if (meos_array_count(selected) == 0 && crossing && oper != CL_DIFFERENCE)
+  if (meos_array_count_intl(selected) == 0 && crossing && oper != CL_DIFFERENCE)
   {
     LWGEOM *meeting = NULL;
     if (oper == CL_INTERSECTION)
     {
-      if (meos_array_count(shared) > 0)
+      if (meos_array_count_intl(shared) > 0)
         meeting = buffer_shared_geometry(shared, srid);
       else if (! coincident)
         meeting = buffer_nodes_geometry(intersections, srid);
@@ -6149,7 +6174,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
    * -> orientation normalization
    * -> CURVEPOLYGON / MULTISURFACE
    */
-  LWGEOM *result = meos_array_count(selected) == 0 ?
+  LWGEOM *result = meos_array_count_intl(selected) == 0 ?
     lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0)) :
     buffer_make_surfaces_from_pieces(selected, srid);
   /* Clean up and return */
@@ -6792,7 +6817,7 @@ buffer_edges_reversed(const MeosArray *edges)
       continue;
     Edge reversed = *edge;
     buffer_edge_reverse(&reversed);
-    meos_array_add(result, &reversed);
+    meos_array_add_intl(result, &reversed);
   }
   return result;
 }
@@ -6815,7 +6840,7 @@ buffer_ring_edges_outward_left(const MeosArray *edges)
       continue;
     Edge piece;
     buffer_piece_from_edge(edge, &piece);
-    meos_array_add(pieces, &piece);
+    meos_array_add_intl(pieces, &piece);
   }
   /* A ring traversed clockwise, whose area is negative, has its exterior on
    * its left */
@@ -7006,7 +7031,7 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
   double radius, int32_t srid)
 {
   assert(arr); assert(edges); assert(radius > 0.0);
-  uint32_t n = meos_array_count(arr);
+  uint32_t n = meos_array_count_intl(arr);
 
   /* Where the ring meets itself, every crossing as each pair finds it, then
    * each node once */
@@ -7025,7 +7050,7 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
       continue;
     Edge piece;
     buffer_piece_from_edge(&all[i], &piece);
-    meos_array_add(pieces, &piece);
+    meos_array_add_intl(pieces, &piece);
   }
   /* Only the pairs whose boxes may meet are read, in the order a walk over
    * every pair meets them: a node found twice keeps the first copy found, so
@@ -7053,12 +7078,12 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
      * a point of an earlier pair suppresses a genuine one of this pair */
     meos_array_reset(points);
     buffer_collect_edge_intersections(e1, e2, points);
-    for (int m = 0; m < meos_array_count(points); m++)
+    for (int m = 0; m < meos_array_count_intl(points); m++)
     {
       const POINT2D *p = (const POINT2D *) meos_array_get_intl(points,
         (uint32_t) m);
       if (p)
-        meos_array_add(crossings, (void *) p);
+        meos_array_add_intl(crossings, (void *) p);
     }
   }
   if (pairs)
@@ -7086,7 +7111,7 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
   MeosArray *keep = meos_array_create(sizeof(BufferSelected));
   RTree *index = buffer_edges_index(edges);
   MeosArray *found = index_result_create();
-  for (int i = 0; i < meos_array_count(split); i++)
+  for (int i = 0; i < meos_array_count_intl(split); i++)
   {
     const Edge *piece = (const Edge *) meos_array_get_intl(split,
       (uint32_t) i);
@@ -7107,13 +7132,13 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
       BufferSelected kept;
       kept.e = *piece;
       kept.answer_left = false;
-      meos_array_add(keep, &kept);
+      meos_array_add_intl(keep, &kept);
     }
   }
   meos_array_destroy(found);
   rtree_free(index);
 
-  LWGEOM *result = (meos_array_count(keep) > 0) ?
+  LWGEOM *result = (meos_array_count_intl(keep) > 0) ?
     buffer_make_surfaces_from_pieces(keep, srid) : NULL;
   meos_array_destroy(keep); meos_array_destroy(split);
   meos_array_destroy(pieces); meos_array_destroy(nodes);
@@ -7560,7 +7585,7 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
     if (ok)
     {
       buffer_split_pieces(raw, intersections, split[i]);
-      npieces += (int) meos_array_count(split[i]);
+      npieces += (int) meos_array_count_intl(split[i]);
     }
     meos_array_destroy(raw);
   }
@@ -7577,7 +7602,7 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
   for (uint32_t i = 0; i < count && ok; i++)
   {
     meos_check_for_interrupts();
-    int npiece = meos_array_count(split[i]);
+    int npiece = meos_array_count_intl(split[i]);
     for (int k = 0; k < npiece && ok; k++)
     {
       Edge *piece = (Edge *) meos_array_get_intl(split[i], k);
@@ -7616,7 +7641,7 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
   pfree(split);
   meos_array_destroy(intersections);
 
-  LWGEOM *result = (ok && meos_array_count(selected) > 0) ?
+  LWGEOM *result = (ok && meos_array_count_intl(selected) > 0) ?
     buffer_make_surfaces_from_pieces(selected, srid) : NULL;
   meos_array_destroy(selected);
   return result;
@@ -8123,6 +8148,8 @@ meos_disc_sweep_union(const POINT2D *centres, const double *radii,
   return result;
 }
 
+static LWGEOM *buffer_arcless_as_polygons(LWGEOM *geom);
+
 /**
  * @brief Return the union of the areal components of a geometry
  * @details The components are dissolved into the surfaces they cover: a pair
@@ -8251,6 +8278,9 @@ meos_areal_union(const LWGEOM *geom)
    * ring that carries no arc into one point array and loses nothing */
   if (! lwgeom_has_arc(result))
   {
+    LWGEOM *taken = buffer_arcless_as_polygons(result);
+    if (taken)
+      return taken;
     LWGEOM *straight = lwgeom_stroke(result, 0);
     if (straight)
     {
@@ -8297,6 +8327,145 @@ buffer_areal_dissolve(const LWGEOM *geom, LWGEOM **dissolved)
     return true;
   *dissolved = meos_areal_union(geom);
   return *dissolved != NULL;
+}
+
+/* A ring of straight members as one point array: the points
+ * lwcompound_linearize joins, its repeated points removed as it removes them,
+ * the array of a single member taken rather than copied; NULL where a member
+ * is not a line */
+static POINTARRAY *
+buffer_ring_points_take(LWGEOM *ring)
+{
+  if (ring->type == LINETYPE)
+  {
+    /* A line ring is copied as it is (lwcurvepoly_linearize) */
+    LWLINE *line = (LWLINE *) ring;
+    POINTARRAY *pa = line->points;
+    line->points = NULL;
+    return pa;
+  }
+  if (ring->type != COMPOUNDTYPE)
+    return NULL;
+  LWCOMPOUND *comp = (LWCOMPOUND *) ring;
+  for (uint32_t i = 0; i < comp->ngeoms; i++)
+    if (comp->geoms[i]->type != LINETYPE)
+      return NULL;
+  POINTARRAY *pa;
+  if (comp->ngeoms == 1)
+  {
+    LWLINE *line = (LWLINE *) comp->geoms[0];
+    pa = line->points;
+    line->points = NULL;
+  }
+  else
+  {
+    pa = ptarray_construct_empty(FLAGS_GET_Z(comp->flags),
+      FLAGS_GET_M(comp->flags), 64);
+    for (uint32_t i = 0; i < comp->ngeoms; i++)
+    {
+      const POINTARRAY *member = ((const LWLINE *) comp->geoms[i])->points;
+      for (uint32_t j = 0; j < member->npoints; j++)
+      {
+        POINT4D p;
+        getPoint4d_p(member, j, &p);
+        ptarray_append_point(pa, &p, LW_TRUE);
+      }
+    }
+  }
+  ptarray_remove_repeated_points_in_place(pa, 0.0, 2);
+  return pa;
+}
+
+/* Whether every ring of a curve polygon is a line or a compound of lines */
+static bool
+buffer_curvepoly_straight(const LWCURVEPOLY *cp)
+{
+  for (uint32_t i = 0; i < cp->nrings; i++)
+  {
+    const LWGEOM *ring = cp->rings[i];
+    if (ring->type == COMPOUNDTYPE)
+    {
+      const LWCOMPOUND *comp = (const LWCOMPOUND *) ring;
+      for (uint32_t j = 0; j < comp->ngeoms; j++)
+        if (comp->geoms[j]->type != LINETYPE)
+          return false;
+    }
+    else if (ring->type != LINETYPE)
+      return false;
+  }
+  return true;
+}
+
+/* A curve polygon of straight rings as a polygon, its rings' arrays taken */
+static LWPOLY *
+buffer_curvepoly_take(LWCURVEPOLY *cp)
+{
+  POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *) * Max(cp->nrings, 1u));
+  for (uint32_t i = 0; i < cp->nrings; i++)
+    rings[i] = buffer_ring_points_take(cp->rings[i]);
+  return lwpoly_construct(cp->srid, NULL, cp->nrings, rings);
+}
+
+/**
+ * @brief Return an answer that carries no arc as the polygons it draws, or
+ * NULL where it is not a surface this reads
+ * @details The answer is #lwgeom_stroke of the curve the boundary walk welds,
+ * built from the same points: a curve polygon becomes a polygon and a multi
+ * surface a multipolygon, every ring the points lwcompound_linearize joins
+ * with its repeated points removed. The point arrays of the curve are moved
+ * rather than copied, which #lwgeom_stroke does twice per ring, and the curve
+ * is freed. Another type is left to #lwgeom_stroke
+ * @param[in] geom Answer carrying no arc, freed where a polygon is returned
+ */
+static LWGEOM *
+buffer_arcless_as_polygons(LWGEOM *geom)
+{
+  if (geom->type == CURVEPOLYTYPE)
+  {
+    if (! buffer_curvepoly_straight((const LWCURVEPOLY *) geom))
+      return NULL;
+    LWPOLY *poly = buffer_curvepoly_take((LWCURVEPOLY *) geom);
+    lwgeom_free(geom);
+    return lwpoly_as_lwgeom(poly);
+  }
+  if (geom->type != MULTISURFACETYPE)
+    return NULL;
+  LWCOLLECTION *ms = (LWCOLLECTION *) geom;
+  /* Every member is read before any array is taken, so a member this does
+   * not read leaves the whole answer to #lwgeom_stroke */
+  for (uint32_t i = 0; i < ms->ngeoms; i++)
+  {
+    const LWGEOM *g = ms->geoms[i];
+    if (g->type != POLYGONTYPE && (g->type != CURVEPOLYTYPE ||
+        ! buffer_curvepoly_straight((const LWCURVEPOLY *) g)))
+      return NULL;
+  }
+  LWGEOM **polys = lwalloc(sizeof(LWGEOM *) * Max(ms->ngeoms, 1u));
+  for (uint32_t i = 0; i < ms->ngeoms; i++)
+  {
+    LWGEOM *g = ms->geoms[i];
+    if (g->type == POLYGONTYPE)
+    {
+      /* A polygon member is copied as it is (lwmsurface_linearize) */
+      LWPOLY *p = (LWPOLY *) g;
+      POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *) *
+        Max(p->nrings, 1u));
+      for (uint32_t r = 0; r < p->nrings; r++)
+      {
+        rings[r] = p->rings[r];
+        p->rings[r] = NULL;
+      }
+      polys[i] = lwpoly_as_lwgeom(lwpoly_construct(ms->srid, NULL,
+        p->nrings, rings));
+      p->nrings = 0;
+    }
+    else
+      polys[i] = lwpoly_as_lwgeom(buffer_curvepoly_take((LWCURVEPOLY *) g));
+  }
+  LWGEOM *result = lwcollection_as_lwgeom(lwcollection_construct(
+    MULTIPOLYGONTYPE, ms->srid, NULL, ms->ngeoms, polys));
+  lwgeom_free(geom);
+  return result;
 }
 
 /**
@@ -8359,6 +8528,9 @@ buffer_areal_operation(const LWGEOM *geom1, const LWGEOM *geom2,
    * of a ring that carries no arc into one point array and loses nothing */
   if (! lwgeom_has_arc(result))
   {
+    LWGEOM *taken = buffer_arcless_as_polygons(result);
+    if (taken)
+      return taken;
     LWGEOM *straight = lwgeom_stroke(result, 0);
     if (straight)
     {

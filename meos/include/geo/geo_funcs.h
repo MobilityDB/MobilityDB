@@ -1734,19 +1734,19 @@ typedef struct
   int len;          /**< Number of limbs of the magnitude, 0 for the value 0 */
   int exp;          /**< Weight of the lowest bit of the magnitude */
   uint64 limb[FLEXIBLE_ARRAY_MEMBER];
-} TowerWide;
+} DyadicWide;
 
-/** Number of 64-bit words a #TowerWideArena holds before it takes a block */
-#define TOWER_WIDE_ARENA_WORDS 1024
+/** Number of 64-bit words a #DyadicWideArena holds before it takes a block */
+#define DYADIC_WIDE_ARENA_WORDS 1024
 
 /**
- * @brief The memory of the #TowerWide values of one exact evaluation: taken
+ * @brief The memory of the #DyadicWide values of one exact evaluation: taken
  * in order from a buffer of its own, then from blocks taken as it is used up,
  * and released in one step
  */
 typedef struct
 {
-  uint64 buf[TOWER_WIDE_ARENA_WORDS];
+  uint64 buf[DYADIC_WIDE_ARENA_WORDS];
   size_t used;      /**< Words taken of the current block */
   size_t cap;       /**< Words of the current block */
   uint64 **blocks; /**< The blocks after @p buf */
@@ -1754,70 +1754,70 @@ typedef struct
   int nblocks;      /**< Number of blocks in use, the last the current one */
   int nkept;        /**< Number of blocks held, those past @p nblocks free */
   int capblocks;
-} TowerWideArena;
+} DyadicWideArena;
 
-/** @brief A point of a #TowerWideArena that a release returns it to */
+/** @brief A point of a #DyadicWideArena that a release returns it to */
 typedef struct
 {
   int nblocks;
   size_t used;
-} TowerWideMark;
+} DyadicWideMark;
 
-extern void tower_wide_arena_init(TowerWideArena *ar);
-extern void tower_wide_arena_free(TowerWideArena *ar);
-extern TowerWideMark tower_wide_arena_mark(const TowerWideArena *ar);
-extern void tower_wide_arena_release(TowerWideArena *ar, TowerWideMark m);
-extern TowerWide *tower_wide_of_double(TowerWideArena *ar, double x);
-extern TowerWide *tower_wide_of_int64(TowerWideArena *ar, int64 v);
-extern TowerWide *tower_wide_dup(const TowerWide *a);
-extern TowerWide *tower_wide_signed(TowerWideArena *ar, const TowerWide *a,
+extern void dyadic_wide_arena_init(DyadicWideArena *ar);
+extern void dyadic_wide_arena_free(DyadicWideArena *ar);
+extern DyadicWideMark dyadic_wide_arena_mark(const DyadicWideArena *ar);
+extern void dyadic_wide_arena_release(DyadicWideArena *ar, DyadicWideMark m);
+extern DyadicWide *dyadic_wide_of_double(DyadicWideArena *ar, double x);
+extern DyadicWide *dyadic_wide_of_int64(DyadicWideArena *ar, int64 v);
+extern DyadicWide *dyadic_wide_dup(const DyadicWide *a);
+extern DyadicWide *dyadic_wide_signed(DyadicWideArena *ar, const DyadicWide *a,
   int sign);
-extern TowerWide *tower_wide_add_signed(TowerWideArena *ar,
-  const TowerWide *a, int sa, const TowerWide *b, int sb);
-extern TowerWide *tower_wide_mul(TowerWideArena *ar, const TowerWide *a,
-  const TowerWide *b);
-extern int tower_wide_cmp(const TowerWide *a, const TowerWide *b);
-extern int tower_wide_to_fixed(const TowerWide *a, int scale, bool up,
+extern DyadicWide *dyadic_wide_add_signed(DyadicWideArena *ar,
+  const DyadicWide *a, int sa, const DyadicWide *b, int sb);
+extern DyadicWide *dyadic_wide_mul(DyadicWideArena *ar, const DyadicWide *a,
+  const DyadicWide *b);
+extern int dyadic_wide_cmp(const DyadicWide *a, const DyadicWide *b);
+extern int dyadic_wide_to_fixed(const DyadicWide *a, int scale, bool up,
   uint64 *mag, int nlimbs);
-extern int tower_wide_cmp_fixed(TowerWideArena *ar, const TowerWide *mid,
+extern int dyadic_wide_cmp_fixed(DyadicWideArena *ar, const DyadicWide *mid,
   int sign, const uint64 *mag, int nlimbs, int exp);
-extern void wide_cross3(TowerWideArena *ar, TowerWide *const *u,
-  TowerWide *const *v, TowerWide **r);
-extern TowerWide *wide_dot3(TowerWideArena *ar, TowerWide *const *u,
-  TowerWide *const *v);
+extern void wide_cross3(DyadicWideArena *ar, DyadicWide *const *u,
+  DyadicWide *const *v, DyadicWide **r);
+extern DyadicWide *wide_dot3(DyadicWideArena *ar, DyadicWide *const *u,
+  DyadicWide *const *v);
 
 /**
  * @brief Return the sum of two values, exactly
  */
-static inline TowerWide *
-tower_wide_add(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+static inline DyadicWide *
+dyadic_wide_add(DyadicWideArena *ar, const DyadicWide *a, const DyadicWide *b)
 {
-  return tower_wide_add_signed(ar, a, 1, b, 1);
+  return dyadic_wide_add_signed(ar, a, 1, b, 1);
 }
 
 /**
  * @brief Return the difference of two values, exactly
  */
-static inline TowerWide *
-tower_wide_sub(TowerWideArena *ar, const TowerWide *a, const TowerWide *b)
+static inline DyadicWide *
+dyadic_wide_sub(DyadicWideArena *ar, const DyadicWide *a, const DyadicWide *b)
 {
-  return tower_wide_add_signed(ar, a, 1, b, -1);
+  return dyadic_wide_add_signed(ar, a, 1, b, -1);
 }
 
 /**
  * @brief Return the negation of a value
  */
-static inline TowerWide *
-tower_wide_neg(TowerWideArena *ar, const TowerWide *a)
+static inline DyadicWide *
+dyadic_wide_neg(DyadicWideArena *ar, const DyadicWide *a)
 {
-  return tower_wide_signed(ar, a, -1);
+  return dyadic_wide_signed(ar, a, -1);
 }
 
 /**
  * @brief Return the sign of a value, -1, 0 or 1
  */
 static inline int
-wide_sign(const TowerWide *a)
+wide_sign(const DyadicWide *a)
 {
   return a->sign;
 }
@@ -1833,7 +1833,7 @@ extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
 
 /* The sign of the value a search reads less @p mid, the values it forms taken
  * from @p ar, which releases them once it answers */
-typedef int (*NearestSide)(TowerWideArena *ar, const TowerWide *mid,
+typedef int (*NearestSide)(DyadicWideArena *ar, const DyadicWide *mid,
   const void *arg);
 
 extern double nearest_double_exact(double c, NearestSide side,
@@ -1845,9 +1845,11 @@ extern double cosd_nearest(double deg);
 extern void lonlat_vector_nearest(double lon, double lat, double *v);
 extern bool ddb_vector_lon_nearest(const int64 *v, double *result);
 extern bool ddb_vector_lat_nearest(const int64 *v, double *result);
+extern bool ddb_mercator_lat_nearest(double r, double *result);
 extern double vector_lon_nearest(const int64 *v);
 extern double vector_lat_nearest(const int64 *v);
 extern double rational_nearest(int64 num, int64 den);
+extern double mercator_lat_nearest(double r);
 extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   const double *a, const double *b, int64 num, int64 den);
 

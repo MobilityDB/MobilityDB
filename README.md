@@ -112,6 +112,7 @@ Requirements
 
 *   Linux (other UNIX-like systems may work, but remain untested)
 *   CMake >= 3.12
+*   A C compiler with 128-bit integers: GCC or Clang on a 64-bit target (the build stops with an explicit error on a 32-bit target or with MSVC's cl.exe)
 *   PostgreSQL 16 to 19 (the build stops with an explicit error outside that range)
 *   PostGIS >= 3.0
 *   PROJ >= 7.1
