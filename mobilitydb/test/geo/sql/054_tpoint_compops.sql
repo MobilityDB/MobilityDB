@@ -434,6 +434,21 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' #= tgeompoint
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' ?= tgeompoint '[Point(-1 0)@2001-01-01, Point(259200000000 0)@2001-01-02]';
 SELECT tgeompoint '(Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' ?= tgeompoint '(Point(-1 0)@2001-01-01, Point(259200000000 0)@2001-01-02]';
 SELECT tgeompoint '(Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' %<> tgeompoint '(Point(-1 0)@2001-01-01, Point(259200000000 0)@2001-01-02]';
+-- A temporal point meets a point as it meets the point standing still: a
+-- planar segment a third of a microsecond after the start, dated by the start,
+-- a day after the start, and never a point one unit in the last place off the
+-- segment; a geography segment on the equator a quarter of a day after the
+-- start, standing still against one on the equator halfway between two
+-- microseconds, at the middle of a segment exchanged by a half turn, and
+-- never at a point only floating trigonometry places on its arc
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00:00, Point(3 0)@2001-01-01 00:00:00.000001]' ?= geometry 'Point(1 0)';
+SELECT tgeompoint '[Point(0 0)@2001-01-01 00:00:00, Point(3 0)@2001-01-01 00:00:00.000001]' #= geometry 'Point(1 0)';
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04]' #= geometry 'Point(1 1)';
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04]' ?= geometry 'Point(1 1.0000000000000002)';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(4 0)@2001-01-02]' #= geography 'Point(1 0)';
+SELECT tgeogpoint '[Point(123.30808741627786 0)@2001-01-01 00:00:00, Point(123.30808741627786 0)@2001-01-01 00:00:00.000002]' #= tgeogpoint '[Point(168.6161748325557 0)@2001-01-01 00:00:00, Point(78 0)@2001-01-01 00:00:00.000002]';
+SELECT tgeogpoint '[Point(12 3)@2001-01-01, Point(8 -3)@2001-01-02]' #= geography 'Point(10 0)';
+SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(2 3)@2001-01-02]' ?= geography 'Point(1.4996952201137808 2.0000760948915994)';
 -- Errors
 SELECT tgeompoint 'SRID=4326;Point(1 1)@2001-01-01' ?&& stbox 'STBOX X((0,0),(2,2))';
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' ?&& stbox 'STBOX X((0,0),(2,2))';

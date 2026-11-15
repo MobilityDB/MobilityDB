@@ -296,19 +296,21 @@ FROM (SELECT ts2cell(tgeompoint
 -- 44.5 in face 2, a path near the antimeridian and one along a meridian. The
 -- samples lie between the minutes. A planar cell departs from the cell of S2,
 -- whose edges are great circles, so the planar cover differs from the
--- geodetic one
-SELECT count(*) AS instants,
-  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
-    startValue(ts2cell(atTime(p, t), z))) AS other_cell,
-  count(DISTINCT p::text) FILTER (WHERE c <> ts2cell(p::tgeogpoint, z))
-    AS other_than_geodetic
-FROM (SELECT p, z, ts2cell(p, z) AS c FROM (VALUES
+-- geodetic one. The covers are materialized so that each is computed once
+-- and not at every sample
+WITH q AS MATERIALIZED (
+  SELECT p, z, ts2cell(p, z) AS c, ts2cell(p::tgeogpoint, z) AS g FROM (VALUES
   (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 6),
   (tgeompoint 'SRID=4326;[Point(-170 75)@2001-01-01, Point(170 78)@2001-01-02]', 5),
   (tgeompoint 'SRID=4326;[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 7),
   (tgeompoint 'SRID=4326;[Point(179 10)@2001-01-01, Point(175 -30)@2001-01-02]', 8),
   (tgeompoint 'SRID=4326;[Point(4.35 10)@2001-01-01, Point(4.35 50)@2001-01-02]', 9))
-  AS v(p, z)) AS q,
+  AS v(p, z))
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(ts2cell(atTime(p, t), z))) AS other_cell,
+  count(DISTINCT p::text) FILTER (WHERE c <> g) AS other_than_geodetic
+FROM q,
   generate_series(timestamptz '2001-01-01 00:00:30',
     timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
  instants | other_cell | other_than_geodetic 
