@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.6.0 |
-| Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split and the QUADBIN, S2 and H3 cells, and how the instant a trajectory crosses from one cell to the next is dated |
-| Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices, owner and outline), `meos/src/s2cell/ts2cell_ops.c` (S2 cells of a trajectory), `meos/src/temporal/tcellindex.c` (the walk the grids share) |
+| Version | v0.7.0 |
+| Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split, the QUADBIN, S2 and H3 cells and the pixels of a raster, and how the instant a trajectory crosses from one cell to the next is dated |
+| Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices, owner and outline), `meos/src/s2cell/ts2cell_ops.c` (S2 cells of a trajectory), `meos/src/temporal/tcellindex.c` (the walk the grids share), `meos/src/raster/raster_quadbin.c` (the pixels of a trajectory) |
 
 ## 1. Scope and intent
 
@@ -50,6 +50,7 @@ as a tile contains its lower bounds and excludes its upper ones:
 | QUADBIN | its west and north edges and its north-west corner; the last row also its south edge, reaching the south pole |
 | S2 | its low-i and low-j edges and the corner between them; of the two cube corners that are the low corner of no cell, each belongs to the cell of the lowest face meeting there |
 | H3 | its north and west sides: an edge belongs to the cell south of it, and east of it where it runs north–south; a vertex to the cell whose corner there opens south, or east where an edge runs due south |
+| Pixels of a raster | the grid lines of its own column and row and the corner between them: its west and north sides where the rows grow southward |
 
 The H3 rule needs no index frame, so it holds unchanged at the twelve
 pentagons and where a cell crosses a face of the icosahedron. The cell around
@@ -189,6 +190,17 @@ pole being stated at any of them.
   whose outline holds its geodetic position (section 4), decided by exact
   signs on the geodetic positions.
 
+### Raster
+
+- **The pixel of a position** on a raster whose georeferencing is affine, a
+  PostGIS raster or a raster file, is the pixel of the column and the row its
+  exact grid coordinates floor to, read through the six doubles of the
+  geotransform: the side of a position of the column line k is the sign of
+  gt5·(x − gt0) − gt2·(y − gt3) − k·det, and of the row line k the sign of
+  gt1·(y − gt3) − gt4·(x − gt0) − k·det, times the sign of det = gt1·gt5 −
+  gt2·gt4, each decided exactly. No inverse of the geotransform is computed,
+  and no coordinate within a tolerance of a grid line is taken as on it.
+
 ## 6. The cells of a trajectory
 
 A cell holds exactly the microseconds whose exact position lies in it. The
@@ -281,6 +293,39 @@ FROM (SELECT ts2cell(tgeogpoint
 -- 19 | 38 | t | t
 ```
 
+The values a raster holds along a trajectory, read with the nearest read,
+are the pixels it passes over, walked by the same rule: each pixel holds
+exactly the microseconds whose exact position lies in it, each crossing of a
+grid line is dated by the truncation of its exact parameter on the doubles
+of the positions and of the geotransform, and a corner the trajectory
+passes through exactly gives that instant alone to the pixel the corner
+belongs to. A position outside the raster or over a pixel carrying no value
+ends a sequence. A trip over a 3x3 raster of unit pixels passes through the
+pixel corners (2, 2) and (1, 1), each held at its instant by the pixel of
+its column and row, of the values 60 and 80:
+
+```sql
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r)::text AS result
+FROM rast;
+-- Interp=Step;{[10@2001-01-01 00:00:00+00, 20@2001-01-01 06:00:00+00,
+--   30@2001-01-01 18:00:00+00, 60@2001-01-02 06:00:00+00],
+--   (50@2001-01-02 06:00:00+00, 80@2001-01-02 18:00:00+00],
+--   (70@2001-01-02 18:00:00+00, 70@2001-01-03 00:00:00+00]}
+```
+
 The restriction of a temporal point to a box and its split by a space grid
 follow the same rule: each instant belongs to exactly one tile, and a box
 holds exactly the instants whose position lies in it.
@@ -298,6 +343,7 @@ number with corrections of wording.
 | v0.4.0 | The vertices of an S2 cell, the exact corners of the cube, a corner on the antimeridian or at a pole taking the longitude its cell gives it |
 | v0.5.0 | The planar S2 cell of a position and the planar S2 cells of a trajectory, walked and dated on the straight-edged outlines |
 | v0.6.0 | The geodetic S2 cell of a position and the geodetic S2 cells of a trajectory, walked on great-circle outlines and dated at constant angular speed |
+| v0.7.0 | The pixel of a position on a raster whose georeferencing is affine and the pixels of a trajectory, walked and dated exactly on the geotransform |
 
 ## 8. Out of scope
 
@@ -305,7 +351,8 @@ Future: the rule extends to these, each added here with its version:
 
 - the vertices of an H3 cell computed from H3's own formula, so that every
   build of the library reads the same outline;
-- the raster values along a trajectory, read pixel by pixel by the same rule.
+- the pixels of a Raquet tile decided exactly, a tile of side 2^b reading
+  its pixels as the QUADBIN tiles of b more zoom levels.
 
 Not specified: the cells of the grids at resolutions the libraries refuse,
 and the temporal relationships of a trajectory with a closed cell, which are
