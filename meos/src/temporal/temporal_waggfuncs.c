@@ -53,6 +53,85 @@
  *****************************************************************************/
 
 /**
+ * @brief A run of a step sequence: one value held over a time span
+ */
+typedef struct
+{
+  Datum value;          /**< Value held over the run */
+  TimestampTz lower;    /**< Start of the run */
+  TimestampTz upper;    /**< End of the run */
+  bool lower_inc;       /**< True when the run holds its start */
+  bool upper_inc;       /**< True when the run holds its end */
+} StepRun;
+
+/**
+ * @brief Split a temporal sequence with step interpolation into its runs, the
+ * maximal spans over which it holds one value, and return their number
+ * @details The split is exclusive, as the tiling and the cell walks split a
+ * value: every instant of the sequence belongs to exactly one run. A run ends
+ * with an exclusive bound where the value changes, and the next run begins
+ * there. The last instant is a run of its own only when the sequence holds
+ * it and its value differs from the one before it; otherwise it is the end of
+ * the last run, which holds it as the sequence does. The instants of a
+ * discrete sequence are each extended alone, as #tdiscseq_extend does
+ * @param[in] seq Temporal sequence with step interpolation
+ * @param[out] runs Array of at least `seq->count` runs
+ */
+static int
+tstepseq_runs(const TSequence *seq, StepRun *runs)
+{
+  assert(seq); assert(runs);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
+  MeosType basetype = temptype_basetype(seq->temptype);
+  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
+  Datum value = tinstant_value_p(start);
+  bool lower_inc = seq->period.lower_inc;
+  int k = 0;
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    Datum value2 = tinstant_value_p(inst);
+    if (datum_eq(value, value2, basetype))
+      continue;
+    /* The value changes at this instant: the run ends before it */
+    runs[k++] = (StepRun) { value, start->t, inst->t, lower_inc, false };
+    start = inst;
+    value = value2;
+    lower_inc = true;
+  }
+  /* The last run ends at the last instant, holding it as the sequence does:
+   * a last instant whose value differs is a run of its own only when held */
+  const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
+  if (start != last || seq->count == 1 || seq->period.upper_inc)
+    runs[k++] = (StepRun) { value, start->t, last->t, lower_inc,
+      seq->period.upper_inc };
+  return k;
+}
+
+/**
+ * @brief Return the sequence holding a value over a run extended by a time
+ * interval, a value held at an instant t being within the window of every
+ * instant from t to t plus the interval
+ * @param[in] value Value the sequence holds
+ * @param[in] temptype Temporal type of the sequence
+ * @param[in] run Run
+ * @param[in] interv Interval
+ */
+static TSequence *
+steprun_extend(Datum value, MeosType temptype, const StepRun *run,
+  const Interval *interv)
+{
+  TInstant *instants[2];
+  instants[0] = tinstant_make(value, temptype, run->lower);
+  instants[1] = tinstant_make(value, temptype,
+    add_timestamptz_interval(run->upper, (Interval *) interv));
+  TSequence *result = tsequence_make(instants, 2, run->lower_inc,
+    run->upper_inc, STEP, NORMALIZE_NO);
+  pfree(instants[0]); pfree(instants[1]);
+  return result;
+}
+
+/**
  * @brief Extend a temporal instant by a time interval
  * @param[in] inst Temporal value
  * @param[in] interv Interval
@@ -107,6 +186,18 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
   /* Instantaneous sequence */
   if (seq->count == 1)
     return tinstant_extend(TSEQUENCE_INST_N(seq, 0), interv, result);
+
+  /* Step interpolation: each run of one value is extended */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == STEP)
+  {
+    StepRun *runs = palloc(sizeof(StepRun) * seq->count);
+    int nruns = tstepseq_runs(seq, runs);
+    for (int i = 0; i < nruns; i++)
+      result[i] = steprun_extend(runs[i].value, seq->temptype, &runs[i],
+        interv);
+    pfree(runs);
+    return nruns;
+  }
 
   /* General case */
   TInstant *instants[3];
@@ -299,6 +390,19 @@ tcontseq_transform_wcount(const TSequence *seq, const Interval *interv,
     return tinstant_transform_wcount(TSEQUENCE_INST_N(seq, 0), interv,
       result);
 
+  /* Step interpolation: each run of one value counts once */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == STEP)
+  {
+    StepRun *runs = palloc(sizeof(StepRun) * seq->count);
+    int nruns = tstepseq_runs(seq, runs);
+    for (int i = 0; i < nruns; i++)
+      result[i] = tinstant_transform_wcount_iter(runs[i].lower, runs[i].upper,
+        runs[i].lower_inc, runs[i].upper_inc, interv);
+    pfree(runs);
+    return nruns;
+  }
+
+  /* Linear interpolation: each segment counts once */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
@@ -439,6 +543,23 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interv,
     inst1 = TSEQUENCE_INST_N(seq, 0);
     tnumberinst_transform_wavg(inst1, interv, &result[0]);
     return 1;
+  }
+
+  /* Step interpolation: each run of one value counts once, with its value */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == STEP)
+  {
+    StepRun *runs = palloc(sizeof(StepRun) * seq->count);
+    int nruns = tstepseq_runs(seq, runs);
+    for (int i = 0; i < nruns; i++)
+    {
+      double2 dvalue2;
+      double2_set(datum_double(runs[i].value,
+        temptype_basetype(seq->temptype)), 1, &dvalue2);
+      result[i] = steprun_extend(PointerGetDatum(&dvalue2), T_TDOUBLE2,
+        &runs[i], interv);
+    }
+    pfree(runs);
+    return nruns;
   }
 
   /* General case */

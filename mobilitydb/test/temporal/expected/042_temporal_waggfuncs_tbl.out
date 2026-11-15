@@ -184,13 +184,13 @@ SELECT numSequences(wcount(seq, interval '5 minutes')) FROM tbl_tfloat_seq;
 SELECT numSequences(wmin(ss, interval '5 minutes')) FROM tbl_tint_seqset;
  numsequences 
 --------------
-          427
+          424
 (1 row)
 
 SELECT numSequences(wmax(ss, interval '5 minutes')) FROM tbl_tint_seqset;
  numsequences 
 --------------
-          424
+          425
 (1 row)
 
 SELECT numSequences(wsum(ss, interval '5 minutes')) FROM tbl_tint_seqset;
@@ -208,7 +208,7 @@ SELECT numSequences(wcount(ss, interval '5 minutes')) FROM tbl_tint_seqset;
 SELECT numSequences(wavg(ss, interval '5 minutes')) FROM tbl_tint_seqset;
  numsequences 
 --------------
-          450
+          451
 (1 row)
 
 -------------------------------------------------------------------------------
