@@ -80,15 +80,20 @@ PRESENCE_CLASSES = {"numeric": "tnumber", "orderable": "torder"}
 CLASS_MEMBERS: dict = {flag: set() for flag in PRESENCE_CLASSES}
 
 
+@functools.lru_cache(maxsize=None)
 def load_manifest() -> dict:
     """Return the manifest assembled from the per-axis files
 
     Each file under manifest.d/ holds one top-level axis, so that a session
-    working on an axis edits a file no other axis shares.
+    working on an axis edits a file no other axis shares.  The files are read
+    once per run, as #_selectivity_of_temptype reads its source, the C parser
+    of libyaml reading them where PyYAML has it, and every caller shares the
+    manifest, which none modifies.
     """
     manifest: dict = {}
+    loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
     for path in sorted(MANIFEST_DIR.glob("*.yaml")):
-        axis = yaml.safe_load(path.read_text())
+        axis = yaml.load(path.read_text(), Loader=loader)
         if not axis:
             continue
         for key, value in axis.items():
