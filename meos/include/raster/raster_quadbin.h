@@ -99,6 +99,23 @@ typedef double (*raster_cross_fn)(const void *ctx, double x1, double y1,
   double x2, double y2, int axis, double k);
 
 /**
+ * @brief Callback returning, exactly, the sign of the difference between the
+ * grid coordinate of a position along an axis and the grid line @p k: -1, 0
+ * or 1, a pixel holding the lines of its own column and row
+ */
+typedef int (*raster_side_fn)(const void *ctx, double x, double y, int axis,
+  int k);
+
+/**
+ * @brief Callback returning the microsecond at which the segment from
+ * (@p x1, @p y1) to (@p x2, @p y2), of @p D microseconds, crosses the grid
+ * line @p k of an axis, as the offset from its start, truncated, and in
+ * @p whole whether the segment lies on the line exactly at it
+ */
+typedef int64 (*raster_offset_fn)(const void *ctx, double x1, double y1,
+  double x2, double y2, int64 D, int axis, int k, bool *whole);
+
+/**
  * @brief What a raster engine tells the sampling about its grid: where a
  * position lies in it, the value of a pixel, where a segment reaches one of
  * its lines, and where it lies
@@ -119,10 +136,12 @@ typedef struct RasterGridOps
   raster_cross_fn cross;   /**< Parameter at which a segment reaches a grid
                                  line, NULL to solve it from the grid
                                  coordinates of the endpoints */
-  const double *affine;     /**< Geotransform of a grid that is its affine
-                                 map, read exactly: the pixel of a position
-                                 and the crossing of a grid line decided on
-                                 its doubles; NULL for another grid */
+  raster_side_fn side;      /**< Exact side of a position of a grid line,
+                                 NULL to read the pixel of a position from
+                                 its grid coordinates */
+  raster_offset_fn offset;  /**< Exact microsecond of the crossing of a grid
+                                 line, NULL to read it from the parameter of
+                                 @p cross */
   void *ctx;                /**< State of the engine, passed to the callbacks */
   int width;                /**< Number of columns of the grid */
   int height;               /**< Number of rows of the grid */
@@ -131,6 +150,10 @@ typedef struct RasterGridOps
 
 extern double raster_affine_cross(const double *gt, double x1, double y1,
   double x2, double y2, int axis, double k);
+extern int raster_affine_side(const double *gt, double x, double y, int axis,
+  int k);
+extern int64 raster_affine_offset(const double *gt, double x1, double y1,
+  double x2, double y2, int64 D, int axis, int k, bool *whole);
 extern Temporal *raster_value_sampler(const Temporal *traj,
   const RasterGridOps *ops);
 extern Temporal *raster_at_value_sampler(const Temporal *traj,
