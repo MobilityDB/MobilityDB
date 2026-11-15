@@ -2456,6 +2456,150 @@ wide_limbs_mul(const uint64 *x, int nx, const uint64 *y, int ny,
 }
 
 /*****************************************************************************
+ * The one search for the nearest double
+ *****************************************************************************/
+
+/**
+ * @brief The side of a value against the upper midpoint of a double: the sign
+ * of the value less the midpoint from the double of bit pattern @p bits to the
+ * next one, or 2 where the side cannot tell
+ */
+typedef int (*NearestBitsSide)(uint64 bits, void *arg);
+
+/* The bit pattern of infinity, above that of every double */
+#define NEAREST_INF_BITS UINT64CONST(0x7FF0000000000000)
+
+/* True where the side @p s puts the value beyond the upper midpoint of the
+ * double of bit pattern @p bits, a tie being beyond where the last bit of
+ * that double is odd, so a tie goes to the even double */
+static inline bool
+nearest_bits_beyond_sign(int s, uint64 bits)
+{
+  return s > 0 || (s == 0 && (bits & 1) != 0);
+}
+
+/**
+ * @brief Find the bit pattern of the double nearest a nonnegative value that
+ * @p side places against midpoints, a tie going to the even double, returning
+ * false where a side it asks cannot tell or its budget runs out
+ * @details The answer is the smallest bit pattern whose upper midpoint the
+ * value does not pass, infinity standing above the largest double, whose
+ * upper midpoint is `2^1024 - 2^970`. A gallop from the candidate
+ * @p bits brackets it, its first two steps of one double, so that a
+ * candidate a neighbour or two from the answer asks no more sides than a
+ * walk, the steps then doubling, and halving the bracket finds it; a candidate whose own side cannot tell is read from its lower
+ * neighbour, which places the value below it or decides nothing. An exact
+ * side never answers 2 and a budget of 0 sets no limit, so the search always
+ * answers; a side of a filter on doubles answers 2 where it cannot tell, and
+ * its budget bounds the sides it is asked, so that the exact search behind it
+ * answers what the filter cannot
+ * @param[in] bits Bit pattern of the candidate, at most infinity's
+ * @param[in] side,arg The side and its argument
+ * @param[in] budget Largest number of sides asked, 0 for no limit
+ * @param[out] result The bit pattern of the answer where the search answers
+ */
+static inline bool
+nearest_double_search(uint64 bits, NearestBitsSide side,
+  void *arg, int budget, uint64 *result)
+{
+  int asked = 0;
+#define NEAREST_ASK(b, res) \
+  do { \
+    if (budget > 0 && asked++ >= budget) \
+      return false; \
+    int s_ = side((b), arg); \
+    if (s_ == 2) \
+      (res) = 2; \
+    else \
+      (res) = nearest_bits_beyond_sign(s_, (b)) ? 1 : 0; \
+  } while (0)
+  const uint64 max_bits = NEAREST_INF_BITS;
+  uint64 lo, hi, step = 1;
+  int beyond, moves = 0;
+  if (bits > max_bits)
+    bits = max_bits;
+  if (bits == max_bits)
+    beyond = 0;
+  else
+    NEAREST_ASK(bits, beyond);
+  if (beyond == 2)
+  {
+    /* The candidate cannot tell: below its lower midpoint the answer is at
+     * most its lower neighbour, otherwise nothing is decided */
+    if (bits == 0)
+      return false;
+    NEAREST_ASK(bits - 1, beyond);
+    if (beyond != 0)
+      return false;
+    bits -= 1;
+  }
+  if (beyond == 1)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    lo = bits;
+    while (true)
+    {
+      hi = (lo < max_bits - step) ? lo + step : max_bits;
+      if (hi == max_bits)
+        break;
+      NEAREST_ASK(hi, beyond);
+      if (beyond == 2)
+        return false;
+      if (! beyond)
+        break;
+      lo = hi;
+      if (moves++ > 0)
+        step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or below 0 */
+    hi = bits;
+    while (true)
+    {
+      if (hi == 0)
+      {
+        *result = 0;
+        return true;
+      }
+      lo = (hi > step) ? hi - step : 0;
+      NEAREST_ASK(lo, beyond);
+      if (beyond == 2)
+        return false;
+      if (beyond)
+        break;
+      if (lo == 0)
+      {
+        *result = 0;
+        return true;
+      }
+      hi = lo;
+      if (moves++ > 0)
+        step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    uint64 mid = lo + (hi - lo) / 2;
+    NEAREST_ASK(mid, beyond);
+    if (beyond == 2)
+      return false;
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef NEAREST_ASK
+  *result = hi;
+  return true;
+}
+
+/* The number of sides a search of a filter on doubles asks before it leaves
+ * the answer to the exact search behind it */
+#define NEAREST_FILTER_BUDGET 8
+
+/*****************************************************************************
  * The wide number
  *****************************************************************************/
 
@@ -3625,9 +3769,177 @@ point_distance_scale_exact(const double *d, const double *e, int ndims, int k,
 static double point_distance_offset_inputs(const double *p, const double *q,
   int ndims, double r, double rlo);
 
+/* The squared distance of #point_distance_nearest, its scaling and the
+ * candidate whose sides it read last, the twin of #OffsetFilterSide */
+typedef struct
+{
+  const double *d, *e;
+  int ndims, k;
+  double f1, f2;        /**< The scaling of a candidate */
+  double s, lo0, lomag0;
+  uint64 cbits;         /**< Bit pattern of the candidate, infinity's for none */
+  double c, cs, gd;     /**< The candidate, scaled, and its gap below, scaled */
+  double dm, dmerr;     /**< The squared distance less cs*cs and its bound */
+} PointDistanceSide;
+
+/**
+ * @brief Set the squared distance less the square of the candidate of bit
+ * pattern @p bits, and the bound on its error, for the sides of
+ * #point_distance_nearest
+ * @details The squared distance arrives as the sum `s` of the rounded squares
+ * and the small terms `lo0` that make it exact; less the square of the
+ * scaled candidate `cs`, split by #two_product, the two large terms nearly
+ * cancel and their difference is exact wherever one is within a factor of
+ * two of the other (Sterbenz)
+ */
+static pg_attribute_always_inline void
+point_distance_candidate(PointDistanceSide *f, uint64 bits)
+{
+  double c, x, y;
+  memcpy(&c, &bits, sizeof(c));
+  double cs = c * f->f1 * f->f2;
+  two_product(cs, cs, &x, &y);
+  double lo = f->lo0 - y;
+  double lomag = f->lomag0 + fabs(y);
+  double hi = f->s - x;
+  bool hiexact = (f->s >= 0.5 * x && f->s <= 2.0 * x);
+  f->dm = hi + lo;
+  f->dmerr = (hiexact ? 0.0 : DBL_EPSILON * fabs(hi)) +
+    16.0 * DBL_EPSILON * lomag + DBL_EPSILON * fabs(f->dm);
+  f->cbits = bits;
+  f->c = c;
+  f->cs = cs;
+  f->gd = 0.0;
+  if (bits > 0)
+  {
+    uint64 dbits = bits - 1;
+    double cd;
+    memcpy(&cd, &dbits, sizeof(cd));
+    f->gd = (c - cd) * f->f1 * f->f2;
+  }
+}
+
+/**
+ * @brief The side of the distance of #point_distance_nearest against the
+ * upper midpoint of the double of bit pattern @p bits, or 2 where the filter
+ * on doubles cannot tell
+ * @details With `gu` and `gd` the gaps from the candidate `c` to its upper and
+ * lower neighbours, scaled, the squares of the two midpoints exceed `cs*cs`
+ * by `cs*gu + gu*gu/4` and fall short of it by `cs*gd - gd*gd/4`, so the
+ * squared distance less `cs*cs` against them gives the sides; the factors
+ * cover the rounding of both sides of each test. The upper midpoint of the
+ * lower neighbour of the candidate read last is that candidate's lower
+ * midpoint, whose test reads the values already set
+ */
+static pg_attribute_always_inline int
+point_distance_filter_side(uint64 bits, void *arg)
+{
+  PointDistanceSide *f = (PointDistanceSide *) arg;
+  if (bits + 1 == f->cbits)
+  {
+    double near = (fabs(f->dm) + f->dmerr) * (1.0 + 0x1p-50);
+    if (near < f->gd * (f->cs - 0.25 * f->gd) * (1.0 - 0x1p-48))
+      return 1;
+    if (- (f->dm + f->dmerr) * (1.0 - 0x1p-50) > f->gd * f->cs * (1.0 + 0x1p-48))
+      return -1;
+    return 2;
+  }
+  double c;
+  memcpy(&c, &bits, sizeof(c));
+  if (! (c > 0.0 && c < DBL_MAX))
+    return 2;
+  point_distance_candidate(f, bits);
+  uint64 ubits = bits + 1;
+  double cu;
+  memcpy(&cu, &ubits, sizeof(cu));
+  double gu = (cu - c) * f->f1 * f->f2;
+  double near = (fabs(f->dm) + f->dmerr) * (1.0 + 0x1p-50);
+  if ((f->dm - f->dmerr) * (1.0 - 0x1p-50) > gu * (f->cs + 0.25 * gu) * (1.0 + 0x1p-48))
+    return 1;
+  if (near < gu * (f->cs + 0.25 * gu) * (1.0 - 0x1p-48))
+    return -1;
+  return 2;
+}
+
+/**
+ * @brief The side of the distance of #point_distance_nearest against the
+ * upper midpoint of the double of bit pattern @p bits, decided exactly
+ * @details Half the gap to the upper neighbour is scaled with the rest; past
+ * the largest double it is half the gap below it, 2^970. The sign is
+ * #point_distance_midpoint_sign's, exact for any finite doubles
+ */
+static int
+point_distance_exact_side(uint64 bits, void *arg)
+{
+  PointDistanceSide *f = (PointDistanceSide *) arg;
+  point_distance_candidate(f, bits);
+  uint64 upbits = bits + 1;
+  double up;
+  memcpy(&up, &upbits, sizeof(up));
+  double hu = isinf(up) ? ldexp(1.0, 970 + f->k) :
+    (up - f->c) * f->f1 * f->f2 / 2.0;
+  return point_distance_midpoint_sign(f->d, f->e, f->ndims, f->cs, hu, f->dm,
+    f->dmerr);
+}
+
+/* The squared distance of the first test of #point_distance_exact and the
+ * candidate whose sides it read last */
+typedef struct
+{
+  double s, lo, err;
+  uint64 cbits;      /**< Bit pattern of the candidate, infinity's for none */
+  double c, dm, gd;  /**< The candidate, s + lo less its square, its gap below */
+} PointDistanceFirstSide;
+
+/**
+ * @brief The side of the distance of the first test of #point_distance_exact
+ * against the upper midpoint of the double of bit pattern @p bits, or 2 where
+ * its fixed bound cannot tell
+ * @details The squared distance less the square of the candidate `c` is
+ * `dm`, formed from `s - x`, exact by Sterbenz since `x`, the rounded square
+ * of `c`, is within a factor of two of `s`, and from the small terms, which
+ * #point_distance_exact bounds by `err`. The squares of the midpoints below
+ * and above `c` exceed `c*c` by `-gd*(c - gd/4)` and `gu*(c + gu/4)`. The
+ * upper midpoint of the lower neighbour of the candidate read last is that
+ * candidate's lower midpoint, whose test reads the values already set
+ */
+static pg_attribute_always_inline int
+point_distance_first_side(uint64 bits, void *arg)
+{
+  PointDistanceFirstSide *f = (PointDistanceFirstSide *) arg;
+  if (bits + 1 == f->cbits)
+  {
+    if (fabs(f->dm) + f->err < f->gd * (f->c - 0.25 * f->gd) * (1.0 - 0x1p-48))
+      return 1;
+    if (- (f->dm + f->err) > f->gd * (f->c - 0.25 * f->gd) * (1.0 + 0x1p-48))
+      return -1;
+    return 2;
+  }
+  double c, x, y;
+  memcpy(&c, &bits, sizeof(c));
+  if (! (c > 0.0 && c < DBL_MAX))
+    return 2;
+  two_square(c, &x, &y);
+  double dm = (f->s - x) + (f->lo - y);
+  uint64 ubits = bits + 1, dbits = bits - 1;
+  double cu, cd;
+  memcpy(&cu, &ubits, sizeof(cu));
+  memcpy(&cd, &dbits, sizeof(cd));
+  double gu = cu - c, gd = c - cd;
+  f->cbits = bits;
+  f->c = c;
+  f->dm = dm;
+  f->gd = gd;
+  if (dm - f->err > gu * (c + 0.25 * gu) * (1.0 + 0x1p-48))
+    return 1;
+  if (fabs(dm) + f->err < gd * (c - 0.25 * gd) * (1.0 - 0x1p-48))
+    return -1;
+  return 2;
+}
+
 /**
  * @brief Return the distance between two points as the double nearest it,
- * moving a candidate from the root of the rounded sum of the squares
+ * searching from the root of the rounded sum of the squares
  * @details The search of #point_distance_exact for a pair its first test does
  * not settle; the differences are scaled first where @p scale is true
  * @param[in] p,q Coordinates of the two points
@@ -3682,84 +3994,25 @@ point_distance_nearest(const double *p, const double *q, double *d,
   if (isinf(c))
     c = DBL_MAX;
 
-  /* Move the candidate to the nearest double */
-  while (true)
+  /* The search reads the filter on doubles first, asking at most
+   * #NEAREST_FILTER_BUDGET of its sides, and the exact sides where it
+   * cannot tell, which every tie is */
+  PointDistanceSide f = {d, e, ndims, k, f1, f2, s, lo0, lomag0,
+    NEAREST_INF_BITS, 0.0, 0.0, 0.0, 0.0, 0.0};
+  uint64 bits, found = NEAREST_INF_BITS;
+  memcpy(&bits, &c, sizeof(bits));
+  if (! nearest_double_search(bits, &point_distance_filter_side, &f,
+      NEAREST_FILTER_BUDGET, &found))
   {
-    uint64 bits;
-    memcpy(&bits, &c, sizeof(bits));
-    bool even = (bits & 1) == 0;
-    double cs = c * f1 * f2;
-    /* The squared distance less cs*cs, and a bound on its error */
-    double x, y;
-    two_product(cs, cs, &x, &y);
-    double lo = lo0 - y;
-    double lomag = lomag0 + fabs(y);
-    double hi = s - x;
-    bool hiexact = (s >= 0.5 * x && s <= 2.0 * x);
-    double dm = hi + lo;
-    double dmerr = (hiexact ? 0.0 : DBL_EPSILON * fabs(hi)) +
-      16.0 * DBL_EPSILON * lomag + DBL_EPSILON * fabs(dm);
-    /* With gu and gd the gaps from c to its upper and lower neighbours,
-     * scaled, the squares of the two midpoints exceed cs*cs by
-     * cs*gu + gu*gu/4 and fall short of it by cs*gd - gd*gd/4: a squared
-     * distance between them rounds its root to c, and one beyond either is
-     * nearer the neighbour, to which the candidate moves without reading the
-     * midpoints. The factors cover the rounding of both sides of each test */
-    if (c > 0.0 && c < DBL_MAX)
-    {
-      uint64 ubits = bits + 1, dbits = bits - 1;
-      double cu, cd;
-      memcpy(&cu, &ubits, sizeof(cu));
-      memcpy(&cd, &dbits, sizeof(cd));
-      double gu = (cu - c) * f1 * f2, gd = (c - cd) * f1 * f2;
-      double near = (fabs(dm) + dmerr) * (1.0 + 0x1p-50);
-      if (near < gd * (cs - 0.25 * gd) * (1.0 - 0x1p-48) &&
-          near < gu * (cs + 0.25 * gu) * (1.0 - 0x1p-48))
-        return c;
-      if ((dm - dmerr) * (1.0 - 0x1p-50) >
-          gu * (cs + 0.25 * gu) * (1.0 + 0x1p-48))
-      {
-        c = cu;
-        continue;
-      }
-      if (- (dm + dmerr) * (1.0 - 0x1p-50) > gd * cs * (1.0 + 0x1p-48))
-      {
-        c = cd;
-        continue;
-      }
-    }
-    /* The neighbours of a non-negative finite double are the next bit
-     * patterns, the one after the largest double being infinity. Half the gap
-     * to the upper neighbour is scaled with the rest; past the largest double
-     * it is half the gap below it, 2^970 */
-    uint64 upbits = bits + 1;
-    double up;
-    memcpy(&up, &upbits, sizeof(up));
-    double hu = isinf(up) ? ldexp(1.0, 970 + k) : (up - c) * f1 * f2 / 2.0;
-    int su = point_distance_midpoint_sign(d, e, ndims, cs, hu, dm, dmerr);
-    if (su > 0 || (su == 0 && ! even))
-    {
-      if (isinf(up))
-        return INFINITY;
-      c = up;
-      continue;
-    }
-    if (c > 0.0)
-    {
-      uint64 downbits = bits - 1;
-      double down;
-      memcpy(&down, &downbits, sizeof(down));
-      double hd = (c - down) * f1 * f2 / 2.0;
-      int sd = point_distance_midpoint_sign(d, e, ndims, cs, - hd, dm,
-        dmerr);
-      if (sd < 0 || (sd == 0 && ! even))
-      {
-        c = down;
-        continue;
-      }
-    }
-    return c;
+    /* An exact side never answers 2 and a budget of 0 sets no limit */
+    bool answered = nearest_double_search(bits, &point_distance_exact_side,
+      &f, 0, &found);
+    assert(answered);
+    (void) answered;
   }
+  double result;
+  memcpy(&result, &found, sizeof(result));
+  return result;
 }
 
 /**
@@ -3840,27 +4093,16 @@ point_distance_exact(const double *p, const double *q, int ndims)
       two_sum(s, x, &s, &t);
       lo += (t + y) + (2.0 * d[i] * e[i] + e[i] * e[i]);
     }
-    double c = sqrt(s + lo), err = 0x1p-90 * s;
-    for (int move = 0; move < 2; move++)
+    double c = sqrt(s + lo);
+    PointDistanceFirstSide f = {s, lo, 0x1p-90 * s, NEAREST_INF_BITS, 0.0,
+      0.0, 0.0};
+    uint64 bits, found;
+    memcpy(&bits, &c, sizeof(bits));
+    if (nearest_double_search(bits, &point_distance_first_side, &f,
+        NEAREST_FILTER_BUDGET, &found))
     {
-      two_square(c, &x, &y);
-      double dm = (s - x) + (lo - y);
-      uint64 cbits, ubits, dbits;
-      memcpy(&cbits, &c, sizeof(cbits));
-      ubits = cbits + 1;
-      dbits = cbits - 1;
-      double cu, cd;
-      memcpy(&cu, &ubits, sizeof(cu));
-      memcpy(&cd, &dbits, sizeof(cd));
-      double gu = cu - c, gd = c - cd;
-      if (fabs(dm) + err < gd * (c - 0.25 * gd) * (1.0 - 0x1p-48))
-        return c;
-      if (dm - err > gu * (c + 0.25 * gu) * (1.0 + 0x1p-48))
-        c = cu;
-      else if (- (dm + err) > gd * (c - 0.25 * gd) * (1.0 + 0x1p-48))
-        c = cd;
-      else
-        break;
+      memcpy(&c, &found, sizeof(c));
+      return c;
     }
   }
   return point_distance_nearest(p, q, d, e, ndims, maxd,
@@ -4108,145 +4350,6 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
   }
 }
 
-/*****************************************************************************
- * The one search for the nearest double
- *****************************************************************************/
-
-/**
- * @brief The side of a value against the upper midpoint of a double: the sign
- * of the value less the midpoint from the double of bit pattern @p bits to the
- * next one, or 2 where the side cannot tell
- */
-typedef int (*NearestBitsSide)(uint64 bits, void *arg);
-
-/* The bit pattern of infinity, above that of every double */
-#define NEAREST_INF_BITS UINT64CONST(0x7FF0000000000000)
-
-/* True where the side @p s puts the value beyond the upper midpoint of the
- * double of bit pattern @p bits, a tie being beyond where the last bit of
- * that double is odd, so a tie goes to the even double */
-static inline bool
-nearest_bits_beyond_sign(int s, uint64 bits)
-{
-  return s > 0 || (s == 0 && (bits & 1) != 0);
-}
-
-/**
- * @brief Find the bit pattern of the double nearest a nonnegative value that
- * @p side places against midpoints, a tie going to the even double, returning
- * false where a side it asks cannot tell or its budget runs out
- * @details The answer is the smallest bit pattern whose upper midpoint the
- * value does not pass, infinity standing above the largest double, whose
- * upper midpoint is `2^1024 - 2^970`. A gallop from the candidate
- * @p bits brackets it, its first two steps of one double, so that a
- * candidate a neighbour or two from the answer asks no more sides than a
- * walk, the steps then doubling, and halving the bracket finds it; a candidate whose own side cannot tell is read from its lower
- * neighbour, which places the value below it or decides nothing. An exact
- * side never answers 2 and a budget of 0 sets no limit, so the search always
- * answers; a side of a filter on doubles answers 2 where it cannot tell, and
- * its budget bounds the sides it is asked, so that the exact search behind it
- * answers what the filter cannot
- * @param[in] bits Bit pattern of the candidate, at most infinity's
- * @param[in] side,arg The side and its argument
- * @param[in] budget Largest number of sides asked, 0 for no limit
- * @param[out] result The bit pattern of the answer where the search answers
- */
-static inline bool
-nearest_double_search(uint64 bits, NearestBitsSide side,
-  void *arg, int budget, uint64 *result)
-{
-  int asked = 0;
-#define NEAREST_ASK(b, res) \
-  do { \
-    if (budget > 0 && asked++ >= budget) \
-      return false; \
-    int s_ = side((b), arg); \
-    if (s_ == 2) \
-      (res) = 2; \
-    else \
-      (res) = nearest_bits_beyond_sign(s_, (b)) ? 1 : 0; \
-  } while (0)
-  const uint64 max_bits = NEAREST_INF_BITS;
-  uint64 lo, hi, step = 1;
-  int beyond, moves = 0;
-  if (bits > max_bits)
-    bits = max_bits;
-  if (bits == max_bits)
-    beyond = 0;
-  else
-    NEAREST_ASK(bits, beyond);
-  if (beyond == 2)
-  {
-    /* The candidate cannot tell: below its lower midpoint the answer is at
-     * most its lower neighbour, otherwise nothing is decided */
-    if (bits == 0)
-      return false;
-    NEAREST_ASK(bits - 1, beyond);
-    if (beyond != 0)
-      return false;
-    bits -= 1;
-  }
-  if (beyond == 1)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    lo = bits;
-    while (true)
-    {
-      hi = (lo < max_bits - step) ? lo + step : max_bits;
-      if (hi == max_bits)
-        break;
-      NEAREST_ASK(hi, beyond);
-      if (beyond == 2)
-        return false;
-      if (! beyond)
-        break;
-      lo = hi;
-      if (moves++ > 0)
-        step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or below 0 */
-    hi = bits;
-    while (true)
-    {
-      if (hi == 0)
-      {
-        *result = 0;
-        return true;
-      }
-      lo = (hi > step) ? hi - step : 0;
-      NEAREST_ASK(lo, beyond);
-      if (beyond == 2)
-        return false;
-      if (beyond)
-        break;
-      if (lo == 0)
-      {
-        *result = 0;
-        return true;
-      }
-      hi = lo;
-      if (moves++ > 0)
-        step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    uint64 mid = lo + (hi - lo) / 2;
-    NEAREST_ASK(mid, beyond);
-    if (beyond == 2)
-      return false;
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef NEAREST_ASK
-  *result = hi;
-  return true;
-}
 
 /**
  * @brief Return the sign of the squared distance between two points less the
@@ -4359,10 +4462,6 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
   }
   return false;
 }
-
-/* The number of sides a search of a filter on doubles asks before it leaves
- * the answer to the exact search behind it */
-#define NEAREST_FILTER_BUDGET 8
 
 /* The squared distance and the radius of #point_distance_offset_filter, and
  * the candidate whose sides it read last */
