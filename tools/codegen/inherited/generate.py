@@ -4730,11 +4730,12 @@ def _tiling_sub(text: str, t: dict) -> str:
 
 # The split functions of the manual's Splitting Operations, per box kind: the box
 # its name carries, the array its functions return and the prefix of the C
-# symbols they call, Temporal for the time spans, Tnumber for the value boxes and
-# Tgeo for the spatiotemporal boxes.
+# symbols they call, Temporal for the time spans, Tnumber for the value boxes,
+# Tgeo for the spatiotemporal boxes and Tpointcloud for the point cloud boxes.
 _SPLIT_KINDS = {"spans": ("Spans", "tstzspan[]", "Temporal"),
                 "tboxes": ("Tboxes", "tbox[]", "Tnumber"),
-                "stboxes": ("Stboxes", "stbox[]", "Tgeo")}
+                "stboxes": ("Stboxes", "stbox[]", "Tgeo"),
+                "tpcboxes": ("Tpcboxes", "tpcbox[]", "Tpointcloud")}
 
 
 def _tiling_splits(st: dict) -> str:

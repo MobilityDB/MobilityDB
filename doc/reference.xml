@@ -3912,7 +3912,13 @@
 						<para><link linkend="tpcpoint_spans"><varname>spans</varname></link>: Return the array of time spans of a tpcpoint's segments</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpoint_tpcboxes"><varname>tpcboxes</varname></link>: Return the array of point cloud boxes of the instants or segments of a tpcpoint</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpoint_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the time spans of a tpcpoint split into a given number of bins, or with a given number of segments per bin</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_splitNTpcboxes"><varname>splitNTpcboxes</varname>, <varname>splitEachNTpcboxes</varname></link>: Return the point cloud boxes of a tpcpoint split into a given number of bins, or with a given number of instants or segments per bin</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -4105,7 +4111,13 @@
 						<para><link linkend="tpcpatch_spans"><varname>spans</varname></link>: Return the array of time spans of a tpcpatch's segments</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpatch_tpcboxes"><varname>tpcboxes</varname></link>: Return the array of point cloud boxes of the instants or segments of a tpcpatch</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpatch_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the time spans of a tpcpatch split into a given number of bins, or with a given number of segments per bin</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_splitNTpcboxes"><varname>splitNTpcboxes</varname>, <varname>splitEachNTpcboxes</varname></link>: Return the point cloud boxes of a tpcpatch split into a given number of bins, or with a given number of instants or segments per bin</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
