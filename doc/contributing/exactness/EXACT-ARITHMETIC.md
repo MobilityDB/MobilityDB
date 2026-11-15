@@ -901,6 +901,10 @@ the enclosure, and the head answers all of them. The limit of the grid moves wit
 85.0511287798066 to 85.05112877980659. A row read first costs 13.6 thousand instructions and a row
 read again 64, `quadbin_row_latitude` keeping the rows read last per thread. It is merged as
 #3722 (`d6eeed48a3` on master); its judge, corpora and probes are `ea8m/` of the oracle kit.
+The arctangent in pairs of doubles that the row latitudes and the S2 corners read first divides
+the terms of its series by `ddb_div_int`, the division by an exact integer, merged as #3731: on the
+planar cover of 10 vessel-like tracks at zoom 18 it takes 0.62 of the instructions it took, the
+cover 0.91, the judges of `ea8m/` and of the S2 corners agreeing on every row.
 Left to the cell walks: the two `atan(sinh)` sites of `raster_quadbin.c`, which their raster walk
 rewrites.
 
