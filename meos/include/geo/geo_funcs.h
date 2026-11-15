@@ -1845,9 +1845,11 @@ extern double cosd_nearest(double deg);
 extern void lonlat_vector_nearest(double lon, double lat, double *v);
 extern bool ddb_vector_lon_nearest(const int64 *v, double *result);
 extern bool ddb_vector_lat_nearest(const int64 *v, double *result);
+extern bool ddb_mercator_lat_nearest(double r, double *result);
 extern double vector_lon_nearest(const int64 *v);
 extern double vector_lat_nearest(const int64 *v);
 extern double rational_nearest(int64 num, int64 den);
+extern double mercator_lat_nearest(double r);
 extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   const double *a, const double *b, int64 num, int64 den);
 

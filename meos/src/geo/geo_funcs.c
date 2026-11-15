@@ -9219,6 +9219,85 @@ ddb_vector_lat_nearest(const int64 *v, double *result)
 }
 
 /**
+ * @brief Return the quotient of a bounded value by a positive integer @p k
+ * below 2^53, with its bound, the twin of #ddb_div for an exact divisor
+ * @details The remainder of the quotient in doubles, `a.hi - q k`, is exact
+ * by a fused multiply-add, so the second double `(rem + a.lo) / k` is the
+ * rest of the quotient within twice its own rounding, below 2^-104 of `q`;
+ * the residuals #ddb_div forms for any divisor are not needed
+ */
+static DDBound
+ddb_div_int(DDBound a, int k)
+{
+  double dk = (double) k;
+  double q = a.hi / dk;
+  double rem = fma(- q, dk, a.hi);
+  DDBound r;
+  two_sum(q, (rem + a.lo) / dk, &r.hi, &r.lo);
+  r.e = (a.e / dk + DDB_EPS * fabs(q)) * DDB_UP + DDB_TINY;
+  return r;
+}
+
+/* pi as the sum of two doubles, within 2^-108 of it (mpmath at 4000 bits),
+ * and the bound kept for it */
+#define DDB_PI_HI 0x1.921fb54442d18p+1
+#define DDB_PI_LO 0x1.1a62633145c07p-53
+#define DDB_PI_ERR 0x1p-100
+
+/**
+ * @brief Set @p result to the double nearest the latitude in degrees of the
+ * row @p r of the Web Mercator grid, atan(sinh(pi r)), 0 < |r| <= 1, where
+ * bounded pairs of doubles decide it, and return false where they cannot
+ * @details The latitude is 2 atan(tanh(t / 2)) for t = pi |r|, and
+ * tanh(t / 2) = m / (m + 2) for m = e^t - 1, which keeps its relative
+ * accuracy as t nears 0: m is the series of e^(t/8) - 1, every term positive
+ * and the rest below the last term read, then three doublings of the angle,
+ * m (2 + m) each (#ddb_atan_degrees, #ddb_degrees_nearest)
+ */
+bool
+ddb_mercator_lat_nearest(double r, double *result)
+{
+  double ar = fabs(r);
+  if (! (ar > 0x1p-900 && ar <= 1.0))
+    return false;
+  DDBound pi, x, two, m, p, t, deg;
+  pi.hi = DDB_PI_HI;
+  pi.lo = DDB_PI_LO;
+  pi.e = DDB_PI_ERR;
+  x.hi = ar / 8.0;
+  x.lo = x.e = 0.0;
+  /* u = pi |r| / 8, below 1/2 */
+  DDBound u = ddb_mul(pi, x);
+  two.hi = 2.0;
+  two.lo = two.e = 0.0;
+  m = p = u;
+  bool done = false;
+  for (int k = 2; k < 60 && ! done; k++)
+  {
+    p = ddb_div_int(ddb_mul(p, u), k);
+    m = ddb_add(m, p);
+    double pmag = ddb_mag_up(p);
+    if (pmag < 0x1p-112 * ddb_low(m))
+    {
+      /* The terms left are positive and each at most a quarter of the one
+       * before, so they sum to less than this one */
+      m.e = (m.e + pmag) * DDB_UP;
+      done = true;
+    }
+  }
+  if (! done)
+    return false;
+  for (int i = 0; i < 3; i++)
+    m = ddb_mul(m, ddb_add(two, m));
+  if (! ddb_div(m, ddb_add(m, two), &t) || ! ddb_atan_degrees(t, &deg))
+    return false;
+  deg.hi *= 2.0;
+  deg.lo *= 2.0;
+  deg.e *= 2.0;
+  return ddb_degrees_nearest(deg, r > 0 ? 1.0 : -1.0, result);
+}
+
+/**
  * @brief Return the distance of a point to a segment less a radius, computed
  * exactly and rounded once, or 0 where the point is no farther from the
  * segment than the radius

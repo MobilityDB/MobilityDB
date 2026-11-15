@@ -69,7 +69,7 @@
 #include "temporal/tcellindex.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
-#include "geo/geo_funcs.h"  /* cross_product_sign */
+#include "geo/geo_funcs.h"  /* cross_product_sign, mercator_lat_nearest */
 
 /*****************************************************************************
  * Input/output
@@ -703,8 +703,9 @@ quadbin_grid_distance(Quadbin origin, Quadbin dest)
 #endif
 
 /** Latitude of the Web-Mercator limit, beyond which the first and the last
- * rows of the grid extend */
-#define QUADBIN_MAX_LATITUDE  85.051128779806604
+ * rows of the grid extend: the double nearest atan(sinh(pi)) in degrees, the
+ * latitude of the row 1 (#mercator_lat_nearest) */
+#define QUADBIN_MAX_LATITUDE  85.05112877980659
 
 /**
  * @brief Set the fractional tile column and row of a lon/lat position in the
@@ -739,16 +740,45 @@ quadbin_tile_index(double f, double n)
   return t;
 }
 
+/** @brief Number of entries of #quadbin_lat_cache, a power of 2 */
+#define QUADBIN_LAT_CACHE 1024
+
+/** @brief The latitudes of rows read last, per thread, by the bits of their
+ * row */
+static MEOS_TLS struct
+{
+  uint64_t bits;
+  double lat;
+  bool used;
+} quadbin_lat_cache[QUADBIN_LAT_CACHE];
+
 /**
  * @brief Return the latitude of the row boundary `y` of the grid of `n` tiles
  * a side
  * @details The boundary is read as #quadbin_cell_bounding_box reads the
- * latitudes of a cell
+ * latitudes of a cell: the double nearest atan(sinh(pi r)) in degrees of the
+ * row r = 1 - 2 y / n, exact in doubles as n is a power of 2
+ * (#mercator_lat_nearest), so every platform reads the same boundary. The
+ * latitude is a function of the row alone, and a box, a point and a walk
+ * read the rows neighbouring tiles share again and again, so the ones read
+ * last are kept by their row and answer again, as #s2cell_corner_uv keeps
+ * the coordinates of the S2 corners
  */
 static double
 quadbin_row_latitude(double y, double n)
 {
-  return 180.0 / M_PI * atan(sinh(M_PI * (1.0 - 2.0 * y / n)));
+  double r = 1.0 - 2.0 * y / n;
+  uint64_t bits;
+  memcpy(&bits, &r, sizeof(bits));
+  int k = (int) ((bits * UINT64CONST(0x9E3779B97F4A7C15)) >> 54) &
+    (QUADBIN_LAT_CACHE - 1);
+  if (! quadbin_lat_cache[k].used || quadbin_lat_cache[k].bits != bits)
+  {
+    quadbin_lat_cache[k].lat = mercator_lat_nearest(r);
+    quadbin_lat_cache[k].bits = bits;
+    quadbin_lat_cache[k].used = true;
+  }
+  return quadbin_lat_cache[k].lat;
 }
 
 /**
@@ -1276,8 +1306,7 @@ quadbin_cell_point(Quadbin cell, double *longitude, double *latitude)
   quadbin_cell_tile(cell, &x, &y, &z);
   double n = (double) (UINT64_C(1) << z);
   *longitude = (x + 0.5) / n * 360.0 - 180.0;
-  double yr = M_PI * (1.0 - 2.0 * (y + 0.5) / n);
-  *latitude = 180.0 / M_PI * atan(sinh(yr));
+  *latitude = quadbin_row_latitude(y + 0.5, n);
 }
 
 /**

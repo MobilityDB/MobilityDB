@@ -1320,11 +1320,14 @@ wide_of_magnitude(DyadicWideArena *ar, int64 x)
 }
 
 /** @brief The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less
- * it, and an enclosure of their magnitude, the twin of #TrigProduct */
+ * it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, and an
+ * enclosure of their magnitude, the twin of #TrigProduct */
 typedef struct
 {
   const DyadicWide *s, *c;   /**< The angle atan2(sqrt(s), c) */
   bool root;                /**< The angle is atan2(s, c) */
+  bool mercator;            /**< The angle is atan(sinh(pi r)), not s and c */
+  double r;                 /**< The row of a Mercator angle, 0 < r <= 1 */
   bool complement;          /**< The degrees are 90 less the angle */
   int sign;                 /**< Sign of the degrees, -1 or 1 */
   int bits;                 /**< Precision of the enclosure */
@@ -1334,9 +1337,99 @@ typedef struct
 } DegreeAngle;
 
 /**
+ * @brief Enclose e^x at the scale 2^-K in [lo, hi], x in [0, 4) given by its
+ * enclosure [xlo, xhi], K a multiple of 32
+ * @details e^x is (e^(x/8))^8: x/8 lies below 1/2, where every term of the
+ * Taylor series 1 + u + u^2/2! + ... is positive and the terms from the k-th
+ * on sum to less than twice the k-th, so the sum stops at a term of at most
+ * one unit and adds two units above; each term is read rounded down for
+ * @p lo and up for @p hi, and so are the three squarings, as e^x increases
+ * with x
+ */
+static void
+fix_exp_enclose(const uint32_t *xlo, const uint32_t *xhi, uint32_t *lo,
+  uint32_t *hi, int L, int K)
+{
+  uint32_t *ulo = palloc(L * sizeof(uint32_t));
+  uint32_t *uhi = palloc(L * sizeof(uint32_t));
+  uint32_t *tlo = palloc(L * sizeof(uint32_t));
+  uint32_t *thi = palloc(L * sizeof(uint32_t));
+  fix_shift_right(xlo, 3, ulo, L, false);
+  fix_shift_right(xhi, 3, uhi, L, true);
+  fix_set_pow2(tlo, L, K);
+  fix_set_pow2(thi, L, K);
+  memcpy(lo, tlo, L * sizeof(uint32_t));
+  memcpy(hi, thi, L * sizeof(uint32_t));
+  for (uint32_t k = 1; ; k++)
+  {
+    fix_mul(tlo, ulo, tlo, L, K, false);
+    fix_div_small(tlo, k, tlo, L, false);
+    fix_mul(thi, uhi, thi, L, K, true);
+    fix_div_small(thi, k, thi, L, true);
+    if (fix_top_bit(thi, L) <= 0)
+    {
+      /* The rest, this term included, is below two units */
+      fix_set_pow2(tlo, L, 1);
+      fix_add(hi, tlo, hi, L);
+      break;
+    }
+    fix_add(lo, tlo, lo, L);
+    fix_add(hi, thi, hi, L);
+  }
+  for (int i = 0; i < 3; i++)
+  {
+    fix_mul(lo, lo, lo, L, K, false);
+    fix_mul(hi, hi, hi, L, K, true);
+  }
+  pfree(ulo); pfree(uhi); pfree(tlo); pfree(thi);
+}
+
+/**
+ * @brief Enclose the latitude atan(sinh(pi r)) in radians of the row @p r of
+ * the Web Mercator grid, 0 < r <= 1, at the scale 2^-K in [lo, hi]
+ * @details The latitude is the Gudermannian 2 atan(e^t) - pi/2 of
+ * t = pi r, which increases with t: t is read from the enclosure of pi and
+ * the exact double @p r, e^t is enclosed by #fix_exp_enclose and its
+ * arctangent by #fix_atan2_bound, every bound rounded outward
+ */
+static void
+fix_mercator_enclose(double r, uint32_t *lo, uint32_t *hi, int L, int K)
+{
+  uint32_t *tlo = palloc(L * sizeof(uint32_t));
+  uint32_t *thi = palloc(L * sizeof(uint32_t));
+  uint32_t *elo = palloc(L * sizeof(uint32_t));
+  uint32_t *ehi = palloc(L * sizeof(uint32_t));
+  uint32_t *one = palloc(L * sizeof(uint32_t));
+  /* r = m 2^e exactly, m an integer of 53 bits, and e < 0 as r <= 1 */
+  int e;
+  double frac = frexp(r, &e);
+  uint64_t m = (uint64_t) ldexp(frac, 53);
+  e -= 53;
+  assert(e < 0);
+  fix_pi(tlo, thi, L, K);
+  fix_mul_u64(tlo, m, L);
+  fix_mul_u64(thi, m, L);
+  fix_shift_right(tlo, - e, tlo, L, false);
+  fix_shift_right(thi, - e, thi, L, true);
+  fix_exp_enclose(tlo, thi, elo, ehi, L, K);
+  /* atan(e^t), then twice it less pi/2, pi/2 at the scale 2^-K being pi at
+   * the scale 2^-(K-1) */
+  fix_set_pow2(one, L, K);
+  fix_atan2_bound(elo, one, tlo, L, K, false);
+  fix_atan2_bound(ehi, one, thi, L, K, true);
+  fix_mul_small(tlo, 2, tlo, L);
+  fix_mul_small(thi, 2, thi, L);
+  fix_pi(elo, ehi, L, K - 1);
+  fix_sub_clamp(tlo, ehi, lo, L);
+  fix_sub_clamp(thi, elo, hi, L);
+  pfree(tlo); pfree(thi); pfree(elo); pfree(ehi); pfree(one);
+}
+
+/**
  * @brief Enclose the magnitude of the degrees of an angle at a precision of
  * @p bits, the twin of #trig_product_enclose
- * @details The angle in radians is enclosed by #fix_atan2_enclose_root, and
+ * @details The angle in radians is enclosed by #fix_atan2_enclose_root, or
+ * for the latitude of a Mercator row by #fix_mercator_enclose, and
  * its degrees are the radians times 180 over pi, each bound multiplied by
  * the bound of 180 / pi of #DEG_TABLE that moves it outward, or, beyond the
  * table, divided by the bound of pi (#fix_pi) that does
@@ -1354,7 +1447,10 @@ degree_angle_enclose(DegreeAngle *p, int bits)
   uint32_t *phi = palloc(L * sizeof(uint32_t));
   uint32_t *dlo = palloc(L * sizeof(uint32_t));
   uint32_t *dhi = palloc(L * sizeof(uint32_t));
-  fix_atan2_enclose_root(p->s, p->root, p->c, tlo, thi, L, K);
+  if (p->mercator)
+    fix_mercator_enclose(p->r, tlo, thi, L, K);
+  else
+    fix_atan2_enclose_root(p->s, p->root, p->c, tlo, thi, L, K);
   if (K <= DEG_TABLE_BITS)
   {
     /* 180 / pi at the scale 2^-K: the table shifted down, the floor of a
@@ -1567,6 +1663,38 @@ vector_lat_nearest(const int64 *v)
   }
   dyadic_wide_arena_free(ar);
   return result;
+}
+
+/**
+ * @brief Return the double nearest the latitude in degrees of the row @p r of
+ * the Web Mercator grid, atan(sinh(pi r)) in degrees, -1 <= @p r <= 1
+ * @details A row boundary y of a grid of n tiles a side, or its centroid
+ * y + 1/2, is the row r = 1 - 2 y / n, a double exactly for the grids of
+ * QUADBIN. The latitude is odd in r and irrational for every r but 0
+ * (e^(pi r) is transcendental, Gelfond): bounded pairs of doubles answer
+ * wherever their bound places it inside the rounding cell of one double
+ * (#ddb_mercator_lat_nearest), and elsewhere it is rounded by
+ * #nearest_double_exact on an enclosure of its degrees
+ * (#degree_angle_enclose, #fix_mercator_enclose)
+ * @param[in] r Row, -1 to 1
+ */
+double
+mercator_lat_nearest(double r)
+{
+  if (isnan(r))
+    return NAN;
+  assert(fabs(r) <= 1.0);
+  if (r == 0.0)
+    return 0.0;
+  double result;
+  if (ddb_mercator_lat_nearest(r, &result))
+    return result;
+  DegreeAngle p;
+  memset(&p, 0, sizeof(p));
+  p.mercator = true;
+  p.r = fabs(r);
+  p.sign = r > 0 ? 1 : -1;
+  return degree_angle_nearest(&p, atan(sinh(M_PI * r)) * (180.0 / M_PI));
 }
 
 /** @brief A quotient of two exact values, for #rational_side */
