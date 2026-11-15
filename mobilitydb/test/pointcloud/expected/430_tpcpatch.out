@@ -1064,6 +1064,18 @@ SELECT splitEachNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
  {"[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]"}
 (1 row)
 
+SELECT mergeNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+                                                           mergenspans                                                           
+---------------------------------------------------------------------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]","[Tue Jan 02 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]"}
+(1 row)
+
+SELECT mergeEachNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+                         mergeeachnspans                          
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]"}
+(1 row)
+
 SELECT tpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
                                                                                              tpcboxes                                                                                              
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1088,6 +1100,18 @@ SELECT splitEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
  {"TPCBOX(ZT(((1,1,1),(6,6,6)),[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]), 1)"}
 (1 row)
 
+SELECT mergeNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+                                                                                          mergentpcboxes                                                                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"TPCBOX(ZT(((1,1,1),(6,6,6)),[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]), 1)","TPCBOX(ZT(((1,1,1),(6,6,6)),[Tue Jan 02 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]), 1)"}
+(1 row)
+
+SELECT mergeEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+                                        mergeeachntpcboxes                                         
+---------------------------------------------------------------------------------------------------
+ {"TPCBOX(ZT(((1,1,1),(6,6,6)),[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]), 1)"}
+(1 row)
+
 -- Every box lies within the box of its value, also when the bounds of the
 -- value exclude its first instant.
 SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
@@ -1099,6 +1123,20 @@ SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', f
 
 SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
   FROM unnest(splitEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true), 1)) b;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
+  FROM unnest(mergeNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true), 2)) b;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
+  FROM unnest(mergeEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true), 1)) b;
  bool_and 
 ----------
  t

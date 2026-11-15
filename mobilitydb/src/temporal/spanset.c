@@ -1115,6 +1115,50 @@ Spanset_split_each_n_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Spanset_merge_n_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_merge_n_spans);
+/**
+ * @ingroup mobilitydb_temporal_bbox_topo
+ * @brief Return an array of N spans obtained by merging the boxes of the
+ * elements of a span set, each time the consecutive pair whose union adds the
+ * least size to theirs
+ * @sqlfn mergeNSpans()
+ */
+Datum
+Spanset_merge_n_spans(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int span_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = spanset_merge_n_spans(ss, span_count, &count);
+  PG_FREE_IF_COPY(ss, 0);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Spanset_merge_each_n_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_merge_each_n_spans);
+/**
+ * @ingroup mobilitydb_temporal_bbox_topo
+ * @brief Return an array of spans obtained by merging the boxes of the elements
+ * of a span set, each time the consecutive pair whose union adds the least size
+ * to theirs, until a box holds on average a given number of them
+ * @sqlfn mergeEachNSpans()
+ */
+Datum
+Spanset_merge_each_n_spans(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int span_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = spanset_merge_each_n_spans(ss, span_count, &count);
+  PG_FREE_IF_COPY(ss, 0);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 /*****************************************************************************
  * Comparison functions for defining B-tree indexes
  *****************************************************************************/

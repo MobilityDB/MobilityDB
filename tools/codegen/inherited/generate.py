@@ -4747,7 +4747,8 @@ def _tiling_splits(st: dict) -> str:
     """A `splits` stanza, expanded over its `temps` as the `gen` chunk of
     #render_tiling expands over a pool, each function from #_tiling_skeleton: per
     kind of its `kinds`, splitN<Box> and then splitEachN<Box>, each a group of one
-    function per type, packed with no blank line, the groups one blank line apart.
+    function per type, packed with no blank line, the groups one blank line apart,
+    and then their merge twins mergeN<Box> and mergeEachN<Box>.
     `prefix` names, per kind, the C prefix of a type with kernels of its own
     (Trgeometry, Geo), and `comment` heads each group with its `-- <name>()` line."""
     groups = []
@@ -4755,7 +4756,9 @@ def _tiling_splits(st: dict) -> str:
         box, ret, prefix = _SPLIT_KINDS[kind]
         prefix = (st.get("prefix") or {}).get(kind, prefix)
         for name, sym in ((f"splitN{box}", f"split_n_{kind}"),
-                          (f"splitEachN{box}", f"split_each_n_{kind}")):
+                          (f"splitEachN{box}", f"split_each_n_{kind}"),
+                          (f"mergeN{box}", f"merge_n_{kind}"),
+                          (f"mergeEachN{box}", f"merge_each_n_{kind}")):
             pre = f"-- {name}()\n" if st.get("comment") else ""
             items = [_tiling_skeleton({"sig": f"{name}({t}, integer)", "ret": ret,
                                        "sym": f"{prefix}_{sym}",

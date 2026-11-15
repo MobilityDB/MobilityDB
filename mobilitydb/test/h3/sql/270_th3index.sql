@@ -256,5 +256,7 @@ SELECT (rec).time, (rec).temp FROM
 SELECT spans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]');
 SELECT splitNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
 SELECT splitEachNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
+SELECT mergeNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
+SELECT mergeEachNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
 
 -------------------------------------------------------------------------------
