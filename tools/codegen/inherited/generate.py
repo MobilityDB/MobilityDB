@@ -5850,6 +5850,109 @@ def splice_boxspgist(filetext: str, box: str, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
+# --- C box splitters (box-type axis) -----------------------------------------
+# The functions returning the boxes of the instants or segments of a temporal
+# value and splitting them into N boxes or N elements per box, one set per
+# entry of `rows` in manifest.d/boxsplit.yaml, are generated into the region
+# between the row's markers in its `file`, as #render_boxgist writes the GiST
+# support functions. A row names the box type, the prefixes of its instant,
+# sequence and sequence set functions, and a C expression for each primitive
+# the template calls, so the reading of a box that differs from one type to
+# another is data of the row: #render_boxsplit replaces each call
+# {NAME}(a, b, ...) of the template by the row's expression for NAME, {0},
+# {1}, ... being the arguments, the first of them the value the box is read
+# from, which a temporal rigid geometry reads its reference geometry from.
+def _boxsplit_markers(row: str):
+    """BEGIN/END markers of a row's box splitters, as #_boxgist_markers names
+    the GiST support functions of a box type"""
+    begin = (f"/* GENERATED-BOXSPLIT-BEGIN {row} — tools/codegen/inherited/"
+             "generate.py from templates/boxsplit.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxsplit.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-BOXSPLIT-END {row} */\n"
+
+
+def _boxsplit_call_args(text: str, start: int):
+    """The arguments of the call whose '(' is at `start`, split at the commas
+    outside any parenthesis, and the index just past its ')'"""
+    depth, args, cur, i = 0, [], "", start + 1
+    while True:
+        c = text[i]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            if depth == 0:
+                args.append(cur.strip())
+                return args, i + 1
+            depth -= 1
+        elif c == "," and depth == 0:
+            args.append(cur.strip())
+            cur = ""
+            i += 1
+            continue
+        cur += c
+        i += 1
+
+
+def _wrap_code(text: str, width: int = 80) -> str:
+    """Refill at ', ' every code statement or signature of a rendered region
+    that a long row name pushes past `width`, its continuation lines indented
+    two columns past its first line as the templates lay them out; a statement
+    within `width` keeps the template's layout, and comment lines go to
+    #_wrap_doc"""
+    lines, out, i = text.split("\n"), [], 0
+    while i < len(lines):
+        unit = [lines[i]]
+        while unit[-1].endswith(",") and i + 1 < len(lines) and \
+                not unit[-1].lstrip().startswith(("*", "/*")):
+            i += 1
+            unit.append(lines[i])
+        i += 1
+        if all(len(line) <= width for line in unit) or \
+                unit[0].lstrip().startswith(("*", "/*")):
+            out += unit
+            continue
+        indent = unit[0][:len(unit[0]) - len(unit[0].lstrip())]
+        cont = indent + "  "
+        words = " ".join(line.strip() for line in unit).split(", ")
+        line = indent + words[0]
+        for n, word in enumerate(words[1:], 2):
+            # A word other than the last carries the ',' that follows it
+            comma = 0 if n == len(words) else 1
+            if len(line) + 2 + len(word) + comma <= width:
+                line += ", " + word
+            else:
+                out.append(line + ",")
+                line = cont + word
+        out.append(line)
+    return _wrap_doc("\n".join(out), width)
+
+
+def render_boxsplit(row: dict) -> str:
+    """The box splitters of a row, rendered from their template as
+    #render_boxgist renders the GiST support functions of a box type: the
+    primitive calls first, then the plain tokens"""
+    text = read_template("boxsplit.c.tmpl")
+    for name, expr in row["calls"].items():
+        token = "{" + name + "}("
+        while token in text:
+            i = text.index(token)
+            args, end = _boxsplit_call_args(text, i + len(token) - 1)
+            text = text[:i] + expr.format(*args) + text[end:]
+    for key, val in row.items():
+        if key not in ("row", "file", "calls"):
+            text = text.replace("{" + key + "}", val)
+    return _wrap_code(text)
+
+
+def splice_boxsplit(filetext: str, row: str, rendered: str) -> str:
+    """Replace the text strictly between the row's markers with `rendered`, as
+    #splice_boxgist does for a box type"""
+    begin, end = _boxsplit_markers(row)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true", help="dry-run: list target paths")
@@ -6923,6 +7026,14 @@ def main() -> int:
                                       render_boxspgist(box, posaxes[box["box"]],
                                                        mf["boxposops"])))
         print(f"spliced boxspgist {box['box']} -> {box['file']}")
+    for row in (mf.get("boxsplit") or {}).get("rows", []):
+        p = ROOT / row["file"]
+        if args.check:
+            print(f"would splice boxsplit {row['row']} -> {row['file']}")
+            continue
+        p.write_text(splice_boxsplit(p.read_text(), row["row"],
+                                     render_boxsplit(row)))
+        print(f"spliced boxsplit {row['row']} -> {row['file']}")
     return 0
 
 

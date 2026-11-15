@@ -292,6 +292,21 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   spatiotemporal boxes. The median centroid of the quad-tree pick-split and the
   compress functions stay beside the region, written by hand, since they read
   the fields of the box and the temporal types of the family.
+  The box splitters of a temporal family -- the boxes of the instants or
+  segments of a value, those of `n` boxes and those of `n` instants or segments
+  each, at the instant, sequence, sequence set and temporal levels -- take
+  their bodies from the `boxsplit:` axis (`manifest.d/boxsplit.yaml`): each row
+  renders `templates/boxsplit.c.tmpl` into the region between its
+  `GENERATED-BOXSPLIT-BEGIN/END` markers in `temporal_boxops.c` (`temporal`,
+  `tnumber`), `tgeo_boxops.c`, `trgeo_boxops.c` and `tpc_boxops.c`. A row
+  states its box type and the prefixes of its functions, its validation and
+  its doxygen groups, and three primitives the template calls: the box of an
+  instant, the box of the segments between two instants of a sequence and
+  the box of a whole sequence. A row whose boxes read a value of the whole
+  temporal value threads it through every function as a context, as the
+  reference geometry of a temporal rigid geometry. Every box a splitter
+  returns lies within the bounding box of its value, bound inclusivity
+  included.
   The index operator classes of a box type are the regions between its
   `GENERATED-BOXOPCLASS-BEGIN/END` markers, one per class of its `opclasses:`
   stanza in `boxtypes.yaml` (`templates/boxopclass.sql.tmpl`): every strategy of
@@ -341,6 +356,7 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | indextrees (C) | `rtree_create.c.tmpl` + `sptree_create.c.tmpl` | **GENERATED** (the constructors of the in-memory trees, one per box type) |
 | boxgist (C) | `boxgist.c.tmpl` | **GENERATED** (the GiST support functions of `tbox`, `stbox` and `tpcbox`, one set per box type) |
 | boxspgist (C) | `boxspgist.c.tmpl` | **GENERATED** (the SP-GiST support functions of `tbox` and `stbox`, one set per box type; `tpcbox` is indexed by those of `stbox`) |
+| boxsplit (C) | `boxsplit.c.tmpl` | **GENERATED** (the box splitters of `temporal`, `tnumber`, `tgeo`, `trgeometry` and `tpointcloud`, one set per row) |
 | gist / spgist | `gist/spgist.sql.tmpl` | **GENERATED** (index infra) — the two templates write the family's operator classes through the `{TEMPOPCLASS_RTREE}`, `{TEMPOPCLASS_QUADTREE}` and `{TEMPOPCLASS_KDTREE}` tokens, which `render_tempopclass` fills from `boxstrategies.yaml` with every strategy whose axis the family's `boxmembers:` lists, the Z-axis strategies 32-35 included when it lists `z`, and with its `distwith:` types on the nearest approach distance. `gist.sql.tmpl` also declares the family's own consistent support function, `{TEMP}_gist_consistent`, and, under the flag `knn` that `render` reads from the axes of the class (a `dist` axis in `boxmembers:`), its distance support function `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share; it carries `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the two templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
