@@ -7640,18 +7640,19 @@ SELECT asText(getResolution(ts2cell '[47c3c3@2001-01-01, 47c3c38705f@2001-01-02]
 SELECT asText(isValidCell(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
 SELECT asText(cellToParent(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 5));
 SELECT asText(ts2CellToToken(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
-SELECT count(*) AS instants,
-  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
-    startValue(ts2cell(atTime(p, t), z))) AS other_cell,
-  count(DISTINCT p::text) FILTER (WHERE c <> ts2cell(p::tgeogpoint, z))
-    AS other_than_geodetic
-FROM (SELECT p, z, ts2cell(p, z) AS c FROM (VALUES
+WITH q AS MATERIALIZED (
+  SELECT p, z, ts2cell(p, z) AS c, ts2cell(p::tgeogpoint, z) AS g FROM (VALUES
   (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 6),
   (tgeompoint 'SRID=4326;[Point(-170 75)@2001-01-01, Point(170 78)@2001-01-02]', 5),
   (tgeompoint 'SRID=4326;[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 7),
   (tgeompoint 'SRID=4326;[Point(179 10)@2001-01-01, Point(175 -30)@2001-01-02]', 8),
   (tgeompoint 'SRID=4326;[Point(4.35 10)@2001-01-01, Point(4.35 50)@2001-01-02]', 9))
-  AS v(p, z)) AS q,
+  AS v(p, z))
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(ts2cell(atTime(p, t), z))) AS other_cell,
+  count(DISTINCT p::text) FILTER (WHERE c <> g) AS other_than_geodetic
+FROM q,
   generate_series(timestamptz '2001-01-01 00:00:30',
     timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
 SELECT b, asText(ts2cell(tgeogpoint
