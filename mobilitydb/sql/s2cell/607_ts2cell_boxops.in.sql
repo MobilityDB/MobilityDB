@@ -50,4 +50,16 @@ CREATE FUNCTION splitEachNSpans(ts2cell, integer)
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- mergeNSpans()
+CREATE FUNCTION mergeNSpans(ts2cell, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeEachNSpans()
+CREATE FUNCTION mergeEachNSpans(ts2cell, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

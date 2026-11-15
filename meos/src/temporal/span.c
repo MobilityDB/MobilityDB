@@ -57,6 +57,8 @@
 #include "temporal/type_parser.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+#include "temporal/bbox_index.h"
+#include "temporal/span_index.h"
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -2639,6 +2641,73 @@ set_split_n_spans(const Set *s, int span_count, int *count)
   }
   assert(i == s->count);
   *count = span_count;
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_bbox_split
+ * @brief Return an array of N spans obtained by merging the boxes of the
+ * consecutive elements of a set, each time the consecutive pair whose union
+ * adds the least size to theirs
+ * @details The merge twin of #set_split_n_spans, by #bbox_merge_n
+ * @param[in] s Set
+ * @param[in] span_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Set_merge_n_spans()
+ */
+Span *
+set_merge_n_spans(const Set *s, int span_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_set_spantype(s->settype))
+    return NULL;
+  if (! ensure_positive(span_count))
+    return NULL;
+
+  Span *result = set_spans(s, count);
+  if (result)
+    *count = bbox_merge_n(result->spantype, result, *count, span_count, &span_adjust,
+      &span_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_bbox_split
+ * @brief Return an array of spans obtained by merging the boxes of the
+ * consecutive elements of a set, each time the consecutive pair whose union
+ * adds the least size to theirs, until a box holds on average a number of
+ * them
+ * @details The merge twin of the function splitting each N elements, by
+ * #bbox_merge_each_n
+ * @param[in] s Set
+ * @param[in] elems_per_span Number of input elements merged into an output box
+ * on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Set_merge_each_n_spans()
+ */
+Span *
+set_merge_each_n_spans(const Set *s, int elems_per_span, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_set_spantype(s->settype))
+    return NULL;
+  if (! ensure_positive(elems_per_span))
+    return NULL;
+
+  Span *result = set_spans(s, count);
+  if (result)
+    *count = bbox_merge_each_n(result->spantype, result, *count, elems_per_span,
+      &span_adjust, &span_size);
   return result;
 }
 

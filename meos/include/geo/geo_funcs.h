@@ -812,6 +812,7 @@ extern LWGEOM *lwcircle_make(double x, double y, double radius,
 extern GSERIALIZED *geocircle_make(double x, double y, double radius,
   int32_t srid);
 extern MeosArray *geom_extract_edges(const LWGEOM *geom);
+extern bool geom_every_part_bounds_area(const LWGEOM *geom);
 extern RTree *build_edge_rtree(const Edge *edges, int nedges, int32_t srid);
 extern bool *pointarr_find_splits(const POINT2D **points, int npoints,
   int *count);

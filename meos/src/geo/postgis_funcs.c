@@ -10962,6 +10962,9 @@ geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius)
  * @brief Locate a point into a line
  * @param[in] gs1 Line
  * @param[in] gs2 Point
+ * @return The fraction of the length of the line at which it comes closest to
+ * the point, or -1.0 with no error for an empty line or point, which have no
+ * position to locate
  * @errval -1.0
  * @csqlfn #Line_locate_point()
  */
@@ -10990,8 +10993,10 @@ line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       "Second argument is not a point");
     return -1.0;
   }
-
-  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  /* An empty line or point holds no position to locate, so there is no
+   * fraction to answer, and no error either */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    return -1.0;
 
   lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs1));
   lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs2));

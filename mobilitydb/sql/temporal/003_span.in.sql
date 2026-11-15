@@ -459,6 +459,48 @@ CREATE FUNCTION splitEachNSpans(tstzset, integer)
   AS 'MODULE_PATHNAME', 'Set_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeNSpans(intset, integer)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(bigintset, integer)
+  RETURNS bigintspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(floatset, integer)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(dateset, integer)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(tstzset, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNSpans(intset, integer)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(bigintset, integer)
+  RETURNS bigintspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(floatset, integer)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(dateset, integer)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(tstzset, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION intspan(floatspan)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Floatspan_to_intspan'

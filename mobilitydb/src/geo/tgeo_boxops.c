@@ -176,6 +176,57 @@ Tgeo_split_each_n_stboxes(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Tgeo_merge_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_merge_n_stboxes);
+/**
+ * @ingroup mobilitydb_geo_bbox
+ * @brief Return an array of N spatiotemporal boxes obtained by merging the
+ * boxes of the elements of a spatiotemporal value, each time the consecutive
+ * pair whose union adds the least size to theirs
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @sqlfn mergeNStboxes()
+ */
+Datum
+Tgeo_merge_n_stboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int box_count = PG_GETARG_INT32(1);
+  int count;
+  STBox *boxes = tgeo_merge_n_stboxes(temp, box_count, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_merge_each_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_merge_each_n_stboxes);
+/**
+ * @ingroup mobilitydb_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging the boxes
+ * of the elements of a spatiotemporal value, each time the consecutive pair
+ * whose union adds the least size to theirs, until a box holds on average a
+ * given number of them
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @sqlfn mergeEachNStboxes()
+ */
+Datum
+Tgeo_merge_each_n_stboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int elems_per_box = PG_GETARG_INT32(1);
+  int count;
+  STBox *boxes = tgeo_merge_each_n_stboxes(temp, elems_per_box, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 PGDLLEXPORT Datum Geo_split_each_n_stboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_split_each_n_stboxes);
 /**
@@ -191,6 +242,55 @@ Geo_split_each_n_stboxes(PG_FUNCTION_ARGS)
   int elems_per_box = PG_GETARG_INT32(1);
   int count;
   STBox *boxes = geo_split_each_n_stboxes(gs, elems_per_box, &count);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Geo_merge_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_merge_n_stboxes);
+/**
+ * @ingroup mobilitydb_geo_bbox
+ * @brief Return an array of N spatial boxes obtained by merging the boxes of
+ * the elements of a (multi)linestring, each time the consecutive pair whose
+ * union adds the least size to theirs
+ * @sqlfn mergeNStboxes()
+ */
+Datum
+Geo_merge_n_stboxes(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int box_count = PG_GETARG_INT32(1);
+  int count;
+  STBox *boxes = geo_merge_n_stboxes(gs, box_count, &count);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Geo_merge_each_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_merge_each_n_stboxes);
+/**
+ * @ingroup mobilitydb_geo_bbox
+ * @brief Return an array of spatial boxes obtained by merging the boxes of the
+ * elements of a (multi)linestring, each time the consecutive pair whose union
+ * adds the least size to theirs, until a box holds on average a given number of
+ * them
+ * @sqlfn mergeEachNStboxes()
+ */
+Datum
+Geo_merge_each_n_stboxes(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int elems_per_box = PG_GETARG_INT32(1);
+  int count;
+  STBox *boxes = geo_merge_each_n_stboxes(gs, elems_per_box, &count);
   PG_FREE_IF_COPY(gs, 0);
   if (! boxes)
     PG_RETURN_NULL();

@@ -428,6 +428,37 @@ SELECT splitNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-0
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_mergeNSpans">
+				<indexterm significance="normal"><primary><varname>mergeNSpans</varname></primary></indexterm>
+				<para>Devuelve un arreglo de N lapsos de tiempo obtenido fusionando los lapsos de tiempo de los instantes o segmentos de un valor temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNSpans(ttype,integer) → tstzspan[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04,
+  A@2001-01-05}', 1);
+-- {"[2001-01-01, 2001-01-05]"}
+SELECT mergeNSpans(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04,
+  1@2001-01-05}', 2);
+-- {"[2001-01-01, 2001-01-04]","[2001-01-05, 2001-01-05]"}
+SELECT mergeNSpans(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03, Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]', 2);
+-- {"[2001-01-01, 2001-01-04]","[2001-01-04, 2001-01-05]"}
+SELECT mergeNSpans(tgeogpoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
+  [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 2);
+-- {"[2001-01-01, 2001-01-04]","[2001-01-05, 2001-01-05]"}
+SELECT mergeNSpans(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04,
+  2@2001-01-05}', 6);
+/* {"[2001-01-01, 2001-01-01]","[2001-01-02, 2001-01-02]",
+   "[2001-01-03, 2001-01-03]","[2001-01-04, 2001-01-04]",
+   "[2001-01-05, 2001-01-05]"} */
+SELECT mergeNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04,
+  A@2001-01-05]', 6);
+/* {"[2001-01-01, 2001-01-02]","[2001-01-02, 2001-01-03]",
+   "[2001-01-03, 2001-01-04]","[2001-01-04, 2001-01-05]"} */
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttype_splitEachNSpans">
 				<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
 				<para>Devuelve una matriz de rangos de tiempo obtenida fusionando N instantes o segmentos consecutivos de un valor temporal &Z_support; &geography_support;</para>
@@ -452,6 +483,33 @@ SELECT splitEachNSpans(tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-0
 SELECT splitEachNSpans(tgeogpoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
   [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 6);
 -- {"[2001-01-01, 2001-01-02]","[2001-01-03, 2001-01-04]","[2001-01-05, 2001-01-05]"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="ttype_mergeEachNSpans">
+				<indexterm significance="normal"><primary><varname>mergeEachNSpans</varname></primary></indexterm>
+				<para>Devuelve un arreglo de lapsos de tiempo obtenido fusionando los lapsos de tiempo de los instantes o segmentos de un valor temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que un lapso contenga en promedio un número dado de ellos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeEachNSpans(ttype,integer) → tstzspan[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeEachNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04,
+  A@2001-01-05}', 1);
+/* {"[2001-01-01, 2001-01-01]","[2001-01-02, 2001-01-02]",
+   "[2001-01-03, 2001-01-03]","[2001-01-04, 2001-01-04]",
+   "[2001-01-05, 2001-01-05]"} */
+SELECT mergeEachNSpans(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04,
+  1@2001-01-05]', 2);
+-- {"[2001-01-01, 2001-01-04]","[2001-01-04, 2001-01-05]"}
+SELECT mergeEachNSpans(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
+  [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 2);
+-- {"[2001-01-01, 2001-01-04]","[2001-01-05, 2001-01-05]"}
+SELECT mergeEachNSpans(tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02,
+  Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04, Point(1 1 1)@2001-01-05]', 6);
+-- {"[2001-01-01, 2001-01-05]"}
+SELECT mergeEachNSpans(tgeogpoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
+  [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 6);
+-- {"[2001-01-01, 2001-01-05]"}
 </programlisting>
 			</listitem>
 
@@ -487,6 +545,41 @@ SELECT splitNTboxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-0
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_mergeNTboxes">
+				<indexterm significance="normal"><primary><varname>mergeNTboxes</varname></primary></indexterm>
+				<para>Devuelve un arreglo de N cajas temporales obtenido fusionando las cajas de los instantes o segmentos de un número temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNTboxes(tnumber,integer) → tbox[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05}', 1);
+-- {"TBOXINT XT([1, 5),[2001-01-01, 2001-01-05])"}
+SELECT mergeNTboxes(tfloat '{[1@2001-01-01, 2@2001-01-02], [1@2001-01-03, 4@2001-01-04],
+  [1@2001-01-05]}', 2);
+/* {"TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])",
+   "TBOXFLOAT XT([1, 4],[2001-01-03, 2001-01-05])"} */
+SELECT mergeNTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05]', 3);
+/* {"TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-03])",
+   "TBOXFLOAT XT([1, 4],[2001-01-03, 2001-01-04])",
+   "TBOXFLOAT XT([1, 4],[2001-01-04, 2001-01-05])"} */
+SELECT mergeNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05}', 6);
+/* {"TBOXINT XT([1, 2),[2001-01-01, 2001-01-01])",
+   "TBOXINT XT([2, 3),[2001-01-02, 2001-01-02])",
+   "TBOXINT XT([1, 2),[2001-01-03, 2001-01-03])",
+   "TBOXINT XT([4, 5),[2001-01-04, 2001-01-04])",
+   "TBOXINT XT([1, 2),[2001-01-05, 2001-01-05])"} */
+SELECT mergeNTboxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05]', 6);
+/* {"TBOXINT XT([1, 3),[2001-01-01, 2001-01-02])",
+   "TBOXINT XT([1, 3),[2001-01-02, 2001-01-03])",
+   "TBOXINT XT([1, 5),[2001-01-03, 2001-01-04])",
+   "TBOXINT XT([1, 5),[2001-01-04, 2001-01-05])"} */
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttype_splitEachNTboxes">
 				<indexterm significance="normal"><primary><varname>splitEachNTboxes</varname></primary></indexterm>
 				<para>Devuelve una matriz de cuadros temporales obtenida fusionando N instantes o segmentos consecutivos de un número temporal</para>
@@ -513,6 +606,36 @@ SELECT splitEachNTboxes(tfloat '{[1@2001-01-01, 2@2001-01-02],
   [1@2001-01-03, 4@2001-01-04], [1@2001-01-05]}', 6);
 /* {"TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])","TBOXFLOAT XT([1, 4],[2001-01-03,
    2001-01-04])","TBOXFLOAT XT([1, 1],[2001-01-05, 2001-01-05])"} */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="ttype_mergeEachNTboxes">
+				<indexterm significance="normal"><primary><varname>mergeEachNTboxes</varname></primary></indexterm>
+				<para>Devuelve un arreglo de cajas temporales obtenido fusionando las cajas de los instantes o segmentos de un número temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que una caja contenga en promedio un número dado de ellos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeEachNTboxes(tnumber,integer) → tbox[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeEachNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05}', 1);
+/* {"TBOXINT XT([1, 2),[2001-01-01, 2001-01-01])",
+   "TBOXINT XT([2, 3),[2001-01-02, 2001-01-02])",
+   "TBOXINT XT([1, 2),[2001-01-03, 2001-01-03])",
+   "TBOXINT XT([4, 5),[2001-01-04, 2001-01-04])",
+   "TBOXINT XT([1, 2),[2001-01-05, 2001-01-05])"} */
+SELECT mergeEachNTboxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05]', 1);
+/* {"TBOXINT XT([1, 3),[2001-01-01, 2001-01-02])",
+   "TBOXINT XT([1, 3),[2001-01-02, 2001-01-03])",
+   "TBOXINT XT([1, 5),[2001-01-03, 2001-01-04])",
+   "TBOXINT XT([1, 5),[2001-01-04, 2001-01-05])"} */
+SELECT mergeEachNTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05]', 3);
+/* {"TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-03])",
+   "TBOXFLOAT XT([1, 4],[2001-01-03, 2001-01-05])"} */
+SELECT mergeEachNTboxes(tfloat '{[1@2001-01-01, 2@2001-01-02],
+  [1@2001-01-03, 4@2001-01-04], [1@2001-01-05]}', 6);
+-- {"TBOXFLOAT XT([1, 4],[2001-01-01, 2001-01-05])"}
 </programlisting>
 			</listitem>
 
@@ -564,6 +687,55 @@ SELECT splitNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_mergeNStboxes">
+				<indexterm significance="normal"><primary><varname>mergeNStboxes</varname></primary></indexterm>
+				<para>Devuelve un arreglo de N cajas espaciales obtenido fusionando las cajas de los segmentos de una (multi)línea, o de N cajas espaciotemporales obtenido fusionando las cajas de los instantes o segmentos de un punto temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNStboxes({lines,tpoint},integer) → stbox[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
+-- {"STBOX X((1,1),(5,2))"}
+SELECT mergeNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
+-- {"STBOX X((1,1),(4,2))","STBOX X((4,1),(5,2))"}
+SELECT mergeNStboxes(geography 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
+/* {"SRID=4326;GEODSTBOX Z((1,1,1),(2,2,1))",
+   "SRID=4326;GEODSTBOX Z((2,1,1),(3,2,1))",
+   "SRID=4326;GEODSTBOX Z((3,1,1),(4,2,1))",
+   "SRID=4326;GEODSTBOX Z((4,1,1),(5,2,1))"} */
+SELECT mergeNStboxes(geometry 'MultiLinestring((1 1,2 2),(3 1,4 2),(5 1,6 2))', 2);
+-- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))"}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNStboxes(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05}', 1);
+-- {"STBOX XT(((1,1),(5,2)),[2001-01-01, 2001-01-05])"}
+SELECT mergeNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05]', 4);
+/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])",
+   "STBOX XT(((2,1),(3,2)),[2001-01-02, 2001-01-03])",
+   "STBOX XT(((3,1),(4,2)),[2001-01-03, 2001-01-04])",
+   "STBOX XT(((4,1),(5,2)),[2001-01-04, 2001-01-05])"} */
+SELECT mergeNStboxes(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
+  [Point(3 1)@2001-01-03, Point(4 2)@2001-01-04], [Point(5 1)@2001-01-05]}', 2);
+/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])",
+   "STBOX XT(((3,1),(5,2)),[2001-01-03, 2001-01-05])"} */
+SELECT mergeNStboxes(tgeogpoint '{Point(1 1 1)@2001-01-01, Point(2 2 1)@2001-01-02,
+  Point(3 1 1)@2001-01-03, Point(4 2 1)@2001-01-04, Point(5 1 1)@2001-01-05}', 6);
+/* {"SRID=4326;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])",
+   "SRID=4326;GEODSTBOX ZT(((2,2,1),(2,2,1)),[2001-01-02, 2001-01-02])",
+   "SRID=4326;GEODSTBOX ZT(((3,1,1),(3,1,1)),[2001-01-03, 2001-01-03])",
+   "SRID=4326;GEODSTBOX ZT(((4,2,1),(4,2,1)),[2001-01-04, 2001-01-04])",
+   "SRID=4326;GEODSTBOX ZT(((5,1,1),(5,1,1)),[2001-01-05, 2001-01-05])"} */
+SELECT mergeNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05]', 6);
+/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])",
+   "STBOX XT(((2,1),(3,2)),[2001-01-02, 2001-01-03])",
+   "STBOX XT(((3,1),(4,2)),[2001-01-03, 2001-01-04])",
+   "STBOX XT(((4,1),(5,2)),[2001-01-04, 2001-01-05])"} */
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttype_splitEachNStboxes">
 				<indexterm significance="normal"><primary><varname>splitEachNStboxes</varname></primary></indexterm>
 				<para>Devuelve ya sea una matriz de cuadros espaciales obtenida fusionando N segmentos consecutivos de una (multi)línea o una matriz de cuadros espaciotemporales obtenida fusionando N instantes o segmentos consecutivos de un punto temporal &Z_support; &geography_support;</para>
@@ -599,6 +771,44 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
 /* {"SRID=4326;GEODSTBOX XT(((1,1),(2,2)),[2001-01-01,
    2001-01-02])","SRID=4326;GEODSTBOX XT(((3,1),(4,2)),[2001-01-03,
    2001-01-04])","SRID=4326;GEODSTBOX XT(((5,1),(5,1)),[2001-01-05, 2001-01-05])"} */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="ttype_mergeEachNStboxes">
+				<indexterm significance="normal"><primary><varname>mergeEachNStboxes</varname></primary></indexterm>
+				<para>Devuelve un arreglo de cajas espaciales obtenido fusionando las cajas de los segmentos de una (multi)línea, o de cajas espaciotemporales obtenido fusionando las cajas de los instantes o segmentos de un punto temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que una caja contenga en promedio un número dado de ellos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeEachNStboxes({lines,tpoint},integer) → stbox[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
+/* {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))",
+   "STBOX X((4,1),(5,2))"} */
+SELECT mergeEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
+-- {"STBOX X((1,1),(4,2))","STBOX X((4,1),(5,2))"}
+SELECT mergeEachNStboxes(geography 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
+-- {"SRID=4326;GEODSTBOX Z((1,1,1),(5,2,1))"}
+SELECT mergeEachNStboxes(geometry 'MultiLinestring((1 1,2 2),(3 1,4 2),(5 1,6 2))', 2);
+-- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))"}
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeEachNStboxes(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05}', 1);
+/* {"STBOX XT(((1,1),(1,1)),[2001-01-01, 2001-01-01])",
+   "STBOX XT(((2,2),(2,2)),[2001-01-02, 2001-01-02])",
+   "STBOX XT(((3,1),(3,1)),[2001-01-03, 2001-01-03])",
+   "STBOX XT(((4,2),(4,2)),[2001-01-04, 2001-01-04])",
+   "STBOX XT(((5,1),(5,1)),[2001-01-05, 2001-01-05])"} */
+SELECT mergeEachNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05]', 1);
+/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])",
+   "STBOX XT(((2,1),(3,2)),[2001-01-02, 2001-01-03])",
+   "STBOX XT(((3,1),(4,2)),[2001-01-03, 2001-01-04])",
+   "STBOX XT(((4,1),(5,2)),[2001-01-04, 2001-01-05])"} */
+SELECT mergeEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
+  [Point(3 1)@2001-01-03, Point(4 2)@2001-01-04], [Point(5 1)@2001-01-05]}', 2);
+/* {"SRID=4326;GEODSTBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])",
+   "SRID=4326;GEODSTBOX XT(((3,1),(5,2)),[2001-01-03, 2001-01-05])"} */
 </programlisting>
 			</listitem>
 		</itemizedlist>

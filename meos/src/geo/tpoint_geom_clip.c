@@ -1195,34 +1195,14 @@ geo_is_planar_areal(const GSERIALIZED *gs)
 
 /**
  * @brief Return true if every part of a geometry bounds a region
- * @details A ring enclosing no area bounds no region: what it contributes is
- * the linework it traces, one dimension lower. #geom_extract_edges already
- * says which of the two every ring of every part is -- a ring of no area
- * yields LINE edges where one bounding a region yields POLY ones -- so reading
- * that classification is what keeps this answer and the engine's own from
- * disagreeing about a part. It also needs no tolerance of its own: the one
- * that decides a ring lives in the extraction, where it is an area read
- * against the extent the ring occupies rather than a length
+ * @details See #geom_every_part_bounds_area
  */
 bool
 geo_every_part_bounds_area(const GSERIALIZED *gs)
 {
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  MeosArray *edges = geom_extract_edges(geom);
-  /* A geometry drawing nothing at all bounds no region either */
-  bool result = edges && meos_array_count_intl(edges) > 0;
-  if (edges)
-  {
-    for (uint32_t i = 0; result && i < edges->count; i++)
-    {
-      const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
-      if (! edge ||
-          (edge->etype != EDGE_POLYSEG && edge->etype != EDGE_POLYARC))
-        result = false;
-    }
-    meos_array_destroy(edges);
-  }
+  bool result = geom_every_part_bounds_area(geom);
   lwgeom_free(geom);
   return result;
 }

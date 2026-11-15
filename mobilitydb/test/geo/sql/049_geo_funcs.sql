@@ -578,6 +578,9 @@ SELECT numPoints(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
 SELECT ST_AsText(lineInterpolatePoint(geometry 'Linestring(0 0,4 0,4 3)', 0.25));
 SELECT ST_AsText(lineSubstring(geometry 'Linestring(0 0,4 0,4 3)', 0.25, 0.8));
 SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)');
+-- An empty line or point has no position to locate
+SELECT lineLocatePoint(geometry 'Linestring empty', geometry 'Point(4 4)');
+SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point empty');
 
 -------------------------------------------------------------------------------
 
