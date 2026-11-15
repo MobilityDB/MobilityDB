@@ -4247,6 +4247,37 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
   return point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c, g);
 }
 
+/* The two points and the radius of #point_distance_offset_inputs */
+typedef struct
+{
+  const double *p, *q;
+  int ndims;
+  double r, rlo;
+} OffsetPairSide;
+
+/**
+ * @brief The side of the distance between two points less a radius against
+ * the upper midpoint of the double of bit pattern @p bits, decided exactly on
+ * the input coordinates (#point_distance_offset_pair_side_sign)
+ * @details Past the largest double the gap above it is the gap below it,
+ * 2^971
+ * @note @p arg is not const, as #NearestBitsSide declares it for the
+ * filter sides, which write their candidate through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+point_distance_offset_pair_side(uint64 bits, void *arg)
+{
+  const OffsetPairSide *f = (const OffsetPairSide *) arg;
+  double c, up;
+  uint64 upbits = bits + 1;
+  memcpy(&c, &bits, sizeof(c));
+  memcpy(&up, &upbits, sizeof(up));
+  double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
+  return point_distance_offset_pair_side_sign(f->p, f->q, f->ndims, f->r,
+    f->rlo, c, gu);
+}
+
 /**
  * @brief Return the distance between two points less a radius, not below
  * zero, as the double nearest it, every side read on the input coordinates
@@ -4313,41 +4344,17 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
   if (isinf(c))
     c = DBL_MAX;
 
-  /* Move the candidate to the nearest double */
-  while (true)
-  {
-    uint64 bits;
-    memcpy(&bits, &c, sizeof(bits));
-    bool even = (bits & 1) == 0;
-    uint64 upbits = bits + 1;
-    double up;
-    memcpy(&up, &upbits, sizeof(up));
-    /* The gap to the upper neighbour, past the largest double the gap below
-     * it, 2^971 */
-    double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
-    int su = point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c, gu);
-    if (su > 0 || (su == 0 && ! even))
-    {
-      if (isinf(up))
-        return INFINITY;
-      c = up;
-      continue;
-    }
-    if (c > 0.0)
-    {
-      uint64 downbits = bits - 1;
-      double down;
-      memcpy(&down, &downbits, sizeof(down));
-      int sd = point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c,
-        - (c - down));
-      if (sd < 0 || (sd == 0 && ! even))
-      {
-        c = down;
-        continue;
-      }
-    }
-    return c;
-  }
+  OffsetPairSide f = {p, q, ndims, r, rlo};
+  /* The search reads the exact sides, which every tie reaches */
+  uint64 bits, found = NEAREST_INF_BITS;
+  memcpy(&bits, &c, sizeof(bits));
+  bool answered = nearest_double_search(bits, &point_distance_offset_pair_side, &f, 0, &found);
+  /* An exact side never answers 2 and a budget of 0 sets no limit */
+  assert(answered);
+  (void) answered;
+  double result;
+  memcpy(&result, &found, sizeof(result));
+  return result;
 }
 
 
@@ -4588,6 +4595,43 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
   return true;
 }
 
+/* The two points, the radius and the scaling of #point_distance_offset_pair */
+typedef struct
+{
+  const double *p, *q, *d, *e;
+  int ndims;
+  double r, rlo, rs, rlos;
+  bool scaled;
+  int k;
+  double f1, f2;
+  int low, high;
+  double cmin;
+} OffsetSide;
+
+/**
+ * @brief The side of the distance between two points less a radius against
+ * the upper midpoint of the double of bit pattern @p bits, decided exactly
+ * (#point_distance_offset_side)
+ * @details Past the largest double the gap above it is the gap below it,
+ * 2^971
+ * @note @p arg is not const, as #NearestBitsSide declares it for the
+ * filter sides, which write their candidate through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+point_distance_offset_exact_side(uint64 bits, void *arg)
+{
+  const OffsetSide *f = (const OffsetSide *) arg;
+  double c, up;
+  uint64 upbits = bits + 1;
+  memcpy(&c, &bits, sizeof(c));
+  memcpy(&up, &upbits, sizeof(up));
+  double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
+  return point_distance_offset_side(f->p, f->q, f->d, f->e, f->ndims, f->r,
+    f->rlo, f->rs, f->rlos, c, gu, f->scaled, f->k, f->f1, f->f2, f->low,
+    f->high, f->cmin);
+}
+
 /**
  * @brief Return the distance between two points less a radius, computed
  * exactly and rounded once, or 0 where the points are no farther apart than
@@ -4765,42 +4809,18 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
   if (isinf(c))
     c = DBL_MAX;
 
-  /* Move the candidate to the nearest double */
-  while (true)
-  {
-    uint64 bits;
-    memcpy(&bits, &c, sizeof(bits));
-    bool even = (bits & 1) == 0;
-    uint64 upbits = bits + 1;
-    double up;
-    memcpy(&up, &upbits, sizeof(up));
-    /* The gap to the upper neighbour, past the largest double the gap below
-     * it, 2^971 */
-    double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
-    int su = point_distance_offset_side(p, q, d, e, ndims, r, rlo, rs, rlos,
-      c, gu, scaled, k, f1, f2, low, high, cmin);
-    if (su > 0 || (su == 0 && ! even))
-    {
-      if (isinf(up))
-        return INFINITY;
-      c = up;
-      continue;
-    }
-    if (c > 0.0)
-    {
-      uint64 downbits = bits - 1;
-      double down;
-      memcpy(&down, &downbits, sizeof(down));
-      int sd = point_distance_offset_side(p, q, d, e, ndims, r, rlo, rs,
-        rlos, c, - (c - down), scaled, k, f1, f2, low, high, cmin);
-      if (sd < 0 || (sd == 0 && ! even))
-      {
-        c = down;
-        continue;
-      }
-    }
-    return c;
-  }
+  OffsetSide f = {p, q, d, e, ndims, r, rlo, rs, rlos, scaled, k, f1, f2,
+    low, high, cmin};
+  /* The search reads the exact sides, which every tie reaches */
+  uint64 bits, found = NEAREST_INF_BITS;
+  memcpy(&bits, &c, sizeof(bits));
+  bool answered = nearest_double_search(bits, &point_distance_offset_exact_side, &f, 0, &found);
+  /* An exact side never answers 2 and a budget of 0 sets no limit */
+  assert(answered);
+  (void) answered;
+  double result;
+  memcpy(&result, &found, sizeof(result));
+  return result;
 }
 
 /**
