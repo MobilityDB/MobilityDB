@@ -150,31 +150,46 @@ tseqarr_normalize(TSequence **sequences, int count, int *newcount)
 {
   assert(sequences); assert(newcount); assert(count > 0);
   TSequence **result = palloc(sizeof(TSequence *) * count);
+  /* The timestamps at which two joined pieces meet, whether the join keeps
+   * or removes their shared instant, which #tsequence_drop_junctions reads
+   * once the chain of pieces ends */
+  TimestampTz *junctions = palloc(sizeof(TimestampTz) * count);
+  int njunctions = 0;
   /* seq1 is the sequence to which we try to join subsequent seq2 */
   TSequence *seq1 = (TSequence *) sequences[0];
   /* newseq is the result of joining seq1 and seq2 */
   bool isnew = false;
   int nseqs = 0;
-  for (int i = 1; i < count; i++)
+  for (int i = 1; i <= count; i++)
   {
-    TSequence *seq2 = (TSequence *) sequences[i];
+    TSequence *seq2 = (i < count) ? (TSequence *) sequences[i] : NULL;
     bool removelast, removefirst;
-    if (tsequence_join_test(seq1, seq2, &removelast, &removefirst))
+    if (seq2 && tsequence_join_test(seq1, seq2, &removelast, &removefirst))
     {
+      if (removefirst)
+        junctions[njunctions++] = TSEQUENCE_INST_N(seq2, 0)->t;
       TSequence *newseq1 = tsequence_join(seq1, seq2, removelast, removefirst);
       if (isnew)
         pfree(seq1);
       seq1 = newseq1;
       isnew = true;
+      continue;
+    }
+    /* The chain of pieces ends with seq1 */
+    TSequence *norm = tsequence_drop_junctions(seq1, junctions, njunctions);
+    if (norm != seq1)
+    {
+      if (isnew)
+        pfree(seq1);
+      result[nseqs++] = norm;
     }
     else
-    {
       result[nseqs++] = isnew ? seq1 : tsequence_copy(seq1);
-      seq1 = seq2;
-      isnew = false;
-    }
+    njunctions = 0;
+    seq1 = seq2;
+    isnew = false;
   }
-  result[nseqs++] = isnew ? seq1 : tsequence_copy(seq1);
+  pfree(junctions);
   *newcount = nseqs;
   return result;
 }

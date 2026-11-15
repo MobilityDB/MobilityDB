@@ -2318,6 +2318,8 @@ tdiscseq_time_split(const TSequence *seq, TimestampTz start, int64 tunits,
  * @brief Split a temporal value into an array of fragments according to time
  * bins
  * @param[in] seq Temporal value
+ * @param[in] orig Value whose segments the bins cut, or NULL for those of
+ * the sequence @nullable
  * @param[in] start,end Start and end timestamps of the bins
  * @param[in] tunits Size of the time bins in PostgreSQL time units
  * @param[in] count Number of bins
@@ -2326,9 +2328,9 @@ tdiscseq_time_split(const TSequence *seq, TimestampTz start, int64 tunits,
  * @note This function is called for each sequence of a temporal sequence set
  */
 static int
-tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
-  TimestampTz end, int64 tunits, int count, TSequence **result,
-  TimestampTz *times)
+tcontseq_time_split_iter(const TSequence *seq, const Temporal *orig,
+  TimestampTz start, TimestampTz end, int64 tunits, int count,
+  TSequence **result, TimestampTz *times)
 {
   assert(seq); assert(result); assert(times);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
@@ -2377,8 +2379,16 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
       if (instants[ninsts - 1]->t < upper)
       {
         if (interp == LINEAR)
-          tofree[nfree] = tsegment_at_timestamptz(TSEQUENCE_INST_N(seq, i - 1),
-            inst, interp, upper);
+        {
+          /* A sequence restricted from another one is cut on the segment of
+           * the other one, which holds the timestamp but at an exclusive
+           * bound, where the cut is the instant of the sequence there */
+          tofree[nfree] = orig ?
+            (TInstant *) temporal_at_timestamptz(orig, upper) : NULL;
+          if (! tofree[nfree])
+            tofree[nfree] = tsegment_at_timestamptz(
+              TSEQUENCE_INST_N(seq, i - 1), inst, interp, upper);
+        }
         else
         {
           /* The last two values of sequences with step interpolation and
@@ -2425,6 +2435,8 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
  * @brief Split a temporal value into an array of fragments according to time
  * bins
  * @param[in] seq Temporal value
+ * @param[in] orig Value whose segments the bins cut, or NULL for those of
+ * the sequence @nullable
  * @param[in] start,end Start and end timestamps of the bins
  * @param[in] tunits Size of the time bins in PostgreSQL time units
  * @param[in] count Number of bins
@@ -2432,16 +2444,17 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
  * @param[out] newcount Number of values in the output array
  */
 static TSequence **
-tcontseq_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
-  int64 tunits, int count, TimestampTz **bins, int *newcount)
+tcontseq_time_split(const TSequence *seq, const Temporal *orig,
+  TimestampTz start, TimestampTz end, int64 tunits, int count,
+  TimestampTz **bins, int *newcount)
 {
   assert(seq); assert(bins); assert(newcount);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
 
   TSequence **result = palloc(sizeof(TSequence *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  *newcount = tcontseq_time_split_iter(seq, start, end, tunits, count, result,
-    times);
+  *newcount = tcontseq_time_split_iter(seq, orig, start, end, tunits, count,
+    result, times);
   *bins = times;
   return result;
 }
@@ -2449,6 +2462,8 @@ tcontseq_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
 /**
  * @brief Split a temporal value into an array of disjoint fragments
  * @param[in] ss Temporal value
+ * @param[in] orig Value whose segments the bins cut, or NULL for those of
+ * the sequence set @nullable
  * @param[in] start,end Start and end timestamps of the bins
  * @param[in] tunits Size of the time bins in PostgreSQL time units
  * @param[in] count Number of bins
@@ -2456,9 +2471,9 @@ tcontseq_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
  * @param[out] newcount Number of values in the output array
  */
 static TSequenceSet **
-tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
-  TimestampTz end, int64 tunits, int count, TimestampTz **bins,
-  int *newcount)
+tsequenceset_time_split(const TSequenceSet *ss, const Temporal *orig,
+  TimestampTz start, TimestampTz end, int64 tunits, int count,
+  TimestampTz **bins, int *newcount)
 {
   assert(ss); assert(bins); assert(newcount);
 
@@ -2466,7 +2481,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
   if (ss->count == 1)
   {
     TSequence **sequences = tcontseq_time_split(TSEQUENCESET_SEQ_N(ss, 0),
-      start, end, tunits, count, bins, newcount);
+      orig, start, end, tunits, count, bins, newcount);
     TSequenceSet **result = palloc(sizeof(TSequenceSet *) * *newcount);
     for (int i = 0; i < *newcount; i++)
       result[i] = tsequence_to_tsequenceset_free(sequences[i]);
@@ -2503,7 +2518,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
       lower += tunits;
     }
     /* Number of time bins of the current sequence */
-    int l = tcontseq_time_split_iter(seq, lower, end, tunits, count,
+    int l = tcontseq_time_split_iter(seq, orig, lower, end, tunits, count,
       sequences, &times[nbucks]);
     /* If the current sequence has produced more than two time bins */
     if (l > 1)
@@ -2546,6 +2561,8 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
  * @brief Return the fragments of a temporal value split according to
  * time bins
  * @param[in] temp Temporal value
+ * @param[in] orig Value whose segments the bins cut, of which @p temp is a
+ * restriction, or NULL for those of @p temp @nullable
  * @param[in] start,end Start and end timestamps of the bins
  * @param[in] tunits Size of the time bins in PostgreSQL time units
  * @param[in] torigin Time origin of the tiles
@@ -2554,9 +2571,9 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
  * @param[out] newcount Number of values in the output array
  */
 Temporal **
-temporal_time_split_intl(const Temporal *temp, TimestampTz start,
-  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
-  TimestampTz **bins, int *newcount)
+temporal_time_split_intl(const Temporal *temp, const Temporal *orig,
+  TimestampTz start, TimestampTz end, int64 tunits, TimestampTz torigin,
+  int count, TimestampTz **bins, int *newcount)
 {
   assert(temp); assert(bins); assert(newcount); assert(start < end);
   assert(count > 0);
@@ -2572,11 +2589,11 @@ temporal_time_split_intl(const Temporal *temp, TimestampTz start,
       return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
         (Temporal **) tdiscseq_time_split((const TSequence *) temp,
           start, tunits, count, bins, newcount) :
-        (Temporal **) tcontseq_time_split((const TSequence *) temp,
+        (Temporal **) tcontseq_time_split((const TSequence *) temp, orig,
           start, end, tunits, count, bins, newcount);
     default: /* TSEQUENCESET */
       return (Temporal **) tsequenceset_time_split((const TSequenceSet *) temp,
-        start, end, tunits, count, bins, newcount);
+        orig, start, end, tunits, count, bins, newcount);
   }
 }
 
@@ -2613,7 +2630,7 @@ temporal_time_split(const Temporal *temp, const Interval *duration,
   int64 tunits = interval_units(duration);
   int nbins = span_num_bins(&s, Int64GetDatum(tunits),
     TimestampTzGetDatum(torigin), border_inc, &start_bin, &end_bin);
-  return temporal_time_split_intl(temp, DatumGetTimestampTz(start_bin),
+  return temporal_time_split_intl(temp, NULL, DatumGetTimestampTz(start_bin),
     DatumGetTimestampTz(end_bin), tunits, torigin, nbins, bins, count);
 }
 
@@ -3159,7 +3176,10 @@ tnumber_value_time_split(const Temporal *temp, Datum vsize,
     {
       int num_time_splits;
       TimestampTz *times;
-      Temporal **time_splits = temporal_time_split_intl(atspan, start_time,
+      /* The time bins cut the segments of the input, not those the value
+       * bin already cut */
+      Temporal **time_splits = temporal_time_split_intl(atspan,
+        MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temp : NULL, start_time,
         end_time, tunits, torigin, time_count, &times, &num_time_splits);
       for (int i = 0; i < num_time_splits; i++)
       {

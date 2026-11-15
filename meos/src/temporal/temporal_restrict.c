@@ -652,6 +652,139 @@ temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
 /*****************************************************************************/
 
 /**
+ * @brief Return the timestamp of the last instant of a continuous sequence
+ * at or before a timestamp, or of its first instant where none is
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ */
+static TimestampTz
+tcontseq_instant_before(const TSequence *seq, TimestampTz t)
+{
+  int lo = 0, hi = seq->count - 1;
+  while (lo < hi)
+  {
+    int mid = (lo + hi + 1) / 2;
+    if (TSEQUENCE_INST_N(seq, mid)->t <= t)
+      lo = mid;
+    else
+      hi = mid - 1;
+  }
+  return TSEQUENCE_INST_N(seq, lo)->t;
+}
+
+/**
+ * @brief Return the timestamp of the first instant of a continuous sequence
+ * at or after a timestamp, or of its last instant where none is
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ */
+static TimestampTz
+tcontseq_instant_after(const TSequence *seq, TimestampTz t)
+{
+  int lo = 0, hi = seq->count - 1;
+  while (lo < hi)
+  {
+    int mid = (lo + hi) / 2;
+    if (TSEQUENCE_INST_N(seq, mid)->t >= t)
+      hi = mid;
+    else
+      lo = mid + 1;
+  }
+  return TSEQUENCE_INST_N(seq, lo)->t;
+}
+
+/**
+ * @brief Return in the last argument the span of the instants of a
+ * continuous temporal value that enclose a period: from its last instant at
+ * or before the lower bound of the period to its first instant at or after
+ * the upper bound, each taken at the bound of the value the period passes
+ * @param[in] temp Temporal value
+ * @param[in] p Period
+ * @param[out] result Span
+ */
+static void
+tcontinuous_enclosing_span(const Temporal *temp, const Span *p, Span *result)
+{
+  TimestampTz lower = DatumGetTimestampTz(p->lower),
+    upper = DatumGetTimestampTz(p->upper);
+  const TSequence *seq1, *seq2;
+  if (temp->subtype == TSEQUENCE)
+    seq1 = seq2 = (const TSequence *) temp;
+  else
+  {
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    /* The last sequence starting at or before the lower bound and the first
+     * one ending at or after the upper bound */
+    int lo = 0, hi = ss->count - 1;
+    while (lo < hi)
+    {
+      int mid = (lo + hi + 1) / 2;
+      if (DatumGetTimestampTz(TSEQUENCESET_SEQ_N(ss, mid)->period.lower) <=
+          lower)
+        lo = mid;
+      else
+        hi = mid - 1;
+    }
+    seq1 = TSEQUENCESET_SEQ_N(ss, lo);
+    lo = 0, hi = ss->count - 1;
+    while (lo < hi)
+    {
+      int mid = (lo + hi) / 2;
+      if (DatumGetTimestampTz(TSEQUENCESET_SEQ_N(ss, mid)->period.upper) >=
+          upper)
+        hi = mid;
+      else
+        lo = mid + 1;
+    }
+    seq2 = TSEQUENCESET_SEQ_N(ss, lo);
+  }
+  span_set(TimestampTzGetDatum(tcontseq_instant_before(seq1, lower)),
+    TimestampTzGetDatum(tcontseq_instant_after(seq2, upper)), true, true,
+    T_TIMESTAMPTZ, T_TSTZSPAN, result);
+}
+
+/**
+ * @brief Return a linear temporal number restricted to the values of a span
+ * within a period, every instant the restriction adds cut on a segment of
+ * the input
+ * @details Restricted to the period and then to the span, the value would be
+ * cut at the values of the span on the pieces the period cuts, whose ends no
+ * input states. The value is restricted instead to the instants enclosing
+ * the period (#tcontinuous_enclosing_span), which adds none, then to the times
+ * at which it takes the values of the span within the period, as
+ * #tnumber_minus_tbox restricts it to the times of a restriction
+ * @param[in] temp Temporal value
+ * @param[in] s Span of values
+ * @param[in] p Period
+ */
+Temporal *
+tnumber_at_span_tstzspan(const Temporal *temp, const Span *s, const Span *p)
+{
+  assert(temp); assert(s); assert(p);
+  assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
+  Span enclosing;
+  tcontinuous_enclosing_span(temp, p, &enclosing);
+  Temporal *temp1 = temporal_restrict_tstzspan(temp, &enclosing, REST_AT);
+  if (! temp1)
+    return NULL;
+  Temporal *result = NULL;
+  Temporal *atspan = tnumber_restrict_span(temp1, s, REST_AT);
+  if (atspan)
+  {
+    SpanSet *ss = temporal_time(atspan);
+    SpanSet *ss1 = intersection_spanset_span(ss, p);
+    if (ss1)
+    {
+      result = temporal_restrict_tstzspanset(temp1, ss1, REST_AT);
+      pfree(ss1);
+    }
+    pfree(ss); pfree(atspan);
+  }
+  pfree(temp1);
+  return result;
+}
+
+/**
  * @ingroup meos_temporal_restrict
  * @brief Return a temporal number restricted to a temporal box
  * @param[in] temp Temporal value
@@ -675,6 +808,8 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
   Temporal *temp1;
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
+  if (hasx && hast && MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return tnumber_at_span_tstzspan(temp, &box->span, &box->period);
   if (hast)
     temp1 = temporal_restrict_tstzspan(temp, &box->period, REST_AT);
   else
