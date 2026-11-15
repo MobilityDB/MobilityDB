@@ -22078,44 +22078,88 @@ meos_is_simple(const LWGEOM *geom, bool *result)
  *****************************************************************************/
 
 /**
+ * @brief Set in the output array the coordinates by which a point is
+ * compared, ordered and hashed, and return their number
+ * @details A geography point denotes a point of the sphere, which two
+ * longitudes name on the antimeridian, 180 and -180, and every longitude
+ * names at a pole. The longitude -180 is read as 180 and the longitude of a
+ * pole as 0, so that one point of the sphere is one value for #geopoint_eq,
+ * #geopoint_cmp, #geopoint_sortkey_put and #geopoint_hash; a zero of either
+ * sign is read as 0, as #float8_eq compares it
+ * @param[in] gs Point
+ * @param[out] coords Its coordinates, the Z coordinate last where it has one
+ */
+static int
+geopoint_coords(const GSERIALIZED *gs, double *coords)
+{
+  int n;
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    const POINT3DZ *point = GSERIALIZED_POINT3DZ_P(gs);
+    coords[0] = point->x; coords[1] = point->y; coords[2] = point->z;
+    n = 3;
+  }
+  else
+  {
+    const POINT2D *point = GSERIALIZED_POINT2D_P(gs);
+    coords[0] = point->x; coords[1] = point->y;
+    n = 2;
+  }
+  if (FLAGS_GET_GEODETIC(gs->gflags))
+  {
+    if (fabs(coords[1]) == 90.0)
+      coords[0] = 0.0;
+    else if (coords[0] == -180.0)
+      coords[0] = 180.0;
+  }
+  /* Adding +0 turns a zero of negative sign into +0, rounding to nearest,
+   * and leaves every other double as it is */
+  for (int i = 0; i < n; i++)
+    coords[i] += 0.0;
+  return n;
+}
+
+/**
  * @brief Return -1, 0, or 1 depending on whether the first point is less than,
  * equal to, or greater than the second one
+ * @details The points are ordered by their coordinates as #geopoint_coords
+ * reads them
  */
 int
 geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  if (FLAGS_GET_Z(gs1->gflags))
+  double c1[3], c2[3];
+  int n = geopoint_coords(gs1, c1);
+  geopoint_coords(gs2, c2);
+  for (int i = 0; i < n; i++)
   {
-    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
-    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
-    if (float8_lt(point1->x, point2->x))
+    if (float8_lt(c1[i], c2[i]))
       return -1;
-    if (float8_gt(point1->x, point2->x))
+    if (float8_gt(c1[i], c2[i]))
       return 1;
-    if (float8_lt(point1->y, point2->y))
-      return -1;
-    if (float8_gt(point1->y, point2->y))
-      return 1;
-    if (float8_lt(point1->z, point2->z))
-      return -1;
-    if (float8_gt(point1->z, point2->z))
-      return 1;
-    return 0;
   }
-  else
+  return 0;
+}
+
+/**
+ * @brief Return the 32-bit hash of a point
+ * @details The hashes of the coordinates as #geopoint_coords reads them are
+ * merged as #cbuffer_hash merges those of a circular buffer, so that two
+ * points #geopoint_eq answers equal hash alike
+ * @param[in] gs Point
+ */
+uint32
+geopoint_hash(const GSERIALIZED *gs)
+{
+  double coords[3];
+  int n = geopoint_coords(gs, coords);
+  uint32 result = float8_hash(coords[0]);
+  for (int i = 1; i < n; i++)
   {
-    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
-    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
-    if (float8_lt(point1->x, point2->x))
-      return -1;
-    if (float8_gt(point1->x, point2->x))
-      return 1;
-    if (float8_lt(point1->y, point2->y))
-      return -1;
-    if (float8_gt(point1->y, point2->y))
-      return 1;
-    return 0;
+    result = pg_rotate_left32(result, 1);
+    result ^= float8_hash(coords[i]);
   }
+  return result;
 }
 
 /**
@@ -22130,8 +22174,8 @@ geopoint_sortkey_size(const GSERIALIZED *gs)
 
 /**
  * @brief Write the sort key of a point
- * @details The key is the coordinates in the order #geopoint_cmp compares
- * them, each written as a double
+ * @details The key is the coordinates as #geopoint_coords reads them, in the
+ * order #geopoint_cmp compares them, each written as a double
  * @param[in] gs Point
  * @param[out] out Buffer of #geopoint_sortkey_size bytes
  * @return The first byte after the key
@@ -22140,19 +22184,7 @@ uint8_t *
 geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
 {
   double coords[3];
-  int ncoords;
-  if (FLAGS_GET_Z(gs->gflags))
-  {
-    const POINT3DZ *point = GSERIALIZED_POINT3DZ_P(gs);
-    coords[0] = point->x; coords[1] = point->y; coords[2] = point->z;
-    ncoords = 3;
-  }
-  else
-  {
-    const POINT2D *point = GSERIALIZED_POINT2D_P(gs);
-    coords[0] = point->x; coords[1] = point->y;
-    ncoords = 2;
-  }
+  int ncoords = geopoint_coords(gs, coords);
   size_t n = datum_sortkey_size(T_FLOAT8);
   for (int i = 0; i < ncoords; i++)
   {
@@ -22173,19 +22205,16 @@ geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
   assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
-  if (FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) )
+  /* The coordinates as #geopoint_coords reads them, in 2D unless both points
+   * have a Z coordinate */
+  double c1[3], c2[3];
+  int n = Min(geopoint_coords(gs1, c1), geopoint_coords(gs2, c2));
+  for (int i = 0; i < n; i++)
   {
-    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
-    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
-    return float8_eq(point1->x, point2->x) &&
-      float8_eq(point1->y, point2->y) && float8_eq(point1->z, point2->z);
+    if (! float8_eq(c1[i], c2[i]))
+      return false;
   }
-  else
-  {
-    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
-    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
-    return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y);
-  }
+  return true;
 }
 /**
  * @brief Return true if the points are equal taking into account floating
