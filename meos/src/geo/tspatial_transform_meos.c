@@ -55,6 +55,7 @@
 #endif /* ! MEOS */
 /* MEOS */
 #include <meos.h>
+#include "temporal/temporal.h"
 
 #define MAX_PROJ_LEN  512
 
@@ -130,11 +131,16 @@ static char *SPATIAL_REF_SYS_CSV_COPY = NULL;
  * @ingroup meos_setup
  * @brief Set the location of the SPATIAL_REF_SYS_CSV files
  * @details The function keeps a copy of the path and frees the copy it kept
- * for an earlier call, as #meos_set_ways_csv does.
+ * for an earlier call, as #meos_set_ways_csv does. A null path is refused and
+ * the path kept before stays in use.
+ * @param[in] path Full path to the spatial reference systems CSV file
  */
 void
 meos_set_spatial_ref_sys_csv(const char* path)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_null(path))
+    return;
   char *copy = malloc(strlen(path) + 1);
   if (! copy)
   {

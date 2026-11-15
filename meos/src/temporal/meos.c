@@ -524,10 +524,15 @@ check_datestyle(const char **newval, void **extra)
 /**
  * @ingroup meos_setup
  * @brief Set the DateStyle
+ * @param[in] newval Name of the style
+ * @param[in] extra Unused: the function reads the style from its name
+ * @errval false
  */
 bool
 meos_set_datestyle(const char *newval, void *extra)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(newval, false);
   if (! check_datestyle(&newval, &extra))
     return false;
 
@@ -590,10 +595,15 @@ check_intervalstyle(const char *newval, int *extra)
 /**
  * @ingroup meos_setup
  * @brief Set the IntervalStyle
+ * @param[in] newval Name of the style
+ * @param[in] extra Unused: the function reads the style from its name
+ * @errval false
  */
 bool
 meos_set_intervalstyle(const char *newval, int extra)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(newval, false);
   if (! check_intervalstyle(newval, &extra))
     return false;
 
