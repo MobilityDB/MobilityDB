@@ -378,6 +378,86 @@ extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
 }
 
 /**
+ * @brief Return 1 if every part of a polygon, a multipolygon or a triangle
+ * bounds a region, 0 if one does not, and -1 where the answer is left to the
+ * edges of the geometry
+ * @details The answer #extract_poly and #extract_triangle give, read from
+ * the same predicate on the same rings without building an edge: a polygon
+ * yields only polygon edges exactly where its outer ring encloses an area
+ * (#ring_encloses_no_area), a hole enclosing none yielding no edge at all,
+ * and a triangle likewise. A ring of fewer than four points, whose edges
+ * depend on how many it holds, and every other type are left to the edges
+ * @param[in] geom Geometry, not empty
+ */
+static int
+geom_parts_bound_area_rings(const LWGEOM *geom)
+{
+  if (geom->type == TRIANGLETYPE)
+  {
+    const POINTARRAY *pa = ((const LWTRIANGLE *) geom)->points;
+    if (! pa || pa->npoints < 4)
+      return -1;
+    return ring_encloses_no_area(pa) ? 0 : 1;
+  }
+  if (geom->type == POLYGONTYPE)
+  {
+    const LWPOLY *poly = (const LWPOLY *) geom;
+    if (poly->nrings == 0 || poly->rings[0]->npoints < 4)
+      return -1;
+    return ring_encloses_no_area(poly->rings[0]) ? 0 : 1;
+  }
+  if (geom->type == MULTIPOLYGONTYPE)
+  {
+    const LWMPOLY *mp = (const LWMPOLY *) geom;
+    int result = mp->ngeoms > 0 ? 1 : -1;
+    for (uint32_t i = 0; i < mp->ngeoms && result == 1; i++)
+      result = geom_parts_bound_area_rings((const LWGEOM *) mp->geoms[i]);
+    return result;
+  }
+  return -1;
+}
+
+/**
+ * @brief Return true if every part of a geometry bounds a region
+ * @details A ring enclosing no area bounds no region: what it contributes is
+ * the linework it traces, one dimension lower. #geom_extract_edges says which
+ * of the two every ring of every part is -- a ring of no area yields LINE
+ * edges where one bounding a region yields POLY ones -- so this answers as
+ * that classification does: from the outer rings of a polygon, a
+ * multipolygon or a triangle where they decide it
+ * (#geom_parts_bound_area_rings), and from the edges of every other geometry.
+ * It needs no tolerance of its own: the one that decides a ring lives in the
+ * extraction, where it is an area read against the extent the ring occupies
+ * rather than a length
+ * @param[in] geom Geometry
+ */
+bool
+geom_every_part_bounds_area(const LWGEOM *geom)
+{
+  assert(geom);
+  /* A geometry drawing nothing at all bounds no region either */
+  if (lwgeom_is_empty(geom))
+    return false;
+  int rings = geom_parts_bound_area_rings(geom);
+  if (rings >= 0)
+    return rings == 1;
+  MeosArray *edges = geom_extract_edges(geom);
+  bool result = edges && meos_array_count_intl(edges) > 0;
+  if (edges)
+  {
+    for (uint32_t i = 0; result && i < edges->count; i++)
+    {
+      const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
+      if (! edge ||
+          (edge->etype != EDGE_POLYSEG && edge->etype != EDGE_POLYARC))
+        result = false;
+    }
+    meos_array_destroy(edges);
+  }
+  return result;
+}
+
+/**
  * @brief Add to the dynamic array in the last argument the edge obtained from
  * three consecutive points of a circular string
  * @details The three points are the start, an intermediate point, and the end
