@@ -2469,6 +2469,8 @@ typedef struct
   int32_t next;    /**< Next node in the same bucket, -1 at the end of a chain */
   double x;        /**< The node itself, which the index never rounds */
   double y;
+  double ci;       /**< Cell the node stands in along x */
+  double cj;       /**< Cell the node stands in along y */
 } BufferNodeEnd;
 
 /**
@@ -2512,6 +2514,9 @@ buffer_node_byx_cmp(const BufferNodeByX *n1, const BufferNodeByX *n2)
 #define ST_DEFINE
 #include "port/sort_template.h"
 
+/** Tolerances a cell of a node index spans along each axis */
+#define BUFFER_NODE_CELL_TOLERANCES 16.0
+
 /**
  * @brief The ends of a ring's boundary pieces, read by the node they sit at
  * @details Chaining a ring asks, once per step, which unused piece continues
@@ -2527,10 +2532,13 @@ buffer_node_byx_cmp(const BufferNodeByX *n1, const BufferNodeByX *n2)
  * for that the way #relate_edges_init sizes the edge index: from the WIDEST
  * tolerance anything in the array is compared at, never from
  * @p MEOS_GEOM_TOLERANCE, which at projected coordinates is thousands of times
- * too small. A cell is therefore as wide as the largest tolerance any pair of
- * these ends reads, so two ends #buffer_points_equal accepts differ by no more
- * than a cell along each axis and lie in the same cell or in one touching it.
- * Reading the nine cells around a node is exhaustive.
+ * too small. Two ends #buffer_points_equal accepts differ by no more than
+ * that WIDEST TOLERANCE along each axis, so reading every cell the square of
+ * that half-width around a node touches is exhaustive. A cell is
+ * #BUFFER_NODE_CELL_TOLERANCES such tolerances wide, so that square nearly
+ * always lies in the one cell the node stands in: a node is read from one
+ * bucket rather than nine, and the ends a cell gathers beyond the tolerance
+ * cost a comparison each.
  */
 typedef struct
 {
@@ -2538,7 +2546,8 @@ typedef struct
   int32_t *cells;       /**< First end of a bucket, -1 where it holds none */
   uint32_t ncells;      /**< Buckets, a power of two so the hash masks */
   uint32_t nends;       /**< Ends held, twice the pieces */
-  double cell;          /**< Side of a cell, never below the tolerance */
+  double tol;           /**< Widest tolerance two ends are compared at */
+  double cell;          /**< Side of a cell, a fixed number of tolerances */
   uint32_t *cand;       /**< Scratch the candidates of one node are read into */
   uint32_t *stamp;      /**< Generation a piece was last gathered in */
   uint32_t gen;         /**< Generation of the node being read */
@@ -2592,8 +2601,9 @@ buffer_node_index_add(BufferNodeIndex *ix, uint32_t id, POINT2D p)
   ix->ends[at].id = id;
   ix->ends[at].x = p.x;
   ix->ends[at].y = p.y;
-  uint32_t b = buffer_node_bucket(ix, buffer_node_cell(p.x, ix->cell),
-    buffer_node_cell(p.y, ix->cell));
+  ix->ends[at].ci = buffer_node_cell(p.x, ix->cell);
+  ix->ends[at].cj = buffer_node_cell(p.y, ix->cell);
+  uint32_t b = buffer_node_bucket(ix, ix->ends[at].ci, ix->ends[at].cj);
   ix->ends[at].next = ix->cells[b];
   ix->cells[b] = (int32_t) at;
   return;
@@ -2612,7 +2622,8 @@ buffer_node_index_alloc(BufferNodeIndex *ix, uint32_t nids, uint32_t nnodes,
   double scale)
 {
   assert(ix);
-  ix->cell = buffer_node_tolerance(scale, scale);
+  ix->tol = buffer_node_tolerance(scale, scale);
+  ix->cell = BUFFER_NODE_CELL_TOLERANCES * ix->tol;
   ix->ncells = 16;
   while (ix->ncells < 2 * nnodes)
     ix->ncells *= 2;
@@ -2707,8 +2718,9 @@ buffer_node_index_free(BufferNodeIndex *ix)
 /**
  * @brief Return the pieces that can meet a node, in the order a walk over
  * every piece reaches them
- * @details The candidates are gathered from the nine cells around the node and
- * reported in ASCENDING PIECE ORDER, which is the order the pieces stand in.
+ * @details The candidates are gathered from every cell touched by the square
+ * around the node whose half-width is the widest tolerance, and reported in
+ * ASCENDING PIECE ORDER, which is the order the pieces stand in.
  * #buffer_find_connected_piece keeps the FIRST of several candidates that tie,
  * so any other order decides a tie differently and chains another ring.
  * @param[in,out] ix Index to read
@@ -2722,11 +2734,19 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
   assert(ix); assert(ncand);
   double ci = buffer_node_cell(point.x, ix->cell);
   double cj = buffer_node_cell(point.y, ix->cell);
+  /* Rounding to nearest is monotone, so an end within the tolerance of the
+   * node stands in a cell from that of the node moved back by the tolerance
+   * to that of the node moved on by it, the node's own cell or one touching
+   * it, a cell being wider than the tolerance */
+  int i0 = (buffer_node_cell(point.x - ix->tol, ix->cell) < ci) ? -1 : 0;
+  int i1 = (buffer_node_cell(point.x + ix->tol, ix->cell) > ci) ? 1 : 0;
+  int j0 = (buffer_node_cell(point.y - ix->tol, ix->cell) < cj) ? -1 : 0;
+  int j1 = (buffer_node_cell(point.y + ix->tol, ix->cell) > cj) ? 1 : 0;
   uint32_t n = 0;
   ix->gen++;
-  for (int di = -1; di <= 1; di++)
+  for (int di = i0; di <= i1; di++)
   {
-    for (int dj = -1; dj <= 1; dj++)
+    for (int dj = j0; dj <= j1; dj++)
     {
       uint32_t b = buffer_node_bucket(ix, ci + di, cj + dj);
       for (int32_t at = ix->cells[b]; at >= 0; at = ix->ends[at].next)
@@ -2736,11 +2756,11 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
          * whatever cells collide into it, so a piece is reported once */
         if (ix->stamp[end->id] == ix->gen)
           continue;
-        /* The buckets bound which ends the walk sees; an end is kept only
-         * where the cell it truly sits in is one of the nine */
-        double ei = buffer_node_cell(end->x, ix->cell) - ci;
-        double ej = buffer_node_cell(end->y, ix->cell) - cj;
-        if (ei < -1.0 || ei > 1.0 || ej < -1.0 || ej > 1.0)
+        /* A bucket gathers whatever cells collide into it, so an end is
+         * kept only where the cell it truly sits in is one of those read */
+        double ei = end->ci - ci;
+        double ej = end->cj - cj;
+        if (ei < i0 || ei > i1 || ej < j0 || ej > j1)
           continue;
         ix->stamp[end->id] = ix->gen;
         /* Ascending order, by insertion: a node holds two ends where the
@@ -2769,8 +2789,8 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
  * The nodes are read out of a node index rather than all of them. Its cell
  * is sized from the largest coordinate of any point, and the tolerance grows
  * with the coordinate, so no tolerance a point reads is wider than a cell and
- * the nine cells around a point hold every node within it; the test itself
- * decides each node the index gathers.
+ * the cells #buffer_node_index_at reads hold every node within it; the test
+ * itself decides each node the index gathers.
  * @param[in] points Points, in the order they are found
  * @param[in,out] nodes Array the nodes are added to, empty on entry
  */
@@ -3337,6 +3357,11 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
   MeosArray *result)
 {
   assert(pieces); assert(intersections); assert(result);
+  /* Each piece yields itself, and each intersection splits about two pieces
+   * once: the room is taken in one step (#edge_array_reserve) rather than
+   * doubled from the array's first sixteen slots, each doubling copying every
+   * piece split before */
+  edge_array_reserve(result, pieces->count + 2 * (size_t) intersections->count);
   /* Every piece is split at the same intersections, so they are indexed once
    * for all of them rather than scanned once per piece */
   BufferNodeIndex ix;
@@ -8123,6 +8148,8 @@ meos_disc_sweep_union(const POINT2D *centres, const double *radii,
   return result;
 }
 
+static LWGEOM *buffer_arcless_as_polygons(LWGEOM *geom);
+
 /**
  * @brief Return the union of the areal components of a geometry
  * @details The components are dissolved into the surfaces they cover: a pair
@@ -8251,6 +8278,9 @@ meos_areal_union(const LWGEOM *geom)
    * ring that carries no arc into one point array and loses nothing */
   if (! lwgeom_has_arc(result))
   {
+    LWGEOM *taken = buffer_arcless_as_polygons(result);
+    if (taken)
+      return taken;
     LWGEOM *straight = lwgeom_stroke(result, 0);
     if (straight)
     {
@@ -8297,6 +8327,145 @@ buffer_areal_dissolve(const LWGEOM *geom, LWGEOM **dissolved)
     return true;
   *dissolved = meos_areal_union(geom);
   return *dissolved != NULL;
+}
+
+/* A ring of straight members as one point array: the points
+ * lwcompound_linearize joins, its repeated points removed as it removes them,
+ * the array of a single member taken rather than copied; NULL where a member
+ * is not a line */
+static POINTARRAY *
+buffer_ring_points_take(LWGEOM *ring)
+{
+  if (ring->type == LINETYPE)
+  {
+    /* A line ring is copied as it is (lwcurvepoly_linearize) */
+    LWLINE *line = (LWLINE *) ring;
+    POINTARRAY *pa = line->points;
+    line->points = NULL;
+    return pa;
+  }
+  if (ring->type != COMPOUNDTYPE)
+    return NULL;
+  LWCOMPOUND *comp = (LWCOMPOUND *) ring;
+  for (uint32_t i = 0; i < comp->ngeoms; i++)
+    if (comp->geoms[i]->type != LINETYPE)
+      return NULL;
+  POINTARRAY *pa;
+  if (comp->ngeoms == 1)
+  {
+    LWLINE *line = (LWLINE *) comp->geoms[0];
+    pa = line->points;
+    line->points = NULL;
+  }
+  else
+  {
+    pa = ptarray_construct_empty(FLAGS_GET_Z(comp->flags),
+      FLAGS_GET_M(comp->flags), 64);
+    for (uint32_t i = 0; i < comp->ngeoms; i++)
+    {
+      const POINTARRAY *member = ((const LWLINE *) comp->geoms[i])->points;
+      for (uint32_t j = 0; j < member->npoints; j++)
+      {
+        POINT4D p;
+        getPoint4d_p(member, j, &p);
+        ptarray_append_point(pa, &p, LW_TRUE);
+      }
+    }
+  }
+  ptarray_remove_repeated_points_in_place(pa, 0.0, 2);
+  return pa;
+}
+
+/* Whether every ring of a curve polygon is a line or a compound of lines */
+static bool
+buffer_curvepoly_straight(const LWCURVEPOLY *cp)
+{
+  for (uint32_t i = 0; i < cp->nrings; i++)
+  {
+    const LWGEOM *ring = cp->rings[i];
+    if (ring->type == COMPOUNDTYPE)
+    {
+      const LWCOMPOUND *comp = (const LWCOMPOUND *) ring;
+      for (uint32_t j = 0; j < comp->ngeoms; j++)
+        if (comp->geoms[j]->type != LINETYPE)
+          return false;
+    }
+    else if (ring->type != LINETYPE)
+      return false;
+  }
+  return true;
+}
+
+/* A curve polygon of straight rings as a polygon, its rings' arrays taken */
+static LWPOLY *
+buffer_curvepoly_take(LWCURVEPOLY *cp)
+{
+  POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *) * Max(cp->nrings, 1u));
+  for (uint32_t i = 0; i < cp->nrings; i++)
+    rings[i] = buffer_ring_points_take(cp->rings[i]);
+  return lwpoly_construct(cp->srid, NULL, cp->nrings, rings);
+}
+
+/**
+ * @brief Return an answer that carries no arc as the polygons it draws, or
+ * NULL where it is not a surface this reads
+ * @details The answer is #lwgeom_stroke of the curve the boundary walk welds,
+ * built from the same points: a curve polygon becomes a polygon and a multi
+ * surface a multipolygon, every ring the points lwcompound_linearize joins
+ * with its repeated points removed. The point arrays of the curve are moved
+ * rather than copied, which #lwgeom_stroke does twice per ring, and the curve
+ * is freed. Another type is left to #lwgeom_stroke
+ * @param[in] geom Answer carrying no arc, freed where a polygon is returned
+ */
+static LWGEOM *
+buffer_arcless_as_polygons(LWGEOM *geom)
+{
+  if (geom->type == CURVEPOLYTYPE)
+  {
+    if (! buffer_curvepoly_straight((const LWCURVEPOLY *) geom))
+      return NULL;
+    LWPOLY *poly = buffer_curvepoly_take((LWCURVEPOLY *) geom);
+    lwgeom_free(geom);
+    return lwpoly_as_lwgeom(poly);
+  }
+  if (geom->type != MULTISURFACETYPE)
+    return NULL;
+  LWCOLLECTION *ms = (LWCOLLECTION *) geom;
+  /* Every member is read before any array is taken, so a member this does
+   * not read leaves the whole answer to #lwgeom_stroke */
+  for (uint32_t i = 0; i < ms->ngeoms; i++)
+  {
+    const LWGEOM *g = ms->geoms[i];
+    if (g->type != POLYGONTYPE && (g->type != CURVEPOLYTYPE ||
+        ! buffer_curvepoly_straight((const LWCURVEPOLY *) g)))
+      return NULL;
+  }
+  LWGEOM **polys = lwalloc(sizeof(LWGEOM *) * Max(ms->ngeoms, 1u));
+  for (uint32_t i = 0; i < ms->ngeoms; i++)
+  {
+    LWGEOM *g = ms->geoms[i];
+    if (g->type == POLYGONTYPE)
+    {
+      /* A polygon member is copied as it is (lwmsurface_linearize) */
+      LWPOLY *p = (LWPOLY *) g;
+      POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *) *
+        Max(p->nrings, 1u));
+      for (uint32_t r = 0; r < p->nrings; r++)
+      {
+        rings[r] = p->rings[r];
+        p->rings[r] = NULL;
+      }
+      polys[i] = lwpoly_as_lwgeom(lwpoly_construct(ms->srid, NULL,
+        p->nrings, rings));
+      p->nrings = 0;
+    }
+    else
+      polys[i] = lwpoly_as_lwgeom(buffer_curvepoly_take((LWCURVEPOLY *) g));
+  }
+  LWGEOM *result = lwcollection_as_lwgeom(lwcollection_construct(
+    MULTIPOLYGONTYPE, ms->srid, NULL, ms->ngeoms, polys));
+  lwgeom_free(geom);
+  return result;
 }
 
 /**
@@ -8359,6 +8528,9 @@ buffer_areal_operation(const LWGEOM *geom1, const LWGEOM *geom2,
    * of a ring that carries no arc into one point array and loses nothing */
   if (! lwgeom_has_arc(result))
   {
+    LWGEOM *taken = buffer_arcless_as_polygons(result);
+    if (taken)
+      return taken;
     LWGEOM *straight = lwgeom_stroke(result, 0);
     if (straight)
     {
