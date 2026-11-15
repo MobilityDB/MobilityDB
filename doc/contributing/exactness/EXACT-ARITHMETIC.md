@@ -598,7 +598,18 @@ and 935 to 1279 on the dwithin walk, which reach the expansions. It is merged as
 receipts strict CI, cppcheck, valgrind, smoke, the oracle (18 CGAL witnesses) and speed, 25 of
 the 26 cells at parity as on EA5; strict CI's `meos/test` step found that the first form of the
 predicate read sums its caller leaves unset, and the predicate forms a sum only when a term
-reads it. Third, the ladder kept takes a name of the arithmetic.
+reads it. Third, the ladder kept takes a name of the arithmetic: `Dyadic`, decided by the owner
+on 2026-11-15, since every value it holds, at every tier, is a dyadic rational. The ladder's
+context, value, operations and runner and the wide number are `DyadicCtx`, `DyadicX` and its
+`dx_*` operations, `DyadicPred`, `dyadic_pred_run` and `dyadic_ctx_*`, `DyadicWide`,
+`DyadicWideArena`, `DyadicWideMark` and `dyadic_wide_*`, and `polynomial_sign_dyadic`, in
+place of `TowerCtx`, `TowerX`, `tx_*`, `TowerPred`, `tower_pred_run`, `tower_ctx_*`,
+`TowerWide`, `TowerWideArena`, `TowerWideMark`, `tower_wide_*` and `polynomial_sign_tower`,
+the names this document reads elsewhere. The names of a tower of quadratic extensions, whose
+numbers the arithmetic computes (`Tower`, `TowerNum`, `TowerPoint`, `TowerArc`, `TowerMeet`,
+`tower_*_k`, `tower_f_*`, `towerseg_*`), name those numbers and stay. The rename is
+`claude-kits` `ea1-kit` `home/cpwork/ea1n/dyadic_rename.py`, which also replays it on a branch
+reading the old names.
 
 ### EA2. Tier 2 for the signs of degree six
 
@@ -865,7 +876,10 @@ of its acceptance set held by no cell or by two.
    or 1, the sense of a circle question is that of `incircle_sign`, a segment of no length is a
    point.
 4. The names of the arithmetic's file and header (EA3), and of the ladder (EA1), as the layer
-   names them rather than the first question each served.
+   names them rather than the first question each served. The ladder and the wide number are
+   named `Dyadic`, decided by the owner on 2026-11-15 ("go I like it very much"): every value
+   the arithmetic holds is a dyadic rational (EA1, step 3). The file and header of EA3 remain
+   to be named.
 5. The window of EA3: one in which no pull request on these files is open, MobilityDB #3484
    and #3557 being two such pull requests, and step 18 of [Exact buffer](EXACT-BUFFER.md) not
    started.
