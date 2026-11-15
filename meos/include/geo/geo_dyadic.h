@@ -687,6 +687,26 @@ two_square(double a, double *x, double *y)
 }
 
 /**
+ * @brief Split the product of two doubles into its rounded value and the
+ * error of that rounding, which together are the product exactly
+ * @details The product of #two_product computed with no call, as #two_square
+ * computes a square: Dekker's product on the halves of 26 bits that splitting
+ * by 2^27 + 1 gives, each of their products exact. A build without a fused
+ * multiply-add instruction calls a library function for `fma`
+ * @note Exact where the product neither overflows nor underflows and both
+ * values are at most 2^995 in magnitude
+ */
+static inline void
+two_product_split(double a, double b, double *x, double *y)
+{
+  double ta = 134217729.0 * a, tb = 134217729.0 * b;
+  double ah = ta - (ta - a), bh = tb - (tb - b);
+  double al = a - ah, bl = b - bh;
+  *x = a * b;
+  *y = ((ah * bh - *x) + ah * bl + al * bh) + al * bl;
+}
+
+/**
  * @brief Add a double to an expansion, a sum of doubles that do not overlap,
  * held in increasing order of magnitude, and return its new length
  * @details The sum is exact, and a zero component is dropped, so the last
