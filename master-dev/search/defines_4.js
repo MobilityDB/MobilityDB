@@ -100,5 +100,7 @@ var searchData=
   ['double4pgetdatum_97',['Double4PGetDatum',['../meos_2include_2temporal_2temporal_8h_a1b25eb74c05a533191b049358180e88a.html#a1b25eb74c05a533191b049358180e88a',1,'temporal.h']]],
   ['double_5fpad_98',['DOUBLE_PAD',['../meos_8h_ad541123ad64c1db30045cc5c5fcf41f0.html#ad541123ad64c1db30045cc5c5fcf41f0',1,'meos.h']]],
   ['dp_5fstack_5fsize_99',['DP_STACK_SIZE',['../meos_2src_2temporal_2temporal__analytics_8c_ad668ce175fa912153919c940139c2bd9.html#ad668ce175fa912153919c940139c2bd9',1,'temporal_analytics.c']]],
-  ['dwithin_5fgrid_5fexact_5fn_100',['DWITHIN_GRID_EXACT_N',['../meos_2src_2geo_2geo__funcs_8c_a2e13914a410925d09f5a4ef4f9df31d4.html#a2e13914a410925d09f5a4ef4f9df31d4',1,'geo_funcs.c']]]
+  ['dwithin_5fgrid_5fexact_5fn_100',['DWITHIN_GRID_EXACT_N',['../meos_2src_2geo_2geo__funcs_8c_a2e13914a410925d09f5a4ef4f9df31d4.html#a2e13914a410925d09f5a4ef4f9df31d4',1,'geo_funcs.c']]],
+  ['dyadic_5fwide_5farena_5fwords_101',['DYADIC_WIDE_ARENA_WORDS',['../geo__funcs_8h_a6f260abd51151f3a6bc67bf6a0469188.html#a6f260abd51151f3a6bc67bf6a0469188',1,'geo_funcs.h']]],
+  ['dyadic_5fwide_5fhead_102',['DYADIC_WIDE_HEAD',['../meos_2src_2geo_2geo__funcs_8c_ae7de4c5b3d15b7190f7d5f28ea7136ce.html#ae7de4c5b3d15b7190f7d5f28ea7136ce',1,'geo_funcs.c']]]
 ];

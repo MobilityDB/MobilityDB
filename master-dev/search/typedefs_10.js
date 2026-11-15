@@ -7,9 +7,8 @@ var searchData=
   ['temporal_5funnest_5ffn_4',['temporal_unnest_fn',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_af6c740a063bad7f87b89010a222d4c30.html#af6c740a063bad7f87b89010a222d4c30',1,'temporal.h']]],
   ['text_5fin_5ffn_5',['text_in_fn',['../cellset__text__io__test_8c_ac369b9d05bb66fb5a9b05d210386cbe5.html#ac369b9d05bb66fb5a9b05d210386cbe5',1,'text_in_fn():&#160;cellset_text_io_test.c'],['../temporal__text__io__test_8c_a373877ae89a6abadf66fb77a66602998.html#a373877ae89a6abadf66fb77a66602998',1,'text_in_fn():&#160;temporal_text_io_test.c']]],
   ['tilerestrictfn_6',['TileRestrictFn',['../tgeo__tile_8h_a4f1e9f7ac06915c5609b855fb5e09d80.html#a4f1e9f7ac06915c5609b855fb5e09d80',1,'tgeo_tile.h']]],
-  ['towerpred_7',['TowerPred',['../meos_2src_2geo_2geo__funcs_8c_aad8cf2e35f282036435c7cd05763586d.html#aad8cf2e35f282036435c7cd05763586d',1,'geo_funcs.c']]],
-  ['tpfunc_5fbase_8',['tpfunc_base',['../meos_2include_2temporal_2temporal_8h_a1c4a9829044bf14a4b851cc2041eb3fd.html#a1c4a9829044bf14a4b851cc2041eb3fd',1,'temporal.h']]],
-  ['tpfunc_5ftemp_9',['tpfunc_temp',['../meos_2include_2temporal_2temporal_8h_ac1fd5721448327416104fc61a596f6f2.html#ac1fd5721448327416104fc61a596f6f2',1,'temporal.h']]],
-  ['tpfunc_5ftemp_5fat_10',['tpfunc_temp_at',['../meos_2include_2temporal_2temporal_8h_a308287c2ac49cd615b83888addc6a395.html#a308287c2ac49cd615b83888addc6a395',1,'temporal.h']]],
-  ['tpfunc_5funary_11',['tpfunc_unary',['../meos_2include_2temporal_2temporal_8h_a1c0cb6158605de6150979ddc7dfe630e.html#a1c0cb6158605de6150979ddc7dfe630e',1,'temporal.h']]]
+  ['tpfunc_5fbase_7',['tpfunc_base',['../meos_2include_2temporal_2temporal_8h_a1c4a9829044bf14a4b851cc2041eb3fd.html#a1c4a9829044bf14a4b851cc2041eb3fd',1,'temporal.h']]],
+  ['tpfunc_5ftemp_8',['tpfunc_temp',['../meos_2include_2temporal_2temporal_8h_ac1fd5721448327416104fc61a596f6f2.html#ac1fd5721448327416104fc61a596f6f2',1,'temporal.h']]],
+  ['tpfunc_5ftemp_5fat_9',['tpfunc_temp_at',['../meos_2include_2temporal_2temporal_8h_a308287c2ac49cd615b83888addc6a395.html#a308287c2ac49cd615b83888addc6a395',1,'temporal.h']]],
+  ['tpfunc_5funary_10',['tpfunc_unary',['../meos_2include_2temporal_2temporal_8h_a1c0cb6158605de6150979ddc7dfe630e.html#a1c0cb6158605de6150979ddc7dfe630e',1,'temporal.h']]]
 ];

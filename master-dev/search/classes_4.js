@@ -47,5 +47,10 @@ var searchData=
   ['double2_44',['double2',['../structdouble2.html',1,'']]],
   ['double3_45',['double3',['../structdouble3.html',1,'']]],
   ['double4_46',['double4',['../structdouble4.html',1,'']]],
-  ['dwithingrid_47',['DWithinGrid',['../structDWithinGrid.html',1,'']]]
+  ['dwithingrid_47',['DWithinGrid',['../structDWithinGrid.html',1,'']]],
+  ['dyadicctx_48',['DyadicCtx',['../structDyadicCtx.html',1,'']]],
+  ['dyadicwide_49',['DyadicWide',['../structDyadicWide.html',1,'']]],
+  ['dyadicwidearena_50',['DyadicWideArena',['../structDyadicWideArena.html',1,'']]],
+  ['dyadicwidemark_51',['DyadicWideMark',['../structDyadicWideMark.html',1,'']]],
+  ['dyadicx_52',['DyadicX',['../unionDyadicX.html',1,'']]]
 ];
