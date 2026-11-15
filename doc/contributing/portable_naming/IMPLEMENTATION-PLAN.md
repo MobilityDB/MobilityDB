@@ -110,7 +110,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   union corpora (manifest `~/cpwork/contract/array.manifest`). The rule of an empty geometry these functions keep is stated for the
   bindings in `doc/specs/meos-empty-geometries.md`, by the owner's request ("this should be
   explicitly added as a document or section in a user .md documentation"), MERGED as
-  MobilityDB #3721 (`79306e3b04`).
+  MobilityDB #3721 (`79306e3b04`). By that rule, `line_locate_point` answers no fraction for an
+  empty line or point, MobilityDB #3736, branch `meos/line-locate-point-answers-an-empty-geometry`.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
