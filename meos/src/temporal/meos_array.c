@@ -140,16 +140,20 @@ meos_array_destroy_free(MeosArray *array)
 }
 
 /**
- * @ingroup meos_misc
- * @brief Add a value to the array
+ * @ingroup meos_internal_misc
+ * @brief Add a value to the array, for a caller that has made the array and,
+ * for a fixed-size array, holds the value
+ * @details The write #meos_array_add makes once it has tested its arguments,
+ * for the callers inside MEOS that fill an array they created
  * @param[in] array Array
- * @param[in] value Pointer to the value to add. For fixed-size arrays, the
- * value is copied. For varlength arrays, the pointer itself is stored.
+ * @param[in] value Pointer to the value to add, not null for a fixed-size
+ * array. For fixed-size arrays, the value is copied. For varlength arrays, the
+ * pointer itself is stored.
  */
 void
-meos_array_add(MeosArray *array, void *value)
+meos_array_add_intl(MeosArray *array, void *value)
 {
-  assert(array);
+  assert(array); assert(array->varlength || value);
   /* Enlarge the values array if necessary */
   if (array->count >= array->capacity)
   {
@@ -170,6 +174,28 @@ meos_array_add(MeosArray *array, void *value)
     memcpy(dest, value, array->elem_size);
   }
   array->count++;
+}
+
+/**
+ * @ingroup meos_misc
+ * @brief Add a value to the array
+ * @details Tests its arguments and delegates to #meos_array_add_intl, as
+ * #meos_array_get does to #meos_array_get_intl. A fixed-size array copies the
+ * value, so it refuses a null value; a varlength array stores the pointer it
+ * is given, a null one included.
+ * @param[in] array Array
+ * @param[in] value Pointer to the value to add. For fixed-size arrays, the
+ * value is copied. For varlength arrays, the pointer itself is stored.
+ */
+void
+meos_array_add(MeosArray *array, void *value)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_null((void *) array))
+    return;
+  if (! array->varlength && ! ensure_not_null(value))
+    return;
+  meos_array_add_intl(array, value);
 }
 
 /**
@@ -218,16 +244,36 @@ meos_array_get(const MeosArray *array, int n)
 }
 
 /**
- * @ingroup meos_misc
- * @brief Return the number of elements in the array
+ * @ingroup meos_internal_misc
+ * @brief Return the number of elements in the array, for a caller holding the
+ * array
+ * @details The read #meos_array_count makes once it has tested the array, as
+ * #meos_array_get_intl is the read of #meos_array_get
  * @param[in] array Array
  * @return Number of elements
  */
 int
-meos_array_count(const MeosArray *array)
+meos_array_count_intl(const MeosArray *array)
 {
   assert(array);
   return (int) array->count;
+}
+
+/**
+ * @ingroup meos_misc
+ * @brief Return the number of elements in the array
+ * @details Tests the array and delegates to #meos_array_count_intl, as
+ * #meos_array_get does to #meos_array_get_intl
+ * @param[in] array Array
+ * @return Number of elements
+ * @errval -1
+ */
+int
+meos_array_count(const MeosArray *array)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(array, -1);
+  return meos_array_count_intl(array);
 }
 
 /**

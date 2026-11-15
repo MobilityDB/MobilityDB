@@ -177,8 +177,8 @@ dist_geom_collect(const LWGEOM *lw, MeosArray *edges, MeosArray *faces,
             face = (*nfaces)++;
           f = face;
         }
-        meos_array_add(edges, e);
-        meos_array_add(faces, &f);
+        meos_array_add_intl(edges, e);
+        meos_array_add_intl(faces, &f);
       }
       meos_array_destroy(part);
       return;
