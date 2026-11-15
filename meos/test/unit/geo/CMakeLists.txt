@@ -69,6 +69,11 @@ target_include_directories(trig_nearest_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(trig_nearest_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME trig_nearest_unit COMMAND trig_nearest_unit)
 
+add_executable(mercator_lat_unit mercator_lat_unit.c)
+target_include_directories(mercator_lat_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(mercator_lat_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME mercator_lat_unit COMMAND mercator_lat_unit)
+
 add_executable(geodetic_fraction_unit geodetic_fraction_unit.c)
 target_include_directories(geodetic_fraction_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(geodetic_fraction_unit ${MEOS_LIB_NAME} postgis pgtypes m)
