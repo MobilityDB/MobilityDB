@@ -1211,7 +1211,7 @@ spnode_search(const SPTree *sptree, const SPNode *node, const void *nodebox,
   if (sptree->leaf_consistent(node->centroid, query, op))
   {
     int64 id = node->id;
-    meos_array_add(result, &id);
+    meos_array_add_intl(result, &id);
   }
   for (int quadrant = 0; node->children && quadrant < sptree->nchild;
     quadrant++)
@@ -1338,7 +1338,7 @@ spnode_search_overlaps_stbox(const SPTree *sptree, const SPNode *node,
   if (spnode_stbox_overlaps(centroid, query, x, z, t))
   {
     int64 id = node->id;
-    meos_array_add(result, &id);
+    meos_array_add_intl(result, &id);
   }
   if (! node->children)
     return;
@@ -1388,7 +1388,7 @@ spnode_search_contain_stbox(const SPTree *sptree, const SPNode *node,
       spnode_stbox_contains(query, centroid, x, z, t))
   {
     int64 id = node->id;
-    meos_array_add(result, &id);
+    meos_array_add_intl(result, &id);
   }
   if (! node->children)
     return;
@@ -1516,7 +1516,7 @@ spnode_search_tbox(const SPTree *sptree, const SPNode *node,
   if (found)
   {
     int64 id = node->id;
-    meos_array_add(result, &id);
+    meos_array_add_intl(result, &id);
   }
   if (! node->children)
     return;
@@ -1704,13 +1704,13 @@ spnode_join(const SPTree *sptree1, const SPNode *node1, const SPTree *sptree2,
   meos_array_reset(found);
   spnode_search(sptree2, sptree2->root, rootbox2, opconv, node1->centroid, 0,
     found);
-  int count = meos_array_count(found);
+  int count = meos_array_count_intl(found);
   for (int k = 0; k < count; k++)
   {
     int64 id1 = node1->id;
     int64 id2 = INDEX_RESULT_ID_N(found, k);
-    meos_array_add(result, &id1);
-    meos_array_add(result, &id2);
+    meos_array_add_intl(result, &id1);
+    meos_array_add_intl(result, &id2);
   }
   for (int quadrant = 0; node1->children && quadrant < sptree1->nchild;
     quadrant++)
@@ -1773,7 +1773,7 @@ sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
           index_op_converse(op), found, result);
       }
   meos_array_destroy(found);
-  return meos_array_count(result) / 2;
+  return meos_array_count_intl(result) / 2;
 }
 
 /*****************************************************************************
@@ -1948,7 +1948,7 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
     for (int j = 0; j < nhits; j++)
     {
       int64 id = INDEX_RESULT_ID_N(hits, j);
-      meos_array_add(raw, &id);
+      meos_array_add_intl(raw, &id);
     }
   }
   pfree(boxes);
@@ -1956,7 +1956,7 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
 
   /* Collapse duplicates by sorting, so the memory is proportional to the
    * NUMBER of candidate ids rather than to their magnitude */
-  int nraw = meos_array_count(raw);
+  int nraw = meos_array_count_intl(raw);
   if (nraw > 0)
   {
     int64 *ids = palloc((size_t) nraw * sizeof(int64));
@@ -1965,11 +1965,11 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
     qsort(ids, (size_t) nraw, sizeof(int64), sptree_id_cmp);
     for (int i = 0; i < nraw; i++)
       if (i == 0 || ids[i] != ids[i - 1])
-        meos_array_add(result, &ids[i]);
+        meos_array_add_intl(result, &ids[i]);
     pfree(ids);
   }
   meos_array_destroy(raw);
-  return meos_array_count(result);
+  return meos_array_count_intl(result);
 }
 
 /*****************************************************************************

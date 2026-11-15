@@ -7821,7 +7821,7 @@ static bool
 geo_part_bounds_area(const LWGEOM *part)
 {
   MeosArray *edges = geom_extract_edges(part);
-  bool result = edges && meos_array_count(edges) > 0;
+  bool result = edges && meos_array_count_intl(edges) > 0;
   if (edges)
   {
     for (uint32_t i = 0; result && i < edges->count; i++)
@@ -10623,7 +10623,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
     const LWPOINT *p = (LWPOINT *) geom;
     const POINT2D *pt = getPoint2d_cp(p->point, 0);
     point = (POINT2D){pt->x, pt->y};
-    meos_array_add(array, &point);
+    meos_array_add_intl(array, &point);
   }
   else if (geom->type == LINETYPE)
   {
@@ -10632,7 +10632,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
     {
       const POINT2D *pt = getPoint2d_cp(l->points, i);
       point = (POINT2D){pt->x, pt->y};
-      meos_array_add(array, &point);
+      meos_array_add_intl(array, &point);
     }
   }
   else if (geom->type == TRIANGLETYPE)
@@ -10642,7 +10642,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
     {
       const POINT2D *pt = getPoint2d_cp(tr->points, i);
       point = (POINT2D){pt->x, pt->y};
-      meos_array_add(array, &point);
+      meos_array_add_intl(array, &point);
     }
   }
   else if (geom->type == POLYGONTYPE)
@@ -10655,7 +10655,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
       {
         const POINT2D *pt = getPoint2d_cp(pa, i);
         point = (POINT2D){pt->x, pt->y};
-        meos_array_add(array, &point);
+        meos_array_add_intl(array, &point);
       }
     }
   }
