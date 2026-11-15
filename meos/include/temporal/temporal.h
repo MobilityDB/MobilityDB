@@ -572,6 +572,8 @@ extern bool ensure_positive_datum(Datum size, MeosType basetype);
 extern bool ensure_valid_day_duration(const Interval *duration);
 extern bool positive_duration(const Interval *duration);
 extern bool ensure_positive_duration(const Interval *duration);
+extern bool positive_window(const Interval *interv);
+extern bool ensure_positive_window(const Interval *interv);
 
 /* General functions */
 
