@@ -210,15 +210,19 @@ ttext_initcap(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_text
- * @brief Return the concatenation of the two text values
+ * @brief Return the concatenation of the two text values, for a caller holding
+ * both
+ * @details The work #textcat_text_text does once it has tested its values, for
+ * the walks over the instants of a temporal text, as #meos_array_get_intl is
+ * the work of #meos_array_get
  * @param[in] txt1,txt2 Text values
  * @note Function adapted from the external function @p text_catenate in file
  * @p varlena.c
  */
-text *
-textcat_text_text(const text *txt1, const text *txt2)
+static text *
+textcat_text_text_intl(const text *txt1, const text *txt2)
 {
+  assert(txt1); assert(txt2);
   size_t len1 = VARSIZE_ANY_EXHDR(txt1);
   size_t len2 = VARSIZE_ANY_EXHDR(txt2);
   size_t len = len1 + len2 + VARHDRSZ;
@@ -238,18 +242,59 @@ textcat_text_text(const text *txt1, const text *txt2)
 }
 
 /**
+ * @ingroup meos_base_text
  * @brief Return the concatenation of the two text values
+ * @details Tests its values and delegates to #textcat_text_text_intl, as
+ * #meos_array_get does to #meos_array_get_intl
+ * @param[in] txt1,txt2 Text values
+ * @errval NULL
+ */
+text *
+textcat_text_text(const text *txt1, const text *txt2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(txt1, NULL); VALIDATE_NOT_NULL(txt2, NULL);
+  return textcat_text_text_intl(txt1, txt2);
+}
+
+/**
+ * @brief Return the concatenation of the two text values
+ * @details Reads #textcat_text_text_intl, as #datum_lower reads
+ * #text_lower_intl
  */
 Datum
 datum_textcat(Datum l, Datum r)
 {
-  return PointerGetDatum(textcat_text_text(DatumGetTextP(l), DatumGetTextP(r)));
+  return PointerGetDatum(textcat_text_text_intl(DatumGetTextP(l),
+    DatumGetTextP(r)));
+}
+
+/**
+ * @brief Return the text value transformed to lowercase, for a caller holding the
+ * text
+ * @details The work #text_lower does once it has tested its value, for the
+ * walks over the instants of a temporal text
+ */
+static text *
+text_lower_intl(const text *txt)
+{
+  assert(txt);
+#if MEOS
+  char *out_string = asc_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
+  char *out_string = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+#endif /* MEOS */
+  text *result = cstring_to_text(out_string);
+  pfree(out_string);
+  return result;
 }
 
 /**
  * @ingroup meos_base_text
  * @brief Return the text value transformed to lowercase
  * @param[in] txt Text value
+ * @errval NULL
  * @note PostgreSQL function: @p lower() in file @p varlena.c.
  * Notice that @p DEFAULT_COLLATION_OID is used instead of
  * @p PG_GET_COLLATION().
@@ -263,16 +308,9 @@ datum_textcat(Datum l, Datum r)
 text *
 text_lower(const text *txt)
 {
-#if MEOS
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(txt, NULL);
-  char *out_string = asc_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
-#else /* ! MEOS */
-  char *out_string = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
-    DEFAULT_COLLATION_OID);
-#endif /* MEOS */
-  text *result = cstring_to_text(out_string);
-  pfree(out_string);
-  return result;
+  return text_lower_intl(txt);
 }
 
 /**
@@ -281,13 +319,35 @@ text_lower(const text *txt)
 Datum
 datum_lower(Datum value)
 {
-  return PointerGetDatum(text_lower(DatumGetTextP(value)));
+  return PointerGetDatum(text_lower_intl(DatumGetTextP(value)));
+}
+
+/**
+ * @brief Return the text value transformed to uppercase, for a caller holding the
+ * text
+ * @details The work #text_upper does once it has tested its value, for the
+ * walks over the instants of a temporal text
+ */
+static text *
+text_upper_intl(const text *txt)
+{
+  assert(txt);
+#if MEOS
+  char *out_string = asc_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
+  char *out_string = str_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+#endif /* MEOS */
+  text *result = cstring_to_text(out_string);
+  pfree(out_string);
+  return result;
 }
 
 /**
  * @ingroup meos_base_text
  * @brief Return the text value transformed to uppercase
  * @param[in] txt Text value
+ * @errval NULL
  * @note PostgreSQL function: @p upper() in file @p varlena.c.
  * Notice that @p DEFAULT_COLLATION_OID is used instead of
  * @p PG_GET_COLLATION().
@@ -300,16 +360,9 @@ datum_lower(Datum value)
 text *
 text_upper(const text *txt)
 {
-#if MEOS
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(txt, NULL);
-  char *out_string = asc_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
-#else /* ! MEOS */
-  char *out_string = str_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
-    DEFAULT_COLLATION_OID);
-#endif /* MEOS */
-  text *result = cstring_to_text(out_string);
-  pfree(out_string);
-  return result;
+  return text_upper_intl(txt);
 }
 
 /**
@@ -318,25 +371,20 @@ text_upper(const text *txt)
 Datum
 datum_upper(Datum value)
 {
-  return PointerGetDatum(text_upper(DatumGetTextP(value)));
+  return PointerGetDatum(text_upper_intl(DatumGetTextP(value)));
 }
 
 /**
- * @ingroup meos_base_text
- * @brief Convert the text value to initcap
- * @param[in] txt Text value
- * @note PostgreSQL function: @p initcap() in file @p varlena.c.
- * Notice that @p DEFAULT_COLLATION_OID is used instead of
- * @p PG_GET_COLLATION().
- *
- * In standalone MEOS this is an ASCII-only fold; bytes >= 0x80 are
- * passed through unchanged. See meos.h for the UTF-8 contract.
+ * @brief Return the text value converted to initcap, for a caller holding the
+ * text
+ * @details The work #text_initcap does once it has tested its value, for the
+ * walks over the instants of a temporal text
  */
-text *
-text_initcap(const text *txt)
+static text *
+text_initcap_intl(const text *txt)
 {
+  assert(txt);
 #if MEOS
-  VALIDATE_NOT_NULL(txt, NULL);
   char *out_string = asc_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
 #else /* ! MEOS */
   char *out_string = str_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
@@ -348,12 +396,32 @@ text_initcap(const text *txt)
 }
 
 /**
+ * @ingroup meos_base_text
+ * @brief Convert the text value to initcap
+ * @param[in] txt Text value
+ * @errval NULL
+ * @note PostgreSQL function: @p initcap() in file @p varlena.c.
+ * Notice that @p DEFAULT_COLLATION_OID is used instead of
+ * @p PG_GET_COLLATION().
+ *
+ * In standalone MEOS this is an ASCII-only fold; bytes >= 0x80 are
+ * passed through unchanged. See meos.h for the UTF-8 contract.
+ */
+text *
+text_initcap(const text *txt)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(txt, NULL);
+  return text_initcap_intl(txt);
+}
+
+/**
  * @brief Convert the text value to uppercase
  */
 Datum
 datum_initcap(Datum value)
 {
-  return PointerGetDatum(text_initcap(DatumGetTextP(value)));
+  return PointerGetDatum(text_initcap_intl(DatumGetTextP(value)));
 }
 
 /*****************************************************************************/
