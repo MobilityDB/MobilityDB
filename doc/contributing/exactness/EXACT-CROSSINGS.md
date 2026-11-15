@@ -533,7 +533,7 @@ diffs classified:
    where a half turn exchanging the ends of each proves it, about the axis through a point of
    the equator or about the axis of the poles, on one great circle or on two; an MPFR judge at
    2400 bits reading no family agrees on 5437 pairs.
-   MobilityDB #3733 (open) meets a point segment and a point value as the segment standing still
+   MobilityDB #3733, merged as `8381bfceae`, meets a point segment and a point value as the segment standing still
    at that value: tsegment_intersection_value reads a planar point through
    tgeompointsegm_crossing and a geography point through tgeogpointsegm_crossing, so no band of
    MEOS_EPSILON locates a point on a segment, and the ever walk against a value decides a point
