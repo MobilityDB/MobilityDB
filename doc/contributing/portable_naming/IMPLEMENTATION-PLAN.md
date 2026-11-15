@@ -104,8 +104,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   walks, MERGED as MobilityDB #3717 (`96d3099a2b`); the extended hash of a pose, MERGED as
   MobilityDB #3718 (`535317679d`); the geometry of an array of circular buffers, MERGED as
   MobilityDB #3719 (`fbcfc79d43`); the setters of the styles and the CSV files, MERGED as
-  MobilityDB #3720 (`3d16da56a5`). The expandable array and the window of the moving aggregates
-  follow, each on its own branch.
+  MobilityDB #3720 (`3d16da56a5`); the window of the moving aggregates, MobilityDB #3723, branch
+  `meos/window-aggregates-test-their-window`. The expandable array follows on branch
+  `meos/expandable-array-add-and-count-test-their-array`: its 25 relate, union, buffer and distance
+  cells run at no more than GEOS, and CGAL agrees with every row of its buffer, relate and linear
+  union corpora. The rule of an empty geometry these functions keep is stated for the
+  bindings in `doc/specs/meos-empty-geometries.md`, by the owner's request ("this should be
+  explicitly added as a document or section in a user .md documentation"), MERGED as
+  MobilityDB #3721 (`79306e3b04`).
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
