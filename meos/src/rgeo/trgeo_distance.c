@@ -526,8 +526,9 @@ dist_event_time(TimestampTz lower, TimestampTz upper, double ratio)
  * vertex, edge     Lc^2 * Vo - Gc^2
  * edge, vertex     Go^2 - Lo^2 * Vc
  * @endcode
- * The squares have the frequencies w and 2w of the rotation w of the body
- * and quadratic coefficients, see #distfun_square().  The tolerance is the
+ * The squares have quadratic coefficients and, for the frequencies of the
+ * functions of the walk, their doubles and the sums and differences of every
+ * two of them, see #distfun_square().  The tolerance is the
  * one of #distwalk_ftol() for the size of the values of the two sides.
  * @pre Neither piece is an overlap
  * @return False if a function is not in the family
@@ -539,8 +540,8 @@ dist_piece_diff(const DistPiece *o, const DistPiece *c, double lo, double hi,
   DistFun a, b;
   if (o->len == 0.0 && c->len == 0.0)
   {
-    a = o->f;
-    b = c->f;
+    distfun_copy(&a, &o->f);
+    distfun_copy(&b, &c->f);
   }
   else if (o->len > 0.0 && c->len > 0.0)
   {
@@ -815,9 +816,6 @@ typedef struct
   DistEvents *pev;           /**< Events and pieces of each pair */
   int nsegs;                 /**< Number of segments walked */
   bool failed;               /**< True if the walk of a segment failed */
-  bool refused;              /**< True if a segment is one the lower envelope
-                                  of pairs does not read, see
-                                  #dist_lift_parts() */
 } DistLift;
 
 /**
@@ -846,7 +844,7 @@ dist_lift_init(DistLift *lift, const DistOps *ops, const DistRefPoly *rb,
   lift->ts = palloc(sizeof(TimestampTz) * lift->size);
   lift->ds = palloc(sizeof(double) * lift->size);
   lift->nsegs = 0;
-  lift->failed = lift->refused = false;
+  lift->failed = false;
   int npairs = ops->nbody1 * (rb ? nrb : ops->nparts);
   lift->nparts = (rb && npairs == 1) ? 0 : npairs;
   lift->pcf = NULL;
@@ -999,14 +997,6 @@ dist_lift_parts(DistLift *lift, const DistMotion *ma, Datum start1,
   DistMotion mb;
   if (lift->rb)
     dist_lift_motion2(lift, start2, end2, &mb);
-  /* The functions the envelope compares have the frequency of one turning
-   * body (trgeo_distance.txt); two bodies turning in one segment give three,
-   * which its solver family does not hold, so the segment is refused */
-  if (lift->rb && ma->w != 0.0 && mb.w != 0.0)
-  {
-    lift->refused = true;
-    return false;
-  }
   for (int k = 0; k < nparts; k++)
   {
     const DistRefPoly *ra = &ops->body1[k / n2];
@@ -1116,13 +1106,6 @@ dist_lift_segm(DistLift *lift, Datum start1, Datum end1, Datum start2,
     {
       lift->count = -1;
       lift->failed = true;
-      if (lift->refused)
-      {
-        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-          "The temporal distance of two temporal rigid geometries that turn "
-          "in the same segment is not supported where a body is not convex");
-        return 0;
-      }
       if (lift->nparts)
       {
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
