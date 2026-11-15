@@ -609,7 +609,10 @@ the names this document reads elsewhere. The names of a tower of quadratic exten
 numbers the arithmetic computes (`Tower`, `TowerNum`, `TowerPoint`, `TowerArc`, `TowerMeet`,
 `tower_*_k`, `tower_f_*`, `towerseg_*`), name those numbers and stay. The rename is
 `claude-kits` `ea1-kit` `home/cpwork/ea1n/dyadic_rename.py`, which also replays it on a branch
-reading the old names.
+reading the old names. It is open as #3713, one commit of three files: mapped back,
+`geo_funcs.h` and `geo_trig.c` equal master byte for byte and `geo_funcs.c` holds its 216 248
+tokens with nine lines rewrapped (`prove_rename.sh`); its receipts are strict CI, cppcheck,
+valgrind, smoke, the oracle (18 CGAL witnesses) and speed.
 
 ### EA2. Tier 2 for the signs of degree six
 
