@@ -665,6 +665,20 @@ MobilityDB #3484 and #3557 change `geo_funcs.c` and `postgis_funcs.c`, and the s
 `geo_buffer.c`. The file is `meos/src/geo/geo_dyadic.c` and its header
 `meos/include/geo/geo_dyadic.h` (Section 8, decided 2026-11-15).
 
+The move is judged on its head alone, no build of its base read: a function the algorithms call
+across the boundary is a tier reached on a tie (the expansions, the wide numbers, the ladder's
+runner and arena, the searches) or a body large enough that a call is a small part of it, and the
+operations of tiers 0 and 1 are static inline in the header; the head's own objects list every
+call from `geo_funcs.o` into `geo_dyadic.o` against that rule. Built on master `9ebe97d988` as two
+commits, by the scripts of `claude-kits` `ea3-kit`, which replay it on the master of the window:
+190 definitions of `geo_funcs.c` (4555 lines, read off the file by libclang, reaching no algorithm)
+and the 50 declarations of `geo_funcs.h` that are the arithmetic move verbatim, 33 `static` the
+only tokens removed; `polynomial_sign_exact`, a filter in doubles then the exact tail, becomes a
+static inline of the header, as `cross_product_sign` is. 51 functions are called across the
+boundary, every one by the rule but `point_segment_offset_sign`, which calls an extern of 512 bytes
+once or twice on every call and has one call site. The build has no warning and the unit tests
+pass; its receipts are earned on the commit replayed in the window.
+
 ### How a merge is proven
 
 EA4 to EA6 each fold two or more implementations of one thing into one. Each starts with a
