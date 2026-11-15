@@ -567,6 +567,7 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
   ops->point = NULL;
   ops->data = NULL;
   ops->cross = &raster_value_gdal_cross;
+  ops->affine = ctx->gt;
   ops->ctx = ctx;
   ops->width = ctx->xsize;
   ops->height = ctx->ysize;
