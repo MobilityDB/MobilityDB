@@ -21988,9 +21988,8 @@ geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
 bool
 geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  // TODO: Currently, activating these lines break tests
-  // assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
-  // assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
+  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
   if (FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) )
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
