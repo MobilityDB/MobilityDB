@@ -408,7 +408,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Collect intersections between two straight buffer edges. </p>
-<p >Two edges meeting at an end of one of them meet at that end, which is an input vertex and is collected as it is: rebuilt from its position along the other edge, it lands a rounding step away from itself, and the node it stands for is computed twice. Only a crossing interior to both edges is constructed, once, from its position along the first. Two edges overlapping along a stretch meet at its two ends, which are ends of the edges </p>
+<p >Two edges meeting at an end of one of them meet at that end, which is an input vertex and is collected as it is: rebuilt from its position along the other edge, it lands a rounding step away from itself, and the node it stands for is computed twice. Only a crossing interior to both edges is constructed, once, as the double nearest its exact point (<a class="el" href="geo__funcs_8h_a723fb727e66ab39c0d49a688faf83b74.html#a723fb727e66ab39c0d49a688faf83b74" title="Set the point where the lines of two segments cross, each coordinate the double nearest its exact val...">linesegm_crossing_exact</a>). Two edges overlapping along a stretch meet at its two ends, which are ends of the edges </p>
 
 </div>
 </div>
