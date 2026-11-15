@@ -8774,6 +8774,36 @@ linesegm_param_wide(const double *a, const double *b, const double *p)
   return (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
 }
 
+/* The point, the segment and the radius of
+ * #point_segment_distance_offset_inputs */
+typedef struct
+{
+  const double *p, *a, *b;
+  int ndims;
+  double r;
+} SegmentOffsetInputsSide;
+
+/**
+ * @brief The side of the distance of a point to a segment less a radius
+ * against the upper midpoint of the double of bit pattern @p bits, decided
+ * exactly on the input coordinates (#point_segment_beyond_inputs)
+ * @details The tie goes to the even double there, as the one search reads it
+ * @note @p arg is not const, as #NearestBitsSide declares it for the
+ * filter sides, which write their candidate through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+point_segment_offset_inputs_side(uint64 bits, void *arg)
+{
+  const SegmentOffsetInputsSide *f = (const SegmentOffsetInputsSide *) arg;
+  double c, n;
+  uint64 nbits = bits + 1;
+  memcpy(&c, &bits, sizeof(c));
+  memcpy(&n, &nbits, sizeof(n));
+  return point_segment_beyond_inputs(f->p, f->a, f->b, f->ndims, f->r, c, n,
+    (bits & 1) != 0) ? 1 : -1;
+}
+
 /**
  * @brief Return the distance between a point and a segment less a radius, not
  * below zero, as the double nearest it, every sign read on the input
@@ -8835,70 +8865,16 @@ point_segment_distance_offset_inputs(const double *p, const double *a,
   uint64_t bits;
   memcpy(&bits, &c, sizeof(bits));
 
-  /* The answer is the smallest bit pattern that is not beyond: gallop from the
-   * candidate to bracket it, then halve the bracket */
-#define PSD_BEYOND_INPUTS(bb, res) \
-  do { \
-    double cc, nn; \
-    uint64_t b1 = (bb), b2 = (bb) + 1; \
-    memcpy(&cc, &b1, sizeof(cc)); \
-    memcpy(&nn, &b2, sizeof(nn)); \
-    (res) = point_segment_beyond_inputs(p, a, b, ndims, r, cc, nn, \
-      (b1 & 1) != 0); \
-  } while (0)
-  uint64_t lo, hi;
-  bool beyond;
-  PSD_BEYOND_INPUTS(bits, beyond);
-  if (beyond)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    uint64_t step = 1;
-    lo = bits;
-    const uint64_t inf_bits = 0x7FF0000000000000ULL;
-    while (true)
-    {
-      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
-      if (hi == inf_bits)
-        break;
-      PSD_BEYOND_INPUTS(hi, beyond);
-      if (! beyond)
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    uint64_t step = 1;
-    hi = bits;
-    while (true)
-    {
-      if (hi == 0)
-        return 0.0;
-      lo = (hi > step) ? hi - step : 0;
-      PSD_BEYOND_INPUTS(lo, beyond);
-      if (beyond)
-        break;
-      hi = lo;
-      if (lo == 0)
-        return 0.0;
-      step *= 2;
-    }
-  }
-  /* lo is beyond, hi is not, and the answer is the least not beyond */
-  while (hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    PSD_BEYOND_INPUTS(mid, beyond);
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef PSD_BEYOND_INPUTS
+  SegmentOffsetInputsSide f = {p, a, b, ndims, r};
+  /* The answer is the smallest bit pattern that is not beyond, which the
+   * one search finds from the candidate on the exact sides */
+  uint64 found = NEAREST_INF_BITS;
+  bool answered = nearest_double_search(bits, &point_segment_offset_inputs_side, &f, 0, &found);
+  /* An exact side never answers 2 and a budget of 0 sets no limit */
+  assert(answered);
+  (void) answered;
   double result;
-  memcpy(&result, &hi, sizeof(result));
+  memcpy(&result, &found, sizeof(result));
   return result;
 }
 
@@ -9834,6 +9810,58 @@ ddb_mercator_lat_nearest(double r, double *result)
   return ddb_degrees_nearest(deg, r > 0 ? 1.0 : -1.0, result);
 }
 
+/* The point, the segment, the radius and the scaled quantities of
+ * #point_segment_distance_offset_exact */
+typedef struct
+{
+  const double *p, *a, *b;
+  int ndims;
+  double r;
+  int k;
+  double f1, f2, rs;
+  DDBound Q, L;
+  ExactSum *sums;
+} SegmentOffsetSide;
+
+/**
+ * @brief The side of the distance of a point to a segment less a radius
+ * against the upper midpoint of the double of bit pattern @p bits, decided
+ * exactly
+ * @details A candidate or a half gap scaled below 2^-268 is read on the input
+ * coordinates (#point_segment_beyond_inputs); otherwise the midpoint
+ * `r + c + h`, as a pair within 2^-104 of it, against the squared distance in
+ * pairs (#pair_mid_sign), and where that cannot tell, on the exact sums
+ * (#point_segment_beyond). The tie goes to the even double
+ * @note @p arg is not const, as #NearestBitsSide declares it for the
+ * filter sides, which write their candidate through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+point_segment_offset_exact_side(uint64 bits, void *arg)
+{
+  const SegmentOffsetSide *f = (const SegmentOffsetSide *) arg;
+  double cc, nn;
+  uint64 nbits = bits + 1;
+  memcpy(&cc, &bits, sizeof(cc));
+  memcpy(&nn, &nbits, sizeof(nn));
+  bool odd = (bits & 1) != 0;
+  if ((cc != 0.0 && double_lowest_set_bit(cc) + f->k < -268) ||
+      (! isinf(nn) && double_lowest_set_bit(nn - cc) - 1 + f->k < -268))
+    return point_segment_beyond_inputs(f->p, f->a, f->b, f->ndims, f->r, cc,
+      nn, odd) ? 1 : -1;
+  double hh = isinf(nn) ? ldexp(1.0, 970 + f->k) :
+    (nn - cc) * f->f1 * f->f2 / 2.0;
+  /* The midpoint r + c + h as a pair, within 2^-104 of it */
+  double s1, e1, mh, e2;
+  two_sum(f->rs, cc * f->f1 * f->f2, &s1, &e1);
+  two_sum(s1, hh, &mh, &e2);
+  int sign = pair_mid_sign(f->Q, f->L, mh, e1 + e2);
+  if (sign != 0)
+    return sign;
+  return point_segment_beyond(f->sums, f->ndims, f->rs, cc * f->f1 * f->f2,
+    hh, odd) ? 1 : -1;
+}
+
 /**
  * @brief Return the distance of a point to a segment less a radius, computed
  * exactly and rounded once, or 0 where the point is no farther from the
@@ -10042,85 +10070,16 @@ point_segment_distance_offset_exact(const double *p, const double *a,
   uint64_t bits;
   memcpy(&bits, &c, sizeof(bits));
 
-  /* The answer is the smallest bit pattern that is not beyond: gallop from the
-   * candidate to bracket it, then halve the bracket */
-#define PSD_BEYOND(bb, res) \
-  do { \
-    double cc, nn; \
-    uint64_t b1 = (bb), b2 = (bb) + 1; \
-    memcpy(&cc, &b1, sizeof(cc)); \
-    memcpy(&nn, &b2, sizeof(nn)); \
-    /* A candidate or a half gap scaled below 2^-268: the input coordinates */ \
-    if ((cc != 0.0 && double_lowest_set_bit(cc) + k < -268) || \
-        (! isinf(nn) && double_lowest_set_bit(nn - cc) - 1 + k < -268)) \
-    { \
-      (res) = point_segment_beyond_inputs(p, a, b, ndims, r, cc, nn, \
-        (b1 & 1) != 0); \
-      break; \
-    } \
-    double hh = isinf(nn) ? ldexp(1.0, 970 + k) : (nn - cc) * f1 * f2 / 2.0; \
-    /* The midpoint r + c + h as a pair, within 2^-104 of it */ \
-    double s1, e1, mh, e2; \
-    two_sum(rs, cc * f1 * f2, &s1, &e1); \
-    two_sum(s1, hh, &mh, &e2); \
-    int sign = pair_mid_sign(Q, L, mh, e1 + e2); \
-    (res) = (sign != 0) ? (sign > 0) : \
-      point_segment_beyond(sums, ndims, rs, cc * f1 * f2, hh, \
-        (b1 & 1) != 0); \
-  } while (0)
-  uint64_t lo, hi;
-  bool beyond;
-  PSD_BEYOND(bits, beyond);
-  if (beyond)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    uint64_t step = 1;
-    lo = bits;
-    const uint64_t inf_bits = 0x7FF0000000000000ULL;
-    while (true)
-    {
-      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
-      if (hi == inf_bits)
-        break;
-      PSD_BEYOND(hi, beyond);
-      if (! beyond)
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    uint64_t step = 1;
-    hi = bits;
-    while (true)
-    {
-      if (hi == 0)
-        return 0.0;
-      lo = (hi > step) ? hi - step : 0;
-      PSD_BEYOND(lo, beyond);
-      if (beyond)
-        break;
-      hi = lo;
-      if (lo == 0)
-        return 0.0;
-      step *= 2;
-    }
-  }
-  /* lo is beyond, hi is not, and the answer is the least not beyond */
-  while (hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    PSD_BEYOND(mid, beyond);
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef PSD_BEYOND
+  SegmentOffsetSide f = {p, a, b, ndims, r, k, f1, f2, rs, Q, L, sums};
+  /* The answer is the smallest bit pattern that is not beyond, which the
+   * one search finds from the candidate on the exact sides */
+  uint64 found = NEAREST_INF_BITS;
+  bool answered = nearest_double_search(bits, &point_segment_offset_exact_side, &f, 0, &found);
+  /* An exact side never answers 2 and a budget of 0 sets no limit */
+  assert(answered);
+  (void) answered;
   double result;
-  memcpy(&result, &hi, sizeof(result));
+  memcpy(&result, &found, sizeof(result));
   return result;
 }
 
