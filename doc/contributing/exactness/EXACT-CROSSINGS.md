@@ -522,7 +522,7 @@ diffs classified:
    section 7 orders the pull requests that decide them. The first of them, MobilityDB #3696,
    merged as `5a1dbe03a2`, builds the correctly rounded `sin`, `cos`, `sinpi`, `cospi` and
    `atan2` of CORE-MATH, vendored under `core-math/`, into MEOS wherever the compiler has an
-   unsigned 128-bit integer. MobilityDB #3705 (open) dates the meeting of a segment and its
+   unsigned 128-bit integer. MobilityDB #3705, merged as `f3336c4d07`, dates the meeting of a segment and its
    mirror across the equator whose end latitudes are not opposite, from the parameter computed
    with a bound on its error over that trigonometry, wherever the bound proves the nearest
    microsecond; CGAL::Gmpfr at 400 bits agrees on 7997 pairs, 193 over 1 to 30 years stated
