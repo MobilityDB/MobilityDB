@@ -5981,7 +5981,7 @@ arr_merge_overlaps(const MeosArray *edges, const ArrPair *pairs,
     {
       mg->newof[i] = out->count;
       w[out->count] = 1;
-      meos_array_add(out, (void *) &e[i]);
+      meos_array_add_intl(out, (void *) &e[i]);
       continue;
     }
     mg->newof[i] = UINT32_MAX;
@@ -6202,7 +6202,7 @@ arr_lines_points(Arr *a, int sgn)
         continue;
       const ArrNode *n1 = &a->nodes[p->from], *n2 = &a->nodes[p->to];
       ArrangePiece piece = {n1->x, n1->y, n2->x, n2->y, 0.0, 0.0, false};
-      meos_array_add(*a->lout, &piece);
+      meos_array_add_intl(*a->lout, &piece);
     }
   }
   for (uint32_t i = 0; i < a->npts; i++)

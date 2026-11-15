@@ -22877,7 +22877,7 @@ edge_index_query(const EdgeIndex *index, Edge **edges, double xmin,
     if (e->xmax < xmin || e->xmin > xmax || e->ymax < ymin || e->ymin > ymax)
       continue;
     int64 id = (int64) ids[k];
-    meos_array_add(result, &id);
+    meos_array_add_intl(result, &id);
   }
   const uint32_t *apart = alongy ? index->tall : index->wide;
   int napart = alongy ? index->ntall : index->nwide;
@@ -22887,7 +22887,7 @@ edge_index_query(const EdgeIndex *index, Edge **edges, double xmin,
     if (e->xmax < xmin || e->xmin > xmax || e->ymax < ymin || e->ymin > ymax)
       continue;
     int64 id = (int64) apart[k];
-    meos_array_add(result, &id);
+    meos_array_add_intl(result, &id);
   }
   return (int) result->count;
 }
@@ -27918,7 +27918,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     if (! relate_area_boundary_edge(e))
     {
       /* An edge of another dimension bounds no area of the union */
-      meos_array_add(result, e);
+      meos_array_add_intl(result, e);
       continue;
     }
     /* Split the edge at every intersection with another boundary edge */
@@ -28018,7 +28018,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
         seen = relate_same_portion((Edge *) meos_array_get_intl(result, q),
           &piece);
       if (! seen)
-        meos_array_add(result, &piece);
+        meos_array_add_intl(result, &piece);
     }
   }
   pfree(params);
@@ -31138,7 +31138,7 @@ meos_linear_union(const LWGEOM *geom)
     if (straight && haslength)
     {
       for (int e = 0; e < (int) edges->count; e++)
-        meos_array_add(lineedges, meos_array_get_intl(edges, e));
+        meos_array_add_intl(lineedges, meos_array_get_intl(edges, e));
       meos_array_destroy(edges);
       continue;
     }
@@ -31710,7 +31710,7 @@ geom_ptarrays(const LWGEOM *geom, MeosArray *arrays)
     {
       const LWPOLY *poly = (const LWPOLY *) geom;
       for (uint32_t i = 0; i < poly->nrings; i++)
-        meos_array_add(arrays, &poly->rings[i]);
+        meos_array_add_intl(arrays, &poly->rings[i]);
       return;
     }
     /* ⛔ The rings of a CURVEPOLYGON and the pieces of a COMPOUNDCURVE are
@@ -31735,7 +31735,7 @@ geom_ptarrays(const LWGEOM *geom, MeosArray *arrays)
     default:
       return;
   }
-  meos_array_add(arrays, &pa);
+  meos_array_add_intl(arrays, &pa);
   return;
 }
 
@@ -31773,7 +31773,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   MeosArray *arrays = meos_array_create(sizeof(POINTARRAY *));
   geom_ptarrays(geom, arrays);
   int nvertices = 0;
-  for (int i = 0; i < meos_array_count(arrays); i++)
+  for (int i = 0; i < meos_array_count_intl(arrays); i++)
     nvertices +=
       (int) (*(POINTARRAY **) meos_array_get_intl(arrays, i))->npoints;
 
@@ -31788,7 +31788,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   LiftPoint *lifted = palloc(sizeof(LiftPoint) * Max(nvertices, 1));
   bool zok = hasz, mok = hasm;
   int nvertex = 0;
-  for (int i = 0; i < meos_array_count(arrays); i++)
+  for (int i = 0; i < meos_array_count_intl(arrays); i++)
   {
     const POINTARRAY *pa = *(POINTARRAY **) meos_array_get_intl(arrays, i);
     for (uint32_t j = 0; j < pa->npoints; j++)
@@ -31838,7 +31838,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   MeosArray *outarrays = meos_array_create(sizeof(POINTARRAY *));
   geom_ptarrays(result, outarrays);
   nvertex = 0;
-  for (int i = 0; i < meos_array_count(outarrays); i++)
+  for (int i = 0; i < meos_array_count_intl(outarrays); i++)
   {
     POINTARRAY *pa = *(POINTARRAY **) meos_array_get_intl(outarrays, i);
     for (uint32_t j = 0; j < pa->npoints; j++)
