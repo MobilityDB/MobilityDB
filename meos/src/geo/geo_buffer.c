@@ -2469,6 +2469,8 @@ typedef struct
   int32_t next;    /**< Next node in the same bucket, -1 at the end of a chain */
   double x;        /**< The node itself, which the index never rounds */
   double y;
+  double ci;       /**< Cell the node stands in along x */
+  double cj;       /**< Cell the node stands in along y */
 } BufferNodeEnd;
 
 /**
@@ -2512,6 +2514,9 @@ buffer_node_byx_cmp(const BufferNodeByX *n1, const BufferNodeByX *n2)
 #define ST_DEFINE
 #include "port/sort_template.h"
 
+/** Tolerances a cell of a node index spans along each axis */
+#define BUFFER_NODE_CELL_TOLERANCES 16.0
+
 /**
  * @brief The ends of a ring's boundary pieces, read by the node they sit at
  * @details Chaining a ring asks, once per step, which unused piece continues
@@ -2527,10 +2532,13 @@ buffer_node_byx_cmp(const BufferNodeByX *n1, const BufferNodeByX *n2)
  * for that the way #relate_edges_init sizes the edge index: from the WIDEST
  * tolerance anything in the array is compared at, never from
  * @p MEOS_GEOM_TOLERANCE, which at projected coordinates is thousands of times
- * too small. A cell is therefore as wide as the largest tolerance any pair of
- * these ends reads, so two ends #buffer_points_equal accepts differ by no more
- * than a cell along each axis and lie in the same cell or in one touching it.
- * Reading the nine cells around a node is exhaustive.
+ * too small. Two ends #buffer_points_equal accepts differ by no more than
+ * that WIDEST TOLERANCE along each axis, so reading every cell the square of
+ * that half-width around a node touches is exhaustive. A cell is
+ * #BUFFER_NODE_CELL_TOLERANCES such tolerances wide, so that square nearly
+ * always lies in the one cell the node stands in: a node is read from one
+ * bucket rather than nine, and the ends a cell gathers beyond the tolerance
+ * cost a comparison each.
  */
 typedef struct
 {
@@ -2538,7 +2546,8 @@ typedef struct
   int32_t *cells;       /**< First end of a bucket, -1 where it holds none */
   uint32_t ncells;      /**< Buckets, a power of two so the hash masks */
   uint32_t nends;       /**< Ends held, twice the pieces */
-  double cell;          /**< Side of a cell, never below the tolerance */
+  double tol;           /**< Widest tolerance two ends are compared at */
+  double cell;          /**< Side of a cell, a fixed number of tolerances */
   uint32_t *cand;       /**< Scratch the candidates of one node are read into */
   uint32_t *stamp;      /**< Generation a piece was last gathered in */
   uint32_t gen;         /**< Generation of the node being read */
@@ -2592,8 +2601,9 @@ buffer_node_index_add(BufferNodeIndex *ix, uint32_t id, POINT2D p)
   ix->ends[at].id = id;
   ix->ends[at].x = p.x;
   ix->ends[at].y = p.y;
-  uint32_t b = buffer_node_bucket(ix, buffer_node_cell(p.x, ix->cell),
-    buffer_node_cell(p.y, ix->cell));
+  ix->ends[at].ci = buffer_node_cell(p.x, ix->cell);
+  ix->ends[at].cj = buffer_node_cell(p.y, ix->cell);
+  uint32_t b = buffer_node_bucket(ix, ix->ends[at].ci, ix->ends[at].cj);
   ix->ends[at].next = ix->cells[b];
   ix->cells[b] = (int32_t) at;
   return;
@@ -2612,7 +2622,8 @@ buffer_node_index_alloc(BufferNodeIndex *ix, uint32_t nids, uint32_t nnodes,
   double scale)
 {
   assert(ix);
-  ix->cell = buffer_node_tolerance(scale, scale);
+  ix->tol = buffer_node_tolerance(scale, scale);
+  ix->cell = BUFFER_NODE_CELL_TOLERANCES * ix->tol;
   ix->ncells = 16;
   while (ix->ncells < 2 * nnodes)
     ix->ncells *= 2;
@@ -2707,8 +2718,9 @@ buffer_node_index_free(BufferNodeIndex *ix)
 /**
  * @brief Return the pieces that can meet a node, in the order a walk over
  * every piece reaches them
- * @details The candidates are gathered from the nine cells around the node and
- * reported in ASCENDING PIECE ORDER, which is the order the pieces stand in.
+ * @details The candidates are gathered from every cell touched by the square
+ * around the node whose half-width is the widest tolerance, and reported in
+ * ASCENDING PIECE ORDER, which is the order the pieces stand in.
  * #buffer_find_connected_piece keeps the FIRST of several candidates that tie,
  * so any other order decides a tie differently and chains another ring.
  * @param[in,out] ix Index to read
@@ -2722,11 +2734,19 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
   assert(ix); assert(ncand);
   double ci = buffer_node_cell(point.x, ix->cell);
   double cj = buffer_node_cell(point.y, ix->cell);
+  /* Rounding to nearest is monotone, so an end within the tolerance of the
+   * node stands in a cell from that of the node moved back by the tolerance
+   * to that of the node moved on by it, the node's own cell or one touching
+   * it, a cell being wider than the tolerance */
+  int i0 = (buffer_node_cell(point.x - ix->tol, ix->cell) < ci) ? -1 : 0;
+  int i1 = (buffer_node_cell(point.x + ix->tol, ix->cell) > ci) ? 1 : 0;
+  int j0 = (buffer_node_cell(point.y - ix->tol, ix->cell) < cj) ? -1 : 0;
+  int j1 = (buffer_node_cell(point.y + ix->tol, ix->cell) > cj) ? 1 : 0;
   uint32_t n = 0;
   ix->gen++;
-  for (int di = -1; di <= 1; di++)
+  for (int di = i0; di <= i1; di++)
   {
-    for (int dj = -1; dj <= 1; dj++)
+    for (int dj = j0; dj <= j1; dj++)
     {
       uint32_t b = buffer_node_bucket(ix, ci + di, cj + dj);
       for (int32_t at = ix->cells[b]; at >= 0; at = ix->ends[at].next)
@@ -2736,11 +2756,11 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
          * whatever cells collide into it, so a piece is reported once */
         if (ix->stamp[end->id] == ix->gen)
           continue;
-        /* The buckets bound which ends the walk sees; an end is kept only
-         * where the cell it truly sits in is one of the nine */
-        double ei = buffer_node_cell(end->x, ix->cell) - ci;
-        double ej = buffer_node_cell(end->y, ix->cell) - cj;
-        if (ei < -1.0 || ei > 1.0 || ej < -1.0 || ej > 1.0)
+        /* A bucket gathers whatever cells collide into it, so an end is
+         * kept only where the cell it truly sits in is one of those read */
+        double ei = end->ci - ci;
+        double ej = end->cj - cj;
+        if (ei < i0 || ei > i1 || ej < j0 || ej > j1)
           continue;
         ix->stamp[end->id] = ix->gen;
         /* Ascending order, by insertion: a node holds two ends where the
@@ -2769,8 +2789,8 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
  * The nodes are read out of a node index rather than all of them. Its cell
  * is sized from the largest coordinate of any point, and the tolerance grows
  * with the coordinate, so no tolerance a point reads is wider than a cell and
- * the nine cells around a point hold every node within it; the test itself
- * decides each node the index gathers.
+ * the cells #buffer_node_index_at reads hold every node within it; the test
+ * itself decides each node the index gathers.
  * @param[in] points Points, in the order they are found
  * @param[in,out] nodes Array the nodes are added to, empty on entry
  */
