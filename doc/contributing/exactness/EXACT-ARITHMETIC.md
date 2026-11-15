@@ -609,7 +609,8 @@ the names this document reads elsewhere. The names of a tower of quadratic exten
 numbers the arithmetic computes (`Tower`, `TowerNum`, `TowerPoint`, `TowerArc`, `TowerMeet`,
 `tower_*_k`, `tower_f_*`, `towerseg_*`), name those numbers and stay. The rename is
 `claude-kits` `ea1-kit` `home/cpwork/ea1n/dyadic_rename.py`, which also replays it on a branch
-reading the old names. It is open as #3713, one commit of three files: mapped back,
+reading the old names. It is merged as #3713 (`b2c0122cf4` on master), one commit of three
+files: mapped back,
 `geo_funcs.h` and `geo_trig.c` equal master byte for byte and `geo_funcs.c` holds its 216 248
 tokens with nine lines rewrapped (`prove_rename.sh`); its receipts are strict CI, cppcheck,
 valgrind, smoke, the oracle (18 CGAL witnesses) and speed.
@@ -635,8 +636,12 @@ EA2 for this sign is spent, and `plane_point_offset_sign` keeps `DyadicWide`.
 `segment_interior_wide_values` and its sign written once on the expression ladder, answers alike
 on its 3 260 calls of those corpora, at 4573 and 7695 instructions a call on the 72 refuting
 faces (1.68 times), 1619 and 1610 on the 961 random ones and 787 and 800 on the 2 227 real
-ones: it keeps `DyadicWide` too. `plane_cross_dot_sign` is not measured; it moves only where its
-own differential shows the expression ladder the cheaper.
+ones: it keeps `DyadicWide` too. `plane_cross_dot_sign`, measured the same way, answers alike on
+its 16 624 calls of those corpora (84 refuting, 9 863 random, 6 677 real faces), and every one of
+them returns from its doubles: no call reaches `DDBound`, so neither the wide number nor the
+expression ladder runs, and the corpora cannot tell the two apart. It keeps `DyadicWide` until an
+input reaching its ties shows the expression ladder the cheaper. EA2 closes there: none of its
+three signs moves.
 
 ### EA3. The arithmetic in its own file
 
