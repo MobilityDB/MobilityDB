@@ -2207,7 +2207,8 @@ buffer_segment_ends_on_segment(const Edge *e1, const Edge *e2, POINT2D *ends)
  * is an input vertex and is collected as it is: rebuilt from its position
  * along the other edge, it lands a rounding step away from itself, and the
  * node it stands for is computed twice. Only a crossing interior to both
- * edges is constructed, once, from its position along the first. Two edges
+ * edges is constructed, once, as the double nearest its exact point
+ * (#linesegm_crossing_exact). Two edges
  * overlapping along a stretch meet at its two ends, which are ends of the
  * edges
  */
@@ -2226,8 +2227,10 @@ buffer_collect_line_line_intersections(const Edge *e1, const Edge *e2,
     buffer_add_intersection_point(points, ends[k].x, ends[k].y);
   if (result.type == INTERSECT_POINT && nends == 0)
   {
-    double x = e1->x1 + result.t0 * e1->dx;
-    double y = e1->y1 + result.t0 * e1->dy;
+    const double a1[2] = {e1->x1, e1->y1}, b1[2] = {e1->x2, e1->y2},
+      a2[2] = {e2->x1, e2->y1}, b2[2] = {e2->x2, e2->y2};
+    double x, y;
+    linesegm_crossing_exact(a1, b1, a2, b2, &x, &y);
     buffer_add_intersection_point(points, x, y);
   }
 }
@@ -9266,11 +9269,10 @@ buffer_ring_offset_edges(const POINTARRAY *ring, double radius,
         b->y);
       if (oc * od < 0 && oa * ob < 0)
       {
-        IntersectResult r = linesegm_intersect(a->x, a->y, b->x, b->y, c->x,
-          c->y, d->x, d->y);
+        const double pa[2] = {a->x, a->y}, pb[2] = {b->x, b->y},
+          pc[2] = {c->x, c->y}, pd[2] = {d->x, d->y};
         trim[i] = true;
-        xp[i].x = a->x + r.t0 * (b->x - a->x);
-        xp[i].y = a->y + r.t0 * (b->y - a->y);
+        linesegm_crossing_exact(pa, pb, pc, pd, &xp[i].x, &xp[i].y);
       }
     }
   }

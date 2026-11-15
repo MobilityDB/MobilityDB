@@ -311,6 +311,8 @@ extern bool point_segment_nearest_microsecond(const double *p, const double *a,
 extern void point_segment_shortestline_exact(const double *c, double r,
   const double *a, const double *b, double *sx, double *sy, double *ex,
   double *ey);
+extern void linesegm_crossing_exact(const double *a, const double *b,
+  const double *c, const double *d, double *x, double *y);
 extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, int ndims, double r);
 /**

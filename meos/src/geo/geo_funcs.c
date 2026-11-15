@@ -5354,6 +5354,189 @@ point_segment_shortestline_exact(const double *c, double r, const double *a,
   return;
 }
 
+static void linesegm_crossing_quotient(const double *a, const double *b,
+  const double *c, const double *d, double *x, double *y);
+
+/* The sum of two doubles as its rounded value and the error of that rounding,
+ * which together are the sum exactly */
+static inline void
+crossing_two_sum(double a, double b, double *x, double *y)
+{
+  *x = a + b;
+  double bv = *x - a;
+  *y = (a - (*x - bv)) + (b - bv);
+}
+
+/* The cross product `p x q` of two vectors held exactly as high and low parts,
+ * in double-double, and the bound of its error: the products of the high
+ * parts exact (#two_product), the four products of a high and a low part in
+ * doubles, the products of two low parts left out */
+static inline void
+crossing_cross_dd(double pxh, double pxl, double pyh, double pyl, double qxh,
+  double qxl, double qyh, double qyl, double *h, double *l, double *err)
+{
+  double p1, e1, p2, e2, dh, dl;
+  two_product(pxh, qyh, &p1, &e1);
+  two_product(pyh, qxh, &p2, &e2);
+  crossing_two_sum(p1, - p2, &dh, &dl);
+  dl += (e1 - e2) + ((pxh * qyl + pxl * qyh) - (pyh * qxl + pyl * qxh));
+  crossing_two_sum(dh, dl, h, l);
+  /* Each part left out or rounded is at most a few u^2 of the products */
+  *err = 0x1p-101 * (fabs(p1) + fabs(p2));
+  return;
+}
+
+/* The distance from a finite double to the nearer of the doubles beside it,
+ * read off its bits as #cert_ulp_up reads the spacing above it: the spacing
+ * 2^(e - 52) of its binade, half that toward zero from a power of two, whose
+ * neighbour below lies in the binade beneath, and the smallest subnormal
+ * among the subnormals and the binade above them */
+static inline double
+crossing_gap(double x)
+{
+  uint64_t u;
+  memcpy(&u, &x, sizeof(u));
+  int e = (int) ((u >> 52) & 0x7ff);
+  if (e <= 1)
+    return 0x1p-1074;
+  /* A power of two is the one double whose mantissa bits are all zero */
+  if ((u & UINT64CONST(0xFFFFFFFFFFFFF)) == 0)
+    e--;
+  if (e <= 52)
+    return ldexp(1.0, e - 1075);
+  uint64_t r = (uint64_t) (e - 52) << 52;
+  double d;
+  memcpy(&d, &r, sizeof(d));
+  return d;
+}
+
+/* The crossing in double-double, a coordinate kept where its bound proves it
+ * the double nearest the exact value: false where it cannot tell */
+static bool
+linesegm_crossing_filter(const double *a, const double *b, const double *c,
+  const double *d, double *x, double *y)
+{
+  for (int i = 0; i < 2; i++)
+    if (! (fabs(a[i]) <= 0x1p400 && fabs(b[i]) <= 0x1p400 &&
+           fabs(c[i]) <= 0x1p400 && fabs(d[i]) <= 0x1p400))
+      return false;
+  /* r = b - a, s = d - c, w = c - a, each exactly as a high and a low part */
+  double rh[2], rl[2], sh[2], sl[2], wh[2], wl[2];
+  for (int i = 0; i < 2; i++)
+  {
+    two_diff(b[i], a[i], &rh[i], &rl[i]);
+    two_diff(d[i], c[i], &sh[i], &sl[i]);
+    two_diff(c[i], a[i], &wh[i], &wl[i]);
+    /* A difference too small for its products to stay normal */
+    if ((rh[i] != 0.0 && fabs(rh[i]) < 0x1p-400) ||
+        (sh[i] != 0.0 && fabs(sh[i]) < 0x1p-400) ||
+        (wh[i] != 0.0 && fabs(wh[i]) < 0x1p-400))
+      return false;
+  }
+  double dh, dl, derr, nh, nl, nerr;
+  crossing_cross_dd(rh[0], rl[0], rh[1], rl[1], sh[0], sl[0], sh[1], sl[1],
+    &dh, &dl, &derr);
+  crossing_cross_dd(wh[0], wl[0], wh[1], wl[1], sh[0], sl[0], sh[1], sl[1],
+    &nh, &nl, &nerr);
+  if (! (fabs(dh) > 2.0 * derr) || ! isfinite(nh))
+    return false;
+  /* t = N / D, one quotient refined by the remainder, which fma forms exactly */
+  double th = nh / dh;
+  double rem = fma(- th, dh, nh);
+  double tl = (rem + nl - th * dl) / dh;
+  double at = fabs(th);
+  double terr = (nerr + at * derr) / (fabs(dh) - derr) + 0x1p-100 * at;
+  double out[2];
+  for (int i = 0; i < 2; i++)
+  {
+    /* a + t r, t = th + tl and r = rh + rl */
+    double ph, pl, s1, s2, hi, lo;
+    two_product(th, rh[i], &ph, &pl);
+    double small = pl + th * rl[i] + tl * rh[i];
+    crossing_two_sum(a[i], ph, &s1, &s2);
+    double low = s2 + small;
+    crossing_two_sum(s1, low, &hi, &lo);
+    double ar = fabs(rh[i]) * (1.0 + 0x1p-50);
+    double bound = ar * terr + 0x1p-100 * at * ar + 0x1p-51 * fabs(low) +
+      0x1p-1000;
+    if (! isfinite(hi) || ! (fabs(lo) + bound < 0.5 * crossing_gap(hi)))
+      return false;
+    out[i] = hi;
+  }
+  *x = out[0];
+  *y = out[1];
+  return true;
+}
+
+/**
+ * @brief Set the point where the lines of two segments cross, each coordinate
+ * the double nearest its exact value
+ * @details The lines of ab and cd cross at `a + t (b - a)`,
+ * `t = N / D` with `N = (c - a) x (d - c)` and `D = (b - a) x (d - c)`, so
+ * each coordinate is the rational `(a D + (b - a) N) / D`, of degree three in
+ * the input doubles, rounded once to its nearest double
+ * (#dyadic_wide_nearest_quotient), as #point_segment_shortestline_exact rounds
+ * the foot of a perpendicular. A filter reads it first in double-double with a
+ * bound of its error (#linesegm_crossing_filter), and keeps a coordinate where
+ * the bound proves it nearest. A crossing at an end of a segment is that end,
+ * an input vertex, so a caller passes it through rather than constructing it
+ * @param[in] a,b Ends of the first segment
+ * @param[in] c,d Ends of the second segment
+ * @param[out] x,y Crossing
+ * @pre The two directions are not parallel, `D != 0`, which
+ * #linesegm_intersect decides exactly
+ */
+void
+linesegm_crossing_exact(const double *a, const double *b, const double *c,
+  const double *d, double *x, double *y)
+{
+  /* Most crossings stand far enough from a midpoint between two doubles for
+   * the double-double value and its bound to tell, a filter ahead of the
+   * exact quotient as #point_segment_offset_sign reads its sign first in
+   * doubles */
+  if (! linesegm_crossing_filter(a, b, c, d, x, y))
+    linesegm_crossing_quotient(a, b, c, d, x, y);
+  return;
+}
+
+/* The crossing of #linesegm_crossing_exact, each coordinate the nearest double
+ * of its exact quotient (#dyadic_wide_nearest_quotient) */
+static void
+linesegm_crossing_quotient(const double *a, const double *b, const double *c,
+  const double *d, double *x, double *y)
+{
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *wax = dyadic_wide_of_double(ar, a[0]),
+    *way = dyadic_wide_of_double(ar, a[1]),
+    *wcx = dyadic_wide_of_double(ar, c[0]),
+    *wcy = dyadic_wide_of_double(ar, c[1]);
+  /* r = b - a, s = d - c, w = c - a, all exact */
+  const DyadicWide *rx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b[0]), wax),
+    *ry = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b[1]), way),
+    *sx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, d[0]), wcx),
+    *sy = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, d[1]), wcy),
+    *wx = dyadic_wide_sub(ar, wcx, wax),
+    *wy = dyadic_wide_sub(ar, wcy, way);
+  const DyadicWide *den = dyadic_wide_sub(ar, dyadic_wide_mul(ar, rx, sy),
+    dyadic_wide_mul(ar, ry, sx));
+  const DyadicWide *num = dyadic_wide_sub(ar, dyadic_wide_mul(ar, wx, sy),
+    dyadic_wide_mul(ar, wy, sx));
+  assert(den->sign != 0);
+  /* The quotient is read with a positive denominator */
+  int sign = den->sign;
+  den = dyadic_wide_signed(ar, den, sign);
+  num = dyadic_wide_signed(ar, num, sign);
+  const DyadicWide *qx = dyadic_wide_add(ar, dyadic_wide_mul(ar, wax, den),
+    dyadic_wide_mul(ar, rx, num));
+  const DyadicWide *qy = dyadic_wide_add(ar, dyadic_wide_mul(ar, way, den),
+    dyadic_wide_mul(ar, ry, num));
+  *x = dyadic_wide_nearest_quotient(qx, den);
+  *y = dyadic_wide_nearest_quotient(qy, den);
+  dyadic_wide_arena_free(ar);
+  return;
+}
+
 /**
  * @brief Return the nearest approach of two points moving linearly over the
  * interval [ta, tb], the double nearest its exact value
@@ -21988,9 +22171,8 @@ geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
 bool
 geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  // TODO: Currently, activating these lines break tests
-  // assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
-  // assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
+  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
   if (FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) )
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
