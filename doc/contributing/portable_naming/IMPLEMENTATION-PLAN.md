@@ -104,11 +104,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   walks, MERGED as MobilityDB #3717 (`96d3099a2b`); the extended hash of a pose, MERGED as
   MobilityDB #3718 (`535317679d`); the geometry of an array of circular buffers, MERGED as
   MobilityDB #3719 (`fbcfc79d43`); the setters of the styles and the CSV files, MERGED as
-  MobilityDB #3720 (`3d16da56a5`); the window of the moving aggregates, MobilityDB #3723, branch
-  `meos/window-aggregates-test-their-window`. The expandable array follows on branch
+  MobilityDB #3720 (`3d16da56a5`); the window of the moving aggregates, MERGED as MobilityDB #3723 (`f9c1b3e8fd`); the
+  expandable array, MobilityDB #3728, branch
   `meos/expandable-array-add-and-count-test-their-array`: its 25 relate, union, buffer and distance
   cells run at no more than GEOS, and CGAL agrees with every row of its buffer, relate and linear
-  union corpora. The rule of an empty geometry these functions keep is stated for the
+  union corpora (manifest `~/cpwork/contract/array.manifest`). The rule of an empty geometry these functions keep is stated for the
   bindings in `doc/specs/meos-empty-geometries.md`, by the owner's request ("this should be
   explicitly added as a document or section in a user .md documentation"), MERGED as
   MobilityDB #3721 (`79306e3b04`).
