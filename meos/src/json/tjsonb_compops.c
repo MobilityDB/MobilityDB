@@ -119,10 +119,13 @@ always_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
  * @brief Return true if two temporal JSONB are ever equal
  * @param[in] temp1,temp2 Temporal JSONB
  * @csqlfn #Ever_eq_tjsonb_tjsonb()
+ * @errval -1
  */
 int
 ever_eq_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp1, -1); VALIDATE_TJSONB(temp2, -1);
   return eacomp_temporal_temporal(temp1, temp2, &datum2_eq, EVER);
 }
 
@@ -131,10 +134,13 @@ ever_eq_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @brief Return true if two temporal JSONB are ever different
  * @param[in] temp1,temp2 Temporal JSONB
  * @csqlfn #Ever_ne_tjsonb_tjsonb()
+ * @errval -1
  */
 int
 ever_ne_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp1, -1); VALIDATE_TJSONB(temp2, -1);
   return eacomp_temporal_temporal(temp1, temp2, &datum2_ne, EVER);
 }
 
@@ -143,10 +149,13 @@ ever_ne_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @brief Return true if two temporal JSONB are always equal
  * @param[in] temp1,temp2 Temporal JSONB
  * @csqlfn #Always_eq_tjsonb_tjsonb()
+ * @errval -1
  */
 int
 always_eq_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp1, -1); VALIDATE_TJSONB(temp2, -1);
   return eacomp_temporal_temporal(temp1, temp2, &datum2_eq, ALWAYS);
 }
 
@@ -155,10 +164,13 @@ always_eq_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @brief Return true if two temporal JSONB are always different
  * @param[in] temp1,temp2 Temporal JSONB
  * @csqlfn #Always_ne_tjsonb_tjsonb()
+ * @errval -1
  */
 int
 always_ne_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp1, -1); VALIDATE_TJSONB(temp2, -1);
   return eacomp_temporal_temporal(temp1, temp2, &datum2_ne, ALWAYS);
 }
 
