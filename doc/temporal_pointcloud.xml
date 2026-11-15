@@ -1311,6 +1311,22 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="tpcpoint_mergeNSpans">
+					<indexterm significance="normal"><primary><varname>mergeNSpans</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>mergeEachNSpans</varname></primary></indexterm>
+					<para>Return the time spans of a tpcpoint merged into a given number of spans, or until a span holds on average a given number of segments, each time the consecutive pair whose union adds the least size to theirs</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNSpans(tpcpoint,integer) → tstzspan[]
+mergeEachNSpans(tpcpoint,integer) → tstzspan[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNSpans(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
+  '2024-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
+-- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="tpcpoint_splitNTpcboxes">
 					<indexterm significance="normal"><primary><varname>splitNTpcboxes</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>splitEachNTpcboxes</varname></primary></indexterm>
@@ -1325,6 +1341,27 @@ SELECT splitNTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-0
   tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
 -- {"TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-01, 2024-01-02]), 1)","TPCBOX(ZT(((2,2,2),(3,3,3)),[2024-01-02, 2024-01-03]), 1)"}
 SELECT splitEachNTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
+-- {"TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-01, 2024-01-03]), 1)"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_mergeNTpcboxes">
+					<indexterm significance="normal"><primary><varname>mergeNTpcboxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>mergeEachNTpcboxes</varname></primary></indexterm>
+					<para>Return the point cloud boxes of a tpcpoint merged into a given number of boxes, or until a box holds on average a given number of instants or segments, each time the consecutive pair whose union adds the least size to theirs</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNTpcboxes(tpcpoint,integer) → tpcbox[]
+mergeEachNTpcboxes(tpcpoint,integer) → tpcbox[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
+/* {"TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-01, 2024-01-02]), 1)",
+   "TPCBOX(ZT(((2,2,2),(3,3,3)),[2024-01-02, 2024-01-03]), 1)"} */
+SELECT mergeEachNTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
 -- {"TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-01, 2024-01-03]), 1)"}
@@ -2295,6 +2332,24 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="tpcpatch_mergeNSpans">
+					<indexterm significance="normal"><primary><varname>mergeNSpans</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>mergeEachNSpans</varname></primary></indexterm>
+					<para>Return the time spans of a tpcpatch merged into a given number of spans, or until a span holds on average a given number of segments, each time the consecutive pair whose union adds the least size to theirs</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNSpans(tpcpatch,integer) → tstzspan[]
+mergeEachNSpans(tpcpatch,integer) → tstzspan[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
+-- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="tpcpatch_splitNTpcboxes">
 					<indexterm significance="normal"><primary><varname>splitNTpcboxes</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>splitEachNTpcboxes</varname></primary></indexterm>
@@ -2311,6 +2366,31 @@ SELECT splitNTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
 -- {"TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-01, 2024-01-02]), 1)","TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-02, 2024-01-03]), 1)"}
 SELECT splitEachNTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
+-- {"TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-01, 2024-01-03]), 1)"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_mergeNTpcboxes">
+					<indexterm significance="normal"><primary><varname>mergeNTpcboxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>mergeEachNTpcboxes</varname></primary></indexterm>
+					<para>Return the point cloud boxes of a tpcpatch merged into a given number of boxes, or until a box holds on average a given number of instants or segments, each time the consecutive pair whose union adds the least size to theirs</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNTpcboxes(tpcpatch,integer) → tpcbox[]
+mergeEachNTpcboxes(tpcpatch,integer) → tpcbox[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
+/* {"TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-01, 2024-01-02]), 1)",
+   "TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-02, 2024-01-03]), 1)"} */
+SELECT mergeEachNTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),

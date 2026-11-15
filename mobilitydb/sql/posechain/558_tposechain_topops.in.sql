@@ -80,6 +80,16 @@ CREATE FUNCTION splitEachNStboxes(tposechain, integer)
   AS 'MODULE_PATHNAME', 'Tgeo_split_each_n_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeNStboxes(tposechain, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNStboxes(tposechain, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION expandSpace(tposechain, float)

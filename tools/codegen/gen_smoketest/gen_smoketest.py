@@ -1822,7 +1822,7 @@ TGEOMETRY_CONFIG = dict(
         r"^bearing_tpoint":      {"Temporal *": "tpoint1",
                                   "GSERIALIZED *": "geom_point1"},
         # Line-only operations need a linestring.
-        r"^line_|^geo_split|^geo_stboxes": {"GSERIALIZED *": "geom_line1"},
+        r"^line_|^geo_split|^geo_merge|^geo_stboxes": {"GSERIALIZED *": "geom_line1"},
         # 3D geometry predicates need geometries carrying a Z coordinate.
         r"^geom_\w+3d$": {"GSERIALIZED *": "geom_pointz1"},
         # tstzset-typed set arguments (the default Set * is a geomset).

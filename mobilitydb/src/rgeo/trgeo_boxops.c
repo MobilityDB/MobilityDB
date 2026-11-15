@@ -117,4 +117,53 @@ Trgeometry_split_each_n_stboxes(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Trgeometry_merge_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_merge_n_stboxes);
+/**
+ * @ingroup mobilitydb_rgeo_bbox
+ * @brief Return an array of N spatiotemporal boxes obtained by merging the
+ * boxes of the elements of a temporal rigid geometry, each time the consecutive
+ * pair whose union adds the least size to theirs
+ * @sqlfn mergeNStboxes()
+ */
+Datum
+Trgeometry_merge_n_stboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int box_count = PG_GETARG_INT32(1);
+  int count;
+  STBox *boxes = trgeometry_merge_n_stboxes(temp, box_count, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_merge_each_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_merge_each_n_stboxes);
+/**
+ * @ingroup mobilitydb_rgeo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging the boxes
+ * of the elements of a temporal rigid geometry, each time the consecutive pair
+ * whose union adds the least size to theirs, until a box holds on average a
+ * given number of them
+ * @sqlfn mergeEachNStboxes()
+ */
+Datum
+Trgeometry_merge_each_n_stboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int elems_per_box = PG_GETARG_INT32(1);
+  int count;
+  STBox *boxes = trgeometry_merge_each_n_stboxes(temp, elems_per_box, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 /*****************************************************************************/
