@@ -29813,6 +29813,14 @@ SELECT tstzset '{2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzset value: Missing closing brace
 LINE 1: SELECT tstzset '{2001-01-01, 2001-01-02';
                        ^
+SELECT tstzset '{2001-01-01, infinity}';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tstzset '{2001-01-01, infinity}';
+                       ^
+SELECT dateset '{-infinity, 2001-01-01}';
+ERROR:  The date must be finite
+LINE 1: SELECT dateset '{-infinity, 2001-01-01}';
+                       ^
 SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
         astext        
 ----------------------
@@ -29966,6 +29974,18 @@ LINE 1: SELECT tstzspan '2001-01-01, 2001-01-02';
 SELECT tstzspan '[2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzspan value: Missing closing bracket/parenthesis
 LINE 1: SELECT tstzspan '[2001-01-01, 2001-01-02';
+                        ^
+SELECT tstzspan '[-infinity, 2001-01-01]';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tstzspan '[-infinity, 2001-01-01]';
+                        ^
+SELECT tstzspan '[2001-01-01, infinity]';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tstzspan '[2001-01-01, infinity]';
+                        ^
+SELECT datespan '[2001-01-01, infinity)';
+ERROR:  The date must be finite
+LINE 1: SELECT datespan '[2001-01-01, infinity)';
                         ^
 SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);
         astext        
@@ -30510,6 +30530,18 @@ SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
 ERROR:  integer out of range
 LINE 1: SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
                     ^
+SELECT tfloat '1@infinity';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tfloat '1@infinity';
+                      ^
+SELECT tfloat '[1@2001-01-01, 2@infinity]';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tfloat '[1@2001-01-01, 2@infinity]';
+                      ^
+SELECT tfloat '{1@-infinity, 2@2001-01-01}';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tfloat '{1@-infinity, 2@2001-01-01}';
+                      ^
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';
                                               tbool                                               
 --------------------------------------------------------------------------------------------------
