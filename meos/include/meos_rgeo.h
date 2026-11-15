@@ -136,6 +136,8 @@ extern STBox *trgeometry_space_time_boxes(const Temporal *temp, double xsize, do
  * per-segment spatiotemporal boxes */
 extern STBox *trgeometry_stboxes(const Temporal *temp, int *count);
 extern STBox *trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count);
+extern STBox *trgeometry_merge_each_n_stboxes(const Temporal *temp, int elem_count, int *count);
+extern STBox *trgeometry_merge_n_stboxes(const Temporal *temp, int box_count, int *count);
 extern STBox *trgeometry_split_each_n_stboxes(const Temporal *temp, int elem_count, int *count);
 extern double trgeometry_length(const Temporal *temp);
 extern Temporal *trgeometry_cumulative_length(const Temporal *temp);

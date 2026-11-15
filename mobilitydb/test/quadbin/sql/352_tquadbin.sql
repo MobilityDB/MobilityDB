@@ -235,5 +235,7 @@ SELECT (rec).time, (rec).temp FROM
 SELECT spans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]');
 SELECT splitNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
 SELECT splitEachNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
+SELECT mergeNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
+SELECT mergeEachNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
 
 -------------------------------------------------------------------------------

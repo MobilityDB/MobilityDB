@@ -14,6 +14,11 @@
 #   NOUN, NOUNCAP, NOUNBOXES, GROUP, IGROUP, CSTEM  the nouns of its comments,
 #                           its public and internal doxygen groups and the stem
 #                           of its SQL wrappers;
+#   MBOXTYPE, MADJUST, MSIZE  the box type, the function growing a box to
+#                           include another and the size function the merges
+#                           of its boxes hand #bbox_merge_n; a point cloud box
+#                           merges through those of the spatiotemporal box it
+#                           begins with, as the in-memory R-tree splits it;
 #   calls                   for each primitive the template calls, the C
 #                           expression it stands for, {0}, {1}, ... being the
 #                           arguments of the call, the first of them the value
@@ -42,6 +47,9 @@ boxsplit:
     CTXDECL: ''
     CTXPASS: ''
     CTXINIT: ''
+    MBOXTYPE: T_STBOX
+    MADJUST: stbox_adjust
+    MSIZE: stbox_size
     calls:
       INSTSET: tspatialinst_set_stbox({1}, {2})
       SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})
@@ -67,6 +75,9 @@ boxsplit:
     CTXDECL: ''
     CTXPASS: ''
     CTXINIT: ''
+    MBOXTYPE: T_TBOX
+    MADJUST: tbox_adjust
+    MSIZE: tbox_size
     calls:
       INSTSET: tnumberinst_set_tbox({1}, {2})
       SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})
@@ -92,6 +103,9 @@ boxsplit:
     CTXDECL: ''
     CTXPASS: ''
     CTXINIT: ''
+    MBOXTYPE: T_TSTZSPAN
+    MADJUST: span_adjust
+    MSIZE: span_size
     calls:
       INSTSET: tinstant_set_span({1}, {2})
       SLICE: tsequence_set_tstzspan_slice({0}, {1}, {2}, {3})
@@ -119,6 +133,9 @@ boxsplit:
     CTXINIT: '  const GSERIALIZED *geom = trgeometry_geom_p(temp);
 
       '
+    MBOXTYPE: T_STBOX
+    MADJUST: stbox_adjust
+    MSIZE: stbox_size
     calls:
       INSTSET: trgeoinst_set_stbox(geom, {1}, {2})
       SLICE: trgeoseq_slice_stbox(geom, {0}, {1}, {2}, {3})
@@ -144,6 +161,9 @@ boxsplit:
     CTXDECL: ''
     CTXPASS: ''
     CTXINIT: ''
+    MBOXTYPE: T_TPCBOX
+    MADJUST: stbox_adjust
+    MSIZE: stbox_size
     calls:
       INSTSET: tpointcloudinst_set_tpcbox({1}, {2})
       SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})

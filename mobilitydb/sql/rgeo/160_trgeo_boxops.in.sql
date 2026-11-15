@@ -53,6 +53,16 @@ CREATE FUNCTION splitEachNSpans(trgeometry, integer)
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeNSpans(trgeometry, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNSpans(trgeometry, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitNStboxes(trgeometry, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Trgeometry_split_n_stboxes'
@@ -61,6 +71,16 @@ CREATE FUNCTION splitNStboxes(trgeometry, integer)
 CREATE FUNCTION splitEachNStboxes(trgeometry, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Trgeometry_split_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeNStboxes(trgeometry, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Trgeometry_merge_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNStboxes(trgeometry, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Trgeometry_merge_each_n_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-TILING-END rgeo_splits
 

@@ -167,4 +167,31 @@ span_index_recheck(StrategyNumber strategy)
   }
 }
 
+/**
+ * @brief Increase the first span to include the second one
+ * @details The span twin of #tbox_adjust and #stbox_adjust
+ */
+void
+span_adjust(void *bbox1, void *bbox2)
+{
+  assert(bbox1); assert(bbox2);
+  span_expand((const Span *) bbox2, (Span *) bbox1);
+  return;
+}
+
+/**
+ * @brief Return the size of a span, the distance between its bounds read in
+ * its base type, as the penalty of its GiST index reads the growth of a span
+ * @details The span twin of #tbox_size and #stbox_size, which measure the
+ * boxes of the index the same way
+ * @note The result can be +Infinity, but not NaN
+ */
+double
+span_size(const void *bbox)
+{
+  assert(bbox);
+  const Span *s = (const Span *) bbox;
+  return distance_value_value_double(s->lower, s->upper, s->basetype);
+}
+
 /*****************************************************************************/
