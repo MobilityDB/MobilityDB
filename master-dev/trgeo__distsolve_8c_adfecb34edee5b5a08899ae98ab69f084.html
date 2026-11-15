@@ -86,6 +86,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_ab726059390889631570f2268c2bad977.html#ab726059390889631570f2268c2bad977">distfun_add_fun</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_ac3e7c84fb7a15c9a97abe5a491547cdc.html#ac3e7c84fb7a15c9a97abe5a491547cdc">distfun_add_poly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a1ef36510282cd89231863eea85a8e549.html#a1ef36510282cd89231863eea85a8e549">DISTFUN_CELLMAX</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a892ddeb280d003073d7b3809077785db.html#a892ddeb280d003073d7b3809077785db">distfun_copy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a22ca5d90b975b7d4563af425aaab2f76.html#a22ca5d90b975b7d4563af425aaab2f76">distfun_crossings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a8129dff48f1fc73aec0f8fa58d128d4e.html#a8129dff48f1fc73aec0f8fa58d128d4e">distfun_deriv</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a65ca282131822ac82cbb7776016d8fbc.html#a65ca282131822ac82cbb7776016d8fbc">distfun_eval</a></td></tr>
@@ -151,7 +152,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return an upper bound of |(a2*t^2 + a1*t + a0)*cos(w*t) + (b2*t^2 + b1*t + b0)*sin(w*t)| over [lo, hi]. </p>
-<p >The value is at most the amplitude |(<a class="el" href="trgeo__distance_8txt_a4512e746095747aa740bf8b40184ef4f.html#a4512e746095747aa740bf8b40184ef4f">A(t)</a>, B(t))|, with A and B the two coefficients. With affine coefficients, the amplitude is the distance from the origin to a point that moves on a line, thus it is convex and its maximum is at an end of the interval. With quadratic coefficients, the amplitude is at most |(max|A|, max|B|)| over the interval, each maximum that of a quadratic, see <a class="el" href="trgeo__distsolve_8c_a47d0ee1b66108048ce4668a84e87254c.html#a47d0ee1b66108048ce4668a84e87254c" title="Return the maximum of |c2*t^2 + c1*t + c0| over [lo, hi].">quad_absmax()</a>. </p>
+<p >The value is at most the amplitude |(<a class="el" href="trgeo__distance_8txt_a4512e746095747aa740bf8b40184ef4f.html#a4512e746095747aa740bf8b40184ef4f">A(t)</a>, <a class="el" href="trgeo__distance_8txt_aa514702fa6cf1da37d2639a2d04b0676.html#aa514702fa6cf1da37d2639a2d04b0676">B(t)</a>)|, with A and B the two coefficients. With affine coefficients, the amplitude is the distance from the origin to a point that moves on a line, thus it is convex and its maximum is at an end of the interval. With quadratic coefficients, the amplitude is at most |(max|A|, max|B|)| over the interval, each maximum that of a quadratic, see <a class="el" href="trgeo__distsolve_8c_a47d0ee1b66108048ce4668a84e87254c.html#a47d0ee1b66108048ce4668a84e87254c" title="Return the maximum of |c2*t^2 + c1*t + c0| over [lo, hi].">quad_absmax()</a>. </p>
 
 </div>
 </div>
