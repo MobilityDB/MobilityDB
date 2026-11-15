@@ -9050,6 +9050,26 @@ ddb_sqrt(DDBound a, DDBound *r)
 }
 
 /**
+ * @brief Return the quotient of a bounded value by a positive integer @p k
+ * below 2^53, with its bound, the twin of #ddb_div for an exact divisor
+ * @details The remainder of the quotient in doubles, `a.hi - q k`, is exact
+ * by a fused multiply-add, so the second double `(rem + a.lo) / k` is the
+ * rest of the quotient within twice its own rounding, below 2^-104 of `q`;
+ * the residuals #ddb_div forms for any divisor are not needed
+ */
+static DDBound
+ddb_div_int(DDBound a, int k)
+{
+  double dk = (double) k;
+  double q = a.hi / dk;
+  double rem = fma(- q, dk, a.hi);
+  DDBound r;
+  two_sum(q, (rem + a.lo) / dk, &r.hi, &r.lo);
+  r.e = (a.e / dk + DDB_EPS * fabs(q)) * DDB_UP + DDB_TINY;
+  return r;
+}
+
+/**
  * @brief Set @p r to the degrees of atan(t), the true t in [0, 1], with
  * their bound, or return false where a bound cannot be kept
  * @details The twin of #fix_atan_bound in bounded pairs of doubles: three
@@ -9058,7 +9078,7 @@ ddb_sqrt(DDBound a, DDBound *r)
  * with decreasing terms; it stops at a power of t below 2^-112, which
  * bounds the rest; the result is eight times the sum, times 180 / pi. Every
  * operation carries the bound of its operands (#ddb_mul, #ddb_div,
- * #ddb_sqrt), so the bound is on the degrees of the true t
+ * #ddb_div_int, #ddb_sqrt), so the bound is on the degrees of the true t
  */
 static bool
 ddb_atan_degrees(DDBound t, DDBound *r)
@@ -9079,11 +9099,7 @@ ddb_atan_degrees(DDBound t, DDBound *r)
   for (int k = 1; k < 40 && ! done; k++)
   {
     p = ddb_mul(p, t2);
-    DDBound d, term;
-    d.hi = 2.0 * k + 1.0;
-    d.lo = d.e = 0.0;
-    if (! ddb_div(p, d, &term))
-      return false;
+    DDBound term = ddb_div_int(p, 2 * k + 1);
     sum = (k % 2) ? ddb_sub(sum, term) : ddb_add(sum, term);
     double pmag = ddb_mag_up(p);
     if (pmag < 0x1p-112)
@@ -9214,26 +9230,6 @@ ddb_vector_lat_nearest(const int64 *v, double *result)
     deg = ddb_sub(k, deg);
   }
   return ddb_degrees_nearest(deg, z > 0 ? 1.0 : -1.0, result);
-}
-
-/**
- * @brief Return the quotient of a bounded value by a positive integer @p k
- * below 2^53, with its bound, the twin of #ddb_div for an exact divisor
- * @details The remainder of the quotient in doubles, `a.hi - q k`, is exact
- * by a fused multiply-add, so the second double `(rem + a.lo) / k` is the
- * rest of the quotient within twice its own rounding, below 2^-104 of `q`;
- * the residuals #ddb_div forms for any divisor are not needed
- */
-static DDBound
-ddb_div_int(DDBound a, int k)
-{
-  double dk = (double) k;
-  double q = a.hi / dk;
-  double rem = fma(- q, dk, a.hi);
-  DDBound r;
-  two_sum(q, (rem + a.lo) / dk, &r.hi, &r.lo);
-  r.e = (a.e / dk + DDB_EPS * fabs(q)) * DDB_UP + DDB_TINY;
-  return r;
 }
 
 /* pi as the sum of two doubles, within 2^-108 of it (mpmath at 4000 bits),
