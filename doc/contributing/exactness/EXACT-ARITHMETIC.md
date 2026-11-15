@@ -824,8 +824,10 @@ stage decides only where every nonzero difference lies from 2^-240 to 2^250. Jud
 every scale from 2^-1070 to 2^1020 and on 198 447 configurations of mixed magnitudes, 599 919
 rows, none is wrong; CGAL's circular-arc judge agrees with the head on 38 584 pairs of a curve
 polygon and a point at 2^0, 2^-300 and 2^300. It is merged as #3694 (`23f24644e0` on master),
-test first, its receipts strict CI, cppcheck, valgrind, smoke, the oracle and speed. What EA7
-leaves is tier 2 where Section 4.4 finds none, after EA2.
+test first, its receipts strict CI, cppcheck, valgrind, smoke, the oracle and speed. Tier 2
+where Section 4.4 finds none is answered by EA2: on the two signs whose ties the corpora reach,
+the expansions of the expression ladder cost more than `DyadicWide` on its arena, and the third
+reaches no tie, so those signs go from `DDBound` to tier 3 and EA7 is closed.
 
 ### EA8. The double nearest a transcendental value
 
