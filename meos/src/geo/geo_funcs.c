@@ -1222,89 +1222,100 @@ offset_x_cmp(double x, double o, double p)
   return polynomial_sign_exact(&sum, &term, 1);
 }
 
+/* The terms of f(P0) or f(P1) of a line given by a function affine in the
+ * position, see #linear_side_at */
+#define LINEAR_SIDE_MAXTERMS 4
+
 /**
- * @brief Return the side of the line through A and B on which a point moving
- * from P0 to P1 lies after n of D microseconds, exactly
- * @details The sign of `(D - n) cross(A, B, P0) + n cross(A, B, P1)`, D
- * times the cross product of B - A and P(n) - A, with
- * `cross(A, B, P) = (bx + ob - ax - oa) (py - ay) - (by - ay) (px - ax - oa)`.
- * The sums are those #segment_edge_cross_offset sets, the coefficients
- * integers below 2^53, so exact doubles
+ * @brief Return the side on which a point moving from P0 to P1 lies after n
+ * of D microseconds, of a line given by a function affine in the position,
+ * exactly
+ * @details The sign of `(D - n) f(P0) + n f(P1)`, D times the value of `f` at
+ * the position after n microseconds, `f` being affine. Each of `f(P0)` and
+ * `f(P1)` is a polynomial in exact sums whose coefficients are -1 or 1, so
+ * each term scaled by `D - n` or `n`, integers below 2^53, keeps an exact
+ * coefficient
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] f0,n0 Terms of `f(P0)` and their number
+ * @param[in] f1,n1 Terms of `f(P1)` and their number
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] n Microsecond, from 0 to @p D
  */
 static int
-segment_edge_side_at(const ExactSum *sums, int64 D, int64 n)
+linear_side_at(const ExactSum *sums, const PolyTerm *f0, int n0,
+  const PolyTerm *f1, int n1, int64 D, int64 n)
 {
-  PolyTerm terms[4];
+  PolyTerm terms[2 * LINEAR_SIDE_MAXTERMS];
   int nterms = 0;
   if (n < D)
-  {
-    terms[nterms++] = (PolyTerm) {.coef = (double) (D - n), .deg = 2,
-      .sum = {0, 2}};
-    terms[nterms++] = (PolyTerm) {.coef = - (double) (D - n), .deg = 2,
-      .sum = {1, 3}};
-  }
+    for (int i = 0; i < n0; i++)
+    {
+      terms[nterms] = f0[i];
+      terms[nterms++].coef *= (double) (D - n);
+    }
   if (n > 0)
-  {
-    terms[nterms++] = (PolyTerm) {.coef = (double) n, .deg = 2,
-      .sum = {0, 4}};
-    terms[nterms++] = (PolyTerm) {.coef = - (double) n, .deg = 2,
-      .sum = {1, 5}};
-  }
+    for (int i = 0; i < n1; i++)
+    {
+      terms[nterms] = f1[i];
+      terms[nterms++].coef *= (double) n;
+    }
   return polynomial_sign_exact(sums, terms, nterms);
 }
 
 /**
- * @brief Return the microsecond at which a segment crosses the line of an
- * edge whose x coordinates carry exact offsets, as the offset from the start
- * of the segment, truncated
+ * @brief Return the double nearest to a polynomial in exact sums, read from
+ * the doubles nearest to the sums, an estimate only
+ */
+static double
+linear_side_approx(const ExactSum *sums, const PolyTerm *f, int n)
+{
+  double val = 0.0;
+  for (int i = 0; i < n; i++)
+  {
+    double v = f[i].coef;
+    for (int k = 0; k < f[i].deg; k++)
+      v *= sums[f[i].sum[k]].approx;
+    val += v;
+  }
+  return val;
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses a line given by a
+ * function affine in the position, as the offset from the start of the
+ * segment, truncated
  * @details The point moves from P0 to P1 over @p D microseconds, and lies on
- * the line through A and B at the exact parameter where
- * `(D - n) cross(A, B, P0) + n cross(A, B, P1)` vanishes, a function of `n`
- * that is linear, hence monotone. The offset returned is the last
- * microsecond `n` at which the point is still on the side of the line it
- * starts on or on the line, each side the exact sign
- * #segment_edge_side_at decides on the input doubles, the integer @p D and
- * the offsets, so the crossing is dated by the truncation of its exact
- * parameter and no rounded parameter decides it. A double estimate starts
- * a galloping search, then a bisection, on that sign. The x offsets, such
- * as a multiple of 360 reading a cell across the antimeridian in the chart
- * of the segment, are never added to a coordinate, where they would round.
- * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * the line where `(D - n) f(P0) + n f(P1)` vanishes, a function of `n` that
+ * is linear, hence monotone. The offset returned is the last microsecond `n`
+ * at which the point is still on the side of the line it starts on or on
+ * the line, each side the exact sign #linear_side_at decides, so the
+ * crossing is dated by the truncation of its exact parameter and no rounded
+ * parameter decides it. A double estimate starts a galloping search, then a
+ * bisection, on that sign.
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] f0,n0 Terms of `f(P0)` and their number
+ * @param[in] f1,n1 Terms of `f(P1)` and their number
  * @param[in] D Duration of the segment in microseconds, below 2^53
- * @param[in] ax,ay,oa Vertex A of the edge and the offset of its x
- * @param[in] bx,by,ob Vertex B of the edge and the offset of its x
  * @param[out] whole True when the point lies on the line exactly at the
  * microsecond returned
  * @return The offset in microseconds: 0 when the segment starts on the line,
  * @p D when it reaches the line only at its end or never
- * @note Exact where no product of the components of the sums overflows or
- * underflows, as #polynomial_sign_exact states it
  */
-int64
-segment_edge_cross_offset(double x0, double y0, double x1, double y1,
-  int64 D, double ax, double ay, double oa, double bx, double by, double ob,
-  bool *whole)
+static int64
+linear_cross_offset(const ExactSum *sums, const PolyTerm *f0, int n0,
+  const PolyTerm *f1, int n1, int64 D, bool *whole)
 {
   assert(D >= 0); assert(whole);
-  ExactSum sums[6];
-  const double t0[4] = {bx, ob, - ax, - oa}, t1[2] = {by, - ay};
-  const double t2[2] = {y0, - ay}, t3[3] = {x0, - ax, - oa};
-  const double t4[2] = {y1, - ay}, t5[3] = {x1, - ax, - oa};
-  exact_sum_set(&sums[0], t0, 4);
-  exact_sum_set(&sums[1], t1, 2);
-  exact_sum_set(&sums[2], t2, 2);
-  exact_sum_set(&sums[3], t3, 3);
-  exact_sum_set(&sums[4], t4, 2);
-  exact_sum_set(&sums[5], t5, 3);
-  int s0 = segment_edge_side_at(sums, D, 0);
+  assert(n0 <= LINEAR_SIDE_MAXTERMS); assert(n1 <= LINEAR_SIDE_MAXTERMS);
+  int s0 = linear_side_at(sums, f0, n0, f1, n1, D, 0);
   if (s0 == 0 || D == 0)
   {
     *whole = (s0 == 0);
     return 0;
   }
   /* The estimate in doubles, the start of the search only */
-  double c0 = sums[0].approx * sums[2].approx - sums[1].approx * sums[3].approx;
-  double c1 = sums[0].approx * sums[4].approx - sums[1].approx * sums[5].approx;
+  double c0 = linear_side_approx(sums, f0, n0);
+  double c1 = linear_side_approx(sums, f1, n1);
   double est = (double) D * (c0 / (c0 - c1));
   int64 n = 0;
   if (isfinite(est) && est > 0.0)
@@ -1312,7 +1323,7 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
   /* lo is the last microsecond known on the start side, hi the first known
    * past it, D + 1 standing for none */
   int64 lo, hi;
-  if (s0 * segment_edge_side_at(sums, D, n) >= 0)
+  if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, n) >= 0)
   {
     lo = n;
     int64 step = 1;
@@ -1324,7 +1335,7 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
         break;
       }
       int64 c = (step > D - lo) ? D : lo + step;
-      if (s0 * segment_edge_side_at(sums, D, c) >= 0)
+      if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, c) >= 0)
       {
         lo = c;
         step *= 2;
@@ -1343,7 +1354,7 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
     for (;;)
     {
       int64 c = (step >= hi) ? 0 : hi - step;
-      if (c == 0 || s0 * segment_edge_side_at(sums, D, c) >= 0)
+      if (c == 0 || s0 * linear_side_at(sums, f0, n0, f1, n1, D, c) >= 0)
       {
         lo = c;
         break;
@@ -1355,13 +1366,163 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
   while (hi - lo > 1)
   {
     int64 mid = lo + (hi - lo) / 2;
-    if (s0 * segment_edge_side_at(sums, D, mid) >= 0)
+    if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, mid) >= 0)
       lo = mid;
     else
       hi = mid;
   }
-  *whole = (segment_edge_side_at(sums, D, lo) == 0);
+  *whole = (linear_side_at(sums, f0, n0, f1, n1, D, lo) == 0);
   return lo;
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the line of an
+ * edge whose x coordinates carry exact offsets, as the offset from the start
+ * of the segment, truncated
+ * @details The point moves from P0 to P1 over @p D microseconds and lies on
+ * the line through A and B where `cross(A, B, P) = (bx + ob - ax - oa) (py -
+ * ay) - (by - ay) (px - ax - oa)` vanishes, a function affine in P, so the
+ * crossing is dated by #linear_cross_offset, the truncation of its exact
+ * parameter, on the input doubles, the integer @p D and the offsets. The x
+ * offsets, such as a multiple of 360 reading a cell across the antimeridian
+ * in the chart of the segment, are never added to a coordinate, where they
+ * would round.
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * @param[in] D Duration of the segment in microseconds, below 2^53
+ * @param[in] ax,ay,oa Vertex A of the edge and the offset of its x
+ * @param[in] bx,by,ob Vertex B of the edge and the offset of its x
+ * @param[out] whole True when the point lies on the line exactly at the
+ * microsecond returned
+ * @return The offset in microseconds: 0 when the segment starts on the line,
+ * @p D when it reaches the line only at its end or never
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int64
+segment_edge_cross_offset(double x0, double y0, double x1, double y1,
+  int64 D, double ax, double ay, double oa, double bx, double by, double ob,
+  bool *whole)
+{
+  ExactSum sums[6];
+  const double t0[4] = {bx, ob, - ax, - oa}, t1[2] = {by, - ay};
+  const double t2[2] = {y0, - ay}, t3[3] = {x0, - ax, - oa};
+  const double t4[2] = {y1, - ay}, t5[3] = {x1, - ax, - oa};
+  exact_sum_set(&sums[0], t0, 4);
+  exact_sum_set(&sums[1], t1, 2);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  exact_sum_set(&sums[4], t4, 2);
+  exact_sum_set(&sums[5], t5, 3);
+  const PolyTerm f0[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 2}},
+    {.coef = -1.0, .deg = 2, .sum = {1, 3}}};
+  const PolyTerm f1[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 4}},
+    {.coef = -1.0, .deg = 2, .sum = {1, 5}}};
+  return linear_cross_offset(sums, f0, 2, f1, 2, D, whole);
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses a grid line of an
+ * affine grid, as the offset from the start of the segment, truncated
+ * @details The grid is the affine map of a geotransform `gt`, the position
+ * `(gt[0] + c gt[1] + r gt[2], gt[3] + c gt[4] + r gt[5])` at the grid
+ * coordinates `(c, r)`, as GDAL and PostGIS state a raster's
+ * georeferencing. Its column line @p k is where `gt[5] (x - gt[0]) - gt[2]
+ * (y - gt[3]) - k det` vanishes and its row line @p k where `gt[1] (y -
+ * gt[3]) - gt[4] (x - gt[0]) - k det` does, `det = gt[1] gt[5] - gt[2]
+ * gt[4]`: the grid coordinate times `det`, read exactly from the six doubles
+ * with no inverse of the geotransform, which would round. Each is affine in
+ * the position, so the crossing is dated by #linear_cross_offset, the
+ * truncation of its exact parameter, as #segment_edge_cross_offset dates the
+ * crossing of the line of an edge.
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * @param[in] D Duration of the segment in microseconds, below 2^53
+ * @param[in] gt Geotransform of the grid
+ * @param[in] axis 0 for a column line, 1 for a row line
+ * @param[in] k Grid line, an integer
+ * @param[out] whole True when the point lies on the line exactly at the
+ * microsecond returned
+ * @return The offset in microseconds: 0 when the segment starts on the line,
+ * @p D when it reaches the line only at its end or never
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int64
+segment_grid_line_cross_offset(double x0, double y0, double x1, double y1,
+  int64 D, const double *gt, int axis, double k, bool *whole)
+{
+  ExactSum sums[9];
+  const double t0[2] = {x0, - gt[0]}, t1[2] = {y0, - gt[3]};
+  const double t2[2] = {x1, - gt[0]}, t3[2] = {y1, - gt[3]};
+  exact_sum_set(&sums[0], t0, 2);
+  exact_sum_set(&sums[1], t1, 2);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 2);
+  for (int i = 0; i < 4; i++)
+    exact_sum_set(&sums[4 + i], &gt[i < 2 ? i + 1 : i + 2], 1);
+  exact_sum_set(&sums[8], &k, 1);
+  /* sums[4..7] are gt[1], gt[2], gt[4], gt[5]; the column line reads
+   * gt[5] dx - gt[2] dy and the row line gt[1] dy - gt[4] dx, each less k
+   * det = k (gt[1] gt[5] - gt[2] gt[4]) */
+  int a = axis ? 4 : 7, b = axis ? 6 : 5;   /* coefficient of dy, dx */
+  int sa = axis ? 1 : 0, sb = axis ? 0 : 1; /* dy for a row line, dx else */
+  double sign_b = -1.0;
+  const PolyTerm f0[4] = {
+    {.coef = 1.0, .deg = 2, .sum = {a, sa}},
+    {.coef = sign_b, .deg = 2, .sum = {b, sb}},
+    {.coef = -1.0, .deg = 3, .sum = {8, 4, 7}},
+    {.coef = 1.0, .deg = 3, .sum = {8, 5, 6}}};
+  const PolyTerm f1[4] = {
+    {.coef = 1.0, .deg = 2, .sum = {a, sa + 2}},
+    {.coef = sign_b, .deg = 2, .sum = {b, sb + 2}},
+    {.coef = -1.0, .deg = 3, .sum = {8, 4, 7}},
+    {.coef = 1.0, .deg = 3, .sum = {8, 5, 6}}};
+  return linear_cross_offset(sums, f0, 4, f1, 4, D, whole);
+}
+
+/**
+ * @brief Return the sign of the difference between a grid coordinate of a
+ * position and a grid line of an affine grid, exactly
+ * @details The grid coordinate is read through the six doubles of the
+ * geotransform as #segment_grid_line_cross_offset reads it: the column of
+ * the position is `(gt[5] (x - gt[0]) - gt[2] (y - gt[3])) / det` and its
+ * row `(gt[1] (y - gt[3]) - gt[4] (x - gt[0])) / det`, `det = gt[1] gt[5] -
+ * gt[2] gt[4]`, so the sign is that of the numerator less @p k det, times
+ * that of det, each a polynomial in the input doubles that
+ * #polynomial_sign_exact decides. A position lies in the pixel of column c
+ * when the sign is 0 or 1 at c and -1 at c + 1, which gives a pixel the
+ * lines of its lower column and row
+ * @param[in] x,y Position
+ * @param[in] gt Geotransform of the grid, of non-zero determinant
+ * @param[in] axis 0 for a column line, 1 for a row line
+ * @param[in] k Grid line, an integer
+ * @return -1, 0 or 1 as the grid coordinate is less than, equal to or
+ * greater than @p k
+ */
+int
+grid_line_side(double x, double y, const double *gt, int axis, double k)
+{
+  ExactSum sums[7];
+  const double t0[2] = {x, - gt[0]}, t1[2] = {y, - gt[3]};
+  exact_sum_set(&sums[0], t0, 2);
+  exact_sum_set(&sums[1], t1, 2);
+  for (int i = 0; i < 4; i++)
+    exact_sum_set(&sums[2 + i], &gt[i < 2 ? i + 1 : i + 2], 1);
+  exact_sum_set(&sums[6], &k, 1);
+  /* sums[2..5] are gt[1], gt[2], gt[4], gt[5] */
+  const PolyTerm det[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {2, 5}},
+    {.coef = -1.0, .deg = 2, .sum = {3, 4}}};
+  int sdet = polynomial_sign_exact(sums, det, 2);
+  int a = axis ? 2 : 5, b = axis ? 4 : 3;   /* coefficient of dy, dx */
+  int sa = axis ? 1 : 0, sb = axis ? 0 : 1;
+  const PolyTerm f[4] = {
+    {.coef = 1.0, .deg = 2, .sum = {a, sa}},
+    {.coef = -1.0, .deg = 2, .sum = {b, sb}},
+    {.coef = -1.0, .deg = 3, .sum = {6, 2, 5}},
+    {.coef = 1.0, .deg = 3, .sum = {6, 3, 4}}};
+  return sdet * polynomial_sign_exact(sums, f, 4);
 }
 
 /**
