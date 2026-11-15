@@ -47,7 +47,7 @@
 /* Collinear function */
 
 extern bool float_collinear(double x1, double x2, double x3, TimestampTz t1,
-  TimestampTz t2, TimestampTz t3, bool constructed);
+  TimestampTz t2, TimestampTz t3);
 
 /* Interpolation functions */
 
@@ -146,6 +146,8 @@ floatsegm_crossing_filter(double start1, double end1, double start2,
 extern bool tsequence_norm_test(Datum value1, Datum value2, Datum value3,
   MeosType basetype, interpType interp, TimestampTz t1, TimestampTz t2,
   TimestampTz t3);
+extern TSequence *tsequence_drop_junctions(const TSequence *seq,
+  const TimestampTz *junctions, int njunctions);
 extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool *removelast, bool *removefirst);
 extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2,

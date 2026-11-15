@@ -65,8 +65,8 @@ extern Span *span_bins(const Span *s, Datum vsize, Datum vorigin, bool border_in
 extern Span *spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc, int *count);
 
 extern Temporal **temporal_time_split_intl(const Temporal *temp,
-  TimestampTz start, TimestampTz end, int64 tunits, TimestampTz torigin,
-  int count, TimestampTz **bins, int *newcount);
+  const Temporal *orig, TimestampTz start, TimestampTz end, int64 tunits,
+  TimestampTz torigin, int count, TimestampTz **bins, int *newcount);
 
 extern TboxGridState *tbox_tile_state_make(const Temporal *temp,
   const TBox *box, Datum vsize, const Interval *duration, Datum xorigin,
