@@ -662,8 +662,8 @@ file, `objdump -dr` for the `R_X86_64_PLT32` relocations across files), and no c
 The move waits for a window with no open pull request on these files: on `a4ac8e7b92`,
 MobilityDB #3484 and #3557 change `geo_funcs.c` and `postgis_funcs.c`, and the steps of
 [Exact buffer](EXACT-BUFFER.md) from 18 on change `geo_funcs.c`, `geo_arrange.c` and
-`geo_buffer.c`. The names of the file and of its header are a decision of the committers
-(Section 8).
+`geo_buffer.c`. The file is `meos/src/geo/geo_dyadic.c` and its header
+`meos/include/geo/geo_dyadic.h` (Section 8, decided 2026-11-15).
 
 ### How a merge is proven
 
@@ -872,9 +872,22 @@ until the difference lies clear of 0. `geo_funcs.c` exports `wide_dyadic_alloc`,
 CGAL::Gmpq and MPFR's atan2 and by mpmath intervals, the head answers every row; the fraction
 read in doubles is wrong on 596 of the 4000 crossing rows. Merged as #3649; the geodetic H3 cover
 of #3657 dates its crossings by it. The witnesses of the row, D6, the geodetic owner and the
-fraction, are `ea8/` of the oracle kit (claude-kits `a5daa8d`). Left: the angles of an exact S2
-corner and the latitude of a QUADBIN row, which take the same side function on an atan2 and an
-atan(sinh) enclosure.
+fraction, are `ea8/` of the oracle kit (claude-kits `a5daa8d`). The angles of an exact S2 corner
+are on master (`vector_lon_nearest`, `vector_lat_nearest`, the cell walks' step D7).
+
+The latitude of a QUADBIN row, atan(sinh(pi r)) in degrees for the row r = 1 - 2 y / n, a double
+exactly, is `mercator_lat_nearest` (`geo_trig.c`): bounded pairs of doubles first
+(`ddb_mercator_lat_nearest`, the latitude written 2 atan(m / (m + 2)) for m = e^(pi r) - 1, which
+keeps its relative accuracy near the equator), and where their bound cannot tell, the one search on
+an enclosure in fixed point of the Gudermannian 2 atan(e^t) - pi/2. Judged in MPFR with directed
+rounding, the rounding read in `CGAL::Gmpq`, on 101 549 rows (every row boundary and centroid of the
+zooms 0 to 14, 3000 random rows a zoom from 15 to 26), the formula of the base rounds 34 127 wrongly
+and the head none, the bounded pairs deciding every row; the 2 124 rows of |r| at most 2^-900 reach
+the enclosure, and the head answers all of them. The limit of the grid moves with it, from
+85.0511287798066 to 85.05112877980659. A row read first costs 13.6 thousand instructions and a row
+read again 64, `quadbin_row_latitude` keeping the rows read last per thread. It is open as #3722.
+Left to the cell walks: the two `atan(sinh)` sites of `raster_quadbin.c`, which their raster walk
+rewrites.
 
 ### EA9. The signs on coordinates shifted by multiples of 360
 
@@ -905,8 +918,9 @@ of its acceptance set held by no cell or by two.
 4. The names of the arithmetic's file and header (EA3), and of the ladder (EA1), as the layer
    names them rather than the first question each served. The ladder and the wide number are
    named `Dyadic`, decided by the owner on 2026-11-15 ("go I like it very much"): every value
-   the arithmetic holds is a dyadic rational (EA1, step 3). The file and header of EA3 remain
-   to be named.
+   the arithmetic holds is a dyadic rational (EA1, step 3). The file and header of EA3 are
+   `meos/src/geo/geo_dyadic.c` and `meos/include/geo/geo_dyadic.h`, decided by the owner on
+   2026-11-15 ("approve and continue").
 5. The window of EA3: one in which no pull request on these files is open, MobilityDB #3484
    and #3557 being two such pull requests, and step 18 of [Exact buffer](EXACT-BUFFER.md) not
    started.
