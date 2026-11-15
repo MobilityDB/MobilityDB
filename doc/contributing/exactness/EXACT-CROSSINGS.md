@@ -538,6 +538,10 @@ diffs classified:
    tgeompointsegm_crossing and a geography point through tgeogpointsegm_crossing, so no band of
    MEOS_EPSILON locates a point on a segment, and the ever walk against a value decides a point
    in continuous time; CGAL and MPFR agree on 3000 planar and 3000 geodetic pairs in both forms.
+   MobilityDB #3741 (open) reads one point of the sphere as one geography value: equality,
+   order, sort key and hash read the longitude -180 as 180 and that of a pole as 0, and a
+   temporal geography is compared by its period rather than its box, which is written in the
+   longitudes the value spells; a CGAL::Gmpq judge agrees on 4000 pairs.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
