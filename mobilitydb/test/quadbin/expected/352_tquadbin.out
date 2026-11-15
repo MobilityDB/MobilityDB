@@ -380,7 +380,7 @@ SELECT ((tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint)::tquadbin
 -- Assignment-context: cast accepted in INSERT without ::
 DROP TABLE IF EXISTS tbl_tquadbin_assign;
 NOTICE:  table "tbl_tquadbin_assign" does not exist, skipping
-CREATE TABLE tbl_tquadbin_assign(k int, temp tquadbin);
+CREATE TEMP TABLE tbl_tquadbin_assign(k int, temp tquadbin);
 INSERT INTO tbl_tquadbin_assign VALUES (1, tbigint '5192650370358181887@2012-01-01 08:00:00');
 SELECT * FROM tbl_tquadbin_assign;
  k |                     temp                      
@@ -421,7 +421,7 @@ SELECT cmp(tquadbin '480fffffffffffff@2012-01-01', tquadbin '480fffffffffffff@20
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_tquadbin_binio;
 NOTICE:  table "tbl_tquadbin_binio" does not exist, skipping
-CREATE TABLE tbl_tquadbin_binio(k int, temp tquadbin);
+CREATE TEMP TABLE tbl_tquadbin_binio(k int, temp tquadbin);
 INSERT INTO tbl_tquadbin_binio VALUES
   (1, tquadbin '480fffffffffffff@2012-01-01 08:00:00'),
   (2, tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'),
@@ -429,7 +429,7 @@ INSERT INTO tbl_tquadbin_binio VALUES
 \copy tbl_tquadbin_binio TO 'tbl_tquadbin_binio' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tquadbin_binio_tmp;
 NOTICE:  table "tbl_tquadbin_binio_tmp" does not exist, skipping
-CREATE TABLE tbl_tquadbin_binio_tmp AS TABLE tbl_tquadbin_binio WITH NO DATA;
+CREATE TEMP TABLE tbl_tquadbin_binio_tmp AS TABLE tbl_tquadbin_binio WITH NO DATA;
 \copy tbl_tquadbin_binio_tmp FROM 'tbl_tquadbin_binio' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tquadbin_binio t1, tbl_tquadbin_binio_tmp t2
   WHERE t1.k = t2.k AND t1.temp <> t2.temp;

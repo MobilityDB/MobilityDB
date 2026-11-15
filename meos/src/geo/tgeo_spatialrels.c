@@ -125,7 +125,7 @@ datum_geo_disjoint2d(Datum geom1, Datum geom2)
 Datum
 datum_geom_disjoint3d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(! geom_intersects3d(DatumGetGserializedP(geom1),
+  return BoolGetDatum(! geom_intersects3d_intl(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -171,7 +171,7 @@ datum_geo_intersects2d(Datum geom1, Datum geom2)
 Datum
 datum_geom_intersects3d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(geom_intersects3d(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_intersects3d_intl(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -195,7 +195,7 @@ datum_geog_intersects(Datum geog1, Datum geog2)
 Datum
 datum_geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 {
-  return BoolGetDatum(geom_dwithin2d(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_dwithin2d_intl(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 
@@ -228,7 +228,7 @@ datum_pt_dwithin2d(Datum point1, Datum point2, Datum dist)
 Datum
 datum_geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 {
-  return BoolGetDatum(geom_dwithin3d(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_dwithin3d_intl(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 

@@ -135,6 +135,19 @@ SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
 ERROR:  integer out of range
 LINE 1: SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
                     ^
+-- A temporal value holds finite timestamps only
+SELECT tfloat '1@infinity';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tfloat '1@infinity';
+                      ^
+SELECT tfloat '[1@2001-01-01, 2@infinity]';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tfloat '[1@2001-01-01, 2@infinity]';
+                      ^
+SELECT tfloat '{1@-infinity, 2@2001-01-01}';
+ERROR:  The timestamp must be finite
+LINE 1: SELECT tfloat '{1@-infinity, 2@2001-01-01}';
+                      ^
 -------------------------------------------------------------------------------
 -- Temporal discrete sequence
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';

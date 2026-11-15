@@ -7,7 +7,7 @@ DROP INDEX IF EXISTS tbl_th3index_kdtree_idx;
 -----------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_th3index_ops;
-CREATE TABLE test_th3index_ops(
+CREATE TEMP TABLE test_th3index_ops(
   op char(3),
   leftarg text,
   rightarg text,

@@ -146,3 +146,8 @@ CREATE TABLE tbl_tpcpatch (
 );
 \set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpatch.data'
 COPY tbl_tpcpatch (k, temp) FROM :'filename';
+
+ANALYZE tbl_pcpoint, tbl_pcpatch, tbl_pcpointset, tbl_pcpatchset, tbl_tpcbox,
+  tbl_tpcpoint_inst, tbl_tpcpoint_discseq, tbl_tpcpoint_seq,
+  tbl_tpcpoint_seqset, tbl_tpcpoint, tbl_tpcpatch_inst, tbl_tpcpatch_discseq,
+  tbl_tpcpatch_seq, tbl_tpcpatch_seqset, tbl_tpcpatch;

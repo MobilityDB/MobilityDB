@@ -11,20 +11,20 @@
 DROP TABLE IF EXISTS tbl_floatspan_ties, tbl_floatspan_ties_q,
   tbl_tstzspan_ties, tbl_tstzspan_ties_q, ties_noidx, ties_idx, ties_plan;
 
-CREATE TABLE tbl_floatspan_ties(k int, f floatspan);
-CREATE TABLE tbl_tstzspan_ties(k int, f tstzspan);
-CREATE TABLE tbl_floatspan_ties_q AS
+CREATE TEMP TABLE tbl_floatspan_ties(k int, f floatspan);
+CREATE TEMP TABLE tbl_tstzspan_ties(k int, f tstzspan);
+CREATE TEMP TABLE tbl_floatspan_ties_q AS
 SELECT k, (CASE WHEN k % 3 = 0 THEN '[' ELSE '(' END || (k % 23) || ', ' ||
   (k % 23 + 1 + (k * 3) % 5) || CASE WHEN k % 5 < 2 THEN ']' ELSE ')' END)::floatspan AS f
 FROM generate_series(1, 120) k;
-CREATE TABLE tbl_tstzspan_ties_q AS
+CREATE TEMP TABLE tbl_tstzspan_ties_q AS
 SELECT k, span(timestamptz 'epoch' + (11323 + k % 23) * interval '1 day',
   timestamptz 'epoch' + (11323 + k % 23 + 1 + (k * 3) % 5) * interval '1 day',
   k % 3 = 0, k % 5 < 2) AS f
 FROM generate_series(1, 120) k;
 
 -- The count of the rows answering each query span through an operator
-CREATE OR REPLACE FUNCTION ties_counts(tbl text, op text)
+CREATE OR REPLACE FUNCTION pg_temp.ties_counts(tbl text, op text)
 RETURNS TABLE(k int, c bigint) AS $$
 BEGIN
   RETURN QUERY EXECUTE format(
@@ -33,7 +33,7 @@ BEGIN
 END $$ LANGUAGE plpgsql;
 
 -- Whether the plan of the first query span reads the index
-CREATE OR REPLACE FUNCTION ties_uses_index(tbl text, op text)
+CREATE OR REPLACE FUNCTION pg_temp.ties_uses_index(tbl text, op text)
 RETURNS bool AS $$
 DECLARE
   line text;
@@ -48,9 +48,9 @@ BEGIN
   RETURN found;
 END $$ LANGUAGE plpgsql;
 
-CREATE TABLE ties_noidx(n int, tbl text, op text, k int, c bigint);
-CREATE TABLE ties_idx(n int, idx text, tbl text, op text, k int, c bigint);
-CREATE TABLE ties_plan(n int, idx text, tbl text, op text, uses_index bool);
+CREATE TEMP TABLE ties_noidx(n int, tbl text, op text, k int, c bigint);
+CREATE TEMP TABLE ties_idx(n int, idx text, tbl text, op text, k int, c bigint);
+CREATE TEMP TABLE ties_plan(n int, idx text, tbl text, op text, uses_index bool);
 CREATE TEMP TABLE ties_ops(tbl text, op text);
 INSERT INTO ties_ops
 SELECT 'tbl_floatspan_ties', op
@@ -60,7 +60,7 @@ SELECT 'tbl_tstzspan_ties', op
 FROM unnest(ARRAY['&&', '@>', '<@', '-|-', '<<#', '&<#', '#>>', '#&>', '=']) op;
 
 -- The counts for one table size, without an index and through each index
-CREATE OR REPLACE FUNCTION ties_run(n int)
+CREATE OR REPLACE FUNCTION pg_temp.ties_run(n int)
 RETURNS void AS $$
 BEGIN
   TRUNCATE tbl_floatspan_ties, tbl_tstzspan_ties;
@@ -79,7 +79,7 @@ BEGIN
   SET LOCAL enable_indexscan = off;
   SET LOCAL enable_bitmapscan = off;
   INSERT INTO ties_noidx
-  SELECT n, o.tbl, o.op, r.k, r.c FROM ties_ops o, LATERAL ties_counts(o.tbl, o.op) r;
+  SELECT n, o.tbl, o.op, r.k, r.c FROM ties_ops o, LATERAL pg_temp.ties_counts(o.tbl, o.op) r;
   SET LOCAL enable_indexscan = on;
   SET LOCAL enable_bitmapscan = on;
   SET LOCAL enable_seqscan = off;
@@ -87,23 +87,23 @@ BEGIN
   CREATE INDEX tbl_floatspan_ties_quadtree_idx ON tbl_floatspan_ties USING SPGIST(f);
   CREATE INDEX tbl_tstzspan_ties_quadtree_idx ON tbl_tstzspan_ties USING SPGIST(f);
   INSERT INTO ties_plan
-  SELECT n, 'quadtree', o.tbl, o.op, ties_uses_index(o.tbl, o.op) FROM ties_ops o;
+  SELECT n, 'quadtree', o.tbl, o.op, pg_temp.ties_uses_index(o.tbl, o.op) FROM ties_ops o;
   INSERT INTO ties_idx
-  SELECT n, 'quadtree', o.tbl, o.op, r.k, r.c FROM ties_ops o, LATERAL ties_counts(o.tbl, o.op) r;
+  SELECT n, 'quadtree', o.tbl, o.op, r.k, r.c FROM ties_ops o, LATERAL pg_temp.ties_counts(o.tbl, o.op) r;
   DROP INDEX tbl_floatspan_ties_quadtree_idx;
   DROP INDEX tbl_tstzspan_ties_quadtree_idx;
 
   CREATE INDEX tbl_floatspan_ties_kdtree_idx ON tbl_floatspan_ties USING SPGIST(f floatspan_kdtree_ops);
   CREATE INDEX tbl_tstzspan_ties_kdtree_idx ON tbl_tstzspan_ties USING SPGIST(f tstzspan_kdtree_ops);
   INSERT INTO ties_plan
-  SELECT n, 'kdtree', o.tbl, o.op, ties_uses_index(o.tbl, o.op) FROM ties_ops o;
+  SELECT n, 'kdtree', o.tbl, o.op, pg_temp.ties_uses_index(o.tbl, o.op) FROM ties_ops o;
   INSERT INTO ties_idx
-  SELECT n, 'kdtree', o.tbl, o.op, r.k, r.c FROM ties_ops o, LATERAL ties_counts(o.tbl, o.op) r;
+  SELECT n, 'kdtree', o.tbl, o.op, r.k, r.c FROM ties_ops o, LATERAL pg_temp.ties_counts(o.tbl, o.op) r;
   DROP INDEX tbl_floatspan_ties_kdtree_idx;
   DROP INDEX tbl_tstzspan_ties_kdtree_idx;
 END $$ LANGUAGE plpgsql;
 
-SELECT ties_run(n) FROM unnest(ARRAY[300, 1200, 2400, 5000]) n;
+SELECT pg_temp.ties_run(n) FROM unnest(ARRAY[300, 1200, 2400, 5000]) n;
 
 -- Every plan reads its index
 SELECT COUNT(*) AS plans, COUNT(*) FILTER (WHERE uses_index) AS plans_with_index
@@ -119,8 +119,8 @@ FROM ties_idx i JOIN ties_noidx n USING (n, tbl, op, k)
 GROUP BY i.idx, i.tbl, i.op
 ORDER BY i.idx, i.tbl, i.op;
 
-DROP FUNCTION ties_run(int);
-DROP FUNCTION ties_uses_index(text, text);
-DROP FUNCTION ties_counts(text, text);
+DROP FUNCTION pg_temp.ties_run(int);
+DROP FUNCTION pg_temp.ties_uses_index(text, text);
+DROP FUNCTION pg_temp.ties_counts(text, text);
 DROP TABLE tbl_floatspan_ties, tbl_floatspan_ties_q, tbl_tstzspan_ties,
   tbl_tstzspan_ties_q, ties_noidx, ties_idx, ties_plan;

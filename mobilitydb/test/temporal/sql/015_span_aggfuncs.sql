@@ -164,7 +164,7 @@ SELECT extentCombine(NULL::intspan, NULL::intspan);
 -------------------------------------------------------------------------------
 -- A direct call expands a copy of the span it is given
 DROP TABLE IF EXISTS tbl_extent_state;
-CREATE TABLE tbl_extent_state(s intspan, s0 intspan);
+CREATE TEMP TABLE tbl_extent_state(s intspan, s0 intspan);
 INSERT INTO tbl_extent_state VALUES (intspan '[1, 3]', intspan '[1, 3]');
 SELECT extentTransition(s, intspan '[10, 20]'), extentTransition(s, 30),
   extentTransition(s, intset '{40}'),

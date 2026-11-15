@@ -45,7 +45,7 @@ SELECT ((s2cell '47c3c444c0000000')::bigint)::s2cell = s2cell '47c3c444c0000000'
 -- text input does, explicitly and in an assignment
 /* Errors */
 SELECT 42::bigint::s2cell;
-CREATE TABLE tbl_s2cell_assign(cell s2cell);
+CREATE TEMP TABLE tbl_s2cell_assign(cell s2cell);
 INSERT INTO tbl_s2cell_assign VALUES (42::bigint);
 DROP TABLE tbl_s2cell_assign;
 

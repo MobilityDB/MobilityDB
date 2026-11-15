@@ -35,6 +35,10 @@ SELECT tbigint '9223372036854775807@2012-01-01 08:00:00';
 SELECT tint '{1@2001-01-01, 2147483647@2001-01-02}';
 SELECT tint '[1@2001-01-01, 2147483647@2001-01-02]';
 SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
+-- A temporal value holds finite timestamps only
+SELECT tfloat '1@infinity';
+SELECT tfloat '[1@2001-01-01, 2@infinity]';
+SELECT tfloat '{1@-infinity, 2@2001-01-01}';
 
 -------------------------------------------------------------------------------
 -- Temporal discrete sequence

@@ -9,6 +9,10 @@ SELECT floatspan '[1,2] xxx';
 SELECT tstzspan '[2001-01-01,2001-01-02] xxx';
 SELECT tstzspan '2001-01-01, 2001-01-02';
 SELECT tstzspan '[2001-01-01, 2001-01-02';
+-- A span holds finite timestamps and dates only
+SELECT tstzspan '[-infinity, 2001-01-01]';
+SELECT tstzspan '[2001-01-01, infinity]';
+SELECT datespan '[2001-01-01, infinity)';
 
 -- The UTC designator of RFC 3339, which every OGC Moving Features datetime is
 -- written in, denotes the same instant as the zero offset it abbreviates
@@ -32,6 +36,10 @@ SELECT span(timestamptz '2001-01-01', '2001-01-01', true, true);
 /* Errors */
 SELECT span(timestamptz '2001-01-01', '2001-01-01');
 SELECT span(timestamptz '2001-01-02', '2001-01-01');
+SELECT span(timestamptz '-infinity', '2001-01-01');
+SELECT timestamptz 'infinity'::tstzspan;
+-- A predicate over an infinite timestamp answers
+SELECT tstzspan '[2001-01-01, 2001-01-02]' @> timestamptz 'infinity';
 
 -------------------------------------------------------------------------------
 -- Conversion

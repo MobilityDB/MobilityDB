@@ -136,6 +136,31 @@ if (NOT MEOS)
   include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
 endif()
 
+# The correctly rounded trigonometry vendored under core-math/, built as the
+# vendored ryu is (postgis/ryu/CMakeLists.txt): an object library whose
+# symbols stay out of the dynamic table of the shared library. Its sin, cos
+# and atan2 compute on an unsigned 128-bit integer, the C23 _BitInt(128) where
+# the compiler has it and __int128 otherwise; the test below compiles that
+# same choice, and a compiler with neither (GCC on a 32-bit target) builds
+# MEOS without the vendored trigonometry. MEOS_CORE_MATH tells the sources
+# below which build this is
+include(CheckCSourceCompiles)
+check_c_source_compiles("
+#if (defined(__clang__) && __clang_major__ >= 14) || \
+  (defined(__GNUC__) && __GNUC__ >= 14 && __BITINT_MAXWIDTH__ && \
+   __BITINT_MAXWIDTH__ >= 128)
+typedef unsigned _BitInt(128) u128;
+#else
+typedef unsigned __int128 u128;
+#endif
+int main(void) { u128 a = 3; a <<= 100; return (int) (a >> 100) - 3; }"
+  MEOS_HAS_UINT128)
+if(MEOS_HAS_UINT128)
+  add_definitions(-DMEOS_CORE_MATH=1)
+else()
+  add_definitions(-DMEOS_CORE_MATH=0)
+endif()
+
 # MEOS
 include_directories("include")
 add_subdirectory("src")
@@ -179,24 +204,8 @@ endif()
 set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
 
-# The correctly rounded trigonometry vendored under core-math/, built as the
-# vendored ryu is (postgis/ryu/CMakeLists.txt): an object library whose
-# symbols stay out of the dynamic table of the shared library. Its sin, cos
-# and atan2 compute on an unsigned 128-bit integer, the C23 _BitInt(128) where
-# the compiler has it and __int128 otherwise; the test below compiles that
-# same choice, and a compiler with neither (GCC on a 32-bit target) builds
-# MEOS without the vendored trigonometry
-include(CheckCSourceCompiles)
-check_c_source_compiles("
-#if (defined(__clang__) && __clang_major__ >= 14) || \
-  (defined(__GNUC__) && __GNUC__ >= 14 && __BITINT_MAXWIDTH__ && \
-   __BITINT_MAXWIDTH__ >= 128)
-typedef unsigned _BitInt(128) u128;
-#else
-typedef unsigned __int128 u128;
-#endif
-int main(void) { u128 a = 3; a <<= 100; return (int) (a >> 100) - 3; }"
-  MEOS_HAS_UINT128)
+# The correctly rounded trigonometry vendored under core-math/ (the test of
+# MEOS_HAS_UINT128 above)
 if(MEOS_HAS_UINT128)
   message(STATUS "Including the correctly rounded trigonometry of core-math/")
   add_library(coremath OBJECT

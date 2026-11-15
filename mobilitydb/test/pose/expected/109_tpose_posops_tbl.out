@@ -8,7 +8,7 @@ NOTICE:  index "tbl_tpose_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_tpose_posops;
 NOTICE:  table "test_tpose_posops" does not exist, skipping
-CREATE TABLE test_tpose_posops(
+CREATE TEMP TABLE test_tpose_posops(
   op char(3),
   leftarg text,
   rightarg text,

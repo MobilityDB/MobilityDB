@@ -24,7 +24,7 @@ SELECT COUNT(*) FROM tbl_raquet WHERE tile::text::raquet <> tile;
 -- Binary round-trip through COPY, exercising the type's send and receive pair
 \copy tbl_raquet TO 'tbl_raquet' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_raquet_tmp;
-CREATE TABLE tbl_raquet_tmp AS TABLE tbl_raquet WITH NO DATA;
+CREATE TEMP TABLE tbl_raquet_tmp AS TABLE tbl_raquet WITH NO DATA;
 \copy tbl_raquet_tmp FROM 'tbl_raquet' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet_tmp t2
 WHERE t1.k = t2.k AND t1.tile <> t2.tile;

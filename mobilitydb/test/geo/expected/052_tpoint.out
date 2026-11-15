@@ -1089,7 +1089,7 @@ SELECT asEWKT(tgeompoint(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_tgeompointinst_test;
 NOTICE:  table "tbl_tgeompointinst_test" does not exist, skipping
-CREATE TABLE tbl_tgeompointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeompoint_seq;
+CREATE TEMP TABLE tbl_tgeompointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeompoint_seq;
 WITH temp AS (
   SELECT numSequences(tgeompointSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tgeompointinst_test GROUP BY k )
@@ -1102,7 +1102,7 @@ SELECT MAX(numSequences) FROM temp;
 DROP TABLE tbl_tgeompointinst_test;
 DROP TABLE IF EXISTS tbl_tgeogpointinst_test;
 NOTICE:  table "tbl_tgeogpointinst_test" does not exist, skipping
-CREATE TABLE tbl_tgeogpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeogpoint_seq;
+CREATE TEMP TABLE tbl_tgeogpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeogpoint_seq;
 WITH temp AS (
   SELECT numSequences(tgeogpointSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tgeogpointinst_test GROUP BY k )

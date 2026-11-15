@@ -12,7 +12,7 @@ DROP INDEX IF EXISTS tbl_tgeogpoint_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_posops;
-CREATE TABLE test_posops(
+CREATE TEMP TABLE test_posops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,
@@ -489,7 +489,7 @@ DROP TABLE test_posops;
 -- operator.
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION test_estimated_rows(query text)
+CREATE FUNCTION pg_temp.test_estimated_rows(query text)
 RETURNS bigint LANGUAGE plpgsql AS $$
 DECLARE
   plan json;
@@ -500,19 +500,19 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tgeompoint_possel;
-CREATE TABLE tbl_tgeompoint_possel AS
+CREATE TEMP TABLE tbl_tgeompoint_possel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.temp
 FROM tbl_tgeompoint t1, generate_series(1, 100) t2(k);
 ANALYZE tbl_tgeompoint_possel;
 
 SELECT op,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
     'STBOX XT(((30,30),(60,60)),[2001-04-01, 2001-08-01])')) AS box_xt,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
     'STBOX X((30,30),(60,60))')) AS box_x,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
     'STBOX T([2001-04-01, 2001-08-01])')) AS box_t
 FROM unnest(ARRAY['&&', '<<', '&<', '>>', '&>', '<<|', '&<|', '|>>', '|&>',
@@ -520,6 +520,6 @@ FROM unnest(ARRAY['&&', '<<', '&<', '>>', '&>', '<<|', '&<|', '|>>', '|&>',
 ORDER BY n;
 
 DROP TABLE tbl_tgeompoint_possel;
-DROP FUNCTION test_estimated_rows(text);
+DROP FUNCTION pg_temp.test_estimated_rows(text);
 
 -------------------------------------------------------------------------------

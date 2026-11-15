@@ -7,7 +7,7 @@ DROP INDEX IF EXISTS tbl_tcbuffer_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE if exists test_tcbuffer_topops;
-CREATE TABLE test_tcbuffer_topops(
+CREATE TEMP TABLE test_tcbuffer_topops(
   op char(3),
   leftarg text,
   rightarg text,

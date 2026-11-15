@@ -544,6 +544,30 @@ tstzspan_in(const char *str)
  *****************************************************************************/
 
 /**
+ * @brief Ensure that a value entering a span is finite
+ * @details A float, a timestamp and a date bound are finite, as
+ * #ensure_finite, #ensure_finite_timestamptz and #ensure_finite_date state;
+ * the values of the other base types have no infinity
+ * @param[in] value Value
+ * @param[in] basetype Type of the value
+ */
+bool
+ensure_finite_span_value(Datum value, MeosType basetype)
+{
+  switch (basetype)
+  {
+    case T_FLOAT8:
+      return ensure_finite(DatumGetFloat8(value));
+    case T_TIMESTAMPTZ:
+      return ensure_finite_timestamptz(DatumGetTimestampTz(value));
+    case T_DATE:
+      return ensure_finite_date(DatumGetDateADT(value));
+    default:
+      return true;
+  }
+}
+
+/**
  * @ingroup meos_internal_setspan_constructor
  * @brief Return a span from the bounds
  * @param[in] lower,upper Bounds
@@ -557,6 +581,11 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   /* Ensure that a float bound is finite */
   if (basetype == T_FLOAT8 && (! ensure_finite(DatumGetFloat8(lower)) ||
       ! ensure_finite(DatumGetFloat8(upper))))
+    return NULL;
+  /* Ensure that a timestamp or a date bound is finite */
+  if ((basetype == T_TIMESTAMPTZ || basetype == T_DATE) &&
+      (! ensure_finite_span_value(lower, basetype) ||
+       ! ensure_finite_span_value(upper, basetype)))
     return NULL;
   /* The span is zero-filled so that a span #span_set refuses to fill keeps
    * no span type */
@@ -731,6 +760,9 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 Span *
 datespan_make(DateADT lower, DateADT upper, bool lower_inc, bool upper_inc)
 {
+  /* Ensure that the bounds are finite */
+  if (! ensure_finite_date(lower) || ! ensure_finite_date(upper))
+    return NULL;
   /* The span is zero-filled so that a span #span_set refuses to fill keeps
    * no span type */
   Span *s = palloc0(sizeof(Span));
@@ -754,6 +786,9 @@ Span *
 tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc)
 {
+  /* Ensure that the bounds are finite */
+  if (! ensure_finite_timestamptz(lower) || ! ensure_finite_timestamptz(upper))
+    return NULL;
   /* The span is zero-filled so that a span #span_set refuses to fill keeps
    * no span type */
   Span *s = palloc0(sizeof(Span));
@@ -796,6 +831,8 @@ value_set_span(Datum value, MeosType basetype, Span *s)
 Span *
 value_span(Datum value, MeosType basetype)
 {
+  if (! ensure_finite_span_value(value, basetype))
+    return NULL;
   Span *result = palloc(sizeof(Span));
   value_set_span(value, basetype, result);
   return result;
@@ -1193,6 +1230,8 @@ float_to_span(double d)
 Span *
 date_to_span(DateADT d)
 {
+  if (! ensure_finite_date(d))
+    return NULL;
   Span *result = palloc(sizeof(Span));
   /* Account for canonicalized spans */
   span_set(DateADTGetDatum(d), DateADTGetDatum(d + 1), true, false, T_DATE,
@@ -1209,6 +1248,8 @@ date_to_span(DateADT d)
 Span *
 timestamptz_to_span(TimestampTz t)
 {
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   Span *result = palloc(sizeof(Span));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, T_TSTZSPAN, result);

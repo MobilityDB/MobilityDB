@@ -203,7 +203,7 @@ SELECT (quadbin '480fffffffffffff')::bigint;
 /* Errors */
 SELECT 42::bigint::quadbin;
 ERROR:  The value 42 does not encode a valid quadbin index
-CREATE TABLE tbl_quadbin_assign(cell quadbin);
+CREATE TEMP TABLE tbl_quadbin_assign(cell quadbin);
 INSERT INTO tbl_quadbin_assign VALUES (42::bigint);
 ERROR:  The value 42 does not encode a valid quadbin index
 INSERT INTO tbl_quadbin_assign VALUES (5192650370358181887::bigint);
@@ -274,7 +274,7 @@ SELECT isValidCell(quadbin '484b5fffffffffff');
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS tbl_quadbin_test;
 NOTICE:  table "tbl_quadbin_test" does not exist, skipping
-CREATE TABLE tbl_quadbin_test(k int, c quadbin);
+CREATE TEMP TABLE tbl_quadbin_test(k int, c quadbin);
 INSERT INTO tbl_quadbin_test VALUES
   (1, quadbin '480fffffffffffff'),
   (2, quadbin '48427fffffffffff'),

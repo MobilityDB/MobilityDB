@@ -232,6 +232,21 @@ angle_normalize(double a)
   return r;
 }
 
+/**
+ * @brief Split the difference of two doubles into its rounded value and the
+ * error of that rounding, which together are the difference exactly
+ * @details The difference twin of #two_sum, defined here so that every file
+ * including this header expands it
+ */
+static inline void
+two_diff(double a, double b, double *x, double *y)
+{
+  *x = a - b;
+  double bv = a - *x;
+  double av = *x + bv;
+  *y = (a - av) + (bv - b);
+}
+
 /*****************************************************************************/
 
 extern LWGEOM *meos_oriented_envelope(const LWGEOM *geom);

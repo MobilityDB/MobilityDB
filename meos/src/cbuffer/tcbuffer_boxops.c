@@ -135,6 +135,8 @@ cbuffer_timestamptz_to_stbox(const Cbuffer *cb, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cb, NULL);
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   STBox box;
   cbuffer_timestamptz_set_stbox(cb, t, &box);
   return stbox_copy(&box);

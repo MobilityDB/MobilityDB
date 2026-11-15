@@ -26,7 +26,7 @@ NOTICE:  index "tbl_ttext_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_topops;
 NOTICE:  table "test_topops" does not exist, skipping
-CREATE TABLE test_topops(
+CREATE TEMP TABLE test_topops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

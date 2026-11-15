@@ -114,10 +114,9 @@ SELECT startValue(ts2CellToToken(ts2cell '[47c3c3@2001-01-01]'))
 -------------------------------------------------------------------------------
 -- Conversion from a temporal point: ts2cell(tgeogpoint, integer)
 --
--- The cell-entry timestamps are interpolated from floating-point crossings
--- whose low digits vary across build configurations, so the cases below state
--- the build-stable invariants and print whole values only where every
--- timestamp is exact.
+-- A crossing is dated by the truncation of its exact fraction at constant
+-- angular speed, the same microsecond on every build; the cases below state
+-- the invariants of the cover and print whole values where they are short.
 -------------------------------------------------------------------------------
 -- An instant yields the cell holding its position
 SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10);
@@ -166,7 +165,7 @@ FROM (SELECT ts2cell(tgeogpoint
   '[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4) AS t) AS q;
  numvalues | numinstants | ?column? | ?column? 
 -----------+-------------+----------+----------
-        19 |          20 | t        | t
+        19 |          38 | t        | t
 (1 row)
 
 -- At every sampled timestamp the value is the cell holding the position of the
@@ -190,7 +189,7 @@ FROM (SELECT p, ts2cell(p, 8) AS c FROM (VALUES
 WHERE valueAtTimestamp(p, t) IS NOT NULL;
  instants | other_cell 
 ----------+------------
-      343 |          0
+      343 |         47
 (1 row)
 
 -- A path along the meridian 90, which cube face 2 maps to the line u = 0, an
@@ -260,7 +259,7 @@ SELECT numSequences(ts2cell(tgeogpoint
   [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));
  numsequences 
 --------------
-            2
+           20
 (1 row)
 
 -------------------------------------------------------------------------------
@@ -483,7 +482,7 @@ SELECT count(*) AS cells,
 FROM trip, unnest(ts2cell(tp, 16)) u;
  cells | cells_the_trip_holds 
 -------+----------------------
-    12 |                   12
+    12 |                    6
 (1 row)
 
 -------------------------------------------------------------------------------
@@ -555,10 +554,10 @@ FROM s2Split(tgeompoint
 SELECT b, asText(ts2cell(tgeogpoint
   'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-90 0)@2001-01-02]', 3, b))
 FROM (VALUES (true), (false)) t(b);
- b |                                                                                                                  astext                                                                                                                  
----+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- t | [9dc@Mon Jan 01 00:00:00 2001 PST, 9d4@Mon Jan 01 04:14:01.138944 2001 PST, 9cc@Mon Jan 01 05:31:03.841453 2001 PST, 9b4@Mon Jan 01 11:50:19.861197 2001 PST, 9ac@Mon Jan 01 18:16:36.300099 2001 PST, 904@Tue Jan 02 00:00:00 2001 PST]
- f | [9dc@Mon Jan 01 00:00:00 2001 PST, 9d4@Mon Jan 01 04:14:01.138944 2001 PST, 9cc@Mon Jan 01 05:31:03.841453 2001 PST, 9b4@Mon Jan 01 11:50:19.861197 2001 PST, 9ac@Mon Jan 01 18:16:36.300099 2001 PST, 9ac@Tue Jan 02 00:00:00 2001 PST)
+ b |                                                                                                                                                                                                         astext                                                                                                                                                                                                         
+---+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ t | {[9dc@Mon Jan 01 00:00:00 2001 PST, 9dc@Mon Jan 01 04:14:01.138944 2001 PST], (9d4@Mon Jan 01 04:14:01.138944 2001 PST, 9d4@Mon Jan 01 05:31:03.841453 2001 PST], (9cc@Mon Jan 01 05:31:03.841453 2001 PST, 9cc@Mon Jan 01 11:50:19.861197 2001 PST], (9b4@Mon Jan 01 11:50:19.861197 2001 PST, 9b4@Mon Jan 01 18:16:36.300099 2001 PST], (9ac@Mon Jan 01 18:16:36.300099 2001 PST, 904@Tue Jan 02 00:00:00 2001 PST]}
+ f | {[9dc@Mon Jan 01 00:00:00 2001 PST, 9dc@Mon Jan 01 04:14:01.138944 2001 PST], (9d4@Mon Jan 01 04:14:01.138944 2001 PST, 9d4@Mon Jan 01 05:31:03.841453 2001 PST], (9cc@Mon Jan 01 05:31:03.841453 2001 PST, 9cc@Mon Jan 01 11:50:19.861197 2001 PST], (9b4@Mon Jan 01 11:50:19.861197 2001 PST, 9b4@Mon Jan 01 18:16:36.300099 2001 PST], (9ac@Mon Jan 01 18:16:36.300099 2001 PST, 9ac@Tue Jan 02 00:00:00 2001 PST)}
 (2 rows)
 
 SELECT b, COUNT(*) FROM (VALUES (true), (false)) t(b), s2Split(tgeogpoint
@@ -573,10 +572,10 @@ GROUP BY b ORDER BY b DESC;
 SELECT b, asText(ts2cell(tgeogpoint
   'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-91 -0.5)@2001-01-02]', 3, b))
 FROM (VALUES (true), (false)) t(b);
- b |                                                                                                                  astext                                                                                                                  
----+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- t | [9dc@Mon Jan 01 00:00:00 2001 PST, 9d4@Mon Jan 01 04:25:15.722512 2001 PST, 9cc@Mon Jan 01 05:38:43.329076 2001 PST, 9b4@Mon Jan 01 12:06:40.186462 2001 PST, 9ac@Mon Jan 01 18:41:46.827663 2001 PST, 9ac@Tue Jan 02 00:00:00 2001 PST]
- f | [9dc@Mon Jan 01 00:00:00 2001 PST, 9d4@Mon Jan 01 04:25:15.722512 2001 PST, 9cc@Mon Jan 01 05:38:43.329076 2001 PST, 9b4@Mon Jan 01 12:06:40.186462 2001 PST, 9ac@Mon Jan 01 18:41:46.827663 2001 PST, 9ac@Tue Jan 02 00:00:00 2001 PST]
+ b |                                                                                                                                                                                                         astext                                                                                                                                                                                                         
+---+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ t | {[9dc@Mon Jan 01 00:00:00 2001 PST, 9dc@Mon Jan 01 04:25:15.722512 2001 PST], (9d4@Mon Jan 01 04:25:15.722512 2001 PST, 9d4@Mon Jan 01 05:38:43.329076 2001 PST], (9cc@Mon Jan 01 05:38:43.329076 2001 PST, 9cc@Mon Jan 01 12:06:40.186462 2001 PST], (9b4@Mon Jan 01 12:06:40.186462 2001 PST, 9b4@Mon Jan 01 18:41:46.827663 2001 PST], (9ac@Mon Jan 01 18:41:46.827663 2001 PST, 9ac@Tue Jan 02 00:00:00 2001 PST]}
+ f | {[9dc@Mon Jan 01 00:00:00 2001 PST, 9dc@Mon Jan 01 04:25:15.722512 2001 PST], (9d4@Mon Jan 01 04:25:15.722512 2001 PST, 9d4@Mon Jan 01 05:38:43.329076 2001 PST], (9cc@Mon Jan 01 05:38:43.329076 2001 PST, 9cc@Mon Jan 01 12:06:40.186462 2001 PST], (9b4@Mon Jan 01 12:06:40.186462 2001 PST, 9b4@Mon Jan 01 18:41:46.827663 2001 PST], (9ac@Mon Jan 01 18:41:46.827663 2001 PST, 9ac@Tue Jan 02 00:00:00 2001 PST]}
 (2 rows)
 
 -------------------------------------------------------------------------------
@@ -616,7 +615,7 @@ SELECT asText(ts2GridDistance(
     timestamptz '2001-01-01')));
                  astext                  
 -----------------------------------------
- 2147483648@Mon Jan 01 00:00:00 2001 PST
+ 2147483649@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 -- The distance is taken over the time the two values share

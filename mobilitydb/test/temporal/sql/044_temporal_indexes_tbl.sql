@@ -1,20 +1,14 @@
-CREATE TABLE test AS
+CREATE TEMP TABLE test AS
 SELECT NULL::ttext FROM generate_series(1, 10);
 ANALYZE test;
 DROP TABLE test;
 
-CREATE TABLE test AS
+CREATE TEMP TABLE test AS
 SELECT NULL::tfloat UNION SELECT tfloat '1@2001-01-01';
 ANALYZE test;
 DROP TABLE test;
 
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tbool_big;
-ANALYZE tbl_tint_big;
-ANALYZE tbl_tfloat_big;
-ANALYZE tbl_ttext_big;
-
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tbool_big_rtree_idx;
@@ -35,7 +29,7 @@ DROP INDEX IF EXISTS tbl_ttext_big_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_idxops;
-CREATE TABLE test_idxops(
+CREATE TEMP TABLE test_idxops(
   op TEXT,
   leftarg TEXT,
   rightarg TEXT,
@@ -1989,7 +1983,7 @@ DROP INDEX tbl_tfloat_big_quadtree_idx;
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
 
-CREATE TABLE tbl_tint_big_allthesame AS SELECT k, tint(5, t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tint_big_allthesame AS SELECT k, tint(5, t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tint_big_allthesame_quadtree_idx ON tbl_tint_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tint_big_allthesame;
 
@@ -1999,7 +1993,7 @@ DROP TABLE tbl_tint_big_allthesame;
 
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tbigint_big_allthesame AS SELECT k, tbigint(5, t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tbigint_big_allthesame AS SELECT k, tbigint(5, t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tbigint_big_allthesame_quadtree_idx ON tbl_tbigint_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tbigint_big_allthesame;
 
@@ -2009,7 +2003,7 @@ DROP TABLE tbl_tbigint_big_allthesame;
 
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat(5.0, t) AS temp FROM tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat(5.0, t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tfloat_big_allthesame_quadtree_idx ON tbl_tfloat_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tfloat_big_allthesame;
 
@@ -2020,9 +2014,6 @@ DROP TABLE tbl_tfloat_big_allthesame;
 -------------------------------------------------------------------------------
 -- Big integer temporal type SP-GiST (quad-tree and k-d tree) index coverage
 -------------------------------------------------------------------------------
-
-ANALYZE tbl_tbigint_big;
-
 CREATE INDEX tbl_tbigint_big_quadtree_idx ON tbl_tbigint_big USING SPGIST(temp);
 
 SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp && bigintspan '[1,3]';
@@ -2062,7 +2053,7 @@ DROP INDEX tbl_tbigint_big_kdtree_idx;
 -- values is what builds such a node.
 -------------------------------------------------------------------------------
 
-CREATE TABLE tbl_tfloat_allthesame AS
+CREATE TEMP TABLE tbl_tfloat_allthesame AS
   SELECT k, tfloat '5.5@2001-01-01' AS temp FROM generate_series(1, 1000) k;
 CREATE INDEX tbl_tfloat_allthesame_quadtree_idx ON tbl_tfloat_allthesame
   USING SPGIST(temp);
@@ -2086,13 +2077,13 @@ DROP TABLE tbl_tfloat_allthesame;
 -- the sequential scan.
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION spgist_shared_bound_disagreements(opclass text)
+CREATE FUNCTION pg_temp.spgist_shared_bound_disagreements(opclass text)
 RETURNS bigint AS $$
 DECLARE scan int; s bigint; i bigint; bad bigint := 0;
   t timestamptz := timestamptz '2001-01-01';
 BEGIN
   DROP TABLE IF EXISTS tbl_spgist_shared_bound;
-  CREATE TABLE tbl_spgist_shared_bound AS
+  CREATE TEMP TABLE tbl_spgist_shared_bound AS
     SELECT k, CASE WHEN k % 10 = 0
       THEN tfloat(format('100@%s', t + interval '100 s'))
       ELSE tfloat(format('[%s@%s, 100@%s]', k % 97, t + (k % 97) * interval '1 s',
@@ -2124,12 +2115,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT spgist_shared_bound_disagreements('tfloat_quadtree_ops')
+SELECT pg_temp.spgist_shared_bound_disagreements('tfloat_quadtree_ops')
   AS quadtree_answers_the_index_misses;
-SELECT spgist_shared_bound_disagreements('tfloat_kdtree_ops')
+SELECT pg_temp.spgist_shared_bound_disagreements('tfloat_kdtree_ops')
   AS kdtree_answers_the_index_misses;
 
-DROP FUNCTION spgist_shared_bound_disagreements(text);
+DROP FUNCTION pg_temp.spgist_shared_bound_disagreements(text);
 
 -------------------------------------------------------------------------------
 -- An index over boxes of several structures answers as the sequential scan:
@@ -2141,7 +2132,7 @@ DROP FUNCTION spgist_shared_bound_disagreements(text);
 -- from the scan
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION index_structures(tbl text, typ text, opclasses text[],
+CREATE FUNCTION pg_temp.index_structures(tbl text, typ text, opclasses text[],
   queries text[], ops text[])
 RETURNS TABLE(opclass text, uses_index boolean, errors int,
   disagreements int) AS $$
@@ -2198,33 +2189,33 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
+CREATE FUNCTION pg_temp.day_of(d int) RETURNS timestamptz AS $$
   SELECT timestamptz '2001-01-01' + d * interval '1 day'
 $$ LANGUAGE sql IMMUTABLE;
 
-CREATE TABLE tbl_index_structures AS
+CREATE TEMP TABLE tbl_index_structures AS
   SELECT k, CASE k % 5
     WHEN 0 THEN tbox(span((k % 50)::float, (k % 50 + 2)::float),
-      span(day_of(k % 40), day_of(k % 40 + 2)))
+      span(pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 1 THEN tbox(span(k % 50, k % 50 + 2),
-      span(day_of(k % 40), day_of(k % 40 + 2)))
+      span(pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 2 THEN tbox(span((k % 50)::float, (k % 50 + 2)::float))
     WHEN 3 THEN tbox(span(k % 50, k % 50 + 2))
-    ELSE tbox(span(day_of(k % 40), day_of(k % 40 + 2))) END AS b
+    ELSE tbox(span(pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2))) END AS b
   FROM generate_series(1, 3000) AS k;
 
-SELECT * FROM index_structures('tbl_index_structures', 'tbox',
+SELECT * FROM pg_temp.index_structures('tbl_index_structures', 'tbox',
   ARRAY['gist(b tbox_rtree_ops)', 'spgist(b tbox_quadtree_ops)',
     'spgist(b tbox_kdtree_ops)'],
-  ARRAY[tbox(span(10.0, 20.0), span(day_of(9), day_of(19)))::text,
-    tbox(span(10, 20), span(day_of(9), day_of(19)))::text,
+  ARRAY[tbox(span(10.0, 20.0), span(pg_temp.day_of(9), pg_temp.day_of(19)))::text,
+    tbox(span(10, 20), span(pg_temp.day_of(9), pg_temp.day_of(19)))::text,
     tbox(span(10.0, 20.0))::text, tbox(span(10, 20))::text,
-    tbox(span(day_of(9), day_of(19)))::text],
+    tbox(span(pg_temp.day_of(9), pg_temp.day_of(19)))::text],
   ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>',
     '<<#', '&<#', '#>>', '#&>', '|=|']);
 
 DROP TABLE tbl_index_structures;
-DROP FUNCTION day_of(int);
-DROP FUNCTION index_structures(text, text, text[], text[], text[]);
+DROP FUNCTION pg_temp.day_of(int);
+DROP FUNCTION pg_temp.index_structures(text, text, text[], text[], text[]);
 
 -------------------------------------------------------------------------------

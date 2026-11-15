@@ -8,7 +8,7 @@
 
 \copy tbl_tpcpoint TO 'tbl_tpcpoint' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tpcpoint_tmp;
-CREATE TABLE tbl_tpcpoint_tmp AS TABLE tbl_tpcpoint WITH NO DATA;
+CREATE TEMP TABLE tbl_tpcpoint_tmp AS TABLE tbl_tpcpoint WITH NO DATA;
 \copy tbl_tpcpoint_tmp FROM 'tbl_tpcpoint' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 DROP TABLE tbl_tpcpoint_tmp;

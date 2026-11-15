@@ -24,7 +24,7 @@ DROP INDEX IF EXISTS tbl_tstzset_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_setops;
-CREATE TABLE test_setops(
+CREATE TEMP TABLE test_setops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

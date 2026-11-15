@@ -7,8 +7,8 @@ DROP TABLE IF EXISTS tbl_tgeompoint_tmp;
 NOTICE:  table "tbl_tgeompoint_tmp" does not exist, skipping
 DROP TABLE IF EXISTS tbl_tgeogpoint_tmp;
 NOTICE:  table "tbl_tgeogpoint_tmp" does not exist, skipping
-CREATE TABLE tbl_tgeompoint_tmp AS TABLE tbl_tgeompoint WITH NO DATA;
-CREATE TABLE tbl_tgeogpoint_tmp AS TABLE tbl_tgeogpoint WITH NO DATA;
+CREATE TEMP TABLE tbl_tgeompoint_tmp AS TABLE tbl_tgeompoint WITH NO DATA;
+CREATE TEMP TABLE tbl_tgeogpoint_tmp AS TABLE tbl_tgeogpoint WITH NO DATA;
 \copy tbl_tgeompoint_tmp FROM 'tbl_tgeompoint' (FORMAT BINARY);
 \copy tbl_tgeogpoint_tmp FROM 'tbl_tgeogpoint' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
