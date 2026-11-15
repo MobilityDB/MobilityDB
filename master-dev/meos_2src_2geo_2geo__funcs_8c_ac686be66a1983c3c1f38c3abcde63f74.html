@@ -1059,7 +1059,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true where the buffer of an arena holds room for <code>ndoubles</code> past the values it holds. </p>
-<p >A sum or a product is formed in that room, at <code>arena-&gt;buf + arena-&gt;used</code>, with its scratch, as #polynomial_sign_stack lays out a term, and its compressed result, written at the start of the room, is all the arena keeps (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a167db0718c6772ee1e3eedeefda342d0.html#a167db0718c6772ee1e3eedeefda342d0" title="Keep the first ndoubles of the room arcseg_arena_room found.">arcseg_arena_keep</a>): the scratch, and the components compression merges, cost no room after it </p>
+<p >A sum or a product is formed in that room, at <code>arena-&gt;buf + arena-&gt;used</code>, with its scratch (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a5867d5cee709779a86621b62fb522ae4.html#a5867d5cee709779a86621b62fb522ae4">arcseg_x_add</a>, <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a5da7c4e294a4dd4d02c0c1758e84727a.html#a5da7c4e294a4dd4d02c0c1758e84727a">arcseg_x_mul</a>), and its compressed result, written at the start of the room, is all the arena keeps (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a167db0718c6772ee1e3eedeefda342d0.html#a167db0718c6772ee1e3eedeefda342d0" title="Keep the first ndoubles of the room arcseg_arena_room found.">arcseg_arena_keep</a>): the scratch, and the components compression merges, cost no room after it </p>
 
 </div>
 </div>
