@@ -627,8 +627,10 @@ then on the expression ladder: 2855 and 5208 on the 48 refuting faces, which rea
 tier, 364 and 359 on the 2 970 random faces, 190 and 185 on the 2 022 real faces, which the
 first tiers decide. The wide number on its arena (EA5) is the cheaper exact tier of this sign,
 by 1.82 times on its ties, where EA1 measured the wide number before its arena: the case for
-EA2 is spent, and `plane_point_offset_sign` keeps `DyadicWide`. The same holds for any sign of
-degree six whose wide tier reads the arena, so EA2 is closed without a change.
+EA2 for this sign is spent, and `plane_point_offset_sign` keeps `DyadicWide`.
+`segment_interior_offset_sign` and `plane_cross_dot_sign` are not measured; their wide tiers read
+the same arena, and each moves only where its own differential shows the expression ladder the
+cheaper.
 
 ### EA3. The arithmetic in its own file
 
