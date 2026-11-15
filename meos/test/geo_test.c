@@ -748,6 +748,31 @@ int main(void)
   free(lift_un_wkt); free(lift_un); free(lift_low); free(lift_high);
   meos_errno_reset();
 
+  /* Two triangles whose edges cross at a point no double holds: each vertex
+   * of the intersection is an input vertex or the double nearest the exact
+   * crossing of two edges, here (0.7071216151430605 0.46451628906371) */
+  GSERIALIZED *near_a = geom_in("POLYGON((0.7955903636001161 "
+    "0.5727817318599232,-0.43175203819581276 0.8491234530557167,"
+    "-0.09442255849364178 -0.516389809338109,0.7955903636001161 "
+    "0.5727817318599232))", -1);
+  GSERIALIZED *near_b = geom_in("POLYGON((0.6340843022934508 "
+    "1.0853538143171477,0.4817653623610816 0.4088454218578439,"
+    "1.23443322478657 0.5947806781551266,0.6340843022934508 "
+    "1.0853538143171477))", -1);
+  assert(near_a != NULL);
+  assert(near_b != NULL);
+  GSERIALIZED *near_res = geom_intersection2d(near_a, near_b);
+  assert(near_res != NULL);
+  char *near_wkt = geo_as_text(near_res, 17, &size_out);
+  printf("geom_intersection2d(two triangles whose edges cross at a point no "
+    "double holds): %s\n", near_wkt);
+  assert(strcmp(near_wkt, "POLYGON((0.7955903636001161 0.5727817318599232,"
+    "0.5320370876822902 0.6321219500316013,0.4817653623610816 "
+    "0.4088454218578439,0.7071216151430605 0.46451628906371,"
+    "0.7955903636001161 0.5727817318599232))") == 0);
+  free(near_wkt); free(near_res); free(near_a); free(near_b);
+  meos_errno_reset();
+
   /* The box of an arc takes its size from the arc. A semicircle through
    * (0 0), (s s) and (2s 0) is 2s wide and s high, and it holds its own middle
    * vertex (s s), so it intersects that point at every s. A box read off the
