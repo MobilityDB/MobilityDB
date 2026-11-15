@@ -89,6 +89,12 @@ extern bool index_strategy_is_valid(MeosType bboxtype, StrategyNumber strategy,
 extern void bbox_split(MeosType bboxtype, void **boxes, int count,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *),
   bool *left);
+extern int bbox_merge_each_n(MeosType bboxtype, void *boxes, int count,
+  int elems_per_box, void (*bbox_adjust)(void *, void *),
+  double (*bbox_size)(const void *));
+extern int bbox_merge_n(MeosType bboxtype, void *boxes, int count,
+  int box_count, void (*bbox_adjust)(void *, void *),
+  double (*bbox_size)(const void *));
 
 /*****************************************************************************/
 

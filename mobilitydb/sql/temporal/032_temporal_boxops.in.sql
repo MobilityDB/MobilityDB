@@ -114,6 +114,48 @@ CREATE FUNCTION splitEachNSpans(ttext, integer)
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeNSpans(tbool, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(tint, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(tbigint, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(tfloat, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(ttext, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNSpans(tbool, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(tint, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(tbigint, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(tfloat, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(ttext, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitNTboxes(tint, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_split_n_tboxes'
@@ -138,6 +180,32 @@ CREATE FUNCTION splitEachNTboxes(tbigint, integer)
 CREATE FUNCTION splitEachNTboxes(tfloat, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_split_each_n_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeNTboxes(tint, integer)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_n_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNTboxes(tbigint, integer)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_n_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNTboxes(tfloat, integer)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_n_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNTboxes(tint, integer)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_each_n_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNTboxes(tbigint, integer)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_each_n_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNTboxes(tfloat, integer)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_each_n_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-TILING-END temporal_splits
 

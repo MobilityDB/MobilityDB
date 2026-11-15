@@ -550,12 +550,12 @@ set_parse(const char **str, MeosType settype)
   Datum d;
   if (! elem_parse(str, basetype, &d))
     goto error;
-  meos_array_add(array, &d);
+  meos_array_add_intl(array, &d);
   while (p_comma(str))
   {
     if (! elem_parse(str, basetype, &d))
       goto error;
-    meos_array_add(array, &d);
+    meos_array_add_intl(array, &d);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -694,13 +694,13 @@ spanset_parse(const char **str, MeosType spansettype)
   bool found = span_parse(str, spantype, false, &s);
   if (! found)
     goto error;
-  meos_array_add(array, &s);
+  meos_array_add_intl(array, &s);
   while (p_comma(str))
   {
     found = span_parse(str, spantype, false, &s);
     if (! found)
       goto error;
-    meos_array_add(array, &s);
+    meos_array_add_intl(array, &s);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -802,13 +802,13 @@ tdiscseq_parse(const char **str, MeosType temptype)
   TInstant *inst = tinstant_parse(str, temptype, false);
   if (! inst)
     goto error;
-  meos_array_add(array, inst);
+  meos_array_add_intl(array, inst);
   while (p_comma(str))
   {
     inst = tinstant_parse(str, temptype, false);
     if (! inst)
       goto error;
-    meos_array_add(array, inst);
+    meos_array_add_intl(array, inst);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -855,13 +855,13 @@ tcontseq_parse(const char **str, MeosType temptype, interpType interp,
   TInstant *inst = tinstant_parse(str, temptype, false);
   if (! inst)
     goto error;
-  meos_array_add(array, inst);
+  meos_array_add_intl(array, inst);
   while (p_comma(str))
   {
     inst = tinstant_parse(str, temptype, false);
     if (! inst)
       goto error;
-    meos_array_add(array, inst);
+    meos_array_add_intl(array, inst);
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -915,13 +915,13 @@ tsequenceset_parse(const char **str, MeosType temptype, interpType interp)
   TSequence *seq = tcontseq_parse(str, temptype, interp, false);
   if (! seq)
     goto error;
-  meos_array_add(array, seq);
+  meos_array_add_intl(array, seq);
   while (p_comma(str))
   {
     seq = tcontseq_parse(str, temptype, interp, false);
     if (! seq)
       goto error;
-    meos_array_add(array, seq);
+    meos_array_add_intl(array, seq);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;

@@ -58,6 +58,18 @@ CREATE FUNCTION splitEachNSpans(tpcpoint, integer)
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- mergeNSpans()
+CREATE FUNCTION mergeNSpans(tpcpoint, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeEachNSpans()
+CREATE FUNCTION mergeEachNSpans(tpcpoint, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- splitNTpcboxes()
 CREATE FUNCTION splitNTpcboxes(tpcpoint, integer)
   RETURNS tpcbox[]
@@ -68,6 +80,18 @@ CREATE FUNCTION splitNTpcboxes(tpcpoint, integer)
 CREATE FUNCTION splitEachNTpcboxes(tpcpoint, integer)
   RETURNS tpcbox[]
   AS 'MODULE_PATHNAME', 'Tpointcloud_split_each_n_tpcboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeNTpcboxes()
+CREATE FUNCTION mergeNTpcboxes(tpcpoint, integer)
+  RETURNS tpcbox[]
+  AS 'MODULE_PATHNAME', 'Tpointcloud_merge_n_tpcboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeEachNTpcboxes()
+CREATE FUNCTION mergeEachNTpcboxes(tpcpoint, integer)
+  RETURNS tpcbox[]
+  AS 'MODULE_PATHNAME', 'Tpointcloud_merge_each_n_tpcboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- tpcpatch
@@ -96,6 +120,18 @@ CREATE FUNCTION splitEachNSpans(tpcpatch, integer)
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- mergeNSpans()
+CREATE FUNCTION mergeNSpans(tpcpatch, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeEachNSpans()
+CREATE FUNCTION mergeEachNSpans(tpcpatch, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- splitNTpcboxes()
 CREATE FUNCTION splitNTpcboxes(tpcpatch, integer)
   RETURNS tpcbox[]
@@ -106,6 +142,18 @@ CREATE FUNCTION splitNTpcboxes(tpcpatch, integer)
 CREATE FUNCTION splitEachNTpcboxes(tpcpatch, integer)
   RETURNS tpcbox[]
   AS 'MODULE_PATHNAME', 'Tpointcloud_split_each_n_tpcboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeNTpcboxes()
+CREATE FUNCTION mergeNTpcboxes(tpcpatch, integer)
+  RETURNS tpcbox[]
+  AS 'MODULE_PATHNAME', 'Tpointcloud_merge_n_tpcboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeEachNTpcboxes()
+CREATE FUNCTION mergeEachNTpcboxes(tpcpatch, integer)
+  RETURNS tpcbox[]
+  AS 'MODULE_PATHNAME', 'Tpointcloud_merge_each_n_tpcboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

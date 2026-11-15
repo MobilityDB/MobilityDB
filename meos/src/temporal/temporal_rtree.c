@@ -1134,7 +1134,7 @@ node_search(const RTree *rtree, const RTreeNode *node, IndexSearchOp op,
       if (leaf_consistent(rtree, RTREE_NODE_BBOX_N(node, i), query, op))
       {
         int64 id = node->ids[i];
-        meos_array_add(result, &id);
+        meos_array_add_intl(result, &id);
       }
     }
     else
@@ -1188,7 +1188,7 @@ node_search_overlaps_stbox(const RTreeNode *node, const STBox *query, bool x,
     if (leaf)
     {
       int64 id = node->ids[i];
-      meos_array_add(result, &id);
+      meos_array_add_intl(result, &id);
     }
     else
       node_search_overlaps_stbox(node->nodes[i], query, x, z, t, result);
@@ -1243,7 +1243,7 @@ node_search_contain_stbox(const RTreeNode *node, const STBox *query,
           stbox_contains_axes(query, key, x, z, t))
       {
         int64 id = node->ids[i];
-        meos_array_add(result, &id);
+        meos_array_add_intl(result, &id);
       }
     }
     else if (contains ? stbox_contains_axes(key, query, x, z, t) :
@@ -1314,7 +1314,7 @@ node_search_tbox(const RTreeNode *node, const TBox *query, IndexSearchOp op,
             tbox_contains_axes(query, key, x, t)))
       {
         int64 id = node->ids[i];
-        meos_array_add(result, &id);
+        meos_array_add_intl(result, &id);
       }
     }
     else if ((op == INDEX_CONTAINS) ? tbox_contains_axes(key, query, x, t) :
@@ -1372,8 +1372,8 @@ node_join(const RTree *rtree1, const RTreeNode *node1, const void *box1,
         {
           int64 id1 = node1->ids[i];
           int64 id2 = node2->ids[j];
-          meos_array_add(result, &id1);
-          meos_array_add(result, &id2);
+          meos_array_add_intl(result, &id1);
+          meos_array_add_intl(result, &id2);
         }
       }
     }
@@ -2075,7 +2075,7 @@ rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
       if (part1->root && part2->root)
         node_join(part1, part1->root, NULL, part2, part2->root, NULL, op,
           result);
-  return meos_array_count(result) / 2;
+  return meos_array_count_intl(result) / 2;
 }
 
 /**
@@ -2267,7 +2267,7 @@ rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
     for (int j = 0; j < nhits; j++)
     {
       int64 id = INDEX_RESULT_ID_N(hits, j);
-      meos_array_add(raw, &id);
+      meos_array_add_intl(raw, &id);
     }
   }
   pfree(boxes);
@@ -2278,7 +2278,7 @@ rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
    * caller's own row identifier, so a set sized to the largest id allocates in
    * proportion to a value the caller chooses and reaches gigabytes on an
    * ordinary sparse id space. */
-  int nraw = meos_array_count(raw);
+  int nraw = meos_array_count_intl(raw);
   if (nraw > 0)
   {
     int64 *ids = palloc((size_t) nraw * sizeof(int64));
@@ -2287,11 +2287,11 @@ rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
     qsort(ids, (size_t) nraw, sizeof(int64), rtree_id_cmp);
     for (int i = 0; i < nraw; i++)
       if (i == 0 || ids[i] != ids[i - 1])
-        meos_array_add(result, &ids[i]);
+        meos_array_add_intl(result, &ids[i]);
     pfree(ids);
   }
   meos_array_destroy(raw);
-  return meos_array_count(result);
+  return meos_array_count_intl(result);
 }
 
 /*****************************************************************************

@@ -1128,6 +1128,19 @@ SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)'
                1
 (1 row)
 
+-- An empty line or point has no position to locate
+SELECT lineLocatePoint(geometry 'Linestring empty', geometry 'Point(4 4)');
+ linelocatepoint 
+-----------------
+                
+(1 row)
+
+SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point empty');
+ linelocatepoint 
+-----------------
+                
+(1 row)
+
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 -- Constructors

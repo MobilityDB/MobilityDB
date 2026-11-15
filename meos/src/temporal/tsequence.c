@@ -286,10 +286,6 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, MeosType basetype)
     case T_FLOAT8:
       return floatsegm_locate(DatumGetFloat8(value1), DatumGetFloat8(value2),
         DatumGetFloat8(value));
-    /* The members of #geo_basetype */
-    case T_GEOMETRY:
-    case T_GEOGRAPHY:
-      return pointsegm_locate(value1, value2, value, NULL);
 #if CBUFFER
     case T_CBUFFER:
       return cbuffersegm_locate(DatumGetCbufferP(value1),
@@ -3271,8 +3267,20 @@ tfloatsegm_intersection_value(Datum start, Datum end, Datum value,
  * @param[in] value Value to locate
  * @param[in] temptype Temporal type
  * @param[in] lower,upper Timestamps defining the segment
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
- * @return Return 0 if the value is equal to the first or the last instant
+ * @param[out] t1,t2 Timestamps defining the resulting period, equal, strictly
+ * between the bounds
+ * @return Return 0 if the value is equal to the first or the last instant,
+ * or where the instant dating the intersection is a bound
+ * @details A segment meets a value as it meets the segment standing still at
+ * that value. A float crossing and its instant are decided exactly
+ * (#tfloatsegm_crossing), a planar point meeting likewise
+ * (#tgeompointsegm_crossing), and a geography point meets the value where
+ * the doubles of the ends prove it (#tgeogpointsegm_crossing), each dated at
+ * the microsecond nearest to it. The other types locate the value on the
+ * segment (#datumsegm_locate) and date it by the fraction of the period
+ * truncated to the microsecond; an instant that is a bound belongs to the
+ * bound, where the callers compare the values of the segment, as
+ * #tsegment_intersection drops it
  * @note The function is used in the lifting infrastructure for determining
  * whether a temporal segment intersects a value
  */
@@ -3295,19 +3303,25 @@ tsegment_intersection_value(Datum start, Datum end, Datum value,
   }
   if (datum_eq(value, start, basetype) || datum_eq(value, end, basetype))
     return 0;
+  /* A point meets the value where the segment standing still at it meets
+   * the segment, decided on the doubles of the ends */
+  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT)
+  {
+    if (! (temptype == T_TGEOMPOINT ?
+        tgeompointsegm_crossing(start, end, value, value, lower, upper, t1) :
+        tgeogpointsegm_crossing(start, end, value, value, lower, upper, t1)))
+      return 0;
+    *t2 = *t1;
+    return 1;
+  }
 
   double fraction = datumsegm_locate(start, end, value, basetype);
   if (fraction < 0.0)
     return 0;
-  if (t1)
-  {
-    double duration = (double) (upper - lower);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t1 = lower + (TimestampTz) (duration * fraction);
-    if (t2)
-      *t2 = *t1;
-  }
+  *t1 = lower + (TimestampTz) ((double) (upper - lower) * fraction);
+  if (*t1 <= lower || *t1 >= upper)
+    return 0;
+  *t2 = *t1;
   return 1;
 }
 

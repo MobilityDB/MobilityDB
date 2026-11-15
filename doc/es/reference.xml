@@ -401,7 +401,13 @@
 						<para><link linkend="setspan_splitNSpans"><varname>splitNSpans</varname></link>: Devuelve una matriz de N rangos obtenida fusionando los elementos de un conjunto o los rangos de un conjunto de rangos</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="setspan_mergeNSpans"><varname>mergeNSpans</varname></link>: Devuelve un arreglo de N lapsos obtenido fusionando los lapsos de los elementos de un conjunto o los lapsos de un conjunto de lapsos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="setspan_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Devuelve una matriz de rangos obtenida fusionando N elementos consecutivos de un conjunto o N rangos consecutivos de un conjunto de rangos</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="setspan_mergeEachNSpans"><varname>mergeEachNSpans</varname></link>: Devuelve un arreglo de lapsos obtenido fusionando los lapsos de los elementos de un conjunto o los lapsos de un conjunto de lapsos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que un lapso contenga en promedio un número dado de ellos</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1323,19 +1329,37 @@
 					<para><link linkend="ttype_splitNSpans"><varname>splitNSpans</varname></link>: Devuelve una matriz de N rangos de tiempo a partir de los instantes o segmentos de un valor temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeNSpans"><varname>mergeNSpans</varname></link>: Devuelve un arreglo de N lapsos de tiempo obtenido fusionando los lapsos de tiempo de los instantes o segmentos de un valor temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Devuelve una matriz de rangos de tiempo obtenida fusionando N instantes o segmentos consecutivos de un valor temporal &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_mergeEachNSpans"><varname>mergeEachNSpans</varname></link>: Devuelve un arreglo de lapsos de tiempo obtenido fusionando los lapsos de tiempo de los instantes o segmentos de un valor temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que un lapso contenga en promedio un número dado de ellos</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_splitNTboxes"><varname>splitNTboxes</varname></link>: Devuelve una matriz de N cuadros temporales obtenida fusionando los instantes o segmentos de un número temporal</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeNTboxes"><varname>mergeNTboxes</varname></link>: Devuelve un arreglo de N cajas temporales obtenido fusionando las cajas de los instantes o segmentos de un número temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitEachNTboxes"><varname>splitEachNTboxes</varname></link>: Devuelve una matriz de cuadros temporales obtenida fusionando N instantes o segmentos consecutivos de un número temporal</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_mergeEachNTboxes"><varname>mergeEachNTboxes</varname></link>: Devuelve un arreglo de cajas temporales obtenido fusionando las cajas de los instantes o segmentos de un número temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que una caja contenga en promedio un número dado de ellos</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_splitNStboxes"><varname>splitNStboxes</varname></link>: Devuelve ya sea una matriz de N cuadros espaciales obtenida fusionando los segmentos de una (multi)línea o una matriz de N cuadros espaciotemporales obtenida fusionando los instantes o segmentos de un punto temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeNStboxes"><varname>mergeNStboxes</varname></link>: Devuelve un arreglo de N cajas espaciales obtenido fusionando las cajas de los segmentos de una (multi)línea, o de N cajas espaciotemporales obtenido fusionando las cajas de los instantes o segmentos de un punto temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitEachNStboxes"><varname>splitEachNStboxes</varname></link>: Devuelve ya sea una matriz de cuadros espaciales obtenida fusionando N segmentos consecutivos de una (multi)línea o una matriz de cuadros espaciotemporales obtenida fusionando N instantes o segmentos consecutivos de un punto temporal &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_mergeEachNStboxes"><varname>mergeEachNStboxes</varname></link>: Devuelve un arreglo de cajas espaciales obtenido fusionando las cajas de los segmentos de una (multi)línea, o de cajas espaciotemporales obtenido fusionando las cajas de los instantes o segmentos de un punto temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que una caja contenga en promedio un número dado de ellos</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2742,6 +2766,9 @@
 				<listitem>
 					<para><link linkend="trgeometry_split_boxes"><varname>splitNStboxes</varname>, <varname>splitEachNStboxes</varname>, <varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Devuelve las cajas espaciotemporales o los lapsos de tiempo de una geometría rígida temporal dividida en un número dado de contenedores, o con un número dado de segmentos por contenedor</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_merge_boxes"><varname>mergeNStboxes</varname>, <varname>mergeEachNStboxes</varname>, <varname>mergeNSpans</varname>, <varname>mergeEachNSpans</varname></link>: Devuelve las cajas espaciotemporales o los lapsos de tiempo de una geometría rígida temporal fusionados en un número dado de cajas, o hasta que una caja contenga en promedio un número dado de segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -3909,7 +3936,13 @@
 						<para><link linkend="tpcpoint_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Devuelve los lapsos de tiempo de un tpcpoint dividido en un número dado de contenedores, o con un número dado de segmentos por contenedor</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpoint_mergeNSpans"><varname>mergeNSpans</varname>, <varname>mergeEachNSpans</varname></link>: Devuelve los lapsos de tiempo de un tpcpoint fusionados en un número dado de lapsos, o hasta que un lapso contenga en promedio un número dado de segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpoint_splitNTpcboxes"><varname>splitNTpcboxes</varname>, <varname>splitEachNTpcboxes</varname></link>: Devuelve las cajas de nube de puntos de un tpcpoint dividido en un número dado de contenedores, o con un número dado de instantes o segmentos por contenedor</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_mergeNTpcboxes"><varname>mergeNTpcboxes</varname>, <varname>mergeEachNTpcboxes</varname></link>: Devuelve las cajas de nube de puntos de un tpcpoint fusionadas en un número dado de cajas, o hasta que una caja contenga en promedio un número dado de instantes o segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -4108,7 +4141,13 @@
 						<para><link linkend="tpcpatch_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Devuelve los lapsos de tiempo de un tpcpatch dividido en un número dado de contenedores, o con un número dado de segmentos por contenedor</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpatch_mergeNSpans"><varname>mergeNSpans</varname>, <varname>mergeEachNSpans</varname></link>: Devuelve los lapsos de tiempo de un tpcpatch fusionados en un número dado de lapsos, o hasta que un lapso contenga en promedio un número dado de segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpatch_splitNTpcboxes"><varname>splitNTpcboxes</varname>, <varname>splitEachNTpcboxes</varname></link>: Devuelve las cajas de nube de puntos de un tpcpatch dividido en un número dado de contenedores, o con un número dado de instantes o segmentos por contenedor</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_mergeNTpcboxes"><varname>mergeNTpcboxes</varname>, <varname>mergeEachNTpcboxes</varname></link>: Devuelve las cajas de nube de puntos de un tpcpatch fusionadas en un número dado de cajas, o hasta que una caja contenga en promedio un número dado de instantes o segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

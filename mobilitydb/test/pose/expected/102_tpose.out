@@ -2782,6 +2782,18 @@ SELECT splitEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1)
  {"[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]"}
 (1 row)
 
+SELECT mergeNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
+                                                           mergenspans                                                           
+---------------------------------------------------------------------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]","[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]"}
+(1 row)
+
+SELECT mergeEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
+                         mergeeachnspans                          
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]"}
+(1 row)
+
 -- A NULL operand of merge returns the other one
 SELECT merge(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', NULL::tpose) = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
  ?column? 

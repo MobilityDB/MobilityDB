@@ -7821,7 +7821,7 @@ static bool
 geo_part_bounds_area(const LWGEOM *part)
 {
   MeosArray *edges = geom_extract_edges(part);
-  bool result = edges && meos_array_count(edges) > 0;
+  bool result = edges && meos_array_count_intl(edges) > 0;
   if (edges)
   {
     for (uint32_t i = 0; result && i < edges->count; i++)
@@ -10623,7 +10623,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
     const LWPOINT *p = (LWPOINT *) geom;
     const POINT2D *pt = getPoint2d_cp(p->point, 0);
     point = (POINT2D){pt->x, pt->y};
-    meos_array_add(array, &point);
+    meos_array_add_intl(array, &point);
   }
   else if (geom->type == LINETYPE)
   {
@@ -10632,7 +10632,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
     {
       const POINT2D *pt = getPoint2d_cp(l->points, i);
       point = (POINT2D){pt->x, pt->y};
-      meos_array_add(array, &point);
+      meos_array_add_intl(array, &point);
     }
   }
   else if (geom->type == TRIANGLETYPE)
@@ -10642,7 +10642,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
     {
       const POINT2D *pt = getPoint2d_cp(tr->points, i);
       point = (POINT2D){pt->x, pt->y};
-      meos_array_add(array, &point);
+      meos_array_add_intl(array, &point);
     }
   }
   else if (geom->type == POLYGONTYPE)
@@ -10655,7 +10655,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
       {
         const POINT2D *pt = getPoint2d_cp(pa, i);
         point = (POINT2D){pt->x, pt->y};
-        meos_array_add(array, &point);
+        meos_array_add_intl(array, &point);
       }
     }
   }
@@ -10962,6 +10962,9 @@ geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius)
  * @brief Locate a point into a line
  * @param[in] gs1 Line
  * @param[in] gs2 Point
+ * @return The fraction of the length of the line at which it comes closest to
+ * the point, or -1.0 with no error for an empty line or point, which have no
+ * position to locate
  * @errval -1.0
  * @csqlfn #Line_locate_point()
  */
@@ -10990,8 +10993,10 @@ line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       "Second argument is not a point");
     return -1.0;
   }
-
-  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  /* An empty line or point holds no position to locate, so there is no
+   * fraction to answer, and no error either */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    return -1.0;
 
   lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs1));
   lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs2));

@@ -74,6 +74,8 @@ extern bool span_index_leaf_consistent(const Span *key, const Span *query,
 extern bool span_gist_inner_consistent(const Span *key, const Span *query,
   StrategyNumber strategy);
 extern bool span_index_recheck(StrategyNumber strategy);
+extern void span_adjust(void *bbox1, void *bbox2);
+extern double span_size(const void *bbox);
 
 extern int span_lower_qsort_cmp(const void *a, const void *b);
 extern int span_upper_qsort_cmp(const void *a, const void *b);

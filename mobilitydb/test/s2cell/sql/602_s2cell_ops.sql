@@ -97,12 +97,14 @@ FROM p;
 -- An empty geography holds no cell
 SELECT geoToS2CellSet(geography 'SRID=4326;POINT EMPTY', 10) IS NULL;
 
--- A level outside 0 to 30 and a cover of more cells than a set is built from
+-- A level outside 0 to 30 and a cover of more cells than a set is built from.
+-- At level 21 the cells the polygon encloses exceed that number, which is
+-- found without walking its rings through millions of cells
 /* Errors */
 SELECT geoToS2CellSet(geography 'SRID=4326;Point(4.35 50.85)', 31);
 SELECT geoToS2CellSet(geography 'SRID=4326;Point(4.35 50.85)', -1);
 SELECT geoToS2CellSet(geography 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
-  4.45 50.90, 4.30 50.90, 4.30 50.80))', 30);
+  4.45 50.90, 4.30 50.90, 4.30 50.80))', 21);
 
 -------------------------------------------------------------------------------
 -- Hierarchy

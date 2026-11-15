@@ -62,6 +62,8 @@
 #include "geo/stbox.h"
 #include "geo/geo_funcs.h"
 #include "geo/tspatial_boxops.h"
+#include "temporal/span_index.h"
+#include "temporal/tbox_index.h"
 #if POINTCLOUD
   #include <meos_pointcloud.h>
   #include "pointcloud/tpc_boxops.h"
@@ -1907,6 +1909,74 @@ temporal_split_each_n_spans(const Temporal *temp, int elem_count, int *count)
         elem_count, count);
   }
 }
+
+/*****************************************************************************
+ * merge_n_spans and merge_each_n_spans functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_bbox_split
+ * @brief Return an array of N spans obtained by merging the boxes of
+ * the consecutive instants or segments of a temporal value, each time the
+ * consecutive pair whose union adds the least size to theirs
+ * @details The merge twin of #temporal_split_n_spans, by #bbox_merge_n
+ * @param[in] temp Temporal value
+ * @param[in] span_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Temporal_merge_n_spans()
+ */
+Span *
+temporal_merge_n_spans(const Temporal *temp, int span_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_positive(span_count))
+    return NULL;
+
+  Span *result = temporal_spans(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_TSTZSPAN, result, *count, span_count, &span_adjust,
+      &span_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_bbox_split
+ * @brief Return an array of spans obtained by merging the boxes of the
+ * consecutive instants or segments of a temporal value, each time the
+ * consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them
+ * @details The merge twin of #temporal_split_each_n_spans, by
+ * #bbox_merge_each_n
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Temporal_merge_each_n_spans()
+ */
+Span *
+temporal_merge_each_n_spans(const Temporal *temp, int elem_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  Span *result = temporal_spans(temp, count);
+  if (result)
+    *count = bbox_merge_each_n(T_TSTZSPAN, result, *count, elem_count,
+      &span_adjust, &span_size);
+  return result;
+}
 /* GENERATED-BOXSPLIT-END temporal */
 
 /*****************************************************************************
@@ -2471,6 +2541,74 @@ tnumber_split_each_n_tboxes(const Temporal *temp, int elem_count, int *count)
       return tnumberseqset_split_each_n_tboxes((TSequenceSet *) temp,
         elem_count, count);
   }
+}
+
+/*****************************************************************************
+ * merge_n_tboxes and merge_each_n_tboxes functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_bbox_split
+ * @brief Return an array of N temporal boxes obtained by merging the boxes of
+ * the consecutive instants or segments of a temporal number, each time the
+ * consecutive pair whose union adds the least size to theirs
+ * @details The merge twin of #tnumber_split_n_tboxes, by #bbox_merge_n
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tnumber_merge_n_tboxes()
+ */
+TBox *
+tnumber_merge_n_tboxes(const Temporal *temp, int box_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNUMBER(temp, NULL);
+  if (! ensure_positive(box_count))
+    return NULL;
+
+  TBox *result = tnumber_tboxes(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_TBOX, result, *count, box_count, &tbox_adjust,
+      &tbox_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_bbox_split
+ * @brief Return an array of temporal boxes obtained by merging the boxes of the
+ * consecutive instants or segments of a temporal number, each time the
+ * consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them
+ * @details The merge twin of #tnumber_split_each_n_tboxes, by
+ * #bbox_merge_each_n
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tnumber_merge_each_n_tboxes()
+ */
+TBox *
+tnumber_merge_each_n_tboxes(const Temporal *temp, int elem_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNUMBER(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  TBox *result = tnumber_tboxes(temp, count);
+  if (result)
+    *count = bbox_merge_each_n(T_TBOX, result, *count, elem_count,
+      &tbox_adjust, &tbox_size);
+  return result;
 }
 /* GENERATED-BOXSPLIT-END tnumber */
 
@@ -3712,6 +3850,221 @@ bbox_split(MeosType bboxtype, void **boxes, int count,
   }
   pfree(common);
   return;
+}
+
+
+/*****************************************************************************
+ * Merge of consecutive bounding boxes
+ *****************************************************************************/
+
+/**
+ * @brief Pair of consecutive boxes of a merge, ordered by the size their
+ * union adds
+ */
+typedef struct
+{
+  double cost;    /**< Size the union of the two boxes adds to theirs */
+  int left;       /**< Position of the left box of the pair */
+  int right;      /**< Position of the right box of the pair */
+  int lversion;   /**< Version of the left box when the cost was read */
+  int rversion;   /**< Version of the right box when the cost was read */
+} BoxPair;
+
+/**
+ * @brief Return true if a pair of boxes is merged before another one: the one
+ * whose union adds less, or of equal cost the one further left, a total order
+ * so that the merges do not depend on the order the heap holds equal pairs in
+ */
+static bool
+boxpair_lt(const BoxPair *pair1, const BoxPair *pair2)
+{
+  return pair1->cost < pair2->cost ||
+    (pair1->cost == pair2->cost && pair1->left < pair2->left);
+}
+
+/**
+ * @brief Restore the order of a heap of box pairs from a position upwards
+ */
+static void
+boxpair_heap_up(BoxPair *heap, int i)
+{
+  while (i > 0)
+  {
+    int parent = (i - 1) / 2;
+    if (! boxpair_lt(&heap[i], &heap[parent]))
+      break;
+    BoxPair tmp = heap[parent]; heap[parent] = heap[i]; heap[i] = tmp;
+    i = parent;
+  }
+  return;
+}
+
+/**
+ * @brief Restore the order of a heap of box pairs from a position downwards
+ */
+static void
+boxpair_heap_down(BoxPair *heap, int count, int i)
+{
+  while (true)
+  {
+    int least = i, l = 2 * i + 1, r = 2 * i + 2;
+    if (l < count && boxpair_lt(&heap[l], &heap[least]))
+      least = l;
+    if (r < count && boxpair_lt(&heap[r], &heap[least]))
+      least = r;
+    if (least == i)
+      break;
+    BoxPair tmp = heap[least]; heap[least] = heap[i]; heap[i] = tmp;
+    i = least;
+  }
+  return;
+}
+
+/**
+ * @brief Return the size the union of two boxes adds to the sizes of both
+ */
+static double
+bbox_merge_cost(const char *box1, const char *box2, char *unionbox,
+  size_t bboxsize, void (*bbox_adjust)(void *, void *),
+  double (*bbox_size)(const void *))
+{
+  memcpy(unionbox, box1, bboxsize);
+  bbox_adjust(unionbox, (void *) box2);
+  return bbox_size(unionbox) - bbox_size(box1) - bbox_size(box2);
+}
+
+/**
+ * @ingroup meos_internal_box_index
+ * @brief Merge consecutive bounding boxes of an array in place until a
+ * number of them remain, each time the consecutive pair whose union adds the
+ * least size to theirs
+ * @details The boxes are those of the consecutive instants or segments of a
+ * value, so two consecutive boxes of a temporal value meet at an instant at
+ * most, and the size of their union less theirs is the empty space the merge
+ * adds. A heap of the consecutive pairs gives the next merge in logarithmic
+ * time; a pair whose box changed since its cost was read is discarded when
+ * reached. The boxes keep their order.
+ * @param[in] bboxtype Type of the boxes, a span type, T_TBOX, T_STBOX or
+ * T_TPCBOX
+ * @param[in,out] boxes Array of boxes, the merged boxes at its start
+ * @param[in] count Number of boxes
+ * @param[in] box_count Number of boxes to keep, at least one
+ * @param[in] bbox_adjust Function growing its first box to include the second
+ * @param[in] bbox_size Function returning the size of a box
+ * @return Number of boxes kept, the least of @p count and @p box_count
+ * @note The merge twin of #bbox_split, which splits a set of boxes by the
+ * same functions
+ */
+int
+bbox_merge_n(MeosType bboxtype, void *boxes, int count, int box_count,
+  void (*bbox_adjust)(void *, void *), double (*bbox_size)(const void *))
+{
+  assert(boxes); assert(count >= 0); assert(box_count > 0);
+  assert(bbox_adjust); assert(bbox_size);
+  if (count <= box_count)
+    return count;
+
+  size_t bboxsize = bbox_get_size(bboxtype);
+  char *box = (char *) boxes;
+  int *prev = palloc(sizeof(int) * count);
+  int *next = palloc(sizeof(int) * count);
+  int *version = palloc0(sizeof(int) * count);
+  bool *alive = palloc(sizeof(bool) * count);
+  /* Every merge adds at most two pairs to the count - 1 initial ones */
+  BoxPair *heap = palloc(sizeof(BoxPair) * (3 * count));
+  char *unionbox = palloc(bboxsize);
+  int nheap = 0;
+  for (int i = 0; i < count; i++)
+  {
+    prev[i] = i - 1;
+    next[i] = (i < count - 1) ? i + 1 : -1;
+    alive[i] = true;
+  }
+  for (int i = 0; i < count - 1; i++)
+  {
+    heap[nheap] = (BoxPair) {
+      bbox_merge_cost(box + i * bboxsize, box + (i + 1) * bboxsize, unionbox,
+        bboxsize, bbox_adjust, bbox_size), i, i + 1, 0, 0 };
+    boxpair_heap_up(heap, nheap++);
+  }
+
+  int nboxes = count;
+  while (nboxes > box_count && nheap > 0)
+  {
+    BoxPair pair = heap[0];
+    heap[0] = heap[--nheap];
+    boxpair_heap_down(heap, nheap, 0);
+    if (! alive[pair.left] || ! alive[pair.right] ||
+        next[pair.left] != pair.right ||
+        version[pair.left] != pair.lversion ||
+        version[pair.right] != pair.rversion)
+      continue;
+    /* Merge the right box into the left one */
+    bbox_adjust(box + pair.left * bboxsize, box + pair.right * bboxsize);
+    alive[pair.right] = false;
+    next[pair.left] = next[pair.right];
+    if (next[pair.right] >= 0)
+      prev[next[pair.right]] = pair.left;
+    version[pair.left]++;
+    nboxes--;
+    /* The pairs the merged box forms with its neighbours */
+    int p = prev[pair.left], n = next[pair.left];
+    if (p >= 0)
+    {
+      heap[nheap] = (BoxPair) {
+        bbox_merge_cost(box + p * bboxsize, box + pair.left * bboxsize,
+          unionbox, bboxsize, bbox_adjust, bbox_size),
+        p, pair.left, version[p], version[pair.left] };
+      boxpair_heap_up(heap, nheap++);
+    }
+    if (n >= 0)
+    {
+      heap[nheap] = (BoxPair) {
+        bbox_merge_cost(box + pair.left * bboxsize, box + n * bboxsize,
+          unionbox, bboxsize, bbox_adjust, bbox_size),
+        pair.left, n, version[pair.left], version[n] };
+      boxpair_heap_up(heap, nheap++);
+    }
+  }
+
+  /* Move the boxes kept to the start of the array, in their order */
+  int k = 0;
+  for (int i = 0; i >= 0; i = next[i])
+  {
+    if (i != k)
+      memcpy(box + k * bboxsize, box + i * bboxsize, bboxsize);
+    k++;
+  }
+  pfree(prev); pfree(next); pfree(version); pfree(alive); pfree(heap);
+  pfree(unionbox);
+  return k;
+}
+
+/**
+ * @ingroup meos_internal_box_index
+ * @brief Merge consecutive bounding boxes of an array in place until a box
+ * holds on average a number of them
+ * @details The number of boxes kept is @p count divided by
+ * @p elems_per_box, rounded up, as the functions splitting each N elements
+ * count them; the merges are those of #bbox_merge_n.
+ * @param[in] bboxtype Type of the boxes
+ * @param[in,out] boxes Array of boxes, the merged boxes at its start
+ * @param[in] count Number of boxes
+ * @param[in] elems_per_box Number of boxes merged into a box on average
+ * @param[in] bbox_adjust Function growing its first box to include the second
+ * @param[in] bbox_size Function returning the size of a box
+ * @return Number of boxes kept
+ */
+int
+bbox_merge_each_n(MeosType bboxtype, void *boxes, int count,
+  int elems_per_box, void (*bbox_adjust)(void *, void *),
+  double (*bbox_size)(const void *))
+{
+  assert(elems_per_box > 0);
+  if (count == 0)
+    return 0;
+  return bbox_merge_n(bboxtype, boxes, count,
+    (count + elems_per_box - 1) / elems_per_box, bbox_adjust, bbox_size);
 }
 
 /*****************************************************************************/

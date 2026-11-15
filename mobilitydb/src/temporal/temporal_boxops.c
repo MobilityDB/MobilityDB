@@ -172,6 +172,54 @@ Temporal_split_each_n_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Temporal_merge_n_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_merge_n_spans);
+/**
+ * @ingroup mobilitydb_temporal_bbox_split
+ * @brief Return an array of N time spans obtained by merging the boxes of the
+ * elements of a temporal value, each time the consecutive pair whose union adds
+ * the least size to theirs
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @sqlfn mergeNSpans()
+ */
+Datum
+Temporal_merge_n_spans(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int max_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = temporal_merge_n_spans(temp, max_count, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Temporal_merge_each_n_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_merge_each_n_spans);
+/**
+ * @ingroup mobilitydb_temporal_bbox_split
+ * @brief Return an array of time spans obtained by merging the boxes of the
+ * elements of a temporal value, each time the consecutive pair whose union adds
+ * the least size to theirs, until a box holds on average a given number of them
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @sqlfn mergeEachNSpans()
+ */
+Datum
+Temporal_merge_each_n_spans(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int max_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = temporal_merge_each_n_spans(temp, max_count, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 PGDLLEXPORT Datum Tnumber_split_each_n_tboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_split_each_n_tboxes);
 /**
@@ -189,6 +237,55 @@ Tnumber_split_each_n_tboxes(PG_FUNCTION_ARGS)
   int max_count = PG_GETARG_INT32(1);
   int count;
   TBox *boxes = tnumber_split_each_n_tboxes(temp, max_count, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  ArrayType *result = tboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Tnumber_merge_n_tboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_merge_n_tboxes);
+/**
+ * @ingroup mobilitydb_temporal_bbox_split
+ * @brief Return an array of N temporal boxes obtained by merging the boxes of
+ * the elements of a temporal number, each time the consecutive pair whose union
+ * adds the least size to theirs
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @sqlfn mergeNTboxes()
+ */
+Datum
+Tnumber_merge_n_tboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int max_count = PG_GETARG_INT32(1);
+  int count;
+  TBox *boxes = tnumber_merge_n_tboxes(temp, max_count, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  ArrayType *result = tboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Tnumber_merge_each_n_tboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_merge_each_n_tboxes);
+/**
+ * @ingroup mobilitydb_temporal_bbox_split
+ * @brief Return an array of temporal boxes obtained by merging the boxes of the
+ * elements of a temporal number, each time the consecutive pair whose union
+ * adds the least size to theirs, until a box holds on average a given number of
+ * them
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @sqlfn mergeEachNTboxes()
+ */
+Datum
+Tnumber_merge_each_n_tboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int max_count = PG_GETARG_INT32(1);
+  int count;
+  TBox *boxes = tnumber_merge_each_n_tboxes(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
   ArrayType *result = tboxarr_to_array(boxes, count);
   pfree(boxes);

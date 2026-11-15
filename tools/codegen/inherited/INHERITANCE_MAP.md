@@ -306,7 +306,11 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   temporal value threads it through every function as a context, as the
   reference geometry of a temporal rigid geometry. Every box a splitter
   returns lies within the bounding box of its value, bound inclusivity
-  included.
+  included. The same rows render the merge twins of the public splitters,
+  `merge_n` and `merge_each_n`, which hand the boxes of the instants or
+  segments to `bbox_merge_n` and `bbox_merge_each_n` with the box type, the
+  function growing a box and the size function the row states; a point cloud
+  box merges through those of the spatiotemporal box it begins with.
   The index operator classes of a box type are the regions between its
   `GENERATED-BOXOPCLASS-BEGIN/END` markers, one per class of its `opclasses:`
   stanza in `boxtypes.yaml` (`templates/boxopclass.sql.tmpl`): every strategy of
@@ -356,7 +360,7 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | indextrees (C) | `rtree_create.c.tmpl` + `sptree_create.c.tmpl` | **GENERATED** (the constructors of the in-memory trees, one per box type) |
 | boxgist (C) | `boxgist.c.tmpl` | **GENERATED** (the GiST support functions of `tbox`, `stbox` and `tpcbox`, one set per box type) |
 | boxspgist (C) | `boxspgist.c.tmpl` | **GENERATED** (the SP-GiST support functions of `tbox` and `stbox`, one set per box type; `tpcbox` is indexed by those of `stbox`) |
-| boxsplit (C) | `boxsplit.c.tmpl` | **GENERATED** (the box splitters of `temporal`, `tnumber`, `tgeo`, `trgeometry` and `tpointcloud`, one set per row) |
+| boxsplit (C) | `boxsplit.c.tmpl` | **GENERATED** (the box splitters of `temporal`, `tnumber`, `tgeo`, `trgeometry` and `tpointcloud` and their merge twins, one set per row) |
 | gist / spgist | `gist/spgist.sql.tmpl` | **GENERATED** (index infra) — the two templates write the family's operator classes through the `{TEMPOPCLASS_RTREE}`, `{TEMPOPCLASS_QUADTREE}` and `{TEMPOPCLASS_KDTREE}` tokens, which `render_tempopclass` fills from `boxstrategies.yaml` with every strategy whose axis the family's `boxmembers:` lists, the Z-axis strategies 32-35 included when it lists `z`, and with its `distwith:` types on the nearest approach distance. `gist.sql.tmpl` also declares the family's own consistent support function, `{TEMP}_gist_consistent`, and, under the flag `knn` that `render` reads from the axes of the class (a `dist` axis in `boxmembers:`), its distance support function `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share; it carries `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the two templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
@@ -569,7 +573,7 @@ Two more reference chapters carry inherited surface:
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
-| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **30 entries**: 23 `reference: true` (geo, tpoint, cbuffer, json, json_boxops, npoint, tpcpoint, tpcpatch, tpc_boxops, pose, posechain, rgeo, tgeo_tile, trgeo_tile, tpoint_tile, tpose_tile, tpcpoint_tile, temporal, th3index, th3index_boxops, quadbin, quadbin_boxops, s2cell_boxops) and seven writing the `GENERATED-TILING` split region of a boxops file (temporal_splits, geo_splits, tpoint_splits, pose_splits, rgeo_splits, cbuffer_splits, npoint_splits). The entry names sit at four granularities — family (`geo`, `npoint`), per-FILE tile split (`tgeo_tile`, `tpose_tile`), per-FILE boxops split (`json_boxops`, `tpc_boxops`, `th3index_boxops`, `quadbin_boxops`) and per-FILE split functions (`geo_splits`). Every `splitN<Box>`/`splitEachN<Box>` of a boxops file is a `splits` stanza: its types, its box kinds (`spans`, `tboxes`, `stboxes`) and, per kind, the C prefix of a type with kernels of its own (`Trgeometry`, `Geo`) |
+| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **30 entries**: 23 `reference: true` (geo, tpoint, cbuffer, json, json_boxops, npoint, tpcpoint, tpcpatch, tpc_boxops, pose, posechain, rgeo, tgeo_tile, trgeo_tile, tpoint_tile, tpose_tile, tpcpoint_tile, temporal, th3index, th3index_boxops, quadbin, quadbin_boxops, s2cell_boxops) and seven writing the `GENERATED-TILING` split region of a boxops file (temporal_splits, geo_splits, tpoint_splits, pose_splits, rgeo_splits, cbuffer_splits, npoint_splits). The entry names sit at four granularities — family (`geo`, `npoint`), per-FILE tile split (`tgeo_tile`, `tpose_tile`), per-FILE boxops split (`json_boxops`, `tpc_boxops`, `th3index_boxops`, `quadbin_boxops`) and per-FILE split functions (`geo_splits`). Every `splitN<Box>`/`splitEachN<Box>` of a boxops file, with its merge twins `mergeN<Box>`/`mergeEachN<Box>`, is a `splits` stanza: its types, its box kinds (`spans`, `tboxes`, `stboxes`, `tpcboxes`) and, per kind, the C prefix of a type with kernels of its own (`Trgeometry`, `Geo`) |
 
 #### `tprecision` — which types carry a time-weighted average, and why the rest do not
 

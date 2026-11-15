@@ -378,6 +378,86 @@ extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
 }
 
 /**
+ * @brief Return 1 if every part of a polygon, a multipolygon or a triangle
+ * bounds a region, 0 if one does not, and -1 where the answer is left to the
+ * edges of the geometry
+ * @details The answer #extract_poly and #extract_triangle give, read from
+ * the same predicate on the same rings without building an edge: a polygon
+ * yields only polygon edges exactly where its outer ring encloses an area
+ * (#ring_encloses_no_area), a hole enclosing none yielding no edge at all,
+ * and a triangle likewise. A ring of fewer than four points, whose edges
+ * depend on how many it holds, and every other type are left to the edges
+ * @param[in] geom Geometry, not empty
+ */
+static int
+geom_parts_bound_area_rings(const LWGEOM *geom)
+{
+  if (geom->type == TRIANGLETYPE)
+  {
+    const POINTARRAY *pa = ((const LWTRIANGLE *) geom)->points;
+    if (! pa || pa->npoints < 4)
+      return -1;
+    return ring_encloses_no_area(pa) ? 0 : 1;
+  }
+  if (geom->type == POLYGONTYPE)
+  {
+    const LWPOLY *poly = (const LWPOLY *) geom;
+    if (poly->nrings == 0 || poly->rings[0]->npoints < 4)
+      return -1;
+    return ring_encloses_no_area(poly->rings[0]) ? 0 : 1;
+  }
+  if (geom->type == MULTIPOLYGONTYPE)
+  {
+    const LWMPOLY *mp = (const LWMPOLY *) geom;
+    int result = mp->ngeoms > 0 ? 1 : -1;
+    for (uint32_t i = 0; i < mp->ngeoms && result == 1; i++)
+      result = geom_parts_bound_area_rings((const LWGEOM *) mp->geoms[i]);
+    return result;
+  }
+  return -1;
+}
+
+/**
+ * @brief Return true if every part of a geometry bounds a region
+ * @details A ring enclosing no area bounds no region: what it contributes is
+ * the linework it traces, one dimension lower. #geom_extract_edges says which
+ * of the two every ring of every part is -- a ring of no area yields LINE
+ * edges where one bounding a region yields POLY ones -- so this answers as
+ * that classification does: from the outer rings of a polygon, a
+ * multipolygon or a triangle where they decide it
+ * (#geom_parts_bound_area_rings), and from the edges of every other geometry.
+ * It needs no tolerance of its own: the one that decides a ring lives in the
+ * extraction, where it is an area read against the extent the ring occupies
+ * rather than a length
+ * @param[in] geom Geometry
+ */
+bool
+geom_every_part_bounds_area(const LWGEOM *geom)
+{
+  assert(geom);
+  /* A geometry drawing nothing at all bounds no region either */
+  if (lwgeom_is_empty(geom))
+    return false;
+  int rings = geom_parts_bound_area_rings(geom);
+  if (rings >= 0)
+    return rings == 1;
+  MeosArray *edges = geom_extract_edges(geom);
+  bool result = edges && meos_array_count_intl(edges) > 0;
+  if (edges)
+  {
+    for (uint32_t i = 0; result && i < edges->count; i++)
+    {
+      const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
+      if (! edge ||
+          (edge->etype != EDGE_POLYSEG && edge->etype != EDGE_POLYARC))
+        result = false;
+    }
+    meos_array_destroy(edges);
+  }
+  return result;
+}
+
+/**
  * @brief Add to the dynamic array in the last argument the edge obtained from
  * three consecutive points of a circular string
  * @details The three points are the start, an intermediate point, and the end
@@ -1222,89 +1302,100 @@ offset_x_cmp(double x, double o, double p)
   return polynomial_sign_exact(&sum, &term, 1);
 }
 
+/* The terms of f(P0) or f(P1) of a line given by a function affine in the
+ * position, see #linear_side_at */
+#define LINEAR_SIDE_MAXTERMS 4
+
 /**
- * @brief Return the side of the line through A and B on which a point moving
- * from P0 to P1 lies after n of D microseconds, exactly
- * @details The sign of `(D - n) cross(A, B, P0) + n cross(A, B, P1)`, D
- * times the cross product of B - A and P(n) - A, with
- * `cross(A, B, P) = (bx + ob - ax - oa) (py - ay) - (by - ay) (px - ax - oa)`.
- * The sums are those #segment_edge_cross_offset sets, the coefficients
- * integers below 2^53, so exact doubles
+ * @brief Return the side on which a point moving from P0 to P1 lies after n
+ * of D microseconds, of a line given by a function affine in the position,
+ * exactly
+ * @details The sign of `(D - n) f(P0) + n f(P1)`, D times the value of `f` at
+ * the position after n microseconds, `f` being affine. Each of `f(P0)` and
+ * `f(P1)` is a polynomial in exact sums whose coefficients are -1 or 1, so
+ * each term scaled by `D - n` or `n`, integers below 2^53, keeps an exact
+ * coefficient
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] f0,n0 Terms of `f(P0)` and their number
+ * @param[in] f1,n1 Terms of `f(P1)` and their number
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] n Microsecond, from 0 to @p D
  */
 static int
-segment_edge_side_at(const ExactSum *sums, int64 D, int64 n)
+linear_side_at(const ExactSum *sums, const PolyTerm *f0, int n0,
+  const PolyTerm *f1, int n1, int64 D, int64 n)
 {
-  PolyTerm terms[4];
+  PolyTerm terms[2 * LINEAR_SIDE_MAXTERMS];
   int nterms = 0;
   if (n < D)
-  {
-    terms[nterms++] = (PolyTerm) {.coef = (double) (D - n), .deg = 2,
-      .sum = {0, 2}};
-    terms[nterms++] = (PolyTerm) {.coef = - (double) (D - n), .deg = 2,
-      .sum = {1, 3}};
-  }
+    for (int i = 0; i < n0; i++)
+    {
+      terms[nterms] = f0[i];
+      terms[nterms++].coef *= (double) (D - n);
+    }
   if (n > 0)
-  {
-    terms[nterms++] = (PolyTerm) {.coef = (double) n, .deg = 2,
-      .sum = {0, 4}};
-    terms[nterms++] = (PolyTerm) {.coef = - (double) n, .deg = 2,
-      .sum = {1, 5}};
-  }
+    for (int i = 0; i < n1; i++)
+    {
+      terms[nterms] = f1[i];
+      terms[nterms++].coef *= (double) n;
+    }
   return polynomial_sign_exact(sums, terms, nterms);
 }
 
 /**
- * @brief Return the microsecond at which a segment crosses the line of an
- * edge whose x coordinates carry exact offsets, as the offset from the start
- * of the segment, truncated
+ * @brief Return the double nearest to a polynomial in exact sums, read from
+ * the doubles nearest to the sums, an estimate only
+ */
+static double
+linear_side_approx(const ExactSum *sums, const PolyTerm *f, int n)
+{
+  double val = 0.0;
+  for (int i = 0; i < n; i++)
+  {
+    double v = f[i].coef;
+    for (int k = 0; k < f[i].deg; k++)
+      v *= sums[f[i].sum[k]].approx;
+    val += v;
+  }
+  return val;
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses a line given by a
+ * function affine in the position, as the offset from the start of the
+ * segment, truncated
  * @details The point moves from P0 to P1 over @p D microseconds, and lies on
- * the line through A and B at the exact parameter where
- * `(D - n) cross(A, B, P0) + n cross(A, B, P1)` vanishes, a function of `n`
- * that is linear, hence monotone. The offset returned is the last
- * microsecond `n` at which the point is still on the side of the line it
- * starts on or on the line, each side the exact sign
- * #segment_edge_side_at decides on the input doubles, the integer @p D and
- * the offsets, so the crossing is dated by the truncation of its exact
- * parameter and no rounded parameter decides it. A double estimate starts
- * a galloping search, then a bisection, on that sign. The x offsets, such
- * as a multiple of 360 reading a cell across the antimeridian in the chart
- * of the segment, are never added to a coordinate, where they would round.
- * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * the line where `(D - n) f(P0) + n f(P1)` vanishes, a function of `n` that
+ * is linear, hence monotone. The offset returned is the last microsecond `n`
+ * at which the point is still on the side of the line it starts on or on
+ * the line, each side the exact sign #linear_side_at decides, so the
+ * crossing is dated by the truncation of its exact parameter and no rounded
+ * parameter decides it. A double estimate starts a galloping search, then a
+ * bisection, on that sign.
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] f0,n0 Terms of `f(P0)` and their number
+ * @param[in] f1,n1 Terms of `f(P1)` and their number
  * @param[in] D Duration of the segment in microseconds, below 2^53
- * @param[in] ax,ay,oa Vertex A of the edge and the offset of its x
- * @param[in] bx,by,ob Vertex B of the edge and the offset of its x
  * @param[out] whole True when the point lies on the line exactly at the
  * microsecond returned
  * @return The offset in microseconds: 0 when the segment starts on the line,
  * @p D when it reaches the line only at its end or never
- * @note Exact where no product of the components of the sums overflows or
- * underflows, as #polynomial_sign_exact states it
  */
-int64
-segment_edge_cross_offset(double x0, double y0, double x1, double y1,
-  int64 D, double ax, double ay, double oa, double bx, double by, double ob,
-  bool *whole)
+static int64
+linear_cross_offset(const ExactSum *sums, const PolyTerm *f0, int n0,
+  const PolyTerm *f1, int n1, int64 D, bool *whole)
 {
   assert(D >= 0); assert(whole);
-  ExactSum sums[6];
-  const double t0[4] = {bx, ob, - ax, - oa}, t1[2] = {by, - ay};
-  const double t2[2] = {y0, - ay}, t3[3] = {x0, - ax, - oa};
-  const double t4[2] = {y1, - ay}, t5[3] = {x1, - ax, - oa};
-  exact_sum_set(&sums[0], t0, 4);
-  exact_sum_set(&sums[1], t1, 2);
-  exact_sum_set(&sums[2], t2, 2);
-  exact_sum_set(&sums[3], t3, 3);
-  exact_sum_set(&sums[4], t4, 2);
-  exact_sum_set(&sums[5], t5, 3);
-  int s0 = segment_edge_side_at(sums, D, 0);
+  assert(n0 <= LINEAR_SIDE_MAXTERMS); assert(n1 <= LINEAR_SIDE_MAXTERMS);
+  int s0 = linear_side_at(sums, f0, n0, f1, n1, D, 0);
   if (s0 == 0 || D == 0)
   {
     *whole = (s0 == 0);
     return 0;
   }
   /* The estimate in doubles, the start of the search only */
-  double c0 = sums[0].approx * sums[2].approx - sums[1].approx * sums[3].approx;
-  double c1 = sums[0].approx * sums[4].approx - sums[1].approx * sums[5].approx;
+  double c0 = linear_side_approx(sums, f0, n0);
+  double c1 = linear_side_approx(sums, f1, n1);
   double est = (double) D * (c0 / (c0 - c1));
   int64 n = 0;
   if (isfinite(est) && est > 0.0)
@@ -1312,7 +1403,7 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
   /* lo is the last microsecond known on the start side, hi the first known
    * past it, D + 1 standing for none */
   int64 lo, hi;
-  if (s0 * segment_edge_side_at(sums, D, n) >= 0)
+  if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, n) >= 0)
   {
     lo = n;
     int64 step = 1;
@@ -1324,7 +1415,7 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
         break;
       }
       int64 c = (step > D - lo) ? D : lo + step;
-      if (s0 * segment_edge_side_at(sums, D, c) >= 0)
+      if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, c) >= 0)
       {
         lo = c;
         step *= 2;
@@ -1343,7 +1434,7 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
     for (;;)
     {
       int64 c = (step >= hi) ? 0 : hi - step;
-      if (c == 0 || s0 * segment_edge_side_at(sums, D, c) >= 0)
+      if (c == 0 || s0 * linear_side_at(sums, f0, n0, f1, n1, D, c) >= 0)
       {
         lo = c;
         break;
@@ -1355,13 +1446,163 @@ segment_edge_cross_offset(double x0, double y0, double x1, double y1,
   while (hi - lo > 1)
   {
     int64 mid = lo + (hi - lo) / 2;
-    if (s0 * segment_edge_side_at(sums, D, mid) >= 0)
+    if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, mid) >= 0)
       lo = mid;
     else
       hi = mid;
   }
-  *whole = (segment_edge_side_at(sums, D, lo) == 0);
+  *whole = (linear_side_at(sums, f0, n0, f1, n1, D, lo) == 0);
   return lo;
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the line of an
+ * edge whose x coordinates carry exact offsets, as the offset from the start
+ * of the segment, truncated
+ * @details The point moves from P0 to P1 over @p D microseconds and lies on
+ * the line through A and B where `cross(A, B, P) = (bx + ob - ax - oa) (py -
+ * ay) - (by - ay) (px - ax - oa)` vanishes, a function affine in P, so the
+ * crossing is dated by #linear_cross_offset, the truncation of its exact
+ * parameter, on the input doubles, the integer @p D and the offsets. The x
+ * offsets, such as a multiple of 360 reading a cell across the antimeridian
+ * in the chart of the segment, are never added to a coordinate, where they
+ * would round.
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * @param[in] D Duration of the segment in microseconds, below 2^53
+ * @param[in] ax,ay,oa Vertex A of the edge and the offset of its x
+ * @param[in] bx,by,ob Vertex B of the edge and the offset of its x
+ * @param[out] whole True when the point lies on the line exactly at the
+ * microsecond returned
+ * @return The offset in microseconds: 0 when the segment starts on the line,
+ * @p D when it reaches the line only at its end or never
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int64
+segment_edge_cross_offset(double x0, double y0, double x1, double y1,
+  int64 D, double ax, double ay, double oa, double bx, double by, double ob,
+  bool *whole)
+{
+  ExactSum sums[6];
+  const double t0[4] = {bx, ob, - ax, - oa}, t1[2] = {by, - ay};
+  const double t2[2] = {y0, - ay}, t3[3] = {x0, - ax, - oa};
+  const double t4[2] = {y1, - ay}, t5[3] = {x1, - ax, - oa};
+  exact_sum_set(&sums[0], t0, 4);
+  exact_sum_set(&sums[1], t1, 2);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 3);
+  exact_sum_set(&sums[4], t4, 2);
+  exact_sum_set(&sums[5], t5, 3);
+  const PolyTerm f0[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 2}},
+    {.coef = -1.0, .deg = 2, .sum = {1, 3}}};
+  const PolyTerm f1[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {0, 4}},
+    {.coef = -1.0, .deg = 2, .sum = {1, 5}}};
+  return linear_cross_offset(sums, f0, 2, f1, 2, D, whole);
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses a grid line of an
+ * affine grid, as the offset from the start of the segment, truncated
+ * @details The grid is the affine map of a geotransform `gt`, the position
+ * `(gt[0] + c gt[1] + r gt[2], gt[3] + c gt[4] + r gt[5])` at the grid
+ * coordinates `(c, r)`, as GDAL and PostGIS state a raster's
+ * georeferencing. Its column line @p k is where `gt[5] (x - gt[0]) - gt[2]
+ * (y - gt[3]) - k det` vanishes and its row line @p k where `gt[1] (y -
+ * gt[3]) - gt[4] (x - gt[0]) - k det` does, `det = gt[1] gt[5] - gt[2]
+ * gt[4]`: the grid coordinate times `det`, read exactly from the six doubles
+ * with no inverse of the geotransform, which would round. Each is affine in
+ * the position, so the crossing is dated by #linear_cross_offset, the
+ * truncation of its exact parameter, as #segment_edge_cross_offset dates the
+ * crossing of the line of an edge.
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment
+ * @param[in] D Duration of the segment in microseconds, below 2^53
+ * @param[in] gt Geotransform of the grid
+ * @param[in] axis 0 for a column line, 1 for a row line
+ * @param[in] k Grid line, an integer
+ * @param[out] whole True when the point lies on the line exactly at the
+ * microsecond returned
+ * @return The offset in microseconds: 0 when the segment starts on the line,
+ * @p D when it reaches the line only at its end or never
+ * @note Exact where no product of the components of the sums overflows or
+ * underflows, as #polynomial_sign_exact states it
+ */
+int64
+segment_grid_line_cross_offset(double x0, double y0, double x1, double y1,
+  int64 D, const double *gt, int axis, double k, bool *whole)
+{
+  ExactSum sums[9];
+  const double t0[2] = {x0, - gt[0]}, t1[2] = {y0, - gt[3]};
+  const double t2[2] = {x1, - gt[0]}, t3[2] = {y1, - gt[3]};
+  exact_sum_set(&sums[0], t0, 2);
+  exact_sum_set(&sums[1], t1, 2);
+  exact_sum_set(&sums[2], t2, 2);
+  exact_sum_set(&sums[3], t3, 2);
+  for (int i = 0; i < 4; i++)
+    exact_sum_set(&sums[4 + i], &gt[i < 2 ? i + 1 : i + 2], 1);
+  exact_sum_set(&sums[8], &k, 1);
+  /* sums[4..7] are gt[1], gt[2], gt[4], gt[5]; the column line reads
+   * gt[5] dx - gt[2] dy and the row line gt[1] dy - gt[4] dx, each less k
+   * det = k (gt[1] gt[5] - gt[2] gt[4]) */
+  int a = axis ? 4 : 7, b = axis ? 6 : 5;   /* coefficient of dy, dx */
+  int sa = axis ? 1 : 0, sb = axis ? 0 : 1; /* dy for a row line, dx else */
+  double sign_b = -1.0;
+  const PolyTerm f0[4] = {
+    {.coef = 1.0, .deg = 2, .sum = {a, sa}},
+    {.coef = sign_b, .deg = 2, .sum = {b, sb}},
+    {.coef = -1.0, .deg = 3, .sum = {8, 4, 7}},
+    {.coef = 1.0, .deg = 3, .sum = {8, 5, 6}}};
+  const PolyTerm f1[4] = {
+    {.coef = 1.0, .deg = 2, .sum = {a, sa + 2}},
+    {.coef = sign_b, .deg = 2, .sum = {b, sb + 2}},
+    {.coef = -1.0, .deg = 3, .sum = {8, 4, 7}},
+    {.coef = 1.0, .deg = 3, .sum = {8, 5, 6}}};
+  return linear_cross_offset(sums, f0, 4, f1, 4, D, whole);
+}
+
+/**
+ * @brief Return the sign of the difference between a grid coordinate of a
+ * position and a grid line of an affine grid, exactly
+ * @details The grid coordinate is read through the six doubles of the
+ * geotransform as #segment_grid_line_cross_offset reads it: the column of
+ * the position is `(gt[5] (x - gt[0]) - gt[2] (y - gt[3])) / det` and its
+ * row `(gt[1] (y - gt[3]) - gt[4] (x - gt[0])) / det`, `det = gt[1] gt[5] -
+ * gt[2] gt[4]`, so the sign is that of the numerator less @p k det, times
+ * that of det, each a polynomial in the input doubles that
+ * #polynomial_sign_exact decides. A position lies in the pixel of column c
+ * when the sign is 0 or 1 at c and -1 at c + 1, which gives a pixel the
+ * lines of its lower column and row
+ * @param[in] x,y Position
+ * @param[in] gt Geotransform of the grid, of non-zero determinant
+ * @param[in] axis 0 for a column line, 1 for a row line
+ * @param[in] k Grid line, an integer
+ * @return -1, 0 or 1 as the grid coordinate is less than, equal to or
+ * greater than @p k
+ */
+int
+grid_line_side(double x, double y, const double *gt, int axis, double k)
+{
+  ExactSum sums[7];
+  const double t0[2] = {x, - gt[0]}, t1[2] = {y, - gt[3]};
+  exact_sum_set(&sums[0], t0, 2);
+  exact_sum_set(&sums[1], t1, 2);
+  for (int i = 0; i < 4; i++)
+    exact_sum_set(&sums[2 + i], &gt[i < 2 ? i + 1 : i + 2], 1);
+  exact_sum_set(&sums[6], &k, 1);
+  /* sums[2..5] are gt[1], gt[2], gt[4], gt[5] */
+  const PolyTerm det[2] = {
+    {.coef = 1.0, .deg = 2, .sum = {2, 5}},
+    {.coef = -1.0, .deg = 2, .sum = {3, 4}}};
+  int sdet = polynomial_sign_exact(sums, det, 2);
+  int a = axis ? 2 : 5, b = axis ? 4 : 3;   /* coefficient of dy, dx */
+  int sa = axis ? 1 : 0, sb = axis ? 0 : 1;
+  const PolyTerm f[4] = {
+    {.coef = 1.0, .deg = 2, .sum = {a, sa}},
+    {.coef = -1.0, .deg = 2, .sum = {b, sb}},
+    {.coef = -1.0, .deg = 3, .sum = {6, 2, 5}},
+    {.coef = 1.0, .deg = 3, .sum = {6, 3, 4}}};
+  return sdet * polynomial_sign_exact(sums, f, 4);
 }
 
 /**
@@ -1972,8 +2213,6 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
   return 2;
 }
 
-/** Number of doubles of the arena in which #polynomial_sign_stack forms each
- * term, and of each of its two buffers of the total */
 /**
  * @brief Return the sign of a polynomial in exact sums where its filters
  * carry it, and 2 where they cannot tell
@@ -5111,6 +5350,189 @@ point_segment_shortestline_exact(const double *c, double r, const double *a,
   bx = dyadic_wide_mul(ar, wr, dx); by = dyadic_wide_mul(ar, wr, dy);
   *sx = dyadic_wide_nearest_offset_root(ar, c[0], bx, s);
   *sy = dyadic_wide_nearest_offset_root(ar, c[1], by, s);
+  dyadic_wide_arena_free(ar);
+  return;
+}
+
+static void linesegm_crossing_quotient(const double *a, const double *b,
+  const double *c, const double *d, double *x, double *y);
+
+/* The sum of two doubles as its rounded value and the error of that rounding,
+ * which together are the sum exactly */
+static inline void
+crossing_two_sum(double a, double b, double *x, double *y)
+{
+  *x = a + b;
+  double bv = *x - a;
+  *y = (a - (*x - bv)) + (b - bv);
+}
+
+/* The cross product `p x q` of two vectors held exactly as high and low parts,
+ * in double-double, and the bound of its error: the products of the high
+ * parts exact (#two_product), the four products of a high and a low part in
+ * doubles, the products of two low parts left out */
+static inline void
+crossing_cross_dd(double pxh, double pxl, double pyh, double pyl, double qxh,
+  double qxl, double qyh, double qyl, double *h, double *l, double *err)
+{
+  double p1, e1, p2, e2, dh, dl;
+  two_product(pxh, qyh, &p1, &e1);
+  two_product(pyh, qxh, &p2, &e2);
+  crossing_two_sum(p1, - p2, &dh, &dl);
+  dl += (e1 - e2) + ((pxh * qyl + pxl * qyh) - (pyh * qxl + pyl * qxh));
+  crossing_two_sum(dh, dl, h, l);
+  /* Each part left out or rounded is at most a few u^2 of the products */
+  *err = 0x1p-101 * (fabs(p1) + fabs(p2));
+  return;
+}
+
+/* The distance from a finite double to the nearer of the doubles beside it,
+ * read off its bits as #cert_ulp_up reads the spacing above it: the spacing
+ * 2^(e - 52) of its binade, half that toward zero from a power of two, whose
+ * neighbour below lies in the binade beneath, and the smallest subnormal
+ * among the subnormals and the binade above them */
+static inline double
+crossing_gap(double x)
+{
+  uint64_t u;
+  memcpy(&u, &x, sizeof(u));
+  int e = (int) ((u >> 52) & 0x7ff);
+  if (e <= 1)
+    return 0x1p-1074;
+  /* A power of two is the one double whose mantissa bits are all zero */
+  if ((u & UINT64CONST(0xFFFFFFFFFFFFF)) == 0)
+    e--;
+  if (e <= 52)
+    return ldexp(1.0, e - 1075);
+  uint64_t r = (uint64_t) (e - 52) << 52;
+  double d;
+  memcpy(&d, &r, sizeof(d));
+  return d;
+}
+
+/* The crossing in double-double, a coordinate kept where its bound proves it
+ * the double nearest the exact value: false where it cannot tell */
+static bool
+linesegm_crossing_filter(const double *a, const double *b, const double *c,
+  const double *d, double *x, double *y)
+{
+  for (int i = 0; i < 2; i++)
+    if (! (fabs(a[i]) <= 0x1p400 && fabs(b[i]) <= 0x1p400 &&
+           fabs(c[i]) <= 0x1p400 && fabs(d[i]) <= 0x1p400))
+      return false;
+  /* r = b - a, s = d - c, w = c - a, each exactly as a high and a low part */
+  double rh[2], rl[2], sh[2], sl[2], wh[2], wl[2];
+  for (int i = 0; i < 2; i++)
+  {
+    two_diff(b[i], a[i], &rh[i], &rl[i]);
+    two_diff(d[i], c[i], &sh[i], &sl[i]);
+    two_diff(c[i], a[i], &wh[i], &wl[i]);
+    /* A difference too small for its products to stay normal */
+    if ((rh[i] != 0.0 && fabs(rh[i]) < 0x1p-400) ||
+        (sh[i] != 0.0 && fabs(sh[i]) < 0x1p-400) ||
+        (wh[i] != 0.0 && fabs(wh[i]) < 0x1p-400))
+      return false;
+  }
+  double dh, dl, derr, nh, nl, nerr;
+  crossing_cross_dd(rh[0], rl[0], rh[1], rl[1], sh[0], sl[0], sh[1], sl[1],
+    &dh, &dl, &derr);
+  crossing_cross_dd(wh[0], wl[0], wh[1], wl[1], sh[0], sl[0], sh[1], sl[1],
+    &nh, &nl, &nerr);
+  if (! (fabs(dh) > 2.0 * derr) || ! isfinite(nh))
+    return false;
+  /* t = N / D, one quotient refined by the remainder, which fma forms exactly */
+  double th = nh / dh;
+  double rem = fma(- th, dh, nh);
+  double tl = (rem + nl - th * dl) / dh;
+  double at = fabs(th);
+  double terr = (nerr + at * derr) / (fabs(dh) - derr) + 0x1p-100 * at;
+  double out[2];
+  for (int i = 0; i < 2; i++)
+  {
+    /* a + t r, t = th + tl and r = rh + rl */
+    double ph, pl, s1, s2, hi, lo;
+    two_product(th, rh[i], &ph, &pl);
+    double small = pl + th * rl[i] + tl * rh[i];
+    crossing_two_sum(a[i], ph, &s1, &s2);
+    double low = s2 + small;
+    crossing_two_sum(s1, low, &hi, &lo);
+    double ar = fabs(rh[i]) * (1.0 + 0x1p-50);
+    double bound = ar * terr + 0x1p-100 * at * ar + 0x1p-51 * fabs(low) +
+      0x1p-1000;
+    if (! isfinite(hi) || ! (fabs(lo) + bound < 0.5 * crossing_gap(hi)))
+      return false;
+    out[i] = hi;
+  }
+  *x = out[0];
+  *y = out[1];
+  return true;
+}
+
+/**
+ * @brief Set the point where the lines of two segments cross, each coordinate
+ * the double nearest its exact value
+ * @details The lines of ab and cd cross at `a + t (b - a)`,
+ * `t = N / D` with `N = (c - a) x (d - c)` and `D = (b - a) x (d - c)`, so
+ * each coordinate is the rational `(a D + (b - a) N) / D`, of degree three in
+ * the input doubles, rounded once to its nearest double
+ * (#dyadic_wide_nearest_quotient), as #point_segment_shortestline_exact rounds
+ * the foot of a perpendicular. A filter reads it first in double-double with a
+ * bound of its error (#linesegm_crossing_filter), and keeps a coordinate where
+ * the bound proves it nearest. A crossing at an end of a segment is that end,
+ * an input vertex, so a caller passes it through rather than constructing it
+ * @param[in] a,b Ends of the first segment
+ * @param[in] c,d Ends of the second segment
+ * @param[out] x,y Crossing
+ * @pre The two directions are not parallel, `D != 0`, which
+ * #linesegm_intersect decides exactly
+ */
+void
+linesegm_crossing_exact(const double *a, const double *b, const double *c,
+  const double *d, double *x, double *y)
+{
+  /* Most crossings stand far enough from a midpoint between two doubles for
+   * the double-double value and its bound to tell, a filter ahead of the
+   * exact quotient as #point_segment_offset_sign reads its sign first in
+   * doubles */
+  if (! linesegm_crossing_filter(a, b, c, d, x, y))
+    linesegm_crossing_quotient(a, b, c, d, x, y);
+  return;
+}
+
+/* The crossing of #linesegm_crossing_exact, each coordinate the nearest double
+ * of its exact quotient (#dyadic_wide_nearest_quotient) */
+static void
+linesegm_crossing_quotient(const double *a, const double *b, const double *c,
+  const double *d, double *x, double *y)
+{
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *wax = dyadic_wide_of_double(ar, a[0]),
+    *way = dyadic_wide_of_double(ar, a[1]),
+    *wcx = dyadic_wide_of_double(ar, c[0]),
+    *wcy = dyadic_wide_of_double(ar, c[1]);
+  /* r = b - a, s = d - c, w = c - a, all exact */
+  const DyadicWide *rx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b[0]), wax),
+    *ry = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b[1]), way),
+    *sx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, d[0]), wcx),
+    *sy = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, d[1]), wcy),
+    *wx = dyadic_wide_sub(ar, wcx, wax),
+    *wy = dyadic_wide_sub(ar, wcy, way);
+  const DyadicWide *den = dyadic_wide_sub(ar, dyadic_wide_mul(ar, rx, sy),
+    dyadic_wide_mul(ar, ry, sx));
+  const DyadicWide *num = dyadic_wide_sub(ar, dyadic_wide_mul(ar, wx, sy),
+    dyadic_wide_mul(ar, wy, sx));
+  assert(den->sign != 0);
+  /* The quotient is read with a positive denominator */
+  int sign = den->sign;
+  den = dyadic_wide_signed(ar, den, sign);
+  num = dyadic_wide_signed(ar, num, sign);
+  const DyadicWide *qx = dyadic_wide_add(ar, dyadic_wide_mul(ar, wax, den),
+    dyadic_wide_mul(ar, rx, num));
+  const DyadicWide *qy = dyadic_wide_add(ar, dyadic_wide_mul(ar, way, den),
+    dyadic_wide_mul(ar, ry, num));
+  *x = dyadic_wide_nearest_quotient(qx, den);
+  *y = dyadic_wide_nearest_quotient(qy, den);
   dyadic_wide_arena_free(ar);
   return;
 }
@@ -9052,6 +9474,26 @@ ddb_sqrt(DDBound a, DDBound *r)
 }
 
 /**
+ * @brief Return the quotient of a bounded value by a positive integer @p k
+ * below 2^53, with its bound, the twin of #ddb_div for an exact divisor
+ * @details The remainder of the quotient in doubles, `a.hi - q k`, is exact
+ * by a fused multiply-add, so the second double `(rem + a.lo) / k` is the
+ * rest of the quotient within twice its own rounding, below 2^-104 of `q`;
+ * the residuals #ddb_div forms for any divisor are not needed
+ */
+static DDBound
+ddb_div_int(DDBound a, int k)
+{
+  double dk = (double) k;
+  double q = a.hi / dk;
+  double rem = fma(- q, dk, a.hi);
+  DDBound r;
+  two_sum(q, (rem + a.lo) / dk, &r.hi, &r.lo);
+  r.e = (a.e / dk + DDB_EPS * fabs(q)) * DDB_UP + DDB_TINY;
+  return r;
+}
+
+/**
  * @brief Set @p r to the degrees of atan(t), the true t in [0, 1], with
  * their bound, or return false where a bound cannot be kept
  * @details The twin of #fix_atan_bound in bounded pairs of doubles: three
@@ -9060,7 +9502,7 @@ ddb_sqrt(DDBound a, DDBound *r)
  * with decreasing terms; it stops at a power of t below 2^-112, which
  * bounds the rest; the result is eight times the sum, times 180 / pi. Every
  * operation carries the bound of its operands (#ddb_mul, #ddb_div,
- * #ddb_sqrt), so the bound is on the degrees of the true t
+ * #ddb_div_int, #ddb_sqrt), so the bound is on the degrees of the true t
  */
 static bool
 ddb_atan_degrees(DDBound t, DDBound *r)
@@ -9081,11 +9523,7 @@ ddb_atan_degrees(DDBound t, DDBound *r)
   for (int k = 1; k < 40 && ! done; k++)
   {
     p = ddb_mul(p, t2);
-    DDBound d, term;
-    d.hi = 2.0 * k + 1.0;
-    d.lo = d.e = 0.0;
-    if (! ddb_div(p, d, &term))
-      return false;
+    DDBound term = ddb_div_int(p, 2 * k + 1);
     sum = (k % 2) ? ddb_sub(sum, term) : ddb_add(sum, term);
     double pmag = ddb_mag_up(p);
     if (pmag < 0x1p-112)
@@ -9216,6 +9654,65 @@ ddb_vector_lat_nearest(const int64 *v, double *result)
     deg = ddb_sub(k, deg);
   }
   return ddb_degrees_nearest(deg, z > 0 ? 1.0 : -1.0, result);
+}
+
+/* pi as the sum of two doubles, within 2^-108 of it (mpmath at 4000 bits),
+ * and the bound kept for it */
+#define DDB_PI_HI 0x1.921fb54442d18p+1
+#define DDB_PI_LO 0x1.1a62633145c07p-53
+#define DDB_PI_ERR 0x1p-100
+
+/**
+ * @brief Set @p result to the double nearest the latitude in degrees of the
+ * row @p r of the Web Mercator grid, atan(sinh(pi r)), 0 < |r| <= 1, where
+ * bounded pairs of doubles decide it, and return false where they cannot
+ * @details The latitude is 2 atan(tanh(t / 2)) for t = pi |r|, and
+ * tanh(t / 2) = m / (m + 2) for m = e^t - 1, which keeps its relative
+ * accuracy as t nears 0: m is the series of e^(t/8) - 1, every term positive
+ * and the rest below the last term read, then three doublings of the angle,
+ * m (2 + m) each (#ddb_atan_degrees, #ddb_degrees_nearest)
+ */
+bool
+ddb_mercator_lat_nearest(double r, double *result)
+{
+  double ar = fabs(r);
+  if (! (ar > 0x1p-900 && ar <= 1.0))
+    return false;
+  DDBound pi, x, two, m, p, t, deg;
+  pi.hi = DDB_PI_HI;
+  pi.lo = DDB_PI_LO;
+  pi.e = DDB_PI_ERR;
+  x.hi = ar / 8.0;
+  x.lo = x.e = 0.0;
+  /* u = pi |r| / 8, below 1/2 */
+  DDBound u = ddb_mul(pi, x);
+  two.hi = 2.0;
+  two.lo = two.e = 0.0;
+  m = p = u;
+  bool done = false;
+  for (int k = 2; k < 60 && ! done; k++)
+  {
+    p = ddb_div_int(ddb_mul(p, u), k);
+    m = ddb_add(m, p);
+    double pmag = ddb_mag_up(p);
+    if (pmag < 0x1p-112 * ddb_low(m))
+    {
+      /* The terms left are positive and each at most a quarter of the one
+       * before, so they sum to less than this one */
+      m.e = (m.e + pmag) * DDB_UP;
+      done = true;
+    }
+  }
+  if (! done)
+    return false;
+  for (int i = 0; i < 3; i++)
+    m = ddb_mul(m, ddb_add(two, m));
+  if (! ddb_div(m, ddb_add(m, two), &t) || ! ddb_atan_degrees(t, &deg))
+    return false;
+  deg.hi *= 2.0;
+  deg.lo *= 2.0;
+  deg.e *= 2.0;
+  return ddb_degrees_nearest(deg, r > 0 ? 1.0 : -1.0, result);
 }
 
 /**
@@ -12589,8 +13086,8 @@ arcseg_arena_alloc(ArcsegArena *arena, int ndoubles)
  * @brief Return true where the buffer of an arena holds room for
  * @p ndoubles past the values it holds
  * @details A sum or a product is formed in that room, at
- * `arena->buf + arena->used`, with its scratch, as #polynomial_sign_stack
- * lays out a term, and its compressed result, written at the start of the
+ * `arena->buf + arena->used`, with its scratch (#arcseg_x_add,
+ * #arcseg_x_mul), and its compressed result, written at the start of the
  * room, is all the arena keeps (#arcseg_arena_keep): the scratch, and the
  * components compression merges, cost no room after it
  */
@@ -21674,9 +22171,8 @@ geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
 bool
 geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  // TODO: Currently, activating these lines break tests
-  // assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
-  // assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
+  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
   if (FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) )
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
@@ -22798,7 +23294,7 @@ edge_index_query(const EdgeIndex *index, Edge **edges, double xmin,
     if (e->xmax < xmin || e->xmin > xmax || e->ymax < ymin || e->ymin > ymax)
       continue;
     int64 id = (int64) ids[k];
-    meos_array_add(result, &id);
+    meos_array_add_intl(result, &id);
   }
   const uint32_t *apart = alongy ? index->tall : index->wide;
   int napart = alongy ? index->ntall : index->nwide;
@@ -22808,7 +23304,7 @@ edge_index_query(const EdgeIndex *index, Edge **edges, double xmin,
     if (e->xmax < xmin || e->xmin > xmax || e->ymax < ymin || e->ymin > ymax)
       continue;
     int64 id = (int64) apart[k];
-    meos_array_add(result, &id);
+    meos_array_add_intl(result, &id);
   }
   return (int) result->count;
 }
@@ -27839,7 +28335,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     if (! relate_area_boundary_edge(e))
     {
       /* An edge of another dimension bounds no area of the union */
-      meos_array_add(result, e);
+      meos_array_add_intl(result, e);
       continue;
     }
     /* Split the edge at every intersection with another boundary edge */
@@ -27939,7 +28435,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
         seen = relate_same_portion((Edge *) meos_array_get_intl(result, q),
           &piece);
       if (! seen)
-        meos_array_add(result, &piece);
+        meos_array_add_intl(result, &piece);
     }
   }
   pfree(params);
@@ -31059,7 +31555,7 @@ meos_linear_union(const LWGEOM *geom)
     if (straight && haslength)
     {
       for (int e = 0; e < (int) edges->count; e++)
-        meos_array_add(lineedges, meos_array_get_intl(edges, e));
+        meos_array_add_intl(lineedges, meos_array_get_intl(edges, e));
       meos_array_destroy(edges);
       continue;
     }
@@ -31631,7 +32127,7 @@ geom_ptarrays(const LWGEOM *geom, MeosArray *arrays)
     {
       const LWPOLY *poly = (const LWPOLY *) geom;
       for (uint32_t i = 0; i < poly->nrings; i++)
-        meos_array_add(arrays, &poly->rings[i]);
+        meos_array_add_intl(arrays, &poly->rings[i]);
       return;
     }
     /* ⛔ The rings of a CURVEPOLYGON and the pieces of a COMPOUNDCURVE are
@@ -31656,7 +32152,7 @@ geom_ptarrays(const LWGEOM *geom, MeosArray *arrays)
     default:
       return;
   }
-  meos_array_add(arrays, &pa);
+  meos_array_add_intl(arrays, &pa);
   return;
 }
 
@@ -31694,7 +32190,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   MeosArray *arrays = meos_array_create(sizeof(POINTARRAY *));
   geom_ptarrays(geom, arrays);
   int nvertices = 0;
-  for (int i = 0; i < meos_array_count(arrays); i++)
+  for (int i = 0; i < meos_array_count_intl(arrays); i++)
     nvertices +=
       (int) (*(POINTARRAY **) meos_array_get_intl(arrays, i))->npoints;
 
@@ -31709,7 +32205,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   LiftPoint *lifted = palloc(sizeof(LiftPoint) * Max(nvertices, 1));
   bool zok = hasz, mok = hasm;
   int nvertex = 0;
-  for (int i = 0; i < meos_array_count(arrays); i++)
+  for (int i = 0; i < meos_array_count_intl(arrays); i++)
   {
     const POINTARRAY *pa = *(POINTARRAY **) meos_array_get_intl(arrays, i);
     for (uint32_t j = 0; j < pa->npoints; j++)
@@ -31759,7 +32255,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   MeosArray *outarrays = meos_array_create(sizeof(POINTARRAY *));
   geom_ptarrays(result, outarrays);
   nvertex = 0;
-  for (int i = 0; i < meos_array_count(outarrays); i++)
+  for (int i = 0; i < meos_array_count_intl(outarrays); i++)
   {
     POINTARRAY *pa = *(POINTARRAY **) meos_array_get_intl(outarrays, i);
     for (uint32_t j = 0; j < pa->npoints; j++)
