@@ -87,10 +87,10 @@ tiling_families:
   begin: "@brief Bounding box operations for temporal pcpoint and pcpatch values"
   end: ""
   blocks:
-  - lit: "/**\n * @file\n * @brief Bounding box operations for temporal pcpoint and pcpatch values\n */\n\n-- tpcpoint\n\n-- spans()\nCREATE FUNCTION spans(tpcpoint)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
-  - splits: {temps: [tpcpoint], kinds: [spans], comment: true}
-  - lit: "\n-- tpcpatch\n\n-- spans()\nCREATE FUNCTION spans(tpcpatch)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
-  - splits: {temps: [tpcpatch], kinds: [spans], comment: true}
+  - lit: "/**\n * @file\n * @brief Bounding box operations for temporal pcpoint and pcpatch values\n */\n\n-- tpcpoint\n\n-- spans()\nCREATE FUNCTION spans(tpcpoint)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- tpcboxes()\nCREATE FUNCTION tpcboxes(tpcpoint)\n  RETURNS tpcbox[]\n  AS 'MODULE_PATHNAME', 'Tpointcloud_tpcboxes'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - splits: {temps: [tpcpoint], kinds: [spans, tpcboxes], comment: true}
+  - lit: "\n-- tpcpatch\n\n-- spans()\nCREATE FUNCTION spans(tpcpatch)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- tpcboxes()\nCREATE FUNCTION tpcboxes(tpcpatch)\n  RETURNS tpcbox[]\n  AS 'MODULE_PATHNAME', 'Tpointcloud_tpcboxes'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - splits: {temps: [tpcpatch], kinds: [spans, tpcboxes], comment: true}
   - lit: "\n/*****************************************************************************/"
 - family: pose
   file: mobilitydb/sql/pose/102_tpose.in.sql
