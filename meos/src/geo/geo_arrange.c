@@ -924,9 +924,11 @@ arr_meet_segments(Arr *a, uint32_t i, uint32_t j)
   }
   if (vertex)
     return ARR_ANSWERED;
-  /* Interior to both: one node, rounded once */
-  double x = p->x1 + r.t0 * (p->x2 - p->x1);
-  double y = p->y1 + r.t0 * (p->y2 - p->y1);
+  /* Interior to both: one node, the double nearest the exact crossing */
+  const double pa[2] = {p->x1, p->y1}, pb[2] = {p->x2, p->y2},
+    qa[2] = {q->x1, q->y1}, qb[2] = {q->x2, q->y2};
+  double x, y;
+  linesegm_crossing_exact(pa, pb, qa, qb, &x, &y);
   int sign = cross_product_sign(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1,
     q->x2, q->y2);
   uint32_t node = arr_node_new(a, x, y, false, -1);
@@ -1344,19 +1346,6 @@ arr_one_line(const Edge *p, const Edge *q)
       q->y1) == 0;
 }
 
-/* The order of two segments by their coordinates, which makes the rounding
- * of their crossing independent of the order they are met in */
-static int
-arr_segment_cmp(const Edge *p, const Edge *q)
-{
-  const double a[4] = {p->x1, p->y1, p->x2, p->y2};
-  const double b[4] = {q->x1, q->y1, q->x2, q->y2};
-  for (int k = 0; k < 4; k++)
-    if (a[k] != b[k])
-      return (a[k] < b[k]) ? -1 : 1;
-  return 0;
-}
-
 /**
  * @brief Node two stretches where they meet
  * @details Where the lines of their segments cross, the point is an input
@@ -1427,17 +1416,13 @@ arr_meet_stretches(Arr *a, uint32_t i, uint32_t j)
       node = arr_vertex(a, x, y);
     else
     {
-      /* Rounded once, from the two segments in the order of their
-       * coordinates */
+      /* The double nearest the exact crossing of the two segments */
       const Edge *s1 = a->sup[i], *s2 = a->sup[j];
-      if (arr_segment_cmp(s1, s2) > 0)
-      {
-        const Edge *t = s1; s1 = s2; s2 = t;
-      }
-      IntersectResult rs = linesegm_intersect(s1->x1, s1->y1, s1->x2, s1->y2,
-        s2->x1, s2->y1, s2->x2, s2->y2);
-      node = arr_node_new(a, s1->x1 + rs.t0 * (s1->x2 - s1->x1),
-        s1->y1 + rs.t0 * (s1->y2 - s1->y1), false, -1);
+      const double a1[2] = {s1->x1, s1->y1}, b1[2] = {s1->x2, s1->y2},
+        a2[2] = {s2->x1, s2->y1}, b2[2] = {s2->x2, s2->y2};
+      double cx, cy;
+      linesegm_crossing_exact(a1, b1, a2, b2, &cx, &cy);
+      node = arr_node_new(a, cx, cy, false, -1);
       a->nodes[node].cross = arr_cross_new(a, node, i, j, sign);
       a->nodes[node].bx = bx;
       a->nodes[node].by = by;

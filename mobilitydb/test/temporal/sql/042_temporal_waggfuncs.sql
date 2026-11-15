@@ -94,6 +94,18 @@ SELECT wsum(temp, interval '1 day') FROM (VALUES ('{5000000000000000000@2001-01-
 
 SELECT wmax(temp, interval '1 day') FROM (VALUES (tfloat '[1@2001-01-01, 1@2001-01-02]'),('[1@2001-01-03, 1@2001-01-04]')) t(temp);
 
+-- A step sequence holds its values in runs, and a held last value that
+-- differs from the one before it is a run of its own, within the window of
+-- every instant up to a window after it
+SELECT wmin(temp, interval '1 day') FROM (VALUES (tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]')) t(temp);
+SELECT wmax(temp, interval '1 day') FROM (VALUES (tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]')) t(temp);
+SELECT wsum(temp, interval '1 day') FROM (VALUES (tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]')) t(temp);
+SELECT wcount(temp, interval '1 day') FROM (VALUES (tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]')) t(temp);
+SELECT round(wavg(temp, interval '1 day'), 6) FROM (VALUES (tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]')) t(temp);
+-- A last instant repeating the value before it ends the run and counts once
+SELECT wcount(temp, interval '1 day') FROM (VALUES (tint '[1@2001-01-01, 1@2001-01-03]')) t(temp);
+SELECT wsum(temp, interval '1 day') FROM (VALUES (tint '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]')) t(temp);
+
 /* Errors */
 SELECT wsum(temp, interval '1 day') FROM (VALUES (tfloat '[1@2001-01-01, 1@2001-01-02]'),('[1@2001-01-03, 1@2001-01-04]')) t(temp);
 
