@@ -141,7 +141,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Add a value to the array. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >Tests its arguments and delegates to <a class="el" href="group__meos__internal__misc_ga7a9eef67b6b6ee7b8e1d3ed141677286.html#ga7a9eef67b6b6ee7b8e1d3ed141677286" title="Add a value to the array, for a caller that has made the array and, for a fixed-size array,...">meos_array_add_intl</a>, as <a class="el" href="group__meos__misc_gae9ed0534c80332de5f1dd4b45f9e46b6.html#gae9ed0534c80332de5f1dd4b45f9e46b6" title="Get the n-th element of the array (0-based)">meos_array_get</a> does to <a class="el" href="group__meos__internal__misc_ga2714bee359d0535b3c6c1bbe1e7961e5.html#ga2714bee359d0535b3c6c1bbe1e7961e5" title="Get the n-th element of the array (0-based), for a caller that has validated the index.">meos_array_get_intl</a>. A fixed-size array copies the value, so it refuses a null value; a varlength array stores the pointer it is given, a null one included. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">array</td><td>Array </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Pointer to the value to add. For fixed-size arrays, the value is copied. For varlength arrays, the pointer itself is stored. </td></tr>

@@ -12,5 +12,6 @@ var searchData=
   ['arc_5fcross_5funit_2ec_9',['arc_cross_unit.c',['../arc__cross__unit_8c.html',1,'']]],
   ['arc_5fdistance_5ftest_2ec_10',['arc_distance_test.c',['../arc__distance__test_8c.html',1,'']]],
   ['arithmetic_5foverflow_5ftest_2ec_11',['arithmetic_overflow_test.c',['../arithmetic__overflow__test_8c.html',1,'']]],
-  ['avg_5fvalue_5ftest_2ec_12',['avg_value_test.c',['../avg__value__test_8c.html',1,'']]]
+  ['array_5fvalidity_5ftest_2ec_12',['array_validity_test.c',['../array__validity__test_8c.html',1,'']]],
+  ['avg_5fvalue_5ftest_2ec_13',['avg_value_test.c',['../avg__value__test_8c.html',1,'']]]
 ];
