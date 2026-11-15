@@ -223,7 +223,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 			</para>
 			<itemizedlist>
 				<listitem><para><filename>CMake</filename> cross-platform build system.</para></listitem>
-				<listitem><para>C compiler <filename>gcc</filename> or <filename>clang</filename>. Other ANSI C compilers can be used but may cause problems compiling some dependencies.</para></listitem>
+				<listitem><para>C compiler <filename>gcc</filename> or <filename>clang</filename> on a 64-bit target, which provide the 128-bit integers MEOS computes on. A compiler without them, <filename>gcc</filename> on a 32-bit target or the <filename>cl.exe</filename> of Microsoft Visual C++, stops the configuration with an explicit error; on Windows, MinGW-w64 <filename>gcc</filename> or <filename>clang-cl</filename> builds MobilityDB.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</para></listitem>
 				<listitem><para>PostgreSQL version 16 to 19. Outside that range the configuration stops with an explicit error. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
 				<listitem><para>PostGIS version 3 or higher. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>

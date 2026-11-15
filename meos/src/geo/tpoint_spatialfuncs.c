@@ -696,7 +696,6 @@ geogpointsegm_mirrored(const POINT4D *p, bool hasz)
     (! hasz || (p[2].z == p[0].z && p[3].z == p[1].z));
 }
 
-#if MEOS_CORE_MATH
 /* The correctly rounded trigonometry vendored under core-math/ */
 extern double cr_sinpi(double x);
 extern double cr_cospi(double x);
@@ -957,7 +956,6 @@ geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
   *t = lower + est;
   return (est > 0 && est < d);
 }
-#endif /* MEOS_CORE_MATH */
 
 /**
  * @brief Return true if two temporal geography point segments meet strictly
@@ -1013,11 +1011,7 @@ geogpointsegm_meeting(Datum start1, Datum end1, Datum start2, Datum end2,
     *meet = true;
     if (p[1].y == - p[0].y)
       return tnumbersegm_crossing(0.0, 1.0, 1.0, 0.0, lower, upper, t);
-#if MEOS_CORE_MATH
     return geogpointsegm_mirror_date(p, lower, upper, t);
-#else
-    return false;
-#endif /* MEOS_CORE_MATH */
   }
   double s1[2], e1[2], s2[2], e2[2];
   int n = geogpointsegm_linear(p, hasz, s1, e1, s2, e2);
