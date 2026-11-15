@@ -696,6 +696,150 @@ geogpointsegm_mirrored(const POINT4D *p, bool hasz)
     (! hasz || (p[2].z == p[0].z && p[3].z == p[1].z));
 }
 
+/**
+ * @brief Return true if the sum of the doubles of an array is exactly zero
+ * @details The terms are gathered into an expansion by error-free sums
+ * (#two_diff of the negated term), whose nonzero components do not overlap,
+ * so that the sum is zero exactly where every component is zero
+ * @param[in] x Terms, finite
+ * @param[in] n Number of terms, at most 8
+ */
+static bool
+double_sum_zero(const double *x, int n)
+{
+  assert(n <= 8);
+  double e[8];
+  int len = 0;
+  for (int i = 0; i < n; i++)
+  {
+    double q = x[i];
+    for (int j = 0; j < len; j++)
+    {
+      double s, r;
+      two_diff(q, - e[j], &s, &r);
+      e[j] = r;
+      q = s;
+    }
+    e[len++] = q;
+  }
+  for (int j = 0; j < len; j++)
+  {
+    if (e[j] != 0.0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the point at which a geography point segment stands at the
+ * middle of its period where a half turn exchanging its ends proves it
+ * @details A half turn about an axis maps the great circle of a segment
+ * whose ends it exchanges to itself, and its motion at a constant angular
+ * speed to the same motion backward, so at the middle of the period the
+ * segment stands at a point of the axis. Two axes are recognised exactly on
+ * the doubles of the ends, their longitudes within [-180, 180] and their
+ * latitudes strictly between -90 and 90, the ends not antipodal:
+ * - the half turn about the axis through the point of the equator at the
+ *   longitude L exchanges the ends (L + d, f) and (L - d, -f); the segment
+ *   then stands at (L, 0) where the longitudes of its ends differ by less
+ *   than 180 degrees and at its antipode otherwise. The middle is returned as
+ *   the three terms whose sum is twice its longitude: the two end longitudes
+ *   and 360 or 0;
+ * - the half turn about the axis of the poles exchanges the ends (l, f) and
+ *   (l + 180, f); the segment then crosses the pole on the side of f.
+ * @param[in] a,b Ends of the segment
+ * @param[out] twice Terms of twice the longitude of a middle on the equator
+ * @return 1 for a middle on the equator, 2 for the north pole, 3 for the
+ * south pole, 0 where no half turn proves the middle
+ */
+static int
+geogpointsegm_middle(const POINT4D *a, const POINT4D *b, double *twice)
+{
+  if (! (fabs(a->x) <= 180.0 && fabs(b->x) <= 180.0 &&
+         fabs(a->y) < 90.0 && fabs(b->y) < 90.0))
+    return 0;
+  /* The difference of the longitudes, exactly d + dlo, lies within
+   * [-360, 360]; 180 being a double, the rounding d compares with 180 as the
+   * difference does, except where d is 180, where dlo decides */
+  double d, dlo;
+  two_diff(a->x, b->x, &d, &dlo);
+  double ad = fabs(d);
+  bool half = (ad == 180.0 && dlo == 0.0);
+  bool beyond = ad > 180.0 ||
+    (ad == 180.0 && (d > 0.0 ? dlo > 0.0 : dlo < 0.0));
+  if (b->y == - a->y)
+  {
+    /* Ends half a turn of longitude apart and of opposite latitudes are
+     * antipodal */
+    if (half)
+      return 0;
+    twice[0] = a->x;
+    twice[1] = b->x;
+    twice[2] = beyond ? 360.0 : 0.0;
+    return 1;
+  }
+  if (b->y == a->y && half)
+    return a->y > 0.0 ? 2 : 3;
+  return 0;
+}
+
+/**
+ * @brief Return true if two geography points are the same point of the sphere
+ * @details A latitude strictly between -90 and 90 is assumed, so that two
+ * longitudes name the same meridian where they are equal or are 180 and -180
+ */
+static bool
+geogpoint_same(const POINT4D *a, const POINT4D *b, bool hasz)
+{
+  return a->y == b->y &&
+    (a->x == b->x || (fabs(a->x) == 180.0 && a->x == - b->x)) &&
+    (! hasz || a->z == b->z);
+}
+
+/**
+ * @brief Return true if two geography point segments stand at one point at
+ * the middle of their period, the point proved on the doubles of their ends
+ * (#geogpointsegm_middle), and differ in their motion
+ * @details Two segments standing at one point at the middle meet there and
+ * nowhere else in the period. On two great circles they share only that
+ * point and its antipode, and a minor arc passes through it once and never
+ * through both; on one great circle the arc between their positions moves
+ * at the difference of their speeds, over less than half a turn in each half
+ * of the period, so it is zero only at the middle unless the two motions are
+ * the same. A Z coordinate moves linearly, so it meets at the middle where
+ * the sums of the Z coordinates of the ends are equal. Every comparison is
+ * an exact sum of input doubles (#double_sum_zero)
+ */
+static bool
+geogpointsegm_middle_meet(const POINT4D *p, bool hasz)
+{
+  double t1[3], t2[3];
+  int k1 = geogpointsegm_middle(&p[0], &p[1], t1);
+  if (k1 == 0 || geogpointsegm_middle(&p[2], &p[3], t2) != k1)
+    return false;
+  if (geogpoint_same(&p[0], &p[2], hasz) &&
+      geogpoint_same(&p[1], &p[3], hasz))
+    return false;
+  if (hasz)
+  {
+    const double z[4] = { p[0].z, p[1].z, - p[2].z, - p[3].z };
+    if (! double_sum_zero(z, 4))
+      return false;
+  }
+  if (k1 != 1)
+    return true;
+  /* Twice the longitudes of the two middles lie within [-360, 720], so they
+   * name one point where they differ by 0, 720 or -720 */
+  for (int j = -1; j <= 1; j++)
+  {
+    const double s[7] = { t1[0], t1[1], t1[2], - t2[0], - t2[1], - t2[2],
+      720.0 * j };
+    if (double_sum_zero(s, 7))
+      return true;
+  }
+  return false;
+}
+
 /* The correctly rounded trigonometry vendored under core-math/ */
 extern double cr_sinpi(double x);
 extern double cr_cospi(double x);
@@ -964,7 +1108,10 @@ geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
  * @details A geography point segment moves along the great circle of its ends
  * at a constant angular speed (#GeogSegmPair). Two segments meet where the
  * inputs prove it: a segment and its reverse meet at the middle of the
- * period, both standing at the middle of the arc; segments on the equator or
+ * period, both standing at the middle of the arc; segments that a half turn
+ * exchanging the ends of each proves to stand at one point at the middle of
+ * the period meet there (#geogpointsegm_middle_meet), on one great circle or
+ * on two; segments on the equator or
  * on one meridian move linearly in longitude or in latitude
  * (#geogpointsegm_linear) and meet as two planar points do
  * (#pointsegm_meet_coord); a segment and its mirror across the equator meet
@@ -995,6 +1142,13 @@ geogpointsegm_meeting(Datum start1, Datum end1, Datum start2, Datum end2,
   bool hasz = FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags);
   *meet = false;
   if (geogpointsegm_reversed(p, hasz))
+  {
+    *meet = true;
+    return tnumbersegm_crossing(0.0, 1.0, 1.0, 0.0, lower, upper, t);
+  }
+  /* Two segments that a half turn proves to stand at one point at the middle
+   * of the period meet there (#geogpointsegm_middle_meet) */
+  if (geogpointsegm_middle_meet(p, hasz))
   {
     *meet = true;
     return tnumbersegm_crossing(0.0, 1.0, 1.0, 0.0, lower, upper, t);
