@@ -618,6 +618,18 @@ keeps, in place of going from `DDBound` to `WideDyadic`; `plane_cross_dot_sign` 
 what MobilityDB #3484 needs to bring "refuters at" toward parity, and the distance walk of ED20,
 ED21 and ED23 reaches `segment_interior_offset_sign` too.
 
+Measured (2026-11-15, master `9b8665c2a7` with the names of EA1 step 3, branch
+`meas/ea2-ties-differential`): `plane_point_offset_sign` answered both ways, its doubles and
+`DDBound` then `DyadicWide` as it stands, and the same tiers then the expression ladder from its
+expansions on, the question written once with its normal formed once. The two answer alike on
+all 5 040 calls of the ED24 face corpora at the distance. Instructions per call, as it stands
+then on the expression ladder: 2855 and 5208 on the 48 refuting faces, which reach the exact
+tier, 364 and 359 on the 2 970 random faces, 190 and 185 on the 2 022 real faces, which the
+first tiers decide. The wide number on its arena (EA5) is the cheaper exact tier of this sign,
+by 1.82 times on its ties, where EA1 measured the wide number before its arena: the case for
+EA2 is spent, and `plane_point_offset_sign` keeps `DyadicWide`. The same holds for any sign of
+degree six whose wide tier reads the arena, so EA2 is closed without a change.
+
 ### EA3. The arithmetic in its own file
 
 A pure move: the representations, the tiers, the ladders, the searches and the exact signs leave
