@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.4.0 |
+| Version | v0.5.0 |
 | Scope | The values a binding of MEOS holds, the functions it calls on them, and the casts that connect them to the types of its host language |
 | Reference | `meos/include/meos.h` (`timestamptz_to_unix_us`, `timestamp_to_unix_us`, `date_to_unix_days`, `interval_to_parts` and their inverses), `pgtypes/pg_time.h` (`time_to_parts`, `timetz_to_parts` and their inverses), `meos/src/temporal/span.c`, `meos/test/unix_epoch_test.c`; the MEOS-API catalog (`typeEncodings`, `bindingScope`) |
 
@@ -264,6 +264,43 @@ names the zone once, on any thread, and every thread reads it.
 | main, its own zone | | `2001-12-06 00:00:00-05` |
 | a later thread, naming none | | `2001-12-06 00:00:00+03` |
 
+### 5.8 The infinities of a host
+
+A host whose timestamp or date holds `infinity` and `-infinity` (PostgreSQL,
+DuckDB) casts them to the infinities of MEOS's bare `timestamptz`, `timestamp`
+and `date`, read with `timestamp_is_finite` and `date_is_finite` and written as
+MEOS reads `'infinity'`, never through a count: the conversions of the counts
+refuse an infinity (sections 5.1 to 5.3). A bare value keeps its infinities, as
+PostgreSQL keeps them, and MEOS refuses them where they enter a value, as
+`doc/specs/meos-finite-values.md` states for every number: a set, a span, a
+span set, a temporal value and the time span of a box hold finite timestamps
+and dates only. `003_span.sql`, `001_set.sql` and `022_temporal.sql` record:
+
+| Input | Answer |
+|---|---|
+| `tstzspan '[-infinity, 2001-01-01]'` | `The timestamp must be finite` |
+| `datespan '[2001-01-01, infinity)'` | `The date must be finite` |
+| `tstzset '{2001-01-01, infinity}'` | `The timestamp must be finite` |
+| `tfloat '1@infinity'` | `The timestamp must be finite` |
+| `tstzspan '[2001-01-01, 2001-01-02]' @> timestamptz 'infinity'` | `false` |
+
+A predicate over an infinite timestamp answers, since it builds no value. A
+host without infinities (Python's `datetime`, Java's `Instant`, Go's
+`time.Time`) has none to cast.
+
+### 5.9 The error of a cast
+
+A cast that MEOS refuses reports the error through the binding's own idiom
+(rule 3): Go answers it as the `error` of `(value, error)`, Python, Java, .NET
+and JavaScript raise it, DuckDB raises its `InvalidInputException`, and
+MobilityDB raises PostgreSQL's `ERROR`. A binding whose handler returns learns
+of the error from `meos_errno`, which MEOS sets before it calls the handler,
+whichever handler the binding installs, so each refused call reports exactly
+its one error. `meos/test/handler_errno_test.c` records it under a handler
+that records no error number: `tbool_in('xyz@2001-01-01')` and
+`floatspan_in('[1, xyz]')` answer no value and one error, whose number
+`meos_errno` reads.
+
 ## 6. Types out of binding scope
 
 `numeric`, `box2d` and `box3d` are no class of any object layer.
@@ -285,6 +322,7 @@ types of its host.
 | v0.2.0 | The casts of `timestamp`, `date`, `interval`, `time` and `timetz` |
 | v0.3.0 | The width of a discrete span, Go's host types of `time` and `timetz`, the time zone of a thread |
 | v0.4.0 | The host types of .NET and JavaScript, the integers of 64 bits of a host whose number holds 2^53 |
+| v0.5.0 | The infinities of a host, refused where they enter a value; the error of a cast under any handler |
 
 A minor version adds what MEOS and the catalog newly guarantee; a major
 version changes a rule a binding follows.
