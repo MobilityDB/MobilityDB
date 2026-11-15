@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">temporal_waggfuncs.c File Reference</div></div>
 </div><!--header-->
@@ -93,8 +94,17 @@ $(function() {
 <code>#include &lt;utils/numeric.h&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structStepRun.html">StepRun</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A run of a step sequence: one value held over a time span.  <a href="structStepRun.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ac4789c24d3f23e905294ba50437a403d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2temporal_2temporal__waggfuncs_8c_ac4789c24d3f23e905294ba50437a403d.html#ac4789c24d3f23e905294ba50437a403d">steprun_extend</a> (Datum <a class="el" href="trgeo__distance_8txt_a422daeec0e503e75c4ee549ab25fa8e7.html#a422daeec0e503e75c4ee549ab25fa8e7">value</a>, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> temptype, const <a class="el" href="structStepRun.html">StepRun</a> *run, const <a class="el" href="structInterval.html">Interval</a> *interv)</td></tr>
+<tr class="memdesc:ac4789c24d3f23e905294ba50437a403d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sequence holding a value over a run extended by a time interval, a value held at an instant t being within the window of every instant from t to t plus the interval.  <a href="meos_2src_2temporal_2temporal__waggfuncs_8c_ac4789c24d3f23e905294ba50437a403d.html#ac4789c24d3f23e905294ba50437a403d">More...</a><br /></td></tr>
+<tr class="separator:ac4789c24d3f23e905294ba50437a403d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga72a9dfccbbb25edc3ceee3cc71b5efec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSkipList.html">SkipList</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__agg_ga72a9dfccbbb25edc3ceee3cc71b5efec.html#ga72a9dfccbbb25edc3ceee3cc71b5efec">tbigint_wmax_transfn</a> (<a class="el" href="structSkipList.html">SkipList</a> *state, const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structInterval.html">Interval</a> *interv)</td></tr>
 <tr class="memdesc:ga72a9dfccbbb25edc3ceee3cc71b5efec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for temporal maximum of temporal values.  <a href="group__meos__temporal__agg_ga72a9dfccbbb25edc3ceee3cc71b5efec.html#ga72a9dfccbbb25edc3ceee3cc71b5efec">More...</a><br /></td></tr>
 <tr class="separator:ga72a9dfccbbb25edc3ceee3cc71b5efec"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -182,6 +192,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aa647c07607de5179657d435c27995bc1"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2temporal_2temporal__waggfuncs_8c_aa647c07607de5179657d435c27995bc1.html#aa647c07607de5179657d435c27995bc1">tsequenceset_transform_wcount</a> (const <a class="el" href="structTSequenceSet.html">TSequenceSet</a> *ss, const <a class="el" href="structInterval.html">Interval</a> *interv, <a class="el" href="structTSequence.html">TSequence</a> **<a class="el" href="infinite__time__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a>)</td></tr>
 <tr class="memdesc:aa647c07607de5179657d435c27995bc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a temporal number sequence set by a time interval.  <a href="meos_2src_2temporal_2temporal__waggfuncs_8c_aa647c07607de5179657d435c27995bc1.html#aa647c07607de5179657d435c27995bc1">More...</a><br /></td></tr>
 <tr class="separator:aa647c07607de5179657d435c27995bc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff9c966277cc8d3cf64f95dbe2636f7e"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2temporal_2temporal__waggfuncs_8c_aff9c966277cc8d3cf64f95dbe2636f7e.html#aff9c966277cc8d3cf64f95dbe2636f7e">tstepseq_runs</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq, <a class="el" href="structStepRun.html">StepRun</a> *runs)</td></tr>
+<tr class="memdesc:aff9c966277cc8d3cf64f95dbe2636f7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Split a temporal sequence with step interpolation into its runs, the maximal spans over which it holds one value, and return their number.  <a href="meos_2src_2temporal_2temporal__waggfuncs_8c_aff9c966277cc8d3cf64f95dbe2636f7e.html#aff9c966277cc8d3cf64f95dbe2636f7e">More...</a><br /></td></tr>
+<tr class="separator:aff9c966277cc8d3cf64f95dbe2636f7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >General aggregate functions for temporal types. </p>
