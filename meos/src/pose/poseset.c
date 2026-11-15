@@ -189,6 +189,7 @@ poseset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_POSESET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   Pose **result = palloc(sizeof(Pose *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetPoseP(datum_copy(SET_VAL_N(s, i), s->basetype));
