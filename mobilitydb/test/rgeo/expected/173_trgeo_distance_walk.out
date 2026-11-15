@@ -345,9 +345,10 @@ SELECT round(tDistance(
  1.1094@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
--- Two bodies, one not convex: every pair of pieces is walked, and two bodies
--- turning in one segment give a temporal distance the lower envelope does
--- not read yet, while their ever-within predicate is answered
+-- Two bodies, one not convex: every pair of pieces is walked, the bodies
+-- translating, both turning at the same rate, and turning the opposite way
+-- with the square in the notch of the U, where the closest pair of pieces
+-- changes from one arm to the other
 SELECT round(tDistance(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
   trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(2 3),0)@2001-01-01, Pose(Point(2 8),0)@2001-01-02]'), 6);
@@ -356,10 +357,22 @@ SELECT round(tDistance(
  [0.416025@Mon Jan 01 00:00:00 2001 PST, 1.802776@Mon Jan 01 12:00:00 2001 PST, 3.807887@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT tDistance(
+SELECT round(tDistance(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]',
-  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]');
-ERROR:  The temporal distance of two temporal rigid geometries that turn in the same segment is not supported where a body is not convex
+  trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]'), 6);
+                                                                                                                                                        round                                                                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [6.363961@Mon Jan 01 00:00:00 2001 PST, 7.405881@Mon Jan 01 10:10:36.281812 2001 PST, 7.737238@Mon Jan 01 12:09:49.51179 2001 PST, 8.227922@Mon Jan 01 18:50:58.401318 2001 PST, 8.218097@Mon Jan 01 19:47:33.387445 2001 PST, 8.200229@Mon Jan 01 21:30:19.185227 2001 PST, 8.238073@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-2 -2,2 -2,2 2,0 -1,-2 2,-2 -2));[Pose(Point(0 0),-0.2)@2001-01-01, Pose(Point(0 0),0.2)@2001-01-02]',
+  trgeometry 'Polygon((-0.3 -0.3,0.3 -0.3,0.3 0.3,-0.3 0.3,-0.3 -0.3));[Pose(Point(0 0.8),0.5)@2001-01-01, Pose(Point(0 0.8),-0.5)@2001-01-02]'), 6);
+                                                                                                                                                    round                                                                                                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [0.525723@Mon Jan 01 00:00:00 2001 PST, 0.58091@Mon Jan 01 01:55:11.839324 2001 PST, 0.566985@Mon Jan 01 06:57:43.530951 2001 PST, 0.582435@Mon Jan 01 12:00:00 2001 PST, 0.566985@Mon Jan 01 17:02:16.469049 2001 PST, 0.58091@Mon Jan 01 22:04:48.160676 2001 PST, 0.525723@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT eDwithin(
   trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]',
   trgeometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5));[Pose(Point(9 9),0)@2001-01-01, Pose(Point(9 9),1)@2001-01-02]', 100);

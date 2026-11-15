@@ -52,19 +52,22 @@
  *        + c2*t^2 + c1*t + c0
  *
  * Each term has phase zero and a frequency that is not negative.  In one
- * temporal segment, the frequencies are wA, wB and wA - wB, where wA and wB
- * are the rotations of the two bodies.  Thus a function has at most three
- * terms.  If the bodies do not rotate, the function is a quadratic.
+ * temporal segment, the frequencies of the walk are wA, wB and wA - wB,
+ * where wA and wB are the rotations of the two bodies.  Thus a function of
+ * the walk has at most three terms.  If the bodies do not rotate, the
+ * function is a quadratic.
  *
- * The functions of the walk have affine coefficients, a2 = b2 = 0.  The
- * square of a function with one frequency w and an affine polynomial part,
- * #distfun_square(), has the frequencies w and 2w and quadratic
- * coefficients: the equation of the distance to a vertex and the distance to
- * an edge is such a difference, see trgeo_distance.txt.
+ * The functions of the walk have affine coefficients, a2 = b2 = 0.  Their
+ * square, #distfun_square(), has quadratic coefficients and the frequencies
+ * of the function, their doubles and the sums and differences of every two
+ * of them: at most twelve for the three frequencies of two turning bodies.
+ * The equation of the distance to a vertex and the distance to an edge is
+ * such a difference, see trgeo_distance.txt.
  *****************************************************************************/
 
-/** Maximum number of terms of a function */
-#define DISTFUN_MAXTERMS   3
+/** Maximum number of terms of a function: the square of a function of three
+ * frequencies, see #distfun_square() */
+#define DISTFUN_MAXTERMS   12
 
 /** Size of a root array for one call.  In tests, a function of the family
  * had at most four roots in [0, 1].  A touch of the level gives a group of
@@ -103,6 +106,7 @@ typedef struct
 /*****************************************************************************/
 
 extern void distfun_init(DistFun *f);
+extern void distfun_copy(DistFun *dst, const DistFun *src);
 extern bool distfun_add(DistFun *f, double w, double g, double A1, double A0,
   double B1, double B0);
 extern bool distfun_add_cs(DistFun *f, double w, double cg, double sg,

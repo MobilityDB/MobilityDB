@@ -484,23 +484,30 @@ main(int argc, char **argv)
       fail++;
   }
 
-  /* 9. The square of a function of one frequency, and a difference of two
-   * functions, against their direct values: L^2 * V - G^2, the equation of
-   * the distances to a vertex and to an edge */
+  /* 9. The square of a function of one frequency, or of the three
+   * frequencies wA, wB and wA - wB of two turning bodies, and a difference
+   * of two functions, against their direct values: L^2 * V - G^2, the
+   * equation of the distances to a vertex and to an edge */
   {
     double worst = 0.0;
     int refused = 0;
     for (int k = 0; k < trials; k++)
     {
       double w = (k % 5 == 0) ? 0.0 : rnd(-M_PI, M_PI);
+      double wb = rnd(-M_PI, M_PI);
+      const double ws[3] = {w, wb, w - wb};
+      int nw = (k % 2 == 1) ? 3 : 1;
       DistFun g, v, sq, h;
       distfun_init(&g);
-      distfun_add(&g, w, rnd(-M_PI, M_PI), rnd(-5, 5), rnd(-5, 5),
-        rnd(-5, 5), rnd(-5, 5));
-      distfun_add_poly(&g, 0.0, rnd(-3, 3), rnd(-3, 3));
       distfun_init(&v);
-      distfun_add(&v, w, rnd(-M_PI, M_PI), rnd(-5, 5), rnd(-5, 5),
-        rnd(-5, 5), rnd(-5, 5));
+      for (int i = 0; i < nw; i++)
+      {
+        distfun_add(&g, ws[i], rnd(-M_PI, M_PI), rnd(-5, 5), rnd(-5, 5),
+          rnd(-5, 5), rnd(-5, 5));
+        distfun_add(&v, ws[i], rnd(-M_PI, M_PI), rnd(-5, 5), rnd(-5, 5),
+          rnd(-5, 5), rnd(-5, 5));
+      }
+      distfun_add_poly(&g, 0.0, rnd(-3, 3), rnd(-3, 3));
       distfun_add_poly(&v, rnd(-3, 3), rnd(-3, 3), rnd(-3, 3));
       double L = rnd(0.1, 4.0);
       if (! distfun_square(&g, &sq))
