@@ -669,15 +669,16 @@ The move is judged on its head alone, no build of its base read: a function the 
 across the boundary is a tier reached on a tie (the expansions, the wide numbers, the ladder's
 runner and arena, the searches) or a body large enough that a call is a small part of it, and the
 operations of tiers 0 and 1 are static inline in the header; the head's own objects list every
-call from `geo_funcs.o` into `geo_dyadic.o` against that rule. Built on master `9ebe97d988` as two
-commits, by the scripts of `claude-kits` `ea3-kit`, which replay it on the master of the window:
-190 definitions of `geo_funcs.c` (4555 lines, read off the file by libclang, reaching no algorithm)
-and the 50 declarations of `geo_funcs.h` that are the arithmetic move verbatim, 33 `static` the
-only tokens removed; `polynomial_sign_exact`, a filter in doubles then the exact tail, becomes a
-static inline of the header, as `cross_product_sign` is. 51 functions are called across the
-boundary, every one by the rule but `point_segment_offset_sign`, which calls an extern of 512 bytes
-once or twice on every call and has one call site. The build has no warning and the unit tests
-pass; its receipts are earned on the commit replayed in the window.
+call from `geo_funcs.o` into `geo_dyadic.o` against that rule. It is open as #3751, two commits
+on master `f48ecca3a8` written by the scripts of `claude-kits` `ea3-kit`: 190 definitions of
+`geo_funcs.c` (4551 lines, read off the file by libclang, reaching no algorithm) and the 50
+declarations of `geo_funcs.h` that are the arithmetic move verbatim, 33 `static` and 3 `uint64_t`
+the only tokens removed, the header spelling `uint64` as a public header of MEOS does;
+`polynomial_sign_exact`, a filter in doubles then the exact tail, becomes a static inline of the
+header, as `cross_product_sign` is. 51 functions are called across the boundary, every one by the
+rule but `point_segment_offset_sign`, which calls an extern of 512 bytes once or twice on every
+call and has one call site. Its receipts are strict CI, cppcheck, valgrind, smoke, the oracle (the
+judges of #3746 and #3722 through the moved arithmetic) and speed, 25 of 26 cells at parity.
 
 ### How a merge is proven
 
