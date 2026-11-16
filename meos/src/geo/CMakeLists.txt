@@ -31,6 +31,7 @@ set(GEO_SOURCES
   geo_arrange.c
   geo_buffer.c
   geo_cluster.c
+  geo_dyadic.c
   geo_funcs.c
   geo_lwgeom_none.c
   geo_round.c

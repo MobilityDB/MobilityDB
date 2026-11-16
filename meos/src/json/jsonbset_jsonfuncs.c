@@ -782,6 +782,7 @@ jsonbset_insert(const Set *set, text **path_elems, int path_len,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(path_elems, NULL);
+  VALIDATE_NOT_NULL(newjb, NULL);
   if (! ensure_positive(path_len))
     return NULL;
 
