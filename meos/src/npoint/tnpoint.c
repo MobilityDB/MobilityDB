@@ -446,28 +446,38 @@ route_point_tinstant(TInstant *inst, const TInstant *model, int32_t srid,
 }
 
 /**
- * @brief Return in the last argument the box of a temporal geometry point
- * sequence converted from a temporal network point, given the spatial box of
- * its points
+ * @brief Set the box of a temporal geometry point sequence converted from a
+ * temporal network point, given the spatial box of its points
  * @details The box #tinstarr_set_bbox computes from the instants, the
  * spatial box of their points and the period from the first instant to the
- * last
+ * last, written in the sequence whose instants were written in place
+ * (#tsequence_append_slot)
+ * @param[in,out] seq Sequence
+ * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
+ * @param[in] interp Interpolation
+ * @param[in,out] box Spatial box of the points, completed with the period
  */
 static void
-route_points_set_stbox(TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, interpType interp, STBox *box)
+route_points_set_stbox(TSequence *seq, bool lower_inc, bool upper_inc,
+  interpType interp, STBox *box)
 {
-  span_set(TimestampTzGetDatum(instants[0]->t),
-    TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
-    T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
+  span_set(TimestampTzGetDatum(TSEQUENCE_INST_N(seq, 0)->t),
+    TimestampTzGetDatum(TSEQUENCE_INST_N(seq, seq->count - 1)->t), lower_inc,
+    upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
 #ifndef NDEBUG
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i);
   STBox box1;
-  tinstarr_set_bbox(instants, count, lower_inc, upper_inc, interp, &box1);
+  tinstarr_set_bbox(instants, seq->count, lower_inc, upper_inc, interp,
+    &box1);
   assert(stbox_eq(box, &box1));
+  pfree(instants);
 #else
   (void) interp;
 #endif /* NDEBUG */
+  memcpy(TSEQUENCE_BBOX_PTR(seq), box, sizeof(STBox));
   return;
 }
 
@@ -645,11 +655,14 @@ TSequence *
 tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
 {
   assert(seq); assert(seq->temptype == T_TNPOINT);
-  /* The instants are written in one block, each in a slot of the size of a
-   * planar point instant */
-  size_t slot = DOUBLE_PAD(tpointinst_coords_size(false));
-  char *block = palloc(slot * seq->count);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  /* The first instant is written on the stack and the sequence is made from
+   * it with room for all the instants, which are written in place after it
+   * (#tsequence_append_slot) */
+  size_t size = tpointinst_coords_size(false);
+  double first[8];
+  assert(size <= sizeof(first));
+  TSequence *result = NULL;
+  const TInstant *model = NULL;
   int64 rid = -1;
   int32_t srid = SRID_UNKNOWN;
   const LWLINE *lwline = NULL;
@@ -669,7 +682,8 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
       lwline = route_line_bound(np->rid, &b, &fracs);
       if (! lwline)
       {
-        pfree(instants); pfree(block);
+        if (result)
+          pfree(result);
         return NULL;
       }
       if (bound)
@@ -680,23 +694,37 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
     }
     POINT4D pt;
     route_point_at(lwline->points, length, fracs, np->pos, &pt);
-    instants[i] = route_point_tinstant((TInstant *) (block + slot * i),
-      i ? instants[0] : NULL, srid, &pt, inst->t, &box);
+    if (i == 0)
+    {
+      TInstant *inst1 = route_point_tinstant((TInstant *) first, NULL, srid,
+        &pt, inst->t, &box);
+      /* The box of the first point, which the box of the sequence replaces
+       * once its points are written */
+      span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+        true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box.period);
+      MEOS_FLAGS_SET_T(box.flags, true);
+      result = tsequence_make_exp1(&inst1, 1, seq->count, true, true,
+        DISCRETE, NORMALIZE_NO, &box);
+      model = TSEQUENCE_INST_N(result, 0);
+    }
+    else
+    {
+      TInstant *slot = tsequence_append_slot(result, size);
+      assert(slot);
+      route_point_tinstant(slot, model, srid, &pt, inst->t, &box);
+    }
   }
   /* The instants are points of routes at the increasing timestamps of the
    * sequence, and every route is a planar line in the SRID of the network,
    * which #ensure_valid_route tests when the network is read, so the
    * sequence is valid by construction and is built without testing them
    * again, with the box of the points it made */
-  assert(seq->count > 0);
+  assert(result->count == seq->count);
 #ifndef NDEBUG
-  for (int i = 1; i < seq->count; i++)
-    assert(instants[i - 1]->t < instants[i]->t);
+  for (int i = 1; i < result->count; i++)
+    assert(TSEQUENCE_INST_N(result, i - 1)->t < TSEQUENCE_INST_N(result, i)->t);
 #endif /* NDEBUG */
-  route_points_set_stbox(instants, seq->count, true, true, DISCRETE, &box);
-  TSequence *result = tsequence_make_exp1(instants, seq->count, seq->count,
-    true, true, DISCRETE, NORMALIZE_NO, &box);
-  pfree(instants); pfree(block);
+  route_points_set_stbox(result, true, true, DISCRETE, &box);
   return result;
 }
 
@@ -749,12 +777,16 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
         count++;
   }
 
-  /* The instants are written in one block, each in a slot of the size of a
-   * planar point instant */
-  size_t slot = DOUBLE_PAD(tpointinst_coords_size(false));
-  char *block = palloc(slot * count);
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  int ninsts = 0;
+  /* The first instant is written on the stack and the sequence is made from
+   * it with room for the bound of its instants, which are written in place
+   * after it (#tsequence_append_slot); a vertex not representable at
+   * microsecond resolution leaves its room unused */
+  size_t size = tpointinst_coords_size(false);
+  double first[8];
+  assert(size <= sizeof(first));
+  TSequence *result = NULL;
+  const TInstant *model = NULL;
+  TimestampTz last = 0;
   STBox box;
   box.flags = 0;
   for (int i = 0; i < seq->count; i++)
@@ -783,20 +815,37 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
           continue;
         /* A vertex dated at an instant already in the result is not
          * representable at microsecond resolution */
-        if (t <= instants[ninsts - 1]->t || t >= inst->t)
+        if (t <= last || t >= inst->t)
           continue;
-        instants[ninsts] = route_point_tinstant(
-          (TInstant *) (block + slot * ninsts), instants[0], srid,
-          getPoint4d_cp(pa, k + 1), t, &box);
-        ninsts++;
+        TInstant *slot = tsequence_append_slot(result, size);
+        assert(slot);
+        route_point_tinstant(slot, model, srid, getPoint4d_cp(pa, k + 1), t,
+          &box);
+        last = t;
       }
     }
     POINT4D pt;
     route_point_at(pa, length, segfracs, np->pos, &pt);
-    instants[ninsts] = route_point_tinstant(
-      (TInstant *) (block + slot * ninsts), ninsts ? instants[0] : NULL, srid,
-      &pt, inst->t, &box);
-    ninsts++;
+    if (i == 0)
+    {
+      TInstant *inst1 = route_point_tinstant((TInstant *) first, NULL, srid,
+        &pt, inst->t, &box);
+      /* The box of the first point, which the box of the sequence replaces
+       * once its points are written */
+      span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+        true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box.period);
+      MEOS_FLAGS_SET_T(box.flags, true);
+      result = tsequence_make_exp1(&inst1, 1, count, seq->period.lower_inc,
+        seq->period.upper_inc, interp, NORMALIZE_NO, &box);
+      model = TSEQUENCE_INST_N(result, 0);
+    }
+    else
+    {
+      TInstant *slot = tsequence_append_slot(result, size);
+      assert(slot);
+      route_point_tinstant(slot, model, srid, &pt, inst->t, &box);
+    }
+    last = inst->t;
   }
 
   if (fracs)
@@ -807,16 +856,13 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
    * #ensure_valid_route tests when the network is read, so the sequence is
    * valid by construction and is built without testing them again, with the
    * box of the points it made */
-  assert(ninsts > 0);
+  assert(result->count > 0 && result->count <= count);
 #ifndef NDEBUG
-  for (int i = 1; i < ninsts; i++)
-    assert(instants[i - 1]->t < instants[i]->t);
+  for (int i = 1; i < result->count; i++)
+    assert(TSEQUENCE_INST_N(result, i - 1)->t < TSEQUENCE_INST_N(result, i)->t);
 #endif /* NDEBUG */
-  route_points_set_stbox(instants, ninsts, seq->period.lower_inc,
+  route_points_set_stbox(result, seq->period.lower_inc,
     seq->period.upper_inc, interp, &box);
-  TSequence *result = tsequence_make_exp1(instants, ninsts, ninsts,
-    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO, &box);
-  pfree(instants); pfree(block);
   return result;
 }
 
