@@ -532,7 +532,7 @@ tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
  * @brief Return the size of a temporal point instant made from the
  * coordinates of a point
  * @details The size #tpointinst_make_coords allocates and
- * #tpointinst_set_coords writes: the instant up to its value and the point,
+ * #tpointinst_coords_set writes: the instant up to its value and the point,
  * its header, its type, its number of points and its coordinates
  * @param[in] hasz True when the point has a Z
  */
@@ -554,8 +554,12 @@ tpointinst_coords_size(bool hasz)
  * extended flags, so it is its header, its type, its number of points and its
  * coordinates. The instant is written in the memory of the caller, as
  * #tinstant_set writes the value and the timestamp of an instant, and its
- * unused bytes are zero
+ * unused bytes are zero. Given @p model, an instant this function wrote with
+ * the same dimension, geodeticity and SRID, the instant copies its header and
+ * its zero bytes and writes only the coordinates and the timestamptz, so the
+ * points of a sequence share the header of its first one
  * @param[out] inst Temporal instant, of #tpointinst_coords_size bytes
+ * @param[in] model Temporal instant whose header is copied @nullable
  * @param[in] x,y,z Coordinates, @p z read only when @p hasz is true
  * @param[in] hasz True when the point has a Z
  * @param[in] geodetic True for a temporal geography point
@@ -565,18 +569,42 @@ tpointinst_coords_size(bool hasz)
  * which the caller tests at its external entry
  */
 void
-tpointinst_set_coords(TInstant *inst, double x, double y, double z,
-  bool hasz, bool geodetic, int32_t srid, TimestampTz t)
+tpointinst_coords_set(TInstant *inst, const TInstant *model, double x,
+  double y, double z, bool hasz, bool geodetic, int32_t srid, TimestampTz t)
 {
-  assert(inst);
+  assert(inst); assert(inst != model);
   assert(isfinite(x)); assert(isfinite(y)); assert(! hasz || isfinite(z));
   /* Header (size, SRID and flags), type, number of points, coordinates */
-  size_t ncoords = hasz ? 3 : 2;
-  size_t gssize = 16 + sizeof(double) * ncoords;
   size_t value_offset = offsetof(TInstant, value);
-  size_t size = tpointinst_coords_size(hasz);
-  memset(inst, 0, size);
   GSERIALIZED *gs = (GSERIALIZED *) (((char *) inst) + value_offset);
+  uint32_t type_npoints[2] = {POINTTYPE, 1};
+  const double coords[3] = {x, y, z};
+  if (model)
+  {
+    assert(VARSIZE(model) == tpointinst_coords_size(hasz));
+    assert(MEOS_FLAGS_GET_Z(model->flags) == hasz);
+    assert(MEOS_FLAGS_GET_GEODETIC(model->flags) == geodetic);
+    assert(gserialized_get_srid((const GSERIALIZED *)
+      (((const char *) model) + value_offset)) == srid);
+    /* The sizes of a planar and of a 3D point instant are constants, so the
+     * copies are made in place */
+    if (hasz)
+    {
+      memcpy(inst, model, tpointinst_coords_size(true));
+      memcpy(gs->data + sizeof(type_npoints), coords, sizeof(double) * 3);
+    }
+    else
+    {
+      memcpy(inst, model, tpointinst_coords_size(false));
+      memcpy(gs->data + sizeof(type_npoints), coords, sizeof(double) * 2);
+    }
+    inst->t = t;
+    return;
+  }
+  size_t ncoords = hasz ? 3 : 2;
+  size_t size = tpointinst_coords_size(hasz);
+  size_t gssize = 16 + sizeof(double) * ncoords;
+  memset(inst, 0, size);
   lwflags_t flags = 0;
   FLAGS_SET_Z(flags, hasz);
   FLAGS_SET_GEODETIC(flags, geodetic);
@@ -584,9 +612,7 @@ tpointinst_set_coords(TInstant *inst, double x, double y, double z,
   gs->gflags = lwflags_get_g2flags(flags);
   gserialized_set_srid(gs, srid);
   SET_VARSIZE(gs, gssize);
-  uint32_t type_npoints[2] = {POINTTYPE, 1};
   memcpy(gs->data, type_npoints, sizeof(type_npoints));
-  const double coords[3] = {x, y, z};
   memcpy(gs->data + sizeof(type_npoints), coords, sizeof(double) * ncoords);
   /* The fixed-size values #tinstant_make sets */
   MeosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
@@ -606,7 +632,7 @@ tpointinst_set_coords(TInstant *inst, double x, double y, double z,
 /**
  * @brief Return a temporal point instant from the coordinates of a point and
  * a timestamptz
- * @details The instant #tpointinst_set_coords writes, in its own memory
+ * @details The instant #tpointinst_coords_set writes, in its own memory
  * @param[in] x,y,z Coordinates, @p z read only when @p hasz is true
  * @param[in] hasz True when the point has a Z
  * @param[in] geodetic True for a temporal geography point
@@ -620,7 +646,7 @@ tpointinst_make_coords(double x, double y, double z, bool hasz, bool geodetic,
   int32_t srid, TimestampTz t)
 {
   TInstant *result = palloc(tpointinst_coords_size(hasz));
-  tpointinst_set_coords(result, x, y, z, hasz, geodetic, srid, t);
+  tpointinst_coords_set(result, NULL, x, y, z, hasz, geodetic, srid, t);
   return result;
 }
 

@@ -416,17 +416,20 @@ tnpointinst_tgeompointinst(const TInstant *inst, double *bound)
  * and a point of it at a fraction of its length has two finite coordinates.
  * The point expands the spatial box of the points of the conversion as
  * #tgeoinstarr_set_stbox reads it from them, and starts it when the box has
- * no spatial extent yet. The instant is written by #tpointinst_set_coords in
- * a slot of the block of the instants of the conversion
+ * no spatial extent yet. The instant is written in a slot of the block of
+ * the instants of the conversion by #tpointinst_coords_set, the first one
+ * whole and the others with the header of the first, as
+ * #tpointseq_make_coords writes its points
  * @param[out] inst Instant, of #tpointinst_coords_size bytes
+ * @param[in] model First instant of the conversion, NULL for the first one
  * @param[in] srid SRID of the route
  * @param[in] pt Point
  * @param[in] t Timestamp
  * @param[inout] box Spatial box of the points
  */
 static TInstant *
-route_point_tinstant(TInstant *inst, int32_t srid, const POINT4D *pt,
-  TimestampTz t, STBox *box)
+route_point_tinstant(TInstant *inst, const TInstant *model, int32_t srid,
+  const POINT4D *pt, TimestampTz t, STBox *box)
 {
   if (! MEOS_FLAGS_GET_X(box->flags))
     stbox_set(true, false, false, srid, pt->x, pt->x, pt->y, pt->y, 0.0, 0.0,
@@ -436,7 +439,8 @@ route_point_tinstant(TInstant *inst, int32_t srid, const POINT4D *pt,
     box->xmin = Min(box->xmin, pt->x); box->xmax = Max(box->xmax, pt->x);
     box->ymin = Min(box->ymin, pt->y); box->ymax = Max(box->ymax, pt->y);
   }
-  tpointinst_set_coords(inst, pt->x, pt->y, 0.0, false, false, srid, t);
+  tpointinst_coords_set(inst, model, pt->x, pt->y, 0.0, false, false, srid,
+    t);
   return inst;
 }
 
@@ -601,8 +605,8 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
     }
     POINT4D pt;
     route_point_at(lwline->points, length, np->pos, &pt);
-    instants[i] = route_point_tinstant((TInstant *) (block + slot * i), srid,
-      &pt, inst->t, &box);
+    instants[i] = route_point_tinstant((TInstant *) (block + slot * i),
+      i ? instants[0] : NULL, srid, &pt, inst->t, &box);
   }
   /* The instants are points of routes at the increasing timestamps of the
    * sequence, and every route is a planar line in the SRID of the network,
@@ -706,15 +710,16 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
         if (t <= instants[ninsts - 1]->t || t >= inst->t)
           continue;
         instants[ninsts] = route_point_tinstant(
-          (TInstant *) (block + slot * ninsts), srid, getPoint4d_cp(pa, k + 1),
-          t, &box);
+          (TInstant *) (block + slot * ninsts), instants[0], srid,
+          getPoint4d_cp(pa, k + 1), t, &box);
         ninsts++;
       }
     }
     POINT4D pt;
     route_point_at(pa, length, np->pos, &pt);
     instants[ninsts] = route_point_tinstant(
-      (TInstant *) (block + slot * ninsts), srid, &pt, inst->t, &box);
+      (TInstant *) (block + slot * ninsts), ninsts ? instants[0] : NULL, srid,
+      &pt, inst->t, &box);
     ninsts++;
   }
 

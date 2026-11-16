@@ -115,6 +115,8 @@ SELECT floatset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
 SELECT intset(jsonbset '{"{\"a\":0}", "{\"a\":2}"}', text 'a');
 SELECT bigintset(jsonbset '{"{\"a\":0}", "{\"a\":2}"}', text 'a');
 SELECT floatset(jsonbset '{"{\"a\":0}", "{\"a\":2.5}"}', text 'a');
+SELECT numValues(s), startValue(s) = 1.7976931348623157e308
+FROM (SELECT floatset(jsonbset '{"{\"a\":1.7976931348623157e308}", "{\"b\":1}"}', text 'a', 'delete_key') AS s) AS x;
 /* Errors */
 SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'xxx');
 SELECT intset(jsonbset '{"{\"a\":\"xxx\", \"b\":2.5}"}', text 'a');
