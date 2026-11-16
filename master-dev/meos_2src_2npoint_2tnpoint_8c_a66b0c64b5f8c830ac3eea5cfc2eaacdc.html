@@ -89,7 +89,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_ab22ba536dffb591c803cbc3c66257c2e.html#ab22ba536dffb591c803cbc3c66257c2e">ensure_valid_tnpoint_tnpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__set__accessor_gacac2cd1c73502ff07c70f9696bdc8ac8.html#gacac2cd1c73502ff07c70f9696bdc8ac8">npointset_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_aa151531097c065034fe76652a298020f.html#aa151531097c065034fe76652a298020f">route_point_at</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a2a2d1681fd737b21ffdbd68409aeff65.html#a2a2d1681fd737b21ffdbd68409aeff65">route_point_tinstant</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a66b0c64b5f8c830ac3eea5cfc2eaacdc.html#a66b0c64b5f8c830ac3eea5cfc2eaacdc">route_point_tinstant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a9e4176655cdd62eee7751d984412672e.html#a9e4176655cdd62eee7751d984412672e">route_points_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f">route_vertex_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__conversion_ga18e87096b5f9556a9fe9d4f70f9eefe5.html#ga18e87096b5f9556a9fe9d4f70f9eefe5">tgeompoint_to_tnpoint</a></td></tr>
@@ -145,8 +145,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a2a2d1681fd737b21ffdbd68409aeff65" name="a2a2d1681fd737b21ffdbd68409aeff65"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a2d1681fd737b21ffdbd68409aeff65">&#9670;&#160;</a></span>route_point_tinstant()</h2>
+<a id="a66b0c64b5f8c830ac3eea5cfc2eaacdc" name="a66b0c64b5f8c830ac3eea5cfc2eaacdc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66b0c64b5f8c830ac3eea5cfc2eaacdc">&#9670;&#160;</a></span>route_point_tinstant()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -159,6 +159,12 @@ $(function() {
           <td>(</td>
           <td class="paramtype"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
           <td class="paramname"><em>inst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
+          <td class="paramname"><em>model</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -198,9 +204,10 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return a temporal geometry point instant located at a point of a route. </p>
-<p >The instant a point of a route makes, as <a class="el" href="meos_2src_2npoint_2tnpoint_8c_a911b1d105d05cb8f173a47bfefdee05e.html#a911b1d105d05cb8f173a47bfefdee05e" title="Convert a temporal network point into a temporal geometry point.">tnpointinst_tgeompointinst</a> makes it for a network point, made from its coordinates by <a class="el" href="tgeo__spatialfuncs_8h_a6ae54d8c8f5a6de2fe2a14020aa51009.html#a6ae54d8c8f5a6de2fe2a14020aa51009" title="Return a temporal point instant from the coordinates of a point and a timestamptz.">tpointinst_make_coords</a>. A route is a planar line with finite coordinates, as <a class="el" href="tnpoint_8h_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc" title="Ensure that the geometry of a route read from the ways network is a planar line without Z or M dimens...">ensure_valid_route</a> tests when the network is read, and a point of it at a fraction of its length has two finite coordinates. The point expands the spatial box of the points of the conversion as <a class="el" href="group__meos__internal__geo__bbox_gaef5f8fadda674e9ffe0ebab2bca0d8fd.html#gaef5f8fadda674e9ffe0ebab2bca0d8fd" title="Return in the last argument the spatiotemporal box of an array of temporal geo instants.">tgeoinstarr_set_stbox</a> reads it from them, and starts it when the box has no spatial extent yet. The instant is written by <a class="el" href="tgeo__spatialfuncs_8h_ad484fb79cac83cbc31dfad9b161a0559.html#ad484fb79cac83cbc31dfad9b161a0559" title="Set the first argument to the temporal point instant of the coordinates of a point and a timestamptz.">tpointinst_set_coords</a> in a slot of the block of the instants of the conversion </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The instant a point of a route makes, as <a class="el" href="meos_2src_2npoint_2tnpoint_8c_a911b1d105d05cb8f173a47bfefdee05e.html#a911b1d105d05cb8f173a47bfefdee05e" title="Convert a temporal network point into a temporal geometry point.">tnpointinst_tgeompointinst</a> makes it for a network point, made from its coordinates by <a class="el" href="tgeo__spatialfuncs_8h_a6ae54d8c8f5a6de2fe2a14020aa51009.html#a6ae54d8c8f5a6de2fe2a14020aa51009" title="Return a temporal point instant from the coordinates of a point and a timestamptz.">tpointinst_make_coords</a>. A route is a planar line with finite coordinates, as <a class="el" href="tnpoint_8h_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc" title="Ensure that the geometry of a route read from the ways network is a planar line without Z or M dimens...">ensure_valid_route</a> tests when the network is read, and a point of it at a fraction of its length has two finite coordinates. The point expands the spatial box of the points of the conversion as <a class="el" href="group__meos__internal__geo__bbox_gaef5f8fadda674e9ffe0ebab2bca0d8fd.html#gaef5f8fadda674e9ffe0ebab2bca0d8fd" title="Return in the last argument the spatiotemporal box of an array of temporal geo instants.">tgeoinstarr_set_stbox</a> reads it from them, and starts it when the box has no spatial extent yet. The instant is written in a slot of the block of the instants of the conversion by <a class="el" href="tgeo__spatialfuncs_8h_a07c3f553c707160eeab91df90dc8c3a1.html#a07c3f553c707160eeab91df90dc8c3a1" title="Set the first argument to the temporal point instant of the coordinates of a point and a timestamptz.">tpointinst_coords_set</a>, the first one whole and the others with the header of the first, as <a class="el" href="group__meos__geo__constructor_ga4ce58ec4878a04a7f343de6b1ec350b1.html#ga4ce58ec4878a04a7f343de6b1ec350b1" title="Return a temporal sequence from arrays of coordinates, one per dimension, and timestamps.">tpointseq_make_coords</a> writes its points </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">inst</td><td>Instant, of <a class="el" href="tgeo__spatialfuncs_8h_a0b4d99b83403477a793396e0fcd3e633.html#a0b4d99b83403477a793396e0fcd3e633" title="Return the size of a temporal point instant made from the coordinates of a point.">tpointinst_coords_size</a> bytes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">model</td><td>First instant of the conversion, NULL for the first one </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID of the route </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pt</td><td>Point </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp </td></tr>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpointinst_set_coords</title>
+<title>MobilityDB: tpointinst_coords_set</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -142,26 +142,32 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a818b11830d859f8de1bc49182770514c.html#a818b11830d859f8de1bc49182770514c">tgeompointsegm_meet</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__accessor_ga71a6a07594fe5a2f96a8909d7b200985.html#ga71a6a07594fe5a2f96a8909d7b200985">tpoint_get_coord</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_acd93170abe05095abaf54c1662da8fa9.html#acd93170abe05095abaf54c1662da8fa9">TPOINT_TO_TGEO</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__spatialfuncs_8h_a07c3f553c707160eeab91df90dc8c3a1.html#a07c3f553c707160eeab91df90dc8c3a1">tpointinst_coords_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a0b4d99b83403477a793396e0fcd3e633.html#a0b4d99b83403477a793396e0fcd3e633">tpointinst_coords_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a6ae54d8c8f5a6de2fe2a14020aa51009.html#a6ae54d8c8f5a6de2fe2a14020aa51009">tpointinst_make_coords</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__spatialfuncs_8h_ad484fb79cac83cbc31dfad9b161a0559.html#ad484fb79cac83cbc31dfad9b161a0559">tpointinst_set_coords</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_aae64c3af72c6108b1a7c791375080096.html#aae64c3af72c6108b1a7c791375080096">tpointseq_stops_iter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_ac876f6d9674c0e21f6b73bfc959be607.html#ac876f6d9674c0e21f6b73bfc959be607">tspatial_magnitude</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad484fb79cac83cbc31dfad9b161a0559" name="ad484fb79cac83cbc31dfad9b161a0559"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad484fb79cac83cbc31dfad9b161a0559">&#9670;&#160;</a></span>tpointinst_set_coords()</h2>
+<a id="a07c3f553c707160eeab91df90dc8c3a1" name="a07c3f553c707160eeab91df90dc8c3a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07c3f553c707160eeab91df90dc8c3a1">&#9670;&#160;</a></span>tpointinst_coords_set()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void tpointinst_set_coords </td>
+          <td class="memname">void tpointinst_coords_set </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
           <td class="paramname"><em>inst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
+          <td class="paramname"><em>model</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -214,9 +220,10 @@ $(function() {
 </div><div class="memdoc">
 
 <p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the first argument to the temporal point instant of the coordinates of a point and a timestamptz. </p>
-<p >The instant <a class="el" href="group__meos__internal__temporal__constructor_ga2afbcce7cee894ca0a4a953479f3f2d8.html#ga2afbcce7cee894ca0a4a953479f3f2d8" title="Return a temporal instant from the arguments.">tinstant_make</a> makes from the point <a class="el" href="geo__funcs_8h_ac97cd2d4e9f389366d8e9454b96ff9ed.html#ac97cd2d4e9f389366d8e9454b96ff9ed" title="Return a point created from the arguments.">geopoint_make</a> serializes, byte for byte, the point written in the instant as <code>gserialized2_from_lwgeom</code> writes it instead of being serialized apart, copied into the instant and freed. A point has no bounding box and no extended flags, so it is its header, its type, its number of points and its coordinates. The instant is written in the memory of the caller, as <a class="el" href="tinstant_8h_ab0d9d65cede9cb1beb42260d60d23eae.html#ab0d9d65cede9cb1beb42260d60d23eae" title="Return the first argument initialized with the value and the timestamptz.">tinstant_set</a> writes the value and the timestamp of an instant, and its unused bytes are zero </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The instant <a class="el" href="group__meos__internal__temporal__constructor_ga2afbcce7cee894ca0a4a953479f3f2d8.html#ga2afbcce7cee894ca0a4a953479f3f2d8" title="Return a temporal instant from the arguments.">tinstant_make</a> makes from the point <a class="el" href="geo__funcs_8h_ac97cd2d4e9f389366d8e9454b96ff9ed.html#ac97cd2d4e9f389366d8e9454b96ff9ed" title="Return a point created from the arguments.">geopoint_make</a> serializes, byte for byte, the point written in the instant as <code>gserialized2_from_lwgeom</code> writes it instead of being serialized apart, copied into the instant and freed. A point has no bounding box and no extended flags, so it is its header, its type, its number of points and its coordinates. The instant is written in the memory of the caller, as <a class="el" href="tinstant_8h_ab0d9d65cede9cb1beb42260d60d23eae.html#ab0d9d65cede9cb1beb42260d60d23eae" title="Return the first argument initialized with the value and the timestamptz.">tinstant_set</a> writes the value and the timestamp of an instant, and its unused bytes are zero. Given <code>model</code>, an instant this function wrote with the same dimension, geodeticity and SRID, the instant copies its header and its zero bytes and writes only the coordinates and the timestamptz, so the points of a sequence share the header of its first one </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">inst</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instant, of <a class="el" href="meos_2src_2geo_2tgeo_8c_a0b4d99b83403477a793396e0fcd3e633.html#a0b4d99b83403477a793396e0fcd3e633" title="Return the size of a temporal point instant made from the coordinates of a point.">tpointinst_coords_size</a> bytes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">model</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instant whose header is copied (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">x,y,z</td><td>Coordinates, <code>z</code> read only when <code>hasz</code> is true </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">hasz</td><td>True when the point has a Z </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">geodetic</td><td>True for a temporal geography point </td></tr>
