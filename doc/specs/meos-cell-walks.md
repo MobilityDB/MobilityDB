@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.7.0 |
+| Version | v0.8.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split, the QUADBIN, S2 and H3 cells and the pixels of a raster, and how the instant a trajectory crosses from one cell to the next is dated |
 | Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices, owner and outline), `meos/src/s2cell/ts2cell_ops.c` (S2 cells of a trajectory), `meos/src/temporal/tcellindex.c` (the walk the grids share), `meos/src/raster/raster_quadbin.c` (the pixels of a trajectory) |
 
@@ -200,6 +200,15 @@ pole being stated at any of them.
   gt1·(y − gt3) − gt4·(x − gt0) − k·det, times the sign of det = gt1·gt5 −
   gt2·gt4, each decided exactly. No inverse of the geotransform is computed,
   and no coordinate within a tolerance of a grid line is taken as on it.
+- **The pixel of a position** on a Raquet tile of 2^b columns and 2^c rows
+  over the QUADBIN cell of column x and row y at zoom z is the QUADBIN tile
+  of that position at the zoom z + b along the columns and z + c along the
+  rows: the column line k is the meridian of longitude (x·2^b + k) / 2^(z+b)
+  · 360 − 180, exact in doubles, and the row line k the parallel at the
+  double nearest the latitude of the Mercator ordinate 1 − 2·(y·2^c + k) /
+  2^(z+c), the bounds of section 5 for a QUADBIN tile, compared with the
+  position as doubles. A tile whose sides are no powers of 2 reads the pixel
+  of a position from its grid coordinates.
 
 ## 6. The cells of a trajectory
 
@@ -297,7 +306,8 @@ The values a raster holds along a trajectory, read with the nearest read,
 are the pixels it passes over, walked by the same rule: each pixel holds
 exactly the microseconds whose exact position lies in it, each crossing of a
 grid line is dated by the truncation of its exact parameter on the doubles
-of the positions and of the geotransform, and a corner the trajectory
+of the positions and of the geotransform, or of the bounds of the QUADBIN
+tiles a Raquet tile's pixels are, and a corner the trajectory
 passes through exactly gives that instant alone to the pixel the corner
 belongs to. A position outside the raster or over a pixel carrying no value
 ends a sequence. A trip over a 3x3 raster of unit pixels passes through the
@@ -344,6 +354,7 @@ number with corrections of wording.
 | v0.5.0 | The planar S2 cell of a position and the planar S2 cells of a trajectory, walked and dated on the straight-edged outlines |
 | v0.6.0 | The geodetic S2 cell of a position and the geodetic S2 cells of a trajectory, walked on great-circle outlines and dated at constant angular speed |
 | v0.7.0 | The pixel of a position on a raster whose georeferencing is affine and the pixels of a trajectory, walked and dated exactly on the geotransform |
+| v0.8.0 | The pixel of a position on a Raquet tile whose sides are powers of 2, read as the QUADBIN tiles of its zoom plus the logarithms of its sides, and its pixels along a trajectory |
 
 ## 8. Out of scope
 
@@ -351,8 +362,8 @@ Future: the rule extends to these, each added here with its version:
 
 - the vertices of an H3 cell computed from H3's own formula, so that every
   build of the library reads the same outline;
-- the pixels of a Raquet tile decided exactly, a tile of side 2^b reading
-  its pixels as the QUADBIN tiles of b more zoom levels.
+- the pixels of a Raquet tile whose sides are no powers of 2, decided
+  exactly.
 
 Not specified: the cells of the grids at resolutions the libraries refuse,
 and the temporal relationships of a trajectory with a closed cell, which are
