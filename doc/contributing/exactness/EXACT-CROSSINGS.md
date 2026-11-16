@@ -538,10 +538,17 @@ diffs classified:
    tgeompointsegm_crossing and a geography point through tgeogpointsegm_crossing, so no band of
    MEOS_EPSILON locates a point on a segment, and the ever walk against a value decides a point
    in continuous time; CGAL and MPFR agree on 3000 planar and 3000 geodetic pairs in both forms.
-   MobilityDB #3741 (open) reads one point of the sphere as one geography value: equality,
+   MobilityDB #3741, merged as `c970ec2d1c`, reads one point of the sphere as one geography value: equality,
    order, sort key and hash read the longitude -180 as 180 and that of a pole as 0, and a
    temporal geography is compared by its period rather than its box, which is written in the
    longitudes the value spells; a CGAL::Gmpq judge agrees on 4000 pairs.
+   MobilityDB #3756 (draft) decides the redundant instants of a sequence on the doubles with no
+   tolerance: geography points on the equator, on one meridian or at the middle a half turn
+   proves, poses whose angle turns linearly, and the instants a restriction adds, each cut on a
+   segment of the input and recognized bit for bit by the join; an MPFR judge at 2400 bits
+   agrees on 4000 rows of three geography instants, where a 1e-9 band disagrees on 1511. It
+   costs 1.21, 1.14 and 1.42 times the instructions on three tiling cells, the reason it is a
+   draft.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
