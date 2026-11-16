@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v1.0.0 |
+| Version | v1.1.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split, the QUADBIN, S2 and H3 cells and the pixels of a raster, and how the instant a trajectory crosses from one cell to the next is dated |
 | Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices, owner and outline), `meos/src/s2cell/ts2cell_ops.c` (S2 cells of a trajectory), `meos/src/temporal/tcellindex.c` (the walk the grids share), `meos/src/raster/raster_quadbin.c` (the pixels of a trajectory) |
 
@@ -27,7 +27,7 @@ to exactly one cell, decided exactly on the input coordinates. It is
 prescriptive: MEOS, MobilityDB and every binding generated from MEOS answer
 by it.
 
-Each section states what master guarantees, and section 8 lists what the
+Each section states what master guarantees, and section 9 lists what the
 rule does not yet cover.
 
 ## 2. Notation
@@ -368,7 +368,97 @@ The restriction of a temporal point to a box and its split by a space grid
 follow the same rule: each instant belongs to exactly one tile, and a box
 holds exactly the instants whose position lies in it.
 
-## 7. Versioning and stability
+## 7. Why the rule is what it is
+
+The rule answers questions that the libraries of the grids and the obvious
+ways of reading them answer wrongly. Each of the results below is what the
+rule removes.
+
+### 7.1 Each vertex is stated once
+
+Two neighbouring cells must read the vertex they share with the same doubles,
+or a position on it, or a trajectory through it, lies in both or in neither.
+The H3 library does not guarantee it: `cellToBoundary` states the vertex two
+neighbours share with different doubles in 166 of the 360 neighbour pairs at
+resolution 0 and in 1213 of the 17640 at resolution 2 (H3 4.5.0), and two
+builds of the library place the same vertex at different doubles, so the
+count itself depends on the build. MEOS reads every vertex of an H3 cell once,
+from the vertex index of the library, and the extra vertex where an edge
+crosses a face of the icosahedron from the directed edge leaving the lower of
+the two cells, so that every vertex a cell shares with a neighbour has the
+same doubles in both outlines, at every cell of the resolutions 0 to 2
+(`meos/test/unit/h3/h3_outline_unit.c`). The vertices of an S2 cell are the
+exact corners of the cube and the bounds of a QUADBIN tile are computed from
+its column, row and zoom, so neither depends on a library's trigonometry.
+That the H3 vertices still depend on the build of the library is the first
+item of section 9.
+
+### 7.2 No index frame decides an owner
+
+A tile of a box grid holds its lower bounds because its index coordinates
+order its neighbours. The local IJ coordinates of H3 (`cellToLocalIj`) look
+like such a frame and are not one: read as the rule that a cell holds the
+edges it shares with the neighbours whose local I and J are both no greater
+than its own, they leave 1982 of the 123480 edges of resolution 3 with no
+owner and 1976 with two, each cell reading its neighbours in a frame of its
+own. The rule of section 3 reads the signs of the edges themselves, and
+`tools/cell_ownership.py` enumerates every edge and every vertex of the H3
+resolutions 0 to 3 in both models, the S2 levels 0 to 4 and the QUADBIN
+zooms 0 to 6: each has exactly one owner, the twelve pentagons and the cells
+crossing a face of the icosahedron, the edges and the eight corners of the
+cube and the poles included, but the south side of the Web Mercator limit,
+which section 5 gives to the last row.
+
+### 7.3 Where the frames of a grid break
+
+The rule needs no case of its own where the index frame of a grid breaks:
+
+- an H3 pentagon holds its edges and vertices by the same signs as a hexagon,
+  and an H3 cell crossing a face of the icosahedron by the same signs on both
+  sides of the face;
+- the low-i and low-j sides of each S2 face give every edge of the cube one
+  owner, though the axes of two faces point in different directions there;
+- of the eight corners of the cube, six are the low corner of one cell, and
+  the other two, (1, −1, 1) and (−1, 1, −1), belong to the cell of the lowest
+  face meeting there;
+- the S2 poles, the centres of the faces 2 and 5, are held as the low corner
+  of one cell of the face; no H3 vertex lies on a pole;
+- across the antimeridian a planar trajectory and the ring of a cell are read
+  in the longitudes of their path, and a geodetic one on the sphere.
+
+### 7.4 The border of an extent
+
+A trajectory ending, or starting, on the border of its extent holds a cell
+that holds nothing of it but that border. With `borderInc`, true by default,
+the cell is part of the result; with `borderInc` false it is left out, and the
+cell beside it holds up to that instant with an exclusive bound, as the split
+by a space grid leaves out the tile of the border. A trajectory starting where
+four QUADBIN tiles meet, on the parallel bounding its extent to the south,
+holds the tile of that corner at its first instant alone, which the cover
+without the border leaves out:
+
+```sql
+SELECT borderInc, tquadbin(tgeompoint
+  'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2, borderInc)
+FROM (VALUES (true), (false)) AS b(borderInc);
+-- t | {[482cffffffffffff@Mon Jan 01 00:00:00 2001 PST],
+--      (4826ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4826ffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+-- f | (4826ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4826ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+```
+
+### 7.5 A computed instant is never moved
+
+An instant of a cell is decided by the exact position at that microsecond,
+and the bound of two pieces is the crossing truncated to the microsecond, the
+piece whose cell holds that microsecond including it. No crossing is moved to
+the end of a segment, rounded to make a piece longer, or nudged off a
+boundary: a crossing in the last microsecond of a segment leaves that
+microsecond to the cell left, the cell entered starting after it, and a cell
+crossed entirely between two microseconds holds no instant, as section 6
+states. The position a value read in doubles names at an instant can leave
+that cell on a boundary, as the example of section 6 shows.
+
+## 8. Versioning and stability
 
 The minor number rises with each part of the rule master gains, the patch
 number with corrections of wording.
@@ -384,8 +474,9 @@ number with corrections of wording.
 | v0.7.0 | The pixel of a position on a raster whose georeferencing is affine and the pixels of a trajectory, walked and dated exactly on the geotransform |
 | v0.8.0 | The pixel of a position on a Raquet tile whose sides are powers of 2, read as the QUADBIN tiles of its zoom plus the logarithms of its sides, and its pixels along a trajectory |
 | v1.0.0 | The rule complete over the space tiles, the QUADBIN, S2 and H3 cells and the pixels of a raster, in both models; the cells of a trajectory are those of its exact positions, which a position read in doubles at an instant can leave on a boundary |
+| v1.1.0 | Why the rule is what it is: each vertex stated once, no index frame deciding an owner, the places where the frames of a grid break, the border of an extent, and an instant never moved |
 
-## 8. Out of scope
+## 9. Out of scope
 
 Future: the rule extends to these, each added here with its version:
 
@@ -398,7 +489,7 @@ Not specified: the cells of the grids at resolutions the libraries refuse,
 and the temporal relationships of a trajectory with a closed cell, which are
 questions of the spatial relationships.
 
-## 9. References
+## 10. References
 
 - [Exact geometry](meos-exact-geometry.md), the exact arithmetic the
   decisions read.
@@ -410,13 +501,13 @@ questions of the spatial relationships.
 - [QUADBIN](https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes#quadbin),
   the encoding of the Web Mercator tiles.
 
-## 10. Consumers
+## 11. Consumers
 
 Every binding generated from the MEOS catalog inherits the rule without code
 of its own: the cells of a position and of a trajectory are answered by MEOS
 and reach the binding unchanged.
 
-## 11. References to the implementation
+## 12. References to the implementation
 
 The source files of the reference line are authoritative. A disagreement
 between this document and the code is a defect of one of them, reported as an
