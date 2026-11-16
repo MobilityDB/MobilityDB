@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- distance
+-------------------------------------------------------------------------------
 SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
  round 
 -------
@@ -152,6 +155,7 @@ SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> geometry 
     13
 (1 row)
 
+-- A geodetic pose and a geography, measured on the surface
 SELECT round(pose 'GeodPose(Point(0 0), 0)' <-> geography 'Point(1 0)', 3);
    round    
 ------------
@@ -224,6 +228,7 @@ SELECT round(nearestApproachDistance(tposechain '[PoseChain(GeodPose(Point(0 0),
  110574.389
 (1 row)
 
+-- A geodetic pose reads SRID 4326 where no SRID is stated, and a stated one holds
 SELECT srid(pose 'GeodPose(Point(0 0), 0)');
  srid 
 ------
@@ -254,6 +259,7 @@ SELECT srid(pose 'Pose(Point(0 0), 0)');
     0
 (1 row)
 
+-- The pose of a geography and the geography of a pose
 SELECT asText(geodpose(geography 'Point(1 2)', 0.5));
           astext          
 --------------------------
@@ -316,6 +322,7 @@ SELECT asText(pose('Point(1 1)', -1.5));
 
 SELECT pose 'SRID=3857;Pose(Point(1 2), 0.5)'::geography;
 ERROR:  Only lon/lat coordinate systems are supported
+-- A planar pose and a geography, two SRIDs
 SELECT pose 'SRID=4326;Pose(Point(0 0), 0)' <-> geography 'SRID=4326;Point(1 0)';
 ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT pose 'SRID=4979;GeodPose(Point(0 0 0), 1, 0, 0, 0)' <-> geography 'SRID=4326;Point(1 0)';
@@ -354,6 +361,7 @@ SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@20
  111319.491
 (1 row)
 
+-- Empty geometry and NULL arguments
 SELECT round(geometry 'Point empty' <-> pose 'Pose(Point(4 0),0)', 6);
  round 
 -------
@@ -383,10 +391,14 @@ SELECT NULL::pose <-> pose 'Pose(Point(4 0),0)';
          
 (1 row)
 
+-- Errors
 SELECT pose 'SRID=5676;Pose(Point(0 0),0)' <-> pose 'Pose(Point(3 4),0)';
 ERROR:  Operation on mixed SRID
 SELECT geometry 'SRID=5676;Point(1 0)' <-> pose 'Pose(Point(4 0),0)';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- tDistance
+-------------------------------------------------------------------------------
 SELECT round(tDistance(geometry 'Point(1 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
                                               round                                               
 --------------------------------------------------------------------------------------------------
@@ -419,6 +431,9 @@ SELECT round(tDistance(
  [2@Mon Jan 01 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- nearestApproachInstant
+-------------------------------------------------------------------------------
 SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'));
                      astext                      
 -------------------------------------------------
@@ -451,6 +466,9 @@ SELECT asText(nearestApproachInstant(
  Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- nearestApproachDistance
+-------------------------------------------------------------------------------
 SELECT round(nearestApproachDistance(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
  round 
 -------
@@ -487,6 +505,7 @@ SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose
      0
 (1 row)
 
+-- A box carrying a period measures the part of the temporal pose inside it
 SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2001-01-01, 2001-01-03])'), 6);
  round 
 -------
@@ -499,12 +518,14 @@ SELECT round(nearestApproachDistance(stbox 'STBOX XT(((10,-1),(12,1)),[2001-01-0
      8
 (1 row)
 
+-- The same box with no period measures the whole temporal pose
 SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', stbox 'STBOX X((10,-1),(12,1))'), 6);
  round 
 -------
      6
 (1 row)
 
+-- No part of the temporal pose is inside the period
 SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2001-02-01, 2001-02-02])'), 6);
  round 
 -------
@@ -519,6 +540,9 @@ SELECT round(nearestApproachDistance(
      2
 (1 row)
 
+-------------------------------------------------------------------------------
+-- shortestLine
+-------------------------------------------------------------------------------
 SELECT ST_AsText(shortestLine(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'));
       st_astext      
 ---------------------
@@ -551,6 +575,9 @@ SELECT ST_AsText(shortestLine(
  LINESTRING(0 0,0 2)
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Table queries
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tpose2d t1, tbl_tpose2d t2
 WHERE tDistance(t1.temp, t2.temp) IS NOT NULL LIMIT 10;
  count 
@@ -579,3 +606,4 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL LIMIT 10;
    104
 (1 row)
 
+-------------------------------------------------------------------------------

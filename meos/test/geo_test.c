@@ -708,6 +708,110 @@ int main(void)
   free(pip_wkt);
   meos_errno_reset();
 
+  /* An arc of radius 1 at magnitude 1e5 sweeping 1e-3 and rising from Z 1 to
+   * 3, crossed by a line along its radius at Z 9. The crossing lies on both,
+   * which determine two elevations there, so the answer carries none: the
+   * arc reads its own crossing within the rounding of the construction */
+  GSERIALIZED *lift_arc = geom_in("CIRCULARSTRING Z ("
+    "100000.92106099401 60000.389418342311 1, "
+    "100000.9208661697 60000.389878824106 2, "
+    "100000.92067111519 60000.390339208439 3)", -1);
+  GSERIALIZED *lift_line = geom_in("LINESTRING Z ("
+    "100000.92004264702 60000.389258946787 9, "
+    "100000.92188457424 60000.390038243982 9)", -1);
+  assert(lift_arc != NULL);
+  assert(lift_line != NULL);
+  GSERIALIZED *lift_res = geom_intersection2d(lift_arc, lift_line);
+  assert(lift_res != NULL);
+  char *lift_wkt = geo_as_text(lift_res, 17, &size_out);
+  printf("geom_intersection2d(a flat arc rising from Z 1 to 3, a line across "
+    "it at Z 9): %s\n", lift_wkt);
+  assert(strncmp(lift_wkt, "POINT(", 6) == 0);
+  free(lift_wkt); free(lift_res); free(lift_arc); free(lift_line);
+  meos_errno_reset();
+
+  /* Two parallel lines 1e-13 apart, at Z 1 and Z 5. Neither passes within the
+   * rounding of a construction, 4 epsilon of 2, of a vertex of the other, so
+   * each vertex of the union takes the elevation of its own line */
+  GSERIALIZED *lift_low = geom_in("LINESTRING Z (0 0 1, 1 0 1)", -1);
+  GSERIALIZED *lift_high = geom_in("LINESTRING Z (0.5 1e-13 5, 2 1e-13 5)",
+    -1);
+  assert(lift_low != NULL);
+  assert(lift_high != NULL);
+  GSERIALIZED *lift_un = geom_union2d(lift_low, lift_high);
+  assert(lift_un != NULL);
+  char *lift_un_wkt = geo_as_text(lift_un, 17, &size_out);
+  printf("geom_union2d(a line at Z 1, a parallel one 1e-13 away at Z 5): %s\n",
+    lift_un_wkt);
+  assert(strcmp(lift_un_wkt,
+    "MULTILINESTRING Z ((0 0 1,1 0 1),(0.5 1e-13 5,2 1e-13 5))") == 0);
+  free(lift_un_wkt); free(lift_un); free(lift_low); free(lift_high);
+  meos_errno_reset();
+
+  /* Two triangles whose edges cross at a point no double holds: each vertex
+   * of the intersection is an input vertex or the double nearest the exact
+   * crossing of two edges, here (0.7071216151430605 0.46451628906371) */
+  GSERIALIZED *near_a = geom_in("POLYGON((0.7955903636001161 "
+    "0.5727817318599232,-0.43175203819581276 0.8491234530557167,"
+    "-0.09442255849364178 -0.516389809338109,0.7955903636001161 "
+    "0.5727817318599232))", -1);
+  GSERIALIZED *near_b = geom_in("POLYGON((0.6340843022934508 "
+    "1.0853538143171477,0.4817653623610816 0.4088454218578439,"
+    "1.23443322478657 0.5947806781551266,0.6340843022934508 "
+    "1.0853538143171477))", -1);
+  assert(near_a != NULL);
+  assert(near_b != NULL);
+  GSERIALIZED *near_res = geom_intersection2d(near_a, near_b);
+  assert(near_res != NULL);
+  char *near_wkt = geo_as_text(near_res, 17, &size_out);
+  printf("geom_intersection2d(two triangles whose edges cross at a point no "
+    "double holds): %s\n", near_wkt);
+  assert(strcmp(near_wkt, "POLYGON((0.7955903636001161 0.5727817318599232,"
+    "0.5320370876822902 0.6321219500316013,0.4817653623610816 "
+    "0.4088454218578439,0.7071216151430605 0.46451628906371,"
+    "0.7955903636001161 0.5727817318599232))") == 0);
+  free(near_wkt); free(near_res); free(near_a); free(near_b);
+  meos_errno_reset();
+
+  /* Two lines meet where their segments do: at the crossing, written in each
+   * coordinate as the double nearest the exact point, and at a shared end, as
+   * that end. The first pair crosses at an angle near 1e-8, where the first
+   * line read back at a rounded parameter stands 1.2e8 doubles from the
+   * crossing; the second meets at an end, which the first line read back at
+   * the parameter 1 misses by 256 doubles */
+  const char *clip_lines[2][2] = {
+    { "LINESTRING(0.45751931334057844 -0.181372601208388,"
+        "1.0898390479539732 0.521430542749709)",
+      "LINESTRING(0.10419740748424167 -0.5740786073692647,"
+        "1.1377233477071886 0.5746524142926592)" },
+    { "LINESTRING(-1124630.0372259333 -1825166.1680862259,"
+        "3444.073664133786 -173667.21248874068)",
+      "LINESTRING(3444.073664133786 -173667.21248874068,"
+        "31589.535620937706 757587.245557281)" } };
+  const double clip_meet[2][2] = {
+    { 0.905890263510826, 0.3169773571901015 },
+    { 3444.073664133786, -173667.21248874068 } };
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *la = geom_in(clip_lines[i][0], -1);
+    GSERIALIZED *lb = geom_in(clip_lines[i][1], -1);
+    assert(la != NULL);
+    assert(lb != NULL);
+    GSERIALIZED *meet = geom_intersection2d(la, lb);
+    GSERIALIZED *want = geompoint_make2d(0, clip_meet[i][0], clip_meet[i][1]);
+    assert(meet != NULL);
+    assert(want != NULL);
+    char *meet_hex = geo_as_hexewkb(meet, "NDR", &size_out);
+    char *want_hex = geo_as_hexewkb(want, "NDR", &size_out);
+    printf("geom_intersection2d(two lines %s): %s\n",
+      i ? "sharing an end" : "crossing at an angle near 1e-8",
+      strcmp(meet_hex, want_hex) == 0 ? "the point they determine" : meet_hex);
+    assert(strcmp(meet_hex, want_hex) == 0);
+    free(meet_hex); free(want_hex); free(meet); free(want);
+    free(la); free(lb);
+  }
+  meos_errno_reset();
+
   /* The box of an arc takes its size from the arc. A semicircle through
    * (0 0), (s s) and (2s 0) is 2s wide and s high, and it holds its own middle
    * vertex (s s), so it intersects that point at every s. A box read off the

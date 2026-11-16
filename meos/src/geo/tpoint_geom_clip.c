@@ -74,6 +74,36 @@ static MEOS_TLS MeosArray *periods = NULL;
 static MEOS_TLS MeosArray *rtree_results = NULL;
 
 /**
+ * @brief Structure keeping a point a kernel met a segment at, with its
+ * parameter along the segment
+ */
+typedef struct
+{
+  double t;  /**< Parameter along the segment */
+  double x;  /**< Point the parameter stands for */
+  double y;
+} ClipMeet;
+
+/* The points the kernels meet the segment of a LINE at, which only
+ * #geo_clip_linear_geom asks for: a temporal clip answers parameters, which
+ * are its timestamps, and leaves the array absent */
+static MEOS_TLS MeosArray *meets = NULL;
+
+/**
+ * @brief Keep the point a parameter of the segment stands for, where the line
+ * clip asks for it
+ */
+static inline void
+clip_meet_add(double t, double x, double y)
+{
+  if (! meets)
+    return;
+  ClipMeet m = { t, x, y };
+  meos_array_add_intl(meets, &m);
+  return;
+}
+
+/**
  * @brief Return the SRID an index answers for, which is the one its own
  * entries carry
  * @details A query box is admitted by #rtree_search only where its SRID
@@ -465,7 +495,7 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
         Span in;
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
           T_FLOAT8, T_FLOATSPAN, &in);
-        meos_array_add(intervals, &in);
+        meos_array_add_intl(intervals, &in);
       }
     }
     return;
@@ -494,7 +524,9 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
       Span in;
       span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
+      /* The segment meets the point of the clip, which is its own vertex */
+      clip_meet_add(t, e->x1, e->y1);
     }
   }
   return;
@@ -535,12 +567,20 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
         e->ymax < seg_ymin || e->ymin > seg_ymax)
       continue;
 
-    /* Compute the intersection */
-    IntersectResult r = linesegm_intersect(ax, ay, bx, by,
-      e->x1, e->y1, e->x2, e->y2);
+    /* Compute the intersection, with the points it stands for where the
+     * line clip asks for them */
+    double pt[4];
+    IntersectResult r = linesegm_intersect_at(ax, ay, bx, by,
+      e->x1, e->y1, e->x2, e->y2, meets ? pt : NULL);
     /* If there is no intersection  */
     if (r.type == INTERSECT_NONE)
       continue;
+    if (meets)
+    {
+      clip_meet_add(r.t0, pt[0], pt[1]);
+      if (r.type == INTERSECT_OVERLAP)
+        clip_meet_add(r.t1, pt[2], pt[3]);
+    }
 
     /* Intersection found: compute the interval */
     has_intersection = true;
@@ -550,7 +590,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
     else
       span_set(Float8GetDatum(r.t0), Float8GetDatum(r.t1), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-    meos_array_add(intervals, &in);
+    meos_array_add_intl(intervals, &in);
   }
 
   /* Full collinear segment */
@@ -575,7 +615,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
       {
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
           T_FLOAT8, T_FLOATSPAN, &in);
-        meos_array_add(intervals, &in);
+        meos_array_add_intl(intervals, &in);
         return;
       }
     }
@@ -624,7 +664,7 @@ intervals_from_arcs(const POINT2D *a, const POINT2D *b, Edge **edges,
     {
       span_set(Float8GetDatum(t[k]), Float8GetDatum(t[k]), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
     }
   }
   return;
@@ -734,14 +774,20 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
 
     if (e->etype == EDGE_POLYSEG)
     {
-      /* Compute the crossing with the straight boundary segment */
-      IntersectResult r = linesegm_intersect(ax, ay, bx, by,
-        e->x1, e->y1, e->x2, e->y2);
+      /* Compute the crossing with the straight boundary segment, with the
+       * point it stands for where the line clip asks for it */
+      double pt[4];
+      IntersectResult r = linesegm_intersect_at(ax, ay, bx, by,
+        e->x1, e->y1, e->x2, e->y2, meets ? pt : NULL);
       if (r.type == INTERSECT_POINT)
       {
         double t = r.t0;
         if (t >= -MEOS_GEOM_TOLERANCE && t <= 1.0 + MEOS_GEOM_TOLERANCE)
-          meos_array_add(events, &t);
+        {
+          meos_array_add_intl(events, &t);
+          if (meets)
+            clip_meet_add(t, pt[0], pt[1]);
+        }
       }
     }
     else
@@ -751,14 +797,14 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       int n = arcsegm_intersect(ax, ay, rx, ry, e, t);
       for (int k = 0; k < n; k++)
         if (t[k] >= -MEOS_GEOM_TOLERANCE && t[k] <= 1.0 + MEOS_GEOM_TOLERANCE)
-          meos_array_add(events, &t[k]);
+          meos_array_add_intl(events, &t[k]);
     }
   }
 
   /* Add endpoints */
   double t0 = 0.0, t1 = 1.0;
-  meos_array_add(events, &t0);
-  meos_array_add(events, &t1);
+  meos_array_add_intl(events, &t0);
+  meos_array_add_intl(events, &t1);
 
   /* Sort */
   qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
@@ -797,7 +843,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
       bounded[i] = bounded[i + 1] = true;
     }
   }
@@ -821,7 +867,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     Span in;
     span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
       T_FLOAT8, T_FLOATSPAN, &in);
-    meos_array_add(intervals, &in);
+    meos_array_add_intl(intervals, &in);
   }
   pfree(bounded);
   return;
@@ -923,7 +969,7 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
   Span s;
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-  meos_array_add(periods, &s);
+  meos_array_add_intl(periods, &s);
   return;
 }
 
@@ -1033,7 +1079,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
           inst1->t : inst1->t + (TimestampTz) (duration * lower);
         span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
       else
       {
@@ -1043,7 +1089,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
           inst2->t : inst1->t + (TimestampTz) (duration * upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
     }
     
@@ -1195,34 +1241,14 @@ geo_is_planar_areal(const GSERIALIZED *gs)
 
 /**
  * @brief Return true if every part of a geometry bounds a region
- * @details A ring enclosing no area bounds no region: what it contributes is
- * the linework it traces, one dimension lower. #geom_extract_edges already
- * says which of the two every ring of every part is -- a ring of no area
- * yields LINE edges where one bounding a region yields POLY ones -- so reading
- * that classification is what keeps this answer and the engine's own from
- * disagreeing about a part. It also needs no tolerance of its own: the one
- * that decides a ring lives in the extraction, where it is an area read
- * against the extent the ring occupies rather than a length
+ * @details See #geom_every_part_bounds_area
  */
 bool
 geo_every_part_bounds_area(const GSERIALIZED *gs)
 {
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  MeosArray *edges = geom_extract_edges(geom);
-  /* A geometry drawing nothing at all bounds no region either */
-  bool result = edges && meos_array_count(edges) > 0;
-  if (edges)
-  {
-    for (uint32_t i = 0; result && i < edges->count; i++)
-    {
-      const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
-      if (! edge ||
-          (edge->etype != EDGE_POLYSEG && edge->etype != EDGE_POLYARC))
-        result = false;
-    }
-    meos_array_destroy(edges);
-  }
+  bool result = geom_every_part_bounds_area(geom);
   lwgeom_free(geom);
   return result;
 }
@@ -1358,7 +1384,7 @@ arc_pieces(const Edge *arc, const Span *intervarr, int count, bool inside,
       {
         POINT2D touch;
         arc_parameter_point(arc, s0, &touch.x, &touch.y);
-        meos_array_add(touches, &touch);
+        meos_array_add_intl(touches, &touch);
       }
       continue;
     }
@@ -1376,9 +1402,9 @@ arc_pieces(const Edge *arc, const Span *intervarr, int count, bool inside,
     {
       piece[2].x = arc->x2; piece[2].y = arc->y2;
     }
-    meos_array_add(out, &piece[0]);
-    meos_array_add(out, &piece[1]);
-    meos_array_add(out, &piece[2]);
+    meos_array_add_intl(out, &piece[0]);
+    meos_array_add_intl(out, &piece[1]);
+    meos_array_add_intl(out, &piece[2]);
   }
   return;
 }
@@ -1499,7 +1525,7 @@ intervals_from_arc_subject(const Edge *arc, Edge **edges, int nedges,
       Span sp;
       span_set(Float8GetDatum(lo), Float8GetDatum(hi), true, true, T_FLOAT8,
         T_FLOATSPAN, &sp);
-      meos_array_add(intervals, &sp);
+      meos_array_add_intl(intervals, &sp);
     }
   }
   /* The points the arc merely meets, kept where no stretch already holds one */
@@ -1518,7 +1544,7 @@ intervals_from_arc_subject(const Edge *arc, Edge **edges, int nedges,
       Span sp;
       span_set(Float8GetDatum(meets[k]), Float8GetDatum(meets[k]), true, true,
         T_FLOAT8, T_FLOATSPAN, &sp);
-      meos_array_add(intervals, &sp);
+      meos_array_add_intl(intervals, &sp);
     }
   }
   pfree(cuts); pfree(meets);
@@ -1732,11 +1758,54 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
 }
 
 /**
+ * @brief Return the point of a segment a parameter of the kernels stands for
+ * @details The ends of the segment are its own vertices, which the segment read
+ * back at 0 or 1 is not always: a + 1 (b - a) rounds. A parameter where a
+ * kernel met the segment stands for the point it met it at (#meets): a vertex
+ * of either geometry, or a crossing as the double nearest its exact value. Only
+ * a parameter no kernel kept a point for, which an arc of the clip gives, is
+ * the segment read back at it
+ * @param[in] a,b Ends of the segment
+ * @param[in] s Parameter along the segment
+ * @param[out] p Point
+ */
+static void
+segment_point_at(const POINT2D *a, const POINT2D *b, double s, POINT2D *p)
+{
+  if (s == 0.0)
+  {
+    *p = *a;
+    return;
+  }
+  if (s == 1.0)
+  {
+    *p = *b;
+    return;
+  }
+  if (meets)
+  {
+    const ClipMeet *m = (const ClipMeet *) meets->elems;
+    for (int i = 0; i < (int) meets->count; i++)
+    {
+      if (m[i].t == s)
+      {
+        p->x = m[i].x; p->y = m[i].y;
+        return;
+      }
+    }
+  }
+  p->x = a->x + s * (b->x - a->x);
+  p->y = a->y + s * (b->y - a->y);
+  return;
+}
+
+/**
  * @brief Add to @p out the part of one straight segment that the intervals
  * describe, as a point array per piece
  * @details The kernels answer the parameter intervals of the segment lying
  * INSIDE the geometry. The part outside is their complement in [0,1], which
- * is what a difference asks for, so one walk answers both
+ * is what a difference asks for, so one walk answers both. Each end of a
+ * piece is the point its parameter stands for (#segment_point_at)
  */
 static void
 segment_pieces(const POINT2D *a, const POINT2D *b, const Span *intervarr,
@@ -1767,19 +1836,16 @@ segment_pieces(const POINT2D *a, const POINT2D *b, const Span *intervarr,
       if (inside)
       {
         POINT2D touch;
-        touch.x = a->x + s0 * (b->x - a->x);
-        touch.y = a->y + s0 * (b->y - a->y);
-        meos_array_add(touches, &touch);
+        segment_point_at(a, b, s0, &touch);
+        meos_array_add_intl(touches, &touch);
       }
       continue;
     }
     POINT2D piece[2];
-    piece[0].x = a->x + s0 * (b->x - a->x);
-    piece[0].y = a->y + s0 * (b->y - a->y);
-    piece[1].x = a->x + s1 * (b->x - a->x);
-    piece[1].y = a->y + s1 * (b->y - a->y);
-    meos_array_add(out, &piece[0]);
-    meos_array_add(out, &piece[1]);
+    segment_point_at(a, b, s0, &piece[0]);
+    segment_point_at(a, b, s1, &piece[1]);
+    meos_array_add_intl(out, &piece[0]);
+    meos_array_add_intl(out, &piece[1]);
   }
   return;
 }
@@ -1834,6 +1900,9 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
    * gives them: the polygon one sorts its crossings through `events` */
   events = meos_array_create(sizeof(double));
   intervals = meos_array_create(sizeof(Span));
+  /* The points the kernels meet each segment at, which the pieces are
+   * written from (#segment_point_at) */
+  meets = meos_array_create(sizeof(ClipMeet));
 
   /* The components a linear geometry draws, one point array each */
   /* A subject carrying arcs is walked through its EDGES, each solved by the
@@ -1846,6 +1915,7 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
     {
       Edge *se = (Edge *) meos_array_get_intl(sarr, i);
       intervals->count = 0;
+      meets->count = 0;
       if (se->etype == EDGE_POLYARC || se->etype == EDGE_LINEARC)
       {
         intervals_from_arc_subject(se, ctx->edge_ptrs, ctx->nedges,
@@ -1932,6 +2002,7 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
         sel = ctx->cand_edges; seln = nc;
       }
       intervals->count = 0;
+      meets->count = 0;
       intervals_from_points(pa, pb, sel, seln);
       intervals_from_lines(pa, pb, sel, seln);
       intervals_from_arcs(pa, pb, sel, seln);
@@ -1965,6 +2036,7 @@ assemble:
   meos_array_destroy(arcs);
   meos_array_destroy(intervals); intervals = NULL;
   meos_array_destroy(events); events = NULL;
+  meos_array_destroy(meets); meets = NULL;
   lwgeom_free(lw);
   geo_edge_ctx_free(ctx);
   return result;
@@ -2634,7 +2706,7 @@ add_within_root(double t, MeosArray *ev)
   if (t > -MEOS_GEOM_TOLERANCE && t < 1.0 + MEOS_GEOM_TOLERANCE)
   {
     if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
-    meos_array_add(ev, &t);
+    meos_array_add_intl(ev, &t);
   }
 }
 
@@ -2773,8 +2845,8 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
   }
   /* Add the segment endpoints */
   double t0 = 0.0, t1 = 1.0;
-  meos_array_add(events, &t0);
-  meos_array_add(events, &t1);
+  meos_array_add_intl(events, &t0);
+  meos_array_add_intl(events, &t1);
 
   /* Sort and deduplicate the candidates */
   qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
@@ -2799,7 +2871,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
     }
   }
 
@@ -2822,7 +2894,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
       Span in;
       span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
+      meos_array_add_intl(intervals, &in);
     }
   }
   return;
@@ -2845,7 +2917,7 @@ tpointinst_dwithin_edges(const TInstant *inst, Edge **edges, int nedges,
   Span s;
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-  meos_array_add(periods, &s);
+  meos_array_add_intl(periods, &s);
   return;
 }
 
@@ -2917,7 +2989,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
         span_set(TimestampTzGetDatum(inst1->t + exact_lo[j]),
           TimestampTzGetDatum(inst1->t + exact_hi[j]), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
       inst1 = inst2;
       a = b;
@@ -2967,7 +3039,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
           inst1->t : inst1->t + (TimestampTz) (duration * lower);
         span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
       else
       {
@@ -2977,7 +3049,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
           inst2->t : inst1->t + (TimestampTz) (duration * upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add(periods, &s);
+        meos_array_add_intl(periods, &s);
       }
     }
 

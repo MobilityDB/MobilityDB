@@ -1,3 +1,10 @@
+-- Ever/always and temporal comparison operators for tquadbin.
+-- Cell equality is int64 bit-equality (the underlying uint64 payload), so the
+-- result is deterministic. Cells: A = '480fffffffffffff' (z0 world cell),
+-- B = '48427fffffffffff' (tile 3,5,4), C = '48a6227affffffff' (res 10).
+-------------------------------------------------------------------------------
+-- eEqual / ?=
+-------------------------------------------------------------------------------
 SELECT quadbin '480fffffffffffff' ?= tquadbin '480fffffffffffff@2001-01-01';
  ?column? 
 ----------
@@ -16,36 +23,46 @@ SELECT tquadbin '480fffffffffffff@2001-01-01' ?= tquadbin '480fffffffffffff@2001
  t
 (1 row)
 
+-- mid-trajectory match (ever-equal)
 SELECT tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]' ?= quadbin '48427fffffffffff';
  ?column? 
 ----------
  t
 (1 row)
 
+-- no match
 SELECT tquadbin '480fffffffffffff@2001-01-01' ?= quadbin '48427fffffffffff';
  ?column? 
 ----------
  f
 (1 row)
 
+-------------------------------------------------------------------------------
+-- aEqual / %=
+-------------------------------------------------------------------------------
 SELECT tquadbin '480fffffffffffff@2001-01-01' %= quadbin '480fffffffffffff';
  ?column? 
 ----------
  t
 (1 row)
 
+-- mixed trajectory — not always
 SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}' %= quadbin '480fffffffffffff';
  ?column? 
 ----------
  f
 (1 row)
 
+-- two identical trajectories — always equal
 SELECT tquadbin '[480fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-02]' %= tquadbin '[480fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- eNotEqual / ?<> and aNotEqual / %<>
+-------------------------------------------------------------------------------
 SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}' ?<> quadbin '480fffffffffffff';
  ?column? 
 ----------
@@ -58,6 +75,7 @@ SELECT tquadbin '480fffffffffffff@2001-01-01' %<> quadbin '48427fffffffffff';
  t
 (1 row)
 
+-- a trajectory can't be both ever-equal AND always-not-equal
 SELECT NOT (
   (tquadbin '480fffffffffffff@2001-01-01' ?= quadbin '480fffffffffffff')
   AND
@@ -67,6 +85,9 @@ SELECT NOT (
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tEqual / #= and tNotEqual / #<> (tbool result)
+-------------------------------------------------------------------------------
 SELECT asText(quadbin '480fffffffffffff' #= tquadbin '480fffffffffffff@2001-01-01');
              astext             
 --------------------------------
@@ -85,3 +106,4 @@ SELECT asText(tquadbin '480fffffffffffff@2001-01-01' #<> tquadbin '48427ffffffff
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------

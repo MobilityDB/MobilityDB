@@ -12,6 +12,8 @@ on:
       - 'pgtypes/**'
       - 'postgis/**'
       - 'tools/codegen/gen_smoketest/**'
+      - 'tools/scripts/check_vendored_undefined.py'
+      - 'tools/scripts/check_meos_only_files.py'
       - 'CMakeLists.txt'
     branches-ignore:
       - gh-pages
@@ -25,6 +27,8 @@ on:
       - 'pgtypes/**'
       - 'postgis/**'
       - 'tools/codegen/gen_smoketest/**'
+      - 'tools/scripts/check_vendored_undefined.py'
+      - 'tools/scripts/check_meos_only_files.py'
       - 'CMakeLists.txt'
     branches-ignore:
       - gh-pages
@@ -75,6 +79,13 @@ jobs:
           e=$(nm -D --defined-only /usr/local/lib/libmeos.so | grep -cE ' (GEOS|initGEOS|finishGEOS)' || true)
           echo "$e GEOS function(s) exported by libmeos"
           test "$n" -eq 0 && test "$e" -eq 0
+
+      # GDAL loads librttopo, which exports many names of liblwgeom over
+      # structures of its own: a function the vendored headers declare and no
+      # vendored source defines is left undefined by the library and binds to
+      # librttopo's at load time, so the library must call none.
+      - name: Check that the library calls no vendored liblwgeom function left undefined
+        run: python3 tools/scripts/check_vendored_undefined.py /usr/local/lib/libmeos.so
 
       - name: Compile and run 01_hello_world.c
         run: |
@@ -206,7 +217,7 @@ jobs:
           make -j $(nproc)
           sudo make install
 
-      - name: Build threaded_test and ways_thread_test under TSan
+      - name: Build threaded_test, ways_thread_test and zone_thread_test under TSan
         run: |
           cd meos/test
           gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -O1 -fsanitize=thread \
@@ -217,17 +228,24 @@ jobs:
             -I/usr/local/include -pthread \
             -o ways_thread_test ways_thread_test.c \
             -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -O1 -fsanitize=thread \
+            -I/usr/local/include -pthread \
+            -o zone_thread_test zone_thread_test.c \
+            -L/usr/local/lib -lmeos
 
       # Halt-on-error so the job fails on the first reported race.
       # ways_thread_test reads the routes of a ways file in two threads
-      # while the main thread names another file between their reads.
-      - name: Run threaded_test and ways_thread_test under TSan
+      # while the main thread names another file between their reads;
+      # zone_thread_test writes a timestamp in threads naming no time zone
+      # while the main thread names another zone between their writes.
+      - name: Run threaded_test, ways_thread_test and zone_thread_test under TSan
         run: |
           cd meos/test
           export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
           export TSAN_OPTIONS="halt_on_error=1 second_deadlock_stack=1"
           ./threaded_test 8 5000
           ./ways_thread_test
+          ./zone_thread_test
 
   static:
     name: Self-contained static library

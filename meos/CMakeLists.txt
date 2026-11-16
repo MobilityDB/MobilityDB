@@ -136,6 +136,30 @@ if (NOT MEOS)
   include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
 endif()
 
+# MEOS computes on 128-bit integers: the exact arithmetic of its geometry
+# and the correctly rounded trigonometry vendored under core-math/, whose sin,
+# cos and atan2 take the C23 _BitInt(128) where the compiler has it and
+# __int128 otherwise. The test below compiles that same choice. A compiler
+# with neither, GCC on a 32-bit target or MSVC's cl.exe, cannot build MEOS;
+# on Windows clang-cl has __int128 in the MSVC environment
+include(CheckCSourceCompiles)
+check_c_source_compiles("
+#if (defined(__clang__) && __clang_major__ >= 14) || \
+  (defined(__GNUC__) && __GNUC__ >= 14 && __BITINT_MAXWIDTH__ && \
+   __BITINT_MAXWIDTH__ >= 128)
+typedef unsigned _BitInt(128) u128;
+#else
+typedef unsigned __int128 u128;
+#endif
+int main(void) { u128 a = 3; a <<= 100; return (int) (a >> 100) - 3; }"
+  MEOS_HAS_UINT128)
+if(NOT MEOS_HAS_UINT128)
+  message(FATAL_ERROR "MEOS needs a compiler with an unsigned 128-bit integer "
+    "(__int128 or _BitInt(128)), which GCC and Clang have on 64-bit targets; "
+    "GCC on a 32-bit target and MSVC's cl.exe have none (on Windows, use "
+    "MinGW-w64 GCC or clang-cl)")
+endif()
+
 # MEOS
 include_directories("include")
 add_subdirectory("src")
@@ -178,6 +202,33 @@ endif()
 # MEOS
 set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
+
+# The correctly rounded trigonometry vendored under core-math/, built as the
+# vendored ryu is (postgis/ryu/CMakeLists.txt): an object library whose
+# symbols stay out of the dynamic table of the shared library
+add_library(coremath OBJECT
+  "${CMAKE_SOURCE_DIR}/core-math/src/binary64/sin/sin.c"
+  "${CMAKE_SOURCE_DIR}/core-math/src/binary64/cos/cos.c"
+  "${CMAKE_SOURCE_DIR}/core-math/src/binary64/sinpi/sinpi.c"
+  "${CMAKE_SOURCE_DIR}/core-math/src/binary64/cospi/cospi.c"
+  "${CMAKE_SOURCE_DIR}/core-math/src/binary64/atan2/atan2.c")
+# sin and cos round with __builtin_roundeven, which GCC lowers to a call to
+# the C23 roundeven where the target has no instruction for it; the Windows
+# C runtime lacks roundeven, and meos_roundeven.c supplies it there
+set(CMAKE_REQUIRED_LIBRARIES m)
+check_c_source_compiles("
+#include <math.h>
+int main(void) { volatile double x = 2.5; return (int) __builtin_roundeven(x) - 2; }"
+  MEOS_HAS_ROUNDEVEN)
+unset(CMAKE_REQUIRED_LIBRARIES)
+if(NOT MEOS_HAS_ROUNDEVEN)
+  message(STATUS "Supplying roundeven, which the C library lacks, to core-math/")
+  target_sources(coremath PRIVATE
+    "${CMAKE_SOURCE_DIR}/meos/src/temporal/meos_roundeven.c")
+endif()
+set_property(TARGET coremath PROPERTY C_VISIBILITY_PRESET hidden)
+set_property(TARGET coremath PROPERTY POSITION_INDEPENDENT_CODE ON)
+set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:coremath>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")

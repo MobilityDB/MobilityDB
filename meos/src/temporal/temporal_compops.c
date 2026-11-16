@@ -2808,6 +2808,7 @@ tge_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_base_temporal(PointerGetDatum(txt), temp, &datum2_ge);
 }
 
@@ -2875,6 +2876,7 @@ tge_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ge);
 }
 
@@ -2939,6 +2941,7 @@ tgt_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_base_temporal(PointerGetDatum(txt), temp, &datum2_gt);
 }
 
@@ -3003,6 +3006,7 @@ tgt_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_gt);
 }
 
@@ -3068,6 +3072,7 @@ tle_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_base_temporal(PointerGetDatum(txt), temp, &datum2_le);
 }
 
@@ -3135,6 +3140,7 @@ tle_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_le);
 }
 
@@ -3197,6 +3203,7 @@ tlt_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_base_temporal(PointerGetDatum(txt), temp, &datum2_lt);
 }
 
@@ -3261,6 +3268,7 @@ tlt_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_lt);
 }
 
@@ -3338,6 +3346,7 @@ tne_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_base_temporal(PointerGetDatum(txt), temp, &datum2_ne);
 }
 
@@ -3417,6 +3426,7 @@ tne_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ne);
 }
 
@@ -3494,6 +3504,7 @@ teq_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_base_temporal(PointerGetDatum(txt), temp, &datum2_eq);
 }
 
@@ -3573,6 +3584,7 @@ teq_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_eq);
 }
 

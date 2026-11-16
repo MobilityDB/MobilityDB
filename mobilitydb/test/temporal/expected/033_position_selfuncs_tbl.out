@@ -1,4 +1,9 @@
-CREATE FUNCTION test_estimated_rows(query text)
+-------------------------------------------------------------------------------
+-- A position operator with the constant on its left is estimated as its
+-- commutator with the column on its left, so the two estimates of each row
+-- below are equal.
+-------------------------------------------------------------------------------
+CREATE FUNCTION pg_temp.test_estimated_rows(query text)
 RETURNS bigint LANGUAGE plpgsql AS $$
 DECLARE
   plan json;
@@ -7,30 +12,23 @@ BEGIN
   RETURN (plan -> 0 -> 'Plan' ->> 'Plan Rows')::bigint;
 END;
 $$;
-CREATE FUNCTION
 DROP TABLE IF EXISTS tbl_tfloat_possel;
 NOTICE:  table "tbl_tfloat_possel" does not exist, skipping
-DROP TABLE
-CREATE TABLE tbl_tfloat_possel AS
+CREATE TEMP TABLE tbl_tfloat_possel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.temp
 FROM tbl_tfloat t1, generate_series(1, 100) t2(k);
-SELECT 10000
 ANALYZE tbl_tfloat_possel;
-ANALYZE
 DROP TABLE IF EXISTS tbl_tbool_possel;
 NOTICE:  table "tbl_tbool_possel" does not exist, skipping
-DROP TABLE
-CREATE TABLE tbl_tbool_possel AS
+CREATE TEMP TABLE tbl_tbool_possel AS
 SELECT t1.k * 1000 + t2.k AS k, t1.temp
 FROM tbl_tbool t1, generate_series(1, 100) t2(k);
-SELECT 10000
 ANALYZE tbl_tbool_possel;
-ANALYZE
 SELECT op, comm,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
     'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])')) AS var_op_const,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE tbox %L %s temp',
     'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])', comm)) AS const_comm_var
 FROM (VALUES (1, '<<', '>>'), (2, '>>', '<<'), (3, '<<#', '#>>'),
@@ -45,10 +43,10 @@ ORDER BY n;
 (4 rows)
 
 SELECT op, comm,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tbool_possel WHERE temp %s tstzspan %L', op,
     '[2001-04-01, 2001-08-01]')) AS var_op_const,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tbool_possel WHERE tstzspan %L %s temp',
     '[2001-04-01, 2001-08-01]', comm)) AS const_comm_var
 FROM (VALUES (1, '<<#', '#>>'), (2, '#>>', '<<#')) AS t(n, op, comm)
@@ -59,14 +57,17 @@ ORDER BY n;
  #>> | <<#  |         3669 |           3669
 (2 rows)
 
+-- A position operator is estimated on the dimension it compares, so a box of
+-- both dimensions estimates the rows of the box of that dimension alone, and
+-- a box without it the default selectivity of the operator
 SELECT op,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
     'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])')) AS box_xt,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
     'TBOXFLOAT X([30, 60])')) AS box_x,
-  test_estimated_rows(format(
+  pg_temp.test_estimated_rows(format(
     'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
     'TBOX T([2001-04-01, 2001-08-01])')) AS box_t
 FROM unnest(ARRAY['<<', '&<', '>>', '&>', '<<#', '&<#', '#>>', '#&>'])
@@ -85,8 +86,6 @@ ORDER BY n;
 (8 rows)
 
 DROP TABLE tbl_tbool_possel;
-DROP TABLE
 DROP TABLE tbl_tfloat_possel;
-DROP TABLE
-DROP FUNCTION test_estimated_rows(text);
-DROP FUNCTION
+DROP FUNCTION pg_temp.test_estimated_rows(text);
+-------------------------------------------------------------------------------

@@ -164,6 +164,7 @@ h3indexset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_H3INDEXSET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   H3Index *result = palloc(sizeof(H3Index) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetH3Index(SET_VAL_N(s, i));

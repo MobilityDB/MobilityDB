@@ -12,7 +12,7 @@ DROP INDEX IF EXISTS tbl_tgeography3D_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_topops3d;
-CREATE TABLE test_topops3d(
+CREATE TEMP TABLE test_topops3d(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

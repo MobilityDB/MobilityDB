@@ -43,6 +43,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <math.h>
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -56,6 +57,9 @@
 #include <meos_pointcloud.h>
 #include "temporal/span.h"
 #include "temporal/temporal.h"
+#include "temporal/temporal_boxops.h"  /* tsequence_set_bbox_slice */
+#include "temporal/bbox_index.h"  /* bbox_merge_n */
+#include "geo/stbox_index.h"  /* stbox_adjust, stbox_size */
 #include "temporal/meos_catalog.h"  /* T_TPCPOINT */
 #include <utils/timestamp.h>   /* TimestampTzGetDatum */
 #include "pointcloud/meos_schema_hook.h"
@@ -747,5 +751,643 @@ nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
   pfree(proj1); pfree(proj2);
   return result;
 }
+
+/* GENERATED-BOXSPLIT-BEGIN tpointcloud — tools/codegen/inherited/generate.py from templates/boxsplit.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxsplit.yaml and re-run. */
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return a singleton array of point cloud boxes from a
+ * temporal point cloud value instant
+ * @param[in] inst Temporal instant
+ */
+TPCBox *
+tpointcloudinst_tpcboxes(const TInstant *inst)
+{
+  assert(inst); assert(tpointcloud_temptype(inst->temptype));
+  /* One bounding box per instant */
+  TPCBox *result = palloc(sizeof(TPCBox));
+  tpointcloudinst_set_tpcbox(inst, &result[0]);
+  return result;
+}
+
+/**
+ * @brief Return an array of point cloud boxes from the instants
+ * of a temporal point cloud value sequence with discrete interpolation
+ * @param[in] seq Temporal sequence
+ */
+static TPCBox *
+tpointcloudseq_disc_tpcboxes(const TSequence *seq)
+{
+  assert(seq); assert(tpointcloud_temptype(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  /* One bounding box per instant */
+  TPCBox *result = palloc(sizeof(TPCBox) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    tpointcloudinst_set_tpcbox(TSEQUENCE_INST_N(seq, i), &result[i]);
+  return result;
+}
+
+/**
+ * @brief Return an array of point cloud boxes from the segments of a
+ * temporal point cloud value sequence with continuous interpolation (iterator
+ * function)
+ * @param[in] seq Temporal sequence
+ * @param[out] result Array of boxes
+ * @return Number of elements in the ouput array
+ */
+static int
+tpointcloudseq_cont_tpcboxes_iter(const TSequence *seq, TPCBox *result)
+{
+  assert(seq); assert(result); assert(tpointcloud_temptype(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    tsequence_set_bbox_slice(seq, 0, 0, &result[0]);
+    return 1;
+  }
+
+  /* One bounding box per segment */
+  for (int i = 0; i < seq->count - 1; i++)
+    tsequence_set_bbox_slice(seq, i, i + 1, &result[i]);
+  return seq->count - 1;
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of point cloud boxes from the instants or segments
+ * of a temporal point cloud value sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[out] count Number of elements in the output array
+ */
+TPCBox *
+tpointcloudseq_tpcboxes(const TSequence *seq, int *count)
+{
+  assert(seq); assert(count); assert(tpointcloud_temptype(seq->temptype));
+
+  /* Discrete case */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+  {
+    *count = seq->count;
+    return tpointcloudseq_disc_tpcboxes(seq);
+  }
+
+  /* Continuous case */
+  int nboxes = (seq->count == 1) ? 1 : seq->count - 1;
+  TPCBox *result = palloc(sizeof(TPCBox) * nboxes);
+  *count = tpointcloudseq_cont_tpcboxes_iter(seq, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of point cloud boxes from the segments of a
+ * temporal point cloud value sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[out] count Number of elements in the output array
+ */
+TPCBox *
+tpointcloudseqset_tpcboxes(const TSequenceSet *ss, int *count)
+{
+  assert(ss); assert(count); assert(tpointcloud_temptype(ss->temptype));
+
+  /* One bounding box per segment */
+  TPCBox *result = palloc(sizeof(TPCBox) * ss->totalcount);
+  int nboxes = 0;
+  for (int i = 0; i < ss->count; i++)
+    nboxes += tpointcloudseq_cont_tpcboxes_iter(TSEQUENCESET_SEQ_N(ss, i),
+      &result[nboxes]);
+  assert(nboxes <= ss->totalcount);
+  *count = nboxes;
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_bbox_split
+ * @brief Return an array of point cloud boxes from the instants or segments
+ * of a temporal point cloud value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] temp Temporal point cloud value
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tpointcloud_tpcboxes()
+ */
+TPCBox *
+tpointcloud_tpcboxes(const Temporal *temp, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tpointcloudinst_tpcboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointcloudseq_tpcboxes((TSequence *) temp, count);
+    default: /* TSEQUENCESET */
+      return tpointcloudseqset_tpcboxes((TSequenceSet *) temp, count);
+  }
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return an array of N point cloud boxes from the instants
+ * of a temporal point cloud value sequence with discrete interpolation
+ * @param[in] seq Temporal sequence
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+static TPCBox *
+tpointcloudseq_disc_split_n_tpcboxes(const TSequence *seq, int box_count,
+  int *count)
+{
+  assert(seq); assert(count); assert(tpointcloud_temptype(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(box_count > 0);
+
+  /* One bounding box per instant */
+  if (seq->count <= box_count)
+  {
+    *count = seq->count;
+    return tpointcloudseq_disc_tpcboxes(seq);
+  }
+
+  /* One bounding box per several consecutive instants */
+  TPCBox *result = palloc(sizeof(TPCBox) * box_count);
+  /* Minimum number of input instants merged together in an output box */
+  int size = seq->count / box_count;
+  /* Number of output boxes that result from merging (size + 1) instants */
+  int remainder = seq->count % box_count;
+  int i = 0; /* Loop variable for input instants */
+  for (int k = 0; k < box_count; k++)
+  {
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    tpointcloudinst_set_tpcbox(TSEQUENCE_INST_N(seq, i), &result[k]);
+    for (int l = i + 1; l < j; l++)
+    {
+      TPCBox box;
+      tpointcloudinst_set_tpcbox(TSEQUENCE_INST_N(seq, l), &box);
+      tpcbox_expand(&box, &result[k]);
+    }
+    i = j;
+  }
+  assert(i == seq->count);
+  *count = box_count;
+  return result;
+}
+
+/**
+ * @brief Return an array of N point cloud boxes from the segments of a 
+ * temporal point cloud value sequence with continuous interpolation (iterator
+ * function)
+ * @param[in] seq Temporal point cloud value
+ * @param[in] box_count Number of boxes
+ * @param[out] result Array of boxes
+ */
+static int
+tpointcloudseq_cont_split_n_tpcboxes_iter(const TSequence *seq, int box_count,
+  TPCBox *result)
+{
+  assert(seq); assert(result); assert(tpointcloud_temptype(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  assert(box_count > 0);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    tsequence_set_bbox_slice(seq, 0, 0, &result[0]);
+    return 1;
+  }
+
+  /* One bounding box per segment */
+  int nsegs = seq->count - 1;
+  if (nsegs <= box_count)
+    return tpointcloudseq_cont_tpcboxes_iter(seq, result);
+
+  /* One bounding box per several consecutive segments */
+  /* Minimum number of input segments merged together in an output box */
+  int size = nsegs / box_count;
+  /* Number of output boxes that result from merging (size + 1) segments */
+  int remainder = nsegs % box_count;
+  int i = 0; /* Loop variable for input segments */
+  for (int k = 0; k < box_count; k++)
+  {
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    tsequence_set_bbox_slice(seq, i, j, &result[k]);
+    i = j;
+  }
+  assert(i == nsegs);
+  return box_count;
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of N point cloud boxes from the instants or
+ * segments of a temporal point cloud value sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @return If `seq->count <= box_count`, the result contains one box
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single box in the result to reach the given number of
+ * boxes.
+ */
+TPCBox *
+tpointcloudseq_split_n_tpcboxes(const TSequence *seq, int box_count, int *count)
+{
+  assert(seq); assert(count); assert(tpointcloud_temptype(seq->temptype));
+  assert(box_count > 0);
+
+  /* Discrete case */
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return tpointcloudseq_disc_split_n_tpcboxes(seq, box_count, count);
+
+  /* Continuous case */
+  int nboxes = (seq->count <= box_count) ?
+    (seq->count == 1 ? 1 : seq->count - 1) : box_count;
+  TPCBox *result = palloc(sizeof(TPCBox) * nboxes);
+  *count = tpointcloudseq_cont_split_n_tpcboxes_iter(seq, box_count, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of N point cloud boxes from the segments of a
+ * temporal point cloud value sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @return If `ss->totalcount <= box_count`, the result contains one box per
+ * segment. Otherwise, consecutive input segments are combined into a single box
+ * in
+ * the result to reach the given number of boxes.
+ */
+TPCBox *
+tpointcloudseqset_split_n_tpcboxes(const TSequenceSet *ss, int box_count,
+  int *count)
+{
+  assert(ss); assert(count); assert(tpointcloud_temptype(ss->temptype));
+  assert(box_count > 0);
+
+  /* One bounding box per segment */
+  int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
+  TPCBox *result = palloc(sizeof(TPCBox) * nboxes);
+  if (ss->totalcount <= box_count)
+    return tpointcloudseqset_tpcboxes(ss, count);
+
+  /* Number of bounding boxes per composing sequence determined from the
+   * proportion of seq->count and ss->totalcount */
+  if (ss->count <= box_count)
+  {
+    int nboxes1 = 0;
+    for (int i = 0; i < ss->count; i++)
+    {
+      bool end = false;
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      int nboxes_seq = (int) (box_count * seq->count * 1.0 / ss->totalcount);
+      if (! nboxes_seq)
+        nboxes_seq = 1;
+      if (nboxes_seq + nboxes1 >= box_count)
+      {
+        end = true;
+        nboxes_seq = box_count - nboxes1;
+      }
+      nboxes1 += tpointcloudseq_cont_split_n_tpcboxes_iter(seq, nboxes_seq,
+        &result[nboxes1]);
+      if (end)
+        break;
+    }
+    assert(nboxes1 <= box_count);
+    *count = nboxes1;
+    return result;
+  }
+
+  /* Merge consecutive sequences to reach the maximum number of boxes */
+  /* Minimum number of sequences merged together in an output box */
+  int size = ss->count / box_count;
+  /* Number of output boxes that result from merging (size + 1) sequences */
+  int remainder = ss->count % box_count;
+  int i = 0; /* Loop variable for input sequences */
+  for (int k = 0; k < box_count; k++)
+  {
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    tpointcloudseq_cont_split_n_tpcboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
+      &result[k]);
+    for (int l = i + 1; l < j; l++)
+    {
+      TPCBox box;
+      tpointcloudseq_cont_split_n_tpcboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1,
+        &box);
+      tpcbox_expand(&box, &result[k]);
+    }
+    i = j;
+  }
+  assert(i == ss->count);
+  *count = box_count;
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_bbox_split
+ * @brief Return an array of N point cloud boxes obtained by merging
+ * consecutive instants or segments of a temporal point cloud value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] temp Temporal point cloud value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @errval NULL
+ * @csqlfn #Tpointcloud_split_n_tpcboxes()
+ */
+TPCBox *
+tpointcloud_split_n_tpcboxes(const Temporal *temp, int box_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  if (! ensure_positive(box_count))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tpointcloudinst_tpcboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointcloudseq_split_n_tpcboxes((TSequence *) temp, box_count,
+        count);
+    default: /* TSEQUENCESET */
+      return tpointcloudseqset_split_n_tpcboxes((TSequenceSet *) temp,
+        box_count, count);
+  }
+}
+
+/*****************************************************************************
+ * split_each_n_tpcboxes function
+ *****************************************************************************/
+
+/**
+ * @brief Return an array of point cloud boxes obtained by merging
+ * consecutive instants of a temporal point cloud value sequence with discrete
+ * interpolation
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input instants merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+static TPCBox *
+tpointcloudseq_disc_split_each_n_tpcboxes(const TSequence *seq, int elem_count,
+  int *count)
+{
+  assert(seq); assert(count); assert(tpointcloud_temptype(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(elem_count > 0);
+
+  int nboxes = ceil((double) seq->count / (double) elem_count);
+  TPCBox *result = palloc(sizeof(TPCBox) * nboxes);
+  int k = 0;
+  for (int i = 0; i < seq->count; ++i)
+  {
+    if (i % elem_count == 0)
+      tpointcloudinst_set_tpcbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
+    else
+    {
+      TPCBox box;
+      tpointcloudinst_set_tpcbox(TSEQUENCE_INST_N(seq, i), &box);
+      tpcbox_expand(&box, &result[k - 1]);
+    }
+  }
+  assert(k == nboxes);
+  *count = k;
+  return result;
+}
+
+/**
+ * @brief Return an array of point cloud boxes obtained by merging
+ * consecutive segments of a temporal point cloud value sequence (iterator
+ * function)
+ * @details The sequence has continuous interpolation.
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input segments merged into an output box
+ * @param[out] result Array of boxes
+ * @return Number of elements in the output array
+ */
+static int
+tpointcloudseq_cont_split_each_n_tpcboxes_iter(const TSequence *seq,
+  int elem_count, TPCBox *result)
+{
+  assert(seq); assert(result); assert(tpointcloud_temptype(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  assert(elem_count > 0);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    tsequence_set_bbox_slice(seq, 0, 0, &result[0]);
+    return 1;
+  }
+
+  /* General case */
+  int nboxes = ceil((double) (seq->count - 1) / (double) elem_count);
+  for (int k = 0; k < nboxes; k++)
+  {
+    int first = k * elem_count;
+    int last = Min(first + elem_count, seq->count - 1);
+    tsequence_set_bbox_slice(seq, first, last, &result[k]);
+  }
+  return nboxes;
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of point cloud boxes obtained by merging
+ * consecutive instants or segments of a temporal point cloud value sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] seq Temporal sequence
+ * @param[in] elem_count Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+TPCBox *
+tpointcloudseq_split_each_n_tpcboxes(const TSequence *seq, int elem_count,
+  int *count)
+{
+  assert(seq); assert(count); assert(tpointcloud_temptype(seq->temptype));
+  assert(elem_count > 0);
+
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return tpointcloudseq_disc_split_each_n_tpcboxes(seq, elem_count, count);
+
+  /* Number of instants or segments */
+  int nelems = (seq->count == 1) ? 1 : seq->count - 1;
+  int nboxes = ceil((double) nelems / (double) elem_count);
+  TPCBox *result = palloc(sizeof(TPCBox) * nboxes);
+  *count = tpointcloudseq_cont_split_each_n_tpcboxes_iter(seq, elem_count,
+    result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of point cloud boxes obtained by merging
+ * consecutive segments of a temporal point cloud value sequence set 
+ * @param[in] ss Temporal sequence set
+ * @param[in] elem_count Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+TPCBox *
+tpointcloudseqset_split_each_n_tpcboxes(const TSequenceSet *ss, int elem_count,
+  int *count)
+{
+  assert(ss); assert(count); assert(tpointcloud_temptype(ss->temptype));
+  assert(elem_count > 0);
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return tpointcloudseq_split_each_n_tpcboxes(TSEQUENCESET_SEQ_N(ss, 0),
+      elem_count, count);
+
+  /* Iterate for every composing sequence */
+  int nboxes = 0;
+  TPCBox *result = palloc(sizeof(TPCBox) * ss->totalcount);
+  for (int i = 0; i < ss->count; ++i)
+    nboxes += tpointcloudseq_cont_split_each_n_tpcboxes_iter(
+      TSEQUENCESET_SEQ_N(ss, i), elem_count, &result[nboxes]);
+  *count = nboxes;
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_bbox_split
+ * @brief Return an array of point cloud boxes obtained by merging
+ * consecutive instants or segments of a temporal point cloud value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tpointcloud_split_each_n_tpcboxes()
+ */
+TPCBox *
+tpointcloud_split_each_n_tpcboxes(const Temporal *temp, int elem_count,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tpointcloudinst_tpcboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointcloudseq_split_each_n_tpcboxes((TSequence *) temp,
+        elem_count, count);
+    default: /* TSEQUENCESET */
+      return tpointcloudseqset_split_each_n_tpcboxes((TSequenceSet *) temp,
+        elem_count, count);
+  }
+}
+
+/*****************************************************************************
+ * merge_n_tpcboxes and merge_each_n_tpcboxes functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_bbox_split
+ * @brief Return an array of N point cloud boxes obtained by merging the boxes
+ * of
+ * the consecutive instants or segments of a temporal point cloud value, each
+ * time the
+ * consecutive pair whose union adds the least size to theirs
+ * @details The merge twin of #tpointcloud_split_n_tpcboxes, by #bbox_merge_n
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tpointcloud_merge_n_tpcboxes()
+ */
+TPCBox *
+tpointcloud_merge_n_tpcboxes(const Temporal *temp, int box_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  if (! ensure_positive(box_count))
+    return NULL;
+
+  TPCBox *result = tpointcloud_tpcboxes(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_TPCBOX, result, *count, box_count, &stbox_adjust,
+      &stbox_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_bbox_split
+ * @brief Return an array of point cloud boxes obtained by merging the boxes of
+ * the
+ * consecutive instants or segments of a temporal point cloud value, each time
+ * the consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them
+ * @details The merge twin of #tpointcloud_split_each_n_tpcboxes, by
+ * #bbox_merge_each_n
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tpointcloud_merge_each_n_tpcboxes()
+ */
+TPCBox *
+tpointcloud_merge_each_n_tpcboxes(const Temporal *temp, int elem_count,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  if (! ensure_positive(elem_count))
+    return NULL;
+
+  TPCBox *result = tpointcloud_tpcboxes(temp, count);
+  if (result)
+    *count = bbox_merge_each_n(T_TPCBOX, result, *count, elem_count,
+      &stbox_adjust, &stbox_size);
+  return result;
+}
+/* GENERATED-BOXSPLIT-END tpointcloud */
 
 /*****************************************************************************/

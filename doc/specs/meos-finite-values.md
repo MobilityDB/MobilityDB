@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.1.0 |
-| Scope | The numbers a MEOS or MobilityDB value holds, the answer to an operation whose result exceeds them, and the class of the error it raises |
-| Reference | `meos/include/temporal/temporal.h` (`ensure_finite`, `ensure_finite_result`), `meos/src/geo/geo_funcs.c` (`ensure_finite_geo`), `meos/src/temporal/meos_error.c` (`meos_errcode_sqlstate`) |
+| Version | v1.3.0 |
+| Scope | The numbers, timestamps and dates a MEOS or MobilityDB value holds, the answer to an operation whose result exceeds them, and the class of the error it raises |
+| Reference | `meos/include/temporal/temporal.h` (`ensure_finite`, `ensure_finite_result`, `ensure_finite_timestamptz`, `ensure_finite_date`), `meos/src/geo/geo_funcs.c` (`ensure_finite_geo`), `meos/src/temporal/meos_error.c` (`meos_errcode_sqlstate`) |
 
 ## 1. Scope and intent
 
@@ -58,8 +58,22 @@ An input holding a NaN or an infinity is refused, and no value is built.
 | network points | the position on the route |
 | a C double argument of any public function | the argument itself |
 
-The timestamp inputs refuse `infinity` and `-infinity`: a `tstzspan`, a
-`tstzset` and a temporal value hold finite timestamps only.
+The time inputs refuse `infinity` and `-infinity` in the same way: a
+timestamp or a date that enters a value is finite.
+
+| value | timestamps and dates tested |
+|---|---|
+| `tstzset`, `tstzspan`, `tstzspanset` | every value and every bound |
+| `dateset`, `datespan`, `datespanset` | every value and every bound |
+| temporal values of every type | the timestamp of every instant |
+| `tbox`, `stbox` | the bounds of their time span |
+
+Every input of the table refuses them: the text, WKB, hex-WKB and MF-JSON
+readers, the constructors, the conversions from a timestamp or a date, and
+the set operations whose result holds the timestamp or the date given. A
+bare `timestamptz` or `date` keeps its infinities, as in PostgreSQL, and a
+predicate over one answers, since it builds no value:
+`tstzspan '[2001-01-01, 2001-01-02]' @> timestamptz 'infinity'` is false.
 
 ### 3.2 The error
 
@@ -71,6 +85,8 @@ error value (`NULL` for a pointer). The messages are:
 |---|---|
 | a number | `The value must be finite` |
 | a geometry | `The coordinates of a geometry must be finite` |
+| a timestamp | `The timestamp must be finite` |
+| a date | `The date must be finite` |
 
 In PostgreSQL the same messages are raised as an `ERROR`.
 
@@ -81,6 +97,12 @@ SELECT tfloat 'NaN@2001-01-01';
 -- ERROR:  The value must be finite
 SELECT tgeompoint 'POINT(1e400 1)@2001-01-01';
 -- ERROR:  The coordinates of a geometry must be finite
+SELECT tstzspan '[-infinity, 2001-01-01]';
+-- ERROR:  The timestamp must be finite
+SELECT datespan '[2001-01-01, infinity)';
+-- ERROR:  The date must be finite
+SELECT tfloat '1@infinity';
+-- ERROR:  The timestamp must be finite
 ```
 
 `1e400` is read as `+Infinity`, since it exceeds `DBL_MAX`.
@@ -222,7 +244,9 @@ reports the error to the error handler of the program with `meos_error`. The
 default handler ends the program. In PostgreSQL the error is raised as an
 `ERROR`, so no error value ever reaches a query. Where the handler returns,
 as the one `meos_initialize_noexit_error_handler` installs does, the function
-returns its error value and `meos_errno()` holds the error code.
+returns its error value and `meos_errno()` holds the error code. MEOS records
+the code before it calls the handler, so `meos_errno()` holds it whatever
+handler the program installs, the one of a binding included.
 
 Each function states its error value in its `@errval` tag:
 
@@ -396,9 +420,11 @@ the binding through its error handler.
 ## 11. References to the implementation
 
 The tests of a number are `ensure_finite` and `ensure_finite_result`
-(`meos/include/temporal/temporal.h`), the test of a geometry is
-`ensure_finite_geo` (`meos/src/geo/geo_funcs.c`), and
+(`meos/include/temporal/temporal.h`), the tests of a timestamp and a date are
+`ensure_finite_timestamptz` and `ensure_finite_date` (the same header), the
+test of a geometry is `ensure_finite_geo` (`meos/src/geo/geo_funcs.c`), and
 `tools/scripts/check_nan_guards.py` lists any public function that does not
 test each of its double arguments. `meos/test/nan_input_test.c` and
-`meos/test/nan_refusal_test.c` exercise each input class. Corrections are
+`meos/test/nan_refusal_test.c` exercise each input class of a number, and
+`meos/test/infinite_time_refusal_test.c` each one of a timestamp and a date. Corrections are
 filed as issues of the MobilityDB repository.

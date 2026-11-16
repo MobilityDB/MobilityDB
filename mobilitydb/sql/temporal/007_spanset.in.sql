@@ -931,6 +931,48 @@ CREATE FUNCTION splitEachNSpans(tstzspanset, integer)
   AS 'MODULE_PATHNAME', 'Spanset_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeNSpans(intspanset, integer)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(bigintspanset, integer)
+  RETURNS bigintspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(floatspanset, integer)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(datespanset, integer)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(tstzspanset, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNSpans(intspanset, integer)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(bigintspanset, integer)
+  RETURNS bigintspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(floatspanset, integer)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(datespanset, integer)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(tstzspanset, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Comparison operators
  ******************************************************************************/

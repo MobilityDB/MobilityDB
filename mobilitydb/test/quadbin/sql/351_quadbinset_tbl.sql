@@ -6,7 +6,7 @@
 
 \copy tbl_quadbinset TO 'tbl_quadbinset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_quadbinset_tmp;
-CREATE TABLE tbl_quadbinset_tmp AS TABLE tbl_quadbinset WITH NO DATA;
+CREATE TEMP TABLE tbl_quadbinset_tmp AS TABLE tbl_quadbinset WITH NO DATA;
 \copy tbl_quadbinset_tmp FROM 'tbl_quadbinset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_quadbinset t1, tbl_quadbinset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
 DROP TABLE tbl_quadbinset_tmp;

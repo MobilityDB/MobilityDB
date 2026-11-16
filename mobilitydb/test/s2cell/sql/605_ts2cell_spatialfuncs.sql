@@ -53,10 +53,9 @@ SELECT startValue(ts2CellToToken(ts2cell '[47c3c3@2001-01-01]'))
 -------------------------------------------------------------------------------
 -- Conversion from a temporal point: ts2cell(tgeogpoint, integer)
 --
--- The cell-entry timestamps are interpolated from floating-point crossings
--- whose low digits vary across build configurations, so the cases below state
--- the build-stable invariants and print whole values only where every
--- timestamp is exact.
+-- A crossing is dated by the truncation of its exact fraction at constant
+-- angular speed, the same microsecond on every build; the cases below state
+-- the invariants of the cover and print whole values where they are short.
 -------------------------------------------------------------------------------
 
 -- An instant yields the cell holding its position
@@ -159,13 +158,12 @@ SELECT numSequences(ts2cell(tgeogpoint
 SELECT ts2cell(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10) =
   ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10);
 
--- A planar segment follows the straight line in longitude and latitude, which
--- is no great circle. Cube face 2 holds the positions where the height z is at
--- least |x| and |y|, so its edge toward face 0 reaches latitude 45 on the
--- meridian 0 and latitude 44.0 on the meridians -15 and 15. The parallel 44.5
--- between those meridians starts and ends in face 2 and dips into face 0 on
--- the way: three instants over two cells and a closing instant, where the
--- great circle between the same positions bulges north and stays in face 2
+-- A planar segment follows the straight line in longitude and latitude, and a
+-- planar cell is its outline joined by straight lines in longitude and
+-- latitude. The outline of cube face 2 at level 0 has its four corners on the
+-- latitude 35.26, so the cell is the region north of that parallel and the
+-- parallel 44.5 stays in it: one cell from the first instant to the closing
+-- one, as the great circle between the same positions stays in face 2
 SELECT numInstants(t), numValues(getValues(t)), startValue(t) = endValue(t),
   numValues(getValues(ts2cell(tgeogpoint
     '[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 0)))
@@ -173,27 +171,32 @@ FROM (SELECT ts2cell(tgeompoint
   'SRID=4326;[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 0) AS t)
   AS q;
 
--- At every sampled timestamp the value is the cell holding the position of the
--- planar trajectory then, over a diagonal from one cube face to the next, a
--- parallel at high latitude, the parallel dipping out of face 2, a path near
--- the antimeridian and one along a meridian. The samples lie between the
--- minutes
-SELECT count(*) AS instants,
-  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
-    geoToS2Cell(valueAtTimestamp(p, t)::geography, z)) AS other_cell,
-  count(DISTINCT p::text) FILTER (WHERE c <> ts2cell(p::tgeogpoint, z))
-    AS other_than_geodetic
-FROM (SELECT p, z, ts2cell(p, z) AS c FROM (VALUES
+-- At every sampled timestamp the value is the planar cell holding the position
+-- of the planar trajectory then, the cell of that instant, over a diagonal
+-- from one cube face to the next, a parallel at high latitude, the parallel
+-- 44.5 in face 2, a path near the antimeridian and one along a meridian. The
+-- samples lie between the minutes. A planar cell departs from the cell of S2,
+-- whose edges are great circles, so the planar cover differs from the
+-- geodetic one. The covers are materialized so that each is computed once
+-- and not at every sample
+WITH q AS MATERIALIZED (
+  SELECT p, z, ts2cell(p, z) AS c, ts2cell(p::tgeogpoint, z) AS g FROM (VALUES
   (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 6),
   (tgeompoint 'SRID=4326;[Point(-170 75)@2001-01-01, Point(170 78)@2001-01-02]', 5),
   (tgeompoint 'SRID=4326;[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 7),
   (tgeompoint 'SRID=4326;[Point(179 10)@2001-01-01, Point(175 -30)@2001-01-02]', 8),
   (tgeompoint 'SRID=4326;[Point(4.35 10)@2001-01-01, Point(4.35 50)@2001-01-02]', 9))
-  AS v(p, z)) AS q,
+  AS v(p, z))
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(ts2cell(atTime(p, t), z))) AS other_cell,
+  count(DISTINCT p::text) FILTER (WHERE c <> g) AS other_than_geodetic
+FROM q,
   generate_series(timestamptz '2001-01-01 00:00:30',
     timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
 
--- A sequence set yields one sequence per sequence, spanning its period
+-- A sequence set yields sequences spanning its period, a crossing whose
+-- instant the cell left holds starting a sequence of its own
 SELECT numSequences(t), getTime(t) = getTime(p)
 FROM (SELECT p, ts2cell(p, 4) AS t FROM (VALUES (tgeompoint
   'SRID=4326;{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
@@ -263,7 +266,9 @@ SELECT s2cellset '{47c3c3}' ?=
 -- The cover of a trajectory cut at half-open periods merges into the cover of
 -- the whole trajectory, here for a trajectory ending on a cell boundary: the
 -- cell reached at the last instant is stated there, as the space split states
--- the tile of the last corner under its default borderInc
+-- the tile of the last corner under its default borderInc. At its middle
+-- instant the trajectory passes the corner (-90 0) between two cells it
+-- touches there alone, and the cell holding the corner holds that instant
 WITH trip(tp) AS (
   SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
 ), periods(period) AS (VALUES

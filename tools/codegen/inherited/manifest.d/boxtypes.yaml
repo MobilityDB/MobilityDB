@@ -449,8 +449,8 @@ boxtypes:
            files: {gist: mobilitydb/sql/temporal/043_temporal_gist.in.sql,
                    spgist: mobilitydb/sql/temporal/044_temporal_spgist.in.sql}}
         - {type: tjsonb, axes: [topo, t], opnames: {"@>": "#@>", "<@": "<@#"},
-           files: {gist: mobilitydb/sql/json/466_tjsonb_indexes.in.sql,
-                   spgist: mobilitydb/sql/json/466_tjsonb_indexes.in.sql}}
+           files: {gist: mobilitydb/sql/json/466_tjsonb_gist.in.sql,
+                   spgist: mobilitydb/sql/json/467_tjsonb_spgist.in.sql}}
     # position wrappers: a span names its one dimension x, so the time operations call
     # the x kernels (before -> left_span_span); a wrapper with a box operand backs the
     # SQL function of every class over a timestamptz span (spanBefore ... tpcboxBefore)

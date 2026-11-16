@@ -8,7 +8,7 @@ DROP INDEX IF EXISTS tbl_tnpoint_gin_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_topops;
-CREATE TABLE test_topops(
+CREATE TEMP TABLE test_topops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

@@ -820,12 +820,11 @@ SELECT getTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 		<para>The values of a temporal distance are exact. When a body turns, the distance between two instants does not change linearly, so the temporal distance also has an instant at each minimum and maximum of the distance. Thus the nearest approach distance and the nearest approach instant are exact.</para>
 
-		<para>The distance functions need a reference geometry that is a convex polygon without holes. A polygon of the other argument must also be convex and without holes. Other values give an error. A geometry collection, nested ones included, is read as its members, as a multi-geometry is. The distance of a temporal rigid geometry in three dimensions is not yet supported, and neither is the distance to a curve. The temporal distance between two concave geometries is thus not yet supported either.</para>
+		<para>The reference geometry may be a polygon of any shape, holes included. It is read as an exact cover of convex pieces whose vertices are its own and whose union is its area, so the distance of the body is the least distance of a piece, and it is 0 exactly where a piece meets the other argument. A polygon of the other argument may also have any shape and holes: the distance to it is 0 while the body has a point in it, and otherwise the distance to its rings. A geometry collection, nested ones included, is read as its members, as a multi-geometry is. Two temporal rigid geometries may both turn in the same segment, whatever the shape of their bodies. The distance of a temporal rigid geometry in three dimensions is not yet supported, and neither is the distance to a curve.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
   Pose(Point(0 0),0)@2001-01-01', geometry 'Point(7 3)');
--- ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is
--- a convex polygon without holes
+-- 3@2001-01-01
 </programlisting>
 
 		<itemizedlist>
@@ -1253,6 +1252,28 @@ SELECT splitNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
 -- {"STBOX XT(((0,0),(11,1)),[2001-01-01, 2001-01-02])"}
 SELECT splitNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
+-- {"[2001-01-01, 2001-01-02]"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_merge_boxes">
+				<indexterm significance="normal"><primary><varname>mergeNStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeEachNStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeNSpans</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeEachNSpans</varname></primary></indexterm>
+				<para>Return the spatiotemporal boxes or time spans of a temporal rigid geometry merged into a given number of boxes, or until a box holds on average a given number of segments, each time the consecutive pair whose union adds the least size to theirs</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNStboxes(trgeometry,integer) → stbox[]
+mergeEachNStboxes(trgeometry,integer) → stbox[]
+mergeNSpans(trgeometry,integer) → tstzspan[]
+mergeEachNSpans(trgeometry,integer) → tstzspan[]
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
+/* {"STBOX XT(((-1.414213562373095,-1.414213562373095),(11.414213562373096,1.414213562373095)),[2001-01-01, 2001-01-02])"} */
+SELECT mergeNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
 -- {"[2001-01-01, 2001-01-02]"}
 </programlisting>

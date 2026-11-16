@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
 SELECT spaceTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0) LIMIT 3;
          spacetiles         
 ----------------------------
@@ -98,6 +101,9 @@ SELECT getSpaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2001-01-15', 2.0, 
 ERROR:  The geometry must have Z dimension
 SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Space boxes
+-------------------------------------------------------------------------------
 SELECT round(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0), 6);
                                                                                                                                                                                                                                                                        round                                                                                                                                                                                                                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -121,6 +127,9 @@ SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-
 ERROR:  The geometry must have Z dimension
 SELECT spaceBoxes(tgeompoint 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- time boxes
+-------------------------------------------------------------------------------
 SELECT round(timeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', interval '2 days', '2001-01-01'), 6);
                                                                                                                                                                                                                          round                                                                                                                                                                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -135,7 +144,10 @@ SELECT round(timeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@200
 
 /* Errors */
 SELECT timeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', interval '2 months', '2001-01-01');
-ERROR:  Cannot have month intervals: 2 mons
+ERROR:  Cannot have month intervals: @ 2 mons
+-------------------------------------------------------------------------------
+-- SpaceTime boxes
+-------------------------------------------------------------------------------
 SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01'), 6);
                                                                                                                                                                                                                          round                                                                                                                                                                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -153,6 +165,10 @@ SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001
 ERROR:  The geometry must have Z dimension
 SELECT spaceTimeBoxes(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', 2.0, interval '2 days', 'SRID=5676;Point(1 1)', '2001-01-01');
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Space split
+-------------------------------------------------------------------------------
+-- 2D
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0) AS sp) t;
    point    |                 tpoint                  
@@ -244,6 +260,7 @@ FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2
  POINT(2.5 2.5) | Interp=Step;{[POINT(3 3)@Thu Jan 04 00:00:00 2001 PST, POINT(3 3)@Fri Jan 05 00:00:00 2001 PST]}
 (2 rows)
 
+-- 3D
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Point(1 1 1)@2001-01-01', 2.0) AS sp) t;
       point      |                    tpoint                    
@@ -348,6 +365,10 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-
 /* Errors */
 SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, geometry 'SRID=3812;Point(0.5 0.5 0.5)');
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Space-time split
+-------------------------------------------------------------------------------
+-- Without bitmatrix
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, interval '2 days', bitmatrix:=false) AS sp) t;
    point    |             time             |                 tpoint                  
@@ -355,6 +376,7 @@ FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, interval '2
  POINT(0 0) | Mon Jan 01 00:00:00 2001 PST | POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- 2D
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, interval '2 days') AS sp) t;
    point    |             time             |                 tpoint                  
@@ -462,6 +484,7 @@ FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Poi
  POINT(2.5 2.5) | Fri Jan 05 00:00:00 2001 PST | Interp=Step;{[POINT(3 3)@Fri Jan 05 00:00:00 2001 PST]}
 (4 rows)
 
+-- 3D
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1 1)@2001-01-01', 2.0, interval '2 days') AS sp) t;
       point      |             time             |                    tpoint                    
@@ -572,6 +595,11 @@ FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, P
 /* Errors */
 SELECT spaceTimeSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, interval '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Convenience overloads taking a tgeompoint directly. Each invocation should
+-- yield the same set of (index, tile) rows as the explicit
+-- @c spaceTiles(stbox(temp), ...) form.
+-------------------------------------------------------------------------------
 WITH t AS (
   SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
 )
@@ -599,6 +627,7 @@ SELECT count(*) FROM t, spaceTiles(temp, 2.0, 4.0, 5.0);
     54
 (1 row)
 
+-- Equivalence: convenience overload vs explicit stbox cast
 WITH t AS (
   SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
 ), a AS (
@@ -649,6 +678,15 @@ SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, 4.0, 5.0, interval '1 day');
    270
 (1 row)
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A geodetic point laid on a space grid. A geodetic trip travels the great
+-- circle between its positions, which leaves the straight line in longitude
+-- and latitude, so the tiles it enters are the tiles that circle crosses.
+-------------------------------------------------------------------------------
+-- Both ends sit at latitude 61 and the great circle between them reaches
+-- latitude 62.485889, so on a grid of 2 degrees the trip enters the row north
+-- of the one the straight line in longitude and latitude stays in
 SELECT count(DISTINCT ST_Y(s.point::geometry)) AS rows_of_tiles
 FROM spaceSplit(tgeogpoint '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]',
   2.0) s;
@@ -665,6 +703,7 @@ FROM spaceSplit(tgeompoint
              1
 (1 row)
 
+-- Every fragment is the trip restricted to the fragment's own period
 SELECT count(*) AS fragments,
   count(*) FILTER (WHERE atTime(t.tp, getTime(s.tpoint)) <> s.tpoint)
   AS fragments_stating_another_value
@@ -676,6 +715,8 @@ FROM (SELECT tgeogpoint
         23 |                               0
 (1 row)
 
+-- An arc across the antimeridian takes its short way, so it stays in the tiles
+-- of the last and the first columns of the grid
 SELECT count(DISTINCT ST_X(s.point::geometry)) AS columns_of_tiles
 FROM spaceSplit(tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]',
   2.0) s;
@@ -684,6 +725,7 @@ FROM spaceSplit(tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-0
                12
 (1 row)
 
+-- The space and time grid answers the tile, the time bin and the fragment
 SELECT count(*) AS fragments
 FROM spaceTimeSplit(tgeogpoint
   '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]', 2.0,
@@ -693,6 +735,11 @@ FROM spaceTimeSplit(tgeogpoint
         25
 (1 row)
 
+-- The fragments of the split of a geodetic trip partition its period: a trip
+-- holding the north pole, stated there at two longitudes, holds one position,
+-- a trip starting at the southernmost position of its great circle runs
+-- north throughout, and a trip leaving the pole runs along the meridian of
+-- its end
 WITH trips(tp) AS (VALUES
   (tgeogpoint '[Point(30 60)@2001-01-01, Point(30 90)@2001-01-02,
     Point(0 90)@2001-01-03, Point(0 60)@2001-01-04]'),
@@ -709,6 +756,11 @@ FROM (SELECT tp, spansetUnion(getTime(s.tpoint)) AS whole,
      3 |                       0
 (1 row)
 
+-- The fragments of the space-time split of a geodetic trip partition its
+-- period too: the trip starting at the southernmost position of its great
+-- circle is cut at the bounds of the periods into parts whose arcs carry
+-- extremes of their own, and the trip crossing the antimeridian is cut into a
+-- part ending a rounding away from the plane of the meridian 15
 WITH trips(tp) AS (VALUES
   (tgeogpoint '[Point(-30 -30)@2001-01-01 17:00:00+00, Point(60 0)@2001-01-02 01:00:00+00]'),
   (tgeogpoint '[Point(150 15)@2001-01-03 11:00:00+00, Point(-120 15)@2001-01-04 15:00:00+00]'))
@@ -724,6 +776,7 @@ FROM (SELECT tp, spansetUnion(getTime(s.tpoint)) AS whole,
      2 |                       0
 (1 row)
 
+-- A grid is laid on a value of its own kind, so a geography origin is required
 SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
   geography 'SRID=4326;Point(0.5 0.5)');
                                                                spacesplit                                                               
@@ -731,6 +784,9 @@ SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
  (0101000020E6100000000000000000E03F000000000000E03F,"0101000020E6100000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST")
 (1 row)
 
+-- Without its upper border a box leaves out only a tile holding nothing of it
+-- but that border: a box reaching into a tile keeps it, and a box ending on a
+-- tile boundary drops the tile starting there
 SELECT borderInc, count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
 FROM (VALUES (true), (false)) AS b(borderInc),
   LATERAL spaceTiles(stbox 'STBOX X((1,1),(7,3))', 5.0,
@@ -753,6 +809,10 @@ GROUP BY borderInc ORDER BY borderInc;
  t         |     3 | {"STBOX X((0,0),(5,5))","STBOX X((5,0),(10,5))","STBOX X((10,0),(15,5))"}
 (2 rows)
 
+-- The tiles along a dimension are counted by the nearest whole number of
+-- sizes between the tiles of its bounds, which lie a whole number of sizes
+-- apart up to the rounding of the tiles: the x values 0.5 to 0.7 meet two
+-- tiles of size 0.1, the last one starting near 0.6 and holding 0.7
 SELECT count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
 FROM spaceTiles(stbox 'STBOX X((0.5,0),(0.7,0.05))', 0.1) AS tile;
  tiles |                            tiles                            
@@ -760,6 +820,9 @@ FROM spaceTiles(stbox 'STBOX X((0.5,0),(0.7,0.05))', 0.1) AS tile;
      2 | {"STBOX X((0.5,0),(0.6,0.1))","STBOX X((0.6,0),(0.7,0.1))"}
 (1 row)
 
+-- A trajectory split without the upper border of its extent keeps every tile
+-- it passes through, with or without the bit matrix, and loses only the
+-- instant it ends on that border
 SELECT bitmatrix, borderInc, count(*) AS fragments,
   array_agg(ST_AsText(s.point) ORDER BY ST_AsText(s.point)) AS tiles
 FROM (VALUES (true), (false)) AS m(bitmatrix),
@@ -776,6 +839,10 @@ GROUP BY bitmatrix, borderInc ORDER BY bitmatrix, borderInc;
  t         | t         |         3 | {"POINT(0 0)","POINT(10 0)","POINT(5 0)"}
 (4 rows)
 
+-- A trajectory passing through the corner where four tiles meet holds the
+-- tile whose lower bounds meet there at that instant, which the bit matrix
+-- sets as the split without it reads it: the trajectory below crosses the
+-- corner (-90 0) halfway, and the tile from (-90 0) holds it then
 SELECT bitmatrix, count(*) AS fragments,
   array_agg(ST_AsText(s.point) || ' ' || asText(s.tpoint)
     ORDER BY ST_AsText(s.point)) AS fragments
@@ -790,6 +857,8 @@ GROUP BY bitmatrix ORDER BY bitmatrix;
  t         |         3 | {"POINT(-180 0) {[POINT(-135 10)@Mon Jan 01 00:00:00 2001 PST, POINT(-90 0)@Tue Jan 02 00:00:00 2001 PST)}","POINT(-90 -90) {(POINT(-90 0)@Tue Jan 02 00:00:00 2001 PST, POINT(-45 -10)@Wed Jan 03 00:00:00 2001 PST]}","POINT(-90 0) {[POINT(-90 0)@Tue Jan 02 00:00:00 2001 PST]}"}
 (2 rows)
 
+-- Every form of spaceTiles takes the border by the name borderInc, the one
+-- with the three sizes included
 SELECT count(*) AS tiles
 FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 5.0, 5.0, 5.0,
   borderInc := false);
@@ -798,6 +867,7 @@ FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 5.0, 5.0, 5.0,
      2
 (1 row)
 
+-- Grid arguments named by their dimension
 SELECT count(*) AS tiles
 FROM timeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])',
   duration := '2 days', torigin := '2001-01-01');
@@ -806,6 +876,7 @@ FROM timeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])',
      3
 (1 row)
 
+-- A time tile keeps the spatial extent of the box, in X, Y and Z
 SELECT index, tile
 FROM timeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])',
   duration := '2 days', torigin := '2001-01-01');
@@ -857,6 +928,10 @@ FROM unnest(timeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]
      3
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A size left out takes xsize
+-------------------------------------------------------------------------------
+-- The one- and two-size forms answer what the form repeating xsize answers
 SELECT array_agg(tile ORDER BY index) = (SELECT array_agg(tile ORDER BY index)
   FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 2.0, 2.0)) AS same
 FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0);
@@ -909,6 +984,7 @@ FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]',
  t
 (1 row)
 
+-- A size of 0 is a size left out, and a zsize is read only for a value with Z
 SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 0, 0) =
   spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
  same 
@@ -923,18 +999,22 @@ SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]',
  t
 (1 row)
 
+-- A size under one
 SELECT array_length(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 0.5), 1) AS boxes;
  boxes 
 -------
      3
 (1 row)
 
+-- An empty point lies in no tile
 SELECT getSpaceTile(geometry 'Point EMPTY', 2.0) IS NULL AS no_tile;
  no_tile 
 ---------
  t
 (1 row)
 
+-- Every fragment of a time split is the trip restricted to its bin, also on a
+-- segment of five hours crossing 32 bins of ten minutes
 SELECT count(*) AS fragments,
   count(*) FILTER (WHERE atTime(t.tp, span((s).time,
     (s).time + interval '10 minutes')) <> (s).temp)
@@ -955,19 +1035,21 @@ SELECT count(*) FROM spaceTiles(stbox 'STBOX X((1,1),(10,3))', 'NaN'::float);
 ERROR:  The argument xsize must be a finite number that is not negative
 SELECT count(*) FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0, 2.0, 'Infinity'::float);
 ERROR:  The argument zsize must be a finite number that is not negative
+-- A space and time grid takes both sizes
 SELECT count(*) FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', 0.0, interval '1 day');
 ERROR:  The value must be strictly positive: 0.000000
 SELECT count(*) FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', 2.0, interval '0 days');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
 SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 0.0, interval '2 days');
 ERROR:  The value must be strictly positive: 0.000000
 SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, interval '0 days');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
 SELECT count(*) FROM spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', 0.0, interval '1 day');
 ERROR:  The value must be strictly positive: 0.000000
 SELECT count(*) FROM spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', 2.0, interval '0 days');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
 SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2001-01-15', 0.0, interval '2 days');
 ERROR:  The value must be strictly positive: 0.000000
 SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2001-01-15', 2.0, interval '0 days');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive: @ 0
+-------------------------------------------------------------------------------

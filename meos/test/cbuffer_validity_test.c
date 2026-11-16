@@ -44,7 +44,10 @@
  * still answers with no error left behind. It also verifies that each
  * commutative relationship of a geometry or a circular buffer and a temporal
  * circular buffer answers what the same relationship in the other argument
- * order answers.
+ * order answers. It verifies that #cbufferarr_to_geom reports a null array
+ * and a count that is not positive by returning NULL and setting
+ * #meos_errno, as #cbufferarr_round does, and answers the geometry of a
+ * single buffer and the collection of two.
  *
  * The program can be build as follows
  * @code
@@ -243,6 +246,35 @@ int main(void)
   assert(ones > 0 && zeros > 0);
   free(moving);
   assert(meos_errno() == 0);
+
+  /* The geometry of an array of circular buffers reports a null array and a
+   * count that is not positive, and answers the geometry of one buffer or the
+   * collection of two */
+  Cbuffer *cb1 = cbuffer_in("Cbuffer(Point(1 1),0.5)");
+  Cbuffer *cb2 = cbuffer_in("Cbuffer(Point(5 5),1)");
+  assert(cb1); assert(cb2);
+  const Cbuffer *cbarr[] = { cb1, cb2 };
+  GSERIALIZED *cbgeo = cbufferarr_to_geom(NULL, 2);
+  printf("cbufferarr_to_geom(NULL, 2): %s, errno %d\n",
+    cbgeo ? "a geometry" : "NULL", meos_errno());
+  assert(cbgeo == NULL); assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  cbgeo = cbufferarr_to_geom(cbarr, 0);
+  printf("cbufferarr_to_geom(cbarr, 0): %s, errno %d\n",
+    cbgeo ? "a geometry" : "NULL", meos_errno());
+  assert(cbgeo == NULL); assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  cbgeo = cbufferarr_to_geom(cbarr, 1);
+  GSERIALIZED *cb1geo = cbuffer_to_geom(cb1);
+  printf("cbufferarr_to_geom(cbarr, 1): %s, errno %d\n",
+    cbgeo ? "a geometry" : "NULL", meos_errno());
+  assert(cbgeo && geo_same(cbgeo, cb1geo)); assert(meos_errno() == 0);
+  free(cbgeo); free(cb1geo);
+  cbgeo = cbufferarr_to_geom(cbarr, 2);
+  printf("cbufferarr_to_geom(cbarr, 2): %d geometries, errno %d\n",
+    cbgeo ? geo_num_geos(cbgeo) : -1, meos_errno());
+  assert(cbgeo && geo_num_geos(cbgeo) == 2); assert(meos_errno() == 0);
+  free(cbgeo); free(cb1); free(cb2);
 
   /* Finalize MEOS */
   meos_finalize();

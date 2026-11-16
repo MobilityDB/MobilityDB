@@ -70,7 +70,7 @@ typedef struct
 } Exact;
 
 /* The rational values (Niven) */
-static const Exact exact[] = {
+static const Exact rational[] = {
   {0.0, 0.0, 1.0},
   {30.0, 0.5, NAN},
   {60.0, NAN, 0.5},
@@ -104,10 +104,10 @@ main(void)
       }
     }
   }
-  int nexact = (int) (sizeof(exact) / sizeof(exact[0]));
+  int nexact = (int) (sizeof(rational) / sizeof(rational[0]));
   for (int i = 0; i < nexact; i++)
   {
-    const Exact *e = &exact[i];
+    const Exact *e = &rational[i];
     double s = sind_nearest(e->deg), c = cosd_nearest(e->deg);
     if ((! isnan(e->sin) && s != e->sin) || (! isnan(e->cos) && c != e->cos))
     {

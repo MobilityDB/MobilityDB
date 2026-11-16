@@ -130,6 +130,12 @@ CREATE OPERATOR CLASS tpcbox_quadtree_ops
   OPERATOR  35    /&> (tpcbox, tpcbox),
   OPERATOR  35    /&> (tpcbox, tpcpoint),
   OPERATOR  35    /&> (tpcbox, tpcpatch),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcbox, tpcpoint),
+  OPERATOR  36    ?&& (tpcbox, tpcpatch),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcbox, tpcpoint),
+  OPERATOR  37    %&& (tpcbox, tpcpatch),
   -- functions
   FUNCTION  1  stbox_spgist_config(internal, internal),
   FUNCTION  2  stbox_quadtree_choose(internal, internal),
@@ -231,6 +237,12 @@ CREATE OPERATOR CLASS tpcbox_kdtree_ops
   OPERATOR  35    /&> (tpcbox, tpcbox),
   OPERATOR  35    /&> (tpcbox, tpcpoint),
   OPERATOR  35    /&> (tpcbox, tpcpatch),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcbox, tpcpoint),
+  OPERATOR  36    ?&& (tpcbox, tpcpatch),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcbox, tpcpoint),
+  OPERATOR  37    %&& (tpcbox, tpcpatch),
   -- functions
   FUNCTION  1  stbox_spgist_config(internal, internal),
   FUNCTION  2  stbox_kdtree_choose(internal, internal),
@@ -330,6 +342,10 @@ CREATE OPERATOR CLASS tpcpoint_quadtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tpcpoint, tpcbox),
   OPERATOR  35    /&> (tpcpoint, tpcpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcpoint, tpcbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcpoint, tpcbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -422,6 +438,10 @@ CREATE OPERATOR CLASS tpcpoint_kdtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tpcpoint, tpcbox),
   OPERATOR  35    /&> (tpcpoint, tpcpoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcpoint, tpcbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcpoint, tpcbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
@@ -514,6 +534,10 @@ CREATE OPERATOR CLASS tpcpatch_quadtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tpcpatch, tpcbox),
   OPERATOR  35    /&> (tpcpatch, tpcpatch),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcpatch, tpcbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcpatch, tpcbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -606,6 +630,10 @@ CREATE OPERATOR CLASS tpcpatch_kdtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tpcpatch, tpcbox),
   OPERATOR  35    /&> (tpcpatch, tpcpatch),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tpcpatch, tpcbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tpcpatch, tpcbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),

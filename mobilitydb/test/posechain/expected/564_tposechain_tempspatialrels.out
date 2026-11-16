@@ -1,124 +1,155 @@
-SELECT asText(tIntersects(tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-- Temporal spatial relationships for temporal pose chains. Every one of them
+-- converts its operands to the temporal geometry point the chain composes to
+-- and re-delegates, so a chain answers exactly as that pose does. The family
+-- declares the matrix its target declares: tContains and tCovers take the
+-- geometry first only, and tTouches has no direction between two chains,
+-- because a moving point neither contains nor covers a geometry and two
+-- moving points do not touch.
+\set square 'geometry ''Polygon((0 0,0 2,2 2,2 0,0 0))'''
+\set inside 'tposechain ''PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'''
+\set corner 'tposechain ''PoseChain(Pose(Point(0 0), 0.1))@2001-01-01'''
+\set moving 'tposechain ''{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'''
+-------------------------------------------------------------------------------
+-- tIntersects and tDisjoint are negations of each other
+-------------------------------------------------------------------------------
+SELECT asText(tIntersects(:moving, :square));
                               astext                              
 ------------------------------------------------------------------
  {t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(tIntersects(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'));
+SELECT asText(tIntersects(:square, :moving));
                               astext                              
 ------------------------------------------------------------------
  {t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(tDisjoint(tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(:moving, :square));
                               astext                              
 ------------------------------------------------------------------
  {f@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(tDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'));
+SELECT asText(tDisjoint(:square, :moving));
                               astext                              
 ------------------------------------------------------------------
  {f@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(tContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'));
+-------------------------------------------------------------------------------
+-- tContains and tCovers
+-------------------------------------------------------------------------------
+SELECT asText(tContains(:square, :moving));
                               astext                              
 ------------------------------------------------------------------
  {t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(tCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'));
+SELECT asText(tCovers(:square, :moving));
                               astext                              
 ------------------------------------------------------------------
  {t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(tContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01'));
+SELECT asText(tContains(:square, :corner));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01'));
+SELECT asText(tCovers(:square, :corner));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tTouches(tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-------------------------------------------------------------------------------
+-- tTouches
+-------------------------------------------------------------------------------
+SELECT asText(tTouches(:corner, :square));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tTouches(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01'));
+SELECT asText(tTouches(:square, :corner));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tTouches(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tTouches(:inside, :square));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', 0.0));
+-- two chains do not touch, so the direction between them is not declared
+-------------------------------------------------------------------------------
+-- tDwithin, including the two-chain direction
+-------------------------------------------------------------------------------
+SELECT asText(tDwithin(:inside, :square, 0.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', geometry 'Point(1 5)', 2.0));
+SELECT asText(tDwithin(:inside, geometry 'Point(1 5)', 2.0));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', tposechain 'PoseChain(Pose(Point(1 2), 0.1))@2001-01-01', 2.0));
+SELECT asText(tDwithin(:inside, tposechain 'PoseChain(Pose(Point(1 2), 0.1))@2001-01-01', 2.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', tposechain 'PoseChain(Pose(Point(1 9), 0.1))@2001-01-01', 2.0));
+SELECT asText(tDwithin(:inside, tposechain 'PoseChain(Pose(Point(1 9), 0.1))@2001-01-01', 2.0));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-------------------------------------------------------------------------------
+-- Linear interpolation, which the tgeompoint target carries
+-------------------------------------------------------------------------------
+\set lin 'tposechain ''[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]'''
+SELECT asText(tIntersects(:lin, :square));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(tIntersects(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]'));
+SELECT asText(tIntersects(:square, :lin));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(tDisjoint(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(:lin, :square));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST], (t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(tDwithin(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]', geometry 'Point(1 1)', 1.0));
+SELECT asText(tDwithin(:lin, geometry 'Point(1 1)', 1.0));
                                                                        astext                                                                       
 ----------------------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 16:58:14.025894 2001 PST], (f@Mon Jan 01 16:58:14.025894 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(tIntersects(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))')) =
-  asText(tIntersects(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]'::tpose::tgeompoint, geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))')) AS ti_agrees;
+-- The answer is the one the chain's own pose gives, turning points and all
+SELECT asText(tIntersects(:lin, :square)) =
+  asText(tIntersects(:lin::tpose::tgeompoint, :square)) AS ti_agrees;
  ti_agrees 
 -----------
  t
 (1 row)
 
+-- A moving point neither contains nor covers a geometry, so the direction
+-- taking the chain first is not declared
 SELECT to_regprocedure('tContains(tposechain, geometry)') IS NULL AS tcontains_absent,
        to_regprocedure('tCovers(tposechain, geometry)') IS NULL AS tcovers_absent,
        to_regprocedure('tTouches(tposechain, tposechain)') IS NULL AS ttouches_absent,
@@ -128,3 +159,4 @@ SELECT to_regprocedure('tContains(tposechain, geometry)') IS NULL AS tcontains_a
  t                | t              | t               | t
 (1 row)
 
+-------------------------------------------------------------------------------

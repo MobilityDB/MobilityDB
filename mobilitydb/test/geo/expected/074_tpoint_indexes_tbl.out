@@ -1,36 +1,24 @@
-CREATE TABLE test AS
+CREATE TEMP TABLE test AS
 SELECT NULL::tgeompoint FROM generate_series(1, 10);
-SELECT 10
 ANALYZE test;
-ANALYZE
 DROP TABLE test;
-DROP TABLE
-ANALYZE tbl_tgeompoint3D_big;
-ANALYZE
-ANALYZE tbl_tgeogpoint3D_big;
-ANALYZE
+-------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_rtree_idx;
 NOTICE:  index "tbl_tgeompoint3d_big_rtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_rtree_idx;
 NOTICE:  index "tbl_tgeogpoint3d_big_rtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_quadtree_idx;
 NOTICE:  index "tbl_tgeompoint3d_big_quadtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_quadtree_idx;
 NOTICE:  index "tbl_tgeogpoint3d_big_quadtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_kdtree_idx;
 NOTICE:  index "tbl_tgeompoint3d_big_kdtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_kdtree_idx;
 NOTICE:  index "tbl_tgeogpoint3d_big_kdtree_idx" does not exist, skipping
-DROP INDEX
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tgeompoint3D_big_rtree_idx ON tbl_tgeompoint3D_big USING GIST(temp);
-CREATE INDEX
 CREATE INDEX tbl_tgeogpoint3D_big_rtree_idx ON tbl_tgeogpoint3D_big USING GIST(temp);
-CREATE INDEX
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
@@ -367,6 +355,18 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && stbox 'GEODSTBOX ZT(((1,
    530
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ?&& stbox 'GEODSTBOX ZT(((1,40,1),(10,50,500)),[2001-01-01, 2001-02-01])';
+ count 
+-------
+   295
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp %&& stbox 'GEODSTBOX ZT(((1,40,1),(10,50,500)),[2001-01-01, 2001-02-01])';
+ count 
+-------
+     8
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> tgeogpoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
@@ -415,6 +415,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tgeogpoint '[Point(1 1 
   9993
 (1 row)
 
+-- Test the commutator for the selectivity
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE tgeogpoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]' <<# temp;
  count 
 -------
@@ -427,14 +428,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE tgeogpoint '[Point(1 1 1)@2001-0
   9952
 (1 row)
 
+-------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_rtree_idx;
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_rtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tgeompoint3D_big_quadtree_idx ON tbl_tgeompoint3D_big USING SPGIST(temp);
-CREATE INDEX
 CREATE INDEX tbl_tgeogpoint3D_big_quadtree_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp);
-CREATE INDEX
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
@@ -723,6 +723,18 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && stbox 'GEODSTBOX ZT(((1,
    530
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ?&& stbox 'GEODSTBOX ZT(((1,40,1),(10,50,500)),[2001-01-01, 2001-02-01])';
+ count 
+-------
+   295
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp %&& stbox 'GEODSTBOX ZT(((1,40,1),(10,50,500)),[2001-01-01, 2001-02-01])';
+ count 
+-------
+     8
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> tgeogpoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
@@ -771,14 +783,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tgeogpoint '[Point(1 1 
   9993
 (1 row)
 
+-------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_quadtree_idx;
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_quadtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
 CREATE INDEX tbl_tgeompoint3D_big_kdtree_idx ON tbl_tgeompoint3D_big USING SPGIST(temp tgeompoint_kdtree_ops);
-CREATE INDEX
 CREATE INDEX tbl_tgeogpoint3D_big_kdtree_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp tgeogpoint_kdtree_ops);
-CREATE INDEX
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
@@ -1067,6 +1078,18 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && stbox 'GEODSTBOX ZT(((1,
    530
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ?&& stbox 'GEODSTBOX ZT(((1,40,1),(10,50,500)),[2001-01-01, 2001-02-01])';
+ count 
+-------
+   295
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp %&& stbox 'GEODSTBOX ZT(((1,40,1),(10,50,500)),[2001-01-01, 2001-02-01])';
+ count 
+-------
+     8
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> tgeogpoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
@@ -1115,24 +1138,18 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tgeogpoint '[Point(1 1 
   9993
 (1 row)
 
+-------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_kdtree_idx;
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_kdtree_idx;
-DROP INDEX
-ANALYZE tbl_tgeompoint;
-ANALYZE
-ANALYZE tbl_tgeompoint3D;
-ANALYZE
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tgeompoint_rtree_idx;
 NOTICE:  index "tbl_tgeompoint_rtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeompoint3D_rtree_idx;
 NOTICE:  index "tbl_tgeompoint3d_rtree_idx" does not exist, skipping
-DROP INDEX
 CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING GIST(temp);
-CREATE INDEX
 CREATE INDEX tbl_tgeompoint3D_rtree_idx ON tbl_tgeompoint3D USING GIST(temp);
-CREATE INDEX
+-- EXPLAIN ANALYZE
 WITH test AS (
   SELECT temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
@@ -1193,6 +1210,7 @@ SELECT round(distance, 6) FROM test;
  3784781.353772
 (3 rows)
 
+-- An empty geometry has no bounding box for the index to read
 WITH test AS (
   SELECT temp |=| geometry 'Polygon empty' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
@@ -1204,19 +1222,15 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
-DROP INDEX
 DROP INDEX tbl_tgeompoint3D_rtree_idx;
-DROP INDEX
+-------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tgeompoint_quadtree_idx;
 NOTICE:  index "tbl_tgeompoint_quadtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeompoint3D_quadtree_idx;
 NOTICE:  index "tbl_tgeompoint3d_quadtree_idx" does not exist, skipping
-DROP INDEX
 CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING SPGIST(temp);
-CREATE INDEX
 CREATE INDEX tbl_tgeompoint3D_quadtree_idx ON tbl_tgeompoint3D USING SPGIST(temp);
-CREATE INDEX
+-- EXPLAIN ANALYZE
 WITH test AS (
   SELECT temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
@@ -1277,6 +1291,7 @@ SELECT round(distance, 6) FROM test;
  3784781.353772
 (3 rows)
 
+-- An empty geometry has no bounding box for the index to read
 WITH test AS (
   SELECT temp |=| geometry 'Polygon empty' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
@@ -1288,28 +1303,27 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
-DROP INDEX
 DROP INDEX tbl_tgeompoint3D_quadtree_idx;
-DROP INDEX
-CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
-SELECT 12500
+-------------------------------------------------------------------------------
+-- Coverage of all the same and order by logic in SP-GiST indexes
+CREATE TEMP TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tgeompoint3D_big_allthesame_quadtree_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
-CREATE INDEX
 ANALYZE tbl_tgeompoint3D_big_allthesame;
-ANALYZE
+-- EXPLAIN ANALYZE
 DROP TABLE tbl_tgeompoint3D_big_allthesame;
-DROP TABLE
-CREATE TABLE tbl_tgeompoint_allthesame AS
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A quad-tree node whose children are all the same computes one ordering
+-- distance per ordering key from the parent node box. A table of identical
+-- values is what builds such a node.
+-------------------------------------------------------------------------------
+CREATE TEMP TABLE tbl_tgeompoint_allthesame AS
   SELECT k, tgeompoint 'Point(5 5)@2001-01-01' AS temp
   FROM generate_series(1, 1000) k;
-SELECT 1000
 CREATE INDEX tbl_tgeompoint_allthesame_quadtree_idx ON tbl_tgeompoint_allthesame
   USING SPGIST(temp);
-CREATE INDEX
 ANALYZE tbl_tgeompoint_allthesame;
-ANALYZE
 SET enable_seqscan = off;
-SET
 WITH test AS (
   SELECT temp |=| geometry 'Point(0 0)' AS distance
   FROM tbl_tgeompoint_allthesame ORDER BY 1 LIMIT 3 )
@@ -1322,15 +1336,21 @@ SELECT round(distance, 6) FROM test;
 (3 rows)
 
 RESET enable_seqscan;
-RESET
 DROP TABLE tbl_tgeompoint_allthesame;
-DROP TABLE
-CREATE FUNCTION gist_bound_inc_disagreements() RETURNS bigint AS $$
+--------------------------------------------------------------------------------
+-- A node key must keep the inclusivity of the bound it is expanded to, and
+-- two keys that differ only in that inclusivity are not the same key. Every
+-- value below ends on an EXCLUSIVE upper bound and the last one is an instant
+-- sitting exactly on the largest of them, so a key that takes the bound value
+-- while keeping the exclusivity of the entry it starts from excludes that
+-- instant and the scan prunes the page that holds it. Several sizes are built
+-- because which node ends on that bound follows from how the pages split.
+CREATE FUNCTION pg_temp.gist_bound_inc_disagreements() RETURNS bigint AS $$
 DECLARE n int; s bigint; i bigint; bad bigint := 0;
 BEGIN
   FOREACH n IN ARRAY ARRAY[200, 300, 400, 800, 1200] LOOP
     DROP TABLE IF EXISTS tbl_gist_bound_inc;
-    EXECUTE format($f$CREATE TABLE tbl_gist_bound_inc AS
+    EXECUTE format($f$CREATE TEMP TABLE tbl_gist_bound_inc AS
       SELECT i AS k, tgeompoint(format('[Point(%%s %%s)@%%s, Point(%%s %%s)@%%s)',
         i %% 97, (i * 7) %% 89,
         timestamptz '2001-01-01' + (i || ' minutes')::interval,
@@ -1358,25 +1378,31 @@ BEGIN
   RETURN bad;
 END;
 $$ LANGUAGE plpgsql;
-CREATE FUNCTION
-SELECT gist_bound_inc_disagreements() AS sizes_where_the_index_disagrees;
+SELECT pg_temp.gist_bound_inc_disagreements() AS sizes_where_the_index_disagrees;
 NOTICE:  table "tbl_gist_bound_inc" does not exist, skipping
  sizes_where_the_index_disagrees 
 ---------------------------------
                                0
 (1 row)
 
-DROP FUNCTION gist_bound_inc_disagreements();
-DROP FUNCTION
+DROP FUNCTION pg_temp.gist_bound_inc_disagreements();
 DROP TABLE tbl_gist_bound_inc;
-DROP TABLE
-CREATE FUNCTION spgist_shared_bound_disagreements(opclass text)
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- An instant [t, t] is after a span [a, t): the bound they share belongs to
+-- the instant only. A node of a space-partitioning index whose values reach t
+-- and no further therefore holds an answer. Every sequence below ends on the
+-- same timestamp, so every centroid ends there and so does every node below
+-- one; the instants sitting on that bound are the answers of a query excluding
+-- it. The answer of each operator class is compared with the sequential scan.
+-------------------------------------------------------------------------------
+CREATE FUNCTION pg_temp.spgist_shared_bound_disagreements(opclass text)
 RETURNS bigint AS $$
 DECLARE scan int; s bigint; i bigint; bad bigint := 0;
   t timestamptz := timestamptz '2001-01-01';
 BEGIN
   DROP TABLE IF EXISTS tbl_spgist_shared_bound;
-  CREATE TABLE tbl_spgist_shared_bound AS
+  CREATE TEMP TABLE tbl_spgist_shared_bound AS
     SELECT k, CASE WHEN k % 10 = 0
       THEN tgeompoint(format('Point(%s %s)@%s', k % 89, k % 83,
         t + interval '100 s'))
@@ -1405,8 +1431,7 @@ BEGIN
   RETURN bad;
 END;
 $$ LANGUAGE plpgsql;
-CREATE FUNCTION
-SELECT spgist_shared_bound_disagreements('tgeompoint_quadtree_ops')
+SELECT pg_temp.spgist_shared_bound_disagreements('tgeompoint_quadtree_ops')
   AS quadtree_answers_the_index_misses;
 NOTICE:  table "tbl_spgist_shared_bound" does not exist, skipping
  quadtree_answers_the_index_misses 
@@ -1414,7 +1439,7 @@ NOTICE:  table "tbl_spgist_shared_bound" does not exist, skipping
                                  0
 (1 row)
 
-SELECT spgist_shared_bound_disagreements('tgeompoint_kdtree_ops')
+SELECT pg_temp.spgist_shared_bound_disagreements('tgeompoint_kdtree_ops')
   AS kdtree_answers_the_index_misses;
 NOTICE:  table "tbl_spgist_shared_bound" does not exist, skipping
  kdtree_answers_the_index_misses 
@@ -1422,9 +1447,17 @@ NOTICE:  table "tbl_spgist_shared_bound" does not exist, skipping
                                0
 (1 row)
 
-DROP FUNCTION spgist_shared_bound_disagreements(text);
-DROP FUNCTION
-CREATE FUNCTION index_structures(tbl text, typ text, opclasses text[],
+DROP FUNCTION pg_temp.spgist_shared_bound_disagreements(text);
+-------------------------------------------------------------------------------
+-- An index over boxes of several structures answers as the sequential scan:
+-- the same count, or an error where the scan raises one, for every operator
+-- and every query, and the same 25 nearest distances for |=|. Where the boxes
+-- of several structures raise different errors, the error is the one of the
+-- first box a plan meets, which no plan orders. Per operator class: whether
+-- the plan reads the index, how many answers are errors, and how many differ
+-- from the scan
+-------------------------------------------------------------------------------
+CREATE FUNCTION pg_temp.index_structures(tbl text, typ text, opclasses text[],
   queries text[], ops text[])
 RETURNS TABLE(opclass text, uses_index boolean, errors int,
   disagreements int) AS $$
@@ -1480,40 +1513,37 @@ BEGIN
   EXECUTE format('DROP INDEX IF EXISTS %I', tbl || '_idx');
 END;
 $$ LANGUAGE plpgsql;
-CREATE FUNCTION
-CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
+CREATE FUNCTION pg_temp.day_of(d int) RETURNS timestamptz AS $$
   SELECT timestamptz '2001-01-01' + d * interval '1 day'
 $$ LANGUAGE sql IMMUTABLE;
-CREATE FUNCTION
-CREATE TABLE tbl_index_structures AS
+CREATE TEMP TABLE tbl_index_structures AS
   SELECT k, CASE k % 7
     WHEN 0 THEN stbox(format('SRID=3857;STBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
-      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 1 THEN stbox(format('SRID=5676;STBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
-      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 2 THEN stbox(format('SRID=4326;GEODSTBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
-      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 3 THEN stbox(format('SRID=3857;STBOX X((%s,%s),(%s,%s))',
       k % 50, k % 47, k % 50 + 2, k % 47 + 2))
     WHEN 4 THEN stbox(format('SRID=3857;STBOX ZT(((%s,%s,%s),(%s,%s,%s)),[%s, %s])',
       k % 50, k % 47, k % 43, k % 50 + 2, k % 47 + 2, k % 43 + 2,
-      day_of(k % 40), day_of(k % 40 + 2)))
+      pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     WHEN 5 THEN stbox(format('SRID=3857;STBOX Z((%s,%s,%s),(%s,%s,%s))',
       k % 50, k % 47, k % 43, k % 50 + 2, k % 47 + 2, k % 43 + 2))
-    ELSE stbox(format('STBOX T([%s, %s])', day_of(k % 40), day_of(k % 40 + 2)))
+    ELSE stbox(format('STBOX T([%s, %s])', pg_temp.day_of(k % 40), pg_temp.day_of(k % 40 + 2)))
     END AS b
   FROM generate_series(1, 4000) AS k;
-SELECT 4000
-SELECT * FROM index_structures('tbl_index_structures', 'stbox',
+SELECT * FROM pg_temp.index_structures('tbl_index_structures', 'stbox',
   ARRAY['gist(b stbox_rtree_ops)', 'spgist(b stbox_quadtree_ops)',
     'spgist(b stbox_kdtree_ops)'],
-  ARRAY[format('SRID=3857;STBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
-    format('SRID=5676;STBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
-    format('SRID=4326;GEODSTBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
+  ARRAY[format('SRID=3857;STBOX XT(((10,10),(20,20)),[%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19)),
+    format('SRID=5676;STBOX XT(((10,10),(20,20)),[%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19)),
+    format('SRID=4326;GEODSTBOX XT(((10,10),(20,20)),[%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19)),
     'SRID=3857;STBOX X((10,10),(20,20))',
-    format('SRID=3857;STBOX ZT(((10,10,10),(20,20,20)),[%s, %s])', day_of(9), day_of(19)),
+    format('SRID=3857;STBOX ZT(((10,10,10),(20,20,20)),[%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19)),
     'SRID=3857;STBOX Z((10,10,10),(20,20,20))',
-    format('STBOX T([%s, %s])', day_of(9), day_of(19))],
+    format('STBOX T([%s, %s])', pg_temp.day_of(9), pg_temp.day_of(19))],
   ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>', '<<|', '&<|',
     '|>>', '|&>', '<</', '&</', '/>>', '/&>', '<<#', '&<#', '#>>', '#&>',
     '|=|']);
@@ -1528,8 +1558,6 @@ NOTICE:  index "tbl_index_structures_idx" does not exist, skipping
 (4 rows)
 
 DROP TABLE tbl_index_structures;
-DROP TABLE
-DROP FUNCTION day_of(int);
-DROP FUNCTION
-DROP FUNCTION index_structures(text, text, text[], text[], text[]);
-DROP FUNCTION
+DROP FUNCTION pg_temp.day_of(int);
+DROP FUNCTION pg_temp.index_structures(text, text, text[], text[], text[]);
+-------------------------------------------------------------------------------

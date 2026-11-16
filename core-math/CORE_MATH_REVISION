@@ -1,0 +1,14 @@
+018fa97cbdacf59924b899a9dfa422d532cb2bb7
+# Upstream CORE-MATH commit embedded in this tree (2026-11-10), MIT license
+# (LICENSE). The files are copied verbatim from
+# https://gitlab.inria.fr/core-math/core-math.git at this commit:
+#   src/binary64/sin/sin.c, src/binary64/cos/cos.c,
+#   src/binary64/sinpi/sinpi.c, src/binary64/cospi/cospi.c,
+#   src/binary64/atan2/atan2.c, src/binary64/atan2/tint.h
+# Bump with:
+#   git clone https://gitlab.inria.fr/core-math/core-math.git <dir>
+#   git -C <dir> checkout <commit>
+#   for f in sin/sin.c cos/cos.c sinpi/sinpi.c cospi/cospi.c \
+#            atan2/atan2.c atan2/tint.h; do
+#     cp <dir>/src/binary64/$f core-math/src/binary64/$f
+#   done

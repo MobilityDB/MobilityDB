@@ -471,6 +471,8 @@ static Datum
       switch (strategy)
       {
         case RTOverlapStrategyNumber:
+        case RTEverOverlapStrategyNumber:
+        case RTAlwaysOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
           flag = {OVERLAP};

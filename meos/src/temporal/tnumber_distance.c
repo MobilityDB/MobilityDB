@@ -86,6 +86,8 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segment
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @note This function is passed to the lifting infrastructure when computing
  * the temporal distance
@@ -93,8 +95,9 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 int
 tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   Datum param UNUSED, TimestampTz lower, TimestampTz upper, TimestampTz *tps,
-  int cap UNUSED)
+  Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(tps); assert(cap >= 2);
   /* The intersection is one instant, which both its outputs date */
   return tnumbersegm_intersection(start1, end1, start2, end2, T_FLOAT8,
@@ -108,14 +111,18 @@ tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @note This function is passed to the lifting infrastructure when computing
  * the temporal distance
  */
 int
 tfloat_base_distance_turnpt(Datum start, Datum end, Datum value,
-  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, Datum *values UNUSED,
+  int cap UNUSED)
 {
+  assert(! values);
   assert(tps); assert(cap >= 2);
   /* The intersection is one instant, which both its outputs date */
   return tnumbersegm_intersection(start, end, value, value, T_FLOAT8, lower,

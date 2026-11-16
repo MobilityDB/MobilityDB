@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Traversed area
+-------------------------------------------------------------------------------
 SELECT traversedArea(NULL::tcbuffer);
  traversedarea 
 ---------------
@@ -28,6 +31,11 @@ SELECT ST_AsText(traversedArea(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1),0.5)@2
  MULTISURFACE(CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1)),CURVEPOLYGON(CIRCULARSTRING(4.5 5,5.5 5,4.5 5)),CURVEPOLYGON(CIRCULARSTRING(8.5 9,9.5 9,8.5 9)),CURVEPOLYGON(CIRCULARSTRING(11.5 12,12.5 12,11.5 12)))
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Restriction to a geometry (atGeometry / minusGeometry)
+-- The restriction is by the circular disk footprint, not the centre path: the
+-- buffer meets the geometry when the moving disk intersects it.
+-------------------------------------------------------------------------------
 SELECT atGeometry(NULL::tcbuffer, geometry 'Point(1 1)');
  atgeometry 
 ------------
@@ -46,6 +54,7 @@ SELECT atGeometry(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', NULL::geometry)
  
 (1 row)
 
+-- Instant: the disk covers the geometry -> unchanged; disjoint -> NULL
 SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01', geometry 'Point(1.5 1)'));
                        astext                       
 ----------------------------------------------------
@@ -58,6 +67,9 @@ SELECT atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01', geometry 'Point(5
  
 (1 row)
 
+-- Sequence: a box lies ABOVE the centre path (y in [0.5,1.5]); the centre (y=0)
+-- never enters it but the radius-1 disk does, so the disk-footprint restriction
+-- is non-empty where a centre-only restriction would be empty
 SELECT getTime(atGeometry(
   tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-05]',
   geometry 'Polygon((1.5 0.5,2.5 0.5,2.5 1.5,1.5 1.5,1.5 0.5))'));
@@ -74,6 +86,7 @@ SELECT getTime(minusGeometry(
  {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 15:12:55.405113 2001 PST), (Thu Jan 04 08:47:04.594886 2001 PST, Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Disjoint over the whole sequence -> at NULL, minus unchanged
 SELECT atGeometry(
   tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-05]',
   geometry 'Point(2 50)');
@@ -102,6 +115,9 @@ SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffe
  {[Cbuffer(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(2 2),0)@Tue Jan 02 00:00:00 2001 PST), (Cbuffer(POINT(3 3),0)@Wed Jan 03 00:00:00 2001 PST, Cbuffer(POINT(4 4),0)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Centroid
+-------------------------------------------------------------------------------
 SELECT centroid(NULL::tcbuffer);
  centroid 
 ----------
@@ -126,6 +142,9 @@ SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Po
  [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Convex hull
+-------------------------------------------------------------------------------
 SELECT convexHull(NULL::tcbuffer);
  convexhull 
 ------------
@@ -144,6 +163,7 @@ SELECT ST_GeometryType(convexHull(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
  ST_CurvePolygon
 (1 row)
 
+-- Rigid motions: the centre moves as the temporal point it traces and the radius stays
 SELECT asText(translate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 1, 2), 6);
                                                    astext                                                   
 ------------------------------------------------------------------------------------------------------------
@@ -182,6 +202,10 @@ SELECT tfloat(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Poin
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transformations
+-- A temporal circular buffer is planar, so a geographic target is refused
+-------------------------------------------------------------------------------
 SELECT asEWKT(round(transform(tcbuffer 'SRID=25832;[Cbuffer(Point(651337 6058377),10)@2001-01-01, Cbuffer(Point(651437 6058377),10)@2001-01-02]', 32632), 3));
                                                                    asewkt                                                                    
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -202,3 +226,4 @@ ERROR:  A circular buffer is planar and cannot be transformed to a geographic re
 SELECT transformPipeline(tcbuffer 'SRID=32631;Cbuffer(Point(595032 5634013),10)@2001-01-01',
   'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, false);
 ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
+-------------------------------------------------------------------------------

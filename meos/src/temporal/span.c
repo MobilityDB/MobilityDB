@@ -57,6 +57,8 @@
 #include "temporal/type_parser.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+#include "temporal/bbox_index.h"
+#include "temporal/span_index.h"
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -544,6 +546,30 @@ tstzspan_in(const char *str)
  *****************************************************************************/
 
 /**
+ * @brief Ensure that a value entering a span is finite
+ * @details A float, a timestamp and a date bound are finite, as
+ * #ensure_finite, #ensure_finite_timestamptz and #ensure_finite_date state;
+ * the values of the other base types have no infinity
+ * @param[in] value Value
+ * @param[in] basetype Type of the value
+ */
+bool
+ensure_finite_span_value(Datum value, MeosType basetype)
+{
+  switch (basetype)
+  {
+    case T_FLOAT8:
+      return ensure_finite(DatumGetFloat8(value));
+    case T_TIMESTAMPTZ:
+      return ensure_finite_timestamptz(DatumGetTimestampTz(value));
+    case T_DATE:
+      return ensure_finite_date(DatumGetDateADT(value));
+    default:
+      return true;
+  }
+}
+
+/**
  * @ingroup meos_internal_setspan_constructor
  * @brief Return a span from the bounds
  * @param[in] lower,upper Bounds
@@ -557,6 +583,11 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   /* Ensure that a float bound is finite */
   if (basetype == T_FLOAT8 && (! ensure_finite(DatumGetFloat8(lower)) ||
       ! ensure_finite(DatumGetFloat8(upper))))
+    return NULL;
+  /* Ensure that a timestamp or a date bound is finite */
+  if ((basetype == T_TIMESTAMPTZ || basetype == T_DATE) &&
+      (! ensure_finite_span_value(lower, basetype) ||
+       ! ensure_finite_span_value(upper, basetype)))
     return NULL;
   /* The span is zero-filled so that a span #span_set refuses to fill keeps
    * no span type */
@@ -731,6 +762,9 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 Span *
 datespan_make(DateADT lower, DateADT upper, bool lower_inc, bool upper_inc)
 {
+  /* Ensure that the bounds are finite */
+  if (! ensure_finite_date(lower) || ! ensure_finite_date(upper))
+    return NULL;
   /* The span is zero-filled so that a span #span_set refuses to fill keeps
    * no span type */
   Span *s = palloc0(sizeof(Span));
@@ -754,6 +788,9 @@ Span *
 tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc)
 {
+  /* Ensure that the bounds are finite */
+  if (! ensure_finite_timestamptz(lower) || ! ensure_finite_timestamptz(upper))
+    return NULL;
   /* The span is zero-filled so that a span #span_set refuses to fill keeps
    * no span type */
   Span *s = palloc0(sizeof(Span));
@@ -796,6 +833,8 @@ value_set_span(Datum value, MeosType basetype, Span *s)
 Span *
 value_span(Datum value, MeosType basetype)
 {
+  if (! ensure_finite_span_value(value, basetype))
+    return NULL;
   Span *result = palloc(sizeof(Span));
   value_set_span(value, basetype, result);
   return result;
@@ -1193,6 +1232,8 @@ float_to_span(double d)
 Span *
 date_to_span(DateADT d)
 {
+  if (! ensure_finite_date(d))
+    return NULL;
   Span *result = palloc(sizeof(Span));
   /* Account for canonicalized spans */
   span_set(DateADTGetDatum(d), DateADTGetDatum(d + 1), true, false, T_DATE,
@@ -1209,6 +1250,8 @@ date_to_span(DateADT d)
 Span *
 timestamptz_to_span(TimestampTz t)
 {
+  if (! ensure_finite_timestamptz(t))
+    return NULL;
   Span *result = palloc(sizeof(Span));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, T_TSTZSPAN, result);
@@ -2268,6 +2311,50 @@ interval_from_parts(int32 months, int32 days, int64 us)
 
 /**
  * @ingroup meos_base_time
+ * @brief Return in the last argument the microseconds from midnight of a time
+ * @details A binding converts a time to the time of its host through this
+ * function and back through #time_from_parts, as #timetz_to_parts converts a
+ * time with time zone
+ * @param[in] time Time
+ * @param[out] us Microseconds from midnight
+ * @errval false
+ */
+bool
+time_to_parts(TimeADT time, int64 *us)
+{
+  /* Ensure the validity of the arguments, as a time is a count within a day */
+  VALIDATE_NOT_NULL(us, false);
+  if (time < 0 || time > USECS_PER_DAY)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "time out of range");
+    return false;
+  }
+  *us = time;
+  return true;
+}
+
+/**
+ * @ingroup meos_base_time
+ * @brief Return the time of a number of microseconds from midnight
+ * @param[in] us Microseconds from midnight, from 0 to 24:00:00
+ * @errval INT64_MAX
+ * @see #time_to_parts
+ */
+TimeADT
+time_from_parts(int64 us)
+{
+  /* Ensure the validity of the arguments, as a time refuses a count outside
+   * a day */
+  if (us < 0 || us > USECS_PER_DAY)
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "time out of range");
+    return INT64_MAX;
+  }
+  return (TimeADT) us;
+}
+
+/**
+ * @ingroup meos_base_time
  * @brief Return in the last two arguments the microseconds from midnight and
  * the offset from UTC of a time with time zone
  * @details A binding converts a time with time zone to the time of its host
@@ -2554,6 +2641,73 @@ set_split_n_spans(const Set *s, int span_count, int *count)
   }
   assert(i == s->count);
   *count = span_count;
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_bbox_split
+ * @brief Return an array of N spans obtained by merging the boxes of the
+ * consecutive elements of a set, each time the consecutive pair whose union
+ * adds the least size to theirs
+ * @details The merge twin of #set_split_n_spans, by #bbox_merge_n
+ * @param[in] s Set
+ * @param[in] span_count Number of boxes
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Set_merge_n_spans()
+ */
+Span *
+set_merge_n_spans(const Set *s, int span_count, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_set_spantype(s->settype))
+    return NULL;
+  if (! ensure_positive(span_count))
+    return NULL;
+
+  Span *result = set_spans(s, count);
+  if (result)
+    *count = bbox_merge_n(result->spantype, result, *count, span_count, &span_adjust,
+      &span_size);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_bbox_split
+ * @brief Return an array of spans obtained by merging the boxes of the
+ * consecutive elements of a set, each time the consecutive pair whose union
+ * adds the least size to theirs, until a box holds on average a number of
+ * them
+ * @details The merge twin of the function splitting each N elements, by
+ * #bbox_merge_each_n
+ * @param[in] s Set
+ * @param[in] elems_per_span Number of input elements merged into an output box
+ * on average
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Set_merge_each_n_spans()
+ */
+Span *
+set_merge_each_n_spans(const Set *s, int elems_per_span, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_set_spantype(s->settype))
+    return NULL;
+  if (! ensure_positive(elems_per_span))
+    return NULL;
+
+  Span *result = set_spans(s, count);
+  if (result)
+    *count = bbox_merge_each_n(result->spantype, result, *count, elems_per_span,
+      &span_adjust, &span_size);
   return result;
 }
 

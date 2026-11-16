@@ -449,6 +449,25 @@ SELECT bool_and(timeSpan(temp) <@
 SELECT spans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
 SELECT splitNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT mergeNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT mergeEachNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+
+SELECT tpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
+SELECT tpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'discrete'));
+SELECT splitNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT splitEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT mergeNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT mergeEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+-- Every box lies within the box of its value, also when the bounds of the
+-- value exclude its first instant.
+SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
+  FROM unnest(splitNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true), 2)) b;
+SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
+  FROM unnest(splitEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true), 1)) b;
+SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
+  FROM unnest(mergeNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true), 2)) b;
+SELECT bool_and(b <@ tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
+  FROM unnest(mergeEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true), 1)) b;
 
 -------------------------------------------------------------------------------
 -- The text of a pcpatch

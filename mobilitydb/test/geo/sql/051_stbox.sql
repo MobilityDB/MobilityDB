@@ -45,7 +45,7 @@ SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01-08])xxxx';
 
 \copy tbl_stbox3d TO 'tbl_stbox3d' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_stbox3d_tmp;
-CREATE TABLE tbl_stbox3d_tmp AS TABLE tbl_stbox3d WITH NO DATA;
+CREATE TEMP TABLE tbl_stbox3d_tmp AS TABLE tbl_stbox3d WITH NO DATA;
 \copy tbl_stbox3d_tmp FROM 'tbl_stbox3d' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_stbox3d_tmp;
@@ -588,7 +588,7 @@ SELECT hashExtended(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])',
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_stbox_notime;
-CREATE TABLE tbl_stbox_notime AS
+CREATE TEMP TABLE tbl_stbox_notime AS
 SELECT k, stbox(ST_MakeEnvelope(k::float, k::float,
                                 (k+1)::float, (k+1)::float)) AS b
 FROM generate_series(1, 200) k;
@@ -689,3 +689,6 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX X((1,2),(1,2))'::geography);
 SELECT stbox 'SRID=3857;STBOX X((1,2),(1,2))'::geography;
 SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geometry);
 SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geography);
+-- The polygon of a geodetic box has the corners of the box
+SELECT ST_Covers(stbox 'GEODSTBOX X((4.3088501085795237,50.84583267322806),(4.4214185584898926,50.932522756328005))'::geometry,
+  ST_Point(4.4214185584898926, 50.84583267322806, 4326));

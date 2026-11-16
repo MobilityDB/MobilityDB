@@ -1397,6 +1397,13 @@ tcontains_covers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   lfinfo.func = (varfunc) &datum_cbuffer_contains3;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(strict ? 1.0 : 0.0);
+  /* A disk does not contain a point on its boundary, which an end of a
+   * segment bounding the period of the containment can be where the second
+   * value is a point there; its synchronized radius is zero only where it is
+   * zero at an instant of its own, the radius being affine and not negative
+   * over a segment */
+  if (strict && tcbuffer_has_point(temp2))
+    lfinfo.tpfn_temp_bound = &tcbuffersegm_contains_bound;
   Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2, &lfinfo,
     &tcbuffersegm_contains_turnpt);
   pfree(sync1); pfree(sync2);

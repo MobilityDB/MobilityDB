@@ -103,6 +103,24 @@ CREATE FUNCTION splitEachNSpans(tgeography, integer)
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeNSpans(tgeometry, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNSpans(tgeography, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNSpans(tgeometry, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNSpans(tgeography, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitNStboxes(tgeometry, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tgeo_split_n_stboxes'
@@ -119,6 +137,24 @@ CREATE FUNCTION splitEachNStboxes(tgeometry, integer)
 CREATE FUNCTION splitEachNStboxes(tgeography, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tgeo_split_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeNStboxes(tgeometry, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeNStboxes(tgeography, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeEachNStboxes(tgeometry, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeEachNStboxes(tgeography, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_each_n_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-TILING-END geo_splits
 

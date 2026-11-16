@@ -112,6 +112,9 @@ typedef struct
   int nvert;             /**< Number of vertices */
   int nedge;             /**< Number of edges: nvert, or 0 for a point */
   double rmax;           /**< Largest distance of a vertex to the center */
+  double rmax_up;        /**< A double no less than the exact largest
+                              distance of an input vertex to the center, see
+                              #dist_segm_apart() */
   DistRefVert *verts;    /**< Vertices */
   DistRefEdge *edges;    /**< Edges */
 } DistRefPoly;
@@ -136,6 +139,8 @@ extern void distrefpoly_set_segment(DistRefPoly *rp, double x1, double y1,
   double x2, double y2, double *cx, double *cy);
 extern void distrefpoly_set_point(DistRefPoly *rp);
 extern void distrefpoly_free(DistRefPoly *rp);
+extern bool distrefpoly_cover(const LWPOLY *poly, DistRefPoly **pieces,
+  int *npieces);
 
 /*****************************************************************************
  * Functions of the walk

@@ -1862,6 +1862,36 @@ SELECT tfloat '{(1@2001-01-01, 5@2001-01-05), [7@2001-01-07, 9@2001-01-09]}' ?= 
 SELECT tfloat '{(1@2001-01-01, 5@2001-01-05), [7@2001-01-07, 9@2001-01-09]}' ?<> 3.0;
 SELECT tfloat '{(1@2001-01-01, 5@2001-01-05), [7@2001-01-07, 9@2001-01-09]}' %<> 1.0;
 
+-- Two temporal values compare over the instants of their common period: the
+-- values they tend to at a bound that the period excludes are no values they
+-- take, and they take values right after a lower bound that it excludes
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' ?= tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' %<> tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[0@2001-01-01, 2@2001-01-02)' ?= tfloat '[1@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' ?= tfloat '[3@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 3@2001-01-02)' ?= tfloat '[0@2001-01-01, 3@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' ?= tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '(2@2001-01-01, 1@2001-01-02]' ?= tfloat '(2@2001-01-01, 3@2001-01-02]';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' ?<= tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02)' %> tfloat '[0@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[0@2001-01-01, 2@2001-01-02)' ?>= tfloat '[1@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '[0@2001-01-01, 2@2001-01-02)' %< tfloat '[1@2001-01-01, 2@2001-01-02)';
+SELECT tfloat '(1@2001-01-03, 3@2001-01-05)' ?< tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-05]';
+SELECT tfloat '(1@2001-01-03, 3@2001-01-05)' %>= tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-05]';
+SELECT tfloat '(1@2001-01-03, 3@2001-01-05)' ?> tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-05]';
+-- The same holds when the period includes the bound: the values they meet at
+-- are taken there
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' ?= tfloat '[0@2001-01-01, 2@2001-01-02]';
+SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' %<> tfloat '[0@2001-01-01, 2@2001-01-02]';
+-- A step sequence takes the value of an instant from that instant on, so the
+-- value it holds before it meets the other value only at the limit
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02]' ?= tfloat '[0@2001-01-01, 1@2001-01-02]';
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02]' %<> tfloat '[0@2001-01-01, 1@2001-01-02]';
+SELECT tfloat '[0@2001-01-01, 1@2001-01-02]' ?>= tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02]';
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 1@2001-01-02)' ?= tfloat 'Interp=Step;[2@2001-01-01, 1@2001-01-02]';
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 1@2001-01-02)' %<> tfloat 'Interp=Step;[2@2001-01-01, 1@2001-01-02]';
+SELECT tfloat 'Interp=Step;[1@2001-01-01, 1@2001-01-02]' ?= tfloat 'Interp=Step;[2@2001-01-01, 1@2001-01-02]';
+
 -- Two temporal values compare over the instants they share: a piece of one
 -- lying where the other has no value decides neither quantifier
 SELECT tint '{[1@2001-01-01, 1@2001-01-02], [1@2001-01-05, 1@2001-01-06]}' %=
@@ -1873,16 +1903,28 @@ SELECT tint '[1@2001-01-01 12:00:00, 1@2001-01-03]' %=
 SELECT tint '{[1@2001-01-01, 1@2001-01-02], [1@2001-01-05, 1@2001-01-06]}' ?<>
   tint '{[1@2001-01-04, 1@2001-01-07]}';
 
--- A crossing near a bound of a segment is at the bound, and the result
--- changes there, not at the next instant: a value that dips a rounding error
--- below the value, and a crossing 0.4 second after the start and before the
--- end of a segment of ten days
+-- A crossing whose nearest microsecond is a bound of a segment belongs to the
+-- bound, and the result changes there, not at the next instant: a value that
+-- dips a rounding error below the value, which the segments ever take
 SELECT tfloat '[2@2001-01-01, 1@2001-01-01 12:00:00, 2@2001-01-02]' #<= 1.0000000000000002;
 SELECT tfloat '[2@2001-01-01, 1@2001-01-01 12:00:00, 2@2001-01-02]' #>= 1.0000000000000002;
 SELECT tfloat '[2@2001-01-01, 1@2001-01-01 12:00:00, 2@2001-01-02]' #<=
   tfloat '[1.0000000000000002@2001-01-01, 1.0000000000000002@2001-01-02]';
+SELECT tfloat '[2@2001-01-01, 1@2001-01-01 12:00:00, 2@2001-01-02]' ?= 1.0000000000000002;
+SELECT tfloat '[2@2001-01-01, 1@2001-01-01 12:00:00, 2@2001-01-02]' ?=
+  tfloat '[1.0000000000000002@2001-01-01, 1.0000000000000002@2001-01-02]';
+-- A crossing near a bound is dated by the microsecond nearest to it: 0.432
+-- second after the start and before the end of a segment of ten days, 8.64
+-- milliseconds before the end of a segment of one day, and half a microsecond
+-- after the start of a segment of one millisecond, a rounding past the half
+-- of the value 0.0005
 SELECT tfloat '[1@2001-01-01, 3@2001-01-11]' #< 1.000001;
 SELECT tfloat '[3@2001-01-01, 1@2001-01-11]' #< 1.000001;
+SELECT tfloat '[2@2001-01-01, 1@2001-01-02]' #<= 1.0000001;
+SELECT tfloat '[2@2001-01-01, 1@2001-01-02]' #<= tfloat '[1.0000001@2001-01-01, 1.0000001@2001-01-02]';
+SELECT tfloat '[0@2001-01-01 00:00:00, 1@2001-01-01 00:00:00.001]' #<= 0.0005;
+-- Two segments crossing between microseconds take one value at the crossing
+SELECT tfloat '[0@2019-09-01, 6@2019-09-02]' #= tfloat '[1@2019-09-01, 0@2019-09-02]';
 
 -------------------------------------------------------------------------------
 

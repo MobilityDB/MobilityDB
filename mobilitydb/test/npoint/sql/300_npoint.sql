@@ -144,8 +144,13 @@ SELECT ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5)::npoint;
 SELECT npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 0.3);
 SELECT round(npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 0.45), 6);
 SELECT round(npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 10), 6);
+-- The cast maps back every point a route constructs, and no point lying off
+-- the route by more than the rounding of that construction: 0, then NULL
+SELECT COUNT(*) FROM generate_series(1, 50) AS r, generate_series(1, 99) AS i
+WHERE (npoint(r, i / 100.0)::geometry)::npoint IS NULL;
+SELECT ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 1e-12)::npoint;
 
-SELECT geometry 'SRID=5676;LINESTRING(83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.625699095428 97.5346013903618)'::nsegment;
+SELECT geometry 'SRID=5676;LINESTRING(83.28320090658963 86.09033222310245,69.08071548677981 81.20815036818385,13.62569909542799 97.53460139036179)'::nsegment;
 -- NULL
 SELECT geometry 'SRID=5676;LINESTRING(416.346567736997 528.335344322874,610.455019399524 528.508247341961,476.989195102204 642.550969672973)'::nsegment;
 /* Errors */

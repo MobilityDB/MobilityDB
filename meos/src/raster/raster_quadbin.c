@@ -64,6 +64,9 @@
 #include "temporal/temporal.h"
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
+#include "temporal/tsequenceset.h"
+#include "temporal/tcellindex.h"
+#include "geo/geo_funcs.h"
 #include "raster/raquet.h"
 #include "raster/raster_quadbin.h"
 
@@ -340,6 +343,11 @@ typedef struct
   bool undomainable;
   double xmin, xmax, ymin, ymax;   /**< Tile bounds in lon/lat */
   double top_merc, bot_merc;       /**< Tile bounds in Mercator metres */
+  bool exact;                      /**< Whether the pixels are QUADBIN tiles,
+                                        the width and height powers of 2 */
+  double ncols, nrows;             /**< Columns and rows of those tiles over
+                                        the world */
+  double col0, row0;               /**< Column and row of the first pixel */
 } RaquetSampleState;
 
 /**
@@ -471,6 +479,83 @@ raster_affine_cross(const double *gt, double x1, double y1, double x2,
 }
 
 /**
+ * @brief Return the side of a position of the grid line @p k of a grid that
+ * is the affine map of its geotransform, exactly, see #grid_line_side()
+ */
+int
+raster_affine_side(const double *gt, double x, double y, int axis, int k)
+{
+  return grid_line_side(x, y, gt, axis, (double) k);
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the grid line
+ * @p k of a grid that is the affine map of its geotransform, exactly, see
+ * #segment_grid_line_cross_offset()
+ */
+int64
+raster_affine_offset(const double *gt, double x1, double y1, double x2,
+  double y2, int64 D, int axis, int k, bool *whole)
+{
+  return segment_grid_line_cross_offset(x1, y1, x2, y2, D, gt, axis,
+    (double) k, whole);
+}
+
+/**
+ * @brief Return the longitude of the column line @p k of a Raquet tile whose
+ * pixels are QUADBIN tiles, or the latitude of its row line @p k
+ * @details The pixels of a tile of 2^b columns of a QUADBIN cell of zoom z
+ * are the QUADBIN tiles of zoom z + b, and their bounds are the doubles that
+ * place a QUADBIN tile: a column line at the exact longitude x / n 360 - 180
+ * and a row line at the double nearest the latitude of the Mercator ordinate
+ * 1 - 2 y / n (#mercator_lat_nearest), n a power of 2
+ */
+static double
+raquet_line(const RaquetSampleState *state, int axis, int k)
+{
+  if (axis == 0)
+    return (state->col0 + (double) k) / state->ncols * 360.0 - 180.0;
+  return mercator_lat_nearest(1.0 - 2.0 * (state->row0 + (double) k) /
+    state->nrows);
+}
+
+/**
+ * @brief Raquet side callback: the sign of the grid coordinate of a position
+ * less the grid line @p k, from the bounds of #raquet_line compared as
+ * doubles, a pixel holding its west and north bounds, as a QUADBIN tile does
+ */
+static int
+raquet_side(const void *ctxp, double x, double y, int axis, int k)
+{
+  const RaquetSampleState *state = (const RaquetSampleState *) ctxp;
+  double line = raquet_line(state, axis, k);
+  /* The rows grow southward, so a row coordinate exceeds the line where the
+   * latitude lies below it */
+  if (axis == 0)
+    return (x > line) - (x < line);
+  return (line > y) - (line < y);
+}
+
+/**
+ * @brief Raquet offset callback: the microsecond at which a segment crosses
+ * the meridian or the parallel of the grid line @p k, dated by
+ * #segment_edge_cross_offset on the bound of #raquet_line, as
+ * #tquadbin_cross_offset dates the crossing of a QUADBIN tile
+ */
+static int64
+raquet_offset(const void *ctxp, double x1, double y1, double x2, double y2,
+  int64 D, int axis, int k, bool *whole)
+{
+  const RaquetSampleState *state = (const RaquetSampleState *) ctxp;
+  double line = raquet_line(state, axis, k);
+  if (axis == 0)
+    return segment_edge_cross_offset(x1, y1, x2, y2, D, line, 0.0, 0.0, line,
+      1.0, 0.0, whole);
+  return segment_edge_cross_offset(x1, y1, x2, y2, D, 0.0, line, 0.0, 1.0,
+    line, 0.0, whole);
+}
+
+/**
  * @brief Fill the grid descriptor of a Raquet tile
  * @details Mirrors #dggs_cellops(), which answers the descriptor of a DGGS:
  * an engine states its grid in one place, and every sampling entry point
@@ -486,6 +571,10 @@ raquet_gridops(RaquetSampleState *state, RasterGridOps *ops)
   ops->point = NULL;
   ops->data = NULL;
   ops->cross = &raquet_cross;
+  /* A tile whose sides are powers of 2 reads its pixels as QUADBIN tiles,
+   * exactly; another reads them from its grid coordinates */
+  ops->side = state->exact ? &raquet_side : NULL;
+  ops->offset = state->exact ? &raquet_offset : NULL;
   ops->ctx = state;
   ops->width = state->width;
   ops->height = state->height;
@@ -575,6 +664,14 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
   state.nodata = nodata;
   state.has_nodata = has_nodata;
   state.undomainable = false;
+  /* The pixels of a tile whose sides are powers of 2 are the QUADBIN tiles
+   * of that many more zoom levels */
+  state.exact = (width & (width - 1)) == 0 && (height & (height - 1)) == 0;
+  double n = (double) (UINT64_C(1) << tz);
+  state.ncols = n * (double) width;
+  state.nrows = n * (double) height;
+  state.col0 = (double) tx * (double) width;
+  state.row0 = (double) ty * (double) height;
 
   RasterGridOps ops;
   raquet_gridops(&state, &ops);
@@ -612,6 +709,37 @@ raster_cell_index(double g, int n)
 }
 
 /**
+ * @brief Return the index along an axis of the pixel holding a position, a
+ * position outside the grid naming the index just outside it, see
+ * #raster_cell_index()
+ * @details On a grid whose engine decides the side of a grid line exactly
+ * (the affine map of a geotransform, #raster_affine_side, or the QUADBIN
+ * tiles of a Raquet tile) the index read from the grid coordinate in doubles
+ * is an estimate, corrected against the exact side of the position of each
+ * grid line, so a position on a line or an ulp beside it lies in the pixel
+ * that holds it: a pixel holds the lines of its lower column and row.
+ * Another grid reads the index from the grid coordinate
+ * @param[in] ops Grid
+ * @param[in] x,y Position
+ * @param[in] g Grid coordinate of the position along the axis
+ * @param[in] axis 0 for the columns, 1 for the rows
+ * @param[in] n Number of pixels along the axis
+ */
+static int
+raster_axis_index(const RasterGridOps *ops, double x, double y, double g,
+  int axis, int n)
+{
+  int c = raster_cell_index(g, n);
+  if (! ops->side)
+    return c;
+  while (c >= 0 && ops->side(ops->ctx, x, y, axis, c) < 0)
+    c--;
+  while (c < n && ops->side(ops->ctx, x, y, axis, c + 1) >= 0)
+    c++;
+  return c;
+}
+
+/**
  * @brief Return the value of the pixel a position falls in
  * @details The function returns false when the position lies outside the
  * pre-filter box, outside the pixel grid, or on a nodata pixel.
@@ -620,13 +748,16 @@ static bool
 raster_sample_at(const RasterGridOps *ops, double x, double y,
   double *value)
 {
+  /* The box pre-filters a grid whose pixel is read from its coordinates;
+   * on a grid decided exactly, whose box is rounded, the exact index decides */
   const STBox *box = &ops->box;
-  if (x < box->xmin || x > box->xmax || y < box->ymin || y > box->ymax)
+  if (! ops->side &&
+      (x < box->xmin || x > box->xmax || y < box->ymin || y > box->ymax))
     return false;
   double gcol, grow;
   ops->grid(ops->ctx, x, y, &gcol, &grow);
-  int col = raster_cell_index(gcol, ops->width);
-  int row = raster_cell_index(grow, ops->height);
+  int col = raster_axis_index(ops, x, y, gcol, 0, ops->width);
+  int row = raster_axis_index(ops, x, y, grow, 1, ops->height);
   /* The half-open pixel convention: a position on the far edge of the grid
    * belongs to the cell beyond it */
   if (col < 0 || col >= ops->width || row < 0 || row >= ops->height)
@@ -693,80 +824,6 @@ raster_run_push(RasterRun *run, double value, TimestampTz t)
 }
 
 /**
- * @brief Close a run at a timestamp and append it to the answer
- * @details The last value of the run holds up to @p t. A run whose upper
- * bound is exclusive ends on the value it holds before @p t, so a value the
- * trip reaches at @p t itself, which it holds for no time before the run
- * ends, is not part of the run, and a run holding only such a value holds no
- * time at all and is not part of the answer.
- */
-static void
-raster_run_close(RasterRun *run, TimestampTz t, bool upper_inc,
-  RasterAnswer *answer)
-{
-  if (run->count == 0)
-    return;
-  bool lower_inc = run->lower_inc;
-  if (! upper_inc)
-  {
-    while (run->count > 1 && run->insts[run->count - 1]->t >= t)
-      pfree(run->insts[--run->count]);
-    if (run->insts[0]->t >= t)
-    {
-      pfree(run->insts[0]);
-      pfree(run->insts);
-      run->insts = NULL;
-      run->count = run->size = 0;
-      return;
-    }
-  }
-  const TInstant *last = run->insts[run->count - 1];
-  if (last->t < t)
-    raster_run_push(run, DatumGetFloat8(tinstant_value_p(last)), t);
-  else if (run->count == 1)
-    /* A run of one instant holds it */
-    lower_inc = upper_inc = true;
-  if (answer->count >= answer->size)
-  {
-    answer->size *= 2;
-    answer->seqs = repalloc(answer->seqs,
-      sizeof(TSequence *) * (size_t) answer->size);
-  }
-  answer->seqs[answer->count++] = tsequence_make_free(run->insts, run->count,
-    lower_inc, upper_inc, STEP, NORMALIZE);
-  run->insts = NULL;
-  run->count = run->size = 0;
-  return;
-}
-
-/**
- * @brief Enter in a run the pixel a trajectory reaches at a timestamp
- * @details A pixel holding the value the run already holds continues it,
- * and a pixel holding another value starts a new piece of the step function
- * at the instant the trip reaches it. A cell outside the grid or a nodata
- * pixel carries no value: the value the run carried holds until here and the
- * run closes on it, and the next run starts at the next pixel the trip
- * reaches that carries a value.
- */
-static void
-raster_run_enter(RasterRun *run, const RasterGridOps *ops, int col, int row,
-  TimestampTz t, RasterAnswer *answer)
-{
-  double value;
-  if (col >= 0 && col < ops->width && row >= 0 && row < ops->height &&
-      ops->pixel(ops->ctx, col, row, &value))
-  {
-    if (run->count == 0 ||
-        DatumGetFloat8(tinstant_value_p(run->insts[run->count - 1])) != value)
-      raster_run_push(run, value, t);
-    return;
-  }
-  raster_run_close(run, t, false, answer);
-  run->lower_inc = true;
-  return;
-}
-
-/**
  * @brief Return the parameter at which a segment reaches the grid line @p k
  * of an axis, or DBL_MAX when no parameter answers it
  * @param[in] ops Grid the segment crosses
@@ -787,25 +844,186 @@ raster_cross_param(const RasterGridOps *ops, const POINT2D *p1,
 }
 
 /**
+ * @brief Return the key of a pixel named by its column and its row, each
+ * from -1 to the number of pixels along its axis, as the visits of a walk
+ * carry it
+ */
+static Datum
+raster_pixel_key(int col, int row)
+{
+  return Int64GetDatum(((int64) (col + 1) << 32) | (int64) (uint32) (row + 1));
+}
+
+/**
+ * @brief Append to the visits of a trajectory the pixel it enters at a
+ * timestamp, the previous visit ending there
+ * @details The visits of a raster walk as #tquadbin_visit_append states those
+ * of the QUADBIN walk: a pixel holds exactly the microseconds whose exact
+ * position lies in it, and the timestamp is the microsecond of the crossing,
+ * truncated, which the pixel entered holds when @p entered and the pixel
+ * left holds otherwise. A crossing landing before the previous one, which the
+ * truncation of two crossings within one microsecond gives, lands on it
+ */
+static void
+raster_visit_append(DggsVisit **visits, int *count, int *size, Datum key,
+  TimestampTz t, bool entered)
+{
+  DggsVisit *prev = &(*visits)[*count - 1];
+  if (t < prev->lower)
+    t = prev->lower;
+  prev->upper = t;
+  prev->upper_inc = ! entered;
+  if (*count == *size)
+  {
+    *size *= 2;
+    *visits = repalloc(*visits, sizeof(DggsVisit) * (size_t) *size);
+  }
+  DggsVisit *v = &(*visits)[(*count)++];
+  v->cell = key;
+  v->lower = t;
+  v->lower_inc = entered;
+  return;
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the grid line
+ * @p k of an axis, as the offset from the start of the segment, truncated
+ * @details On a grid whose engine dates a crossing exactly (the affine map
+ * of a geotransform, #raster_affine_offset, or the QUADBIN tiles of a Raquet
+ * tile) the crossing is dated by the truncation of its exact parameter.
+ * Another grid reads the parameter in doubles (#raster_cross_param)
+ * @param[in] ops Grid the segment crosses
+ * @param[in] p1,p2 Endpoints of the segment
+ * @param[in] g1,g2 Grid coordinates of the endpoints
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] axis 0 for a column line, 1 for a row line
+ * @param[in] k Grid line
+ * @param[out] whole True when the segment lies on the line exactly at the
+ * microsecond returned
+ */
+static int64
+raster_cross_offset(const RasterGridOps *ops, const POINT2D *p1,
+  const POINT2D *p2, const double *g1, const double *g2, int64 D, int axis,
+  int k, bool *whole)
+{
+  if (ops->offset)
+    return ops->offset(ops->ctx, p1->x, p1->y, p2->x, p2->y, D, axis, k,
+      whole);
+  double s = raster_cross_param(ops, p1, p2, g1, g2, axis, (double) k);
+  *whole = false;
+  if (s == DBL_MAX)
+    return D;
+  double ds = (double) D * fmin(fmax(s, 0.0), 1.0);
+  int64 off = (int64) ds;
+  if (off > D)
+    off = D;
+  *whole = ((double) off == ds);
+  return off;
+}
+
+/**
+ * @brief Append a temporal float to the sequences of an answer, which takes
+ * its sequences over
+ */
+static void
+raster_answer_add(RasterAnswer *answer, Temporal *temp)
+{
+  if (! temp)
+    return;
+  int count = (temp->subtype == TSEQUENCE) ? 1 :
+    ((TSequenceSet *) temp)->count;
+  while (answer->count + count > answer->size)
+  {
+    answer->size *= 2;
+    answer->seqs = repalloc(answer->seqs,
+      sizeof(TSequence *) * (size_t) answer->size);
+  }
+  if (temp->subtype == TSEQUENCE)
+  {
+    answer->seqs[answer->count++] = (TSequence *) temp;
+    return;
+  }
+  const TSequenceSet *ss = (const TSequenceSet *) temp;
+  for (int i = 0; i < ss->count; i++)
+    answer->seqs[answer->count++] = tsequence_copy(TSEQUENCESET_SEQ_N(ss, i));
+  pfree(temp);
+  return;
+}
+
+/**
+ * @brief Append to an answer the values the pixels of the visits of a walk
+ * hold, as the sequences of a step temporal float
+ * @details Each pixel holds its value over its visit, and the visits of one
+ * stretch over pixels carrying a value become the step function
+ * #dggs_visits_to_temporal makes of the visits of a cell walk, the value of
+ * each pixel standing for its cell: two pixels of one value meeting are one
+ * piece, and a crossing whose instant the pixel left holds starts a sequence
+ * after it. A visit outside the grid or over a pixel carrying no value ends
+ * the stretch where it holds a microsecond, and a visit holding none, which
+ * the walk gives a pixel crossed between two microseconds, is no part of it
+ * @param[in] ops Grid the values are read from
+ * @param[in] visits,count Visits of the walk, their cells the keys of
+ * #raster_pixel_key
+ * @param[in,out] answer Sequences of the answer, appended to
+ */
+static void
+raster_visits_answer(const RasterGridOps *ops, const DggsVisit *visits,
+  int count, RasterAnswer *answer)
+{
+  DggsVisit *run = palloc(sizeof(DggsVisit) * (size_t) count);
+  int n = 0;
+  for (int i = 0; i < count; i++)
+  {
+    DggsVisit v = visits[i];
+    int64 key = DatumGetInt64(v.cell);
+    int col = (int) (key >> 32) - 1, row = (int) (key & 0xFFFFFFFF) - 1;
+    double value;
+    if (col >= 0 && col < ops->width && row >= 0 && row < ops->height &&
+        ops->pixel(ops->ctx, col, row, &value))
+    {
+      v.cell = Float8GetDatum(value);
+      run[n++] = v;
+      continue;
+    }
+    bool holds = ! ((v.lower == v.upper && ! (v.lower_inc && v.upper_inc)) ||
+      (v.upper - v.lower == 1 && ! v.lower_inc && ! v.upper_inc));
+    if (holds && n > 0)
+    {
+      raster_answer_add(answer, dggs_visits_to_temporal(run, n, T_TFLOAT));
+      n = 0;
+    }
+  }
+  if (n > 0)
+    raster_answer_add(answer, dggs_visits_to_temporal(run, n, T_TFLOAT));
+  pfree(run);
+  return;
+}
+
+/**
  * @brief Return the values a raster holds along a linearly interpolated
  * sequence, as the sequences of a step temporal float
  * @details A trajectory moving between two instants passes over the pixels
  * between them, and their values belong to the answer as much as the values
  * under the instants themselves. Each segment is therefore TRAVERSED pixel by
- * pixel. The grid coordinates of a position are monotonic along a straight
- * segment, affine in it for a PostGIS raster or a GDAL file and with the row
- * following the Mercator ordinate for a Raquet tile, so the parameter at
- * which the segment reaches the next column line and the next row line is
- * solved directly. Stepping to the nearer of the two moves to an adjacent
- * pixel every time, and to the diagonal one where the segment passes through
- * a pixel corner, so the walk cannot pass over a pixel, and each value is
- * read from the instant the trip reaches the pixel holding it, which is step
- * interpolation. A walk sampling the segment at a spacing has neither
- * property at any spacing: a segment clips a pixel corner over an
+ * pixel, as the QUADBIN walk traverses its tiles: a pixel holds exactly the
+ * microseconds whose exact position lies in it, and the lines of its lower
+ * column and row. The grid coordinates of a position are monotonic along a
+ * straight segment, so the segment crosses the next column line and the next
+ * row line once each, and each crossing is dated by the truncation of its
+ * exact parameter (#raster_cross_offset); a crossing at a microsecond comes
+ * before one after it, and stepping to the earlier of the two moves to an
+ * adjacent pixel every time, to the diagonal one where the segment passes
+ * through a pixel corner, so the walk cannot pass over a pixel. The pixel
+ * entered holds the instant of a crossing exactly at a microsecond when it
+ * holds the line crossed, and the pixel left holds it otherwise, so a
+ * crossing between two microseconds leaves the earlier one to the pixel
+ * left, the pixel entered starting after it; a corner held by a third pixel
+ * holds that instant alone. A walk sampling the segment at a spacing has
+ * neither property at any spacing: a segment clips a pixel corner over an
  * arbitrarily short chord.
  *
  * A position outside the raster or over a nodata pixel carries no value and
- * ends the run, so a trip leaving and re-entering the raster answers one
+ * ends the sequence, so a trip leaving and re-entering the raster answers one
  * sequence per visit.
  * @param[in] seq Trajectory sequence with linear interpolation
  * @param[in] ops Grid the values are read from
@@ -815,7 +1033,6 @@ static void
 tpointseq_raster_value_traverse(const TSequence *seq, const RasterGridOps *ops,
   RasterAnswer *answer)
 {
-  RasterRun run = {NULL, 0, 0, seq->period.lower_inc};
   /* The positions are read, never kept, and the instants that hold them
    * outlive this call, so they are borrowed rather than copied */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
@@ -823,10 +1040,14 @@ tpointseq_raster_value_traverse(const TSequence *seq, const RasterGridOps *ops,
     (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst1)));
   double g1[2];
   ops->grid(ops->ctx, p1->x, p1->y, &g1[0], &g1[1]);
-  int col = raster_cell_index(g1[0], ops->width);
-  int row = raster_cell_index(g1[1], ops->height);
+  int col = raster_axis_index(ops, p1->x, p1->y, g1[0], 0, ops->width);
+  int row = raster_axis_index(ops, p1->x, p1->y, g1[1], 1, ops->height);
   /* The trip starts in the pixel holding its first position */
-  raster_run_enter(&run, ops, col, row, inst1->t, answer);
+  int vsize = seq->count + 1, nvisits = 1;
+  DggsVisit *visits = palloc(sizeof(DggsVisit) * (size_t) vsize);
+  visits[0].cell = raster_pixel_key(col, row);
+  visits[0].lower = inst1->t;
+  visits[0].lower_inc = seq->period.lower_inc;
 
   for (int i = 1; i < seq->count; i++)
   {
@@ -835,77 +1056,89 @@ tpointseq_raster_value_traverse(const TSequence *seq, const RasterGridOps *ops,
       (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst2)));
     double g2[2];
     ops->grid(ops->ctx, p2->x, p2->y, &g2[0], &g2[1]);
-    int ecol = raster_cell_index(g2[0], ops->width);
-    int erow = raster_cell_index(g2[1], ops->height);
-    /* A segment whose two ends lie on the same side outside the grid along
-     * one axis lies there along its whole length, since the grid coordinate
-     * is monotonic along it, and meets no pixel */
-    bool outside = (col == ecol && (col < 0 || col >= ops->width)) ||
-      (row == erow && (row < 0 || row >= ops->height));
-    if (! outside)
+    int ecol = raster_axis_index(ops, p2->x, p2->y, g2[0], 0, ops->width);
+    int erow = raster_axis_index(ops, p2->x, p2->y, g2[1], 1, ops->height);
+    int64 D = inst2->t - inst1->t;
+    int stepc = (ecol > col) ? 1 : ((ecol < col) ? -1 : 0);
+    int stepr = (erow > row) ? 1 : ((erow < row) ? -1 : 0);
+    /* One step for each column line and each row line the segment crosses
+     * bounds the walk */
+    int guard = abs(ecol - col) + abs(erow - row);
+    while ((col != ecol || row != erow) && guard-- > 0)
     {
-      int stepc = (ecol > col) ? 1 : ((ecol < col) ? -1 : 0);
-      int stepr = (erow > row) ? 1 : ((erow < row) ? -1 : 0);
-      double dt = (double) (inst2->t - inst1->t);
-      double s_prev = 0.0;
-      /* One step for each column line and each row line the segment
-       * crosses bounds the walk */
-      int guard = abs(ecol - col) + abs(erow - row);
-      while ((col != ecol || row != erow) && guard-- > 0)
+      /* The next column line and row line, each crossing keyed so that one
+       * exactly at a microsecond precedes one after it */
+      int kc = (stepc > 0) ? col + 1 : col, kr = (stepr > 0) ? row + 1 : row;
+      bool wc = false, wr = false;
+      int64 oc = 0, orr = 0, keyc = INT64_MAX, keyr = INT64_MAX;
+      if (col != ecol)
       {
-        double sc = (col == ecol) ? DBL_MAX :
-          raster_cross_param(ops, p1, p2, g1, g2, 0,
-            (double) ((stepc > 0) ? col + 1 : col));
-        double sr = (row == erow) ? DBL_MAX :
-          raster_cross_param(ops, p1, p2, g1, g2, 1,
-            (double) ((stepr > 0) ? row + 1 : row));
-        if (sc == DBL_MAX && sr == DBL_MAX)
-          break;
-        double s;
-        if (sc < sr)
-        {
-          col += stepc;
-          s = sc;
-        }
-        else if (sr < sc)
-        {
-          row += stepr;
-          s = sr;
-        }
+        oc = raster_cross_offset(ops, p1, p2, g1, g2, D, 0, kc, &wc);
+        keyc = 2 * oc + (wc ? 0 : 1);
+      }
+      if (row != erow)
+      {
+        orr = raster_cross_offset(ops, p1, p2, g1, g2, D, 1, kr, &wr);
+        keyr = 2 * orr + (wr ? 0 : 1);
+      }
+      bool bc = (keyc <= keyr), br = (keyr <= keyc);
+      int ncol = bc ? col + stepc : col, nrow = br ? row + stepr : row;
+      bool whole = bc ? wc : wr;
+      TimestampTz t = inst1->t + (bc ? oc : orr);
+      Datum next = raster_pixel_key(ncol, nrow);
+      if (bc && br && whole)
+      {
+        /* Through a corner at a microsecond: the pixel holding the corner,
+         * the one of its lower column and row, holds that instant */
+        int ocol = (stepc > 0) ? ncol : col, orow = (stepr > 0) ? nrow : row;
+        if (ocol == ncol && orow == nrow)
+          raster_visit_append(&visits, &nvisits, &vsize, next, t, true);
+        else if (ocol == col && orow == row)
+          raster_visit_append(&visits, &nvisits, &vsize, next, t, false);
         else
         {
-          /* The segment passes through a pixel corner, touching the two
-           * pixels beside it at that point alone */
-          col += stepc;
-          row += stepr;
-          s = sc;
+          raster_visit_append(&visits, &nvisits, &vsize,
+            raster_pixel_key(ocol, orow), t, true);
+          raster_visit_append(&visits, &nvisits, &vsize, next, t, false);
         }
-        /* Rounding may place a crossing a hair before the previous one or
-         * past the end of the segment */
-        if (s < s_prev)
-          s = s_prev;
-        if (s > 1.0)
-          s = 1.0;
-        s_prev = s;
-        raster_run_enter(&run, ops, col, row,
-          inst1->t + (TimestampTz) (dt * s), answer);
       }
-      /* The end of the segment lies in the pixel holding its position */
-      if (col != ecol || row != erow)
-        raster_run_enter(&run, ops, ecol, erow, inst2->t, answer);
+      else
+        raster_visit_append(&visits, &nvisits, &vsize, next, t,
+          whole && ((bc && stepc > 0) || (br && stepr > 0)));
+      col = ncol;
+      row = nrow;
+    }
+    /* The end of the segment lies in the pixel holding its position */
+    if (col != ecol || row != erow)
+    {
+      raster_visit_append(&visits, &nvisits, &vsize,
+        raster_pixel_key(ecol, erow), inst2->t, true);
+      col = ecol;
+      row = erow;
     }
     /* The next segment starts where this one ends */
-    col = ecol;
-    row = erow;
     inst1 = inst2;
     p1 = p2;
     g1[0] = g2[0];
     g1[1] = g2[1];
   }
-  /* The last value holds to the end of the trip, which the closing instant
-   * states: a sequence reaches no further than its last instant */
-  raster_run_close(&run, TSEQUENCE_INST_N(seq, seq->count - 1)->t,
-    seq->period.upper_inc, answer);
+
+  /* The last pixel holds to the end of the trip. A crossing dated at the
+   * first or the last instant of the trip holds that instant only where the
+   * trip does, as the QUADBIN walk states it */
+  TimestampTz tstart = TSEQUENCE_INST_N(seq, 0)->t;
+  TimestampTz tend = TSEQUENCE_INST_N(seq, seq->count - 1)->t;
+  visits[nvisits - 1].upper = tend;
+  visits[nvisits - 1].upper_inc = seq->period.upper_inc;
+  for (int i = 0; i < nvisits; i++)
+  {
+    if (visits[i].lower == tstart)
+      visits[i].lower_inc &= seq->period.lower_inc;
+    if (visits[i].upper == tend)
+      visits[i].upper_inc &= seq->period.upper_inc;
+  }
+  raster_visits_answer(ops, visits, nvisits, answer);
+  pfree(visits);
   return;
 }
 

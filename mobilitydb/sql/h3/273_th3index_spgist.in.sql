@@ -33,10 +33,9 @@
 /**
  * @file
  * @brief SP-GiST quadtree and kdtree operator classes for `th3index`
- * @details The bounding box of a `th3index` value is the spatiotemporal box of
- * its cell, and both operator classes mirror `tcbuffer_quadtree_ops` and
- * `tcbuffer_kdtree_ops` of `mobilitydb/sql/cbuffer/216_tcbuffer_indexes.in.sql`.
- * Every support function takes `(internal, internal)`, so the operator classes
+ * @details The bounding box of a `th3index` value is a spatiotemporal box, and
+ * both operator classes are those of `stbox_quadtree_ops` and
+ * `stbox_kdtree_ops` over the values of the type. Every support function takes `(internal, internal)`, so the operator classes
  * name the `stbox_spgist_config`, `stbox_quadtree_*`, `stbox_kdtree_*`,
  * `stbox_spgist_leaf_consistent` and `tspatial_spgist_compress` functions
  * directly.
@@ -108,6 +107,10 @@ CREATE OPERATOR CLASS th3index_quadtree_ops
   OPERATOR  31    #&> (th3index, tstzspan),
   OPERATOR  31    #&> (th3index, stbox),
   OPERATOR  31    #&> (th3index, th3index),
+  -- ever overlaps
+  OPERATOR  36    ?&& (th3index, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (th3index, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -182,6 +185,10 @@ CREATE OPERATOR CLASS th3index_kdtree_ops
   OPERATOR  31    #&> (th3index, tstzspan),
   OPERATOR  31    #&> (th3index, stbox),
   OPERATOR  31    #&> (th3index, th3index),
+  -- ever overlaps
+  OPERATOR  36    ?&& (th3index, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (th3index, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
@@ -269,7 +276,11 @@ ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, th3index),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, th3index);
+  OPERATOR  31    #&> (stbox, th3index),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, th3index),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, th3index);
 
 ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly left
@@ -305,6 +316,10 @@ ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, th3index),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, th3index);
+  OPERATOR  31    #&> (stbox, th3index),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, th3index),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, th3index);
 
 /******************************************************************************/

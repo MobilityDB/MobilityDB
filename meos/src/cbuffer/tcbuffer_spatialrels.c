@@ -676,12 +676,41 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   lfinfo.ever = ever;
   lfinfo.param[0] = Float8GetDatum(param);
   lfinfo.tpfn_temp = tpfn;
+  /* The containment turning point function states exactly where the
+   * relationship holds inside a segment */
+  if (tpfn == &tcbuffersegm_contains_turnpt)
+    lfinfo.tpfn_temp_bound = &tcbuffersegm_contains_bound;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a geometry ever/always contains a temporal circular
+ * buffer, 0 if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @pre The arguments are valid, as #ea_contains_geo_tcbuffer ensures
+ */
+int
+ea_contains_geo_tcbuffer_intl(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever)
+{
+  assert(ensure_valid_tcbuffer_geo(temp, gs));
+
+  /* Native running ever/always contains, exactly consistent with the temporal
+   * contains; a geometry that has no edge decomposition keeps the
+   * traversed-area path. */
+  int native = eacontains_tcbuffer_geo_native(temp, gs, ever, true);
+  if (native >= 0)
+    return native;
+  return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
+      (varfunc) &datum_geom_contains, 2, ever, INVERT);
+}
 
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
@@ -699,15 +728,7 @@ ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs))
     return -1;
-
-  /* Native running ever/always contains, exactly consistent with the temporal
-   * contains; a geometry that has no edge decomposition keeps the
-   * traversed-area path. */
-  int native = eacontains_tcbuffer_geo_native(temp, gs, ever, true);
-  if (native >= 0)
-    return native;
-  return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_contains, 2, ever, INVERT);
+  return ea_contains_geo_tcbuffer_intl(gs, temp, ever);
 }
 
 /**
@@ -941,14 +962,13 @@ acontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Ecovers_geo_tcbuffer(), #Acovers_geo_tcbuffer()
+ * @pre The arguments are valid, as #ea_covers_geo_tcbuffer ensures
  */
 int
-ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+ea_covers_geo_tcbuffer_intl(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs))
-    return -1;
+  assert(ensure_valid_tcbuffer_geo(temp, gs));
 
   /* Native running ever/always covers (contains up to boundary tangency),
    * exactly consistent with the temporal covers; a geometry that has no edge
@@ -958,6 +978,24 @@ ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
     return native;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_covers, 2, ever, INVERT);
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a geometry ever/always covers a temporal circular buffer
+ * 0 if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Ecovers_geo_tcbuffer(), #Acovers_geo_tcbuffer()
+ */
+int
+ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
+    return -1;
+  return ea_covers_geo_tcbuffer_intl(gs, temp, ever);
 }
 
 /**
@@ -1197,15 +1235,13 @@ acovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edisjoint_tcbuffer_geo(), #Adisjoint_tcbuffer_geo()
+ * @pre The arguments are valid, as #ea_disjoint_tcbuffer_geo ensures
  */
 int
-ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+ea_disjoint_tcbuffer_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) )
-    return -1;
+  assert(ensure_valid_tcbuffer_geo(temp, gs));
 
   /* Bounding box test: a moving disk whose radius-aware bounding box is
    * disjoint from the geometry never reaches it, so it is disjoint at every
@@ -1228,6 +1264,31 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
     return native;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_disjoint2d, 2, ever, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer and a geometry are ever
+ * disjoint,0 if not, and -1 on error
+ * @details The always semantics reduce exactly to the native nearest-approach
+ * distance: aDisjoint(temp, gs) ⟺ ¬eIntersects(temp, gs) ⟺
+ * min_t dist(disk(t), gs) > 0. The ever semantics are computed from the
+ * native coverage of the intersecting sub-periods: eDisjoint(temp, gs) ⟺
+ * ∃t disk(t) ∩ gs = ∅. A geometry that has no edge decomposition falls back
+ * to the exact traversed-area path.
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Edisjoint_tcbuffer_geo(), #Adisjoint_tcbuffer_geo()
+ */
+int
+ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs) )
+    return -1;
+  return ea_disjoint_tcbuffer_geo_intl(temp, gs, ever);
 }
 
 /**
@@ -1312,6 +1373,25 @@ adisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
+ * @pre The arguments are valid, as #ea_disjoint_tcbuffer_cbuffer ensures
+ */
+int
+ea_disjoint_tcbuffer_cbuffer_intl(const Temporal *temp, const Cbuffer *cb,
+  bool ever)
+{
+  assert(ensure_valid_tcbuffer_cbuffer(temp, cb));
+  return INVERT_RESULT(ea_intersects_tcbuffer_cbuffer_intl(temp, cb, ! ever));
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer and a circular buffer are
+ * ever/always disjoint, 0 if not, and -1 on error
+ * @details Disjoint is the complement of intersects with the quantifier
+ * swapped: aDisjoint = ¬eIntersects and eDisjoint = ¬aIntersects
+ * @param[in] temp Temporal circular buffer
+ * @param[in] cb Circular buffer
+ * @param[in] ever True for the ever semantics, false for the always semantics
  * @csqlfn #Edisjoint_tcbuffer_cbuffer() #Adisjoint_tcbuffer_cbuffer()
  */
 int
@@ -1321,7 +1401,7 @@ ea_disjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return -1;
-  return INVERT_RESULT(ea_intersects_tcbuffer_cbuffer(temp, cb, ! ever));
+  return ea_disjoint_tcbuffer_cbuffer_intl(temp, cb, ever);
 }
 
 /**
@@ -1405,15 +1485,13 @@ adisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * 0 if not, and -1 on error or if they do not intersect in time
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edisjoint_tcbuffer_tcbuffer(), #Adisjoint_tcbuffer_tcbuffer()
+ * @pre The arguments are valid, as #ea_disjoint_tcbuffer_tcbuffer ensures
  */
 int
-ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
+ea_disjoint_tcbuffer_tcbuffer_intl(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
-    return -1;
+  assert(ensure_valid_tcbuffer_tcbuffer(temp1, temp2));
 
   /* Common-time gate: return -1 (SQL NULL) when the two temporal circular
    * buffers share no time, respecting the gaps of a sequence set so a pair
@@ -1431,6 +1509,24 @@ ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
    * above, and INVERT_RESULT(-1) = -1. */
   return INVERT_RESULT(
     ea_intersects_tcbuffer_tcbuffer(temp1, temp2, ! ever));
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if the temporal circular buffers are ever/always disjoint,
+ * 0 if not, and -1 on error or if they do not intersect in time
+ * @param[in] temp1,temp2 Temporal circular buffers
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Edisjoint_tcbuffer_tcbuffer(), #Adisjoint_tcbuffer_tcbuffer()
+ */
+int
+ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
+    return -1;
+  return ea_disjoint_tcbuffer_tcbuffer_intl(temp1, temp2, ever);
 }
 
 /**
@@ -1478,15 +1574,13 @@ adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tcbuffer_geo(), #Aintersects_tcbuffer_geo()
+ * @pre The arguments are valid, as #ea_intersects_tcbuffer_geo ensures
  */
 int
-ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+ea_intersects_tcbuffer_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) )
-    return -1;
+  assert(ensure_valid_tcbuffer_geo(temp, gs));
 
   /* Bounding box test: a moving disk whose radius-aware bounding box is
    * disjoint from the geometry never reaches it, so it neither ever nor always
@@ -1508,6 +1602,32 @@ ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
     return native == 1 ? 0 : 1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_intersects2d, 2, ever, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever/always intersects a
+ * geometry, 0 if not, and -1 on error
+ * @details The ever semantics reduce exactly to the native nearest-approach
+ * distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always
+ * semantics are the complement of ever disjoint: aIntersects(temp, gs) ⟺
+ * ¬eDisjoint(temp, gs), computed from the native coverage of the intersecting
+ * sub-periods. Both read the round buffer as a disk, without linearizing it;
+ * a geometry that has no edge decomposition falls back to the exact
+ * traversed-area path.
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Eintersects_tcbuffer_geo(), #Aintersects_tcbuffer_geo()
+ */
+int
+ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs) )
+    return -1;
+  return ea_intersects_tcbuffer_geo_intl(temp, gs, ever);
 }
 
 /**
@@ -1596,6 +1716,31 @@ aintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
+ * @pre The arguments are valid, as #ea_intersects_tcbuffer_cbuffer ensures
+ */
+int
+ea_intersects_tcbuffer_cbuffer_intl(const Temporal *temp, const Cbuffer *cb,
+  bool ever)
+{
+  assert(ensure_valid_tcbuffer_cbuffer(temp, cb));
+
+  Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+  int result = ea_intersects_tcbuffer_tcbuffer(temp, ctemp, ever);
+  pfree(ctemp);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever/always intersects a
+ * circular buffer, 0 if not, and -1 on error
+ * @details A static circular buffer is a constant temporal circular buffer
+ * over the time of the temporal one, so both quantifiers are those of two
+ * temporal circular buffers, which ever or always intersect where they are
+ * ever or always within the distance zero, decided over continuous time
+ * @param[in] temp Temporal circular buffer
+ * @param[in] cb Circular buffer
+ * @param[in] ever True for the ever semantics, false for the always semantics
  * @csqlfn #Eintersects_tcbuffer_cbuffer(), #Aintersects_tcbuffer_cbuffer()
  */
 int
@@ -1605,11 +1750,7 @@ ea_intersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return -1;
-
-  Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
-  int result = ea_intersects_tcbuffer_tcbuffer(temp, ctemp, ever);
-  pfree(ctemp);
-  return result;
+  return ea_intersects_tcbuffer_cbuffer_intl(temp, cb, ever);
 }
 
 /**
@@ -1753,14 +1894,13 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Etouches_tcbuffer_geo(), #Atouches_tcbuffer_geo()
+ * @pre The arguments are valid, as #ea_touches_tcbuffer_geo ensures
  */
 int
-ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_touches_tcbuffer_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) )
-    return -1;
+  assert(ensure_valid_tcbuffer_geo(temp, gs));
 
   /* A value composed of discs of a zero radius is a temporal point, whose
    * conversion is exact, and the temporal point relationship resolves the
@@ -1769,7 +1909,7 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (tcbuffer_is_tpoint(temp))
   {
     Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
-    int result = ea_touches_tpoint_geo(tpoint, gs, ever);
+    int result = ea_touches_tpoint_geo_intl(tpoint, gs, ever);
     pfree(tpoint);
     return result;
   }
@@ -1813,6 +1953,31 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     return native;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_touches, 2, ever, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer and a geometry ever touch,
+ * 0 if not, and -1 on error
+ * @details Touching is a contact of the two whose interiors stay disjoint. A
+ * disc of a strictly positive radius carries an interior, and the paths below
+ * read the disjointness from the position of its centre with respect to the
+ * geometry. A disc of radius zero is a point, whose interior is the point
+ * itself: it touches the geometry exactly where it lies on the boundary of the
+ * geometry, and a value composed of such discs is a temporal point, which
+ * reaches that relationship through its own conversion
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Etouches_tcbuffer_geo(), #Atouches_tcbuffer_geo()
+ */
+int
+ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs) )
+    return -1;
+  return ea_touches_tcbuffer_geo_intl(temp, gs, ever);
 }
 
 /**
@@ -2012,6 +2177,29 @@ static int ea_dwithin_touches_tcbuffer_tcbuffer(const Temporal *temp1,
  * within the distance 0
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] ever True for the ever semantics, false for the always semantics
+ * @pre The arguments are valid, as #ea_touches_tcbuffer_tcbuffer ensures
+ */
+int
+ea_touches_tcbuffer_tcbuffer_intl(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  assert(ensure_valid_tcbuffer_tcbuffer(temp1, temp2));
+  return ea_dwithin_touches_tcbuffer_tcbuffer(temp1, temp2, 0.0, ever, true);
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever/always touches another
+ * one, 0 if not, and -1 on error or if they do not intersect in time
+ * @details Two discs touch where they meet and their interiors are disjoint:
+ * where the gap of their centres less the sum of their radii is zero and
+ * they are not both points, a point having no boundary. The gap may be zero
+ * only strictly inside a segment, as when one disc leaves another, so both
+ * quantifiers are decided over continuous time by the walk of the within
+ * distance (#ea_dwithin_touches_tcbuffer_tcbuffer), discs that touch being
+ * within the distance 0
+ * @param[in] temp1,temp2 Temporal circular buffers
+ * @param[in] ever True for the ever semantics, false for the always semantics
  * @csqlfn #Etouches_tcbuffer_tcbuffer(), #Atouches_tcbuffer_tcbuffer()
  */
 int
@@ -2021,7 +2209,7 @@ ea_touches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1;
-  return ea_dwithin_touches_tcbuffer_tcbuffer(temp1, temp2, 0.0, ever, true);
+  return ea_touches_tcbuffer_tcbuffer_intl(temp1, temp2, ever);
 }
 
 /**
@@ -2065,16 +2253,14 @@ atouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] invert True if the arguments should be inverted
- * @csqlfn #Edwithin_tcbuffer_geo(), #Adwithin_tcbuffer_geo()
+ * @pre The arguments are valid, as #ea_dwithin_tcbuffer_geo ensures
  */
 int
-ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+ea_dwithin_tcbuffer_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
   double dist, bool ever, bool invert)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
-    return -1;
+  assert(ensure_valid_tcbuffer_geo(temp, gs));
+  assert(ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8));
 
   /* A point is the circular buffer of radius 0 at it, the same set, so the
    * point made constant over the time frame of the value turns the pair into
@@ -2143,6 +2329,28 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
     return native == 0 ? 1 : 0;
   return ea_spatialrel_tcbuffer_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) &datum_geom_dwithin2d, 3, ever, invert);
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_spatial_rel_ever
+ * @brief Return 1 if a temporal circular buffer and a geometry are ever/always
+ * within the given distance, 0 if not, -1 on error
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @param[in] invert True if the arguments should be inverted
+ * @csqlfn #Edwithin_tcbuffer_geo(), #Adwithin_tcbuffer_geo()
+ */
+int
+ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist, bool ever, bool invert)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return -1;
+  return ea_dwithin_tcbuffer_geo_intl(temp, gs, dist, ever, invert);
 }
 
 /**
@@ -2551,27 +2759,6 @@ tcbufferseq_disc_at(const TSequence *seq, int k, TimestampTz t, double *c,
   return;
 }
 
-/**
- * @brief Set in @p start_out and @p end_out whether the start and the end of
- * an interval of #tcont_tcont_merge_walk are the first or the last instant of
- * one of the sequences, which the sequence excludes, and so no instant of the
- * time they share
- */
-static void
-tcbuffer_interval_ends_out(const TSequence *seq1, const TSequence *seq2,
-  TimestampTz lower, TimestampTz upper, bool *start_out, bool *end_out)
-{
-  *start_out =
-    (lower == TSEQUENCE_INST_N(seq1, 0)->t && ! seq1->period.lower_inc) ||
-    (lower == TSEQUENCE_INST_N(seq2, 0)->t && ! seq2->period.lower_inc);
-  *end_out =
-    (upper == TSEQUENCE_INST_N(seq1, seq1->count - 1)->t &&
-      ! seq1->period.upper_inc) ||
-    (upper == TSEQUENCE_INST_N(seq2, seq2->count - 1)->t &&
-      ! seq2->period.upper_inc);
-  return;
-}
-
 /*****************************************************************************/
 
 /**
@@ -2726,7 +2913,7 @@ tcbuffer_touch_interval(const TSequence *seq1, int k1, const TSequence *seq2,
   tcbufferseq_disc_at(seq1, k1, upper, seg[1], &rad[1]);
   tcbufferseq_disc_at(seq2, k2, upper, seg[3], &rad[3]);
   bool start_out, end_out;
-  tcbuffer_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
+  tcont_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
   return tcbuffer_segm_touch(seg, rad, ! start_out, ! end_out, ever) == ever;
 }
 
@@ -2782,7 +2969,7 @@ tcbuffer_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2,
     return false;
   /* Within at an end alone that no instant of the shared time reaches */
   bool start_out, end_out;
-  tcbuffer_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
+  tcont_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
   if ((start_out && point_motion_dwithin_only_at_end(seg[0], seg[1],
         seg[2], seg[3], 2, rad[0], rad[1], rad[2], rad[3], st->dist, true)) ||
       (end_out && point_motion_dwithin_only_at_end(seg[0], seg[1], seg[2],

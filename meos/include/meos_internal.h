@@ -736,7 +736,9 @@ typedef struct MeosArray
  */
 #define INDEX_RESULT_ID_N(result, n) (((const int64 *) (result)->elems)[(n)])
 
+extern void meos_array_add_intl(MeosArray *array, void *value);
 extern void *meos_array_get_intl(const MeosArray *array, int n);
+extern int meos_array_count_intl(const MeosArray *array);
 
 
 /*****************************************************************************/
@@ -1192,6 +1194,7 @@ extern Temporal *temporal_from_mfjson(const char *mfjson, MeosType temptype);
 extern Temporal *temporal_from_base_temp(Datum value, MeosType temptype, const Temporal *temp);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, MeosType temptype, TimestampTz t);
+extern TInstant *tinstant_make_intl(Datum value, MeosType temptype, TimestampTz t);
 extern TInstant *tinstant_make_free(Datum value, MeosType temptype, TimestampTz t);
 extern TSequence *tsequence_copy(const TSequence *seq);
 extern TSequence *tsequence_derivative(const TSequence *seq, bool spheroid);
@@ -1220,6 +1223,20 @@ extern void tnumberseq_set_tbox(const TSequence *seq, TBox *box);
 extern void tnumberseqset_set_tbox(const TSequenceSet *ss, TBox *box);
 extern void tsequence_set_tstzspan(const TSequence *seq, Span *s);
 extern void tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s);
+extern Span *tinstant_spans(const TInstant *inst);
+extern Span *tsequence_spans(const TSequence *seq, int *count);
+extern Span *tsequenceset_spans(const TSequenceSet *ss, int *count);
+extern Span *tsequence_split_n_spans(const TSequence *seq, int span_count, int *count);
+extern Span *tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count);
+extern Span *tsequence_split_each_n_spans(const TSequence *seq, int elem_count, int *count);
+extern Span *tsequenceset_split_each_n_spans(const TSequenceSet *ss, int elem_count, int *count);
+extern TBox *tnumberinst_tboxes(const TInstant *inst);
+extern TBox *tnumberseq_tboxes(const TSequence *seq, int *count);
+extern TBox *tnumberseqset_tboxes(const TSequenceSet *ss, int *count);
+extern TBox *tnumberseq_split_n_tboxes(const TSequence *seq, int box_count, int *count);
+extern TBox *tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count);
+extern TBox *tnumberseq_split_each_n_tboxes(const TSequence *seq, int elem_count, int *count);
+extern TBox *tnumberseqset_split_each_n_tboxes(const TSequenceSet *ss, int elem_count, int *count);
 
 /*****************************************************************************/
 

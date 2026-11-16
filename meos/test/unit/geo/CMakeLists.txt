@@ -51,6 +51,10 @@ add_executable(cross3_overflow_unit cross3_overflow_unit.c)
 target_link_libraries(cross3_overflow_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME cross3_overflow_unit COMMAND cross3_overflow_unit)
 
+add_executable(incircle_range_unit incircle_range_unit.c)
+target_link_libraries(incircle_range_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME incircle_range_unit COMMAND incircle_range_unit)
+
 add_executable(ray_cast_unit ray_cast_unit.c)
 target_link_libraries(ray_cast_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME ray_cast_unit COMMAND ray_cast_unit)
@@ -65,6 +69,11 @@ target_include_directories(trig_nearest_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(trig_nearest_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME trig_nearest_unit COMMAND trig_nearest_unit)
 
+add_executable(mercator_lat_unit mercator_lat_unit.c)
+target_include_directories(mercator_lat_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(mercator_lat_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME mercator_lat_unit COMMAND mercator_lat_unit)
+
 add_executable(geodetic_fraction_unit geodetic_fraction_unit.c)
 target_include_directories(geodetic_fraction_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(geodetic_fraction_unit ${MEOS_LIB_NAME} postgis pgtypes m)
@@ -77,3 +86,7 @@ add_test(NAME within_time_unit COMMAND within_time_unit)
 add_executable(simple_traj_unit simple_traj_unit.c)
 target_link_libraries(simple_traj_unit ${MEOS_LIB_NAME} postgis pgtypes m)
 add_test(NAME simple_traj_unit COMMAND simple_traj_unit)
+
+add_executable(planar_meet_unit planar_meet_unit.c)
+target_link_libraries(planar_meet_unit ${MEOS_LIB_NAME} postgis pgtypes m)
+add_test(NAME planar_meet_unit COMMAND planar_meet_unit)

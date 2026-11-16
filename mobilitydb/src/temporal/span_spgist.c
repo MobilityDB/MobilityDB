@@ -517,6 +517,8 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
       switch (strategy)
       {
         case RTOverlapStrategyNumber:
+        case RTEverOverlapStrategyNumber:
+        case RTAlwaysOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
           flag = overlap2D(&next_nodespan, &queries[i]);
           break;

@@ -187,6 +187,7 @@ npointset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NPOINTSET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   Npoint **result = palloc(sizeof(Npoint *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetNpointP(datum_copy(SET_VAL_N(s, i), s->basetype));

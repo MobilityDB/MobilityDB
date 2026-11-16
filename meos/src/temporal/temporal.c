@@ -632,6 +632,36 @@ ensure_positive_duration(const Interval *duration)
   return false;
 }
 
+/**
+ * @brief Return true if an interval is the window of an aggregate: none of its
+ * fields is negative and they are not all zero, so that adding it moves every
+ * timestamp forward
+ * @details A window may hold months, which #positive_duration refuses for the
+ * size of a tile, since a month moves a timestamp forward whatever its length
+ */
+bool
+positive_window(const Interval *interv)
+{
+  return interv->month >= 0 && interv->day >= 0 && interv->time >= 0 &&
+    (interv->month > 0 || interv->day > 0 || interv->time > 0);
+}
+
+/**
+ * @brief Ensure that an interval is the window of an aggregate, as
+ * #ensure_positive_duration ensures the duration of a tile
+ */
+bool
+ensure_positive_window(const Interval *interv)
+{
+  if (positive_window(interv))
+    return true;
+  char *str = pg_interval_out(interv);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The window must be positive with no negative field: %s", str);
+  pfree(str);
+  return false;
+}
+
 /*****************************************************************************
  * Reference geometry of the temporal types that carry one
  *****************************************************************************/
@@ -5083,6 +5113,19 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
+ * @brief Return true if the base values of a temporal value are geographies
+ * @details Its bounding box is written in the longitudes the value spells,
+ * which do not decide the equality of its points (#geopoint_eq), so
+ * #temporal_cmp and #temporal_sortkey_put read its period instead. The other
+ * geodetic types, cells and poses, are equal exactly where their boxes allow
+ */
+static bool
+temporal_geodetic(const Temporal *temp)
+{
+  return temptype_basetype(temp->temptype) == T_GEOGRAPHY;
+}
+
+/**
  * @ingroup meos_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal to, or greater than the second one
@@ -5105,11 +5148,25 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
     return INT_MAX;
   }
 
-  /* Compare bounding box */
-  bboxunion box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
-  int result = temporal_bbox_cmp(&box1, &box2, temp1->temptype);
+  /* Compare the bounding box, or for a temporal geography its period: the
+   * box of a geography is written in the longitudes the value spells, and one
+   * point of the sphere spelled twice is one value (#geopoint_eq) with two
+   * boxes but one period. #temporal_sortkey_put writes the same field */
+  int result;
+  if (temporal_geodetic(temp1))
+  {
+    Span p1, p2;
+    temporal_set_tstzspan(temp1, &p1);
+    temporal_set_tstzspan(temp2, &p2);
+    result = span_cmp(&p1, &p2);
+  }
+  else
+  {
+    bboxunion box1, box2;
+    temporal_set_bbox(temp1, &box1);
+    temporal_set_bbox(temp2, &box2);
+    result = temporal_bbox_cmp(&box1, &box2, temp1->temptype);
+  }
   if (result)
     return result;
 
@@ -5271,6 +5328,7 @@ tinstant_sortkey_put(const TInstant *inst, uint8_t *out)
  * buffer is NULL
  * @details The key holds the fields in the order #temporal_cmp compares them:
  * - the bounding box, as #tbox_sortkey_put, #stbox_sortkey_put or
+ *   #span_sortkey_body writes it, and for a temporal geography its period, as
  *   #span_sortkey_body writes it;
  * - each instant, as #tinstant_sortkey_put writes it;
  * - each run, as #temporal_run reads it: its number of instants, whether it
@@ -5294,10 +5352,22 @@ temporal_sortkey_put(const Temporal *temp, uint8_t *out)
   size_t result = 1;
   if (out)
     out[0] = temp->temptype;
-  bboxunion box;
-  temporal_set_bbox(temp, &box);
-  result += temporal_bbox_sortkey_put(&box, type_bboxtype(temp->temptype),
-    out ? out + result : NULL);
+  if (temporal_geodetic(temp))
+  {
+    /* The period, as #temporal_cmp compares a temporal geography */
+    Span p;
+    temporal_set_tstzspan(temp, &p);
+    if (out)
+      span_sortkey_body(&p, out + result);
+    result += span_sortkey_body_size(T_TIMESTAMPTZ);
+  }
+  else
+  {
+    bboxunion box;
+    temporal_set_bbox(temp, &box);
+    result += temporal_bbox_sortkey_put(&box, type_bboxtype(temp->temptype),
+      out ? out + result : NULL);
+  }
 
   const Temporal *utemp = temporal_unwrapped(temp);
   switch (utemp->subtype)

@@ -99,7 +99,7 @@ The runbook sections build on each other and must be done in order. Each step ha
 | 4 | §3.6 (index opclasses) | `EXPLAIN SELECT ... WHERE tfoo && stbox(...);` shows a Bitmap Index Scan on the GiST index. The scan returns the right rows (compare against a sequential scan). |
 | 5 | §3.7 (registry cache, if applicable) | `meos/examples/standalone_foo.c` populates the cache via `meos_foo_register()` and a query against it returns the right values without a PG backend. |
 | 6 | §3.8 (datagen) | `SELECT random_tfoo_inst(...) FROM generate_series(1, 100);` produces 100 plausible values. `tbl_tfoo` table populates without error. |
-| 7 | §3.9 (regression tests) | `ctest -R tfoo` runs the full suite; expected outputs check in cleanly. |
+| 7 | §3.9 (regression tests) | `MOBILITYDB_TESTS=tfoo ctest -R regress` runs the full suite; expected outputs check in cleanly. |
 | 8 | §3.10 (DocBook chapter) | `xmllint --noout --xinclude --noent doc/mobilitydb-manual.xml` is silent. The Doxygen build resolves all `@csqlfn` cross-links. |
 | 9 | Parity checklist (§4) + robustness pass (§5) + documentation pass (§6) | Every row in the parity table is checked. Each named hazard is classified and mitigated or documented. The DocBook chapter has a `<sect1 xml:id="foo_type_guidance">` covering durability, when-to-use, design restrictions, and the four-to-six named hazards specific to this type. |
 
@@ -113,15 +113,15 @@ After every change, the inner loop is:
 cmake -B build -DFOO=ON     # only to change a cmake option
 cmake --build build -j       # rebuild C
 sudo cmake --install build   # install into PG's extension dir
-ctest --test-dir build -R foo --output-on-failure   # run just the foo tests
+MOBILITYDB_TESTS=foo ctest --test-dir build -R regress --output-on-failure   # run just the foo tests
 ```
 
-For a single SQL test (faster iteration than ctest):
-
-```sh
-psql -d mobilitydb_test -f mobilitydb/test/foo/sql/NN0_foo.sql > /tmp/actual.out
-diff -u mobilitydb/test/foo/expected/NN0_foo.out /tmp/actual.out
-```
+The suite is one ctest test, `regress`, which runs pg_regress. The regular
+expression in `MOBILITYDB_TESTS` limits it to the tests whose names match,
+`'^NN0_foo$'` for a single one; the setup scripts that load the tables always
+run first. pg_regress writes the output of each test to
+`build/mobilitydb/test/regress/results/<name>.out` and the differences to
+`build/mobilitydb/test/regress/regression.diffs`.
 
 For a MEOS-only change (no PG):
 
@@ -217,6 +217,22 @@ Squash + merge. Then **trim aggressively**: drop `doc/`, `.github/`, `tools/`, `
 - SP-GiST is much larger; quad-tree + k-d-tree variants. Defer to a follow-up unless time permits.
 - **MEOS in-memory R-tree** (`meos/src/temporal/temporal_rtree.c`) has its own `T_*` dispatch via function pointers (`get_axis`, `bbox_expand`, `bbox_contains`, `bbox_overlaps`). Extend it for `T_TFOOBOX` so standalone C programs can also index by bbox.
 
+#### 3.6.1 Equality, order, hash and sort key
+
+Four functions answer one question about two values of a type, and they agree: equality (`datum_eq`, `set_eq`, `temporal_eq`), order (`datum_cmp`, `set_cmp`, `temporal_cmp`), hash (`datum_hash`, `set_hash`, `temporal_hash`) and sort key (`set_sortkey`, `span_sortkey`, `spanset_sortkey`, `tbox_sortkey`, `stbox_sortkey`, `tpcbox_sortkey`, `temporal_sortkey`). The comparison answers 0 exactly where the equality holds, two equal values hash alike, and the unsigned byte order of two sort keys is the order of the comparison while their byte equality is the equality. A B-tree reads the comparison, a hash join the hash, and an engine that holds a value as its bytes (DuckDB's `BLOB` alias, Spark's `BinaryType`, Flink's `RAW` type) sorts and groups by the sort key. The key is computed and never stored: the value keeps its WKB as the form it is exchanged in.
+
+The key of a value is its type followed by the fields in the order the comparison reads them, so that a value whose fields prefix another's sorts first.
+
+- **A base value** is written by `datum_sortkey_put`, its length counted by `datum_sortkey_len`, and `datum_sortkey_type` answers whether a base type has a key at all. An integer, a date, a timestamp and a cell are written most significant byte first with the sign bit flipped. A double is written as it is for spans. A text is written as its bytes under the C collation MEOS pins, a zero byte as a zero byte followed by 0xFF, then two zero bytes ending it.
+- **A point** is its coordinates as `geopoint_coords` reads them, the reading that `geopoint_eq`, `geopoint_cmp` and `geopoint_hash` share. A zero of either sign is 0. For a geography point, the longitude -180 is 180 and the longitude of a pole is 0, so one point of the sphere is one value.
+- **A circular buffer, a network point, a pose and a pose chain** have keys of their own (`cbuffer_sortkey_size`, `npoint_sortkey_size`, `pose_sortkey_size`, `posechain_sortkey_size`). The keys of a pose and a pose chain depend on the value.
+- **A set** is its set type followed by the key of each value in the order of the set.
+- **A temporal value** is its type, then its bounding box, then each instant (its timestamp, then its value), then each run (its number of instants, its bounds, an inclusive bound first, and its interpolation). Neither list needs an end mark: two values with one period end at one timestamp, so two values whose leading instants agree hold as many instants. A temporal geography (`tgeogpoint`, `tgeography`) writes its period in place of its box, as `temporal_cmp` compares it: the box of a geography is written in the longitudes the value spells, so one point of the sphere spelled twice is one value with two boxes. Other geodetic types, cells and poses, are equal exactly where their boxes allow, and write their box. `temporal_sortkey_type` answers which temporal types have a key. A temporal rigid geometry has none, since `temporal_cmp` reads no part of its reference geometry, so two values `temporal_eq` holds different can compare equal.
+
+A function that asks for the key of a value whose type has none answers NULL with `MEOS_ERR_INVALID_ARG_TYPE`.
+
+A new base type `foo` therefore adds `foo_eq`, `foo_cmp`, `foo_hash` and `foo_hash_extended` that read one set of fields, an arm in `datum_sortkey_put` and `datum_sortkey_len` writing those fields in the order `foo_cmp` compares them, and a sort key test. The tests of `meos/test` (`sortkey_test.c`, `box_sortkey_test.c`, `temporal_sortkey_test.c`, `cbuffer_npoint_sortkey_test.c`, `pose_sortkey_test.c`) check, over every pair of a corpus, that the comparison answers 0 exactly where the equality holds, that swapping the operands negates it, that it is transitive over ordered triples, and that the byte order and byte equality of the keys are the comparison and the equality.
+
 ### 3.7 Schema/registry caches (when the type has external metadata)
 
 This pattern (pgPointCloud `pointcloud_formats`, network points' `npoint_segments`, GeoPose `geopose_frames`, …) appears whenever the type's value semantics depend on metadata declared elsewhere.
@@ -273,10 +289,10 @@ Wired in `mobilitydb/datagen/CMakeLists.txt::DATAGEN_FILES` under an `if(FOO)` b
 ### 3.9 Tests (`mobilitydb/test/foo/`)
 
 Layout:
-- `CMakeLists.txt` — registers `load_foo_tables` (the fixture) + globs the tests `sql/[0-9]*.sql`. Add `if(FOO) add_subdirectory(foo) endif()` to `mobilitydb/test/CMakeLists.txt`.
+- `CMakeLists.txt` — `mobilitydb_add_tests(SETUP load_foo)`, which registers the setup script and every other file of `sql/`. Add `if(FOO) add_subdirectory(foo) endif()` to `mobilitydb/test/CMakeLists.txt`.
 - `sql/load_foo.sql` and `data/<table>.data` — the setup script that creates the standard fixture tables and loads them from the data files (see §3.9.1).
 - `sql/NN0_foo.sql` (value-level) and `sql/NN0_foo_tbl.sql` (table-level).
-- `expected/<name>.out` — generated by running ctest once and copying `tmptest/out/<name>.out` over.
+- `expected/<name>.out` — the output of the test, see "Regenerating expected output" below.
 
 **`_tbl` test convention**: every query collapses to a single scalar (`COUNT`, `MIN/MAX`, `bool_and`) so the diff is human-readable. Example:
 
@@ -289,21 +305,11 @@ FROM tbl_geom t1, tbl_tcbuffer t2;
 -- SELECT t1.k, t2.k, intersects(...) FROM ...;
 ```
 
-**`test.cmake` adjustment**: when `FOO=ON`, the bootstrap CREATE EXTENSION must include the upstream extension *before* `mobilitydb CASCADE` if the mobilitydb script body references the upstream's types directly:
-
-```cmake
-set(_create_ext "")
-if("@FOO@" STREQUAL "ON")
-  string(APPEND _create_ext "CREATE EXTENSION foo; ")
-endif()
-string(APPEND _create_ext "CREATE EXTENSION mobilitydb CASCADE; ...")
-```
-
-CASCADE doesn't help here because the type references happen during the mobilitydb script body, not at extension dependency resolution.
+**Upstream extension**: when `FOO=ON` requires an upstream extension, add it to `MOBILITYDB_REQUIRES` in the top-level `CMakeLists.txt`. That list is the `requires` of `mobilitydb.control`, and pg_regress creates its extensions, in its order, before `mobilitydb` in the test database.
 
 #### 3.9.1 Test data fixture (`load_foo.sql`)
 
-Every type must ship a setup script that creates the standard family of test tables. This script is run once at the start of the test run via the `load_foo_tables` CTest fixture; all `_tbl` tests depend on it.
+Every type must ship a setup script that creates the standard family of test tables. The schedule runs the setup scripts of every module before the tests; all `_tbl` tests depend on it.
 
 **Required tables** (all in the `public` schema):
 
@@ -336,32 +342,15 @@ COPY tbl_foo (k, i) FROM :'filename';
 
 `\getenv srcdir MOBILITYDB_SOURCE_DIR` at the top of the script reads the source directory, which the test runner sets. The file of a table can be written from a database holding it with `\copy tbl_foo TO 'tbl_foo.data'`.
 
-**CMakeLists.txt wiring** (mirrors the cbuffer pattern):
+**CMakeLists.txt wiring**:
 
 ```cmake
-add_test(
-  NAME load_foo_tables
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-  COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_foo_tables
-    -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/sql/load_foo.sql
-    -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
-)
-set_tests_properties(load_foo_tables PROPERTIES
-  DEPENDS test_setup
-  FIXTURES_SETUP DBFOO
-  FIXTURES_REQUIRED "DB")
-
-# ...in the per-test loop:
-# Tests that reference fixture tables must add DBFOO:
-set(FIXTURE_TESTS  270_tfoo_tbl  275_tfoo_indexes_tbl)
-
-# set FIXTURES to "DB;DBFOO" for fixture tests, "DB" for others
+mobilitydb_add_tests(SETUP load_foo)
 ```
 
 **When datagen is available**: if `mobilitydb_datagen` ships random generators for the type, the fixture can instead call `SELECT create_test_tables_foo(100)` from the datagen extension (see §3.8). The data files are preferred when the type is external or the generator isn't yet available.
 
-**Regenerating expected output**: run `ctest -R "test_setup|load_tables|load_foo_tables|<testname>"`, then copy `build/tmptest/out/<testname>.out` → `mobilitydb/test/foo/expected/<testname>.out`. Never copy from direct `psql` output — the local machine's timezone/datestyle may differ from the canonical CTest environment (`datestyle='Postgres,MDY'`, `timezone='America/Los_Angeles'`). Never add `SET timezone` or `SET datestyle` to test SQL files.
+**Regenerating expected output**: run `MOBILITYDB_TESTS='^<testname>$' ctest --test-dir build -R regress`, then copy `build/mobilitydb/test/regress/results/<testname>.out` → `mobilitydb/test/foo/expected/<testname>.out`. Never copy from direct `psql` output — pg_regress runs the tests with its own settings (`datestyle='Postgres, MDY'`, `timezone='America/Los_Angeles'`, `intervalstyle='postgres_verbose'`), which the local machine's may differ from. Never add `SET timezone` or `SET datestyle` to test SQL files.
 
 ### 3.10 Documentation
 

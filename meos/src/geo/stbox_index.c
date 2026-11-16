@@ -74,6 +74,8 @@ stbox_index_leaf_consistent(const STBox *key, const STBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
       retval = overlaps_stbox_stbox(key, query);
       break;
     case RTContainsStrategyNumber:
@@ -163,6 +165,8 @@ stbox_gist_inner_consistent(const STBox *key, const STBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
       retval = overlaps_stbox_stbox(key, query);
       break;
@@ -292,9 +296,10 @@ stbox_adjust(void *bbox1, void *bbox2)
  * @brief Return the size of a spatiotemporal box for penalty calculation
  * @note The result can be +Infinity, but not NaN
  */
-static double
-stbox_size(const STBox *box)
+double
+stbox_size(const void *bbox)
 {
+  const STBox *box = (const STBox *) bbox;
   double result_size = 1;
   bool hasx = MEOS_FLAGS_GET_X(box->flags),
        hasz = MEOS_FLAGS_GET_Z(box->flags),

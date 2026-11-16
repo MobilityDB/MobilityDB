@@ -76,6 +76,18 @@ datum_h3_cell_area_m2(Datum cell_d)
  *****************************************************************************/
 
 /**
+ * @brief Return whether a geodetic h3 cell shares a position with a box, as
+ * #h3_cell_meets_box answers it, the twin of
+ * `datum_quadbin_cell_meets_box` (meos/src/quadbin/tquadbin_ops.c)
+ */
+static Datum
+datum_h3_cell_meets_box(Datum d, Datum box, Datum border_inc)
+{
+  return BoolGetDatum(h3_cell_meets_box((H3Index) DatumGetInt64(d),
+    (const STBox *) DatumGetPointer(box), DatumGetBool(border_inc)));
+}
+
+/**
  * @brief H3 operations descriptor consumed by `dggs_cellops()`
  */
 const DggsCellOps h3_cellops =
@@ -92,7 +104,8 @@ const DggsCellOps h3_cellops =
   .cell_to_parent  = &datum_h3_cell_to_parent,
   .cell_to_point   = &datum_h3_cell_to_latlng,
   .cell_to_boundary = &datum_h3_cell_to_boundary,
-  .cell_area       = &datum_h3_cell_area_m2
+  .cell_area       = &datum_h3_cell_area_m2,
+  .cell_meets_box  = &datum_h3_cell_meets_box
 };
 
 /*****************************************************************************/

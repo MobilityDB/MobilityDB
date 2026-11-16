@@ -41,9 +41,11 @@
 /* C */
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 /* MEOS */
 #include "temporal/temporal.h"
 #include "geo/geo_funcs.h"
+#include "geo/geo_ival.h"
 
 
 /*****************************************************************************
@@ -460,7 +462,7 @@ distevents_add_piece(DistEvents *events, double t0, double t1,
   p->zero = (f == NULL);
   p->len = len;
   if (f)
-    p->f = *f;
+    distfun_copy(&p->f, f);
   else
     distfun_init(&p->f);
 }
@@ -1452,32 +1454,51 @@ refring_canonicalize(double *px, double *py, int n)
 }
 
 /**
- * @brief Set a body from a polygon whose vertices are relative to
- * (@p ox, @p oy)
- * @details A polygon with holes is refused: the walk uses the outer ring
- * only, and it would give a wrong distance for a body in a hole.
- * @return False if the polygon is not convex or has holes
+ * @brief Return a double no less than the exact largest distance of the
+ * @p n input vertices to (@p ox, @p oy)
+ * @details The bound of the distance #distrefvert_set() rounds to nearest as
+ * @p rho, read in intervals (#Ival) on the input doubles: each difference,
+ * square, sum and square root holds the exact value, so the upper end of the
+ * largest is no less than it.  The vertices the walk keeps are these less the
+ * center, rounded, and a body placed at any pose keeps every point of its
+ * input within this distance of its rotation center.
+ */
+static double
+distrefpoly_radius_up(const double *px, const double *py, int n, double ox,
+  double oy)
+{
+  double result = 0.0;
+  for (int i = 0; i < n; i++)
+  {
+    Ival x = ival_sub(ival(px[i]), ival(ox));
+    Ival y = ival_sub(ival(py[i]), ival(oy));
+    double r = ival_sqrt(ival_dot(x, y, x, y)).hi;
+    if (r > result)
+      result = r;
+  }
+  return result;
+}
+
+/**
+ * @brief Set a body from the @p nraw vertices of a ring, without its closing
+ * point, relative to (@p ox, @p oy)
+ * @details The second half of #distrefpoly_set_offset, which reads the ring
+ * of a polygon into the arrays; the pieces of #distrefpoly_cover come here
+ * from arrays of their own.  The arrays are freed.
+ * @return False if the ring is not a convex polygon
  */
 static bool
-distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
-  double oy)
+distrefpoly_set_ring(DistRefPoly *rp, double *px, double *py, int nraw,
+  double ox, double oy)
 {
   assert(rp);
   rp->nvert = rp->nedge = 0;
-  rp->rmax = 0.0;
+  rp->rmax = rp->rmax_up = 0.0;
   rp->verts = NULL;
   rp->edges = NULL;
-  if (! poly || poly->nrings != 1 || poly->rings[0]->npoints < 4)
-    return false;
-  int nraw = (int) poly->rings[0]->npoints - 1;
-  double *px = palloc(sizeof(double) * nraw);
-  double *py = palloc(sizeof(double) * nraw);
-  for (int i = 0; i < nraw; i++)
-  {
-    const POINT2D *p = getPoint2d_cp(poly->rings[0], (uint32_t) i);
-    px[i] = p->x;
-    py[i] = p->y;
-  }
+  /* The bound reads every input vertex: one the cleaning removes lies on a
+   * segment between two that stay, no farther from the center */
+  double rmax_up = distrefpoly_radius_up(px, py, nraw, ox, oy);
   /* The ring is cleaned on its input vertices, which decide whether it is
    * convex.  The subtraction of a nonzero offset rounds, so the walk's ring
    * is cleaned again on the doubles it uses: two vertices can become one and
@@ -1498,6 +1519,7 @@ distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
     return false;
   }
   rp->nvert = rp->nedge = n;
+  rp->rmax_up = rmax_up;
   rp->verts = palloc(sizeof(DistRefVert) * n);
   rp->edges = palloc(sizeof(DistRefEdge) * n);
   for (int i = 0; i < n; i++)
@@ -1513,6 +1535,39 @@ distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
   }
   pfree(px); pfree(py);
   return true;
+}
+
+/**
+ * @brief Set a body from a polygon whose vertices are relative to
+ * (@p ox, @p oy)
+ * @details It reads the ring into arrays and leaves the rest to
+ * #distrefpoly_set_ring.  A polygon with holes is refused: the walk uses the
+ * outer ring only, and it would give a wrong distance for a body in a hole.
+ * @return False if the polygon is not convex or has holes
+ */
+static bool
+distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
+  double oy)
+{
+  assert(rp);
+  if (! poly || poly->nrings != 1 || poly->rings[0]->npoints < 4)
+  {
+    rp->nvert = rp->nedge = 0;
+    rp->rmax = rp->rmax_up = 0.0;
+    rp->verts = NULL;
+    rp->edges = NULL;
+    return false;
+  }
+  int nraw = (int) poly->rings[0]->npoints - 1;
+  double *px = palloc(sizeof(double) * nraw);
+  double *py = palloc(sizeof(double) * nraw);
+  for (int i = 0; i < nraw; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(poly->rings[0], (uint32_t) i);
+    px[i] = p->x;
+    py[i] = p->y;
+  }
+  return distrefpoly_set_ring(rp, px, py, nraw, ox, oy);
 }
 
 /**
@@ -1584,6 +1639,9 @@ distrefpoly_set_segment(DistRefPoly *rp, double x1, double y1, double x2,
   distrefedge_set(&rp->edges[0], -hx, -hy, hx, hy);
   distrefedge_set(&rp->edges[1], hx, hy, -hx, -hy);
   rp->rmax = rp->verts[0].rho;
+  /* The two input ends, from the rounded middle */
+  const double ex[2] = {x1, x2}, ey[2] = {y1, y2};
+  rp->rmax_up = distrefpoly_radius_up(ex, ey, 2, *cx, *cy);
 }
 
 /**
@@ -1595,7 +1653,7 @@ distrefpoly_set_point(DistRefPoly *rp)
   assert(rp);
   rp->nvert = 1;
   rp->nedge = 0;
-  rp->rmax = 0.0;
+  rp->rmax = rp->rmax_up = 0.0;
   rp->verts = palloc(sizeof(DistRefVert));
   rp->edges = NULL;
   distrefvert_set(&rp->verts[0], 0.0, 0.0);
@@ -1615,7 +1673,531 @@ distrefpoly_free(DistRefPoly *rp)
   rp->verts = NULL;
   rp->edges = NULL;
   rp->nvert = rp->nedge = 0;
-  rp->rmax = 0.0;
+  rp->rmax = rp->rmax_up = 0.0;
+}
+
+/*****************************************************************************
+ * Exact convex cover of a polygon
+ *****************************************************************************/
+
+/**
+ * @brief Return the sign of the turn from vertex @p a through @p b to @p c,
+ * decided exactly by #cross_product_sign
+ */
+static inline int
+cover_orient(const double *x, const double *y, int a, int b, int c)
+{
+  return cross_product_sign(x[a], y[a], x[b], y[b], x[a], y[a], x[c], y[c]);
+}
+
+/**
+ * @brief Return true if two vertices have the same coordinates
+ */
+static inline bool
+cover_same(const double *x, const double *y, int a, int b)
+{
+  return x[a] == x[b] && y[a] == y[b];
+}
+
+/**
+ * @brief Return true if vertex @p c lies on the closed segment from @p a to
+ * @p b
+ */
+static bool
+cover_on_segment(const double *x, const double *y, int a, int b, int c)
+{
+  return cover_orient(x, y, a, b, c) == 0 &&
+    fmin(x[a], x[b]) <= x[c] && x[c] <= fmax(x[a], x[b]) &&
+    fmin(y[a], y[b]) <= y[c] && y[c] <= fmax(y[a], y[b]);
+}
+
+/**
+ * @brief Return true if the closed segments from @p a to @p b and from @p c
+ * to @p d share a point, as #seg_meet of the CGAL judges decides it
+ */
+static bool
+cover_segments_meet(const double *x, const double *y, int a, int b, int c,
+  int d)
+{
+  int o1 = cover_orient(x, y, a, b, c), o2 = cover_orient(x, y, a, b, d);
+  int o3 = cover_orient(x, y, c, d, a), o4 = cover_orient(x, y, c, d, b);
+  if (o1 * o2 < 0 && o3 * o4 < 0)
+    return true;
+  return (o1 == 0 && cover_on_segment(x, y, a, b, c)) ||
+    (o2 == 0 && cover_on_segment(x, y, a, b, d)) ||
+    (o3 == 0 && cover_on_segment(x, y, c, d, a)) ||
+    (o4 == 0 && cover_on_segment(x, y, c, d, b));
+}
+
+/**
+ * @brief Return true if the direction from vertex @p p to vertex @p q points
+ * strictly into the area at @p p, where the ring comes from @p a and goes on
+ * to @p b with the area on its left
+ */
+static bool
+cover_in_wedge(const double *x, const double *y, int a, int p, int b, int q)
+{
+  int in_left = cover_orient(x, y, a, p, q) > 0;
+  int out_left = cover_orient(x, y, p, b, q) > 0;
+  if (cover_orient(x, y, a, p, b) > 0)
+    return in_left && out_left;
+  return in_left || out_left;
+}
+
+/**
+ * @brief Read a ring into the arrays from position @p at on, without its
+ * closing point, its repeated vertices and the vertices on the segment
+ * between their neighbors, and orient it counterclockwise if @p ccw, else
+ * clockwise
+ * @return Number of vertices, or 0 if the ring has fewer than three or a
+ * spike, where it goes back on itself
+ */
+static int
+cover_read_ring(const POINTARRAY *pa, double *x, double *y, int at,
+  bool ccw)
+{
+  int n = (int) pa->npoints - 1, m = 0;
+  for (int i = 0; i < n; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, (uint32_t) i);
+    if (m > 0 && x[at + m - 1] == p->x && y[at + m - 1] == p->y)
+      continue;
+    x[at + m] = p->x; y[at + m] = p->y; m++;
+  }
+  while (m > 1 && x[at + m - 1] == x[at] && y[at + m - 1] == y[at])
+    m--;
+  /* The vertices on the segment between their neighbors, as
+   * #refring_canonicalize removes them; a vertex where the ring turns back
+   * on the same line is a spike, and the ring is refused */
+  for (int pass = 0; pass < n && m >= 3; pass++)
+  {
+    int w = 0;
+    for (int i = 0; i < m; i++)
+    {
+      int p = at + (i + m - 1) % m, c = at + i, q = at + (i + 1) % m;
+      if (cover_orient(x, y, p, c, q) == 0)
+      {
+        if (! cover_on_segment(x, y, p, q, c))
+          return 0;
+        continue;
+      }
+      x[at + w] = x[c]; y[at + w] = y[c]; w++;
+    }
+    if (w == m)
+      break;
+    m = w;
+  }
+  if (m < 3)
+    return 0;
+  /* The orientation is the turn at the lowest, then leftmost, vertex, which
+   * is a vertex of the convex hull of the ring */
+  int k = at;
+  for (int i = at + 1; i < at + m; i++)
+    if (y[i] < y[k] || (y[i] == y[k] && x[i] < x[k]))
+      k = i;
+  int turn = cover_orient(x, y, at + (k - at + m - 1) % m, k,
+    at + (k - at + 1) % m);
+  if ((turn > 0) != ccw)
+    for (int i = at, j = at + m - 1; i < j; i++, j--)
+    {
+      double tx = x[i], ty = y[i];
+      x[i] = x[j]; y[i] = y[j];
+      x[j] = tx;   y[j] = ty;
+    }
+  return m;
+}
+
+/**
+ * @brief Return true if the bridge from vertex @p m of a hole to vertex
+ * @p p meets the edge from @p u to @p v anywhere but at its ends
+ * @details An edge with an end at @p p or @p m touches the bridge there, and
+ * meets it elsewhere only where its other end lies on the bridge
+ */
+static bool
+cover_bridge_meets(const double *x, const double *y, int m, int p, int u,
+  int v)
+{
+  bool u_end = cover_same(x, y, u, p) || cover_same(x, y, u, m);
+  bool v_end = cover_same(x, y, v, p) || cover_same(x, y, v, m);
+  if (u_end && v_end)
+    return true;
+  if (u_end)
+    return cover_on_segment(x, y, m, p, v);
+  if (v_end)
+    return cover_on_segment(x, y, m, p, u);
+  return cover_segments_meet(x, y, m, p, u, v);
+}
+
+/**
+ * @brief Return true if the vertex at position @p c of the ring sees vertex
+ * @p m of a hole: the bridge between them lies in the area of the polygon,
+ * meeting no edge of the ring or of a hole not yet bridged but at its ends
+ * @param[in] ring,len Positions of the vertices of the ring
+ * @param[in] holes,hlen,nholes First vertex and count of the holes not yet
+ * bridged
+ * @param[in] mprev,mnext Neighbors of @p m in its hole
+ */
+static bool
+cover_sees(const double *x, const double *y, const int *ring, int len,
+  int c, int m, int mprev, int mnext, const int *holes, const int *hlen,
+  int nholes)
+{
+  int p = ring[c];
+  if (! cover_in_wedge(x, y, ring[(c + len - 1) % len], p,
+        ring[(c + 1) % len], m) ||
+      ! cover_in_wedge(x, y, mprev, m, mnext, p))
+    return false;
+  for (int i = 0; i < len; i++)
+    if (cover_bridge_meets(x, y, m, p, ring[i], ring[(i + 1) % len]))
+      return false;
+  for (int h = 0; h < nholes; h++)
+    for (int i = 0; i < hlen[h]; i++)
+      if (cover_bridge_meets(x, y, m, p, holes[h] + i,
+            holes[h] + (i + 1) % hlen[h]))
+        return false;
+  return true;
+}
+
+/**
+ * @brief Return true if the vertex at position @p i of the list, between
+ * @p a and @p b, is an ear: its triangle turns counterclockwise and holds no
+ * other vertex of the list
+ * @details A vertex at a corner of the triangle that is another visit of
+ * that corner, as the two ends of a bridge are, blocks the ear only where
+ * one of its edges goes into the triangle at that corner
+ */
+static bool
+cover_is_ear(const double *x, const double *y, const int *ring,
+  const int *prev, const int *next, int a, int i, int b)
+{
+  int A = ring[a], P = ring[i], B = ring[b];
+  if (cover_orient(x, y, A, P, B) <= 0)
+    return false;
+  for (int j = next[b]; j != a; j = next[j])
+  {
+    int V = ring[j];
+    /* The corner, and the corners before and after it in the triangle */
+    int corner = -1, before = -1, after = -1;
+    if (cover_same(x, y, V, A))
+      { corner = A; before = B; after = P; }
+    else if (cover_same(x, y, V, P))
+      { corner = P; before = A; after = B; }
+    else if (cover_same(x, y, V, B))
+      { corner = B; before = P; after = A; }
+    if (corner >= 0)
+    {
+      const int w[2] = {ring[prev[j]], ring[next[j]]};
+      for (int k = 0; k < 2; k++)
+        if (cover_orient(x, y, corner, after, w[k]) > 0 &&
+            cover_orient(x, y, before, corner, w[k]) > 0)
+          return false;
+      continue;
+    }
+    if (cover_orient(x, y, A, P, V) >= 0 && cover_orient(x, y, P, B, V) >= 0 &&
+        cover_orient(x, y, B, A, V) >= 0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the piece that triangle @p t belongs to
+ */
+static int
+cover_find(int *owner, int t)
+{
+  while (owner[t] != t)
+  {
+    owner[t] = owner[owner[t]];
+    t = owner[t];
+  }
+  return t;
+}
+
+/**
+ * @brief Return the index in @p list of @p n positions of the position
+ * @p v that follows @p u, or -1
+ */
+static int
+cover_index_after(const int *list, int n, int u, int v)
+{
+  for (int k = 0; k < n; k++)
+    if (list[k] == v && list[(k + n - 1) % n] == u)
+      return k;
+  return -1;
+}
+
+/**
+ * @brief Set the pieces of an exact convex cover of a polygon, holes
+ * included, as bodies relative to the rotation center
+ * @details The algorithm of section 5.1 of NON-CONVEX-DISTANCE.md, beside
+ * #distrefpoly_set, which takes a convex polygon as its only piece.  Every
+ * hole, from its rightmost vertex, is bridged to a vertex of the ring that
+ * sees it, giving one ring that visits each bridge twice; ear clipping
+ * triangulates that ring; and Hertel-Mehlhorn removes every diagonal whose
+ * two ends stay convex in the union of its two pieces.  Every question is a
+ * turn of three input vertices decided exactly (#cross_product_sign), so
+ * every vertex of a piece is a vertex of the polygon, the pieces have
+ * disjoint interiors, and their union is the area of the polygon, holes
+ * excluded.  The distance from the polygon is then the least distance from
+ * a piece, and it is zero exactly where a piece meets the other operand.
+ * @param[in] poly Polygon
+ * @param[out] pieces Array of the pieces
+ * @param[out] npieces Number of pieces
+ * @return False if a ring has fewer than three vertices or a spike, or the
+ * rings do not bound an area
+ */
+bool
+distrefpoly_cover(const LWPOLY *poly, DistRefPoly **pieces, int *npieces)
+{
+  assert(pieces); assert(npieces);
+  *pieces = NULL;
+  *npieces = 0;
+  if (! poly || poly->nrings < 1)
+    return false;
+  if (poly->nrings == 1)
+  {
+    DistRefPoly *one = palloc(sizeof(DistRefPoly));
+    if (distrefpoly_set(one, poly))
+    {
+      *pieces = one;
+      *npieces = 1;
+      return true;
+    }
+    pfree(one);
+  }
+
+  /* The vertices of the rings, the outer one counterclockwise and the holes
+   * clockwise, so that the area is on the left of every edge */
+  int total = 0;
+  for (uint32_t r = 0; r < poly->nrings; r++)
+    total += (int) poly->rings[r]->npoints;
+  double *x = palloc(sizeof(double) * total);
+  double *y = palloc(sizeof(double) * total);
+  int nholes = (int) poly->nrings - 1;
+  int *holes = palloc(sizeof(int) * (nholes + 1));
+  int *hlen = palloc(sizeof(int) * (nholes + 1));
+  int *ring = palloc(sizeof(int) * (total + 2 * nholes));
+  int nv = 0, len = 0, ntri = 0;
+  int *prev = NULL, *next = NULL, *tri = NULL, *owner = NULL, *pn = NULL;
+  int **pv = NULL;
+  bool ok = true;
+  for (uint32_t r = 0; r < poly->nrings && ok; r++)
+  {
+    int m = cover_read_ring(poly->rings[r], x, y, nv, r == 0);
+    if (m == 0)
+      ok = false;
+    else if (r == 0)
+    {
+      for (int i = 0; i < m; i++)
+        ring[len++] = nv + i;
+    }
+    else
+    {
+      holes[r - 1] = nv;
+      hlen[r - 1] = m;
+    }
+    nv += m;
+  }
+
+  /* The holes in decreasing order of their rightmost vertex, each bridged
+   * to the nearest vertex of the ring that sees it.  The distance only
+   * orders the candidates; whether one sees the hole is decided exactly */
+  int *cand = ok ? palloc(sizeof(int) * (total + 2 * nholes)) : NULL;
+  double *cd = ok ? palloc(sizeof(double) * (total + 2 * nholes)) : NULL;
+  while (ok && nholes > 0)
+  {
+    int h = 0, hm = holes[0];
+    for (int g = 0; g < nholes; g++)
+      for (int i = holes[g]; i < holes[g] + hlen[g]; i++)
+        if (x[i] > x[hm] || (x[i] == x[hm] && y[i] > y[hm]))
+        {
+          hm = i;
+          h = g;
+        }
+    int k = hm - holes[h], n = hlen[h];
+    int mprev = holes[h] + (k + n - 1) % n, mnext = holes[h] + (k + 1) % n;
+    for (int c = 0; c < len; c++)
+    {
+      double dx = x[ring[c]] - x[hm], dy = y[ring[c]] - y[hm];
+      double d = dx * dx + dy * dy;
+      int j = c;
+      while (j > 0 && cd[j - 1] > d)
+      {
+        cand[j] = cand[j - 1];
+        cd[j] = cd[j - 1];
+        j--;
+      }
+      cand[j] = c;
+      cd[j] = d;
+    }
+    int found = -1;
+    for (int j = 0; j < len && found < 0; j++)
+      if (cover_sees(x, y, ring, len, cand[j], hm, mprev, mnext, holes, hlen,
+            nholes))
+        found = cand[j];
+    if (found < 0)
+    {
+      ok = false;
+      break;
+    }
+    /* The ring up to the vertex that sees the hole, the hole from its
+     * rightmost vertex round to it again, the vertex again, the rest */
+    int tail = len - found - 1;
+    memmove(&ring[found + n + 3], &ring[found + 1], sizeof(int) * tail);
+    for (int i = 0; i <= n; i++)
+      ring[found + 1 + i] = holes[h] + (k + i) % n;
+    ring[found + n + 2] = ring[found];
+    len += n + 2;
+    holes[h] = holes[nholes - 1];
+    hlen[h] = hlen[nholes - 1];
+    nholes--;
+  }
+
+  /* Ear clipping over a list of the positions of the ring */
+  if (ok)
+  {
+    prev = palloc(sizeof(int) * len);
+    next = palloc(sizeof(int) * len);
+    tri = palloc(sizeof(int) * 3 * len);
+    for (int i = 0; i < len; i++)
+    {
+      prev[i] = (i + len - 1) % len;
+      next[i] = (i + 1) % len;
+    }
+    int count = len, i = 0, miss = 0;
+    while (count > 3)
+    {
+      if (cover_is_ear(x, y, ring, prev, next, prev[i], i, next[i]))
+      {
+        tri[3 * ntri] = prev[i];
+        tri[3 * ntri + 1] = i;
+        tri[3 * ntri + 2] = next[i];
+        ntri++;
+        next[prev[i]] = next[i];
+        prev[next[i]] = prev[i];
+        i = next[i];
+        count--;
+        miss = 0;
+        continue;
+      }
+      i = next[i];
+      if (++miss > count)
+      {
+        ok = false;
+        break;
+      }
+    }
+    if (ok && cover_orient(x, y, ring[prev[i]], ring[i], ring[next[i]]) > 0)
+    {
+      tri[3 * ntri] = prev[i];
+      tri[3 * ntri + 1] = i;
+      tri[3 * ntri + 2] = next[i];
+      ntri++;
+    }
+    if (ntri == 0)
+      ok = false;
+  }
+
+  /* Hertel-Mehlhorn: each triangle starts as a piece; the diagonal that cut
+   * a triangle off, from its last corner to its first, goes where its two
+   * ends stay convex in the union of the two pieces it separates */
+  if (ok)
+  {
+    owner = palloc(sizeof(int) * ntri);
+    pn = palloc(sizeof(int) * ntri);
+    pv = palloc(sizeof(int *) * ntri);
+    for (int t = 0; t < ntri; t++)
+    {
+      owner[t] = t;
+      pn[t] = 3;
+      pv[t] = palloc(sizeof(int) * 3);
+      memcpy(pv[t], &tri[3 * t], sizeof(int) * 3);
+    }
+    for (int t = 0; t < ntri; t++)
+    {
+      int a = tri[3 * t], b = tri[3 * t + 2];
+      if (b == (a + 1) % len || a == (b + 1) % len)
+        continue;
+      /* The triangle on the other side holds the edge from a to b */
+      int u = -1;
+      for (int s = t + 1; s < ntri && u < 0; s++)
+        for (int e = 0; e < 3; e++)
+          if (tri[3 * s + e] == a && tri[3 * s + (e + 1) % 3] == b)
+          {
+            u = s;
+            break;
+          }
+      if (u < 0)
+        continue;
+      int p1 = cover_find(owner, t), p2 = cover_find(owner, u);
+      if (p1 == p2)
+        continue;
+      int n1 = pn[p1], n2 = pn[p2];
+      int ia1 = cover_index_after(pv[p1], n1, b, a);
+      int ib2 = cover_index_after(pv[p2], n2, a, b);
+      if (ia1 < 0 || ib2 < 0)
+        continue;
+      int ib1 = (ia1 + n1 - 1) % n1, ia2 = (ib2 + n2 - 1) % n2;
+      int a_pred = pv[p2][(ia2 + n2 - 1) % n2], a_succ = pv[p1][(ia1 + 1) % n1];
+      int b_pred = pv[p1][(ib1 + n1 - 1) % n1], b_succ = pv[p2][(ib2 + 1) % n2];
+      if (cover_orient(x, y, ring[a_pred], ring[a], ring[a_succ]) < 0 ||
+          cover_orient(x, y, ring[b_pred], ring[b], ring[b_succ]) < 0)
+        continue;
+      /* The first piece from a round to b, then the second after b up to
+       * the vertex before a */
+      int *merged = palloc(sizeof(int) * (n1 + n2 - 2));
+      int nm = 0;
+      for (int k = 0; k < n1; k++)
+        merged[nm++] = pv[p1][(ia1 + k) % n1];
+      for (int k = 1; k < n2 - 1; k++)
+        merged[nm++] = pv[p2][(ib2 + k) % n2];
+      pfree(pv[p1]);
+      pv[p1] = merged;
+      pn[p1] = nm;
+      owner[p2] = p1;
+      pn[p2] = 0;
+    }
+
+    /* The pieces as bodies */
+    *pieces = palloc(sizeof(DistRefPoly) * ntri);
+    for (int t = 0; t < ntri && ok; t++)
+    {
+      if (owner[t] != t)
+        continue;
+      double *px = palloc(sizeof(double) * pn[t]);
+      double *py = palloc(sizeof(double) * pn[t]);
+      for (int k = 0; k < pn[t]; k++)
+      {
+        px[k] = x[ring[pv[t][k]]];
+        py[k] = y[ring[pv[t][k]]];
+      }
+      if (distrefpoly_set_ring(&(*pieces)[*npieces], px, py, pn[t], 0.0,
+            0.0))
+        (*npieces)++;
+      else
+        ok = false;
+    }
+    for (int t = 0; t < ntri; t++)
+      pfree(pv[t]);
+    pfree(pv); pfree(pn); pfree(owner);
+  }
+
+  if (! ok && *pieces)
+  {
+    for (int k = 0; k < *npieces; k++)
+      distrefpoly_free(&(*pieces)[k]);
+    pfree(*pieces);
+    *pieces = NULL;
+    *npieces = 0;
+  }
+  if (prev) pfree(prev);
+  if (next) pfree(next);
+  if (tri) pfree(tri);
+  if (cand) pfree(cand);
+  if (cd) pfree(cd);
+  pfree(x); pfree(y); pfree(holes); pfree(hlen); pfree(ring);
+  return ok;
 }
 
 /*****************************************************************************/

@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Input
+-------------------------------------------------------------------------------
 SELECT npoint 'npoint(1,0.5)';
     npoint     
 ---------------
@@ -10,6 +13,7 @@ SELECT npoint ' npoint   (   1   ,	0.5   )   ';
  NPoint(1,0.5)
 (1 row)
 
+-- An SRID is read when it is the one of the network
 SELECT asEWKT(npoint 'SRID=5676;npoint(1,0.5)');
          asewkt          
 -------------------------
@@ -45,6 +49,7 @@ SELECT npoint 'npoint(1,0.5)xxx';
 ERROR:  Could not parse npoint value: Extraneous characters at the end
 LINE 1: SELECT npoint 'npoint(1,0.5)xxx';
                       ^
+-- An SRID other than the one of the network is refused
 SELECT npoint 'SRID=4326;npoint(1,0.5)';
 ERROR:  The SRID of the npoint (4326) does not match the SRID of the network (5676)
 LINE 1: SELECT npoint 'SRID=4326;npoint(1,0.5)';
@@ -63,6 +68,7 @@ SELECT nsegment '  nsegment  (  1  ,  0.5  ,  0.7 ) ';
  NSegment(1,0.5,0.7)
 (1 row)
 
+-- An SRID is read when it is the one of the network
 SELECT nsegment 'SRID=5676;nsegment(1,0.5,0.7)';
       nsegment       
 ---------------------
@@ -104,10 +110,14 @@ SELECT nsegment 'NSegment(1, 1, 1.5)';
 ERROR:  The relative position must be a real number between 0 and 1
 LINE 1: SELECT nsegment 'NSegment(1, 1, 1.5)';
                         ^
+-- An SRID other than the one of the network is refused
 SELECT nsegment 'SRID=4326;nsegment(1,0.5,0.7)';
 ERROR:  The SRID of the nsegment (4326) does not match the SRID of the network (5676)
 LINE 1: SELECT nsegment 'SRID=4326;nsegment(1,0.5,0.7)';
                         ^
+-------------------------------------------------------------------------------
+-- Input/output in (E)WKT, (E)WKB, and HexWKB representation
+-------------------------------------------------------------------------------
 SELECT asText(npoint 'SRID=5676;Npoint(1,0.5)');
     astext     
 ---------------
@@ -186,6 +196,7 @@ SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
  NPoint(1,0.5)
 (1 row)
 
+-- An SRID other than the one of the network is refused
 SELECT npointFromHexEWKB(replace(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)', 'XDR'), '0000162C', '000010E6'));
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT asBinary(nsegment 'NSegment(1,0.5,0.7)');
@@ -242,22 +253,27 @@ SELECT nsegmentFromHexEWKB(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)'));
  NSegment(1,0.5,0.7)
 (1 row)
 
+-- An SRID other than the one of the network is refused, and so is a route the
+-- network lacks
 SELECT nsegmentFromHexEWKB(replace(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000162C', '000010E6'));
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT nsegmentFromHexWKB(replace(asHexWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000000000000001', '00000000000003E8'));
 ERROR:  There is no route with gid value 1000 in table ways
+-- The container states the SRID once, for its components too
 SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
                          ashexewkb                          
 ------------------------------------------------------------
  013100412C16000001000000010100000000000000000000000000E03F
 (1 row)
 
+-- A component that states the SRID of its container again reads back
 SELECT npointsetFromHexEWKB('013100412C16000001000000412C1600000100000000000000000000000000E03F');
  npointsetfromhexewkb 
 ----------------------
  {"NPoint(1,0.5)"}
 (1 row)
 
+-- A component that states an SRID other than the one of the network is refused
 SELECT npointsetFromHexEWKB('01310041E61000000100000041E61000000100000000000000000000000000E03F');
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT asText(nsegment 'NSegment(1,0.5,0.7)');
@@ -295,6 +311,9 @@ SELECT nsegmentFromEWKT(asEWKT(nsegment 'NSegment(1,0.5,0.7)'))
 /* Errors */
 SELECT nsegmentFromEWKT('SRID=4326;NSegment(1,0.5,0.7)');
 ERROR:  The SRID of the nsegment (4326) does not match the SRID of the network (5676)
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 SELECT npoint(1, 0.5);
     npoint     
 ---------------
@@ -335,6 +354,9 @@ SELECT nsegment(1000,0.5,0.7);
 ERROR:  There is no route with gid value 1000 in table ways
 SELECT nsegment(1,1.5,0.7);
 ERROR:  The relative position must be a real number between 0 and 1
+-------------------------------------------------------------------------------
+-- Accessing values
+-------------------------------------------------------------------------------
 SELECT route(npoint 'npoint(1,0.5)');
  route 
 -------
@@ -377,6 +399,9 @@ SELECT srid(nsegment 'nsegment(1,0.5,0.7)');
  5676
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 SELECT round(npoint 'NPoint(1, 0.123456789)', 6);
        round        
 --------------------
@@ -389,6 +414,9 @@ SELECT round(nsegment 'NSegment(1, 0.123456789, 0.223456789)', 6);
  NSegment(1,0.123457,0.223457)
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Conversion functions between network and space
+-------------------------------------------------------------------------------
 SELECT ST_AsText(round(npoint 'npoint(1,0.2)'::geometry, 6));
          st_astext          
 ----------------------------
@@ -425,6 +453,8 @@ SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::npoint;
  
 (1 row)
 
+-- A point off the network is mapped only within a tolerance, onto the
+-- nearest route: route 29 is at 0.398 of this point and route 1 at 0.473
 SELECT ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5)::npoint;
  st_translate 
 --------------
@@ -449,12 +479,28 @@ SELECT round(npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 10),
  NPoint(29,0.431073)
 (1 row)
 
-SELECT geometry 'SRID=5676;LINESTRING(83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.625699095428 97.5346013903618)'::nsegment;
+-- The cast maps back every point a route constructs, and no point lying off
+-- the route by more than the rounding of that construction: 0, then NULL
+SELECT COUNT(*) FROM generate_series(1, 50) AS r, generate_series(1, 99) AS i
+WHERE (npoint(r, i / 100.0)::geometry)::npoint IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 1e-12)::npoint;
+ st_translate 
+--------------
+ 
+(1 row)
+
+SELECT geometry 'SRID=5676;LINESTRING(83.28320090658963 86.09033222310245,69.08071548677981 81.20815036818385,13.62569909542799 97.53460139036179)'::nsegment;
  nsegment 
 ----------
  
 (1 row)
 
+-- NULL
 SELECT geometry 'SRID=5676;LINESTRING(416.346567736997 528.335344322874,610.455019399524 528.508247341961,476.989195102204 642.550969672973)'::nsegment;
  nsegment 
 ----------
@@ -472,6 +518,9 @@ SELECT npoint(npoint 'npoint(1,0.2)'::geometry, 'NaN');
 ERROR:  The value must be finite
 SELECT npoint(npoint 'npoint(1,0.2)'::geometry, 'Infinity');
 ERROR:  The value must be finite
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
 SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.5)';
  ?column? 
 ----------
@@ -490,6 +539,7 @@ SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(2,0.5)';
  f
 (1 row)
 
+-- Equality is exact, as the order is: positions closer than any tolerance differ
 SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.5000006)';
  ?column? 
 ----------
@@ -610,6 +660,7 @@ SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.7)';
  f
 (1 row)
 
+-- Equality is exact, as the order is: positions closer than any tolerance differ
 SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.5000006)';
  ?column? 
 ----------
@@ -754,16 +805,22 @@ SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(2,0.3,0.5)';
  f
 (1 row)
 
+-------------------------------------------------------------------------------/
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
 SELECT npoint 'Npoint(1, 0.5)'::geography;
 ERROR:  Only lon/lat coordinate systems are supported
 SELECT nsegment 'Nsegment(1, 0.5, 0.7)'::geography;
 ERROR:  Only lon/lat coordinate systems are supported
+-------------------------------------------------------------------------------
+-- A route of the ways table is read as a planar line in the SRID of the network
+-------------------------------------------------------------------------------
 INSERT INTO ways(gid, the_geom, length) VALUES
   (9001, 'SRID=5676;LINESTRING Z(0 0 0,3 4 0)', 5),
   (9002, 'SRID=5676;LINESTRING M(0 0 0,3 4 0)', 5),
   (9003, 'SRID=5676;MULTILINESTRING((0 0,3 4))', 5),
   (9004, 'SRID=4326;LINESTRING(0 0,3 4)', 5);
-INSERT 0 4
 /* Errors */
 SELECT npoint(9001, 0.5);
 ERROR:  The geometry cannot have Z dimension
@@ -776,4 +833,3 @@ ERROR:  Operation on mixed SRID
 SELECT npoint(geometry 'SRID=5676;POINT(1 1)', 10);
 ERROR:  The geometry cannot have Z dimension
 DELETE FROM ways WHERE gid > 9000;
-DELETE 4

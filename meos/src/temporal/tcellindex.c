@@ -466,6 +466,75 @@ ensure_valid_tcellindex_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
+ * @brief Margin in degrees by which the box of a temporal cell is widened
+ * before it is found to share no position with a box
+ * @details The box of a cell holds its vertices and the latitudes its edges
+ * rise to, which the test of a cell against a box reads through its own
+ * trigonometry; the margin covers the rounding between the two readings, so
+ * a box beyond it meets no cell of the value
+ */
+#define TCELL_BOX_MARGIN 1.0e-9
+
+/**
+ * @brief The test of a cell against a box, with the answer for the last cell
+ * it was given
+ * @details A temporal cell keeps one cell over many consecutive instants, so
+ * the test is computed once for each run of instants holding the same cell
+ */
+typedef struct
+{
+  Datum (*cell_meets_box)(Datum cell, Datum box, Datum border_inc);
+  MeosType basetype;  /**< The type of the cells */
+  Datum box;          /**< The box, an STBox pointer */
+  Datum border_inc;   /**< True when the box holds its upper borders */
+  bool set;           /**< True when the last cell and its answer are set */
+  Datum cell;         /**< The last cell tested, a cell passed by value */
+  Datum result;       /**< Its answer */
+} CellMeetsBoxCache;
+
+/**
+ * @brief Return true if the spatial extent of a box, widened by
+ * #TCELL_BOX_MARGIN, shares no position with the spatial extent of another
+ * box
+ * @param[in] vbox Box of a cell or of a temporal cell
+ * @param[in] box Box
+ */
+static bool
+tcellindex_box_apart(const STBox *vbox, const STBox *box)
+{
+  return vbox->xmax + TCELL_BOX_MARGIN < box->xmin ||
+    box->xmax + TCELL_BOX_MARGIN < vbox->xmin ||
+    vbox->ymax + TCELL_BOX_MARGIN < box->ymin ||
+    box->ymax + TCELL_BOX_MARGIN < vbox->ymin;
+}
+
+/**
+ * @brief Return whether a cell meets the box of a cache, computing the test
+ * only when the cell differs from the last one given
+ * @details A cell whose box is apart from the box meets it nowhere, which the
+ * box of the cell answers before its region is read
+ * @param[in] cell Cell, passed by value
+ * @param[in] cache Pointer to a #CellMeetsBoxCache
+ */
+static Datum
+datum_cell_meets_box_cached(Datum cell, Datum cache)
+{
+  CellMeetsBoxCache *c = (CellMeetsBoxCache *) DatumGetPointer(cache);
+  if (! c->set || c->cell != cell)
+  {
+    STBox cbox;
+    if (spatial_set_stbox(cell, c->basetype, &cbox) &&
+        tcellindex_box_apart(&cbox, (const STBox *) DatumGetPointer(c->box)))
+      c->result = BoolGetDatum(false);
+    else
+      c->result = c->cell_meets_box(cell, c->box, c->border_inc);
+    c->cell = cell;
+    c->set = true;
+  }
+  return c->result;
+}
+
+/**
  * @brief Return a temporal cell restricted to (the complement of) a
  * spatiotemporal box
  * @details A cell lies in a box at an instant when its region, with the
@@ -492,6 +561,11 @@ tcellindex_restrict_stbox(const Temporal *temp, const STBox *box,
     return NULL;
   if (! MEOS_FLAGS_GET_X(box->flags))
     return temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  /* No cell of the value meets a box apart from the box of the value */
+  STBox vbox;
+  tspatial_set_stbox(temp, &vbox);
+  if (tcellindex_box_apart(&vbox, box))
+    return atfunc ? NULL : temporal_copy(temp);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
   /* Restrict first to the period of the box, which the test of a cell does
    * not read */
@@ -501,12 +575,17 @@ tcellindex_restrict_stbox(const Temporal *temp, const STBox *box,
   SpanSet *inside = NULL;
   if (intime)
   {
+    CellMeetsBoxCache cache;
+    memset(&cache, 0, sizeof(CellMeetsBoxCache));
+    cache.cell_meets_box = ops->cell_meets_box;
+    cache.basetype = temptype_basetype(temp->temptype);
+    cache.box = PointerGetDatum(box);
+    cache.border_inc = BoolGetDatum(border_inc);
     LiftedFunctionInfo lfinfo;
     memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-    lfinfo.func = (varfunc) ops->cell_meets_box;
-    lfinfo.numparam = 2;
-    lfinfo.param[0] = PointerGetDatum(box);
-    lfinfo.param[1] = BoolGetDatum(border_inc);
+    lfinfo.func = (varfunc) &datum_cell_meets_box_cached;
+    lfinfo.numparam = 1;
+    lfinfo.param[0] = PointerGetDatum(&cache);
     lfinfo.argtype[0] = temp->temptype;
     lfinfo.restype = T_TBOOL;
     lfinfo.reslinear = false;
@@ -664,7 +743,11 @@ always_overlaps_stbox_tcellindex(const STBox *box, const Temporal *temp)
  * containing that border leaves the cell out, as #tile_dim_count leaves out
  * the tile starting at the upper bound of a box, and the cover ends with an
  * exclusive bound on the cell held before it. A last instant alone in its
- * sequence holds its cell without entering it, and stays.
+ * sequence holds its cell without entering it, and stays, but where the
+ * sequence before ends within the microsecond before it: the cells between
+ * the two were crossed between two microseconds and hold none, so the
+ * trajectory enters the cell at its last instant, which is left out, the
+ * cell before held up to that instant.
  * @param[in] cover Cover of a trajectory, freed when the result differs
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
@@ -679,8 +762,43 @@ tcellindex_cover_border(Temporal *cover, bool border_inc)
     (const TSequenceSet *) cover : NULL;
   const TSequence *seq = ss ? TSEQUENCESET_SEQ_N(ss, ss->count - 1) :
     (const TSequence *) cover;
-  if (seq->count < 2 || ! seq->period.upper_inc)
+  if (! seq->period.upper_inc)
     return cover;
+  if (seq->count < 2)
+  {
+    /* A last instant alone in its sequence, after a sequence ending within
+     * the microsecond before it: that sequence runs on to the instant,
+     * exclusive, and the instant is left out */
+    if (! ss || ss->count < 2)
+      return cover;
+    const TSequence *before = TSEQUENCESET_SEQ_N(ss, ss->count - 2);
+    TimestampTz t = TSEQUENCE_INST_N(seq, 0)->t;
+    TimestampTz u = DatumGetTimestampTz(before->period.upper);
+    if (before->period.upper_inc ? t - u > 1 : t > u)
+      return cover;
+    int count = before->count;
+    TInstant **insts = palloc(sizeof(TInstant *) * (count + 1));
+    for (int i = 0; i < count; i++)
+      insts[i] = (TInstant *) TSEQUENCE_INST_N(before, i);
+    TInstant *end = tinstant_make(
+      tinstant_value_p(TSEQUENCE_INST_N(before, count - 1)), seq->temptype, t);
+    insts[count] = end;
+    TSequence *run = tsequence_make(insts, count + 1,
+      before->period.lower_inc, false, MEOS_FLAGS_GET_INTERP(seq->flags),
+      NORMALIZE);
+    pfree(end); pfree(insts);
+    TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+    for (int i = 0; i < ss->count - 2; i++)
+      sequences[i] = (TSequence *) TSEQUENCESET_SEQ_N(ss, i);
+    sequences[ss->count - 2] = run;
+    Temporal *result = (ss->count == 2) ? (Temporal *) run :
+      (Temporal *) tsequenceset_make(sequences, ss->count - 1, NORMALIZE);
+    if (ss->count > 2)
+      pfree(run);
+    pfree(sequences);
+    pfree(cover);
+    return result;
+  }
   const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
   const TInstant *prev = TSEQUENCE_INST_N(seq, seq->count - 2);
   Datum held = tinstant_value_p(prev);
@@ -2781,6 +2899,15 @@ dggs_visits_to_temporal(DggsVisit *visits, int count, MeosType temptype)
     if ((v.lower == v.upper && ! (v.lower_inc && v.upper_inc)) ||
         (v.upper - v.lower == 1 && ! v.lower_inc && ! v.upper_inc))
       continue;
+    /* The visits of one cell that visits holding no microsecond separate
+     * are one period, as #build_runs of the oracle of the cell walks joins
+     * the stretches of one cell */
+    if (n > 0 && visits[n - 1].cell == v.cell)
+    {
+      visits[n - 1].upper = v.upper;
+      visits[n - 1].upper_inc = v.upper_inc;
+      continue;
+    }
     while (n > 0 && visits[n - 1].upper == v.lower &&
       visits[n - 1].upper_inc && v.lower_inc)
     {
@@ -3138,6 +3265,1497 @@ tcellindex_ever_in_set(const Temporal *temp, const Set *cells)
       return false;
     }
   }
+}
+
+/*****************************************************************************
+ * The planar walk on the straight-edged outlines — shared by every DGGS whose
+ * planar cell is its outline joined by straight edges in longitude and
+ * latitude
+ *****************************************************************************/
+
+/**
+ * @brief Return the offset that reads a longitude in the chart of another
+ * @details The offset, 0 or a multiple of 360, puts the longitude less than
+ * 180 degrees from the reference, so that an edge of an outline crossing the
+ * antimeridian is read along its path. An edge of a cell spans far less than
+ * 180 degrees of longitude, so the rounded difference decides the chart; the
+ * offset is never added to the longitude, whose shifted value would round
+ */
+double
+dggs_lon_offset(double ref, double lon)
+{
+  if (lon - ref > 180.0)
+    return -360.0;
+  if (ref - lon > 180.0)
+    return 360.0;
+  return 0.0;
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the line of the
+ * edge of an outline from the vertex k to the vertex k + 1, as the offset
+ * from the start of the segment, truncated
+ * @details The edge is read in the chart of the start of the segment, each
+ * vertex through an exact offset of 360 (#dggs_lon_offset), and the crossing
+ * is dated by #segment_edge_cross_offset, the truncation of its exact
+ * parameter. Whether the segment meets the edge itself, between its
+ * vertices, is a question of its own.
+ * @param[in] o Outline of the cell
+ * @param[in] k Index of the first vertex of the edge
+ * @param[in] x0,y0,x1,y1 Start and end points of the segment, in degrees
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] whole True when the segment lies on the line exactly at the
+ * microsecond returned
+ */
+int64
+dggs_outline_edge_offset(const DggsOutline *o, int k, double x0, double y0,
+  double x1, double y1, int64 D, bool *whole)
+{
+  int k1 = (k + 1) % o->count;
+  double ax = o->lon[k], bx = o->lon[k1];
+  double oa = dggs_lon_offset(x0, ax);
+  /* Both offsets are multiples of 360 of small magnitude, so their sum is
+   * exact */
+  double ob = oa + dggs_lon_offset(ax, bx);
+  return segment_edge_cross_offset(x0, y0, x1, y1, D, ax, o->lat[k], oa, bx,
+    o->lat[k1], ob, whole);
+}
+
+/**
+ * @brief Return in the last arguments the chart in which an outline is read
+ * against a longitude
+ * @details The offset of each vertex from the first along the ring, chained
+ * by #dggs_lon_offset, so that no edge of the ring spans the antimeridian, and
+ * the offset of the copy of the ring read against the longitude: the copy
+ * whose middle lies within 180 degrees of it, or around a pole the copy
+ * whose 360 degrees, from the first vertex in the sense of the ring, hold
+ * it. The estimate of the copy is rounded, its correction exact
+ * @param[in] o Outline of the cell
+ * @param[in] x Longitude, in degrees
+ * @param[out] xo Offset of each vertex from the first
+ * @param[out] s Offset of the copy
+ * @param[out] wrap Around a pole, the offset of the ring after one turn,
+ * 360 or -360, and 0 for any other cell
+ */
+static void
+dggs_outline_chart(const DggsOutline *o, double x, double *xo, double *s,
+  double *wrap)
+{
+  int n = o->count;
+  xo[0] = 0.0;
+  for (int k = 1; k < n; k++)
+    xo[k] = xo[k - 1] + dggs_lon_offset(o->lon[k - 1], o->lon[k]);
+  double x0 = o->lon[0];
+  *wrap = 0.0;
+  if (o->pole)
+  {
+    *wrap = xo[n - 1] + dggs_lon_offset(o->lon[n - 1], x0);
+    double c = 360.0 * floor((x - x0) / 360.0);
+    if (*wrap > 0.0)
+    {
+      while (offset_x_cmp(x0, c, x) > 0)
+        c -= 360.0;
+      while (offset_x_cmp(x0, c + 360.0, x) <= 0)
+        c += 360.0;
+    }
+    else
+    {
+      c += 360.0;
+      while (offset_x_cmp(x0, c, x) < 0)
+        c += 360.0;
+      while (offset_x_cmp(x0, c - 360.0, x) >= 0)
+        c -= 360.0;
+    }
+    *s = c;
+    return;
+  }
+  double lo = x0, hi = x0;
+  for (int k = 1; k < n; k++)
+  {
+    double v = o->lon[k] + xo[k];
+    lo = fmin(lo, v);
+    hi = fmax(hi, v);
+  }
+  double mid = (lo + hi) / 2.0;
+  double c = 360.0 * round((x - mid) / 360.0);
+  while (mid + c - x > 180.0)
+    c -= 360.0;
+  while (x - (mid + c) > 180.0)
+    c += 360.0;
+  *s = c;
+  return;
+}
+
+/**
+ * @brief Return true if a cell holds a position of the plane of longitude
+ * and latitude
+ * @details A cell is its outline joined by straight edges in longitude and
+ * latitude, the ring read along its path across the antimeridian through
+ * exact offsets of 360 chained from its first vertex, and the cell around a
+ * pole is the region between its ring and the pole. A position strictly
+ * inside or outside is read by #point_in_ring_offset_exact on the copy of
+ * the ring #dggs_outline_chart reads against it; a position on the ring
+ * belongs to the cell when it holds the vertex or the edge the position lies
+ * on, by the rule of its grid (`vertex_held`, `edge_held`). A position on a
+ * side of the region around a pole that is no edge of the cell, the meridian
+ * where the ring is closed or the pole, lies inside it. Every sign is exact
+ * on the doubles of the outline, which neighbours share, so exactly one cell
+ * holds each position.
+ * @param[in] ops Planar walk of the grid
+ * @param[in] o Outline of the cell
+ * @param[in] x,y Longitude and latitude of the position, in degrees
+ */
+bool
+dggs_outline_holds_point(const DggsPlanarOps *ops, const DggsOutline *o,
+  double x, double y)
+{
+  if (! isfinite(x) || ! isfinite(y))
+    return false;
+  int n = o->count;
+  double xo[DGGS_OUTLINE_MAX], s, wrap;
+  dggs_outline_chart(o, x, xo, &s, &wrap);
+  double x0 = o->lon[0];
+  /* The closed polygon: the ring, and around a pole the vertex closing it
+   * 360 degrees on, then the pole at both ends */
+  double rx[DGGS_OUTLINE_MAX + 3] = { 0 },
+    ry[DGGS_OUTLINE_MAX + 3] = { 0 }, ro[DGGS_OUTLINE_MAX + 3] = { 0 };
+  int m = 0;
+  for (int k = 0; k < n; k++, m++)
+  {
+    rx[m] = o->lon[k];
+    ry[m] = o->lat[k];
+    ro[m] = xo[k] + s;
+  }
+  if (o->pole)
+  {
+    double py = o->pole > 0 ? 90.0 : -90.0;
+    rx[m] = x0; ry[m] = o->lat[0]; ro[m++] = wrap + s;
+    rx[m] = x0; ry[m] = py; ro[m++] = wrap + s;
+    rx[m] = x0; ry[m] = py; ro[m++] = s;
+  }
+  int loc = point_in_ring_offset_exact(rx, ry, ro, m, x, y);
+  if (loc >= 0)
+    return loc == 1;
+  /* On the polygon: the vertex or the edge of the ring the position lies
+   * on decides */
+  for (int k = 0; k < n; k++)
+  {
+    int j = o->pole ? k + 1 : (k + 1) % n;
+    int sa = offset_x_cmp(rx[k], ro[k], x), sb = offset_x_cmp(rx[j], ro[j], x);
+    if (sa == 0 && ry[k] == y)
+      return ops->vertex_held(o, k);
+    if (sb == 0 && ry[j] == y)
+      return ops->vertex_held(o, (k + 1) % n);
+    if (sa * sb <= 0 && fmin(ry[k], ry[j]) <= y && y <= fmax(ry[k], ry[j]) &&
+        cross_product_sign_offset(rx[k], ry[k], rx[j], ry[j], rx[k], ry[k], x,
+          y, ro[j] - ro[k], - ro[k]) == 0)
+      return ops->edge_held(o, k);
+  }
+  /* The meridian closing the ring around a pole, or the pole */
+  return o->pole != 0;
+}
+
+/**
+ * @brief Outline of a cell read in the chart of a segment
+ * @details Vertex `i` of the chart, for any integer `i`, is the vertex `i mod
+ * n` of the outline, its longitude carrying the exact offset `xo[i mod n] +
+ * s`, and around a pole `wrap` more for each turn of the ring, so that the
+ * edge from each vertex to the next runs along the ring in the chart of the
+ * segment, the ring around a pole repeated every 360 degrees. No offset is
+ * added to a longitude, where it would round.
+ */
+typedef struct
+{
+  const DggsPlanarOps *ops;     /**< Planar walk of the grid */
+  uint64 cell;                  /**< Cell */
+  DggsOutline o;                /**< Its outline */
+  double xo[DGGS_OUTLINE_MAX];  /**< Offset of each vertex from the first
+                                     along the ring */
+  double s;                     /**< Offset of the copy */
+  double wrap;                  /**< Around a pole, the offset of the ring
+                                     after one turn */
+} DggsChart;
+
+/**
+ * @brief A crossing of the planar walk: the line of an edge of an outline
+ * in the chart of the segment, which the segment crosses where it leaves a
+ * cell
+ */
+typedef struct
+{
+  double ax, ay, oa;      /**< First vertex of the edge and its offset */
+  double bx, by, ob;      /**< Second vertex of the edge and its offset */
+  int index;              /**< Chart index of the edge crossed, or of the
+                               vertex passed */
+  bool vertex;            /**< True when the segment leaves at a vertex */
+  int cout;               /**< At a vertex, the side of the edge leaving it
+                               the segment heads to */
+  bool along_out;         /**< At a vertex, the segment runs along the edge
+                               leaving it */
+  bool back_in;           /**< At a vertex, the segment runs back along the
+                               edge reaching it */
+} DggsCrossing;
+
+/**
+ * @brief Return in the last arguments the vertex `i` of a chart and the
+ * offset of its longitude
+ */
+static void
+dggs_chart_vertex(const DggsChart *c, int i, double *x, double *y, double *off)
+{
+  int n = c->o.count;
+  int q = (i >= 0) ? i / n : - ((n - 1 - i) / n);
+  int k = i - q * n;
+  *x = c->o.lon[k];
+  *y = c->o.lat[k];
+  *off = c->xo[k] + c->s + (c->o.pole ? q * c->wrap : 0.0);
+  return;
+}
+
+/**
+ * @brief Return in the last argument the chart of a cell whose copy holds a
+ * longitude, as #dggs_outline_holds_point reads it, false when the grid
+ * reads no outline of the cell
+ */
+static bool
+dggs_chart_at_lon(const DggsPlanarOps *ops, uint64 cell, double x,
+  DggsChart *c)
+{
+  const DggsOutline *o = ops->outline(cell);
+  if (! o)
+    return false;
+  c->ops = ops;
+  c->cell = cell;
+  c->o = *o;
+  dggs_outline_chart(o, x, c->xo, &c->s, &c->wrap);
+  return true;
+}
+
+/**
+ * @brief Return in the next to last argument the chart of a cell that puts
+ * one of its vertices at a given offset, and in the last one the index of
+ * that vertex, false when the cell has no such vertex
+ * @details The walk steps from a cell to the next through a vertex both
+ * outlines state with the same doubles, so the next chart continues the
+ * first along the segment
+ */
+static bool
+dggs_chart_at_vertex(const DggsPlanarOps *ops, uint64 cell, double x,
+  double y, double off, DggsChart *c, int *vertex)
+{
+  if (! dggs_chart_at_lon(ops, cell, x, c))
+    return false;
+  for (int k = 0; k < c->o.count; k++)
+  {
+    /* A vertex on the antimeridian lies at 180 and at -180, and a grid may
+     * state it on the side of each cell, so the two outlines state it 360
+     * apart; the difference of two longitudes of at most 180 in magnitude
+     * is exact, and so is the offset it adds */
+    double d = x - c->o.lon[k];
+    if (c->o.lat[k] == y && (d == 0.0 || d == 360.0 || d == -360.0))
+    {
+      c->s = (off + d) - c->xo[k];
+      *vertex = k;
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @brief Return true if the outline of a chart turns left, or goes
+ * straight, at every vertex, by the exact sign of each turn
+ */
+static bool
+dggs_chart_convex(const DggsChart *c)
+{
+  if (c->o.pole)
+    return false;
+  for (int k = 0; k < c->o.count; k++)
+  {
+    double px, py, po, x, y, o, nx, ny, no;
+    dggs_chart_vertex(c, k - 1, &px, &py, &po);
+    dggs_chart_vertex(c, k, &x, &y, &o);
+    dggs_chart_vertex(c, k + 1, &nx, &ny, &no);
+    if (cross_product_sign_offset(px, py, x, y, x, y, nx, ny, o - po,
+        no - o) < 0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the sign of the dot product of the vector from A to B with
+ * the vector of a segment parallel to it, from the signs of their components
+ */
+static int
+dggs_parallel_dot_sign(double ax, double ay, double oa, double bx, double by,
+  double ob, int dxs, int dys)
+{
+  if (dxs != 0)
+    return offset_x_cmp(bx, ob - oa, ax) * dxs;
+  return ((by > ay) - (by < ay)) * dys;
+}
+
+/**
+ * @brief Return true if a segment passing through the vertex `j` of a chart
+ * lies in the cell just after it, and fill the fields of the crossing that
+ * name the cell it heads into otherwise
+ * @details Just after the vertex the segment lies in the cell where it lies
+ * left of both edges meeting there at a convex corner, or of either at a
+ * reflex one, since the cell lies left of its edges; running along an edge,
+ * it lies in the cell when the cell holds the edge (`edge_held`).
+ * Every sign is exact on the doubles of the outline and the offsets of the
+ * chart (#cross_product_sign_offset)
+ */
+static bool
+dggs_chart_vertex_inside(const DggsChart *c, int j, double x0, double y0,
+  double x1, double y1, DggsCrossing *cr)
+{
+  double px, py, po, vx, vy, vo, nx, ny, no;
+  dggs_chart_vertex(c, j - 1, &px, &py, &po);
+  dggs_chart_vertex(c, j, &vx, &vy, &vo);
+  dggs_chart_vertex(c, j + 1, &nx, &ny, &no);
+  int n = c->o.count;
+  int k = ((j % n) + n) % n;
+  int cin = cross_product_sign_offset(px, py, vx, vy, x0, y0, x1, y1,
+    vo - po, 0.0);
+  int cout = cross_product_sign_offset(vx, vy, nx, ny, x0, y0, x1, y1,
+    no - vo, 0.0);
+  int turn = cross_product_sign_offset(px, py, vx, vy, vx, vy, nx, ny,
+    vo - po, no - vo);
+  int dxs = (x1 > x0) - (x1 < x0), dys = (y1 > y0) - (y1 < y0);
+  cr->cout = cout;
+  cr->along_out = cout == 0 &&
+    dggs_parallel_dot_sign(vx, vy, vo, nx, ny, no, dxs, dys) > 0;
+  cr->back_in = cin == 0 &&
+    dggs_parallel_dot_sign(px, py, po, vx, vy, vo, dxs, dys) < 0;
+  if (cr->along_out)
+    return c->ops->edge_held(&c->o, k);
+  if (cr->back_in)
+    return c->ops->edge_held(&c->o, (k + n - 1) % n);
+  return (turn >= 0) ? (cin > 0 && cout > 0) : (cin > 0 || cout > 0);
+}
+
+/**
+ * @brief Return true and in the last argument where a planar segment leaves
+ * the cell of a chart, at or after a crossing, false when it ends in the
+ * cell
+ * @details The segment meets an edge of the outline where the two vertices of
+ * the edge lie on either side of its line or on it. Where it crosses the
+ * edge between its vertices, it leaves when it heads out, to the right of the
+ * edge; where it meets a vertex, it leaves when it does not lie in the cell
+ * just after (#dggs_chart_vertex_inside). A meeting at the start of the
+ * segment, or at the crossing the walk entered the cell by, counts, so a
+ * segment passing a vertex reaches the third cell meeting there at the same
+ * parameter. The first meeting where it leaves is the exit, the meetings
+ * ordered by #segment_edge_cross_cmp; a meeting at the end of the segment is
+ * none, the end belonging to the cell of its own position. Around a pole the
+ * ring is read in the copies the segment reaches.
+ * @param[in] c Chart of the cell
+ * @param[in] x0,y0,x1,y1 The segment
+ * @param[in] t Crossing the walk entered the cell by, or NULL at the start
+ * @param[out] exit The exit
+ */
+static bool
+dggs_chart_exit(const DggsChart *c, double x0, double y0, double x1, double y1,
+  const DggsCrossing *t, DggsCrossing *exit)
+{
+  int n = c->o.count, ilo = 0, ihi = n;
+  if (c->o.pole)
+  {
+    int nq = (int) ceil(fabs(x1 - x0) / 360.0) + 2;
+    ilo = - nq * n;
+    ihi = (nq + 1) * n;
+  }
+  bool found = false;
+  for (int i = ilo; i < ihi; i++)
+  {
+    DggsCrossing cr;
+    memset(&cr, 0, sizeof(DggsCrossing));
+    dggs_chart_vertex(c, i, &cr.ax, &cr.ay, &cr.oa);
+    dggs_chart_vertex(c, i + 1, &cr.bx, &cr.by, &cr.ob);
+    /* The sides of the line of the segment the vertices of the edge lie on */
+    int sa = cross_product_sign_offset(x0, y0, x1, y1, x0, y0, cr.ax, cr.ay,
+      0.0, cr.oa);
+    int sb = cross_product_sign_offset(x0, y0, x1, y1, x0, y0, cr.bx, cr.by,
+      0.0, cr.ob);
+    if ((sa == 0 && sb == 0) || sa * sb > 0)
+      continue;
+    /* The sign of f(P0) - f(P1), f the side of the edge, which is not 0
+     * since the vertices lie apart from the line of the segment; a crossing
+     * at or after the end of the segment is none */
+    int den = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, x1, y1,
+      x0, y0, cr.ob - cr.oa, 0.0);
+    int f1 = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, cr.ax,
+      cr.ay, x1, y1, cr.ob - cr.oa, - cr.oa);
+    if (f1 * den >= 0)
+      continue;
+    /* At or after the crossing the walk stands at */
+    int cmp;
+    if (! t)
+      cmp = cross_product_sign_offset(cr.ax, cr.ay, cr.bx, cr.by, cr.ax,
+        cr.ay, x0, y0, cr.ob - cr.oa, - cr.oa) * den;
+    else
+      cmp = segment_edge_cross_cmp(x0, y0, x1, y1, cr.ax, cr.ay, cr.oa,
+        cr.bx, cr.by, cr.ob, t->ax, t->ay, t->oa, t->bx, t->by, t->ob);
+    if (cmp < 0)
+      continue;
+    if (sa != 0 && sb != 0)
+    {
+      /* Across the edge between its vertices, heading out */
+      if (den <= 0)
+        continue;
+      cr.index = i;
+      cr.vertex = false;
+    }
+    else
+    {
+      cr.index = (sa == 0) ? i : i + 1;
+      cr.vertex = true;
+      if (dggs_chart_vertex_inside(c, cr.index, x0, y0, x1, y1, &cr))
+        continue;
+    }
+    if (! found || segment_edge_cross_cmp(x0, y0, x1, y1, cr.ax, cr.ay,
+        cr.oa, cr.bx, cr.by, cr.ob, exit->ax, exit->ay, exit->oa, exit->bx,
+        exit->by, exit->ob) < 0)
+      *exit = cr;
+    found = true;
+  }
+  return found;
+}
+
+/**
+ * @brief Return the parameter at which a segment crosses the line of a
+ * crossing, in doubles
+ */
+static double
+dggs_crossing_line_param(const DggsCrossing *cr, double x0, double y0,
+  double x1, double y1)
+{
+  double ux = (cr->bx - cr->ax) + (cr->ob - cr->oa), uy = cr->by - cr->ay;
+  double f0 = ux * (y0 - cr->ay) - uy * ((x0 - cr->ax) - cr->oa);
+  double f1 = ux * (y1 - cr->ay) - uy * ((x1 - cr->ax) - cr->oa);
+  double t = (f0 == f1) ? 0.0 : f0 / (f0 - f1);
+  return fmin(1.0, fmax(0.0, t));
+}
+
+/** @brief Number of cells a planar walk steps through at one parameter
+ * before it gives up, at most three cells meeting at a vertex */
+#define DGGS_WALK_SAME_PARAM 6
+
+/**
+ * @brief Put in a walk the owner of a vertex it passes through, when the
+ * owner is none of the cells the walk passes there, and return the number of
+ * cells of the walk
+ * @details The walk passes a vertex from the cell it leaves to the cells it
+ * heads into, at one parameter, while more cells may meet at the vertex: four
+ * S2 cells meet at a corner, and a trip through the corner from one cell to
+ * the opposite one touches the two others there alone. The cell holding the
+ * vertex (`point_cell`) holds the instant the trip lies there, so where it is
+ * none of the cells of the passage, the cell left included, it is put in the
+ * walk at the start of the passage, at the same crossing, as a crossing
+ * through a corner of a tile reaches the tile holding the corner first
+ * (#tpointseq_to_tquadbin): it holds the crossing position, and the cell
+ * after it does not.
+ * @param[in] ops Planar walk of the grid
+ * @param[in] resolution Resolution of the cells
+ * @param[in] vx,vy The vertex, in degrees
+ * @param[in] start Index of the first cell of the passage
+ * @param[in] n Number of cells of the walk
+ * @param[in,out] cells,enter,cross The walk
+ * @param[in] maxout Capacity of the arrays
+ */
+static int
+dggs_walk_vertex_owner(const DggsPlanarOps *ops, int32 resolution, double vx,
+  double vy, int start, int n, uint64 *cells, double *enter,
+  DggsEdgeCross *cross, int maxout)
+{
+  if (start < 1 || start >= n || n >= maxout)
+    return n;
+  uint64 owner = ops->point_cell(vx, vy, resolution);
+  if (owner == 0)
+    return n;
+  for (int i = start - 1; i < n; i++)
+    if (cells[i] == owner)
+      return n;
+  size_t m = (size_t) (n - start);
+  memmove(&cells[start + 1], &cells[start], m * sizeof(uint64));
+  memmove(&enter[start + 1], &enter[start], m * sizeof(double));
+  cells[start] = owner;
+  if (cross)
+  {
+    memmove(&cross[start + 1], &cross[start], m * sizeof(DggsEdgeCross));
+    cross[start].held_left = false;
+    cross[start].held_entered = true;
+    cross[start + 1].held_left = true;
+  }
+  return n + 1;
+}
+
+/**
+ * @brief Fill `cells` with every cell a planar segment crosses, and `enter`
+ * with the segment parameter at which it reaches each
+ * @details The walk of a planar segment on the straight-edged outlines of a
+ * grid: the segment starts in the cell of its first position
+ * (`point_cell`), leaves each cell where #dggs_chart_exit finds,
+ * and enters the cell across the edge it leaves by, or at a vertex the cell
+ * across the edge on whose side it heads, and from there the third cell
+ * meeting at the vertex at the same parameter where it lies in neither
+ * first. A segment ending in the convex cell it starts in never leaves it.
+ * Each entry states the edge crossed and which cell holds the crossing
+ * position: across an edge between its vertices, the one of the two holding
+ * the edge (`edge_held`), at a vertex, the cells holding the vertex
+ * (`vertex_held`), each by the rule of the grid.
+ * @param[in] ops Planar walk of the grid
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] resolution Resolution of the cells
+ * @param[out] cells,enter,cross Arrays of at least `maxout` entries, the last
+ * one possibly NULL
+ * @param[in] maxout Capacity of the arrays, at least 1
+ * @return Number of cells written, or 0 when the first lookup fails
+ */
+int
+dggs_segment_cells_planar(const DggsPlanarOps *ops, double lon1, double lat1,
+  double lon2, double lat2, int32 resolution, uint64 *cells, double *enter,
+  DggsEdgeCross *cross, int maxout)
+{
+  uint64 cur = ops->point_cell(lon1, lat1, resolution);
+  if (cur == (uint64) 0)
+    return 0;
+  cells[0] = cur; enter[0] = 0.0;
+  int n = 1;
+  if (lon1 == lon2 && lat1 == lat2)
+    return n;
+  DggsCrossing t, exit;
+  memset(&t, 0, sizeof(DggsCrossing));
+  bool started = false;
+  uint64 prev = (uint64) 0;
+  /* The cell the segment lies in just after its start, where the grid
+   * states one other than the cell holding the start: the segment enters it
+   * at its start, the line of the crossing the parallel through the start,
+   * and the cell holding the start holds the start */
+  uint64 s = ops->start_cell ?
+    ops->start_cell(lon1, lat1, lon2, lat2, resolution) : 0;
+  if (s != 0 && s != cur && n < maxout)
+  {
+    t.ax = t.bx = lon1;
+    t.ay = t.by = lat1;
+    t.oa = 0.0;
+    t.ob = 360.0;
+    cells[n] = s;
+    enter[n] = 0.0;
+    if (cross)
+    {
+      DggsEdgeCross *x = &cross[n];
+      x->ax = t.ax; x->ay = t.ay; x->oa = t.oa;
+      x->bx = t.bx; x->by = t.by; x->ob = t.ob;
+      x->held_left = true;
+      x->held_entered = false;
+    }
+    n++;
+    prev = cur;
+    cur = s;
+    started = true;
+  }
+  DggsChart chart;
+  if (! dggs_chart_at_lon(ops, cur, lon1, &chart))
+    return n;
+  /* A convex cell holding both ends holds the segment, where both ends lie
+   * in one copy of its ring: a cell apart from a pole spans less than 180
+   * degrees of longitude and its copies lie 360 apart, so two positions of
+   * different copies lie more than 180 degrees apart */
+  if (! started && fabs(lon2 - lon1) < 180.0 && dggs_chart_convex(&chart) &&
+      ops->point_cell(lon2, lat2, resolution) == cur)
+  {
+    /* The segment reaches its end from the cell the reversed segment lies
+     * in just after its start, where the grid states one */
+    uint64 e = ops->start_cell ?
+      ops->start_cell(lon2, lat2, lon1, lat1, resolution) : 0;
+    if (e == 0 || e == cur)
+      return n;
+  }
+
+  int same = 0;
+  /* The passage at one parameter the walk is in: its first cell, and the
+   * vertex it passes through, if any */
+  int pass_start = 0, vertex_start = -1;
+  double pvx = 0.0, pvy = 0.0;
+  while (n < maxout &&
+      dggs_chart_exit(&chart, lon1, lat1, lon2, lat2, started ? &t : NULL,
+        &exit))
+  {
+    int nv = chart.o.count;
+    int k = ((exit.index % nv) + nv) % nv;
+    double vx, vy, vo;
+    dggs_chart_vertex(&chart, exit.index, &vx, &vy, &vo);
+    bool at_t = started && segment_edge_cross_cmp(lon1, lat1, lon2, lat2,
+      exit.ax, exit.ay, exit.oa, exit.bx, exit.by, exit.ob, t.ax, t.ay, t.oa,
+      t.bx, t.by, t.ob) == 0;
+    same = at_t ? same + 1 : 0;
+    if (same > DGGS_WALK_SAME_PARAM)
+      break;
+    if (! at_t)
+    {
+      /* The passage before ends here */
+      if (vertex_start >= 0)
+        n = dggs_walk_vertex_owner(ops, resolution, pvx, pvy, vertex_start,
+          n, cells, enter, cross, maxout);
+      vertex_start = -1;
+      pass_start = n;
+      if (n >= maxout)
+        break;
+    }
+    if (exit.vertex && vertex_start < 0)
+    {
+      vertex_start = pass_start;
+      pvx = vx;
+      pvy = vy;
+    }
+    uint64 next;
+    if (! exit.vertex)
+      next = chart.o.across[k];
+    else
+    {
+      /* The cell across the edge leaving the vertex or the edge reaching
+       * it, never the one the walk left at this parameter */
+      int kp = (k + nv - 1) % nv;
+      uint64 first = chart.o.across[k], second = chart.o.across[kp];
+      if (exit.back_in || (! exit.along_out && exit.cout >= 0))
+      {
+        first = chart.o.across[kp];
+        second = chart.o.across[k];
+      }
+      next = (at_t && first == prev) ? second : first;
+    }
+    DggsChart nc;
+    int vk;
+    if (next == (uint64) 0 ||
+        ! dggs_chart_at_vertex(ops, next, vx, vy, vo, &nc, &vk))
+      break;
+    cells[n] = next;
+    enter[n] = dggs_crossing_line_param(&exit, lon1, lat1, lon2, lat2);
+    if (cross)
+    {
+      DggsEdgeCross *x = &cross[n];
+      x->ax = exit.ax; x->ay = exit.ay; x->oa = exit.oa;
+      x->bx = exit.bx; x->by = exit.by; x->ob = exit.ob;
+      if (exit.vertex)
+      {
+        x->held_left = ops->vertex_held(&chart.o, k);
+        x->held_entered = ops->vertex_held(&nc.o, vk);
+      }
+      else
+      {
+        x->held_left = ops->edge_held(&chart.o, k);
+        x->held_entered = ! x->held_left;
+      }
+    }
+    n++;
+    prev = cur;
+    cur = next;
+    chart = nc;
+    t = exit;
+    started = true;
+  }
+  if (vertex_start >= 0)
+    n = dggs_walk_vertex_owner(ops, resolution, pvx, pvy, vertex_start, n,
+      cells, enter, cross, maxout);
+  return n;
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * The geodetic walk of the cells of any grid on their great-circle outlines
+ *****************************************************************************/
+
+/**
+ * @brief Return in @p v the geodetic position of the vertex k of an outline,
+ * the vector the grid states for it (#DggsGeodeticOps)
+ */
+static void
+dggs_geo_vertex(const DggsGeodeticOps *ops, const DggsOutline *o, int k,
+  POINT3D *v)
+{
+  double d[3];
+  ops->vector(o, k, d);
+  v->x = d[0];
+  v->y = d[1];
+  v->z = d[2];
+}
+
+/** @brief Number of entries of #dggs_vec_cache, a power of 2 */
+#define DGGS_VEC_CACHE 512
+
+/** @brief The geodetic positions read last, per thread, by the bits of
+ * their degrees */
+static MEOS_TLS struct
+{
+  uint64 lon, lat;
+  double v[3];
+  bool used;
+} dggs_vec_cache[DGGS_VEC_CACHE];
+
+/**
+ * @brief Return in @p v the geodetic position of degrees, the vector of
+ * decision D6 of the cell walks (#lonlat_vector_nearest)
+ * @details The vector is a function of the doubles of the degrees alone and
+ * costs some hundred thousand instructions, while a walk reads the vertices
+ * a cell shares with its neighbours again and again, so the positions read
+ * last are kept by the bits of their degrees and answer again
+ */
+void
+dggs_lonlat_vector(double lon, double lat, double *v)
+{
+  uint64 a, b;
+  memcpy(&a, &lon, sizeof(uint64));
+  memcpy(&b, &lat, sizeof(uint64));
+  uint64 h = (a ^ (b * UINT64CONST(0x9E3779B97F4A7C15))) *
+    UINT64CONST(0xBF58476D1CE4E5B9);
+  int i = (int) (h >> 55) & (DGGS_VEC_CACHE - 1);
+  if (! dggs_vec_cache[i].used || dggs_vec_cache[i].lon != a ||
+      dggs_vec_cache[i].lat != b)
+  {
+    lonlat_vector_nearest(lon, lat, dggs_vec_cache[i].v);
+    dggs_vec_cache[i].lon = a;
+    dggs_vec_cache[i].lat = b;
+    dggs_vec_cache[i].used = true;
+  }
+  memcpy(v, dggs_vec_cache[i].v, 3 * sizeof(double));
+}
+
+/**
+ * @brief Return true if a geodetic cell holds a direction
+ * @details The geodetic twin of #dggs_outline_holds_point: the cell is the
+ * region of the sphere its outline bounds, each edge the great-circle arc
+ * between the geodetic positions of its vertices (the vector the grid states for each),
+ * holding its interior and its north and west sides. A direction on an edge
+ * or at a vertex belongs to the cell holding it
+ * (the edge_held and vertex_held of the grid); one
+ * strictly inside or outside is read by the crossing number in the gnomonic
+ * chart about the sum c of the vertices, where every great circle is a
+ * line: the chart coordinate of v along a direction e is (v . e) / (v . c),
+ * so each comparison is the sign of #sphere_dir_dot_diff_sign, and the side
+ * of the line of an edge from a to b is the sign of the triple product
+ * (a x b) . p. Every sign is exact, so neighbours reading the same vertices
+ * hold each direction once.
+ * @param[in] ops Answers of the grid
+ * @param[in] o Outline of the cell
+ * @param[in] p Direction, exact
+ */
+bool
+dggs_outline_holds_dir(const DggsGeodeticOps *ops, const DggsOutline *o,
+  const SphereDir *p)
+{
+  int n = o->count;
+  SphereDir *v[DGGS_OUTLINE_MAX + 1] = { NULL };
+  for (int k = 0; k < n; k++)
+  {
+    double d[3];
+    ops->vector(o, k, d);
+    v[k] = sphere_dir_make(d);
+  }
+  v[n] = v[0];
+  SphereDir *c = sphere_dir_add(v[0], v[1]);
+  for (int k = 2; k < n; k++)
+  {
+    SphereDir *s = sphere_dir_add(c, v[k]);
+    sphere_dir_free(c);
+    c = s;
+  }
+  bool result = false, decided = false;
+  /* A direction behind the chart lies outside: the cell lies in the open
+   * hemisphere about c */
+  if (sphere_dir_dot_sign(c, p) <= 0)
+    decided = true;
+  /* On an edge, or at one of its ends */
+  for (int k = 0; k < n && ! decided; k++)
+  {
+    SphereDir *ne = sphere_dir_cross(v[k], v[k + 1]);
+    if (sphere_dir_dot_sign(ne, p) == 0 &&
+        sphere_dir_triple_sign(v[k], p, ne) >= 0 &&
+        sphere_dir_triple_sign(p, v[k + 1], ne) >= 0)
+    {
+      decided = true;
+      if (sphere_dir_parallel(v[k], p))
+        result = ops->vertex_held(o, k);
+      else if (sphere_dir_parallel(v[k + 1], p))
+        result = ops->vertex_held(o, (k + 1) % n);
+      else
+        result = ops->edge_held(o, k);
+    }
+    sphere_dir_free(ne);
+  }
+  if (! decided)
+  {
+    /* The axes of the chart: e1 = c x z, or c x x where c lies on the
+     * z axis, and e2 = c x e1; the turn of the frame e1, e2, c fixes the
+     * side of an edge a point to the right of it lies on */
+    const double zd[3] = { 0.0, 0.0, 1.0 }, xd[3] = { 1.0, 0.0, 0.0 };
+    SphereDir *z = sphere_dir_make(zd);
+    SphereDir *e1 = sphere_dir_cross(c, z);
+    if (sphere_dir_parallel(c, z))
+    {
+      SphereDir *x = sphere_dir_make(xd);
+      sphere_dir_free(e1);
+      e1 = sphere_dir_cross(c, x);
+      sphere_dir_free(x);
+    }
+    SphereDir *e2 = sphere_dir_cross(c, e1);
+    int frame = sphere_dir_triple_sign(e1, e2, c);
+    bool inside = false;
+    for (int k = 0; k < n; k++)
+    {
+      /* a above p, and b above p, in the coordinate along e2 */
+      bool ua = sphere_dir_dot_diff_sign(v[k], e2, p, c) > 0;
+      bool ub = sphere_dir_dot_diff_sign(v[k + 1], e2, p, c) > 0;
+      if (ua == ub)
+        continue;
+      /* The edge meets the horizontal of p right of p when the turn of
+       * a, b, p in the chart has the sign of b above a */
+      int up = sphere_dir_dot_diff_sign(v[k + 1], e2, v[k], c);
+      int turn = frame * sphere_dir_triple_sign(v[k], v[k + 1], p);
+      if (turn == up)
+        inside = ! inside;
+    }
+    result = inside;
+    sphere_dir_free(z); sphere_dir_free(e1); sphere_dir_free(e2);
+  }
+  sphere_dir_free(c);
+  for (int k = 0; k < n; k++)
+    sphere_dir_free(v[k]);
+  return result;
+}
+
+/**
+ * @brief Return true if a cell holds a direction, by #dggs_outline_holds_dir
+ * on the outline the grid states for it
+ */
+static bool
+dggs_cell_holds_dir(const DggsGeodeticOps *ops, uint64 cell,
+  const SphereDir *p)
+{
+  const DggsOutline *o = ops->outline(cell);
+  return o && dggs_outline_holds_dir(ops, o, p);
+}
+
+/**
+ * @brief Return true if the position of a geodetic segment at the offset
+ * @p m of @p D has not passed the crossing, m / D <= f, exactly, the
+ * comparison itself in @p cmp
+ * @details The geodetic twin of #segment_edge_side_at, which the planar
+ * search reads the same way. An undecided comparison, beyond the precision
+ * #geodetic_arc_fraction_cmp reaches, reads as not passed.
+ */
+static bool
+dggs_geodetic_before(const double *p0, const double *p1, const double *a,
+  const double *b, int64 m, int64 D, int *cmp)
+{
+  *cmp = geodetic_arc_fraction_cmp(p0, p1, a, b, m, D);
+  return *cmp >= 0;
+}
+
+/**
+ * @brief Return the microsecond at which a geodetic segment crosses the
+ * great circle of an edge, as the offset from the start of the segment,
+ * truncated
+ * @details The geodetic twin of #dggs_outline_edge_offset, searched as
+ * #segment_edge_cross_offset searches: the position moves at constant
+ * angular speed along the great circle of the segment, so it meets the
+ * circle of the edge at the fraction f of the segment the angles give, and
+ * the crossing is dated by the truncation of f D, the last offset m with
+ * m / D <= f, each comparison exact (#dggs_geodetic_before). The fraction in
+ * doubles @p f is the start of the search only, which gallops from it and
+ * halves.
+ * @param[in] p0,p1 Geodetic positions of the start and end of the segment
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] a,b Geodetic positions of the vertices of an edge through the
+ * crossing, off the great circle of the segment
+ * @param[in] f Fraction of the segment at the crossing, in doubles
+ * @param[out] whole True when the segment meets the circle exactly at the
+ * microsecond returned
+ */
+int64
+dggs_geodetic_edge_offset(const double *p0, const double *p1, int64 D,
+  const double *a, const double *b, double f, bool *whole)
+{
+  assert(D >= 0); assert(whole);
+  if (D == 0)
+  {
+    *whole = (geodetic_arc_fraction_cmp(p0, p1, a, b, 0, 1) == 0);
+    return 0;
+  }
+  /* The estimate in doubles, the start of the search only */
+  double est = floor((double) D * f);
+  int64 n = 0;
+  if (isfinite(est) && est > 0.0)
+    n = (est >= (double) D) ? D : llrint(est);
+  /* lo is the last offset known not to have passed the crossing, and locmp
+   * the comparison read there, 3 where none is; hi the first offset known
+   * past it, D + 1 standing for none */
+  int64 lo, hi;
+  int cmp, locmp = 3;
+  if (dggs_geodetic_before(p0, p1, a, b, n, D, &cmp))
+  {
+    lo = n;
+    locmp = cmp;
+    int64 step = 1;
+    for (;;)
+    {
+      if (lo == D)
+      {
+        hi = D + 1;
+        break;
+      }
+      int64 c = (step > D - lo) ? D : lo + step;
+      if (dggs_geodetic_before(p0, p1, a, b, c, D, &cmp))
+      {
+        lo = c;
+        locmp = cmp;
+        step *= 2;
+      }
+      else
+      {
+        hi = c;
+        break;
+      }
+    }
+  }
+  else
+  {
+    hi = n;
+    int64 step = 1;
+    for (;;)
+    {
+      int64 c = (step >= hi) ? 0 : hi - step;
+      if (c == 0)
+      {
+        lo = 0;
+        break;
+      }
+      if (dggs_geodetic_before(p0, p1, a, b, c, D, &cmp))
+      {
+        lo = c;
+        locmp = cmp;
+        break;
+      }
+      hi = c;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    int64 mid = lo + (hi - lo) / 2;
+    if (dggs_geodetic_before(p0, p1, a, b, mid, D, &cmp))
+    {
+      lo = mid;
+      locmp = cmp;
+    }
+    else
+      hi = mid;
+  }
+  if (locmp == 3)
+    locmp = geodetic_arc_fraction_cmp(p0, p1, a, b, lo, D);
+  *whole = (locmp == 0);
+  return lo;
+}
+
+/** @brief A point where a geodetic segment meets an edge of a cell */
+typedef struct
+{
+  SphereDir *x;            /**< Direction of the point, exact */
+  double f;                /**< Its fraction of the segment, in doubles */
+  double ax, ay, bx, by;   /**< An edge through it, off the great circle of
+                                the segment, in degrees */
+  double av[3], bv[3];     /**< The geodetic positions of its vertices */
+} DggsArcCross;
+
+static void
+dggs_dvec_cross(const double *a, const double *b, double *r)
+{
+  r[0] = a[1] * b[2] - a[2] * b[1];
+  r[1] = a[2] * b[0] - a[0] * b[2];
+  r[2] = a[0] * b[1] - a[1] * b[0];
+}
+
+/**
+ * @brief Return the fraction of the arc from @p p0 to @p p1 at the direction
+ * @p x, the ratio of the angles, in doubles
+ * @details The order of the crossings and the cells they part are read
+ * exactly; the fraction only places a crossing in time, where its
+ * microsecond is read exactly (#geodetic_arc_fraction_cmp)
+ */
+static double
+dggs_arc_fraction_approx(const double *p0, const double *p1, const double *x)
+{
+  double c[3], m[3];
+  dggs_dvec_cross(p0, x, c);
+  dggs_dvec_cross(p0, p1, m);
+  double ax = atan2(sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]),
+    p0[0] * x[0] + p0[1] * x[1] + p0[2] * x[2]);
+  double am = atan2(sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]),
+    p0[0] * p1[0] + p0[1] * p1[1] + p0[2] * p1[2]);
+  double f = am > 0.0 ? ax / am : 0.0;
+  return f < 0.0 ? 0.0 : (f > 1.0 ? 1.0 : f);
+}
+
+/**
+ * @brief Append the points strictly between @p s and the end of a geodetic
+ * segment where it meets an edge of an outline
+ * @details The segment runs along the great circle of normal m = p0 x p1
+ * from p0 to p1; a direction x lies ahead of s on it when (s x x) . m > 0
+ * and before p1 when (x x p1) . m > 0. It meets the great circle of the edge
+ * from a to b, of normal n, in the direction m x n or its opposite, which
+ * lies on the edge when (a x x) . n >= 0 and (x x b) . n >= 0. Where the
+ * segment runs along the circle of the edge, the points are the vertices of
+ * the edge lying on it. Each point records an edge through it that does not
+ * lie on the circle of the segment, which dates it.
+ */
+static void
+dggs_arc_outline_crossings(const DggsGeodeticOps *ops,
+  const DggsOutline *o, const double *p0,
+  const double *p1, const SphereDir *P1, const SphereDir *M,
+  const SphereDir *s, DggsArcCross **out, int *count, int *size)
+{
+  int n = o->count;
+  double v[DGGS_OUTLINE_MAX][3];
+  SphereDir *V[DGGS_OUTLINE_MAX] = { NULL };
+  for (int k = 0; k < n; k++)
+  {
+    ops->vector(o, k, v[k]);
+    V[k] = sphere_dir_make(v[k]);
+  }
+  double m[3];
+  dggs_dvec_cross(p0, p1, m);
+  for (int k = 0; k < n; k++)
+  {
+    int k1 = (k + 1) % n;
+    SphereDir *ne = sphere_dir_cross(V[k], V[k1]);
+    SphereDir *d = sphere_dir_cross(M, ne);
+    SphereDir *cand[2] = { NULL, NULL };
+    int ends[2] = { -1, -1 };
+    if (sphere_dir_parallel(M, ne))
+    {
+      /* Along the circle of the edge: its vertices, each dated by the edge
+       * of the outline meeting it off this circle */
+      ends[0] = k; ends[1] = k1;
+    }
+    else
+    {
+      cand[0] = d;
+      cand[1] = sphere_dir_neg(d);
+    }
+    for (int j = 0; j < 2; j++)
+    {
+      const SphereDir *x = ends[j] >= 0 ? V[ends[j]] : cand[j];
+      bool keep = sphere_dir_triple_sign(s, x, M) > 0 &&
+        sphere_dir_triple_sign(x, P1, M) > 0;
+      if (keep && ends[j] < 0)
+        keep = sphere_dir_triple_sign(V[k], x, ne) >= 0 &&
+          sphere_dir_triple_sign(x, V[k1], ne) >= 0;
+      if (! keep)
+        continue;
+      if (*count == *size)
+      {
+        *size *= 2;
+        *out = repalloc(*out, sizeof(DggsArcCross) * (size_t) *size);
+      }
+      DggsArcCross *c = &(*out)[(*count)++];
+      double xd[3];
+      int ea = k, eb = k1;
+      if (ends[j] >= 0)
+      {
+        int w = ends[j];
+        xd[0] = v[w][0]; xd[1] = v[w][1]; xd[2] = v[w][2];
+        c->x = sphere_dir_add(V[w], V[w]);
+        /* The other edge of the outline at this vertex */
+        if (w == k)
+        {
+          ea = (k + n - 1) % n; eb = k;
+        }
+        else
+        {
+          ea = k1; eb = (k1 + 1) % n;
+        }
+      }
+      else
+      {
+        double nd[3];
+        dggs_dvec_cross(v[k], v[k1], nd);
+        dggs_dvec_cross(m, nd, xd);
+        if (j == 1)
+        {
+          xd[0] = -xd[0]; xd[1] = -xd[1]; xd[2] = -xd[2];
+        }
+        c->x = sphere_dir_add(x, x);
+      }
+      c->f = dggs_arc_fraction_approx(p0, p1, xd);
+      c->ax = o->lon[ea]; c->ay = o->lat[ea];
+      c->bx = o->lon[eb]; c->by = o->lat[eb];
+      memcpy(c->av, v[ea], 3 * sizeof(double));
+      memcpy(c->bv, v[eb], 3 * sizeof(double));
+    }
+    sphere_dir_free(ne); sphere_dir_free(d);
+    sphere_dir_free(cand[1]);
+  }
+  for (int k = 0; k < n; k++)
+    sphere_dir_free(V[k]);
+}
+
+/**
+ * @brief Return true if a cell is convex on the sphere, every corner of its
+ * outline turning left
+ */
+bool
+dggs_outline_convex_geodetic(const DggsGeodeticOps *ops,
+  const DggsOutline *o)
+{
+  int n = o->count;
+  for (int k = 0; k < n; k++)
+  {
+    POINT3D p, v, q;
+    dggs_geo_vertex(ops, o, (k + n - 1) % n, &p);
+    dggs_geo_vertex(ops, o, k, &v);
+    dggs_geo_vertex(ops, o, (k + 1) % n, &q);
+    if (triple_product_sign_exact(&p, &v, &q) <= 0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the cell among @p cand holding a direction, or the one
+ * found around @p cur when none of them does
+ */
+static uint64
+dggs_dir_cell(const DggsGeodeticOps *ops, const uint64 *cand, int ncand,
+  uint64 cur, const SphereDir *p)
+{
+  for (int i = 0; i < ncand; i++)
+    if (cand[i] != 0 && dggs_cell_holds_dir(ops, cand[i], p))
+      return cand[i];
+  return ops->dir_around(cur, p);
+}
+
+/**
+ * @brief Find an edge of the cells @p cand holding the start @p p0 of a
+ * geodetic segment off the great circle of the segment, its vertices in
+ * degrees in @p ex (lon, lat of each), and return true if one is found
+ * @details The edge that dates a crossing at the start of the segment
+ * (#dggs_geodetic_edge_offset): @p p0 lies on its circle, the triple product
+ * of its vertices and @p p0 being 0, between its vertices, and the edge
+ * does not lie on the circle of the segment, the triple products of the
+ * ends of the segment and its vertices not both being 0. The twin of the
+ * edge test of #dggs_arc_outline_crossings.
+ */
+static bool
+dggs_start_edge(const DggsGeodeticOps *ops, const uint64 *cand,
+  int ncand, const double *p0, const double *p1, double *ex, double *exv)
+{
+  POINT3D q0 = { p0[0], p0[1], p0[2] }, q1 = { p1[0], p1[1], p1[2] };
+  for (int i = 0; i < ncand; i++)
+  {
+    DggsOutline co;
+    if (cand[i] == 0 || ! ops->outline_copy(cand[i], &co))
+      continue;
+    int n = co.count;
+    for (int k = 0; k < n; k++)
+    {
+      int k1 = (k + 1) % n;
+      POINT3D a, b;
+      dggs_geo_vertex(ops, &co, k, &a);
+      dggs_geo_vertex(ops, &co, k1, &b);
+      if (triple_product_sign_exact(&a, &b, &q0) != 0 ||
+          (triple_product_sign_exact(&q0, &q1, &a) == 0 &&
+           triple_product_sign_exact(&q0, &q1, &b) == 0))
+        continue;
+      /* Between the vertices: a x p0 and p0 x b point along a x b */
+      const double ad[3] = { a.x, a.y, a.z }, bd[3] = { b.x, b.y, b.z };
+      SphereDir *A = sphere_dir_make(ad), *B = sphere_dir_make(bd);
+      SphereDir *Q = sphere_dir_make(p0), *N = sphere_dir_cross(A, B);
+      bool on = sphere_dir_triple_sign(A, Q, N) >= 0 &&
+        sphere_dir_triple_sign(Q, B, N) >= 0;
+      sphere_dir_free(A); sphere_dir_free(B);
+      sphere_dir_free(Q); sphere_dir_free(N);
+      if (! on)
+        continue;
+      ex[0] = co.lon[k]; ex[1] = co.lat[k];
+      ex[2] = co.lon[k1]; ex[3] = co.lat[k1];
+      exv[0] = a.x; exv[1] = a.y; exv[2] = a.z;
+      exv[3] = b.x; exv[4] = b.y; exv[5] = b.z;
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @brief Return the edge through whose interior a geodetic segment leaves a
+ * convex cell, -1 when it leaves through none, or -2 when the step is not
+ * of that kind
+ * @details With m = p0 x p1 and n = a x b the normal of the circle of the
+ * edge from a to b, the segment meets that circle in the direction m x n
+ * strictly between its ends exactly when p0 lies strictly left of the edge
+ * and p1 strictly right of it, and leaves the cell there; that direction
+ * lies strictly inside the edge exactly when a lies strictly right of the
+ * segment and b strictly left of it. Each side is the exact sign of a
+ * triple product of the geodetic positions (#triple_product_sign_exact), and
+ * a convex cell is left through one edge at most. Any other step, an end on
+ * the circle of an edge, a vertex on the circle of the segment, or a cell
+ * that is not convex, is for #dggs_segment_cells_geodetic to read.
+ */
+static int
+dggs_convex_exit(const DggsGeodeticOps *ops, const DggsOutline *o,
+  const double *p0, const double *p1)
+{
+  if (! dggs_outline_convex_geodetic(ops, o))
+    return -2;
+  POINT3D q0 = { p0[0], p0[1], p0[2] }, q1 = { p1[0], p1[1], p1[2] }, a, b;
+  int n = o->count, found = -1;
+  dggs_geo_vertex(ops, o, 0, &a);
+  for (int k = 0; k < n; k++, a = b)
+  {
+    dggs_geo_vertex(ops, o, (k + 1) % n, &b);
+    int e0 = triple_product_sign_exact(&a, &b, &q0);
+    int e1 = triple_product_sign_exact(&a, &b, &q1);
+    if (e0 == 0 || e1 == 0)
+      return -2;
+    if (e0 < 0 || e1 > 0)
+      continue;
+    int sa = triple_product_sign_exact(&q0, &q1, &a);
+    int sb = triple_product_sign_exact(&q0, &q1, &b);
+    if (sa == 0 || sb == 0)
+      return -2;
+    if (sa < 0 && sb > 0)
+    {
+      if (found >= 0)
+        return -2;
+      found = k;
+    }
+  }
+  return found;
+}
+
+/**
+ * @brief Fill `cells` with every cell a geodetic segment crosses, and
+ * `enter` with the fraction of the segment at which it reaches each
+ * @details The geodetic twin of #dggs_segment_cells_planar, on the cells
+ * bounded by great-circle arcs (#dggs_outline_holds_dir). The segment starts
+ * in the cell of its first position (the point_cell of the grid). In a cell, the next
+ * stretch of the segment begins at the first point x1 ahead where it meets
+ * an edge of the cell or of a neighbour, and ends at the next one x2, or at
+ * the end of the segment: no other cell has an edge crossing the segment
+ * inside the cell. The stretch lies in the cell holding the direction
+ * x1 + x2, which lies between them on the segment, and the point x1 in the
+ * cell holding it, which at a vertex can be a third cell, passed for no
+ * length. Every point and every order is decided by exact signs on the
+ * geodetic positions of the vertices and of the ends of the segment, as the
+ * oracle of the cell walks decides them. Each entry states an edge through
+ * its point and which cell holds the point: the cell left, the cell entered,
+ * or neither.
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] ops Answers of the grid
+ * @param[in] resolution Resolution or level of the grid
+ * @param[out] cells,enter,cross Arrays of at least `maxout` entries, the last
+ * one possibly NULL
+ * @param[in] maxout Capacity of the arrays, at least 1
+ * @return Number of cells written, `maxout` when they may not all fit, or 0
+ * when the first lookup fails
+ */
+int
+dggs_segment_cells_geodetic(const DggsGeodeticOps *ops, double lon1,
+  double lat1, double lon2, double lat2, int32 resolution, uint64 *cells,
+  double *enter, DggsEdgeCross *cross, int maxout)
+{
+  uint64 cur = ops->point_cell(lon1, lat1, resolution);
+  if (cur == 0)
+    return 0;
+  cells[0] = cur; enter[0] = 0.0;
+  int n = 1;
+  double p0[3], p1[3];
+  dggs_lonlat_vector(lon1, lat1, p0);
+  dggs_lonlat_vector(lon2, lat2, p1);
+  SphereDir *P0 = sphere_dir_make(p0), *P1 = sphere_dir_make(p1);
+  SphereDir *M = sphere_dir_cross(P0, P1);
+  bool degenerate = sphere_dir_parallel(P0, P1);
+  /* Equal or opposite ends span no great circle; a convex cell holding both
+   * ends holds the arc between them */
+  const DggsOutline *o = ops->outline(cur);
+  if (degenerate || ! o || (dggs_outline_convex_geodetic(ops, o) &&
+      ops->point_cell(lon2, lat2, resolution) == cur))
+  {
+    sphere_dir_free(P0); sphere_dir_free(P1); sphere_dir_free(M);
+    return n;
+  }
+  int size = 32, count = 0;
+  DggsArcCross *xs = palloc(sizeof(DggsArcCross) * (size_t) size);
+  SphereDir *s = sphere_dir_add(P0, P0);
+  uint64 cand[DGGS_GEO_NEIGHBOURS];
+  int ncand = 0;
+  /* The edge of the last crossing of the common step, whose direction s
+   * stands for once a step of another kind reads it */
+  bool pending = false, at_start = true;
+  double sa[3] = { 0 }, sb[3] = { 0 };
+  double m[3];
+  dggs_dvec_cross(p0, p1, m);
+  while (true)
+  {
+    /* The common step: a convex cell left through the interior of an edge
+     * (#dggs_convex_exit), the next cell the one across it, the crossing held
+     * by the one of the two holding the edge */
+    o = ops->outline(cur);
+    int fk = o ? dggs_convex_exit(ops, o, p0, p1) : -2;
+    if (fk == -1)
+      break;
+    if (fk >= 0)
+    {
+      int k1 = (fk + 1) % o->count;
+      uint64 next = o->across[fk];
+      if (next == 0)
+        break;
+      if (n == maxout)
+        break;
+      POINT3D a, b;
+      dggs_geo_vertex(ops, o, fk, &a);
+      dggs_geo_vertex(ops, o, k1, &b);
+      sa[0] = a.x; sa[1] = a.y; sa[2] = a.z;
+      sb[0] = b.x; sb[1] = b.y; sb[2] = b.z;
+      double nd[3], xd[3];
+      dggs_dvec_cross(sa, sb, nd);
+      dggs_dvec_cross(m, nd, xd);
+      cells[n] = next;
+      enter[n] = dggs_arc_fraction_approx(p0, p1, xd);
+      if (cross)
+      {
+        DggsEdgeCross *e = &cross[n];
+        e->ax = o->lon[fk]; e->ay = o->lat[fk]; e->oa = 0.0;
+        e->bx = o->lon[k1]; e->by = o->lat[k1]; e->ob = 0.0;
+        memcpy(e->av, sa, 3 * sizeof(double));
+        memcpy(e->bv, sb, 3 * sizeof(double));
+        e->held_left = ops->edge_held(o, fk);
+        e->held_entered = ! e->held_left;
+      }
+      n++;
+      cur = next;
+      pending = true;
+      at_start = false;
+      continue;
+    }
+    if (pending)
+    {
+      /* The direction of the last crossing, m x (a x b), exactly */
+      SphereDir *A = sphere_dir_make(sa), *B = sphere_dir_make(sb);
+      SphereDir *ne = sphere_dir_cross(A, B);
+      sphere_dir_free(s);
+      s = sphere_dir_cross(M, ne);
+      sphere_dir_free(A); sphere_dir_free(B); sphere_dir_free(ne);
+      pending = false;
+    }
+    memset(cand, 0, sizeof(cand));
+    ncand = ops->neighbours(cur, cand, DGGS_GEO_NEIGHBOURS);
+    if (ncand <= 0)
+      break;
+    count = 0;
+    for (int i = 0; i < ncand; i++)
+    {
+      DggsOutline co;
+      if (cand[i] != 0 && ops->outline_copy(cand[i], &co))
+        dggs_arc_outline_crossings(ops, &co, p0, p1, P1, M, s, &xs, &count, &size);
+    }
+    /* The first point ahead */
+    int i1 = 0;
+    for (int i = 1; i < count; i++)
+      if (sphere_dir_triple_sign(xs[i].x, xs[i1].x, M) > 0)
+        i1 = i;
+    /* The stretch from the start of the segment: a start on the boundary of
+     * its cell can leave the cell at once, the stretch then lying in the
+     * cell holding the direction between the start and the first point
+     * ahead, entered at the start */
+    if (at_start)
+    {
+      at_start = false;
+      SphereDir *mid0 = sphere_dir_add(P0, count ? xs[i1].x : P1);
+      uint64 first = dggs_dir_cell(ops, cand, ncand, cur, mid0);
+      sphere_dir_free(mid0);
+      double ex[4], exv[6];
+      if (first != 0 && first != cur && n < maxout &&
+          dggs_start_edge(ops, cand, ncand, p0, p1, ex, exv))
+      {
+        cells[n] = first;
+        enter[n] = 0.0;
+        if (cross)
+        {
+          DggsEdgeCross *e = &cross[n];
+          e->ax = ex[0]; e->ay = ex[1]; e->oa = 0.0;
+          e->bx = ex[2]; e->by = ex[3]; e->ob = 0.0;
+          memcpy(e->av, exv, 3 * sizeof(double));
+          memcpy(e->bv, exv + 3, 3 * sizeof(double));
+          e->held_left = true;
+          e->held_entered = false;
+        }
+        n++;
+        cur = first;
+        /* The points ahead are those of the cell entered and of its
+         * neighbours, read again from the start */
+        for (int i = 0; i < count; i++)
+          sphere_dir_free(xs[i].x);
+        continue;
+      }
+    }
+    if (count == 0)
+      break;
+    /* The next point after the first */
+    int i2 = -1;
+    for (int i = 0; i < count; i++)
+      if (sphere_dir_triple_sign(xs[i1].x, xs[i].x, M) > 0 &&
+          (i2 < 0 || sphere_dir_triple_sign(xs[i].x, xs[i2].x, M) > 0))
+        i2 = i;
+    SphereDir *mid = sphere_dir_add(xs[i1].x, i2 >= 0 ? xs[i2].x : P1);
+    uint64 next = dggs_dir_cell(ops, cand, ncand, cur, mid);
+    uint64 at = dggs_dir_cell(ops, cand, ncand, cur, xs[i1].x);
+    sphere_dir_free(mid);
+    if (next == 0 || at == 0)
+      break;
+    const uint64 step[2] = { at, next };
+    bool full = false;
+    for (int j = 0; j < 2; j++)
+    {
+      uint64 c = step[j];
+      if (c == cur || (j == 1 && c == at))
+        continue;
+      if (n == maxout)
+      {
+        full = true;
+        break;
+      }
+      cells[n] = c;
+      enter[n] = xs[i1].f;
+      if (cross)
+      {
+        DggsEdgeCross *e = &cross[n];
+        e->ax = xs[i1].ax; e->ay = xs[i1].ay; e->oa = 0.0;
+        e->bx = xs[i1].bx; e->by = xs[i1].by; e->ob = 0.0;
+        memcpy(e->av, xs[i1].av, 3 * sizeof(double));
+        memcpy(e->bv, xs[i1].bv, 3 * sizeof(double));
+        e->held_left = (at == cur);
+        e->held_entered = (at == c);
+      }
+      n++;
+      cur = c;
+    }
+    sphere_dir_free(s);
+    s = sphere_dir_add(xs[i1].x, xs[i1].x);
+    for (int i = 0; i < count; i++)
+      sphere_dir_free(xs[i].x);
+    if (full)
+      break;
+    cur = next;
+  }
+  sphere_dir_free(s);
+  pfree(xs);
+  sphere_dir_free(P0); sphere_dir_free(P1); sphere_dir_free(M);
+  return n;
 }
 
 /*****************************************************************************/

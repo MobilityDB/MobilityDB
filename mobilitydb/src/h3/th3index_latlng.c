@@ -42,6 +42,7 @@
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
 #include "h3/th3index_internal.h"
+#include "geo/stbox.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -256,6 +257,56 @@ Th3index_cell_to_boundary(PG_FUNCTION_ARGS)
   Temporal *result = tcellindex_cell_to_boundary(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Restriction to a box
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal H3 cell restricted to (the complement of) a
+ * spatiotemporal box, as #Tquadbin_restrict_stbox restricts a temporal QUADBIN
+ * cell
+ */
+static Datum
+Th3index_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tcellindex_restrict_stbox(temp, box, border_inc, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Th3index_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Th3index_at_stbox);
+/**
+ * @ingroup mobilitydb_h3_restrict
+ * @brief Return a temporal H3 cell restricted to a geodetic box, the times at
+ * which its cell shares a position with the box
+ * @sqlfn atStbox()
+ */
+inline Datum
+Th3index_at_stbox(PG_FUNCTION_ARGS)
+{
+  return Th3index_restrict_stbox(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Th3index_minus_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Th3index_minus_stbox);
+/**
+ * @ingroup mobilitydb_h3_restrict
+ * @brief Return a temporal H3 cell restricted to the complement of a geodetic
+ * box, the times at which its cell shares no position with the box
+ * @sqlfn minusStbox()
+ */
+inline Datum
+Th3index_minus_stbox(PG_FUNCTION_ARGS)
+{
+  return Th3index_restrict_stbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

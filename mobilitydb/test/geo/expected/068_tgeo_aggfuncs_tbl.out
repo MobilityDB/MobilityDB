@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Extent aggregate function
+-------------------------------------------------------------------------------
 SELECT round(extent(inst), 6) FROM tbl_tgeometry_inst;
                                                               round                                                               
 ----------------------------------------------------------------------------------------------------------------------------------
@@ -118,6 +121,7 @@ SELECT round(extent(temp), 6) FROM tbl_tgeography3D;
  SRID=7844;GEODSTBOX ZT(((-179.994834,-89.964124,0.052802),(179.797694,89.965007,99.947817)),[Fri Jan 05 17:10:00 2001 PST, Fri Dec 28 01:51:00 2001 PST])
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT numInstants(tcount(inst)) FROM tbl_tgeometry_inst;
  numinstants 
 -------------
@@ -286,6 +290,7 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeometry3D_seqset GROUP BY k%10 
         9 |           46
 (10 rows)
 
+-------------------------------------------------------------------------------
 SELECT numInstants(tcount(inst)) FROM tbl_tgeography_inst;
  numinstants 
 -------------
@@ -370,3 +375,4 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeography_seqset GROUP BY k%10 O
         9 |           51
 (10 rows)
 
+-------------------------------------------------------------------------------

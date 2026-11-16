@@ -90,6 +90,10 @@
  * @brief Static set-returning helpers (gridDisk, cellToChildren,
  * compactCells, …) surfaced via `mobilitydb/src/h3/h3index_sets.c`
  *
+ * @defgroup mobilitydb_h3_restrict Restriction functions
+ * @ingroup mobilitydb_h3
+ * @brief Restriction functions for temporal H3 cell indices
+ *
  * @defgroup mobilitydb_h3_metrics Metric functions
  * @ingroup mobilitydb_h3
  * @brief Per-instant area / edge-length / great-circle distance helpers

@@ -80,15 +80,20 @@ PRESENCE_CLASSES = {"numeric": "tnumber", "orderable": "torder"}
 CLASS_MEMBERS: dict = {flag: set() for flag in PRESENCE_CLASSES}
 
 
+@functools.lru_cache(maxsize=None)
 def load_manifest() -> dict:
     """Return the manifest assembled from the per-axis files
 
     Each file under manifest.d/ holds one top-level axis, so that a session
-    working on an axis edits a file no other axis shares.
+    working on an axis edits a file no other axis shares.  The files are read
+    once per run, as #_selectivity_of_temptype reads its source, the C parser
+    of libyaml reading them where PyYAML has it, and every caller shares the
+    manifest, which none modifies.
     """
     manifest: dict = {}
+    loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
     for path in sorted(MANIFEST_DIR.glob("*.yaml")):
-        axis = yaml.safe_load(path.read_text())
+        axis = yaml.load(path.read_text(), Loader=loader)
         if not axis:
             continue
         for key, value in axis.items():
@@ -282,8 +287,6 @@ def _geography_twins(body: str, names) -> str:
 BOXMEMBER_CLASSES = {
     "gist": [("stbox_rtree_ops", "gist")],
     "spgist": [("stbox_quadtree_ops", "spgist"), ("stbox_kdtree_ops", "spgist")],
-    "indexes": [("stbox_rtree_ops", "gist"), ("stbox_quadtree_ops", "spgist"),
-                ("stbox_kdtree_ops", "spgist")],
 }
 
 
@@ -301,6 +304,13 @@ def render_boxmembers(behaviour: str, sub: dict) -> str:
     for name, am in BOXMEMBER_CLASSES[behaviour]:
         members = []
         for s in strategies:
+            if s["axis"] == "ever":
+                # The box written first in the ever and always overlaps of the
+                # family's type (#_ever_overlaps_box)
+                if _ever_overlaps_box(temp) == "stbox":
+                    members += [f"  -- {s['desc']}",
+                                f"  OPERATOR  {s['num']}    {s['sqlop']} (stbox, {temp}),"]
+                continue
             if s["axis"] not in axes:
                 continue
             order = (" FOR ORDER BY pg_catalog.float_ops"
@@ -335,7 +345,12 @@ def render(behaviour: str, sub: dict) -> str:
         # `compops_families:` entries (temporal, tgeo, tpoint) use.
         return generated(render_compops_body(
             _compops_spec_from_subtype(sub)), "compops.sql.tmpl")
-    tmpl = apply_conditionals(read_template(f"{behaviour}.sql.tmpl"), sub)
+    # `knn`: the class of the family has a nearest approach distance, so its
+    # GiST file declares the `{TEMP}_gist_distance` support function that
+    # FUNCTION 8 of the class names; it is read from the axes the class is
+    # rendered on (#render_tempopclass), never stated by hand.
+    tmpl = apply_conditionals(read_template(f"{behaviour}.sql.tmpl"),
+                              {**sub, "knn": "dist" in (sub.get("boxmembers") or [])})
     # `cellToBoundary` is a slot of the DggsCellOps descriptor, so it is one bare
     # polymorphic name overloaded by argument type across every cell-index family.
     boundary = "cellToBoundary"
@@ -907,6 +922,15 @@ def render_boxopclass(bt: dict, cls: dict, strategies: list) -> str:
                                for p in bt["opclasses"].get("partners") or []]
     members = []
     for s in strategies:
+        if s["axis"] == "ever":
+            # The box written first in the ever and always overlaps of each
+            # partner declaring them with this box (#_ever_overlaps_box)
+            typs = [typ for typ, _ in partners[1:] if _ever_overlaps_box(typ) == box]
+            if typs:
+                members.append(f"  -- {s['desc']}")
+                members += [f"  OPERATOR  {s['num']}    {s['sqlop']} ({box}, {typ}),"
+                            for typ in typs]
+            continue
         if s["axis"] not in own:
             continue
         order = " FOR ORDER BY pg_catalog.float_ops" if s["axis"] == "dist" else ""
@@ -990,6 +1014,14 @@ def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
     axes = set(axes)
     members = []
     for s in strategies:
+        if s["axis"] == "ever":
+            # The ever and always overlaps, against the box the type declares
+            # them with (#_ever_overlaps_box)
+            if _ever_overlaps_box(temp) == box:
+                op = (opnames or {}).get(s["sqlop"], s["sqlop"])
+                members += [f"  -- {s['desc']}",
+                            f"  OPERATOR  {s['num']}    {op} ({temp}, {box}),"]
+            continue
         if s["axis"] not in axes:
             continue
         order = " FOR ORDER BY pg_catalog.float_ops" if s["axis"] == "dist" else ""
@@ -4703,18 +4735,20 @@ def _tiling_sub(text: str, t: dict) -> str:
 
 # The split functions of the manual's Splitting Operations, per box kind: the box
 # its name carries, the array its functions return and the prefix of the C
-# symbols they call, Temporal for the time spans, Tnumber for the value boxes and
-# Tgeo for the spatiotemporal boxes.
+# symbols they call, Temporal for the time spans, Tnumber for the value boxes,
+# Tgeo for the spatiotemporal boxes and Tpointcloud for the point cloud boxes.
 _SPLIT_KINDS = {"spans": ("Spans", "tstzspan[]", "Temporal"),
                 "tboxes": ("Tboxes", "tbox[]", "Tnumber"),
-                "stboxes": ("Stboxes", "stbox[]", "Tgeo")}
+                "stboxes": ("Stboxes", "stbox[]", "Tgeo"),
+                "tpcboxes": ("Tpcboxes", "tpcbox[]", "Tpointcloud")}
 
 
 def _tiling_splits(st: dict) -> str:
     """A `splits` stanza, expanded over its `temps` as the `gen` chunk of
     #render_tiling expands over a pool, each function from #_tiling_skeleton: per
     kind of its `kinds`, splitN<Box> and then splitEachN<Box>, each a group of one
-    function per type, packed with no blank line, the groups one blank line apart.
+    function per type, packed with no blank line, the groups one blank line apart,
+    and then their merge twins mergeN<Box> and mergeEachN<Box>.
     `prefix` names, per kind, the C prefix of a type with kernels of its own
     (Trgeometry, Geo), and `comment` heads each group with its `-- <name>()` line."""
     groups = []
@@ -4722,7 +4756,9 @@ def _tiling_splits(st: dict) -> str:
         box, ret, prefix = _SPLIT_KINDS[kind]
         prefix = (st.get("prefix") or {}).get(kind, prefix)
         for name, sym in ((f"splitN{box}", f"split_n_{kind}"),
-                          (f"splitEachN{box}", f"split_each_n_{kind}")):
+                          (f"splitEachN{box}", f"split_each_n_{kind}"),
+                          (f"mergeN{box}", f"merge_n_{kind}"),
+                          (f"mergeEachN{box}", f"merge_each_n_{kind}")):
             pre = f"-- {name}()\n" if st.get("comment") else ""
             items = [_tiling_skeleton({"sig": f"{name}({t}, integer)", "ret": ret,
                                        "sym": f"{prefix}_{sym}",
@@ -4921,6 +4957,24 @@ def _compops_box(temp: str) -> str | None:
             return "stbox"
     return None
 
+def _ever_overlaps_box(temp: str) -> str | None:
+    """The box with which the temporal type `temp` declares the ever and always
+    overlaps `?&&` and `%&&`, as #_compops_ea_group declares them for a
+    `compops_families` entry or a subtype stating `overlaps`, or None when its
+    family declares none. The index operator classes take these operators
+    against this box alone: a value lying in the box at some instant has a
+    bounding box overlapping it, which is the test the classes prune with,
+    whereas two values meeting within the band of a constructed point, as two
+    temporal network points do, need not have overlapping boxes."""
+    mf = load_manifest()
+    declared = any(fam.get("overlaps") and
+                   any(p["temp"] == temp for p in fam.get("pairs") or [])
+                   for fam in mf.get("compops_families", []))
+    declared = declared or any(sub["temp"] == temp and sub.get("overlaps")
+                               for sub in mf.get("subtypes", []))
+    return _compops_box(temp) if declared else None
+
+
 def _compops_box_tside(tempsym: str, box: str) -> str:
     """The temporal side of the C symbol of an overlaps with the box `box`, the
     narrower of the family's `tempsym` and the `tside` the box states in
@@ -4962,14 +5016,18 @@ def _compops_func(sig: str, ret: str, sym: str, support: str | None) -> str:
 
 
 def _compops_op_ea(op: str, l: str, r: str, proc: str, neg: str | None,
-                    rest: str, join: str) -> str:
+                    rest: str, join: str, comm: str | None = None) -> str:
     """An ever/always operator, written as #_compops_op_t writes a temporal
-    one; an operator no other operator negates states no NEGATOR."""
+    one; an operator no other operator negates states no NEGATOR, and one
+    whose arguments do not commute states no COMMUTATOR."""
     tmpl = read_template("compops_op_evalways.sql.tmpl")
     if neg is None:
         tmpl = tmpl.replace("  NEGATOR = {NEG},\n", "")
+    if comm is None:
+        tmpl = tmpl.replace("  COMMUTATOR = {COMM},\n", "")
     return (tmpl.replace("{OP}", op).replace("{L}", l).replace("{R}", r)
                 .replace("{PROC}", proc).replace("{NEG}", neg or "")
+                .replace("{COMM}", comm or "")
                 .replace("{REST}", rest).replace("{JOIN}", join).rstrip("\n"))
 
 
@@ -5010,8 +5068,12 @@ def _compops_ea_group(pred: dict, direction: str, pairs: list, basesym: str,
             support = p.get("eqsupport") if pred["key"] == "eq" else None
             funcs.append(_compops_func(f"{prefix}{pred['cap']}({l}, {r})",
                                         "boolean", sym, support))
+            # The overlaps asks the same of its two arguments in either order,
+            # so each order is the commutator of the other, which lets an index
+            # on the temporal value answer the box written first
             ops.append(_compops_op_ea(pred[op_key], l, r, f"{prefix}{pred['cap']}",
-                                       pred[neg_key], p["rest"], p["join"]))
+                                       pred[neg_key], p["rest"], p["join"],
+                                       pred[op_key] if pred.get("box") else None))
         out += "\n".join(funcs) + "\n\n" + "\n".join(ops) + "\n\n"
     return out
 
@@ -5792,6 +5854,109 @@ def splice_boxspgist(filetext: str, box: str, rendered: str) -> str:
     """Replace the text strictly between the box's markers with `rendered`, as
     #splice_boxgist does for the GiST ones"""
     begin, end = _boxspgist_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+# --- C box splitters (box-type axis) -----------------------------------------
+# The functions returning the boxes of the instants or segments of a temporal
+# value and splitting them into N boxes or N elements per box, one set per
+# entry of `rows` in manifest.d/boxsplit.yaml, are generated into the region
+# between the row's markers in its `file`, as #render_boxgist writes the GiST
+# support functions. A row names the box type, the prefixes of its instant,
+# sequence and sequence set functions, and a C expression for each primitive
+# the template calls, so the reading of a box that differs from one type to
+# another is data of the row: #render_boxsplit replaces each call
+# {NAME}(a, b, ...) of the template by the row's expression for NAME, {0},
+# {1}, ... being the arguments, the first of them the value the box is read
+# from, which a temporal rigid geometry reads its reference geometry from.
+def _boxsplit_markers(row: str):
+    """BEGIN/END markers of a row's box splitters, as #_boxgist_markers names
+    the GiST support functions of a box type"""
+    begin = (f"/* GENERATED-BOXSPLIT-BEGIN {row} — tools/codegen/inherited/"
+             "generate.py from templates/boxsplit.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxsplit.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-BOXSPLIT-END {row} */\n"
+
+
+def _boxsplit_call_args(text: str, start: int):
+    """The arguments of the call whose '(' is at `start`, split at the commas
+    outside any parenthesis, and the index just past its ')'"""
+    depth, args, cur, i = 0, [], "", start + 1
+    while True:
+        c = text[i]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            if depth == 0:
+                args.append(cur.strip())
+                return args, i + 1
+            depth -= 1
+        elif c == "," and depth == 0:
+            args.append(cur.strip())
+            cur = ""
+            i += 1
+            continue
+        cur += c
+        i += 1
+
+
+def _wrap_code(text: str, width: int = 80) -> str:
+    """Refill at ', ' every code statement or signature of a rendered region
+    that a long row name pushes past `width`, its continuation lines indented
+    two columns past its first line as the templates lay them out; a statement
+    within `width` keeps the template's layout, and comment lines go to
+    #_wrap_doc"""
+    lines, out, i = text.split("\n"), [], 0
+    while i < len(lines):
+        unit = [lines[i]]
+        while unit[-1].endswith(",") and i + 1 < len(lines) and \
+                not unit[-1].lstrip().startswith(("*", "/*")):
+            i += 1
+            unit.append(lines[i])
+        i += 1
+        if all(len(line) <= width for line in unit) or \
+                unit[0].lstrip().startswith(("*", "/*")):
+            out += unit
+            continue
+        indent = unit[0][:len(unit[0]) - len(unit[0].lstrip())]
+        cont = indent + "  "
+        words = " ".join(line.strip() for line in unit).split(", ")
+        line = indent + words[0]
+        for n, word in enumerate(words[1:], 2):
+            # A word other than the last carries the ',' that follows it
+            comma = 0 if n == len(words) else 1
+            if len(line) + 2 + len(word) + comma <= width:
+                line += ", " + word
+            else:
+                out.append(line + ",")
+                line = cont + word
+        out.append(line)
+    return _wrap_doc("\n".join(out), width)
+
+
+def render_boxsplit(row: dict) -> str:
+    """The box splitters of a row, rendered from their template as
+    #render_boxgist renders the GiST support functions of a box type: the
+    primitive calls first, then the plain tokens"""
+    text = read_template("boxsplit.c.tmpl")
+    for name, expr in row["calls"].items():
+        token = "{" + name + "}("
+        while token in text:
+            i = text.index(token)
+            args, end = _boxsplit_call_args(text, i + len(token) - 1)
+            text = text[:i] + expr.format(*args) + text[end:]
+    for key, val in row.items():
+        if key not in ("row", "file", "calls"):
+            text = text.replace("{" + key + "}", val)
+    return _wrap_code(text)
+
+
+def splice_boxsplit(filetext: str, row: str, rendered: str) -> str:
+    """Replace the text strictly between the row's markers with `rendered`, as
+    #splice_boxgist does for a box type"""
+    begin, end = _boxsplit_markers(row)
     b = filetext.index(begin) + len(begin)
     e = filetext.index(end)
     return filetext[:b] + rendered + filetext[e:]
@@ -6870,6 +7035,14 @@ def main() -> int:
                                       render_boxspgist(box, posaxes[box["box"]],
                                                        mf["boxposops"])))
         print(f"spliced boxspgist {box['box']} -> {box['file']}")
+    for row in (mf.get("boxsplit") or {}).get("rows", []):
+        p = ROOT / row["file"]
+        if args.check:
+            print(f"would splice boxsplit {row['row']} -> {row['file']}")
+            continue
+        p.write_text(splice_boxsplit(p.read_text(), row["row"],
+                                     render_boxsplit(row)))
+        print(f"spliced boxsplit {row['row']} -> {row['file']}")
     return 0
 
 

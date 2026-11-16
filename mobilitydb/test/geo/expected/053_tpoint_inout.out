@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- Input
+-------------------------------------------------------------------------------
+-- Maximum decimal digits
 SELECT asText(tgeompoint 'Point(1.123456789 1.123456789 1.123456789)@2001-01-01', 6);
                               astext                               
 -------------------------------------------------------------------
@@ -70,6 +74,7 @@ SELECT asEWKT(tgeogpoint 'Interp=Step;{[Point(1.123456789 1.123456789 1.12345678
  SRID=4326,Interp=Step;{[POINT Z (1.123457 1.123457 1.123457)@Mon Jan 01 00:00:00 2001 PST, POINT Z (2.123457 2.123457 2.123457)@Tue Jan 02 00:00:00 2001 PST, POINT Z (1.123457 1.123457 1.123457)@Wed Jan 03 00:00:00 2001 PST], [POINT Z (3.123457 3.123457 3.123457)@Thu Jan 04 00:00:00 2001 PST, POINT Z (3.123457 3.123457 3.123457)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Point(1 2)@2001-01-01')));
                  asewkt                  
 -----------------------------------------
@@ -124,12 +129,15 @@ SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Interp=Step;{[Point(1 2)
  Interp=Step;{[POINT(1 2)@Mon Jan 01 00:00:00 2001 PST, POINT(3 4)@Tue Jan 02 00:00:00 2001 PST], [POINT(1 2)@Wed Jan 03 00:00:00 2001 PST, POINT(3 4)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- A member the sequence reader refuses is reported, whether it is the only
+-- member or one of several
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[{"coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}');
 ERROR:  Invalid value of 'coordinates' array in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[{"coordinates":[[1,1]],"datetimes":["2001-01-01T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}');
 ERROR:  Invalid value of 'coordinates' array in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}');
 ERROR:  Unable to find 'interpolation' in MFJSON string
+-- Additional attributes
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;Point(1 2 3)@2001-01-01',1,0,2)));
                          asewkt                         
 --------------------------------------------------------
@@ -183,6 +191,7 @@ SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":{"coordinates":[[
 ERROR:  Invalid 'sequences' array in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[],"interpolation":"Linear"}');
 ERROR:  Invalid value of 'sequences' array in MFJSON string
+-----------------------------------------------------------------------
 SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Point(1 2)@2001-01-01')));
                       asewkt                       
 ---------------------------------------------------
@@ -219,6 +228,7 @@ SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Interp=Step;{[Point(1 2)
  SRID=4326,Interp=Step;{[POINT(1 2)@Mon Jan 01 00:00:00 2001 PST, POINT(3 4)@Tue Jan 02 00:00:00 2001 PST], [POINT(1 2)@Wed Jan 03 00:00:00 2001 PST, POINT(3 4)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-----------------------------------------------------------------------
 SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'Point(1 2)@2001-01-01')));
                  asewkt                  
 -----------------------------------------
@@ -300,6 +310,9 @@ select asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1 1)@2001-
 /* Errors */
 select asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'ABC')));
 ERROR:  Invalid value for endian flag
+-------------------------------------------------------------------------------
+-- Output
+-------------------------------------------------------------------------------
 SELECT asText(tgeompoint 'Point(1 1)@2001-01-01');
                  astext                  
 -----------------------------------------
@@ -650,6 +663,8 @@ SELECT asMFJSON(tgeompoint '[Point(1 2 3)@2019-01-01, Point(4 5 6)@2019-01-02]',
  {"type":"MovingPoint","bbox":[[1,2,3],[4,5,6]],"period":{"begin":"2019-01-01T00:00:00-08:00","end":"2019-01-02T00:00:00-08:00","lower_inc":true,"upper_inc":true},"coordinates":[[1,2,3],[4,5,6]],"datetimes":["2019-01-01T00:00:00-08:00","2019-01-02T00:00:00-08:00"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
 (1 row)
 
+-- Additional pretty-print attribute
+-- Notice that the Linux and Mac versions of json_c produce slightly different versions of the pretty-print JSON
 SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint 'POINT(1 1)@2001-01-01', 1, 3, 15)));
                  astext                  
 -----------------------------------------
@@ -674,8 +689,8 @@ SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{[POINT(1 1)@2001-01-01,
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST], [POINT(3 3)@Wed Jan 03 00:00:00 2001 PST, POINT(3 3)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+-- The MF-JSON datetimes are ISO 8601 whatever the DateStyle of the session is
 SET DateStyle TO 'Postgres, MDY';
-SET
 SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
                                                                                       asmfjson                                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -683,7 +698,6 @@ SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
 (1 row)
 
 SET DateStyle TO 'SQL, DMY';
-SET
 SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
                                                                                       asmfjson                                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -691,7 +705,6 @@ SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
 (1 row)
 
 SET DateStyle TO 'German, DMY';
-SET
 SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
                                                                                       asmfjson                                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -699,7 +712,6 @@ SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
 (1 row)
 
 SET DateStyle TO 'ISO, MDY';
-SET
 SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
                                                                                       asmfjson                                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -707,10 +719,10 @@ SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
 (1 row)
 
 RESET DateStyle;
-RESET
 /* Errors */
 SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);
 ERROR:  SRID 123456 unknown in spatial_ref_sys table
+-------------------------------------------------------------------------------
 SELECT asBinary(tgeompoint 'Point(1 1)@2001-01-01');
                                asbinary                               
 ----------------------------------------------------------------------
@@ -729,6 +741,7 @@ SELECT asBinary(tgeompoint 'Point(1 1)@2001-01-01', 'XDR');
  \x00002e0100000000013ff00000000000003ff000000000000000001cc95e886000
 (1 row)
 
+-- 3D round trip: Z must survive the plain (non-extended) WKB encoding
 SELECT asText(tgeompointFromBinary(asBinary(tgeompoint 'Point(1 2 3)@2001-01-01')));
                     astext                    
 ----------------------------------------------
@@ -777,6 +790,7 @@ select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'XDR');
  00002E410000162C00000000013FF00000000000003FF000000000000000001CC95E886000
 (1 row)
 
+-- The container states the SRID once, for its components too
 SELECT asEWKB(geomset 'SRID=4326;{Point(1 1)}');
                                 asewkb                                
 ----------------------------------------------------------------------
@@ -789,6 +803,7 @@ SELECT asHexEWKB(geomset 'SRID=4326;{Point(1 1)}');
  012B0041E6100000010000000101000000000000000000F03F000000000000F03F
 (1 row)
 
+-- A component that states the SRID of its container again reads back
 SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E6100000000000000000F03F000000000000F03F0060885EC91C0000'));
                       asewkt                       
 ---------------------------------------------------
@@ -801,6 +816,7 @@ SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E61000000000
  SRID=4326;{"POINT(1 1)"}
 (1 row)
 
+-- A component that states an SRID other than the one of its container
 SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E40E0000000000000000F03F000000000000F03F'));
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the geomset (3812)
 SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E40E0000000000000000F03F000000000000F03F0060885EC91C0000'));
@@ -808,12 +824,20 @@ ERROR:  The SRID of the WKB (4326) does not match the SRID of the tgeompoint (38
 /* Errors */
 select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'ABCD');
 ERROR:  Invalid value for endian flag
+-------------------------------------------------------------------------------
 SELECT astext('{}'::geometry[]);
  astext 
 --------
  
 (1 row)
 
+----------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Every datetime an MF-JSON document carries is RFC 3339, which is what a JSON
+-- Schema `format: date-time` is defined against: the UTC offset carries hours
+-- AND minutes. The assertion is a shape rather than a literal, so it says the
+-- same thing under any session time zone.
+-------------------------------------------------------------------------------
 SELECT bool_and(d ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([+-]\d{2}:\d{2}|Z)$')
 FROM jsonb_array_elements_text(
   (asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]')::jsonb)->'datetimes') AS d;
@@ -822,6 +846,11 @@ FROM jsonb_array_elements_text(
  t
 (1 row)
 
+----------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Sixteen AIS reports of one vessel, one of them 1e-6 degrees off the path of
+-- its neighbours: normalization keeps every instant not exactly on that path,
+-- and the value read back from its binary form is the value written
 WITH s(temp) AS (
   SELECT tgeompoint 'SRID=4326;[
   POINT(11.900285 57.691918)@2026-01-20 13:02:48+00,

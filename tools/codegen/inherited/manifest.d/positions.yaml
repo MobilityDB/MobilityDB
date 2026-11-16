@@ -18,8 +18,7 @@ positions:
   distance:        10
   aggfuncs:        11
   spatialrels:     12
-  indexes:         16
-  # Cell-index families split the GiST and SP-GiST opclasses into separate files
-  # (the canonical geo/h3 layout); the combined `indexes` above is the cbuffer form.
+  # Every family writes its GiST and its SP-GiST operator classes in two files,
+  # so the multi-entry classes of each access method follow one file per family.
   gist:            22
   spgist:          23

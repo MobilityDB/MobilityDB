@@ -401,7 +401,13 @@
 						<para><link linkend="setspan_splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N spans obtained by merging the elements of a set or the spans of a spanset</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="setspan_mergeNSpans"><varname>mergeNSpans</varname></link>: Return an array of N spans obtained by merging the spans of the elements of a set or the spans of a spanset, each time the consecutive pair whose union adds the least size to theirs</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="setspan_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of spans obtained by merging N consecutive elements of a set or N consecutive spans of a spanset</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="setspan_mergeEachNSpans"><varname>mergeEachNSpans</varname></link>: Return an array of spans obtained by merging the spans of the elements of a set or the spans of a spanset, each time the consecutive pair whose union adds the least size to theirs, until a span holds on average a given number of them</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1323,19 +1329,37 @@
 					<para><link linkend="ttype_splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N time spans obtained by merging the instants or segments of a temporal value &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeNSpans"><varname>mergeNSpans</varname></link>: Return an array of N time spans obtained by merging the time spans of the instants or segments of a temporal value, each time the consecutive pair whose union adds the least size to theirs</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_mergeEachNSpans"><varname>mergeEachNSpans</varname></link>: Return an array of time spans obtained by merging the time spans of the instants or segments of a temporal value, each time the consecutive pair whose union adds the least size to theirs, until a span holds on average a given number of them</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_splitNTboxes"><varname>splitNTboxes</varname></link>: Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeNTboxes"><varname>mergeNTboxes</varname></link>: Return an array of N temporal boxes obtained by merging the boxes of the instants or segments of a temporal number, each time the consecutive pair whose union adds the least size to theirs</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitEachNTboxes"><varname>splitEachNTboxes</varname></link>: Return an array of temporal boxes obtained by merging N consecutive instants or segments of a temporal number</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_mergeEachNTboxes"><varname>mergeEachNTboxes</varname></link>: Return an array of temporal boxes obtained by merging the boxes of the instants or segments of a temporal number, each time the consecutive pair whose union adds the least size to theirs, until a box holds on average a given number of them</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_splitNStboxes"><varname>splitNStboxes</varname></link>: Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeNStboxes"><varname>mergeNStboxes</varname></link>: Return an array of N spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of N spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point, each time the consecutive pair whose union adds the least size to theirs</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitEachNStboxes"><varname>splitEachNStboxes</varname></link>: Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_mergeEachNStboxes"><varname>mergeEachNStboxes</varname></link>: Return an array of spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point, each time the consecutive pair whose union adds the least size to theirs, until a box holds on average a given number of them</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2751,6 +2775,9 @@
 				<listitem>
 					<para><link linkend="trgeometry_split_boxes"><varname>splitNStboxes</varname>, <varname>splitEachNStboxes</varname>, <varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the spatiotemporal boxes or time spans of a temporal rigid geometry split into a given number of bins, or with a given number of segments per bin</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_merge_boxes"><varname>mergeNStboxes</varname>, <varname>mergeEachNStboxes</varname>, <varname>mergeNSpans</varname>, <varname>mergeEachNSpans</varname></link>: Return the spatiotemporal boxes or time spans of a temporal rigid geometry merged into a given number of boxes, or until a box holds on average a given number of segments, each time the consecutive pair whose union adds the least size to theirs</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -3223,7 +3250,7 @@
 					<para><link linkend="tcell_at_time"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restrict a temporal cell to (the complement of) a time value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict a temporal QUADBIN cell to (the complement of) a spatiotemporal box</para>
+					<para><link linkend="tcell_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict a temporal QUADBIN or H3 cell to (the complement of) a spatiotemporal box</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3296,7 +3323,7 @@
 					<para><link linkend="tcell_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps of a temporal QUADBIN cell and a spatiotemporal box</para>
+					<para><link linkend="tcell_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Ever and always overlaps of a temporal QUADBIN or H3 cell and a spatiotemporal box</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_position"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Position operators</para>
@@ -3912,7 +3939,19 @@
 						<para><link linkend="tpcpoint_spans"><varname>spans</varname></link>: Return the array of time spans of a tpcpoint's segments</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpoint_tpcboxes"><varname>tpcboxes</varname></link>: Return the array of point cloud boxes of the instants or segments of a tpcpoint</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpoint_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the time spans of a tpcpoint split into a given number of bins, or with a given number of segments per bin</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_mergeNSpans"><varname>mergeNSpans</varname>, <varname>mergeEachNSpans</varname></link>: Return the time spans of a tpcpoint merged into a given number of spans, or until a span holds on average a given number of segments, each time the consecutive pair whose union adds the least size to theirs</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_splitNTpcboxes"><varname>splitNTpcboxes</varname>, <varname>splitEachNTpcboxes</varname></link>: Return the point cloud boxes of a tpcpoint split into a given number of bins, or with a given number of instants or segments per bin</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_mergeNTpcboxes"><varname>mergeNTpcboxes</varname>, <varname>mergeEachNTpcboxes</varname></link>: Return the point cloud boxes of a tpcpoint merged into a given number of boxes, or until a box holds on average a given number of instants or segments, each time the consecutive pair whose union adds the least size to theirs</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -4105,7 +4144,19 @@
 						<para><link linkend="tpcpatch_spans"><varname>spans</varname></link>: Return the array of time spans of a tpcpatch's segments</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcpatch_tpcboxes"><varname>tpcboxes</varname></link>: Return the array of point cloud boxes of the instants or segments of a tpcpatch</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpatch_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the time spans of a tpcpatch split into a given number of bins, or with a given number of segments per bin</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_mergeNSpans"><varname>mergeNSpans</varname>, <varname>mergeEachNSpans</varname></link>: Return the time spans of a tpcpatch merged into a given number of spans, or until a span holds on average a given number of segments, each time the consecutive pair whose union adds the least size to theirs</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_splitNTpcboxes"><varname>splitNTpcboxes</varname>, <varname>splitEachNTpcboxes</varname></link>: Return the point cloud boxes of a tpcpatch split into a given number of bins, or with a given number of instants or segments per bin</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_mergeNTpcboxes"><varname>mergeNTpcboxes</varname>, <varname>mergeEachNTpcboxes</varname></link>: Return the point cloud boxes of a tpcpatch merged into a given number of boxes, or until a box holds on average a given number of instants or segments, each time the consecutive pair whose union adds the least size to theirs</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

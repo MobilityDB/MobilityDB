@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
                  st_extent                 
 -------------------------------------------
@@ -46,6 +47,7 @@ SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
  BOX(-9.77763 35.053716,31.914229 71.89642)
 (1 row)
 
+--------------------------------------------------------
 SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint;
                  st_extent                 
 -------------------------------------------
@@ -94,6 +96,7 @@ SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3
  BOX(-9.77763 35.053716,31.914229 71.89642)
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint;
                                                        round                                                       
 -------------------------------------------------------------------------------------------------------------------
@@ -106,6 +109,7 @@ SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint3D;
  STBOX ZT(((0.029,0.153451,0.198564),(99.997066,99.910108,99.981844)),[Sun Dec 31 21:13:00 2000 PST, Sun Dec 30 06:00:00 2001 PST])
 (1 row)
 
+-- The reason for the low counts is that the lower/ upper bounds are lost in the translation
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
  count 
 -------
@@ -142,6 +146,7 @@ SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
  SRID=4326;GEODSTBOX ZT(((-9.77763,35.053716,0.416793),(31.914229,71.89642,999.09274)),[Wed Jan 03 19:45:00 2001 PST, Sun Dec 23 00:21:00 2001 PST])
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT ST_Extent(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
                   st_extent                   
 ----------------------------------------------
@@ -166,18 +171,22 @@ SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeo
  BOX(0.029 0.153451,99.997066 99.896214)
 (1 row)
 
+-------------------------------------------------------------------------------
+--Rotate a 3d line 180 degrees about the z axis.  Note this is long-hand for doing ST_Rotate();
 SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0))) FROM tbl_tgeompoint;
  max 
 -----
   56
 (1 row)
 
+--Rotate a 3d line 180 degrees in both the x and z axis
 SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))) FROM tbl_tgeompoint;
  max 
 -----
   56
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tfloat;
  max 
 -----
@@ -214,6 +223,7 @@ SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeogpoint
   39
 (1 row)
 
+-- As for PostGIS function ST_Simplify, no support for tgeogpoint
 SELECT MAX(numInstants(maxDistSimplify(temp, 4))) FROM tbl_tfloat;
  max 
 -----
@@ -250,6 +260,7 @@ SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4, false))) FROM tbl_tgeompo
   53
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT round(MAX(ST_Length((mvt).geom)), 6), MAX(array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(temp, stbox 'STBOX X((0,0),(50,50))') AS mvt
   FROM tbl_tgeompoint ) AS t;
@@ -258,7 +269,10 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX X((0,0),(50,50))') AS mvt
  67717.649686 |  45
 (1 row)
 
-SELECT MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true)))AS max_removed
+-------------------------------------------------------------------------------
+  -- Extended Kalman Filter (EKF) for tbl_tgeompoint
+  -- 1) Maximum number of instants removed by EKF
+  SELECT MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true)))AS max_removed
   FROM tbl_tgeompoint
   WHERE numInstants(temp) >= 3;
  max_removed 
@@ -266,7 +280,8 @@ SELECT MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 
           30
 (1 row)
 
-SELECT MIN(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS min_diff,
+  -- 2) Fill mode should preserve the number of instants exception of normalized points
+  SELECT MIN(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS min_diff,
          MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS max_diff
   FROM tbl_tgeompoint
   WHERE numInstants(temp) >= 3;
@@ -275,7 +290,12 @@ SELECT MIN(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 
         0 |        0
 (1 row)
 
-SELECT k,
+  -- 3) EKF drops vs fills outliers
+  -- Only return integer counts, not asEWKT() - the float coordinates
+  -- of the corrected positions differ between x86_64 and ARM64 due to
+  -- FMA / rounding-mode differences, producing churn across platforms.
+  -- The counts are the meaningful invariants the test is checking.
+  SELECT k,
          numInstants(temp) AS n_before,
          numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))  AS n_after_drop,
          numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false)) AS n_after_fill

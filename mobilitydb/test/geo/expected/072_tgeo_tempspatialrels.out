@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- tContains
+-------------------------------------------------------------------------------
 SELECT tContains(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
            tcontains            
 --------------------------------
@@ -61,6 +64,9 @@ SELECT tContains(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2001-01-01');
 ERROR:  The tgeometry cannot have Z dimension
 SELECT tContains(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
 ERROR:  The geometry cannot have Z dimension
+-------------------------------------------------------------------------------
+-- tCovers
+-------------------------------------------------------------------------------
 SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
             tcovers             
 --------------------------------
@@ -85,6 +91,7 @@ SELECT tCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Empty geometry
 SELECT tCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
             tcovers             
 --------------------------------
@@ -124,6 +131,7 @@ SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2001-01-01');
 ERROR:  The tgeometry cannot have Z dimension
 SELECT tCovers(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
 ERROR:  The geometry cannot have Z dimension
+-------------------------------------------------------------------------------
 SELECT tCovers(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1)');
             tcovers             
 --------------------------------
@@ -148,6 +156,7 @@ SELECT tCovers(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Empty geometry
 SELECT tCovers(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point empty');
             tcovers             
 --------------------------------
@@ -181,6 +190,7 @@ SELECT tCovers(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1)');
 ERROR:  The tgeometry cannot have Z dimension
 SELECT tCovers(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1 1)');
 ERROR:  The geometry cannot have Z dimension
+-------------------------------------------------------------------------------
 SELECT tCovers(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-01');
             tcovers             
 --------------------------------
@@ -214,6 +224,9 @@ SELECT tCovers(tgeometry 'Point(1 1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-0
 ERROR:  The tgeometry cannot have Z dimension
 SELECT tCovers(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1 1)@2001-01-01');
 ERROR:  The tgeometry cannot have Z dimension
+-------------------------------------------------------------------------------
+-- tDisjoint
+-------------------------------------------------------------------------------
 SELECT tDisjoint(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
            tdisjoint            
 --------------------------------
@@ -328,6 +341,7 @@ SELECT tDisjoint(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Poin
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+--3D
 SELECT tDisjoint(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(2 2 2)');
            tdisjoint            
 --------------------------------
@@ -357,6 +371,9 @@ SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tgeometry 'Point(1 1)@2001-01-
 ERROR:  Operation on mixed SRID
 SELECT tDisjoint(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- tIntersects
+-------------------------------------------------------------------------------
 SELECT tIntersects(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
           tintersects           
 --------------------------------
@@ -483,6 +500,7 @@ SELECT tIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(4 1)@2001-01-02]', g
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+--3D
 SELECT tIntersects(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(2 2 2)');
           tintersects           
 --------------------------------
@@ -507,6 +525,7 @@ SELECT tIntersects(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Coverage
 SELECT tIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(1 1)@2001-01-03}', tgeometry 'Point(2 2)@2001-01-02');
  tintersects 
 -------------
@@ -524,6 +543,10 @@ SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tgeometry 'Point(1 1)@2001-0
 ERROR:  Operation on mixed SRID
 SELECT tIntersects(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- tTouches
+-------------------------------------------------------------------------------
+-- The function does not support 3D or geographies
 SELECT tTouches(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01');
             ttouches            
 --------------------------------
@@ -635,6 +658,9 @@ SELECT tTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT tTouches(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2001-01-01');
 ERROR:  The tgeometry cannot have Z dimension
+-------------------------------------------------------------------------------
+-- tDwithin
+-------------------------------------------------------------------------------
 SELECT tDwithin(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2001-01-01', 2);
             tdwithin            
 --------------------------------
@@ -731,6 +757,7 @@ SELECT tDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- A null argument answers null
 SELECT tDwithin(NULL::tgeometry, geometry 'Point(1 1)', 2);
  tdwithin 
 ----------
@@ -749,6 +776,7 @@ SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1)', NULL);
  
 (1 row)
 
+--3D
 SELECT tDwithin(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2001-01-01', 2);
             tdwithin            
 --------------------------------
@@ -845,6 +873,7 @@ SELECT tDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, P
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Coverage
 SELECT tDwithin(tgeometry '(Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Point(0 1)', 1);
                              tdwithin                             
 ------------------------------------------------------------------
@@ -1105,6 +1134,7 @@ SELECT tDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Mixed 2D/3D
 SELECT tDwithin(tgeometry 'Point(1 1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-01', 2);
             tdwithin            
 --------------------------------
@@ -1134,6 +1164,10 @@ SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(0 0)', -1);
 ERROR:  The value cannot be negative: -1.000000
 SELECT tDwithin(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(0 0 0)', -1);
 ERROR:  The value cannot be negative: -1.000000
+-------------------------------------------------------------------------------
+-- Regions: two temporal geometries or geographies intersect where their values
+-- intersect, not only where they are equal; geographies on the ellipsoid
+-------------------------------------------------------------------------------
 SELECT tIntersects(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]');
                            tintersects                            
 ------------------------------------------------------------------
@@ -1209,3 +1243,20 @@ SELECT tDwithin(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 
 /* Errors */
 SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', geography 'SRID=4269;Point(1 1)');
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- Set-set spatial join
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- A point that misses a tilted face by less than a unit in the last place, and one on it
+SELECT tIntersects(tgeometry 'Triangle Z((3 -8 9,-9 -3 -3,-9 8 -8,3 -8 9))@2001-01-01', geometry 'Point(-5 -1 -0.6666666666666666)');
+          tintersects           
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tIntersects(tgeometry 'Triangle Z((5 0 7,6 -3 2,1 -6 6,5 0 7))@2001-01-01', geometry 'Point(4 -3 5)');
+          tintersects           
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+

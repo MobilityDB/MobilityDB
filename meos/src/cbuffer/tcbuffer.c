@@ -148,7 +148,9 @@ ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] sv2,ev2 Circular buffers defining the second segment
  * @param[in] l0,l1 Length at the start and at the end of the segment
  * @param[out] roots Fractions found, in increasing order
- * @return Number of fractions found, from 0 to 2
+ * @return Number of fractions found, from 0 to 2, or -1 when the quadratic
+ * vanishes at every fraction, the distance of the centres equalling |L|
+ * throughout the segment
  */
 static int
 tcbuffersegm_length_roots(const Cbuffer *sv1, const Cbuffer *ev1,
@@ -175,9 +177,12 @@ tcbuffersegm_length_roots(const Cbuffer *sv1, const Cbuffer *ev1,
   if (a == 0.0)
   {
     /* A distance changing at the rate of the length leaves a linear equation,
-     * and a gap that does not change at all leaves no isolated root */
+     * and a gap that does not change at all leaves no isolated root: none
+     * where it is not zero, and every fraction where it is */
     if (b != 0.0)
       cand[ncand++] = -c / b;
+    else if (c == 0.0)
+      return -1;
   }
   else
   {
@@ -227,14 +232,17 @@ tcbuffersegm_length_roots(const Cbuffer *sv1, const Cbuffer *ev1,
  * @param[in] dist Distance
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   Datum dist, TimestampTz lower, TimestampTz upper, TimestampTz *tps,
-  int cap UNUSED)
+  Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
@@ -250,7 +258,8 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
 
   /* Keep the strictly internal instants: those at the bounds are no crossings
    * the caller splices, being handled by the surrounding sequence construction,
-   * and returning them duplicates a timestamp */
+   * and returning them duplicates a timestamp. Buffers standing at the
+   * distance throughout the segment (-1 roots) cross it nowhere */
   double duration = (double) (upper - lower);
   int nts = 0;
   for (int i = 0; i < nroots; i++)
@@ -279,14 +288,17 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * @param[in] dist Distance
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
@@ -344,6 +356,256 @@ tcbuffersegm_tdwithin_at(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /**
+ * @brief Return true if a temporal circular buffer segment contains another
+ * one at an end of the segment that bounds the period
+ * #tcbuffersegm_contains_turnpt returns
+ * @details The twin of #tcbuffersegm_tdwithin_at for an end of the segment.
+ * The first disk covers the second one at such an end, and contains it there
+ * unless the second one is a point on the boundary of the first one, as
+ * #cbuffer_contains states it; a second disk of a positive radius is
+ * contained, whatever the rounding of the values the end interpolates
+ * @param[in] start1,end1 Circular buffers defining the first segment
+ * @param[in] start2,end2 Circular buffers defining the second segment
+ * @param[in] strict Passed as a float, non-zero for contains, zero for covers
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[in] t Timestamp, @p lower or @p upper
+ */
+bool
+tcbuffersegm_contains_bound(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum strict, TimestampTz lower, TimestampTz upper UNUSED,
+  TimestampTz t)
+{
+  assert(lower < upper); assert(t == lower || t == upper);
+  const Cbuffer *cb1 = DatumGetCbufferP((t == lower) ? start1 : end1);
+  const Cbuffer *cb2 = DatumGetCbufferP((t == lower) ? start2 : end2);
+  if (DatumGetFloat8(strict) == 0 || cb2->radius > 0.0)
+    return true;
+  return cbuffer_contains(cb1, cb2);
+}
+
+/**
+ * @brief Return 1 or 2 if a temporal circular buffer segment contains or
+ * covers another one during a sub-period of the segment, 0 otherwise, for
+ * two segments whose distance of the centres is |L| throughout, or below
+ * |L| save where both vanish
+ * @details The cases of #tcbuffersegm_contains_turnpt in which the squared
+ * clearance cannot tell where L(f) = (1 - f) l0 + f l1, the difference
+ * R1 - R2 of the radii over the fraction f of the segment, is negative: the
+ * distance of the centres equals |L| throughout, which
+ * #tcbuffersegm_length_roots states by returning -1, or the squared clearance
+ * is a negative multiple of L^2, the centres meeting where L vanishes
+ * (#tcbuffersegm_contains_meet), a case passed as covers since a point there
+ * lies inside the first disk wherever it is covered. The first
+ * disk covers the second one exactly where L is not negative: the whole
+ * segment, none of it, or the part on one side of the root l0 / (l0 - l1) of
+ * L. The sign of L at an end of the segment is the sign of the difference of
+ * the radii there, which the rounding of the subtraction keeps. The first disk
+ * contains the second one where it covers it, save where the second one is a
+ * point on the boundary of the first one. A radius R2 that is zero at a single
+ * end of the segment is zero there alone, an end that the walks read
+ * (#tcbuffersegm_contains_bound). A radius R2 that is zero throughout makes
+ * L = R1, so the first disk covers the point throughout, and contains it
+ * where their centres coincide: a distance of the centres equal to R1 puts
+ * the point on the boundary save where R1 is zero, and is an affine function
+ * not negative, so the centres coincide inside the segment only where they
+ * coincide at both ends. The bounds of the period are dated as
+ * #tcbuffersegm_contains_turnpt dates them. Kept out of line, as
+ * #point_motion_dwithin_period_wide is, so that the segments the quadratic
+ * answers do not pay for it.
+ * @param[in] sv1,ev1 Circular buffers defining the first segment
+ * @param[in] sv2,ev2 Circular buffers defining the second segment
+ * @param[in] strict Passed as a float, non-zero for contains, zero for covers
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] tps Array of the instants found
+ */
+static pg_noinline int
+tcbuffersegm_contains_radii(const Cbuffer *sv1, const Cbuffer *ev1,
+  const Cbuffer *sv2, const Cbuffer *ev2, Datum strict, TimestampTz lower,
+  TimestampTz upper, TimestampTz *tps)
+{
+  long double fstart = 0.0, fend = 1.0;
+  if (DatumGetFloat8(strict) != 0 && sv2->radius == 0.0 &&
+      ev2->radius == 0.0)
+  {
+    const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+    const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+    const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+    const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+    if (spt1->x != spt2->x || spt1->y != spt2->y)
+      fstart = 1.0;
+    if (ept1->x != ept2->x || ept1->y != ept2->y)
+      fend = 0.0;
+    if (fstart > fend)
+      return 0;
+  }
+  else
+  {
+    double l0 = sv1->radius - sv2->radius;
+    double l1 = ev1->radius - ev2->radius;
+    if (l0 < 0.0 && l1 < 0.0)
+      return 0;
+    if (l0 < 0.0)
+      fstart = (long double) l0 / ((long double) l0 - l1);
+    else if (l1 < 0.0)
+      fend = (long double) l0 / ((long double) l0 - l1);
+  }
+  double duration = (double) (upper - lower);
+  tps[0] = lower + (TimestampTz) (fstart * duration);
+  tps[1] = lower + (TimestampTz) (fend * duration);
+  return (tps[0] == tps[1]) ? 1 : 2;
+}
+
+/**
+ * @brief True where the difference L = R1 - R2 of the radii of two circular
+ * buffer segments vanishes in the segment, not being of one strict sign at
+ * both ends, the signs of the rounded differences being exact
+ */
+#define TCBUFFERSEGM_L_VANISHES(sv1, ev1, sv2, ev2) \
+  ( ! ((sv1)->radius > (sv2)->radius && (ev1)->radius > (ev2)->radius) && \
+    ! ((sv1)->radius < (sv2)->radius && (ev1)->radius < (ev2)->radius) )
+
+/**
+ * @brief Return 1 or 2 if a temporal circular buffer segment contains or
+ * covers another one during a sub-period of the segment, 0 otherwise, for
+ * two segments whose centres meet where the difference of their radii
+ * vanishes, and -1 for two segments whose centres do not
+ * @details The case of #tcbuffersegm_contains_turnpt in which the squared
+ * clearance G(f) = |c(f)|^2 - L(f)^2 has a double root, its two terms
+ * vanishing together, which the rounding of its discriminant cannot tell from
+ * no root. L(f) = (1 - f) l0 + f l1 vanishes at f* = l0 / (l0 - l1), where
+ * c(f*) = 0 exactly when l0 c1 = l1 c0, for the differences c0 and c1 of the
+ * centres at the ends of the segment, a cross product of differences of the
+ * input doubles whose sign #cross_product_sign decides exactly. Then
+ * c(f) = (f - f*) dc and L(f) = (f - f*) dl, so G(f) = (f - f*)^2 a with
+ * a = |dc|^2 - dl^2, as #tcbuffersegm_length_roots forms it: where a is
+ * positive the discs, equal at f*, meet there alone, where it is negative the
+ * first one covers the second one where L is not negative, and contains it
+ * there, a point at a distance below R1 from the centre save at f*, where
+ * the two coincide (#tcbuffersegm_contains_radii); a zero a is a clearance
+ * vanishing throughout. Where L vanishes throughout, the centres meet where
+ * c vanishes, where the cross product of c0 and c1 is zero and the two point
+ * opposite ways, the discs being equal there. The instants are dated as
+ * #tcbuffersegm_contains_turnpt dates them. Kept out of line, as
+ * #point_motion_dwithin_period_wide is, and read where the roots of the
+ * rounded quadratic leave the meeting open: none, two, or a tangency.
+ * @param[in] sv1,ev1 Circular buffers defining the first segment
+ * @param[in] sv2,ev2 Circular buffers defining the second segment
+ * @param[in] strict Passed as a float, non-zero for contains, zero for covers
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] tps Array of the instants found
+ */
+static pg_noinline int
+tcbuffersegm_contains_meet(const Cbuffer *sv1, const Cbuffer *ev1,
+  const Cbuffer *sv2, const Cbuffer *ev2, Datum strict, TimestampTz lower,
+  TimestampTz upper, TimestampTz *tps)
+{
+  double l0 = sv1->radius - sv2->radius;
+  double l1 = ev1->radius - ev2->radius;
+  /* L vanishes in the segment where it is not of one strict sign at both
+   * ends, the signs of the rounded differences being exact */
+  if ((l0 > 0.0 && l1 > 0.0) || (l0 < 0.0 && l1 < 0.0))
+    return -1;
+  long double f;
+  if (l0 == 0.0 && l1 == 0.0)
+  {
+    double c0x = sv1->x - sv2->x, c0y = sv1->y - sv2->y;
+    double c1x = ev1->x - ev2->x, c1y = ev1->y - ev2->y;
+    if (c0x == 0.0 && c0y == 0.0 && c1x == 0.0 && c1y == 0.0)
+      return tcbuffersegm_contains_radii(sv1, ev1, sv2, ev2, strict, lower,
+        upper, tps);
+    /* The signs of the rounded differences are exact */
+    if (cross_product_sign(sv2->x, sv2->y, sv1->x, sv1->y, ev2->x, ev2->y,
+          ev1->x, ev1->y) != 0 ||
+        (c0x > 0.0 && c1x > 0.0) || (c0x < 0.0 && c1x < 0.0) ||
+        (c0y > 0.0 && c1y > 0.0) || (c0y < 0.0 && c1y < 0.0))
+      return -1;
+    f = (c0x != c1x) ? (long double) c0x / ((long double) c0x - c1x) :
+      (long double) c0y / ((long double) c0y - c1y);
+  }
+  else
+  {
+    if (cross_product_sign(sv2->radius, ev2->radius, sv1->radius,
+          ev1->radius, sv2->x, ev2->x, sv1->x, ev1->x) != 0 ||
+        cross_product_sign(sv2->radius, ev2->radius, sv1->radius,
+          ev1->radius, sv2->y, ev2->y, sv1->y, ev1->y) != 0)
+      return -1;
+    double dx = (ev1->x - sv1->x) - (ev2->x - sv2->x);
+    double dy = (ev1->y - sv1->y) - (ev2->y - sv2->y);
+    double dl = l1 - l0;
+    long double a = (long double) (dx * dx) + dy * dy - dl * dl;
+    if (a < 0.0)
+      return tcbuffersegm_contains_radii(sv1, ev1, sv2, ev2,
+        Float8GetDatum(0.0), lower, upper, tps);
+    if (a == 0.0)
+      return tcbuffersegm_contains_radii(sv1, ev1, sv2, ev2, strict, lower,
+        upper, tps);
+    f = (long double) l0 / ((long double) l0 - l1);
+  }
+  double duration = (double) (upper - lower);
+  tps[0] = tps[1] = lower + (TimestampTz) (f * duration);
+  return 1;
+}
+
+/**
+ * @brief Return 1 or 2 if a temporal circular buffer segment contains another
+ * one during a sub-period of the segment, 0 otherwise, for a second segment
+ * that is a point on the boundary of the first disk at an end of the segment
+ * and contained at neither end
+ * @details The case of #tcbuffersegm_contains_turnpt in which the squared
+ * clearance G(f) = a f^2 + b f + c has an exact root at an end of the
+ * segment, where the base predicates read the point covered and not
+ * contained: G(1) = 0, or G(0) = 0. Its other root is then the product of
+ * the roots, c / a, over the root at 1, or the sum, -b / a, less the root
+ * at 0, and the clearance is not positive between the two where a is
+ * positive. The point is contained strictly inside that period, whose end at
+ * the end of the segment the walks read (#tcbuffersegm_contains_bound), and
+ * nowhere where the other root lies outside the segment, the two meeting at
+ * the end alone; a point on the boundary at both ends has its two roots
+ * there. Kept out of line, as #point_motion_dwithin_period_wide is,
+ * so that the other segments pay nothing for it.
+ * @param[in] sv1,ev1 Circular buffers defining the first segment
+ * @param[in] sv2,ev2 Circular buffers defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] tps Array of the instants found
+ */
+static pg_noinline int
+tcbuffersegm_contains_end(const Cbuffer *sv1, const Cbuffer *ev1,
+  const Cbuffer *sv2, const Cbuffer *ev2, TimestampTz lower, TimestampTz upper,
+  TimestampTz *tps)
+{
+  double l0 = sv1->radius - sv2->radius;
+  double l1 = ev1->radius - ev2->radius;
+  double dx0 = sv1->x - sv2->x, dy0 = sv1->y - sv2->y;
+  double dx = (ev1->x - sv1->x) - (ev2->x - sv2->x);
+  double dy = (ev1->y - sv1->y) - (ev2->y - sv2->y);
+  double dl = l1 - l0;
+  long double a = (long double) (dx * dx) + dy * dy - dl * dl;
+  long double b = (long double) (2 * dx0 * dx) + 2 * dy0 * dy - 2 * l0 * dl;
+  long double c = (long double) (dx0 * dx0) + dy0 * dy0 - l0 * l0;
+  if (a <= 0.0)
+    return 0;
+  bool at_start = sv2->radius == 0.0 && cbuffer_covers(sv1, sv2);
+  bool at_end = ev2->radius == 0.0 && cbuffer_covers(ev1, ev2);
+  long double fstart = 0.0, fend = 1.0;
+  /* At both ends, the two roots are the ends */
+  if (! at_start || ! at_end)
+  {
+    long double other = at_end ? c / a : - b / a;
+    if (other <= 0.0 || other >= 1.0 ||
+        (1.0 - other) * l0 + other * l1 < 0.0)
+      return 0;
+    if (at_end)
+      fstart = other;
+    else
+      fend = other;
+  }
+  double duration = (double) (upper - lower);
+  tps[0] = lower + (TimestampTz) (fstart * duration);
+  tps[1] = lower + (TimestampTz) (fend * duration);
+  return (tps[0] == tps[1]) ? 1 : 2;
+}
+
+/**
  * @brief Return 1 or 2 if a temporal circular buffer segment contains or
  * covers another one during a sub-period of the segment, 0 otherwise
  * @details The first segment contains the second one when @p strict is true
@@ -360,51 +622,62 @@ tcbuffersegm_tdwithin_at(Datum start1, Datum end1, Datum start2, Datum end2,
  * rather than only at the clearance minimum. As #cbuffer_contains states it,
  * contains is covers except for a point on the boundary of a disk of a
  * strictly positive radius, so with @p strict true the isolated tangency
- * (g = 0 at a single instant) of such a point does not count.
+ * (g = 0 at a single instant) of such a point does not count, and an end of
+ * the segment at which a point lies on the boundary of the disk is read by
+ * the walks (#tcbuffersegm_contains_bound). A clearance whose square vanishes
+ * throughout the segment has no isolated root, and the period is then where
+ * the difference of the radii is not negative (#tcbuffersegm_contains_radii);
+ * centres that meet where that difference vanishes make a double root of the
+ * square, which #tcbuffersegm_contains_meet decides.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] strict Passed as a float, non-zero for contains, zero for covers
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum strict, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(tps); assert(cap >= 2); assert(lower < upper);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
   const Cbuffer *ev2 = DatumGetCbufferP(end2);
-  bool contains = (DatumGetFloat8(strict) != 0);
-  /* Contains differs from covers only for a disk of a zero radius, a point,
-   * on the boundary of a disk of a strictly positive radius, as
-   * #cbuffer_contains states it. The radius of the second disk is affine and
-   * non-negative, so it is zero inside the segment only when it is zero at
-   * both ends; otherwise contains is covers there */
-  bool is_strict = contains && sv2->radius == 0.0 && ev2->radius == 0.0;
   /* Radius DIFFERENCE R1 - R2 (contains threshold), not the sum */
   long double roots[2];
   int nroots = tcbuffersegm_length_roots(sv1, ev1, sv2, ev2,
     sv1->radius - sv2->radius, ev1->radius - ev2->radius, roots);
+  if (nroots < 0)
+    return tcbuffersegm_contains_radii(sv1, ev1, sv2, ev2, strict, lower,
+      upper, tps);
+  bool contains = (DatumGetFloat8(strict) != 0);
   /* Status at the two segment endpoints, read by the base predicates the
-   * instants of the result are read with */
-  bool in_lower = contains ? cbuffer_contains(sv1, sv2) :
-    cbuffer_covers(sv1, sv2);
-  bool in_upper = contains ? cbuffer_contains(ev1, ev2) :
-    cbuffer_covers(ev1, ev2);
+   * instants of the result are read with, where the roots leave it open */
   long double fstart, fend;
   if (nroots == 0)
   {
-    if (! in_lower)
+    int result = TCBUFFERSEGM_L_VANISHES(sv1, ev1, sv2, ev2) ?
+      tcbuffersegm_contains_meet(sv1, ev1, sv2, ev2, strict, lower, upper,
+        tps) : -1;
+    if (result >= 0)
+      return result;
+    if (! (contains ? cbuffer_contains(sv1, sv2) : cbuffer_covers(sv1, sv2)))
       return 0;
     fstart = 0.0; fend = 1.0;
   }
   else if (nroots == 1)
   {
+    bool in_lower = contains ? cbuffer_contains(sv1, sv2) :
+      cbuffer_covers(sv1, sv2);
+    bool in_upper = contains ? cbuffer_contains(ev1, ev2) :
+      cbuffer_covers(ev1, ev2);
     if (in_lower && ! in_upper)
     {
       fstart = 0.0; fend = roots[0];
@@ -424,15 +697,47 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
     {
       /* Isolated tangency: the disks graze from inside at a single instant.
        * Covers holds there; contains does not when a point touches the
-       * boundary of a disk of a strictly positive radius */
+       * boundary of a disk of a strictly positive radius, save a point the
+       * disk shrinks to. Contains differs from covers only for a disk of a
+       * zero radius, a point, as #cbuffer_contains states it, and the radius
+       * of the second disk is affine and non-negative, so it is zero inside
+       * the segment only when it is zero at both ends */
       long double r1 = sv1->radius + roots[0] * (ev1->radius - sv1->radius);
-      if (is_strict && r1 > 0)
-        return 0;
+      if (contains && sv2->radius == 0.0 && ev2->radius == 0.0 && r1 > 0)
+      {
+        int result = tcbuffersegm_contains_meet(sv1, ev1, sv2, ev2, strict,
+          lower, upper, tps);
+        return (result >= 0) ? result : 0;
+      }
+      /* A point on the boundary at an end of the segment, covered there and
+       * not contained, is an exact root of the squared clearance at that end,
+       * which the root found may be */
+      if (contains && ((sv2->radius == 0.0 && cbuffer_covers(sv1, sv2)) ||
+          (ev2->radius == 0.0 && cbuffer_covers(ev1, ev2))))
+        return tcbuffersegm_contains_end(sv1, ev1, sv2, ev2, lower, upper,
+          tps);
       fstart = fend = roots[0];
     }
   }
   else
   {
+    int result = TCBUFFERSEGM_L_VANISHES(sv1, ev1, sv2, ev2) ?
+      tcbuffersegm_contains_meet(sv1, ev1, sv2, ev2, strict, lower, upper,
+        tps) : -1;
+    if (result >= 0)
+      return result;
+    /* A point grazing the boundary of a disk is contained nowhere, and the
+     * rounding of the quadratic reads its double root as two: the exact sign
+     * of the discriminant tells them apart */
+    if (contains && sv2->radius == 0.0 && ev2->radius == 0.0)
+    {
+      const double a0[2] = {sv1->x, sv1->y}, a1[2] = {ev1->x, ev1->y};
+      const double b0[2] = {sv2->x, sv2->y}, b1[2] = {ev2->x, ev2->y};
+      int asign;
+      if (point_motion_contains_disc_sign(a0, a1, b0, b1, 2, sv1->radius,
+            ev1->radius, 0.0, 0.0, &asign) <= 0 && asign > 0)
+        return 0;
+    }
     fstart = roots[0]; fend = roots[1];
   }
   double duration = (double) (upper - lower);
@@ -451,14 +756,17 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] dist Distance, unused parameter
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  Datum end2, Datum dist UNUSED, TimestampTz lower, TimestampTz upper,
- TimestampTz *tps, int cap)
+ TimestampTz *tps, Datum *values UNUSED, int cap)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   const Cbuffer *sv1 = DatumGetCbufferP(start1);
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
@@ -551,7 +859,7 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
    * distance answers it */
   if (best < 0.0)
     return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
-      lower, upper, tps, cap);
+      lower, upper, tps, NULL, cap);
 
   tps[0] = lower + (TimestampTz) ((double) (upper - lower) * fbest);
   return 1;
@@ -576,7 +884,7 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
   assert(lower < upper); assert(t1); assert(t2);
   TimestampTz tps[2];
   int result = tcbuffersegm_dwithin_turnpt(start, end, value, value,
-    (Datum) 0.0, lower, upper, tps, 2);
+    (Datum) 0.0, lower, upper, tps, NULL, 2);
   if (result == 0)
   {
     *t1 = *t2 = (TimestampTz) 0;

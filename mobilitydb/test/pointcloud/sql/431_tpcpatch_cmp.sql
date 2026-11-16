@@ -78,7 +78,7 @@ SELECT (:p1) < (:p2);  -- transitive consequence
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_cmp_ordered;
-CREATE TABLE tbl_cmp_ordered AS
+CREATE TEMP TABLE tbl_cmp_ordered AS
   SELECT 1::int AS k, (:p2)::tpcpatch AS pa
   UNION ALL SELECT 2, (:p1)
   UNION ALL SELECT 3, (:p_pcid2)

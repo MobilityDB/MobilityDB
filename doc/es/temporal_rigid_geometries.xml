@@ -819,12 +819,11 @@ SELECT getTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 		<para>Los valores de una distancia temporal son exactos. Cuando un cuerpo gira, la distancia entre dos instantes no varía linealmente, por lo que la distancia temporal tiene también un instante en cada mínimo y cada máximo de la distancia. Así, la distancia de aproximación más cercana y el instante de aproximación más cercana son exactos.</para>
 
-		<para>Las funciones de distancia requieren una geometría de referencia que sea un polígono convexo sin agujeros. Un polígono del otro argumento también debe ser convexo y sin agujeros. Otros valores dan un error. Una colección de geometrías, incluidas las anidadas, se lee como sus miembros, como una multigeometría. La distancia de una geometría rígida temporal en tres dimensiones aún no se admite, ni la distancia a una curva. Por tanto, la distancia temporal entre dos geometrías cóncavas tampoco se admite aún.</para>
+		<para>La geometría de referencia puede ser un polígono de cualquier forma, con agujeros. Se lee como un recubrimiento exacto de piezas convexas cuyos vértices son los suyos y cuya unión es su área, por lo que la distancia del cuerpo es la menor distancia de una pieza, y es 0 exactamente donde una pieza toca el otro argumento. Un polígono del otro argumento también puede tener cualquier forma y agujeros: la distancia a él es 0 mientras el cuerpo tiene un punto en él y, en otro caso, la distancia a sus anillos. Una colección de geometrías, incluidas las anidadas, se lee como sus miembros, como una multigeometría. Dos geometrías rígidas temporales pueden girar ambas en el mismo segmento, sea cual sea la forma de sus cuerpos. La distancia de una geometría rígida temporal en tres dimensiones aún no se admite, ni la distancia a una curva.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
   Pose(Point(0 0),0)@2001-01-01', geometry 'Point(7 3)');
--- ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is
--- a convex polygon without holes
+-- 3@2001-01-01
 </programlisting>
 
 		<itemizedlist>
@@ -1254,6 +1253,28 @@ SELECT splitNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
 -- {"STBOX XT(((0,0),(11,1)),[2001-01-01, 2001-01-02])"}
 SELECT splitNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
+-- {"[2001-01-01, 2001-01-02]"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_merge_boxes">
+				<indexterm significance="normal"><primary><varname>mergeNStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeEachNStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeNSpans</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeEachNSpans</varname></primary></indexterm>
+				<para>Devuelve las cajas espaciotemporales o los lapsos de tiempo de una geometría rígida temporal fusionados en un número dado de cajas, o hasta que una caja contenga en promedio un número dado de segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeNStboxes(trgeometry,integer) → stbox[]
+mergeEachNStboxes(trgeometry,integer) → stbox[]
+mergeNSpans(trgeometry,integer) → tstzspan[]
+mergeEachNSpans(trgeometry,integer) → tstzspan[]
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
+/* {"STBOX XT(((-1.414213562373095,-1.414213562373095),(11.414213562373096,1.414213562373095)),[2001-01-01, 2001-01-02])"} */
+SELECT mergeNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
 -- {"[2001-01-01, 2001-01-02]"}
 </programlisting>

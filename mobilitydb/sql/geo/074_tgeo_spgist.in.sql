@@ -141,6 +141,10 @@ CREATE OPERATOR CLASS tgeometry_quadtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tgeometry, stbox),
   OPERATOR  35    /&> (tgeometry, tgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tgeometry, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tgeometry, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -247,6 +251,10 @@ CREATE OPERATOR CLASS tgeometry_kdtree_ops
   -- overlaps or back
   OPERATOR  35    /&> (tgeometry, stbox),
   OPERATOR  35    /&> (tgeometry, tgeometry),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tgeometry, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tgeometry, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
@@ -302,6 +310,10 @@ CREATE OPERATOR CLASS tgeography_quadtree_ops
   OPERATOR  31    #&> (tgeography, tstzspan),
   OPERATOR  31    #&> (tgeography, stbox),
   OPERATOR  31    #&> (tgeography, tgeography),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tgeography, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tgeography, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -357,6 +369,10 @@ CREATE OPERATOR CLASS tgeography_kdtree_ops
   OPERATOR  31    #&> (tgeography, tstzspan),
   OPERATOR  31    #&> (tgeography, stbox),
   OPERATOR  31    #&> (tgeography, tgeography),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tgeography, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tgeography, stbox),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),

@@ -112,13 +112,13 @@ trgeoseq_disc_parse(const char **str, MeosType temptype, int *temp_srid,
   TInstant *inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
   if (! inst)
     goto error;
-  meos_array_add(array, inst);
+  meos_array_add_intl(array, inst);
   while (p_comma(str))
   {
     inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
     if (! inst)
       goto error;
-    meos_array_add(array, inst);
+    meos_array_add_intl(array, inst);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -170,13 +170,13 @@ trgeoseq_cont_parse(const char **str, MeosType temptype, interpType interp,
   TInstant *inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
   if (! inst)
     goto error;
-  meos_array_add(array, inst);
+  meos_array_add_intl(array, inst);
   while (p_comma(str))
   {
     inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
     if (! inst)
       goto error;
-    meos_array_add(array, inst);
+    meos_array_add_intl(array, inst);
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -234,13 +234,13 @@ trgeoseqset_parse(const char **str, MeosType temptype, interpType interp,
     geom);
   if (! seq)
     goto error;
-  meos_array_add(array, seq);
+  meos_array_add_intl(array, seq);
   while (p_comma(str))
   {
     seq = trgeoseq_cont_parse(str, temptype, interp, false, temp_srid, geom);
     if (! seq)
       goto error;
-    meos_array_add(array, seq);
+    meos_array_add_intl(array, seq);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;

@@ -459,6 +459,29 @@ raster_value_gdal_cross(const void *ctxp, double x1, double y1, double x2,
 }
 
 /**
+ * @brief Raster side callback deciding exactly the side of a position of a
+ * grid line of the geotransform, see #raster_affine_side()
+ */
+static int
+raster_value_gdal_side(const void *ctxp, double x, double y, int axis, int k)
+{
+  const RasterValueGdalCtx *ctx = (const RasterValueGdalCtx *) ctxp;
+  return raster_affine_side(ctx->gt, x, y, axis, k);
+}
+
+/**
+ * @brief Raster offset callback dating exactly the crossing of a grid line of
+ * the geotransform, see #raster_affine_offset()
+ */
+static int64
+raster_value_gdal_offset(const void *ctxp, double x1, double y1, double x2, double y2,
+  int64 D, int axis, int k, bool *whole)
+{
+  const RasterValueGdalCtx *ctx = (const RasterValueGdalCtx *) ctxp;
+  return raster_affine_offset(ctx->gt, x1, y1, x2, y2, D, axis, k, whole);
+}
+
+/**
  * @brief Raster pixel callback backed by a single-pixel GDALRasterIO read:
  * the context carries the band, only the pixel varies per call
  * @details A pixel GDAL cannot read, as when a virtual raster takes its
@@ -567,6 +590,8 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
   ops->point = NULL;
   ops->data = NULL;
   ops->cross = &raster_value_gdal_cross;
+  ops->side = &raster_value_gdal_side;
+  ops->offset = &raster_value_gdal_offset;
   ops->ctx = ctx;
   ops->width = ctx->xsize;
   ops->height = ctx->ysize;

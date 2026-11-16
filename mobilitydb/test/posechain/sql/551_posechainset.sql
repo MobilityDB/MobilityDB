@@ -115,7 +115,7 @@ SELECT hashExtended(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}', 1) =
   hashExtended(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}', 1);
 
 DROP TABLE IF EXISTS tbl_posechainset_test;
-CREATE TABLE tbl_posechainset_test(k int, s posechainset);
+CREATE TEMP TABLE tbl_posechainset_test(k int, s posechainset);
 INSERT INTO tbl_posechainset_test VALUES
   (1, posechainset '{"PoseChain(Pose(Point(0 0), 0))"}'),
   (2, posechainset '{"PoseChain(Pose(Point(1 0), 0))"}'),

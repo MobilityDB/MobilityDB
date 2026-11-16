@@ -1,3 +1,4 @@
+-------------------------------------------------------------------------------
 SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint;
  srid 
 ------
@@ -40,6 +41,8 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
    100
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Transform by using Gauss Kruger Projection that is used in Secondo
 SELECT ST_AsText(transformGK(geometry 'Linestring empty'));
     st_astext     
 ------------------
@@ -64,6 +67,7 @@ SELECT round(MAX(ST_X(ST_StartPoint(transformGK(g)))), 6) FROM tbl_geom_linestri
  13567136.086579
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT tgeogpoint(temp) FROM tbl_tgeompoint LIMIT 10;
                                    tgeogpoint                                    
 ---------------------------------------------------------------------------------
@@ -244,6 +248,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
  POINT Z (31.13 68.76 563.03)@Wed Oct 10 11:35:00 2001 PDT
 (10 rows)
 
+-- Round an array of temporal points
 SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
                                                                                                                            astext                                                                                                                           
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -340,6 +345,7 @@ SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3D;
   52
 (1 row)
 
+-- Apply ST_UnaryUnion to the result
 SELECT MAX(ST_NPoints(trajectory(temp, true))) FROM tbl_tgeompoint;
  max 
 -----
@@ -364,6 +370,7 @@ SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint3D;
  2974.577302
 (1 row)
 
+-- Tests independent of PROJ version
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
  count 
 -------
@@ -418,6 +425,7 @@ SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tgeompoint3D WHERE interp(t
  1.860218
 (1 row)
 
+-- Tests intended to avoid floating point precision errors
 SELECT COUNT(*) FROM tbl_tgeogpoint
 WHERE interp(temp) = 'Linear' AND startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
@@ -482,6 +490,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL;
     47
 (1 row)
 
+-- Return negative result in PostGIS 2.5.5, return erroneous value in PostGIS 3.1.1
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL;
  count 
 -------
@@ -512,6 +521,8 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE angularDifference(temp) IS NOT NULL;
     43
 (1 row)
 
+-------------------------------------------------------------------------------
+-- 2D
 SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point t1, tbl_tgeompoint t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     
@@ -547,6 +558,9 @@ WHERE bearing(temp, g) IS NOT NULL;
  360
 (1 row)
 
+-- SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+-- WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
+-- 3D
 SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     
@@ -582,6 +596,9 @@ WHERE bearing(temp, g) IS NOT NULL;
  360
 (1 row)
 
+-- SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+-- WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
  count 
 -------
@@ -618,6 +635,7 @@ SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3D;
  t
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geom t2 WHERE temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
  count 
 -------
@@ -642,6 +660,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_stbox3d t2 WHERE temp != merge(atS
      0
 (1 row)
 
+-- TODO THE FOLLOWING FUNCTION RETURNS 1, WE NEED TO DEBUG TO UNDERSTAND WHY
 SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geodstbox3d t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));
  count 
 -------
@@ -660,3 +679,4 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_floatspan t2 WHERE temp != merge(a
      0
 (1 row)
 
+-------------------------------------------------------------------------------

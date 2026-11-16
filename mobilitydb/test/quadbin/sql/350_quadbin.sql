@@ -86,7 +86,7 @@ SELECT (quadbin '480fffffffffffff')::bigint;
 -- text input does, explicitly and in an assignment
 /* Errors */
 SELECT 42::bigint::quadbin;
-CREATE TABLE tbl_quadbin_assign(cell quadbin);
+CREATE TEMP TABLE tbl_quadbin_assign(cell quadbin);
 INSERT INTO tbl_quadbin_assign VALUES (42::bigint);
 INSERT INTO tbl_quadbin_assign VALUES (5192650370358181887::bigint);
 SELECT cell FROM tbl_quadbin_assign;
@@ -120,7 +120,7 @@ SELECT isValidCell(quadbin '484b5fffffffffff');
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_quadbin_test;
-CREATE TABLE tbl_quadbin_test(k int, c quadbin);
+CREATE TEMP TABLE tbl_quadbin_test(k int, c quadbin);
 INSERT INTO tbl_quadbin_test VALUES
   (1, quadbin '480fffffffffffff'),
   (2, quadbin '48427fffffffffff'),

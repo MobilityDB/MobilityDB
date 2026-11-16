@@ -17,6 +17,8 @@ on:
       - 'mobilitydb/**'
       - 'pgtypes/**'
       - 'postgis/**'
+      - 'tools/scripts/check_vendored_undefined.py'
+      - 'tools/scripts/check_meos_only_files.py'
       - 'CMakeLists.txt'
     branches-ignore:
       - gh-pages
@@ -29,6 +31,8 @@ on:
       - 'mobilitydb/**'
       - 'pgtypes/**'
       - 'postgis/**'
+      - 'tools/scripts/check_vendored_undefined.py'
+      - 'tools/scripts/check_meos_only_files.py'
       - 'CMakeLists.txt'
     branches-ignore:
       - gh-pages
@@ -174,6 +178,12 @@ jobs:
           cd build
           make -j 4
           sudo make install
+
+      # The backend loads librttopo with postgis_raster, and its names of
+      # liblwgeom would take the call of any vendored function the extension
+      # leaves undefined, so the extension must call none.
+      - name: Check that the extension calls no vendored liblwgeom function left undefined
+        run: python3 tools/scripts/check_vendored_undefined.py build/libMobilityDB-*.so
 
       - name: test install
         run: |

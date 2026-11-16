@@ -203,6 +203,8 @@ typedef enum
 #define RTFrontStrategyNumber         33    /* for <</ */
 #define RTBackStrategyNumber          34    /* for />> */
 #define RTOverBackStrategyNumber      35    /* for /&> */
+#define RTEverOverlapStrategyNumber   36    /* for ?&& */
+#define RTAlwaysOverlapStrategyNumber 37    /* for %&& */
 
 /*****************************************************************************
  * Well-Known Binary (WKB)
@@ -308,16 +310,21 @@ typedef int (*tpfunc_unary)(Datum, Datum, TimestampTz, TimestampTz,
   TimestampTz *, int);
 
 /* Definition of a turning point function for a temporal and a base types,
- * writing and counting its instants as a #tpfunc_unary does */
+ * writing and counting its instants as a #tpfunc_unary does. When the array
+ * of values it receives is not NULL, it writes there, beside each instant,
+ * the value of the lifted function computed at the exact time of which the
+ * instant is the nearest microsecond, which the readers take in place of
+ * evaluating the function at the instant (field tpfn_value of
+ * LiftedFunctionInfo) */
 typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
-  TimestampTz *, int);
+  TimestampTz *, Datum *, int);
 
 /* Definition of a turning point function for two temporal types, writing and
- * counting its instants as a #tpfunc_unary does. The instants of a predicate
- * are the interval of a segment during which it holds: its enter and exit
- * instants, or the one instant of a touch */
+ * counting its instants and their values as a #tpfunc_base does. The
+ * instants of a predicate are the interval of a segment during which it
+ * holds: its enter and exit instants, or the one instant of a touch */
 typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
-  TimestampTz, TimestampTz *, int);
+  TimestampTz, TimestampTz *, Datum *, int);
 
 /* Capacity of the array a caller of a turning point function holds on its
  * stack, which it replaces by a larger one only when the function counts more
@@ -516,6 +523,34 @@ ensure_finite(double d)
   return false;
 }
 /**
+ * @brief Ensure that a timestamp is finite
+ * @details `infinity` and `-infinity` have no position on the time line a
+ * span, a set or a temporal value bounds and interpolates over, so MEOS
+ * refuses them where a timestamp enters a value, as #ensure_finite refuses a
+ * number
+ */
+static inline bool
+ensure_finite_timestamptz(TimestampTz t)
+{
+  if (! TIMESTAMP_NOT_FINITE(t))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "The timestamp must be finite");
+  return false;
+}
+/**
+ * @brief Ensure that a date is finite
+ * @details A date span, a date set and a date bound hold finite dates only,
+ * as #ensure_finite_timestamptz states for a timestamp
+ */
+static inline bool
+ensure_finite_date(DateADT d)
+{
+  if (! DATE_NOT_FINITE(d))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "The date must be finite");
+  return false;
+}
+/**
  * @brief Ensure that the result of an operation is finite
  * @details Every MEOS value is finite (#ensure_finite), and an operation on
  * finite operands can leave the doubles, as a sum or a product beyond
@@ -537,6 +572,8 @@ extern bool ensure_positive_datum(Datum size, MeosType basetype);
 extern bool ensure_valid_day_duration(const Interval *duration);
 extern bool positive_duration(const Interval *duration);
 extern bool ensure_positive_duration(const Interval *duration);
+extern bool positive_window(const Interval *interv);
+extern bool ensure_positive_window(const Interval *interv);
 
 /* General functions */
 

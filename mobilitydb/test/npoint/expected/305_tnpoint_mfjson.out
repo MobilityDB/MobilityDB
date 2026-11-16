@@ -1,59 +1,79 @@
+-------------------------------------------------------------------------------
+-- asMFJSON / tnpointFromMFJSON round-trip across all temporal subtypes
+-------------------------------------------------------------------------------
+-- Instant
 SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint 'Npoint(1, 0.5)@2001-01-01')));
                    astext                   
 --------------------------------------------
  NPoint(1,0.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Discrete sequence
 SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}')));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {NPoint(1,0.3)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.5)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
+-- Linear sequence
 SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]')));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- Sequence set (linear)
 SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.1)@2001-01-04, Npoint(2, 0.2)@2001-01-05]}')));
                                                                                                               astext                                                                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.1)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.2)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Step interpolation
 SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]')));
                                                                       astext                                                                      
 --------------------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- Boundary positions on the route (0.0 = start, 1.0 = end)
 SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '[Npoint(1, 0.0)@2001-01-01, Npoint(1, 1.0)@2001-01-02]')));
                                         astext                                        
 --------------------------------------------------------------------------------------
  [NPoint(1,0)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,1)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
 /* Errors */
 -------------------------------------------------------------------------------
 -- Malformed JSON
 SELECT tnpointFromMFJSON('ABC');
 ERROR:  Error while processing MFJSON string unexpected character (at offset 0)
+-- Wrong moving-feature type tag
 SELECT tnpointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"}');
 ERROR:  Invalid 'type' value in MFJSON string, expected: tnpoint, received: tgeompoint
+-- Unknown moving-feature type tag
 SELECT tnpointFromMFJSON('{"type":"XXX","values":[{"route":1,"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"}');
 ERROR:  Invalid 'type' value in MFJSON string: XXX
+-- Missing 'route'
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"}');
 ERROR:  Unable to find 'route' in MFJSON string
+-- Missing 'position'
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"}');
 ERROR:  Unable to find 'position' in MFJSON string
+-- Position out of [0, 1] (negative)
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":-0.1}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"}');
 ERROR:  The relative position must be a real number between 0 and 1
+-- Position out of [0, 1] (above 1)
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":1.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"}');
 ERROR:  The relative position must be a real number between 0 and 1
+-- Unregistered route id
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":99999,"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"}');
 ERROR:  There is no route with gid value 99999 in table ways
+-- Missing interpolation
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"]}');
 ERROR:  Unable to find 'interpolation' in MFJSON string
+-- Bad interpolation
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"XXX"}');
 ERROR:  Invalid 'interpolation' value in MFJSON string
+-------------------------------------------------------------------------------

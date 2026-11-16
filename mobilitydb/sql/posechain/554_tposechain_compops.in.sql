@@ -98,6 +98,7 @@ CREATE FUNCTION eOverlaps(stbox, tposechain)
 CREATE OPERATOR ?&& (
   LEFTARG = stbox, RIGHTARG = tposechain,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -109,6 +110,7 @@ CREATE FUNCTION aOverlaps(stbox, tposechain)
 CREATE OPERATOR %&& (
   LEFTARG = stbox, RIGHTARG = tposechain,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -172,6 +174,7 @@ CREATE FUNCTION eOverlaps(tposechain, stbox)
 CREATE OPERATOR ?&& (
   LEFTARG = tposechain, RIGHTARG = stbox,
   PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -183,6 +186,7 @@ CREATE FUNCTION aOverlaps(tposechain, stbox)
 CREATE OPERATOR %&& (
   LEFTARG = tposechain, RIGHTARG = stbox,
   PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 

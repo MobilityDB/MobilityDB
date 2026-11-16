@@ -78,6 +78,8 @@ tbox_index_leaf_consistent(const TBox *key, const TBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
       retval = overlaps_tbox_tbox(key, query);
       break;
     case RTContainsStrategyNumber:
@@ -144,6 +146,8 @@ tbox_gist_inner_consistent(const TBox *key, const TBox *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
+    case RTEverOverlapStrategyNumber:
+    case RTAlwaysOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
       retval = overlaps_tbox_tbox(key, query);
       break;
@@ -243,9 +247,10 @@ tbox_adjust(void *bbox1, void *bbox2)
  * @brief Return the size of a temporal box for penalty calculation
  * @note The result can be +Infinity, but not NaN
  */
-static double
-tbox_size(const TBox *box)
+double
+tbox_size(const void *bbox)
 {
+  const TBox *box = (const TBox *) bbox;
   double result_size = 1;
   bool hasx = MEOS_FLAGS_GET_X(box->flags),
        hast = MEOS_FLAGS_GET_T(box->flags);

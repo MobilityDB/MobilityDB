@@ -570,6 +570,12 @@ SELECT eDwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tge
 -- Trajectories far apart at both shared endpoints that meet only strictly
 -- between the vertices
 SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]', tgeompoint '[Point(5 -100)@2001-01-01, Point(5 100)@2001-01-02]', 1);
+-- Geodetic points within the distance only at a bound of their common period
+-- that the period excludes, or apart right after a lower bound that it
+-- excludes
+SELECT eDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)', tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)', 0);
+SELECT eDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeogpoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 0);
+SELECT aDwithin(tgeogpoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeogpoint '(Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 100000);
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'Interp=Step;[Point(5 0)@2001-01-01, Point(3 2)@2001-01-02]', 1);
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2001-01-01, Point(2 2)@2001-01-02]', 1);
 
@@ -634,6 +640,21 @@ SELECT aDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tg
 SELECT eDwithin(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02],[Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '[Point(100 100)@2001-01-03, Point(101 100)@2001-01-04]', 2);
 SELECT aDwithin(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02],[Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '[Point(100 100)@2001-01-03, Point(101 100)@2001-01-04]', 2);
 
+-- Two moving points within the distance only at a bound of their common
+-- period that the period excludes are within it at no instant they share,
+-- ever, while over inclusive bounds they are; a point that reaches a
+-- geometry point only at such a bound is likewise never within it. Always
+-- within reads the distance at both bounds, which the instants next to an
+-- excluded bound approach
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)', tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)', 0);
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 0);
+SELECT eDwithin(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '(Point(0 0)@2001-01-01, Point(2 0)@2001-01-02]', 0);
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02)', tgeompoint '[Point(3 0)@2001-01-01, Point(1 0)@2001-01-02)', 1);
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(3 0)@2001-01-01, Point(1 0)@2001-01-02]', 1);
+SELECT eDwithin(tgeompoint '[Point(2 0)@2001-01-01, Point(0 0)@2001-01-02)', geometry 'Point(0 0)', 0);
+SELECT aDwithin(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '(Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 2);
+SELECT aDwithin(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '(Point(2 0)@2001-01-01, Point(0 0)@2001-01-02]', 1);
+
 -------------------------------------------------------------------------------
 
 -- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
@@ -653,6 +674,31 @@ SELECT eIntersects(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03
 SELECT eDisjoint(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]');
 SELECT aIntersects(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]');
 SELECT aDisjoint(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]');
+
+-- Two temporal geography points meet where the doubles of their ends prove
+-- it: on the equator, three quarters of a day after the start, on one
+-- meridian, a segment and its reverse at the middle, a segment and its mirror
+-- across the equator, at the microsecond nearest to where the first crosses
+-- it, two segments that a half turn proves to stand at one point at the
+-- middle, there, on two great circles, through Point(10 0) or the north pole;
+-- a segment off the equator by 1e-6 degrees never meets one on it, nor a
+-- segment moved by 1e-6 degrees off the half turn of the other
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' ?= tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]';
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' #= tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]';
+SELECT eDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]', tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]', 0);
+SELECT eIntersects(tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]', tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]');
+SELECT tgeogpoint '[Point(10 0)@2001-01-01, Point(10 4)@2001-01-02]' #= tgeogpoint '[Point(10 1)@2001-01-01, Point(10 2)@2001-01-02]';
+SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(2 3)@2001-01-02]' #= tgeogpoint '[Point(2 3)@2001-01-01, Point(1 1)@2001-01-02]';
+SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(2 -3)@2001-01-02]' ?= tgeogpoint '[Point(1 -1)@2001-01-01, Point(2 3)@2001-01-02]';
+SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(2 -3)@2001-01-02]' #= tgeogpoint '[Point(1 -1)@2001-01-01, Point(2 3)@2001-01-02]';
+SELECT eDwithin(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 -3)@2001-01-02]', tgeogpoint '[Point(1 -1)@2001-01-01, Point(2 3)@2001-01-02]', 0);
+SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' ?= tgeogpoint '[Point(3 0.000001)@2001-01-01, Point(0 0.000001)@2001-01-02]';
+SELECT tgeogpoint '[Point(10 3)@2001-01-01, Point(10 -3)@2001-01-02]' #= tgeogpoint '[Point(8 0)@2001-01-01, Point(12 0)@2001-01-02]';
+SELECT eDwithin(tgeogpoint '[Point(10 3)@2001-01-01, Point(10 -3)@2001-01-02]', tgeogpoint '[Point(8 0)@2001-01-01, Point(12 0)@2001-01-02]', 0);
+SELECT tgeogpoint '[Point(12 3)@2001-01-01, Point(8 -3)@2001-01-02]' ?= tgeogpoint '[Point(9 -5)@2001-01-01, Point(11 5)@2001-01-02]';
+SELECT tgeogpoint '[Point(10 80)@2001-01-01, Point(-170 80)@2001-01-02]' #= tgeogpoint '[Point(50 85)@2001-01-01, Point(-130 85)@2001-01-02]';
+SELECT tgeogpoint '[Point(10 3)@2001-01-01, Point(10 -3)@2001-01-02]' ?= tgeogpoint '[Point(8 0)@2001-01-01, Point(12.000001 0)@2001-01-02]';
+SELECT aDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]', tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]', 0);
 
 -------------------------------------------------------------------------------
 

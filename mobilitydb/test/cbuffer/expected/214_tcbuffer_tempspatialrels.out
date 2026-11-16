@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+-- tContains
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the function is not STRICT
 SELECT tContains(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
  tcontains 
 -----------
@@ -64,6 +68,9 @@ SELECT tContains(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0
  [f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- The disc leaves the geometry: containment stops at the internal tangency,
+-- when the disc starts poking out, not at the later external tangency where it
+-- stops intersecting
 SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
                                                               tcontains                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -76,6 +83,8 @@ SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbu
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 21:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A hole the disc passes over: contained on both sides, not while it overlaps
+-- the hole, so containment starts and stops at internal tangencies only
 SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');
                                                                               tcontains                                                                               
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -88,24 +97,29 @@ SELECT tCovers(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, t@Tue Jan 02 12:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
+-- centre (0,0) and radius 5. The disc stays strictly inside the ring
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');
                              tcontains                              
 --------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- The disc leaves the arc ring at the internal tangency
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
                                                               tcontains                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 03:00:00 2001 PST], (f@Tue Jan 02 03:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Internally tangent disc: covered by the ring but not strictly contained
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2001-01-01');
            tcontains            
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Multi surface grouping the same curve polygon
 SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');
                              tcontains                              
 --------------------------------------------------------------------
@@ -129,6 +143,9 @@ LINE 1: SELECT tContains(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Po...
                                                          ^
 SELECT tContains(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
 ERROR:  The geometry cannot have Z dimension
+-- Two temporal circular buffers: a small disc passing straight through a large
+-- stationary one is contained on the interval between the two clearance
+-- crossings, not only at the closest-approach instant
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),5)@2001-01-01, Cbuffer(Point(0 0),5)@2001-01-03]', tcbuffer '[Cbuffer(Point(-10 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-03]');
                                                                               tcontains                                                                               
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -141,6 +158,8 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),5)@2001-01-01, Cbuffer(Point(0 0),5
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 14:24:00 2001 PST, t@Tue Jan 02 09:36:00 2001 PST], (f@Tue Jan 02 09:36:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Identical moving buffers contain and cover each other throughout, as
+-- cbuffer_contains and cbuffer_covers read each of their instants
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]');
                              tcontains                              
 --------------------------------------------------------------------
@@ -153,6 +172,7 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A moving buffer tangent from inside to the one containing it throughout
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(10 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(1 0),2)@2001-01-01, Cbuffer(Point(11 0),2)@2001-01-03]');
                              tcontains                              
 --------------------------------------------------------------------
@@ -165,6 +185,8 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(10 0),
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A moving point on the boundary of a moving buffer throughout is covered but
+-- not contained, the one case where the two relationships part
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(10 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 2),0)@2001-01-01, Cbuffer(Point(10 2),0)@2001-01-03]');
                              tcontains                              
 --------------------------------------------------------------------
@@ -177,6 +199,7 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(10 0),
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A moving point grazing the boundary of a stationary buffer at one instant
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),0)@2001-01-01, Cbuffer(Point(5 2),0)@2001-01-03]');
                              tcontains                              
 --------------------------------------------------------------------
@@ -189,12 +212,16 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Two discs overlapping throughout a segment and tangent at its end are within
+-- a distance zero throughout it
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(2 2),3)@2001-01-01, Cbuffer(Point(0 2),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(2 -1),2)@2001-01-01, Cbuffer(Point(-2 2),1)@2001-01-03]', 0);
                               tdwithin                              
 --------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A disc inside a stationary one throughout a segment and tangent to it from
+-- inside at its end is covered and contained throughout it
 SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
                               tcovers                               
 --------------------------------------------------------------------
@@ -207,6 +234,9 @@ SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0)
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A buffer whose nearest approach to a point exceeds the bound by less than
+-- half a unit in the last place: never within at the bound, within at the
+-- next double
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317311);
                               tdwithin                              
 --------------------------------------------------------------------
@@ -219,6 +249,10 @@ SELECT tDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),4
  {[f@Wed Jan 01 06:52:39 2025 PST, f@Wed Jan 01 06:55:39.999999 2025 PST], (t@Wed Jan 01 06:55:39.999999 2025 PST, t@Wed Jan 01 06:55:40 2025 PST]}
 (1 row)
 
+-- Crossings inside a segment at projected coordinates: the first centre jumps
+-- 330 km in 4 seconds and passes 64.9 m from the second. With constant radii
+-- the answers are those of the centres at the radii read as a distance, which
+-- the temporal points beside them give
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]', 100);
                                                                                                              tdwithin                                                                                                             
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -249,6 +283,10 @@ SELECT tDwithin(tgeompoint '[Point(579857.891 6033318.651)@2025-01-01 16:35:22+0
  {[f@Wed Jan 01 07:35:22 2025 PST, f@Wed Jan 01 07:35:25.203721 2025 PST], (t@Wed Jan 01 07:35:25.203721 2025 PST, t@Wed Jan 01 07:35:25.686006 2025 PST], (f@Wed Jan 01 07:35:25.686006 2025 PST, f@Wed Jan 01 07:35:26 2025 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- tDisjoint
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the function is not STRICT
 SELECT tDisjoint(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
  tdisjoint 
 -----------
@@ -399,6 +437,8 @@ SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Circular arc input (native arc-exact); arc centre (0,0) radius 5, upper-right
+-- quadrant. Complement of the corresponding tIntersects cases below
 SELECT tDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),2.5)@2001-01-01, Cbuffer(Point(4 3),2.5)@2001-01-03]');
                                              tdisjoint                                              
 ----------------------------------------------------------------------------------------------------
@@ -411,18 +451,21 @@ SELECT tDisjoint(tcbuffer '[Cbuffer(Point(4 3),2.5)@2001-01-01, Cbuffer(Point(8 
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST], (t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Off-span: the disc meets the full circle but not the arc (angular gating)
 SELECT tDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2001-01-01, Cbuffer(Point(5 -1),0.5)@2001-01-03]');
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- Compound curve (arc chained to a line)
 SELECT tDisjoint(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(-2 8),0.5)@2001-01-01, Cbuffer(Point(-2 4),0.5)@2001-01-03]');
                                                                               tdisjoint                                                                               
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 06:00:00 2001 PST, f@Tue Jan 02 18:00:00 2001 PST], (t@Tue Jan 02 18:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Curve polygon (arc ring): the disc starts inside the ring and exits it
 SELECT tDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -434,6 +477,7 @@ SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0
 ERROR:  Operation on mixed SRID
 SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+-- 3D geometry (cbuffer is 2D only)
 SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2001-01-01', geometry 'Point(2 2 2)');
 ERROR:  The geometry cannot have Z dimension
 LINE 1: SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2001-01...
@@ -450,6 +494,10 @@ SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1 1),0.5)@2001-01-01, Cbuffer(Point
 ERROR:  The geometry cannot have Z dimension
 LINE 1: SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1 1),0.5)@2001-...
                                   ^
+-------------------------------------------------------------------------------
+-- tIntersects
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the function is not STRICT
 SELECT tIntersects(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
  tintersects 
 -------------
@@ -612,6 +660,7 @@ SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-- Circular arc input (native arc-exact); arc centre (0,0) radius 5, upper-right quadrant
 SELECT tIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),2.5)@2001-01-01, Cbuffer(Point(4 3),2.5)@2001-01-03]');
                                             tintersects                                             
 ----------------------------------------------------------------------------------------------------
@@ -624,12 +673,15 @@ SELECT tIntersects(tcbuffer '[Cbuffer(Point(4 3),2.5)@2001-01-01, Cbuffer(Point(
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Off-span: the disc meets the full circle but not the arc (angular gating)
 SELECT tIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2001-01-01, Cbuffer(Point(5 -1),0.5)@2001-01-03]');
                            tintersects                            
 ------------------------------------------------------------------
  [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- Compound curve (arc chained to a line): the arc component drives the same
+-- result as the arc-only case, and the line component is walked too
 SELECT tIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(8 6),2.5)@2001-01-01, Cbuffer(Point(4 3),2.5)@2001-01-03]');
                                             tintersects                                             
 ----------------------------------------------------------------------------------------------------
@@ -642,12 +694,14 @@ SELECT tIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 06:00:00 2001 PST, t@Tue Jan 02 18:00:00 2001 PST], (f@Tue Jan 02 18:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Curve polygon (arc ring): the disc starts inside the ring and exits it
 SELECT tIntersects(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 09:00:00 2001 PST], (f@Tue Jan 02 09:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Multi curve and multi surface grouping the same arc components
 SELECT tIntersects(geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(8 6),2.5)@2001-01-01, Cbuffer(Point(4 3),2.5)@2001-01-03]');
                                             tintersects                                             
 ----------------------------------------------------------------------------------------------------
@@ -660,6 +714,7 @@ SELECT tIntersects(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, 
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 09:00:00 2001 PST], (f@Tue Jan 02 09:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Coverage
 SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-03}', tcbuffer 'Cbuffer(Point(2 2),0.5)@2001-01-02');
  tintersects 
 -------------
@@ -672,6 +727,8 @@ SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-- Two moving discs with changing radii, apart at both ends of the segment and
+-- meeting in its middle, where their centres coincide
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(3 3),0)@2001-01-01, Cbuffer(Point(-2 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 1),3)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-03]');
                                                                                                             tintersects                                                                                                             
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -684,6 +741,7 @@ SELECT tDisjoint(tcbuffer '[Cbuffer(Point(3 3),0)@2001-01-01, Cbuffer(Point(-2 0
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 09:43:36.562167 2001 PST], (f@Mon Jan 01 09:43:36.562167 2001 PST, f@Tue Jan 02 17:11:41.698701 2001 PST], (t@Tue Jan 02 17:11:41.698701 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A moving disc touching a stationary one at a single instant
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),1)@2001-01-01, Cbuffer(Point(5 2),1)@2001-01-03]');
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -696,6 +754,9 @@ SELECT tDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0)
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST], (t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A moving disc meeting a stationary one from 08:15:22.3199847 to
+-- 15:44:37.6800153: apart at the whole microsecond before it meets and after it
+-- leaves, meeting at the ones within
 SELECT valueAtTimestamp(tIntersects(tcbuffer '[Cbuffer(Point(343.4469752357655 644.134764860065),0.5)@2001-01-01 00:00:00+00, Cbuffer(Point(348.1833027851398 644.134764860065),0.5)@2001-01-02 00:00:00+00]', tcbuffer '[Cbuffer(Point(345.81513901045264 644.2637366958002),0.25)@2001-01-01 00:00:00+00, Cbuffer(Point(345.81513901045264 644.2637366958002),0.25)@2001-01-02 00:00:00+00]'), t)
 FROM unnest(ARRAY[timestamptz '2001-01-01 08:15:22.319984+00', '2001-01-01 08:15:22.319985+00',
   '2001-01-01 15:44:37.680015+00', '2001-01-01 15:44:37.680016+00']) AS t;
@@ -712,6 +773,7 @@ SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1)
 ERROR:  Operation on mixed SRID
 SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+-- 3D geometry (cbuffer is 2D only)
 SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2001-01-01', geometry 'Point(2 2 2)');
 ERROR:  The geometry cannot have Z dimension
 LINE 1: SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2001-...
@@ -728,6 +790,11 @@ SELECT tIntersects(tcbuffer '{[Cbuffer(Point(1 1 1),0.5)@2001-01-01, Cbuffer(Poi
 ERROR:  The geometry cannot have Z dimension
 LINE 1: SELECT tIntersects(tcbuffer '{[Cbuffer(Point(1 1 1),0.5)@200...
                                     ^
+-------------------------------------------------------------------------------
+-- tTouches
+-------------------------------------------------------------------------------
+-- The function does not support 3D or geographies
+-- Test for NULL inputs since the function is not STRICT
 SELECT tTouches(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
  ttouches 
 ----------
@@ -788,6 +855,7 @@ SELECT tTouches(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Test for NULL inputs since the function is not STRICT
 SELECT tTouches(NULL::tcbuffer, geometry 'Point(1 1)');
  ttouches 
 ----------
@@ -854,18 +922,23 @@ SELECT tTouches(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.
  [f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+-- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
+-- centre (0,0) and radius 5. The disc of radius 1 comes from outside and is
+-- externally tangent to the ring at the instant its centre is at distance 6
 SELECT tTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]');
                                                                ttouches                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 19:12:00 2001 PST], (f@Mon Jan 01 19:12:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- The disc stays outside the ring and never reaches it
 SELECT tTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2001-01-01, Cbuffer(Point(10 10),1)@2001-01-03]');
                              ttouches                             
 ------------------------------------------------------------------
  [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- Circular arc (a curve, not a region): the disc grazes the arc
 SELECT tTouches(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(10 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]');
                                                                                                 ttouches                                                                                                
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -883,6 +956,10 @@ SELECT tTouches(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2001-
 ERROR:  The geometry cannot have Z dimension
 LINE 1: SELECT tTouches(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Poi...
                                                         ^
+-------------------------------------------------------------------------------
+-- tDwithin
+-------------------------------------------------------------------------------
+-- Test for NULL inputs since the function is not STRICT
 SELECT tDwithin(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 2);
  tdwithin 
 ----------
@@ -949,6 +1026,7 @@ SELECT tDwithin(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Test for NULL inputs since the function is not STRICT
 SELECT tDwithin(NULL::tcbuffer, geometry 'Point(1 1)', 2);
  tdwithin 
 ----------
@@ -1015,6 +1093,7 @@ SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- Test for NULL inputs since the function is not STRICT
 SELECT tDwithin(NULL::tcbuffer, tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 2);
  tdwithin 
 ----------
@@ -1033,6 +1112,7 @@ SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', tcbuffer 'Cbuffer
  
 (1 row)
 
+-- Coverage
 SELECT tDwithin(tcbuffer '(Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', geometry 'Point(0 1)', 1);
                                                                       tdwithin                                                                      
 ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1207,18 +1287,21 @@ SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Linestr
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Circular arc input (native arc-exact); arc centre (0,0) radius 5, upper-right quadrant
 SELECT tDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),0.5)@2001-01-01, Cbuffer(Point(4 3),0.5)@2001-01-03]', 2);
                                               tdwithin                                              
 ----------------------------------------------------------------------------------------------------
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Moving radius (dr != 0): the growing disc reaches within-distance of the arc
 SELECT tDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(10 0),0.5)@2001-01-01, Cbuffer(Point(10 0),4.5)@2001-01-03]', 2.5);
                                               tdwithin                                              
 ----------------------------------------------------------------------------------------------------
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Off-span: within the full circle but not the arc (angular gating)
 SELECT tDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2001-01-01, Cbuffer(Point(5 -1),0.5)@2001-01-03]', 0.3);
                              tdwithin                             
 ------------------------------------------------------------------
@@ -1234,6 +1317,7 @@ SELECT tDwithin(tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2001-01-01', tcbuffe
 ERROR:  Operation on mixed SRID
 SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Point(0 0)', -1);
 ERROR:  The value cannot be negative: -1.000000
+-- 3D geometry (cbuffer is 2D only)
 SELECT tDwithin(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2001-01-01', 2);
 ERROR:  The geometry cannot have Z dimension
 LINE 1: SELECT tDwithin(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(P...
@@ -1250,6 +1334,15 @@ SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2001-01-01', tcbuffer 'Cbuff
 ERROR:  The geometry cannot have Z dimension
 LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2001-01-...
                                  ^
+-------------------------------------------------------------------------------
+-- Discs of a zero radius: the value is a temporal point
+--
+-- A disc of a zero radius is the point at its centre, so the answers below are
+-- those of the temporal point the value converts to. The contact is at a zero
+-- clearance, which is the disc boundary the disc kernels read a touch from
+-------------------------------------------------------------------------------
+-- A point running through the position of a point geometry meets it at the
+-- single instant it passes through
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]', geometry 'Point(0 0)');
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -1268,6 +1361,7 @@ SELECT tDisjoint(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST], (t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- The same point crossing a line, and running along it
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]', geometry 'Linestring(0 -5,0 5)');
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -1280,6 +1374,7 @@ SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Entering and leaving a polygon
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
                                                                              tintersects                                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1292,12 +1387,14 @@ SELECT tDisjoint(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbu
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 16:00:00 2001 PST, f@Tue Jan 02 08:00:00 2001 PST], (t@Tue Jan 02 08:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A point standing still on the position of a point geometry
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0)@2001-01-01, Cbuffer(Point(1 1),0)@2001-01-03]', geometry 'Point(1 1)');
                             tintersects                             
 --------------------------------------------------------------------
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Within a distance of a line the point approaches and leaves
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]', geometry 'Linestring(0 -5,0 5)', 2);
                                                                                tdwithin                                                                               
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1310,6 +1407,8 @@ SELECT tDwithin(geometry 'Linestring(0 -5,0 5)', tcbuffer '[Cbuffer(Point(-3 0),
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:00:00 2001 PST, t@Tue Jan 02 16:00:00 2001 PST], (f@Tue Jan 02 16:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A point touches a geometry where it lies on the boundary of the geometry,
+-- so it touches a polygon it crosses at the two boundary crossings
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
                                                                                                 ttouches                                                                                                
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1322,6 +1421,8 @@ SELECT tTouches(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuf
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 16:00:00 2001 PST], (f@Mon Jan 01 16:00:00 2001 PST, t@Tue Jan 02 08:00:00 2001 PST], (f@Tue Jan 02 08:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A geometry whose boundary is empty is touched nowhere, even at the instant
+-- the point passes through it
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]', geometry 'Point(0 0)');
                              ttouches                             
 ------------------------------------------------------------------
@@ -1334,18 +1435,24 @@ SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0)
  [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- The boundary of a line is its two end points, which a point crossing the
+-- line never reaches
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]', geometry 'Linestring(0 -5,0 5)');
                               ttouches                              
 --------------------------------------------------------------------
  {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A point reaching an end point of the line touches it there
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(5 0),0)@2001-01-03]', geometry 'Linestring(-5 0,5 0)');
                               ttouches                              
 --------------------------------------------------------------------
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A geometry contains a point where the point lies in its open interior, and
+-- covers it where the point lies in the closed geometry, so the two differ at
+-- the boundary crossings
 SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]');
                                                                               tcontains                                                                               
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1358,6 +1465,7 @@ SELECT tCovers(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuff
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 16:00:00 2001 PST, t@Tue Jan 02 08:00:00 2001 PST], (f@Tue Jan 02 08:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A geometry whose boundary is empty contains the point wherever it covers it
 SELECT tContains(geometry 'Point(0 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]');
                                                               tcontains                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -1370,6 +1478,7 @@ SELECT tCovers(geometry 'Point(0 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A line covers the point it carries, and contains it away from its end points
 SELECT tCovers(geometry 'Linestring(-5 0,5 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]');
                               tcovers                               
 --------------------------------------------------------------------
@@ -1382,6 +1491,8 @@ SELECT tContains(geometry 'Linestring(-5 0,5 0)', tcbuffer '[Cbuffer(Point(-3 0)
  {[t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Two points that coincide do not touch, since their interiors coincide,
+-- while each contains and covers the other
 SELECT tTouches(tcbuffer 'Cbuffer(Point(0 0),0)@2001-01-01', tcbuffer 'Cbuffer(Point(0 0),0)@2001-01-01');
             ttouches            
 --------------------------------
@@ -1412,6 +1523,8 @@ SELECT tContains(tcbuffer 'Cbuffer(Point(0 0),0)@2001-01-01', tcbuffer 'Cbuffer(
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- Two points crossing meet at a single instant, which they contain and cover
+-- each other at and touch at nowhere
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 -3),0)@2001-01-01, Cbuffer(Point(0 3),0)@2001-01-03]');
                              ttouches                             
 ------------------------------------------------------------------
@@ -1430,6 +1543,7 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- Discs of a strictly positive radius keep the disc kernels
 SELECT tTouches(tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01', tcbuffer 'Cbuffer(Point(2 0),1)@2001-01-01');
             ttouches            
 --------------------------------
@@ -1442,6 +1556,203 @@ SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),2)@2001-01-01', tcbuffer 'Cbuffer(Po
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- The distance of the centres equals the difference of the radii throughout
+-- the segment, and the first disc covers the second one where that
+-- difference is not negative. A point on the boundary at the start is
+-- contained right after it
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)');
+                                              tcontains                                               
+------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 06:00:00 2001 PST], (t@Mon Jan 01 06:00:00 2001 PST, t@Mon Jan 01 08:00:00 2001 PST)}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00)');
+                              tcovers                               
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 06:00:00 2001 PST, t@Mon Jan 01 08:00:00 2001 PST)}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]');
+                                              tcontains                                               
+------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 06:00:00 2001 PST], (t@Mon Jan 01 06:00:00 2001 PST, t@Mon Jan 01 08:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 2),1)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]', tcbuffer '[Cbuffer(Point(1 2),0)@2001-01-01 06:00, Cbuffer(Point(0 2),1)@2001-01-01 08:00]');
+                              tcovers                               
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 06:00:00 2001 PST, t@Mon Jan 01 08:00:00 2001 PST]}
+(1 row)
+
+-- The difference of the radii changes sign at 04:00, where the centres meet:
+-- the first disc covers the second one after it, and the second the first
+-- before it
+SELECT tContains(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)');
+                                             tcontains                                              
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST, t@Mon Jan 01 05:00:00 2001 PST)}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)');
+                                              tcovers                                               
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST, t@Mon Jan 01 05:00:00 2001 PST)}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00]', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00]');
+                                             tcontains                                              
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST, f@Mon Jan 01 05:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00]', tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00]');
+                                              tcovers                                               
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST, t@Mon Jan 01 05:00:00 2001 PST]}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)');
+                                                                               tcontains                                                                                
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 03:00:00 2001 PST], (t@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST], (f@Mon Jan 01 04:00:00 2001 PST, f@Mon Jan 01 05:00:00 2001 PST)}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(3 1),1)@2001-01-01 03:00, Cbuffer(Point(3 0),0)@2001-01-01 05:00)', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01 03:00, Cbuffer(Point(3 1),1)@2001-01-01 05:00)');
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST], (f@Mon Jan 01 04:00:00 2001 PST, f@Mon Jan 01 05:00:00 2001 PST)}
+(1 row)
+
+-- The second disc is covered from 03:00, after the middle of the segment
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00)');
+                                             tcontains                                              
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST)}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00)');
+                                              tcovers                                               
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST)}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00]');
+                                             tcontains                                              
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 03:00:00 2001 PST, f@Mon Jan 01 04:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(-3 0),4)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 04:00]');
+                                              tcovers                                               
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 03:00:00 2001 PST, t@Mon Jan 01 04:00:00 2001 PST]}
+(1 row)
+
+-- Concentric discs: the first covers the second one until 02:40, while its
+-- radius is not the smaller one
+SELECT tContains(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00)');
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 02:00:00 2001 PST, t@Mon Jan 01 02:40:00 2001 PST], (f@Mon Jan 01 02:40:00 2001 PST, f@Mon Jan 01 04:00:00 2001 PST)}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00)', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00)');
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 02:00:00 2001 PST, t@Mon Jan 01 02:40:00 2001 PST], (f@Mon Jan 01 02:40:00 2001 PST, f@Mon Jan 01 04:00:00 2001 PST)}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00]');
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 02:00:00 2001 PST, t@Mon Jan 01 02:40:00 2001 PST], (f@Mon Jan 01 02:40:00 2001 PST, f@Mon Jan 01 04:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(2 1),2)@2001-01-01 02:00, Cbuffer(Point(0 2),0)@2001-01-01 04:00]', tcbuffer '[Cbuffer(Point(2 1),1)@2001-01-01 02:00, Cbuffer(Point(0 2),2)@2001-01-01 04:00]');
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 02:00:00 2001 PST, t@Mon Jan 01 02:40:00 2001 PST], (f@Mon Jan 01 02:40:00 2001 PST, f@Mon Jan 01 04:00:00 2001 PST]}
+(1 row)
+
+-- A point leaving the boundary for the centre is contained after the start,
+-- and one reaching the boundary at the end is contained before the end
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(1 0),0)@2001-01-01 00:00, Cbuffer(Point(0 0),0)@2001-01-01 01:00]');
+                                              tcontains                                               
+------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST], (t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 01:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(1 0),0)@2001-01-01 00:00, Cbuffer(Point(0 0),0)@2001-01-01 01:00]');
+                              tcovers                               
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 01:00:00 2001 PST]}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(0 0),0)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 01:00]');
+                             tcontains                              
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 01:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01 00:00, Cbuffer(Point(0 0),1)@2001-01-01 01:00]', tcbuffer '[Cbuffer(Point(0 0),0)@2001-01-01 00:00, Cbuffer(Point(1 0),0)@2001-01-01 01:00]');
+                              tcovers                               
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 01:00:00 2001 PST]}
+(1 row)
+
+-- A point on the boundary at a start the period excludes is always contained
+-- over the period, and is not where the period includes the start
+SELECT tContains(tcbuffer '(Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '(Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+                             tcontains                              
+--------------------------------------------------------------------
+ {(t@Mon Jan 01 01:00:00 2001 PST, t@Mon Jan 01 02:00:00 2001 PST)}
+(1 row)
+
+SELECT tCovers(tcbuffer '(Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '(Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+                              tcovers                               
+--------------------------------------------------------------------
+ {(t@Mon Jan 01 01:00:00 2001 PST, t@Mon Jan 01 02:00:00 2001 PST)}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+                                              tcontains                                               
+------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 01:00:00 2001 PST], (t@Mon Jan 01 01:00:00 2001 PST, t@Mon Jan 01 02:00:00 2001 PST)}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(2 3),3)@2001-01-01 01:00, Cbuffer(Point(3 3),2)@2001-01-01 02:00]', tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(3 2),1)@2001-01-01 02:00)');
+                              tcovers                               
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 01:00:00 2001 PST, t@Mon Jan 01 02:00:00 2001 PST)}
+(1 row)
+
+-- A cover at a single instant inside a segment: the discs touch from inside
+-- at 01:48, and the centres meet at 02:20 where the radii are equal
+SELECT tContains(tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(2 2),0)@2001-01-01 01:00, Cbuffer(Point(0 0),1)@2001-01-01 03:00]');
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 01:00:00 2001 PST, t@Mon Jan 01 01:48:00 2001 PST], (f@Mon Jan 01 01:48:00 2001 PST, f@Mon Jan 01 03:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(2 0),0)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(2 2),0)@2001-01-01 01:00, Cbuffer(Point(0 0),1)@2001-01-01 03:00]');
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 01:00:00 2001 PST, t@Mon Jan 01 01:48:00 2001 PST], (f@Mon Jan 01 01:48:00 2001 PST, f@Mon Jan 01 03:00:00 2001 PST]}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(3 2),3)@2001-01-01 01:00, Cbuffer(Point(1 2),2)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]');
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 01:00:00 2001 PST, t@Mon Jan 01 02:20:00 2001 PST], (f@Mon Jan 01 02:20:00 2001 PST, f@Mon Jan 01 03:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(3 2),3)@2001-01-01 01:00, Cbuffer(Point(1 2),2)@2001-01-01 03:00]', tcbuffer '[Cbuffer(Point(1 0),1)@2001-01-01 01:00, Cbuffer(Point(2 3),3)@2001-01-01 03:00]');
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 01:00:00 2001 PST, t@Mon Jan 01 02:20:00 2001 PST], (f@Mon Jan 01 02:20:00 2001 PST, f@Mon Jan 01 03:00:00 2001 PST]}
+(1 row)
+
+-- A single disc of a strictly positive radius keeps the disc semantics
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]', geometry 'Point(0 0)');
                                                                                         tintersects                                                                                        
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1460,6 +1771,9 @@ SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0)
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 14:46:09.230769 2001 PST], (f@Mon Jan 01 14:46:09.230769 2001 PST, t@Tue Jan 02 10:54:32.727273 2001 PST], (f@Tue Jan 02 10:54:32.727273 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+-- A disc of radius 0 beside discs of a positive radius is its centre: on the
+-- boundary of a polygon it touches it and is covered, not contained, and
+-- against a line it touches at an end only
 SELECT tTouches(tcbuffer '{Cbuffer(Point(0 -1),0)@2001-01-01, Cbuffer(Point(0 -5),1)@2001-01-02}', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
                              ttouches                             
 ------------------------------------------------------------------
@@ -1496,6 +1810,12 @@ SELECT tTouches(tcbuffer '{Cbuffer(Point(-1 0),0)@2001-01-01, Cbuffer(Point(0 5)
  {t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
+-------------------------------------------------------------------------------
+-- The relationship holds against the geometry, not against a circle enclosing
+-- it: the farthest point of the geometry from the centre of the disc lies off
+-- the line joining the two centres, so a circle enclosing the geometry reaches
+-- outside the disc while the geometry itself does not
+-------------------------------------------------------------------------------
 SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),3.2)@2001-01-01', geometry 'Linestring(3 0,3 1)');
             tcovers             
 --------------------------------
@@ -1508,12 +1828,14 @@ SELECT tContains(tcbuffer 'Cbuffer(Point(0 0),3.2)@2001-01-01', geometry 'Linest
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- The same value against a disc that the geometry reaches outside of
 SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),3)@2001-01-01', geometry 'Linestring(3 0,3 1)');
             tcovers             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-- A disc that stops covering the geometry as it moves away
 SELECT tCovers(tcbuffer '{Cbuffer(Point(0 0),3.2)@2001-01-01, Cbuffer(Point(9 9),1)@2001-01-03}', geometry 'Linestring(3 0,3 1)');
                              tcovers                              
 ------------------------------------------------------------------
@@ -1526,9 +1848,11 @@ SELECT tCovers(tcbuffer '{[Cbuffer(Point(0 0),3.2)@2001-01-01, Cbuffer(Point(0 0
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- A disc touching a line it is tangent to
 SELECT tTouches(tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01', geometry 'Linestring(1 -5,1 5)');
             ttouches            
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------

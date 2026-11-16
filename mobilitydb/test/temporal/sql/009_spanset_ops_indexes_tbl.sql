@@ -23,7 +23,7 @@ DROP INDEX IF EXISTS tbl_tstzspanset_kdtree_idx;
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_spansetops;
-CREATE TABLE test_spansetops(
+CREATE TEMP TABLE test_spansetops(
   op CHAR(3),
   leftarg TEXT,
   rightarg TEXT,

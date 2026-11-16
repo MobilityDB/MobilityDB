@@ -135,6 +135,14 @@ CREATE OPERATOR CLASS tbox_quadtree_ops
   OPERATOR  31    #&> (tbox, tint),
   OPERATOR  31    #&> (tbox, tbigint),
   OPERATOR  31    #&> (tbox, tfloat),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbox, tint),
+  OPERATOR  36    ?&& (tbox, tbigint),
+  OPERATOR  36    ?&& (tbox, tfloat),
+  -- always overlaps
+  OPERATOR  37    %&& (tbox, tint),
+  OPERATOR  37    %&& (tbox, tbigint),
+  OPERATOR  37    %&& (tbox, tfloat),
   -- functions
   FUNCTION  1  tbox_spgist_config(internal, internal),
   FUNCTION  2  tbox_quadtree_choose(internal, internal),
@@ -234,6 +242,14 @@ CREATE OPERATOR CLASS tbox_kdtree_ops
   OPERATOR  31    #&> (tbox, tint),
   OPERATOR  31    #&> (tbox, tbigint),
   OPERATOR  31    #&> (tbox, tfloat),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbox, tint),
+  OPERATOR  36    ?&& (tbox, tbigint),
+  OPERATOR  36    ?&& (tbox, tfloat),
+  -- always overlaps
+  OPERATOR  37    %&& (tbox, tint),
+  OPERATOR  37    %&& (tbox, tbigint),
+  OPERATOR  37    %&& (tbox, tfloat),
   -- functions
   FUNCTION  1  tbox_spgist_config(internal, internal),
   FUNCTION  2  tbox_kdtree_choose(internal, internal),
@@ -282,6 +298,10 @@ CREATE OPERATOR CLASS tbool_quadtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (tbool, tstzspan),
   OPERATOR  31    #&> (tbool, tbool),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbool, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (tbool, tstzspan),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
@@ -324,6 +344,10 @@ CREATE OPERATOR CLASS tbool_kdtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (tbool, tstzspan),
   OPERATOR  31    #&> (tbool, tbool),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbool, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (tbool, tstzspan),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
@@ -400,6 +424,10 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   OPERATOR  31    #&> (tint, tstzspan),
   OPERATOR  31    #&> (tint, tbox),
   OPERATOR  31    #&> (tint, tint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tint, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tint, tbox),
   -- functions
   FUNCTION  1 tbox_spgist_config(internal, internal),
   FUNCTION  2 tbox_quadtree_choose(internal, internal),
@@ -476,6 +504,10 @@ CREATE OPERATOR CLASS tint_kdtree_ops
   OPERATOR  31    #&> (tint, tstzspan),
   OPERATOR  31    #&> (tint, tbox),
   OPERATOR  31    #&> (tint, tint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tint, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tint, tbox),
   -- functions
   FUNCTION  1 tbox_spgist_config(internal, internal),
   FUNCTION  2 tbox_kdtree_choose(internal, internal),
@@ -552,6 +584,10 @@ CREATE OPERATOR CLASS tbigint_quadtree_ops
   OPERATOR  31    #&> (tbigint, tstzspan),
   OPERATOR  31    #&> (tbigint, tbox),
   OPERATOR  31    #&> (tbigint, tbigint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbigint, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tbigint, tbox),
   -- functions
   FUNCTION  1 tbox_spgist_config(internal, internal),
   FUNCTION  2 tbox_quadtree_choose(internal, internal),
@@ -628,6 +664,10 @@ CREATE OPERATOR CLASS tbigint_kdtree_ops
   OPERATOR  31    #&> (tbigint, tstzspan),
   OPERATOR  31    #&> (tbigint, tbox),
   OPERATOR  31    #&> (tbigint, tbigint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbigint, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tbigint, tbox),
   -- functions
   FUNCTION  1 tbox_spgist_config(internal, internal),
   FUNCTION  2 tbox_kdtree_choose(internal, internal),
@@ -704,6 +744,10 @@ CREATE OPERATOR CLASS tfloat_quadtree_ops
   OPERATOR  31    #&> (tfloat, tstzspan),
   OPERATOR  31    #&> (tfloat, tbox),
   OPERATOR  31    #&> (tfloat, tfloat),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tfloat, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tfloat, tbox),
   -- functions
   FUNCTION  1 tbox_spgist_config(internal, internal),
   FUNCTION  2 tbox_quadtree_choose(internal, internal),
@@ -780,6 +824,10 @@ CREATE OPERATOR CLASS tfloat_kdtree_ops
   OPERATOR  31    #&> (tfloat, tstzspan),
   OPERATOR  31    #&> (tfloat, tbox),
   OPERATOR  31    #&> (tfloat, tfloat),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tfloat, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tfloat, tbox),
   -- functions
   FUNCTION  1 tbox_spgist_config(internal, internal),
   FUNCTION  2 tbox_kdtree_choose(internal, internal),
@@ -822,6 +870,10 @@ CREATE OPERATOR CLASS ttext_quadtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (ttext, tstzspan),
   OPERATOR  31    #&> (ttext, ttext),
+  -- ever overlaps
+  OPERATOR  36    ?&& (ttext, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (ttext, tstzspan),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
@@ -864,6 +916,10 @@ CREATE OPERATOR CLASS ttext_kdtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (ttext, tstzspan),
   OPERATOR  31    #&> (ttext, ttext),
+  -- ever overlaps
+  OPERATOR  36    ?&& (ttext, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (ttext, tstzspan),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),

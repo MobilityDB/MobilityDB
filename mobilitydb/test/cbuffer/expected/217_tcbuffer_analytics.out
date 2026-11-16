@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Simplification functions
+-------------------------------------------------------------------------------
 SELECT minDistSimplify(NULL::tcbuffer, 1.0);
  mindistsimplify 
 -----------------
@@ -58,6 +61,11 @@ SELECT douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbu
  [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Wed Jan 03 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Simplification keeps the interpolation and the sequence segmentation of the
+-- value it simplifies. Restricting to the surviving timestamps would return a
+-- discrete value instead, which has no value between its instants.
+-------------------------------------------------------------------------------
 SELECT interp(minDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', 2.0));
  interp 
 --------
@@ -82,12 +90,14 @@ SELECT interp(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01
  Linear
 (1 row)
 
+-- A step value stays step: the interpolation is preserved, not forced linear.
 SELECT interp(minDistSimplify(tcbuffer 'Interp=Step;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', 2.0));
  interp 
 --------
  Step
 (1 row)
 
+-- When nothing is dropped the value comes back unchanged, not NULL.
 SELECT minDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', 0.5) =
   tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]';
  ?column? 
@@ -95,6 +105,8 @@ SELECT minDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Poin
  t
 (1 row)
 
+-- The gap of a sequence set survives: the result has two sequences, not one
+-- run of instants spanning the gap.
 SELECT numSequences(minDistSimplify(tcbuffer '{[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03], [Cbuffer(Point(9 0),1)@2001-01-05, Cbuffer(Point(20 0),1)@2001-01-06]}', 2.0));
  numsequences 
 --------------
@@ -107,3 +119,4 @@ SELECT minDistSimplify(tcbuffer '{[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Poi
  {[Cbuffer(010100000000000000000000000000000000000000,1)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000000000,1)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(010100000000000000000022400000000000000000,1)@Fri Jan 05 00:00:00 2001 PST, Cbuffer(010100000000000000000034400000000000000000,1)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------

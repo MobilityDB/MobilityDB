@@ -332,3 +332,6 @@ SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+-- A point that misses a tilted face by less than a unit in the last place, and one on it
+SELECT tIntersects(tgeometry 'Triangle Z((3 -8 9,-9 -3 -3,-9 8 -8,3 -8 9))@2001-01-01', geometry 'Point(-5 -1 -0.6666666666666666)');
+SELECT tIntersects(tgeometry 'Triangle Z((5 0 7,6 -3 2,1 -6 6,5 0 7))@2001-01-01', geometry 'Point(4 -3 5)');

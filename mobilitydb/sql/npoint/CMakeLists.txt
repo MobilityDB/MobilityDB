@@ -40,9 +40,10 @@ SET(LOCAL_FILES
   311_tnpoint_gin
   312_tnpoint_distance
   314_tnpoint_aggfuncs
-  316_tnpoint_indexes
   320_tnpoint_spatialrels
+  322_tnpoint_gist
   322_tnpoint_tempspatialrels
+  323_tnpoint_spgist
   )
 
 foreach (f ${LOCAL_FILES})

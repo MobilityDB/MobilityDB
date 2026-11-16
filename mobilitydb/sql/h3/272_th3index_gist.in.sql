@@ -33,12 +33,13 @@
 /**
  * @file
  * @brief GiST operator class for `th3index`
- * @details The bounding box of a `th3index` value is the spatiotemporal box of
- * its cell, so the operator class stores an `stbox` and indexes the
- * topological, position and time operators through that box, as the operator
- * classes of `tgeompoint` and `tcbuffer` do. The consistent and compress
- * support functions are `Stbox_gist_consistent` and `tspatial_gist_compress`,
- * and the union, penalty, picksplit and same functions are those of `stbox`.
+ * @details The bounding box of a `th3index` value is a spatiotemporal box, so
+ * the operator class stores an `stbox` and indexes the operators of the type
+ * through that box, as the operator classes of `tgeompoint` do. The consistent
+ * and compress support functions are `Stbox_gist_consistent` and
+ * `tspatial_gist_compress`, the distance function, where the class orders by
+ * `|=|`, is `Tspatial_gist_distance`, and the union, penalty, picksplit and
+ * same functions are those of `stbox`.
  */
 
 /******************************************************************************
@@ -117,6 +118,10 @@ CREATE OPERATOR CLASS th3index_rtree_ops
   OPERATOR  31    #&> (th3index, tstzspan),
   OPERATOR  31    #&> (th3index, stbox),
   OPERATOR  31    #&> (th3index, th3index),
+  -- ever overlaps
+  OPERATOR  36    ?&& (th3index, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (th3index, stbox),
   -- functions
   FUNCTION  1 th3index_gist_consistent(internal, th3index, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -193,6 +198,10 @@ ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
   -- strictly after
   OPERATOR  30    #>> (stbox, th3index),
   -- overlaps or after
-  OPERATOR  31    #&> (stbox, th3index);
+  OPERATOR  31    #&> (stbox, th3index),
+  -- ever overlaps
+  OPERATOR  36    ?&& (stbox, th3index),
+  -- always overlaps
+  OPERATOR  37    %&& (stbox, th3index);
 
 /******************************************************************************/

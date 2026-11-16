@@ -490,6 +490,118 @@ geogpointsegm_closest(Datum start, Datum end, Datum point)
  *****************************************************************************/
 
 /**
+ * @brief Return a coordinate of the difference of two temporal geometry point
+ * segments that changes sign strictly over their period, where they meet
+ * strictly inside it, decided exactly on the doubles of their ends, -1
+ * otherwise
+ * @details The difference of the two points moves linearly from
+ * `start1 - start2` to `end1 - end2`, so the points meet strictly inside the
+ * period where that difference passes through the origin: every coordinate
+ * of it changes sign strictly between the two ends, or is zero at both, and
+ * the two differences lie on one line through the origin, the cross product
+ * of each pair of their coordinates being zero (#cross_product_sign, which
+ * reads the differences of the doubles exactly). Nothing is constructed: the
+ * meeting is the time parameter both coordinates share, as
+ * #tgeogpointsegm_intersection reads the geodetic one, and every coordinate
+ * changing sign crosses zero at it
+ * @param[in] start1,end1 Coordinates of the ends of the first segment
+ * @param[in] start2,end2 Coordinates of the ends of the second segment
+ * @param[in] n Number of coordinates, 2 or 3
+ */
+static int
+pointsegm_meet_coord(const double *start1, const double *end1,
+  const double *start2, const double *end2, int n)
+{
+  int result = -1;
+  for (int k = 0; k < n; k++)
+  {
+    int ds = (start1[k] > start2[k]) - (start1[k] < start2[k]);
+    int de = (end1[k] > end2[k]) - (end1[k] < end2[k]);
+    if (ds == 0 && de == 0)
+      continue;
+    if (ds == 0 || ds != - de)
+      return -1;
+    if (result < 0)
+      result = k;
+  }
+  if (result < 0)
+    return -1;
+  for (int i = 0; i < n; i++)
+    for (int j = i + 1; j < n; j++)
+      if (cross_product_sign(start2[i], start2[j], start1[i], start1[j],
+          end2[i], end2[j], end1[i], end1[j]) != 0)
+        return -1;
+  return result;
+}
+
+/**
+ * @brief Return in the last arguments the coordinates of the ends of two
+ * temporal geometry point segments and their number
+ */
+static int
+tgeompointsegm_coords(Datum start1, Datum end1, Datum start2, Datum end2,
+  double *s1, double *e1, double *s2, double *e2)
+{
+  POINT4D a1, a2, b1, b2;
+  datum_point4d(start1, &a1);
+  datum_point4d(end1, &a2);
+  datum_point4d(start2, &b1);
+  datum_point4d(end2, &b2);
+  s1[0] = a1.x; s1[1] = a1.y; s1[2] = a1.z;
+  e1[0] = a2.x; e1[1] = a2.y; e1[2] = a2.z;
+  s2[0] = b1.x; s2[1] = b1.y; s2[2] = b1.z;
+  e2[0] = b2.x; e2[1] = b2.y; e2[2] = b2.z;
+  return FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags) ? 3 : 2;
+}
+
+/**
+ * @brief Return true if two temporal geometry point segments over one period
+ * meet strictly inside it, decided exactly on the doubles of their ends
+ * (#pointsegm_meet_coord)
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ */
+bool
+tgeompointsegm_meet(Datum start1, Datum end1, Datum start2, Datum end2)
+{
+  double s1[3], e1[3], s2[3], e2[3];
+  int n = tgeompointsegm_coords(start1, end1, start2, end2, s1, e1, s2, e2);
+  return pointsegm_meet_coord(s1, e1, s2, e2, n) >= 0;
+}
+
+/**
+ * @brief Return true if two temporal geometry point segments meet strictly
+ * inside their period, dated in the output argument by the microsecond
+ * nearest to the meeting
+ * @details The point twin of #tnumbersegm_crossing. The meeting is decided
+ * exactly (#pointsegm_meet_coord), and every coordinate of the difference of
+ * the two points that changes sign crosses zero at its time parameter, so
+ * the crossing of the two segments of one such coordinate dates it
+ * (#tnumbersegm_crossing)
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Microsecond nearest to the meeting, a tie going to the even
+ * timestamp, set where the segments meet inside the period, a bound where
+ * the meeting belongs to it
+ * @return False where the segments do not meet inside the period or where
+ * the microsecond nearest to the meeting is a bound
+ * @pre The segments are synchronized
+ */
+bool
+tgeompointsegm_crossing(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t)
+{
+  assert(lower < upper); assert(t);
+  double s1[3], e1[3], s2[3], e2[3];
+  int n = tgeompointsegm_coords(start1, end1, start2, end2, s1, e1, s2, e2);
+  int k = pointsegm_meet_coord(s1, e1, s2, e2, n);
+  if (k < 0)
+    return false;
+  return tnumbersegm_crossing(s1[k], e1[k], s2[k], e2[k], lower, upper, t);
+}
+
+/**
  * @brief Return 1 or 2 if two temporal geometry point segments intersect
  * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Values defining the first segment
@@ -504,65 +616,625 @@ tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   assert(t1); assert(t2);
   TimestampTz tps[2];
   int result = tgeompointsegm_distance_turnpt(start1, end1, start2, end2,
-    (Datum) 0.0, lower, upper, tps, 2);
+    (Datum) 0.0, lower, upper, tps, NULL, 2);
   if (result)
     *t1 = *t2 = tps[0];
   return result;
 }
 
 /**
- * @brief Return the distance within which two geodetic points MEOS
- * constructs along the great circles of two segments at one instant are the
- * same point
- * @details A geodetic point at an instant of a segment is computed in doubles
- * along its great circle, so two segments meeting at that instant give two
- * points apart by the rounding of their coordinates, and the exact distance
- * between them is almost never zero. The distance is the band of a
- * constructed point the exact computation of MEOS admits, as
- * #geompoint_route_band is for a point on a route: #MEOS_GEOM_TOLERANCE plus
- * four units of rounding of the largest coordinate of the two points, which
- * no two points genuinely apart are within
- * @param[in] p1,p2 Points
+ * @brief Set in the output arrays the coordinates of two geography point
+ * segments that move linearly in time, where their positions lie on the
+ * equator or on one meridian, and return their number, or 0 otherwise
+ * @details A geography point segment moves along the great circle of its ends
+ * at a constant angular speed (#GeogSegmPair). Where the four ends lie on the
+ * equator, their longitudes within less than 180 degrees of each other, a
+ * position is its longitude, which then moves linearly; where they lie on one
+ * meridian away from the poles, a position is its latitude, likewise. A Z
+ * coordinate moves linearly in every case and is the second coordinate.
+ * Every coordinate set is an input double: nothing is constructed
+ * @param[in] p Ends: the start and the end of the first segment, then those
+ * of the second
+ * @param[in] hasz True when the points have a Z coordinate
+ * @param[out] s1,e1,s2,e2 Coordinates of the ends
  */
-static double
-geogpoint_meeting_band(const POINT4D *p1, const POINT4D *p2)
+static int
+geogpointsegm_linear(const POINT4D *p, bool hasz, double *s1, double *e1,
+  double *s2, double *e2)
 {
-  return MEOS_GEOM_TOLERANCE + 4.0 * DBL_EPSILON *
-    Max(Max(fabs(p1->x), fabs(p1->y)), Max(fabs(p2->x), fabs(p2->y)));
+  bool equator = true, meridian = true;
+  double lomin = p[0].x, lomax = p[0].x;
+  for (int i = 0; i < 4; i++)
+  {
+    equator = equator && p[i].y == 0.0;
+    meridian = meridian && p[i].x == p[0].x && fabs(p[i].y) < 90.0;
+    lomin = Min(lomin, p[i].x);
+    lomax = Max(lomax, p[i].x);
+  }
+  if (equator && lomax - lomin < 180.0)
+  {
+    s1[0] = p[0].x; e1[0] = p[1].x; s2[0] = p[2].x; e2[0] = p[3].x;
+  }
+  else if (meridian)
+  {
+    s1[0] = p[0].y; e1[0] = p[1].y; s2[0] = p[2].y; e2[0] = p[3].y;
+  }
+  else
+    return 0;
+  if (! hasz)
+    return 1;
+  s1[1] = p[0].z; e1[1] = p[1].z; s2[1] = p[2].z; e2[1] = p[3].z;
+  return 2;
 }
 
 /**
- * @brief Return 1 or 2 if two temporal geography point segments intersect
- * during the period defined by the output timestamps, return 0 otherwise
- * @details The instant is the turning point of their distance
- * (#tgeogpointsegm_distance_turnpt), and the segments meet there where the
- * two points they interpolate at it lie within the band of those
- * constructed points (#geogpoint_meeting_band)
+ * @brief Return true if the second of two geography point segments runs the
+ * first one backward, its start the end of the first and its end the start
+ */
+static bool
+geogpointsegm_reversed(const POINT4D *p, bool hasz)
+{
+  return p[2].x == p[1].x && p[2].y == p[1].y && p[3].x == p[0].x &&
+    p[3].y == p[0].y && (p[0].x != p[1].x || p[0].y != p[1].y) &&
+    (! hasz || (p[2].z == p[1].z && p[3].z == p[0].z));
+}
+
+/**
+ * @brief Return true if the second of two geography point segments is the
+ * mirror of the first across the equator and the first crosses it
+ * @details The reflection across the plane of the equator maps the great
+ * circle of a segment and its motion at a constant angular speed to those of
+ * its mirror, so the two stand at one point where the first crosses the
+ * equator, at a parameter no double computation states exactly
+ */
+static bool
+geogpointsegm_mirrored(const POINT4D *p, bool hasz)
+{
+  return p[2].x == p[0].x && p[2].y == - p[0].y && p[3].x == p[1].x &&
+    p[3].y == - p[1].y && ((p[0].y > 0.0 && p[1].y < 0.0) ||
+      (p[0].y < 0.0 && p[1].y > 0.0)) &&
+    (! hasz || (p[2].z == p[0].z && p[3].z == p[1].z));
+}
+
+/**
+ * @brief Return true if the sum of the doubles of an array is exactly zero
+ * @details The terms are gathered into an expansion by error-free sums
+ * (#two_diff of the negated term), whose nonzero components do not overlap,
+ * so that the sum is zero exactly where every component is zero
+ * @param[in] x Terms, finite
+ * @param[in] n Number of terms, at most 8
+ */
+static bool
+double_sum_zero(const double *x, int n)
+{
+  assert(n <= 8);
+  double e[8];
+  int len = 0;
+  for (int i = 0; i < n; i++)
+  {
+    double q = x[i];
+    for (int j = 0; j < len; j++)
+    {
+      double s, r;
+      two_diff(q, - e[j], &s, &r);
+      e[j] = r;
+      q = s;
+    }
+    e[len++] = q;
+  }
+  for (int j = 0; j < len; j++)
+  {
+    if (e[j] != 0.0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the point at which a geography point segment stands at the
+ * middle of its period where a half turn exchanging its ends proves it
+ * @details A half turn about an axis maps the great circle of a segment
+ * whose ends it exchanges to itself, and its motion at a constant angular
+ * speed to the same motion backward, so at the middle of the period the
+ * segment stands at a point of the axis. Two axes are recognised exactly on
+ * the doubles of the ends, their longitudes within [-180, 180] and their
+ * latitudes strictly between -90 and 90, the ends not antipodal:
+ * - the half turn about the axis through the point of the equator at the
+ *   longitude L exchanges the ends (L + d, f) and (L - d, -f); the segment
+ *   then stands at (L, 0) where the longitudes of its ends differ by less
+ *   than 180 degrees and at its antipode otherwise. The middle is returned as
+ *   the three terms whose sum is twice its longitude: the two end longitudes
+ *   and 360 or 0;
+ * - the half turn about the axis of the poles exchanges the ends (l, f) and
+ *   (l + 180, f); the segment then crosses the pole on the side of f.
+ * @param[in] a,b Ends of the segment
+ * @param[out] twice Terms of twice the longitude of a middle on the equator
+ * @return 1 for a middle on the equator, 2 for the north pole, 3 for the
+ * south pole, 0 where no half turn proves the middle
+ */
+static int
+geogpointsegm_middle(const POINT4D *a, const POINT4D *b, double *twice)
+{
+  if (! (fabs(a->x) <= 180.0 && fabs(b->x) <= 180.0 &&
+         fabs(a->y) < 90.0 && fabs(b->y) < 90.0))
+    return 0;
+  /* The difference of the longitudes, exactly d + dlo, lies within
+   * [-360, 360]; 180 being a double, the rounding d compares with 180 as the
+   * difference does, except where d is 180, where dlo decides */
+  double d, dlo;
+  two_diff(a->x, b->x, &d, &dlo);
+  double ad = fabs(d);
+  bool half = (ad == 180.0 && dlo == 0.0);
+  bool beyond = ad > 180.0 ||
+    (ad == 180.0 && (d > 0.0 ? dlo > 0.0 : dlo < 0.0));
+  if (b->y == - a->y)
+  {
+    /* Ends half a turn of longitude apart and of opposite latitudes are
+     * antipodal */
+    if (half)
+      return 0;
+    twice[0] = a->x;
+    twice[1] = b->x;
+    twice[2] = beyond ? 360.0 : 0.0;
+    return 1;
+  }
+  if (b->y == a->y && half)
+    return a->y > 0.0 ? 2 : 3;
+  return 0;
+}
+
+/**
+ * @brief Return true if two geography points are the same point of the sphere
+ * @details A latitude strictly between -90 and 90 is assumed, so that two
+ * longitudes name the same meridian where they are equal or are 180 and -180
+ */
+static bool
+geogpoint_same(const POINT4D *a, const POINT4D *b, bool hasz)
+{
+  return a->y == b->y &&
+    (a->x == b->x || (fabs(a->x) == 180.0 && a->x == - b->x)) &&
+    (! hasz || a->z == b->z);
+}
+
+/**
+ * @brief Return true if two geography point segments stand at one point at
+ * the middle of their period, the point proved on the doubles of their ends
+ * (#geogpointsegm_middle), and differ in their motion
+ * @details Two segments standing at one point at the middle meet there and
+ * nowhere else in the period. On two great circles they share only that
+ * point and its antipode, and a minor arc passes through it once and never
+ * through both; on one great circle the arc between their positions moves
+ * at the difference of their speeds, over less than half a turn in each half
+ * of the period, so it is zero only at the middle unless the two motions are
+ * the same. A Z coordinate moves linearly, so it meets at the middle where
+ * the sums of the Z coordinates of the ends are equal. Every comparison is
+ * an exact sum of input doubles (#double_sum_zero)
+ */
+static bool
+geogpointsegm_middle_meet(const POINT4D *p, bool hasz)
+{
+  double t1[3], t2[3];
+  int k1 = geogpointsegm_middle(&p[0], &p[1], t1);
+  if (k1 == 0 || geogpointsegm_middle(&p[2], &p[3], t2) != k1)
+    return false;
+  if (geogpoint_same(&p[0], &p[2], hasz) &&
+      geogpoint_same(&p[1], &p[3], hasz))
+    return false;
+  if (hasz)
+  {
+    const double z[4] = { p[0].z, p[1].z, - p[2].z, - p[3].z };
+    if (! double_sum_zero(z, 4))
+      return false;
+  }
+  if (k1 != 1)
+    return true;
+  /* Twice the longitudes of the two middles lie within [-360, 720], so they
+   * name one point where they differ by 0, 720 or -720 */
+  for (int j = -1; j <= 1; j++)
+  {
+    const double s[7] = { t1[0], t1[1], t1[2], - t2[0], - t2[1], - t2[2],
+      720.0 * j };
+    if (double_sum_zero(s, 7))
+      return true;
+  }
+  return false;
+}
+
+/* The correctly rounded trigonometry vendored under core-math/ */
+extern double cr_sinpi(double x);
+extern double cr_cospi(double x);
+extern double cr_atan2(double y, double x);
+
+/**
+ * @brief A double and a bound on its distance to the real number it computes
+ * @details The bounds follow those of #polynomial_sign_pairs: with
+ * u = DBL_EPSILON / 2, a rounding of a result c moves it by at most u |c|, and
+ * each bound is inflated by 1 + 16 DBL_EPSILON for its own rounding. A
+ * result whose magnitude is below 2^-900 or not finite, where underflow could
+ * lose its error, makes the evaluation decline
+ */
+typedef struct
+{
+  double v;   /**< Computed value */
+  double e;   /**< Bound on its distance to the exact value */
+} BoundedDouble;
+
+#define BD_U (DBL_EPSILON / 2.0)
+#define BD_INFLATE (1.0 + 16.0 * DBL_EPSILON)
+
+/**
+ * @brief Return true if a computed value keeps its error bound
+ */
+static bool
+bd_valid(BoundedDouble a)
+{
+  return isfinite(a.v) && isfinite(a.e) &&
+    (a.v == 0.0 || fabs(a.v) >= 0x1p-900);
+}
+
+/**
+ * @brief Return the sum of two bounded doubles
+ */
+static BoundedDouble
+bd_add(BoundedDouble a, BoundedDouble b)
+{
+  BoundedDouble r;
+  r.v = a.v + b.v;
+  r.e = (a.e + b.e + BD_U * fabs(r.v)) * BD_INFLATE;
+  return r;
+}
+
+/**
+ * @brief Return the difference of two bounded doubles
+ */
+static BoundedDouble
+bd_sub(BoundedDouble a, BoundedDouble b)
+{
+  b.v = - b.v;
+  return bd_add(a, b);
+}
+
+/**
+ * @brief Return the product of two bounded doubles
+ */
+static BoundedDouble
+bd_mul(BoundedDouble a, BoundedDouble b)
+{
+  BoundedDouble r;
+  r.v = a.v * b.v;
+  r.e = (fabs(a.v) * b.e + fabs(b.v) * a.e + a.e * b.e +
+    BD_U * fabs(r.v)) * BD_INFLATE;
+  return r;
+}
+
+/**
+ * @brief Return the quotient of two bounded doubles, the error unbounded
+ * where the divisor may be zero
+ */
+static BoundedDouble
+bd_div(BoundedDouble a, BoundedDouble b)
+{
+  BoundedDouble r;
+  r.v = a.v / b.v;
+  double lo = fabs(b.v) - b.e;
+  r.e = (lo > 0.0) ?
+    ((a.e + fabs(r.v) * b.e) / lo + BD_U * fabs(r.v)) * BD_INFLATE :
+    INFINITY;
+  return r;
+}
+
+/**
+ * @brief Return the square root of a bounded double, the error unbounded
+ * where the argument may be zero or negative
+ * @details |sqrt(x) - sqrt(y)| <= |x - y| / sqrt(min(x, y))
+ */
+static BoundedDouble
+bd_sqrt(BoundedDouble a)
+{
+  BoundedDouble r;
+  double lo = a.v - a.e;
+  r.v = sqrt(a.v);
+  r.e = (lo > 0.0) ?
+    (a.e / sqrt(lo) + BD_U * r.v) * BD_INFLATE : INFINITY;
+  return r;
+}
+
+/**
+ * @brief Return the angle of a vector of bounded coordinates, the error
+ * unbounded where the vector may be zero or cross the cut of the angle
+ * @details The gradient of the angle is (-y, x) / (x^2 + y^2), so over the
+ * box of the vector, whose norm is at least lo, the angle moves by at most
+ * (|y| ex + |x| ey) / lo^2, |x| and |y| taken at their largest in the box;
+ * #cr_atan2 rounds it correctly
+ */
+static BoundedDouble
+bd_atan2(BoundedDouble y, BoundedDouble x)
+{
+  BoundedDouble r;
+  r.v = cr_atan2(y.v, x.v);
+  double lo = hypot(x.v, y.v) * (1.0 - 4.0 * DBL_EPSILON) - (x.e + y.e);
+  bool cut = fabs(y.v) <= y.e && x.v - x.e <= 0.0;
+  r.e = (lo > 0.0 && ! cut) ?
+    (((fabs(y.v) + y.e) * x.e + (fabs(x.v) + x.e) * y.e) / (lo * lo) +
+      BD_U * fabs(r.v)) * BD_INFLATE : INFINITY;
+  return r;
+}
+
+/**
+ * @brief Set the sine and the cosine of an angle given in degrees, known
+ * within an absolute error
+ * @details The angle is reduced to [0, 45] degrees by the subtractions from
+ * 360, 180 and 90 degrees, each exact by Sterbenz's lemma in the range where
+ * it is taken, so that the error of the angle stays the given one. #cr_sinpi
+ * and #cr_cospi round correctly the sine and the cosine of pi times the
+ * reduced angle divided by 180, which is within u of itself, so that each
+ * moves by at most pi / 180 times the error of the angle more. A reduced
+ * angle near 0 keeps the relative accuracy of a small sine, which an angle
+ * near 90 or 180 degrees divided by 180 loses. The bounded twin of the
+ * trigonometry #geogsegm_circle reads in doubles from the ends of a segment
+ * @param[in] deg,lo Angle in degrees, between -360 and 360, as the sum of
+ * a double and a correction much smaller than it
+ * @param[in] err Bound on the distance of the sum to the exact angle
+ * @param[out] s,c Sine and cosine
+ */
+static void
+bd_sincos_deg(double deg, double lo, double err, BoundedDouble *s,
+  BoundedDouble *c)
+{
+  double a = fabs(deg), ssign = (deg < 0.0) ? -1.0 : 1.0, csign = 1.0;
+  bool swap = false;
+  if (deg < 0.0)
+    lo = - lo;
+  if (a > 180.0)
+  {
+    a = 360.0 - a;
+    lo = - lo;
+    ssign = - ssign;
+  }
+  if (a > 90.0)
+  {
+    a = 180.0 - a;
+    lo = - lo;
+    csign = - csign;
+  }
+  if (a > 45.0)
+  {
+    a = 90.0 - a;
+    lo = - lo;
+    swap = true;
+  }
+  /* The correction is added after the reduction, the sum rounded once */
+  a += lo;
+  double x = a / 180.0;
+  double ex = ((err + BD_U * fabs(a)) / 180.0 + BD_U * fabs(x)) *
+    BD_INFLATE;
+  double sv = cr_sinpi(x), cv = cr_cospi(x);
+  double se = (3.15 * ex + BD_U * fabs(sv)) * BD_INFLATE;
+  double ce = (3.15 * ex + BD_U * fabs(cv)) * BD_INFLATE;
+  s->v = ssign * (swap ? cv : sv);
+  s->e = swap ? ce : se;
+  c->v = csign * (swap ? sv : cv);
+  c->e = swap ? se : ce;
+}
+
+/**
+ * @brief Return true if the microsecond nearest to the meeting of a geography
+ * point segment and its mirror across the equator is proved, set in the
+ * output argument
+ * @details The first segment moves along the great circle of its ends A and B
+ * at a constant angular speed (#GeogSegmPair), its mirror at the mirror
+ * position, so the two meet where the first crosses the equator. With sa and
+ * sb the sines of the end latitudes and om the angle between the ends, its
+ * position at the angle t from A along the circle, sin(om - t) A + sin(t) B
+ * over sin(om), is on the equator where
+ * tan t = sin(om) sa / (cos(om) sa - sb), so at the parameter t / om. The
+ * parameter is computed with its error bound from the correctly rounded
+ * trigonometry of core-math/ (#BoundedDouble), om from the haversine of the
+ * ends and its complement, sums of positive terms that keep their relative
+ * accuracy for ends very near each other or nearly antipodal. A transcendental
+ * offset is no tie, so the nearest microsecond is proved as
+ * #floatsegm_offset_filter proves it, where the bound keeps the offset away
+ * from the middle of two microseconds; elsewhere it is not stated
+ * @param[in] p Ends: the start and the end of the first segment, then those
+ * of the second
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Microsecond nearest to the meeting, set where it is proved,
+ * a bound where the meeting belongs to it
+ * @return False where the date is not proved or where it is a bound
+ */
+static bool
+geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
+  TimestampTz upper, TimestampTz *t)
+{
+  int64 d = upper - lower;
+  if (d >= FLOATSEGM_FILTER_MAXD)
+    return false;
+  /* The sines and cosines of the end latitudes, of half their difference and
+   * of half their sum, rounded once, and of half the difference of the
+   * longitudes, held exactly (#two_diff), so that its cosine near 90
+   * degrees, the ends nearly antipodal, keeps its relative accuracy */
+  double dlat = p[1].y - p[0].y, slat = p[0].y + p[1].y, dlon, dlonlo;
+  two_diff(p[1].x, p[0].x, &dlon, &dlonlo);
+  BoundedDouble sa, ca, sb, cb, sh, ch, sq, cq, sd, cd;
+  bd_sincos_deg(p[0].y, 0.0, 0.0, &sa, &ca);
+  bd_sincos_deg(p[1].y, 0.0, 0.0, &sb, &cb);
+  bd_sincos_deg(dlat / 2.0, 0.0, BD_U * fabs(dlat) / 2.0, &sh, &ch);
+  bd_sincos_deg(slat / 2.0, 0.0, BD_U * fabs(slat) / 2.0, &sq, &cq);
+  bd_sincos_deg(dlon / 2.0, dlonlo / 2.0, 0.0, &sd, &cd);
+  /* The haversine of the angle om between the ends and its complement,
+   * hav = sin^2(om / 2) and 1 - hav = cos^2(om / 2), each a sum of positive
+   * terms, so that both keep their relative accuracy where om is near 0 or
+   * near 180 degrees */
+  BoundedDouble cacb = bd_mul(ca, cb);
+  BoundedDouble hav = bd_add(bd_mul(sh, sh), bd_mul(cacb, bd_mul(sd, sd)));
+  BoundedDouble comp = bd_add(bd_mul(sq, sq), bd_mul(cacb, bd_mul(cd, cd)));
+  BoundedDouble rh = bd_sqrt(hav), rc = bd_sqrt(comp);
+  BoundedDouble two = { 2.0, 0.0 };
+  BoundedDouble om = bd_mul(two, bd_atan2(rh, rc));
+  BoundedDouble sinom = bd_mul(two, bd_mul(rh, rc));
+  /* cos(om) sa - sb, which cancels where the ends are near each other or
+   * nearly antipodal, in the form that does not: with cos(om) = 1 - 2 hav and
+   * sa - sb = -2 cos(Q / 2) sin(P / 2), P and Q the difference and the sum of
+   * the end latitudes, it is -2 (cq sh + hav sa) for om up to 90 degrees;
+   * with cos(om) = 2 (1 - hav) - 1 and sa + sb = 2 sin(Q / 2) cos(P / 2), it
+   * is 2 ((1 - hav) sa - sq ch) beyond */
+  BoundedDouble half = bd_add(bd_mul(cq, sh), bd_mul(hav, sa));
+  if (hav.v > 0.5)
+    half = bd_sub(bd_mul(sq, ch), bd_mul(comp, sa));
+  BoundedDouble mtwo = { -2.0, 0.0 };
+  BoundedDouble ang = bd_atan2(bd_mul(sinom, sa), bd_mul(mtwo, half));
+  BoundedDouble dur = { (double) d, 0.0 };
+  BoundedDouble x = bd_mul(bd_div(ang, om), dur);
+  if (! bd_valid(hav) || ! bd_valid(comp) || ! bd_valid(om) ||
+      ! bd_valid(ang) || ! bd_valid(x))
+    return false;
+  /* The offset lies within x.e of x.v; not a number fails both comparisons */
+  double y = x.v + 0.5;
+  if (! (y >= 0.0 && y < (double) d + 1.0))
+    return false;
+  TimestampTz est = (TimestampTz) y;
+  if (fabs(x.v - (double) est) + x.e * BD_INFLATE >= 0.5)
+    return false;
+  /* A meeting whose nearest microsecond is a bound belongs to the bound,
+   * which dates it */
+  *t = lower + est;
+  return (est > 0 && est < d);
+}
+
+/**
+ * @brief Return true if two temporal geography point segments meet strictly
+ * inside their period, proved on the doubles of their ends, setting in the
+ * output argument the microsecond nearest to the meeting
+ * @details A geography point segment moves along the great circle of its ends
+ * at a constant angular speed (#GeogSegmPair). Two segments meet where the
+ * inputs prove it: a segment and its reverse meet at the middle of the
+ * period, both standing at the middle of the arc; segments that a half turn
+ * exchanging the ends of each proves to stand at one point at the middle of
+ * the period meet there (#geogpointsegm_middle_meet), on one great circle or
+ * on two; segments on the equator or
+ * on one meridian move linearly in longitude or in latitude
+ * (#geogpointsegm_linear) and meet as two planar points do
+ * (#pointsegm_meet_coord); a segment and its mirror across the equator meet
+ * where the first crosses it (#geogpointsegm_mirrored), at the middle where
+ * the latitudes of its ends are opposite and at an instant that is not dated
+ * otherwise. Elsewhere a meeting is the coincidence of two angles computed in
+ * floating trigonometry, which no input proves, and none is stated. The
+ * meeting is dated as #tnumbersegm_crossing dates the crossing of one
+ * coordinate that changes sign, a tie going to the even timestamp
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] meet True where the segments meet strictly inside the period
+ * @param[out] t Microsecond nearest to the meeting, set where they meet
+ * @return False where the segments meet nowhere strictly inside the period,
+ * where the microsecond nearest to the meeting is a bound, or where the
+ * meeting is not dated
+ */
+static bool
+geogpointsegm_meeting(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, bool *meet, TimestampTz *t)
+{
+  POINT4D p[4];
+  datum_point4d(start1, &p[0]);
+  datum_point4d(end1, &p[1]);
+  datum_point4d(start2, &p[2]);
+  datum_point4d(end2, &p[3]);
+  bool hasz = FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags);
+  *meet = false;
+  if (geogpointsegm_reversed(p, hasz))
+  {
+    *meet = true;
+    return tnumbersegm_crossing(0.0, 1.0, 1.0, 0.0, lower, upper, t);
+  }
+  /* Two segments that a half turn proves to stand at one point at the middle
+   * of the period meet there (#geogpointsegm_middle_meet) */
+  if (geogpointsegm_middle_meet(p, hasz))
+  {
+    *meet = true;
+    return tnumbersegm_crossing(0.0, 1.0, 1.0, 0.0, lower, upper, t);
+  }
+  /* A segment and its mirror across the equator meet where the first crosses
+   * it. A first segment whose end latitude is the opposite of its start one
+   * crosses it at its middle, the rotation by a half turn about the axis
+   * through the point of the equator at the middle longitude exchanging its
+   * ends; a pair on one meridian moves linearly in latitude and is dated
+   * below; elsewhere the instant is dated where its bound proves it
+   * (#geogpointsegm_mirror_date) */
+  if (geogpointsegm_mirrored(p, hasz) && p[1].x != p[0].x)
+  {
+    *meet = true;
+    if (p[1].y == - p[0].y)
+      return tnumbersegm_crossing(0.0, 1.0, 1.0, 0.0, lower, upper, t);
+    return geogpointsegm_mirror_date(p, lower, upper, t);
+  }
+  double s1[2], e1[2], s2[2], e2[2];
+  int n = geogpointsegm_linear(p, hasz, s1, e1, s2, e2);
+  int k = (n > 0) ? pointsegm_meet_coord(s1, e1, s2, e2, n) : -1;
+  if (k < 0)
+    return false;
+  *meet = true;
+  return tnumbersegm_crossing(s1[k], e1[k], s2[k], e2[k], lower, upper, t);
+}
+
+/**
+ * @brief Return true if two temporal geography point segments meet strictly
+ * inside their period, proved on the doubles of their ends
+ * (#geogpointsegm_meeting)
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ */
+bool
+tgeogpointsegm_meet(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper)
+{
+  bool meet;
+  TimestampTz t;
+  geogpointsegm_meeting(start1, end1, start2, end2, lower, upper, &meet, &t);
+  return meet;
+}
+
+/**
+ * @brief Return true if two temporal geography point segments meet strictly
+ * inside their period, dated in the output argument by the microsecond
+ * nearest to the meeting (#geogpointsegm_meeting)
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Microsecond nearest to the meeting, a tie going to the even
+ * timestamp
+ * @return False where the segments do not meet inside the period or where
+ * the microsecond nearest to the meeting is a bound
+ */
+bool
+tgeogpointsegm_crossing(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t)
+{
+  assert(lower < upper); assert(t);
+  bool meet;
+  return geogpointsegm_meeting(start1, end1, start2, end2, lower, upper,
+    &meet, t);
+}
+
+/**
+ * @brief Return 1 if two temporal geography point segments intersect at the
+ * instant in the output timestamps, return 0 otherwise
+ * @details The meeting is proved on the doubles of the ends and dated by the
+ * microsecond nearest to it (#tgeogpointsegm_crossing)
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamps defining the resulting period, equal
  */
 int
 tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(t1); assert(t2);
-  TimestampTz tps[2];
-  if (! tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
-    (Datum) 0.0, lower, upper, tps, 2))
+  if (! tgeogpointsegm_crossing(start1, end1, start2, end2, lower, upper, t1))
     return 0;
-  *t1 = *t2 = tps[0];
-  Datum v1 = tsegment_value_at_timestamptz(start1, end1, T_TGEOGPOINT, lower,
-    upper, *t1);
-  Datum v2 = tsegment_value_at_timestamptz(start2, end2, T_TGEOGPOINT, lower,
-    upper, *t1);
-  POINT4D p1, p2;
-  datum_point4d(v1, &p1);
-  datum_point4d(v2, &p2);
-  pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
-  return (hypot(p1.x - p2.x, p1.y - p2.y) <=
-    geogpoint_meeting_band(&p1, &p2)) ? 1 : 0;
+  *t2 = *t1;
+  return 1;
 }
 
 /*****************************************************************************
@@ -2997,13 +3669,17 @@ geo_bearing_fn(int16 flags)
  * @param[in] point Geometric/geography point to locate
  * @param[in] lower,upper Timestampts defining the segment
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segment is not constant and has linear interpolation
  */
 static int
 tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
-  TimestampTz lower, TimestampTz upper, TimestampTz *tps, int cap UNUSED)
+  TimestampTz lower, TimestampTz upper, TimestampTz *tps, Datum *values UNUSED,
+  int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   const POINT2D *p1 = DATUM_POINT2D_P(start);
   const POINT2D *p2 = DATUM_POINT2D_P(end);
@@ -3064,6 +3740,8 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] tps Array of the instants found
+ * @param[out] values Values of the function at the instants, which this
+ * function does not write, NULL
  * @param[in] cap Number of instants @p tps holds
  * @pre The segments are not both constants and are both linear
  * @note This function is currently not available for two temporal geographic
@@ -3072,8 +3750,9 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
 static int
 tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *tps, int cap UNUSED)
+  TimestampTz *tps, Datum *values UNUSED, int cap UNUSED)
 {
+  assert(! values);
   assert(lower < upper); assert(tps); assert(cap >= 2);
   assert(! FLAGS_GET_GEODETIC(DatumGetGserializedP(start1)->gflags));
   const POINT2D *sp1 = DATUM_POINT2D_P(start1);
@@ -3121,6 +3800,7 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double *result)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(result, false);
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       ! ensure_point_type(gs1) || ! ensure_point_type(gs2) ||
       ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2) ||

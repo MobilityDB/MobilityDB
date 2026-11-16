@@ -4116,6 +4116,22 @@ SELECT b, asText(th3index(trip, 10, b)),
   (SELECT COUNT(*) FROM h3Split(trip, 10, b)) AS fragments
 FROM t, (VALUES (true), (false)) bb(b);
 -------------------------------------------------------------------------------
+-- Extracted from h3/sql/291_th3index_spatialfuncs.sql
+-------------------------------------------------------------------------------
+
+SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+SELECT asText(atStbox(th3index(h3index '8009fffffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+SELECT asText(atStbox(th3index(h3index '8001fffffffffff', timestamptz '2001-01-01'),
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+SELECT asText(atStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+SELECT asText(minusStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+-------------------------------------------------------------------------------
 -- Extracted from json/sql/450_jsonbset_tbl.sql
 -------------------------------------------------------------------------------
 
@@ -5745,6 +5761,15 @@ SELECT asEWKT(round(tposechainFromGeoPose(doc), 6)) FROM test;
 SELECT asEWKT(round(tposechainFromGeoPose(
   '{"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=-122.3&latitude=47.7&height=11&crs=EPSG:4979"},"frameChain":[{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[2, 0, 0]&rotation=[1, 0, 0, 0]"}]}'), 6));
 -------------------------------------------------------------------------------
+-- Extracted from posechain/sql/555_tposechain_spatialfuncs.sql
+-------------------------------------------------------------------------------
+
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((-1,-1),(1,1))'));
+SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((4,-1),(6,1))'));
+SELECT asText(minusStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', stbox 'STBOX X((4,-1),(6,1))'));
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(-5 0), 0), Pose(Point(0 20), 0))@2001-01-01, PoseChain(Pose(Point(5 0), 0), Pose(Point(0 20), 0))@2001-01-02]', stbox 'STBOX X((-1,-1),(1,1))'));
+SELECT asText(atStbox(tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01, PoseChain(Pose(Point(0 5), 0), Pose(Point(10 0), 0))@2001-01-02]', stbox 'STBOX X((9,-1),(11,1))'));
+-------------------------------------------------------------------------------
 -- Extracted from posechain/sql/560_tposechain_distance.sql
 -------------------------------------------------------------------------------
 
@@ -5982,6 +6007,24 @@ SELECT asText(tquadbinGridDistance(
 SELECT asText(tquadbinGridDistance(
   tquadbin(quadbinTileToCell(1, 1, 3), tstzspan '[2001-01-01, 2001-01-03]'),
   tquadbin(quadbinTileToCell(4, 2, 3), tstzspan '[2001-01-02, 2001-01-04]')));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((0,10),(10,20))'));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,-10),(-5,0))'));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(0, 1, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,-10),(-5,0))'));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,10),(0,20))'));
+SELECT asText(atStbox(tquadbin(quadbinTileToCell(1, 0, 1), timestamptz '2001-01-01'),
+  stbox 'SRID=4326;STBOX X((-10,10),(0,20))', false));
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02, 4817ffffffffffff@2001-01-03]',
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02, 4817ffffffffffff@2001-01-03]',
+  stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
+SELECT asText(atStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-03]',
+  stbox 'STBOX T([2001-01-02, 2001-01-04])'));
 -------------------------------------------------------------------------------
 -- Extracted from quadbin/sql/361_tquadbin_aggfuncs.sql
 -------------------------------------------------------------------------------
@@ -7478,6 +7521,8 @@ SELECT
   asText(tDwithin(seq1, big_region, 1.0)) = asText(tDwithin(seq1::tgeometry, big_region, 1.0)) AS tdw_rg_geo,
   asText(tDwithin(seq1, seq2, 1.0)) = asText(tDwithin(seq1::tgeometry, seq2::tgeometry, 1.0)) AS tdw_rg_rg
 FROM t;
+SELECT tIntersects(trgeometry(asText(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01')), geometry 'Point(0.1 0.1 0.1)');
+SELECT tIntersects(trgeometryFromBinary(asBinary(trgeometry 'PolyhedralSurface Z(((0 0 0,0 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,1 0 0,0 0 1,0 0 0)),((1 0 0,0 1 0,0 0 1,1 0 0)));Pose(Point(0 0 0),1,0,0,0)@2001-01-01')), geometry 'Point(0.1 0.1 0.1)');
 -------------------------------------------------------------------------------
 -- Extracted from s2cell/sql/600_s2cell.sql
 -------------------------------------------------------------------------------
@@ -7595,18 +7640,19 @@ SELECT asText(getResolution(ts2cell '[47c3c3@2001-01-01, 47c3c38705f@2001-01-02]
 SELECT asText(isValidCell(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
 SELECT asText(cellToParent(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 5));
 SELECT asText(ts2CellToToken(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
-SELECT count(*) AS instants,
-  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
-    geoToS2Cell(valueAtTimestamp(p, t)::geography, z)) AS other_cell,
-  count(DISTINCT p::text) FILTER (WHERE c <> ts2cell(p::tgeogpoint, z))
-    AS other_than_geodetic
-FROM (SELECT p, z, ts2cell(p, z) AS c FROM (VALUES
+WITH q AS MATERIALIZED (
+  SELECT p, z, ts2cell(p, z) AS c, ts2cell(p::tgeogpoint, z) AS g FROM (VALUES
   (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 6),
   (tgeompoint 'SRID=4326;[Point(-170 75)@2001-01-01, Point(170 78)@2001-01-02]', 5),
   (tgeompoint 'SRID=4326;[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 7),
   (tgeompoint 'SRID=4326;[Point(179 10)@2001-01-01, Point(175 -30)@2001-01-02]', 8),
   (tgeompoint 'SRID=4326;[Point(4.35 10)@2001-01-01, Point(4.35 50)@2001-01-02]', 9))
-  AS v(p, z)) AS q,
+  AS v(p, z))
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(ts2cell(atTime(p, t), z))) AS other_cell,
+  count(DISTINCT p::text) FILTER (WHERE c <> g) AS other_than_geodetic
+FROM q,
   generate_series(timestamptz '2001-01-01 00:00:30',
     timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
 SELECT b, asText(ts2cell(tgeogpoint
@@ -7667,6 +7713,8 @@ SELECT dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
 SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
 SELECT tstzset '2001-01-01, 2001-01-02';
 SELECT tstzset '{2001-01-01, 2001-01-02';
+SELECT tstzset '{2001-01-01, infinity}';
+SELECT dateset '{-infinity, 2001-01-01}';
 SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
 SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
 SELECT asText(set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']));
@@ -7702,6 +7750,9 @@ SELECT floatspan '[1,2] xxx';
 SELECT tstzspan '[2001-01-01,2001-01-02] xxx';
 SELECT tstzspan '2001-01-01, 2001-01-02';
 SELECT tstzspan '[2001-01-01, 2001-01-02';
+SELECT tstzspan '[-infinity, 2001-01-01]';
+SELECT tstzspan '[2001-01-01, infinity]';
+SELECT datespan '[2001-01-01, infinity)';
 SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);
 SELECT asText(floatspan '[1.12345678, 2.123456789]', -6);
 SELECT intspan '[1,2]';
@@ -7821,6 +7872,9 @@ SELECT tbigint '9223372036854775807@2012-01-01 08:00:00';
 SELECT tint '{1@2001-01-01, 2147483647@2001-01-02}';
 SELECT tint '[1@2001-01-01, 2147483647@2001-01-02]';
 SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
+SELECT tfloat '1@infinity';
+SELECT tfloat '[1@2001-01-01, 2@infinity]';
+SELECT tfloat '{1@-infinity, 2@2001-01-01}';
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';
 SELECT tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}';
 SELECT tint ' { 1@2001-01-01 08:00:00 , 2@2001-01-01 08:05:00 , 3@2001-01-01 08:06:00 } ';

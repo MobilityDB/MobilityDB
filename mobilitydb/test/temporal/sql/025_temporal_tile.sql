@@ -235,6 +235,12 @@ SELECT valueSplit(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5
 SELECT valueSplit(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5);
 SELECT valueSplit(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', 0.5);
 SELECT valueSplit(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', 0.5);
+-- A bin bound crossed is dated by the microsecond nearest to it, at which the
+-- segment takes the bin bound, and one whose nearest microsecond is a bound of
+-- the segment belongs to the bound
+SELECT number, round(tnumber, 6) FROM valueSplit(tfloat '[1@2001-01-01 00:00:00, 2@2001-01-01 00:00:00.000003]', 0.25);
+SELECT valueSplit(tfloat '[0@2001-01-01 00:00:00, 1@2001-01-01 00:00:00.000002]', 0.25);
+SELECT valueSplit(tfloat '[2@2001-01-01, 0.9999999999999999@2001-01-02]', 0.5);
 
 -------------------------------------------------------------------------------
 -- timeSplit

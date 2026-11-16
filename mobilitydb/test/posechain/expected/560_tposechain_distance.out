@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- distance
+-------------------------------------------------------------------------------
 SELECT round(distance(geometry 'Point(1 0)', posechain 'PoseChain(Pose(Point(4 0),0))'), 6);
  round 
 -------
@@ -92,6 +95,7 @@ SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> posechain
     13
 (1 row)
 
+-- Empty geometry and NULL arguments
 SELECT round(geometry 'Point empty' <-> posechain 'PoseChain(Pose(Point(4 0),0))', 6);
  round 
 -------
@@ -121,10 +125,14 @@ SELECT NULL::posechain <-> posechain 'PoseChain(Pose(Point(4 0),0))';
          
 (1 row)
 
+-- Errors
 SELECT posechain 'SRID=5676;PoseChain(Pose(Point(0 0),0))' <-> posechain 'PoseChain(Pose(Point(3 4),0))';
 ERROR:  Operation on mixed SRID
 SELECT geometry 'SRID=5676;Point(1 0)' <-> posechain 'PoseChain(Pose(Point(4 0),0))';
 ERROR:  Operation on mixed SRID
+-------------------------------------------------------------------------------
+-- tDistance
+-------------------------------------------------------------------------------
 SELECT round(tDistance(geometry 'Point(1 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'), 6);
                                               round                                               
 --------------------------------------------------------------------------------------------------
@@ -157,6 +165,9 @@ SELECT round(tDistance(
  [2@Mon Jan 01 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
+-------------------------------------------------------------------------------
+-- nearestApproachInstant
+-------------------------------------------------------------------------------
 SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'));
                            astext                           
 ------------------------------------------------------------
@@ -189,6 +200,9 @@ SELECT asText(nearestApproachInstant(
  PoseChain(Pose(POINT(0 0),0))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+-------------------------------------------------------------------------------
+-- nearestApproachDistance
+-------------------------------------------------------------------------------
 SELECT round(nearestApproachDistance(geometry 'Point(2 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'), 6);
  round 
 -------
@@ -225,6 +239,7 @@ SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@
      0
 (1 row)
 
+-- A box carrying a period measures the part of the temporal pose chain inside it
 SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2001-01-01, 2001-01-03])'), 6);
  round 
 -------
@@ -237,12 +252,14 @@ SELECT round(nearestApproachDistance(stbox 'STBOX XT(((10,-1),(12,1)),[2001-01-0
      8
 (1 row)
 
+-- The same box with no period measures the whole temporal pose chain
 SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', stbox 'STBOX X((10,-1),(12,1))'), 6);
  round 
 -------
      6
 (1 row)
 
+-- No part of the temporal pose chain is inside the period
 SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2001-02-01, 2001-02-02])'), 6);
  round 
 -------
@@ -257,6 +274,9 @@ SELECT round(nearestApproachDistance(
      2
 (1 row)
 
+-------------------------------------------------------------------------------
+-- shortestLine
+-------------------------------------------------------------------------------
 SELECT ST_AsText(shortestLine(geometry 'Point(2 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'));
       st_astext      
 ---------------------
@@ -289,6 +309,9 @@ SELECT ST_AsText(shortestLine(
  LINESTRING(0 0,0 2)
 (1 row)
 
+-------------------------------------------------------------------------------
+-- A chain of two links answers for the pose its composition gives
+-------------------------------------------------------------------------------
 SELECT round(distance(posechain 'PoseChain(Pose(Point(1 0),0), Pose(Point(1 0),0))', geometry 'Point(5 0)'), 6);
  round 
 -------
@@ -338,6 +361,9 @@ SELECT ST_AsText(shortestLine(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Po
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Pose chain sets
+-------------------------------------------------------------------------------
 SELECT round(setDistance(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(4 0), 0))"}',
   posechain 'PoseChain(Pose(Point(6 0), 0))'), 6);
  round 
@@ -359,6 +385,9 @@ SELECT round(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' <->
      5
 (1 row)
 
+-------------------------------------------------------------------------------
+-- Gaps stated by a maximum distance
+-------------------------------------------------------------------------------
 SELECT asText(tposechainSeqSetGaps(ARRAY[
   tposechain 'PoseChain(Pose(Point(0 0),0))@2001-01-01',
   tposechain 'PoseChain(Pose(Point(10 0),0))@2001-01-02'], NULL, 1.0));
@@ -391,3 +420,4 @@ SELECT asText(appendInstant(temp, 'linear', 1.0, interval '2 days')) FROM (VALUE
  {[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST], [Pose(POINT(10 0),0)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+-------------------------------------------------------------------------------

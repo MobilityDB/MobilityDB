@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+-- Extent aggregate function
+-------------------------------------------------------------------------------
 SELECT round(extent(inst), 6) FROM tbl_tgeompoint_inst;
                                                        round                                                        
 --------------------------------------------------------------------------------------------------------------------
@@ -118,6 +121,7 @@ SELECT round(extent(temp), 6) FROM tbl_tgeogpoint3D;
  SRID=4326;GEODSTBOX ZT(((-9.77763,35.053716,0.416793),(31.914229,71.89642,999.09274)),(Wed Jan 03 19:45:00 2001 PST, Sun Dec 23 00:21:00 2001 PST])
 (1 row)
 
+-------------------------------------------------------------------------------
 SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompoint_inst;
  numinstants 
 -------------
@@ -454,6 +458,7 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeompoint3D_seqset GROUP BY k%10
         9 |           58
 (10 rows)
 
+-------------------------------------------------------------------------------
 SELECT numInstants(tcount(inst)) FROM tbl_tgeogpoint_inst;
  numinstants 
 -------------
@@ -538,3 +543,4 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeogpoint_seqset GROUP BY k%10 O
         9 |           43
 (10 rows)
 
+-------------------------------------------------------------------------------

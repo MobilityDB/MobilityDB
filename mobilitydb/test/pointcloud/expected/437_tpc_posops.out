@@ -1,144 +1,166 @@
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) << (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1));
+-- Value-level tests for the directional position operators on
+-- tpcpoint / tpcpatch.
+\set p_low  'tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), ''2024-01-01''::timestamptz)'
+\set p_high 'tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), ''2024-01-15''::timestamptz)'
+\set box_left  'tpcboxZT(0, 0, 0, 5, 5, 5,    tstzspan ''[2024-01-01, 2024-01-15]'', 1)'
+\set box_right 'tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan ''[2025-01-01, 2025-01-15]'', 1)'
+-------------------------------------------------------------------------------
+-- X axis: <<, >>, &<, &>
+-------------------------------------------------------------------------------
+SELECT (:p_low) << (:box_right);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1)) >> (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT (:box_right) >> (:p_low);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-15'::timestamptz)) << (tpcboxZT(0, 0, 0, 5, 5, 5,    tstzspan '[2024-01-01, 2024-01-15]', 1));
+SELECT (:p_high) << (:box_left);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) &< (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1));
+SELECT (:p_low) &< (:box_right);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) &> (tpcboxZT(0, 0, 0, 5, 5, 5,    tstzspan '[2024-01-01, 2024-01-15]', 1));
+SELECT (:p_low) &> (:box_left);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) <<| (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1));
+-------------------------------------------------------------------------------
+-- Y axis: <<|, |>>, &<|, |&>
+-------------------------------------------------------------------------------
+SELECT (:p_low) <<| (:box_right);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1)) |>> (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT (:box_right) |>> (:p_low);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) &<| (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1));
+SELECT (:p_low) &<| (:box_right);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) |&> (tpcboxZT(0, 0, 0, 5, 5, 5,    tstzspan '[2024-01-01, 2024-01-15]', 1));
+SELECT (:p_low) |&> (:box_left);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) <</ (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1));
+-------------------------------------------------------------------------------
+-- Z axis: <</, />>, &</, /&>
+-------------------------------------------------------------------------------
+SELECT (:p_low) <</ (:box_right);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1)) />> (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT (:box_right) />> (:p_low);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) &</ (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1));
+SELECT (:p_low) &</ (:box_right);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) /&> (tpcboxZT(0, 0, 0, 5, 5, 5,    tstzspan '[2024-01-01, 2024-01-15]', 1));
+SELECT (:p_low) /&> (:box_left);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) <<# (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1));
+-------------------------------------------------------------------------------
+-- Time axis: <<#, #>>, &<#, #&>  (also tstzspan)
+-------------------------------------------------------------------------------
+SELECT (:p_low) <<# (:box_right);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan '[2025-01-01, 2025-01-15]', 1)) #>> (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT (:box_right) #>> (:p_low);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) <<# tstzspan '[2099-01-01, 2099-12-31]';
+SELECT (:p_low) <<# tstzspan '[2099-01-01, 2099-12-31]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzspan '[2099-01-01, 2099-12-31]' #>> (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT tstzspan '[2099-01-01, 2099-12-31]' #>> (:p_low);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) &<# tstzspan '[2099-01-01, 2099-12-31]';
+SELECT (:p_low) &<# tstzspan '[2099-01-01, 2099-12-31]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT NOT ((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) << (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+-------------------------------------------------------------------------------
+-- Reflexivity check: nothing is strictly to one side of itself.
+-------------------------------------------------------------------------------
+SELECT NOT ((:p_low) << (:p_low));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT NOT ((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) >> (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+SELECT NOT ((:p_low) >> (:p_low));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT NOT ((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) <<| (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+SELECT NOT ((:p_low) <<| (:p_low));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT NOT ((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) |>> (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+SELECT NOT ((:p_low) |>> (:p_low));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT NOT ((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) <<# (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+SELECT NOT ((:p_low) <<# (:p_low));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT NOT ((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) #>> (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+SELECT NOT ((:p_low) #>> (:p_low));
  ?column? 
 ----------
  t
 (1 row)
 
+-------------------------------------------------------------------------------

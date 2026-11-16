@@ -186,6 +186,14 @@ CREATE OPERATOR CLASS tbox_rtree_ops
   OPERATOR  31    #&> (tbox, tint),
   OPERATOR  31    #&> (tbox, tbigint),
   OPERATOR  31    #&> (tbox, tfloat),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbox, tint),
+  OPERATOR  36    ?&& (tbox, tbigint),
+  OPERATOR  36    ?&& (tbox, tfloat),
+  -- always overlaps
+  OPERATOR  37    %&& (tbox, tint),
+  OPERATOR  37    %&& (tbox, tbigint),
+  OPERATOR  37    %&& (tbox, tfloat),
   -- functions
   FUNCTION  1  tbox_gist_consistent(internal, tbox, smallint, oid, internal),
   FUNCTION  2  tbox_gist_union(internal, internal),
@@ -230,6 +238,10 @@ CREATE OPERATOR CLASS tbool_rtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (tbool, tstzspan),
   OPERATOR  31    #&> (tbool, tbool),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbool, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (tbool, tstzspan),
   -- functions
   FUNCTION  1 tbool_gist_consistent(internal, tbool, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
@@ -313,6 +325,10 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  31    #&> (tint, tstzspan),
   OPERATOR  31    #&> (tint, tbox),
   OPERATOR  31    #&> (tint, tint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tint, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tint, tbox),
   -- functions
   FUNCTION  1 tint_gist_consistent(internal, tint, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
@@ -397,6 +413,10 @@ CREATE OPERATOR CLASS tbigint_rtree_ops
   OPERATOR  31    #&> (tbigint, tstzspan),
   OPERATOR  31    #&> (tbigint, tbox),
   OPERATOR  31    #&> (tbigint, tbigint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbigint, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tbigint, tbox),
   -- functions
   FUNCTION  1 tbigint_gist_consistent(internal, tbigint, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
@@ -481,6 +501,10 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   OPERATOR  31    #&> (tfloat, tstzspan),
   OPERATOR  31    #&> (tfloat, tbox),
   OPERATOR  31    #&> (tfloat, tfloat),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tfloat, tbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tfloat, tbox),
   -- functions
   FUNCTION  1 tfloat_gist_consistent(internal, tfloat, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
@@ -526,6 +550,10 @@ CREATE OPERATOR CLASS ttext_rtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (ttext, tstzspan),
   OPERATOR  31    #&> (ttext, ttext),
+  -- ever overlaps
+  OPERATOR  36    ?&& (ttext, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (ttext, tstzspan),
   -- functions
   FUNCTION  1 ttext_gist_consistent(internal, ttext, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
