@@ -119,7 +119,8 @@ stbox_expand_point2d(const POINT2D *p, STBox *box)
 static bool
 route_stretch_set_stbox(int64 rid, double pos1, double pos2, STBox *box)
 {
-  const LWLINE *line = route_line(rid);
+  const double *fracs;
+  const LWLINE *line = route_line_bound(rid, NULL, &fracs);
   if (! line)
     return false;
   int32_t srid = line->srid;
@@ -131,10 +132,10 @@ route_stretch_set_stbox(int64 rid, double pos1, double pos2, STBox *box)
   double posmin = Min(pos1, pos2), posmax = Max(pos1, pos2);
 
   POINT4D p;
-  route_point_at(pa, length, posmin, &p);
+  route_point_at(pa, length, fracs, posmin, &p);
   stbox_set(true, false, false, srid, p.x, p.x, p.y, p.y, 0.0, 0.0, NULL,
     box);
-  route_point_at(pa, length, posmax, &p);
+  route_point_at(pa, length, fracs, posmax, &p);
   stbox_expand_point2d((const POINT2D *) &p, box);
 
   /* The position of a vertex is its distance along the route over the length

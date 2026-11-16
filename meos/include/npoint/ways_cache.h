@@ -55,6 +55,9 @@ typedef struct
   GSERIALIZED *the_geom;  /**< Geometry of the route */
   const LWLINE *the_line; /**< Geometry of the route read as a line, set by
                                the cache and not by a fetch function */
+  const double *the_fracs; /**< Fractions of the segments of the route
+                               (#route_segment_fractions), set by the cache
+                               and not by a fetch function */
   double length;          /**< Length of the route, DBL_MAX when it states
                                none */
   double bound;           /**< Bound of the construction of a point on the
