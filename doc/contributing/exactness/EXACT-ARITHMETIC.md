@@ -806,9 +806,17 @@ does. A call costs 4% more for `nearest_double_exact` and the wide root, 5% for 
 EA6 is merged as #3686 (`7dce0ed93e` on master), four commits: the search read by
 `nearest_double_exact`, then the wide root, the offset filter and the DDBound root as its sides.
 Its receipts are strict CI, cppcheck, valgrind, smoke, the oracle (18 CGAL witnesses with 36
-controls) and speed, 25 of the 26 cells at parity as on EA5. The other
-searches of Section 4.5 (`point_distance_nearest`, the searches of `point_distance_offset_pair`,
-`point_segment_distance_offset_exact` and their `_inputs` twins, `mec_nearest`) are not in it.
+controls) and speed, 25 of the 26 cells at parity as on EA5. The other searches of Section 4.5
+read it as sides in #3746: the first test of `point_distance_exact` and `point_distance_nearest` (a
+filter on doubles, then `point_distance_midpoint_sign`), the walks of `point_distance_offset_pair`
+and `point_distance_offset_inputs`, and the copies of the gallop in
+`point_segment_distance_offset_exact` and its `_inputs` twin. Judged in MPFR, its rounding read
+back in `CGAL::Gmpq`, the head answers all of 41 610 point distances, 16 708 distances less a
+radius and 17 400 point-segment distances less a radius, ties on midpoints included, where the
+same quantities in doubles answer 19 799, 10 004 and 10 872 wrongly; speed 25 of 26 cells at parity
+on the relate and distance cells. `mec_nearest` (`postgis_funcs.c`) searches signed doubles in a
+file the one search is not visible from: after EA3 it reads the search from `geo_dyadic.h`, its sign
+split on `mec_beyond`.
 
 ### EA7. Every sign with every tier
 
