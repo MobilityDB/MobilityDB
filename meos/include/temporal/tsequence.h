@@ -165,6 +165,7 @@ extern bool ensure_valid_tinstarr_common(TInstant **instants, int count,
 extern TSequence *tsequence_make_exp1(TInstant **instants, int count,
   int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize, const void *bbox);
+extern TInstant *tsequence_append_slot(TSequence *seq, size_t size);
 
 /* Synchronization functions */
 
