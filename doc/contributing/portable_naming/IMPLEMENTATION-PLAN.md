@@ -115,7 +115,15 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   step sequence exclusively into its runs, as the cell walks split a value, MERGED as MobilityDB
   #3740 (`baf181a67b`); `geopoint_eq` asserts the reference system and the geodetic flag of the
   points it compares, MERGED as MobilityDB #3739 (`e75f948868`): CGAL agrees with every row of its
-  relate and linear union corpora (manifest `~/cpwork/contract/geopoint.manifest`).
+  relate and linear union corpora (manifest `~/cpwork/contract/geopoint.manifest`). Every
+  pointer parameter of an external function reaches a guard or a NULL test within three calls
+  (`~/cpwork/contract/scan_args.py`: 134 untested at master `f48ecca3a8`, 90 of them a NULL the
+  function accepts or tests behind a function pointer); each family that crashes a Release
+  build on a NULL is one PR with a witness under `meos/test`: the bins of a span, a span set and
+  the time of a temporal value, OPEN as MobilityDB #3748; the text of a temporal text, OPEN as
+  MobilityDB #3749; the value the JSONB inserts insert, OPEN as MobilityDB #3750; the count of
+  the set values accessors, `meos/set-values-test-their-count`; the result of
+  `bearing_point_point` and the set of `tstzset_tprecision`, not started.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
