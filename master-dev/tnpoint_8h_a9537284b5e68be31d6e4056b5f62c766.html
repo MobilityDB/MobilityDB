@@ -116,9 +116,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a304adec86bd11085e3dd14c00e1cc5b5.html#a304adec86bd11085e3dd14c00e1cc5b5">route_construction_bound</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_ab346a7a99b9df4a2cf37649cbe9983c0.html#ab346a7a99b9df4a2cf37649cbe9983c0">route_constructs_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a1c4d324de0d91f17609961e4ca953960.html#a1c4d324de0d91f17609961e4ca953960">route_line</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a56944ea9dcfa3c134919c4a456d3072d.html#a56944ea9dcfa3c134919c4a456d3072d">route_line_bound</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a87e8102fbd362a81b52f91bb5295a29c.html#a87e8102fbd362a81b52f91bb5295a29c">route_line_bound</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_aae819d8def8b0aae0df039157d48a44a.html#aae819d8def8b0aae0df039157d48a44a">route_nearest_update</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_aa151531097c065034fe76652a298020f.html#aa151531097c065034fe76652a298020f">route_point_at</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_a9537284b5e68be31d6e4056b5f62c766.html#a9537284b5e68be31d6e4056b5f62c766">route_point_at</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a0ae5889823860c699e9ff52f57b5d265.html#a0ae5889823860c699e9ff52f57b5d265">route_segment_fractions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f">route_vertex_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">tgeompointinst_tnpointinst</a></td></tr>
@@ -146,8 +147,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa151531097c065034fe76652a298020f" name="aa151531097c065034fe76652a298020f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa151531097c065034fe76652a298020f">&#9670;&#160;</a></span>route_point_at()</h2>
+<a id="a9537284b5e68be31d6e4056b5f62c766" name="a9537284b5e68be31d6e4056b5f62c766"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9537284b5e68be31d6e4056b5f62c766">&#9670;&#160;</a></span>route_point_at()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -163,6 +164,12 @@ $(function() {
           <td></td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>fracs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -185,10 +192,11 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return in the last argument the point of a route at a fraction of its length. </p>
-<p >The point <code>lwline_interpolate_points</code> returns for one fraction, computed by the same expressions in the same order, given the length of the route instead of measuring it again, and written in place instead of in a new point array. A route is a planar line, as <a class="el" href="tnpoint_8h_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc" title="Ensure that the geometry of a route read from the ways network is a planar line without Z or M dimens...">ensure_valid_route</a> tests when the network is read, so its points are read as the 2D points they are, and the point has the Z and M of zero <code>getPoint4d_p</code> gives a planar point and <code>interpolate_point4d</code> gives two of them </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The point <code>lwline_interpolate_points</code> returns for one fraction, computed by the same expressions in the same order, given the length of the route instead of measuring it again, and written in place instead of in a new point array. A route is a planar line, as <a class="el" href="tnpoint_8h_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc" title="Ensure that the geometry of a route read from the ways network is a planar line without Z or M dimens...">ensure_valid_route</a> tests when the network is read, so its points are read as the 2D points they are, and the point has the Z and M of zero <code>getPoint4d_p</code> gives a planar point and <code>interpolate_point4d</code> gives two of them. Given the fractions of the segments of the route (<a class="el" href="meos_2src_2npoint_2tnpoint_8c_a0ae5889823860c699e9ff52f57b5d265.html#a0ae5889823860c699e9ff52f57b5d265" title="Return the fractions of the segments of a route.">route_segment_fractions</a>), the segment holding the fraction is found among them by bisection, as <a class="el" href="tsequence_8h_abed8495f6c229b6c78f5dbe0191fe00c.html#abed8495f6c229b6c78f5dbe0191fe00c" title="Return the index of the segment of a temporal continuous sequence containing a timestamp using binary...">tcontseq_find_timestamptz</a> finds the segment of a sequence holding a timestamp, instead of measuring the segments before it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Points of the route, not empty </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Length of the route, <code>ptarray_length_2d</code> of the points </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fracs</td><td>Fractions of the segments of the route (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">fraction</td><td>Fraction of the length </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">pt</td><td>Point </td></tr>
   </table>

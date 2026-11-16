@@ -90,7 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__route_gaafdab49c6282c6374bb2a7ebbf88504f.html#gaafdab49c6282c6374bb2a7ebbf88504f">route_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__route_ga604734ff210d5485e1c98e7274582f31.html#ga604734ff210d5485e1c98e7274582f31">route_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways_8c_a1c4d324de0d91f17609961e4ca953960.html#a1c4d324de0d91f17609961e4ca953960">route_line</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="ways_8c_a56944ea9dcfa3c134919c4a456d3072d.html#a56944ea9dcfa3c134919c4a456d3072d">route_line_bound</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="ways_8c_a87e8102fbd362a81b52f91bb5295a29c.html#a87e8102fbd362a81b52f91bb5295a29c">route_line_bound</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways_8c_af1fed75bc0587c5465e98e7a19e25923.html#af1fed75bc0587c5465e98e7a19e25923">route_lookup</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways_8c_acf84d55aa210ab3bf0bbb864c21fb36a.html#acf84d55aa210ab3bf0bbb864c21fb36a">SQL_ROUTE_MAXLEN</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways_8c_a9ce3f08a59492fdb794fc859853aeaa8.html#a9ce3f08a59492fdb794fc859853aeaa8">SRID_WAYS</a></td></tr>
@@ -102,8 +102,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a56944ea9dcfa3c134919c4a456d3072d" name="a56944ea9dcfa3c134919c4a456d3072d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56944ea9dcfa3c134919c4a456d3072d">&#9670;&#160;</a></span>route_line_bound()</h2>
+<a id="a87e8102fbd362a81b52f91bb5295a29c" name="a87e8102fbd362a81b52f91bb5295a29c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a87e8102fbd362a81b52f91bb5295a29c">&#9670;&#160;</a></span>route_line_bound()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -118,7 +118,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>bound</em>&#160;</td>
+          <td class="paramname"><em>bound</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double **&#160;</td>
+          <td class="paramname"><em>fracs</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -128,11 +134,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the geometry of a route read as a line, as <a class="el" href="ways_8c_a1c4d324de0d91f17609961e4ca953960.html#a1c4d324de0d91f17609961e4ca953960" title="Return the geometry of a route read as a line, as route_geom returns its geometry.">route_line</a> returns it, and in the last argument, when it is not NULL, the bound of the construction of a point on the route (<a class="el" href="tnpoint_8h_a304adec86bd11085e3dd14c00e1cc5b5.html#a304adec86bd11085e3dd14c00e1cc5b5" title="Return a bound on the distance between a point a route constructs and the point of the route it stand...">route_construction_bound</a>), read by the ways cache with the line. </p>
+<p>Return the geometry of a route read as a line, as <a class="el" href="ways_8c_a1c4d324de0d91f17609961e4ca953960.html#a1c4d324de0d91f17609961e4ca953960" title="Return the geometry of a route read as a line, as route_geom returns its geometry.">route_line</a> returns it, and in the other arguments, when they are not NULL, the bound of the construction of a point on the route (<a class="el" href="tnpoint_8h_a304adec86bd11085e3dd14c00e1cc5b5.html#a304adec86bd11085e3dd14c00e1cc5b5" title="Return a bound on the distance between a point a route constructs and the point of the route it stand...">route_construction_bound</a>) and the fractions of the segments of the route (<a class="el" href="tnpoint_8h_a0ae5889823860c699e9ff52f57b5d265.html#a0ae5889823860c699e9ff52f57b5d265" title="Return the fractions of the segments of a route.">route_segment_fractions</a>), read by the ways cache with the line. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rid</td><td>Route identifier </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">bound</td><td>Bound of the construction </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">fracs</td><td>Fractions of the segments, NULL when the route has no length </td></tr>
   </table>
   </dd>
 </dl>
