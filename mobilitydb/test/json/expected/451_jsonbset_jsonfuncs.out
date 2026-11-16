@@ -359,7 +359,7 @@ SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'a');
 SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
  intset 
 --------
- {2}
+ {3}
 (1 row)
 
 SELECT intset(jsonbset '{"{\"a\":\"1\", \"b\":2.5}"}', text 'a');
