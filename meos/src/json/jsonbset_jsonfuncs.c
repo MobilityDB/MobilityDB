@@ -287,9 +287,11 @@ jsonbset_delete_array(const Set *set, text **keys, int count)
 bool *
 jsonbset_exists(const Set *set, const text *key, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(key, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -861,9 +863,12 @@ bool *
 jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jp, NULL);
-  VALIDATE_NOT_NULL(vars, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(vars, NULL);
   return jsonbset_path_exists_intl(set, jp, vars, silent, tz, count);
 }
 
@@ -926,9 +931,12 @@ bool *
 jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jp, NULL);
-  VALIDATE_NOT_NULL(vars, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(vars, NULL);
   return jsonbset_path_match_intl(set, jp, vars, silent, tz, count);
 }
 

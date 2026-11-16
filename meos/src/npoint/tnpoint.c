@@ -1109,8 +1109,11 @@ tnpoint_value_n(const Temporal *temp, int n, Npoint **result)
 Npoint **
 tnpoint_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TNPOINT(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   Npoint **result = palloc(sizeof(Npoint *) * *count);
   for (int i = 0; i < *count; i++)
@@ -1303,8 +1306,11 @@ tnpointseqset_positions(const TSequenceSet *ss, int *count)
 Nsegment **
 tnpoint_positions(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TNPOINT(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

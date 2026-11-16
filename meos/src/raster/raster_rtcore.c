@@ -1705,7 +1705,10 @@ GeomVal *
 raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
   int *count)
 {
-  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(rast, NULL);
   *count = 0;
 
   /* The bands are read, so the subject is deserialized in full */
@@ -1849,8 +1852,11 @@ Pixel *
 raster_pixel_as_points(const Raster *rast, int band, bool exclude_nodata,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(rast, NULL);
   *count = 0;
   rt_raster raster;
   rt_band rtband = raster_read_band(rast, band, &raster);
@@ -1927,9 +1933,11 @@ double *
 raster_dump_values(const Raster *rast, int band, bool exclude_nodata,
   bool **nodata, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(nodata, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   *nodata = NULL;
   *count = 0;
   rt_raster raster;
@@ -3124,8 +3132,11 @@ ValueCount *
 raster_value_count(const Raster *rast, int band, bool exclude_nodata,
   const double *searchvalues, int nsearch, double roundto, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(rast, NULL);
   *count = 0;
   if (! ensure_finite(roundto))
     return NULL;

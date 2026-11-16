@@ -603,8 +603,11 @@ trgeometry_start_value(const Temporal *temp)
 Pose **
 trgeometry_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TRGEOMETRY(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   Pose **result = palloc(sizeof(Pose *) * *count);
   for (int i = 0; i < *count; i++)

@@ -783,8 +783,11 @@ temporal_reachability_filter_finalfn(ReachabilityState *state)
 TInstant **
 reachabilitystate_instants(ReachabilityState *state, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(state, NULL);
   TInstant **result = state->pending ? state->pending :
     palloc(sizeof(TInstant *));
   *count = state->npending;
@@ -813,8 +816,11 @@ reachabilitystate_instants(ReachabilityState *state, int *count)
 TInstant **
 reachabilitystate_close(ReachabilityState *state, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(state, NULL);
   if (! state->seeded && state->nhead > 0)
     reachabilitystate_seed(state);
   return reachabilitystate_instants(state, count);

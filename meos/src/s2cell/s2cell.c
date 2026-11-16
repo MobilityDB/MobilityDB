@@ -296,8 +296,10 @@ s2cell_cell_to_child(S2CellId cell, uint32_t level, uint32_t position)
 S2CellId *
 s2cell_cell_to_children(S2CellId cell, uint32_t level, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! s2cell_is_valid_cell(cell))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -1766,8 +1768,10 @@ s2cell_from_face_ij_wrap(uint32_t face, int64 i, int64 j, uint32_t level)
 S2CellId *
 s2cell_edge_neighbors(S2CellId cell, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! s2cell_is_valid_cell(cell))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

@@ -669,8 +669,11 @@ pcpatch_point_n(const Pcpatch *pa, int n)
 Pcpoint **
 pcpatch_points(const Pcpatch *pa, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pa, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(pa, NULL);
   const PCSCHEMA *schema = meos_pc_schema(pa->pcid);
   if (! schema)
   {

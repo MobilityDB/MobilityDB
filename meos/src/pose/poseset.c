@@ -187,9 +187,11 @@ poseset_value_n(const Set *s, int n, Pose **result)
 Pose **
 poseset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_POSESET(s, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   Pose **result = palloc(sizeof(Pose *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetPoseP(datum_copy(SET_VAL_N(s, i), s->basetype));
