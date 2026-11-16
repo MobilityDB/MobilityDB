@@ -973,13 +973,15 @@ linesegm_param(double ax, double ay, double bx, double by, double r2,
  * the line, read off the coordinate the first segment advances most in and
  * oriented to grow from its start to its end, so the order of two positions
  * is the order of two input coordinates. A first segment of no length meets
- * nothing
+ * nothing. Each end of the shared stretch is an end of one of the two
+ * segments, which @p pt receives where it is given
  * @param[in] ax,ay,bx,by Coordinates of the points defining the first segment
  * @param[in] cx,cy,dx,dy Coordinates of the points defining the second segment
+ * @param[out] pt NULL, or the point at @p t0 followed by the one at @p t1
  */
 static inline IntersectResult
-linesegm_intersect_collinear(double ax, double ay, double bx, double by,
-  double cx, double cy, double dx, double dy)
+linesegm_intersect_collinear_at(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy, double *pt)
 {
   IntersectResult res = {INTERSECT_NONE, 0, 0};
   if (ax == bx && ay == by)
@@ -1005,6 +1007,10 @@ linesegm_intersect_collinear(double ax, double ay, double bx, double by,
   if (plo > phi)
     return res;
   res.t0 = linesegm_param(ax, ay, bx, by, r2, lox, loy);
+  if (pt)
+  {
+    pt[0] = lox; pt[1] = loy;
+  }
   if (plo == phi)
   {
     res.type = INTERSECT_POINT;
@@ -1012,7 +1018,23 @@ linesegm_intersect_collinear(double ax, double ay, double bx, double by,
   }
   res.type = INTERSECT_OVERLAP;
   res.t1 = linesegm_param(ax, ay, bx, by, r2, hix, hiy);
+  if (pt)
+  {
+    pt[2] = hix; pt[3] = hiy;
+  }
   return res;
+}
+
+/**
+ * @brief Return how two segments lying on one line meet, as
+ * #linesegm_intersect_collinear_at answers it without the points
+ */
+static inline IntersectResult
+linesegm_intersect_collinear(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy)
+{
+  return linesegm_intersect_collinear_at(ax, ay, bx, by, cx, cy, dx, dy,
+    NULL);
 }
 
 /**
@@ -1028,13 +1050,20 @@ linesegm_intersect_collinear(double ax, double ay, double bx, double by,
  * - Overlap segment: INTERSECT_OVERLAP -> t0 < t1 in [0,1]
  * The parameters are positions along the first segment, 0 at its start and 1
  * at its end, and read exactly 0 or 1 where the meeting is one of its ends.
- * A first segment of no length meets nothing
+ * A first segment of no length meets nothing.
+ *
+ * Where @p pt is given it receives the POINT each parameter stands for: an
+ * end of either segment where the meeting is one, and otherwise the crossing
+ * of the two, each coordinate the double nearest its exact value
+ * (#linesegm_crossing_exact), so the point is the one the segments determine
+ * rather than the first segment read back at a rounded parameter
  * @param[in] ax,ay,bx,by Coordinates of the points defining the first segment
  * @param[in] cx,cy,dx,dy Coordinates of the points defining the second segment
+ * @param[out] pt NULL, or the point at @p t0 followed by the one at @p t1
  */
 static inline IntersectResult
-linesegm_intersect(double ax, double ay, double bx, double by,
-  double cx, double cy, double dx, double dy)
+linesegm_intersect_at(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy, double *pt)
 {
   IntersectResult res = {INTERSECT_NONE, 0, 0};
   if (ax == bx && ay == by)
@@ -1052,7 +1081,8 @@ linesegm_intersect(double ax, double ay, double bx, double by,
     return res;
 
   if (oc == 0 && od == 0)
-    return linesegm_intersect_collinear(ax, ay, bx, by, cx, cy, dx, dy);
+    return linesegm_intersect_collinear_at(ax, ay, bx, by, cx, cy, dx, dy,
+      pt);
 
   /* Crossing directions: the segments meet where the first does not lie
    * wholly on one side of the line of the second either */
@@ -1061,22 +1091,54 @@ linesegm_intersect(double ax, double ay, double bx, double by,
   if ((oa > 0 && ob > 0) || (oa < 0 && ob < 0))
     return res;
   res.type = INTERSECT_POINT;
+  double px, py;
   if (oa == 0)
-    res.t0 = 0.0;
+  {
+    res.t0 = 0.0; px = ax; py = ay;
+  }
   else if (ob == 0)
-    res.t0 = 1.0;
+  {
+    res.t0 = 1.0; px = bx; py = by;
+  }
   else if (oc == 0)
-    res.t0 = linesegm_param(ax, ay, bx, by, r2, cx, cy);
+  {
+    res.t0 = linesegm_param(ax, ay, bx, by, r2, cx, cy); px = cx; py = cy;
+  }
   else if (od == 0)
-    res.t0 = linesegm_param(ax, ay, bx, by, r2, dx, dy);
+  {
+    res.t0 = linesegm_param(ax, ay, bx, by, r2, dx, dy); px = dx; py = dy;
+  }
   else
   {
     /* A crossing interior to both, whose position is a quotient */
     double sx = dx - cx, sy = dy - cy;
     double t = ((cx - ax) * sy - (cy - ay) * sx) / (rx * sy - ry * sx);
     res.t0 = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+    if (pt)
+    {
+      const double a[2] = { ax, ay }, b[2] = { bx, by };
+      const double c[2] = { cx, cy }, d[2] = { dx, dy };
+      linesegm_crossing_exact(a, b, c, d, &pt[0], &pt[1]);
+    }
+    return res;
+  }
+  if (pt)
+  {
+    pt[0] = px; pt[1] = py;
   }
   return res;
+}
+
+/**
+ * @brief Return the intersection value obtained by computing the intersection
+ * of a line segment defined by two 2D points intersects an edge, as
+ * #linesegm_intersect_at answers it without the points
+ */
+static inline IntersectResult
+linesegm_intersect(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy)
+{
+  return linesegm_intersect_at(ax, ay, bx, by, cx, cy, dx, dy, NULL);
 }
 
 /*****************************************************************************
