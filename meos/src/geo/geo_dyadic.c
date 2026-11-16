@@ -58,8 +58,6 @@ static int cross_product_sign_wide(double ax, double ay, double bx,
   double by, double cx, double cy, double dx, double dy);
 static inline void dbl_cross3(const double *a0, const double *a1,
   const double *b0, const double *b1, double *x, double *mx);
-static int polynomial_sign_dyadic(const ExactSum *sums,
-  const PolyTerm *terms, int nterms);
 
 /*****************************************************************************
  * The sign of a cross product where the filter cannot tell
@@ -496,28 +494,6 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
   if (v < - bound)
     return -1;
   return 2;
-}
-
-/**
- * @brief Return the sign of a polynomial in exact sums, computed exactly
- * @details The polynomial is first evaluated in doubles together with a bound
- * on the error of every operation, then in pairs of doubles against its own
- * bound (#polynomial_sign_filter); where neither tells, the sign is read on
- * the expression ladder from its expansions on (#polynomial_sign_dyadic), in
- * expansions and in #DyadicWide where those leave their exact range, so it is
- * exact for any finite sums
- * @param[in] sums Exact sums the terms refer to
- * @param[in] terms,nterms Terms of the polynomial and their number
- * @return -1, 0, or 1
- */
-int
-polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
-  int nterms)
-{
-  int sign = polynomial_sign_filter(sums, terms, nterms);
-  if (sign != 2)
-    return sign;
-  return polynomial_sign_dyadic(sums, terms, nterms);
 }
 
 /**
@@ -3802,7 +3778,7 @@ polynomial_sign_pred(DyadicCtx *ctx, const void *varg)
  * ladder from its expansions on, exact for any finite sums
  * @details #polynomial_sign_exact reads it where its own filters cannot tell
  */
-static int
+int
 polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
   int nterms)
 {

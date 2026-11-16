@@ -38,7 +38,299 @@
 #ifndef __GEO_DYADIC_H__
 #define __GEO_DYADIC_H__
 
-#include "geo/geo_funcs.h"
+/* C */
+#include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+/* PostgreSQL */
+#include <postgres.h>
+#include <meos_error.h>
+/* PostGIS */
+#include <liblwgeom.h>
+/* MEOS */
+#include <meos.h>
+#include <meos_internal.h>
+#include "temporal/temporal.h"
+#include <port/pg_bitutils.h>
+
+/**
+ * @brief Split the difference of two doubles into its rounded value and the
+ * error of that rounding, which together are the difference exactly
+ * @details The difference twin of #two_sum, defined here so that every file
+ * including this header expands it
+ */
+static inline void
+two_diff(double a, double b, double *x, double *y)
+{
+  *x = a - b;
+  double bv = a - *x;
+  double av = *x + bv;
+  *y = (a - av) + (bv - b);
+}
+
+extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy);
+
+extern int cross_product_sign_offset(double ax, double ay, double bx,
+  double by, double cx, double cy, double dx, double dy, double oab,
+  double ocd);
+
+extern int point_segment_offset_sign(const double *p, const double *a,
+  const double *b, int ndims, double r);
+
+extern int segment_interior_offset_sign(const double *a, const double *b,
+  const double *c, const double *d, double r);
+
+extern int vector_triple_sign(const double *a0, const double *a1,
+  const double *b0, const double *b1, const double *c0, const double *c1);
+
+extern int point_segment_dot_sign_inputs(const double *p, const double *s,
+  const double *a, const double *b, int ndims);
+
+extern int plane_cross_dot_sign(const double *a, const double *b,
+  const double *c, const double *x0, const double *x1, const double *y0,
+  const double *y1);
+
+extern int plane_point_offset_sign(const double *a, const double *b,
+  const double *c, const double *p, double d);
+
+/* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
+ * with the double nearest to it and a bound on the error of that double */
+#define EXACT_SUM_MAXTERMS 4
+
+typedef struct
+{
+  double e[EXACT_SUM_MAXTERMS];  /**< Components, increasing in magnitude */
+  int n;                         /**< Number of components */
+  double approx;                 /**< Double nearest to the sum */
+  double err;                    /**< Bound on the error of approx */
+} ExactSum;
+
+/* A term of a polynomial in exact sums: a coefficient, exactly representable,
+ * times the product of up to POLY_TERM_MAXDEG exact sums given by index */
+#define POLY_TERM_MAXDEG 6
+
+typedef struct
+{
+  double coef;                   /**< Coefficient */
+  int deg;                       /**< Number of factors */
+  int sum[POLY_TERM_MAXDEG];     /**< Indices of the exact sums multiplied */
+} PolyTerm;
+
+extern void exact_sum_set(ExactSum *sum, const double *terms, int nterms);
+
+extern int triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
+  const POINT3D *r);
+
+extern int incircle_sign(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy);
+
+/**
+ * @brief Return the sign of the cross product of the vectors B - A and D - C
+ * @details The operands are coordinates of input vertices, and every double is
+ * an exact rational, so the sign has one answer. A filter gives it where the
+ * double evaluation carries it: Shewchuk's bound on the rounding of a
+ * difference of two products of rounded differences, computed from the
+ * operands. The bound is relative, so it holds where the products lie clear
+ * of the subnormal range, whose rounding is absolute; a product of two
+ * nonzero differences can also underflow to zero. Two products each with a
+ * zero difference need no more: a rounded difference is zero only where the
+ * two coordinates are equal. Where the filter cannot tell otherwise,
+ * #cross_product_sign_exact decides the same cross product exactly, for any
+ * finite coordinates. With C = A the sign is the side of the line AB that D
+ * lies on
+ * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
+ */
+static inline int
+cross_product_sign(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  double l1 = bx - ax, l2 = dy - cy, r1 = by - ay, r2 = dx - cx;
+  double left = l1 * l2, right = r1 * r2;
+  double mag = fabs(left) + fabs(right);
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON * mag;
+  if (mag >= 0x1p-969)
+  {
+    double det = left - right;
+    if (det > bound)
+      return 1;
+    if (det < - bound)
+      return -1;
+  }
+  if ((l1 == 0.0 || l2 == 0.0) && (r1 == 0.0 || r2 == 0.0))
+    return 0;
+  return cross_product_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
+}
+
+/**
+ * @brief Return the sign of the dot product of two vectors
+ * @details The coordinates are exact rationals, so the sign has one answer,
+ * that of `(p - 0) . (q - 0)`, which #point_segment_dot_sign_inputs gives
+ * exactly for any finite doubles. With `p` the normal of a plane the sign is
+ * the side of that plane `q` lies on
+ * @return 1 or -1, 0 exactly where the vectors are orthogonal
+ */
+static inline int
+dot_product_sign(const POINT3D *p, const POINT3D *q)
+{
+  const double origin[3] = {0.0, 0.0, 0.0};
+  const double pc[3] = {p->x, p->y, p->z}, qc[3] = {q->x, q->y, q->z};
+  return point_segment_dot_sign_inputs(pc, origin, origin, qc, 3);
+}
+
+/**
+ * @brief Return the sign of the triple product `<p, q x r>` of three vectors
+ * @details The coordinates are exact rationals, so the sign has one answer,
+ * that of the determinant `(p - 0) . ((q - 0) x (r - 0))`, which
+ * #vector_triple_sign gives exactly for any finite doubles. With `p` and `q`
+ * two points of a unit sphere the sign is the side of the great circle
+ * through them, taken from `p` to `q`, that `r` lies on
+ * @return 1 where `r` lies on the side of the plane of `p` and `q` that their
+ * cross product points to, -1 on the other, 0 exactly where the three vectors
+ * are coplanar
+ */
+static inline int
+triple_product_sign(const POINT3D *p, const POINT3D *q, const POINT3D *r)
+{
+  const double origin[3] = {0.0, 0.0, 0.0};
+  const double pc[3] = {p->x, p->y, p->z}, qc[3] = {q->x, q->y, q->z},
+    rc[3] = {r->x, r->y, r->z};
+  return vector_triple_sign(origin, pc, origin, qc, origin, rc);
+}
+
+/**
+ * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
+ * as many 64-bit limbs as it takes, the lowest first, with exact sums,
+ * differences and products of any two
+ */
+typedef struct
+{
+  int sign;         /**< -1, 0 or 1 */
+  int len;          /**< Number of limbs of the magnitude, 0 for the value 0 */
+  int exp;          /**< Weight of the lowest bit of the magnitude */
+  uint64 limb[FLEXIBLE_ARRAY_MEMBER];
+} DyadicWide;
+
+/** Number of 64-bit words a #DyadicWideArena holds before it takes a block */
+#define DYADIC_WIDE_ARENA_WORDS 1024
+
+/**
+ * @brief The memory of the #DyadicWide values of one exact evaluation: taken
+ * in order from a buffer of its own, then from blocks taken as it is used up,
+ * and released in one step
+ */
+typedef struct
+{
+  uint64 buf[DYADIC_WIDE_ARENA_WORDS];
+  size_t used;      /**< Words taken of the current block */
+  size_t cap;       /**< Words of the current block */
+  uint64 **blocks; /**< The blocks after @p buf */
+  size_t *caps;     /**< The words of each block */
+  int nblocks;      /**< Number of blocks in use, the last the current one */
+  int nkept;        /**< Number of blocks held, those past @p nblocks free */
+  int capblocks;
+} DyadicWideArena;
+
+/** @brief A point of a #DyadicWideArena that a release returns it to */
+typedef struct
+{
+  int nblocks;
+  size_t used;
+} DyadicWideMark;
+
+extern void dyadic_wide_arena_init(DyadicWideArena *ar);
+
+extern void dyadic_wide_arena_free(DyadicWideArena *ar);
+
+extern DyadicWideMark dyadic_wide_arena_mark(const DyadicWideArena *ar);
+
+extern void dyadic_wide_arena_release(DyadicWideArena *ar, DyadicWideMark m);
+
+extern DyadicWide *dyadic_wide_of_double(DyadicWideArena *ar, double x);
+
+extern DyadicWide *dyadic_wide_of_int64(DyadicWideArena *ar, int64 v);
+
+extern DyadicWide *dyadic_wide_dup(const DyadicWide *a);
+
+extern DyadicWide *dyadic_wide_signed(DyadicWideArena *ar, const DyadicWide *a,
+  int sign);
+
+extern DyadicWide *dyadic_wide_add_signed(DyadicWideArena *ar,
+  const DyadicWide *a, int sa, const DyadicWide *b, int sb);
+
+extern DyadicWide *dyadic_wide_mul(DyadicWideArena *ar, const DyadicWide *a,
+  const DyadicWide *b);
+
+extern int dyadic_wide_cmp(const DyadicWide *a, const DyadicWide *b);
+
+extern int dyadic_wide_to_fixed(const DyadicWide *a, int scale, bool up,
+  uint64 *mag, int nlimbs);
+
+extern int dyadic_wide_cmp_fixed(DyadicWideArena *ar, const DyadicWide *mid,
+  int sign, const uint64 *mag, int nlimbs, int exp);
+
+extern void wide_cross3(DyadicWideArena *ar, DyadicWide *const *u,
+  DyadicWide *const *v, DyadicWide **r);
+
+extern DyadicWide *wide_dot3(DyadicWideArena *ar, DyadicWide *const *u,
+  DyadicWide *const *v);
+
+/**
+ * @brief Return the sum of two values, exactly
+ */
+static inline DyadicWide *
+dyadic_wide_add(DyadicWideArena *ar, const DyadicWide *a, const DyadicWide *b)
+{
+  return dyadic_wide_add_signed(ar, a, 1, b, 1);
+}
+
+/**
+ * @brief Return the difference of two values, exactly
+ */
+static inline DyadicWide *
+dyadic_wide_sub(DyadicWideArena *ar, const DyadicWide *a, const DyadicWide *b)
+{
+  return dyadic_wide_add_signed(ar, a, 1, b, -1);
+}
+
+/**
+ * @brief Return the negation of a value
+ */
+static inline DyadicWide *
+dyadic_wide_neg(DyadicWideArena *ar, const DyadicWide *a)
+{
+  return dyadic_wide_signed(ar, a, -1);
+}
+
+/**
+ * @brief Return the sign of a value, -1, 0 or 1
+ */
+static inline int
+wide_sign(const DyadicWide *a)
+{
+  return a->sign;
+}
+
+extern int wide_limbs_divmod(const uint64 *u, int nu, const uint64 *v,
+  int nv, uint64 *q, uint64 *r, int *nr);
+
+extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
+  bool *exact);
+
+/* The sign of the value a search reads less @p mid, the values it forms taken
+ * from @p ar, which releases them once it answers */
+typedef int (*NearestSide)(DyadicWideArena *ar, const DyadicWide *mid,
+  const void *arg);
+
+extern double nearest_double_exact(double c, NearestSide side,
+  const void *arg);
+
+extern bool ddb_vector_lon_nearest(const int64 *v, double *result);
+
+extern bool ddb_vector_lat_nearest(const int64 *v, double *result);
+
+extern bool ddb_mercator_lat_nearest(double r, double *result);
 
 /**
  * @brief A value held as the unevaluated sum of two doubles, with a bound on
@@ -271,37 +563,10 @@ cross_product_expansion(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy, double *buf1, double *buf2,
   const double **result);
 extern int
-cross_product_sign_offset(double ax, double ay, double bx, double by,
-  double cx, double cy, double dx, double dy, double oab, double ocd);
-extern void
-exact_sum_set(ExactSum *sum, const double *terms, int nterms);
-extern int
 polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
   int nterms);
-extern int
-polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
-  int nterms);
-extern void
-dyadic_wide_arena_init(DyadicWideArena *ar);
-extern void
-dyadic_wide_arena_free(DyadicWideArena *ar);
-extern DyadicWideMark
-dyadic_wide_arena_mark(const DyadicWideArena *ar);
-extern void
-dyadic_wide_arena_release(DyadicWideArena *ar, DyadicWideMark m);
 extern pg_noinline void
 dyadic_wide_arena_grow(DyadicWideArena *ar, size_t words);
-extern DyadicWide *
-dyadic_wide_of_double(DyadicWideArena *ar, double x);
-extern DyadicWide *
-dyadic_wide_signed(DyadicWideArena *ar, const DyadicWide *a, int sign);
-extern int
-dyadic_wide_cmp(const DyadicWide *a, const DyadicWide *b);
-extern DyadicWide *
-dyadic_wide_add_signed(DyadicWideArena *ar, const DyadicWide *a, int sa,
-  const DyadicWide *b, int sb);
-extern DyadicWide *
-dyadic_wide_mul(DyadicWideArena *ar, const DyadicWide *a, const DyadicWide *b);
 extern int
 dyadic_wide_product_cmp(DyadicWideArena *ar, const DyadicWide *a,
   const DyadicWide *b, const DyadicWide *c, const DyadicWide *d);
@@ -309,8 +574,6 @@ extern double
 dyadic_wide_frexp(const DyadicWide *a, int *exp);
 extern double
 dyadic_wide_approx(const DyadicWide *a);
-extern DyadicWide *
-dyadic_wide_of_int64(DyadicWideArena *ar, int64 v);
 extern DyadicWide *
 square_products_wide(DyadicWideArena *ar, const double *left,
   const double *right, const double *factor, int n);
@@ -320,8 +583,6 @@ square_products_sign(const double *left, const double *right,
 extern int
 point_distance_offset_pair_side_sign(const double *p, const double *q,
   int ndims, double r, double rlo, double c, double g);
-extern double
-nearest_double_exact(double c, NearestSide side, const void *arg);
 extern double
 dyadic_wide_nearest_root(DyadicWideArena *ar, const DyadicWide *n,
   const DyadicWide *d);
@@ -333,17 +594,11 @@ dyadic_wide_nearest_offset_root(DyadicWideArena *ar, double c,
 extern int
 point_segment_side_sign_inputs(const double *p, const double *a,
   const double *b, int ndims, double r, double c, double g);
-extern int
-point_segment_dot_sign_inputs(const double *p, const double *s,
-  const double *a, const double *b, int ndims);
 extern void
 ddb_triple3_points(const double *a, const double *b, const double *c,
   const double *d, DDBound *r);
 extern bool
 ddb_nearest_root(DDBound n, DDBound d, double *result);
-extern int
-point_segment_offset_sign(const double *p, const double *a, const double *b,
-  int ndims, double r);
 extern int
 segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
   const SegmentSquare *s2);
@@ -351,12 +606,6 @@ extern bool
 segment_interior_wide_values(DyadicWideArena *ar, const double *a,
   const double *b, const double *c, const double *d, DyadicWide **en,
   DyadicWide **nn);
-extern int
-vector_triple_sign(const double *a0, const double *a1, const double *b0,
-  const double *b1, const double *c0, const double *c1);
-extern int
-incircle_sign(double ax, double ay, double bx, double by, double cx,
-  double cy, double dx, double dy);
 extern void
 arcseg_arena_free(ArcsegArena *arena);
 extern void
@@ -638,6 +887,31 @@ polynomial_sign_filter(const ExactSum *sums, const PolyTerm *terms,
   if (isfinite(val) && isfinite(bound) && fabs(val) > bound)
     return (val > 0.0) ? 1 : -1;
   return polynomial_sign_pairs(sums, terms, nterms);
+}
+
+extern int polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
+  int nterms);
+
+/**
+ * @brief Return the sign of a polynomial in exact sums, computed exactly
+ * @details The polynomial is first evaluated in doubles together with a bound
+ * on the error of every operation, then in pairs of doubles against its own
+ * bound (#polynomial_sign_filter); where neither tells, the sign is read on
+ * the expression ladder from its expansions on (#polynomial_sign_dyadic), in
+ * expansions and in #DyadicWide where those leave their exact range, so it is
+ * exact for any finite sums
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] terms,nterms Terms of the polynomial and their number
+ * @return -1, 0, or 1
+ */
+static inline int
+polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
+  int nterms)
+{
+  int sign = polynomial_sign_filter(sums, terms, nterms);
+  if (sign != 2)
+    return sign;
+  return polynomial_sign_dyadic(sums, terms, nterms);
 }
 
 /**
