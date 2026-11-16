@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.8.0 |
+| Version | v1.0.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split, the QUADBIN, S2 and H3 cells and the pixels of a raster, and how the instant a trajectory crosses from one cell to the next is dated |
 | Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices, owner and outline), `meos/src/s2cell/ts2cell_ops.c` (S2 cells of a trajectory), `meos/src/temporal/tcellindex.c` (the walk the grids share), `meos/src/raster/raster_quadbin.c` (the pixels of a trajectory) |
 
@@ -336,6 +336,34 @@ FROM rast;
 --   (70@2001-01-02 18:00:00+00, 70@2001-01-03 00:00:00+00]}
 ```
 
+**The cells of a trajectory are those of its exact positions.** The position
+a trajectory holds at an instant, read with `valueAtTimestamp`, is
+interpolated in doubles, so where the trajectory runs along a cell boundary
+it lies a few units in the last place off that boundary, on either side of
+it, and the cell of that rounded position can be the cell across the
+boundary. The cells of the trajectory hold each instant in the cell of its
+exact position. Over five trips at level 8, two of them along the meridian
+0, an edge of the cells of cube face 2, 47 of 343 sampled instants read a
+cell from `valueAtTimestamp` that is not the one the cells of the
+trajectory hold then:
+
+```sql
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToS2Cell(valueAtTimestamp(p, t), 8)) AS other_cell
+FROM (SELECT p, ts2cell(p, 8) AS c FROM (VALUES
+  (tgeogpoint '[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]'),
+  (tgeogpoint '[Point(179 10)@2001-01-01, Point(-179 12)@2001-01-03]'),
+  (tgeogpoint '[Point(0 88)@2001-01-01, Point(170 88)@2001-01-03]'),
+  (tgeogpoint '[Point(0 86)@2001-01-01, Point(0 89.5)@2001-01-03]'),
+  (tgeogpoint '[Point(0 88)@2001-01-01, Point(180 88)@2001-01-03]'))
+  AS v(p)) AS q,
+  generate_series(timestamptz '2001-01-01 00:17', timestamptz '2001-01-02 23:00',
+    interval '37 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+-- 343 | 47
+```
+
 The restriction of a temporal point to a box and its split by a space grid
 follow the same rule: each instant belongs to exactly one tile, and a box
 holds exactly the instants whose position lies in it.
@@ -355,6 +383,7 @@ number with corrections of wording.
 | v0.6.0 | The geodetic S2 cell of a position and the geodetic S2 cells of a trajectory, walked on great-circle outlines and dated at constant angular speed |
 | v0.7.0 | The pixel of a position on a raster whose georeferencing is affine and the pixels of a trajectory, walked and dated exactly on the geotransform |
 | v0.8.0 | The pixel of a position on a Raquet tile whose sides are powers of 2, read as the QUADBIN tiles of its zoom plus the logarithms of its sides, and its pixels along a trajectory |
+| v1.0.0 | The rule complete over the space tiles, the QUADBIN, S2 and H3 cells and the pixels of a raster, in both models; the cells of a trajectory are those of its exact positions, which a position read in doubles at an instant can leave on a boundary |
 
 ## 8. Out of scope
 
