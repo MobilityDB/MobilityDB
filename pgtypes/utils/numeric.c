@@ -516,7 +516,7 @@ static void compute_bucket(Numeric operand, Numeric bound1, Numeric bound2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return a numeric value from its string representation
  * @param[in] str String
  * @param[in] typmod Typmod
@@ -701,7 +701,7 @@ invalid_syntax:
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the string representation of a numeric value
  * @param[out] size_out Size of the result, the terminating null character
  * included

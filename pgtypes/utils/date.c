@@ -1067,7 +1067,7 @@ cmp_timestamptz_date(TimestampTz tstz, DateADT date)
 }
 
 /**
- * @ingroup meos_base_date
+ * @ingroup meos_internal_date
  * @brief Extract a field from a date
  * @note Derived from PostgreSQL function @p extract_date()
  */
@@ -2164,7 +2164,7 @@ pg_time_part(TimeADT time, const text *units)
 }
 
 /**
- * @ingroup meos_base_time
+ * @ingroup meos_internal_time
  * @brief Extract a field from a time
  * @note Derived from PostgreSQL function @p extract_time()
  */
@@ -2918,7 +2918,7 @@ pg_timetz_part(const TimeTzADT *timetz, const text *units)
 }
 
 /**
- * @ingroup meos_base_time
+ * @ingroup meos_internal_time
  * @brief Extract a field from a time with time zone
  * @note Derived from PostgreSQL function @p extract_timetz()
  */
