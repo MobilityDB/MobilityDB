@@ -1207,6 +1207,7 @@ Set *
 tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_duration(duration))
     return NULL;
