@@ -117,13 +117,17 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   points it compares, MERGED as MobilityDB #3739 (`e75f948868`): CGAL agrees with every row of its
   relate and linear union corpora (manifest `~/cpwork/contract/geopoint.manifest`). Every
   pointer parameter of an external function reaches a guard or a NULL test within three calls
-  (`~/cpwork/contract/scan_args.py`: 134 untested at master `f48ecca3a8`, 90 of them a NULL the
-  function accepts or tests behind a function pointer); each family that crashes a Release
-  build on a NULL is one PR with a witness under `meos/test`: the bins of a span, a span set and
-  the time of a temporal value, OPEN as MobilityDB #3748; the text of a temporal text, OPEN as
-  MobilityDB #3749; the value the JSONB inserts insert, OPEN as MobilityDB #3750; the count of
-  the set values accessors, OPEN as MobilityDB #3752; the set of `tstzset_tprecision`, OPEN as
-  MobilityDB #3753; the result of `bearing_point_point`, OPEN as MobilityDB #3754.
+  (`~/cpwork/contract/scan_args.py`: 90 untested at master `4479b7c334`, each a NULL the
+  function accepts or tests behind a function pointer: the 84 box operators, the compression of
+  the two point cloud schema constructors, the value of the two lax JSONB setters,
+  `meos_error` and `meos_set_datestyle`). Each family that crashed a Release build on a NULL
+  is one PR with a witness under `meos/test`: the bins of a span, a span set and the time of a
+  temporal value, MERGED as MobilityDB #3748 (`ded15f6731`); the text of a temporal text,
+  MERGED as MobilityDB #3749 (`426b3c88cb`); the value the JSONB inserts insert, MERGED as
+  MobilityDB #3750 (`c23329c9ff`); the count of the set values accessors, MERGED as
+  MobilityDB #3752 (`a01bc90d2b`); the set of `tstzset_tprecision`, MERGED as MobilityDB #3753
+  (`322ea2ed18`); the result of `bearing_point_point`, MERGED as MobilityDB #3754
+  (`4479b7c334`).
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
