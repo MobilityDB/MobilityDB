@@ -669,8 +669,8 @@ The move is judged on its head alone, no build of its base read: a function the 
 across the boundary is a tier reached on a tie (the expansions, the wide numbers, the ladder's
 runner and arena, the searches) or a body large enough that a call is a small part of it, and the
 operations of tiers 0 and 1 are static inline in the header; the head's own objects list every
-call from `geo_funcs.o` into `geo_dyadic.o` against that rule. It is open as #3751, two commits
-on master `f48ecca3a8` written by the scripts of `claude-kits` `ea3-kit`: 190 definitions of
+call from `geo_funcs.o` into `geo_dyadic.o` against that rule. It is merged as #3751, two
+commits written by the scripts of `claude-kits` `ea3-kit`: 190 definitions of
 `geo_funcs.c` (4551 lines, read off the file by libclang, reaching no algorithm) and the 50
 declarations of `geo_funcs.h` that are the arithmetic move verbatim, 33 `static` and 3 `uint64_t`
 the only tokens removed, the header spelling `uint64` as a public header of MEOS does;
