@@ -424,13 +424,13 @@ SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g >= t2.g;
 SELECT MAX(hash(g)) FROM tbl_geomset;
     max     
 ------------
- 2017846624
+ 2066255607
 (1 row)
 
 SELECT MAX(hash(g)) FROM tbl_geogset;
     max     
 ------------
- 2146662600
+ 2146969963
 (1 row)
 
 -- PostGIS currently does not provide an extended hash function

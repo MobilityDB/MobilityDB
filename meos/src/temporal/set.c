@@ -1094,6 +1094,7 @@ Datum *
 set_values(const Set *s, int *count)
 {
   assert(s);
+  assert(count);
   Datum *result = palloc(sizeof(Datum) * s->count);
   bool byval = MEOS_FLAGS_GET_BYVAL(s->flags);
   for (int i = 0; i < s->count; i++)
@@ -1422,6 +1423,7 @@ intset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   int *result = palloc(sizeof(int) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt32(SET_VAL_N(s, i));
@@ -1442,6 +1444,7 @@ bigintset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   int64 *result = palloc(sizeof(int64) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt64(SET_VAL_N(s, i));
@@ -1462,6 +1465,7 @@ floatset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   double *result = palloc(sizeof(double) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetFloat8(SET_VAL_N(s, i));
@@ -1482,6 +1486,7 @@ textset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TEXTSET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   text **result = palloc(sizeof(text *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetTextP(datum_copy(SET_VAL_N(s, i), s->basetype));
@@ -1502,6 +1507,7 @@ dateset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   DateADT *result = palloc(sizeof(DateADT) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetDateADT(SET_VAL_N(s, i));
@@ -1522,6 +1528,7 @@ tstzset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   TimestampTz *result = palloc(sizeof(TimestampTz) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetTimestampTz(SET_VAL_N(s, i));

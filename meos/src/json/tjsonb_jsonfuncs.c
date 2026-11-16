@@ -2048,6 +2048,7 @@ tjsonb_insert(const Temporal *temp, text **path_elems, int path_len,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(path_elems, NULL);
+  VALIDATE_NOT_NULL(newjb, NULL);
   if (! ensure_positive(path_len))
     return NULL;
 

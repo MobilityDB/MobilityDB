@@ -773,6 +773,45 @@ int main(void)
   free(near_wkt); free(near_res); free(near_a); free(near_b);
   meos_errno_reset();
 
+  /* Two lines meet where their segments do: at the crossing, written in each
+   * coordinate as the double nearest the exact point, and at a shared end, as
+   * that end. The first pair crosses at an angle near 1e-8, where the first
+   * line read back at a rounded parameter stands 1.2e8 doubles from the
+   * crossing; the second meets at an end, which the first line read back at
+   * the parameter 1 misses by 256 doubles */
+  const char *clip_lines[2][2] = {
+    { "LINESTRING(0.45751931334057844 -0.181372601208388,"
+        "1.0898390479539732 0.521430542749709)",
+      "LINESTRING(0.10419740748424167 -0.5740786073692647,"
+        "1.1377233477071886 0.5746524142926592)" },
+    { "LINESTRING(-1124630.0372259333 -1825166.1680862259,"
+        "3444.073664133786 -173667.21248874068)",
+      "LINESTRING(3444.073664133786 -173667.21248874068,"
+        "31589.535620937706 757587.245557281)" } };
+  const double clip_meet[2][2] = {
+    { 0.905890263510826, 0.3169773571901015 },
+    { 3444.073664133786, -173667.21248874068 } };
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *la = geom_in(clip_lines[i][0], -1);
+    GSERIALIZED *lb = geom_in(clip_lines[i][1], -1);
+    assert(la != NULL);
+    assert(lb != NULL);
+    GSERIALIZED *meet = geom_intersection2d(la, lb);
+    GSERIALIZED *want = geompoint_make2d(0, clip_meet[i][0], clip_meet[i][1]);
+    assert(meet != NULL);
+    assert(want != NULL);
+    char *meet_hex = geo_as_hexewkb(meet, "NDR", &size_out);
+    char *want_hex = geo_as_hexewkb(want, "NDR", &size_out);
+    printf("geom_intersection2d(two lines %s): %s\n",
+      i ? "sharing an end" : "crossing at an angle near 1e-8",
+      strcmp(meet_hex, want_hex) == 0 ? "the point they determine" : meet_hex);
+    assert(strcmp(meet_hex, want_hex) == 0);
+    free(meet_hex); free(want_hex); free(meet); free(want);
+    free(la); free(lb);
+  }
+  meos_errno_reset();
+
   /* The box of an arc takes its size from the arc. A semicircle through
    * (0 0), (s s) and (2s 0) is 2s wide and s high, and it holds its own middle
    * vertex (s s), so it intersects that point at every s. A box read off the

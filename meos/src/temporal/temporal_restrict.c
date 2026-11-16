@@ -804,6 +804,7 @@ ttext_at_value(const Temporal *temp, text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL); 
+  VALIDATE_NOT_NULL(txt, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(txt), REST_AT);
 }
 
@@ -884,6 +885,7 @@ ttext_minus_value(const Temporal *temp, text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL); 
+  VALIDATE_NOT_NULL(txt, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(txt), REST_MINUS);
 }
 

@@ -180,6 +180,7 @@ posechainset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_POSECHAINSET(s, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   PoseChain **result = palloc(sizeof(PoseChain *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetPoseChainP(datum_copy(SET_VAL_N(s, i), s->basetype));

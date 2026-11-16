@@ -1921,6 +1921,7 @@ ttextseq_from_base_tstzspan(const text *txt, const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(txt, NULL);
   return tsequence_from_base_tstzspan(PointerGetDatum(txt), T_TTEXT, s, STEP);
 }
 
@@ -3627,9 +3628,13 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
       ! span_eq(&seq1->period, &seq2->period))
     return false;
 
-  /* If bounding boxes are not equal */
-  if (! temporal_bbox_eq(TSEQUENCE_BBOX_PTR(seq1), TSEQUENCE_BBOX_PTR(seq2),
-      seq1->temptype))
+  /* If bounding boxes are not equal. The box of a geography is written in
+   * the longitudes the value spells, and one point of the sphere spelled
+   * twice, at 180 and -180 or at a pole, is one value (#geopoint_eq) with two
+   * boxes, so the boxes reject a pair of other values only */
+  if (temptype_basetype(seq1->temptype) != T_GEOGRAPHY &&
+      ! temporal_bbox_eq(TSEQUENCE_BBOX_PTR(seq1), TSEQUENCE_BBOX_PTR(seq2),
+        seq1->temptype))
     return false;
 
   /* Compare the composing instants */
