@@ -1621,8 +1621,9 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
   for (int i = 0; i < count; i ++)
   {
     instants[i] = (TInstant *) (block + slot * i);
-    tpointinst_set_coords(instants[i], xcoords[i], ycoords[i],
-      hasz ? zcoords[i] : 0.0, hasz, geodetic, srid, times[i]);
+    /* The first point is written whole, the others with its header */
+    tpointinst_coords_set(instants[i], i ? instants[0] : NULL, xcoords[i],
+      ycoords[i], hasz ? zcoords[i] : 0.0, hasz, geodetic, srid, times[i]);
   }
   TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
     interp, normalize);
