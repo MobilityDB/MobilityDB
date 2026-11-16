@@ -396,12 +396,13 @@ tnpointinst_tgeompointinst(const TInstant *inst, double *bound)
   assert(inst); assert(inst->temptype == T_TNPOINT);
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   /* A route that is found is not empty. The line belongs to the ways cache */
-  const LWLINE *lwline = route_line_bound(np->rid, bound);
+  const double *fracs;
+  const LWLINE *lwline = route_line_bound(np->rid, bound, &fracs);
   if (! lwline)
     return NULL;
   POINT4D pt;
-  route_point_at(lwline->points, ptarray_length_2d(lwline->points), np->pos,
-    &pt);
+  route_point_at(lwline->points, ptarray_length_2d(lwline->points), fracs,
+    np->pos, &pt);
   return tpointinst_make_coords(pt.x, pt.y, 0.0, false, false, lwline->srid,
     inst->t);
 }
@@ -479,15 +480,20 @@ route_points_set_stbox(TInstant **instants, int count, bool lower_inc,
  * in a new point array. A route is a planar line, as #ensure_valid_route
  * tests when the network is read, so its points are read as the 2D points
  * they are, and the point has the Z and M of zero `getPoint4d_p` gives a
- * planar point and `interpolate_point4d` gives two of them
+ * planar point and `interpolate_point4d` gives two of them. Given the
+ * fractions of the segments of the route (#route_segment_fractions), the
+ * segment holding the fraction is found among them by bisection, as
+ * #tcontseq_find_timestamptz finds the segment of a sequence holding a
+ * timestamp, instead of measuring the segments before it
  * @param[in] pa Points of the route, not empty
  * @param[in] length Length of the route, `ptarray_length_2d` of the points
+ * @param[in] fracs Fractions of the segments of the route @nullable
  * @param[in] fraction Fraction of the length
  * @param[out] pt Point
  */
 void
-route_point_at(const POINTARRAY *pa, double length, double fraction,
-  POINT4D *pt)
+route_point_at(const POINTARRAY *pa, double length, const double *fracs,
+  double fraction, POINT4D *pt)
 {
   assert(! FLAGS_GET_Z(pa->flags)); assert(! FLAGS_GET_M(pa->flags));
   pt->z = pt->m = 0.0;
@@ -501,6 +507,37 @@ route_point_at(const POINTARRAY *pa, double length, double fraction,
   if (fraction == 1.0)
   {
     pt->x = last->x; pt->y = last->y;
+    return;
+  }
+  if (fracs)
+  {
+    /* The first segment whose end, the start of the next one, is beyond the
+     * fraction; the starts never decrease */
+    const double *starts = fracs, *segments = fracs + pa->npoints;
+    uint32_t lo = 1, hi = pa->npoints;
+    while (lo < hi)
+    {
+      uint32_t mid = lo + (hi - lo) / 2;
+      if (fraction < starts[mid])
+        hi = mid;
+      else
+        lo = mid + 1;
+    }
+    /* The last point of the route, which rounding can leave a fraction
+     * short of 1 reaching */
+    if (lo == pa->npoints)
+    {
+      pt->x = last->x; pt->y = last->y;
+      return;
+    }
+    uint32_t i = lo - 1;
+    p1 = getPoint2d_cp(pa, i);
+    const POINT2D *p2 = getPoint2d_cp(pa, i + 1);
+    /* The expressions of `interpolate_point4d` */
+    double f = (fraction - starts[i]) / segments[i];
+    assert(f >= 0 && f <= 1);
+    pt->x = p1->x + ((p2->x - p1->x) * f);
+    pt->y = p1->y + ((p2->y - p1->y) * f);
     return;
   }
   double consumed = 0.0;
@@ -524,6 +561,43 @@ route_point_at(const POINTARRAY *pa, double length, double fraction,
    * of 1 reaching */
   pt->x = last->x; pt->y = last->y;
   return;
+}
+
+/**
+ * @brief Return the fractions of the segments of a route
+ * @details The fractions #route_point_at computes as it walks the route,
+ * by the same expressions in the same order, so that it reads them instead:
+ * the fraction of the length at the start of each point of the route,
+ * the first one zero, followed by the fraction of the length of each
+ * segment. Their order never decreases, which #route_point_at reads by
+ * bisection, and #route_vertex_positions gives the positions of the
+ * interior vertices by another expression
+ * @param[in] pa Points of the route, not empty
+ * @return Array of `2 * npoints - 1` fractions, NULL when the route has no
+ * segment or no length
+ */
+double *
+route_segment_fractions(const POINTARRAY *pa)
+{
+  assert(pa); assert(pa->npoints > 0);
+  double length = ptarray_length_2d(pa);
+  if (pa->npoints < 2 || length <= 0.0)
+    return NULL;
+  double *result = palloc(sizeof(double) * (2 * pa->npoints - 1));
+  double *starts = result, *segments = result + pa->npoints;
+  double consumed = 0.0;
+  const POINT2D *p1 = getPoint2d_cp(pa, 0);
+  starts[0] = 0.0;
+  for (uint32_t i = 0; i < pa->npoints - 1; i++)
+  {
+    const POINT2D *p2 = getPoint2d_cp(pa, i + 1);
+    double segment = distance2d_pt_pt(p1, p2) / length;
+    segments[i] = segment;
+    consumed += segment;
+    starts[i + 1] = consumed;
+    p1 = p2;
+  }
+  return result;
 }
 
 /**
@@ -580,6 +654,7 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
   int32_t srid = SRID_UNKNOWN;
   const LWLINE *lwline = NULL;
   double length = 0.0;
+  const double *fracs = NULL;
   STBox box;
   box.flags = 0;
   for (int i = 0; i < seq->count; i++)
@@ -591,7 +666,7 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
       /* A route that is found is not empty. The line belongs to the ways
        * cache, which keeps the route used last while the next one is read */
       double b;
-      lwline = route_line_bound(np->rid, &b);
+      lwline = route_line_bound(np->rid, &b, &fracs);
       if (! lwline)
       {
         pfree(instants); pfree(block);
@@ -604,7 +679,7 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
       length = ptarray_length_2d(lwline->points);
     }
     POINT4D pt;
-    route_point_at(lwline->points, length, np->pos, &pt);
+    route_point_at(lwline->points, length, fracs, np->pos, &pt);
     instants[i] = route_point_tinstant((TInstant *) (block + slot * i),
       i ? instants[0] : NULL, srid, &pt, inst->t, &box);
   }
@@ -644,7 +719,8 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   /* A route that is found is not empty. The line belongs to the ways cache */
   double b;
-  const LWLINE *lwline = route_line_bound(np->rid, &b);
+  const double *segfracs;
+  const LWLINE *lwline = route_line_bound(np->rid, &b, &segfracs);
   if (! lwline)
     return NULL;
   if (bound)
@@ -716,7 +792,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
       }
     }
     POINT4D pt;
-    route_point_at(pa, length, np->pos, &pt);
+    route_point_at(pa, length, segfracs, np->pos, &pt);
     instants[ninsts] = route_point_tinstant(
       (TInstant *) (block + slot * ninsts), ninsts ? instants[0] : NULL, srid,
       &pt, inst->t, &box);
