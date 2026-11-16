@@ -416,15 +416,17 @@ tnpointinst_tgeompointinst(const TInstant *inst, double *bound)
  * and a point of it at a fraction of its length has two finite coordinates.
  * The point expands the spatial box of the points of the conversion as
  * #tgeoinstarr_set_stbox reads it from them, and starts it when the box has
- * no spatial extent yet
+ * no spatial extent yet. The instant is written by #tpointinst_set_coords in
+ * a slot of the block of the instants of the conversion
+ * @param[out] inst Instant, of #tpointinst_coords_size bytes
  * @param[in] srid SRID of the route
  * @param[in] pt Point
  * @param[in] t Timestamp
  * @param[inout] box Spatial box of the points
  */
 static TInstant *
-route_point_tinstant(int32_t srid, const POINT4D *pt, TimestampTz t,
-  STBox *box)
+route_point_tinstant(TInstant *inst, int32_t srid, const POINT4D *pt,
+  TimestampTz t, STBox *box)
 {
   if (! MEOS_FLAGS_GET_X(box->flags))
     stbox_set(true, false, false, srid, pt->x, pt->x, pt->y, pt->y, 0.0, 0.0,
@@ -434,7 +436,8 @@ route_point_tinstant(int32_t srid, const POINT4D *pt, TimestampTz t,
     box->xmin = Min(box->xmin, pt->x); box->xmax = Max(box->xmax, pt->x);
     box->ymin = Min(box->ymin, pt->y); box->ymax = Max(box->ymax, pt->y);
   }
-  return tpointinst_make_coords(pt->x, pt->y, 0.0, false, false, srid, t);
+  tpointinst_set_coords(inst, pt->x, pt->y, 0.0, false, false, srid, t);
+  return inst;
 }
 
 /**
@@ -555,6 +558,10 @@ TSequence *
 tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
 {
   assert(seq); assert(seq->temptype == T_TNPOINT);
+  /* The instants are written in one block, each in a slot of the size of a
+   * planar point instant */
+  size_t slot = DOUBLE_PAD(tpointinst_coords_size(false));
+  char *block = palloc(slot * seq->count);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int64 rid = -1;
   int32_t srid = SRID_UNKNOWN;
@@ -574,7 +581,7 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
       lwline = route_line_bound(np->rid, &b);
       if (! lwline)
       {
-        pfree_array((void **) instants, i);
+        pfree(instants); pfree(block);
         return NULL;
       }
       if (bound)
@@ -585,7 +592,8 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
     }
     POINT4D pt;
     route_point_at(lwline->points, length, np->pos, &pt);
-    instants[i] = route_point_tinstant(srid, &pt, inst->t, &box);
+    instants[i] = route_point_tinstant((TInstant *) (block + slot * i), srid,
+      &pt, inst->t, &box);
   }
   /* The instants are points of routes at the increasing timestamps of the
    * sequence, and every route is a planar line in the SRID of the network,
@@ -600,7 +608,7 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq, double *bound)
   route_points_set_stbox(instants, seq->count, true, true, DISCRETE, &box);
   TSequence *result = tsequence_make_exp1(instants, seq->count, seq->count,
     true, true, DISCRETE, NORMALIZE_NO, &box);
-  pfree_array((void **) instants, seq->count);
+  pfree(instants); pfree(block);
   return result;
 }
 
@@ -652,6 +660,10 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
         count++;
   }
 
+  /* The instants are written in one block, each in a slot of the size of a
+   * planar point instant */
+  size_t slot = DOUBLE_PAD(tpointinst_coords_size(false));
+  char *block = palloc(slot * count);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   int ninsts = 0;
   STBox box;
@@ -684,13 +696,17 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
          * representable at microsecond resolution */
         if (t <= instants[ninsts - 1]->t || t >= inst->t)
           continue;
-        instants[ninsts++] = route_point_tinstant(srid,
-          getPoint4d_cp(pa, k + 1), t, &box);
+        instants[ninsts] = route_point_tinstant(
+          (TInstant *) (block + slot * ninsts), srid, getPoint4d_cp(pa, k + 1),
+          t, &box);
+        ninsts++;
       }
     }
     POINT4D pt;
     route_point_at(pa, length, np->pos, &pt);
-    instants[ninsts++] = route_point_tinstant(srid, &pt, inst->t, &box);
+    instants[ninsts] = route_point_tinstant(
+      (TInstant *) (block + slot * ninsts), srid, &pt, inst->t, &box);
+    ninsts++;
   }
 
   if (fracs)
@@ -710,7 +726,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq, double *bound)
     seq->period.upper_inc, interp, &box);
   TSequence *result = tsequence_make_exp1(instants, ninsts, ninsts,
     seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO, &box);
-  pfree_array((void **) instants, ninsts);
+  pfree(instants); pfree(block);
   return result;
 }
 

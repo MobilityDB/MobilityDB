@@ -61,6 +61,9 @@
 
 /* Constructor functions */
 
+extern size_t tpointinst_coords_size(bool hasz);
+extern void tpointinst_set_coords(TInstant *inst, double x, double y,
+  double z, bool hasz, bool geodetic, int32_t srid, TimestampTz t);
 extern TInstant *tpointinst_make_coords(double x, double y, double z,
   bool hasz, bool geodetic, int32_t srid, TimestampTz t);
 
