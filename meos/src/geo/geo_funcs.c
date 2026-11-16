@@ -3322,6 +3322,48 @@ crossing_gap(double x)
   return d;
 }
 
+/* The parameter t = N / D in double-double, th + tl within terr, from N and
+ * D in double-double with the bounds of their errors: one quotient refined by
+ * the remainder, which fma forms exactly. False where D does not stand clear
+ * of its bound */
+static inline bool
+crossing_param_dd(double nh, double nl, double nerr, double dh, double dl,
+  double derr, double *th, double *tl, double *terr)
+{
+  if (! (fabs(dh) > 2.0 * derr) || ! isfinite(nh))
+    return false;
+  *th = nh / dh;
+  double rem = fma(- *th, dh, nh);
+  *tl = (rem + nl - *th * dl) / dh;
+  double at = fabs(*th);
+  *terr = (nerr + at * derr) / (fabs(dh) - derr) + 0x1p-100 * at;
+  return true;
+}
+
+/* The ordinate a + t r, t = th + tl within terr and r = rh + rl, kept where
+ * its bound proves it the double nearest the exact value: false where it
+ * cannot tell. A coordinate of a crossing is one (#linesegm_crossing_filter),
+ * and so is an ordinate a segment holds at a point of its line */
+static inline bool
+crossing_ordinate_dd(double a, double rh, double rl, double th, double tl,
+  double terr, double *out)
+{
+  double ph, pl, s1, s2, hi, lo;
+  two_product(th, rh, &ph, &pl);
+  double small = pl + th * rl + tl * rh;
+  crossing_two_sum(a, ph, &s1, &s2);
+  double low = s2 + small;
+  crossing_two_sum(s1, low, &hi, &lo);
+  double at = fabs(th);
+  double ar = fabs(rh) * (1.0 + 0x1p-50);
+  double bound = ar * terr + 0x1p-100 * at * ar + 0x1p-51 * fabs(low) +
+    0x1p-1000;
+  if (! isfinite(hi) || ! (fabs(lo) + bound < 0.5 * crossing_gap(hi)))
+    return false;
+  *out = hi;
+  return true;
+}
+
 /* The crossing in double-double, a coordinate kept where its bound proves it
  * the double nearest the exact value: false where it cannot tell */
 static bool
@@ -3350,31 +3392,12 @@ linesegm_crossing_filter(const double *a, const double *b, const double *c,
     &dh, &dl, &derr);
   crossing_cross_dd(wh[0], wl[0], wh[1], wl[1], sh[0], sl[0], sh[1], sl[1],
     &nh, &nl, &nerr);
-  if (! (fabs(dh) > 2.0 * derr) || ! isfinite(nh))
+  double th, tl, terr, out[2];
+  if (! crossing_param_dd(nh, nl, nerr, dh, dl, derr, &th, &tl, &terr))
     return false;
-  /* t = N / D, one quotient refined by the remainder, which fma forms exactly */
-  double th = nh / dh;
-  double rem = fma(- th, dh, nh);
-  double tl = (rem + nl - th * dl) / dh;
-  double at = fabs(th);
-  double terr = (nerr + at * derr) / (fabs(dh) - derr) + 0x1p-100 * at;
-  double out[2];
   for (int i = 0; i < 2; i++)
-  {
-    /* a + t r, t = th + tl and r = rh + rl */
-    double ph, pl, s1, s2, hi, lo;
-    two_product(th, rh[i], &ph, &pl);
-    double small = pl + th * rl[i] + tl * rh[i];
-    crossing_two_sum(a[i], ph, &s1, &s2);
-    double low = s2 + small;
-    crossing_two_sum(s1, low, &hi, &lo);
-    double ar = fabs(rh[i]) * (1.0 + 0x1p-50);
-    double bound = ar * terr + 0x1p-100 * at * ar + 0x1p-51 * fabs(low) +
-      0x1p-1000;
-    if (! isfinite(hi) || ! (fabs(lo) + bound < 0.5 * crossing_gap(hi)))
+    if (! crossing_ordinate_dd(a[i], rh[i], rl[i], th, tl, terr, &out[i]))
       return false;
-    out[i] = hi;
-  }
   *x = out[0];
   *y = out[1];
   return true;
@@ -27158,7 +27181,18 @@ typedef struct
   bool mconflict;  /**< Two inputs determine different measures there */
   double z;        /**< Elevation the inputs determine */
   double m;        /**< Measure the inputs determine */
+  double vx, vy;   /**< The vertex of the answer read */
+  int kind;        /**< What the first reading is: LIFT_VERTEX, LIFT_SEGMENT
+                        or LIFT_ARC */
+  POINT4D r0, r1;  /**< The first reading: the vertex, or the segment */
+  bool crossed;    /**< A segment crossing the first one was read */
+  POINT4D c0, c1;  /**< That segment */
 } LiftPoint;
+
+/* What a reading of #lift_point_read is */
+#define LIFT_VERTEX  1
+#define LIFT_SEGMENT 2
+#define LIFT_ARC     3
 
 /**
  * @brief Return the angle swept from one angle to another in a direction
@@ -27291,11 +27325,12 @@ arc_ordinates_at(const POINT4D *p0, const POINT4D *p1, const POINT4D *p2,
 }
 
 /**
- * @brief Read one pair of ordinates determined at a point into what is
+ * @brief Read one pair of ordinates an arc determines at a point into what is
  * already determined there
- * @details The first pair read gives the ordinates, and a pair differing from
- * them reports the conflict, which is separate for each of the two: two
- * surfaces meeting at one elevation may carry different measures
+ * @details An arc is read along the angle it turns (#arc_ordinates_at), so its
+ * ordinates are compared within the rounding of their construction, the band
+ * of #coordinate_tolerance; the first pair read gives the ordinates, and a pair
+ * differing from them reports the conflict, separately for each of the two
  * @param[in,out] state Ordinates determined at the point
  * @param[in] z,m Ordinates read
  */
@@ -27305,6 +27340,7 @@ lift_point_take(LiftPoint *state, double z, double m)
   if (! state->found)
   {
     state->found = true;
+    state->kind = LIFT_ARC;
     state->z = z; state->m = m;
     return;
   }
@@ -27312,6 +27348,395 @@ lift_point_take(LiftPoint *state, double z, double m)
     state->zconflict = true;
   if (fabs(m - state->m) > coordinate_tolerance(m, state->m))
     state->mconflict = true;
+  return;
+}
+
+/* The ordinate @p o of a point: 2 its elevation, 3 its measure */
+static inline double
+lift_ord(const POINT4D *p, int o)
+{
+  return (o == 2) ? p->z : p->m;
+}
+
+/**
+ * @brief Return the sign of the ordinate @p o a vertex holds less the one a
+ * segment holds at the exact projection of the vertex on it
+ * @details The projection of p on ab is at `t = ((p - a) . r) / (r . r)`,
+ * r = b - a, so the segment holds `(oa (r . r) + (ob - oa) ((p - a) . r)) /
+ * (r . r)` there, compared with the vertex's in rationals (#DyadicWide)
+ */
+static int
+lift_cmp_vertex_segment(const POINT4D *p, const POINT4D *a, const POINT4D *b,
+  int o)
+{
+  /* The value in doubles first, the tier 0 #cross_product_sign reads ahead of
+   * its exact stage: each rounded difference, product and sum is within a
+   * unit in the last place of the magnitude of its terms, so the value is
+   * within 16 epsilon of that magnitude where every term stays between 2^-300
+   * and 2^300 */
+  {
+    double rx = b->x - a->x, ry = b->y - a->y, wx = p->x - a->x,
+      wy = p->y - a->y, dob = lift_ord(b, o) - lift_ord(a, o),
+      dp = lift_ord(p, o) - lift_ord(a, o);
+    /* A difference of two doubles is zero exactly where they are equal, so a
+     * segment holding the vertex's ordinate at both ends holds it
+     * everywhere */
+    if (dp == 0.0 && dob == 0.0)
+      return 0;
+    double rr = rx * rx + ry * ry, wr = wx * rx + wy * ry;
+    double mag = fabs(dp) * rr + fabs(dob) * (fabs(wx * rx) + fabs(wy * ry));
+    if (isfinite(mag) && mag < 0x1p300 && mag > 0x1p-300)
+    {
+      double v = dp * rr - dob * wr;
+      double bound = 16.0 * DBL_EPSILON * mag;
+      if (v > bound)
+        return 1;
+      if (v < - bound)
+        return -1;
+    }
+  }
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *ax = dyadic_wide_of_double(ar, a->x),
+    *ay = dyadic_wide_of_double(ar, a->y),
+    *oa = dyadic_wide_of_double(ar, lift_ord(a, o));
+  const DyadicWide *rx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b->x), ax),
+    *ry = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b->y), ay),
+    *wx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, p->x), ax),
+    *wy = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, p->y), ay),
+    *dob = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, lift_ord(b, o)), oa);
+  const DyadicWide *rr = dyadic_wide_add(ar, dyadic_wide_mul(ar, rx, rx),
+    dyadic_wide_mul(ar, ry, ry));
+  const DyadicWide *wr = dyadic_wide_add(ar, dyadic_wide_mul(ar, wx, rx),
+    dyadic_wide_mul(ar, wy, ry));
+  /* (op - oa) (r . r) - (ob - oa) ((p - a) . r) */
+  const DyadicWide *diff = dyadic_wide_sub(ar,
+    dyadic_wide_mul(ar, dyadic_wide_sub(ar,
+      dyadic_wide_of_double(ar, lift_ord(p, o)), oa), rr),
+    dyadic_wide_mul(ar, dob, wr));
+  int sign = diff->sign;
+  dyadic_wide_arena_free(ar);
+  return sign;
+}
+
+/**
+ * @brief Return the sign of the ordinate @p o segment ab holds less the one
+ * segment cd holds, each where the two determine it
+ * @details Two segments whose lines cross are compared at that crossing, where
+ * ab holds `oa + t (ob - oa)` and cd holds `oc + u (od - oc)`, `t = N1 / D`
+ * and `u = N2 / D` with `D = r x s`, `N1 = w x s`, `N2 = w x r`, r = b - a,
+ * s = d - c, w = c - a (#linesegm_crossing_exact): the sign of
+ * `((oa - oc) D + (ob - oa) N1 - (od - oc) N2) / D`, in rationals
+ * (#DyadicWide). Two parallel segments meet along a stretch, if anywhere, and
+ * are compared at the projection of the vertex @p vx, @p vy of the answer on
+ * each, as #lift_cmp_vertex_segment reads one
+ */
+static int
+lift_cmp_segments(const POINT4D *a, const POINT4D *b, const POINT4D *c,
+  const POINT4D *d, double vx, double vy, int o)
+{
+  /* Two segments whose lines cross, the sign of D decided exactly
+   * (#cross_product_sign): the numerator in doubles first, within 16 epsilon
+   * of the magnitude of its terms, as #lift_cmp_vertex_segment bounds its
+   * value */
+  /* Two segments holding one ordinate at all four ends hold it everywhere, a
+   * difference of two doubles being zero exactly where they are equal */
+  if (lift_ord(a, o) == lift_ord(b, o) && lift_ord(a, o) == lift_ord(c, o) &&
+      lift_ord(c, o) == lift_ord(d, o))
+    return 0;
+  int sd = cross_product_sign(a->x, a->y, b->x, b->y, c->x, c->y, d->x, d->y);
+  if (sd != 0)
+  {
+    double rx = b->x - a->x, ry = b->y - a->y, sx = d->x - c->x,
+      sy = d->y - c->y, wx = c->x - a->x, wy = c->y - a->y;
+    double doac = lift_ord(a, o) - lift_ord(c, o),
+      dob = lift_ord(b, o) - lift_ord(a, o),
+      dod = lift_ord(d, o) - lift_ord(c, o);
+    double den = rx * sy - ry * sx, n1 = wx * sy - wy * sx,
+      n2 = wx * ry - wy * rx;
+    double mag = fabs(doac) * (fabs(rx * sy) + fabs(ry * sx)) +
+      fabs(dob) * (fabs(wx * sy) + fabs(wy * sx)) +
+      fabs(dod) * (fabs(wx * ry) + fabs(wy * rx));
+    if (isfinite(mag) && mag < 0x1p300 && mag > 0x1p-300)
+    {
+      double v = doac * den + dob * n1 - dod * n2;
+      double bound = 16.0 * DBL_EPSILON * mag;
+      if (v > bound)
+        return sd;
+      if (v < - bound)
+        return - sd;
+    }
+  }
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *ax = dyadic_wide_of_double(ar, a->x),
+    *ay = dyadic_wide_of_double(ar, a->y),
+    *cx = dyadic_wide_of_double(ar, c->x),
+    *cy = dyadic_wide_of_double(ar, c->y),
+    *oa = dyadic_wide_of_double(ar, lift_ord(a, o)),
+    *oc = dyadic_wide_of_double(ar, lift_ord(c, o));
+  const DyadicWide *rx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b->x), ax),
+    *ry = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b->y), ay),
+    *sx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, d->x), cx),
+    *sy = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, d->y), cy),
+    *dob = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, lift_ord(b, o)), oa),
+    *dod = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, lift_ord(d, o)), oc);
+  const DyadicWide *den = dyadic_wide_sub(ar, dyadic_wide_mul(ar, rx, sy),
+    dyadic_wide_mul(ar, ry, sx));
+  int sign;
+  if (den->sign != 0)
+  {
+    const DyadicWide *wx = dyadic_wide_sub(ar, cx, ax),
+      *wy = dyadic_wide_sub(ar, cy, ay);
+    const DyadicWide *n1 = dyadic_wide_sub(ar, dyadic_wide_mul(ar, wx, sy),
+      dyadic_wide_mul(ar, wy, sx));
+    const DyadicWide *n2 = dyadic_wide_sub(ar, dyadic_wide_mul(ar, wx, ry),
+      dyadic_wide_mul(ar, wy, rx));
+    const DyadicWide *num = dyadic_wide_sub(ar, dyadic_wide_add(ar,
+      dyadic_wide_mul(ar, dyadic_wide_sub(ar, oa, oc), den),
+      dyadic_wide_mul(ar, dob, n1)), dyadic_wide_mul(ar, dod, n2));
+    sign = num->sign * den->sign;
+  }
+  else
+  {
+    /* At the projection of the vertex on each: (oa rr + dob vr) / rr less
+     * (oc ss + dod vs) / ss, both denominators positive */
+    const DyadicWide *vx_ = dyadic_wide_of_double(ar, vx),
+      *vy_ = dyadic_wide_of_double(ar, vy);
+    const DyadicWide *rr = dyadic_wide_add(ar, dyadic_wide_mul(ar, rx, rx),
+      dyadic_wide_mul(ar, ry, ry));
+    const DyadicWide *ss = dyadic_wide_add(ar, dyadic_wide_mul(ar, sx, sx),
+      dyadic_wide_mul(ar, sy, sy));
+    const DyadicWide *vr = dyadic_wide_add(ar,
+      dyadic_wide_mul(ar, dyadic_wide_sub(ar, vx_, ax), rx),
+      dyadic_wide_mul(ar, dyadic_wide_sub(ar, vy_, ay), ry));
+    const DyadicWide *vs = dyadic_wide_add(ar,
+      dyadic_wide_mul(ar, dyadic_wide_sub(ar, vx_, cx), sx),
+      dyadic_wide_mul(ar, dyadic_wide_sub(ar, vy_, cy), sy));
+    const DyadicWide *lhs = dyadic_wide_mul(ar, dyadic_wide_add(ar,
+      dyadic_wide_mul(ar, oa, rr), dyadic_wide_mul(ar, dob, vr)), ss);
+    const DyadicWide *rhs = dyadic_wide_mul(ar, dyadic_wide_add(ar,
+      dyadic_wide_mul(ar, oc, ss), dyadic_wide_mul(ar, dod, vs)), rr);
+    sign = dyadic_wide_sub(ar, lhs, rhs)->sign;
+  }
+  dyadic_wide_arena_free(ar);
+  return sign;
+}
+
+/**
+ * @brief Return true and the double nearest the ordinate @p o segment ab
+ * holds where #lift_segment_value reads it, where a bound in double-double
+ * proves it, false otherwise
+ * @details The ordinate is `oa + t (ob - oa)`, t the parameter of the point on
+ * ab: `N / D` with `N = w x s` and `D = r x s` at a crossing, as
+ * #linesegm_crossing_filter forms it, and `((v - a) . r) / (r . r)` at the
+ * projection of the vertex, a dot product being the cross product with the
+ * second vector turned a quarter (#crossing_cross_dd); the ordinate is then
+ * kept as a coordinate of the crossing is (#crossing_ordinate_dd)
+ */
+static bool
+lift_segment_value_filter(const LiftPoint *state, int o, double *result)
+{
+  const POINT4D *a = &state->r0, *b = &state->r1;
+  const POINT4D *c = &state->c0, *d = &state->c1;
+  double oa = lift_ord(a, o), ob = lift_ord(b, o);
+  double pts[] = { a->x, a->y, b->x, b->y, state->vx, state->vy, c->x, c->y,
+    d->x, d->y, oa, ob };
+  for (size_t i = 0; i < sizeof(pts) / sizeof(pts[0]); i++)
+    if (! (fabs(pts[i]) <= 0x1p400))
+      return false;
+  double rxh, rxl, ryh, ryl, roh, rol;
+  two_diff(b->x, a->x, &rxh, &rxl);
+  two_diff(b->y, a->y, &ryh, &ryl);
+  two_diff(ob, oa, &roh, &rol);
+  double nh, nl, nerr, dh, dl, derr;
+  if (state->crossed)
+  {
+    double sxh, sxl, syh, syl, wxh, wxl, wyh, wyl;
+    two_diff(d->x, c->x, &sxh, &sxl);
+    two_diff(d->y, c->y, &syh, &syl);
+    two_diff(c->x, a->x, &wxh, &wxl);
+    two_diff(c->y, a->y, &wyh, &wyl);
+    double parts[] = { rxh, ryh, sxh, syh, wxh, wyh };
+    for (size_t i = 0; i < sizeof(parts) / sizeof(parts[0]); i++)
+      if (parts[i] != 0.0 && fabs(parts[i]) < 0x1p-400)
+        return false;
+    crossing_cross_dd(rxh, rxl, ryh, ryl, sxh, sxl, syh, syl, &dh, &dl, &derr);
+    crossing_cross_dd(wxh, wxl, wyh, wyl, sxh, sxl, syh, syl, &nh, &nl, &nerr);
+  }
+  else
+  {
+    double vxh, vxl, vyh, vyl;
+    two_diff(state->vx, a->x, &vxh, &vxl);
+    two_diff(state->vy, a->y, &vyh, &vyl);
+    double parts[] = { rxh, ryh, vxh, vyh };
+    for (size_t i = 0; i < sizeof(parts) / sizeof(parts[0]); i++)
+      if (parts[i] != 0.0 && fabs(parts[i]) < 0x1p-400)
+        return false;
+    /* p . q is p x (-qy, qx) */
+    crossing_cross_dd(rxh, rxl, ryh, ryl, - ryh, - ryl, rxh, rxl, &dh, &dl,
+      &derr);
+    crossing_cross_dd(vxh, vxl, vyh, vyl, - ryh, - ryl, rxh, rxl, &nh, &nl,
+      &nerr);
+  }
+  double th, tl, terr;
+  return crossing_param_dd(nh, nl, nerr, dh, dl, derr, &th, &tl, &terr) &&
+    crossing_ordinate_dd(oa, roh, rol, th, tl, terr, result);
+}
+
+/**
+ * @brief Return the double nearest the ordinate @p o segment ab holds where
+ * the state says: at its crossing with the segment read crossing it, and
+ * otherwise at the projection of the vertex of the answer on it
+ * @details A bound in double-double decides most of them
+ * (#lift_segment_value_filter), the exact quotient the rest
+ */
+static double
+lift_segment_value(const LiftPoint *state, int o)
+{
+  double filtered;
+  if (lift_segment_value_filter(state, o, &filtered))
+    return filtered;
+  const POINT4D *a = &state->r0, *b = &state->r1;
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *ax = dyadic_wide_of_double(ar, a->x),
+    *ay = dyadic_wide_of_double(ar, a->y),
+    *oa = dyadic_wide_of_double(ar, lift_ord(a, o));
+  const DyadicWide *rx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b->x), ax),
+    *ry = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, b->y), ay),
+    *dob = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, lift_ord(b, o)), oa);
+  const DyadicWide *num, *den;
+  if (state->crossed)
+  {
+    const POINT4D *c = &state->c0, *d = &state->c1;
+    const DyadicWide *cx = dyadic_wide_of_double(ar, c->x),
+      *cy = dyadic_wide_of_double(ar, c->y);
+    const DyadicWide *sx = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, d->x), cx),
+      *sy = dyadic_wide_sub(ar, dyadic_wide_of_double(ar, d->y), cy),
+      *wx = dyadic_wide_sub(ar, cx, ax), *wy = dyadic_wide_sub(ar, cy, ay);
+    den = dyadic_wide_sub(ar, dyadic_wide_mul(ar, rx, sy),
+      dyadic_wide_mul(ar, ry, sx));
+    num = dyadic_wide_sub(ar, dyadic_wide_mul(ar, wx, sy),
+      dyadic_wide_mul(ar, wy, sx));
+  }
+  else
+  {
+    den = dyadic_wide_add(ar, dyadic_wide_mul(ar, rx, rx),
+      dyadic_wide_mul(ar, ry, ry));
+    num = dyadic_wide_add(ar,
+      dyadic_wide_mul(ar, dyadic_wide_sub(ar,
+        dyadic_wide_of_double(ar, state->vx), ax), rx),
+      dyadic_wide_mul(ar, dyadic_wide_sub(ar,
+        dyadic_wide_of_double(ar, state->vy), ay), ry));
+  }
+  int sign = den->sign;
+  /* A segment of no length is its first end */
+  if (sign == 0)
+  {
+    dyadic_wide_arena_free(ar);
+    return lift_ord(a, o);
+  }
+  den = dyadic_wide_signed(ar, den, sign);
+  num = dyadic_wide_signed(ar, num, sign);
+  /* (oa den + dob num) / den */
+  double result = dyadic_wide_nearest_quotient(dyadic_wide_add(ar,
+    dyadic_wide_mul(ar, oa, den), dyadic_wide_mul(ar, dob, num)), den);
+  dyadic_wide_arena_free(ar);
+  return result;
+}
+
+/**
+ * @brief Read the ordinates an input vertex or segment determines at the
+ * vertex of the answer into what is already determined there
+ * @details The first reading is kept as it is read, a vertex or a segment.
+ * Each later one is compared with it exactly, ordinate by ordinate, at the
+ * point the two determine: two vertices hold their own ordinates; a vertex
+ * and a segment meet at the exact projection of the vertex on the segment
+ * (#lift_cmp_vertex_segment); two segments at the exact crossing of their
+ * lines, or along the stretch two parallel ones share (#lift_cmp_segments).
+ * An ordinate differing there reports the conflict, separately for the
+ * elevation and the measure. An arc read first is compared within its band
+ * (#lift_point_take)
+ * @param[in,out] state Ordinates determined at the point
+ * @param[in] p0 The vertex, or the first end of the segment
+ * @param[in] p1 NULL for a vertex, or the second end of the segment
+ */
+static void
+lift_point_read_piece(LiftPoint *state, const POINT4D *p0, const POINT4D *p1)
+{
+  if (! state->found)
+  {
+    state->found = true;
+    state->kind = p1 ? LIFT_SEGMENT : LIFT_VERTEX;
+    state->r0 = *p0;
+    if (p1)
+      state->r1 = *p1;
+    state->z = p0->z; state->m = p0->m;
+    return;
+  }
+  if (state->kind == LIFT_ARC)
+  {
+    /* An arc read first answers within its band: the piece is read at the
+     * vertex of the answer in doubles */
+    double z = p0->z, m = p0->m;
+    if (p1)
+    {
+      POINT2D pt = { state->vx, state->vy }, a = { p0->x, p0->y },
+        b = { p1->x, p1->y }, closest;
+      double f = (double) closest_point2d_on_segment_ratio(&pt, &a, &b,
+        &closest);
+      z = p0->z + f * (p1->z - p0->z);
+      m = p0->m + f * (p1->m - p0->m);
+    }
+    lift_point_take(state, z, m);
+    return;
+  }
+  for (int o = 2; o <= 3; o++)
+  {
+    bool *conflict = (o == 2) ? &state->zconflict : &state->mconflict;
+    if (*conflict)
+      continue;
+    int sign;
+    if (state->kind == LIFT_VERTEX && ! p1)
+      sign = (lift_ord(&state->r0, o) == lift_ord(p0, o)) ? 0 : 1;
+    else if (state->kind == LIFT_VERTEX)
+      sign = lift_cmp_vertex_segment(&state->r0, p0, p1, o);
+    else if (! p1)
+      sign = lift_cmp_vertex_segment(p0, &state->r0, &state->r1, o);
+    else
+      sign = lift_cmp_segments(&state->r0, &state->r1, p0, p1, state->vx,
+        state->vy, o);
+    if (sign != 0)
+      *conflict = true;
+  }
+  /* A segment first read takes its ordinate at the crossing of the first
+   * segment that crosses it, where both determine it */
+  if (state->kind == LIFT_SEGMENT && p1 && ! state->crossed &&
+      cross_product_sign(state->r0.x, state->r0.y, state->r1.x, state->r1.y,
+        p0->x, p0->y, p1->x, p1->y) != 0)
+  {
+    state->crossed = true;
+    state->c0 = *p0;
+    state->c1 = *p1;
+  }
+  return;
+}
+
+/**
+ * @brief Write the ordinates the readings determine at the vertex of the
+ * answer: a vertex its own, a segment the double nearest its ordinate where
+ * it is read (#lift_segment_value), an arc those it was read with
+ */
+static void
+lift_point_finish(LiftPoint *state, bool hasz, bool hasm)
+{
+  if (! state->found || state->kind != LIFT_SEGMENT)
+    return;
+  if (hasz && ! state->zconflict)
+    state->z = lift_segment_value(state, 2);
+  if (hasm && ! state->mconflict)
+    state->m = lift_segment_value(state, 3);
   return;
 }
 
@@ -27349,7 +27774,7 @@ lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
     double band = coordinate_rounding(fmax(qbig,
       fmax(fabs(p.x), fabs(p.y))), 0.0);
     if (point_segm_within(q, v, v, band))
-      lift_point_take(state, p.z, p.m);
+      lift_point_read_piece(state, &p, NULL);
   }
 
   double z, m;
@@ -27384,9 +27809,7 @@ lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
         py < fmin(p0.y, p1.y) - 2 * band || py > fmax(p0.y, p1.y) + 2 * band ||
         ! point_segm_within(q, s0, s1, band))
       continue;
-    POINT2D pt = { px, py }, a = { p0.x, p0.y }, b = { p1.x, p1.y }, closest;
-    double f = (double) closest_point2d_on_segment_ratio(&pt, &a, &b, &closest);
-    lift_point_take(state, p0.z + f * (p1.z - p0.z), p0.m + f * (p1.m - p0.m));
+    lift_point_read_piece(state, &p0, &p1);
   }
   return;
 }
@@ -27577,8 +28000,8 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
       POINT4D p;
       getPoint4d_p(pa, j, &p);
       LiftPoint *state = &lifted[nvertex++];
-      state->found = false; state->zconflict = false; state->mconflict = false;
-      state->z = state->m = 0;
+      memset(state, 0, sizeof(LiftPoint));
+      state->vx = p.x; state->vy = p.y;
       for (int k = 0; k < count; k++)
       {
         /* The extent is grown by the band #lift_point_read reads the vertex
@@ -27595,6 +28018,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
         }
         geom_ordinates_at(geoms[k], p.x, p.y, state);
       }
+      lift_point_finish(state, hasz, hasm);
       /* A vertex no input determines an ordinate for leaves the answer with
        * none, as a conflict does: the answer is a figure of one dimension or
        * of another, never of one at some of its vertices */
