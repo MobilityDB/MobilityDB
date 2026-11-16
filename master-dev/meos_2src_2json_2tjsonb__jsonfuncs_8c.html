@@ -85,6 +85,7 @@ $(function() {
 <p>Basic functions for temporal JSONB.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;ctype.h&gt;</code><br />
 <code>#include &lt;limits.h&gt;</code><br />
 <code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
@@ -269,6 +270,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga2695e1e1edcc8b2932bb3002e8d6bf1b"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__json__json_ga2695e1e1edcc8b2932bb3002e8d6bf1b.html#ga2695e1e1edcc8b2932bb3002e8d6bf1b">nullhandletype_name</a> (<a class="el" href="meos__json_8h_a5119ad52984dc87fea22d7c0f78e7f59.html#a5119ad52984dc87fea22d7c0f78e7f59">nullHandleType</a> type)</td></tr>
 <tr class="memdesc:ga2695e1e1edcc8b2932bb3002e8d6bf1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the name of the handling of a SQL NULL: <code>invalid_value</code>, <code>raise_exception</code>, <code>use_json_null</code>, <code>delete_key</code> or <code>return_null</code>  <a href="group__meos__json__json_ga2695e1e1edcc8b2932bb3002e8d6bf1b.html#ga2695e1e1edcc8b2932bb3002e8d6bf1b">More...</a><br /></td></tr>
 <tr class="separator:ga2695e1e1edcc8b2932bb3002e8d6bf1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a595f51c7fbc4d5abac90c8f24f06309c"><td class="memItemLeft" align="right" valign="top">static Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a595f51c7fbc4d5abac90c8f24f06309c.html#a595f51c7fbc4d5abac90c8f24f06309c">numeric_to_alphanum</a> (Numeric num, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> resbasetype)</td></tr>
+<tr class="memdesc:a595f51c7fbc4d5abac90c8f24f06309c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert the number of a JSONB value into a base number or boolean.  <a href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a595f51c7fbc4d5abac90c8f24f06309c.html#a595f51c7fbc4d5abac90c8f24f06309c">More...</a><br /></td></tr>
+<tr class="separator:a595f51c7fbc4d5abac90c8f24f06309c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53000bd5b34f8824790df72828151398"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a53000bd5b34f8824790df72828151398.html#a53000bd5b34f8824790df72828151398">path_contains_nulls</a> (text **path_elems, int path_len)</td></tr>
 <tr class="memdesc:a53000bd5b34f8824790df72828151398"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true when a path holds a NULL element.  <a href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a53000bd5b34f8824790df72828151398.html#a53000bd5b34f8824790df72828151398">More...</a><br /></td></tr>
 <tr class="separator:a53000bd5b34f8824790df72828151398"><td class="memSeparator" colspan="2">&#160;</td></tr>
