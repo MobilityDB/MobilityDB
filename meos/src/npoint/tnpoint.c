@@ -472,7 +472,10 @@ route_points_set_stbox(TInstant **instants, int count, bool lower_inc,
  * @details The point `lwline_interpolate_points` returns for one fraction,
  * computed by the same expressions in the same order, given the length of
  * the route instead of measuring it again, and written in place instead of
- * in a new point array
+ * in a new point array. A route is a planar line, as #ensure_valid_route
+ * tests when the network is read, so its points are read as the 2D points
+ * they are, and the point has the Z and M of zero `getPoint4d_p` gives a
+ * planar point and `interpolate_point4d` gives two of them
  * @param[in] pa Points of the route, not empty
  * @param[in] length Length of the route, `ptarray_length_2d` of the points
  * @param[in] fraction Fraction of the length
@@ -482,27 +485,32 @@ void
 route_point_at(const POINTARRAY *pa, double length, double fraction,
   POINT4D *pt)
 {
+  assert(! FLAGS_GET_Z(pa->flags)); assert(! FLAGS_GET_M(pa->flags));
+  pt->z = pt->m = 0.0;
+  const POINT2D *p1 = getPoint2d_cp(pa, 0);
   if (fraction == 0.0)
   {
-    getPoint4d_p(pa, 0, pt);
+    pt->x = p1->x; pt->y = p1->y;
     return;
   }
+  const POINT2D *last = getPoint2d_cp(pa, pa->npoints - 1);
   if (fraction == 1.0)
   {
-    getPoint4d_p(pa, pa->npoints - 1, pt);
+    pt->x = last->x; pt->y = last->y;
     return;
   }
   double consumed = 0.0;
-  const POINT2D *p1 = getPoint2d_cp(pa, 0);
   for (uint32_t i = 0; i < pa->npoints - 1; i++)
   {
     const POINT2D *p2 = getPoint2d_cp(pa, i + 1);
     double segment = distance2d_pt_pt(p1, p2) / length;
     if (fraction < consumed + segment)
     {
-      POINT4D a = getPoint4d(pa, i);
-      POINT4D b = getPoint4d(pa, i + 1);
-      interpolate_point4d(&a, &b, pt, (fraction - consumed) / segment);
+      /* The expressions of `interpolate_point4d` */
+      double f = (fraction - consumed) / segment;
+      assert(f >= 0 && f <= 1);
+      pt->x = p1->x + ((p2->x - p1->x) * f);
+      pt->y = p1->y + ((p2->y - p1->y) * f);
       return;
     }
     consumed += segment;
@@ -510,7 +518,8 @@ route_point_at(const POINTARRAY *pa, double length, double fraction,
   }
   /* The last point of the route, which rounding can leave a fraction short
    * of 1 reaching */
-  getPoint4d_p(pa, pa->npoints - 1, pt);
+  pt->x = last->x; pt->y = last->y;
+  return;
 }
 
 /**
