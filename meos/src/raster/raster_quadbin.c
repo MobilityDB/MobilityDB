@@ -343,6 +343,11 @@ typedef struct
   bool undomainable;
   double xmin, xmax, ymin, ymax;   /**< Tile bounds in lon/lat */
   double top_merc, bot_merc;       /**< Tile bounds in Mercator metres */
+  bool exact;                      /**< Whether the pixels are QUADBIN tiles,
+                                        the width and height powers of 2 */
+  double ncols, nrows;             /**< Columns and rows of those tiles over
+                                        the world */
+  double col0, row0;               /**< Column and row of the first pixel */
 } RaquetSampleState;
 
 /**
@@ -474,6 +479,83 @@ raster_affine_cross(const double *gt, double x1, double y1, double x2,
 }
 
 /**
+ * @brief Return the side of a position of the grid line @p k of a grid that
+ * is the affine map of its geotransform, exactly, see #grid_line_side()
+ */
+int
+raster_affine_side(const double *gt, double x, double y, int axis, int k)
+{
+  return grid_line_side(x, y, gt, axis, (double) k);
+}
+
+/**
+ * @brief Return the microsecond at which a segment crosses the grid line
+ * @p k of a grid that is the affine map of its geotransform, exactly, see
+ * #segment_grid_line_cross_offset()
+ */
+int64
+raster_affine_offset(const double *gt, double x1, double y1, double x2,
+  double y2, int64 D, int axis, int k, bool *whole)
+{
+  return segment_grid_line_cross_offset(x1, y1, x2, y2, D, gt, axis,
+    (double) k, whole);
+}
+
+/**
+ * @brief Return the longitude of the column line @p k of a Raquet tile whose
+ * pixels are QUADBIN tiles, or the latitude of its row line @p k
+ * @details The pixels of a tile of 2^b columns of a QUADBIN cell of zoom z
+ * are the QUADBIN tiles of zoom z + b, and their bounds are the doubles that
+ * place a QUADBIN tile: a column line at the exact longitude x / n 360 - 180
+ * and a row line at the double nearest the latitude of the Mercator ordinate
+ * 1 - 2 y / n (#mercator_lat_nearest), n a power of 2
+ */
+static double
+raquet_line(const RaquetSampleState *state, int axis, int k)
+{
+  if (axis == 0)
+    return (state->col0 + (double) k) / state->ncols * 360.0 - 180.0;
+  return mercator_lat_nearest(1.0 - 2.0 * (state->row0 + (double) k) /
+    state->nrows);
+}
+
+/**
+ * @brief Raquet side callback: the sign of the grid coordinate of a position
+ * less the grid line @p k, from the bounds of #raquet_line compared as
+ * doubles, a pixel holding its west and north bounds, as a QUADBIN tile does
+ */
+static int
+raquet_side(const void *ctxp, double x, double y, int axis, int k)
+{
+  const RaquetSampleState *state = (const RaquetSampleState *) ctxp;
+  double line = raquet_line(state, axis, k);
+  /* The rows grow southward, so a row coordinate exceeds the line where the
+   * latitude lies below it */
+  if (axis == 0)
+    return (x > line) - (x < line);
+  return (line > y) - (line < y);
+}
+
+/**
+ * @brief Raquet offset callback: the microsecond at which a segment crosses
+ * the meridian or the parallel of the grid line @p k, dated by
+ * #segment_edge_cross_offset on the bound of #raquet_line, as
+ * #tquadbin_cross_offset dates the crossing of a QUADBIN tile
+ */
+static int64
+raquet_offset(const void *ctxp, double x1, double y1, double x2, double y2,
+  int64 D, int axis, int k, bool *whole)
+{
+  const RaquetSampleState *state = (const RaquetSampleState *) ctxp;
+  double line = raquet_line(state, axis, k);
+  if (axis == 0)
+    return segment_edge_cross_offset(x1, y1, x2, y2, D, line, 0.0, 0.0, line,
+      1.0, 0.0, whole);
+  return segment_edge_cross_offset(x1, y1, x2, y2, D, 0.0, line, 0.0, 1.0,
+    line, 0.0, whole);
+}
+
+/**
  * @brief Fill the grid descriptor of a Raquet tile
  * @details Mirrors #dggs_cellops(), which answers the descriptor of a DGGS:
  * an engine states its grid in one place, and every sampling entry point
@@ -489,7 +571,10 @@ raquet_gridops(RaquetSampleState *state, RasterGridOps *ops)
   ops->point = NULL;
   ops->data = NULL;
   ops->cross = &raquet_cross;
-  ops->affine = NULL;
+  /* A tile whose sides are powers of 2 reads its pixels as QUADBIN tiles,
+   * exactly; another reads them from its grid coordinates */
+  ops->side = state->exact ? &raquet_side : NULL;
+  ops->offset = state->exact ? &raquet_offset : NULL;
   ops->ctx = state;
   ops->width = state->width;
   ops->height = state->height;
@@ -579,6 +664,14 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
   state.nodata = nodata;
   state.has_nodata = has_nodata;
   state.undomainable = false;
+  /* The pixels of a tile whose sides are powers of 2 are the QUADBIN tiles
+   * of that many more zoom levels */
+  state.exact = (width & (width - 1)) == 0 && (height & (height - 1)) == 0;
+  double n = (double) (UINT64_C(1) << tz);
+  state.ncols = n * (double) width;
+  state.nrows = n * (double) height;
+  state.col0 = (double) tx * (double) width;
+  state.row0 = (double) ty * (double) height;
 
   RasterGridOps ops;
   raquet_gridops(&state, &ops);
@@ -619,12 +712,13 @@ raster_cell_index(double g, int n)
  * @brief Return the index along an axis of the pixel holding a position, a
  * position outside the grid naming the index just outside it, see
  * #raster_cell_index()
- * @details On a grid that is the affine map of its geotransform the index
- * read from the grid coordinate in doubles is an estimate, corrected against
- * the exact side of the position of each grid line (#grid_line_side), so a
- * position on a line or an ulp beside it lies in the pixel that holds it: a
- * pixel holds the lines of its lower column and row. Another grid reads the
- * index from the grid coordinate
+ * @details On a grid whose engine decides the side of a grid line exactly
+ * (the affine map of a geotransform, #raster_affine_side, or the QUADBIN
+ * tiles of a Raquet tile) the index read from the grid coordinate in doubles
+ * is an estimate, corrected against the exact side of the position of each
+ * grid line, so a position on a line or an ulp beside it lies in the pixel
+ * that holds it: a pixel holds the lines of its lower column and row.
+ * Another grid reads the index from the grid coordinate
  * @param[in] ops Grid
  * @param[in] x,y Position
  * @param[in] g Grid coordinate of the position along the axis
@@ -636,12 +730,11 @@ raster_axis_index(const RasterGridOps *ops, double x, double y, double g,
   int axis, int n)
 {
   int c = raster_cell_index(g, n);
-  if (! ops->affine)
+  if (! ops->side)
     return c;
-  while (c >= 0 && grid_line_side(x, y, ops->affine, axis, (double) c) < 0)
+  while (c >= 0 && ops->side(ops->ctx, x, y, axis, c) < 0)
     c--;
-  while (c < n &&
-      grid_line_side(x, y, ops->affine, axis, (double) (c + 1)) >= 0)
+  while (c < n && ops->side(ops->ctx, x, y, axis, c + 1) >= 0)
     c++;
   return c;
 }
@@ -656,9 +749,9 @@ raster_sample_at(const RasterGridOps *ops, double x, double y,
   double *value)
 {
   /* The box pre-filters a grid whose pixel is read from its coordinates;
-   * on an affine grid, whose box is rounded, the exact index decides */
+   * on a grid decided exactly, whose box is rounded, the exact index decides */
   const STBox *box = &ops->box;
-  if (! ops->affine &&
+  if (! ops->side &&
       (x < box->xmin || x > box->xmax || y < box->ymin || y > box->ymax))
     return false;
   double gcol, grow;
@@ -795,10 +888,10 @@ raster_visit_append(DggsVisit **visits, int *count, int *size, Datum key,
 /**
  * @brief Return the microsecond at which a segment crosses the grid line
  * @p k of an axis, as the offset from the start of the segment, truncated
- * @details On a grid that is the affine map of its geotransform the crossing
- * is dated by #segment_grid_line_cross_offset, the truncation of its exact
- * parameter on the doubles of the positions and of the geotransform. Another
- * grid reads the parameter in doubles (#raster_cross_param)
+ * @details On a grid whose engine dates a crossing exactly (the affine map
+ * of a geotransform, #raster_affine_offset, or the QUADBIN tiles of a Raquet
+ * tile) the crossing is dated by the truncation of its exact parameter.
+ * Another grid reads the parameter in doubles (#raster_cross_param)
  * @param[in] ops Grid the segment crosses
  * @param[in] p1,p2 Endpoints of the segment
  * @param[in] g1,g2 Grid coordinates of the endpoints
@@ -813,9 +906,9 @@ raster_cross_offset(const RasterGridOps *ops, const POINT2D *p1,
   const POINT2D *p2, const double *g1, const double *g2, int64 D, int axis,
   int k, bool *whole)
 {
-  if (ops->affine)
-    return segment_grid_line_cross_offset(p1->x, p1->y, p2->x, p2->y, D,
-      ops->affine, axis, (double) k, whole);
+  if (ops->offset)
+    return ops->offset(ops->ctx, p1->x, p1->y, p2->x, p2->y, D, axis, k,
+      whole);
   double s = raster_cross_param(ops, p1, p2, g1, g2, axis, (double) k);
   *whole = false;
   if (s == DBL_MAX)

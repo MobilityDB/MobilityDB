@@ -2385,9 +2385,11 @@ tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2)
   if (ss1->count != ss2->count || ss1->flags != ss2->flags)
     return false;
 
-  /* If bounding boxes are not equal */
-  if (! temporal_bbox_eq(TSEQUENCESET_BBOX_PTR(ss1),
-      TSEQUENCESET_BBOX_PTR(ss2), ss1->temptype))
+  /* If bounding boxes are not equal, for a pair of values other than
+   * geographies, as #tsequence_eq reads them */
+  if (temptype_basetype(ss1->temptype) != T_GEOGRAPHY &&
+      ! temporal_bbox_eq(TSEQUENCESET_BBOX_PTR(ss1),
+        TSEQUENCESET_BBOX_PTR(ss2), ss1->temptype))
     return false;
 
   /* Compare the composing sequences */

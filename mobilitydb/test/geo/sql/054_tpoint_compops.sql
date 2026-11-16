@@ -26,6 +26,17 @@ SELECT tgeogpoint 'Point(1 1)@2001-01-01' ?= tgeogpoint 'Point(1 1)@2001-01-01';
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' ?<> tgeogpoint 'Point(1 1)@2001-01-01';
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' %= tgeogpoint 'Point(1 1)@2001-01-01';
 SELECT tgeogpoint 'Point(1 1)@2001-01-01' %<> tgeogpoint 'Point(1 1)@2001-01-01';
+-- One point of the sphere spelled twice, at the longitudes 180 and -180 or
+-- at a pole with two longitudes, is one geography value: equal, ordered and
+-- hashed alike, and two such motions are equal over their whole period
+SELECT tgeogpoint 'Point(180 10)@2001-01-01' = tgeogpoint 'Point(-180 10)@2001-01-01';
+SELECT tgeogpoint 'Point(30 90)@2001-01-01' = tgeogpoint 'Point(-75 90)@2001-01-01';
+SELECT cmp(tgeogpoint 'Point(180 10)@2001-01-01', tgeogpoint 'Point(-180 10)@2001-01-01');
+SELECT hash(tgeogpoint 'Point(180 10)@2001-01-01') = hash(tgeogpoint 'Point(-180 10)@2001-01-01');
+SELECT tgeogpoint '[Point(180 10)@2001-01-01, Point(170 -10)@2001-01-02]' = tgeogpoint '[Point(-180 10)@2001-01-01, Point(170 -10)@2001-01-02]';
+SELECT tgeogpoint '(Point(180 10)@2001-01-01, Point(170 -10)@2001-01-02)' ?= tgeogpoint '(Point(-180 10)@2001-01-01, Point(170 -10)@2001-01-02)';
+SELECT tgeogpoint '[Point(180 10)@2001-01-01, Point(170 -10)@2001-01-02]' #= tgeogpoint '[Point(-180 10)@2001-01-01, Point(170 -10)@2001-01-02]';
+SELECT tgeompoint 'Point(180 10)@2001-01-01' = tgeompoint 'Point(-180 10)@2001-01-01';
 
 -- Two points meeting only at a bound of their common period that the period
 -- excludes are never equal

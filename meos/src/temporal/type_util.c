@@ -610,7 +610,14 @@ datum_hash(Datum d, MeosType type)
       return text_hash(DatumGetTextP(d), DEFAULT_COLLATION_OID);
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      return gserialized_hash(DatumGetGserializedP(d));
+    {
+      /* A point hashes as #datum_eq compares it, by its coordinates
+       * (#geopoint_hash) */
+      GSERIALIZED *gs = DatumGetGserializedP(d);
+      if (gserialized_get_type(gs) == POINTTYPE)
+        return geopoint_hash(gs);
+      return (uint32) gserialized_hash(gs);
+    }
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_hash(DatumGetCbufferP(d));

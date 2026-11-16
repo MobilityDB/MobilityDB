@@ -5937,6 +5937,29 @@ raster_value_cross(const void *ctxp, double x1, double y1, double x2,
 }
 
 /**
+ * @brief Raster side callback deciding exactly the side of a position of a
+ * grid line of the geotransform, see #raster_affine_side()
+ */
+static int
+raster_value_side(const void *ctxp, double x, double y, int axis, int k)
+{
+  const RasterSampleState *state = (const RasterSampleState *) ctxp;
+  return raster_affine_side(state->gt, x, y, axis, k);
+}
+
+/**
+ * @brief Raster offset callback dating exactly the crossing of a grid line of
+ * the geotransform, see #raster_affine_offset()
+ */
+static int64
+raster_value_offset(const void *ctxp, double x1, double y1, double x2, double y2,
+  int64 D, int axis, int k, bool *whole)
+{
+  const RasterSampleState *state = (const RasterSampleState *) ctxp;
+  return raster_affine_offset(state->gt, x1, y1, x2, y2, D, axis, k, whole);
+}
+
+/**
  * @brief Raster pixel callback reading one pixel of a PostGIS raster through
  * the vendored raster core
  * @details Reading the pixel a position falls in is the nearest-neighbour
@@ -6093,7 +6116,8 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
   ops->point = bilinear ? &raster_value_bilinear : NULL;
   ops->data = bilinear ? &raster_value_data : NULL;
   ops->cross = &raster_value_cross;
-  ops->affine = state->gt;
+  ops->side = &raster_value_side;
+  ops->offset = &raster_value_offset;
   ops->ctx = state;
   ops->width = (int) rt_raster_get_width(raster);
   ops->height = (int) rt_raster_get_height(raster);
