@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Test of the signs in 3D whose cross products overflow the doubles, <a class="el" href="geo__funcs_8h_a3e57bba52805f9908242b0f795e29eef.html#a3e57bba52805f9908242b0f795e29eef" title="Return the sign of the determinant of three vectors in 3D, each the difference of two points,...">vector_triple_sign</a> and <a class="el" href="group__meos__internal__geo__base__rel_ga97d6dccbceb645b95d8e9b339e701c2e.html#ga97d6dccbceb645b95d8e9b339e701c2e" title="Return true if two geometries are within a distance.">geom_dwithin3d</a>.  
+<p>Test of the signs in 3D whose cross products overflow the doubles, <a class="el" href="geo__dyadic_8h_a3e57bba52805f9908242b0f795e29eef.html#a3e57bba52805f9908242b0f795e29eef" title="Return the sign of the determinant of three vectors in 3D, each the difference of two points,...">vector_triple_sign</a> and <a class="el" href="group__meos__internal__geo__base__rel_ga97d6dccbceb645b95d8e9b339e701c2e.html#ga97d6dccbceb645b95d8e9b339e701c2e" title="Return true if two geometries are within a distance.">geom_dwithin3d</a>.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
@@ -111,7 +111,7 @@ Variables</h2></td></tr>
 <tr class="separator:a5c7ba59d434acf5dafb8ec5fd28e9a1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Test of the signs in 3D whose cross products overflow the doubles, <a class="el" href="geo__funcs_8h_a3e57bba52805f9908242b0f795e29eef.html#a3e57bba52805f9908242b0f795e29eef" title="Return the sign of the determinant of three vectors in 3D, each the difference of two points,...">vector_triple_sign</a> and <a class="el" href="group__meos__internal__geo__base__rel_ga97d6dccbceb645b95d8e9b339e701c2e.html#ga97d6dccbceb645b95d8e9b339e701c2e" title="Return true if two geometries are within a distance.">geom_dwithin3d</a>. </p>
+<div class="textblock"><p >Test of the signs in 3D whose cross products overflow the doubles, <a class="el" href="geo__dyadic_8h_a3e57bba52805f9908242b0f795e29eef.html#a3e57bba52805f9908242b0f795e29eef" title="Return the sign of the determinant of three vectors in 3D, each the difference of two points,...">vector_triple_sign</a> and <a class="el" href="group__meos__internal__geo__base__rel_ga97d6dccbceb645b95d8e9b339e701c2e.html#ga97d6dccbceb645b95d8e9b339e701c2e" title="Return true if two geometries are within a distance.">geom_dwithin3d</a>. </p>
 <p >A face a = 0, b = (X, -X, 0), c = (X, X, 2X) and a segment from (3X/4, X/4, X/4) to (X/4, -X/4, 3X/4), which crosses the face at (X/2, 0, X/2), a point inside it at the weights (1/2, 1/4, 1/4), so the two are within any distance at every scale X. From X = 2^512 on, every product of two components of <code>(c - a) x (p - a)</code> is past the largest double, and the two of each component are infinities of one sign whose difference is not zero. Each scale is a power of two, so every coordinate is exact on doubles and an answer depends on no magnitude. The orientations are rows whose exact sign is known, read with the vectors scaled by 2^-600, exactly, where no product overflows. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

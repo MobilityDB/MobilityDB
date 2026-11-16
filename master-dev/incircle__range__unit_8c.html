@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Test of the incircle sign over the whole range of the doubles, <a class="el" href="geo__funcs_8h_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415" title="Return the sign of the incircle determinant of four points, decided exactly.">incircle_sign</a>.  
+<p>Test of the incircle sign over the whole range of the doubles, <a class="el" href="geo__dyadic_8h_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415" title="Return the sign of the incircle determinant of four points, decided exactly.">incircle_sign</a>.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
@@ -113,7 +113,7 @@ Variables</h2></td></tr>
 <tr class="separator:a5c7ba59d434acf5dafb8ec5fd28e9a1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Test of the incircle sign over the whole range of the doubles, <a class="el" href="geo__funcs_8h_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415" title="Return the sign of the incircle determinant of four points, decided exactly.">incircle_sign</a>. </p>
+<div class="textblock"><p >Test of the incircle sign over the whole range of the doubles, <a class="el" href="geo__dyadic_8h_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415" title="Return the sign of the incircle determinant of four points, decided exactly.">incircle_sign</a>. </p>
 <p >The circle through A = (1, 0), B = (0, 1) and C = (-1, 0), taken counterclockwise, is the unit circle, so the sign is 1 for D = (0, 1/2) inside it, -1 for D = (0, 2) outside, 0 for D = (0, -1) on it, 1 for the double above -1 and -1 for the double below -1, one unit in the last place inside and outside. A second circle through (3, 1), (1, 3) and (-1, 1), of centre (1, 1) and radius 2, holds (1, -1) on it. The determinant is homogeneous of degree 4 in the coordinate differences, so scaling the four points by 2^e leaves its sign unchanged; every scale from 2^-1020 to 2^1020 keeps each coordinate an exact double, and the rows of a scale whose products of four differences overflow or underflow the doubles answer as those of 2^0. The last row, four points in general position whose sign GMP reads as 1, has a determinant whose evaluation in doubles, near 2^-268, rounds to the least subnormal with its bound underflowing to 0. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

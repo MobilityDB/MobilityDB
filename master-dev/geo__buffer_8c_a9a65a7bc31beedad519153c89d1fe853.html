@@ -391,7 +391,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return whether the written ends of every offset segment lie strictly on the side of the edge they offset that their tangent points take, which <a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> decides exactly on the doubles, as <a class="el" href="geo__buffer_8c_a5666e3a0bdd6beb4b5d95c69416d1452.html#a5666e3a0bdd6beb4b5d95c69416d1452">buffer_piece_writes_arc</a> reads the written points of a piece. </p>
+<p>Return whether the written ends of every offset segment lie strictly on the side of the edge they offset that their tangent points take, which <a class="el" href="geo__dyadic_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> decides exactly on the doubles, as <a class="el" href="geo__buffer_8c_a5666e3a0bdd6beb4b5d95c69416d1452.html#a5666e3a0bdd6beb4b5d95c69416d1452">buffer_piece_writes_arc</a> reads the written points of a piece. </p>
 <p >An end is the tangent point rounded to doubles. Where the distance falls below the rounding of the coordinates of an edge, its end rounds onto the edge or across it, and no ring written in doubles holds the edge strictly inside </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">edges</td><td>Edges of the offset curves </td></tr>

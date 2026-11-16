@@ -9,5 +9,5 @@ var searchData=
   ['datum_5ffunc7_6',['datum_func7',['../meos__internal_8h_a52fe5aa5d5522f08571d57ad6d0ab7d8.html#a52fe5aa5d5522f08571d57ad6d0ab7d8',1,'meos_internal.h']]],
   ['dggscellops_7',['DggsCellOps',['../tcellindex_8h_a8d82447b587f0f0f407186ef555637c2.html#a8d82447b587f0f0f407186ef555637c2',1,'tcellindex.h']]],
   ['dggsplanarops_8',['DggsPlanarOps',['../tcellindex_8h_a4056e5928cbc718d8b020e179f7808ef.html#a4056e5928cbc718d8b020e179f7808ef',1,'tcellindex.h']]],
-  ['dyadicpred_9',['DyadicPred',['../meos_2src_2geo_2geo__funcs_8c_a67a3452b94d693ce444de9e05754e0b4.html#a67a3452b94d693ce444de9e05754e0b4',1,'geo_funcs.c']]]
+  ['dyadicpred_9',['DyadicPred',['../geo__dyadic_8h_a67a3452b94d693ce444de9e05754e0b4.html#a67a3452b94d693ce444de9e05754e0b4',1,'geo_dyadic.h']]]
 ];

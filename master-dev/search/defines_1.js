@@ -8,7 +8,7 @@ var searchData=
   ['angle_5flast_5fbits_5',['ANGLE_LAST_BITS',['../geo__trig_8c_a89d1ffc27cb7de1628008babf27f3995.html#a89d1ffc27cb7de1628008babf27f3995',1,'geo_trig.c']]],
   ['arc_5ffilter_5fmax_6',['ARC_FILTER_MAX',['../meos_2src_2geo_2geo__funcs_8c_aab7b82e7d52779d802152a8afafb7d03.html#aab7b82e7d52779d802152a8afafb7d03',1,'geo_funcs.c']]],
   ['arc_5ffilter_5fmin_7',['ARC_FILTER_MIN',['../meos_2src_2geo_2geo__funcs_8c_a4c02ef2f00fb7e7f3034dbd69938d31f.html#a4c02ef2f00fb7e7f3034dbd69938d31f',1,'geo_funcs.c']]],
-  ['arcseg_5farena_5fsize_8',['ARCSEG_ARENA_SIZE',['../meos_2src_2geo_2geo__funcs_8c_a99778f98f1176e1dbab8720bcaebe326.html#a99778f98f1176e1dbab8720bcaebe326',1,'geo_funcs.c']]],
+  ['arcseg_5farena_5fsize_8',['ARCSEG_ARENA_SIZE',['../geo__dyadic_8h_a99778f98f1176e1dbab8720bcaebe326.html#a99778f98f1176e1dbab8720bcaebe326',1,'geo_dyadic.h']]],
   ['arcseg_5fline_5fdisc_9',['ARCSEG_LINE_DISC',['../meos_2src_2geo_2geo__funcs_8c_a93ac38adc9b8ff57116a87dc578d6d40.html#a93ac38adc9b8ff57116a87dc578d6d40',1,'geo_funcs.c']]],
   ['arcseg_5fpolynomials_10',['ARCSEG_POLYNOMIALS',['../meos_2src_2geo_2geo__funcs_8c_af0fcd989cd2a447b1843c780e70eb4e0.html#af0fcd989cd2a447b1843c780e70eb4e0',1,'geo_funcs.c']]],
   ['arcseg_5fshared_5fsigns_11',['ARCSEG_SHARED_SIGNS',['../meos_2src_2geo_2geo__funcs_8c_acfd9a4181e877709dc237a536b779efa.html#acfd9a4181e877709dc237a536b779efa',1,'geo_funcs.c']]],
