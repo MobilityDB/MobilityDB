@@ -954,12 +954,13 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool border_inc, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
   *count = 0;
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
@@ -984,6 +985,9 @@ STBox *
 stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
   const GSERIALIZED *sorigin,  bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
@@ -1009,6 +1013,9 @@ STBox *
 stbox_time_tiles(const STBox *bounds, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, NULL);
   return stbox_space_time_tiles_intl(bounds, 0.0, 0.0, 0.0, duration, NULL,
@@ -1272,12 +1279,13 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
   *count = 0;
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
@@ -1305,12 +1313,13 @@ tgeo_space_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
   *count = 0;
   VALIDATE_TGEO(temp, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
@@ -1337,9 +1346,10 @@ STBox *
 tgeo_time_boxes(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   *count = 0;
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   return tspatial_space_time_boxes(temp, 0.0, 0.0, 0.0, duration, NULL,
@@ -1939,12 +1949,13 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
   *count = 0;
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
@@ -1974,6 +1985,9 @@ tgeo_space_split(const Temporal *temp, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_bins, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))

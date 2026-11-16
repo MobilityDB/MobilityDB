@@ -2565,7 +2565,8 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   double tolerance, int minpoints, int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   if (! ensure_finite(tolerance))
     return NULL;
   *count = 0;
@@ -2702,7 +2703,8 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
   double tolerance, int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   if (! ensure_finite(tolerance))
     return NULL;
   *count = 0;

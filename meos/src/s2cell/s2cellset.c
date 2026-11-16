@@ -145,9 +145,11 @@ s2cellset_make(const S2CellId *values, int count)
 S2CellId *
 s2cellset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_S2CELLSET(s, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   S2CellId *result = palloc(sizeof(S2CellId) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetS2Cell(SET_VAL_N(s, i));

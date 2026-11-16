@@ -1205,8 +1205,11 @@ spanset_sps(const SpanSet *ss, int *count)
 Span **
 spanset_spanarr(const SpanSet *ss, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(ss, NULL);
   Span **spans = palloc(sizeof(Span *) * ss->count);
   for (int i = 0; i < ss->count; i++)
     spans[i] = span_copy(SPANSET_SP_N(ss, i));
@@ -1787,8 +1790,11 @@ datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
 Span *
 spanset_spans(const SpanSet *ss, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(ss, NULL);
 
   Span *result = palloc(sizeof(Span) * ss->count);
   /* Output the composing spans */

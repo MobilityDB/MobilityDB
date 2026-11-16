@@ -2868,9 +2868,12 @@ GSERIALIZED *
 tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, int64 **timesarr, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(bounds, NULL);
-  VALIDATE_NOT_NULL(timesarr, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(timesarr, NULL);
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -4645,8 +4648,11 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TPOINT(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

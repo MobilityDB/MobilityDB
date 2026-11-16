@@ -3487,8 +3487,10 @@ int *
 edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, double dist, bool spheroid, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   if (! ensure_finite(dist))
     return NULL;
   return setset_ea_pairs(arr1, count1, arr2, count2, dist, spheroid,
@@ -3513,8 +3515,10 @@ int *
 adwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, double dist, bool spheroid, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   if (! ensure_finite(dist))
     return NULL;
   return setset_ea_pairs(arr1, count1, arr2, count2, dist, spheroid,
@@ -3536,8 +3540,10 @@ int *
 eintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_EINTERSECTS,
     count);
 }
@@ -3557,8 +3563,10 @@ int *
 aintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_AINTERSECTS,
     count);
 }
@@ -3577,8 +3585,10 @@ int *
 etouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ETOUCHES,
     count);
 }
@@ -3598,8 +3608,10 @@ int *
 atouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ATOUCHES,
     count);
 }
@@ -3621,8 +3633,10 @@ int *
 econtains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ECONTAINS,
     count);
 }
@@ -3644,8 +3658,10 @@ int *
 acontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ACONTAINS,
     count);
 }
@@ -3667,8 +3683,10 @@ int *
 ecovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ECOVERS,
     count);
 }
@@ -3690,8 +3708,10 @@ int *
 acovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ACOVERS,
     count);
 }
@@ -3711,8 +3731,10 @@ int *
 edisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_EDISJOINT,
     count);
 }
@@ -3732,8 +3754,10 @@ int *
 adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count)
 {
-  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ADISJOINT,
     count);
 }
@@ -3760,8 +3784,11 @@ tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, double dist, bool spheroid, int *count,
   SpanSet ***periods)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  VALIDATE_NOT_NULL(periods, NULL);
   if (! ensure_finite(dist))
     return NULL;
   return setset_t_pairs(arr1, count1, arr2, count2, dist, spheroid,
@@ -3784,8 +3811,11 @@ int *
 tintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count, SpanSet ***periods)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  VALIDATE_NOT_NULL(periods, NULL);
   return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TINTERSECTS,
     count, periods);
 }
@@ -3806,8 +3836,11 @@ int *
 ttouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count, SpanSet ***periods)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  VALIDATE_NOT_NULL(periods, NULL);
   return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TTOUCHES,
     count, periods);
 }
@@ -3831,8 +3864,11 @@ int *
 tcontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count, SpanSet ***periods)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  VALIDATE_NOT_NULL(periods, NULL);
   return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TCONTAINS,
     count, periods);
 }
@@ -3856,8 +3892,11 @@ int *
 tcovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count, SpanSet ***periods)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  VALIDATE_NOT_NULL(periods, NULL);
   return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TCOVERS,
     count, periods);
 }
@@ -3878,8 +3917,11 @@ int *
 tdisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, int *count, SpanSet ***periods)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  VALIDATE_NOT_NULL(periods, NULL);
   return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TDISJOINT,
     count, periods);
 }
