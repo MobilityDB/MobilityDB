@@ -1267,6 +1267,9 @@ numeric_to_alphanum(Numeric num, MeosType resbasetype)
  * @param[in] key Key to extract from the JSONB object
  * @param[in] resbasetype Resulting base type
  * @param[in] null_handle States the null value treatment
+ * @param[out] absent True when the result has no value, the key missing or
+ * its value invalid, since every number is an answer and none can stand for
+ * no value
  * @note Supported JSONB types: boolean, numeric, string. A number, and a
  * string holding one, is converted by #numeric_to_alphanum, as PostgreSQL
  * casts a numeric. A boolean read from a number is true when the number is
@@ -1274,9 +1277,11 @@ numeric_to_alphanum(Numeric num, MeosType resbasetype)
  */
 static Datum
 jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
-  nullHandleType null_handle)
+  nullHandleType null_handle, bool *absent)
 {
   assert(jb); assert(key); assert(alphanum_basetype(resbasetype));
+  assert(absent);
+  *absent = false;
 
   /* Lookup key in the JSONB object, which writes the value found */
   JsonbValue found;
@@ -1292,7 +1297,10 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
         "The lifted operation returned NULL");
     if (null_handle == NULL_ERROR || null_handle == NULL_RETURN ||
         null_handle == NULL_DELETE)
+    {
+      *absent = true;
       return jsonb_to_alphanum_error(resbasetype);
+    }
     if (null_handle == NULL_JSON_NULL)
       return PointerGetDatum(pg_jsonb_in("null"));
     /* NULL_INVALID or any other unhandled case */
@@ -1350,6 +1358,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
           pg_numeric_in(buf, -1);
         if (! num)
         {
+          *absent = true;
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "Invalid numeric string for key \"%s\": %s", key, buf);
           pfree(buf);
@@ -1371,6 +1380,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
 
     default:
     {
+      *absent = true;
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Unsupported JSONB value type for key \"%s\"", key);
       return jsonb_to_alphanum_error(resbasetype);
@@ -1380,19 +1390,23 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
 
 /**
  * @brief Convert a JSONB value into a base alphanumeric value
+ * @details The Datum form of #jsonb_to_alphanum, the function a lift applies
  * @param[in] jb JSONB value
  * @param[in] key Key to extract from the JSONB object
  * @param[in] resbasetype Resulting type
  * @param[in] null_handle States the null value treatment
+ * @param[out] absent Pointer to the flag stating that the result has no
+ * value, the @p resabsent of the lifted function that @p reportsabsent
  * @note Supported JSONB types: boolean, numeric, string
  */
 Datum
 datum_jsonb_to_alphanum(Datum jb, Datum key, Datum resbasetype,
-  Datum null_handle)
+  Datum null_handle, Datum absent)
 {
   return jsonb_to_alphanum(DatumGetJsonbP(jb),
     (const char *) DatumGetPointer(key), (MeosType) DatumGetInt32(resbasetype),
-    (nullHandleType) DatumGetInt32(null_handle));
+    (nullHandleType) DatumGetInt32(null_handle),
+    (bool *) DatumGetPointer(absent));
 }
 
 /**
@@ -1500,14 +1514,17 @@ tjsonb_to_talphanum(const Temporal *temp, const char *key,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_to_alphanum;
   lfinfo.argtype[0] = T_JSONB;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(key);
   lfinfo.param[1] = Int32GetDatum(resbasetype);
   lfinfo.param[2] = null_handle;
+  lfinfo.param[3] = PointerGetDatum(&lfinfo.resabsent);
   lfinfo.restype = restype;
   lfinfo.reslinear = (interp == LINEAR);
-  /* Set the error value to test */
+  /* Every number is an answer, so the function states a result with no
+   * value in resabsent */
   lfinfo.reserror = jsonb_to_alphanum_error(resbasetype);
+  lfinfo.reportsabsent = true;
   lfinfo.resnull = null_handle; /* per-instant result may be NULL */
   return tfunc_temporal(temp, &lfinfo);
 }

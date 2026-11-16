@@ -138,9 +138,11 @@ extern Datum datum_npoint_round(Datum npoint, Datum size);
 /* Conversion functions */
 
 extern const LWLINE *route_line(int64 rid);
-extern const LWLINE *route_line_bound(int64 rid, double *bound);
+extern const LWLINE *route_line_bound(int64 rid, double *bound,
+  const double **fracs);
 extern void route_point_at(const POINTARRAY *pa, double length,
-  double fraction, POINT4D *pt);
+  const double *fracs, double fraction, POINT4D *pt);
+extern double *route_segment_fractions(const POINTARRAY *pa);
 extern double *route_vertex_positions(const POINTARRAY *pa, int *count);
 extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst,
   double *bound);

@@ -294,20 +294,23 @@ route_geom(int64 rid)
 const LWLINE *
 route_line(int64 rid)
 {
-  return route_line_bound(rid, NULL);
+  return route_line_bound(rid, NULL, NULL);
 }
 
 /**
  * @brief Return the geometry of a route read as a line, as #route_line
- * returns it, and in the last argument, when it is not NULL, the bound of
- * the construction of a point on the route (#route_construction_bound),
+ * returns it, and in the other arguments, when they are not NULL, the bound
+ * of the construction of a point on the route (#route_construction_bound)
+ * and the fractions of the segments of the route (#route_segment_fractions),
  * read by the ways cache with the line
  * @param[in] rid Route identifier
  * @param[out] bound Bound of the construction
+ * @param[out] fracs Fractions of the segments, NULL when the route has no
+ * length
  * @errval NULL
  */
 const LWLINE *
-route_line_bound(int64 rid, double *bound)
+route_line_bound(int64 rid, double *bound, const double **fracs)
 {
   ways_record rec;
   if (! route_lookup(rid, false, &rec))
@@ -320,6 +323,8 @@ route_line_bound(int64 rid, double *bound)
     return NULL;
   if (bound)
     *bound = rec.bound;
+  if (fracs)
+    *fracs = rec.the_fracs;
   return rec.the_line;
 }
 

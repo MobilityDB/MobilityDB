@@ -226,6 +226,19 @@ if(NOT MEOS_HAS_ROUNDEVEN)
   target_sources(coremath PRIVATE
     "${CMAKE_SOURCE_DIR}/meos/src/temporal/meos_roundeven.c")
 endif()
+# core-math/ raises and tests the floating-point exceptions it names; <fenv.h>
+# defines the macro of an exception only where the target supports it, and
+# WebAssembly supports none, so Emscripten defines none of them. A macro the
+# target lacks names the empty set of exceptions, which the functions of
+# <fenv.h> raise and report as none, the meaning C gives an unsupported one
+include(CheckSymbolExists)
+foreach(_fe FE_INVALID FE_INEXACT FE_OVERFLOW FE_UNDERFLOW)
+  check_symbol_exists(${_fe} "fenv.h" MEOS_HAS_${_fe})
+  if(NOT MEOS_HAS_${_fe})
+    message(STATUS "Stating ${_fe}, which <fenv.h> lacks, as no exception to core-math/")
+    target_compile_definitions(coremath PRIVATE ${_fe}=0)
+  endif()
+endforeach()
 set_property(TARGET coremath PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET coremath PROPERTY POSITION_INDEPENDENT_CODE ON)
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:coremath>")
