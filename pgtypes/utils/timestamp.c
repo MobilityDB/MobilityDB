@@ -5196,7 +5196,7 @@ pg_timestamp_part(Timestamp ts, const text *units)
 }
 
 /**
- * @ingroup meos_base_timestamp
+ * @ingroup meos_internal_timestamp
  * @brief Extract from a field from a timestamp
  * @return On error return DT_NOEND
  * @note Derived from PostgreSQL function @p extract_timestamp()
@@ -5474,7 +5474,7 @@ pg_timestamptz_part(TimestampTz ts, const text *units)
 }
 
 /**
- * @ingroup meos_base_timestamp
+ * @ingroup meos_internal_timestamp
  * @brief Extract a field from a timestamptz
  * @return On error return INT_MAX
  * @note Derived from PostgreSQL function @p extract_timestamptz()
@@ -5765,7 +5765,7 @@ pg_interval_part(const Interval *interv, const text *units)
 }
 
 /**
- * @ingroup meos_base_interval
+ * @ingroup meos_internal_interval
  * @brief Extract a field from an interval
  * @return On error return DT_NOEND
  * @note Derived from PostgreSQL function @p extract_interval()

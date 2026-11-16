@@ -101,6 +101,22 @@
  *   @ingroup meos_internal_base
  *   @brief Functions for the numeric type
  *
+ *   @defgroup meos_internal_date Functions for the date type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the date type
+ *
+ *   @defgroup meos_internal_time Functions for the time types
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the time types
+ *
+ *   @defgroup meos_internal_timestamp Functions for the timestamp types
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the timestamp types
+ *
+ *   @defgroup meos_internal_interval Functions for the interval type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the interval type
+ *
  *   @defgroup meos_internal_char Functions for the char type
  *   @ingroup meos_internal_base
  *   @brief Functions for the char type
