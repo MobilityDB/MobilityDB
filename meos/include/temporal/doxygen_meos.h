@@ -101,10 +101,6 @@
  *   @ingroup meos_base_types
  *   @brief Functions for the text types
  *
- *   @defgroup meos_base_numeric Functions for the numeric type
- *   @ingroup meos_base_types
- *   @brief Functions for the numeric type
- *
  *   @defgroup meos_base_date Functions for the date type
  *   @ingroup meos_base_types
  *   @brief Functions for the date type

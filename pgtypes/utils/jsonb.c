@@ -972,7 +972,7 @@ jsonb_to_bool(const Jsonb *jb)
 }
 
 /**
- * @ingroup meos_json_base_conversion
+ * @ingroup meos_internal_json
  * @brief Convert a JSONB value into a numeric
  * @param[in] jb JSONB object
  */
