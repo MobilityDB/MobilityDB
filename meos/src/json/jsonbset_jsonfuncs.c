@@ -454,13 +454,16 @@ jsonbset_to_alphanumset(const Set *set, const char *key, MeosType resbasetype,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_to_alphanum;
   lfinfo.argtype[0] = T_JSONB;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(key);
   lfinfo.param[1] = resbasetype;
   lfinfo.param[2] = null_handle;
+  lfinfo.param[3] = PointerGetDatum(&lfinfo.resabsent);
   lfinfo.restype = restype;
-  /* Set the error value to test */
+  /* Every number is an answer, so the function states a result with no
+   * value in resabsent */
   lfinfo.reserror = jsonb_to_alphanum_error(resbasetype);
+  lfinfo.reportsabsent = true;
   lfinfo.resnull = null_handle; /* Handle NULL result */
   return lfunc_set(set, &lfinfo);
 }

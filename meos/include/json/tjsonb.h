@@ -90,7 +90,8 @@ extern Datum datum_jsonb_path_query_first(Datum jb, Datum jp, Datum vars, Datum 
 extern Datum datum_jsonb_to_text(Datum jb);
 extern Datum datum_text_to_jsonb(Datum txt);
 extern Datum jsonb_to_alphanum_error(MeosType basetype);
-extern Datum datum_jsonb_to_alphanum(Datum jb, Datum key, Datum temptype, Datum null_handle);
+extern Datum datum_jsonb_to_alphanum(Datum jb, Datum key, Datum temptype,
+  Datum null_handle, Datum absent);
 extern Datum datum_jsonb_to_spatial(Datum jb, Datum key, Datum restype, Datum null_handle);
 
 /*****************************************************************************

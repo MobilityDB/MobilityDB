@@ -62,8 +62,17 @@ typedef struct
   MeosType argtype[MAX_ARGS]; /**< Type of the arguments of the function */
   MeosType restype;           /**< Type of the result of the function */
   Datum reserror;             /**< Resulting value error (e.g., INT_MAX or NULL pointer) */
-  int resnull;                /**< NULL handling if the resulting value may be 
+  int resnull;                /**< NULL handling if the resulting value may be
            * possible values are NULL_ERROR, NULL_JSON_NULL, NULL_DELETE, or NULL_RETURN */
+  bool reportsabsent;         /**< True if the function states whether its
+                                 result has a value in @p resabsent, as a
+                                 function does whose every result value is an
+                                 answer, a number for instance, so that no
+                                 value of the result type can be @p reserror */
+  bool resabsent;             /**< True if the result of the last call has no
+                                 value, written at every call by a function
+                                 that @p reportsabsent, through a pointer to it
+                                 among its parameters */
   bool reslinear;             /**< True if the result has linear interpolation */
   bool invert;                /**< True if the arguments of the function must be inverted */
   bool discont;               /**< True if the function has instantaneous discontinuities */

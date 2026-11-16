@@ -407,6 +407,28 @@ lfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
   }
 }
 
+/**
+ * @brief Return true if the result of a lifted function has no value
+ * @details The one test #tfunc_tinstant, #lfunc_set_dispatch and
+ * #lfunc_set_bool apply, as #lifting_result is the one test of an error. A
+ * function that @p reportsabsent states it in @p resabsent, since every value
+ * of its result type is an answer. For any other function, a result with no
+ * value is the NULL pointer of a result passed by reference, or the value
+ * @p reserror of a result passed by value.
+ * @param[in] value Result of the function
+ * @param[in] lfinfo Information about the lifted function
+ * @param[in] typbyval True if the result type is passed by value
+ * @param[in] basetype Result type
+ */
+static bool
+lfunc_result_absent(Datum value, const LiftedFunctionInfo *lfinfo,
+  bool typbyval, MeosType basetype)
+{
+  if (lfinfo->reportsabsent)
+    return lfinfo->resabsent;
+  return typbyval ? datum_eq(value, lfinfo->reserror, basetype) : ! value;
+}
+
 /*****************************************************************************
  * Functions where the argument is a set type.
  * The function is applied to the composing elements.
@@ -445,9 +467,8 @@ lfunc_set_dispatch(const Set *set, LiftedFunctionInfo *lfinfo)
     }
     else
     {
-      /* Check if resulting value is a value error or a NULL pointer */
-      if ((! typbyval && ! resvalue) ||
-          (typbyval && datum_eq(resvalue, lfinfo->reserror, basetype)))
+      /* Check if the result has no value */
+      if (lfunc_result_absent(resvalue, lfinfo, typbyval, basetype))
 #if JSON
       {
         if (lfinfo->resnull == NULL_JSON_NULL)
@@ -539,7 +560,7 @@ lfunc_set_bool(const Set *set, LiftedFunctionInfo *lfinfo, int *count)
     Datum value = lfunc_base(SET_VAL_N(set, i), lfinfo);
     /* A value without an answer is left out with NULL_DELETE and leaves the
      * result without one otherwise, as in #lfunc_set_dispatch */
-    if (lfinfo->resnull && datum_eq(value, lfinfo->reserror, T_BOOL))
+    if (lfinfo->resnull && lfunc_result_absent(value, lfinfo, true, T_BOOL))
     {
 #if JSON
       if (lfinfo->resnull == NULL_DELETE)
@@ -585,8 +606,8 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
   bool typbyval = basetype_byvalue(basetype);
   /* If we must check NULLs, check if the resulting value is an error or a
      NULL pointer */
-  if (lfinfo->resnull && ((! typbyval && ! resvalue) ||
-      (typbyval && datum_eq(resvalue, lfinfo->reserror, basetype))))
+  if (lfinfo->resnull &&
+      lfunc_result_absent(resvalue, lfinfo, typbyval, basetype))
   {
     if (lfinfo->resnull != NULL_JSON_NULL)
       return NULL;
