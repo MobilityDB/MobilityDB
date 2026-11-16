@@ -56,6 +56,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/temporal.h"
+#include "geo/geo_dyadic.h"
 
 /*****************************************************************************/
 
@@ -88,7 +89,6 @@ typedef enum
  * -- including the smaller one `lwgeodetic.h` states for spherical work.
  */
 #define MEOS_GEOM_TOLERANCE 1e-12
-
 
 /**
  * @brief A point where a common tangent of two circles touches one of them,
@@ -232,21 +232,6 @@ angle_normalize(double a)
   return r;
 }
 
-/**
- * @brief Split the difference of two doubles into its rounded value and the
- * error of that rounding, which together are the difference exactly
- * @details The difference twin of #two_sum, defined here so that every file
- * including this header expands it
- */
-static inline void
-two_diff(double a, double b, double *x, double *y)
-{
-  *x = a - b;
-  double bv = a - *x;
-  double av = *x + bv;
-  *y = (a - av) + (bv - b);
-}
-
 /*****************************************************************************/
 
 extern LWGEOM *meos_oriented_envelope(const LWGEOM *geom);
@@ -273,11 +258,6 @@ extern bool relate_is_areal(const LWGEOM *geom);
 extern bool relate_members_apart(const LWGEOM *geom);
 extern bool relate_members_apart_within(const LWGEOM *geom,
   int64 budget);
-extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
-  double cx, double cy, double dx, double dy);
-extern int cross_product_sign_offset(double ax, double ay, double bx,
-  double by, double cx, double cy, double dx, double dy, double oab,
-  double ocd);
 extern int offset_x_cmp(double x, double o, double p);
 extern double segment_construction_bound(double a, double b);
 extern bool segment_meets_point_box(double ax, double ay, double bx,
@@ -342,26 +322,13 @@ extern bool arcarc_within_exact(const ExactArc *p, const ExactArc *q,
 extern bool point_segm_ray_parity(const double *p, const double *a,
   const double *b);
 extern bool point_arc_ray_parity(const double *p, const ExactArc *arc);
-extern int point_segment_offset_sign(const double *p, const double *a,
-  const double *b, int ndims, double r);
-extern int segment_interior_offset_sign(const double *a, const double *b,
-  const double *c, const double *d, double r);
 extern int axis_offset_sign(double p, double a, double d);
 extern bool plane_normal_exact(const double *a, const double *b,
   const double *c, double *n);
 extern int plane_normal_offset_sign(const double *n, const double *a,
   const double *v);
-extern int vector_triple_sign(const double *a0, const double *a1,
-  const double *b0, const double *b1, const double *c0, const double *c1);
-extern int point_segment_dot_sign_inputs(const double *p, const double *s,
-  const double *a, const double *b, int ndims);
 extern void vector_cross_signs(const double *b0, const double *b1,
   const double *c0, const double *c1, int *sn);
-extern int plane_cross_dot_sign(const double *a, const double *b,
-  const double *c, const double *x0, const double *x1, const double *y0,
-  const double *y1);
-extern int plane_point_offset_sign(const double *a, const double *b,
-  const double *c, const double *p, double d);
 extern int point_arc_offset_sign(const double *p, const Edge *e, double r);
 extern bool sums_nonpositive_exact(const double *t, int n, int k);
 extern bool linear_sums_nonpositive_meet_exact(const double *start,
@@ -439,34 +406,6 @@ extern int point_motion_gap_zero_exact(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
   double rb0, double rb1, int *s0, int *s1);
 
-/* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
- * with the double nearest to it and a bound on the error of that double */
-#define EXACT_SUM_MAXTERMS 4
-typedef struct
-{
-  double e[EXACT_SUM_MAXTERMS];  /**< Components, increasing in magnitude */
-  int n;                         /**< Number of components */
-  double approx;                 /**< Double nearest to the sum */
-  double err;                    /**< Bound on the error of approx */
-} ExactSum;
-
-/* A term of a polynomial in exact sums: a coefficient, exactly representable,
- * times the product of up to POLY_TERM_MAXDEG exact sums given by index */
-#define POLY_TERM_MAXDEG 6
-typedef struct
-{
-  double coef;                   /**< Coefficient */
-  int deg;                       /**< Number of factors */
-  int sum[POLY_TERM_MAXDEG];     /**< Indices of the exact sums multiplied */
-} PolyTerm;
-
-extern void exact_sum_set(ExactSum *sum, const double *terms, int nterms);
-extern int polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
-  int nterms);
-extern int triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
-  const POINT3D *r);
-extern int incircle_sign(double ax, double ay, double bx, double by,
-  double cx, double cy, double dx, double dy);
 extern bool point_on_arc_circle(const Edge *e, double qx, double qy);
 extern int arc_circle_side(const Edge *e, double qx, double qy);
 extern bool arc_same_circle(const Edge *a, const Edge *b);
@@ -831,59 +770,6 @@ extern bool *pointarr_find_splits(const POINT2D **points, int npoints,
  *****************************************************************************/
 
 /**
- * @brief Return the sign of the cross product of the vectors B - A and D - C
- * @details The operands are coordinates of input vertices, and every double is
- * an exact rational, so the sign has one answer. A filter gives it where the
- * double evaluation carries it: Shewchuk's bound on the rounding of a
- * difference of two products of rounded differences, computed from the
- * operands. The bound is relative, so it holds where the products lie clear
- * of the subnormal range, whose rounding is absolute; a product of two
- * nonzero differences can also underflow to zero. Two products each with a
- * zero difference need no more: a rounded difference is zero only where the
- * two coordinates are equal. Where the filter cannot tell otherwise,
- * #cross_product_sign_exact decides the same cross product exactly, for any
- * finite coordinates. With C = A the sign is the side of the line AB that D
- * lies on
- * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
- */
-static inline int
-cross_product_sign(double ax, double ay, double bx, double by, double cx,
-  double cy, double dx, double dy)
-{
-  double l1 = bx - ax, l2 = dy - cy, r1 = by - ay, r2 = dx - cx;
-  double left = l1 * l2, right = r1 * r2;
-  double mag = fabs(left) + fabs(right);
-  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON * mag;
-  if (mag >= 0x1p-969)
-  {
-    double det = left - right;
-    if (det > bound)
-      return 1;
-    if (det < - bound)
-      return -1;
-  }
-  if ((l1 == 0.0 || l2 == 0.0) && (r1 == 0.0 || r2 == 0.0))
-    return 0;
-  return cross_product_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
-}
-
-/**
- * @brief Return the sign of the dot product of two vectors
- * @details The coordinates are exact rationals, so the sign has one answer,
- * that of `(p - 0) . (q - 0)`, which #point_segment_dot_sign_inputs gives
- * exactly for any finite doubles. With `p` the normal of a plane the sign is
- * the side of that plane `q` lies on
- * @return 1 or -1, 0 exactly where the vectors are orthogonal
- */
-static inline int
-dot_product_sign(const POINT3D *p, const POINT3D *q)
-{
-  const double origin[3] = {0.0, 0.0, 0.0};
-  const double pc[3] = {p->x, p->y, p->z}, qc[3] = {q->x, q->y, q->z};
-  return point_segment_dot_sign_inputs(pc, origin, origin, qc, 3);
-}
-
-/**
  * @brief Return the sign of the squared distance between two points less the
  * square of a distance
  * @details The coordinates and the distance are exact rationals, so the sign
@@ -923,26 +809,6 @@ point_within_distance_sign(double px, double py, double qx, double qy,
   if (value < - bound)
     return -1;
   return point_within_distance_sign_exact(px, py, qx, qy, d);
-}
-
-/**
- * @brief Return the sign of the triple product `<p, q x r>` of three vectors
- * @details The coordinates are exact rationals, so the sign has one answer,
- * that of the determinant `(p - 0) . ((q - 0) x (r - 0))`, which
- * #vector_triple_sign gives exactly for any finite doubles. With `p` and `q`
- * two points of a unit sphere the sign is the side of the great circle
- * through them, taken from `p` to `q`, that `r` lies on
- * @return 1 where `r` lies on the side of the plane of `p` and `q` that their
- * cross product points to, -1 on the other, 0 exactly where the three vectors
- * are coplanar
- */
-static inline int
-triple_product_sign(const POINT3D *p, const POINT3D *q, const POINT3D *r)
-{
-  const double origin[3] = {0.0, 0.0, 0.0};
-  const double pc[3] = {p->x, p->y, p->z}, qc[3] = {q->x, q->y, q->z},
-    rc[3] = {r->x, r->y, r->z};
-  return vector_triple_sign(origin, pc, origin, qc, origin, rc);
 }
 
 /**
@@ -1793,129 +1659,14 @@ point_on_segment_exact(double px, double py, double x1, double y1, double x2,
  * The wide number
  *****************************************************************************/
 
-/**
- * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
- * as many 64-bit limbs as it takes, the lowest first, with exact sums,
- * differences and products of any two
- */
-typedef struct
-{
-  int sign;         /**< -1, 0 or 1 */
-  int len;          /**< Number of limbs of the magnitude, 0 for the value 0 */
-  int exp;          /**< Weight of the lowest bit of the magnitude */
-  uint64 limb[FLEXIBLE_ARRAY_MEMBER];
-} DyadicWide;
-
-/** Number of 64-bit words a #DyadicWideArena holds before it takes a block */
-#define DYADIC_WIDE_ARENA_WORDS 1024
-
-/**
- * @brief The memory of the #DyadicWide values of one exact evaluation: taken
- * in order from a buffer of its own, then from blocks taken as it is used up,
- * and released in one step
- */
-typedef struct
-{
-  uint64 buf[DYADIC_WIDE_ARENA_WORDS];
-  size_t used;      /**< Words taken of the current block */
-  size_t cap;       /**< Words of the current block */
-  uint64 **blocks; /**< The blocks after @p buf */
-  size_t *caps;     /**< The words of each block */
-  int nblocks;      /**< Number of blocks in use, the last the current one */
-  int nkept;        /**< Number of blocks held, those past @p nblocks free */
-  int capblocks;
-} DyadicWideArena;
-
-/** @brief A point of a #DyadicWideArena that a release returns it to */
-typedef struct
-{
-  int nblocks;
-  size_t used;
-} DyadicWideMark;
-
-extern void dyadic_wide_arena_init(DyadicWideArena *ar);
-extern void dyadic_wide_arena_free(DyadicWideArena *ar);
-extern DyadicWideMark dyadic_wide_arena_mark(const DyadicWideArena *ar);
-extern void dyadic_wide_arena_release(DyadicWideArena *ar, DyadicWideMark m);
-extern DyadicWide *dyadic_wide_of_double(DyadicWideArena *ar, double x);
-extern DyadicWide *dyadic_wide_of_int64(DyadicWideArena *ar, int64 v);
-extern DyadicWide *dyadic_wide_dup(const DyadicWide *a);
-extern DyadicWide *dyadic_wide_signed(DyadicWideArena *ar, const DyadicWide *a,
-  int sign);
-extern DyadicWide *dyadic_wide_add_signed(DyadicWideArena *ar,
-  const DyadicWide *a, int sa, const DyadicWide *b, int sb);
-extern DyadicWide *dyadic_wide_mul(DyadicWideArena *ar, const DyadicWide *a,
-  const DyadicWide *b);
-extern int dyadic_wide_cmp(const DyadicWide *a, const DyadicWide *b);
-extern int dyadic_wide_to_fixed(const DyadicWide *a, int scale, bool up,
-  uint64 *mag, int nlimbs);
-extern int dyadic_wide_cmp_fixed(DyadicWideArena *ar, const DyadicWide *mid,
-  int sign, const uint64 *mag, int nlimbs, int exp);
-extern void wide_cross3(DyadicWideArena *ar, DyadicWide *const *u,
-  DyadicWide *const *v, DyadicWide **r);
-extern DyadicWide *wide_dot3(DyadicWideArena *ar, DyadicWide *const *u,
-  DyadicWide *const *v);
-
-/**
- * @brief Return the sum of two values, exactly
- */
-static inline DyadicWide *
-dyadic_wide_add(DyadicWideArena *ar, const DyadicWide *a, const DyadicWide *b)
-{
-  return dyadic_wide_add_signed(ar, a, 1, b, 1);
-}
-
-/**
- * @brief Return the difference of two values, exactly
- */
-static inline DyadicWide *
-dyadic_wide_sub(DyadicWideArena *ar, const DyadicWide *a, const DyadicWide *b)
-{
-  return dyadic_wide_add_signed(ar, a, 1, b, -1);
-}
-
-/**
- * @brief Return the negation of a value
- */
-static inline DyadicWide *
-dyadic_wide_neg(DyadicWideArena *ar, const DyadicWide *a)
-{
-  return dyadic_wide_signed(ar, a, -1);
-}
-
-/**
- * @brief Return the sign of a value, -1, 0 or 1
- */
-static inline int
-wide_sign(const DyadicWide *a)
-{
-  return a->sign;
-}
-
-extern int wide_limbs_divmod(const uint64 *u, int nu, const uint64 *v,
-  int nv, uint64 *q, uint64 *r, int *nr);
-extern int wide_limbs_isqrt(const uint64 *n, int nn, uint64 *x,
-  bool *exact);
-
 /*****************************************************************************
  * The nearest double of a value read exactly
  *****************************************************************************/
-
-/* The sign of the value a search reads less @p mid, the values it forms taken
- * from @p ar, which releases them once it answers */
-typedef int (*NearestSide)(DyadicWideArena *ar, const DyadicWide *mid,
-  const void *arg);
-
-extern double nearest_double_exact(double c, NearestSide side,
-  const void *arg);
 
 /* The double nearest the sine and cosine of degrees (geo_trig.c) */
 extern double sind_nearest(double deg);
 extern double cosd_nearest(double deg);
 extern void lonlat_vector_nearest(double lon, double lat, double *v);
-extern bool ddb_vector_lon_nearest(const int64 *v, double *result);
-extern bool ddb_vector_lat_nearest(const int64 *v, double *result);
-extern bool ddb_mercator_lat_nearest(double r, double *result);
 extern double vector_lon_nearest(const int64 *v);
 extern double vector_lat_nearest(const int64 *v);
 extern double rational_nearest(int64 num, int64 den);
