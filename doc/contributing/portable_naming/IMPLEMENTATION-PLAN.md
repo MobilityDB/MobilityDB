@@ -122,8 +122,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   build on a NULL is one PR with a witness under `meos/test`: the bins of a span, a span set and
   the time of a temporal value, OPEN as MobilityDB #3748; the text of a temporal text, OPEN as
   MobilityDB #3749; the value the JSONB inserts insert, OPEN as MobilityDB #3750; the count of
-  the set values accessors, OPEN as MobilityDB #3752; the set of `tstzset_tprecision`, branch
-  `meos/tstzset-tprecision-tests-its-set`; the result of `bearing_point_point`, not started.
+  the set values accessors, OPEN as MobilityDB #3752; the set of `tstzset_tprecision`, OPEN as
+  MobilityDB #3753; the result of `bearing_point_point`, branch `meos/bearing-tests-its-result`.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
