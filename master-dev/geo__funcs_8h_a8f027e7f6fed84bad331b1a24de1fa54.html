@@ -211,7 +211,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a3b0c93b6b2b99f6173a7db4fd23343b5.html#a3b0c93b6b2b99f6173a7db4fd23343b5">linear_sums_nonpositive_meet_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a723fb727e66ab39c0d49a688faf83b74.html#a723fb727e66ab39c0d49a688faf83b74">linesegm_crossing_exact</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a8f027e7f6fed84bad331b1a24de1fa54.html#a8f027e7f6fed84bad331b1a24de1fa54">linesegm_intersect</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af9701540b8f85f8b8cec93ec032708bb.html#af9701540b8f85f8b8cec93ec032708bb">linesegm_intersect_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_abe6d44eccda1c127f572b3110c6f5598.html#abe6d44eccda1c127f572b3110c6f5598">linesegm_intersect_collinear</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a0a4620d2a70c24c947231be937479877.html#a0a4620d2a70c24c947231be937479877">linesegm_intersect_collinear_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a432549bd59fd6c29b13b12e4a4b9f24d.html#a432549bd59fd6c29b13b12e4a4b9f24d">linesegm_param</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_acc6a7984ced58b87cd834ab4a6fb4c63.html#acc6a7984ced58b87cd834ab4a6fb4c63">linesegm_param_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a5ae354ba96b74c36ee8fd70fbc591680.html#a5ae354ba96b74c36ee8fd70fbc591680">linesegm_param_wide</a></td></tr>
@@ -439,19 +441,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the intersection value obtained by computing the intersection of a line segment defined by two 2D points intersects an edge. </p>
-<p >The verdict is decided on the four endpoints and is exact: whether the two directions are parallel, whether the segments lie on one line and whether each end lies on the line of the other segment are signs of cross products of coordinate differences (<a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a>), and along one line the stretch the two share runs between positions compared exactly.</p><ul>
-<li>No intersection: INTERSECT_NONE -&gt; t0 and t1 undefined</li>
-<li>Single point: INTERSECT_POINT -&gt; t0 in [0,1], t1 ignored</li>
-<li>Overlap segment: INTERSECT_OVERLAP -&gt; t0 &lt; t1 in [0,1] The parameters are positions along the first segment, 0 at its start and 1 at its end, and read exactly 0 or 1 where the meeting is one of its ends. A first segment of no length meets nothing <dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ax,ay,bx,by</td><td>Coordinates of the points defining the first segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">cx,cy,dx,dy</td><td>Coordinates of the points defining the second segment </td></tr>
-  </table>
-  </dd>
-</dl>
-</li>
-</ul>
+<p>Return the intersection value obtained by computing the intersection of a line segment defined by two 2D points intersects an edge, as <a class="el" href="geo__funcs_8h_af9701540b8f85f8b8cec93ec032708bb.html#af9701540b8f85f8b8cec93ec032708bb" title="Return the intersection value obtained by computing the intersection of a line segment defined by two...">linesegm_intersect_at</a> answers it without the points. </p>
 
 </div>
 </div>
