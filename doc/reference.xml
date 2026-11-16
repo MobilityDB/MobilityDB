@@ -2990,7 +2990,7 @@
 					<para><link linkend="tjson_array_element"><varname>tjsonArrayElement</varname>, <varname>tjsonbArrayElement</varname>, <varname>tjsonbArrayElementText</varname></link>: Extract an element from a temporal JSON array</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tjsonb_talphanum"><varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname></link>: Extract a temporal alphanumeric value from a temporal JSONB value given by a key</para>
+					<para><link linkend="tjsonb_talphanum"><varname>tbool</varname>, <varname>tint</varname>, <varname>tbigint</varname>, <varname>tfloat</varname>, <varname>ttext</varname></link>: Extract a temporal alphanumeric value from a temporal JSONB value given by a key</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tjsonb_tgeo"><varname>tgeompoint</varname>, <varname>tgeogpoint</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname></link>: Extract a temporal geo value from a temporal JSONB value given by a key</para>

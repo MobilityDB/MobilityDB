@@ -1272,7 +1272,7 @@ mergeEachNSpans(trgeometry,integer) → tstzspan[]
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT mergeNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
-/* {"STBOX XT(((-1.414213562373095,-1.414213562373095),(11.414213562373096,1.414213562373095)),[2001-01-01, 2001-01-02])"} */
+-- {"STBOX XT(((0,0),(11,1)),[2001-01-01, 2001-01-02])"}
 SELECT mergeNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', 2);
 -- {"[2001-01-01, 2001-01-02]"}

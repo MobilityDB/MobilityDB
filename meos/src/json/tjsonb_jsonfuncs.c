@@ -34,6 +34,7 @@
 
 /* C */
 #include <assert.h>
+#include <ctype.h>
 #include <limits.h>
 #include <float.h>
 /* PostgreSQL */
@@ -1223,14 +1224,53 @@ jsonb_to_alphanum_error(MeosType basetype)
 }
 
 /**
+ * @brief Convert the number of a JSONB value into a base number or boolean
+ * @details The number is converted as #jsonb_to_int32, #jsonb_to_int64 and
+ * #jsonb_to_float8 convert a JSONB number, that is, as PostgreSQL casts a
+ * numeric: an integer is the number rounded to the nearest, half away from
+ * zero, and a number outside the range of the integer type is an error, whose
+ * value is the one #jsonb_to_alphanum_error states for the type; a float is
+ * the double nearest the number. A boolean is true when the number is not
+ * zero.
+ * @param[in] num Number
+ * @param[in] resbasetype Resulting base type
+ */
+static Datum
+numeric_to_alphanum(Numeric num, MeosType resbasetype)
+{
+  assert(num); assert(resbasetype != T_TEXT);
+  switch (resbasetype)
+  {
+    case T_BOOL:
+    {
+      Numeric zero = int32_to_numeric(0);
+      bool result = pg_numeric_cmp(num, zero) != 0;
+      pfree(zero);
+      return BoolGetDatum(result);
+    }
+    case T_INT4:
+      return Int32GetDatum(numeric_to_int32(num));
+    case T_INT8:
+      return Int64GetDatum(numeric_to_int64(num));
+    case T_FLOAT8:
+      return Float8GetDatum(numeric_to_float8(num));
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown numeric base type: %s", meostype_name(resbasetype));
+      return PointerGetDatum(NULL);
+  }
+}
+
+/**
  * @brief Convert a JSONB value into a base alphanumeric value
  * @param[in] jb JSONB value
  * @param[in] key Key to extract from the JSONB object
  * @param[in] resbasetype Resulting base type
  * @param[in] null_handle States the null value treatment
- * @note Supported JSONB types: boolean, numeric, string. A boolean read from
- * a number is true when the number is not zero, as a number read from a
- * boolean is 1 when the boolean is true.
+ * @note Supported JSONB types: boolean, numeric, string. A number, and a
+ * string holding one, is converted by #numeric_to_alphanum, as PostgreSQL
+ * casts a numeric. A boolean read from a number is true when the number is
+ * not zero, as a number read from a boolean is 1 when the boolean is true.
  */
 static Datum
 jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
@@ -1281,35 +1321,12 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
 
     case jbvNumeric:
     {
-      /* Convert Numeric to C string to double */
-      char *cstr = pg_numeric_out(v->val.numeric);
       if (resbasetype != T_TEXT)
-      {
-        char *endptr;
-        double dval = strtod(cstr, &endptr);
-        bool invalid = (endptr == cstr);
-        pfree(cstr);
-        if (invalid)
-        {
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "Invalid numeric value for key \"%s\"", key);
-          return jsonb_to_alphanum_error(resbasetype);
-        }
-        if (resbasetype == T_BOOL)
-          return BoolGetDatum(dval != 0.0);
-        else if (resbasetype == T_INT4)
-          return Int32GetDatum((int) dval);
-        else if (resbasetype == T_INT8)
-          return Int64GetDatum((int64) dval);
-        else /* resbasetype == T_FLOAT8 */
-          return Float8GetDatum(dval);
-      }
-      else /* resbasetype == T_TEXT */
-      {
-        Datum val = PointerGetDatum(pg_cstring_to_text(cstr));
-        pfree(cstr);
-        return val;
-      }
+        return numeric_to_alphanum(v->val.numeric, resbasetype);
+      char *cstr = pg_numeric_out(v->val.numeric);
+      Datum val = PointerGetDatum(pg_cstring_to_text(cstr));
+      pfree(cstr);
+      return val;
     }
 
     case jbvString:
@@ -1324,21 +1341,24 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
       }
       else if (tnumber_basetype(resbasetype))
       {
+        /* The whole string is a number, read exactly by #pg_numeric_in */
         char *endptr;
-        double dval = strtod(buf, &endptr);
-        if (endptr == buf)
+        (void) strtod(buf, &endptr);
+        while (isspace((unsigned char) *endptr))
+          endptr++;
+        Numeric num = (endptr == buf || *endptr != '\0') ? NULL :
+          pg_numeric_in(buf, -1);
+        if (! num)
         {
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "Invalid numeric string for key \"%s\": %s", key, buf);
           pfree(buf);
           return jsonb_to_alphanum_error(resbasetype);
         }
-        if (resbasetype == T_INT4)
-          return Int32GetDatum((int) dval);
-        else if (resbasetype == T_INT8)
-          return Int64GetDatum((int64) dval);
-        else /* resbasetype == T_FLOAT8 */
-          return Float8GetDatum(dval);
+        pfree(buf);
+        val = numeric_to_alphanum(num, resbasetype);
+        pfree(num);
+        return val;
       }
       else /* resbasetype == T_TTEXT */
       {

@@ -1613,13 +1613,21 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
   if (geodetic && srid != SRID_UNKNOWN && ! ensure_srid_is_latlong(srid))
     return NULL;
   /* The coordinates are finite and the SRID of a geography is geodetic, so
-   * the instants are made from the coordinates without testing them again */
+   * the instants are made from the coordinates without testing them again,
+   * written in one block, each in a slot of the size of a point instant */
+  size_t slot = DOUBLE_PAD(tpointinst_coords_size(hasz));
+  char *block = palloc(slot * count);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i ++)
-    instants[i] = tpointinst_make_coords(xcoords[i], ycoords[i],
+  {
+    instants[i] = (TInstant *) (block + slot * i);
+    tpointinst_set_coords(instants[i], xcoords[i], ycoords[i],
       hasz ? zcoords[i] : 0.0, hasz, geodetic, srid, times[i]);
-  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
-    normalize);
+  }
+  TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
+    interp, normalize);
+  pfree(instants); pfree(block);
+  return result;
 }
 
 /**
