@@ -482,7 +482,7 @@ SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
               tint              
 --------------------------------
- 2@Mon Jan 01 00:00:00 2001 PST
+ 3@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tint(tjsonb '"{\"a\":\"1\", \"b\":2.5}"@2001-01-01', text 'a');
@@ -506,7 +506,7 @@ SELECT tbigint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tbigint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
             tbigint             
 --------------------------------
- 2@Mon Jan 01 00:00:00 2001 PST
+ 3@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tbigint(tjsonb '"{\"a\":\"1\", \"b\":2.5}"@2001-01-01', text 'a');
@@ -531,6 +531,39 @@ SELECT tfloat(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
               tfloat              
 ----------------------------------
  2.5@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+-- A number is converted as PostgreSQL casts a numeric: an integer is the
+-- number rounded to the nearest, half away from zero, and a float the double
+-- nearest the number, whether the JSON value is a number or a string
+SELECT tint(tjsonb '[{"a":1.7}@2001-01-01, {"a":-1.7}@2001-01-02, {"a":-2.5}@2001-01-03, {"a":"1.7"}@2001-01-04]', text 'a');
+                                                                tint                                                                
+------------------------------------------------------------------------------------------------------------------------------------
+ [2@Mon Jan 01 00:00:00 2001 PST, -2@Tue Jan 02 00:00:00 2001 PST, -3@Wed Jan 03 00:00:00 2001 PST, 2@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+SELECT tint(tjsonb '"{\"a\":-2147483648}"@2001-01-01', text 'a');
+                   tint                   
+------------------------------------------
+ -2147483648@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tbigint(tjsonb '[{"a":1.7}@2001-01-01, {"a":-2.5}@2001-01-02, {"a":"2.5"}@2001-01-03]', text 'a');
+                                              tbigint                                              
+---------------------------------------------------------------------------------------------------
+ [2@Mon Jan 01 00:00:00 2001 PST, -3@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tbigint(tjsonb '[{"a":9007199254740993}@2001-01-01, {"a":"9007199254740995"}@2001-01-02, {"a":-9223372036854775808}@2001-01-03]', text 'a');
+                                                                      tbigint                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ [9007199254740993@Mon Jan 01 00:00:00 2001 PST, 9007199254740995@Tue Jan 02 00:00:00 2001 PST, -9223372036854775808@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(tfloat(tjsonb '[{"a":0.1}@2001-01-01, {"a":"1e-5"}@2001-01-02, {"a":1234.56789012}@2001-01-03]', text 'a', 'step'), 6);
+                                                            astext                                                             
+-------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[0.1@Mon Jan 01 00:00:00 2001 PST, 0.00001@Tue Jan 02 00:00:00 2001 PST, 1234.56789@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 -- The interpolation of a temporal float is the one asked, linear by default
@@ -688,6 +721,14 @@ SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'xxx');
 ERROR:  The lifted operation returned NULL
 SELECT tint(tjsonb '"{\"a\":\"xxx\", \"b\":2.5}"@2001-01-01', text 'a');
 ERROR:  Invalid numeric string for key "a": xxx
+SELECT tint(tjsonb '"{\"a\":2147483648}"@2001-01-01', text 'a');
+ERROR:  integer out of range
+SELECT tint(tjsonb '"{\"a\":\"-2147483649\"}"@2001-01-01', text 'a');
+ERROR:  integer out of range
+SELECT tbigint(tjsonb '"{\"a\":9223372036854775808}"@2001-01-01', text 'a');
+ERROR:  bigint out of range
+SELECT tint(tjsonb '"{\"a\":\"12abc\"}"@2001-01-01', text 'a');
+ERROR:  Invalid numeric string for key "a": 12abc
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Polygon((0 0,1 0,1 1,0 0))\"}"@2001-01-01', text 'pos');
 ERROR:  Only point geometries accepted
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 xxx)\"}"@2001-01-01', text 'pos');

@@ -1247,16 +1247,19 @@ SELECT tjsonbArrayElement(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
 			<listitem xml:id="tjsonb_talphanum">
 				<indexterm significance="normal"><primary><varname>tbool</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbigint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tfloat</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>ttext</varname></primary></indexterm>
 				<para>Extract a temporal alphanumeric value from a temporal JSONB value given by a key</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tbool(tjsonb,text,null_handle text='raise_exception') → tbool
 tint(tjsonb,text,null_handle text='raise_exception') → tint
+tbigint(tjsonb,text,null_handle text='raise_exception') → tbigint
 tfloat(tjsonb,text,interp text='linear',null_handle text='raise_exception') → tfloat
 ttext(tjsonb,text,null_handle text='raise_exception') → ttext
 </programlisting>
 				<para>Note that the value <varname>use_json_null</varname> cannot be used for the above functions and thus the default value <varname>'raise_exception'</varname> is used.</para>
+				<para>A JSON number, and a JSON string holding one, is converted as PostgreSQL casts a <varname>jsonb</varname> number: an integer is the number rounded to the nearest, half away from zero, a number outside the range of <varname>integer</varname> or <varname>bigint</varname> raises an error, and a float is the double nearest the number. A number keeps every digit up to the range of its type, so a <varname>tbigint</varname> holds 9007199254740993 exactly. A boolean read from a number is true when the number is not zero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbool(tjsonb '[{"speed": 10, "lights": "on"}@2001-01-01,
   {"speed": 20, "lights": "on"}@2001-01-02]', 'lights');
@@ -1264,6 +1267,9 @@ SELECT tbool(tjsonb '[{"speed": 10, "lights": "on"}@2001-01-01,
 SELECT tint(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', 'speed');
 -- {[10@2001-01-01, 20@2001-01-02]}
+SELECT tbigint(tjsonb '[{"odometer": 9007199254740993}@2001-01-01,
+  {"odometer": 9007199254740995.5}@2001-01-02]', 'odometer');
+-- [9007199254740993@2001-01-01, 9007199254740996@2001-01-02]
 SELECT tfloat(tjsonb '{[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02],
   [{"speed": 20}@2001-01-03, {"speed": 20}@2001-01-04]}', 'speed', 'step');
