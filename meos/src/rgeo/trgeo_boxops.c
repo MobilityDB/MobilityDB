@@ -178,6 +178,60 @@ trgeoinstarr_rotating_stbox(const GSERIALIZED *geom, TInstant **instants,
   return;
 }
 
+/**
+ * @brief Return true if two instants of a temporal rigid geometry hold the
+ * same orientation, so that between them the geometry only translates
+ * @details The orientation is the angle of a planar pose and the quaternion
+ * of a 3D one, as #pose_eq reads them; a quaternion and its opposite, which
+ * state the same rotation, are read as distinct, which keeps the box of
+ * #trgeoinstarr_rotating_stbox for the segment
+ * @param[in] inst1,inst2 Temporal instants
+ */
+static bool
+trgeoinst_same_orientation(const TInstant *inst1, const TInstant *inst2)
+{
+  const Pose *pose1 = DatumGetPoseP(tinstant_value_p(inst1));
+  const Pose *pose2 = DatumGetPoseP(tinstant_value_p(inst2));
+  if (MEOS_FLAGS_GET_Z(pose1->flags))
+    return pose1->data[3] == pose2->data[3] &&
+      pose1->data[4] == pose2->data[4] && pose1->data[5] == pose2->data[5] &&
+      pose1->data[6] == pose2->data[6];
+  return pose1->data[2] == pose2->data[2];
+}
+
+/**
+ * @brief Set the spatiotemporal box from the array of instants of a temporal
+ * rigid geometry with linear interpolation
+ * @details The box is the union of the boxes of its segments. On a segment
+ * where the geometry keeps its orientation it only translates, its
+ * coordinates moving linearly with time, so the box of the segment is the
+ * union of the boxes of the geometry at both ends, as
+ * #trgeoinstarr_static_stbox gives them; on a segment where it turns, the
+ * box is the one of #trgeoinstarr_rotating_stbox, holding the geometry at
+ * every angle
+ * @param[in] geom Reference geometry
+ * @param[in] instants Temporal instants
+ * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
+ */
+static void
+trgeoinstarr_linear_stbox(const GSERIALIZED *geom, TInstant **instants,
+  int count, STBox *box)
+{
+  trgeoinst_set_stbox(geom, instants[0], box);
+  for (int i = 1; i < count; i++)
+  {
+    STBox box1;
+    memset(&box1, 0, sizeof(STBox));
+    if (trgeoinst_same_orientation(instants[i - 1], instants[i]))
+      trgeoinst_set_stbox(geom, instants[i], &box1);
+    else
+      trgeoinstarr_rotating_stbox(geom, &instants[i - 1], 2, &box1);
+    stbox_expand(&box1, box);
+  }
+  return;
+}
+
 /*****************************************************************************/
 
 /**
@@ -198,7 +252,7 @@ trgeoinstarr_compute_bbox(const GSERIALIZED *geom, TInstant **instants,
   if (instants[0]->temptype == T_TRGEOMETRY)
   {
     if (interp == LINEAR)
-      trgeoinstarr_rotating_stbox(geom, instants, count, (STBox *) box);
+      trgeoinstarr_linear_stbox(geom, instants, count, (STBox *) box);
     else
       trgeoinstarr_static_stbox(geom, instants, count, (STBox *) box);
   }

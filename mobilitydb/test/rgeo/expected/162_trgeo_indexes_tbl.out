@@ -1958,7 +1958,7 @@ SELECT op, no_idx FROM test_trgeometry_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  2d #>> trgeometry          | 19699
  2d #>> tstzspan            | 43461
  2d && stbox                | 149
- 2d && stbox x              | 57095
+ 2d && stbox x              | 57075
  2d && trgeometry           | 44
  2d && tstzspan             | 188
  2d &< stbox                | 58750
@@ -1967,32 +1967,32 @@ SELECT op, no_idx FROM test_trgeometry_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  2d &<# stbox               | 76211
  2d &<# trgeometry          | 42793
  2d &<# tstzspan            | 69021
- 2d &<| stbox               | 44565
+ 2d &<| stbox               | 44545
  2d &<| stbox x             | 39415
- 2d &<| trgeometry          | 28750
- 2d &> stbox                | 43665
- 2d &> stbox x              | 27685
- 2d &> trgeometry           | 28620
+ 2d &<| trgeometry          | 28730
+ 2d &> stbox                | 43690
+ 2d &> stbox x              | 27730
+ 2d &> trgeometry           | 28615
  2d -|- stbox               | 25
  2d -|- stbox x             | 65
  2d -|- trgeometry          | 21
  2d -|- tstzspan            | 21
- 2d << stbox                | 20520
+ 2d << stbox                | 20545
  2d << stbox x              | 31535
- 2d << trgeometry           | 9185
+ 2d << trgeometry           | 9210
  2d <<# stbox               | 76031
  2d <<# trgeometry          | 42757
  2d <<# tstzspan            | 68851
- 2d <<| stbox               | 9035
+ 2d <<| stbox               | 9075
  2d <<| stbox x             | 7850
- 2d <<| trgeometry          | 3765
+ 2d <<| trgeometry          | 3805
  2d <@ stbox                | 65
- 2d <@ stbox x              | 12735
+ 2d <@ stbox x              | 12765
  2d <@ trgeometry           | 30
  2d <@ tstzspan             | 161
- 2d >> stbox                | 9135
- 2d >> stbox x              | 7240
- 2d >> trgeometry           | 4320
+ 2d >> stbox                | 9155
+ 2d >> stbox x              | 7255
+ 2d >> trgeometry           | 4325
  2d @> stbox                | 40
  2d @> stbox x              | 25090
  2d @> trgeometry           | 27
@@ -2000,13 +2000,13 @@ SELECT op, no_idx FROM test_trgeometry_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  2d stbox #>> trgeometry    | 76031
  2d stbox && trgeometry     | 149
  2d stbox -|- trgeometry    | 25
- 2d stbox << trgeometry     | 9135
+ 2d stbox << trgeometry     | 9155
  2d stbox <<# trgeometry    | 36272
- 2d stbox <<| trgeometry    | 16110
+ 2d stbox <<| trgeometry    | 16190
  2d stbox <@ trgeometry     | 40
- 2d stbox >> trgeometry     | 20520
+ 2d stbox >> trgeometry     | 20545
  2d stbox @> trgeometry     | 65
- 2d stbox |>> trgeometry    | 9035
+ 2d stbox |>> trgeometry    | 9075
  2d stbox ~= trgeometry     | 23
  2d tstzspan #>> trgeometry | 68851
  2d tstzspan && trgeometry  | 188
@@ -2015,12 +2015,12 @@ SELECT op, no_idx FROM test_trgeometry_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  2d tstzspan <@ trgeometry  | 31
  2d tstzspan @> trgeometry  | 161
  2d tstzspan ~= trgeometry  | 17
- 2d |&> stbox               | 55595
- 2d |&> stbox x             | 50560
- 2d |&> trgeometry          | 34785
- 2d |>> stbox               | 16110
- 2d |>> stbox x             | 14905
- 2d |>> trgeometry          | 7225
+ 2d |&> stbox               | 55640
+ 2d |&> stbox x             | 50615
+ 2d |&> trgeometry          | 34805
+ 2d |>> stbox               | 16190
+ 2d |>> stbox x             | 14975
+ 2d |>> trgeometry          | 7275
  2d ~= stbox                | 23
  2d ~= stbox x              | 65
  2d ~= trgeometry           | 27
@@ -2032,53 +2032,53 @@ SELECT op, no_idx FROM test_trgeometry_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  3d #>> trgeometry          | 26473
  3d #>> tstzspan            | 53722
  3d && stbox                | 150
- 3d && stbox x              | 66095
+ 3d && stbox x              | 66065
  3d && trgeometry           | 39
  3d && tstzspan             | 158
- 3d &< stbox                | 40745
- 3d &< stbox x              | 33040
- 3d &< trgeometry           | 26825
+ 3d &< stbox                | 40705
+ 3d &< stbox x              | 33005
+ 3d &< trgeometry           | 26795
  3d &<# stbox               | 64248
  3d &<# trgeometry          | 36019
  3d &<# tstzspan            | 58763
  3d &</ stbox               | 40955
  3d &</ stbox x             | 33765
- 3d &</ trgeometry          | 26710
- 3d &<| stbox               | 40895
- 3d &<| stbox x             | 33665
- 3d &<| trgeometry          | 26710
- 3d &> stbox                | 40750
- 3d &> stbox x              | 29200
- 3d &> trgeometry           | 25275
+ 3d &</ trgeometry          | 26700
+ 3d &<| stbox               | 40840
+ 3d &<| stbox x             | 33610
+ 3d &<| trgeometry          | 26660
+ 3d &> stbox                | 40810
+ 3d &> stbox x              | 29250
+ 3d &> trgeometry           | 25305
  3d -|- stbox               | 23
  3d -|- stbox x             | 65
  3d -|- trgeometry          | 19
  3d -|- tstzspan            | 21
- 3d /&> stbox               | 40790
- 3d /&> stbox x             | 36230
- 3d /&> trgeometry          | 25440
- 3d />> stbox               | 14640
- 3d />> stbox x             | 14170
- 3d />> trgeometry          | 6650
- 3d << stbox                | 12525
- 3d << stbox x              | 17935
- 3d << trgeometry           | 6125
+ 3d /&> stbox               | 40835
+ 3d /&> stbox x             | 36260
+ 3d /&> trgeometry          | 25475
+ 3d />> stbox               | 14675
+ 3d />> stbox x             | 14200
+ 3d />> trgeometry          | 6675
+ 3d << stbox                | 12585
+ 3d << stbox x              | 17960
+ 3d << trgeometry           | 6165
  3d <<# stbox               | 64095
  3d <<# trgeometry          | 35988
  3d <<# tstzspan            | 58620
- 3d <</ stbox               | 12685
- 3d <</ stbox x             | 10655
+ 3d <</ stbox               | 12700
+ 3d <</ stbox x             | 10670
  3d <</ trgeometry          | 6150
- 3d <<| stbox               | 12550
- 3d <<| stbox x             | 10515
+ 3d <<| stbox               | 12560
+ 3d <<| stbox x             | 10525
  3d <<| trgeometry          | 6085
  3d <@ stbox                | 54
- 3d <@ stbox x              | 9650
+ 3d <@ stbox x              | 9645
  3d <@ trgeometry           | 28
  3d <@ tstzspan             | 137
- 3d >> stbox                | 15395
- 3d >> stbox x              | 15045
- 3d >> trgeometry           | 7000
+ 3d >> stbox                | 15425
+ 3d >> stbox x              | 15075
+ 3d >> trgeometry           | 7010
  3d @> stbox                | 42
  3d @> stbox x              | 44745
  3d @> trgeometry           | 31
@@ -2086,15 +2086,15 @@ SELECT op, no_idx FROM test_trgeometry_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  3d stbox #>> trgeometry    | 64095
  3d stbox && trgeometry     | 150
  3d stbox -|- trgeometry    | 23
- 3d stbox />> trgeometry    | 12685
- 3d stbox << trgeometry     | 15395
+ 3d stbox />> trgeometry    | 12700
+ 3d stbox << trgeometry     | 15425
  3d stbox <<# trgeometry    | 48236
- 3d stbox <</ trgeometry    | 14640
- 3d stbox <<| trgeometry    | 14380
+ 3d stbox <</ trgeometry    | 14675
+ 3d stbox <<| trgeometry    | 14455
  3d stbox <@ trgeometry     | 42
- 3d stbox >> trgeometry     | 12525
+ 3d stbox >> trgeometry     | 12585
  3d stbox @> trgeometry     | 54
- 3d stbox |>> trgeometry    | 12550
+ 3d stbox |>> trgeometry    | 12560
  3d stbox ~= trgeometry     | 23
  3d tstzspan #>> trgeometry | 58620
  3d tstzspan && trgeometry  | 158
@@ -2103,12 +2103,12 @@ SELECT op, no_idx FROM test_trgeometry_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  3d tstzspan <@ trgeometry  | 31
  3d tstzspan @> trgeometry  | 137
  3d tstzspan ~= trgeometry  | 17
- 3d |&> stbox               | 40575
- 3d |&> stbox x             | 36020
- 3d |&> trgeometry          | 25355
- 3d |>> stbox               | 14380
- 3d |>> stbox x             | 13930
- 3d |>> trgeometry          | 6530
+ 3d |&> stbox               | 40660
+ 3d |&> stbox x             | 36090
+ 3d |&> trgeometry          | 25390
+ 3d |>> stbox               | 14455
+ 3d |>> stbox x             | 14000
+ 3d |>> trgeometry          | 6555
  3d ~= stbox                | 23
  3d ~= stbox x              | 65
  3d ~= trgeometry           | 27
@@ -2261,7 +2261,7 @@ CREATE TEMP TABLE tbl_stbox_trgeometry_seq AS SELECT pg_temp.stbox_trgeometry_an
 SELECT a FROM tbl_stbox_trgeometry_seq;
                                                                    a                                                                    
 ----------------------------------------------------------------------------------------------------------------------------------------
- 18,5,60,20,6,64,1,1,1,17,42,2,14,40,1,1,1,1,1,1,1,1,1,1,6,48,42,5,44,40,37,4,5,39,5,6,1,1,1,69,14,92,68,13,91,31,86,8,32,87,9,15,15,15
+ 18,5,60,20,6,64,1,1,1,17,42,2,15,40,1,1,1,1,1,1,1,1,1,1,6,48,42,5,44,40,37,4,5,39,5,6,1,1,1,69,14,92,68,13,91,31,86,8,32,87,9,15,15,15
 (1 row)
 
 SET enable_seqscan = off;
