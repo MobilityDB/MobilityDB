@@ -84,4 +84,12 @@ FROM t;
  t        | t        | t
 (1 row)
 
+-- A square moving without turning only translates, so the box of the segment
+-- is the box of the square at its two ends
+SELECT stbox(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]');
+                                         stbox                                         
+---------------------------------------------------------------------------------------
+ STBOX XT(((0,0),(11,1)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
 -------------------------------------------------------------------------------
