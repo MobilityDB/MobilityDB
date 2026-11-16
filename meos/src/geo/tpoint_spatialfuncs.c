@@ -3800,6 +3800,7 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double *result)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(result, false);
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       ! ensure_point_type(gs1) || ! ensure_point_type(gs2) ||
       ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2) ||
