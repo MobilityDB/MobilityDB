@@ -185,7 +185,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return in the last argument the point of a route at a fraction of its length. </p>
-<p >The point <code>lwline_interpolate_points</code> returns for one fraction, computed by the same expressions in the same order, given the length of the route instead of measuring it again, and written in place instead of in a new point array </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The point <code>lwline_interpolate_points</code> returns for one fraction, computed by the same expressions in the same order, given the length of the route instead of measuring it again, and written in place instead of in a new point array. A route is a planar line, as <a class="el" href="tnpoint_8h_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc" title="Ensure that the geometry of a route read from the ways network is a planar line without Z or M dimens...">ensure_valid_route</a> tests when the network is read, so its points are read as the 2D points they are, and the point has the Z and M of zero <code>getPoint4d_p</code> gives a planar point and <code>interpolate_point4d</code> gives two of them </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Points of the route, not empty </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Length of the route, <code>ptarray_length_2d</code> of the points </td></tr>
