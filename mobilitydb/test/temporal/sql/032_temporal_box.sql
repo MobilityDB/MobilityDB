@@ -57,6 +57,8 @@ SELECT mergeNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-0
 SELECT mergeNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04, A@2001-01-05}', 5);
 SELECT mergeNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04, A@2001-01-05}', 6);
 -- Continuous Sequence
+-- The span of a value takes the bounds of its period, an exclusive one included
+SELECT splitNSpans(tfloat '(1.5@2001-01-01, 3.5@2001-01-02, 2@2001-01-04)', 1);
 SELECT splitNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04, A@2001-01-05]', 1);
 SELECT splitNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04, A@2001-01-05]', 2);
 SELECT splitNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04, A@2001-01-05]', 3);
