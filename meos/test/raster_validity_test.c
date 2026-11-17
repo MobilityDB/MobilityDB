@@ -141,6 +141,22 @@ int main(void)
       raster_tile_value(bad[i], rq) == NULL, errnum[i]);
     refused(CALL("raster_tile_value_array"),
       raster_tile_value_array(bad[i], rqarr, 1) == NULL, errnum[i]);
+    refused(CALL("raster_tile_at_value"),
+      raster_tile_at_value(bad[i], rq, vspan) == NULL, errnum[i]);
+    refused(CALL("raster_tile_at_value_array"),
+      raster_tile_at_value_array(bad[i], rqarr, 1, vspan) == NULL, errnum[i]);
+    refused(CALL("raster_tile_minus_value"),
+      raster_tile_minus_value(bad[i], rq, vspan) == NULL, errnum[i]);
+    refused(CALL("raster_tile_minus_value_array"),
+      raster_tile_minus_value_array(bad[i], rqarr, 1, vspan) == NULL, errnum[i]);
+    refused(CALL("eraster_tile_value"),
+      eraster_tile_value(bad[i], rq, vspan) == -1, errnum[i]);
+    refused(CALL("eraster_tile_value_array"),
+      eraster_tile_value_array(bad[i], rqarr, 1, vspan) == -1, errnum[i]);
+    refused(CALL("araster_tile_value"),
+      araster_tile_value(bad[i], rq, vspan) == -1, errnum[i]);
+    refused(CALL("araster_tile_value_array"),
+      araster_tile_value_array(bad[i], rqarr, 1, vspan) == -1, errnum[i]);
 #undef CALL
   }
 

@@ -225,6 +225,14 @@ CREATE FUNCTION makeLine(geometry[])
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geo_makeline_garray'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION makePoint(x float, y float, srid integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_makepoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION makePoint(x float, y float, z float, srid integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_makepoint3dz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Clustering

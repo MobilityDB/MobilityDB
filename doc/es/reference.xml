@@ -1017,6 +1017,9 @@
 					<para><link linkend="geo_constructors"><varname>collect</varname>, <varname>makeLine</varname></link>: Devuelve la colección de un arreglo de geometrías o la línea que las une</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_makepoint"><varname>makePoint</varname></link>: Devuelve un punto geométrico a partir de sus coordenadas y su SRID</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_output"><varname>asText</varname>, <varname>asEWKT</varname>, <varname>asEWKB</varname>, <varname>asGeoJSON</varname></link>: Devuelve la representación Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary o GeoJSON de una geometría o una geografía</para>
 				</listitem>
 				<listitem>

@@ -429,6 +429,22 @@ extern Temporal *raster_tile_value_quadbin(const Temporal *traj,
 extern Temporal *raster_tile_value(const Temporal *traj, const Raquet *rq);
 extern Temporal *raster_tile_value_array(const Temporal *traj,
   const Raquet **rqarr, int count);
+extern Temporal *raster_tile_at_value(const Temporal *traj, const Raquet *rq,
+  const Span *vspan);
+extern Temporal *raster_tile_minus_value(const Temporal *traj,
+  const Raquet *rq, const Span *vspan);
+extern int eraster_tile_value(const Temporal *traj, const Raquet *rq,
+  const Span *vspan);
+extern int araster_tile_value(const Temporal *traj, const Raquet *rq,
+  const Span *vspan);
+extern Temporal *raster_tile_at_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count, const Span *vspan);
+extern Temporal *raster_tile_minus_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count, const Span *vspan);
+extern int eraster_tile_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count, const Span *vspan);
+extern int araster_tile_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count, const Span *vspan);
 
 /*****************************************************************************/
 

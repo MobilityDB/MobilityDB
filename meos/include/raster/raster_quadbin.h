@@ -156,6 +156,9 @@ extern int64 raster_affine_offset(const double *gt, double x1, double y1,
   double x2, double y2, int64 D, int axis, int k, bool *whole);
 extern Temporal *raster_value_sampler(const Temporal *traj,
   const RasterGridOps *ops);
+extern Temporal *raster_values_restrict(const Temporal *traj, Temporal *v,
+  const Span *vspan, bool atfunc);
+extern int raster_values_ever(Temporal *v, const Span *vspan, bool ever);
 extern Temporal *raster_at_value_sampler(const Temporal *traj,
   const RasterGridOps *ops, const Span *vspan);
 extern Temporal *raster_minus_value_sampler(const Temporal *traj,

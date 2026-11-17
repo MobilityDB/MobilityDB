@@ -740,6 +740,43 @@ Geo_makeline_garray(PG_FUNCTION_ARGS)
   return Geoarr_construct(fcinfo, &geo_makeline_garray);
 }
 
+PGDLLEXPORT Datum Geom_makepoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_makepoint);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return a 2D geometry point from its coordinates and SRID
+ * @details The arguments come in the order of the PostGIS function
+ * @p ST_Point, which #geompoint_make2d takes with the SRID first
+ * @sqlfn makePoint()
+ */
+Datum
+Geom_makepoint(PG_FUNCTION_ARGS)
+{
+  double x = PG_GETARG_FLOAT8(0);
+  double y = PG_GETARG_FLOAT8(1);
+  int32_t srid = PG_GETARG_INT32(2);
+  PG_RETURN_GSERIALIZED_P(geompoint_make2d(srid, x, y));
+}
+
+PGDLLEXPORT Datum Geom_makepoint3dz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_makepoint3dz);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return a 3DZ geometry point from its coordinates and SRID
+ * @details The arguments come in the order of the PostGIS function
+ * @p ST_PointZ, which #geompoint_make3dz takes with the SRID first
+ * @sqlfn makePoint()
+ */
+Datum
+Geom_makepoint3dz(PG_FUNCTION_ARGS)
+{
+  double x = PG_GETARG_FLOAT8(0);
+  double y = PG_GETARG_FLOAT8(1);
+  double z = PG_GETARG_FLOAT8(2);
+  int32_t srid = PG_GETARG_INT32(3);
+  PG_RETURN_GSERIALIZED_P(geompoint_make3dz(srid, x, y, z));
+}
+
 /*****************************************************************************
  * Simple geometries
  *****************************************************************************/

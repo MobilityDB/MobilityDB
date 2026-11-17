@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.1.0 |
+| Version | v0.3.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -48,6 +48,7 @@ being QUADBIN tiles of a finer zoom.
 | Georeferencing | the geotransform the value holds (upper left, scale, skew) | derived from the QUADBIN cell |
 | A raster larger than one value | a table of tiles, as PostGIS stores rasters | a Parquet file of Raquet rows, which any engine reading Parquet scans |
 | SQL type | PostGIS's `raster`, from `postgis_raster` | MobilityDB's `raquet` |
+| Type of the MEOS catalog | `T_RASTER`, named `raster` in SQL and `Raster` in the bindings | `T_RAQUET`, named `raquet` in SQL and `RaQuet` in the bindings |
 
 The algorithms over a `raster` are those of the PostGIS raster core, which
 MEOS carries, so a raster is processed in every engine as PostGIS processes
@@ -118,8 +119,11 @@ geotransform of the file, which must state Web Mercator. The text of a
 | `minusRasterValue(traj, rast, vspan, band = 1)`, `minusRasterValue(traj, path text, vspan, band = 1)` | `tgeompoint` |
 | `eRasterValue(traj, rast, vspan, band = 1)`, `eRasterValue(traj, path text, vspan, band = 1)` | `boolean` |
 | `aRasterValue(traj, rast, vspan, band = 1)`, `aRasterValue(traj, path text, vspan, band = 1)` | `boolean` |
+| `atRasterValue`, `minusRasterValue`, `eRasterValue`, `aRasterValue` `(traj, tile, vspan)` and `(traj, raquet[], vspan)` | as above |
 
-With `v` the values `rasterValue` reads along `traj`:
+With `v` the values `rasterValue` reads along `traj`, or `rasterTileValue` for a
+tile and an array of tiles, the tile of the higher zoom answering where tiles
+overlap:
 
 - `atRasterValue` is the trajectory at the times `v` lies in `vspan`,
   `atTime(traj, getTime(atSpan(v, vspan)))`, and `minusRasterValue` the
@@ -152,15 +156,13 @@ patch number with corrections of wording.
 | Version | Content |
 |---|---|
 | v0.1.0 | The two types, the WKB readers and writers and `raquetRead`, the values along a trajectory over a raster, a raster file, a Raquet tile and an array of tiles, the restrictions over a raster and a raster file, a raster series as rows of a table |
+| v0.2.0 | `raster` a type of the MEOS catalog, `T_RASTER` |
+| v0.3.0 | The restrictions over a Raquet tile and an array of tiles |
 
 ## 9. Out of scope
 
 Future: each of these is added here with its version.
 
-- `raster` named in the catalog of types of MEOS, as `raquet` is, so that
-  every binding and server reads its names from the catalog.
-- The restrictions over a Raquet tile and an array of tiles, reading the
-  values `rasterTileValue` reads.
 - `asGDALRaster`, `asTIFF`, `asPNG`, `asJPEG` and `rasterFromGDALRaster`,
   the writers of a raster to any GDAL format and its reader from the bytes of
   a GDAL file, as PostGIS's `ST_AsGDALRaster`, `ST_AsTIFF`, `ST_AsPNG`,
