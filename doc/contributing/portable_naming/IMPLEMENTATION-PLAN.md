@@ -174,9 +174,9 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   2026-11-17 ("as you recommend"): branch `geo/io-through-meos` rewrites `7e950c3cb0` there, the
   commented-out `getSRIDbySRS` call of `temporal_from_mfjson` in `meos/src/temporal/type_in.c` and
   its note that the call needs a `spatial_ref_sys` entry, which `srs_srid`, reading no table,
-  replaces. MobilityDB #3791, head `8bf05621a7` on master `23819c336f`, holds strict, cppcheck
-  and valgrind (169 programs) by patch id `768e5a6bda`, the CGAL oracle crs-read (3000 of 3000)
-  and speed (relate at parity), Windows waived.
+  replaces. Head `8bf05621a7` on master `23819c336f` held strict, cppcheck and valgrind (169
+  programs) by patch id `768e5a6bda`, the CGAL oracle crs-read (3000 of 3000) and speed (relate
+  at parity), Windows waived. MERGED as MobilityDB #3791 (`af8c281d9d`).
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
