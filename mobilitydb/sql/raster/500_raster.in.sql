@@ -747,6 +747,76 @@ CREATE FUNCTION asCoverageJSON(temp tfloat, traj tgeompoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * The formats of GDAL
+ *
+ * A raster is written in a format of GDAL and read from the bytes of a file
+ * in one, as PostGIS's ST_AsGDALRaster, ST_AsTIFF, ST_AsPNG, ST_AsJPEG and
+ * ST_FromGDALRaster write and read it. A NULL SRID when writing is the
+ * raster's own, an SRID of 0 when reading the one the file states.
+ ******************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written in a format of GDAL
+ * @param[in] rast Raster
+ * @param[in] format Short name of the GDAL driver, as GTiff, PNG or JPEG
+ * @param[in] options Creation options of the driver, each KEY=VALUE
+ * @param[in] srid Spatial reference system the file states
+ */
+CREATE FUNCTION asGDALRaster(rast raster, format text,
+    options text[] DEFAULT NULL, srid integer DEFAULT NULL)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_gdal'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a GeoTIFF
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the GTiff driver, each KEY=VALUE
+ * @param[in] srid Spatial reference system the file states
+ */
+CREATE FUNCTION asTIFF(rast raster, options text[] DEFAULT NULL,
+    srid integer DEFAULT NULL)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_tiff'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a PNG image
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the PNG driver, each KEY=VALUE
+ */
+CREATE FUNCTION asPNG(rast raster, options text[] DEFAULT NULL)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_png'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a JPEG image
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the JPEG driver, each KEY=VALUE
+ */
+CREATE FUNCTION asJPEG(rast raster, options text[] DEFAULT NULL)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_jpeg'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster read from the bytes of a file in a format of GDAL
+ * @param[in] gdaldata Bytes of the file
+ * @param[in] srid Spatial reference system of the result, 0 for the one the
+ * file states
+ */
+CREATE FUNCTION rasterFromGDALRaster(gdaldata bytea, srid integer DEFAULT 0)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_from_gdal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * A raster built from its pixels and its georeferencing
  ******************************************************************************/
 

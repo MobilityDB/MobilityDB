@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.5.0 |
+| Version | v0.6.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -63,8 +63,9 @@ without its `ST_` prefix.
 |---|---|---|
 | WKB → value | `rasterFromBinary(bytea)`, `rasterFromHexWKB(text)` | `raquetFromBinary(bytea)`, `raquetFromHexWKB(text)` |
 | value → WKB | `asBinary(raster)`, `asHexWKB(raster)` | `asBinary(raquet)`, `asHexWKB(raquet)` |
-| a raster file → value | | `raquetRead(path text, quadbin)`, `raquetRead(bytea, quadbin)` |
+| a raster file → value | `rasterFromGDALRaster(bytea, srid = 0)` | `raquetRead(path text, quadbin)`, `raquetRead(bytea, quadbin)` |
 | a row of a Raquet file → value | | `raquetFromRow(block bigint, band bytea, metadata text, bandnum = 1)` |
+| value → a raster file | `asGDALRaster(raster, format, options = NULL, srid = NULL)`, `asTIFF(raster, options = NULL, srid = NULL)`, `asPNG(raster, options = NULL)`, `asJPEG(raster, options = NULL)` | |
 
 The WKB of a `raster` is PostGIS's raster WKB, so a value written by PostGIS
 is read by every engine and the converse. `raquetRead` reads a raster file of
@@ -72,6 +73,21 @@ any format GDAL reads, from a path on the server or from the bytes of the
 file, into a tile; when no QUADBIN cell is given, the cell is derived from the
 geotransform of the file, which must state Web Mercator. The text of a
 `raquet` is its hexadecimal WKB.
+
+A `raster` is written in a format of GDAL and read from the bytes of a file
+in one as PostGIS writes and reads it: `asGDALRaster`, `asTIFF`, `asPNG` and
+`asJPEG` write the bytes `ST_AsGDALRaster`, `ST_AsTIFF`, `ST_AsPNG` and
+`ST_AsJPEG` write, and `rasterFromGDALRaster` reads the raster
+`ST_FromGDALRaster` reads. `format` is the short name of a GDAL driver that
+writes a copy of a raster into memory (`GTiff`, `PNG`, `JPEG` ...), and
+`options` its creation options, each `KEY=VALUE`; in MEOS the options are one
+string of those pairs separated by spaces, a value holding a space written
+between double quotes, as GDAL tokenizes them. A NULL `srid` when writing is
+the raster's own, the pixels not being reprojected, and an `srid` of 0 when
+reading the one the file states. A format takes the bands its driver takes: a
+GeoTIFF holds one pixel type and one nodata value for all its bands, PNG one
+to four bands of 8 or 16 unsigned bits, JPEG one or three bands of 8 unsigned
+bits.
 
 A Raquet file is a Parquet table whose rows are tiles keyed by their QUADBIN
 cell in the column `block`, the row of block 0 holding the metadata of the
@@ -192,17 +208,12 @@ patch number with corrections of wording.
 | v0.3.0 | The restrictions over a Raquet tile and an array of tiles |
 | v0.4.0 | One row of a Raquet file read into a tile, `raquetFromRow` |
 | v0.5.0 | A raster, a Raquet tile and the values a trajectory reads written as CoverageJSON |
+| v0.6.0 | The writers of a raster to a format of GDAL and its reader from the bytes of a file in one |
 
 ## 9. Out of scope
 
 Future: each of these is added here with its version.
 
-- `asGDALRaster`, `asTIFF`, `asPNG`, `asJPEG` and `rasterFromGDALRaster`,
-  the writers of a raster to any GDAL format and its reader from the bytes of
-  a GDAL file, as PostGIS's `ST_AsGDALRaster`, `ST_AsTIFF`, `ST_AsPNG`,
-  `ST_AsJPEG` and `ST_FromGDALRaster` write and read; the creation options
-  are one string of `KEY=VALUE` pairs, as GDAL tokenizes them, or in SQL the
-  `text[]` of PostGIS.
 - A Raquet file read as its tiles and written from them, through GDAL's
   Parquet driver.
 - The values a trajectory reads from a raster series and its restrictions,

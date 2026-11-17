@@ -355,6 +355,47 @@ SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
 -- [1,2,3,4,-5,null]
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_asGDALRaster">
+				<indexterm significance="normal"><primary><varname>asGDALRaster</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asTIFF</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asPNG</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asJPEG</varname></primary></indexterm>
+				<para>Return a raster written in a format of GDAL</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asGDALRaster(rast raster,format text,options text[]=NULL,srid integer=NULL) → bytea
+asTIFF(rast raster,options text[]=NULL,srid integer=NULL) → bytea
+asPNG(rast raster,options text[]=NULL) → bytea
+asJPEG(rast raster,options text[]=NULL) → bytea
+</programlisting>
+				<para>Writes the raster as PostGIS's <varname>ST_AsGDALRaster</varname>, <varname>ST_AsTIFF</varname>, <varname>ST_AsPNG</varname> and <varname>ST_AsJPEG</varname> write it, so that the bytes are those PostGIS writes. <varname>format</varname> is the short name of a GDAL driver that writes a copy of a raster into memory, such as <varname>GTiff</varname>, <varname>PNG</varname> or <varname>JPEG</varname>; <varname>options</varname> are the creation options of the driver, each <varname>KEY=VALUE</varname>; <varname>srid</varname> is the spatial reference system the file states, the raster's own when <varname>NULL</varname>, the pixels not being reprojected. A GeoTIFF holds one pixel type and one nodata value for all its bands, PNG one to four bands of 8 or 16 unsigned bits, JPEG one or three bands of 8 unsigned bits; a format refusing the bands of the raster raises an error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH r AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[1, 2], [3, 4]]::double precision[][]) AS rast)
+SELECT asTIFF(rast) = ST_AsTIFF(rast),
+  encode(substring(asPNG(rast) from 2 for 3), 'escape')
+FROM r;
+-- true | PNG
+</programlisting>
+			</listitem>
+			<listitem xml:id="rasterFromGDALRaster">
+				<indexterm significance="normal"><primary><varname>rasterFromGDALRaster</varname></primary></indexterm>
+				<para>Return a raster read from the bytes of a file in a format of GDAL</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterFromGDALRaster(gdaldata bytea,srid integer=0) → raster
+</programlisting>
+				<para>Reads the raster as PostGIS's <varname>ST_FromGDALRaster</varname> reads it, the format found by GDAL from the bytes. <varname>srid</varname> is the spatial reference system of the result, the one the file states when 0.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH r AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '16BSI'::text, 7::float8, 0::float8) AS rast)
+SELECT SRID(rasterFromGDALRaster(asTIFF(rast))),
+  SRID(rasterFromGDALRaster(asTIFF(rast), 4326))
+FROM r;
+-- 3857 | 4326
+</programlisting>
+			</listitem>
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_constructors">
 		<title>Constructors</title>
