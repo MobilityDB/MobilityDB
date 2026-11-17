@@ -332,17 +332,15 @@ double4_eq(const double4 *d1, const double4 *d2)
  * @details Every component is collinear, as #float_collinear decides it
  * @param[in] x1,x2,x3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  * @note Function used for normalizing temporal values by removing redundant
  * instants
  */
 bool
 double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
-  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3, constructed) &&
-    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3, constructed);
+  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3) &&
+    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3);
 }
 
 /**
@@ -350,18 +348,16 @@ double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
  * @details Every component is collinear, as #float_collinear decides it
  * @param[in] x1,x2,x3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  * @note Function used for normalizing temporal values by removing redundant
  * instants
  */
 bool
 double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
-  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3, constructed) &&
-    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3, constructed) &&
-    float_collinear(x1->c, x2->c, x3->c, t1, t2, t3, constructed);
+  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3) &&
+    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3) &&
+    float_collinear(x1->c, x2->c, x3->c, t1, t2, t3);
 }
 
 /**
@@ -369,19 +365,17 @@ double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
  * @details Every component is collinear, as #float_collinear decides it
  * @param[in] x1,x2,x3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  * @note Function used for normalizing temporal values by removing redundant
  * instants
  */
 bool
 double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
-  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3, constructed) &&
-    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3, constructed) &&
-    float_collinear(x1->c, x2->c, x3->c, t1, t2, t3, constructed) &&
-    float_collinear(x1->d, x2->d, x3->d, t1, t2, t3, constructed);
+  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3) &&
+    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3) &&
+    float_collinear(x1->c, x2->c, x3->c, t1, t2, t3) &&
+    float_collinear(x1->d, x2->d, x3->d, t1, t2, t3);
 }
 
 /*****************************************************************************

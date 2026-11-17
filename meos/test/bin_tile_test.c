@@ -613,6 +613,21 @@ int main(void)
   check("tfloat_value_time_split, linear sequence", frags && nsplit > 0);
   free(tbins);
   free_frags(frags, nsplit, fbins);
+  /* Each fragment of a linear sequence split by value and time is cut on the
+   * segments of the sequence, so the fragments merge back into it */
+  Temporal *tfcut = tfloat_in("(95.80318544479087@2001-01-12 01:44:00+01, "
+    "20.5609181998297572@2001-01-12 01:47:00+01, "
+    "31.6651852764189243@2001-01-12 01:51:00+01, "
+    "87.5175971132703125@2001-01-12 01:57:00+01)");
+  Interval *fivemin = interval_in("5 minutes", -1);
+  frags = tfloat_value_time_split(tfcut, 5.0, fivemin, 0.0,
+    timestamptz_in("2001-01-01", -1), false, &fbins, &tbins, &nsplit);
+  Temporal *merged = frags ? temporal_merge_array(frags, nsplit) : NULL;
+  check("tfloat_value_time_split, fragments merging back into the sequence",
+    merged && temporal_eq(merged, tfcut));
+  free(merged); free(tbins);
+  free_frags(frags, nsplit, fbins);
+  free(tfcut); free(fivemin);
   free(tfseq); free(tfstep); free(tiseq); free(tbseq); free(tfss);
 
   free(week); free(hour); free(zero);
