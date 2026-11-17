@@ -9399,9 +9399,13 @@ geom_in(const char *str, int32 typmod)
     }
     if (srs)
     {
-      srid = SRID_DEFAULT; // TODO
-      // srid = GetSRIDCacheBySRS(fcinfo, srs);
+      srid = srs_srid(srs);
       lwfree(srs);
+      if (srid == SRID_INVALID)
+      {
+        lwgeom_free(lwgeom);
+        return NULL;
+      }
       lwgeom_set_srid(lwgeom, srid);
     }
     result = geo_serialize(lwgeom);
@@ -9704,6 +9708,42 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 }
 
 /**
+ * @brief Return the SRID of a coordinate reference system named as the GeoJSON
+ * and MF-JSON representations name it
+ * @details The name is the short one, as in `EPSG:3857`, or the OGC URN, as in
+ * `urn:ogc:def:crs:EPSG::3857`, the two names #srid_srs writes, or an OGC name
+ * of the WGS84 longitude and latitude, as in `urn:ogc:def:crs:OGC:1.3:CRS84`
+ * @param[in] srs Name of the coordinate reference system
+ * @return The SRID, or #SRID_INVALID with an error where the name is none of
+ * these
+ */
+int32_t
+srs_srid(const char *srs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(srs, SRID_INVALID);
+  int32_t srid = 0;
+  int len = 0;
+  /* The short name, then the OGC URN without and with a version of the code */
+  if ((sscanf(srs, "EPSG:%d%n", &srid, &len) == 1 && srs[len] == '\0') ||
+      (sscanf(srs, "urn:ogc:def:crs:EPSG::%d%n", &srid, &len) == 1 &&
+        srs[len] == '\0') ||
+      (sscanf(srs, "urn:ogc:def:crs:EPSG:%*[0-9.]:%d%n", &srid, &len) == 1 &&
+        srs[len] == '\0'))
+  {
+    if (srid > 0)
+      return srid;
+  }
+  else if (strcmp(srs, "urn:ogc:def:crs:OGC:1.3:CRS84") == 0 ||
+      strcmp(srs, "urn:ogc:def:crs:OGC::CRS84") == 0 ||
+      strcmp(srs, "OGC:CRS84") == 0)
+    return WGS84_SRID;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown coordinate reference system: %s", srs);
+  return SRID_INVALID;
+}
+
+/**
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry/geography from its GeoJSON representation
  * @param[in] geojson GeoJSON string
@@ -9728,12 +9768,18 @@ geo_from_geojson(const char *geojson)
     return NULL;
   }
 
-  // if (srs)
-  // {
-    // srid = GetSRIDCacheBySRS(fcinfo, srs);
+  /* The SRID the coordinate reference system names, WGS84 where it names
+   * none, as the GeoJSON specification states */
+  if (srs)
+  {
+    srid = srs_srid(srs);
     lwfree(srs);
-  // }
-
+    if (srid == SRID_INVALID)
+    {
+      lwgeom_free(geom);
+      return NULL;
+    }
+  }
   lwgeom_set_srid(geom, srid);
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
