@@ -169,6 +169,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   cppcheck, Windows, valgrind with `enum_token_test`, and the smoke suites, 15 of 15 built against
   GDAL 3.13). The bindings pass the values as text through the pairs: MEOS.js #50 (`00e101367d`,
   58 arguments) and MEOS.NET #62 (`ac275c4bd7`, 70 parameters), both MERGED.
+- **The MF-JSON reader reads the SRID of the system it names through `srs_srid`**, the inverse of
+  `srid_srs`, row IO-M4 of the input and output plan MobilityDB #3788, as the owner decided on
+  2026-11-17 ("as you recommend"): branch `geo/io-through-meos` rewrites `7e950c3cb0` there, the
+  commented-out `getSRIDbySRS` call of `temporal_from_mfjson` in `meos/src/temporal/type_in.c` and
+  its note that the call needs a `spatial_ref_sys` entry, which `srs_srid`, reading no table,
+  replaces. Head `10a0bebea0` on master `19367096ae` holds strict, cppcheck and valgrind (169
+  programs) by patch id `768e5a6bda`.
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
