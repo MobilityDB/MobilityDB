@@ -362,15 +362,14 @@ fix_pi(uint32_t *lo, uint32_t *hi, int L, int S)
  * of the cosine (1 - x^2/2! + ...) alternate with decreasing terms as x < 1,
  * so the sum stops at a term of at most one unit, which bounds the rest
  */
+static void fix_trig_fixed(const uint32_t *xlo, const uint32_t *xhi,
+  bool is_sin, uint32_t *lo, uint32_t *hi, int L, int S);
+
 static void
 fix_trig(double a, bool is_sin, uint32_t *lo, uint32_t *hi, int L, int S)
 {
   uint32_t *xlo = palloc(L * sizeof(uint32_t));
   uint32_t *xhi = palloc(L * sizeof(uint32_t));
-  uint32_t *x2lo = palloc(L * sizeof(uint32_t));
-  uint32_t *x2hi = palloc(L * sizeof(uint32_t));
-  uint32_t *tlo = palloc(L * sizeof(uint32_t));
-  uint32_t *thi = palloc(L * sizeof(uint32_t));
 
   /* a = m 2^e exactly, m an integer of 53 bits */
   int e;
@@ -386,6 +385,26 @@ fix_trig(double a, bool is_sin, uint32_t *lo, uint32_t *hi, int L, int S)
   fix_shift_right(xhi, - e, xhi, L, true);
   fix_div_small(xlo, 180, xlo, L, false);
   fix_div_small(xhi, 180, xhi, L, true);
+  fix_trig_fixed(xlo, xhi, is_sin, lo, hi, L, S);
+  pfree(xlo); pfree(xhi);
+}
+
+/**
+ * @brief Enclose the sine or the cosine of every radian angle of
+ * [@p xlo, @p xhi] at the scale 2^-S in [lo, hi], 0 <= xlo <= xhi < 1
+ * @details The series of #fix_trig on an angle given by its enclosure: each
+ * term is read from the end of the interval that moves the bound outward, so
+ * the bounds hold over the whole interval
+ */
+static void
+fix_trig_fixed(const uint32_t *xlo, const uint32_t *xhi, bool is_sin,
+  uint32_t *lo, uint32_t *hi, int L, int S)
+{
+  uint32_t *x2lo = palloc(L * sizeof(uint32_t));
+  uint32_t *x2hi = palloc(L * sizeof(uint32_t));
+  uint32_t *tlo = palloc(L * sizeof(uint32_t));
+  uint32_t *thi = palloc(L * sizeof(uint32_t));
+
   fix_mul(xlo, xlo, x2lo, L, S, false);
   fix_mul(xhi, xhi, x2hi, L, S, true);
 
@@ -431,7 +450,7 @@ fix_trig(double a, bool is_sin, uint32_t *lo, uint32_t *hi, int L, int S)
       fix_add(hi, thi, hi, L);
     }
   }
-  pfree(xlo); pfree(xhi); pfree(x2lo); pfree(x2hi);
+  pfree(x2lo); pfree(x2hi);
   pfree(tlo); pfree(thi);
 }
 
@@ -1249,6 +1268,525 @@ geodetic_arc_fraction_cmp(const double *p0, const double *p1,
       }
       pfree(tl); pfree(th); pfree(pl); pfree(ph); pfree(lhs); pfree(rhs);
     }
+  }
+  dyadic_wide_arena_free(ar);
+  return result;
+}
+
+/*****************************************************************************
+ * Intervals of exact values
+ *
+ * The within distance of two geography point segments on the sphere
+ * (#geog_motion_dwithin_at_wide) reads positions that are transcendental in
+ * the input: the trigonometry of the input degrees and of an angle along a
+ * great circle. Each is enclosed in an interval whose ends are exact values
+ * (#DyadicWide), so that sums and products of intervals are exact; only the
+ * transcendental steps (a square root, an arc tangent, a sine or a cosine)
+ * are read in the fixed-point integers of the enclosures at the scale 2^-K,
+ * rounded outward, and the precision is raised until the interval of the
+ * sign asked lies clear of 0, as #geodetic_arc_fraction_cmp raises it.
+ *****************************************************************************/
+
+/* An interval of exact values, lo <= hi */
+typedef struct
+{
+  DyadicWide *lo;
+  DyadicWide *hi;
+} WideInterval;
+
+/**
+ * @brief Return the value sign * v * 2^-K of a fixed-point integer of @p L
+ * 32-bit limbs, exactly
+ * @details Each limb is a value of its own made by #dyadic_wide_of_int64 and
+ * given the weight 2^(32 i - K) of its lowest bit, as #nearest_exact_side of
+ * geo_dyadic.c gives a bound its weight
+ */
+static DyadicWide *
+wide_interval_of_fixed(DyadicWideArena *ar, const uint32_t *v, int L, int K,
+  int sign)
+{
+  DyadicWide *r = dyadic_wide_of_int64(ar, 0);
+  for (int i = 0; i < L; i++)
+  {
+    if (! v[i])
+      continue;
+    DyadicWide *t = dyadic_wide_of_int64(ar, v[i]);
+    t->exp = 32 * i - K;
+    r = dyadic_wide_add(ar, r, t);
+  }
+  return (sign < 0) ? dyadic_wide_neg(ar, r) : r;
+}
+
+/**
+ * @brief Write floor(|a| 2^K), or its ceiling where @p up, in @p L 32-bit
+ * limbs and return the sign of @p a, 2 where it does not fit
+ * (#dyadic_wide_to_fixed, #fix_of_limbs)
+ */
+static int
+fix_of_wide(const DyadicWide *a, int K, bool up, uint32_t *v, int L)
+{
+  int n64 = (L + 1) / 2;
+  uint64 *buf = palloc(n64 * sizeof(uint64));
+  int sign = dyadic_wide_to_fixed(a, K, up, buf, n64);
+  if (sign != 2)
+    fix_of_limbs(buf, n64, v, L);
+  pfree(buf);
+  return sign;
+}
+
+/* The interval of one exact value */
+static WideInterval
+wide_interval_point(DyadicWide *a)
+{
+  WideInterval r = { a, a };
+  return r;
+}
+
+/* The sum of two intervals, exactly */
+static WideInterval
+wide_interval_add(DyadicWideArena *ar, WideInterval a, WideInterval b)
+{
+  WideInterval r = { dyadic_wide_add(ar, a.lo, b.lo),
+    dyadic_wide_add(ar, a.hi, b.hi) };
+  return r;
+}
+
+/* The difference of two intervals, exactly */
+static WideInterval
+wide_interval_sub(DyadicWideArena *ar, WideInterval a, WideInterval b)
+{
+  WideInterval r = { dyadic_wide_sub(ar, a.lo, b.hi),
+    dyadic_wide_sub(ar, a.hi, b.lo) };
+  return r;
+}
+
+/**
+ * @brief The product of two intervals, exactly: the least and the greatest of
+ * the products of their ends; the square of an interval, @p a and @p b the
+ * same, is not negative
+ */
+static WideInterval
+wide_interval_mul(DyadicWideArena *ar, WideInterval a, WideInterval b)
+{
+  DyadicWide *p[4] = { dyadic_wide_mul(ar, a.lo, b.lo),
+    dyadic_wide_mul(ar, a.lo, b.hi), dyadic_wide_mul(ar, a.hi, b.lo),
+    dyadic_wide_mul(ar, a.hi, b.hi) };
+  WideInterval r = { p[0], p[0] };
+  for (int i = 1; i < 4; i++)
+  {
+    if (dyadic_wide_cmp(p[i], r.lo) < 0)
+      r.lo = p[i];
+    if (dyadic_wide_cmp(p[i], r.hi) > 0)
+      r.hi = p[i];
+  }
+  if (a.lo == b.lo && a.hi == b.hi && wide_sign(r.lo) < 0)
+    r.lo = dyadic_wide_of_int64(ar, 0);
+  return r;
+}
+
+/**
+ * @brief The square root of an interval of values that are not negative, at
+ * the scale 2^-K, rounded outward; false where it does not fit the limbs
+ */
+static bool
+wide_interval_sqrt(DyadicWideArena *ar, WideInterval a, int L, int K,
+  WideInterval *r)
+{
+  uint32_t *v = palloc(L * sizeof(uint32_t));
+  bool ok = true;
+  DyadicWide *ends[2] = { NULL, NULL };
+  for (int k = 0; k < 2 && ok; k++)
+  {
+    /* sqrt(floor(a 2^2K)) bounds sqrt(a) 2^K below, the ceilings above */
+    int sign = fix_of_wide(k ? a.hi : a.lo, 2 * K, k == 1, v, L);
+    if (sign == 2)
+      ok = false;
+    else
+    {
+      if (sign < 0)
+        memset(v, 0, L * sizeof(uint32_t));
+      fix_isqrt(v, v, L, k == 1);
+      ends[k] = wide_interval_of_fixed(ar, v, L, K, 1);
+    }
+  }
+  pfree(v);
+  if (ok)
+  {
+    r->lo = ends[0];
+    r->hi = ends[1];
+  }
+  return ok;
+}
+
+/**
+ * @brief Bound atan2(y, x) at the scale 2^-K below or, where @p up, above,
+ * for y >= 0 and x of either sign given by its sign @p sx and its magnitude,
+ * the angle in [0, pi], as #fix_atan2_enclose_root reads it
+ */
+static void
+fix_atan2_signed(const uint32_t *y, int sx, const uint32_t *x, uint32_t *r,
+  int L, int K, bool up)
+{
+  if (sx >= 0)
+  {
+    fix_atan2_bound(y, x, r, L, K, up);
+    return;
+  }
+  /* pi - atan2(y, |x|) */
+  uint32_t *pl = palloc(L * sizeof(uint32_t));
+  uint32_t *ph = palloc(L * sizeof(uint32_t));
+  uint32_t *a = palloc(L * sizeof(uint32_t));
+  fix_pi(pl, ph, L, K);
+  fix_atan2_bound(y, x, a, L, K, ! up);
+  fix_sub_clamp(up ? ph : pl, a, r, L);
+  pfree(pl); pfree(ph); pfree(a);
+}
+
+/**
+ * @brief Enclose atan2(y, x) over the box of two intervals, y >= 0, at the
+ * scale 2^-K, an angle in [0, pi]; false where the box reaches the origin
+ * or does not fit the limbs
+ * @details The angle decreases with x; it increases with y where x > 0 and
+ * decreases where x < 0, so its least is at the greatest x and its greatest
+ * at the least x, each at the end of y its sign there selects, each
+ * magnitude read rounded in the direction that moves the bound outward
+ */
+static bool
+wide_interval_atan2(DyadicWideArena *ar, WideInterval y, WideInterval x,
+  int L, int K, WideInterval *r)
+{
+  if (wide_sign(y.hi) <= 0)
+    return false;
+  uint32_t *vy = palloc(L * sizeof(uint32_t));
+  uint32_t *vx = palloc(L * sizeof(uint32_t));
+  uint32_t *a = palloc(L * sizeof(uint32_t));
+  bool ok = true;
+  for (int k = 0; k < 2 && ok; k++)
+  {
+    /* k = 0: the least angle, at x = x.hi; k = 1: the greatest, at x.lo */
+    bool up = (k == 1);
+    const DyadicWide *xe = up ? x.lo : x.hi;
+    int sx = wide_sign(xe);
+    /* Where x > 0 the angle increases with y, else it decreases */
+    bool yhi = (sx > 0) == up;
+    int sy = fix_of_wide(yhi ? y.hi : y.lo, K, yhi, vy, L);
+    /* A greater |x| lowers the angle where x > 0 and raises it where x < 0 */
+    int sxx = fix_of_wide(xe, K, (sx > 0) != up, vx, L);
+    if (sy == 2 || sxx == 2)
+      ok = false;
+    else
+    {
+      if (sy < 0)
+        memset(vy, 0, L * sizeof(uint32_t));
+      if (fix_is_zero(vy, L) && fix_is_zero(vx, L))
+        ok = false;
+      else
+      {
+        fix_atan2_signed(vy, sx, vx, a, L, K, up);
+        if (up)
+          r->hi = wide_interval_of_fixed(ar, a, L, K, 1);
+        else
+          r->lo = wide_interval_of_fixed(ar, a, L, K, 1);
+      }
+    }
+  }
+  pfree(vy); pfree(vx); pfree(a);
+  return ok;
+}
+
+/**
+ * @brief Enclose the sine and the cosine of every angle of an interval in
+ * [0, pi] at the scale 2^-K; false where it does not fit the limbs
+ * @details The quarter y of the angle lies in [0, pi / 4], below 1, where
+ * the series of #fix_trig_fixed enclose sin y and cos y, both not negative;
+ * two doublings, sin 2u = 2 sin u cos u and cos 2u = cos^2 u - sin^2 u,
+ * give the sine and the cosine of the angle, cos 2y being not negative and
+ * sin 4y the double of such a product, every bound of those read in fixed
+ * point rounded outward, and cos 4y, of either sign, the exact difference of
+ * the two squares
+ * @param[in] x Angle in radians
+ * @param[out] s,c Sine and cosine, @p c NULL where not asked
+ */
+static bool
+wide_interval_sincos(DyadicWideArena *ar, WideInterval x, int L, int K,
+  WideInterval *s, WideInterval *c)
+{
+  uint32_t *v[12];
+  for (int i = 0; i < 12; i++)
+    v[i] = palloc(L * sizeof(uint32_t));
+  uint32_t *ylo = v[0], *yhi = v[1], *sl = v[2], *sh = v[3], *cl = v[4],
+    *ch = v[5], *t = v[6], *u = v[7], *s2l = v[8], *s2h = v[9], *c2l = v[10],
+    *c2h = v[11];
+  /* y = x / 4, floor(x 2^(K-2)) and its ceiling */
+  int sg0 = fix_of_wide(x.lo, K - 2, false, ylo, L);
+  int sg1 = fix_of_wide(x.hi, K - 2, true, yhi, L);
+  bool ok = (sg0 != 2 && sg1 != 2);
+  if (ok)
+  {
+    if (sg0 < 0)
+      memset(ylo, 0, L * sizeof(uint32_t));
+    if (sg1 < 0)
+      memset(yhi, 0, L * sizeof(uint32_t));
+    fix_trig_fixed(ylo, yhi, true, sl, sh, L, K);
+    fix_trig_fixed(ylo, yhi, false, cl, ch, L, K);
+    /* sin 2y = 2 sin y cos y */
+    fix_mul(sl, cl, s2l, L, K, false);
+    fix_mul_small(s2l, 2, s2l, L);
+    fix_mul(sh, ch, s2h, L, K, true);
+    fix_mul_small(s2h, 2, s2h, L);
+    /* cos 2y = cos^2 y - sin^2 y, not negative */
+    fix_mul(cl, cl, t, L, K, false);
+    fix_mul(sh, sh, u, L, K, true);
+    fix_sub_clamp(t, u, c2l, L);
+    fix_mul(ch, ch, t, L, K, true);
+    fix_mul(sl, sl, u, L, K, false);
+    fix_sub_clamp(t, u, c2h, L);
+    /* sin 4y = 2 sin 2y cos 2y */
+    fix_mul(s2l, c2l, t, L, K, false);
+    fix_mul_small(t, 2, t, L);
+    s->lo = wide_interval_of_fixed(ar, t, L, K, 1);
+    fix_mul(s2h, c2h, t, L, K, true);
+    fix_mul_small(t, 2, t, L);
+    s->hi = wide_interval_of_fixed(ar, t, L, K, 1);
+    if (c)
+    {
+      /* cos 4y = cos^2 2y - sin^2 2y */
+      fix_mul(c2l, c2l, t, L, K, false);
+      fix_mul(s2h, s2h, u, L, K, true);
+      c->lo = dyadic_wide_sub(ar, wide_interval_of_fixed(ar, t, L, K, 1),
+        wide_interval_of_fixed(ar, u, L, K, 1));
+      fix_mul(c2h, c2h, t, L, K, true);
+      fix_mul(s2l, s2l, u, L, K, false);
+      c->hi = dyadic_wide_sub(ar, wide_interval_of_fixed(ar, t, L, K, 1),
+        wide_interval_of_fixed(ar, u, L, K, 1));
+    }
+  }
+  for (int i = 0; i < 12; i++)
+    pfree(v[i]);
+  return ok;
+}
+
+/**
+ * @brief Enclose the sine and the cosine of @p deg degrees at the scale
+ * 2^-K, exactly where they are rational (#trig_factor_exact)
+ * @details Each is reduced to the sine or the cosine of an angle in [0, 45]
+ * (#trig_reduce) and enclosed by #fix_trig, as #sind_nearest reads it
+ */
+static void
+wide_interval_sincos_deg(DyadicWideArena *ar, double deg, int L, int K,
+  WideInterval *s, WideInterval *c)
+{
+  uint32_t *lo = palloc(L * sizeof(uint32_t));
+  uint32_t *hi = palloc(L * sizeof(uint32_t));
+  for (int k = 0; k < 2; k++)
+  {
+    TrigFactor f;
+    trig_reduce(deg, k == 0, &f);
+    WideInterval *r = (k == 0) ? s : c;
+    double num;
+    if (trig_factor_exact(&f, &num))
+    {
+      *r = wide_interval_point(dyadic_wide_of_double(ar, f.sign * num));
+      continue;
+    }
+    fix_trig(f.a, f.is_sin, lo, hi, L, K);
+    if (f.sign > 0)
+    {
+      r->lo = wide_interval_of_fixed(ar, lo, L, K, 1);
+      r->hi = wide_interval_of_fixed(ar, hi, L, K, 1);
+    }
+    else
+    {
+      r->lo = wide_interval_of_fixed(ar, hi, L, K, -1);
+      r->hi = wide_interval_of_fixed(ar, lo, L, K, -1);
+    }
+  }
+  pfree(lo); pfree(hi);
+}
+
+/**
+ * @brief Enclose the quotient of two positive integers below 2^53 at the
+ * scale 2^-K (#fix_div_shift)
+ */
+static WideInterval
+wide_interval_ratio(DyadicWideArena *ar, uint64 num, uint64 den, int L,
+  int K)
+{
+  uint32_t *a = palloc0(L * sizeof(uint32_t));
+  uint32_t *d = palloc0(L * sizeof(uint32_t));
+  uint32_t *q = palloc(L * sizeof(uint32_t));
+  a[0] = (uint32_t) num; a[1] = (uint32_t) (num >> 32);
+  d[0] = (uint32_t) den; d[1] = (uint32_t) (den >> 32);
+  WideInterval r;
+  fix_div_shift(a, K, d, q, L, false);
+  r.lo = wide_interval_of_fixed(ar, q, L, K, 1);
+  fix_div_shift(a, K, d, q, L, true);
+  r.hi = wide_interval_of_fixed(ar, q, L, K, 1);
+  pfree(a); pfree(d); pfree(q);
+  return r;
+}
+
+/* The unit vector of a longitude and a latitude in degrees, enclosed */
+static void
+wide_interval_unit(DyadicWideArena *ar, const POINT2D *p, int L, int K,
+  WideInterval *v)
+{
+  WideInterval sla, cla, slo, clo;
+  wide_interval_sincos_deg(ar, p->y, L, K, &sla, &cla);
+  wide_interval_sincos_deg(ar, p->x, L, K, &slo, &clo);
+  v[0] = wide_interval_mul(ar, cla, clo);
+  v[1] = wide_interval_mul(ar, cla, slo);
+  v[2] = sla;
+}
+
+/**
+ * @brief Set the scaled position N and the scale s of a geography point
+ * segment at the fraction num / den, its position being N / s, enclosed
+ * @details With A and B the unit vectors of its ends and om the angle between
+ * them, the position at the fraction f is the spherical interpolation
+ * (sin((1 - f) om) A + sin(f om) B) / sin(om), and sin(om) = |A x B|, so no
+ * quotient is taken; a segment whose ends are one position stands at A, s
+ * being 1
+ * @return False where the precision does not suffice
+ */
+static bool
+wide_interval_geogsegm(DyadicWideArena *ar, const POINT2D *p0,
+  const POINT2D *p1, uint64 num, uint64 den, int L, int K, WideInterval *N,
+  WideInterval *s)
+{
+  WideInterval A[3], B[3], X[3];
+  wide_interval_unit(ar, p0, L, K, A);
+  if (p0->x == p1->x && p0->y == p1->y)
+  {
+    for (int i = 0; i < 3; i++)
+      N[i] = A[i];
+    *s = wide_interval_point(dyadic_wide_of_int64(ar, 1));
+    return true;
+  }
+  wide_interval_unit(ar, p1, L, K, B);
+  X[0] = wide_interval_sub(ar, wide_interval_mul(ar, A[1], B[2]),
+    wide_interval_mul(ar, A[2], B[1]));
+  X[1] = wide_interval_sub(ar, wide_interval_mul(ar, A[2], B[0]),
+    wide_interval_mul(ar, A[0], B[2]));
+  X[2] = wide_interval_sub(ar, wide_interval_mul(ar, A[0], B[1]),
+    wide_interval_mul(ar, A[1], B[0]));
+  WideInterval x2 = wide_interval_add(ar, wide_interval_add(ar,
+    wide_interval_mul(ar, X[0], X[0]), wide_interval_mul(ar, X[1], X[1])),
+    wide_interval_mul(ar, X[2], X[2]));
+  WideInterval dot = wide_interval_add(ar, wide_interval_add(ar,
+    wide_interval_mul(ar, A[0], B[0]), wide_interval_mul(ar, A[1], B[1])),
+    wide_interval_mul(ar, A[2], B[2]));
+  WideInterval om, th, ph, sth, sph;
+  if (! wide_interval_sqrt(ar, x2, L, K, s) ||
+      ! wide_interval_atan2(ar, *s, dot, L, K, &om))
+    return false;
+  th = wide_interval_mul(ar, om, wide_interval_ratio(ar, num, den, L, K));
+  ph = wide_interval_mul(ar, om,
+    wide_interval_ratio(ar, den - num, den, L, K));
+  if (! wide_interval_sincos(ar, th, L, K, &sth, NULL) ||
+      ! wide_interval_sincos(ar, ph, L, K, &sph, NULL))
+    return false;
+  for (int i = 0; i < 3; i++)
+    N[i] = wide_interval_add(ar, wide_interval_mul(ar, sph, A[i]),
+      wide_interval_mul(ar, sth, B[i]));
+  return true;
+}
+
+/**
+ * @brief Enclose dist / (2 radius) at the scale 2^-K, both positive doubles
+ * and the quotient below 2
+ */
+static WideInterval
+wide_interval_half_angle(DyadicWideArena *ar, double dist, double radius,
+  int L, int K)
+{
+  int ed, er;
+  uint64 md = (uint64) ldexp(frexp(dist, &ed), 53);
+  uint64 mr = (uint64) ldexp(frexp(radius, &er), 53);
+  /* dist / (2 radius) = md / mr 2^(ed - er - 1) */
+  int k = K + ed - er - 1;
+  WideInterval r;
+  if (k < 0)
+  {
+    /* Below 2^-K: [0, 2^-K] */
+    r.lo = dyadic_wide_of_int64(ar, 0);
+    r.hi = dyadic_wide_of_int64(ar, 1);
+    r.hi->exp = - K;
+    return r;
+  }
+  r = wide_interval_ratio(ar, md, mr, L, k);
+  /* The ratio read at the scale 2^-k is the value at the scale 2^-K */
+  r.lo = dyadic_wide_signed(ar, r.lo, 1);
+  r.hi = dyadic_wide_signed(ar, r.hi, 1);
+  r.lo->exp += k - K;
+  r.hi->exp += k - K;
+  return r;
+}
+
+/**
+ * @brief Return 1 or 0 where two geography point segments are within a
+ * distance on the sphere at the microsecond @p n of a segment of @p D
+ * microseconds, or not, 2 where the precision does not decide it
+ * @details The precise tier of #geog_motion_dwithin_at_exact, the geodetic
+ * twin of the wide tier of the planar kernel
+ * (#point_motion_dwithin_period_exact). With each position P = N / s
+ * (#wide_interval_geogsegm), the two are within the distance d where
+ * |P1 - P2| <= 2 sin(d / 2R), that is where
+ * 4 sin^2(d / 2R) s1^2 s2^2 - |s2 N1 - s1 N2|^2 is not negative, read on
+ * intervals of exact values at a precision raised until the interval lies
+ * clear of 0
+ * @param[in] a0,a1 Ends of the first segment, longitude and latitude
+ * @param[in] b0,b1 Ends of the second segment
+ * @param[in] dist Distance, positive, below pi times @p radius
+ * @param[in] radius Radius of the sphere
+ * @param[in] D Duration of the segment in microseconds, below 2^52
+ * @param[in] n Microsecond from the start of the segment
+ */
+int
+geog_motion_dwithin_at_wide(const POINT2D *a0, const POINT2D *a1,
+  const POINT2D *b0, const POINT2D *b1, double dist, double radius, int64 D,
+  int64 n)
+{
+  assert(D > 0); assert(0 <= n && n <= D); assert(dist > 0.0);
+  const POINT2D *ends[2][2] = { { a0, a1 }, { b0, b1 } };
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  int result = 2;
+  for (int K = ANGLE_FIRST_BITS; K <= ANGLE_LAST_BITS && result == 2; K *= 2)
+  {
+    DyadicWideMark mark = dyadic_wide_arena_mark(ar);
+    int L = (2 * K + 192) / 32;
+    WideInterval N[2][3], s[2], sx;
+    bool ok = true;
+    for (int k = 0; k < 2 && ok; k++)
+      ok = wide_interval_geogsegm(ar, ends[k][0], ends[k][1], (uint64) n,
+        (uint64) D, L, K, N[k], &s[k]);
+    if (ok)
+      ok = wide_interval_sincos(ar, wide_interval_half_angle(ar, dist,
+        radius, L, K), L, K, &sx, NULL);
+    if (ok)
+    {
+      /* 4 sin^2(d / 2R) s1^2 s2^2 - |s2 N1 - s1 N2|^2 */
+      WideInterval lim = wide_interval_mul(ar, sx, wide_interval_mul(ar,
+        s[0], s[1]));
+      WideInterval rhs = wide_interval_mul(ar, lim, lim);
+      rhs = wide_interval_add(ar, rhs, rhs);
+      rhs = wide_interval_add(ar, rhs, rhs);
+      WideInterval sq = wide_interval_point(dyadic_wide_of_int64(ar, 0));
+      for (int i = 0; i < 3; i++)
+      {
+        WideInterval v = wide_interval_sub(ar,
+          wide_interval_mul(ar, s[1], N[0][i]),
+          wide_interval_mul(ar, s[0], N[1][i]));
+        sq = wide_interval_add(ar, sq, wide_interval_mul(ar, v, v));
+      }
+      WideInterval h = wide_interval_sub(ar, rhs, sq);
+      if (wide_sign(h.lo) >= 0)
+        result = 1;
+      else if (wide_sign(h.hi) < 0)
+        result = 0;
+    }
+    dyadic_wide_arena_release(ar, mark);
   }
   dyadic_wide_arena_free(ar);
   return result;
