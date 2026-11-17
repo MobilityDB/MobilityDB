@@ -73,6 +73,7 @@ static const type_camel CASES[] =
   {T_TCBUFFER, "TCBuffer"},
   {T_H3INDEXSET, "H3IndexSet"},
   {T_TJSONB, "TJsonb"},
+  {T_RASTER, "Raster"},
 };
 
 /* The base types whose CamelCase name is not their name in lowercase */

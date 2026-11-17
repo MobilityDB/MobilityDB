@@ -181,6 +181,7 @@ static const struct
   [T_TPCPATCH]        = { "tpcpatch",       "TPCPatch" },
   [T_TPCBOX]          = { "tpcbox",         "TPCBox" },
   [T_RAQUET]          = { "raquet",         "RaQuet" },
+  [T_RASTER]          = { "raster",         "Raster" },
   [T_POSECHAIN]       = { "posechain",      "PoseChain" },
   [T_POSECHAINSET]    = { "posechainset",   "PoseChainSet" },
   [T_TPOSECHAIN]      = { "tposechain",     "TPoseChain" },
