@@ -3647,10 +3647,10 @@
 				<title>Input and Output</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pcpoint_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
+						<para><link linkend="pcpoint_asHexWKB"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Input of a pcpoint or a pcpatch from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromBinary</varname>, <varname>pcpatchFromBinary</varname>, <varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Input of a pcpoint or a pcpatch from its Well-Known Binary (WKB) or its Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

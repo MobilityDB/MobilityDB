@@ -1651,36 +1651,35 @@ nsegment_to_wkb_size(const Nsegment *ns, uint8_t variant)
 
 #if POINTCLOUD
 /**
- * @brief Return the size in bytes of a pgPointCloud pcpoint / pcpatch in the
- * Well-Known Binary (WKB) representation
- * @details The encoding is intentionally minimal: the entire varlena body (i.e.
- * pcid + payload) is written length-prefixed. The full length is kept even for
- * a pcpoint, whose trailing bytes are pgpointcloud's struct-tail padding (see
- * the note in pointcloud/pcpoint.c): shrinking the length would make @c
- * pcvarlena_from_wkb_state (type_in.c) allocate a varlena pgpointcloud's own
- * point deserializer no longer recognizes.
- * @c pcpoint_to_wkb_buf writes that padding as zeros instead, as the
- * constructors store it, so two byte-equal pcpoints always agree on their
- * WKB. The schema for the @c pcid is resolved out-of-band (pgpointcloud's
- * @c pointcloud_formats catalog, via the @c meos_pc_schema_fn hook
- * installed at backend startup), so it is not embedded in the WKB. This
- * makes the encoding fine for @c COPY @c BINARY round-trips inside a
- * database, but assumes the receiver can resolve @c pcid against the
- * same catalog. Cross-cluster portability is a separate concern handled
- * by an optional schema-embedding flag bit (not yet implemented).
+ * @brief Return the size in bytes of a pcpoint or a pcpatch in the Well-Known
+ * Binary (WKB) representation
+ * @details The WKB is the one of pgPointCloud, in the byte order the variant
+ * states: the endian flag, the pcid and the data, under the schema of the
+ * pcid, which the WKB does not carry. As a component of a set or of a
+ * temporal value it is preceded by its size (@p int32), so that a reader
+ * passes over it without the schema. The size of a pcpatch depends on the
+ * byte order when a dimension is compressed by zlib, so the WKB is written
+ * to measure it.
+ * @param[in] value Value
+ * @param[in] type Type of the value, @c T_PCPOINT or @c T_PCPATCH
+ * @param[in] variant Output variant
+ * @param[in] component True when the value is a component of another one
+ * @errval SIZE_MAX
  */
 static size_t
-pcpoint_to_wkb_size(const Pcpoint *pt, uint8_t variant)
+pcvalue_to_wkb_size(Datum value, MeosType type, uint8_t variant,
+  bool component)
 {
-  (void) variant;
-  /* int32 body length + body bytes */
-  return MEOS_WKB_INT4_SIZE + (VARSIZE(pt) - VARHDRSZ);
-}
-static size_t
-pcpatch_to_wkb_size(const Pcpatch *pa, uint8_t variant)
-{
-  (void) variant;
-  return MEOS_WKB_INT4_SIZE + (VARSIZE(pa) - VARHDRSZ);
+  size_t size;
+  uint8_t *wkb = (type == T_PCPOINT) ?
+    pcpoint_to_wkb_bytes((const Pcpoint *) DatumGetPointer(value), variant,
+      &size) :
+    pcpatch_to_wkb_bytes((const Pcpatch *) DatumGetPointer(value), variant,
+      &size);
+  if (! wkb)
+    return SIZE_MAX;
+  pfree(wkb);
+  return component ? MEOS_WKB_INT4_SIZE + size : size;
 }
 #endif /* POINTCLOUD */
 
@@ -1805,11 +1804,8 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
 #endif /* NPOINT */
 #if POINTCLOUD
     case T_PCPOINT:
-      return pcpoint_to_wkb_size((const Pcpoint *) DatumGetPointer(value),
-        variant);
     case T_PCPATCH:
-      return pcpatch_to_wkb_size((const Pcpatch *) DatumGetPointer(value),
-        variant);
+      return pcvalue_to_wkb_size(value, basetype, variant, true);
 #endif /* POINTCLOUD */
 #if POSE
     case T_POSE:
@@ -2114,6 +2110,8 @@ datum_to_wkb_body_size(Datum value, MeosType type, uint8_t variant)
 #if POINTCLOUD
   if (type == T_TPCBOX)
     return tpcbox_to_wkb_size((TPCBox *) DatumGetPointer(value), variant);
+  if (type == T_PCPOINT || type == T_PCPATCH)
+    return pcvalue_to_wkb_size(value, type, variant, false);
 #endif /* POINTCLOUD */
 #if CBUFFER
   if (type == T_CBUFFER)
@@ -2725,9 +2723,8 @@ posechain_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant,
 #if POINTCLOUD
 /**
  * @brief Emit @p body_len bytes from @p src into @p buf, hex-encoding when
- * @c WKB_HEX is requested. Used for the opaque varlena payload of
- * pcpoint / pcpatch where each byte must be preserved verbatim (no
- * endian swap, since the contents are pgPointCloud's own format).
+ * @c WKB_HEX is requested. Used for the pgPointCloud WKB of a pcpoint or a
+ * pcpatch, already written in the byte order of the variant.
  */
 static uint8_t *
 opaque_bytes_to_wkb_buf(const uint8_t *src, size_t body_len, uint8_t *buf,
@@ -2747,41 +2744,34 @@ opaque_bytes_to_wkb_buf(const uint8_t *src, size_t body_len, uint8_t *buf,
 }
 
 /**
- * @brief Write into the buffer a pgPointCloud pcpoint in the Well-Known Binary
- * (WKB) representation: int32 body length + body bytes
- * @details The body comprises everything after the varlena header: pcid +
- * dimension payload. The trailing bytes past the meaningful prefix are
- * pgpointcloud's struct-tail padding, which its constructor leaves
- * uninitialized (see the note in pointcloud/pcpoint.c). They are written as
- * zeros, as the constructors store them, instead of copied verbatim, so that
- * two pcpoints holding the same point always produce the same WKB. The full
- * body length is still written, matching what
- * @c pcvarlena_from_wkb_state (type_in.c) needs to rebuild a varlena of
- * the size pgpointcloud's own deserializer expects.
+ * @brief Write into the buffer a pcpoint or a pcpatch in the Well-Known
+ * Binary (WKB) representation
+ * @details The WKB is the one of pgPointCloud in the byte order the variant
+ * states, preceded by its size as a component, as #pcvalue_to_wkb_size
+ * states
+ * @param[in] value Value
+ * @param[in] type Type of the value, @c T_PCPOINT or @c T_PCPATCH
+ * @param[out] buf Output buffer
+ * @param[in] variant Output variant
+ * @param[in] component True when the value is a component of another one
  */
 static uint8_t *
-pcpoint_to_wkb_buf(const Pcpoint *pt, uint8_t *buf, uint8_t variant)
+pcvalue_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant,
+  bool component)
 {
-  size_t body_len = VARSIZE(pt) - VARHDRSZ;
-  size_t meaningful_len = pcpoint_meaningful_size(pt) - VARHDRSZ;
-  assert(meaningful_len <= body_len);
-  buf = int32_to_wkb_buf((int32) body_len, buf, variant);
-  buf = opaque_bytes_to_wkb_buf((const uint8_t *) VARDATA(pt), meaningful_len,
-    buf, variant);
-  for (size_t i = meaningful_len; i < body_len; i++)
-  {
-    uint8_t zero = 0;
-    buf = opaque_bytes_to_wkb_buf(&zero, 1, buf, variant);
-  }
+  size_t size;
+  uint8_t *wkb = (type == T_PCPOINT) ?
+    pcpoint_to_wkb_bytes((const Pcpoint *) DatumGetPointer(value), variant,
+      &size) :
+    pcpatch_to_wkb_bytes((const Pcpatch *) DatumGetPointer(value), variant,
+      &size);
+  if (! wkb)
+    return NULL;
+  if (component)
+    buf = int32_to_wkb_buf((int) size, buf, variant);
+  buf = opaque_bytes_to_wkb_buf(wkb, size, buf, variant);
+  pfree(wkb);
   return buf;
-}
-static uint8_t *
-pcpatch_to_wkb_buf(const Pcpatch *pa, uint8_t *buf, uint8_t variant)
-{
-  size_t body_len = VARSIZE(pa) - VARHDRSZ;
-  buf = int32_to_wkb_buf((int32) body_len, buf, variant);
-  return opaque_bytes_to_wkb_buf((const uint8_t *) VARDATA(pa), body_len,
-    buf, variant);
 }
 #endif /* POINTCLOUD */
 
@@ -2898,12 +2888,8 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
 #endif /* NPOINT */
 #if POINTCLOUD
     case T_PCPOINT:
-      buf = pcpoint_to_wkb_buf((const Pcpoint *) DatumGetPointer(value),
-        buf, variant);
-      break;
     case T_PCPATCH:
-      buf = pcpatch_to_wkb_buf((const Pcpatch *) DatumGetPointer(value),
-        buf, variant);
+      buf = pcvalue_to_wkb_buf(value, basetype, buf, variant, true);
       break;
 #endif /* POINTCLOUD */
 #if POSE
@@ -3583,6 +3569,8 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
 #if POINTCLOUD
   else if (type == T_TPCBOX)
     buf = tpcbox_to_wkb_buf((TPCBox *) DatumGetPointer(value), buf, variant);
+  else if (type == T_PCPOINT || type == T_PCPATCH)
+    buf = pcvalue_to_wkb_buf(value, type, buf, variant, false);
 #endif /* POINTCLOUD */
 #if CBUFFER
   else if (type == T_CBUFFER)
@@ -3659,7 +3647,7 @@ datum_as_wkb(Datum value, MeosType type, uint8_t variant, size_t *size_out)
 
   /* Calculate the required size of the output buffer */
   buf_size = datum_to_wkb_size(value, type, variant);
-  if (buf_size == 0)
+  if (buf_size == 0 || buf_size == SIZE_MAX)
   {
     meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Error calculating output WKB buffer size.");
