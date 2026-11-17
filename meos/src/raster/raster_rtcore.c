@@ -490,6 +490,255 @@ raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_out)
 }
 
 /*****************************************************************************
+ * The formats of GDAL
+ *****************************************************************************/
+
+static char *raster_srs_text(int32_t srid);
+
+/**
+ * @brief Return the GDAL driver of a format that writes a copy of a raster
+ * into memory
+ * @details A format is written as PostGIS writes it, through the driver's
+ * copy of a dataset into a virtual file, so a driver that copies no dataset
+ * or writes to no virtual file cannot write a raster here
+ * @param[in] format Short name of the GDAL driver, as `GTiff` or `PNG`
+ * @errval NULL
+ */
+static GDALDriverH
+raster_gdal_writer(const char *format)
+{
+  rt_util_gdal_register_all(0);
+  GDALDriverH drv = GDALGetDriverByName(format);
+  if (! drv)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL has no driver of the format %s", format);
+    return NULL;
+  }
+  if (! GDALGetMetadataItem(drv, GDAL_DCAP_CREATECOPY, NULL) ||
+      ! GDALGetMetadataItem(drv, GDAL_DCAP_VIRTUALIO, NULL))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The GDAL driver of the format %s cannot write a raster into memory",
+      format);
+    return NULL;
+  }
+  return drv;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster written in a format of GDAL
+ * @details The raster is written as PostGIS's `ST_AsGDALRaster` writes it.
+ * Each call writes into a virtual file of its own, so that calls in several
+ * threads never write into one another's file
+ * @param[in] rast Raster
+ * @param[in] format Short name of the GDAL driver, as `GTiff`, `PNG` or
+ * `JPEG`
+ * @param[in] options Creation options of the driver, as pairs `KEY=VALUE`
+ * separated by spaces, a value holding a space written between double
+ * quotes, or NULL for none @nullable
+ * @param[in] srid Spatial reference system the file states, or 0 for the
+ * raster's own; the pixels are not reprojected
+ * @param[out] size_out Size of the result
+ * @errval NULL
+ * @csqlfn #Raster_as_gdal()
+ */
+uint8_t *
+raster_as_gdal(const Raster *rast, const char *format, const char *options,
+  int32_t srid, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(format, NULL);
+  VALIDATE_NOT_NULL(size_out, NULL);
+
+  GDALDriverH drv = raster_gdal_writer(format);
+  if (! drv)
+    return NULL;
+  if (srid == SRID_UNKNOWN)
+    srid = raster_srid(rast);
+  char *srs = NULL;
+  if (srid != SRID_UNKNOWN)
+  {
+    srs = raster_srs_text(srid);
+    if (! srs)
+      return NULL;
+  }
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    if (srs) pfree(srs);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  GDALDriverH src_drv = NULL;
+  int destroy_src_drv = 0;
+  GDALDatasetH src = rt_raster_to_gdal_mem(raster, srs, NULL, NULL, 0,
+    &src_drv, &destroy_src_drv);
+  raster_destroy(raster);
+  if (srs) pfree(srs);
+  if (! src)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not hand the raster to GDAL");
+    return NULL;
+  }
+
+  char **opts = options ? CSLTokenizeString2(options, " ",
+    CSLT_HONOURSTRINGS) : NULL;
+  /* The address of a local names the file: it is unique among the calls
+   * running at the same time, and the file is gone when the call returns */
+  int unique = 0;
+  char path[64];
+  snprintf(path, sizeof(path), "/vsimem/meos_raster_%p", (void *) &unique);
+  CPLErrorReset();
+  GDALDatasetH dst = GDALCreateCopy(drv, path, src, FALSE, opts, NULL, NULL);
+  CSLDestroy(opts);
+  GDALClose(src);
+  if (destroy_src_drv)
+    GDALDestroyDriver(src_drv);
+  if (! dst)
+  {
+    VSIUnlink(path);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL cannot write the raster in the format %s: %s", format,
+      CPLGetLastErrorMsg());
+    return NULL;
+  }
+  GDALClose(dst);
+
+  vsi_l_offset len = 0;
+  GByte *buf = VSIGetMemFileBuffer(path, &len, TRUE);
+  if (! buf)
+  {
+    VSIUnlink(path);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL wrote no bytes of the raster in the format %s", format);
+    return NULL;
+  }
+  uint8_t *result = palloc((size_t) len);
+  memcpy(result, buf, (size_t) len);
+  CPLFree(buf);
+  *size_out = (size_t) len;
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster written as a GeoTIFF
+ * @details The raster is written as PostGIS's `ST_AsTIFF` writes it
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the GTiff driver, as
+ * #raster_as_gdal() takes them, or NULL for none @nullable
+ * @param[in] srid Spatial reference system the file states, or 0 for the
+ * raster's own
+ * @param[out] size_out Size of the result
+ * @errval NULL
+ * @csqlfn #Raster_as_tiff()
+ */
+uint8_t *
+raster_as_tiff(const Raster *rast, const char *options, int32_t srid,
+  size_t *size_out)
+{
+  return raster_as_gdal(rast, "GTiff", options, srid, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster written as a PNG image
+ * @details The raster is written as PostGIS's `ST_AsPNG` writes it: the PNG
+ * driver takes one to four bands of 8 or 16 unsigned bits
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the PNG driver, as
+ * #raster_as_gdal() takes them, or NULL for none @nullable
+ * @param[out] size_out Size of the result
+ * @errval NULL
+ * @csqlfn #Raster_as_png()
+ */
+uint8_t *
+raster_as_png(const Raster *rast, const char *options, size_t *size_out)
+{
+  return raster_as_gdal(rast, "PNG", options, SRID_UNKNOWN, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster written as a JPEG image
+ * @details The raster is written as PostGIS's `ST_AsJPEG` writes it: the
+ * JPEG driver takes one or three bands of 8 unsigned bits
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the JPEG driver, as
+ * #raster_as_gdal() takes them, or NULL for none @nullable
+ * @param[out] size_out Size of the result
+ * @errval NULL
+ * @csqlfn #Raster_as_jpeg()
+ */
+uint8_t *
+raster_as_jpeg(const Raster *rast, const char *options, size_t *size_out)
+{
+  return raster_as_gdal(rast, "JPEG", options, SRID_UNKNOWN, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster read from the bytes of a file in a format of GDAL
+ * @details The raster is read as PostGIS's `ST_FromGDALRaster` reads it, the
+ * format found by GDAL from the bytes. Each call reads from a virtual file of
+ * its own
+ * @param[in] data Bytes of the file
+ * @param[in] size Number of bytes
+ * @param[in] srid Spatial reference system of the result, or 0 for the one
+ * the file states
+ * @errval NULL
+ * @csqlfn #Raster_from_gdal()
+ */
+Raster *
+raster_from_gdal(const uint8_t *data, size_t size, int32_t srid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(data, NULL);
+
+  rt_util_gdal_register_all(0);
+  int unique = 0;
+  char path[64];
+  snprintf(path, sizeof(path), "/vsimem/meos_raster_%p", (void *) &unique);
+  /* GDAL reads the caller's bytes in place and takes no ownership of them */
+  VSILFILE *vf = VSIFileFromMemBuffer(path, (GByte *) (uintptr_t) data,
+    (vsi_l_offset) size, FALSE);
+  if (! vf)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL cannot read the bytes of the raster file");
+    return NULL;
+  }
+  VSIFCloseL(vf);
+  CPLErrorReset();
+  GDALDatasetH ds = GDALOpen(path, GA_ReadOnly);
+  if (! ds)
+  {
+    VSIUnlink(path);
+    /* GDAL's own message names the virtual file, whose name changes with
+     * every call, so it is not repeated */
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL reads no raster in the bytes given");
+    return NULL;
+  }
+  rt_raster raster = rt_raster_from_gdal_dataset(ds);
+  GDALClose(ds);
+  VSIUnlink(path);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read the raster GDAL opened");
+    return NULL;
+  }
+  if (srid != SRID_UNKNOWN)
+    rt_raster_set_srid(raster, srid);
+  return raster_serialize_destroy(raster);
+}
+
+/*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 

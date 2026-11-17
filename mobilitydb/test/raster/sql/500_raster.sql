@@ -1190,6 +1190,57 @@ SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,
 SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
   0));
 
+-- A raster is written in a format of GDAL as PostGIS writes it and read as
+-- PostGIS reads it, and a GeoTIFF read back keeps the values of every band,
+-- the georeferencing and the SRID: three bands of 16 signed bits sharing
+-- their pixel type and their nodata value, the one of each a TIFF holds for
+-- all its bands, in EPSG:3857.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+    '16BSI'::text, 7::float8, 0::float8),
+    '16BSI'::text, -3::float8, 0::float8),
+    '16BSI'::text, 1::float8, 0::float8), 1, 1, 1,
+    ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]) AS r),
+back AS (
+  SELECT r, rasterFromGDALRaster(asTIFF(r)) AS b FROM rast)
+SELECT asTIFF(r) = ST_AsTIFF(r) AS writes_as_postgis,
+  asGDALRaster(r, 'GTiff') = ST_AsGDALRaster(r, 'GTiff') AS gdal_as_postgis,
+  asHexWKB(b) = asHexWKB(ST_FromGDALRaster(ST_AsTIFF(r))) AS reads_as_postgis,
+  dumpValues(b, 1) = dumpValues(r, 1) AND dumpValues(b, 2) = dumpValues(r, 2)
+    AND dumpValues(b, 3) = dumpValues(r, 3) AS values_kept,
+  bandPixelType(b, 1) || ' ' || bandPixelType(b, 2) || ' ' ||
+    bandPixelType(b, 3) AS pixel_types,
+  width(b) = width(r) AND height(b) = height(r) AND
+    upperLeftX(b) = upperLeftX(r) AND upperLeftY(b) = upperLeftY(r) AND
+    scaleX(b) = scaleX(r) AND scaleY(b) = scaleY(r) AS grid_kept,
+  dumpValues(rasterFromGDALRaster(asTIFF(r, ARRAY['COMPRESS=DEFLATE',
+    'TILED=YES'])), 1) = dumpValues(r, 1) AS deflate_kept,
+  SRID(b) AS srid_of_file,
+  SRID(rasterFromGDALRaster(asTIFF(r), 4326)) AS srid_given,
+  SRID(rasterFromGDALRaster(asTIFF(r, NULL, 4326))) AS srid_written
+FROM back;
+
+-- An image is written by the drivers that take its bands: PNG and JPEG of one
+-- band of 8 unsigned bits, each opening with its own signature.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[0, 64, 128, 255], [0, 64, 128, 255], [0, 64, 128, 255],
+          [0, 64, 128, 255]]::double precision[][]) AS r)
+SELECT encode(substring(asPNG(r) from 1 for 8), 'hex') AS png_signature,
+  encode(substring(asJPEG(r) from 1 for 2), 'hex') AS jpeg_signature,
+  dumpValues(rasterFromGDALRaster(asPNG(r)), 1) =
+    dumpValues(r, 1) AS png_values
+FROM rast;
+
+-- A format GDAL has no driver of, and bytes that are no raster file, are
+-- refused.
+SELECT asGDALRaster(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  4326), 'NoSuchFormat');
+SELECT rasterFromGDALRaster('\x0102030405'::bytea);
+
 -- A string shorter than the raster it states is refused, not read past its end.
 SELECT rasterFromHexWKB('0100');
 

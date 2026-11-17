@@ -3126,6 +3126,12 @@
 				<listitem>
 					<para><link linkend="raster_asCoverageJSON"><varname>asCoverageJSON</varname></link>: Devuelve un ráster, una tesela Raquet o los valores que lee una trayectoria como una cobertura CoverageJSON</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_asGDALRaster"><varname>asGDALRaster</varname>, <varname>asTIFF</varname>, <varname>asPNG</varname>, <varname>asJPEG</varname></link>: Devuelve un ráster escrito en un formato de GDAL</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="rasterFromGDALRaster"><varname>rasterFromGDALRaster</varname></link>: Devuelve un ráster leído de los bytes de un archivo en un formato de GDAL</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
