@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.6.0 |
+| Version | v0.7.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -191,10 +191,32 @@ A raster that changes in time, a satellite archive or a forecast, is a table
 of rows `(validtime tstzspan, rast raster)`. No temporal type holds it: a
 raster does not move, nothing interpolates between two acquisitions, and one
 raster per instant would carry the pixels of every acquisition in a single
-value. The value a trajectory reads from such a table is read today by
-cutting the trajectory at each row's `validtime` (`atTime`) and merging the
-reads of the rows (`merge`), the rows selected by the indexes on `validtime`
-and on the raster's extent.
+value. A trajectory reads such a series through overloads of the names that
+read one raster, given the array of its rasters and the array of their
+periods, paired one to one:
+
+| Function | Result |
+|---|---|
+| `rasterValue(traj, rast raster[], validtime tstzspan[], band = 1)` | `tfloat` |
+| `rasterTileValue(traj, rast raquet[], validtime tstzspan[])` | `tfloat` |
+| `atRasterValue`, `minusRasterValue` `(traj, rast, validtime, vspan[, band])` | `tgeompoint` |
+| `eRasterValue`, `aRasterValue` `(traj, rast, validtime, vspan[, band])` | `boolean` |
+
+Each raster is read over the part of `traj` within its period, as section 5
+reads one raster, and the reads are merged in the order of the periods,
+whatever the order of the arrays. Rows sharing one period are the tiles of
+one raster in space, read together as an array of tiles is read; two rows of
+one place and one period are one tile given twice, read where they hold one
+value and refused where they hold two, as `merge` refuses two temporal values
+that differ at one timestamp. A part of
+the trajectory within no period reads no value, as a nodata pixel reads none.
+Two distinct periods that overlap, which would give two values at one time,
+and arrays of different lengths are refused. The restrictions read these
+values as section 6 states. A query passes the rows that meet the trajectory,
+selected by the indexes on `validtime` and on the raster's extent, gathered
+with `array_agg`. In MEOS: `raster_value_series`, `raster_tile_value_series`
+and their restrictions, `raster_at_value_series` and the others, each taking
+the rasters, a `Span` array of their periods and the count.
 
 ## 8. Versioning and stability
 
@@ -209,6 +231,7 @@ patch number with corrections of wording.
 | v0.4.0 | One row of a Raquet file read into a tile, `raquetFromRow` |
 | v0.5.0 | A raster, a Raquet tile and the values a trajectory reads written as CoverageJSON |
 | v0.6.0 | The writers of a raster to a format of GDAL and its reader from the bytes of a file in one |
+| v0.7.0 | The values a trajectory reads from a raster series and their restrictions |
 
 ## 9. Out of scope
 
@@ -216,11 +239,6 @@ Future: each of these is added here with its version.
 
 - A Raquet file read as its tiles and written from them, through GDAL's
   Parquet driver.
-- The values a trajectory reads from a raster series and its restrictions,
-  `rasterValue(traj, raster[], tstzspan[], band)` and
-  `rasterTileValue(traj, raquet[], tstzspan[])`: each raster read over the
-  part of the trajectory within its span, a part within no span reading no
-  value, spans that overlap refused.
 
 - MobilityAPI publishing a raster collection through OGC API – Coverages,
   its queries along a path through OGC API – Environmental Data Retrieval,

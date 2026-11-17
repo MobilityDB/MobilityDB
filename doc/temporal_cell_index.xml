@@ -3388,6 +3388,39 @@ GROUP BY t.tripid, t.trip;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_rasterValueSeries">
+				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
+				<para>Sample a raster series along a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterValue(tgeompoint,rast raster[],validtime tstzspan[],band integer=1) → tfloat
+rasterTileValue(tgeompoint,rast raquet[],validtime tstzspan[]) → tfloat
+</programlisting>
+				<para>A raster that changes in time is a series of rows <varname>(validtime, rast)</varname>, each raster valid over its period, not a temporal raster: a value holding a whole raster at every instant would weigh a raster per instant, and nothing between two rasters interpolates. These forms read a series given as the array of its rasters and the array of their periods, paired one to one: each raster is read over the part of <varname>traj</varname> within its period, as <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> and <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> read one raster, and the reads are merged in the order of the periods, whatever the order of the arrays. Rows sharing one period are the tiles of one raster in space, read together as <link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link> reads an array of tiles. Two rows of one place and one period are one tile given twice, which a Raquet file never holds: they are read where they hold one value and raise an error where they hold two, as merging two temporal values that differ at one timestamp does. A part of the trip within no period has no value, as a nodata pixel has none. Two distinct periods that overlap, and arrays of different lengths, raise an error. A query passes the rows meeting the trip, which the indexes on the period and on the extent of the raster select, and gathers them with <varname>array_agg</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A raster of 10 | 20 valid until 06:00 and one of 30 | 40 valid after it,
+-- read along a trip crossing from the western pixel into the eastern one at 12:00
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS a,
+  ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[30, 40]]::double precision[][]) AS b )
+SELECT asText(rasterValue(
+  tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[a, b], ARRAY[tstzspan '[2001-01-01, 2001-01-01 06:00)',
+  tstzspan '[2001-01-01 06:00, 2001-01-02]'])) FROM rast;
+-- Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-01 06:00:00+00,
+--   40@2001-01-01 12:00:00+00, 40@2001-01-02 00:00:00+00]
+-- The rows of a series meeting each trip
+SELECT t.tripid, rasterValue(t.trip, array_agg(s.rast), array_agg(s.validtime))
+FROM trips t JOIN ndvi_series s
+  ON s.validtime &amp;&amp; t.trip::tstzspan AND s.rast::geometry &amp;&amp; t.trip::geometry
+GROUP BY t.tripid, t.trip;
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_rasterTileValueQuadbin">
 				<indexterm significance="normal"><primary><varname>rasterTileValueQuadbin</varname></primary></indexterm>
 				<para>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
@@ -3418,8 +3451,11 @@ atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompo
 atRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
 atRasterValue(tgeompoint,rast raquet,vspan floatspan) → tgeompoint
 atRasterValue(tgeompoint,rast raquet[],vspan floatspan) → tgeompoint
+atRasterValue(tgeompoint,rast raster[],validtime tstzspan[],vspan floatspan,
+  band integer=1) → tgeompoint
+atRasterValue(tgeompoint,rast raquet[],validtime tstzspan[],vspan floatspan) → tgeompoint
 </programlisting>
-				<para>Reads <varname>rasterValue</varname> along <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no time satisfies the condition. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap.</para>
+				<para>Reads <varname>rasterValue</varname> along <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no time satisfies the condition. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap. The forms taking an array of rasters or of tiles and the array of their periods read the series <link linkend="raster_rasterValueSeries"><varname>rasterValue</varname></link> reads.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
@@ -3443,8 +3479,11 @@ minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeo
 minusRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
 minusRasterValue(tgeompoint,rast raquet,vspan floatspan) → tgeompoint
 minusRasterValue(tgeompoint,rast raquet[],vspan floatspan) → tgeompoint
+minusRasterValue(tgeompoint,rast raster[],validtime tstzspan[],vspan floatspan,
+  band integer=1) → tgeompoint
+minusRasterValue(tgeompoint,rast raquet[],validtime tstzspan[],vspan floatspan) → tgeompoint
 </programlisting>
-				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when the pixel value lies within <varname>vspan</varname> at every time. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap.</para>
+				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when the pixel value lies within <varname>vspan</varname> at every time. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap. The forms taking an array of rasters or of tiles and the array of their periods read the series <link linkend="raster_rasterValueSeries"><varname>rasterValue</varname></link> reads.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Keep only the instant whose raster value (10) is below 40
 SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
@@ -3460,8 +3499,11 @@ eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 eRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
 eRasterValue(tgeompoint,rast raquet,vspan floatspan) → boolean
 eRasterValue(tgeompoint,rast raquet[],vspan floatspan) → boolean
+eRasterValue(tgeompoint,rast raster[],validtime tstzspan[],vspan floatspan,
+  band integer=1) → boolean
+eRasterValue(tgeompoint,rast raquet[],validtime tstzspan[],vspan floatspan) → boolean
 </programlisting>
-				<para>Returns <varname>true</varname> when <varname>traj</varname> ever reads a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap.</para>
+				<para>Returns <varname>true</varname> when <varname>traj</varname> ever reads a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap. The forms taking an array of rasters or of tiles and the array of their periods read the series <link linkend="raster_rasterValueSeries"><varname>rasterValue</varname></link> reads.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid FROM trips,
@@ -3477,8 +3519,11 @@ aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 aRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
 aRasterValue(tgeompoint,rast raquet,vspan floatspan) → boolean
 aRasterValue(tgeompoint,rast raquet[],vspan floatspan) → boolean
+aRasterValue(tgeompoint,rast raster[],validtime tstzspan[],vspan floatspan,
+  band integer=1) → boolean
+aRasterValue(tgeompoint,rast raquet[],validtime tstzspan[],vspan floatspan) → boolean
 </programlisting>
-				<para>Returns <varname>true</varname> when every pixel value <varname>traj</varname> reads over the raster lies within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap.</para>
+				<para>Returns <varname>true</varname> when every pixel value <varname>traj</varname> reads over the raster lies within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap. The forms taking an array of rasters or of tiles and the array of their periods read the series <link linkend="raster_rasterValueSeries"><varname>rasterValue</varname></link> reads.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that stayed entirely below 100 m elevation
 SELECT tripid FROM trips,
