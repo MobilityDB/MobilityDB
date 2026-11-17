@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.1.0 |
+| Version | v0.1.1 |
 | Scope | The boxes MEOS gives a value for an index: one box per piece of the value, a split of its pieces into a number of boxes, and a merge of its piece boxes into a number of boxes, for the sets, the span sets, the temporal types and the lines of the geometry types; and the box of a temporal rigid geometry |
 | Reference | `tools/codegen/inherited/templates/boxsplit.c.tmpl` (the splits and merges of the temporal types), `meos/src/geo/tgeo_boxops.c` (the temporal points and geometries, the lines of a geometry), `meos/src/rgeo/trgeo_boxops.c` (the box of a temporal rigid geometry), `meos/src/temporal/temporal_boxops.c` (`bbox_merge_n`, the merge), `meos/src/temporal/span_index.c`, `meos/src/temporal/tbox_index.c`, `meos/src/geo/stbox_index.c` (the size of a box) |
 
@@ -167,10 +167,9 @@ SELECT mergeNStboxes(tgeompoint 'Point(1 1)@2001-01-01', -1);
 In MEOS the refusal is `MEOS_ERR_INVALID_ARG_VALUE`. A MEOS function of
 this document returns its boxes as an array and their number through its
 last argument, `count`: a null `count` is refused with
-`MEOS_ERR_INVALID_ARG` before anything is written through it. The splits,
-the merges and the boxes of the pieces of a temporal type or a line set
-`count` to 0 once it is known not null, before any other argument is
-tested, so a refused call leaves it at 0.
+`MEOS_ERR_INVALID_ARG` before anything is written through it. Every one
+of them sets `count` to 0 once it is known not null, before any other
+argument is tested, so a refused call leaves it at 0.
 
 ## 9. Why the rules are what they are
 
@@ -207,6 +206,7 @@ number with corrections of wording.
 | Version | Content |
 |---|---|
 | v0.1.0 | The boxes of the pieces of a value, its splits by count and its merges by size, the box of a temporal rigid geometry, and the arguments |
+| v0.1.1 | Every function of the document, the sets and the span sets included, sets its count to 0 first |
 
 ## 11. Out of scope
 
