@@ -160,4 +160,28 @@ SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
   ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
   #&gt; '{ranges,band1,values}';
 -- [1,2,3,4,-5,null]
+</pre></li><li class="listitem"><a name="raster_asGDALRaster"></a><a class="indexterm" name="id14473"></a><a class="indexterm" name="id14476"></a><a class="indexterm" name="id14479"></a><a class="indexterm" name="id14482"></a><p>Return a raster written in a format of GDAL</p><pre class="programlisting">
+asGDALRaster(rast raster,format text,options text[]=NULL,srid integer=NULL) → bytea
+asTIFF(rast raster,options text[]=NULL,srid integer=NULL) → bytea
+asPNG(rast raster,options text[]=NULL) → bytea
+asJPEG(rast raster,options text[]=NULL) → bytea
+</pre><p>Writes the raster as PostGIS's <code class="varname">ST_AsGDALRaster</code>, <code class="varname">ST_AsTIFF</code>, <code class="varname">ST_AsPNG</code> and <code class="varname">ST_AsJPEG</code> write it, so that the bytes are those PostGIS writes. <code class="varname">format</code> is the short name of a GDAL driver that writes a copy of a raster into memory, such as <code class="varname">GTiff</code>, <code class="varname">PNG</code> or <code class="varname">JPEG</code>; <code class="varname">options</code> are the creation options of the driver, each <code class="varname">KEY=VALUE</code>; <code class="varname">srid</code> is the spatial reference system the file states, the raster's own when <code class="varname">NULL</code>, the pixels not being reprojected. A GeoTIFF holds one pixel type and one nodata value for all its bands, PNG one to four bands of 8 or 16 unsigned bits, JPEG one or three bands of 8 unsigned bits; a format refusing the bands of the raster raises an error.</p><pre class="programlisting">
+WITH r AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[1, 2], [3, 4]]::double precision[][]) AS rast)
+SELECT asTIFF(rast) = ST_AsTIFF(rast),
+  encode(substring(asPNG(rast) from 2 for 3), 'escape')
+FROM r;
+-- true | PNG
+</pre></li><li class="listitem"><a name="rasterFromGDALRaster"></a><a class="indexterm" name="id14502"></a><p>Return a raster read from the bytes of a file in a format of GDAL</p><pre class="programlisting">
+rasterFromGDALRaster(gdaldata bytea,srid integer=0) → raster
+</pre><p>Reads the raster as PostGIS's <code class="varname">ST_FromGDALRaster</code> reads it, the format found by GDAL from the bytes. <code class="varname">srid</code> is the spatial reference system of the result, the one the file states when 0.</p><pre class="programlisting">
+WITH r AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '16BSI'::text, 7::float8, 0::float8) AS rast)
+SELECT SRID(rasterFromGDALRaster(asTIFF(rast))),
+  SRID(rasterFromGDALRaster(asTIFF(rast), 4326))
+FROM r;
+-- 3857 | 4326
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 16. Temporal Tessellations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>
