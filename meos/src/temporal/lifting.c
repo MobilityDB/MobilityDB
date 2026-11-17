@@ -197,9 +197,12 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
+/* PostGIS */
+#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #if JSON
   #include <meos_json.h>
 #endif
@@ -968,6 +971,134 @@ tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 }
 
 /**
+ * @brief Apply a lifted function whose result is a point to a temporal
+ * sequence, writing the points of the result from their coordinates, or
+ * return NULL with @p done false when a point is not one #tinstant_make
+ * accepts, which the caller then makes
+ * @details Each point the function returns is read in place and written by
+ * #tpointinst_coords_set in one block of instants, after the first one with
+ * its header, instead of being copied into an instant of its own. The points
+ * are tested as #tinstant_make tests a value, a non-empty point with finite
+ * coordinates, of one SRID, which is geodetic for a geography, and of one
+ * dimensionality; they are at the increasing timestamps of the sequence, so
+ * the instants are valid and the sequence is made without testing them
+ * again, and normalized as before.
+ * @param[in] seq Temporal value
+ * @param[in] lfinfo Information about the lifted function
+ * @param[in] interp Interpolation of the result
+ * @param[out] done False when a point is left to the caller
+ */
+static TSequence *
+tfunc_tpointseq(const TSequence *seq, LiftedFunctionInfo *lfinfo,
+  interpType interp, bool *done)
+{
+  bool geodetic = (lfinfo->restype == T_TGEOGPOINT);
+  int count = seq->count;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  char *block = NULL;
+  size_t size = 0;
+  bool hasz = false;
+  int32_t srid = SRID_UNKNOWN;
+  const TInstant *model = NULL;
+  POINT4D prev = {0};
+  /* The SRID and the dimensionality of the first point that differs from the
+   * points before it, which #tsequence_make refuses once every instant is
+   * made */
+  bool mismatch = false;
+  int32_t srid_mis = SRID_UNKNOWN;
+  bool hasz_mis = false;
+  *done = false;
+  for (int i = 0; i < count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    GSERIALIZED *gs = DatumGetGserializedP(lfunc_base(tinstant_value_p(inst),
+      lfinfo));
+    POINT4D p;
+    bool hasz_i = (bool) gserialized_has_z(gs);
+    bool ok = gserialized_get_type(gs) == POINTTYPE &&
+      ! gserialized_has_m(gs) && ! gserialized_is_empty(gs) &&
+      gserialized_peek_first_point(gs, &p) == LW_SUCCESS &&
+      isfinite(p.x) && isfinite(p.y) && (! hasz_i || isfinite(p.z));
+    int32_t srid_i = ok ? gserialized_get_srid(gs) : SRID_UNKNOWN;
+    /* A geography SRID that is not lon/lat raises the error of
+     * #tinstant_make */
+    if (ok && geodetic && srid_i != SRID_UNKNOWN &&
+        (i == 0 || srid_i != srid) && ! ensure_srid_is_latlong(srid_i))
+    {
+      if (block)
+        pfree(block);
+      pfree(gs); pfree(instants);
+      *done = true;
+      return NULL;
+    }
+    if (! ok)
+    {
+      if (block)
+        pfree(block);
+      pfree(instants);
+      /* A value #tinstant_make refuses raises its error and the result is
+       * NULL, as for the instants the caller makes; any other value is left
+       * to the caller */
+      TInstant *res = tinstant_make_free(PointerGetDatum(gs), lfinfo->restype,
+        inst->t);
+      if (! res)
+      {
+        *done = true;
+        return NULL;
+      }
+      pfree(res);
+      return NULL;
+    }
+    pfree(gs);
+    if (i == 0)
+    {
+      hasz = hasz_i;
+      srid = srid_i;
+      size = tpointinst_coords_size(hasz);
+      block = palloc(size * count);
+    }
+    /* The last two values of sequences with step interpolation and exclusive
+     * upper bound must be equal */
+    bool last_prev = (i == count - 1 && i > 0 && ! seq->period.upper_inc &&
+      interp == STEP);
+    if (! mismatch && ! last_prev && (hasz_i != hasz || srid_i != srid))
+    {
+      mismatch = true;
+      srid_mis = srid_i;
+      hasz_mis = hasz_i;
+    }
+    if (mismatch)
+      continue;
+    if (last_prev)
+      p = prev;
+    instants[i] = (TInstant *) (block + size * i);
+    tpointinst_coords_set(instants[i], model, p.x, p.y, hasz ? p.z : 0.0, hasz,
+      geodetic, srid, inst->t);
+    model = instants[0];
+    prev = p;
+  }
+  if (mismatch)
+  {
+    /* The error #tsequence_make raises for the first two instants whose SRID
+     * or dimensionality differ */
+    int16 flags = 0, flags_mis = 0;
+    MEOS_FLAGS_SET_X(flags, true); MEOS_FLAGS_SET_T(flags, true);
+    MEOS_FLAGS_SET_X(flags_mis, true); MEOS_FLAGS_SET_T(flags_mis, true);
+    MEOS_FLAGS_SET_Z(flags, hasz); MEOS_FLAGS_SET_Z(flags_mis, hasz_mis);
+    if (ensure_same_srid(srid, srid_mis))
+      ensure_same_dimensionality(flags, flags_mis);
+    pfree(block); pfree(instants);
+    *done = true;
+    return NULL;
+  }
+  TSequence *result = tsequence_make_exp1(instants, count, count,
+    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE, NULL);
+  pfree(block); pfree(instants);
+  *done = true;
+  return result;
+}
+
+/**
  * @brief Apply a lifted function to a temporal sequence
  * @param[in] seq Temporal value
  * @param[in] lfinfo Information about the lifted function
@@ -985,6 +1116,17 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
    * poles of tan) */
   if (lfinfo->tpfn_adaptive && interp == LINEAR)
     return tfunc_tlinearseq_adaptive(seq, lfinfo);
+
+  /* A point result is written from its coordinates */
+  if (lfinfo->restype == T_TGEOMPOINT || lfinfo->restype == T_TGEOGPOINT)
+  {
+    interpType resinterp = (interp == LINEAR && ! lfinfo->reslinear) ?
+      STEP : interp;
+    bool done;
+    TSequence *result = tfunc_tpointseq(seq, lfinfo, resinterp, &done);
+    if (done)
+      return result;
+  }
 
   /* Plain per-instant lift */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
