@@ -287,6 +287,40 @@ tbox_size(const void *bbox)
 }
 
 /**
+ * @brief Return the size of a temporal box for a query box: the product over
+ * the dimensions of both of the width of the box plus the width of the query
+ * box, to which a query of those widths placed at random reads it in
+ * proportion
+ * @details The query twin of #tbox_size, the widths read as it reads them; a
+ * dimension the query box lacks restricts no query and is not read
+ * @param[in] bbox Temporal box
+ * @param[in] query Query box, whose value span, if any, has the base type of
+ * the value span of the box
+ */
+double
+tbox_query_size(const void *bbox, const void *query)
+{
+  assert(bbox); assert(query);
+  const TBox *box = (const TBox *) bbox;
+  const TBox *q = (const TBox *) query;
+  double result = 1.0;
+  if (MEOS_FLAGS_GET_X(box->flags) && MEOS_FLAGS_GET_X(q->flags))
+  {
+    assert(box->span.basetype == q->span.basetype);
+    result *= distance_value_value_double(box->span.lower, box->span.upper,
+        box->span.basetype) +
+      distance_value_value_double(q->span.lower, q->span.upper,
+        q->span.basetype);
+  }
+  if (MEOS_FLAGS_GET_T(box->flags) && MEOS_FLAGS_GET_T(q->flags))
+    result *= (double) (DatumGetTimestampTz(box->period.upper) -
+        DatumGetTimestampTz(box->period.lower)) +
+      (double) (DatumGetTimestampTz(q->period.upper) -
+        DatumGetTimestampTz(q->period.lower));
+  return result;
+}
+
+/**
  * @brief Return the amount by which the union of two temporal boxes is larger
  * than the first one
  * @note The result can be +Infinity, but not NaN

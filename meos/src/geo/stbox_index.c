@@ -339,6 +339,41 @@ stbox_size(const void *bbox)
 }
 
 /**
+ * @brief Return the size of a spatiotemporal box for a query box: the
+ * product over the dimensions of both of the width of the box plus the width
+ * of the query box, to which a query of those widths placed at random reads
+ * it in proportion
+ * @details The query twin of #stbox_size, the widths read as it reads them,
+ * time in seconds; a dimension the query box lacks restricts no query and is
+ * not read. A point cloud box shares the layout of a spatiotemporal box on
+ * the fields read here, so it is measured by the same function.
+ * @param[in] bbox Spatiotemporal box
+ * @param[in] query Query box, in the reference system of the box when it has
+ * a spatial dimension
+ */
+double
+stbox_query_size(const void *bbox, const void *query)
+{
+  assert(bbox); assert(query);
+  const STBox *box = (const STBox *) bbox;
+  const STBox *q = (const STBox *) query;
+  double result = 1.0;
+  if (MEOS_FLAGS_GET_X(box->flags) && MEOS_FLAGS_GET_X(q->flags))
+  {
+    result *= (box->xmax - box->xmin + q->xmax - q->xmin) *
+      (box->ymax - box->ymin + q->ymax - q->ymin);
+    if (MEOS_FLAGS_GET_Z(box->flags) && MEOS_FLAGS_GET_Z(q->flags))
+      result *= box->zmax - box->zmin + q->zmax - q->zmin;
+  }
+  if (MEOS_FLAGS_GET_T(box->flags) && MEOS_FLAGS_GET_T(q->flags))
+    result *= (double) (DatumGetTimestampTz(box->period.upper) -
+        DatumGetTimestampTz(box->period.lower) +
+        DatumGetTimestampTz(q->period.upper) -
+        DatumGetTimestampTz(q->period.lower)) / USECS_PER_SEC;
+  return result;
+}
+
+/**
  * @brief Return the amount by which the union of the two boxes is larger than
  * the first one
  * @details A point cloud box shares the layout of a spatiotemporal box on the

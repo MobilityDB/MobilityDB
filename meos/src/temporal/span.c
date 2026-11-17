@@ -2716,6 +2716,40 @@ set_merge_each_n_spans(const Set *s, int elems_per_span, int *count)
 
 /**
  * @ingroup meos_setspan_bbox_split
+ * @brief Return an array of spans obtained by merging the boxes of the
+ * consecutive elements of a set into those a query of the width of a query
+ * span is expected to read least
+ * @details The query twin of #set_merge_n_spans, by #bbox_merge_query: the
+ * width of the query span is the extent of the query, its position is not
+ * read
+ * @param[in] s Set
+ * @param[in] query Query span, of the span type of the set
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Set_merge_query_spans()
+ */
+Span *
+set_merge_query_spans(const Set *s, const Span *query, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_set_spantype(s->settype) ||
+      ! ensure_span_isof_type(query, basetype_spantype(s->basetype)))
+    return NULL;
+
+  Span *result = set_spans(s, count);
+  if (result)
+    *count = bbox_merge_query(result->spantype, result, *count, query,
+      &span_adjust, &span_query_size);
+  return result;
+}
+
+
+/**
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of spans from a set obtained by merging consecutive
  * elements
  * @param[in] s Set
