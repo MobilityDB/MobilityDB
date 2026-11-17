@@ -149,4 +149,15 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
   quadbin '4817ffffffffffff', 'uint8')))
   = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 -- true
+</pre></li><li class="listitem"><a name="raster_asCoverageJSON"></a><a class="indexterm" name="id13841"></a><p>Devuelve un ráster, una tesela Raquet o los valores que lee una trayectoria como una cobertura CoverageJSON</p><pre class="programlisting">
+asCoverageJSON(raster) → text
+asCoverageJSON(raquet) → text
+asCoverageJSON(tfloat,tgeompoint) → text
+</pre><p>CoverageJSON es la codificación de OGC API – Coverages y de OGC API – Environmental Data Retrieval. Un <code class="varname">raster</code> es una cobertura <code class="varname">Grid</code>: sus ejes <code class="varname">x</code> e <code class="varname">y</code> van del centro del primer píxel al centro del último, cada banda es un parámetro <code class="varname">band1</code>, <code class="varname">band2</code> ..., cuyos valores van fila por fila desde la fila superior, y un píxel nodata es <code class="varname">null</code>; un ráster con sesgo, cuyos píxeles no están sobre tales ejes, y un ráster sin sistema de referencia espacial producen un error. Una tesela <code class="varname">raquet</code> es una malla de Web Mercator, EPSG:3857, sobre los límites de su celda QUADBIN. Los valores que lee una trayectoria, como los de <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>, son una cobertura <code class="varname">Trajectory</code> cuyos puntos son los instantes de los valores, cada uno en la posición de la trayectoria en su instante. EPSG:4326 se declara como OGC CRS84, cuya longitud va primero como la declara MobilityDB.</p><pre class="programlisting">
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
+  #&gt; '{ranges,band1,values}';
+-- [1,2,3,4,-5,null]
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s03.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Capítulo 16. Teselaciones temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Constructores</td></tr></table></div></body></html>

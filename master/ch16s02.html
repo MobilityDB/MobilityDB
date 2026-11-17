@@ -149,4 +149,15 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
   quadbin '4817ffffffffffff', 'uint8')))
   = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 -- true
+</pre></li><li class="listitem"><a name="raster_asCoverageJSON"></a><a class="indexterm" name="id14416"></a><p>Return a raster, a Raquet tile or the values a trajectory reads as a CoverageJSON coverage</p><pre class="programlisting">
+asCoverageJSON(raster) → text
+asCoverageJSON(raquet) → text
+asCoverageJSON(tfloat,tgeompoint) → text
+</pre><p>CoverageJSON is the encoding of OGC API – Coverages and OGC API – Environmental Data Retrieval. A <code class="varname">raster</code> is a <code class="varname">Grid</code> coverage: its axes <code class="varname">x</code> and <code class="varname">y</code> run from the centre of the first pixel to the centre of the last, each band is a parameter <code class="varname">band1</code>, <code class="varname">band2</code> ..., whose values run row by row from the top row, and a nodata pixel is <code class="varname">null</code>; a raster with a skew, whose pixels lie on no such axes, and a raster in no spatial reference system raise an error. A <code class="varname">raquet</code> tile is a grid of Web Mercator, EPSG:3857, over the bounds of its QUADBIN cell. The values a trajectory reads, such as those of <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>, are a <code class="varname">Trajectory</code> coverage whose points are the instants of the values, each at the position of the trajectory at its instant. EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MobilityDB states it.</p><pre class="programlisting">
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
+  #&gt; '{ranges,band1,values}';
+-- [1,2,3,4,-5,null]
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 16. Temporal Tessellations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>
