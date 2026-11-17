@@ -1311,6 +1311,36 @@ tsequence_make_exp1(TInstant **instants, int count, int maxcount,
 }
 
 /**
+ * @brief Return the place of a new instant at the end of an expandable
+ * temporal sequence and count the instant, or NULL when the sequence has no
+ * room for it
+ * @details The place where #tsequence_append_tinstant writes an instant it
+ * appends in place: after the last instant of the sequence, at the offset of
+ * the last instant plus its size, within the bytes the sequence reserved when
+ * it was made expandable (#tsequence_make_exp). The caller writes the
+ * instant there, in increasing time, and sets the bounding box of the
+ * sequence once its instants are written.
+ * @param[in,out] seq Temporal sequence
+ * @param[in] size Size of the instant
+ */
+TInstant *
+tsequence_append_slot(TSequence *seq, size_t size)
+{
+  assert(seq); assert(seq->count > 0);
+  if (seq->count >= seq->maxcount)
+    return NULL;
+  const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
+  size_t size_last = DOUBLE_PAD(VARSIZE(last));
+  char *result = (char *) last + size_last;
+  if (DOUBLE_PAD(size) > (size_t) ((char *) seq + VARSIZE(seq) - result))
+    return NULL;
+  (TSEQUENCE_OFFSETS_PTR(seq))[seq->count] =
+    (TSEQUENCE_OFFSETS_PTR(seq))[seq->count - 1] + size_last;
+  seq->count++;
+  return (TInstant *) result;
+}
+
+/**
  * @brief Ensure that the timestamp of the first temporal instant is smaller
  * than the one of the second temporal instant
  * @details The timestamps may also be equal if the merge parameter is true.

@@ -28,4 +28,8 @@ SELECT (stboxes(temp))[1] @> stbox(valueAtTimestamp(temp, '2001-01-01 12:00')),
   (mergeEachNStboxes(temp, 1))[1] @> stbox(valueAtTimestamp(temp, '2001-01-01 12:00'))
 FROM t;
 
+-- A square moving without turning only translates, so the box of the segment
+-- is the box of the square at its two ends
+SELECT stbox(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]');
+
 -------------------------------------------------------------------------------
