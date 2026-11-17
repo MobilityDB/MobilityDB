@@ -87,9 +87,11 @@ the standard's conformance classes against the fixture.
 - MEOS and MobilityDB hold both types and their functions (122 public MEOS functions in
   `meos_raster.h`, 139 SQL functions in `mobilitydb/sql/raster/500_raster.in.sql`), the value
   along a trajectory among them, its pixel walk judged exact.
-- The catalog exchanges `Raster` and `Raquet` as WKB; `Raster` has no catalog slot (R1).
+- The catalog exchanges `Raster` and `Raquet` as WKB, `Raster` in its slot `T_RASTER` (R1,
+  MobilityDB #3780).
 - No raster writer to GeoTIFF or CoverageJSON exists in MEOS (R3, R4).
 - The restrictions to the values of a `Raquet` tile are missing (R2), and a Raquet Parquet file
   is read and written by no MEOS function (R5).
-- How much of the raster surface each binding and MobilityDuck carries is not measured (R6).
+- `tools/raster_matrix.py` measures the raster surface each binding and MobilityDuck carries
+  (R6, MobilityDB #3776).
 - MobilityAPI publishes no raster (R7 to R10).
