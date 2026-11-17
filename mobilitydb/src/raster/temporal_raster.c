@@ -2097,6 +2097,227 @@ Raster_tile_value_array(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * atRasterValue / minusRasterValue / eRasterValue / aRasterValue over Raquet
+ * tiles
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_tile_at_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_at_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * Raquet tile falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rq Raquet tile
+ * @param[in] vspan Float value range
+ * @sqlfn atRasterValue()
+ */
+Datum
+Raster_tile_at_value(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  Raquet *rq = PG_GETARG_RAQUET_P(1);
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  Temporal *result = raster_tile_at_value(traj, rq, vspan);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rq, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_tile_minus_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_minus_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * Raquet tile falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rq Raquet tile
+ * @param[in] vspan Float value range
+ * @sqlfn minusRasterValue()
+ */
+Datum
+Raster_tile_minus_value(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  Raquet *rq = PG_GETARG_RAQUET_P(1);
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  Temporal *result = raster_tile_minus_value(traj, rq, vspan);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rq, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Eraster_tile_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Eraster_tile_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if a trajectory ever reads a value inside a float range
+ * from a Raquet tile
+ * @param[in] traj Trajectory
+ * @param[in] rq Raquet tile
+ * @param[in] vspan Float value range
+ * @sqlfn eRasterValue()
+ */
+Datum
+Eraster_tile_value(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  Raquet *rq = PG_GETARG_RAQUET_P(1);
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int result = eraster_tile_value(traj, rq, vspan);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rq, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Araster_tile_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Araster_tile_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value a trajectory reads from a Raquet tile falls
+ * inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rq Raquet tile
+ * @param[in] vspan Float value range
+ * @sqlfn aRasterValue()
+ */
+Datum
+Araster_tile_value(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  Raquet *rq = PG_GETARG_RAQUET_P(1);
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int result = araster_tile_value(traj, rq, vspan);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rq, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raster_tile_at_value_array(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_at_value_array);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from an
+ * array of Raquet tiles falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] vspan Float value range
+ * @sqlfn atRasterValue()
+ */
+Datum
+Raster_tile_at_value_array(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int count;
+  Raquet **rqarr = raquetarr_extract(array, &count);
+  Temporal *result = raster_tile_at_value_array(traj,
+    (const Raquet **) rqarr, count, vspan);
+  pfree(rqarr);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(array, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_tile_minus_value_array(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_minus_value_array);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from an
+ * array of Raquet tiles falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] vspan Float value range
+ * @sqlfn minusRasterValue()
+ */
+Datum
+Raster_tile_minus_value_array(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int count;
+  Raquet **rqarr = raquetarr_extract(array, &count);
+  Temporal *result = raster_tile_minus_value_array(traj,
+    (const Raquet **) rqarr, count, vspan);
+  pfree(rqarr);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(array, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Eraster_tile_value_array(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Eraster_tile_value_array);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if a trajectory ever reads a value inside a float range
+ * from an array of Raquet tiles
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] vspan Float value range
+ * @sqlfn eRasterValue()
+ */
+Datum
+Eraster_tile_value_array(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int count;
+  Raquet **rqarr = raquetarr_extract(array, &count);
+  int result = eraster_tile_value_array(traj, (const Raquet **) rqarr, count,
+    vspan);
+  pfree(rqarr);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(array, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Araster_tile_value_array(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Araster_tile_value_array);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value a trajectory reads from an array of Raquet
+ * tiles falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] vspan Float value range
+ * @sqlfn aRasterValue()
+ */
+Datum
+Araster_tile_value_array(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int count;
+  Raquet **rqarr = raquetarr_extract(array, &count);
+  int result = araster_tile_value_array(traj, (const Raquet **) rqarr, count,
+    vspan);
+  pfree(rqarr);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(array, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
  * Raquet type: accessors
  *****************************************************************************/
 
