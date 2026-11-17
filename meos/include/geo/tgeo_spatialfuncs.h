@@ -127,6 +127,8 @@ extern bool ensure_same_geodetic_stbox_geo(const STBox *box,
 extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern bool ensure_valid_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
+extern bool ensure_valid_tspatial_stbox(const Temporal *temp,
+  const STBox *box);
 extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2);
 extern bool ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box);

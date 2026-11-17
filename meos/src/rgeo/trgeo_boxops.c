@@ -45,6 +45,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "geo/stbox.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo.h"
 #include "rgeo/trgeo_inst.h"
@@ -938,6 +939,44 @@ trgeometry_merge_each_n_stboxes(const Temporal *temp, int elem_count,
   if (result)
     *count = bbox_merge_each_n(T_STBOX, result, *count, elem_count,
       &stbox_adjust, &stbox_size);
+  return result;
+}
+
+/*****************************************************************************
+ * merge_query_stboxes function
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_rgeo_bbox_split
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal rigid geometry into those a query of the extents of a query box
+ * is expected to read least
+ * @details The query twin of #trgeometry_merge_n_stboxes, by #bbox_merge_query:
+ * the widths of the query box are the extents of the query, its position is
+ * not read, and a dimension it lacks restricts no query
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Trgeometry_merge_query_stboxes()
+ */
+STBox *
+trgeometry_merge_query_stboxes(const Temporal *temp, const STBox *query,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_valid_tspatial_stbox(temp, query))
+    return NULL;
+
+  STBox *result = trgeometry_stboxes(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_STBOX, result, *count, query, &stbox_adjust,
+      &stbox_query_size);
   return result;
 }
 /* GENERATED-BOXSPLIT-END trgeometry */

@@ -767,6 +767,23 @@ ensure_valid_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
+/**
+ * @brief Ensure the validity of a spatiotemporal value and a spatiotemporal
+ * box that may lack a spatial dimension
+ * @details The box twin of #ensure_valid_tspatial_geo; a box with a spatial
+ * dimension shares the reference system and the geodetic flag of the value,
+ * as #tgeo_restrict_stbox requires them
+ */
+bool
+ensure_valid_tspatial_stbox(const Temporal *temp, const STBox *box)
+{
+  VALIDATE_TSPATIAL(temp, false); VALIDATE_NOT_NULL(box, false);
+  if (MEOS_FLAGS_GET_X(box->flags) &&
+      (! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
+       ! ensure_same_geodetic(temp->flags, box->flags)))
+    return false;
+  return true;
+}
 
 /**
  * @brief Ensure the validity of a temporal geo and a spatiotemporal box

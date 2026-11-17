@@ -459,6 +459,7 @@ extern bool geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern STBox *geo_stboxes(const GSERIALIZED *gs, int *count);
 extern STBox *geo_merge_each_n_stboxes(const GSERIALIZED *gs, int elem_count, int *count);
 extern STBox *geo_merge_n_stboxes(const GSERIALIZED *gs, int box_count, int *count);
+extern STBox *geo_merge_query_stboxes(const GSERIALIZED *gs, const STBox *query, int *count);
 extern STBox *geo_split_each_n_stboxes(const GSERIALIZED *gs, int elem_count, int *count);
 extern STBox *geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count);
 
@@ -805,6 +806,7 @@ extern STBox *tgeo_time_boxes(const Temporal *temp, const Interval *duration, Ti
 extern STBox *tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, int *count);
 extern STBox *tgeo_merge_each_n_stboxes(const Temporal *temp, int elem_count, int *count);
 extern STBox *tgeo_merge_n_stboxes(const Temporal *temp, int box_count, int *count);
+extern STBox *tgeo_merge_query_stboxes(const Temporal *temp, const STBox *query, int *count);
 extern STBox *tgeo_split_each_n_stboxes(const Temporal *temp, int elem_count, int *count);
 extern STBox *tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *count);
 
