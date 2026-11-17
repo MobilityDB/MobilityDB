@@ -89,7 +89,9 @@ the standard's conformance classes against the fixture.
   along a trajectory among them, its pixel walk judged exact.
 - The catalog exchanges `Raster` and `Raquet` as WKB, `Raster` in its slot `T_RASTER` (R1,
   MobilityDB #3780).
-- No raster writer to GeoTIFF or CoverageJSON exists in MEOS (R3, R4).
+- A raster is written in a format of GDAL and read from the bytes of one (R3, MobilityDB #3783),
+  and a raster, a Raquet tile and the values a trajectory reads are written as CoverageJSON
+  (R4, #3786).
 - The restrictions read the values of a `Raquet` tile and an array of tiles (R2, MobilityDB
   #3781); one row of a Raquet file is read into a tile (R5, #3782), and a whole Raquet
   Parquet file is read and written by no MEOS function.
