@@ -90,7 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_ac7bee00da38cb3c61dd4047f0b22c584.html#ac7bee00da38cb3c61dd4047f0b22c584">tbox_tile_state_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a5ceef19ccf484999b950331f86b2eb81.html#a5ceef19ccf484999b950331f86b2eb81">tbox_value_time_tile_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_ac535cd7c14f21ac0c5784dd467856e5d.html#ac535cd7c14f21ac0c5784dd467856e5d">TboxGridState</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__tile_8h_a9338de3a9b08496ba1f935b6bb334097.html#a9338de3a9b08496ba1f935b6bb334097">temporal_time_split_intl</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__tile_8h_a77eb204b60441257b8b4642665c2ba59.html#a77eb204b60441257b8b4642665c2ba59">temporal_time_split_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_ab6bbe0feb62d5ebd2e055714a4a016f5.html#ab6bbe0feb62d5ebd2e055714a4a016f5">timestamptz_bin_start</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a7e786813719a186943ebd2bafa6b828b.html#a7e786813719a186943ebd2bafa6b828b">tnumber_value_time_split_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a158ce0cb51d7c9dd5b4fa7e22d4d4b16.html#a158ce0cb51d7c9dd5b4fa7e22d4d4b16">tnumber_value_time_tile_init</a></td></tr>
@@ -98,8 +98,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9338de3a9b08496ba1f935b6bb334097" name="a9338de3a9b08496ba1f935b6bb334097"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9338de3a9b08496ba1f935b6bb334097">&#9670;&#160;</a></span>temporal_time_split_intl()</h2>
+<a id="a77eb204b60441257b8b4642665c2ba59" name="a77eb204b60441257b8b4642665c2ba59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77eb204b60441257b8b4642665c2ba59">&#9670;&#160;</a></span>temporal_time_split_intl()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -109,6 +109,12 @@ $(function() {
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>orig</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -164,6 +170,7 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">orig</td><td>Value whose segments the bins cut, of which <code>temp</code> is a restriction, or NULL for those of <code>temp</code> (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">start,end</td><td>Start and end timestamps of the bins </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tunits</td><td>Size of the time bins in PostgreSQL time units </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Time origin of the tiles </td></tr>
