@@ -1076,6 +1076,18 @@ SELECT mergeEachNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
  {"[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]"}
 (1 row)
 
+SELECT mergeQuerySpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), tstzspan '[2001-01-01, 2001-01-01 06:00]');
+                         mergequeryspans                          
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]"}
+(1 row)
+
+SELECT mergeQuerySpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), tstzspan '[2001-01-01, 2001-01-08]');
+                         mergequeryspans                          
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]"}
+(1 row)
+
 SELECT tpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
                                                                                              tpcboxes                                                                                              
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1108,6 +1120,12 @@ SELECT mergeNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 
 SELECT mergeEachNTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
                                         mergeeachntpcboxes                                         
+---------------------------------------------------------------------------------------------------
+ {"TPCBOX(ZT(((1,1,1),(6,6,6)),[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]), 1)"}
+(1 row)
+
+SELECT mergeQueryTpcboxes(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])));
+                                        mergequerytpcboxes                                         
 ---------------------------------------------------------------------------------------------------
  {"TPCBOX(ZT(((1,1,1),(6,6,6)),[Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]), 1)"}
 (1 row)

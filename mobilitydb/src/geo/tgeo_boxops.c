@@ -227,6 +227,31 @@ Tgeo_merge_each_n_stboxes(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Tgeo_merge_query_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_merge_query_stboxes);
+/**
+ * @ingroup mobilitydb_geo_bbox
+ * @brief Return an array of boxes obtained by merging the boxes of
+ * the instants or segments of a temporal geo into those a query of the widths of
+ * a query box is expected to read least
+ * @details The widths of the query box are the extents of the query, its
+ * position is not read, and a dimension it lacks restricts no query
+ * @sqlfn mergeQueryStboxes()
+ */
+Datum
+Tgeo_merge_query_stboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *query = PG_GETARG_STBOX_P(1);
+  int count;
+  STBox *boxes = tgeo_merge_query_stboxes(temp, query, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+
 PGDLLEXPORT Datum Geo_split_each_n_stboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_split_each_n_stboxes);
 /**
@@ -298,6 +323,33 @@ Geo_merge_each_n_stboxes(PG_FUNCTION_ARGS)
   pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
 }
+
+PGDLLEXPORT Datum Geo_merge_query_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_merge_query_stboxes);
+/**
+ * @ingroup mobilitydb_geo_bbox
+ * @brief Return an array of boxes obtained by merging the boxes of
+ * the segments of a (multi)line into those a query of the widths of
+ * a query box is expected to read least
+ * @details The widths of the query box are the extents of the query, its
+ * position is not read, and a dimension it lacks restricts no query
+ * @sqlfn mergeQueryStboxes()
+ */
+Datum
+Geo_merge_query_stboxes(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  STBox *query = PG_GETARG_STBOX_P(1);
+  int count;
+  STBox *boxes = geo_merge_query_stboxes(gs, query, &count);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 
 /* GENERATED-BOXOPS-BEGIN stbox — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
  * edit the template + manifest.d/boxtypes.yaml and re-run. */

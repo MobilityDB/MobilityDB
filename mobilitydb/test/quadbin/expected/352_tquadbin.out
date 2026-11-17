@@ -749,4 +749,16 @@ SELECT mergeEachNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@
  {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
 (1 row)
 
+SELECT mergeQuerySpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+                         mergequeryspans                          
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
+(1 row)
+
+SELECT mergeQuerySpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', tstzspan '[2001-01-01, 2001-01-08]');
+                         mergequeryspans                          
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
+(1 row)
+
 -------------------------------------------------------------------------------

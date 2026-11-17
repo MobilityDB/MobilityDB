@@ -1279,6 +1279,24 @@ SELECT mergeNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 -- {"[2001-01-01, 2001-01-02]"}
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="trgeometry_merge_query_boxes">
+				<indexterm significance="normal"><primary><varname>mergeQueryStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeQuerySpans</varname></primary></indexterm>
+				<para>Devuelve las cajas espaciotemporales o los lapsos de tiempo de una geometría rígida temporal fusionados en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeQueryStboxes(trgeometry,stbox) → stbox[]
+mergeQuerySpans(trgeometry,tstzspan) → tstzspan[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeQueryStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(1 0), 0.0)@2001-01-02,
+  Pose(Point(10 0), 0.0)@2001-01-03]',
+  stbox 'STBOX XT(((0,0),(1,1)),[2001-01-01, 2001-01-01 06:00])');
+/* {"STBOX XT(((0,0),(2,1)),[2001-01-01, 2001-01-02])",
+   "STBOX XT(((1,0),(11,1)),[2001-01-02, 2001-01-03])"} */
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

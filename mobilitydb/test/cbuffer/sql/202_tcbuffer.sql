@@ -734,6 +734,8 @@ SELECT splitNSpans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point
 SELECT splitEachNSpans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 2);
 SELECT mergeNSpans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 2);
 SELECT mergeEachNSpans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 2);
+SELECT mergeQuerySpans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQuerySpans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', tstzspan '[2001-01-01, 2001-01-08]');
 
 -- A NULL operand of merge returns the other one
 SELECT merge(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', NULL::tcbuffer) = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';

@@ -513,6 +513,24 @@ SELECT mergeEachNSpans(tgeogpoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_mergeQuerySpans">
+				<indexterm significance="normal"><primary><varname>mergeQuerySpans</varname></primary></indexterm>
+				<para>Devuelve un arreglo de lapsos de tiempo obtenido fusionando los lapsos de tiempo de los instantes o segmentos de un valor temporal en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeQuerySpans(ttype,tstzspan) → tstzspan[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeQuerySpans(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-10,
+  1@2001-01-11}', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+/* {"[2001-01-01, 2001-01-01]","[2001-01-02, 2001-01-02]",
+   "[2001-01-03, 2001-01-03]","[2001-01-10, 2001-01-10]",
+   "[2001-01-11, 2001-01-11]"} */
+SELECT mergeQuerySpans(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-10,
+  1@2001-01-11}', tstzspan '[2001-01-01, 2001-01-04]');
+-- {"[2001-01-01, 2001-01-03]","[2001-01-10, 2001-01-11]"}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttype_splitNTboxes">
 				<indexterm significance="normal"><primary><varname>splitNTboxes</varname></primary></indexterm>
 				<para>Devuelve una matriz de N cuadros temporales obtenida fusionando los instantes o segmentos de un número temporal</para>
@@ -636,6 +654,24 @@ SELECT mergeEachNTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@200
 SELECT mergeEachNTboxes(tfloat '{[1@2001-01-01, 2@2001-01-02],
   [1@2001-01-03, 4@2001-01-04], [1@2001-01-05]}', 6);
 -- {"TBOXFLOAT XT([1, 4],[2001-01-01, 2001-01-05])"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="ttype_mergeQueryTboxes">
+				<indexterm significance="normal"><primary><varname>mergeQueryTboxes</varname></primary></indexterm>
+				<para>Devuelve un arreglo de cajas temporales obtenido fusionando las cajas de los instantes o segmentos de un número temporal en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeQueryTboxes(tnumber,tbox) → tbox[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeQueryTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 9@2001-01-04,
+  8@2001-01-05]', tbox 'TBOXFLOAT XT([0, 1],[2001-01-01, 2001-01-02])');
+/* {"TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-03])",
+   "TBOXFLOAT XT([1, 9],[2001-01-03, 2001-01-04])",
+   "TBOXFLOAT XT([8, 9],[2001-01-04, 2001-01-05])"} */
+SELECT mergeQueryTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 9@2001-01-04,
+  8@2001-01-05]', tbox 'TBOX T([2001-01-01, 2001-01-08])');
+-- {"TBOXFLOAT XT([1, 9],[2001-01-01, 2001-01-05])"}
 </programlisting>
 			</listitem>
 
@@ -809,6 +845,25 @@ SELECT mergeEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
   [Point(3 1)@2001-01-03, Point(4 2)@2001-01-04], [Point(5 1)@2001-01-05]}', 2);
 /* {"SRID=4326;GEODSTBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])",
    "SRID=4326;GEODSTBOX XT(((3,1),(5,2)),[2001-01-03, 2001-01-05])"} */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="ttype_mergeQueryStboxes">
+				<indexterm significance="normal"><primary><varname>mergeQueryStboxes</varname></primary></indexterm>
+				<para>Devuelve un arreglo de cajas espaciales obtenido fusionando las cajas de los segmentos de una (multi)línea, o de cajas espaciotemporales obtenido fusionando las cajas de los instantes o segmentos de un punto temporal en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeQueryStboxes({lines,tpoint},stbox) → stbox[]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeQueryStboxes(geometry 'Linestring(1 1,2 2,3 1,10 10,11 11)',
+  stbox 'STBOX X((0,0),(1,1))');
+-- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(10,10))","STBOX X((10,10),(11,11))"}
+SELECT mergeQueryStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03, Point(9 9)@2001-01-04, Point(10 10)@2001-01-05]',
+  stbox 'STBOX XT(((0,0),(1,1)),[2001-01-01, 2001-01-02])');
+/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-03])",
+   "STBOX XT(((1,1),(9,9)),[2001-01-03, 2001-01-04])",
+   "STBOX XT(((9,9),(10,10)),[2001-01-04, 2001-01-05])"} */
 </programlisting>
 			</listitem>
 		</itemizedlist>

@@ -718,6 +718,8 @@ SELECT splitNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.
 SELECT splitEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
 SELECT mergeNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
 SELECT mergeEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
+SELECT mergeQuerySpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQuerySpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', tstzspan '[2001-01-01, 2001-01-08]');
 
 -- A NULL operand of merge returns the other one
 SELECT merge(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', NULL::tpose) = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
