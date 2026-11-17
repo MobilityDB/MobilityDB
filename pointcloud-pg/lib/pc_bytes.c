@@ -881,32 +881,40 @@ pc_bytes_sigbits_encode(const PCBYTES pcb)
   return pcb;
 }
 
+/**
+ * Reverse the bytes of each whole word of the buffer, a word being the size
+ * of the interpretation
+ */
+static void pc_bytes_words_flip_endian(uint8_t *bytes, size_t nbytes,
+                                       size_t size)
+{
+  size_t n, w;
+  uint8_t tmp;
+  for (w = 0; w + size <= nbytes; w += size)
+  {
+    for (n = 0; n < size / 2; n++)
+    {
+      tmp = bytes[w + n];
+      bytes[w + n] = bytes[w + size - n - 1];
+      bytes[w + size - n - 1] = tmp;
+    }
+  }
+}
+
+/**
+ * Significant-bits bytes are the bit count word, the common bits word and
+ * the unique bits packed into words of the size of the interpretation, every
+ * one written in the byte order of the machine, so every word is flipped
+ */
 static PCBYTES pc_bytes_sigbits_flip_endian(const PCBYTES pcb)
 {
-  int n;
-  uint8_t tmp1, tmp2;
   size_t size = pc_interpretation_size(pcb.interpretation);
-  uint8_t *b1 = pcb.bytes;
-  uint8_t *b2 = pcb.bytes + size;
 
   /* If it's not multi-byte words, it doesn't need flipping */
   if (size < 2)
     return pcb;
 
-  /* We only need to flip the first two words, */
-  /* which are the common bit count and common bits word */
-  for (n = 0; n < (int) (size / 2); n++)
-  {
-    /* Flip bit count */
-    tmp1 = b1[n];
-    b1[n] = b1[size - n - 1];
-    b1[size - n - 1] = tmp1;
-    /* Flip common bits */
-    tmp2 = b2[n];
-    b2[n] = b2[size - n - 1];
-    b2[size - n - 1] = tmp2;
-  }
-
+  pc_bytes_words_flip_endian(pcb.bytes, pcb.size, size);
   return pcb;
 }
 
@@ -1294,7 +1302,39 @@ pc_bytes_zlib_decode(const PCBYTES pcb)
 }
 
 /**
- * This flips bytes in-place, so won't work on readonly bytes
+ * Uncompressed bytes are the values one after another, each one flipped
+ */
+static PCBYTES pc_bytes_uncompressed_flip_endian(const PCBYTES pcb)
+{
+  size_t size = pc_interpretation_size(pcb.interpretation);
+  if (size < 2)
+    return pcb;
+  pc_bytes_words_flip_endian(pcb.bytes, pcb.size, size);
+  return pcb;
+}
+
+/**
+ * Zlib bytes compress the values in the byte order of the machine that wrote
+ * them, so the values are decompressed, flipped and compressed again; the
+ * input bytes are freed
+ */
+static PCBYTES pc_bytes_zlib_flip_endian(PCBYTES pcb)
+{
+  PCBYTES raw, result;
+  size_t size = pc_interpretation_size(pcb.interpretation);
+  if (size < 2)
+    return pcb;
+  raw = pc_bytes_zlib_decode(pcb);
+  raw = pc_bytes_uncompressed_flip_endian(raw);
+  result = pc_bytes_zlib_encode(raw);
+  pc_bytes_free(raw);
+  pc_bytes_free(pcb);
+  return result;
+}
+
+/**
+ * This flips bytes in-place, so won't work on readonly bytes; the flip of
+ * zlib bytes returns new bytes and frees the input ones
  */
 PCBYTES
 pc_bytes_flip_endian(PCBYTES pcb)
@@ -1305,11 +1345,11 @@ pc_bytes_flip_endian(PCBYTES pcb)
   switch (pcb.compression)
   {
   case PC_DIM_NONE:
-    return pcb;
+    return pc_bytes_uncompressed_flip_endian(pcb);
   case PC_DIM_SIGBITS:
     return pc_bytes_sigbits_flip_endian(pcb);
   case PC_DIM_ZLIB:
-    return pcb;
+    return pc_bytes_zlib_flip_endian(pcb);
   case PC_DIM_RLE:
     return pc_bytes_run_length_flip_endian(pcb);
   default:
@@ -1350,6 +1390,9 @@ int pc_bytes_deserialize(const uint8_t *buf, const PCDIMENSION *dim,
   pcb->compression = buf[0];
   pcb->size = wkb_get_int32(buf + 1, flip_endian);
   pcb->readonly = readonly;
+  /* A flip reads the size of the values from the interpretation, and a flip
+   * of zlib bytes their number from pcb->npoints, which the caller sets */
+  pcb->interpretation = dim->interpretation;
   if (readonly && flip_endian)
     pcerror("pc_bytes_deserialize: cannot create a read-only buffer on "
             "byteswapped input");
