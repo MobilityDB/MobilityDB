@@ -164,4 +164,13 @@ SELECT mergeEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
 -- {"[1, 10)","[10, 11)"}
 SELECT mergeEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 12);
 -- {"[1, 11)"}
+</pre></li><li class="listitem"><a name="setspan_mergeQuerySpans"></a><a class="indexterm" name="id3277"></a><p>Return an array of spans obtained by merging the spans of the elements of a set or the spans of a spanset into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</p><pre class="programlisting">
+mergeQuerySpans({set,spanset},span) → span[]
+</pre><pre class="programlisting">
+SELECT mergeQuerySpans(intset '{1, 2, 3, 10, 11, 30}', intspan '[1, 2]');
+-- {"[1, 4)","[10, 12)","[30, 31)"}
+SELECT mergeQuerySpans(intset '{1, 2, 3, 10, 11, 30}', intspan '[1, 50]');
+-- {"[1, 31)"}
+SELECT mergeQuerySpans(floatspanset '{[1, 2], [3, 4], [20, 21]}', floatspan '[1, 3]');
+-- {"[1, 4]","[20, 21]"}
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Set Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Distance Operations</td></tr></table></div></body></html>
