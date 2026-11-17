@@ -112,6 +112,8 @@ extern Raquet *raquet_make(Quadbin quadbin, int32 width, int32 height,
 extern Raquet *raquet_copy(const Raquet *rq);
 extern Raquet *raquet_read(const char *path, Quadbin quadbin);
 extern Raquet *raquet_read_bytes(const uint8_t *data, size_t size, Quadbin quadbin);
+extern Raquet *raquet_from_row(Quadbin block, const uint8_t *data, size_t size,
+  const char *metadata, int band);
 
 /* Accessor functions for Raquet tiles */
 

@@ -1120,6 +1120,36 @@ SELECT rasterFromBinary(asBinary(r, 'XDR')) = r AS xdr,
   asBinary(r, 'XDR') <> asBinary(r, 'NDR') AS orders_differ
 FROM rast;
 
+-- A row of a Raquet file is read into a tile as an engine scanning the
+-- Parquet file hands it over: its block, the bytes of a band and the metadata
+-- of the file. Raw, gzip and zlib bands give the tile the constructor gives;
+-- an interleaved column gives each of its bands; a JPEG image gives its band.
+WITH m(meta, inter, img, cell) AS (SELECT
+  '{"file_format": "raquet", "version": "0.5.0", "tiling": {"scheme": "quadbin", "block_width": 2, "block_height": 2}, "bands": [{"name": "band_1", "type": "uint8", "nodata": 0}]}'::text,
+  '{"file_format": "raquet", "band_layout": "interleaved", "tiling": {"block_width": 2, "block_height": 2}, "bands": [{"name": "r", "type": "uint8", "nodata": null}, {"name": "g", "type": "uint8", "nodata": null}]}'::text,
+  '{"file_format": "raquet", "band_layout": "interleaved", "compression": "jpeg", "tiling": {"block_width": 2, "block_height": 2}, "bands": [{"name": "band_1", "type": "uint8", "nodata": null}]}'::text,
+  quadbinTileToCell(1, 0, 1)::bigint)
+SELECT raquetFromRow(cell, '\x01020304'::bytea, meta) =
+    raquet('\x01020304'::bytea, 2, 2, cell::quadbin, 'uint8', 0) AS raw,
+  raquetFromRow(cell, '\x1f8b08000000000002ff636462660100cdfb3cb604000000'::bytea,
+    replace(meta, '"version"', '"compression": "gzip", "version"')) =
+    raquetFromRow(cell, '\x01020304'::bytea, meta) AS gzip,
+  raquetFromRow(cell, '\x789c6364626601000018000b'::bytea,
+    replace(meta, '"version"', '"compression": "gzip", "version"')) =
+    raquetFromRow(cell, '\x01020304'::bytea, meta) AS zlib,
+  pixels(raquetFromRow(cell, '\x010a0214031e0428'::bytea, inter, 2)) AS second_band,
+  pixels(raquetFromRow(cell, '\xffd8ffe000104a46494600010100000100010000ffdb004300080606070605080707070909080a0c140d0c0b0b0c1912130f141d1a1f1e1d1a1c1c20242e2720222c231c1c2837292c30313434341f27393d38323c2e333432ffc0000b080002000201011100ffc40014000100000000000000000000000000000005ffc40014100100000000000000000000000000000000ffda0008010100003f000dffd9'::bytea, img)) AS jpeg_band
+FROM m;
+-- The metadata row, a band the metadata does not state, a band of the wrong
+-- size and a band stating a scale are refused.
+SELECT raquetFromRow(0, '\x01020304'::bytea, '{}');
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x01020304'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8"}]}', 2);
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x010203'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8"}]}');
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x01020304'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8", "scale": 0.5}]}');
+
 -- A string shorter than the raster it states is refused, not read past its end.
 SELECT rasterFromHexWKB('0100');
 
