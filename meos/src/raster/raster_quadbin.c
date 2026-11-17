@@ -1575,16 +1575,68 @@ raster_value_sampler(const Temporal *traj, const RasterGridOps *ops)
  *****************************************************************************/
 
 /**
- * @brief Return a trajectory restricted to the instants where the sampled
- * raster pixel value falls inside a float span
- * @details Equivalent to, with
- * @p v = #raster_value_sampler(traj, ops):
+ * @brief Return a trajectory restricted to the times where the values it
+ * reads from a raster fall inside or outside a float span
+ * @details Equivalent to, with @p v the values read along @p traj:
  * @code
  * atTime(traj, getTime(atSpan(v, vspan)))
+ * atTime(traj, getTime(minusSpan(v, vspan)))
  * @endcode
- * composed here in C on top of #tnumber_restrict_span, #temporal_time and
- * #temporal_restrict_tstzspanset, so that every caller supplying a @p sample
- * callback gets the restriction.
+ * the restrictions of every raster form, one raster, one Raquet tile or an
+ * array of tiles, read from their values this way
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] v Values read along @p traj, freed here, or @p NULL when the
+ * trajectory reads none
+ * @param[in] vspan Float value range
+ * @param[in] atfunc True for the times inside @p vspan, false for those
+ * outside it
+ * @return A trajectory restricted to the qualifying times, or @p NULL when
+ * none qualify
+ */
+Temporal *
+raster_values_restrict(const Temporal *traj, Temporal *v, const Span *vspan,
+  bool atfunc)
+{
+  if (! v)
+    return NULL;
+  Temporal *v1 = tnumber_restrict_span(v, vspan, atfunc ? REST_AT :
+    REST_MINUS);
+  pfree(v);
+  if (! v1)
+    return NULL;
+  SpanSet *ss = temporal_time(v1);
+  pfree(v1);
+  Temporal *result = temporal_restrict_tstzspanset(traj, ss, REST_AT);
+  pfree(ss);
+  return result;
+}
+
+/**
+ * @brief Return true if the values a trajectory reads from a raster ever, or
+ * always, fall inside a float span
+ * @details A trajectory reading no value answers false for both
+ * @param[in] v Values read along a trajectory, freed here, or @p NULL when
+ * the trajectory reads none
+ * @param[in] vspan Float value range
+ * @param[in] ever True for ever, false for always
+ * @return 1 if the values ever, or always, fall inside @p vspan, 0 if not
+ */
+int
+raster_values_ever(Temporal *v, const Span *vspan, bool ever)
+{
+  if (! v)
+    return 0;
+  Temporal *v1 = tnumber_restrict_span(v, vspan, ever ? REST_AT : REST_MINUS);
+  pfree(v);
+  bool result = ever ? (v1 != NULL) : (v1 == NULL);
+  if (v1)
+    pfree(v1);
+  return result ? 1 : 0;
+}
+
+/**
+ * @brief Return a trajectory restricted to the instants where the sampled
+ * raster pixel value falls inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] ops Grid the values are read from
  * @param[in] vspan Float value range (inclusive bounds)
@@ -1598,29 +1650,13 @@ raster_at_value_sampler(const Temporal *traj,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) ops, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
-
-  Temporal *v = raster_value_sampler(traj, ops);
-  if (! v)
-    return NULL;
-  Temporal *v1 = tnumber_restrict_span(v, vspan, REST_AT);
-  pfree(v);
-  if (! v1)
-    return NULL;
-  SpanSet *ss = temporal_time(v1);
-  pfree(v1);
-  Temporal *result = temporal_restrict_tstzspanset(traj, ss, REST_AT);
-  pfree(ss);
-  return result;
+  return raster_values_restrict(traj, raster_value_sampler(traj, ops), vspan,
+    true);
 }
 
 /**
  * @brief Return a trajectory restricted to the instants where the sampled
  * raster pixel value falls outside a float span
- * @details Equivalent to, with
- * @p v = #raster_value_sampler(traj, ops):
- * @code
- * atTime(traj, getTime(minusSpan(v, vspan)))
- * @endcode
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] ops Grid the values are read from
  * @param[in] vspan Float value range to exclude
@@ -1634,19 +1670,8 @@ raster_minus_value_sampler(const Temporal *traj,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) ops, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
-
-  Temporal *v = raster_value_sampler(traj, ops);
-  if (! v)
-    return NULL;
-  Temporal *v1 = tnumber_restrict_span(v, vspan, REST_MINUS);
-  pfree(v);
-  if (! v1)
-    return NULL;
-  SpanSet *ss = temporal_time(v1);
-  pfree(v1);
-  Temporal *result = temporal_restrict_tstzspanset(traj, ss, REST_AT);
-  pfree(ss);
-  return result;
+  return raster_values_restrict(traj, raster_value_sampler(traj, ops), vspan,
+    false);
 }
 
 /**
@@ -1665,16 +1690,7 @@ eraster_value_sampler(const Temporal *traj,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) ops, -1);
   VALIDATE_NOT_NULL(vspan, -1);
-
-  Temporal *v = raster_value_sampler(traj, ops);
-  if (! v)
-    return 0;
-  Temporal *v1 = tnumber_restrict_span(v, vspan, REST_AT);
-  pfree(v);
-  bool result = (v1 != NULL);
-  if (v1)
-    pfree(v1);
-  return result ? 1 : 0;
+  return raster_values_ever(raster_value_sampler(traj, ops), vspan, true);
 }
 
 /**
@@ -1693,17 +1709,7 @@ araster_value_sampler(const Temporal *traj,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) ops, -1);
   VALIDATE_NOT_NULL(vspan, -1);
-
-  Temporal *v = raster_value_sampler(traj, ops);
-  if (! v)
-    return 0;
-  Temporal *v1 = tnumber_restrict_span(v, vspan, REST_MINUS);
-  pfree(v);
-  bool result = (v1 == NULL);
-  if (v1)
-    pfree(v1);
-  return result ? 1 : 0;
+  return raster_values_ever(raster_value_sampler(traj, ops), vspan, false);
 }
-
 
 /*****************************************************************************/

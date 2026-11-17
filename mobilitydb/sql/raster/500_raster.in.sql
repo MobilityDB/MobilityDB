@@ -302,6 +302,32 @@ CREATE OR REPLACE FUNCTION atRasterValue(traj tgeompoint, path text,
   AS 'MODULE_PATHNAME', 'Raster_at_value_gdal'
   LANGUAGE C STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * Raquet tile falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION atRasterValue(traj tgeompoint, rast raquet, vspan floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_tile_at_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from an
+ * array of Raquet tiles falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Array of Raquet tiles
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION atRasterValue(traj tgeompoint, rast raquet[], vspan floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_tile_at_value_array'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * minusRasterValue
  *****************************************************************************/
@@ -335,6 +361,33 @@ CREATE OR REPLACE FUNCTION minusRasterValue(traj tgeompoint, path text,
     vspan floatspan, band integer DEFAULT 1)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Raster_minus_value_gdal'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * Raquet tile falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION minusRasterValue(traj tgeompoint, rast raquet, vspan floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_tile_minus_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from an
+ * array of Raquet tiles falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Array of Raquet tiles
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION minusRasterValue(traj tgeompoint, rast raquet[],
+    vspan floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_tile_minus_value_array'
   LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -372,6 +425,32 @@ CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, path text,
   AS 'MODULE_PATHNAME', 'Eraster_value_gdal'
   LANGUAGE C STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the trajectory ever reads a value inside a float range
+ * from a Raquet tile
+ * @param[in] traj Trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION eRasterValue(traj tgeompoint, rast raquet, vspan floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eraster_tile_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the trajectory ever reads a value inside a float range
+ * from an array of Raquet tiles
+ * @param[in] traj Trajectory
+ * @param[in] rast Array of Raquet tiles
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION eRasterValue(traj tgeompoint, rast raquet[], vspan floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eraster_tile_value_array'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * aRasterValue
  *****************************************************************************/
@@ -403,6 +482,32 @@ CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, rast raster,
 CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, path text,
     vspan floatspan, band integer DEFAULT 1) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Araster_value_gdal'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value the trajectory reads from a Raquet tile
+ * falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION aRasterValue(traj tgeompoint, rast raquet, vspan floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Araster_tile_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value the trajectory reads from an array of
+ * Raquet tiles falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Array of Raquet tiles
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION aRasterValue(traj tgeompoint, rast raquet[], vspan floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Araster_tile_value_array'
   LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************

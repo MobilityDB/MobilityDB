@@ -1096,4 +1096,195 @@ raster_tile_value_array(const Temporal *traj, const Raquet **rqarr, int count)
   return result;
 }
 
+/**
+ * @ingroup meos_raster
+ * @brief Return a trajectory restricted to the times where the value it reads
+ * from a Raquet tile falls inside a float span
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rq Raquet tile
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return A trajectory, or @p NULL when no time qualifies
+ * @errval NULL
+ * @csqlfn #Raster_tile_at_value()
+ */
+Temporal *
+raster_tile_at_value(const Temporal *traj, const Raquet *rq, const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
+  VALIDATE_NOT_NULL(vspan, NULL);
+  return raster_values_restrict(traj, raster_tile_value(traj, rq), vspan,
+    true);
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return a trajectory restricted to the times where the value it reads
+ * from a Raquet tile falls outside a float span
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rq Raquet tile
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return A trajectory, or @p NULL when no time qualifies
+ * @errval NULL
+ * @csqlfn #Raster_tile_minus_value()
+ */
+Temporal *
+raster_tile_minus_value(const Temporal *traj, const Raquet *rq,
+  const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
+  VALIDATE_NOT_NULL(vspan, NULL);
+  return raster_values_restrict(traj, raster_tile_value(traj, rq), vspan,
+    false);
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return true if a trajectory ever reads a value inside a float span
+ * from a Raquet tile
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rq Raquet tile
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return 1 if it ever does, 0 if not, -1 on error
+ * @errval -1
+ * @csqlfn #Eraster_tile_value()
+ */
+int
+eraster_tile_value(const Temporal *traj, const Raquet *rq, const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, -1); VALIDATE_TGEOMPOINT(traj, -1);
+  VALIDATE_NOT_NULL(vspan, -1);
+  return raster_values_ever(raster_tile_value(traj, rq), vspan, true);
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return true if every value a trajectory reads from a Raquet tile falls
+ * inside a float span
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rq Raquet tile
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return 1 if every value does, 0 if not or if it reads none, -1 on error
+ * @errval -1
+ * @csqlfn #Araster_tile_value()
+ */
+int
+araster_tile_value(const Temporal *traj, const Raquet *rq, const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, -1); VALIDATE_TGEOMPOINT(traj, -1);
+  VALIDATE_NOT_NULL(vspan, -1);
+  return raster_values_ever(raster_tile_value(traj, rq), vspan, false);
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return a trajectory restricted to the times where the value it reads
+ * from an array of Raquet tiles falls inside a float span
+ * @details The values are those #raster_tile_value_array() reads, the tile
+ * of highest zoom answering where tiles overlap
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] count Number of tiles in the array
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return A trajectory, or @p NULL when no time qualifies
+ * @errval NULL
+ * @csqlfn #Raster_tile_at_value_array()
+ */
+Temporal *
+raster_tile_at_value_array(const Temporal *traj, const Raquet **rqarr,
+  int count, const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rqarr, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
+  VALIDATE_NOT_NULL(vspan, NULL);
+  if (! ensure_not_empty_array(count))
+    return NULL;
+  Temporal *v = raster_tile_value_array(traj, rqarr, count);
+  return raster_values_restrict(traj, v, vspan, true);
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return a trajectory restricted to the times where the value it reads
+ * from an array of Raquet tiles falls outside a float span
+ * @details The values are those #raster_tile_value_array() reads, the tile
+ * of highest zoom answering where tiles overlap
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] count Number of tiles in the array
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return A trajectory, or @p NULL when no time qualifies
+ * @errval NULL
+ * @csqlfn #Raster_tile_minus_value_array()
+ */
+Temporal *
+raster_tile_minus_value_array(const Temporal *traj, const Raquet **rqarr,
+  int count, const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rqarr, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
+  VALIDATE_NOT_NULL(vspan, NULL);
+  if (! ensure_not_empty_array(count))
+    return NULL;
+  Temporal *v = raster_tile_value_array(traj, rqarr, count);
+  return raster_values_restrict(traj, v, vspan, false);
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return true if a trajectory ever reads a value inside a float span
+ * from an array of Raquet tiles
+ * @details The values are those #raster_tile_value_array() reads, the tile
+ * of highest zoom answering where tiles overlap
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] count Number of tiles in the array
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return 1 if it ever does, 0 if not, -1 on error
+ * @errval -1
+ * @csqlfn #Eraster_tile_value_array()
+ */
+int
+eraster_tile_value_array(const Temporal *traj, const Raquet **rqarr,
+  int count, const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rqarr, -1); VALIDATE_TGEOMPOINT(traj, -1);
+  VALIDATE_NOT_NULL(vspan, -1);
+  if (! ensure_not_empty_array(count))
+    return -1;
+  Temporal *v = raster_tile_value_array(traj, rqarr, count);
+  return raster_values_ever(v, vspan, true);
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return true if every value a trajectory reads from an array of Raquet
+ * tiles falls inside a float span
+ * @details The values are those #raster_tile_value_array() reads, the tile
+ * of highest zoom answering where tiles overlap
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] count Number of tiles in the array
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return 1 if every value does, 0 if not or if it reads none, -1 on error
+ * @errval -1
+ * @csqlfn #Araster_tile_value_array()
+ */
+int
+araster_tile_value_array(const Temporal *traj, const Raquet **rqarr,
+  int count, const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rqarr, -1); VALIDATE_TGEOMPOINT(traj, -1);
+  VALIDATE_NOT_NULL(vspan, -1);
+  if (! ensure_not_empty_array(count))
+    return -1;
+  Temporal *v = raster_tile_value_array(traj, rqarr, count);
+  return raster_values_ever(v, vspan, false);
+}
+
 /*****************************************************************************/

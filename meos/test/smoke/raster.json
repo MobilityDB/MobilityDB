@@ -110,6 +110,18 @@
     "raster_tile_value_array": {
       "2": "2"
     },
+    "raster_tile_at_value_array": {
+      "2": "2"
+    },
+    "raster_tile_minus_value_array": {
+      "2": "2"
+    },
+    "eraster_tile_value_array": {
+      "2": "2"
+    },
+    "araster_tile_value_array": {
+      "2": "2"
+    },
     "raster_clip": {
       "1": "clipbands1",
       "4": "NULL",

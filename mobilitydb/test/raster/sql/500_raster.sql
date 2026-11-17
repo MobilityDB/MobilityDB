@@ -365,6 +365,28 @@ SELECT rasterTileValue(tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01,
     Point(0 45)@2001-01-02]', raquet('\x14141414'::bytea, 2, 2,
     quadbinTileToCell(1, 0, 1), 'uint8'))) AS closed_end;
 
+-- The restrictions read a trip over a Raquet tile and over an array of tiles:
+-- the trip crosses from the western tile (value 10) into the eastern one
+-- (value 50) at 12:00.
+WITH tiles(w, e) AS (
+  SELECT raquet('\x0a0a0a0a'::bytea, 2, 2, quadbinTileToCell(0, 0, 1), 'uint8'),
+    raquet('\x32323232'::bytea, 2, 2, quadbinTileToCell(1, 0, 1), 'uint8')
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01, Point(90 45)@2001-01-02]'
+)
+SELECT asText(atRasterValue(tp, w, floatspan '[0, 20]')) AS at_tile,
+  minusRasterValue(tp, w, floatspan '[0, 20]') IS NULL AS minus_tile,
+  eRasterValue(tp, e, floatspan '[40, 60]') AS ever_tile,
+  aRasterValue(tp, w, floatspan '[40, 60]') AS always_tile,
+  asText(atRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]')) AS at_tiles,
+  asText(minusRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]')) AS minus_tiles,
+  eRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]') AS ever_tiles,
+  aRasterValue(tp, ARRAY[w, e], floatspan '[0, 60]') AS always_tiles,
+  aRasterValue(tp, ARRAY[w, e], floatspan '[0, 20]') AS not_always_tiles
+FROM tiles, trip;
+SELECT atRasterValue(tgeompoint 'SRID=4326;Point(0 0)@2001-01-01',
+  '{}'::raquet[], floatspan '[0, 1]');
+
 -- Tiles valid over successive half-open periods are read along a trip one
 -- period at a time and the reads merged: here the trip crosses from one tile
 -- into the other at 12:00, where a period also starts.
