@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.1.0 |
+| Version | v0.2.0 |
 | Scope | The temporal points MEOS builds from coordinates: the conversions to a temporal geometry or geography point, the points a lifted function returns, and the sequences built from arrays of coordinates; what they answer, what they refuse, and when their sequences are normalized |
-| Reference | `meos/src/geo/tgeo.c` (`tpointinst_coords_size`, `tpointinst_coords_set`, `tpointinst_make_coords`), `meos/src/temporal/tsequence.c` (`tpointseq_make_coords`), `meos/src/npoint/tnpoint.c`, `meos/src/cbuffer/tcbuffer.c`, `meos/src/geo/tgeo_spatialfuncs.c`, `meos/src/temporal/lifting.c` (`tfunc_tpointseq`) |
+| Reference | `meos/src/geo/tgeo.c` (`tpointinst_coords_size`, `tpointinst_coords_set`, `tpointinst_make_coords`), `meos/src/temporal/tsequence.c` (`tpointseq_make_coords`), `meos/src/npoint/tnpoint.c`, `meos/src/cbuffer/tcbuffer.c`, `meos/src/geo/tgeo_spatialfuncs.c`, `meos/src/temporal/lifting.c` (`tfunc_tpointseq`), `meos/src/temporal/temporal_restrict.c` (`tsegment_at_timestamptz`), `meos/src/geo/tpoint_spatialfuncs.c` (`point4dsegm_interpolate`) |
 
 ## 1. Scope and intent
 
@@ -56,6 +56,7 @@ normalization.
 | `tgeompoint_to_tgeogpoint` and every conversion to a temporal geography point that goes through it | the geography point of each geometry point | `tgeominst_tgeoginst`, `tgeomseq_tgeogseq` |
 | lifted functions whose result is a temporal geometry or geography point: the centres of H3, quadbin and S2 cells, the position of a pose, a rigid geometry to a point, `force2d`, the centroid | each point the function returns | `tfunc_tpointseq` |
 | `tcbuffer_to_tgeompoint` and every operation that converts a temporal circular buffer | the centre of each circular buffer | `tcbufferinst_tgeompointinst`, `tcbufferseq_tgeompointseq` |
+| the value of a temporal geometry or geography point at a timestamp inside a segment that is not constant: the restrictions to a timestamp, a set and a span of timestamps and their complements, the value at a timestamp, the synchronization of two temporal values that the temporal distance and the spatial relationships lift, the tiling | the point the segment interpolates, from the coordinates `point4dsegm_interpolate` computes: on the sphere for a geography, coordinate by coordinate for a geometry | `tsegment_at_timestamptz` |
 
 The points of a sequence are written in one block, each after the first
 copying its header, so the cost of a point is that of its coordinates and
