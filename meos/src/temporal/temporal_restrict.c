@@ -2777,6 +2777,28 @@ tsegment_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   Datum endvalue = tinstant_value_p(inst2);
   if (t == inst2->t)
     return tinstant_make_intl(endvalue, inst1->temptype, t);
+  /* The point of a temporal point is written from the coordinates
+   * #pointsegm_interpolate interpolates, as #tpointseq_make_coords writes
+   * its points, unless the segment is constant, whose start value is the
+   * value at every timestamp */
+  if (tpoint_type(inst1->temptype) &&
+      ! datum_eq(startvalue, endvalue, temptype_basetype(inst1->temptype)))
+  {
+    const GSERIALIZED *gs = DatumGetGserializedP(startvalue);
+    bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+    bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+    POINT4D p1, p2, p;
+    datum_point4d(startvalue, &p1);
+    datum_point4d(endvalue, &p2);
+    /* The ratio #tsegment_value_at_timestamptz computes */
+    long double ratio = (long double) (t - inst1->t) /
+      (long double) (inst2->t - inst1->t);
+    point4dsegm_interpolate(&p1, &p2, geodetic, ratio, &p);
+    TInstant *result = palloc(tpointinst_coords_size(hasz));
+    tpointinst_coords_set(result, NULL, p.x, p.y, hasz ? p.z : 0.0, hasz,
+      geodetic, gserialized_get_srid(gs), t);
+    return result;
+  }
   Datum value = tsegment_value_at_timestamptz(startvalue, endvalue,
     inst1->temptype, inst1->t, inst2->t, t);
   TInstant *result = tinstant_make_intl(value, inst1->temptype, t);

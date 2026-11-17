@@ -153,6 +153,8 @@ extern int eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 /* Functions specializing the PostGIS functions ST_LineInterpolatePoint and
  * ST_LineLocatePoint */
 
+extern void point4dsegm_interpolate(const POINT4D *p1, const POINT4D *p2,
+  bool geodetic, long double ratio, POINT4D *p);
 extern Datum pointsegm_interpolate(Datum start, Datum end,
   long double ratio);
 extern void interpolate_point4d_spheroid(const POINT4D *p1,

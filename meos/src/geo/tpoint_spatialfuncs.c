@@ -344,6 +344,38 @@ interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
  *****************************************************************************/
 
 /**
+ * @brief Set the last argument to the coordinates of the point interpolated
+ * from the coordinates of a geometry/geography segment with respect to the
+ * fraction of its total length
+ * @details A geography segment is interpolated on the sphere by
+ * #interpolate_point4d_spheroid, and a geometry one coordinate by coordinate
+ * by #floatsegm_interpolate
+ * @param[in] p1,p2 Coordinates of the points defining the segment
+ * @param[in] geodetic True when the segment is a geography one
+ * @param[in] ratio Float between 0 and 1 representing the fraction of the
+ * total length of the segment where the point must be located
+ * @param[out] p Coordinates of the interpolated point
+ */
+void
+point4dsegm_interpolate(const POINT4D *p1, const POINT4D *p2, bool geodetic,
+  long double ratio, POINT4D *p)
+{
+  if (geodetic)
+    interpolate_point4d_spheroid(p1, p2, p, NULL, (double) ratio);
+  else
+  {
+    /* We cannot call the PostGIS function
+     * interpolate_point4d(&p1, &p2, &p, ratio);
+     * since it uses a double and not a long double for the interpolation */
+    p->x = floatsegm_interpolate(p1->x, p2->x, ratio);
+    p->y = floatsegm_interpolate(p1->y, p2->y, ratio);
+    p->z = floatsegm_interpolate(p1->z, p2->z, ratio);
+    p->m = 0.0;
+  }
+  return;
+}
+
+/**
  * @brief Return a point interpolated from the geometry/geography segment with
  * respect to the fraction of its total length
  * @param[in] start,end Points defining the segment
@@ -360,19 +392,7 @@ pointsegm_interpolate(Datum start, Datum end, long double ratio)
   datum_point4d(end, &p2);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  if (geodetic)
-    interpolate_point4d_spheroid(&p1, &p2, &p, NULL, (double) ratio);
-  else
-  {
-    /* We cannot call the PostGIS function
-     * interpolate_point4d(&p1, &p2, &p, ratio);
-     * since it uses a double and not a long double for the interpolation */
-    p.x = floatsegm_interpolate(p1.x, p2.x, ratio);
-    p.y = floatsegm_interpolate(p1.y, p2.y, ratio);
-    p.z = floatsegm_interpolate(p1.z, p2.z, ratio);
-    p.m = 0.0;
-  }
-
+  point4dsegm_interpolate(&p1, &p2, geodetic, ratio, &p);
   Datum result = PointerGetDatum(geopoint_make(p.x, p.y, p.z, hasz, geodetic,
     srid));
   return result;
