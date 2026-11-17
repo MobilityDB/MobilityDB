@@ -81,6 +81,7 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__index_ga89f493801093b0e91f2fe783f6afce95.html#ga89f493801093b0e91f2fe783f6afce95">bbox_merge_each_n</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__box__index_ga48e3d588f22e995adaaa4228cae3887a.html#ga48e3d588f22e995adaaa4228cae3887a">bbox_merge_n</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__index_ga957bfec2c3aae47f7ea8ebc6eaf8e589.html#ga957bfec2c3aae47f7ea8ebc6eaf8e589">bbox_merge_query</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__index_ga2db53b49d9d06bb70f298e203c0d7393.html#ga2db53b49d9d06bb70f298e203c0d7393">bbox_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__index_ga582562fc5f4aca02ffd180257adecc7e.html#ga582562fc5f4aca02ffd180257adecc7e">rtree_create</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__index_gaeb30d4b04885c6e55bf0567f3df2adbf.html#gaeb30d4b04885c6e55bf0567f3df2adbf">rtree_search_intl</a></td></tr>
@@ -141,7 +142,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Merge consecutive bounding boxes of an array in place until a number of them remain, each time the consecutive pair whose union adds the least size to theirs. </p>
-<p >The boxes are those of the consecutive instants or segments of a value, so two consecutive boxes of a temporal value meet at an instant at most, and the size of their union less theirs is the empty space the merge adds. A heap of the consecutive pairs gives the next merge in logarithmic time; a pair whose box changed since its cost was read is discarded when reached. The boxes keep their order. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The merges are those of <a class="el" href="meos_2src_2temporal_2temporal__boxops_8c_ab959f0eee3bf161b88618d7fe24995bb.html#ab959f0eee3bf161b88618d7fe24995bb" title="Merge consecutive bounding boxes of an array in place, each time the consecutive pair whose union add...">bbox_merge</a>, the size of a box read by <code>bbox_size</code>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">bboxtype</td><td>Type of the boxes, a span type, T_TBOX, T_STBOX or T_TPCBOX </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">boxes</td><td>Array of boxes, the merged boxes at its start </td></tr>
