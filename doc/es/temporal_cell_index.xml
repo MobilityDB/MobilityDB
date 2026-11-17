@@ -337,6 +337,24 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 -- true
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_asCoverageJSON">
+				<indexterm significance="normal"><primary><varname>asCoverageJSON</varname></primary></indexterm>
+				<para>Devuelve un ráster, una tesela Raquet o los valores que lee una trayectoria como una cobertura CoverageJSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asCoverageJSON(raster) → text
+asCoverageJSON(raquet) → text
+asCoverageJSON(tfloat,tgeompoint) → text
+</programlisting>
+				<para>CoverageJSON es la codificación de OGC API – Coverages y de OGC API – Environmental Data Retrieval. Un <varname>raster</varname> es una cobertura <varname>Grid</varname>: sus ejes <varname>x</varname> e <varname>y</varname> van del centro del primer píxel al centro del último, cada banda es un parámetro <varname>band1</varname>, <varname>band2</varname> ..., cuyos valores van fila por fila desde la fila superior, y un píxel nodata es <varname>null</varname>; un ráster con sesgo, cuyos píxeles no están sobre tales ejes, y un ráster sin sistema de referencia espacial producen un error. Una tesela <varname>raquet</varname> es una malla de Web Mercator, EPSG:3857, sobre los límites de su celda QUADBIN. Los valores que lee una trayectoria, como los de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>, son una cobertura <varname>Trajectory</varname> cuyos puntos son los instantes de los valores, cada uno en la posición de la trayectoria en su instante. EPSG:4326 se declara como OGC CRS84, cuya longitud va primero como la declara MobilityDB.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
+  #> '{ranges,band1,values}';
+-- [1,2,3,4,-5,null]
+</programlisting>
+			</listitem>
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_constructors">
 		<title>Constructores</title>

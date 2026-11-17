@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.4.0 |
+| Version | v0.5.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -87,6 +87,22 @@ little-endian, row by row from the top. `bandnum` is the band of the bytes,
 or the band taken from an interleaved column. The row of block 0, a band the
 metadata does not state, bytes of another size than the tile, and a band
 stating a scale or an offset, which a tile does not carry, are refused.
+
+`asCoverageJSON` writes the encoding of OGC API – Coverages and OGC API –
+Environmental Data Retrieval, CoverageJSON:
+
+| Function | Coverage |
+|---|---|
+| `asCoverageJSON(raster)` | a `Grid`: the axes `x` and `y` run from the centre of the first pixel to the centre of the last, each band is a parameter `band1`, `band2` ..., whose values run row by row from the top row, a nodata pixel `null` |
+| `asCoverageJSON(raquet)` | a `Grid` of Web Mercator, EPSG:3857, over the bounds of the tile's QUADBIN cell |
+| `asCoverageJSON(tfloat, tgeompoint)` | a `Trajectory` of the values a trajectory reads (section 5): a point per instant of the values, at the position of the trajectory at that instant, so the instants a trajectory crosses from one pixel to the next are points of the coverage |
+
+EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MEOS states
+it; another system is stated by its EPSG identifier, its coordinates listed in
+the order the authority gives its axes. A raster with a skew, whose pixels lie
+on no axes of a grid, and a value in no reference system are refused. A
+coverage holds the values at its points, so a step or a linear `tfloat` is
+written as the values at its instants.
 
 ## 5. The values along a trajectory
 
@@ -175,6 +191,7 @@ patch number with corrections of wording.
 | v0.2.0 | `raster` a type of the MEOS catalog, `T_RASTER` |
 | v0.3.0 | The restrictions over a Raquet tile and an array of tiles |
 | v0.4.0 | One row of a Raquet file read into a tile, `raquetFromRow` |
+| v0.5.0 | A raster, a Raquet tile and the values a trajectory reads written as CoverageJSON |
 
 ## 9. Out of scope
 
@@ -186,9 +203,6 @@ Future: each of these is added here with its version.
   `ST_AsJPEG` and `ST_FromGDALRaster` write and read; the creation options
   are one string of `KEY=VALUE` pairs, as GDAL tokenizes them, or in SQL the
   `text[]` of PostGIS.
-- `asCoverageJSON`: a raster and a tile as a CoverageJSON `Grid` coverage,
-  and the values a trajectory reads, `asCoverageJSON(tfloat, tgeompoint)`, as
-  a `Trajectory` coverage.
 - A Raquet file read as its tiles and written from them, through GDAL's
   Parquet driver.
 - The values a trajectory reads from a raster series and its restrictions,
