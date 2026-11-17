@@ -55,6 +55,7 @@
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/meos_transform.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
@@ -1868,6 +1869,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
 #endif /* RGEO */
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
+    json_object_put(poObj);
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string, expected: %s, received: %s",
       meostype_name(temptype), meostype_name(jtemptype));
@@ -1913,9 +1915,12 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     }
     if (pszName)
     {
-      // The following call requires a valid spatial_ref_sys table entry
-      // srid = getSRIDbySRS(fcinfo, srs);
-      sscanf(pszName, "EPSG:%d", &srid);
+      srid = srs_srid(pszName);
+      if (srid == SRID_INVALID)
+      {
+        json_object_put(poObj);
+        return NULL;
+      }
     }
     else if (tgeodetic_type(temptype))
       srid = WGS84_SRID;
