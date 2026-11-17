@@ -65,6 +65,7 @@
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_restrict.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -2331,15 +2332,50 @@ geogsegmpair_crossings(const GeogSegmPair *sp, double dist, double *cross)
 /**
  * @brief Add to a walk the result of the temporal dwithin of one segment of
  * two geography points, from the crossings of the distance in the segment
- * @details Each crossing is an instant at which the two points are within the
- * distance, dated by truncation as #tpointsegm_tdwithin_turnpt dates one, and
- * the value between two consecutive instants is the one at their middle
+ * @details On the sphere the answer is decided exactly
+ * (#geog_motion_dwithin_crossings_exact): the value at every microsecond is
+ * the exact one, a crossing is dated by the truncation of its exact instant,
+ * as #point_motion_dwithin_period_exact dates a planar one, and the value
+ * after it is the one at the next microsecond. On the spheroid each crossing
+ * is an instant at which the two points are within the distance, dated by
+ * truncation as #tpointsegm_tdwithin_turnpt dates one, and the value between
+ * two consecutive instants is the one at their middle
+ * @param[in] inend Whether the two are within the distance at the values of
+ * the instants ending the segment, read where @p upper_inc
  */
 static bool
 tdwithin_geogsegm_run(const GeogSegmPair *sp, double dist,
   TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc,
-  double dend, TDwithinRun *run)
+  bool inend, TDwithinRun *run)
 {
+  if (sp->sphere)
+  {
+    int64 dated[GEOG_DWITHIN_MAXCROSS];
+    bool after[GEOG_DWITHIN_MAXCROSS], value;
+    int ncross = geog_motion_dwithin_crossings_exact(&sp->s1, &sp->e1,
+      &sp->s2, &sp->e2, dist, sp->s.radius, upper - lower, &value, dated,
+      after, GEOG_DWITHIN_MAXCROSS);
+    if (ncross < 0)
+      return false;
+    if (lower_inc)
+      tdwithin_run_add(run, BoolGetDatum(value), lower, lower, true, true);
+    /* The microseconds up to the date of a crossing take the value before
+     * it, the date included */
+    TimestampTz prev = lower;
+    for (int k = 0; k < ncross; k++)
+    {
+      TimestampTz t = lower + dated[k];
+      if (t > prev)
+        tdwithin_run_add(run, BoolGetDatum(value), prev, t, false, true);
+      value = after[k];
+      prev = t;
+    }
+    if (upper > prev)
+      tdwithin_run_add(run, BoolGetDatum(value), prev, upper, false, false);
+    if (upper_inc)
+      tdwithin_run_add(run, BoolGetDatum(inend), upper, upper, true, true);
+    return true;
+  }
   const Datum datum_true = BoolGetDatum(true);
   double cross[GEOG_DWITHIN_MAXCROSS];
   int ncross = geogsegmpair_crossings(sp, dist, cross);
@@ -2365,8 +2401,28 @@ tdwithin_geogsegm_run(const GeogSegmPair *sp, double dist,
   tdwithin_run_add(run, BoolGetDatum(geogsegmpair_dist(sp, fmid) <= dist),
     prev, upper, false, false);
   if (upper_inc)
-    tdwithin_run_add(run, BoolGetDatum(dend <= dist), upper, upper, true,
-      true);
+    tdwithin_run_add(run, BoolGetDatum(inend), upper, upper, true, true);
+  return true;
+}
+
+/**
+ * @brief Return true where two geography points at rest are within a
+ * distance, set in @p result, as the walk of #tdwithin_tgeogpoint_geogpoint
+ * measures it: exactly on the sphere (#geog_motion_dwithin_at_exact), as
+ * #geog_dwithin decides it on the spheroid
+ * @return False where the sphere does not decide it
+ */
+static bool
+tdwithin_geogpoints_at_rest(const GeogSegmPair *sp, const POINT2D *p1,
+  const POINT2D *p2, double dist, bool *result)
+{
+  if (sp->sphere)
+    return geog_motion_dwithin_at_exact(p1, p1, p2, p2, dist, sp->s.radius,
+      1, 0, result);
+  GeogSegmPair rest = *sp;
+  rest.s1 = rest.e1 = *p1;
+  rest.s2 = rest.e2 = *p2;
+  *result = geogsegmpair_dist(&rest, 0.0) <= dist;
   return true;
 }
 
@@ -2443,10 +2499,15 @@ tdwithin_tgeogpoint_geogpoint(const Temporal *temp1, const Temporal *temp2,
       const TInstant *inst2 = seq2 ? TSEQUENCE_INST_N(seq2, i) : NULL;
       if (seq1->count == 1)
       {
-        sp.s1 = sp.e1 = *tgeogpointinst_point2d(inst1);
-        sp.s2 = sp.e2 = inst2 ? *tgeogpointinst_point2d(inst2) : *pt;
-        tdwithin_run_add(&run, BoolGetDatum(geogsegmpair_dist(&sp, 0.0) <=
-          dist), inst1->t, inst1->t, true, true);
+        bool within;
+        ok = tdwithin_geogpoints_at_rest(&sp, tgeogpointinst_point2d(inst1),
+          inst2 ? tgeogpointinst_point2d(inst2) : pt, dist, &within);
+        if (ok)
+          tdwithin_run_add(&run, BoolGetDatum(within), inst1->t, inst1->t,
+            true, true);
+        else
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "The distance of two geography points could not be decided");
         break;
       }
       if (i == seq1->count - 1)
@@ -2460,13 +2521,15 @@ tdwithin_tgeogpoint_geogpoint(const Temporal *temp1, const Temporal *temp2,
       bool upper_inc = (i == seq1->count - 2) ? seq1->period.upper_inc : false;
       /* The distance at the end of the last segment is the one of the values
        * of the two instants, which a step segment reaches only there */
-      double dend = 0.0;
-      if (upper_inc)
+      bool inend = false;
+      if (upper_inc && ! tdwithin_geogpoints_at_rest(&sp,
+          tgeogpointinst_point2d(end1),
+          end2 ? tgeogpointinst_point2d(end2) : pt, dist, &inend))
       {
-        GeogSegmPair last = sp;
-        last.s1 = last.e1 = *tgeogpointinst_point2d(end1);
-        last.s2 = last.e2 = end2 ? *tgeogpointinst_point2d(end2) : *pt;
-        dend = geogsegmpair_dist(&last, 0.0);
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "The distance of two geography points could not be decided");
+        ok = false;
+        break;
       }
       if (! geogsegm_circle(&sp.s1, &sp.e1, &sp.A1, &sp.C1, &sp.om1) ||
           ! geogsegm_circle(&sp.s2, &sp.e2, &sp.A2, &sp.C2, &sp.om2))
@@ -2478,7 +2541,7 @@ tdwithin_tgeogpoint_geogpoint(const Temporal *temp1, const Temporal *temp2,
       }
       bool lower_inc = (i == 0) ? seq1->period.lower_inc : true;
       if (! tdwithin_geogsegm_run(&sp, dist, inst1->t, end1->t, lower_inc,
-          upper_inc, dend, &run))
+          upper_inc, inend, &run))
       {
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "The crossings of the distance of two geography points could not "
