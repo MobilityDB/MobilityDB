@@ -97,6 +97,28 @@
       "0": "tfloat_cov1",
       "1": "traj1"
     },
+    "raster_as_gdal": {
+      "1": "\"GTiff\"",
+      "2": "\"COMPRESS=DEFLATE\"",
+      "3": "0"
+    },
+    "raster_as_tiff": {
+      "1": "NULL",
+      "2": "0"
+    },
+    "raster_as_png": {
+      "0": "rast_u8",
+      "1": "NULL"
+    },
+    "raster_as_jpeg": {
+      "0": "rast_u8",
+      "1": "NULL"
+    },
+    "raster_from_gdal": {
+      "0": "grid_bytes1",
+      "1": "grid_bytes1_size",
+      "2": "0"
+    },
     "raster_make": {
       "0": "2",
       "1": "2",
@@ -243,6 +265,9 @@
     "  const char *rq_meta1 = \"{\\\"tiling\\\": {\\\"block_width\\\": 2, \\\"block_height\\\": 2}, \\\"bands\\\": [{\\\"type\\\": \\\"uint8\\\"}]}\";",
     "  /* Values read along the trip, over its own period. */",
     "  Temporal *tfloat_cov1 = tfloat_in(\"[10@2001-01-01, 20@2001-01-02]\");",
+    "  /* A raster of one band of 8 unsigned bits, which the image drivers take. */",
+    "  Raster *rast_u8 = raster_make(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326,",
+    "    \"8BUI\", 0.0, false, rq_pixels1, 4);",
     "  size_t rq_wkb1_size = 0;",
     "  uint8_t *rq_wkb1 = raquet_as_wkb(rq1, 0, &rq_wkb1_size);",
     "  char *rq_hexwkb1 = raquet_as_hexwkb(rq1, 0, &size_out);",
@@ -349,6 +374,7 @@
     "  free(rq_hexwkb1);",
     "  free(rq_wkb1);",
     "  free(tfloat_cov1);",
+    "  free(rast_u8);",
     "  free(rq2);",
     "  free(rq1);",
     "  free(cells1);",

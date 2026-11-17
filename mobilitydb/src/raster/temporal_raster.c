@@ -45,6 +45,7 @@
 #include <catalog/pg_type.h>
 #include <commands/extension.h>
 #include <executor/executor.h>  /* GetAttributeByNum */
+#include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/guc.h>
 #include <utils/lsyscache.h>
@@ -754,6 +755,175 @@ Tfloat_as_coveragejson(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(traj, 1);
   return coveragejson_text_datum(fcinfo, str);
+}
+
+/*****************************************************************************
+ * The formats of GDAL
+ *****************************************************************************/
+
+/**
+ * @brief Return the creation options of a GDAL driver held in a text array as
+ * the one string MEOS takes, or NULL for an array of none
+ * @details Each option is written between double quotes, a double quote or a
+ * backslash it holds escaped, which is how GDAL's tokenizer reads a string
+ * back into its options
+ * @param[in] array Array of options `KEY=VALUE`
+ */
+static char *
+gdal_options_string(ArrayType *array)
+{
+  Datum *elems;
+  bool *nulls;
+  int count;
+  deconstruct_array(array, TEXTOID, -1, false, 'i', &elems, &nulls, &count);
+  StringInfoData buf;
+  initStringInfo(&buf);
+  int n = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (nulls[i])
+      continue;
+    char *opt = text_to_cstring(DatumGetTextP(elems[i]));
+    if (n++ > 0)
+      appendStringInfoChar(&buf, ' ');
+    appendStringInfoChar(&buf, '"');
+    for (const char *c = opt; *c; c++)
+    {
+      if (*c == '"' || *c == '\\')
+        appendStringInfoChar(&buf, '\\');
+      appendStringInfoChar(&buf, *c);
+    }
+    appendStringInfoChar(&buf, '"');
+    pfree(opt);
+  }
+  pfree(elems); pfree(nulls);
+  if (n == 0)
+  {
+    pfree(buf.data);
+    return NULL;
+  }
+  return buf.data;
+}
+
+/**
+ * @brief Return the bytes a GDAL writer answers as a bytea, or NULL
+ */
+static Datum
+gdal_bytes_datum(FunctionCallInfo fcinfo, uint8_t *bytes, size_t size)
+{
+  if (! bytes)
+    PG_RETURN_NULL();
+  bytea *result = bstring2bytea(bytes, size);
+  pfree(bytes);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Raster_as_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written in a format of GDAL
+ * @sqlfn asGDALRaster()
+ */
+Datum
+Raster_as_gdal(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *format = text_to_cstring(PG_GETARG_TEXT_P(1));
+  char *options = PG_ARGISNULL(2) ? NULL :
+    gdal_options_string(PG_GETARG_ARRAYTYPE_P(2));
+  int32 srid = PG_ARGISNULL(3) ? 0 : PG_GETARG_INT32(3);
+  size_t size;
+  uint8_t *bytes = raster_as_gdal(rast, format, options, srid, &size);
+  pfree(format);
+  if (options) pfree(options);
+  return gdal_bytes_datum(fcinfo, bytes, size);
+}
+
+PGDLLEXPORT Datum Raster_as_tiff(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_tiff);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a GeoTIFF
+ * @sqlfn asTIFF()
+ */
+Datum
+Raster_as_tiff(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *options = PG_ARGISNULL(1) ? NULL :
+    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  int32 srid = PG_ARGISNULL(2) ? 0 : PG_GETARG_INT32(2);
+  size_t size;
+  uint8_t *bytes = raster_as_tiff(rast, options, srid, &size);
+  if (options) pfree(options);
+  return gdal_bytes_datum(fcinfo, bytes, size);
+}
+
+PGDLLEXPORT Datum Raster_as_png(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_png);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a PNG image
+ * @sqlfn asPNG()
+ */
+Datum
+Raster_as_png(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *options = PG_ARGISNULL(1) ? NULL :
+    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  size_t size;
+  uint8_t *bytes = raster_as_png(rast, options, &size);
+  if (options) pfree(options);
+  return gdal_bytes_datum(fcinfo, bytes, size);
+}
+
+PGDLLEXPORT Datum Raster_as_jpeg(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_jpeg);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a JPEG image
+ * @sqlfn asJPEG()
+ */
+Datum
+Raster_as_jpeg(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *options = PG_ARGISNULL(1) ? NULL :
+    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  size_t size;
+  uint8_t *bytes = raster_as_jpeg(rast, options, &size);
+  if (options) pfree(options);
+  return gdal_bytes_datum(fcinfo, bytes, size);
+}
+
+PGDLLEXPORT Datum Raster_from_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_from_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster read from the bytes of a file in a format of GDAL
+ * @sqlfn rasterFromGDALRaster()
+ */
+Datum
+Raster_from_gdal(PG_FUNCTION_ARGS)
+{
+  bytea *data = PG_GETARG_BYTEA_P(0);
+  int32 srid = PG_GETARG_INT32(1);
+  Raster *result = raster_from_gdal((uint8_t *) VARDATA(data),
+    VARSIZE(data) - VARHDRSZ, srid);
+  PG_FREE_IF_COPY(data, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Raster_from_wkb(PG_FUNCTION_ARGS);
