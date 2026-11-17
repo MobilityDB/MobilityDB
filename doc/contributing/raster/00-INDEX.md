@@ -90,8 +90,8 @@ the standard's conformance classes against the fixture.
 - The catalog exchanges `Raster` and `Raquet` as WKB, `Raster` in its slot `T_RASTER` (R1,
   MobilityDB #3780).
 - No raster writer to GeoTIFF or CoverageJSON exists in MEOS (R3, R4).
-- The restrictions to the values of a `Raquet` tile are missing (R2), and a Raquet Parquet file
-  is read and written by no MEOS function (R5).
+- The restrictions read the values of a `Raquet` tile and an array of tiles (R2, MobilityDB
+  #3781); a Raquet Parquet file is read and written by no MEOS function (R5).
 - `tools/raster_matrix.py` measures the raster surface each binding and MobilityDuck carries
   (R6, MobilityDB #3776).
 - MobilityAPI publishes no raster (R7 to R10).
