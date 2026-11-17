@@ -460,10 +460,34 @@ SELECT mergeEachNspans(bigintset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
  {"[1, 8)","[8, 9)","[9, 10)","[10, 11)"}
 (1 row)
 
+SELECT mergeQueryspans(bigintset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', bigintspan '[1, 2]');
+ mergequeryspans 
+-----------------
+ {"[1, 11)"}
+(1 row)
+
+SELECT mergeQueryspans(bigintset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', bigintspan '[1, 20]');
+ mergequeryspans 
+-----------------
+ {"[1, 11)"}
+(1 row)
+
 SELECT mergeEachNspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', 2);
              mergeeachnspans              
 ------------------------------------------
  {"[1.5, 3.5]","[4.5, 4.5]","[5.5, 5.5]"}
+(1 row)
+
+SELECT mergeQueryspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', floatspan '[1, 1.5]');
+                          mergequeryspans                           
+--------------------------------------------------------------------
+ {"[1.5, 1.5]","[2.5, 2.5]","[3.5, 3.5]","[4.5, 4.5]","[5.5, 5.5]"}
+(1 row)
+
+SELECT mergeQueryspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', floatspan '[1, 20]');
+ mergequeryspans 
+-----------------
+ {"[1.5, 5.5]"}
 (1 row)
 
 SELECT mergeEachNspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', 2);
@@ -472,10 +496,34 @@ SELECT mergeEachNspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}
  {"[01-01-2001, 01-06-2001)","[01-07-2001, 01-08-2001)"}
 (1 row)
 
+SELECT mergeQueryspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', datespan '[2001-01-01, 2001-01-02]');
+       mergequeryspans        
+------------------------------
+ {"[01-01-2001, 01-08-2001)"}
+(1 row)
+
+SELECT mergeQueryspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', datespan '[2001-01-01, 2001-03-01]');
+       mergequeryspans        
+------------------------------
+ {"[01-01-2001, 01-08-2001)"}
+(1 row)
+
 SELECT mergeEachNspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', 2);
                                                          mergeeachnspans                                                         
 ---------------------------------------------------------------------------------------------------------------------------------
  {"[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST]","[Sun Jan 07 00:00:00 2001 PST, Sun Jan 07 00:00:00 2001 PST]"}
+(1 row)
+
+SELECT mergeQueryspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+                                                                                                                        mergequeryspans                                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]","[Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]","[Fri Jan 05 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST]","[Sun Jan 07 00:00:00 2001 PST, Sun Jan 07 00:00:00 2001 PST]"}
+(1 row)
+
+SELECT mergeQueryspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', tstzspan '[2001-01-01, 2001-01-08]');
+                         mergequeryspans                          
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Sun Jan 07 00:00:00 2001 PST]"}
 (1 row)
 
 /* Errors */
@@ -483,6 +531,18 @@ SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
 ERROR:  The value must be strictly positive: -1
 SELECT mergeEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
 ERROR:  The value must be strictly positive: -1
+SELECT mergeQueryspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', intspan '[1, 2]');
+ mergequeryspans 
+-----------------
+ {"[1, 11)"}
+(1 row)
+
+SELECT mergeQueryspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', intspan '[1, 20]');
+ mergequeryspans 
+-----------------
+ {"[1, 11)"}
+(1 row)
+
 -------------------------------------------------------------------------------
 SELECT numValues(dateset '{2001-01-01}');
  numvalues 

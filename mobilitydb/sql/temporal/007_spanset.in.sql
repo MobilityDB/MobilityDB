@@ -973,6 +973,27 @@ CREATE FUNCTION mergeEachNSpans(tstzspanset, integer)
   AS 'MODULE_PATHNAME', 'Spanset_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeQuerySpans(intspanset, intspan)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(bigintspanset, bigintspan)
+  RETURNS bigintspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(floatspanset, floatspan)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(datespanset, datespan)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(tstzspanset, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Comparison operators
  ******************************************************************************/

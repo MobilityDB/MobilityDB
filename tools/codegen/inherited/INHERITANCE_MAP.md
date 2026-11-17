@@ -309,7 +309,10 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   included. The same rows render the merge twins of the public splitters,
   `merge_n` and `merge_each_n`, which hand the boxes of the instants or
   segments to `bbox_merge_n` and `bbox_merge_each_n` with the box type, the
-  function growing a box and the size function the row states; a point cloud
+  function growing a box and the size function the row states, and
+  `merge_query`, which validates the query box of the subject's own box type
+  through the row's `QVALID` call and hands the boxes to `bbox_merge_query`
+  with the size of a box for that query, the row's `MQSIZE`; a point cloud
   box merges through those of the spatiotemporal box it begins with.
   The index operator classes of a box type are the regions between its
   `GENERATED-BOXOPCLASS-BEGIN/END` markers, one per class of its `opclasses:`

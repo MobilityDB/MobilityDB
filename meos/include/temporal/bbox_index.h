@@ -95,6 +95,9 @@ extern int bbox_merge_each_n(MeosType bboxtype, void *boxes, int count,
 extern int bbox_merge_n(MeosType bboxtype, void *boxes, int count,
   int box_count, void (*bbox_adjust)(void *, void *),
   double (*bbox_size)(const void *));
+extern int bbox_merge_query(MeosType bboxtype, void *boxes, int count,
+  const void *query, void (*bbox_adjust)(void *, void *),
+  double (*bbox_query_size)(const void *, const void *));
 
 /*****************************************************************************/
 

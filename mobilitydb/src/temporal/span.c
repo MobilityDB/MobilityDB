@@ -405,6 +405,31 @@ Set_merge_each_n_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Set_merge_query_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_merge_query_spans);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Return an array of boxes obtained by merging the boxes of
+ * the elements of a set into those a query of the width of
+ * a query span is expected to read least
+ * @details The width of the query box are the extents of the query, its
+ * position is not read, and a dimension it lacks restricts no query
+ * @sqlfn mergeQuerySpans()
+ */
+Datum
+Set_merge_query_spans(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Span *query = PG_GETARG_SPAN_P(1);
+  int count;
+  Span *spans = set_merge_query_spans(s, query, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+
 PGDLLEXPORT Datum Intspan_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intspan_to_floatspan);
 /**

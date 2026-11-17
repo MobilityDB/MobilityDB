@@ -1977,6 +1977,44 @@ temporal_merge_each_n_spans(const Temporal *temp, int elem_count, int *count)
       &span_adjust, &span_size);
   return result;
 }
+
+/*****************************************************************************
+ * merge_query_spans function
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_bbox_split
+ * @brief Return an array of spans obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal value into those a query of the extents of a query box
+ * is expected to read least
+ * @details The query twin of #temporal_merge_n_spans, by #bbox_merge_query:
+ * the widths of the query box are the extents of the query, its position is
+ * not read, and a dimension it lacks restricts no query
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Temporal_merge_query_spans()
+ */
+Span *
+temporal_merge_query_spans(const Temporal *temp, const Span *query,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_span_isof_type(query, T_TSTZSPAN))
+    return NULL;
+
+  Span *result = temporal_spans(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_TSTZSPAN, result, *count, query, &span_adjust,
+      &span_query_size);
+  return result;
+}
 /* GENERATED-BOXSPLIT-END temporal */
 
 /*****************************************************************************
@@ -2608,6 +2646,44 @@ tnumber_merge_each_n_tboxes(const Temporal *temp, int elem_count, int *count)
   if (result)
     *count = bbox_merge_each_n(T_TBOX, result, *count, elem_count,
       &tbox_adjust, &tbox_size);
+  return result;
+}
+
+/*****************************************************************************
+ * merge_query_tboxes function
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_bbox_split
+ * @brief Return an array of temporal boxes obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal number into those a query of the extents of a query box
+ * is expected to read least
+ * @details The query twin of #tnumber_merge_n_tboxes, by #bbox_merge_query:
+ * the widths of the query box are the extents of the query, its position is
+ * not read, and a dimension it lacks restricts no query
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tnumber_merge_query_tboxes()
+ */
+TBox *
+tnumber_merge_query_tboxes(const Temporal *temp, const TBox *query,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_valid_tnumber_tbox(temp, query))
+    return NULL;
+
+  TBox *result = tnumber_tboxes(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_TBOX, result, *count, query, &tbox_adjust,
+      &tbox_query_size);
   return result;
 }
 /* GENERATED-BOXSPLIT-END tnumber */
@@ -3921,46 +3997,57 @@ boxpair_heap_down(BoxPair *heap, int count, int i)
 }
 
 /**
- * @brief Return the size the union of two boxes adds to the sizes of both
+ * @brief Return the size the union of two boxes adds to the sizes of both,
+ * measured for a query box when one is given
  */
 static double
 bbox_merge_cost(const char *box1, const char *box2, char *unionbox,
-  size_t bboxsize, void (*bbox_adjust)(void *, void *),
-  double (*bbox_size)(const void *))
+  size_t bboxsize, const void *query, void (*bbox_adjust)(void *, void *),
+  double (*bbox_size)(const void *),
+  double (*bbox_query_size)(const void *, const void *))
 {
   memcpy(unionbox, box1, bboxsize);
   bbox_adjust(unionbox, (void *) box2);
+  if (query)
+    return bbox_query_size(unionbox, query) - bbox_query_size(box1, query) -
+      bbox_query_size(box2, query);
   return bbox_size(unionbox) - bbox_size(box1) - bbox_size(box2);
 }
 
 /**
- * @ingroup meos_internal_box_index
- * @brief Merge consecutive bounding boxes of an array in place until a
- * number of them remain, each time the consecutive pair whose union adds the
- * least size to theirs
+ * @brief Merge consecutive bounding boxes of an array in place, each time the
+ * consecutive pair whose union adds the least size to theirs, until a number
+ * of them remain
  * @details The boxes are those of the consecutive instants or segments of a
  * value, so two consecutive boxes of a temporal value meet at an instant at
  * most, and the size of their union less theirs is the empty space the merge
  * adds. A heap of the consecutive pairs gives the next merge in logarithmic
  * time; a pair whose box changed since its cost was read is discarded when
  * reached. The boxes keep their order.
- * @param[in] bboxtype Type of the boxes, a span type, T_TBOX, T_STBOX or
- * T_TPCBOX
+ * @param[in] bboxtype Type of the boxes
  * @param[in,out] boxes Array of boxes, the merged boxes at its start
  * @param[in] count Number of boxes
  * @param[in] box_count Number of boxes to keep, at least one
+ * @param[in] query Query box, or NULL
  * @param[in] bbox_adjust Function growing its first box to include the second
- * @param[in] bbox_size Function returning the size of a box
- * @return Number of boxes kept, the least of @p count and @p box_count
- * @note The merge twin of #bbox_split, which splits a set of boxes by the
- * same functions
+ * @param[in] bbox_size Function returning the size of a box, read when
+ * @p query is NULL
+ * @param[in] bbox_query_size Function returning the size of a box for a query
+ * box, read when @p query is not NULL
+ * @param[out] best When not NULL, the number of boxes after the merge at
+ * which the sum of the sizes is least, the boxes before any merge included
+ * @return Number of boxes kept
  */
-int
-bbox_merge_n(MeosType bboxtype, void *boxes, int count, int box_count,
-  void (*bbox_adjust)(void *, void *), double (*bbox_size)(const void *))
+static int
+bbox_merge(MeosType bboxtype, void *boxes, int count, int box_count,
+  const void *query, void (*bbox_adjust)(void *, void *),
+  double (*bbox_size)(const void *),
+  double (*bbox_query_size)(const void *, const void *), int *best)
 {
   assert(boxes); assert(count >= 0); assert(box_count > 0);
-  assert(bbox_adjust); assert(bbox_size);
+  assert(bbox_adjust); assert(query ? bbox_query_size != NULL : bbox_size != NULL);
+  if (best)
+    *best = count;
   if (count <= box_count)
     return count;
 
@@ -3984,11 +4071,15 @@ bbox_merge_n(MeosType bboxtype, void *boxes, int count, int box_count,
   {
     heap[nheap] = (BoxPair) {
       bbox_merge_cost(box + i * bboxsize, box + (i + 1) * bboxsize, unionbox,
-        bboxsize, bbox_adjust, bbox_size), i, i + 1, 0, 0 };
+        bboxsize, query, bbox_adjust, bbox_size, bbox_query_size),
+      i, i + 1, 0, 0 };
     boxpair_heap_up(heap, nheap++);
   }
 
   int nboxes = count;
+  /* The sum of the sizes changes by the cost of each merge, so its least
+   * value is found without measuring the boxes again */
+  double total = 0.0, least = 0.0;
   while (nboxes > box_count && nheap > 0)
   {
     BoxPair pair = heap[0];
@@ -4007,13 +4098,19 @@ bbox_merge_n(MeosType bboxtype, void *boxes, int count, int box_count,
       prev[next[pair.right]] = pair.left;
     version[pair.left]++;
     nboxes--;
+    total += pair.cost;
+    if (best && total < least)
+    {
+      least = total;
+      *best = nboxes;
+    }
     /* The pairs the merged box forms with its neighbours */
     int p = prev[pair.left], n = next[pair.left];
     if (p >= 0)
     {
       heap[nheap] = (BoxPair) {
         bbox_merge_cost(box + p * bboxsize, box + pair.left * bboxsize,
-          unionbox, bboxsize, bbox_adjust, bbox_size),
+          unionbox, bboxsize, query, bbox_adjust, bbox_size, bbox_query_size),
         p, pair.left, version[p], version[pair.left] };
       boxpair_heap_up(heap, nheap++);
     }
@@ -4021,7 +4118,7 @@ bbox_merge_n(MeosType bboxtype, void *boxes, int count, int box_count,
     {
       heap[nheap] = (BoxPair) {
         bbox_merge_cost(box + pair.left * bboxsize, box + n * bboxsize,
-          unionbox, bboxsize, bbox_adjust, bbox_size),
+          unionbox, bboxsize, query, bbox_adjust, bbox_size, bbox_query_size),
         pair.left, n, version[pair.left], version[n] };
       boxpair_heap_up(heap, nheap++);
     }
@@ -4038,6 +4135,78 @@ bbox_merge_n(MeosType bboxtype, void *boxes, int count, int box_count,
   pfree(prev); pfree(next); pfree(version); pfree(alive); pfree(heap);
   pfree(unionbox);
   return k;
+}
+
+/**
+ * @ingroup meos_internal_box_index
+ * @brief Merge consecutive bounding boxes of an array in place until a
+ * number of them remain, each time the consecutive pair whose union adds the
+ * least size to theirs
+ * @details The merges are those of #bbox_merge, the size of a box read by
+ * @p bbox_size.
+ * @param[in] bboxtype Type of the boxes, a span type, T_TBOX, T_STBOX or
+ * T_TPCBOX
+ * @param[in,out] boxes Array of boxes, the merged boxes at its start
+ * @param[in] count Number of boxes
+ * @param[in] box_count Number of boxes to keep, at least one
+ * @param[in] bbox_adjust Function growing its first box to include the second
+ * @param[in] bbox_size Function returning the size of a box
+ * @return Number of boxes kept, the least of @p count and @p box_count
+ * @note The merge twin of #bbox_split, which splits a set of boxes by the
+ * same functions
+ */
+int
+bbox_merge_n(MeosType bboxtype, void *boxes, int count, int box_count,
+  void (*bbox_adjust)(void *, void *), double (*bbox_size)(const void *))
+{
+  return bbox_merge(bboxtype, boxes, count, box_count, NULL, bbox_adjust,
+    bbox_size, NULL, NULL);
+}
+
+/**
+ * @ingroup meos_internal_box_index
+ * @brief Merge consecutive bounding boxes of an array in place into the
+ * boxes a query of the extents of a query box is expected to read least
+ * along the merges, each time the consecutive pair whose union lowers that
+ * number most
+ * @details A query box of widths q placed at random reads a box of widths w
+ * with a likelihood proportional to the product over the dimensions of
+ * w + q, so the boxes are measured by that product, @p bbox_query_size, and
+ * the merges are those of #bbox_merge, the boxes kept being those of the
+ * merge after which the sum of the products is least along the merges down
+ * to one box, the boxes before any merge included. The answer thus reads no
+ * more than the boxes unmerged or the box of all of them. The position of the
+ * query box is not read.
+ * @param[in] bboxtype Type of the boxes, a span type, T_TBOX, T_STBOX or
+ * T_TPCBOX
+ * @param[in,out] boxes Array of boxes, the merged boxes at its start
+ * @param[in] count Number of boxes
+ * @param[in] query Query box, of the type of the boxes
+ * @param[in] bbox_adjust Function growing its first box to include the second
+ * @param[in] bbox_query_size Function returning the size of a box for the
+ * query box
+ * @return Number of boxes kept
+ */
+int
+bbox_merge_query(MeosType bboxtype, void *boxes, int count, const void *query,
+  void (*bbox_adjust)(void *, void *),
+  double (*bbox_query_size)(const void *, const void *))
+{
+  assert(query); assert(bbox_query_size);
+  if (count == 0)
+    return 0;
+  /* Merge a copy down to one box to find the number of boxes whose sum of
+   * sizes is least, then merge the boxes to that number: the merges are the
+   * same, the heap ordering the pairs alike in both runs */
+  size_t size = bbox_get_size(bboxtype) * count;
+  void *copy = palloc(size);
+  memcpy(copy, boxes, size);
+  int best;
+  bbox_merge(bboxtype, copy, count, 1, query, bbox_adjust, NULL,
+    bbox_query_size, &best);
+  pfree(copy);
+  return bbox_merge(bboxtype, boxes, count, best, query, bbox_adjust, NULL,
+    bbox_query_size, NULL);
 }
 
 /**

@@ -1962,6 +1962,38 @@ spanset_merge_each_n_spans(const SpanSet *ss, int elems_per_span, int *count)
 
 /**
  * @ingroup meos_setspan_bbox_split
+ * @brief Return an array of spans obtained by merging the boxes of the
+ * consecutive elements of a span set into those a query of the width of a
+ * query span is expected to read least
+ * @details The query twin of #spanset_merge_n_spans, by #bbox_merge_query:
+ * the width of the query span is the extent of the query, its position is not
+ * read
+ * @param[in] ss Span set
+ * @param[in] query Query span, of the span type of the span set
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Spanset_merge_query_spans()
+ */
+Span *
+spanset_merge_query_spans(const SpanSet *ss, const Span *query, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, query))
+    return NULL;
+
+  Span *result = spanset_spans(ss, count);
+  if (result)
+    *count = bbox_merge_query(ss->spantype, result, *count, query,
+      &span_adjust, &span_query_size);
+  return result;
+}
+
+
+/**
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of N spans from a spanset obtained by merging
  * consecutive composing spans 
  * @param[in] ss SpanSet

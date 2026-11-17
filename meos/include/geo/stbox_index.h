@@ -91,6 +91,7 @@ extern bool stbox_index_recheck(StrategyNumber strategy);
 
 extern void stbox_adjust(void *bbox1, void *bbox2);
 extern double stbox_size(const void *bbox);
+extern double stbox_query_size(const void *bbox, const void *query);
 extern double stbox_penalty(void *bbox1, void *bbox2);
 extern STboxNode *stboxnode_copy(const STboxNode *box);
 extern int stbox_index_dims(int16 flags);

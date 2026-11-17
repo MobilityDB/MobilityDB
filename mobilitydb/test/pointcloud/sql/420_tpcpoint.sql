@@ -368,6 +368,8 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT mergeNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT mergeEachNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT mergeQuerySpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQuerySpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), tstzspan '[2001-01-01, 2001-01-08]');
 
 SELECT tpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]));
 SELECT tpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3], 'discrete'));
@@ -375,6 +377,7 @@ SELECT splitNTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT mergeNTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT mergeEachNTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT mergeQueryTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), tpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3])));
 -- Every box lies within the box of its value, also when the bounds of the
 -- value exclude its first instant.
 SELECT bool_and(b <@ tpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))

@@ -237,5 +237,7 @@ SELECT splitNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001
 SELECT splitEachNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
 SELECT mergeNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
 SELECT mergeEachNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
+SELECT mergeQuerySpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQuerySpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', tstzspan '[2001-01-01, 2001-01-08]');
 
 -------------------------------------------------------------------------------
