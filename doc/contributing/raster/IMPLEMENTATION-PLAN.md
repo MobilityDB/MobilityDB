@@ -11,9 +11,9 @@
 [Back to the index](00-INDEX.md) · [Assessment](ASSESSMENT.md)
 
 Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it, in order. A row
-names the layer it changes, and its State column names the pull request that closes it. The names a row proposes are proposals until the portable naming notes of
-MobilityDB #2861 state them; a format's reader and writer follow the input and output notes of
-MobilityDB #3353.
+names the layer it changes, and its State column names the pull request that closes it. The names
+a row proposes are proposals until the portable naming notes of MobilityDB #2861 state them; a
+format's reader and writer follow the input and output notes of MobilityDB #3353.
 
 ## MEOS and MobilityDB
 
@@ -21,17 +21,51 @@ MobilityDB #3353.
 |---|---|---|
 | `Raster` has no `MeosType` slot | R1: `T_RASTER = 88`, the next free value after `T_TS2CELL = 87`, and its `MEOS_TYPE_NAMES` entry `{ "raster", "Raster" }`, as `T_GEOMETRY` and `T_PCPATCH` hold the slots of PostGIS's and pgpointcloud's types; the catalog then reads `Raster` as a type of its own. The WKB of a `raster` stays PostGIS's: the slot changes no encoding, and no WKB of another type embeds it | open |
 | The restrictions exist over a `Raster` and a raster file, not over a `Raquet` tile | R2: `atRasterValue`, `minusRasterValue` → `tgeompoint` and `eRasterValue`, `aRasterValue` → `boolean` over a `raquet` and a `raquet[]`, in MEOS over the pixel walk of the tiles that `rasterTileValue` already walks (MobilityDB #3743), so the restriction is dated at the crossings the walk dates | open |
-| No GDAL reader or writer of a `Raster` | R3: a writer of a `Raster` to any GDAL format and to GeoTIFF, and a reader of a `Raster` from the bytes of a GDAL file, in MEOS through GDAL, as PostGIS spells them (`ST_AsGDALRaster(raster, format, options, srid)`, `ST_AsTIFF`, `ST_FromGDALRaster(bytea, srid)`) without the `ST_` prefix in SQL; the writer of a `Raquet` tile follows from it, a tile being a raster of one band over its cell | open |
-| No CoverageJSON writer | R4: `asCoverageJSON` of a `Raster` and a `Raquet` (a `Grid` coverage, one parameter per band, its axes from the geotransform, its reference system from the SRID) and of the value along a trajectory (a `tfloat` over the points of a `tgeompoint`, a `Trajectory` coverage), written by MEOS, so that MobilityAPI serves the EDR and Coverages encodings without encoding a raster itself | open |
-| No reader or writer of a Raquet Parquet file | R5: the reader of a Raquet file as the set of its tiles and its metadata row, and the writer of a set of tiles as a Raquet file, in MEOS, for the engines and bindings with no Parquet reader of their own; an engine that reads Parquet (DuckDB, Spark) scans the rows itself and builds each tile through `raquet_make`, the tile still a MEOS value | open |
+| No GDAL reader or writer of a `Raster` | R3: the writers `asGDALRaster(raster, format, options, srid)`, `asTIFF`, `asPNG` and `asJPEG`, as PostGIS's `ST_AsGDALRaster`, `ST_AsTIFF`, `ST_AsPNG` and `ST_AsJPEG` write, and the reader `rasterFromGDALRaster(bytea, srid)`, as PostGIS's `ST_FromGDALRaster` reads, named `<type>From<Format>` as `rasterFromBinary` names PostGIS's `ST_RastFromWKB`; each a MEOS function through GDAL (`raster_as_gdal`, `raster_as_tiff`, `raster_as_png`, `raster_as_jpeg`, `raster_from_gdal`). MEOS takes GDAL's creation options as one string of `KEY=VALUE` pairs, split by GDAL's own tokenizer, so no binding marshals an array of strings; the SQL keeps PostGIS's `options text[]`, which the wrapper joins | DECIDED by the owner 2026-11-17 |
+| No CoverageJSON writer | R4: `asCoverageJSON` of a `Raster` and a `Raquet`, a CoverageJSON `Grid` coverage, one parameter per band, its axes from the geotransform, its reference system from the SRID, a nodata pixel written `null` (`raster_as_coveragejson`, `raquet_as_coveragejson`); and of the values along a trajectory, `asCoverageJSON(tfloat, tgeompoint)` (`tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj)`), a `Trajectory` coverage whose position at each instant of the `tfloat` is the trajectory's at that instant, so that MobilityAPI serves the EDR and Coverages encodings without encoding a raster itself | DECIDED by the owner 2026-11-17 |
+| No reader or writer of a Raquet Parquet file | R5: the reader of a Raquet file as its tiles and the writer of tiles as a Raquet file, in MEOS through GDAL's Parquet driver, so that `RASTER` depends on GDAL alone and MEOS links no Arrow or Parquet library of its own; a GDAL built without the driver is refused naming it. And a MEOS decoder of one Raquet row (its cell, its band bytes, the file's metadata with the band's compression) into a tile, for the engines that scan Parquet themselves (DuckDB, Spark), so that every engine decodes a tile alike and none links GDAL to read one | DECIDED by the owner 2026-11-17 |
 | A raster that changes in time | R11: a raster series is a relation of rows `(validtime tstzspan, rast raster)`, never a temporal raster type, since a value `[r1@t1, ..., rn@tn]` carries a whole raster per instant and nothing in it interpolates. MEOS reads a trajectory along a series through overloads of the names that read one raster: `rasterValue(tgeompoint, raster[], tstzspan[], band)` and `rasterTileValue(tgeompoint, raquet[], tstzspan[])` → `tfloat`, and the same overloads of `atRasterValue`, `minusRasterValue`, `eRasterValue` and `aRasterValue`. Each raster is read over the part of the trajectory within its span, in one ordered walk, as `rasterTileValue(tgeompoint, raquet[])` walks the tiles side by side in space. A part of the trajectory within no span has no value, as a nodata pixel has none; spans that overlap are refused with an error. A query passes the rows that meet the trip, selected by the indexes on `validtime` and `stbox(rast)`, gathered in `validtime` order; every engine answers it through the same MEOS function. In MobilityAPI the `validtime` column is the temporal axis of a raster collection | DECIDED by the owner 2026-11-17 |
 
 ## The catalog and the bindings
 
 | Gap | Task | State |
 |---|---|---|
-| How much of the raster surface each binding carries is not measured | R6: a matrix of every public raster function (122 in `meos_raster.h` at `247d7da164`) against each binding's generated surface at its pinned commit, built by a tool that reads the catalog and the binding's object layer as `tools/io_matrix.py --repo` does for the readers and writers; `--check` diffs it against the table it writes into this note. A binding's name is matched through the catalog's `altSqlName` as well as its SQL name, so `sameAlignmentAgg`, the name DuckDB, Spark and Flink give the aggregate MobilityDB calls `sameAlignment`, counts as that aggregate | open |
+| How much of the raster surface each binding carries is not measured | R6: `tools/raster_matrix.py`, which reads the raster functions a binding calls from the catalog (the public functions of the family `RASTER` carrying a SQL name, less the support functions of a type and of an aggregate, an aggregate counted once under its name) and each binding's object layer as `tools/io_matrix.py --repo` reads it, and credits a function when the layer names it (its SQL name, its `altSqlName` or its C name) and carries every raster type its signatures name; `--check` compares its rows with the table below | MERGED as MobilityDB #3776 |
 | The gaps R6 finds | One row per binding and gap, numbered from R12, each closed in the binding's generator from the catalog, never by a hand-written function, as the bindings plan of MobilityDB #2861 requires | after R6 |
+
+### The raster surface of each binding
+
+Built by `tools/raster_matrix.py` (R6) over the MEOS-API catalog at MobilityDB `247d7da164`, each
+binding at the commit its row names, its default branch; 71 functions, of which 7 name no raster
+type (`rasterTileValueQuadbin` and the `summarystats*` accessors):
+
+| Binding | Commit | raster | raquet | Functions | Missing |
+|---|---|---|---|---|---|
+| JMEOS | `f456f24e44` | **no** | **no** | 0 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
+| GoMEOS | `9551b85318` | yes | yes | 57 of 71 | `aRasterValue`, `eRasterValue`, `rasterAdd`, `rasterDiv`, `rasterMul`, ... |
+| MEOS.NET | `359675c41e` | yes | yes | 46 of 71 | `aRasterValue`, `asBinary`, `atRasterValue`, `eRasterValue`, `makeEmptyRaster`, ... |
+| meos-rs | `2b49f27223` | **no** | **no** | 0 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
+| MEOS.js | `bbda83df38` | yes | yes | 48 of 71 | `aRasterValue`, `atRasterValue`, `eRasterValue`, `makeEmptyRaster`, `minusRasterValue`, ... |
+| MobilityDuck | `e47d67c413` | yes | yes | 70 of 71 | `setValues` |
+| MobilityNebula | `5c0974e0a0` | **no** | **no** | 1 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
+| PyMEOS | `33717764b7` | **no** | **no** | 0 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
+| PyMEOS-CFFI | `7d41acfbd7` | **no** | **no** | 7 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
+| MobilityAPI | `3305f77395` | **no** | **no** | 0 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
+
+JMEOS, MobilitySpark, MobilityFlink and MobilityKafka generate their surface at build time
+(`jmeos-core/target/generated-sources`), so their rows read the committed layer only until they
+are rebuilt from a built checkout. The roots are those of the bindings' table of the input and
+output notes:
+
+```
+raster_matrix.py --catalog meos-idl.json \
+  --repo JMEOS=<JMEOS>:jmeos-core/src/main/java/types --repo GoMEOS=<GoMEOS>:types \
+  --repo MEOS.NET=<MEOS.NET>:MEOS.NET/Types --repo meos-rs=<meos-rs>:src \
+  --repo MEOS.js=<MEOS.js>:core/types,core/objects --repo MobilityDuck=<MobilityDuck>:src \
+  --repo MobilityNebula=<MobilityNebula>:nes-plugins/MEOS --repo PyMEOS=<PyMEOS>:pymeos \
+  --repo PyMEOS-CFFI=<PyMEOS-CFFI>:pymeos_cffi --repo MobilityAPI=<MobilityAPI>:. \
+  [--check IMPLEMENTATION-PLAN.md]
+```
 
 The catalog needs no change of its own beyond R1: `typeEncodings` already exchanges `Raster` and
 `Raquet` as WKB and hexadecimal WKB, and every new MEOS function of R2 to R5 reaches it by the

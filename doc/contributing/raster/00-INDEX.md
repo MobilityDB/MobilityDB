@@ -35,6 +35,7 @@ MobilityDB #3287 (`doc/contributing/exactness/`) and the cell walks of the manua
 |---|---|
 | [Assessment](ASSESSMENT.md) | The two types and what each answers, the raster surface at each layer (MEOS, the SQL functions, the catalog, the bindings, MobilityDuck, MobilityAPI), the gaps, and the OGC API standards that fit |
 | [Implementation plan](IMPLEMENTATION-PLAN.md) | The pull request that closes each gap, in MEOS and MobilityDB, the catalog, each binding, MobilityDuck and MobilityAPI, and its state |
+| [Rasters specification](../../specs/meos-rasters.md) | The user document of the campaign: what MEOS and MobilityDB answer over rasters, each pull request of the campaign raising its version with the part of the interface master gains |
 
 ## The rules
 
@@ -62,6 +63,16 @@ MobilityDB #3287 (`doc/contributing/exactness/`) and the cell walks of the manua
 6. **What MobilityAPI answers about a raster is what MobilityDB declares over it.** As for the
    temporal types (`catalog_gen.go`), the functions per raster type are generated from the
    catalog, and a query MobilityDB states no function for is refused naming the function.
+
+## The user document and the close of the campaign
+
+`doc/specs/meos-rasters.md` (MobilityDB #3777) is what a user reads: it states only what master
+answers, and its Future list the parts this plan has decided. Each pull request of the campaign
+changes it in the same pull request, moving its part from the Future list into the body and
+raising the minor version. When every row of the plan is merged, the specification gains a
+section stating why the interface is what it is, the insights of these notes a user needs, and
+this plan pull request closes unmerged, its last comment naming the version of the specification
+that carries them.
 
 ## Acceptance
 
