@@ -116,7 +116,9 @@ The judges, their corpora, generators and controls are kept in the oracle kit of
 - **The geodetic within distance above 0.** Its turning point function solves a quadratic in
   longitude and latitude, which is not the distance on the sphere, so the ever and always walk
   reads the middle of a segment where the function states no turning point. The turning points
-  of the geodetic distance (`GeogSegmPair`) replace it, and the middle read goes with them.
+  of the geodetic distance (`GeogSegmPair`) replace it, and the middle read goes with them. The
+  temporal within distance of two such segments, decided in doubles today, is row GO13 of
+  [Geodetic operations](GEODETIC-OPERATIONS.md).
 - **Two geography segments on different great circles.** Their meeting is decided where an exact
   computation on the doubles proves it; none exists for a general pair. Section 7 states how the
   case is decided.
