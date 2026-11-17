@@ -1003,6 +1003,44 @@ tgeoarr_tgeoarr_common_dims(const Temporal **arr1, int count1,
  *****************************************************************************/
 
 /**
+ * @brief Set the first argument to the temporal geography point instant of
+ * a temporal geometry point instant
+ * @details The instant #tgeominst_tgeoginst makes from the point with
+ * #geom_to_geog, written from its coordinates by #tpointinst_coords_set
+ * instead of read, made geodetic and serialized again: the coordinates are
+ * read in place (`gserialized_peek_first_point`), nudged to and forced into
+ * the geodetic range by `lwgeom_nudge_geodetic` and `lwgeom_force_geodetic`
+ * on a point over them, as #geom_to_geog does to the point it reads, and the
+ * point takes the SRID the caller tested once for all the instants
+ * @param[out] result Instant, of #tpointinst_coords_size bytes
+ * @param[in] model Instant written by this function with the same dimension
+ * and SRID, whose header is copied @nullable
+ * @param[in] inst Temporal geometry point instant
+ * @param[in] srid SRID of the result, a lon/lat one
+ */
+static void
+tgeompointinst_set_tgeogpointinst(TInstant *result, const TInstant *model,
+  const TInstant *inst, int32_t srid)
+{
+  assert(inst->temptype == T_TGEOMPOINT);
+  bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
+  POINT4D p4d;
+  gserialized_peek_first_point(DatumGetGserializedP(tinstant_value_p(inst)),
+    &p4d);
+  double coords[3] = {p4d.x, p4d.y, p4d.z};
+  POINTARRAY pa = { .npoints = 1, .maxpoints = 1,
+    .flags = lwflags(hasz, false, false),
+    .serialized_pointlist = (uint8_t *) coords };
+  LWPOINT point = { .bbox = NULL, .point = &pa, .srid = srid,
+    .flags = pa.flags, .type = POINTTYPE };
+  lwgeom_nudge_geodetic((LWGEOM *) &point);
+  lwgeom_force_geodetic((LWGEOM *) &point);
+  tpointinst_coords_set(result, model, coords[0], coords[1],
+    hasz ? coords[2] : 0.0, hasz, true, srid, inst->t);
+  return;
+}
+
+/**
  * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geometry/geography transformed from/to a temporal
  * geometry/geography
@@ -1017,6 +1055,17 @@ tgeominst_tgeoginst(const TInstant *inst, bool oper)
 {
   assert(inst); assert(tgeo_type_all(inst->temptype));
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
+  if (oper == TGEOMP_TO_TGEOGP && inst->temptype == T_TGEOMPOINT)
+  {
+    /* The SRID #geom_to_geog gives the point and refuses */
+    int32_t srid = srid_geodetic_default(gserialized_get_srid(gs), true);
+    if (! ensure_srid_is_latlong(srid))
+      return NULL;
+    TInstant *result = palloc(
+      tpointinst_coords_size(MEOS_FLAGS_GET_Z(inst->flags)));
+    tgeompointinst_set_tgeogpointinst(result, NULL, inst, srid);
+    return result;
+  }
   GSERIALIZED *res;
   if (oper == TGEOMP_TO_TGEOGP)
     res = geom_to_geog(gs);
@@ -1048,6 +1097,34 @@ TSequence *
 tgeomseq_tgeogseq(const TSequence *seq, bool oper)
 {
   assert(seq); assert(tgeo_type_all(seq->temptype));
+  if (oper == TGEOMP_TO_TGEOGP && seq->temptype == T_TGEOMPOINT)
+  {
+    /* The SRID #geom_to_geog gives every point and refuses, the same for all
+     * the instants of the sequence, tested once */
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    int32_t srid = srid_geodetic_default(gserialized_get_srid(
+      DatumGetGserializedP(tinstant_value_p(inst))), true);
+    if (! ensure_srid_is_latlong(srid))
+      return NULL;
+    /* The instants are written in one block, the instants after the first
+     * with its header, as #tpointseq_make_coords writes its points */
+    size_t slot = DOUBLE_PAD(tpointinst_coords_size(
+      MEOS_FLAGS_GET_Z(seq->flags)));
+    char *block = palloc(slot * seq->count);
+    TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+    for (int i = 0; i < seq->count; i++)
+    {
+      instants[i] = (TInstant *) (block + slot * i);
+      tgeompointinst_set_tgeogpointinst(instants[i], i ? instants[0] : NULL,
+        TSEQUENCE_INST_N(seq, i), srid);
+    }
+    /* Normalized for the interpolation of a geography, as below */
+    TSequence *result = tsequence_make(instants, seq->count,
+      seq->period.lower_inc, seq->period.upper_inc,
+      MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+    pfree(instants); pfree(block);
+    return result;
+  }
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
