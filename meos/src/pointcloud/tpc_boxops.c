@@ -866,6 +866,31 @@ tpointcloudseqset_tpcboxes(const TSequenceSet *ss, int *count)
 }
 
 /**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of point cloud boxes from the instants or segments
+ * of a temporal point cloud value, its arguments valid
+ * @details The internal twin of #tpointcloud_tpcboxes, which an index calls
+ * @param[in] temp Temporal point cloud value
+ * @param[out] count Number of values of the output array
+ */
+TPCBox *
+tpointcloud_tpcboxes_intl(const Temporal *temp, int *count)
+{
+  assert(temp); assert(count); assert(tpointcloud_temptype(temp->temptype));
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tpointcloudinst_tpcboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointcloudseq_tpcboxes((TSequence *) temp, count);
+    default: /* TSEQUENCESET */
+      return tpointcloudseqset_tpcboxes((TSequenceSet *) temp, count);
+  }
+}
+
+/**
  * @ingroup meos_pointcloud_bbox_split
  * @brief Return an array of point cloud boxes from the instants or segments
  * of a temporal point cloud value
@@ -884,18 +909,7 @@ tpointcloud_tpcboxes(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TPOINTCLOUD(temp, NULL);
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tpointcloudinst_tpcboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tpointcloudseq_tpcboxes((TSequence *) temp, count);
-    default: /* TSEQUENCESET */
-      return tpointcloudseqset_tpcboxes((TSequenceSet *) temp, count);
-  }
+  return tpointcloud_tpcboxes_intl(temp, count);
 }
 
 /*****************************************************************************/
@@ -1106,6 +1120,37 @@ tpointcloudseqset_split_n_tpcboxes(const TSequenceSet *ss, int box_count,
 }
 
 /**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of N point cloud boxes obtained by merging
+ * consecutive instants or segments of a temporal point cloud value, its
+ * arguments valid
+ * @details The internal twin of #tpointcloud_split_n_tpcboxes, which an index calls
+ * @param[in] temp Temporal point cloud value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+TPCBox *
+tpointcloud_split_n_tpcboxes_intl(const Temporal *temp, int box_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tpointcloud_temptype(temp->temptype));
+  assert(box_count > 0);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tpointcloudinst_tpcboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointcloudseq_split_n_tpcboxes((TSequence *) temp, box_count,
+        count);
+    default: /* TSEQUENCESET */
+      return tpointcloudseqset_split_n_tpcboxes((TSequenceSet *) temp,
+        box_count, count);
+  }
+}
+
+/**
  * @ingroup meos_pointcloud_bbox_split
  * @brief Return an array of N point cloud boxes obtained by merging
  * consecutive instants or segments of a temporal point cloud value
@@ -1127,20 +1172,7 @@ tpointcloud_split_n_tpcboxes(const Temporal *temp, int box_count, int *count)
   VALIDATE_TPOINTCLOUD(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tpointcloudinst_tpcboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tpointcloudseq_split_n_tpcboxes((TSequence *) temp, box_count,
-        count);
-    default: /* TSEQUENCESET */
-      return tpointcloudseqset_split_n_tpcboxes((TSequenceSet *) temp,
-        box_count, count);
-  }
+  return tpointcloud_split_n_tpcboxes_intl(temp, box_count, count);
 }
 
 /*****************************************************************************
@@ -1278,6 +1310,39 @@ tpointcloudseqset_split_each_n_tpcboxes(const TSequenceSet *ss, int elem_count,
 }
 
 /**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of point cloud boxes obtained by merging
+ * consecutive instants or segments of a temporal point cloud value, its
+ * arguments valid
+ * @details The internal twin of #tpointcloud_split_each_n_tpcboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ */
+TPCBox *
+tpointcloud_split_each_n_tpcboxes_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tpointcloud_temptype(temp->temptype));
+  assert(elem_count > 0);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tpointcloudinst_tpcboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointcloudseq_split_each_n_tpcboxes((TSequence *) temp,
+        elem_count, count);
+    default: /* TSEQUENCESET */
+      return tpointcloudseqset_split_each_n_tpcboxes((TSequenceSet *) temp,
+        elem_count, count);
+  }
+}
+
+/**
  * @ingroup meos_pointcloud_bbox_split
  * @brief Return an array of point cloud boxes obtained by merging
  * consecutive instants or segments of a temporal point cloud value
@@ -1301,25 +1366,38 @@ tpointcloud_split_each_n_tpcboxes(const Temporal *temp, int elem_count,
   VALIDATE_TPOINTCLOUD(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tpointcloudinst_tpcboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tpointcloudseq_split_each_n_tpcboxes((TSequence *) temp,
-        elem_count, count);
-    default: /* TSEQUENCESET */
-      return tpointcloudseqset_split_each_n_tpcboxes((TSequenceSet *) temp,
-        elem_count, count);
-  }
+  return tpointcloud_split_each_n_tpcboxes_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_n_tpcboxes and merge_each_n_tpcboxes functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of N point cloud boxes obtained by merging the boxes
+ * of
+ * the consecutive instants or segments of a temporal point cloud value, each
+ * time the
+ * consecutive pair whose union adds the least size to theirs, its arguments
+ * valid
+ * @details The internal twin of #tpointcloud_merge_n_tpcboxes, which an index calls
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ */
+TPCBox *
+tpointcloud_merge_n_tpcboxes_intl(const Temporal *temp, int box_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tpointcloud_temptype(temp->temptype));
+  assert(box_count > 0);
+  TPCBox *result = tpointcloud_tpcboxes_intl(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_TPCBOX, result, *count, box_count, &stbox_adjust,
+      &stbox_size);
+  return result;
+}
 
 /**
  * @ingroup meos_pointcloud_bbox_split
@@ -1345,11 +1423,34 @@ tpointcloud_merge_n_tpcboxes(const Temporal *temp, int box_count, int *count)
   VALIDATE_TPOINTCLOUD(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
+  return tpointcloud_merge_n_tpcboxes_intl(temp, box_count, count);
+}
 
-  TPCBox *result = tpointcloud_tpcboxes(temp, count);
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of point cloud boxes obtained by merging the boxes of
+ * the
+ * consecutive instants or segments of a temporal point cloud value, each time
+ * the consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them, its arguments valid
+ * @details The internal twin of #tpointcloud_merge_each_n_tpcboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ */
+TPCBox *
+tpointcloud_merge_each_n_tpcboxes_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tpointcloud_temptype(temp->temptype));
+  assert(elem_count > 0);
+  TPCBox *result = tpointcloud_tpcboxes_intl(temp, count);
   if (result)
-    *count = bbox_merge_n(T_TPCBOX, result, *count, box_count, &stbox_adjust,
-      &stbox_size);
+    *count = bbox_merge_each_n(T_TPCBOX, result, *count, elem_count,
+      &stbox_adjust, &stbox_size);
   return result;
 }
 
@@ -1381,17 +1482,38 @@ tpointcloud_merge_each_n_tpcboxes(const Temporal *temp, int elem_count,
   VALIDATE_TPOINTCLOUD(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  TPCBox *result = tpointcloud_tpcboxes(temp, count);
-  if (result)
-    *count = bbox_merge_each_n(T_TPCBOX, result, *count, elem_count,
-      &stbox_adjust, &stbox_size);
-  return result;
+  return tpointcloud_merge_each_n_tpcboxes_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_query_tpcboxes function
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_pointcloud_bbox
+ * @brief Return an array of point cloud boxes obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal point cloud value into those a query of the extents of a query box
+ * is expected to read least, its arguments valid
+ * @details The internal twin of #tpointcloud_merge_query_tpcboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ */
+TPCBox *
+tpointcloud_merge_query_tpcboxes_intl(const Temporal *temp, const TPCBox *query,
+  int *count)
+{
+  assert(temp); assert(query); assert(count);
+  assert(tpointcloud_temptype(temp->temptype));
+  assert(ensure_valid_tpointcloud_tpcbox(temp, query));
+  TPCBox *result = tpointcloud_tpcboxes_intl(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_TPCBOX, result, *count, query, &stbox_adjust,
+      &stbox_query_size);
+  return result;
+}
 
 /**
  * @ingroup meos_pointcloud_bbox_split
@@ -1419,12 +1541,7 @@ tpointcloud_merge_query_tpcboxes(const Temporal *temp, const TPCBox *query,
   VALIDATE_TPOINTCLOUD(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
   if (! ensure_valid_tpointcloud_tpcbox(temp, query))
     return NULL;
-
-  TPCBox *result = tpointcloud_tpcboxes(temp, count);
-  if (result)
-    *count = bbox_merge_query(T_TPCBOX, result, *count, query, &stbox_adjust,
-      &stbox_query_size);
-  return result;
+  return tpointcloud_merge_query_tpcboxes_intl(temp, query, count);
 }
 /* GENERATED-BOXSPLIT-END tpointcloud */
 

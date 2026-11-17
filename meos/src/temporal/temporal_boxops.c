@@ -1467,6 +1467,31 @@ tsequenceset_spans(const TSequenceSet *ss, int *count)
 }
 
 /**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of spans from the instants or segments
+ * of a temporal value, its arguments valid
+ * @details The internal twin of #temporal_spans, which an index calls
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values of the output array
+ */
+Span *
+temporal_spans_intl(const Temporal *temp, int *count)
+{
+  assert(temp); assert(count); assert(temporal_type(temp->temptype));
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tinstant_spans((TInstant *) temp);
+    case TSEQUENCE:
+      return tsequence_spans((TSequence *) temp, count);
+    default: /* TSEQUENCESET */
+      return tsequenceset_spans((TSequenceSet *) temp, count);
+  }
+}
+
+/**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of spans from the instants or segments
  * of a temporal value
@@ -1485,18 +1510,7 @@ temporal_spans(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tinstant_spans((TInstant *) temp);
-    case TSEQUENCE:
-      return tsequence_spans((TSequence *) temp, count);
-    default: /* TSEQUENCESET */
-      return tsequenceset_spans((TSequenceSet *) temp, count);
-  }
+  return temporal_spans_intl(temp, count);
 }
 
 /*****************************************************************************/
@@ -1703,6 +1717,34 @@ tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count)
 }
 
 /**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of N spans obtained by merging
+ * consecutive instants or segments of a temporal value, its arguments valid
+ * @details The internal twin of #temporal_split_n_spans, which an index calls
+ * @param[in] temp Temporal value
+ * @param[in] span_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+Span *
+temporal_split_n_spans_intl(const Temporal *temp, int span_count, int *count)
+{
+  assert(temp); assert(count); assert(temporal_type(temp->temptype));
+  assert(span_count > 0);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tinstant_spans((TInstant *) temp);
+    case TSEQUENCE:
+      return tsequence_split_n_spans((TSequence *) temp, span_count, count);
+    default: /* TSEQUENCESET */
+      return tsequenceset_split_n_spans((TSequenceSet *) temp, span_count,
+        count);
+  }
+}
+
+/**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of N spans obtained by merging
  * consecutive instants or segments of a temporal value
@@ -1724,19 +1766,7 @@ temporal_split_n_spans(const Temporal *temp, int span_count, int *count)
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_positive(span_count))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tinstant_spans((TInstant *) temp);
-    case TSEQUENCE:
-      return tsequence_split_n_spans((TSequence *) temp, span_count, count);
-    default: /* TSEQUENCESET */
-      return tsequenceset_split_n_spans((TSequenceSet *) temp, span_count,
-        count);
-  }
+  return temporal_split_n_spans_intl(temp, span_count, count);
 }
 
 /*****************************************************************************
@@ -1872,6 +1902,38 @@ tsequenceset_split_each_n_spans(const TSequenceSet *ss, int elem_count,
 }
 
 /**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of spans obtained by merging
+ * consecutive instants or segments of a temporal value, its arguments valid
+ * @details The internal twin of #temporal_split_each_n_spans, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ */
+Span *
+temporal_split_each_n_spans_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(temporal_type(temp->temptype));
+  assert(elem_count > 0);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tinstant_spans((TInstant *) temp);
+    case TSEQUENCE:
+      return tsequence_split_each_n_spans((TSequence *) temp, elem_count,
+        count);
+    default: /* TSEQUENCESET */
+      return tsequenceset_split_each_n_spans((TSequenceSet *) temp,
+        elem_count, count);
+  }
+}
+
+/**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of spans obtained by merging
  * consecutive instants or segments of a temporal value
@@ -1894,25 +1956,35 @@ temporal_split_each_n_spans(const Temporal *temp, int elem_count, int *count)
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tinstant_spans((TInstant *) temp);
-    case TSEQUENCE:
-      return tsequence_split_each_n_spans((TSequence *) temp, elem_count,
-        count);
-    default: /* TSEQUENCESET */
-      return tsequenceset_split_each_n_spans((TSequenceSet *) temp,
-        elem_count, count);
-  }
+  return temporal_split_each_n_spans_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_n_spans and merge_each_n_spans functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of N spans obtained by merging the boxes of
+ * the consecutive instants or segments of a temporal value, each time the
+ * consecutive pair whose union adds the least size to theirs, its arguments
+ * valid
+ * @details The internal twin of #temporal_merge_n_spans, which an index calls
+ * @param[in] temp Temporal value
+ * @param[in] span_count Number of boxes
+ * @param[out] count Number of values of the output array
+ */
+Span *
+temporal_merge_n_spans_intl(const Temporal *temp, int span_count, int *count)
+{
+  assert(temp); assert(count); assert(temporal_type(temp->temptype));
+  assert(span_count > 0);
+  Span *result = temporal_spans_intl(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_TSTZSPAN, result, *count, span_count, &span_adjust,
+      &span_size);
+  return result;
+}
 
 /**
  * @ingroup meos_temporal_bbox_split
@@ -1936,11 +2008,33 @@ temporal_merge_n_spans(const Temporal *temp, int span_count, int *count)
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_positive(span_count))
     return NULL;
+  return temporal_merge_n_spans_intl(temp, span_count, count);
+}
 
-  Span *result = temporal_spans(temp, count);
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of spans obtained by merging the boxes of the
+ * consecutive instants or segments of a temporal value, each time the
+ * consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them, its arguments valid
+ * @details The internal twin of #temporal_merge_each_n_spans, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ */
+Span *
+temporal_merge_each_n_spans_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(temporal_type(temp->temptype));
+  assert(elem_count > 0);
+  Span *result = temporal_spans_intl(temp, count);
   if (result)
-    *count = bbox_merge_n(T_TSTZSPAN, result, *count, span_count, &span_adjust,
-      &span_size);
+    *count = bbox_merge_each_n(T_TSTZSPAN, result, *count, elem_count,
+      &span_adjust, &span_size);
   return result;
 }
 
@@ -1970,17 +2064,38 @@ temporal_merge_each_n_spans(const Temporal *temp, int elem_count, int *count)
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  Span *result = temporal_spans(temp, count);
-  if (result)
-    *count = bbox_merge_each_n(T_TSTZSPAN, result, *count, elem_count,
-      &span_adjust, &span_size);
-  return result;
+  return temporal_merge_each_n_spans_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_query_spans function
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of spans obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal value into those a query of the extents of a query box
+ * is expected to read least, its arguments valid
+ * @details The internal twin of #temporal_merge_query_spans, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ */
+Span *
+temporal_merge_query_spans_intl(const Temporal *temp, const Span *query,
+  int *count)
+{
+  assert(temp); assert(query); assert(count);
+  assert(temporal_type(temp->temptype));
+  assert(ensure_span_isof_type(query, T_TSTZSPAN));
+  Span *result = temporal_spans_intl(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_TSTZSPAN, result, *count, query, &span_adjust,
+      &span_query_size);
+  return result;
+}
 
 /**
  * @ingroup meos_temporal_bbox_split
@@ -2008,12 +2123,7 @@ temporal_merge_query_spans(const Temporal *temp, const Span *query,
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
   if (! ensure_span_isof_type(query, T_TSTZSPAN))
     return NULL;
-
-  Span *result = temporal_spans(temp, count);
-  if (result)
-    *count = bbox_merge_query(T_TSTZSPAN, result, *count, query, &span_adjust,
-      &span_query_size);
-  return result;
+  return temporal_merge_query_spans_intl(temp, query, count);
 }
 /* GENERATED-BOXSPLIT-END temporal */
 
@@ -2137,6 +2247,31 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int *count)
 }
 
 /**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of temporal boxes from the instants or segments
+ * of a temporal number, its arguments valid
+ * @details The internal twin of #tnumber_tboxes, which an index calls
+ * @param[in] temp Temporal number
+ * @param[out] count Number of values of the output array
+ */
+TBox *
+tnumber_tboxes_intl(const Temporal *temp, int *count)
+{
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tnumberinst_tboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tnumberseq_tboxes((TSequence *) temp, count);
+    default: /* TSEQUENCESET */
+      return tnumberseqset_tboxes((TSequenceSet *) temp, count);
+  }
+}
+
+/**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of temporal boxes from the instants or segments
  * of a temporal number
@@ -2155,18 +2290,7 @@ tnumber_tboxes(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL);
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tnumberinst_tboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tnumberseq_tboxes((TSequence *) temp, count);
-    default: /* TSEQUENCESET */
-      return tnumberseqset_tboxes((TSequenceSet *) temp, count);
-  }
+  return tnumber_tboxes_intl(temp, count);
 }
 
 /*****************************************************************************/
@@ -2373,6 +2497,34 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
 }
 
 /**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of N temporal boxes obtained by merging
+ * consecutive instants or segments of a temporal number, its arguments valid
+ * @details The internal twin of #tnumber_split_n_tboxes, which an index calls
+ * @param[in] temp Temporal number
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+TBox *
+tnumber_split_n_tboxes_intl(const Temporal *temp, int box_count, int *count)
+{
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
+  assert(box_count > 0);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tnumberinst_tboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tnumberseq_split_n_tboxes((TSequence *) temp, box_count, count);
+    default: /* TSEQUENCESET */
+      return tnumberseqset_split_n_tboxes((TSequenceSet *) temp, box_count,
+        count);
+  }
+}
+
+/**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of N temporal boxes obtained by merging
  * consecutive instants or segments of a temporal number
@@ -2394,19 +2546,7 @@ tnumber_split_n_tboxes(const Temporal *temp, int box_count, int *count)
   VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tnumberinst_tboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tnumberseq_split_n_tboxes((TSequence *) temp, box_count, count);
-    default: /* TSEQUENCESET */
-      return tnumberseqset_split_n_tboxes((TSequenceSet *) temp, box_count,
-        count);
-  }
+  return tnumber_split_n_tboxes_intl(temp, box_count, count);
 }
 
 /*****************************************************************************
@@ -2543,6 +2683,38 @@ tnumberseqset_split_each_n_tboxes(const TSequenceSet *ss, int elem_count,
 }
 
 /**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of temporal boxes obtained by merging
+ * consecutive instants or segments of a temporal number, its arguments valid
+ * @details The internal twin of #tnumber_split_each_n_tboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ */
+TBox *
+tnumber_split_each_n_tboxes_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
+  assert(elem_count > 0);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tnumberinst_tboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tnumberseq_split_each_n_tboxes((TSequence *) temp, elem_count,
+        count);
+    default: /* TSEQUENCESET */
+      return tnumberseqset_split_each_n_tboxes((TSequenceSet *) temp,
+        elem_count, count);
+  }
+}
+
+/**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of temporal boxes obtained by merging
  * consecutive instants or segments of a temporal number
@@ -2565,25 +2737,35 @@ tnumber_split_each_n_tboxes(const Temporal *temp, int elem_count, int *count)
   VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tnumberinst_tboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tnumberseq_split_each_n_tboxes((TSequence *) temp, elem_count,
-        count);
-    default: /* TSEQUENCESET */
-      return tnumberseqset_split_each_n_tboxes((TSequenceSet *) temp,
-        elem_count, count);
-  }
+  return tnumber_split_each_n_tboxes_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_n_tboxes and merge_each_n_tboxes functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of N temporal boxes obtained by merging the boxes of
+ * the consecutive instants or segments of a temporal number, each time the
+ * consecutive pair whose union adds the least size to theirs, its arguments
+ * valid
+ * @details The internal twin of #tnumber_merge_n_tboxes, which an index calls
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ */
+TBox *
+tnumber_merge_n_tboxes_intl(const Temporal *temp, int box_count, int *count)
+{
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
+  assert(box_count > 0);
+  TBox *result = tnumber_tboxes_intl(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_TBOX, result, *count, box_count, &tbox_adjust,
+      &tbox_size);
+  return result;
+}
 
 /**
  * @ingroup meos_temporal_bbox_split
@@ -2607,11 +2789,33 @@ tnumber_merge_n_tboxes(const Temporal *temp, int box_count, int *count)
   VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
+  return tnumber_merge_n_tboxes_intl(temp, box_count, count);
+}
 
-  TBox *result = tnumber_tboxes(temp, count);
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of temporal boxes obtained by merging the boxes of the
+ * consecutive instants or segments of a temporal number, each time the
+ * consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them, its arguments valid
+ * @details The internal twin of #tnumber_merge_each_n_tboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ */
+TBox *
+tnumber_merge_each_n_tboxes_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
+  assert(elem_count > 0);
+  TBox *result = tnumber_tboxes_intl(temp, count);
   if (result)
-    *count = bbox_merge_n(T_TBOX, result, *count, box_count, &tbox_adjust,
-      &tbox_size);
+    *count = bbox_merge_each_n(T_TBOX, result, *count, elem_count,
+      &tbox_adjust, &tbox_size);
   return result;
 }
 
@@ -2641,17 +2845,38 @@ tnumber_merge_each_n_tboxes(const Temporal *temp, int elem_count, int *count)
   VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  TBox *result = tnumber_tboxes(temp, count);
-  if (result)
-    *count = bbox_merge_each_n(T_TBOX, result, *count, elem_count,
-      &tbox_adjust, &tbox_size);
-  return result;
+  return tnumber_merge_each_n_tboxes_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_query_tboxes function
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of temporal boxes obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal number into those a query of the extents of a query box
+ * is expected to read least, its arguments valid
+ * @details The internal twin of #tnumber_merge_query_tboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ */
+TBox *
+tnumber_merge_query_tboxes_intl(const Temporal *temp, const TBox *query,
+  int *count)
+{
+  assert(temp); assert(query); assert(count);
+  assert(tnumber_type(temp->temptype));
+  assert(ensure_valid_tnumber_tbox(temp, query));
+  TBox *result = tnumber_tboxes_intl(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_TBOX, result, *count, query, &tbox_adjust,
+      &tbox_query_size);
+  return result;
+}
 
 /**
  * @ingroup meos_temporal_bbox_split
@@ -2679,12 +2904,7 @@ tnumber_merge_query_tboxes(const Temporal *temp, const TBox *query,
   VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
   if (! ensure_valid_tnumber_tbox(temp, query))
     return NULL;
-
-  TBox *result = tnumber_tboxes(temp, count);
-  if (result)
-    *count = bbox_merge_query(T_TBOX, result, *count, query, &tbox_adjust,
-      &tbox_query_size);
-  return result;
+  return tnumber_merge_query_tboxes_intl(temp, query, count);
 }
 /* GENERATED-BOXSPLIT-END tnumber */
 
