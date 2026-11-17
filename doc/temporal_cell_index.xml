@@ -337,6 +337,24 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 -- true
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_asCoverageJSON">
+				<indexterm significance="normal"><primary><varname>asCoverageJSON</varname></primary></indexterm>
+				<para>Return a raster, a Raquet tile or the values a trajectory reads as a CoverageJSON coverage</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asCoverageJSON(raster) → text
+asCoverageJSON(raquet) → text
+asCoverageJSON(tfloat,tgeompoint) → text
+</programlisting>
+				<para>CoverageJSON is the encoding of OGC API – Coverages and OGC API – Environmental Data Retrieval. A <varname>raster</varname> is a <varname>Grid</varname> coverage: its axes <varname>x</varname> and <varname>y</varname> run from the centre of the first pixel to the centre of the last, each band is a parameter <varname>band1</varname>, <varname>band2</varname> ..., whose values run row by row from the top row, and a nodata pixel is <varname>null</varname>; a raster with a skew, whose pixels lie on no such axes, and a raster in no spatial reference system raise an error. A <varname>raquet</varname> tile is a grid of Web Mercator, EPSG:3857, over the bounds of its QUADBIN cell. The values a trajectory reads, such as those of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>, are a <varname>Trajectory</varname> coverage whose points are the instants of the values, each at the position of the trajectory at its instant. EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MobilityDB states it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
+  #> '{ranges,band1,values}';
+-- [1,2,3,4,-5,null]
+</programlisting>
+			</listitem>
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_constructors">
 		<title>Constructors</title>

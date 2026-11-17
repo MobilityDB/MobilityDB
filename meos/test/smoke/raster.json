@@ -93,6 +93,10 @@
       "3": "rq_meta1",
       "4": "1"
     },
+    "tfloat_as_coveragejson": {
+      "0": "tfloat_cov1",
+      "1": "traj1"
+    },
     "raster_make": {
       "0": "2",
       "1": "2",
@@ -237,6 +241,8 @@
     "  const Raquet *rqarr1[] = { rq1, rq2 };",
     "  /* The metadata of a Raquet file of 2 x 2 tiles of one 8-bit band. */",
     "  const char *rq_meta1 = \"{\\\"tiling\\\": {\\\"block_width\\\": 2, \\\"block_height\\\": 2}, \\\"bands\\\": [{\\\"type\\\": \\\"uint8\\\"}]}\";",
+    "  /* Values read along the trip, over its own period. */",
+    "  Temporal *tfloat_cov1 = tfloat_in(\"[10@2001-01-01, 20@2001-01-02]\");",
     "  size_t rq_wkb1_size = 0;",
     "  uint8_t *rq_wkb1 = raquet_as_wkb(rq1, 0, &rq_wkb1_size);",
     "  char *rq_hexwkb1 = raquet_as_hexwkb(rq1, 0, &size_out);",
@@ -342,6 +348,7 @@
     "  free(rq_text1);",
     "  free(rq_hexwkb1);",
     "  free(rq_wkb1);",
+    "  free(tfloat_cov1);",
     "  free(rq2);",
     "  free(rq1);",
     "  free(cells1);",

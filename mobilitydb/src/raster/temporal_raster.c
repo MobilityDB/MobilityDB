@@ -688,6 +688,74 @@ Raster_band_nodata_value(PG_FUNCTION_ARGS)
  * Well-Known Binary representations of a raster
  *****************************************************************************/
 
+/*****************************************************************************
+ * CoverageJSON
+ *****************************************************************************/
+
+/**
+ * @brief Return a CoverageJSON string MEOS answers as a text, or NULL
+ */
+static Datum
+coveragejson_text_datum(FunctionCallInfo fcinfo, char *str)
+{
+  if (! str)
+    PG_RETURN_NULL();
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Raster_as_coveragejson(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_coveragejson);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster as a CoverageJSON grid coverage
+ * @sqlfn asCoverageJSON()
+ */
+Datum
+Raster_as_coveragejson(PG_FUNCTION_ARGS)
+{
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *str = raster_as_coveragejson(rast);
+  PG_FREE_IF_COPY(rast, 0);
+  return coveragejson_text_datum(fcinfo, str);
+}
+
+PGDLLEXPORT Datum Raquet_as_coveragejson(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_as_coveragejson);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile as a CoverageJSON grid coverage
+ * @sqlfn asCoverageJSON()
+ */
+Datum
+Raquet_as_coveragejson(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  char *str = raquet_as_coveragejson(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  return coveragejson_text_datum(fcinfo, str);
+}
+
+PGDLLEXPORT Datum Tfloat_as_coveragejson(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_as_coveragejson);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values a trajectory reads as a CoverageJSON trajectory
+ * coverage
+ * @sqlfn asCoverageJSON()
+ */
+Datum
+Tfloat_as_coveragejson(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *traj = PG_GETARG_TEMPORAL_P(1);
+  char *str = tfloat_as_coveragejson(temp, traj);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(traj, 1);
+  return coveragejson_text_datum(fcinfo, str);
+}
+
 PGDLLEXPORT Datum Raster_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raster_from_wkb);
 /**

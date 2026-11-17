@@ -1150,6 +1150,46 @@ SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x010203'::bytea,
 SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x01020304'::bytea,
   '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8", "scale": 0.5}]}');
 
+-- A raster is a CoverageJSON grid coverage: its axes run from the centre of
+-- the first pixel to the centre of the last, a band is a parameter whose
+-- values run row by row from the top, a nodata pixel is null.
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]));
+-- EPSG:4326 is stated as OGC CRS84, its longitude first as MEOS states it,
+-- and a band of floats has float values.
+SELECT (asCoverageJSON(ST_AddBand(
+  ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 0.5, -1.0, 0.0, 0.0, 4326),
+  '32BF'::text, 1.5::float8, NULL::float8))::json)
+  #> '{domain,referencing,0,system,id}' AS crs84;
+-- A Raquet tile is a grid of Web Mercator over the bounds of its cell: its
+-- axes run between the centres of its pixels, read here to the centimetre.
+SELECT j #>> '{domain,domainType}' AS domain,
+  round((j #>> '{domain,axes,x,start}')::numeric, 2) AS x_start,
+  round((j #>> '{domain,axes,x,stop}')::numeric, 2) AS x_stop,
+  round((j #>> '{domain,axes,y,start}')::numeric, 2) AS y_start,
+  round((j #>> '{domain,axes,y,stop}')::numeric, 2) AS y_stop,
+  j #>> '{domain,axes,x,num}' AS num,
+  j #>> '{domain,referencing,0,system,id}' AS crs,
+  j #> '{ranges,band1,values}' AS band1
+FROM (SELECT asCoverageJSON(raquet('\x01020304'::bytea, 2, 2,
+  quadbinTileToCell(1, 0, 1), 'uint8'))::json AS j) t;
+-- The values a trip reads are a trajectory coverage, each value at the
+-- position of the trip at its instant.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS r),
+trip(t) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]')
+SELECT asCoverageJSON(rasterValue(t, r), t) FROM rast, trip;
+-- A raster with a skew and a raster in no reference system are refused.
+SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,
+  4326));
+SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  0));
+
 -- A string shorter than the raster it states is refused, not read past its end.
 SELECT rasterFromHexWKB('0100');
 

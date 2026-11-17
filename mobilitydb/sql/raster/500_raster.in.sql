@@ -707,6 +707,46 @@ CREATE FUNCTION asHexWKB(raster, endian text DEFAULT '')
 -- GENERATED-REPRESENTATIONS-END raster_base
 
 /******************************************************************************
+ * CoverageJSON
+ *
+ * A raster and a Raquet tile are written as a CoverageJSON grid coverage, and
+ * the values a trajectory reads as a CoverageJSON trajectory coverage, the
+ * encoding of OGC API - Coverages and OGC API - EDR.
+ ******************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster as a CoverageJSON grid coverage
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION asCoverageJSON(rast raster)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raster_as_coveragejson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile as a CoverageJSON grid coverage
+ * @param[in] rast Raquet tile
+ */
+CREATE FUNCTION asCoverageJSON(rast raquet)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raquet_as_coveragejson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values a trajectory reads as a CoverageJSON trajectory
+ * coverage
+ * @param[in] temp Values read along the trajectory
+ * @param[in] traj Trajectory
+ */
+CREATE FUNCTION asCoverageJSON(temp tfloat, traj tgeompoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tfloat_as_coveragejson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * A raster built from its pixels and its georeferencing
  ******************************************************************************/
 
