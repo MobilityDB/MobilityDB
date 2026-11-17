@@ -463,6 +463,21 @@ FROM (SELECT addBand(makeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 3857),
 -- 2
 </programlisting>
 			</listitem>
+			<listitem xml:id="raquetFromRow">
+				<indexterm significance="normal"><primary><varname>raquetFromRow</varname></primary></indexterm>
+				<para>Devuelve la tesela de una banda de una fila de un archivo Raquet</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquetFromRow(block bigint,band bytea,metadata text,bandnum integer=1) → raquet
+</programlisting>
+				<para>Un archivo Raquet es una tabla Parquet cuyas filas son las teselas de un ráster, identificadas por su celda QUADBIN en la columna <varname>block</varname>, la fila del bloque 0 guardando los metadatos del archivo como JSON. Un motor que lee Parquet recorre las filas y entrega cada una a <varname>raquetFromRow</varname> con los metadatos, que declaran el tamaño de una tesela, el tipo y el valor nodata de cada banda, la disposición de las bandas, secuencial (una columna por banda) o intercalada (las bandas de un píxel una junto a otra en una columna), y su compresión: ninguna, <varname>gzip</varname>, o <varname>jpeg</varname> y <varname>webp</varname>, una imagen de todas las bandas. <varname>bandnum</varname> es la banda de los bytes, o la banda tomada de una columna intercalada. La fila del bloque 0, una banda que los metadatos no declaran, bytes de otro tamaño que la tesela, y una banda que declara una escala o un desplazamiento producen un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pixels(raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint,
+  '\x010a0214031e0428'::bytea,
+  '{"band_layout": "interleaved", "tiling": {"block_width": 2, "block_height": 2},
+    "bands": [{"type": "uint8"}, {"type": "uint8"}]}', 2));
+-- \x0a141e28
+</programlisting>
+			</listitem>
 			<listitem xml:id="raquetRead">
 				<indexterm significance="normal"><primary><varname>raquetRead</varname></primary></indexterm>
 				<para>Decodifica un archivo ráster en una tesela ráster Raquet mediante GDAL</para>

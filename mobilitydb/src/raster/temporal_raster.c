@@ -2018,6 +2018,32 @@ Raquet_read_bytes(PG_FUNCTION_ARGS)
   PG_RETURN_RAQUET_P(result);
 }
 
+PGDLLEXPORT Datum Raquet_from_row(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_from_row);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the tile of one band of a row of a Raquet file
+ * @sqlfn raquetFromRow()
+ */
+Datum
+Raquet_from_row(PG_FUNCTION_ARGS)
+{
+  int64 block = PG_GETARG_INT64(0);
+  bytea *data = PG_GETARG_BYTEA_PP(1);
+  text *metadata_text = PG_GETARG_TEXT_P(2);
+  int32 band = PG_GETARG_INT32(3);
+  char *metadata = text_to_cstring(metadata_text);
+  Raquet *result = raquet_from_row((Quadbin) block,
+    (const uint8_t *) VARDATA_ANY(data), VARSIZE_ANY_EXHDR(data), metadata,
+    band);
+  pfree(metadata);
+  PG_FREE_IF_COPY(data, 1);
+  PG_FREE_IF_COPY(metadata_text, 2);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_RAQUET_P(result);
+}
+
 PGDLLEXPORT Datum Raquet_read(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raquet_read);
 /**

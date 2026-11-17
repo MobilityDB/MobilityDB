@@ -463,6 +463,21 @@ FROM (SELECT addBand(makeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 3857),
 -- 2
 </programlisting>
 			</listitem>
+			<listitem xml:id="raquetFromRow">
+				<indexterm significance="normal"><primary><varname>raquetFromRow</varname></primary></indexterm>
+				<para>Return the tile of one band of a row of a Raquet file</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquetFromRow(block bigint,band bytea,metadata text,bandnum integer=1) → raquet
+</programlisting>
+				<para>A Raquet file is a Parquet table whose rows are the tiles of a raster, keyed by their QUADBIN cell in the column <varname>block</varname>, the row of block 0 holding the metadata of the file as JSON. An engine that reads Parquet scans the rows and hands each to <varname>raquetFromRow</varname> with the metadata, which states the size of a tile, the type and nodata value of each band, the layout of the bands, sequential (one column per band) or interleaved (the bands of a pixel side by side in one column), and their compression: none, <varname>gzip</varname>, or <varname>jpeg</varname> and <varname>webp</varname>, an image of every band. <varname>bandnum</varname> is the band of the bytes, or the band taken from an interleaved column. The row of block 0, a band the metadata does not state, bytes of another size than the tile, and a band stating a scale or an offset raise an error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pixels(raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint,
+  '\x010a0214031e0428'::bytea,
+  '{"band_layout": "interleaved", "tiling": {"block_width": 2, "block_height": 2},
+    "bands": [{"type": "uint8"}, {"type": "uint8"}]}', 2));
+-- \x0a141e28
+</programlisting>
+			</listitem>
 			<listitem xml:id="raquetRead">
 				<indexterm significance="normal"><primary><varname>raquetRead</varname></primary></indexterm>
 				<para>Decode a raster file into a Raquet raster tile via GDAL</para>

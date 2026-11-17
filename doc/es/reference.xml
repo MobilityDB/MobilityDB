@@ -3132,6 +3132,9 @@
 					<para><link linkend="raster_addBand"><varname>addBand</varname></link>: Añade una banda a un ráster</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raquetFromRow"><varname>raquetFromRow</varname></link>: Devuelve la tesela de una banda de una fila de un archivo Raquet</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decodifica un archivo ráster en una tesela ráster Raquet mediante GDAL</para>
 				</listitem>
 			</itemizedlist>

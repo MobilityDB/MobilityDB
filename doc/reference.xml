@@ -3141,6 +3141,9 @@
 					<para><link linkend="raster_addBand"><varname>addBand</varname></link>: Add a band to a raster</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raquetFromRow"><varname>raquetFromRow</varname></link>: Return the tile of one band of a row of a Raquet file</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode a raster file into a Raquet raster tile via GDAL</para>
 				</listitem>
 			</itemizedlist>

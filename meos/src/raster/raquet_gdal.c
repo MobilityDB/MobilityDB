@@ -53,6 +53,7 @@
 /* GDAL */
 #include <gdal.h>
 #include <cpl_error.h>
+#include <cpl_conv.h>
 #include <cpl_vsi.h>
 #include <ogr_srs_api.h>
 /* PostgreSQL */
@@ -60,6 +61,7 @@
 /* PostGIS */
 // #include <liblwgeom.h>
 /* MEOS */
+#include <json-c/json.h>
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
@@ -403,6 +405,314 @@ raquet_read_bytes(const uint8_t *data, size_t size, Quadbin quadbin)
   /* The callee takes over the dataset and the `/vsimem/` file, releasing both
    * on every path */
   return raquet_from_gdal_dataset(ds, vpath, quadbin, "in-memory raster");
+}
+
+/*****************************************************************************
+ * A row of a Raquet file
+ *****************************************************************************/
+
+/**
+ * @brief Return in the last arguments the nodata value a band of the
+ * metadata of a Raquet file states
+ * @details The specification writes it as a number, as null for none, or as
+ * one of the strings `NaN`, `Infinity` and `-Infinity`
+ * @return False when the value is none of these
+ */
+static bool
+raquet_row_nodata(json_object *jnodata, double *nodata, bool *has_nodata)
+{
+  *nodata = 0.0;
+  *has_nodata = false;
+  if (! jnodata || json_object_is_type(jnodata, json_type_null))
+    return true;
+  if (json_object_is_type(jnodata, json_type_double) ||
+      json_object_is_type(jnodata, json_type_int))
+  {
+    *nodata = json_object_get_double(jnodata);
+    *has_nodata = true;
+    return true;
+  }
+  if (json_object_is_type(jnodata, json_type_string))
+  {
+    const char *str = json_object_get_string(jnodata);
+    if (strcmp(str, "NaN") == 0)
+      *nodata = NAN;
+    else if (strcmp(str, "Infinity") == 0)
+      *nodata = INFINITY;
+    else if (strcmp(str, "-Infinity") == 0)
+      *nodata = -INFINITY;
+    else
+      return false;
+    *has_nodata = true;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Return the pixels of one band of a Raquet row stored as an image,
+ * JPEG or WebP, which GDAL decodes
+ * @details The specification stores a lossy band only in the interleaved
+ * layout and only for bands of unsigned 8 bits, the image holding every band
+ * @param[in] data,size Bytes of the image
+ * @param[in] band Band, from 1
+ * @param[in] width,height Size of the tile
+ * @errval NULL
+ */
+static uint8_t *
+raquet_row_image(const uint8_t *data, size_t size, int band, int width,
+  int height)
+{
+  GDALAllRegister();
+  int unique = 0;
+  char vpath[64];
+  snprintf(vpath, sizeof(vpath), "/vsimem/raquet_row_%p", (void *) &unique);
+  meos_gdal_enter();
+  VSILFILE *vf = VSIFileFromMemBuffer(vpath, (GByte *) (uintptr_t) data,
+    (vsi_l_offset) size, FALSE);
+  if (vf)
+    VSIFCloseL(vf);
+  GDALDatasetH ds = vf ? GDALOpen(vpath, GA_ReadOnly) : NULL;
+  meos_gdal_leave();
+  if (! ds)
+  {
+    VSIUnlink(vpath);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL cannot decode the image of a Raquet row");
+    return NULL;
+  }
+  int iw = GDALGetRasterXSize(ds), ih = GDALGetRasterYSize(ds),
+    in = GDALGetRasterCount(ds);
+  if (iw != width || ih != height || band > in)
+  {
+    GDALClose(ds);
+    VSIUnlink(vpath);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The image of a Raquet row is %d x %d with %d bands, where the metadata "
+      "states a %d x %d tile and band %d", iw, ih, in, width, height, band);
+    return NULL;
+  }
+  uint8_t *result = palloc((size_t) width * height);
+  meos_gdal_enter();
+  CPLErr err = GDALRasterIO(GDALGetRasterBand(ds, band), GF_Read, 0, 0,
+    width, height, result, width, height, GDT_Byte, 0, 0);
+  meos_gdal_leave();
+  GDALClose(ds);
+  VSIUnlink(vpath);
+  if (err != CE_None)
+  {
+    pfree(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL cannot read band %d of the image of a Raquet row", band);
+    return NULL;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return the tile of one band of a row of a Raquet file
+ * @details A Raquet file is a Parquet table whose rows are the tiles of a
+ * raster, keyed by their QUADBIN cell in the column `block`, the row of block
+ * 0 holding the metadata of the file as JSON. An engine that reads Parquet
+ * scans the rows itself and hands each to this function with the metadata,
+ * which states the size of a tile (`tiling.block_width`,
+ * `tiling.block_height`), the type and nodata value of each band (`bands`),
+ * the layout of the bands (`band_layout`: `sequential`, one column per band,
+ * or `interleaved`, the bands of a pixel side by side in one column) and
+ * their compression (`compression`: none, `gzip`, which the zlib form also
+ * reads as, or `jpeg` or `webp`, an image of every band). The pixels are
+ * little-endian, row by row from the top, as the specification states. A
+ * band stating a scale or an offset is refused, the tile holding the stored
+ * numbers alone
+ * @param[in] block QUADBIN cell of the row
+ * @param[in] data Bytes of the band column of the row, or of the column of
+ * the pixels in the interleaved layout
+ * @param[in] size Number of bytes
+ * @param[in] metadata Metadata of the file, as JSON
+ * @param[in] band Band of the bytes, from 1
+ * @errval NULL
+ * @csqlfn #Raquet_from_row()
+ */
+Raquet *
+raquet_from_row(Quadbin block, const uint8_t *data, size_t size,
+  const char *metadata, int band)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(data, NULL); VALIDATE_NOT_NULL(metadata, NULL);
+  if (block == 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The row of block 0 of a Raquet file holds its metadata, not a tile");
+    return NULL;
+  }
+  if (band < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The band of a Raquet row is counted from 1: %d", band);
+    return NULL;
+  }
+
+  json_tokener *tok = json_tokener_new();
+  json_object *root = json_tokener_parse_ex(tok, metadata, -1);
+  bool parsed = tok->err == json_tokener_success && root;
+  json_tokener_free(tok);
+  if (! parsed)
+  {
+    if (root) json_object_put(root);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The metadata of a Raquet file is no JSON object");
+    return NULL;
+  }
+
+  Raquet *result = NULL;
+  uint8_t *pixels = NULL, *inflated = NULL;
+  const char *problem = NULL;
+  json_object *jtiling, *jw, *jh, *jbands, *jband, *jtype, *jtmp;
+  int width = 0, height = 0, nbands = 0;
+  if (! json_object_object_get_ex(root, "tiling", &jtiling) ||
+      ! json_object_object_get_ex(jtiling, "block_width", &jw) ||
+      ! json_object_object_get_ex(jtiling, "block_height", &jh) ||
+      (width = json_object_get_int(jw)) <= 0 ||
+      (height = json_object_get_int(jh)) <= 0)
+    problem = "states no positive tiling.block_width and tiling.block_height";
+  else if (! json_object_object_get_ex(root, "bands", &jbands) ||
+      ! json_object_is_type(jbands, json_type_array) ||
+      (nbands = (int) json_object_array_length(jbands)) < band)
+    problem = "states fewer bands than the band asked for";
+  if (problem)
+    goto refuse;
+
+  /* The band asked for, and the bytes a pixel of each band takes */
+  jband = json_object_array_get_idx(jbands, (size_t) band - 1);
+  size_t stride = 0, offset = 0;
+  MeosPixType pt = MEOS_PT_UINT8;
+  for (int b = 1; b <= nbands; b++)
+  {
+    json_object *jb = json_object_array_get_idx(jbands, (size_t) b - 1);
+    if (! json_object_object_get_ex(jb, "type", &jtype))
+    {
+      problem = "states a band with no type";
+      goto refuse;
+    }
+    meos_errno_reset();
+    MeosPixType bpt = meospixtype_from_string(json_object_get_string(jtype));
+    if (meos_errno())
+      goto cleanup;
+    if (b < band)
+      offset += raquet_pixtype_size(bpt);
+    if (b == band)
+      pt = bpt;
+    stride += raquet_pixtype_size(bpt);
+  }
+  double nodata;
+  bool has_nodata;
+  if (! raquet_row_nodata(json_object_object_get_ex(jband, "nodata", &jtmp) ?
+      jtmp : NULL, &nodata, &has_nodata))
+  {
+    problem = "states a nodata value that is no number, null, NaN or Infinity";
+    goto refuse;
+  }
+  if ((json_object_object_get_ex(jband, "scale", &jtmp) &&
+       ! json_object_is_type(jtmp, json_type_null) &&
+       json_object_get_double(jtmp) != 1.0) ||
+      (json_object_object_get_ex(jband, "offset", &jtmp) &&
+       ! json_object_is_type(jtmp, json_type_null) &&
+       json_object_get_double(jtmp) != 0.0))
+  {
+    problem = "states a scale or an offset, which a tile does not carry";
+    goto refuse;
+  }
+
+  const char *layout = "sequential", *compression = NULL;
+  if (json_object_object_get_ex(root, "band_layout", &jtmp) &&
+      ! json_object_is_type(jtmp, json_type_null))
+    layout = json_object_get_string(jtmp);
+  if (json_object_object_get_ex(root, "compression", &jtmp) &&
+      ! json_object_is_type(jtmp, json_type_null))
+    compression = json_object_get_string(jtmp);
+  bool interleaved = strcmp(layout, "interleaved") == 0;
+  if (! interleaved && strcmp(layout, "sequential") != 0)
+  {
+    problem = "states a band_layout other than sequential and interleaved";
+    goto refuse;
+  }
+
+  size_t npix = (size_t) width * height;
+  size_t psize = raquet_pixtype_size(pt);
+  if (compression && (strcmp(compression, "jpeg") == 0 ||
+      strcmp(compression, "webp") == 0))
+  {
+    if (pt != MEOS_PT_UINT8)
+    {
+      problem = "compresses as an image a band that is not of unsigned 8 bits";
+      goto refuse;
+    }
+    pixels = raquet_row_image(data, size, band, width, height);
+    if (pixels)
+      result = raquet_make(block, width, height, pt, nodata, has_nodata,
+        pixels, npix);
+    goto cleanup;
+  }
+
+  /* The raw bytes of the column, inflated when compressed */
+  const uint8_t *raw = data;
+  size_t rawsize = size;
+  size_t expected = npix * (interleaved ? stride : psize);
+  if (compression && strcmp(compression, "gzip") == 0)
+  {
+    inflated = palloc(expected);
+    size_t out = 0;
+    if (! CPLZLibInflate(data, size, inflated, expected, &out) ||
+        out != expected)
+    {
+      problem = "compresses a band that does not inflate to a tile";
+      goto refuse;
+    }
+    raw = inflated;
+    rawsize = out;
+  }
+  else if (compression)
+  {
+    problem = "states a compression other than gzip, jpeg and webp";
+    goto refuse;
+  }
+  if (rawsize != expected)
+  {
+    if (inflated) pfree(inflated);
+    json_object_put(root);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A Raquet row of a %d x %d tile holds %zu bytes where %zu are expected",
+      width, height, rawsize, expected);
+    return NULL;
+  }
+  if (! interleaved)
+  {
+    result = raquet_make(block, width, height, pt, nodata, has_nodata, raw,
+      rawsize);
+    goto cleanup;
+  }
+  pixels = palloc(npix * psize);
+  for (size_t i = 0; i < npix; i++)
+    memcpy(pixels + i * psize, raw + i * stride + offset, psize);
+  result = raquet_make(block, width, height, pt, nodata, has_nodata, pixels,
+    npix * psize);
+  goto cleanup;
+
+cleanup:
+  if (pixels) pfree(pixels);
+  if (inflated) pfree(inflated);
+  json_object_put(root);
+  return result;
+
+refuse:
+  /* The problem is a literal, so it outlives the metadata released here */
+  if (pixels) pfree(pixels);
+  if (inflated) pfree(inflated);
+  json_object_put(root);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The metadata of a Raquet file %s", problem);
+  return NULL;
 }
 
 /*****************************************************************************
