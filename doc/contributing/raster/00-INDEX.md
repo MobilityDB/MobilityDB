@@ -91,7 +91,8 @@ the standard's conformance classes against the fixture.
   MobilityDB #3780).
 - No raster writer to GeoTIFF or CoverageJSON exists in MEOS (R3, R4).
 - The restrictions read the values of a `Raquet` tile and an array of tiles (R2, MobilityDB
-  #3781); a Raquet Parquet file is read and written by no MEOS function (R5).
+  #3781); one row of a Raquet file is read into a tile (R5, #3782), and a whole Raquet
+  Parquet file is read and written by no MEOS function.
 - `tools/raster_matrix.py` measures the raster surface each binding and MobilityDuck carries
   (R6, MobilityDB #3776).
 - MobilityAPI publishes no raster (R7 to R10).
