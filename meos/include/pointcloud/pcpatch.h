@@ -86,6 +86,8 @@ extern bool ensure_valid_pcpatchset_pcpatch(const Set *s, const Pcpatch *pa);
  *****************************************************************************/
 
 extern Pcpatch *pcpatch_parse(const char **str, bool end);
+extern uint8_t *pcpatch_to_wkb_bytes(const Pcpatch *pa, uint8_t variant,
+  size_t *size_out);
 
 /*****************************************************************************/
 

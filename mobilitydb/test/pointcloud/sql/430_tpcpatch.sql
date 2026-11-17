@@ -494,6 +494,61 @@ SELECT pcpatchFromHexWKB(asHexWKB(:patch1)) = :patch1;
 /* Errors */
 SELECT pcpatchFromHexWKB('01010000000000000003000000640000006400000064000000C8000000C8000000C8000000');
 
+-- asBinary and asHexWKB write the WKB of pgPointCloud in the byte order the
+-- endian argument states, and pcpatchFromBinary reads either one
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 'XDR');
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 'XDR') =
+  '00000000010000000000000002000000640000006400000064000000C8000000C8000000C8';
+SELECT asBinary(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 'XDR');
+SELECT pcpatchFromBinary(asBinary(:patch1)) = :patch1;
+SELECT pcpatchFromBinary(asBinary(:patch1, 'XDR')) = :patch1;
+SELECT pcpatchFromHexWKB(asHexWKB(:patch1, 'XDR')) = :patch1;
+SELECT numPoints(pcpatchFromBinary(
+  '\x00000000010000000000000002000000640000006400000064000000c8000000c8000000c8'));
+SELECT pcpatchsetFromBinary(asBinary(set(ARRAY[:patch1]), 'XDR')) =
+  set(ARRAY[:patch1]);
+SELECT tpcpatchFromBinary(asBinary(tpcpatch(:patch1, timestamptz '2024-01-01'), 'XDR')) =
+  tpcpatch(:patch1, timestamptz '2024-01-01');
+/* Errors */
+SELECT pcpatchFromBinary('\x01010000000000'::bytea);
+
+-- A dimensionally compressed patch keeps in the other byte order the
+-- compression of each of its dimensions: run-length for the constant
+-- intensity, significant bits for the near Y values and zlib for the others.
+-- The values each dimension carries are flipped, and read back, the patch is
+-- the one written, byte for byte.
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
+  (95, 4326, 'dimensional');
+INSERT INTO pointcloud_dimensions
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset)
+  VALUES (95, 1, 'X', 'int32_t', 0.01, 0), (95, 2, 'Y', 'int32_t', 0.01, 0),
+    (95, 3, 'Z', 'double', 1, 0), (95, 4, 'Intensity', 'uint16_t', 1, 0);
+WITH RECURSIVE p AS (
+  SELECT pcpatch(95, ARRAY(SELECT v FROM generate_series(1, 32) AS i,
+    LATERAL (VALUES (1, 1000 + i * 37.13), (2, 1 + i * 0.01),
+      (3, i * i * 1.234567), (4, 7)) AS d(k, v) ORDER BY i, k)::float[]) AS pa),
+w AS (SELECT pa, asBinary(pa, 'NDR') AS ndr, asBinary(pa, 'XDR') AS xdr
+  FROM p),
+-- The compression byte of each dimension, which follows the header of 13
+-- bytes and the bytes of the dimensions before it
+d(n, off, comp) AS (
+  SELECT 1, 13, get_byte(ndr, 13) FROM w
+  UNION ALL
+  SELECT n + 1, off + 5 + get_byte(ndr, off + 1) + get_byte(ndr, off + 2) * 256,
+    get_byte(ndr, off + 5 + get_byte(ndr, off + 1) + get_byte(ndr, off + 2) * 256)
+  FROM d, w WHERE n < 4)
+SELECT (SELECT array_agg(comp ORDER BY n) FROM d) AS compressions,
+  get_byte(xdr, 0) AS xdr_endian, ndr <> xdr AS differ,
+  pcpatchFromBinary(xdr) = pa AS xdr_roundtrips,
+  pcpatchFromBinary(ndr) = pa AS ndr_roundtrips,
+  asBinary(pcpatchFromBinary(xdr), 'NDR') = ndr AS same_bytes,
+  pcpatchsetFromBinary(asBinary(set(ARRAY[pa]), 'XDR')) = set(ARRAY[pa])
+    AS set_roundtrips,
+  tpcpatchFromHexWKB(asHexWKB(tpcpatch(pa, timestamptz '2024-01-01'), 'XDR')) =
+    tpcpatch(pa, timestamptz '2024-01-01') AS temporal_roundtrips
+FROM w;
+DELETE FROM pointcloud_schemas WHERE pcid = 95;
+
 -------------------------------------------------------------------------------
 -- A value whose pcid names no schema
 -- The data of a pcpatch is laid out by the schema its pcid resolves to, so a

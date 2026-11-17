@@ -48,14 +48,24 @@
 /******************************************************************************
  * Input and output
  *
- * pcpointFromHexWKB, pcpatchFromHexWKB and asHexWKB read and write the hex of
- * the pgPointCloud Well-Known Binary, the text representation of the type
- * input and output functions of pgPointCloud.
+ * The Well-Known Binary of a pcpoint and of a pcpatch is the one of
+ * pgPointCloud, in the byte order the endian argument states; its hex is the
+ * text representation of the type input and output functions of pgPointCloud.
  ******************************************************************************/
+
+CREATE FUNCTION pcpointFromBinary(bytea)
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Pcpoint_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pcpointFromHexWKB(text)
   RETURNS pcpoint
   AS 'MODULE_PATHNAME', 'Pcpoint_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION pcpatchFromBinary(bytea)
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Pcpatch_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pcpatchFromHexWKB(text)
@@ -63,12 +73,22 @@ CREATE FUNCTION pcpatchFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Pcpatch_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(pcpoint)
+CREATE FUNCTION asBinary(pcpoint, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Pcpoint_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(pcpoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Pcpoint_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(pcpatch)
+CREATE FUNCTION asBinary(pcpatch, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Pcpatch_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(pcpatch, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Pcpatch_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

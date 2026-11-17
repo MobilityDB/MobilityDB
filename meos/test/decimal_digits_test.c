@@ -102,24 +102,24 @@ int main(void)
   /* A pcpoint writes the hex its input reads back */
   Pcpoint *pt = pcpoint_from_hexwkb(PCPOINT_HEX);
   assert(pt && meos_errno() == 0);
-  char *hex1 = pcpoint_as_hexwkb(pt, &size_out);
+  char *hex1 = pcpoint_as_hexwkb(pt, 0, &size_out);
   printf("pcpoint_as_hexwkb: %s, errno %d\n", hex1 ? hex1 : "NULL",
     meos_errno());
   assert(hex1 && meos_errno() == 0);
   Pcpoint *pt2 = pcpoint_from_hexwkb(hex1);
-  char *hex2 = pt2 ? pcpoint_as_hexwkb(pt2, &size_out) : NULL;
+  char *hex2 = pt2 ? pcpoint_as_hexwkb(pt2, 0, &size_out) : NULL;
   assert(hex2 && strcmp(hex1, hex2) == 0);
   free(pt); free(pt2); free(hex1); free(hex2);
 
   /* So does a pcpatch */
   Pcpatch *pa = pcpatch_from_hexwkb(PCPATCH_HEX);
   assert(pa && meos_errno() == 0);
-  hex1 = pcpatch_as_hexwkb(pa, &size_out);
+  hex1 = pcpatch_as_hexwkb(pa, 0, &size_out);
   printf("pcpatch_as_hexwkb: %s, errno %d\n", hex1 ? hex1 : "NULL",
     meos_errno());
   assert(hex1 && meos_errno() == 0);
   Pcpatch *pa2 = pcpatch_from_hexwkb(hex1);
-  hex2 = pa2 ? pcpatch_as_hexwkb(pa2, &size_out) : NULL;
+  hex2 = pa2 ? pcpatch_as_hexwkb(pa2, 0, &size_out) : NULL;
   assert(hex2 && strcmp(hex1, hex2) == 0);
   free(pa); free(pa2); free(hex1); free(hex2);
 
