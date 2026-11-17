@@ -533,6 +533,7 @@ geo_mem_size(const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_base_constructor
  * @brief Return a 2D geometry point constructed from the arguments
+ * @csqlfn #Geom_makepoint()
  */
 GSERIALIZED *
 geompoint_make2d(int32_t srid, double x, double y)
@@ -568,6 +569,7 @@ geogpoint_make2d(int32_t srid, double x, double y)
 /**
  * @ingroup meos_geo_base_constructor
  * @brief Return a 3DZ geometry point constructed from the arguments
+ * @csqlfn #Geom_makepoint3dz()
  */
 GSERIALIZED *
 geompoint_make3dz(int32_t srid, double x, double y, double z)

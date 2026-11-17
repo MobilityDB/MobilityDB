@@ -1017,6 +1017,9 @@
 					<para><link linkend="geo_constructors"><varname>collect</varname>, <varname>makeLine</varname></link>: Return the collection of an array of geometries or the line joining them</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_makepoint"><varname>makePoint</varname></link>: Return a geometry point from its coordinates and SRID</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_output"><varname>asText</varname>, <varname>asEWKT</varname>, <varname>asEWKB</varname>, <varname>asGeoJSON</varname></link>: Return the Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary or GeoJSON representation of a geometry or a geography</para>
 				</listitem>
 				<listitem>
