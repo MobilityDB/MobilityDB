@@ -58,6 +58,11 @@ CREATE FUNCTION mergeEachNSpans(tcbuffer, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeQuerySpans(tcbuffer, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-TILING-END cbuffer_splits
 
 /*****************************************************************************/

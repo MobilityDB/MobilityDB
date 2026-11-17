@@ -258,5 +258,7 @@ SELECT splitNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-0
 SELECT splitEachNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
 SELECT mergeNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
 SELECT mergeEachNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
+SELECT mergeQuerySpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQuerySpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', tstzspan '[2001-01-01, 2001-01-08]');
 
 -------------------------------------------------------------------------------

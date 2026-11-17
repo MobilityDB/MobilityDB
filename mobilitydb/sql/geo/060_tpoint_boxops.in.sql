@@ -139,6 +139,15 @@ CREATE FUNCTION mergeEachNSpans(tgeogpoint, integer)
   AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeQuerySpans(tgeompoint, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(tgeogpoint, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitNStboxes(tgeompoint, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tgeo_split_n_stboxes'
@@ -175,6 +184,15 @@ CREATE FUNCTION mergeEachNStboxes(tgeogpoint, integer)
   AS 'MODULE_PATHNAME', 'Tgeo_merge_each_n_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeQueryStboxes(tgeompoint, stbox)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_query_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQueryStboxes(tgeogpoint, stbox)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_query_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitNStboxes(geometry, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Geo_split_n_stboxes'
@@ -209,6 +227,15 @@ CREATE FUNCTION mergeEachNStboxes(geometry, integer)
 CREATE FUNCTION mergeEachNStboxes(geography, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Geo_merge_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeQueryStboxes(geometry, stbox)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Geo_merge_query_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQueryStboxes(geography, stbox)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Geo_merge_query_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-TILING-END tpoint_splits
 

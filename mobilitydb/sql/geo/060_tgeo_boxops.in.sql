@@ -121,6 +121,15 @@ CREATE FUNCTION mergeEachNSpans(tgeography, integer)
   AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeQuerySpans(tgeometry, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(tgeography, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitNStboxes(tgeometry, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tgeo_split_n_stboxes'
@@ -155,6 +164,15 @@ CREATE FUNCTION mergeEachNStboxes(tgeometry, integer)
 CREATE FUNCTION mergeEachNStboxes(tgeography, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tgeo_merge_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeQueryStboxes(tgeometry, stbox)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_query_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQueryStboxes(tgeography, stbox)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_query_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-TILING-END geo_splits
 

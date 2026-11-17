@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.1.1 |
-| Scope | The boxes MEOS gives a value for an index: one box per piece of the value, a split of its pieces into a number of boxes, and a merge of its piece boxes into a number of boxes, for the sets, the span sets, the temporal types and the lines of the geometry types; and the box of a temporal rigid geometry |
-| Reference | `tools/codegen/inherited/templates/boxsplit.c.tmpl` (the splits and merges of the temporal types), `meos/src/geo/tgeo_boxops.c` (the temporal points and geometries, the lines of a geometry), `meos/src/rgeo/trgeo_boxops.c` (the box of a temporal rigid geometry), `meos/src/temporal/temporal_boxops.c` (`bbox_merge_n`, the merge), `meos/src/temporal/span_index.c`, `meos/src/temporal/tbox_index.c`, `meos/src/geo/stbox_index.c` (the size of a box) |
+| Version | v0.2.0 |
+| Scope | The boxes MEOS gives a value for an index: one box per piece of the value, a split of its pieces into a number of boxes, and a merge of its piece boxes into a number of boxes or into those a query of the extents of a query box reads least, for the sets, the span sets, the temporal types and the lines of the geometry types; and the box of a temporal rigid geometry |
+| Reference | `tools/codegen/inherited/templates/boxsplit.c.tmpl` (the splits and merges of the temporal types), `meos/src/geo/tgeo_boxops.c` (the temporal points and geometries, the lines of a geometry), `meos/src/rgeo/trgeo_boxops.c` (the box of a temporal rigid geometry), `meos/src/temporal/temporal_boxops.c` (`bbox_merge_n` and `bbox_merge_query`, the merges), `meos/src/temporal/span_index.c`, `meos/src/temporal/tbox_index.c`, `meos/src/geo/stbox_index.c` (the size of a box and its size for a query box) |
 
 ## 1. Scope and intent
 
@@ -136,6 +136,26 @@ Point(8 2)@2001-01-08, Point(9 1)@2001-01-09,Point(10 2)@2001-01-10]}', 2);
 `mergeEachN<Box>(value, n)` merges in the same way down to the number of
 pieces divided by `n`, rounded up.
 
+`mergeQuery<Box>(value, query)` takes in place of a count a query box of the
+box type of the answer: its widths are the extents of a query, its position
+is not read, and a dimension it lacks restricts no query. Each box is
+measured by the product, over the dimensions of both, of its width plus the
+width of the query box, time in the unit of the size of its box type. The
+boxes merge as `mergeN<Box>` merges them, by that measure, down to one box,
+and the answer is the boxes after the merge at which the sum of the
+measures is least, the boxes of the pieces included, so it never measures
+more than the boxes of the pieces or the box of the value:
+
+```sql
+SELECT mergeQueryStboxes(geometry 'Linestring(1 1,2 2,3 1,10 10,11 11)', stbox 'STBOX X((0,0),(1,1))');
+-- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(10,10))","STBOX X((10,10),(11,11))"}
+SELECT mergeQueryStboxes(geometry 'Linestring(1 1,2 2,3 1,10 10,11 11)', stbox 'STBOX X((0,0),(20,20))');
+-- {"STBOX X((1,1),(11,11))"}
+```
+
+A query box whose reference system or value type differs from the value's
+is refused as the other operations on a value and a box refuse it.
+
 ## 7. The box of a temporal rigid geometry
 
 A temporal rigid geometry is a geometry carried by a pose. The box of a
@@ -198,6 +218,17 @@ an end of the segment, so the boxes at the ends hold it; between two poses
 of different orientations the geometry can reach any angle about its
 reference point, which the radius bounds.
 
+### 9.4 A query merge measures what a query reads
+
+A query box of widths q placed at random meets a box of widths w with a
+likelihood proportional to the product over the dimensions of w + q, so the
+sum of those products over the boxes of an answer is proportional to the
+number of boxes such a query reads. Small boxes suit queries of small
+extents and one box suits queries larger than the value. The least sum
+along the merges is kept rather than the first merge that raises it, since
+the sum can rise and then fall below its first value as the boxes become
+one.
+
 ## 10. Versioning and stability
 
 The minor number rises with each part of the rule master gains, the patch
@@ -207,13 +238,12 @@ number with corrections of wording.
 |---|---|
 | v0.1.0 | The boxes of the pieces of a value, its splits by count and its merges by size, the box of a temporal rigid geometry, and the arguments |
 | v0.1.1 | Every function of the document, the sets and the span sets included, sets its count to 0 first |
+| v0.2.0 | The merge into the boxes a query of the extents of a query box reads least |
 
 ## 11. Out of scope
 
 Future: the rule extends to these, each added here with its version:
 
-- a merge that stops at the boxes a query of a given extent reads least,
-  in place of a count;
 - the index operator classes keyed by the boxes of this document.
 
 Not specified: the boxes of a value read by the GiST and SP-GiST operator
