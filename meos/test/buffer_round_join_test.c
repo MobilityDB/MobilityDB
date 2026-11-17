@@ -126,6 +126,17 @@ buffer_area_is(const char *label, const char *wkt, double area)
   free(geo); free(buf);
 }
 
+/** Seconds of processor time within which #buffer_returns asks a buffer to
+ * return */
+#define RETURN_SECS        5.0
+/** Seconds within which it asks it where MEOS_TEST_SMALL is set, as a run
+ * under valgrind sets it: valgrind runs the buffer about 25 times slower,
+ * and more beside the other programs it runs, while a buffer whose signs
+ * are not declined runs for minutes even without valgrind */
+#define RETURN_SECS_SMALL  60.0
+/** Seconds within which a buffer returns in this run */
+static double return_secs = RETURN_SECS;
+
 /* The buffer of @p wkt by @p dist, as #buffer_box_holds takes it at
  * coordinates whose squares no double holds, asserted to return within a
  * few seconds of processor time: there the products of the exact signs of
@@ -141,9 +152,9 @@ buffer_returns(const char *label, const char *wkt, double dist)
   clock_t start = clock();
   GSERIALIZED *buf = geom_buffer(geo, dist, "");
   double secs = (double) (clock() - start) / CLOCKS_PER_SEC;
-  printf("geom_buffer(%s): returned in %s\n", label,
-    secs < 5.0 ? "under 5 s" : "5 s or more");
-  assert(secs < 5.0);
+  printf("geom_buffer(%s): returned in %s %g s\n", label,
+    secs < return_secs ? "under" : "not under", return_secs);
+  assert(secs < return_secs);
   free(geo);
   if (buf)
     free(buf);
@@ -176,6 +187,8 @@ main(void)
   meos_initialize();
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
+  if (getenv("MEOS_TEST_SMALL"))
+    return_secs = RETURN_SECS_SMALL;
 
   const char *square = "Polygon((0 0,10 0,10 10,0 10,0 0))";
   buffer_covers("an axis-aligned square", square, square);

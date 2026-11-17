@@ -3117,6 +3117,9 @@
 				<listitem>
 					<para><link linkend="raquetFromHexWKB"><varname>rasterFromHexWKB</varname>, <varname>raquetFromHexWKB</varname></link>: Return a raster or a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_asCoverageJSON"><varname>asCoverageJSON</varname></link>: Return a raster, a Raquet tile or the values a trajectory reads as a CoverageJSON coverage</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

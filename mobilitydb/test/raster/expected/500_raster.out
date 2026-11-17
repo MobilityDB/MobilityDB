@@ -1424,6 +1424,67 @@ ERROR:  A Raquet row of a 2 x 2 tile holds 3 bytes where 4 are expected
 SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x01020304'::bytea,
   '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8", "scale": 0.5}]}');
 ERROR:  The metadata of a Raquet file states a scale or an offset, which a tile does not carry
+-- A raster is a CoverageJSON grid coverage: its axes run from the centre of
+-- the first pixel to the centre of the last, a band is a parameter whose
+-- values run row by row from the top, a nodata pixel is null.
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]));
+                                                                                                                                                                                                                                          ascoveragejson                                                                                                                                                                                                                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"Coverage","domain":{"type":"Domain","domainType":"Grid","axes":{"x":{"start":11,"stop":15,"num":3},"y":{"start":19,"stop":17,"num":2}},"referencing":[{"coordinates":["x","y"],"system":{"type":"ProjectedCRS","id":"http://www.opengis.net/def/crs/EPSG/0/3857"}}]},"parameters":{"band1":{"type":"Parameter","observedProperty":{"label":{"en":"Band 1"}}}},"ranges":{"band1":{"type":"NdArray","dataType":"integer","axisNames":["y","x"],"shape":[2,3],"values":[1,2,3,4,-5,null]}}}
+(1 row)
+
+-- EPSG:4326 is stated as OGC CRS84, its longitude first as MEOS states it,
+-- and a band of floats has float values.
+SELECT (asCoverageJSON(ST_AddBand(
+  ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 0.5, -1.0, 0.0, 0.0, 4326),
+  '32BF'::text, 1.5::float8, NULL::float8))::json)
+  #> '{domain,referencing,0,system,id}' AS crs84;
+                     crs84                      
+------------------------------------------------
+ "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+(1 row)
+
+-- A Raquet tile is a grid of Web Mercator over the bounds of its cell: its
+-- axes run between the centres of its pixels, read here to the centimetre.
+SELECT j #>> '{domain,domainType}' AS domain,
+  round((j #>> '{domain,axes,x,start}')::numeric, 2) AS x_start,
+  round((j #>> '{domain,axes,x,stop}')::numeric, 2) AS x_stop,
+  round((j #>> '{domain,axes,y,start}')::numeric, 2) AS y_start,
+  round((j #>> '{domain,axes,y,stop}')::numeric, 2) AS y_stop,
+  j #>> '{domain,axes,x,num}' AS num,
+  j #>> '{domain,referencing,0,system,id}' AS crs,
+  j #> '{ranges,band1,values}' AS band1
+FROM (SELECT asCoverageJSON(raquet('\x01020304'::bytea, 2, 2,
+  quadbinTileToCell(1, 0, 1), 'uint8'))::json AS j) t;
+ domain |  x_start   |   x_stop    |   y_start   |   y_stop   | num |                    crs                     |   band1   
+--------+------------+-------------+-------------+------------+-----+--------------------------------------------+-----------
+ Grid   | 5009377.09 | 15028131.26 | 15028131.26 | 5009377.09 | 2   | http://www.opengis.net/def/crs/EPSG/0/3857 | [1,2,3,4]
+(1 row)
+
+-- The values a trip reads are a trajectory coverage, each value at the
+-- position of the trip at its instant.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS r),
+trip(t) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]')
+SELECT asCoverageJSON(rasterValue(t, r), t) FROM rast, trip;
+                                                                                                                                                                                                                                                                                                                                          ascoveragejson                                                                                                                                                                                                                                                                                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"Coverage","domain":{"type":"Domain","domainType":"Trajectory","axes":{"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-01T12:00:00+00:00",1,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5]]}},"referencing":[{"coordinates":["t"],"system":{"type":"TemporalRS","calendar":"Gregorian"}},{"coordinates":["x","y"],"system":{"type":"GeographicCRS","id":"http://www.opengis.net/def/crs/OGC/1.3/CRS84"}}]},"parameters":{"value":{"type":"Parameter","observedProperty":{"label":{"en":"Value"}}}},"ranges":{"value":{"type":"NdArray","dataType":"float","axisNames":["composite"],"shape":[3],"values":[10,20,20]}}}
+(1 row)
+
+-- A raster with a skew and a raster in no reference system are refused.
+SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,
+  4326));
+ERROR:  A raster with a skew lies on no grid of CoverageJSON
+SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  0));
+ERROR:  A value in no spatial reference system has no CoverageJSON referencing
 -- A string shorter than the raster it states is refused, not read past its end.
 SELECT rasterFromHexWKB('0100');
 ERROR:  rt_raster_from_wkb: wkb size (2) < min size (61)

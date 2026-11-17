@@ -3108,6 +3108,9 @@
 				<listitem>
 					<para><link linkend="raquetFromHexWKB"><varname>rasterFromHexWKB</varname>, <varname>raquetFromHexWKB</varname></link>: Devuelve un ráster o una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_asCoverageJSON"><varname>asCoverageJSON</varname></link>: Devuelve un ráster, una tesela Raquet o los valores que lee una trayectoria como una cobertura CoverageJSON</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
