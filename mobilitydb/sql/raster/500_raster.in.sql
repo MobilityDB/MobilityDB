@@ -164,6 +164,22 @@ CREATE FUNCTION raquetRead(
   AS 'MODULE_PATHNAME', 'Raquet_read'
   LANGUAGE C PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the tile of one band of a row of a Raquet file, as an engine
+ * reading the Parquet file hands its rows over
+ * @param[in] block QUADBIN cell of the row, the column block
+ * @param[in] band Bytes of the band column of the row, or of the column of
+ * the pixels in the interleaved layout
+ * @param[in] metadata Metadata of the file, the JSON of the row of block 0
+ * @param[in] bandnum Band of the bytes, from 1
+ */
+CREATE FUNCTION raquetFromRow(block bigint, band bytea, metadata text,
+    bandnum integer DEFAULT 1)
+  RETURNS raquet
+  AS 'MODULE_PATHNAME', 'Raquet_from_row'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * rasterValue
  *****************************************************************************/

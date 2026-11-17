@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.3.0 |
+| Version | v0.4.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -64,6 +64,7 @@ without its `ST_` prefix.
 | WKB → value | `rasterFromBinary(bytea)`, `rasterFromHexWKB(text)` | `raquetFromBinary(bytea)`, `raquetFromHexWKB(text)` |
 | value → WKB | `asBinary(raster)`, `asHexWKB(raster)` | `asBinary(raquet)`, `asHexWKB(raquet)` |
 | a raster file → value | | `raquetRead(path text, quadbin)`, `raquetRead(bytea, quadbin)` |
+| a row of a Raquet file → value | | `raquetFromRow(block bigint, band bytea, metadata text, bandnum = 1)` |
 
 The WKB of a `raster` is PostGIS's raster WKB, so a value written by PostGIS
 is read by every engine and the converse. `raquetRead` reads a raster file of
@@ -71,6 +72,21 @@ any format GDAL reads, from a path on the server or from the bytes of the
 file, into a tile; when no QUADBIN cell is given, the cell is derived from the
 geotransform of the file, which must state Web Mercator. The text of a
 `raquet` is its hexadecimal WKB.
+
+A Raquet file is a Parquet table whose rows are tiles keyed by their QUADBIN
+cell in the column `block`, the row of block 0 holding the metadata of the
+file as JSON. An engine that reads Parquet scans the rows itself and hands
+each to `raquetFromRow` with the metadata, so that every engine decodes a tile
+alike. The metadata states the size of a tile (`tiling.block_width`,
+`tiling.block_height`), the type and nodata value of each band (`bands`), the
+layout of the bands (`band_layout`: `sequential`, one column per band, or
+`interleaved`, the bands of a pixel side by side in one column) and their
+compression (`compression`: none, `gzip`, whose zlib form is read too, or
+`jpeg` and `webp`, an image of every band of unsigned 8 bits). The pixels are
+little-endian, row by row from the top. `bandnum` is the band of the bytes,
+or the band taken from an interleaved column. The row of block 0, a band the
+metadata does not state, bytes of another size than the tile, and a band
+stating a scale or an offset, which a tile does not carry, are refused.
 
 ## 5. The values along a trajectory
 
@@ -158,6 +174,7 @@ patch number with corrections of wording.
 | v0.1.0 | The two types, the WKB readers and writers and `raquetRead`, the values along a trajectory over a raster, a raster file, a Raquet tile and an array of tiles, the restrictions over a raster and a raster file, a raster series as rows of a table |
 | v0.2.0 | `raster` a type of the MEOS catalog, `T_RASTER` |
 | v0.3.0 | The restrictions over a Raquet tile and an array of tiles |
+| v0.4.0 | One row of a Raquet file read into a tile, `raquetFromRow` |
 
 ## 9. Out of scope
 
@@ -173,8 +190,7 @@ Future: each of these is added here with its version.
   and the values a trajectory reads, `asCoverageJSON(tfloat, tgeompoint)`, as
   a `Trajectory` coverage.
 - A Raquet file read as its tiles and written from them, through GDAL's
-  Parquet driver, and one Raquet row decoded into a tile, for the engines
-  that scan Parquet themselves.
+  Parquet driver.
 - The values a trajectory reads from a raster series and its restrictions,
   `rasterValue(traj, raster[], tstzspan[], band)` and
   `rasterTileValue(traj, raquet[], tstzspan[])`: each raster read over the
