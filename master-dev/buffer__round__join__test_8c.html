@@ -75,7 +75,9 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">buffer_round_join_test.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -91,6 +93,15 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:acb07061dca3fe9c4fcb166cac54f0ac4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buffer__round__join__test_8c_acb07061dca3fe9c4fcb166cac54f0ac4.html#acb07061dca3fe9c4fcb166cac54f0ac4">RETURN_SECS</a>&#160;&#160;&#160;5.0</td></tr>
+<tr class="memdesc:acb07061dca3fe9c4fcb166cac54f0ac4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seconds of processor time within which <a class="el" href="buffer__round__join__test_8c_a2e62faa1eedb190018911c6cbdb6378f.html#a2e62faa1eedb190018911c6cbdb6378f">buffer_returns</a> asks a buffer to return.  <a href="buffer__round__join__test_8c_acb07061dca3fe9c4fcb166cac54f0ac4.html#acb07061dca3fe9c4fcb166cac54f0ac4">More...</a><br /></td></tr>
+<tr class="separator:acb07061dca3fe9c4fcb166cac54f0ac4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09349580f311cb679a2600efcb9c0ff6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buffer__round__join__test_8c_a09349580f311cb679a2600efcb9c0ff6.html#a09349580f311cb679a2600efcb9c0ff6">RETURN_SECS_SMALL</a>&#160;&#160;&#160;60.0</td></tr>
+<tr class="memdesc:a09349580f311cb679a2600efcb9c0ff6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seconds within which it asks it where MEOS_TEST_SMALL is set, as a run under valgrind sets it: valgrind runs the buffer about 25 times slower, and more beside the other programs it runs, while a buffer whose signs are not declined runs for minutes even without valgrind.  <a href="buffer__round__join__test_8c_a09349580f311cb679a2600efcb9c0ff6.html#a09349580f311cb679a2600efcb9c0ff6">More...</a><br /></td></tr>
+<tr class="separator:a09349580f311cb679a2600efcb9c0ff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a750dac91853363702586798daf8c0166"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buffer__round__join__test_8c_a750dac91853363702586798daf8c0166.html#a750dac91853363702586798daf8c0166">buffer_area_is</a> (const char *label, const char *wkt, double <a class="el" href="tcbuffer__traversed__area__test_8c_a60904e117af411ae7428366b883558b8.html#a60904e117af411ae7428366b883558b8">area</a>)</td></tr>
@@ -105,6 +116,12 @@ Functions</h2></td></tr>
 <tr class="separator:a2e62faa1eedb190018911c6cbdb6378f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buffer__round__join__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ab9d5285dc824e1a06be96a757a93eca2"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buffer__round__join__test_8c_ab9d5285dc824e1a06be96a757a93eca2.html#ab9d5285dc824e1a06be96a757a93eca2">return_secs</a> = <a class="el" href="buffer__round__join__test_8c_acb07061dca3fe9c4fcb166cac54f0ac4.html#acb07061dca3fe9c4fcb166cac54f0ac4">RETURN_SECS</a></td></tr>
+<tr class="memdesc:ab9d5285dc824e1a06be96a757a93eca2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seconds within which a buffer returns in this run.  <a href="buffer__round__join__test_8c_ab9d5285dc824e1a06be96a757a93eca2.html#ab9d5285dc824e1a06be96a757a93eca2">More...</a><br /></td></tr>
+<tr class="separator:ab9d5285dc824e1a06be96a757a93eca2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >The round-join buffer of polygons whose joins meet exactly. </p>
