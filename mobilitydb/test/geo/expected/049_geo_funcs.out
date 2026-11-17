@@ -1178,11 +1178,33 @@ SELECT collect(ARRAY[]::geometry[]) IS NULL, makeLine(ARRAY[]::geometry[]) IS NU
  t        | t
 (1 row)
 
+SELECT ST_AsEWKT(makePoint(4.35, 50.85, 4326)),
+  ST_AsEWKT(makePoint(4.35, 50.85, 4326)) = ST_AsEWKT(ST_Point(4.35, 50.85, 4326)) AS point_agrees,
+  ST_AsEWKT(makePoint(1, 2, 3, 3812)),
+  ST_AsEWKT(makePoint(1, 2, 3, 3812)) = ST_AsEWKT(ST_PointZ(1, 2, 3, 3812)) AS pointz_agrees,
+  ST_AsEWKT(makePoint(1, 2, 0));
+          st_asewkt          | point_agrees |       st_asewkt        | pointz_agrees | st_asewkt  
+-----------------------------+--------------+------------------------+---------------+------------
+ SRID=4326;POINT(4.35 50.85) | t            | SRID=3812;POINT(1 2 3) | t             | POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(makePoint(1, 2, 1000000000)) = ST_AsEWKT(ST_Point(1, 2, 1000000000)) AS clamped_srid_agrees;
+NOTICE:  SRID value 1000000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000000 > SRID_MAXIMUM converted to 999001
+ clamped_srid_agrees 
+---------------------
+ t
+(1 row)
+
 /* Errors */
 SELECT makeLine(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=4326;Point(2 2)', geometry 'SRID=3812;Point(3 3)']);
 ERROR:  Operation on mixed SRID
 SELECT collect(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=3812;Point(3 3)']);
 ERROR:  Operation on mixed SRID
+SELECT makePoint('NaN', 1, 4326);
+ERROR:  The value must be finite
+SELECT makePoint(1, 2, 'Infinity', 4326);
+ERROR:  The value must be finite
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 -- Output and transformation
