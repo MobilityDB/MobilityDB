@@ -93,30 +93,47 @@ SELECT pointCloudSchemaNDims(1);
 
 			<itemizedlist>
 				<listitem xml:id="pcpoint_asHexWKB">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
-					<para>Return the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
+					<para>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asHexWKB({pcpoint,pcpatch}) → text
+asBinary({pcpoint,pcpatch},endian text='') → bytea
+asHexWKB({pcpoint,pcpatch},endian text='') → text
 </programlisting>
-					<para>The result is the text the type output function of pgPointCloud writes, in the byte order of the machine.</para>
+					<para>The WKB is the one of pgPointCloud: the endian flag, the <varname>pcid</varname> and the data under the schema of the <varname>pcid</varname>, which for a pcpatch are the compression, the number of points and the points or, dimensionally compressed, the bytes of each dimension in its own compression. The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used, and the HexWKB is the text the type output function of pgPointCloud writes. The big-endian encoding of a dimensionally compressed pcpatch keeps the compression of each dimension. A set and a temporal value carry the WKB of each of their pcpoints or pcpatches, preceded by its size, in their own encoding.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asBinary(pcpoint(1, 1.0, 2.0, 3.0));
+-- \x010100000064000000c80000002c010000
 SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0));
 -- 010100000064000000C80000002C010000
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR');
+-- 000000000100000064000000C80000012C
 SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
 -- 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 'XDR');
+-- 00000000010000000000000002000000640000006400000064000000C8000000C8000000C8
 </programlisting>
 				</listitem>
 
 				<listitem xml:id="pcpointFromHexWKB">
+					<indexterm significance="normal"><primary><varname>pcpointFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>pcpatchFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>pcpointFromHexWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>pcpatchFromHexWKB</varname></primary></indexterm>
-					<para>Input of a pcpoint or a pcpatch from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para>Input of a pcpoint or a pcpatch from its Well-Known Binary (WKB) or its Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pcpointFromBinary(bytea) → pcpoint
+pcpatchFromBinary(bytea) → pcpatch
 pcpointFromHexWKB(text) → pcpoint
 pcpatchFromHexWKB(text) → pcpatch
 </programlisting>
 					<para>The input is read as the type input function of pgPointCloud reads it, in either byte order, under the schema of its <varname>pcid</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getZ(pcpointFromBinary('\x000000000100000064000000c80000012c'));
+-- 3
+SELECT numPoints(pcpatchFromBinary(
+  '\x00000000010000000000000002000000640000006400000064000000c8000000c8000000c8'));
+-- 2
 SELECT getZ(pcpointFromHexWKB('010100000064000000C80000002C010000'));
 -- 3
 SELECT numPoints(pcpatchFromHexWKB('01010000000000000002000000640000006400000064000000C8000000C8000000C8000000'));
@@ -1367,6 +1384,29 @@ SELECT mergeEachNTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-
 -- {"TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-01, 2024-01-03]), 1)"}
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="tpcpoint_mergeQueryTpcboxes">
+					<indexterm significance="normal"><primary><varname>mergeQueryTpcboxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>mergeQuerySpans</varname></primary></indexterm>
+					<para>Return the point cloud boxes or the time spans of a tpcpoint merged into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeQueryTpcboxes(tpcpoint,tpcbox) → tpcbox[]
+mergeQuerySpans(tpcpoint,tstzspan) → tstzspan[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeQueryTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1),
+  '2024-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 9, 9, 9), '2024-01-03'::timestamptz)]),
+  tpcbox(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz)])));
+/* {"TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-01, 2024-01-02]), 1)",
+   "TPCBOX(ZT(((2,2,2),(9,9,9)),[2024-01-02, 2024-01-03]), 1)"} */
+SELECT mergeQuerySpans(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1),
+  '2024-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), tstzspan '[2024-01-01, 2024-01-08]');
+-- {"[2024-01-01, 2024-01-03]"}
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -2396,6 +2436,25 @@ SELECT mergeEachNTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
 -- {"TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-01, 2024-01-03]), 1)"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_mergeQueryTpcboxes">
+					<indexterm significance="normal"><primary><varname>mergeQueryTpcboxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>mergeQuerySpans</varname></primary></indexterm>
+					<para>Return the point cloud boxes or the time spans of a tpcpatch merged into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeQueryTpcboxes(tpcpatch,tpcbox) → tpcbox[]
+mergeQuerySpans(tpcpatch,tstzspan) → tstzspan[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeQueryTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 2, 2, 2), pcpoint(1, 3, 3, 3)), '2024-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 9, 9, 9), pcpoint(1, 10, 10, 10)), '2024-01-03'::timestamptz)]),
+  tpcbox(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
+/* {"TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-01, 2024-01-02]), 1)",
+   "TPCBOX(ZT(((2,2,2),(10,10,10)),[2024-01-02, 2024-01-03]), 1)"} */
 </programlisting>
 				</listitem>
 			</itemizedlist>

@@ -501,6 +501,27 @@ CREATE FUNCTION mergeEachNSpans(tstzset, integer)
   AS 'MODULE_PATHNAME', 'Set_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeQuerySpans(intset, intspan)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(bigintset, bigintspan)
+  RETURNS bigintspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(floatset, floatspan)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(dateset, datespan)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(tstzset, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Set_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION intspan(floatspan)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Floatspan_to_intspan'

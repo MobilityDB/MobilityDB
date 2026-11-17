@@ -300,8 +300,11 @@ tpcpatch_value_n(const Temporal *temp, int n, Pcpatch **result)
 Pcpatch **
 tpcpatch_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TPCPATCH(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TPCPATCH(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   Pcpatch **result = palloc(sizeof(Pcpatch *) * *count);
   for (int i = 0; i < *count; i++)

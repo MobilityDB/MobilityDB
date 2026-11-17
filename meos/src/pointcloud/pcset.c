@@ -233,8 +233,11 @@ pcpointset_value_n(const Set *s, int n, Pcpoint **result)
 Pcpoint **
 pcpointset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_PCPOINTSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_PCPOINTSET(s, NULL);
   Pcpoint **result = palloc(sizeof(Pcpoint *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = (Pcpoint *) DatumGetPointer(datum_copy(SET_VAL_N(s, i),
@@ -506,8 +509,11 @@ pcpatchset_value_n(const Set *s, int n, Pcpatch **result)
 Pcpatch **
 pcpatchset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_PCPATCHSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_PCPATCHSET(s, NULL);
   Pcpatch **result = palloc(sizeof(Pcpatch *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = (Pcpatch *) DatumGetPointer(datum_copy(SET_VAL_N(s, i),

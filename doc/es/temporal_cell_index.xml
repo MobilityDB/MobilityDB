@@ -337,6 +337,65 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 -- true
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_asCoverageJSON">
+				<indexterm significance="normal"><primary><varname>asCoverageJSON</varname></primary></indexterm>
+				<para>Devuelve un ráster, una tesela Raquet o los valores que lee una trayectoria como una cobertura CoverageJSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asCoverageJSON(raster) → text
+asCoverageJSON(raquet) → text
+asCoverageJSON(tfloat,tgeompoint) → text
+</programlisting>
+				<para>CoverageJSON es la codificación de OGC API – Coverages y de OGC API – Environmental Data Retrieval. Un <varname>raster</varname> es una cobertura <varname>Grid</varname>: sus ejes <varname>x</varname> e <varname>y</varname> van del centro del primer píxel al centro del último, cada banda es un parámetro <varname>band1</varname>, <varname>band2</varname> ..., cuyos valores van fila por fila desde la fila superior, y un píxel nodata es <varname>null</varname>; un ráster con sesgo, cuyos píxeles no están sobre tales ejes, y un ráster sin sistema de referencia espacial producen un error. Una tesela <varname>raquet</varname> es una malla de Web Mercator, EPSG:3857, sobre los límites de su celda QUADBIN. Los valores que lee una trayectoria, como los de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>, son una cobertura <varname>Trajectory</varname> cuyos puntos son los instantes de los valores, cada uno en la posición de la trayectoria en su instante. EPSG:4326 se declara como OGC CRS84, cuya longitud va primero como la declara MobilityDB.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
+  #> '{ranges,band1,values}';
+-- [1,2,3,4,-5,null]
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_asGDALRaster">
+				<indexterm significance="normal"><primary><varname>asGDALRaster</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asTIFF</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asPNG</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asJPEG</varname></primary></indexterm>
+				<para>Devuelve un ráster escrito en un formato de GDAL</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asGDALRaster(rast raster,format text,options text[]=NULL,srid integer=NULL) → bytea
+asTIFF(rast raster,options text[]=NULL,srid integer=NULL) → bytea
+asPNG(rast raster,options text[]=NULL) → bytea
+asJPEG(rast raster,options text[]=NULL) → bytea
+</programlisting>
+				<para>Escribe el ráster como lo escriben <varname>ST_AsGDALRaster</varname>, <varname>ST_AsTIFF</varname>, <varname>ST_AsPNG</varname> y <varname>ST_AsJPEG</varname> de PostGIS, de modo que los bytes son los que escribe PostGIS. <varname>format</varname> es el nombre corto de un controlador de GDAL que escribe una copia de un ráster en memoria, como <varname>GTiff</varname>, <varname>PNG</varname> o <varname>JPEG</varname>; <varname>options</varname> son las opciones de creación del controlador, cada una <varname>KEY=VALUE</varname>; <varname>srid</varname> es el sistema de referencia espacial que declara el archivo, el del ráster cuando es <varname>NULL</varname>, sin reproyectar los píxeles. Un GeoTIFF guarda un único tipo de píxel y un único valor nodata para todas sus bandas, PNG de una a cuatro bandas de 8 o 16 bits sin signo, JPEG una o tres bandas de 8 bits sin signo; un formato que rechaza las bandas del ráster produce un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH r AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[1, 2], [3, 4]]::double precision[][]) AS rast)
+SELECT asTIFF(rast) = ST_AsTIFF(rast),
+  encode(substring(asPNG(rast) from 2 for 3), 'escape')
+FROM r;
+-- true | PNG
+</programlisting>
+			</listitem>
+			<listitem xml:id="rasterFromGDALRaster">
+				<indexterm significance="normal"><primary><varname>rasterFromGDALRaster</varname></primary></indexterm>
+				<para>Devuelve un ráster leído de los bytes de un archivo en un formato de GDAL</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterFromGDALRaster(gdaldata bytea,srid integer=0) → raster
+</programlisting>
+				<para>Lee el ráster como lo lee <varname>ST_FromGDALRaster</varname> de PostGIS, encontrando GDAL el formato a partir de los bytes. <varname>srid</varname> es el sistema de referencia espacial del resultado, el que declara el archivo cuando es 0.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH r AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '16BSI'::text, 7::float8, 0::float8) AS rast)
+SELECT SRID(rasterFromGDALRaster(asTIFF(rast))),
+  SRID(rasterFromGDALRaster(asTIFF(rast), 4326))
+FROM r;
+-- 3857 | 4326
+</programlisting>
+			</listitem>
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_constructors">
 		<title>Constructores</title>
@@ -461,6 +520,21 @@ SELECT numBands(addBand(r, r))
 FROM (SELECT addBand(makeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 3857),
   NULL::integer, '8BUI', 1) AS r) t;
 -- 2
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquetFromRow">
+				<indexterm significance="normal"><primary><varname>raquetFromRow</varname></primary></indexterm>
+				<para>Devuelve la tesela de una banda de una fila de un archivo Raquet</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquetFromRow(block bigint,band bytea,metadata text,bandnum integer=1) → raquet
+</programlisting>
+				<para>Un archivo Raquet es una tabla Parquet cuyas filas son las teselas de un ráster, identificadas por su celda QUADBIN en la columna <varname>block</varname>, la fila del bloque 0 guardando los metadatos del archivo como JSON. Un motor que lee Parquet recorre las filas y entrega cada una a <varname>raquetFromRow</varname> con los metadatos, que declaran el tamaño de una tesela, el tipo y el valor nodata de cada banda, la disposición de las bandas, secuencial (una columna por banda) o intercalada (las bandas de un píxel una junto a otra en una columna), y su compresión: ninguna, <varname>gzip</varname>, o <varname>jpeg</varname> y <varname>webp</varname>, una imagen de todas las bandas. <varname>bandnum</varname> es la banda de los bytes, o la banda tomada de una columna intercalada. La fila del bloque 0, una banda que los metadatos no declaran, bytes de otro tamaño que la tesela, y una banda que declara una escala o un desplazamiento producen un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pixels(raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint,
+  '\x010a0214031e0428'::bytea,
+  '{"band_layout": "interleaved", "tiling": {"block_width": 2, "block_height": 2},
+    "bands": [{"type": "uint8"}, {"type": "uint8"}]}', 2));
+-- \x0a141e28
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetRead">
@@ -3341,8 +3415,10 @@ JOIN sst_raquet r ON r.block IN (SELECT unnest(getValues(tquadbin(t.trip, 6)))::
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 atRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
+atRasterValue(tgeompoint,rast raquet,vspan floatspan) → tgeompoint
+atRasterValue(tgeompoint,rast raquet[],vspan floatspan) → tgeompoint
 </programlisting>
-				<para>Lee <varname>rasterValue</varname> a lo largo de <varname>traj</varname> y devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está dentro de <varname>vspan</varname>. Devuelve <varname>NULL</varname> cuando ningún tiempo satisface la condición. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Lee <varname>rasterValue</varname> a lo largo de <varname>traj</varname> y devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está dentro de <varname>vspan</varname>. Devuelve <varname>NULL</varname> cuando ningún tiempo satisface la condición. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>. Las formas que reciben una tesela <varname>raquet</varname> o un arreglo de teselas leen los valores que lee <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>, respondiendo la tesela de mayor zoom donde las teselas se superponen.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
@@ -3364,8 +3440,10 @@ SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 minusRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
+minusRasterValue(tgeompoint,rast raquet,vspan floatspan) → tgeompoint
+minusRasterValue(tgeompoint,rast raquet[],vspan floatspan) → tgeompoint
 </programlisting>
-				<para>El complemento de <varname>atRasterValue</varname>: devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está fuera de <varname>vspan</varname>. Devuelve <varname>NULL</varname> cuando el valor del píxel está dentro de <varname>vspan</varname> en todo momento. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>El complemento de <varname>atRasterValue</varname>: devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está fuera de <varname>vspan</varname>. Devuelve <varname>NULL</varname> cuando el valor del píxel está dentro de <varname>vspan</varname> en todo momento. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>. Las formas que reciben una tesela <varname>raquet</varname> o un arreglo de teselas leen los valores que lee <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>, respondiendo la tesela de mayor zoom donde las teselas se superponen.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Keep only the instant whose raster value (10) is below 40
 SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
@@ -3379,8 +3457,10 @@ SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM 
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 eRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
+eRasterValue(tgeompoint,rast raquet,vspan floatspan) → boolean
+eRasterValue(tgeompoint,rast raquet[],vspan floatspan) → boolean
 </programlisting>
-				<para>Devuelve <varname>true</varname> cuando <varname>traj</varname> lee alguna vez un valor de píxel dentro de <varname>vspan</varname>, <varname>false</varname> en caso contrario. Devuelve <varname>NULL</varname> únicamente cuando la entrada es <varname>NULL</varname>. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Devuelve <varname>true</varname> cuando <varname>traj</varname> lee alguna vez un valor de píxel dentro de <varname>vspan</varname>, <varname>false</varname> en caso contrario. Devuelve <varname>NULL</varname> únicamente cuando la entrada es <varname>NULL</varname>. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>. Las formas que reciben una tesela <varname>raquet</varname> o un arreglo de teselas leen los valores que lee <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>, respondiendo la tesela de mayor zoom donde las teselas se superponen.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid FROM trips,
@@ -3394,8 +3474,10 @@ SELECT tripid FROM trips,
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 aRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
+aRasterValue(tgeompoint,rast raquet,vspan floatspan) → boolean
+aRasterValue(tgeompoint,rast raquet[],vspan floatspan) → boolean
 </programlisting>
-				<para>Devuelve <varname>true</varname> cuando cada valor de píxel que <varname>traj</varname> lee sobre el ráster está dentro de <varname>vspan</varname>, <varname>false</varname> cuando al menos uno no lo está. Devuelve <varname>NULL</varname> únicamente cuando la entrada es <varname>NULL</varname>. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Devuelve <varname>true</varname> cuando cada valor de píxel que <varname>traj</varname> lee sobre el ráster está dentro de <varname>vspan</varname>, <varname>false</varname> cuando al menos uno no lo está. Devuelve <varname>NULL</varname> únicamente cuando la entrada es <varname>NULL</varname>. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>. Las formas que reciben una tesela <varname>raquet</varname> o un arreglo de teselas leen los valores que lee <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>, respondiendo la tesela de mayor zoom donde las teselas se superponen.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that stayed entirely below 100 m elevation
 SELECT tripid FROM trips,

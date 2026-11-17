@@ -156,6 +156,27 @@ CREATE FUNCTION mergeEachNSpans(ttext, integer)
   AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeQuerySpans(tbool, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(tint, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(tbigint, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(tfloat, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQuerySpans(ttext, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitNTboxes(tint, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_split_n_tboxes'
@@ -206,6 +227,19 @@ CREATE FUNCTION mergeEachNTboxes(tbigint, integer)
 CREATE FUNCTION mergeEachNTboxes(tfloat, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_merge_each_n_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION mergeQueryTboxes(tint, tbox)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_query_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQueryTboxes(tbigint, tbox)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_query_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION mergeQueryTboxes(tfloat, tbox)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_merge_query_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-TILING-END temporal_splits
 

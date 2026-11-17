@@ -840,8 +840,11 @@ posechain_pose_n(const PoseChain *pc, int n)
 Pose **
 posechain_poses(const PoseChain *pc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pc, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(pc, NULL);
   Pose **result = palloc(sizeof(Pose *) * pc->count);
   for (int i = 0; i < pc->count; i++)
     result[i] = posechain_link_pose(pc, i, i == 0);
@@ -1005,13 +1008,10 @@ posechainsegm_locate(const PoseChain *start, const PoseChain *end,
  * (#pose_collinear)
  * @param[in] pc1,pc2,pc3 Pose chains
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  */
 bool
 posechain_collinear(const PoseChain *pc1, const PoseChain *pc2,
-  const PoseChain *pc3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
-  bool constructed)
+  const PoseChain *pc3, TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   assert(pc1); assert(pc2); assert(pc3);
   if (pc1->count != pc2->count || pc1->count != pc3->count)
@@ -1022,7 +1022,7 @@ posechain_collinear(const PoseChain *pc1, const PoseChain *pc2,
     Pose *pose1 = posechain_link_pose(pc1, i, i == 0);
     Pose *pose2 = posechain_link_pose(pc2, i, i == 0);
     Pose *pose3 = posechain_link_pose(pc3, i, i == 0);
-    result = pose_collinear(pose1, pose2, pose3, t1, t2, t3, constructed);
+    result = pose_collinear(pose1, pose2, pose3, t1, t2, t3);
     pfree(pose1); pfree(pose2); pfree(pose3);
   }
   return result;

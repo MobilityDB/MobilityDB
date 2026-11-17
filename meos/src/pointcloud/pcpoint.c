@@ -54,11 +54,13 @@
 #include <liblwgeom.h>       /* parse_hex, deparse_hex (PostGIS) */
 /* pgPointCloud */
 #include "pc_api.h"
+#include "pc_api_internal.h"   /* machine_endian, int32_flip_endian */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
 #include "temporal/temporal.h"
+#include "temporal/type_inout.h"
 #include "pointcloud/meos_schema_hook.h"
 #include "pointcloud/pgsql_compat.h"
 #include "pointcloud/tpcbox.h"
@@ -118,9 +120,8 @@ typedef struct
  *   In practice any well-formed pcpoint has VARSIZE >= 12 (header +
  *   pcid + at least 1 data byte from the data[1] placeholder) so the
  *   guard only protects against malformed input, not valid values.
- * @note Exported (not `static`) so that the generic WKB path in
- *   temporal/type_out.c (`pcpoint_to_wkb_buf`) can zero the same padding
- *   bytes and stay byte-consistent with the hex-WKB path below.
+ * @note Exported (not `static`) so that pcpatch.c zeroes the same padding
+ *   of the points it builds.
  */
 size_t
 pcpoint_meaningful_size(const Pcpoint *pt)
@@ -276,6 +277,82 @@ pcpoint_hex_in(const char *str)
 }
 
 /**
+ * @brief Return the endian flag of pgPointCloud, 1 for little endian and 0
+ * for big endian, that a Well-Known Binary (WKB) output variant states
+ * @details A variant stating neither byte order or both states the one of
+ * the machine, as #datum_as_wkb reads it
+ */
+uint8_t
+pc_wkb_endian(uint8_t variant)
+{
+  bool ndr = (variant & WKB_NDR) != 0, xdr = (variant & WKB_XDR) != 0;
+  if (ndr && ! xdr)
+    return 1;
+  if (xdr && ! ndr)
+    return 0;
+  return (uint8_t) machine_endian();
+}
+
+/**
+ * @brief Flip the int32 at the address
+ */
+void
+pc_wkb_int32_flip(uint8_t *ptr)
+{
+  int32_t val;
+  memcpy(&val, ptr, sizeof(int32_t));
+  val = int32_flip_endian(val);
+  memcpy(ptr, &val, sizeof(int32_t));
+}
+
+/**
+ * @brief Return the pgPointCloud Well-Known Binary (WKB) representation of a
+ * pcpoint in the byte order the variant states
+ * @details The WKB is the endian flag, the pcid and the data of the point
+ * under the schema of the pcid, as pgPointCloud's @c pc_point_to_wkb writes
+ * it in the byte order of the machine; the other byte order flips the pcid
+ * and each value of the data
+ * @param[in] pt Point
+ * @param[in] variant Output variant, of which only the byte order is read
+ * @param[out] size_out Size of the result
+ */
+uint8_t *
+pcpoint_to_wkb_bytes(const Pcpoint *pt, uint8_t variant, size_t *size_out)
+{
+  uint32_t pcid = pcpoint_get_pcid(pt);
+  const PCSCHEMA *schema = meos_pc_schema(pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return NULL;
+  }
+  PCPOINT *pcpt = meos_pc_point_deserialize((const SERIALIZED_POINT *) pt,
+    schema);
+  if (! pcpt)
+    return NULL;
+  size_t size;
+  uint8_t *wkb = pc_point_to_wkb(pcpt, &size);
+  pc_point_free(pcpt);
+  uint8_t *result = palloc(size);
+  memcpy(result, wkb, size);
+  pcfree(wkb);
+  uint8_t endian = pc_wkb_endian(variant);
+  if (result[0] != endian)
+  {
+    /* Endian flag, pcid and data */
+    result[0] = endian;
+    pc_wkb_int32_flip(result + 1);
+    uint8_t *data = uncompressed_bytes_flip_endian(result + 1 +
+      sizeof(uint32_t), schema, 1);
+    memcpy(result + 1 + sizeof(uint32_t), data, schema->size);
+    pcfree(data);
+  }
+  *size_out = size;
+  return result;
+}
+
+/**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return the textual (hex-WKB) representation of a pcpoint
  * @details The text is the one the type output function of pgPointCloud
@@ -294,33 +371,39 @@ pcpoint_hex_out(const Pcpoint *pt, int maxdd, size_t *size_out)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  uint32_t pcid = pcpoint_get_pcid(pt);
-  const PCSCHEMA *schema = meos_pc_schema(pcid);
-  if (! schema)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "No schema registered for pcid %u", pcid);
-    return NULL;
-  }
-  PCPOINT *pcpt = meos_pc_point_deserialize((const SERIALIZED_POINT *) pt,
-    schema);
-  if (! pcpt)
-    return NULL;
   size_t size;
-  uint8_t *wkb = pc_point_to_wkb(pcpt, &size);
-  pc_point_free(pcpt);
+  uint8_t *wkb = pcpoint_to_wkb_bytes(pt, 0, &size);
+  if (! wkb)
+    return NULL;
   char *result = palloc(2 * size + 1);
   for (size_t i = 0; i < size; i++)
     deparse_hex(wkb[i], result + 2 * i);
   result[2 * size] = '\0';
   *size_out = 2 * size + 1;
-  pcfree(wkb);
+  pfree(wkb);
   return result;
 }
 
 /**
  * @ingroup meos_pointcloud_base_inout
- * @brief Return a pcpoint from its hex-WKB representation
+ * @brief Return a pcpoint from its Well-Known Binary (WKB) representation
+ * @details The WKB is the one of pgPointCloud, in either byte order
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #Pcpoint_from_wkb()
+ */
+Pcpoint *
+pcpoint_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(wkb, NULL);
+  return pcpoint_from_wkb_bytes(wkb, size);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_inout
+ * @brief Return a pcpoint from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Pcpoint_from_hexwkb()
  */
@@ -332,18 +415,41 @@ pcpoint_from_hexwkb(const char *hexwkb)
 
 /**
  * @ingroup meos_pointcloud_base_inout
- * @brief Return the hex-WKB representation of a pcpoint
+ * @brief Return the Well-Known Binary (WKB) representation of a pcpoint
+ * @details The WKB is the one of pgPointCloud, in the byte order the variant
+ * states
  * @param[in] pt Point
- * @param[out] size_out Size of the result, the terminating null character
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Pcpoint_as_wkb()
+ */
+uint8_t *
+pcpoint_as_wkb(const Pcpoint *pt, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(pt), T_PCPOINT, variant, size_out);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a pcpoint
+ * @details The WKB is the one of pgPointCloud, in the byte order the variant
+ * states
+ * @param[in] pt Point
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output, the terminating null character
  * included
  * @csqlfn #Pcpoint_as_hexwkb()
  */
 char *
-pcpoint_as_hexwkb(const Pcpoint *pt, size_t *size_out)
+pcpoint_as_hexwkb(const Pcpoint *pt, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  return pcpoint_hex_out(pt, 0, size_out);
+  VALIDATE_NOT_NULL(pt, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(pt), T_PCPOINT,
+    variant | (uint8_t) WKB_HEX, size_out);
 }
 
 /*****************************************************************************

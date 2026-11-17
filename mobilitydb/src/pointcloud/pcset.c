@@ -58,6 +58,7 @@
 #include "pointcloud/meos_schema_hook.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"  /* PG_RETURN_GSERIALIZED_P */
+#include "pg_temporal/temporal.h"  /* Datum_as_wkb, Datum_as_hexwkb */
 #include "pg_temporal/type_util.h"  /* datumarr_extract */
 #include "pg_pointcloud/schema_cache.h"
 
@@ -90,26 +91,58 @@ Pcpoint_from_hexwkb(PG_FUNCTION_ARGS)
   PG_RETURN_PCPOINT_P(result);
 }
 
+PGDLLEXPORT Datum Pcpoint_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_from_wkb);
+/**
+ * @ingroup mobilitydb_pointcloud_base_inout
+ * @brief Return a pcpoint from its Well-Known Binary (WKB) representation
+ * @details Read as #Cbuffer_from_wkb reads a circular buffer, the WKB being
+ * the one of pgPointCloud
+ * @sqlfn pcpointFromBinary()
+ */
+Datum
+Pcpoint_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  Pcpoint *result = pcpoint_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_PCPOINT_P(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_as_wkb);
+/**
+ * @ingroup mobilitydb_pointcloud_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a pcpoint
+ * @details Written as #Cbuffer_as_wkb writes a circular buffer, the WKB being
+ * the one of pgPointCloud
+ * @sqlfn asBinary()
+ */
+Datum
+Pcpoint_as_wkb(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(pt), T_PCPOINT,
+    false));
+}
+
 PGDLLEXPORT Datum Pcpoint_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpoint_as_hexwkb);
 /**
  * @ingroup mobilitydb_pointcloud_base_inout
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a pcpoint
- * @details Written as #H3index_as_hexwkb writes an h3index, the WKB being the
- * one of pgPointCloud, in the byte order of the machine
+ * @details Written as #Cbuffer_as_hexwkb writes a circular buffer, the WKB
+ * being the one of pgPointCloud
  * @sqlfn asHexWKB()
  */
 Datum
 Pcpoint_as_hexwkb(PG_FUNCTION_ARGS)
 {
-  size_t size_out;
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  char *hexwkb = pcpoint_as_hexwkb(pt, &size_out);
-  text *result = cstring_to_text(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(pt, 0);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(pt), T_PCPOINT,
+    false));
 }
 
 PGDLLEXPORT Datum Pcpatch_from_hexwkb(PG_FUNCTION_ARGS);
@@ -132,6 +165,40 @@ Pcpatch_from_hexwkb(PG_FUNCTION_ARGS)
   PG_RETURN_PCPATCH_P(result);
 }
 
+PGDLLEXPORT Datum Pcpatch_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_from_wkb);
+/**
+ * @ingroup mobilitydb_pointcloud_base_inout
+ * @brief Return a pcpatch from its Well-Known Binary (WKB) representation
+ * @details Read as #Pcpoint_from_wkb reads a pcpoint
+ * @sqlfn pcpatchFromBinary()
+ */
+Datum
+Pcpatch_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  Pcpatch *result = pcpatch_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_PCPATCH_P(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_as_wkb);
+/**
+ * @ingroup mobilitydb_pointcloud_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a pcpatch
+ * @details Written as #Pcpoint_as_wkb writes a pcpoint
+ * @sqlfn asBinary()
+ */
+Datum
+Pcpatch_as_wkb(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(pa), T_PCPATCH,
+    false));
+}
+
 PGDLLEXPORT Datum Pcpatch_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpatch_as_hexwkb);
 /**
@@ -144,13 +211,9 @@ PG_FUNCTION_INFO_V1(Pcpatch_as_hexwkb);
 Datum
 Pcpatch_as_hexwkb(PG_FUNCTION_ARGS)
 {
-  size_t size_out;
   Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
-  char *hexwkb = pcpatch_as_hexwkb(pa, &size_out);
-  text *result = cstring_to_text(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(pa, 0);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(pa), T_PCPATCH,
+    false));
 }
 
 /*****************************************************************************

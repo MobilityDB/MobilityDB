@@ -123,13 +123,23 @@ SELECT mergeEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 4);
 SELECT mergeEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 5);
 SELECT mergeEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
 SELECT mergeEachNspans(bigintset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
+SELECT mergeQueryspans(bigintset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', bigintspan '[1, 2]');
+SELECT mergeQueryspans(bigintset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', bigintspan '[1, 20]');
 SELECT mergeEachNspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', 2);
+SELECT mergeQueryspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', floatspan '[1, 1.5]');
+SELECT mergeQueryspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', floatspan '[1, 20]');
 SELECT mergeEachNspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', 2);
+SELECT mergeQueryspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', datespan '[2001-01-01, 2001-01-02]');
+SELECT mergeQueryspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', datespan '[2001-01-01, 2001-03-01]');
 SELECT mergeEachNspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', 2);
+SELECT mergeQueryspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQueryspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', tstzspan '[2001-01-01, 2001-01-08]');
 
 /* Errors */
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
 SELECT mergeEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
+SELECT mergeQueryspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', intspan '[1, 2]');
+SELECT mergeQueryspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', intspan '[1, 20]');
 
 -------------------------------------------------------------------------------
 

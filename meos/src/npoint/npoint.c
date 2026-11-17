@@ -88,16 +88,13 @@
  * collinear as #float_collinear decides it
  * @param[in] np1,np2,np3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  */
 bool
 npoint_collinear(const Npoint *np1, const Npoint *np2, const Npoint *np3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   assert(np1->rid == np2->rid); assert(np1->rid == np3->rid);
-  return float_collinear(np1->pos, np2->pos, np3->pos, t1, t2, t3,
-    constructed);
+  return float_collinear(np1->pos, np2->pos, np3->pos, t1, t2, t3);
 }
 
 /**

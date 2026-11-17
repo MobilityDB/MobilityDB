@@ -344,6 +344,38 @@ interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
  *****************************************************************************/
 
 /**
+ * @brief Set the last argument to the coordinates of the point interpolated
+ * from the coordinates of a geometry/geography segment with respect to the
+ * fraction of its total length
+ * @details A geography segment is interpolated on the sphere by
+ * #interpolate_point4d_spheroid, and a geometry one coordinate by coordinate
+ * by #floatsegm_interpolate
+ * @param[in] p1,p2 Coordinates of the points defining the segment
+ * @param[in] geodetic True when the segment is a geography one
+ * @param[in] ratio Float between 0 and 1 representing the fraction of the
+ * total length of the segment where the point must be located
+ * @param[out] p Coordinates of the interpolated point
+ */
+void
+point4dsegm_interpolate(const POINT4D *p1, const POINT4D *p2, bool geodetic,
+  long double ratio, POINT4D *p)
+{
+  if (geodetic)
+    interpolate_point4d_spheroid(p1, p2, p, NULL, (double) ratio);
+  else
+  {
+    /* We cannot call the PostGIS function
+     * interpolate_point4d(&p1, &p2, &p, ratio);
+     * since it uses a double and not a long double for the interpolation */
+    p->x = floatsegm_interpolate(p1->x, p2->x, ratio);
+    p->y = floatsegm_interpolate(p1->y, p2->y, ratio);
+    p->z = floatsegm_interpolate(p1->z, p2->z, ratio);
+    p->m = 0.0;
+  }
+  return;
+}
+
+/**
  * @brief Return a point interpolated from the geometry/geography segment with
  * respect to the fraction of its total length
  * @param[in] start,end Points defining the segment
@@ -360,19 +392,7 @@ pointsegm_interpolate(Datum start, Datum end, long double ratio)
   datum_point4d(end, &p2);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  if (geodetic)
-    interpolate_point4d_spheroid(&p1, &p2, &p, NULL, (double) ratio);
-  else
-  {
-    /* We cannot call the PostGIS function
-     * interpolate_point4d(&p1, &p2, &p, ratio);
-     * since it uses a double and not a long double for the interpolation */
-    p.x = floatsegm_interpolate(p1.x, p2.x, ratio);
-    p.y = floatsegm_interpolate(p1.y, p2.y, ratio);
-    p.z = floatsegm_interpolate(p1.z, p2.z, ratio);
-    p.m = 0.0;
-  }
-
+  point4dsegm_interpolate(&p1, &p2, geodetic, ratio, &p);
   Datum result = PointerGetDatum(geopoint_make(p.x, p.y, p.z, hasz, geodetic,
     srid));
   return result;
@@ -1244,45 +1264,63 @@ tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 /**
  * @brief Return true if the three values are collinear
  * @details A planar point interpolates its coordinates linearly, so each of
- * them is collinear exactly as #float_collinear decides it. A geodetic point
- * interpolates its longitude and latitude along the great circle through the
- * other two, a point the engine CONSTRUCTS and rounds, so the middle point is
- * on the path where it lies within the rounding of that construction of it
- * (#coordinate_tolerance). A constructed middle point, the point at which a
- * restriction splits a segment, is rounded as well and lies within that
- * rounding of the interpolated point. The Z coordinate interpolates linearly
- * and is collinear as #float_collinear decides it
+ * them is collinear exactly as #float_collinear decides it. A geography point
+ * moves along the great circle of its neighbours at a constant angular speed
+ * (#GeogSegmPair), and the middle point is on that path where the doubles
+ * prove it: on the equator, the longitudes of the three within less than 180
+ * degrees of each other, the longitude moves linearly; on one meridian away
+ * from the poles, the latitude does; and at the middle of the period, a
+ * segment that a half turn exchanging its ends proves to stand at one point
+ * there (#geogpointsegm_middle) stands at the middle point where that is the
+ * point. Elsewhere the middle point is a point no input proves on the path,
+ * and it is kept. The Z coordinate interpolates linearly and is collinear as
+ * #float_collinear decides it
  * @param[in] value1,value2,value3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
  * @param[in] hasz True if the points have Z coordinates
  * @param[in] geodetic True for geography, false for geometry
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  */
 bool
 geopoint_collinear(Datum value1, Datum value2, Datum value3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz, bool geodetic,
-  bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz, bool geodetic)
 {
   POINT4D p1, p2, p3;
   datum_point4d(value1, &p1);
   datum_point4d(value2, &p2);
   datum_point4d(value3, &p3);
-  if (hasz && ! float_collinear(p1.z, p2.z, p3.z, t1, t2, t3, constructed))
+  if (hasz && ! float_collinear(p1.z, p2.z, p3.z, t1, t2, t3))
     return false;
-  if (! geodetic && ! constructed)
-    return float_collinear(p1.x, p2.x, p3.x, t1, t2, t3, false) &&
-      float_collinear(p1.y, p2.y, p3.y, t1, t2, t3, false);
-  POINT4D p;
-  double ratio = (double) (t2 - t1) / (double) (t3 - t1);
-  if (geodetic)
-    interpolate_point4d_spheroid(&p1, &p3, &p, NULL, ratio);
-  else
-    interpolate_point4d(&p1, &p3, &p, ratio);
-  double maxcoord = Max(Max(fabs(p1.x), fabs(p1.y)),
-    Max(fabs(p3.x), fabs(p3.y)));
-  return (hypot(p2.x - p.x, p2.y - p.y) <= coordinate_tolerance(maxcoord,
-    Max(fabs(p2.x), fabs(p2.y))));
+  if (! geodetic)
+    return float_collinear(p1.x, p2.x, p3.x, t1, t2, t3) &&
+      float_collinear(p1.y, p2.y, p3.y, t1, t2, t3);
+  /* On the equator the longitude moves linearly */
+  if (p1.y == 0.0 && p2.y == 0.0 && p3.y == 0.0 &&
+      Max(p1.x, Max(p2.x, p3.x)) - Min(p1.x, Min(p2.x, p3.x)) < 180.0)
+    return float_collinear(p1.x, p2.x, p3.x, t1, t2, t3);
+  /* On one meridian away from the poles the latitude moves linearly */
+  if (p1.x == p2.x && p2.x == p3.x && fabs(p1.y) < 90.0 &&
+      fabs(p2.y) < 90.0 && fabs(p3.y) < 90.0)
+    return float_collinear(p1.y, p2.y, p3.y, t1, t2, t3);
+  /* At the middle of the period, the middle a half turn proves */
+  if (t2 - t1 != t3 - t2)
+    return false;
+  double twice[3];
+  int k = geogpointsegm_middle(&p1, &p3, twice);
+  if (k == 2 || k == 3)
+    return p2.y == (k == 2 ? 90.0 : -90.0);
+  if (k != 1 || p2.y != 0.0 || fabs(p2.x) > 180.0)
+    return false;
+  /* Twice the longitude of the middle against twice that of the point, which
+   * lie within [-360, 720] and name one point where they differ by 0, 720 or
+   * -720 */
+  for (int j = -1; j <= 1; j++)
+  {
+    const double sum[5] = { twice[0], twice[1], twice[2], - 2.0 * p2.x,
+      720.0 * j };
+    if (double_sum_zero(sum, 5))
+      return true;
+  }
+  return false;
 }
 
 /*****************************************************************************
@@ -2868,9 +2906,12 @@ GSERIALIZED *
 tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, int64 **timesarr, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(bounds, NULL);
-  VALIDATE_NOT_NULL(timesarr, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(timesarr, NULL);
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -4645,8 +4686,11 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TPOINT(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

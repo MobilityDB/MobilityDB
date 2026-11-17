@@ -164,6 +164,22 @@ CREATE FUNCTION raquetRead(
   AS 'MODULE_PATHNAME', 'Raquet_read'
   LANGUAGE C PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the tile of one band of a row of a Raquet file, as an engine
+ * reading the Parquet file hands its rows over
+ * @param[in] block QUADBIN cell of the row, the column block
+ * @param[in] band Bytes of the band column of the row, or of the column of
+ * the pixels in the interleaved layout
+ * @param[in] metadata Metadata of the file, the JSON of the row of block 0
+ * @param[in] bandnum Band of the bytes, from 1
+ */
+CREATE FUNCTION raquetFromRow(block bigint, band bytea, metadata text,
+    bandnum integer DEFAULT 1)
+  RETURNS raquet
+  AS 'MODULE_PATHNAME', 'Raquet_from_row'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * rasterValue
  *****************************************************************************/
@@ -302,6 +318,32 @@ CREATE OR REPLACE FUNCTION atRasterValue(traj tgeompoint, path text,
   AS 'MODULE_PATHNAME', 'Raster_at_value_gdal'
   LANGUAGE C STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * Raquet tile falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION atRasterValue(traj tgeompoint, rast raquet, vspan floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_tile_at_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from an
+ * array of Raquet tiles falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Array of Raquet tiles
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION atRasterValue(traj tgeompoint, rast raquet[], vspan floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_tile_at_value_array'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * minusRasterValue
  *****************************************************************************/
@@ -335,6 +377,33 @@ CREATE OR REPLACE FUNCTION minusRasterValue(traj tgeompoint, path text,
     vspan floatspan, band integer DEFAULT 1)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Raster_minus_value_gdal'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * Raquet tile falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION minusRasterValue(traj tgeompoint, rast raquet, vspan floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_tile_minus_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from an
+ * array of Raquet tiles falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Array of Raquet tiles
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION minusRasterValue(traj tgeompoint, rast raquet[],
+    vspan floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_tile_minus_value_array'
   LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -372,6 +441,32 @@ CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, path text,
   AS 'MODULE_PATHNAME', 'Eraster_value_gdal'
   LANGUAGE C STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the trajectory ever reads a value inside a float range
+ * from a Raquet tile
+ * @param[in] traj Trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION eRasterValue(traj tgeompoint, rast raquet, vspan floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eraster_tile_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the trajectory ever reads a value inside a float range
+ * from an array of Raquet tiles
+ * @param[in] traj Trajectory
+ * @param[in] rast Array of Raquet tiles
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION eRasterValue(traj tgeompoint, rast raquet[], vspan floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eraster_tile_value_array'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * aRasterValue
  *****************************************************************************/
@@ -403,6 +498,32 @@ CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, rast raster,
 CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, path text,
     vspan floatspan, band integer DEFAULT 1) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Araster_value_gdal'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value the trajectory reads from a Raquet tile
+ * falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION aRasterValue(traj tgeompoint, rast raquet, vspan floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Araster_tile_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value the trajectory reads from an array of
+ * Raquet tiles falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rast Array of Raquet tiles
+ * @param[in] vspan Float value range
+ */
+CREATE FUNCTION aRasterValue(traj tgeompoint, rast raquet[], vspan floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Araster_tile_value_array'
   LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -584,6 +705,116 @@ CREATE FUNCTION asHexWKB(raster, endian text DEFAULT '')
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- GENERATED-REPRESENTATIONS-END raster_base
+
+/******************************************************************************
+ * CoverageJSON
+ *
+ * A raster and a Raquet tile are written as a CoverageJSON grid coverage, and
+ * the values a trajectory reads as a CoverageJSON trajectory coverage, the
+ * encoding of OGC API - Coverages and OGC API - EDR.
+ ******************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster as a CoverageJSON grid coverage
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION asCoverageJSON(rast raster)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raster_as_coveragejson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile as a CoverageJSON grid coverage
+ * @param[in] rast Raquet tile
+ */
+CREATE FUNCTION asCoverageJSON(rast raquet)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raquet_as_coveragejson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values a trajectory reads as a CoverageJSON trajectory
+ * coverage
+ * @param[in] temp Values read along the trajectory
+ * @param[in] traj Trajectory
+ */
+CREATE FUNCTION asCoverageJSON(temp tfloat, traj tgeompoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tfloat_as_coveragejson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * The formats of GDAL
+ *
+ * A raster is written in a format of GDAL and read from the bytes of a file
+ * in one, as PostGIS's ST_AsGDALRaster, ST_AsTIFF, ST_AsPNG, ST_AsJPEG and
+ * ST_FromGDALRaster write and read it. A NULL SRID when writing is the
+ * raster's own, an SRID of 0 when reading the one the file states.
+ ******************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written in a format of GDAL
+ * @param[in] rast Raster
+ * @param[in] format Short name of the GDAL driver, as GTiff, PNG or JPEG
+ * @param[in] options Creation options of the driver, each KEY=VALUE
+ * @param[in] srid Spatial reference system the file states
+ */
+CREATE FUNCTION asGDALRaster(rast raster, format text,
+    options text[] DEFAULT NULL, srid integer DEFAULT NULL)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_gdal'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a GeoTIFF
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the GTiff driver, each KEY=VALUE
+ * @param[in] srid Spatial reference system the file states
+ */
+CREATE FUNCTION asTIFF(rast raster, options text[] DEFAULT NULL,
+    srid integer DEFAULT NULL)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_tiff'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a PNG image
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the PNG driver, each KEY=VALUE
+ */
+CREATE FUNCTION asPNG(rast raster, options text[] DEFAULT NULL)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_png'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a JPEG image
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the JPEG driver, each KEY=VALUE
+ */
+CREATE FUNCTION asJPEG(rast raster, options text[] DEFAULT NULL)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_jpeg'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster read from the bytes of a file in a format of GDAL
+ * @param[in] gdaldata Bytes of the file
+ * @param[in] srid Spatial reference system of the result, 0 for the one the
+ * file states
+ */
+CREATE FUNCTION rasterFromGDALRaster(gdaldata bytea, srid integer DEFAULT 0)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_from_gdal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * A raster built from its pixels and its georeferencing

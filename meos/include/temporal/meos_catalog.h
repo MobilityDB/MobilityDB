@@ -146,6 +146,7 @@ typedef enum
   T_S2CELL         = 85,  /**< static Google S2 cell index type (uint64) */
   T_S2CELLSET      = 86,  /**< s2cell set type */
   T_TS2CELL        = 87,  /**< temporal S2 index type (cell index over time) */
+  T_RASTER         = 88,  /**< PostGIS raster type */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;

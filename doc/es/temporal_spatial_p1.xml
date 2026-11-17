@@ -310,6 +310,22 @@ SELECT ST_AsText(makeLine(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_makepoint">
+				<indexterm significance="normal"><primary><varname>makePoint</varname></primary></indexterm>
+				<para>Devuelve un punto geométrico a partir de sus coordenadas y su SRID</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+makePoint(x float, y float, srid integer) → geometry
+makePoint(x float, y float, z float, srid integer) → geometry
+</programlisting>
+				<para>Los argumentos vienen en el orden de las funciones de PostGIS <varname>ST_Point</varname> y <varname>ST_PointZ</varname>, el SRID al final, y la forma que da una coordenada z devuelve un punto 3D. Una coordenada que no es finita se rechaza, y un SRID fuera del rango de PostGIS se convierte como lo convierte PostGIS. Un punto geográfico es la geografía del punto geométrico, como <varname>geography(makePoint(x, y, 4326))</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsEWKT(makePoint(4.35, 50.85, 4326));
+-- SRID=4326;POINT(4.35 50.85)
+SELECT ST_AsEWKT(makePoint(1, 2, 3, 3812));
+-- SRID=3812;POINT(1 2 3)
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_output">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>

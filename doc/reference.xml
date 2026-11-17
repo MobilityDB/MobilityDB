@@ -409,6 +409,9 @@
 					<listitem>
 						<para><link linkend="setspan_mergeEachNSpans"><varname>mergeEachNSpans</varname></link>: Return an array of spans obtained by merging the spans of the elements of a set or the spans of a spanset, each time the consecutive pair whose union adds the least size to theirs, until a span holds on average a given number of them</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="setspan_mergeQuerySpans"><varname>mergeQuerySpans</varname></link>: Return an array of spans obtained by merging the spans of the elements of a set or the spans of a spanset into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
@@ -1017,6 +1020,9 @@
 					<para><link linkend="geo_constructors"><varname>collect</varname>, <varname>makeLine</varname></link>: Return the collection of an array of geometries or the line joining them</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_makepoint"><varname>makePoint</varname></link>: Return a geometry point from its coordinates and SRID</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_output"><varname>asText</varname>, <varname>asEWKT</varname>, <varname>asEWKB</varname>, <varname>asGeoJSON</varname></link>: Return the Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary or GeoJSON representation of a geometry or a geography</para>
 				</listitem>
 				<listitem>
@@ -1338,6 +1344,9 @@
 					<para><link linkend="ttype_mergeEachNSpans"><varname>mergeEachNSpans</varname></link>: Return an array of time spans obtained by merging the time spans of the instants or segments of a temporal value, each time the consecutive pair whose union adds the least size to theirs, until a span holds on average a given number of them</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeQuerySpans"><varname>mergeQuerySpans</varname></link>: Return an array of time spans obtained by merging the time spans of the instants or segments of a temporal value into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitNTboxes"><varname>splitNTboxes</varname></link>: Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</para>
 				</listitem>
 				<listitem>
@@ -1350,6 +1359,9 @@
 					<para><link linkend="ttype_mergeEachNTboxes"><varname>mergeEachNTboxes</varname></link>: Return an array of temporal boxes obtained by merging the boxes of the instants or segments of a temporal number, each time the consecutive pair whose union adds the least size to theirs, until a box holds on average a given number of them</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeQueryTboxes"><varname>mergeQueryTboxes</varname></link>: Return an array of temporal boxes obtained by merging the boxes of the instants or segments of a temporal number into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitNStboxes"><varname>splitNStboxes</varname></link>: Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
@@ -1360,6 +1372,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_mergeEachNStboxes"><varname>mergeEachNStboxes</varname></link>: Return an array of spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point, each time the consecutive pair whose union adds the least size to theirs, until a box holds on average a given number of them</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_mergeQueryStboxes"><varname>mergeQueryStboxes</varname></link>: Return an array of spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2778,6 +2793,9 @@
 				<listitem>
 					<para><link linkend="trgeometry_merge_boxes"><varname>mergeNStboxes</varname>, <varname>mergeEachNStboxes</varname>, <varname>mergeNSpans</varname>, <varname>mergeEachNSpans</varname></link>: Return the spatiotemporal boxes or time spans of a temporal rigid geometry merged into a given number of boxes, or until a box holds on average a given number of segments, each time the consecutive pair whose union adds the least size to theirs</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_merge_query_boxes"><varname>mergeQueryStboxes</varname>, <varname>mergeQuerySpans</varname></link>: Return the spatiotemporal boxes or time spans of a temporal rigid geometry merged into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -3114,6 +3132,15 @@
 				<listitem>
 					<para><link linkend="raquetFromHexWKB"><varname>rasterFromHexWKB</varname>, <varname>raquetFromHexWKB</varname></link>: Return a raster or a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_asCoverageJSON"><varname>asCoverageJSON</varname></link>: Return a raster, a Raquet tile or the values a trajectory reads as a CoverageJSON coverage</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_asGDALRaster"><varname>asGDALRaster</varname>, <varname>asTIFF</varname>, <varname>asPNG</varname>, <varname>asJPEG</varname></link>: Return a raster written in a format of GDAL</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="rasterFromGDALRaster"><varname>rasterFromGDALRaster</varname></link>: Return a raster read from the bytes of a file in a format of GDAL</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -3136,6 +3163,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="raster_addBand"><varname>addBand</varname></link>: Add a band to a raster</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetFromRow"><varname>raquetFromRow</varname></link>: Return the tile of one band of a row of a Raquet file</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode a raster file into a Raquet raster tile via GDAL</para>
@@ -3647,10 +3677,10 @@
 				<title>Input and Output</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pcpoint_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
+						<para><link linkend="pcpoint_asHexWKB"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Input of a pcpoint or a pcpatch from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromBinary</varname>, <varname>pcpatchFromBinary</varname>, <varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Input of a pcpoint or a pcpatch from its Well-Known Binary (WKB) or its Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3953,6 +3983,9 @@
 					<listitem>
 						<para><link linkend="tpcpoint_mergeNTpcboxes"><varname>mergeNTpcboxes</varname>, <varname>mergeEachNTpcboxes</varname></link>: Return the point cloud boxes of a tpcpoint merged into a given number of boxes, or until a box holds on average a given number of instants or segments, each time the consecutive pair whose union adds the least size to theirs</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_mergeQueryTpcboxes"><varname>mergeQueryTpcboxes</varname>, <varname>mergeQuerySpans</varname></link>: Return the point cloud boxes or the time spans of a tpcpoint merged into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -4157,6 +4190,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_mergeNTpcboxes"><varname>mergeNTpcboxes</varname>, <varname>mergeEachNTpcboxes</varname></link>: Return the point cloud boxes of a tpcpatch merged into a given number of boxes, or until a box holds on average a given number of instants or segments, each time the consecutive pair whose union adds the least size to theirs</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_mergeQueryTpcboxes"><varname>mergeQueryTpcboxes</varname>, <varname>mergeQuerySpans</varname></link>: Return the point cloud boxes or the time spans of a tpcpatch merged into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

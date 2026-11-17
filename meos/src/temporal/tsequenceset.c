@@ -150,31 +150,46 @@ tseqarr_normalize(TSequence **sequences, int count, int *newcount)
 {
   assert(sequences); assert(newcount); assert(count > 0);
   TSequence **result = palloc(sizeof(TSequence *) * count);
+  /* The timestamps at which two joined pieces meet, whether the join keeps
+   * or removes their shared instant, which #tsequence_drop_junctions reads
+   * once the chain of pieces ends */
+  TimestampTz *junctions = palloc(sizeof(TimestampTz) * count);
+  int njunctions = 0;
   /* seq1 is the sequence to which we try to join subsequent seq2 */
   TSequence *seq1 = (TSequence *) sequences[0];
   /* newseq is the result of joining seq1 and seq2 */
   bool isnew = false;
   int nseqs = 0;
-  for (int i = 1; i < count; i++)
+  for (int i = 1; i <= count; i++)
   {
-    TSequence *seq2 = (TSequence *) sequences[i];
+    TSequence *seq2 = (i < count) ? (TSequence *) sequences[i] : NULL;
     bool removelast, removefirst;
-    if (tsequence_join_test(seq1, seq2, &removelast, &removefirst))
+    if (seq2 && tsequence_join_test(seq1, seq2, &removelast, &removefirst))
     {
+      if (removefirst)
+        junctions[njunctions++] = TSEQUENCE_INST_N(seq2, 0)->t;
       TSequence *newseq1 = tsequence_join(seq1, seq2, removelast, removefirst);
       if (isnew)
         pfree(seq1);
       seq1 = newseq1;
       isnew = true;
+      continue;
+    }
+    /* The chain of pieces ends with seq1 */
+    TSequence *norm = tsequence_drop_junctions(seq1, junctions, njunctions);
+    if (norm != seq1)
+    {
+      if (isnew)
+        pfree(seq1);
+      result[nseqs++] = norm;
     }
     else
-    {
       result[nseqs++] = isnew ? seq1 : tsequence_copy(seq1);
-      seq1 = seq2;
-      isnew = false;
-    }
+    njunctions = 0;
+    seq1 = seq2;
+    isnew = false;
   }
-  result[nseqs++] = isnew ? seq1 : tsequence_copy(seq1);
+  pfree(junctions);
   *newcount = nseqs;
   return result;
 }
@@ -398,11 +413,16 @@ tsequenceset_make_exp(TSequence **sequences, int count, int maxcount,
   else
     maxcount = newcount;
   /* Size of the struct and the offset array */
-  size_t memsize = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra +
-    sizeof(size_t) * maxcount + seqs_size;
+  size_t pdata = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra +
+    sizeof(size_t) * maxcount;
+  size_t memsize = pdata + seqs_size;
 
-  /* Create the temporal sequence set */
-  TSequenceSet *result = palloc0(memsize);
+  /* Create the temporal sequence set. The sequences are copied over their
+   * part of it, so only the struct, the bounding box, the offsets and the
+   * bytes no sequence covers are zeroed, the bytes `palloc0` would zero, as
+   * #tsequence_make_exp1 zeroes those of a sequence */
+  TSequenceSet *result = palloc(memsize);
+  memset(result, 0, pdata);
   SET_VARSIZE(result, memsize);
   result->count = newcount;
   result->maxcount = maxcount;
@@ -426,16 +446,21 @@ tsequenceset_make_exp(TSequence **sequences, int count, int maxcount,
   /* Compute the bounding box */
   tseqarr_compute_bbox(normseqs, newcount, TSEQUENCESET_BBOX_PTR(result));
   /* Store the composing sequences */
-  size_t pdata = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra +
-    sizeof(size_t) * maxcount;
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
-    memcpy(((char *) result) + pdata + pos, normseqs[i],
-      VARSIZE(normseqs[i]));
+    size_t size = VARSIZE(normseqs[i]);
+    memcpy(((char *) result) + pdata + pos, normseqs[i], size);
+    /* The padding after the piece, when its size is not a multiple of 8 */
+    if (DOUBLE_PAD(size) != size)
+      memset(((char *) result) + pdata + pos + size, 0,
+        DOUBLE_PAD(size) - size);
     (TSEQUENCESET_OFFSETS_PTR(result))[i] = pos;
-    pos += DOUBLE_PAD(VARSIZE(normseqs[i]));
+    pos += DOUBLE_PAD(size);
   }
+  /* The room reserved for the pieces an expandable value may add */
+  if (memsize > pdata + pos)
+    memset(((char *) result) + pdata + pos, 0, memsize - pdata - pos);
   if (normalize && count > 1)
     pfree_array((void **) normseqs, newcount);
   return result;

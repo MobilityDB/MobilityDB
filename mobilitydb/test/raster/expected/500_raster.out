@@ -435,6 +435,33 @@ SELECT rasterTileValue(tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01,
                | Interp=Step;[20@2001-01-02 00:00:00+00]
 (1 row)
 
+-- The restrictions read a trip over a Raquet tile and over an array of tiles:
+-- the trip crosses from the western tile (value 10) into the eastern one
+-- (value 50) at 12:00.
+WITH tiles(w, e) AS (
+  SELECT raquet('\x0a0a0a0a'::bytea, 2, 2, quadbinTileToCell(0, 0, 1), 'uint8'),
+    raquet('\x32323232'::bytea, 2, 2, quadbinTileToCell(1, 0, 1), 'uint8')
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01, Point(90 45)@2001-01-02]'
+)
+SELECT asText(atRasterValue(tp, w, floatspan '[0, 20]')) AS at_tile,
+  minusRasterValue(tp, w, floatspan '[0, 20]') IS NULL AS minus_tile,
+  eRasterValue(tp, e, floatspan '[40, 60]') AS ever_tile,
+  aRasterValue(tp, w, floatspan '[40, 60]') AS always_tile,
+  asText(atRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]')) AS at_tiles,
+  asText(minusRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]')) AS minus_tiles,
+  eRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]') AS ever_tiles,
+  aRasterValue(tp, ARRAY[w, e], floatspan '[0, 60]') AS always_tiles,
+  aRasterValue(tp, ARRAY[w, e], floatspan '[0, 20]') AS not_always_tiles
+FROM tiles, trip;
+                                   at_tile                                    | minus_tile | ever_tile | always_tile |                                  at_tiles                                   |                                 minus_tiles                                  | ever_tiles | always_tiles | not_always_tiles 
+------------------------------------------------------------------------------+------------+-----------+-------------+-----------------------------------------------------------------------------+------------------------------------------------------------------------------+------------+--------------+------------------
+ {[POINT(-90 45)@2001-01-01 00:00:00+00, POINT(0 45)@2001-01-01 12:00:00+00)} | t          | t         | f           | {[POINT(0 45)@2001-01-01 12:00:00+00, POINT(90 45)@2001-01-02 00:00:00+00]} | {[POINT(-90 45)@2001-01-01 00:00:00+00, POINT(0 45)@2001-01-01 12:00:00+00)} | t          | t            | f
+(1 row)
+
+SELECT atRasterValue(tgeompoint 'SRID=4326;Point(0 0)@2001-01-01',
+  '{}'::raquet[], floatspan '[0, 1]');
+ERROR:  The input array cannot be empty
 -- Tiles valid over successive half-open periods are read along a trip one
 -- period at a time and the reads merged: here the trip crosses from one tile
 -- into the other at 12:00, where a period also starts.
@@ -1359,6 +1386,165 @@ FROM rast;
  t   | t   | t       | t          | t                 | t                 |              1 |              0 | t
 (1 row)
 
+-- A row of a Raquet file is read into a tile as an engine scanning the
+-- Parquet file hands it over: its block, the bytes of a band and the metadata
+-- of the file. Raw, gzip and zlib bands give the tile the constructor gives;
+-- an interleaved column gives each of its bands; a JPEG image gives its band.
+WITH m(meta, inter, img, cell) AS (SELECT
+  '{"file_format": "raquet", "version": "0.5.0", "tiling": {"scheme": "quadbin", "block_width": 2, "block_height": 2}, "bands": [{"name": "band_1", "type": "uint8", "nodata": 0}]}'::text,
+  '{"file_format": "raquet", "band_layout": "interleaved", "tiling": {"block_width": 2, "block_height": 2}, "bands": [{"name": "r", "type": "uint8", "nodata": null}, {"name": "g", "type": "uint8", "nodata": null}]}'::text,
+  '{"file_format": "raquet", "band_layout": "interleaved", "compression": "jpeg", "tiling": {"block_width": 2, "block_height": 2}, "bands": [{"name": "band_1", "type": "uint8", "nodata": null}]}'::text,
+  quadbinTileToCell(1, 0, 1)::bigint)
+SELECT raquetFromRow(cell, '\x01020304'::bytea, meta) =
+    raquet('\x01020304'::bytea, 2, 2, cell::quadbin, 'uint8', 0) AS raw,
+  raquetFromRow(cell, '\x1f8b08000000000002ff636462660100cdfb3cb604000000'::bytea,
+    replace(meta, '"version"', '"compression": "gzip", "version"')) =
+    raquetFromRow(cell, '\x01020304'::bytea, meta) AS gzip,
+  raquetFromRow(cell, '\x789c6364626601000018000b'::bytea,
+    replace(meta, '"version"', '"compression": "gzip", "version"')) =
+    raquetFromRow(cell, '\x01020304'::bytea, meta) AS zlib,
+  pixels(raquetFromRow(cell, '\x010a0214031e0428'::bytea, inter, 2)) AS second_band,
+  pixels(raquetFromRow(cell, '\xffd8ffe000104a46494600010100000100010000ffdb004300080606070605080707070909080a0c140d0c0b0b0c1912130f141d1a1f1e1d1a1c1c20242e2720222c231c1c2837292c30313434341f27393d38323c2e333432ffc0000b080002000201011100ffc40014000100000000000000000000000000000005ffc40014100100000000000000000000000000000000ffda0008010100003f000dffd9'::bytea, img)) AS jpeg_band
+FROM m;
+ raw | gzip | zlib | second_band | jpeg_band  
+-----+------+------+-------------+------------
+ t   | t    | t    | \x0a141e28  | \x64646464
+(1 row)
+
+-- The metadata row, a band the metadata does not state, a band of the wrong
+-- size and a band stating a scale are refused.
+SELECT raquetFromRow(0, '\x01020304'::bytea, '{}');
+ERROR:  The row of block 0 of a Raquet file holds its metadata, not a tile
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x01020304'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8"}]}', 2);
+ERROR:  The metadata of a Raquet file states fewer bands than the band asked for
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x010203'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8"}]}');
+ERROR:  A Raquet row of a 2 x 2 tile holds 3 bytes where 4 are expected
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x01020304'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8", "scale": 0.5}]}');
+ERROR:  The metadata of a Raquet file states a scale or an offset, which a tile does not carry
+-- A raster is a CoverageJSON grid coverage: its axes run from the centre of
+-- the first pixel to the centre of the last, a band is a parameter whose
+-- values run row by row from the top, a nodata pixel is null.
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]));
+                                                                                                                                                                                                                                          ascoveragejson                                                                                                                                                                                                                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"Coverage","domain":{"type":"Domain","domainType":"Grid","axes":{"x":{"start":11,"stop":15,"num":3},"y":{"start":19,"stop":17,"num":2}},"referencing":[{"coordinates":["x","y"],"system":{"type":"ProjectedCRS","id":"http://www.opengis.net/def/crs/EPSG/0/3857"}}]},"parameters":{"band1":{"type":"Parameter","observedProperty":{"label":{"en":"Band 1"}}}},"ranges":{"band1":{"type":"NdArray","dataType":"integer","axisNames":["y","x"],"shape":[2,3],"values":[1,2,3,4,-5,null]}}}
+(1 row)
+
+-- EPSG:4326 is stated as OGC CRS84, its longitude first as MEOS states it,
+-- and a band of floats has float values.
+SELECT (asCoverageJSON(ST_AddBand(
+  ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 0.5, -1.0, 0.0, 0.0, 4326),
+  '32BF'::text, 1.5::float8, NULL::float8))::json)
+  #> '{domain,referencing,0,system,id}' AS crs84;
+                     crs84                      
+------------------------------------------------
+ "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+(1 row)
+
+-- A Raquet tile is a grid of Web Mercator over the bounds of its cell: its
+-- axes run between the centres of its pixels, read here to the centimetre.
+SELECT j #>> '{domain,domainType}' AS domain,
+  round((j #>> '{domain,axes,x,start}')::numeric, 2) AS x_start,
+  round((j #>> '{domain,axes,x,stop}')::numeric, 2) AS x_stop,
+  round((j #>> '{domain,axes,y,start}')::numeric, 2) AS y_start,
+  round((j #>> '{domain,axes,y,stop}')::numeric, 2) AS y_stop,
+  j #>> '{domain,axes,x,num}' AS num,
+  j #>> '{domain,referencing,0,system,id}' AS crs,
+  j #> '{ranges,band1,values}' AS band1
+FROM (SELECT asCoverageJSON(raquet('\x01020304'::bytea, 2, 2,
+  quadbinTileToCell(1, 0, 1), 'uint8'))::json AS j) t;
+ domain |  x_start   |   x_stop    |   y_start   |   y_stop   | num |                    crs                     |   band1   
+--------+------------+-------------+-------------+------------+-----+--------------------------------------------+-----------
+ Grid   | 5009377.09 | 15028131.26 | 15028131.26 | 5009377.09 | 2   | http://www.opengis.net/def/crs/EPSG/0/3857 | [1,2,3,4]
+(1 row)
+
+-- The values a trip reads are a trajectory coverage, each value at the
+-- position of the trip at its instant.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS r),
+trip(t) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]')
+SELECT asCoverageJSON(rasterValue(t, r), t) FROM rast, trip;
+                                                                                                                                                                                                                                                                                                                                          ascoveragejson                                                                                                                                                                                                                                                                                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"Coverage","domain":{"type":"Domain","domainType":"Trajectory","axes":{"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-01T12:00:00+00:00",1,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5]]}},"referencing":[{"coordinates":["t"],"system":{"type":"TemporalRS","calendar":"Gregorian"}},{"coordinates":["x","y"],"system":{"type":"GeographicCRS","id":"http://www.opengis.net/def/crs/OGC/1.3/CRS84"}}]},"parameters":{"value":{"type":"Parameter","observedProperty":{"label":{"en":"Value"}}}},"ranges":{"value":{"type":"NdArray","dataType":"float","axisNames":["composite"],"shape":[3],"values":[10,20,20]}}}
+(1 row)
+
+-- A raster with a skew and a raster in no reference system are refused.
+SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,
+  4326));
+ERROR:  A raster with a skew lies on no grid of CoverageJSON
+SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  0));
+ERROR:  A value in no spatial reference system has no CoverageJSON referencing
+-- A raster is written in a format of GDAL as PostGIS writes it and read as
+-- PostGIS reads it, and a GeoTIFF read back keeps the values of every band,
+-- the georeferencing and the SRID: three bands of 16 signed bits sharing
+-- their pixel type and their nodata value, the one of each a TIFF holds for
+-- all its bands, in EPSG:3857.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+    '16BSI'::text, 7::float8, 0::float8),
+    '16BSI'::text, -3::float8, 0::float8),
+    '16BSI'::text, 1::float8, 0::float8), 1, 1, 1,
+    ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]) AS r),
+back AS (
+  SELECT r, rasterFromGDALRaster(asTIFF(r)) AS b FROM rast)
+SELECT asTIFF(r) = ST_AsTIFF(r) AS writes_as_postgis,
+  asGDALRaster(r, 'GTiff') = ST_AsGDALRaster(r, 'GTiff') AS gdal_as_postgis,
+  asHexWKB(b) = asHexWKB(ST_FromGDALRaster(ST_AsTIFF(r))) AS reads_as_postgis,
+  dumpValues(b, 1) = dumpValues(r, 1) AND dumpValues(b, 2) = dumpValues(r, 2)
+    AND dumpValues(b, 3) = dumpValues(r, 3) AS values_kept,
+  bandPixelType(b, 1) || ' ' || bandPixelType(b, 2) || ' ' ||
+    bandPixelType(b, 3) AS pixel_types,
+  width(b) = width(r) AND height(b) = height(r) AND
+    upperLeftX(b) = upperLeftX(r) AND upperLeftY(b) = upperLeftY(r) AND
+    scaleX(b) = scaleX(r) AND scaleY(b) = scaleY(r) AS grid_kept,
+  dumpValues(rasterFromGDALRaster(asTIFF(r, ARRAY['COMPRESS=DEFLATE',
+    'TILED=YES'])), 1) = dumpValues(r, 1) AS deflate_kept,
+  SRID(b) AS srid_of_file,
+  SRID(rasterFromGDALRaster(asTIFF(r), 4326)) AS srid_given,
+  SRID(rasterFromGDALRaster(asTIFF(r, NULL, 4326))) AS srid_written
+FROM back;
+ writes_as_postgis | gdal_as_postgis | reads_as_postgis | values_kept |    pixel_types    | grid_kept | deflate_kept | srid_of_file | srid_given | srid_written 
+-------------------+-----------------+------------------+-------------+-------------------+-----------+--------------+--------------+------------+--------------
+ t                 | t               | t                | t           | int16 int16 int16 | t         | t            |         3857 |       4326 |         4326
+(1 row)
+
+-- An image is written by the drivers that take its bands: PNG and JPEG of one
+-- band of 8 unsigned bits, each opening with its own signature.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[0, 64, 128, 255], [0, 64, 128, 255], [0, 64, 128, 255],
+          [0, 64, 128, 255]]::double precision[][]) AS r)
+SELECT encode(substring(asPNG(r) from 1 for 8), 'hex') AS png_signature,
+  encode(substring(asJPEG(r) from 1 for 2), 'hex') AS jpeg_signature,
+  dumpValues(rasterFromGDALRaster(asPNG(r)), 1) =
+    dumpValues(r, 1) AS png_values
+FROM rast;
+  png_signature   | jpeg_signature | png_values 
+------------------+----------------+------------
+ 89504e470d0a1a0a | ffd8           | t
+(1 row)
+
+-- A format GDAL has no driver of, and bytes that are no raster file, are
+-- refused.
+SELECT asGDALRaster(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  4326), 'NoSuchFormat');
+ERROR:  GDAL has no driver of the format NoSuchFormat
+SELECT rasterFromGDALRaster('\x0102030405'::bytea);
+ERROR:  GDAL reads no raster in the bytes given
 -- A string shorter than the raster it states is refused, not read past its end.
 SELECT rasterFromHexWKB('0100');
 ERROR:  rt_raster_from_wkb: wkb size (2) < min size (61)

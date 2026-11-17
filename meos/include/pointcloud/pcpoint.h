@@ -83,6 +83,10 @@ extern bool ensure_valid_pcpointset_pcpoint(const Set *s, const Pcpoint *pt);
  *****************************************************************************/
 
 extern Pcpoint *pcpoint_parse(const char **str, bool end);
+extern uint8_t pc_wkb_endian(uint8_t variant);
+extern void pc_wkb_int32_flip(uint8_t *ptr);
+extern uint8_t *pcpoint_to_wkb_bytes(const Pcpoint *pt, uint8_t variant,
+  size_t *size_out);
 extern size_t pcpoint_meaningful_size(const Pcpoint *pt);
 extern double *pcpoint_dims(const Pcpoint *pt, int *count);
 extern PCSCHEMA *pcpoint_schema(const Pcpoint *pt);

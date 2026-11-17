@@ -57,6 +57,7 @@
 #include "temporal/spanset.h"
 #include "temporal/temporal.h"
 #include "temporal/tinstant.h"
+#include "temporal/tsequenceset.h"
 #include "temporal/temporal_boxops.h"
 #include "temporal/temporal_restrict.h"
 #include "temporal/type_util.h"
@@ -126,31 +127,17 @@ duration_split(TimestampTz duration, double *hi, double *lo)
  * of their difference and a duration would overflow are scaled by a power of
  * two, which leaves the sign unchanged. Values that are not all finite are
  * collinear only where they are equal.
- *
- * A middle value the engine CONSTRUCTS, the value at which a restriction
- * splits a segment, is rounded and lies on the line within that rounding
- * only. It is collinear where it lies within the rounding of the value
- * interpolated at its timestamp (#coordinate_tolerance)
  * @param[in] x1,x2,x3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  * @note Exact where no product of a difference of the values and a duration
  * underflows
  */
 bool
 float_collinear(double x1, double x2, double x3, TimestampTz t1,
-  TimestampTz t2, TimestampTz t3, bool constructed)
+  TimestampTz t2, TimestampTz t3)
 {
   if (! isfinite(x1) || ! isfinite(x2) || ! isfinite(x3))
     return (x1 == x2 && x2 == x3);
-  if (constructed)
-  {
-    double ratio = (double) (t2 - t1) / (double) (t3 - t1);
-    double x = x1 + (x3 - x1) * ratio;
-    return (fabs(x2 - x) <= coordinate_tolerance(Max(fabs(x1), fabs(x3)),
-      x2));
-  }
   /* A duration is below 2^63 and the difference of two values below 2^959
    * is below 2^960, so their product does not overflow */
   if (Max(fabs(x1), Max(fabs(x2), fabs(x3))) > 0x1p958)
@@ -172,22 +159,20 @@ float_collinear(double x1, double x2, double x3, TimestampTz t1,
  * @param[in] value1,value2,value3 Input values
  * @param[in] basetype Type of the values
  * @param[in] t1,t2,t3 Input timestamps
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  */
 static bool
 datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   switch (basetype)
   {
     case T_FLOAT8:
       return float_collinear(DatumGetFloat8(value1), DatumGetFloat8(value2),
-        DatumGetFloat8(value3), t1, t2, t3, constructed);
+        DatumGetFloat8(value3), t1, t2, t3);
     case T_DOUBLE2:
       return double2_collinear(DatumGetDouble2P(value1),
         DatumGetDouble2P(value2), DatumGetDouble2P(value3),
-        t1, t2, t3, constructed);
+        t1, t2, t3);
     /* The members of #geo_basetype */
     case T_GEOMETRY:
     case T_GEOGRAPHY:
@@ -196,35 +181,35 @@ datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
       bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
       bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
       return geopoint_collinear(value1, value2, value3, t1, t2, t3, hasz,
-        geodetic, constructed);
+        geodetic);
     }
     case T_DOUBLE3:
       return double3_collinear(DatumGetDouble3P(value1),
         DatumGetDouble3P(value2), DatumGetDouble3P(value3),
-        t1, t2, t3, constructed);
+        t1, t2, t3);
     case T_DOUBLE4:
       return double4_collinear(DatumGetDouble4P(value1),
         DatumGetDouble4P(value2), DatumGetDouble4P(value3),
-        t1, t2, t3, constructed);
+        t1, t2, t3);
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_collinear(DatumGetCbufferP(value1),
         DatumGetCbufferP(value2), DatumGetCbufferP(value3),
-        t1, t2, t3, constructed);
+        t1, t2, t3);
 #endif
 #if NPOINT
     case T_NPOINT:
       return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
-        DatumGetNpointP(value3), t1, t2, t3, constructed);
+        DatumGetNpointP(value3), t1, t2, t3);
 #endif
 #if POSE
     case T_POSE:
       return pose_collinear(DatumGetPoseP(value1), DatumGetPoseP(value2),
-        DatumGetPoseP(value3), t1, t2, t3, constructed);
+        DatumGetPoseP(value3), t1, t2, t3);
     case T_POSECHAIN:
       return posechain_collinear(DatumGetPoseChainP(value1),
         DatumGetPoseChainP(value2), DatumGetPoseChainP(value3),
-        t1, t2, t3, constructed);
+        t1, t2, t3);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -752,7 +737,7 @@ tsequence_norm_test(Datum value1, Datum value2, Datum value3, MeosType basetype,
       ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
     */
     (interp == LINEAR && datum_collinear(value1, value2, value3, basetype,
-      t1, t2, t3, false))
+      t1, t2, t3))
     )
     return true;
   else
@@ -802,6 +787,183 @@ tinstarr_normalize(TInstant **instants, interpType interp, int count,
   }
   result[ninsts++] = inst2;
   *newcount = ninsts;
+  return result;
+}
+
+/**
+ * @brief Return true if an instant holds the value a segment takes at its
+ * timestamp, as the engine constructs it
+ * @details A restriction splits a segment at an instant whose value it
+ * computes with #tsegment_value_at_timestamptz, a value it rounds, which no
+ * collinearity of input values recognizes. The same computation on the ends of
+ * the segment answers the same double, so the instant is the point at which
+ * the segment was split exactly where the two values are equal, a comparison
+ * of the doubles with no tolerance
+ * @param[in] inst1,inst2 Ends of the segment
+ * @param[in] inst Instant strictly between them
+ */
+static bool
+tinstant_on_segment(const TInstant *inst1, const TInstant *inst,
+  const TInstant *inst2)
+{
+  MeosType basetype = temptype_basetype(inst1->temptype);
+  Datum value = tsegment_value_at_timestamptz(tinstant_value_p(inst1),
+    tinstant_value_p(inst2), inst1->temptype, inst1->t, inst2->t, inst->t);
+  bool result = datum_eq(value, tinstant_value_p(inst), basetype);
+  DATUM_FREE(value, basetype);
+  return result;
+}
+
+/**
+ * @brief Return where an instant lies against the value a segment takes at
+ * its timestamp: 2 where it is that value (#tinstant_on_segment), 1 where it
+ * lies near it, the filter that bounds the search of
+ * #tsequence_drop_junctions, and 0 elsewhere
+ * @details Near compares the distance from the instant to that value with
+ * 1e-9 of the length of the segment, unit-free, so that it reads alike the
+ * doubles of a float, the degrees of a geography and the metres of a network.
+ * The filter only admits candidates: what it admits, a comparison of doubles
+ * decides, and what it refuses is kept. The value is computed once for both
+ * answers
+ * @param[in] inst1,inst2 Ends of the segment
+ * @param[in] inst Instant strictly between them
+ */
+static int
+tinstant_segment_test(const TInstant *inst1, const TInstant *inst,
+  const TInstant *inst2)
+{
+  MeosType basetype = temptype_basetype(inst1->temptype);
+  Datum value = tsegment_value_at_timestamptz(tinstant_value_p(inst1),
+    tinstant_value_p(inst2), inst1->temptype, inst1->t, inst2->t, inst->t);
+  int result;
+  if (datum_eq(value, tinstant_value_p(inst), basetype))
+    result = 2;
+  else
+  {
+    double d = datum_distance(value, tinstant_value_p(inst), basetype,
+      inst1->flags, false);
+    double len = datum_distance(tinstant_value_p(inst1),
+      tinstant_value_p(inst2), basetype, inst1->flags, false);
+    result = (len != 0.0 && d <= 1e-9 * len) ? 1 : 0;
+  }
+  DATUM_FREE(value, basetype);
+  return result;
+}
+
+/**
+ * @brief Return a linear sequence without the instants at which a
+ * restriction split one of its segments, around the junctions of a join
+ * @details Two adjacent pieces of a sequence meet at a junction, the instant
+ * they share, which their join keeps or removes (#tsequence_join_test). A
+ * restriction splits a
+ * segment at an instant whose value it computes on the ends of that segment
+ * (#tsegment_value_at_timestamptz), and splitting it again keeps those ends,
+ * so each split instant holds the value the segment takes there, a double a
+ * recomputation states bit for bit (#tinstant_on_segment). The instants a
+ * join may make redundant are its junction, or the two instants beside it
+ * where the join removed it, and those around them that lie near the segment
+ * of their neighbours, split instants kept by an earlier join whose other end
+ * had not yet arrived. From the last instant kept, such an instant and
+ * those after it up to an instant on its right are dropped where each of
+ * them is that value on the segment to that instant, or is collinear with
+ * its ends (#tsequence_norm_test), so that the segment that replaces them
+ * passes through every one; the instants on its right are read while it
+ * lies near their segment (#tinstant_segment_test). Every instant dropped is
+ * decided by a comparison of doubles, with no tolerance; the filter only
+ * bounds the search
+ * @param[in] seq Sequence
+ * @param[in] junctions Timestamps of the junctions, in increasing order
+ * @param[in] njunctions Number of junctions
+ * @return The sequence, or a new one where an instant is dropped
+ */
+TSequence *
+tsequence_drop_junctions(const TSequence *seq, const TimestampTz *junctions,
+  int njunctions)
+{
+  int count = seq->count;
+  if (njunctions == 0 || count < 3 || MEOS_FLAGS_GET_INTERP(seq->flags) !=
+      LINEAR)
+    return (TSequence *) seq;
+  MeosType basetype = temptype_basetype(seq->temptype);
+  bool *candidate = palloc0(sizeof(bool) * count);
+  bool found = false;
+  for (int k = 0, i = 1; k < njunctions; k++)
+  {
+    /* The junction is the instant i, or falls between the instants i - 1
+     * and i where the join removed it */
+    while (i < count - 1 && TSEQUENCE_INST_N(seq, i)->t < junctions[k])
+      i++;
+    int lo = (TSEQUENCE_INST_N(seq, i)->t == junctions[k]) ? i : i - 1;
+    int hi = i;
+    if (lo < 1)
+      lo = 1;
+    if (hi > count - 2)
+      hi = count - 2;
+    if (lo > hi)
+      continue;
+    for (int j = lo; j <= hi; j++)
+      candidate[j] = found = true;
+    /* The split instants an earlier join kept beside this junction */
+    for (int j = lo - 1; j > 0 && ! candidate[j] && tinstant_segment_test(
+        TSEQUENCE_INST_N(seq, j - 1), TSEQUENCE_INST_N(seq, j),
+        TSEQUENCE_INST_N(seq, j + 1)) > 0; j--)
+      candidate[j] = true;
+    for (int j = hi + 1; j < count - 1 && ! candidate[j] &&
+        tinstant_segment_test(TSEQUENCE_INST_N(seq, j - 1),
+          TSEQUENCE_INST_N(seq, j), TSEQUENCE_INST_N(seq, j + 1)) > 0; j++)
+      candidate[j] = true;
+  }
+  if (! found)
+  {
+    pfree(candidate);
+    return (TSequence *) seq;
+  }
+  const TInstant **instants = palloc(sizeof(TInstant *) * count);
+  int ninsts = 0;
+  instants[ninsts++] = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < count - 1; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    /* The instants from i to j - 1 are dropped where each of them is on the
+     * segment from the last instant kept to the instant j, which then
+     * follows it */
+    int next = i;
+    if (candidate[i])
+    {
+      const TInstant *a = instants[ninsts - 1];
+      for (int j = i + 1; j < count && next == i; j++)
+      {
+        const TInstant *r = TSEQUENCE_INST_N(seq, j);
+        int test = tinstant_segment_test(a, inst, r);
+        if (! test)
+          break;
+        bool redundant = true;
+        for (int m = i; m < j && redundant; m++)
+        {
+          const TInstant *mid = TSEQUENCE_INST_N(seq, m);
+          redundant = ((m == i) ? test == 2 : tinstant_on_segment(a, mid, r)) ||
+            tsequence_norm_test(tinstant_value_p(a), tinstant_value_p(mid),
+              tinstant_value_p(r), basetype, LINEAR, a->t, mid->t, r->t);
+        }
+        if (redundant)
+          next = j;
+      }
+    }
+    if (next == i)
+      instants[ninsts++] = inst;
+    else
+      i = next - 1;
+  }
+  instants[ninsts++] = TSEQUENCE_INST_N(seq, count - 1);
+  pfree(candidate);
+  if (ninsts == count)
+  {
+    pfree(instants);
+    return (TSequence *) seq;
+  }
+  TSequence *result = tsequence_make((TInstant **) instants, ninsts,
+    seq->period.lower_inc, seq->period.upper_inc, LINEAR, NORMALIZE_NO);
+  pfree(instants);
   return result;
 }
 
@@ -868,13 +1030,16 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
        collinear, e.g., ..., 1@t1, 2@t2] (2@t2, 3@t3, ... which would wrongly
        remove the shared instant 2@t2. For step interpolation, the value at
        the shared boundary timestamp is the inclusive side's value and must
-       always survive the join. The shared instant is the one at which a
-       restriction splits a segment, a value the engine constructs, so its
-       collinearity is that of a constructed middle value.
+       always survive the join. The shared instant is redundant where its
+       value is collinear with those around it, an input value decided
+       exactly (#datum_collinear), or where it is the value the segment takes
+       at its timestamp as the engine constructs it, the value at which a
+       restriction splits a segment (#tinstant_on_segment)
     */
     (interp == LINEAR && eq_last1_first1 &&
-      datum_collinear(last2value, first1value, first2value, basetype,
-        last2->t, first1->t, first2->t, true))
+      (tinstant_on_segment(last2, first1, first2) ||
+       datum_collinear(last2value, first1value, first2value, basetype,
+        last2->t, first1->t, first2->t)))
     ))
   {
     /* Remove the last and first instants of the sequences */
@@ -1265,11 +1430,15 @@ tsequence_make_exp1(TInstant **instants, int count, int maxcount,
   else
     maxcount = newcount;
   /* Total size of the struct */
-  size_t memsize = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
-    sizeof(size_t) * maxcount + insts_size;
+  size_t pdata = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
+    sizeof(size_t) * maxcount;
+  size_t memsize = pdata + insts_size;
 
-  /* Create the temporal sequence */
-  TSequence *result = palloc0(memsize);
+  /* Create the temporal sequence. The instants are copied over their part of
+   * it, so only the struct, the bounding box, the offsets and the bytes no
+   * instant covers are zeroed, the bytes `palloc0` would zero */
+  TSequence *result = palloc(memsize);
+  memset(result, 0, pdata);
   SET_VARSIZE(result, memsize);
   result->count = newcount;
   result->maxcount = maxcount;
@@ -1295,19 +1464,54 @@ tsequence_make_exp1(TInstant **instants, int count, int maxcount,
     tinstarr_set_bbox(norminsts, newcount, lower_inc, upper_inc, interp,
       TSEQUENCE_BBOX_PTR(result));
   /* Store the composing instants */
-  size_t pdata = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
-    sizeof(size_t) * maxcount;
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
-    memcpy(((char *) result) + pdata + pos, norminsts[i],
-      VARSIZE(norminsts[i]));
+    size_t size = VARSIZE(norminsts[i]);
+    memcpy(((char *) result) + pdata + pos, norminsts[i], size);
+    /* The padding after the piece, when its size is not a multiple of 8 */
+    if (DOUBLE_PAD(size) != size)
+      memset(((char *) result) + pdata + pos + size, 0,
+        DOUBLE_PAD(size) - size);
     (TSEQUENCE_OFFSETS_PTR(result))[i] = pos;
-    pos += DOUBLE_PAD(VARSIZE(norminsts[i]));
+    pos += DOUBLE_PAD(size);
   }
+  /* The room reserved for the pieces an expandable value may add */
+  if (memsize > pdata + pos)
+    memset(((char *) result) + pdata + pos, 0, memsize - pdata - pos);
   if (interp != DISCRETE && normalize && count > 1)
     pfree(norminsts);
   return result;
+}
+
+/**
+ * @brief Return the place of a new instant at the end of an expandable
+ * temporal sequence and count the instant, or NULL when the sequence has no
+ * room for it
+ * @details The place where #tsequence_append_tinstant writes an instant it
+ * appends in place: after the last instant of the sequence, at the offset of
+ * the last instant plus its size, within the bytes the sequence reserved when
+ * it was made expandable (#tsequence_make_exp). The caller writes the
+ * instant there, in increasing time, and sets the bounding box of the
+ * sequence once its instants are written.
+ * @param[in,out] seq Temporal sequence
+ * @param[in] size Size of the instant
+ */
+TInstant *
+tsequence_append_slot(TSequence *seq, size_t size)
+{
+  assert(seq); assert(seq->count > 0);
+  if (seq->count >= seq->maxcount)
+    return NULL;
+  const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
+  size_t size_last = DOUBLE_PAD(VARSIZE(last));
+  char *result = (char *) last + size_last;
+  if (DOUBLE_PAD(size) > (size_t) ((char *) seq + VARSIZE(seq) - result))
+    return NULL;
+  (TSEQUENCE_OFFSETS_PTR(seq))[seq->count] =
+    (TSEQUENCE_OFFSETS_PTR(seq))[seq->count - 1] + size_last;
+  seq->count++;
+  return (TInstant *) result;
 }
 
 /**

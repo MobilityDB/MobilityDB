@@ -533,6 +533,7 @@ geo_mem_size(const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_base_constructor
  * @brief Return a 2D geometry point constructed from the arguments
+ * @csqlfn #Geom_makepoint()
  */
 GSERIALIZED *
 geompoint_make2d(int32_t srid, double x, double y)
@@ -568,6 +569,7 @@ geogpoint_make2d(int32_t srid, double x, double y)
 /**
  * @ingroup meos_geo_base_constructor
  * @brief Return a 3DZ geometry point constructed from the arguments
+ * @csqlfn #Geom_makepoint3dz()
  */
 GSERIALIZED *
 geompoint_make3dz(int32_t srid, double x, double y, double z)
@@ -5359,8 +5361,11 @@ geo_points(const GSERIALIZED *gs)
 GSERIALIZED **
 geo_pointarr(const GSERIALIZED *gs, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(gs, NULL);
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   LWMPOINT *res = lwmpoint_from_lwgeom(lwgeom);

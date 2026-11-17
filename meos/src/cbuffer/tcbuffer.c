@@ -46,6 +46,7 @@
 #include "temporal/span.h"
 #include "temporal/spanset.h"
 #include "temporal/tnumber_mathfuncs.h"
+#include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
 #include "geo/tgeo_distance.h"
@@ -1211,10 +1212,12 @@ TInstant *
 tcbufferinst_tgeompointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TCBUFFER);
-  GSERIALIZED *point = cbuffer_point(DatumGetCbufferP(tinstant_value_p(inst)));
-  TInstant *result = tinstant_make(PointerGetDatum(point), T_TGEOMPOINT,
-    inst->t);
-  pfree(point);
+  /* The point is written from the coordinates of the centre, finite and
+   * planar in every circular buffer */
+  const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  TInstant *result = palloc(tpointinst_coords_size(false));
+  tpointinst_coords_set(result, NULL, cb->x, cb->y, 0.0, false, false,
+    cb->srid, inst->t);
   return result;
 }
 
@@ -1226,11 +1229,27 @@ TSequence *
 tcbufferseq_tgeompointseq(const TSequence *seq)
 {
   assert(seq); assert(seq->temptype == T_TCBUFFER);
+  /* The instants are written in one block, the instants after the first
+   * with its header, as #tpointseq_make_coords writes its points */
+  size_t slot = DOUBLE_PAD(tpointinst_coords_size(false));
+  char *block = palloc(slot * seq->count);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    instants[i] = tcbufferinst_tgeompointinst(TSEQUENCE_INST_N(seq, i));
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+    instants[i] = (TInstant *) (block + slot * i);
+    tpointinst_coords_set(instants[i], i ? instants[0] : NULL, cb->x, cb->y,
+      0.0, false, false, cb->srid, inst->t);
+  }
+  /* The centres of a temporal circular buffer share its SRID and its
+   * increasing timestamps, and equal circular buffers have equal centres,
+   * so the instants are not tested again */
+  TSequence *result = tsequence_make_exp1(instants, seq->count, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO, NULL);
+  pfree(instants); pfree(block);
+  return result;
 }
 
 /**
@@ -1517,8 +1536,11 @@ tcbuffer_value_n(const Temporal *temp, int n, Cbuffer **result)
 Cbuffer **
 tcbuffer_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TCBUFFER(temp, NULL);
 
   Datum *datumarr = temporal_values_p(temp, count);
   Cbuffer **result = palloc(sizeof(Cbuffer *) * *count);

@@ -2591,6 +2591,40 @@ SELECT numInstants(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-
            5
 (1 row)
 
+-- A geography sequence drops a middle instant where the doubles prove it on the
+-- path: on the equator, on one meridian and at the middle a half turn proves,
+-- and keeps one only floating trigonometry places on its arc; two pieces cut
+-- at an instant a restriction constructs merge back into one segment
+SELECT numInstants(tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02, Point(2 0)@2001-01-03]');
+ numinstants 
+-------------
+           2
+(1 row)
+
+SELECT numInstants(tgeogpoint '[Point(5 0)@2001-01-01, Point(5 1)@2001-01-02, Point(5 2)@2001-01-03]');
+ numinstants 
+-------------
+           2
+(1 row)
+
+SELECT numInstants(tgeogpoint '[Point(12 3)@2001-01-01, Point(10 0)@2001-01-02, Point(8 -3)@2001-01-03]');
+ numinstants 
+-------------
+           2
+(1 row)
+
+SELECT numInstants(tgeogpoint '[Point(1 1)@2001-01-01, Point(1.4996952201137808 2.0000760948915994)@2001-01-02, Point(2 3)@2001-01-03]');
+ numinstants 
+-------------
+           3
+(1 row)
+
+SELECT numInstants(merge(atTime(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 3)@2001-01-02]', tstzspan '[2001-01-01, 2001-01-01 07:00]'), atTime(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 3)@2001-01-02]', tstzspan '[2001-01-01 07:00, 2001-01-02]')));
+ numinstants 
+-------------
+           2
+(1 row)
+
 SELECT asEWKT(startInstant(tgeompoint 'Point(1 1)@2001-01-01'));
                  asewkt                  
 -----------------------------------------
@@ -6243,7 +6277,7 @@ SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBin
 FROM s;
  numinstants | ?column? 
 -------------+----------
-           2 | t
+           3 | t
 (1 row)
 
 WITH s(temp) AS (
@@ -6254,7 +6288,7 @@ SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBin
 FROM s;
  numinstants | ?column? 
 -------------+----------
-           3 | t
+           4 | t
 (1 row)
 
 WITH s(temp) AS (
@@ -6265,7 +6299,7 @@ SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBin
 FROM s;
  numinstants | ?column? 
 -------------+----------
-           4 | t
+           5 | t
 (1 row)
 
 WITH s(temp) AS (

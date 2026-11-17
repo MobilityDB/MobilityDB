@@ -603,9 +603,17 @@ SELECT ST_AsText(collect(arr)), ST_AsText(ST_Collect(arr)) = ST_AsText(collect(a
   ST_AsText(makeLine(arr)) IS NOT DISTINCT FROM ST_AsText(ST_MakeLine(arr)) AS makeline_agrees
 FROM a;
 SELECT collect(ARRAY[]::geometry[]) IS NULL, makeLine(ARRAY[]::geometry[]) IS NULL;
+SELECT ST_AsEWKT(makePoint(4.35, 50.85, 4326)),
+  ST_AsEWKT(makePoint(4.35, 50.85, 4326)) = ST_AsEWKT(ST_Point(4.35, 50.85, 4326)) AS point_agrees,
+  ST_AsEWKT(makePoint(1, 2, 3, 3812)),
+  ST_AsEWKT(makePoint(1, 2, 3, 3812)) = ST_AsEWKT(ST_PointZ(1, 2, 3, 3812)) AS pointz_agrees,
+  ST_AsEWKT(makePoint(1, 2, 0));
+SELECT ST_AsEWKT(makePoint(1, 2, 1000000000)) = ST_AsEWKT(ST_Point(1, 2, 1000000000)) AS clamped_srid_agrees;
 /* Errors */
 SELECT makeLine(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=4326;Point(2 2)', geometry 'SRID=3812;Point(3 3)']);
 SELECT collect(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=3812;Point(3 3)']);
+SELECT makePoint('NaN', 1, 4326);
+SELECT makePoint(1, 2, 'Infinity', 4326);
 
 -------------------------------------------------------------------------------
 

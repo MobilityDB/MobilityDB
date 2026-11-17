@@ -56,6 +56,7 @@
 
 /* C */
 #include <ctype.h>
+#include <math.h>
 #include <string.h>
 /* MEOS */
 #include <meos.h>
@@ -63,6 +64,9 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <meos_raster.h>
+#include <miscadmin.h>
+#include <utils/datetime.h>
+#include <stringbuffer.h>
 #include "geo/geo_funcs.h"
 #include "raster/raquet.h"
 #include "raster/raster_quadbin.h"
@@ -483,6 +487,255 @@ raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_out)
   pfree(wkb);
   *size_out = 2 * wkb_size + 1;
   return result;
+}
+
+/*****************************************************************************
+ * The formats of GDAL
+ *****************************************************************************/
+
+static char *raster_srs_text(int32_t srid);
+
+/**
+ * @brief Return the GDAL driver of a format that writes a copy of a raster
+ * into memory
+ * @details A format is written as PostGIS writes it, through the driver's
+ * copy of a dataset into a virtual file, so a driver that copies no dataset
+ * or writes to no virtual file cannot write a raster here
+ * @param[in] format Short name of the GDAL driver, as `GTiff` or `PNG`
+ * @errval NULL
+ */
+static GDALDriverH
+raster_gdal_writer(const char *format)
+{
+  rt_util_gdal_register_all(0);
+  GDALDriverH drv = GDALGetDriverByName(format);
+  if (! drv)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL has no driver of the format %s", format);
+    return NULL;
+  }
+  if (! GDALGetMetadataItem(drv, GDAL_DCAP_CREATECOPY, NULL) ||
+      ! GDALGetMetadataItem(drv, GDAL_DCAP_VIRTUALIO, NULL))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The GDAL driver of the format %s cannot write a raster into memory",
+      format);
+    return NULL;
+  }
+  return drv;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster written in a format of GDAL
+ * @details The raster is written as PostGIS's `ST_AsGDALRaster` writes it.
+ * Each call writes into a virtual file of its own, so that calls in several
+ * threads never write into one another's file
+ * @param[in] rast Raster
+ * @param[in] format Short name of the GDAL driver, as `GTiff`, `PNG` or
+ * `JPEG`
+ * @param[in] options Creation options of the driver, as pairs `KEY=VALUE`
+ * separated by spaces, a value holding a space written between double
+ * quotes, or NULL for none @nullable
+ * @param[in] srid Spatial reference system the file states, or 0 for the
+ * raster's own; the pixels are not reprojected
+ * @param[out] size_out Size of the result
+ * @errval NULL
+ * @csqlfn #Raster_as_gdal()
+ */
+uint8_t *
+raster_as_gdal(const Raster *rast, const char *format, const char *options,
+  int32_t srid, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(format, NULL);
+  VALIDATE_NOT_NULL(size_out, NULL);
+
+  GDALDriverH drv = raster_gdal_writer(format);
+  if (! drv)
+    return NULL;
+  if (srid == SRID_UNKNOWN)
+    srid = raster_srid(rast);
+  char *srs = NULL;
+  if (srid != SRID_UNKNOWN)
+  {
+    srs = raster_srs_text(srid);
+    if (! srs)
+      return NULL;
+  }
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    if (srs) pfree(srs);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  GDALDriverH src_drv = NULL;
+  int destroy_src_drv = 0;
+  GDALDatasetH src = rt_raster_to_gdal_mem(raster, srs, NULL, NULL, 0,
+    &src_drv, &destroy_src_drv);
+  raster_destroy(raster);
+  if (srs) pfree(srs);
+  if (! src)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not hand the raster to GDAL");
+    return NULL;
+  }
+
+  char **opts = options ? CSLTokenizeString2(options, " ",
+    CSLT_HONOURSTRINGS) : NULL;
+  /* The address of a local names the file: it is unique among the calls
+   * running at the same time, and the file is gone when the call returns */
+  int unique = 0;
+  char path[64];
+  snprintf(path, sizeof(path), "/vsimem/meos_raster_%p", (void *) &unique);
+  CPLErrorReset();
+  GDALDatasetH dst = GDALCreateCopy(drv, path, src, FALSE, opts, NULL, NULL);
+  CSLDestroy(opts);
+  GDALClose(src);
+  if (destroy_src_drv)
+    GDALDestroyDriver(src_drv);
+  if (! dst)
+  {
+    VSIUnlink(path);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL cannot write the raster in the format %s: %s", format,
+      CPLGetLastErrorMsg());
+    return NULL;
+  }
+  GDALClose(dst);
+
+  vsi_l_offset len = 0;
+  GByte *buf = VSIGetMemFileBuffer(path, &len, TRUE);
+  if (! buf)
+  {
+    VSIUnlink(path);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL wrote no bytes of the raster in the format %s", format);
+    return NULL;
+  }
+  uint8_t *result = palloc((size_t) len);
+  memcpy(result, buf, (size_t) len);
+  CPLFree(buf);
+  *size_out = (size_t) len;
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster written as a GeoTIFF
+ * @details The raster is written as PostGIS's `ST_AsTIFF` writes it
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the GTiff driver, as
+ * #raster_as_gdal() takes them, or NULL for none @nullable
+ * @param[in] srid Spatial reference system the file states, or 0 for the
+ * raster's own
+ * @param[out] size_out Size of the result
+ * @errval NULL
+ * @csqlfn #Raster_as_tiff()
+ */
+uint8_t *
+raster_as_tiff(const Raster *rast, const char *options, int32_t srid,
+  size_t *size_out)
+{
+  return raster_as_gdal(rast, "GTiff", options, srid, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster written as a PNG image
+ * @details The raster is written as PostGIS's `ST_AsPNG` writes it: the PNG
+ * driver takes one to four bands of 8 or 16 unsigned bits
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the PNG driver, as
+ * #raster_as_gdal() takes them, or NULL for none @nullable
+ * @param[out] size_out Size of the result
+ * @errval NULL
+ * @csqlfn #Raster_as_png()
+ */
+uint8_t *
+raster_as_png(const Raster *rast, const char *options, size_t *size_out)
+{
+  return raster_as_gdal(rast, "PNG", options, SRID_UNKNOWN, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster written as a JPEG image
+ * @details The raster is written as PostGIS's `ST_AsJPEG` writes it: the
+ * JPEG driver takes one or three bands of 8 unsigned bits
+ * @param[in] rast Raster
+ * @param[in] options Creation options of the JPEG driver, as
+ * #raster_as_gdal() takes them, or NULL for none @nullable
+ * @param[out] size_out Size of the result
+ * @errval NULL
+ * @csqlfn #Raster_as_jpeg()
+ */
+uint8_t *
+raster_as_jpeg(const Raster *rast, const char *options, size_t *size_out)
+{
+  return raster_as_gdal(rast, "JPEG", options, SRID_UNKNOWN, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster read from the bytes of a file in a format of GDAL
+ * @details The raster is read as PostGIS's `ST_FromGDALRaster` reads it, the
+ * format found by GDAL from the bytes. Each call reads from a virtual file of
+ * its own
+ * @param[in] data Bytes of the file
+ * @param[in] size Number of bytes
+ * @param[in] srid Spatial reference system of the result, or 0 for the one
+ * the file states
+ * @errval NULL
+ * @csqlfn #Raster_from_gdal()
+ */
+Raster *
+raster_from_gdal(const uint8_t *data, size_t size, int32_t srid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(data, NULL);
+
+  rt_util_gdal_register_all(0);
+  int unique = 0;
+  char path[64];
+  snprintf(path, sizeof(path), "/vsimem/meos_raster_%p", (void *) &unique);
+  /* GDAL reads the caller's bytes in place and takes no ownership of them */
+  VSILFILE *vf = VSIFileFromMemBuffer(path, (GByte *) (uintptr_t) data,
+    (vsi_l_offset) size, FALSE);
+  if (! vf)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL cannot read the bytes of the raster file");
+    return NULL;
+  }
+  VSIFCloseL(vf);
+  CPLErrorReset();
+  GDALDatasetH ds = GDALOpen(path, GA_ReadOnly);
+  if (! ds)
+  {
+    VSIUnlink(path);
+    /* GDAL's own message names the virtual file, whose name changes with
+     * every call, so it is not repeated */
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL reads no raster in the bytes given");
+    return NULL;
+  }
+  rt_raster raster = rt_raster_from_gdal_dataset(ds);
+  GDALClose(ds);
+  VSIUnlink(path);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read the raster GDAL opened");
+    return NULL;
+  }
+  if (srid != SRID_UNKNOWN)
+    rt_raster_set_srid(raster, srid);
+  return raster_serialize_destroy(raster);
 }
 
 /*****************************************************************************
@@ -1705,7 +1958,10 @@ GeomVal *
 raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
   int *count)
 {
-  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  VALIDATE_NOT_NULL(rast, NULL);
   *count = 0;
 
   /* The bands are read, so the subject is deserialized in full */
@@ -1849,8 +2105,11 @@ Pixel *
 raster_pixel_as_points(const Raster *rast, int band, bool exclude_nodata,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(rast, NULL);
   *count = 0;
   rt_raster raster;
   rt_band rtband = raster_read_band(rast, band, &raster);
@@ -1927,9 +2186,11 @@ double *
 raster_dump_values(const Raster *rast, int band, bool exclude_nodata,
   bool **nodata, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(nodata, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   *nodata = NULL;
   *count = 0;
   rt_raster raster;
@@ -3124,8 +3385,11 @@ ValueCount *
 raster_value_count(const Raster *rast, int band, bool exclude_nodata,
   const double *searchvalues, int nsearch, double roundto, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(rast, NULL);
   *count = 0;
   if (! ensure_finite(roundto))
     return NULL;
@@ -6367,6 +6631,364 @@ araster_value(const Temporal *traj, const Raster *rast, int band,
     return -1;
   int result = araster_value_sampler(traj, &ops, vspan);
   return raster_rtcore_release(&state, band) ? result : -1;
+}
+
+/*****************************************************************************
+ * CoverageJSON
+ *****************************************************************************/
+
+/**
+ * @brief Write into the buffer the spatial referencing of a CoverageJSON
+ * domain whose horizontal axes are `x` and `y`
+ * @details MEOS states a position as its longitude or easting first, whatever
+ * order the authority gives the axes, so EPSG:4326 is written as OGC CRS84,
+ * whose identifier states that order, and every other system by its EPSG
+ * identifier, its coordinates listed in the order the authority gives its
+ * axes. A domain in no reference system has no referencing CoverageJSON can
+ * state, and is refused
+ * @param[in,out] sb Buffer
+ * @param[in] srid Spatial reference system identifier
+ * @return True on success, false with an error otherwise
+ */
+static bool
+coveragejson_spatial_rs_sb(stringbuffer_t *sb, int32_t srid)
+{
+  if (srid == SRID_UNKNOWN)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A value in no spatial reference system has no CoverageJSON referencing");
+    return false;
+  }
+  if (srid == 4326)
+  {
+    stringbuffer_append(sb, "{\"coordinates\":[\"x\",\"y\"],\"system\":"
+      "{\"type\":\"GeographicCRS\","
+      "\"id\":\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"}}");
+    return true;
+  }
+  PJ_CONTEXT *ctx = meos_proj_get_context();
+  char code[MAX_SRS_LEN];
+  snprintf(code, MAX_SRS_LEN, "EPSG:%d", srid);
+  PJ *crs = proj_create(ctx, code);
+  if (! crs)
+  {
+    proj_errno_reset(NULL);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "PROJ cannot resolve the spatial reference system EPSG:%d", srid);
+    return false;
+  }
+  PJ_TYPE type = proj_get_type(crs);
+  proj_destroy(crs);
+  bool geographic = (type == PJ_TYPE_GEOGRAPHIC_2D_CRS ||
+    type == PJ_TYPE_GEOGRAPHIC_3D_CRS);
+  stringbuffer_aprintf(sb, "{\"coordinates\":[%s],\"system\":"
+    "{\"type\":\"%s\",\"id\":\"http://www.opengis.net/def/crs/EPSG/0/%d\"}}",
+    raster_srid_north_first(srid) ? "\"y\",\"x\"" : "\"x\",\"y\"",
+    geographic ? "GeographicCRS" : "ProjectedCRS", srid);
+  return true;
+}
+
+/**
+ * @brief Write into the buffer a regular axis of a CoverageJSON grid, from
+ * the centre of its first cell to the centre of its last
+ */
+static void
+coveragejson_axis_sb(stringbuffer_t *sb, const char *name, double start,
+  double stop, int num)
+{
+  stringbuffer_aprintf(sb, "\"%s\":{\"start\":", name);
+  stringbuffer_append_double(sb, start, OUT_DEFAULT_DECIMAL_DIGITS);
+  stringbuffer_append(sb, ",\"stop\":");
+  stringbuffer_append_double(sb, stop, OUT_DEFAULT_DECIMAL_DIGITS);
+  stringbuffer_aprintf(sb, ",\"num\":%d}", num);
+}
+
+/**
+ * @brief Write into the buffer the start of a CoverageJSON grid coverage:
+ * its domain, the parameters of its bands and the opening of its ranges
+ * @param[in,out] sb Buffer
+ * @param[in] gt Geotransform of the grid, with no skew
+ * @param[in] width,height Number of columns and rows
+ * @param[in] srid Spatial reference system of the grid
+ * @param[in] nbands Number of bands
+ * @return True on success, false with an error otherwise
+ */
+static bool
+coveragejson_grid_start_sb(stringbuffer_t *sb, const double *gt, int width,
+  int height, int32_t srid, int nbands)
+{
+  stringbuffer_append(sb, "{\"type\":\"Coverage\",\"domain\":{\"type\":"
+    "\"Domain\",\"domainType\":\"Grid\",\"axes\":{");
+  coveragejson_axis_sb(sb, "x", gt[0] + gt[1] / 2.0,
+    gt[0] + ((double) width - 0.5) * gt[1], width);
+  stringbuffer_append_char(sb, ',');
+  coveragejson_axis_sb(sb, "y", gt[3] + gt[5] / 2.0,
+    gt[3] + ((double) height - 0.5) * gt[5], height);
+  stringbuffer_append(sb, "},\"referencing\":[");
+  if (! coveragejson_spatial_rs_sb(sb, srid))
+    return false;
+  stringbuffer_append(sb, "]},\"parameters\":{");
+  for (int b = 1; b <= nbands; b++)
+    stringbuffer_aprintf(sb, "%s\"band%d\":{\"type\":\"Parameter\","
+      "\"observedProperty\":{\"label\":{\"en\":\"Band %d\"}}}",
+      b > 1 ? "," : "", b, b);
+  stringbuffer_append(sb, "},\"ranges\":{");
+  return true;
+}
+
+/**
+ * @brief Write into the buffer the opening of the range of one band of a
+ * CoverageJSON grid coverage, up to its first value
+ */
+static void
+coveragejson_range_start_sb(stringbuffer_t *sb, int band, bool integer,
+  int width, int height)
+{
+  stringbuffer_aprintf(sb, "%s\"band%d\":{\"type\":\"NdArray\","
+    "\"dataType\":\"%s\",\"axisNames\":[\"y\",\"x\"],\"shape\":[%d,%d],"
+    "\"values\":[", band > 1 ? "," : "", band, integer ? "integer" : "float",
+    height, width);
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a raster as a CoverageJSON grid coverage
+ * @details Each band is a parameter, `band1`, `band2` ..., whose range lists
+ * the values of the band row by row from the top row, a nodata pixel written
+ * `null`. The axes `x` and `y` run from the centre of the first pixel to the
+ * centre of the last, so a raster with a skew, whose pixels lie on no such
+ * axes, is refused, as is a raster in no spatial reference system
+ * @param[in] rast Raster
+ * @errval NULL
+ * @csqlfn #Raster_as_coveragejson()
+ */
+char *
+raster_as_coveragejson(const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  double gt[6];
+  rt_raster_get_geotransform_matrix(raster, gt);
+  if (gt[2] != 0.0 || gt[4] != 0.0)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A raster with a skew lies on no grid of CoverageJSON");
+    return NULL;
+  }
+  int width = rt_raster_get_width(raster);
+  int height = rt_raster_get_height(raster);
+  int nbands = rt_raster_get_num_bands(raster);
+  stringbuffer_t *sb = stringbuffer_create();
+  bool ok = coveragejson_grid_start_sb(sb, gt, width, height,
+    rt_raster_get_srid(raster), nbands);
+  for (int b = 1; ok && b <= nbands; b++)
+  {
+    rt_band band = rt_raster_get_band(raster, b - 1);
+    rt_pixtype pt = rt_band_get_pixtype(band);
+    coveragejson_range_start_sb(sb, b, pt != PT_32BF && pt != PT_64BF,
+      width, height);
+    for (int y = 0; ok && y < height; y++)
+    {
+      for (int x = 0; x < width; x++)
+      {
+        double value;
+        int nodata;
+        if (rt_band_get_pixel(band, x, y, &value, &nodata) != ES_NONE)
+        {
+          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            "Could not read the pixel (%d, %d) of band %d", x, y, b);
+          ok = false;
+          break;
+        }
+        if (x > 0 || y > 0)
+          stringbuffer_append_char(sb, ',');
+        if (nodata)
+          stringbuffer_append(sb, "null");
+        else
+          stringbuffer_append_double(sb, value, OUT_DEFAULT_DECIMAL_DIGITS);
+      }
+    }
+    stringbuffer_append(sb, "]}");
+  }
+  raster_destroy(raster);
+  char *result = NULL;
+  if (ok)
+  {
+    stringbuffer_append(sb, "}}");
+    result = stringbuffer_getstringcopy(sb);
+  }
+  stringbuffer_destroy(sb);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return a Raquet tile as a CoverageJSON grid coverage
+ * @details The pixels of a tile lie on a regular grid of Web Mercator,
+ * EPSG:3857, which is the system the coverage states: the axes `x` and `y` run
+ * from the centre of the first pixel to the centre of the last over the
+ * Mercator bounds of the tile's QUADBIN cell. The band is the parameter
+ * `band1`, a nodata pixel written `null`
+ * @param[in] rq Raquet tile
+ * @errval NULL
+ * @csqlfn #Raquet_as_coveragejson()
+ */
+char *
+raquet_as_coveragejson(const Raquet *rq)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, NULL);
+
+  /* The Mercator bounds of the cell, on the sphere of Web Mercator */
+  const double R = 6378137.0;
+  double lonmin, latmin, lonmax, latmax;
+  raster_quadbin_bounds(rq->quadbin, &lonmin, &latmin, &lonmax, &latmax);
+  double xmin = R * lonmin * M_PI / 180.0;
+  double xmax = R * lonmax * M_PI / 180.0;
+  double ymin = R * log(tan(M_PI / 4.0 + latmin * M_PI / 360.0));
+  double ymax = R * log(tan(M_PI / 4.0 + latmax * M_PI / 360.0));
+  int width = rq->width, height = rq->height;
+  const double gt[6] = { xmin, (xmax - xmin) / width, 0.0, ymax, 0.0,
+    (ymin - ymax) / height };
+
+  MeosPixType pt = (MeosPixType) rq->pixtype;
+  bool integer = pt != MEOS_PT_FLOAT16 && pt != MEOS_PT_FLOAT32 &&
+    pt != MEOS_PT_FLOAT64;
+  stringbuffer_t *sb = stringbuffer_create();
+  bool ok = coveragejson_grid_start_sb(sb, gt, width, height, 3857, 1);
+  if (ok)
+    coveragejson_range_start_sb(sb, 1, integer, width, height);
+  for (size_t i = 0; ok && i < (size_t) width * height; i++)
+  {
+    double value;
+    if (! raquet_pixel_value(rq->pixels, i, pt, &value))
+    {
+      ok = false;
+      break;
+    }
+    if (i > 0)
+      stringbuffer_append_char(sb, ',');
+    if (rq->has_nodata && value == rq->nodata)
+      stringbuffer_append(sb, "null");
+    else
+      stringbuffer_append_double(sb, value, OUT_DEFAULT_DECIMAL_DIGITS);
+  }
+  char *result = NULL;
+  if (ok)
+  {
+    stringbuffer_append(sb, "]}}}");
+    result = stringbuffer_getstringcopy(sb);
+  }
+  stringbuffer_destroy(sb);
+  return result;
+}
+
+/**
+ * @brief Write into the buffer a timestamp as CoverageJSON writes a time,
+ * an RFC 3339 date-time, as #datetimes_as_mfjson_sb writes it for MF-JSON
+ */
+static bool
+coveragejson_time_sb(stringbuffer_t *sb, TimestampTz t)
+{
+  struct pg_tm tt;
+  fsec_t fsec;
+  int tz;
+  const char *tzn = NULL;
+  char buf[MAXDATELEN + 1];
+  if (TIMESTAMP_NOT_FINITE(t) ||
+      timestamp2tm(t, &tz, &tt, &fsec, &tzn, NULL) != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "CoverageJSON states no time for an infinite or out of range timestamp");
+    return false;
+  }
+  EncodeDateTime(&tt, fsec, true, tz, tzn, USE_XSD_DATES, buf);
+  stringbuffer_aprintf(sb, "\"%s\"", buf);
+  return true;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return the values a trajectory reads as a CoverageJSON trajectory
+ * coverage
+ * @details The domain is a CoverageJSON `Trajectory`, one point per instant
+ * of the values, its time the instant and its position that of the
+ * trajectory at the instant, so the values #raster_value reads, whose
+ * instants include the exact crossings of the pixels, are written where they
+ * are read. The values are the parameter `value`
+ * @param[in] temp Temporal float, the values read along @p traj
+ * @param[in] traj Temporal geometry point the values are read along
+ * @errval NULL
+ * @csqlfn #Tfloat_as_coveragejson()
+ */
+char *
+tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
+
+  int count;
+  const TInstant **insts = temporal_insts_p(temp, &count);
+  stringbuffer_t *sb = stringbuffer_create();
+  stringbuffer_append(sb, "{\"type\":\"Coverage\",\"domain\":{\"type\":"
+    "\"Domain\",\"domainType\":\"Trajectory\",\"axes\":{\"composite\":"
+    "{\"dataType\":\"tuple\",\"coordinates\":[\"t\",\"x\",\"y\"],"
+    "\"values\":[");
+  bool ok = true;
+  for (int i = 0; ok && i < count; i++)
+  {
+    GSERIALIZED *gs;
+    if (! tgeo_value_at_timestamptz(traj, insts[i]->t, false, &gs))
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The trajectory has no position at an instant of the values");
+      ok = false;
+      break;
+    }
+    const POINT2D *p = GSERIALIZED_POINT2D_P(gs);
+    stringbuffer_append(sb, i > 0 ? ",[" : "[");
+    ok = coveragejson_time_sb(sb, insts[i]->t);
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, p->x, OUT_DEFAULT_DECIMAL_DIGITS);
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, p->y, OUT_DEFAULT_DECIMAL_DIGITS);
+    stringbuffer_append_char(sb, ']');
+    pfree(gs);
+  }
+  if (ok)
+  {
+    stringbuffer_append(sb, "]}},\"referencing\":[{\"coordinates\":[\"t\"],"
+      "\"system\":{\"type\":\"TemporalRS\",\"calendar\":\"Gregorian\"}},");
+    ok = coveragejson_spatial_rs_sb(sb, tspatial_srid(traj));
+  }
+  if (ok)
+  {
+    stringbuffer_aprintf(sb, "]},\"parameters\":{\"value\":{\"type\":"
+      "\"Parameter\",\"observedProperty\":{\"label\":{\"en\":\"Value\"}}}},"
+      "\"ranges\":{\"value\":{\"type\":\"NdArray\",\"dataType\":\"float\","
+      "\"axisNames\":[\"composite\"],\"shape\":[%d],\"values\":[", count);
+    for (int i = 0; i < count; i++)
+    {
+      if (i > 0)
+        stringbuffer_append_char(sb, ',');
+      stringbuffer_append_double(sb,
+        DatumGetFloat8(tinstant_value_p(insts[i])), OUT_DEFAULT_DECIMAL_DIGITS);
+    }
+    stringbuffer_append(sb, "]}}}");
+  }
+  pfree(insts);
+  char *result = ok ? stringbuffer_getstringcopy(sb) : NULL;
+  stringbuffer_destroy(sb);
+  return result;
 }
 
 /*****************************************************************************/

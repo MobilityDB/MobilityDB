@@ -197,6 +197,33 @@ Tpointcloud_merge_each_n_tpcboxes(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Tpointcloud_merge_query_tpcboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpointcloud_merge_query_tpcboxes);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return an array of boxes obtained by merging the boxes of
+ * the instants or segments of a temporal point cloud value into those a query of the widths of
+ * a query box is expected to read least
+ * @details The widths of the query box are the extents of the query, its
+ * position is not read, and a dimension it lacks restricts no query
+ * @sqlfn mergeQueryTpcboxes()
+ */
+Datum
+Tpointcloud_merge_query_tpcboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TPCBox *query = PG_GETARG_TPCBOX_P(1);
+  int count;
+  TPCBox *boxes = tpointcloud_merge_query_tpcboxes(temp, query, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
+  ArrayType *result = tpcboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+
 /* GENERATED-BOXOPS-BEGIN tpcbox — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
  * edit the template + manifest.d/boxtypes.yaml and re-run. */
 /*****************************************************************************
