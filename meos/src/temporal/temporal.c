@@ -3535,8 +3535,11 @@ temporal_insts_p(const Temporal *temp, int *count)
 TInstant **
 temporal_instants(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(temp, NULL);
 
   const GSERIALIZED *geom;
   Temporal *work = temporal_strip_geom(temp, &geom);
@@ -3679,8 +3682,11 @@ temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result)
 TimestampTz *
 temporal_timestamps(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -3704,8 +3710,11 @@ temporal_timestamps(const Temporal *temp, int *count)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TBOOL(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_TBOOL(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)
@@ -3756,8 +3765,11 @@ tbool_unnest(const Temporal *temp, bool **values, int *count)
 int *
 tint_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_TINT(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   int *result = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
@@ -3808,8 +3820,11 @@ tint_unnest(const Temporal *temp, int **values, int *count)
 int64 *
 tbigint_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TBIGINT(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   int64 *result = palloc(sizeof(int64) * *count);
   for (int i = 0; i < *count; i++)
@@ -3860,8 +3875,11 @@ tbigint_unnest(const Temporal *temp, int64 **values, int *count)
 double *
 tfloat_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_TFLOAT(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   double *result = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
@@ -3912,8 +3930,11 @@ tfloat_unnest(const Temporal *temp, double **values, int *count)
 text **
 ttext_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_TTEXT(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   text **result = palloc(sizeof(text *) * *count);
   for (int i = 0; i < *count; i++)

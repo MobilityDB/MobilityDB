@@ -5359,8 +5359,11 @@ geo_points(const GSERIALIZED *gs)
 GSERIALIZED **
 geo_pointarr(const GSERIALIZED *gs, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(gs, NULL);
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   LWMPOINT *res = lwmpoint_from_lwgeom(lwgeom);

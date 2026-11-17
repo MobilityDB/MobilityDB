@@ -1032,6 +1032,111 @@ SELECT pcpointFromHexWKB('020100000064000000C80000002C010000');
 ERROR:  Could not parse pcpoint value: invalid endian flag 2
 SELECT pcpointFromHexWKB('010100000064000000C8000000');
 ERROR:  Could not parse pcpoint value: 8 bytes of data where the schema 1 states 12
+-- asBinary and asHexWKB write the WKB of pgPointCloud in the byte order the
+-- endian argument states, the big-endian one being the one pgPointCloud
+-- writes on a big-endian machine, and pcpointFromBinary reads either one
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR');
+              ashexwkb              
+------------------------------------
+ 000000000100000064000000C80000012C
+(1 row)
+
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'NDR');
+              ashexwkb              
+------------------------------------
+ 010100000064000000C80000002C010000
+(1 row)
+
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR') =
+  '000000000100000064000000C80000012C';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asBinary(pcpoint(1, 1.0, 2.0, 3.0));
+               asbinary               
+--------------------------------------
+ \x010100000064000000c80000002c010000
+(1 row)
+
+SELECT asBinary(pcpoint(1, 1.0, 2.0, 3.0), 'XDR');
+               asbinary               
+--------------------------------------
+ \x000000000100000064000000c80000012c
+(1 row)
+
+SELECT pcpointFromBinary(asBinary(pcpoint(1, 1.0, 2.0, 3.0))) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pcpointFromBinary(asBinary(pcpoint(1, 1.0, 2.0, 3.0), 'XDR')) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pcpointFromHexWKB(asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR')) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT getZ(pcpointFromBinary('\x000000000100000064000000c80000012c'));
+ getz 
+------
+    3
+(1 row)
+
+-- A set and a temporal value carry, after its size, the WKB of each point in
+-- their own byte order
+SELECT asHexWKB(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0)]), 'XDR');
+                          ashexwkb                          
+------------------------------------------------------------
+ 00004B110000000100000011000000000100000064000000C80000012C
+(1 row)
+
+SELECT position('000000000100000064000000C80000012C' IN
+  asHexWKB(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0)]), 'XDR')) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pcpointsetFromBinary(asBinary(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0)]), 'XDR')) =
+  set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT position('000000000100000064000000C80000012C' IN
+  asHexWKB(tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), timestamptz '2024-01-01'),
+  'XDR')) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpointFromBinary(asBinary(tpcpoint(pcpoint(1, 1.0, 2.0, 3.0),
+  timestamptz '2024-01-01'), 'XDR')) =
+  tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), timestamptz '2024-01-01');
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT pcpointFromBinary('\x0101000000'::bytea);
+ERROR:  Could not parse pcpoint value: 0 bytes of data where the schema 1 states 12
+SELECT pcpointFromBinary('\x020100000064000000c80000002c010000'::bytea);
+ERROR:  Could not parse pcpoint value: invalid endian flag 2
 -------------------------------------------------------------------------------
 -- A value whose pcid names no schema
 -- The data of a pcpoint is laid out by the schema its pcid resolves to, so a

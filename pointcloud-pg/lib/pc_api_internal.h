@@ -258,6 +258,8 @@ PCBYTES pc_bytes_sigbits_decode(const PCBYTES pcb);
 PCBYTES pc_bytes_zlib_encode(const PCBYTES pcb);
 /** De-compress bytes using zlib */
 PCBYTES pc_bytes_zlib_decode(const PCBYTES pcb);
+/** Flip the byte order of the values of bytes, keeping their compression */
+PCBYTES pc_bytes_flip_endian(PCBYTES pcb);
 
 /** How many runs are there in a value array? */
 uint32_t pc_bytes_run_count(const PCBYTES *pcb);

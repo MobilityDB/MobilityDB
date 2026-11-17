@@ -4274,6 +4274,7 @@ SELECT asText(jsonpathFromText('lax $.a.**{1 to last}'));
 -- Extracted from json/sql/454_tjsonb_jsonfuncs.sql
 -------------------------------------------------------------------------------
 
+SELECT asText(tfloat(tjsonb '[{"a":0.1}@2001-01-01, {"a":"1e-5"}@2001-01-02, {"a":1234.56789012}@2001-01-03]', text 'a', 'step'), 6);
 SELECT asText(tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\", \"b\":2.5}"@2001-01-01', text 'pos'));
 SELECT asText(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(2 2)"}@2001-01-03]', text 'pos'));
 SELECT asText(valueAtTimestamp(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(2 2)"}@2001-01-03]', text 'pos'), '2001-01-02'));
@@ -4695,6 +4696,30 @@ SELECT asHexWKB(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])) =
   PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])::text;
 SELECT pcpointFromHexWKB(asHexWKB(pcpoint(1, 1.0, 2.0, 3.0))) =
   pcpoint(1, 1.0, 2.0, 3.0);
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR');
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'NDR');
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR') =
+  '000000000100000064000000C80000012C';
+SELECT asBinary(pcpoint(1, 1.0, 2.0, 3.0));
+SELECT asBinary(pcpoint(1, 1.0, 2.0, 3.0), 'XDR');
+SELECT pcpointFromBinary(asBinary(pcpoint(1, 1.0, 2.0, 3.0))) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+SELECT pcpointFromBinary(asBinary(pcpoint(1, 1.0, 2.0, 3.0), 'XDR')) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+SELECT pcpointFromHexWKB(asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR')) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+SELECT asHexWKB(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0)]), 'XDR');
+SELECT position('000000000100000064000000C80000012C' IN
+  asHexWKB(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0)]), 'XDR')) > 0;
+SELECT pcpointsetFromBinary(asBinary(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0)]), 'XDR')) =
+  set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)]);
+SELECT position('000000000100000064000000C80000012C' IN
+  asHexWKB(tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), timestamptz '2024-01-01'),
+  'XDR')) > 0;
+SELECT tpcpointFromBinary(asBinary(tpcpoint(pcpoint(1, 1.0, 2.0, 3.0),
+  timestamptz '2024-01-01'), 'XDR')) =
+  tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), timestamptz '2024-01-01');
 SELECT tpcpoint '0163000000000000000000F03F00000000000000400000000000000840@2024-01-01';
 SELECT asEWKT((:inst1)::tgeompoint, 6);
 SELECT asEWKT((:inst1)::tgeogpoint, 6);
@@ -4842,6 +4867,48 @@ SELECT tpcpatch '01010000000200000002000000640000006400000064000000C8000000C8000
 SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
 SELECT asHexWKB(:patch1) = (:patch1)::text;
 SELECT pcpatchFromHexWKB(asHexWKB(:patch1)) = :patch1;
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 'XDR');
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 'XDR') =
+  '00000000010000000000000002000000640000006400000064000000C8000000C8000000C8';
+SELECT asBinary(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 'XDR');
+SELECT pcpatchFromBinary(asBinary(:patch1)) = :patch1;
+SELECT pcpatchFromBinary(asBinary(:patch1, 'XDR')) = :patch1;
+SELECT pcpatchFromHexWKB(asHexWKB(:patch1, 'XDR')) = :patch1;
+SELECT pcpatchsetFromBinary(asBinary(set(ARRAY[:patch1]), 'XDR')) =
+  set(ARRAY[:patch1]);
+SELECT tpcpatchFromBinary(asBinary(tpcpatch(:patch1, timestamptz '2024-01-01'), 'XDR')) =
+  tpcpatch(:patch1, timestamptz '2024-01-01');
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
+  (95, 4326, 'dimensional');
+INSERT INTO pointcloud_dimensions
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset)
+  VALUES (95, 1, 'X', 'int32_t', 0.01, 0), (95, 2, 'Y', 'int32_t', 0.01, 0),
+    (95, 3, 'Z', 'double', 1, 0), (95, 4, 'Intensity', 'uint16_t', 1, 0);
+WITH RECURSIVE p AS (
+  SELECT pcpatch(95, ARRAY(SELECT v FROM generate_series(1, 32) AS i,
+    LATERAL (VALUES (1, 1000 + i * 37.13), (2, 1 + i * 0.01),
+      (3, i * i * 1.234567), (4, 7)) AS d(k, v) ORDER BY i, k)::float[]) AS pa),
+w AS (SELECT pa, asBinary(pa, 'NDR') AS ndr, asBinary(pa, 'XDR') AS xdr
+  FROM p),
+-- The compression byte of each dimension, which follows the header of 13
+-- bytes and the bytes of the dimensions before it
+d(n, off, comp) AS (
+  SELECT 1, 13, get_byte(ndr, 13) FROM w
+  UNION ALL
+  SELECT n + 1, off + 5 + get_byte(ndr, off + 1) + get_byte(ndr, off + 2) * 256,
+    get_byte(ndr, off + 5 + get_byte(ndr, off + 1) + get_byte(ndr, off + 2) * 256)
+  FROM d, w WHERE n < 4)
+SELECT (SELECT array_agg(comp ORDER BY n) FROM d) AS compressions,
+  get_byte(xdr, 0) AS xdr_endian, ndr <> xdr AS differ,
+  pcpatchFromBinary(xdr) = pa AS xdr_roundtrips,
+  pcpatchFromBinary(ndr) = pa AS ndr_roundtrips,
+  asBinary(pcpatchFromBinary(xdr), 'NDR') = ndr AS same_bytes,
+  pcpatchsetFromBinary(asBinary(set(ARRAY[pa]), 'XDR')) = set(ARRAY[pa])
+    AS set_roundtrips,
+  tpcpatchFromHexWKB(asHexWKB(tpcpatch(pa, timestamptz '2024-01-01'), 'XDR')) =
+    tpcpatch(pa, timestamptz '2024-01-01') AS temporal_roundtrips
+FROM w;
+DELETE FROM pointcloud_schemas WHERE pcid = 95;
 SELECT tpcpatch '01630000000000000002000000000000000000F03F000000000000F03F000000000000F03F000000000000004000000000000000400000000000000040@2024-01-01';
 -------------------------------------------------------------------------------
 -- Extracted from pointcloud/sql/430_tpcpatch_tbl.sql

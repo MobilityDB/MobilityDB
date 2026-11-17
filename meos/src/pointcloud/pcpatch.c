@@ -54,6 +54,7 @@
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
 #include "temporal/temporal.h"
+#include "temporal/type_inout.h"
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/meos_schema_hook.h"
 #include "pointcloud/pgsql_compat.h"
@@ -342,6 +343,112 @@ pcpatch_hex_out(const Pcpatch *pa, int maxdd, size_t *size_out)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
+  size_t size;
+  uint8_t *wkb = pcpatch_to_wkb_bytes(pa, 0, &size);
+  if (! wkb)
+    return NULL;
+  char *result = palloc(2 * size + 1);
+  for (size_t i = 0; i < size; i++)
+    deparse_hex(wkb[i], result + 2 * i);
+  result[2 * size] = '\0';
+  *size_out = 2 * size + 1;
+  pfree(wkb);
+  return result;
+}
+
+/**
+ * @brief Return the pgPointCloud Well-Known Binary (WKB) of a patch in the
+ * byte order of the machine flipped to the other byte order
+ * @details The endian flag, the pcid, the compression and the number of
+ * points are flipped, then the data: each value of an uncompressed patch, and
+ * the size and the bytes of each dimension of a dimensional one, whose bytes
+ * keep their compression, a zlib dimension being compressed again
+ * @param[in] wkb WKB in the byte order of the machine
+ * @param[in] size Size of the WKB
+ * @param[in] schema Schema of the pcid
+ * @param[out] size_out Size of the result
+ */
+static uint8_t *
+pcpatch_wkb_flip(const uint8_t *wkb, size_t size, const PCSCHEMA *schema,
+  size_t *size_out)
+{
+  const size_t hdrsz = 1 + 3 * sizeof(uint32_t);
+  uint32_t compression, npoints;
+  memcpy(&compression, wkb + 1 + sizeof(uint32_t), sizeof(uint32_t));
+  memcpy(&npoints, wkb + 1 + 2 * sizeof(uint32_t), sizeof(uint32_t));
+  uint8_t *result;
+  if (compression == PC_NONE)
+  {
+    result = palloc(size);
+    memcpy(result, wkb, hdrsz);
+    uint8_t *data = uncompressed_bytes_flip_endian(wkb + hdrsz, schema,
+      npoints);
+    memcpy(result + hdrsz, data, size - hdrsz);
+    pcfree(data);
+    *size_out = size;
+  }
+  else if (compression == PC_DIMENSIONAL)
+  {
+    /* Flip the bytes of each dimension, whose size may change */
+    PCBYTES *dims = palloc(sizeof(PCBYTES) * schema->ndims);
+    size_t off = hdrsz, total = hdrsz;
+    for (uint32_t i = 0; i < schema->ndims; i++)
+    {
+      uint32_t dimsize;
+      memcpy(&dimsize, wkb + off + 1, sizeof(uint32_t));
+      dims[i].compression = wkb[off];
+      dims[i].size = dimsize;
+      dims[i].npoints = npoints;
+      dims[i].interpretation = schema->dims[i]->interpretation;
+      dims[i].readonly = PC_FALSE;
+      dims[i].bytes = pcalloc(dimsize);
+      memcpy(dims[i].bytes, wkb + off + 1 + sizeof(uint32_t), dimsize);
+      dims[i] = pc_bytes_flip_endian(dims[i]);
+      off += 1 + sizeof(uint32_t) + dimsize;
+      total += 1 + sizeof(uint32_t) + dims[i].size;
+    }
+    result = palloc(total);
+    memcpy(result, wkb, hdrsz);
+    uint8_t *ptr = result + hdrsz;
+    for (uint32_t i = 0; i < schema->ndims; i++)
+    {
+      *ptr = (uint8_t) dims[i].compression;
+      int32_t dimsize = int32_flip_endian((int32_t) dims[i].size);
+      memcpy(ptr + 1, &dimsize, sizeof(int32_t));
+      memcpy(ptr + 1 + sizeof(int32_t), dims[i].bytes, dims[i].size);
+      ptr += 1 + sizeof(int32_t) + dims[i].size;
+      pc_bytes_free(dims[i]);
+    }
+    pfree(dims);
+    *size_out = total;
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Cannot write a pcpatch of compression %u in the other byte order",
+      compression);
+    return NULL;
+  }
+  /* Endian flag, pcid, compression and number of points */
+  result[0] = wkb[0] ? 0 : 1;
+  for (int i = 0; i < 3; i++)
+    pc_wkb_int32_flip(result + 1 + i * sizeof(uint32_t));
+  return result;
+}
+
+/**
+ * @brief Return the pgPointCloud Well-Known Binary (WKB) representation of a
+ * pcpatch in the byte order the variant states
+ * @details The WKB is the one pgPointCloud's @c pc_patch_to_wkb writes in the
+ * byte order of the machine, in the compression of the patch; the other byte
+ * order is written by #pcpatch_wkb_flip
+ * @param[in] pa Patch
+ * @param[in] variant Output variant, of which only the byte order is read
+ * @param[out] size_out Size of the result
+ */
+uint8_t *
+pcpatch_to_wkb_bytes(const Pcpatch *pa, uint8_t variant, size_t *size_out)
+{
   uint32_t pcid = pcpatch_get_pcid(pa);
   const PCSCHEMA *schema = meos_pc_schema(pcid);
   if (! schema)
@@ -359,18 +466,40 @@ pcpatch_hex_out(const Pcpatch *pa, int maxdd, size_t *size_out)
   pc_patch_free(patch);
   if (! wkb)
     return NULL;
-  char *result = palloc(2 * size + 1);
-  for (size_t i = 0; i < size; i++)
-    deparse_hex(wkb[i], result + 2 * i);
-  result[2 * size] = '\0';
-  *size_out = 2 * size + 1;
+  uint8_t *result;
+  if (wkb[0] == pc_wkb_endian(variant))
+  {
+    result = palloc(size);
+    memcpy(result, wkb, size);
+  }
+  else
+    result = pcpatch_wkb_flip(wkb, size, schema, &size);
   pcfree(wkb);
+  if (result)
+    *size_out = size;
   return result;
 }
 
 /**
  * @ingroup meos_pointcloud_base_inout
- * @brief Return a pcpatch from its hex-WKB representation
+ * @brief Return a pcpatch from its Well-Known Binary (WKB) representation
+ * @details The WKB is the one of pgPointCloud, in either byte order
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #Pcpatch_from_wkb()
+ */
+Pcpatch *
+pcpatch_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(wkb, NULL);
+  return pcpatch_from_wkb_bytes(wkb, size);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_inout
+ * @brief Return a pcpatch from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Pcpatch_from_hexwkb()
  */
@@ -382,18 +511,41 @@ pcpatch_from_hexwkb(const char *hexwkb)
 
 /**
  * @ingroup meos_pointcloud_base_inout
- * @brief Return the hex-WKB representation of a pcpatch
+ * @brief Return the Well-Known Binary (WKB) representation of a pcpatch
+ * @details The WKB is the one of pgPointCloud, in the byte order the variant
+ * states and the compression of the patch
  * @param[in] pa Patch
- * @param[out] size_out Size of the result, the terminating null character
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Pcpatch_as_wkb()
+ */
+uint8_t *
+pcpatch_as_wkb(const Pcpatch *pa, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(pa), T_PCPATCH, variant, size_out);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a pcpatch
+ * @details The WKB is the one of pgPointCloud, in the byte order the variant
+ * states and the compression of the patch
+ * @param[in] pa Patch
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output, the terminating null character
  * included
  * @csqlfn #Pcpatch_as_hexwkb()
  */
 char *
-pcpatch_as_hexwkb(const Pcpatch *pa, size_t *size_out)
+pcpatch_as_hexwkb(const Pcpatch *pa, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  return pcpatch_hex_out(pa, 0, size_out);
+  VALIDATE_NOT_NULL(pa, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(pa), T_PCPATCH,
+    variant | (uint8_t) WKB_HEX, size_out);
 }
 
 /*****************************************************************************
@@ -669,8 +821,11 @@ pcpatch_point_n(const Pcpatch *pa, int n)
 Pcpoint **
 pcpatch_points(const Pcpatch *pa, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pa, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(pa, NULL);
   const PCSCHEMA *schema = meos_pc_schema(pa->pcid);
   if (! schema)
   {

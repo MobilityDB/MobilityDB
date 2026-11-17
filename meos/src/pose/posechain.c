@@ -840,8 +840,11 @@ posechain_pose_n(const PoseChain *pc, int n)
 Pose **
 posechain_poses(const PoseChain *pc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pc, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(pc, NULL);
   Pose **result = palloc(sizeof(Pose *) * pc->count);
   for (int i = 0; i < pc->count; i++)
     result[i] = posechain_link_pose(pc, i, i == 0);

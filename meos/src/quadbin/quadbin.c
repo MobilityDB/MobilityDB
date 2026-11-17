@@ -452,8 +452,10 @@ quadbin_cell_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
 int *
 quadbin_cell_to_tile(Quadbin cell, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   uint32_t x, y, z;
   quadbin_cell_tile(cell, &x, &y, &z);
   int *result = palloc(sizeof(int) * 3);
@@ -558,8 +560,10 @@ Quadbin *
 quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
   int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
 
   uint32_t resolution = (cell >> 52) & 0x1F;
   if (children_resolution > QUADBIN_MAX_RESOLUTION ||
@@ -642,8 +646,10 @@ quadbin_cell_sibling(Quadbin cell, const char *direction)
 Quadbin *
 quadbin_k_ring(Quadbin cell, int k, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
 
   uint32_t x, y, z;
   quadbin_cell_tile(cell, &x, &y, &z);

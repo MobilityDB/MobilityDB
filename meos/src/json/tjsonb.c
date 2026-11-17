@@ -371,8 +371,11 @@ tjsonb_value_n(const Temporal *temp, int n, Jsonb **result)
 Jsonb **
 tjsonb_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TJSONB(temp, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   Jsonb **result = palloc(sizeof(Jsonb *) * *count);
   for (int i = 0; i < *count; i++)

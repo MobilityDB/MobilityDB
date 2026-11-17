@@ -80,6 +80,14 @@
     "^tpcbox_from_hexwkb$": {
       "char *": "tpcbox_hexwkb1"
     },
+    "^pcpoint_from_wkb$": {
+      "uint8_t *": "pcpoint_wkb1",
+      "size_t": "pcpoint_wkb1_size"
+    },
+    "^pcpatch_from_wkb$": {
+      "uint8_t *": "pcpatch_wkb1",
+      "size_t": "pcpatch_wkb1_size"
+    },
     "^tpcpoint_in$|^tpcpointseq_in$": {
       "char *": "\"[0101000000640000006400000064000000@2024-01-01, 0101000000C8000000C8000000C8000000@2024-01-03]\""
     },
@@ -159,6 +167,10 @@
     "  size_t tpcbox_wkb1_size = 0;",
     "  uint8_t *tpcbox_wkb1 = tpcbox_as_wkb(tpcbox1, 0, &tpcbox_wkb1_size);",
     "  char *tpcbox_hexwkb1 = tpcbox_as_hexwkb(tpcbox1, 0, &size_out);",
+    "  size_t pcpoint_wkb1_size = 0;",
+    "  uint8_t *pcpoint_wkb1 = pcpoint_as_wkb(pcpoint1, 0, &pcpoint_wkb1_size);",
+    "  size_t pcpatch_wkb1_size = 0;",
+    "  uint8_t *pcpatch_wkb1 = pcpatch_as_wkb(pcpatch1, 0, &pcpatch_wkb1_size);",
     "  Temporal *tpcpoint1 = tpcpoint_in(\"[0101000000640000006400000064000000@2024-01-01, 0101000000C8000000C8000000C8000000@2024-01-03]\");",
     "  Temporal *tpcpatch1 = tpcpatch_in(\"[01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01, 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-03]\");",
     "  /* The value of a temporal is read off an instant, and so is the position a",
@@ -243,6 +255,8 @@
     "  free(tpcpatch1);",
     "  free(tpcbox_hexwkb1);",
     "  free(tpcbox_wkb1);",
+    "  free(pcpoint_wkb1);",
+    "  free(pcpatch_wkb1);",
     "  free(tpcbox1);",
     "  free(pcpatchset1);",
     "  free(pcpointset1);",

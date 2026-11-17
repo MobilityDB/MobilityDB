@@ -204,7 +204,9 @@ static const GeoPoseFrame GEOPOSE_FRAME_REGISTRY[] =
 const GeoPoseFrame *
 geopose_frames(int *count)
 {
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   *count = (int) (sizeof(GEOPOSE_FRAME_REGISTRY) /
     sizeof(GEOPOSE_FRAME_REGISTRY[0]));
   return GEOPOSE_FRAME_REGISTRY;

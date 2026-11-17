@@ -1265,11 +1265,15 @@ tsequence_make_exp1(TInstant **instants, int count, int maxcount,
   else
     maxcount = newcount;
   /* Total size of the struct */
-  size_t memsize = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
-    sizeof(size_t) * maxcount + insts_size;
+  size_t pdata = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
+    sizeof(size_t) * maxcount;
+  size_t memsize = pdata + insts_size;
 
-  /* Create the temporal sequence */
-  TSequence *result = palloc0(memsize);
+  /* Create the temporal sequence. The instants are copied over their part of
+   * it, so only the struct, the bounding box, the offsets and the bytes no
+   * instant covers are zeroed, the bytes `palloc0` would zero */
+  TSequence *result = palloc(memsize);
+  memset(result, 0, pdata);
   SET_VARSIZE(result, memsize);
   result->count = newcount;
   result->maxcount = maxcount;
@@ -1295,16 +1299,21 @@ tsequence_make_exp1(TInstant **instants, int count, int maxcount,
     tinstarr_set_bbox(norminsts, newcount, lower_inc, upper_inc, interp,
       TSEQUENCE_BBOX_PTR(result));
   /* Store the composing instants */
-  size_t pdata = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
-    sizeof(size_t) * maxcount;
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
-    memcpy(((char *) result) + pdata + pos, norminsts[i],
-      VARSIZE(norminsts[i]));
+    size_t size = VARSIZE(norminsts[i]);
+    memcpy(((char *) result) + pdata + pos, norminsts[i], size);
+    /* The padding after the piece, when its size is not a multiple of 8 */
+    if (DOUBLE_PAD(size) != size)
+      memset(((char *) result) + pdata + pos + size, 0,
+        DOUBLE_PAD(size) - size);
     (TSEQUENCE_OFFSETS_PTR(result))[i] = pos;
-    pos += DOUBLE_PAD(VARSIZE(norminsts[i]));
+    pos += DOUBLE_PAD(size);
   }
+  /* The room reserved for the pieces an expandable value may add */
+  if (memsize > pdata + pos)
+    memset(((char *) result) + pdata + pos, 0, memsize - pdata - pos);
   if (interp != DISCRETE && normalize && count > 1)
     pfree(norminsts);
   return result;

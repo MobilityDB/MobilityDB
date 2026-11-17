@@ -1091,8 +1091,11 @@ Span *
 tint_value_bins(const Temporal *temp, int vsize, int vorigin, bool border_inc,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TINT(temp, NULL);
   return tnumber_value_bins(temp, Int32GetDatum(vsize),
     Int32GetDatum(vorigin), border_inc, count);
 }
@@ -1112,8 +1115,11 @@ Span *
 tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TBIGINT(temp, NULL);
   return tnumber_value_bins(temp, Int64GetDatum(vsize),
     Int64GetDatum(vorigin), border_inc, count);
 }
@@ -1133,8 +1139,11 @@ Span *
 tfloat_value_bins(const Temporal *temp, double vsize, double vorigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TFLOAT(temp, NULL);
   if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   return tnumber_value_bins(temp, Float8GetDatum(vsize),
@@ -1552,8 +1561,11 @@ TBox *
 tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
   int vorigin, TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Int32GetDatum(vsize), T_INT4) ||
       ! ensure_valid_tbox_tiles(box, (double) vsize, duration, T_INTSPAN))
@@ -1581,8 +1593,11 @@ tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
   const Interval *duration, int64 vorigin, TimestampTz torigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8) ||
       ! ensure_valid_tbox_tiles(box, (double) vsize, duration, T_BIGINTSPAN))
@@ -1610,8 +1625,11 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
   const Interval *duration, double vorigin, TimestampTz torigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
@@ -1637,8 +1655,11 @@ TBox *
 tintbox_value_tiles(const TBox *box, int vsize, int vorigin, bool border_inc,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_positive_datum(Int32GetDatum(vsize), T_INT4) ||
       ! ensure_valid_tbox_tiles(box, (double) vsize, NULL, T_INTSPAN))
     return NULL;
@@ -1661,8 +1682,11 @@ TBox *
 tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8) ||
       ! ensure_valid_tbox_tiles(box, (double) vsize, NULL, T_BIGINTSPAN))
     return NULL;
@@ -1685,8 +1709,11 @@ TBox *
 tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
@@ -1711,8 +1738,11 @@ TBox *
 tbox_time_tiles(const TBox *box, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_valid_tbox_tiles(box, 0.0, duration, box->span.spantype))
     return NULL;
@@ -1737,6 +1767,9 @@ TBox *
 tintbox_time_tiles(const TBox *box, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   return tbox_time_tiles(box, duration, torigin, border_inc, count);
 }
 
@@ -1754,6 +1787,9 @@ TBox *
 tbigintbox_time_tiles(const TBox *box, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   return tbox_time_tiles(box, duration, torigin, border_inc, count);
 }
 
@@ -1771,6 +1807,9 @@ TBox *
 tfloatbox_time_tiles(const TBox *box, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   return tbox_time_tiles(box, duration, torigin, border_inc, count);
 }
 
@@ -2009,8 +2048,11 @@ tint_value_time_boxes(const Temporal *temp, int vsize,
   const Interval *duration, int vorigin, TimestampTz torigin, bool border_inc,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TINT(temp, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Int32GetDatum(vsize), T_INT4) ||
       ! ensure_positive_duration(duration))
@@ -2039,8 +2081,11 @@ tbigint_value_time_boxes(const Temporal *temp, int64 vsize,
   const Interval *duration, int64 vorigin, TimestampTz torigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TBIGINT(temp, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8) ||
       ! ensure_positive_duration(duration))
@@ -2069,8 +2114,11 @@ tfloat_value_time_boxes(const Temporal *temp, double vsize,
   const Interval *duration, double vorigin, TimestampTz torigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TFLOAT(temp, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
@@ -2099,8 +2147,11 @@ TBox *
 tint_value_boxes(const Temporal *temp, int vsize, int vorigin, bool border_inc,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TINT(temp, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), NULL,
     Int32GetDatum(vorigin), 0, border_inc, count);
 }
@@ -2121,8 +2172,11 @@ TBox *
 tint_time_boxes(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TINT(temp, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(0), duration,
     Int32GetDatum(0), torigin, border_inc, count);
@@ -2146,8 +2200,11 @@ TBox *
 tbigint_value_boxes(const Temporal *temp, int64 vsize, int64 vorigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TBIGINT(temp, NULL);
   return tnumber_value_time_boxes(temp, Int64GetDatum(vsize), NULL,
     Int64GetDatum(vorigin), 0, border_inc, count);
 }
@@ -2168,8 +2225,11 @@ TBox *
 tbigint_time_boxes(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TBIGINT(temp, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   return tnumber_value_time_boxes(temp, Int64GetDatum(0), duration,
     Int64GetDatum(0), torigin, border_inc, count);
@@ -2193,8 +2253,11 @@ TBox *
 tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
   bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TFLOAT(temp, NULL);
   if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), NULL,
@@ -2217,8 +2280,11 @@ TBox *
 tfloat_time_boxes(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TFLOAT(temp, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(0.0), duration,
     Float8GetDatum(0.0), torigin, border_inc, count);

@@ -2584,8 +2584,11 @@ datespan_shift_scale(const Span *s, int shift, int width, bool hasshift,
 Span *
 set_spans(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(s, NULL);
   /* Output the composing spans */
   Span *result = palloc(sizeof(Span) * s->count);
   for (int i = 0; i < s->count; i++)
