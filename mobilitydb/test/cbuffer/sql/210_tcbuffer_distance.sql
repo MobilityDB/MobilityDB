@@ -58,6 +58,21 @@ SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1),
 SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
 SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point(1 1)', 6);
 
+-- A buffer whose radius grows past a point: the distance turns only at its
+-- minimum, and the point and the circular buffer of radius zero at the same
+-- place answer the same instants
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 2)@2001-01-01, Cbuffer(Point(16 15), 5)@2001-01-04]' <-> geometry 'Point(14 3)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 2)@2001-01-01, Cbuffer(Point(16 15), 5)@2001-01-04]' <-> cbuffer 'Cbuffer(Point(14 3), 0)', 6);
+-- A buffer whose radius shrinks: the companion root of the squared equation
+-- lies past the minimum, where the distance rises
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 5)@2001-01-01, Cbuffer(Point(16 15), 2)@2001-01-04]' <-> geometry 'Point(14 3)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 5)@2001-01-01, Cbuffer(Point(16 15), 2)@2001-01-04]' <-> cbuffer 'Cbuffer(Point(14 3), 0)', 6);
+-- A buffer passing over a point: the distance is zero from the instant the
+-- disc reaches the point to the instant it leaves it
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-03]' <-> geometry 'Point(5 0)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-03]' <-> cbuffer 'Cbuffer(Point(5 0), 0)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 3)@2001-01-03]' <-> geometry 'Point(5 0)', 6);
+
 SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point empty', 6);
 SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point empty', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point empty', 6);

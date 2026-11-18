@@ -63,6 +63,8 @@ extern int tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);
 
+extern int tcbuffersegm_length_roots_xy(double dx0, double dy0, double dx,
+  double dy, double l0, double l1, long double roots[2]);
 extern int tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
   TimestampTz *tps, Datum *values, int cap);
