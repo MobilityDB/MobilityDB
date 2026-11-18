@@ -133,7 +133,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   owner's ruling of 2026-11-18 ("approve the rewrite"): the 25 `return NULL;` lines that commit
   wrote become `return false;`, the same machine code. These operators answer a boolean, so a
   refused argument answers false with `meos_errno` set, while the three-valued predicates answer
-  an integer whose -1 is the error.
+  an integer: 0 or 1 an answer, an empty geometry included, and -1 either an error with
+  `meos_errno` set or, for two temporal values with no common time, the absent answer SQL reads
+  as NULL. `070_tgeo_spatialrels` asks every ever and always relationship of an empty geometry,
+  OPEN as MobilityDB #3812.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
