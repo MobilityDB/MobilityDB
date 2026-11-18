@@ -73,28 +73,28 @@ measures it.
 ## MobilityAPI
 
 MobilityAPI publishes moving features through OGC API – Moving Features, their temporal geometry
-in any spatial temporal type of MEOS. It publishes no raster. The OGC API standards that fit:
+in any spatial temporal type of MEOS, and rasters through the standards below. It is a server,
+not a binding: it holds no object layer, so `tools/raster_matrix.py` does not measure it; its
+raster surface is its endpoints, measured by the MobilityAPI plan.
 
-| Standard | Status | What it serves | Fit |
-|---|---|---|---|
-| OGC API – Coverages, Part 1: Core | a draft of the Coverages Standards Working Group (OGC 19-087), not yet an approved standard | a coverage as a resource, its domain set and range type, subset by `bbox`, `datetime` and `properties` (bands), its encoding negotiated | the raster itself: a collection whose items are `Raster` or `Raquet` tiles |
-| OGC API – Environmental Data Retrieval (EDR), Part 1 | approved standard, version 1.2 (OGC 19-086r9) | queries of a coverage at a position, in an area, a cube, along a trajectory or a corridor, answered in CoverageJSON among others | the queries along a path: `/trajectory` is the value along a path that `rasterValue` computes |
-| OGC API – Moving Features, Part 1: Core | version 1.0 (OGC 22-003r3), the standard MobilityAPI implements | temporal properties of a moving feature | the value of a raster along a moving feature's own trajectory, a `tfloat` temporal property |
-| OGC API – Tiles, Part 1 | not checked for this plan | a raster cut in tiles of a tile matrix set | a later choice; a Raquet file is already tiled in the QUADBIN grid, which is Web Mercator's |
+| Standard | Status | What MobilityAPI serves |
+|---|---|---|
+| OGC API – Coverages, Part 1: Core | a draft of the Coverages Standards Working Group (OGC 19-087, 1.0.0rc4), whose version MobilityAPI records in its conformance declaration | a raster collection as a coverage, one period of its series per coverage, subset by `bbox`, `datetime` and `properties` (bands), encoded in GeoTIFF or CoverageJSON (R7) |
+| OGC API – Environmental Data Retrieval (EDR), Part 1 | version 1.1 (OGC 19-086r6), the published version | `/position`, `/area`, `/trajectory` and `/corridor` over a raster collection, answered in CoverageJSON (R8) |
+| OGC API – Moving Features, Part 1: Core | version 1.0 (OGC 22-003r3), the standard MobilityAPI implements | the values of a raster collection along a moving feature's own trajectory, the TemporalGeometryQuery `raster` beside `distance` and `velocity`, a MobilityAPI query type (R9) |
+| OGC API – Tiles, Part 1 | not checked for this plan | a raster cut in tiles of a tile matrix set; a later choice, a Raquet file being already tiled in the QUADBIN grid, which is Web Mercator's |
 
-Raquet is CARTO's specification, not an OGC standard: MobilityAPI offers it as an encoding of a
-coverage (a Parquet response, as it already reads GeoParquet in its bulk ingest), not as a
-conformance class. CoverageJSON is an OGC community standard, version 1.0 (OGC 21-069r2).
-
-Coverages Part 1 being a draft, MobilityAPI implements the draft its working group publishes
-(`opengeospatial/ogcapi-coverages`) and records the draft it conforms to; the queries along a
-path, which EDR states in an approved standard, do not wait for it.
+Raquet is CARTO's specification, not an OGC standard. A Raquet collection is served as a coverage
+like a raster one; the encodings a coverage is answered in are those of the conformance classes
+of Coverages Part 1, GeoTIFF and CoverageJSON, the latter an OGC community standard, version 1.0
+(OGC 21-069r2).
 
 The trajectory of EDR is a static path, a `LINESTRING` whose M ordinate is the time; a moving
-feature on the server is a richer path, and its temporal property is the query only MobilityAPI
-answers. The two compose: EDR's `/trajectory` builds a `tgeompoint` from the coordinates it
-receives and answers `rasterValue` over it, and the temporal property answers it over the
-feature's own trajectory.
+feature on the server is a richer path. The two compose: EDR's `/trajectory` builds a
+`tgeompoint` from the coordinates it receives and reads the raster along it, and the query
+`raster` of a temporal geometry reads it along the feature's own trajectory. The values along a
+feature are derived when asked and never stored, so `/tproperties` stays the store of the values
+a client writes.
 
 **Questions the plan settles.**
 

@@ -31,26 +31,33 @@ format's reader and writer follow the input and output notes of MobilityDB #3353
 | Gap | Task | State |
 |---|---|---|
 | How much of the raster surface each binding carries is not measured | R6: `tools/raster_matrix.py`, which reads the raster functions a binding calls from the catalog (the public functions of the family `RASTER` carrying a SQL name, less the support functions of a type and of an aggregate, an aggregate counted once under its name) and each binding's object layer as `tools/io_matrix.py --repo` reads it, and credits a function when the layer names it (its SQL name, its `altSqlName` or its C name) and carries every raster type its signatures name; `--check` compares its rows with the table below | MERGED as MobilityDB #3776 |
-| The gaps R6 finds | One row per binding and gap, numbered from R12, each closed in the binding's generator from the catalog, never by a hand-written function, as the bindings plan of MobilityDB #2861 requires | after R6 |
+| MobilityDuck lacks 8 of the 79 functions: `asCoverageJSON`, `asGDALRaster`, `asJPEG`, `asPNG`, `asTIFF`, `raquetFromRow`, `rasterFromGDALRaster`, `setValues` | R12: its generators register them from the catalog, as they register the family's other functions | after R3, R4, R5 |
+| GoMEOS lacks 21: the writers and the reader of R3 and R4, `raquetFromRow`, `aRasterValue`, `eRasterValue`, the map algebra (`rasterAdd`, `rasterSub`, `rasterMul`, `rasterDiv`), `rasterUnion` and the `summaryStats` aggregate and accessors | R13: `tools/codegen.py` projects them from the catalog | after R6 |
+| MEOS.js lacks 31: those of GoMEOS less the map algebra, plus the readers along a trajectory (`rasterValue`, `rasterTileValue`, `rasterTileValueQuadbin`), the restrictions `atRasterValue` and `minusRasterValue`, the readers `rasterFromBinary`, `rasterFromHexWKB`, `raquetFromHexWKB` and `raquetRead`, `makeEmptyRaster`, `valuePercent`, and the casts `raster`, `raquet` and `stbox` | R14: `FunctionsGenerator.ts` projects them from the catalog | after R6 |
+| MEOS.NET lacks 33: those of MEOS.js less the three casts, plus the map algebra and `asBinary` | R15: `tools/codegen.py` projects them from the catalog | after R6 |
+| PyMEOS-CFFI carries 7 functions and neither type; PyMEOS carries none | R16: the `RASTER` family in the libmeos PyMEOS-CFFI builds and in its cdef, then the `Raster` and `Raquet` classes of PyMEOS from the catalog | after R6; the binding's active owner first |
+| JMEOS carries neither type | R17: `FunctionsGenerator.java` with the family `RASTER` enabled, and the two classes of the object layer | after R6; the binding's active owner first |
+| meos-rs carries neither type | R18: the family over the 1.4 FFI of meos-rs | HELD until the owner and David choose the 1.4 FFI design of meos-rs #6 |
+| MobilityNebula carries 1 function and neither type | R19: the raster functions its plugin generator registers from the catalog | after R6; the binding's active owner first |
 
 ### The raster surface of each binding
 
-Built by `tools/raster_matrix.py` (R6) over the MEOS-API catalog at MobilityDB `247d7da164`, each
-binding at the commit its row names, its default branch; 71 functions, of which 7 name no raster
-type (`rasterTileValueQuadbin` and the `summarystats*` accessors):
+Built by `tools/raster_matrix.py` (R6) over the MEOS-API catalog at MobilityDB `eaffbb532e`, each
+binding at the commit its row names, its default branch; 79 functions, of which 7 name no raster
+type (`rasterTileValueQuadbin` and the `summarystats*` accessors). MobilityAPI is a server, not a
+binding, and is measured by the MobilityAPI plan:
 
 | Binding | Commit | raster | raquet | Functions | Missing |
 |---|---|---|---|---|---|
-| JMEOS | `f456f24e44` | **no** | **no** | 0 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
-| GoMEOS | `9551b85318` | yes | yes | 57 of 71 | `aRasterValue`, `eRasterValue`, `rasterAdd`, `rasterDiv`, `rasterMul`, ... |
-| MEOS.NET | `359675c41e` | yes | yes | 46 of 71 | `aRasterValue`, `asBinary`, `atRasterValue`, `eRasterValue`, `makeEmptyRaster`, ... |
-| meos-rs | `2b49f27223` | **no** | **no** | 0 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
-| MEOS.js | `bbda83df38` | yes | yes | 48 of 71 | `aRasterValue`, `atRasterValue`, `eRasterValue`, `makeEmptyRaster`, `minusRasterValue`, ... |
-| MobilityDuck | `e47d67c413` | yes | yes | 70 of 71 | `setValues` |
-| MobilityNebula | `5c0974e0a0` | **no** | **no** | 1 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
-| PyMEOS | `33717764b7` | **no** | **no** | 0 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
-| PyMEOS-CFFI | `7d41acfbd7` | **no** | **no** | 7 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
-| MobilityAPI | `3305f77395` | **no** | **no** | 0 of 71 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asHexWKB`, ... |
+| JMEOS | `f456f24e44` | **no** | **no** | 0 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
+| GoMEOS | `9551b85318` | yes | yes | 58 of 79 | `aRasterValue`, `asCoverageJSON`, `asGDALRaster`, `asJPEG`, `asPNG`, ... |
+| MEOS.NET | `359675c41e` | yes | yes | 46 of 79 | `aRasterValue`, `asBinary`, `asCoverageJSON`, `asGDALRaster`, `asJPEG`, ... |
+| meos-rs | `2b49f27223` | **no** | **no** | 0 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
+| MEOS.js | `bbda83df38` | yes | yes | 48 of 79 | `aRasterValue`, `asCoverageJSON`, `asGDALRaster`, `asJPEG`, `asPNG`, ... |
+| MobilityDuck | `e47d67c413` | yes | yes | 71 of 79 | `asCoverageJSON`, `asGDALRaster`, `asJPEG`, `asPNG`, `asTIFF`, ... |
+| MobilityNebula | `5c0974e0a0` | **no** | **no** | 1 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
+| PyMEOS | `33717764b7` | **no** | **no** | 0 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
+| PyMEOS-CFFI | `7d41acfbd7` | **no** | **no** | 7 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
 
 JMEOS, MobilitySpark, MobilityFlink and MobilityKafka generate their surface at build time
 (`jmeos-core/target/generated-sources`), so their rows read the committed layer only until they
@@ -63,7 +70,7 @@ raster_matrix.py --catalog meos-idl.json \
   --repo MEOS.NET=<MEOS.NET>:MEOS.NET/Types --repo meos-rs=<meos-rs>:src \
   --repo MEOS.js=<MEOS.js>:core/types,core/objects --repo MobilityDuck=<MobilityDuck>:src \
   --repo MobilityNebula=<MobilityNebula>:nes-plugins/MEOS --repo PyMEOS=<PyMEOS>:pymeos \
-  --repo PyMEOS-CFFI=<PyMEOS-CFFI>:pymeos_cffi --repo MobilityAPI=<MobilityAPI>:. \
+  --repo PyMEOS-CFFI=<PyMEOS-CFFI>:pymeos_cffi \
   [--check IMPLEMENTATION-PLAN.md]
 ```
 
@@ -94,5 +101,6 @@ the row names, its tests the abstract tests of that class against the fixture of
 
 R1 first, as the slot every generated layer reads; R2 to R5 in MEOS and MobilityDB, each its own
 pull request; R6 once R1 is in the catalog, so that it measures `Raster` as a type; the binding
-rows R6 finds; then MobilityAPI, R10 with R7, R8, and R9. R11 comes before R7
+rows R6 finds, R12 to R19, the binding nearest to the whole surface first; then MobilityAPI, R10
+with R7, R8, and R9. R11 comes before R7
 declares a temporal axis, the axis being the series' `validtime`.

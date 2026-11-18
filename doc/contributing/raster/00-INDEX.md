@@ -55,11 +55,13 @@ MobilityDB #3287 (`doc/contributing/exactness/`) and the cell walks of the manua
    require of every format; no server or binding encodes a raster itself.
 5. **MobilityAPI publishes rasters through OGC API standards.** OGC API – Coverages Part 1, a
    draft (OGC 19-087) whose version MobilityAPI records, for the raster as a resource, its
-   encodings negotiated (GeoTIFF, CoverageJSON, Raquet); OGC API – Environmental Data Retrieval
-   (EDR) Part 1, version 1.2, for the queries along a path (`/position`, `/area`, `/trajectory`,
-   `/corridor`); and the temporal properties of OGC API – Moving Features Part 1 for the value
-   of a raster along a moving feature's own trajectory, which only MobilityAPI can answer, the
-   moving feature being on the server.
+   encodings negotiated (GeoTIFF, CoverageJSON); OGC API – Environmental Data Retrieval (EDR)
+   Part 1, version 1.1, for the queries along a path (`/position`, `/area`, `/trajectory`,
+   `/corridor`); and a TemporalGeometryQuery of OGC API – Moving Features Part 1, beside
+   `distance` and `velocity`, for the values of a raster along a moving feature's own
+   trajectory, which only MobilityAPI can answer, the moving feature being on the server.
+   MobilityAPI being a server rather than a binding, its surface is measured by the MobilityAPI
+   plan, not by `tools/raster_matrix.py`.
 6. **What MobilityAPI answers about a raster is what MobilityDB declares over it.** As for the
    temporal types (`catalog_gen.go`), the functions per raster type are generated from the
    catalog, and a query MobilityDB states no function for is refused naming the function.
@@ -94,6 +96,10 @@ the standard's conformance classes against the fixture.
   (R4, #3786).
 - The restrictions read the values of a `Raquet` tile and an array of tiles (R2, MobilityDB
   #3781); one row of a Raquet file is read into a tile (R5, #3782).
+- A series of rasters is read along a trajectory, each raster over the part of the trajectory
+  within its validity period (R11, MobilityDB #3792).
 - `tools/raster_matrix.py` measures the raster surface each binding and MobilityDuck carries
-  (R6, MobilityDB #3776).
-- MobilityAPI publishes no raster (R7 to R10).
+  (R6, MobilityDB #3776); the gaps it finds are R12 to R19.
+- MobilityAPI publishes a raster collection as a coverage (R7, MobilityAPI #79), answers the EDR
+  queries over it (R8, #80) and the values of its rasters along a moving feature (R9, #81),
+  from the raster types its catalog tables generate (R10, #77).
