@@ -1315,7 +1315,7 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp ?&& tbox(t2.temp
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp %&& tbox(t2.temp);
  count 
 -------
-   108
+   107
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_tstzspan t2
