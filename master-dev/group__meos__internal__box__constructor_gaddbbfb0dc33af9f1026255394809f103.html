@@ -125,13 +125,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return in the last argument the spatiotemporal box of a network point. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The box is the point of the route at the position, whose coordinates <a class="el" href="tnpoint_8h_a9537284b5e68be31d6e4056b5f62c766.html#a9537284b5e68be31d6e4056b5f62c766" title="Return in the last argument the point of a route at a fraction of its length.">route_point_at</a> reads from the line and the fractions of the route kept by the ways cache, as <a class="el" href="tnpoint_8h_a911b1d105d05cb8f173a47bfefdee05e.html#a911b1d105d05cb8f173a47bfefdee05e" title="Convert a temporal network point into a temporal geometry point.">tnpointinst_tgeompointinst</a> reads them for the conversion, so they are the coordinates of <a class="el" href="group__meos__npoint__base__conversion_ga58adc6bffb2a00164c7082f3078fec4f.html#ga58adc6bffb2a00164c7082f3078fec4f" title="Transform a network point into a geometry.">npoint_to_geompoint</a>. A route is a planar line without Z (<a class="el" href="meos_2src_2npoint_2npoint_8c_a92f3ab3837e807ecaaf7283fa1a07fdc.html#a92f3ab3837e807ecaaf7283fa1a07fdc" title="Ensure that the geometry of a route read from the ways network is a planar line without Z or M dimens...">ensure_valid_route</a>) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Network point </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>False where the route is not found </dd></dl>
 
 </div>
 </div>
