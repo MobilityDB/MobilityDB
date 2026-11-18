@@ -9825,7 +9825,6 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
    */
   int output_bbox = (option & 1) ? LW_TRUE : LW_FALSE;
 
-#if MEOS
   /* Name the coordinate reference system the options ask for, as PostGIS
    * function LWGEOM_asGeoJson names it, where the caller names none */
   if (! srs)
@@ -9841,7 +9840,6 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
         return NULL;
     }
   }
-#endif /* MEOS */
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *txt = lwgeom_to_geojson(geom, srs, precision, output_bbox);

@@ -3,13 +3,6 @@
 # fails the check. Regenerate with --rebaseline after a split.
 meos/src/geo/postgis_funcs.c	meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, \	file-scope conditional
 meos/src/geo/tspatial.c	spatialarr_as_text(const Datum *spatialarr, MeosType elemtype, int cou	file-scope conditional
-meos/src/geo/tspatial_transform_meos.c	#include "lwgeom_pg.h"	conditional in a MEOS-only file
-meos/src/geo/tspatial_transform_meos.c	#include <libpq/pqformat.h>	conditional in a MEOS-only file
-meos/src/geo/tspatial_transform_meos.c	GetProjStringsSPI(int32_t srid)	conditional in a MEOS-only file
-meos/src/geo/tspatial_transform_meos.c	SPI_pstrdup(const char *str)	conditional in a MEOS-only file
-meos/src/geo/tspatial_transform_meos.c	lwproj_lookup(int32_t srid_from, int32_t srid_to, LWPROJ **pj)	conditional in a MEOS-only file
-meos/src/geo/tspatial_transform_meos.c	meos_set_spatial_ref_sys_csv(const char* path)	conditional in a MEOS-only file
-meos/src/geo/tspatial_transform_meos.c	spheroid_init_from_srid(int32_t srid, SPHEROID *s)	conditional in a MEOS-only file
 meos/src/npoint/npoint.c	#include <libpq/pqformat.h>	file-scope conditional
 meos/src/pointcloud/schema_hook.c	#include <utils/memutils.h>  /* TopMemoryContext */	file-scope conditional
 meos/src/temporal/doublen.c	double2_make(double a, double b)	file-scope conditional
