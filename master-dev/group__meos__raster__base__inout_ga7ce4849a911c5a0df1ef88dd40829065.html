@@ -127,8 +127,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the values a trajectory reads as a CoverageJSON trajectory coverage. </p>
-<p >The domain is a CoverageJSON <code>Trajectory</code>, one point per instant of the values, its time the instant and its position that of the trajectory at the instant, so the values <a class="el" href="group__meos__raster_gaca221ddb2eb9a7420ee6fe5d158b1743.html#gaca221ddb2eb9a7420ee6fe5d158b1743" title="Return the values of a raster band read along a trajectory.">raster_value</a> reads, whose instants include the exact crossings of the pixels, are written where they are read. The values are the parameter <code>value</code> </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the values a trajectory reads as a CoverageJSON coverage. </p>
+<p >The domain is chosen by the positions of the values, the position of each instant of the values being that of the trajectory at the instant:</p><ul>
+<li>one instant is a <code>Point</code>, its axes <code>x</code>, <code>y</code> and <code>t</code> one value each;</li>
+<li>several instants at one position, the positions being equal doubles, are a <code>PointSeries</code>, the axes <code>x</code> and <code>y</code> one value and <code>t</code> one per instant;</li>
+<li>otherwise a <code>Trajectory</code>, one point per instant, its time the instant and its position that of the trajectory at the instant.</li>
+</ul>
+<p >A stationary point's values over time are thereby the <code>PointSeries</code> the position query of OGC API - Environmental Data Retrieval answers, and the values <a class="el" href="group__meos__raster_gaca221ddb2eb9a7420ee6fe5d158b1743.html#gaca221ddb2eb9a7420ee6fe5d158b1743" title="Return the values of a raster band read along a trajectory.">raster_value</a> reads along a moving trajectory, whose instants include the exact crossings of the pixels, are written where they are read. The values are the parameter <code>value</code> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> float, the values read along <code>traj</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geometry point the values are read along </td></tr>
