@@ -25,4 +25,12 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-mobilitydb_add_tests(SETUP load_pointcloud)
+# These tests register and remove point cloud schemas in the catalog of
+# pgPointCloud, which the other point cloud tests read
+mobilitydb_add_tests(SETUP load_pointcloud
+  ALONE
+    399_pointcloud_schemas 400_pcpoint_tbl 410_tpcbox 410_tpcbox_tbl
+    415_tpc_typmod 420_tpcpoint 421_tpcpoint_mfjson 430_tpcpatch
+    431_tpcpatch_cmp 432_tpcpatch_mfjson 438_tpc_distance
+    443_tpcpoint_spatialrels 444_tpcpoint_tempspatialrels
+    448_tpcpatch_tempspatialrels 449_tpcpatch_spatialrels)
