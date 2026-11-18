@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tdwithin_geogsegm_run</title>
+<title>MobilityDB: tdwithin_geogpoints_at_rest</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -119,7 +119,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a59d4c932110fd24011af2cbbe7cc196e.html#a59d4c932110fd24011af2cbbe7cc196e">tdwithin_bounds_end</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a3b4789214a1f0bca4a84f27268fd08c9.html#a3b4789214a1f0bca4a84f27268fd08c9">tdwithin_bounds_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__rel__temp_ga160047a86c4933100fa8e4c766119c6a.html#ga160047a86c4933100fa8e4c766119c6a">tdwithin_geo_tgeo</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a71896d915eaac91c04807f51844efd74.html#a71896d915eaac91c04807f51844efd74">tdwithin_geogsegm_run</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_ab9a6d3bb05cc08c695d37efe2ddedefc.html#ab9a6d3bb05cc08c695d37efe2ddedefc">tdwithin_geogpoints_at_rest</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a1b645453d0f1df27e67d1b4f95489893.html#a1b645453d0f1df27e67d1b4f95489893">tdwithin_geogsegm_run</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a2df7524d3ede4d32a89ad8590503463b.html#a2df7524d3ede4d32a89ad8590503463b">tdwithin_geogsegmgeog_change</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a8f64deeede2a9fa2eb0e96ea647fddd9.html#a8f64deeede2a9fa2eb0e96ea647fddd9">tdwithin_geogsegmgeog_run</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_afd4d01c18074dd80f383abb677643026.html#afd4d01c18074dd80f383abb677643026">tdwithin_run_add</a></td></tr>
@@ -166,8 +167,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a71896d915eaac91c04807f51844efd74" name="a71896d915eaac91c04807f51844efd74"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a71896d915eaac91c04807f51844efd74">&#9670;&#160;</a></span>tdwithin_geogsegm_run()</h2>
+<a id="ab9a6d3bb05cc08c695d37efe2ddedefc" name="ab9a6d3bb05cc08c695d37efe2ddedefc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9a6d3bb05cc08c695d37efe2ddedefc">&#9670;&#160;</a></span>tdwithin_geogpoints_at_rest()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -176,10 +177,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool tdwithin_geogsegm_run </td>
+          <td class="memname">static bool tdwithin_geogpoints_at_rest </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGeogSegmPair.html">GeogSegmPair</a> *&#160;</td>
           <td class="paramname"><em>sp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>p1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>p2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -190,38 +203,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TimestampTz&#160;</td>
-          <td class="paramname"><em>lower</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TimestampTz&#160;</td>
-          <td class="paramname"><em>upper</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>lower_inc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>upper_inc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dend</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structTDwithinRun.html">TDwithinRun</a> *&#160;</td>
-          <td class="paramname"><em>run</em>&#160;</td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -236,8 +219,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Add to a walk the result of the temporal dwithin of one segment of two geography points, from the crossings of the distance in the segment. </p>
-<p >Each crossing is an instant at which the two points are within the distance, dated by truncation as <a class="el" href="tgeo__spatialrels_8h_ab528a867b42fbbb83ea124488b2988e2.html#ab528a867b42fbbb83ea124488b2988e2">tpointsegm_tdwithin_turnpt</a> dates one, and the value between two consecutive instants is the one at their middle </p>
+<p>Return true where two geography points at rest are within a distance, set in <code>result</code>, as the walk of <a class="el" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_ae452b028253c0aea579817d8e059a133.html#ae452b028253c0aea579817d8e059a133" title="Return a temporal Boolean that states whether a temporal geography point and a geography point,...">tdwithin_tgeogpoint_geogpoint</a> measures it: exactly on the sphere (<a class="el" href="geo__funcs_8h_aa036506a05cd70cc3cef79fdecc1809b.html#aa036506a05cd70cc3cef79fdecc1809b" title="Return true where two geography point segments are within a distance on the sphere at the microsecond...">geog_motion_dwithin_at_exact</a>), as <a class="el" href="group__meos__geo__base__rel_gad02c83b0140d8fdca6503018a19c9fc9.html#gad02c83b0140d8fdca6503018a19c9fc9" title="Return true if two geographies are within a distance.">geog_dwithin</a> decides it on the spheroid. </p>
+<dl class="section return"><dt>Returns</dt><dd>False where the sphere does not decide it </dd></dl>
 
 </div>
 </div>
