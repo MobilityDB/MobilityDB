@@ -88,7 +88,9 @@ def read_functions(catalog):
 
   `names` holds the normalized names a binding may give the function, and
   `types` the raster types its SQL signatures name.  Overloads of one SQL
-  name are one function, needing every raster type an overload names.  The
+  name are one function, needing every raster type an overload names.  A
+  signature carrying a SQL name of its own (`valuePercent`, beside the
+  `valueCount` of `raster_value_count`) is a function under that name.  The
   support functions of a type (`raquet_in`) and of an aggregate
   (`rasterUnionCombine`) are no function of their own: a binding reads and
   writes a type through its readers and writers, and calls an aggregate by
@@ -105,11 +107,12 @@ def read_functions(catalog):
     sigs = f.get('sqlSignatures') or ()
     if any(sig.get('typeSupport') for sig in sigs):
       continue
-    sql = f['sqlfn']
-    names, types = by_sql.setdefault(sql, (set(), set()))
-    names.update(normal(n) for n in (sql, f.get('altSqlName'), f['name'])
-      if n)
-    types.update(signature_types(sigs))
+    for sig in sigs or ({},):
+      sql = sig.get('sqlName') or f['sqlfn']
+      names, types = by_sql.setdefault(sql, (set(), set()))
+      names.update(normal(n) for n in (sql, f.get('altSqlName'), f['name'])
+        if n)
+      types.update(signature_types([sig]))
   raster = {f['name'] for f in data['functions'] if f.get('family') == FAMILY}
   for agg in data.get('aggregates') or ():
     if (agg.get('transition') or {}).get('meos') not in raster:
