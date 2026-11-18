@@ -107,6 +107,16 @@ which are the sums `route_point_at` computes, so the point is the same
 double. The cache is bounded, indexed by the offset of each route in the
 file, and kept per thread for the file that thread names.
 
+The box of a network point, and of the network points of a set or of a
+discrete or step sequence, is read the same way: `npoint_set_stbox` and
+`npointarr_set_stbox` locate each position with `route_point_at` on the line
+of the cache entry and take its coordinates, without building the point, so
+the box has the bits of the box of the point the conversion builds. The
+restriction of a temporal network point to a box or a geometry restricts it
+to the times of the restriction of its geometry point and answers in that
+answer's subtype (`tnpoint_restrict_times`); a box holding only a period
+restricts by the period without converting the value.
+
 ## 7. Versioning and stability
 
 The minor version rises with each path added to section 3 or row added to
