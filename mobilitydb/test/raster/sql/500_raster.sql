@@ -1288,6 +1288,41 @@ WITH rast AS (
 trip(t) AS (
   SELECT tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]')
 SELECT asCoverageJSON(rasterValue(t, r), t) FROM rast, trip;
+-- The values a step trajectory reads keep its bounds and its gaps: each
+-- sequence is read alone, a run ends at an instant with no value (a nodata
+-- pixel or a position outside the raster), its last value holding up to that
+-- instant, excluded, and the first and the last runs take the bounds of the
+-- sequence. The raster is 3 x 1 over (0, 0)-(3, 1), valued 10, nodata, 30.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, 0::float8), 1, 1, 1,
+    ARRAY[[10, 0, 30]]::double precision[][]) AS r),
+trips(name, t) AS (VALUES
+  ('01 closed-open', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02)'),
+  ('02 open-closed', tgeompoint 'SRID=4326;Interp=Step;(Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02]'),
+  ('03 open-open', tgeompoint 'SRID=4326;Interp=Step;(Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03)'),
+  ('04 two pixels', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03]'),
+  ('05 nodata in the middle', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03]'),
+  ('06 nodata at the end', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('07 nodata at the start', tgeompoint 'SRID=4326;Interp=Step;[Point(1.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03]'),
+  ('08 outside in the middle', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03]'),
+  ('09 one instant', tgeompoint 'SRID=4326;Interp=Step;[Point(2.5 0.5)@2001-01-01]'),
+  ('10 sequence set', tgeompoint 'SRID=4326;Interp=Step;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(2.5 0.5)@2001-01-04, Point(2.5 0.5)@2001-01-05)}'),
+  ('11 sequence set, one all nodata', tgeompoint 'SRID=4326;Interp=Step;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(1.5 0.5)@2001-01-04, Point(1.5 0.5)@2001-01-05]}'),
+  ('12 discrete, unchanged', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03}'),
+  ('13 linear, unchanged', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02)'))
+SELECT name, rasterValue(t, r) FROM rast, trips ORDER BY name;
+-- A step point held across two adjacent periods of a raster series reads
+-- each period's raster over its part, the January part open at February.
+WITH series(v, r) AS (VALUES
+  (tstzspan '[2024-01-01, 2024-02-01)', ST_AddBand(ST_MakeEmptyRaster(2, 2,
+    0, 2, 1, -1, 0, 0, 4326), '8BUI'::text, 1, 0)),
+  (tstzspan '[2024-02-01, 2024-03-01)', ST_AddBand(ST_MakeEmptyRaster(2, 2,
+    0, 2, 1, -1, 0, 0, 4326), '8BUI'::text, 5, 0)))
+SELECT rasterValue(tgeompoint(ST_GeomFromText('POINT(0.5 1)', 4326),
+  tstzspan '[2024-01-15, 2024-02-15]', 'Step'), array_agg(r ORDER BY v),
+  array_agg(v ORDER BY v), 1)
+FROM series;
 -- A raster with a skew and a raster in no reference system are refused.
 SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,
   4326));

@@ -1473,11 +1473,87 @@ tpointseq_raster_point_traverse(const TSequence *seq, const RasterGridOps *ops,
 }
 
 /**
+ * @brief Add to the answer the values a step sequence reads from a raster
+ * grid
+ * @details A step sequence holds its position from one instant up to the
+ * next, so the value it reads at an instant holds up to the next instant:
+ * it is read at its instants, as #tpointseq_raster_value_traverse reads a
+ * linear one along its segments, and as there a run ends where the grid
+ * answers no value, here at an instant on a nodata pixel or outside the
+ * grid, the last value of the run holding up to that instant, excluded.
+ * The first run takes the lower bound of the sequence and the last run its
+ * upper bound
+ * @param[in] seq Step sequence of a temporal geometry point
+ * @param[in] ops Grid the values are read from
+ * @param[in,out] answer Sequences of the answer, which the runs are added to
+ */
+static void
+tpointseq_step_raster_value(const TSequence *seq, const RasterGridOps *ops,
+  RasterAnswer *answer)
+{
+  int n = seq->count;
+  TInstant **insts = palloc(sizeof(TInstant *) * (size_t) (n + 1));
+  int count = 0, first = 0;
+  double last = 0.0;
+  for (int i = 0; i <= n; i++)
+  {
+    const TInstant *inst = i < n ? TSEQUENCE_INST_N(seq, i) : NULL;
+    double pixval;
+    bool has = false;
+    if (inst)
+    {
+      /* Borrowed: the sampling reads the point and keeps nothing */
+      const POINT2D *p = GSERIALIZED_POINT2D_P(
+        (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst)));
+      has = raster_sample_at(ops, p->x, p->y, &pixval);
+    }
+    if (has)
+    {
+      if (count == 0)
+        first = i;
+      insts[count++] = tinstant_make(Float8GetDatum(pixval), T_TFLOAT,
+        inst->t);
+      last = pixval;
+      continue;
+    }
+    if (count == 0)
+      continue;
+    /* The run ends here: at an instant with no value, up to which its last
+     * value holds, or at the end of the sequence */
+    bool lower_inc = (first == 0) ? seq->period.lower_inc : true;
+    bool upper_inc;
+    if (inst)
+    {
+      insts[count++] = tinstant_make(Float8GetDatum(last), T_TFLOAT, inst->t);
+      upper_inc = false;
+    }
+    else
+      upper_inc = seq->period.upper_inc;
+    if (count == 1 && ! (lower_inc && upper_inc))
+    {
+      /* One instant excluded at either end holds no time */
+      pfree(insts[0]);
+      pfree(insts);
+    }
+    else
+      raster_answer_add(answer, (Temporal *) tsequence_make_free(insts, count,
+        lower_inc, upper_inc, STEP, NORMALIZE));
+    insts = palloc(sizeof(TInstant *) * (size_t) (n + 1));
+    count = 0;
+  }
+  pfree(insts);
+  return;
+}
+
+/**
  * @brief Return the values of a raster read along a trajectory
  * @details The pixel access is delegated to the grid descriptor so that the
  * one algorithm serves any raster engine: a PostGIS raster is read through
  * the vendored raster core, a raster file through GDAL, a Raquet tile from
- * its own pixel array.
+ * its own pixel array. A linear sequence is read along its segments by
+ * #tpointseq_raster_value_traverse, a step sequence at its instants by
+ * #tpointseq_step_raster_value, each keeping the bounds and the gaps of the
+ * sequence, and a discrete trajectory at its instants.
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] ops Grid the values are read from
  * @return A temporal float, or @p NULL when no instant of @p traj falls
@@ -1493,9 +1569,12 @@ raster_value_sampler(const Temporal *traj, const RasterGridOps *ops)
 
   /* A trajectory that moves between its instants passes over the pixels
    * between them, so the traversal reads those too; one that holds its
-   * position, or that states nothing between its instants, is read at the
-   * instants */
-  if (MEOS_FLAGS_GET_INTERP(traj->flags) == LINEAR)
+   * position from one instant to the next is read at its instants, each
+   * value holding up to the next; both are read sequence by sequence, so
+   * their bounds and their gaps are kept. One that states nothing between
+   * its instants is read at the instants */
+  interpType interp = MEOS_FLAGS_GET_INTERP(traj->flags);
+  if (interp == LINEAR || interp == STEP)
   {
     const TSequence **seqs;
     int nseqs_in;
@@ -1517,7 +1596,9 @@ raster_value_sampler(const Temporal *traj, const RasterGridOps *ops)
     answer.seqs = palloc(sizeof(TSequence *) * (size_t) answer.size);
     for (int i = 0; i < nseqs_in; i++)
     {
-      if (ops->point)
+      if (interp == STEP)
+        tpointseq_step_raster_value(seqs[i], ops, &answer);
+      else if (ops->point)
         tpointseq_raster_point_traverse(seqs[i], ops, &answer);
       else
         tpointseq_raster_value_traverse(seqs[i], ops, &answer);
@@ -1566,7 +1647,7 @@ raster_value_sampler(const Temporal *traj, const RasterGridOps *ops)
     return NULL;
   }
   return (Temporal *) tsequence_make_free(result_insts, ninsts, true, true,
-    MEOS_FLAGS_GET_INTERP(traj->flags) == STEP ? STEP : DISCRETE, NORMALIZE);
+    DISCRETE, NORMALIZE);
 }
 
 /*****************************************************************************
