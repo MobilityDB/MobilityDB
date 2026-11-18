@@ -344,18 +344,18 @@ ensure_valid_tinstant_value(Datum value, MeosType temptype)
     {
       int32_t srid = spatial_srid(value, basetype);
       if (srid != SRID_UNKNOWN && ! ensure_srid_is_latlong(srid))
-        return NULL;
+        return false;
     }
     /* Ensure that a geometry/geography is not empty and has finite
      * coordinates */
     if (tgeo_type_all(temptype) &&
         (! ensure_not_empty(DatumGetGserializedP(value)) ||
          ! ensure_finite_geo(DatumGetGserializedP(value))))
-      return NULL;
+      return false;
   }
   /* Ensure that a float value is finite */
   if (temptype == T_TFLOAT && ! ensure_finite(DatumGetFloat8(value)))
-    return NULL;
+    return false;
   /* Ensure that an integer value is not the maximum of its type, since the
    * value span of the bounding box, whose upper bound is the next value, has
    * no representation */
