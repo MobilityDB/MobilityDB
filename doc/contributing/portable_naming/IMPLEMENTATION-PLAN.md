@@ -127,7 +127,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   MobilityDB #3750 (`c23329c9ff`); the count of the set values accessors, MERGED as
   MobilityDB #3752 (`a01bc90d2b`); the set of `tstzset_tprecision`, MERGED as MobilityDB #3753
   (`322ea2ed18`); the result of `bearing_point_point`, MERGED as MobilityDB #3754
-  (`4479b7c334`).
+  (`4479b7c334`). The boolean functions that refuse an argument return `false`, the 25 number
+  box operators of `temporal_boxops.c` and `ensure_valid_tinstant_value` among them, branch
+  `meos/bool-functions-return-false`, which rewrites 29c346279f (MobilityDB #3348) by the
+  owner's ruling of 2026-11-18 ("approve the rewrite"): the 25 `return NULL;` lines that commit
+  wrote become `return false;`, the same machine code. These operators answer a boolean, so a
+  refused argument answers false with `meos_errno` set, while the three-valued predicates answer
+  an integer whose -1 is the error.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
