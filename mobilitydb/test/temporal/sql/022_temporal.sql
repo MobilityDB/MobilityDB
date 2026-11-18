@@ -2766,6 +2766,9 @@ SELECT minusTBox(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-0
 SELECT minusTBox(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]}', tbox 'TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
 SELECT minusTBox(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', tbox 'TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
 SELECT minusTBox(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', tbox 'TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
+-- The boxes overlap, the value lies in the box at no instant: its complement is the whole value
+SELECT minusTBox(tfloat '{3@2001-01-01, 1.5@2001-01-03}', tbox 'TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
+SELECT minusTBox(tfloat '[3@2001-01-01, 1.5@2001-01-03]', tbox 'TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
 
 -------------------------------------------------------------------------------
 
