@@ -165,6 +165,27 @@ datumarr_extract(ArrayType *array, int *count)
   return result;
 }
 
+/**
+ * @brief Extract a C array from a one-dimensional PostgreSQL array of texts
+ * @details As #datumarr_extract for the texts MEOS takes as `text **` and a
+ * count, the keys and paths of the JSON functions and the creation options
+ * of the GDAL writers among them
+ * @note A NULL element of the array is a NULL pointer of the result; the
+ * elements are pointers into the array object
+ */
+text **
+textarr_extract(ArrayType *array, int *count)
+{
+  if (ARR_NDIM(array) > 1)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
+       errmsg("wrong number of array subscripts")));
+  Datum *elems;
+  bool *nulls;
+  deconstruct_array(array, TEXTOID, -1, false, 'i', &elems, &nulls, count);
+  pfree(nulls);
+  return (text **) elems;
+}
+
 #if CBUFFER
 /**
  * @brief Extract a C array from a PostgreSQL array containing circular buffers

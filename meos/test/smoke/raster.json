@@ -99,20 +99,24 @@
     },
     "raster_as_gdal": {
       "1": "\"GTiff\"",
-      "2": "\"COMPRESS=DEFLATE\"",
-      "3": "0"
+      "2": "gdal_opts1",
+      "3": "1",
+      "4": "0"
     },
     "raster_as_tiff": {
       "1": "NULL",
-      "2": "0"
+      "2": "0",
+      "3": "0"
     },
     "raster_as_png": {
       "0": "rast_u8",
-      "1": "NULL"
+      "1": "NULL",
+      "2": "0"
     },
     "raster_as_jpeg": {
       "0": "rast_u8",
-      "1": "NULL"
+      "1": "NULL",
+      "2": "0"
     },
     "raster_from_gdal": {
       "0": "grid_bytes1",
@@ -334,6 +338,9 @@
     "  if (grid_file1) { fputs(grid_text1, grid_file1); fclose(grid_file1); }",
     "  const uint8_t *grid_bytes1 = (const uint8_t *) grid_text1;",
     "  size_t grid_bytes1_size = sizeof(grid_text1) - 1;",
+    "  /* The creation options a GDAL writer takes, one KEY=VALUE an element. */",
+    "  text *gdal_opt1 = cstring_to_text(\"COMPRESS=DEFLATE\");",
+    "  text *gdal_opts1[] = { gdal_opt1 };",
     "  /* The band a clip keeps and the block of values a set writes. */",
     "  int clipbands1[] = { 1 };",
     "  double setvals1[] = { 11.0, 12.0 };",
@@ -425,6 +432,7 @@
     "  free(rq_hexwkb1);",
     "  free(rq_wkb1);",
     "  free(tfloat_cov1);",
+    "  free(gdal_opt1);",
     "  free(rast_u8);",
     "  free(rq2);",
     "  free(rq1);",
