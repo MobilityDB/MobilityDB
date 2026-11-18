@@ -120,104 +120,6 @@ Temporalarr_as_text(PG_FUNCTION_ARGS)
  * Output in Moving Features JSON MF-JSON representation
  *****************************************************************************/
 
-typedef struct
-{
-  int32_t srid;
-  bool short_crs;
-  char *srs;
-} MFSrsCache;
-
-/**
- * @brief Return the SRS name associated to a SRID
- */
-static char *
-get_srs_by_srid(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
-{
-  MemoryContext oldcontext;
-  const uint16_t max_query_size = 512;
-  char query[512];
-  Oid argtypes[1] = {INT4OID};
-  Datum values[1] = {Int32GetDatum(srid)};
-  char *srs, *srscopy;
-
-  postgis_initialize_cache();
-
-  if (SPI_connect() != SPI_OK_CONNECT)
-    elog(ERROR, "%s: could not connect to SPI manager", __func__);
-
-  if (short_crs)
-    snprintf(query, max_query_size,
-      "SELECT auth_name || ':' || auth_srid "
-      "FROM %s WHERE srid = $1",
-      postgis_spatial_ref_sys());
-  else
-    snprintf(query, max_query_size,
-      "SELECT 'urn:ogc:def:crs:' || auth_name || '::' || auth_srid "
-      "FROM %s WHERE srid = $1",
-      postgis_spatial_ref_sys());
-
-  if (SPI_execute_with_args(query, 1, argtypes, values, NULL, true, 1) !=
-      SPI_OK_SELECT)
-  {
-    SPI_finish();
-    elog(ERROR, "%s: error executing spatial_ref_sys lookup", __func__);
-  }
-
-  if (SPI_processed <= 0)
-  {
-    SPI_finish();
-    return NULL;
-  }
-
-  srs = SPI_getvalue(SPI_tuptable->vals[0], SPI_tuptable->tupdesc, 1);
-  if (! srs)
-  {
-    SPI_finish();
-    return NULL;
-  }
-
-  oldcontext = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
-  srscopy = pstrdup(srs);
-  MemoryContextSwitchTo(oldcontext);
-
-  SPI_finish();
-  return srscopy;
-}
-
-/**
- * @brief Return the cached SRS name associated to a SRID
- */
-static char *
-get_srs_cache_by_srid(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
-{
-  MFSrsCache *cache = fcinfo->flinfo->fn_extra;
-  MemoryContext oldcontext;
-  char *srs;
-
-  if (cache && cache->srid == srid && cache->short_crs == short_crs &&
-      cache->srs)
-    return cache->srs;
-
-  srs = get_srs_by_srid(fcinfo, srid, short_crs);
-  if (! srs)
-    return NULL;
-
-  oldcontext = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
-  if (! cache)
-  {
-    cache = palloc0(sizeof(MFSrsCache));
-    fcinfo->flinfo->fn_extra = cache;
-  }
-  else if (cache->srs)
-    pfree(cache->srs);
-  cache->srid = srid;
-  cache->short_crs = short_crs;
-  cache->srs = srs;
-  MemoryContextSwitchTo(oldcontext);
-
-  return cache->srs;
-}
-
 PGDLLEXPORT Datum Temporal_as_mfjson(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_as_mfjson);
 /**
@@ -233,7 +135,6 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   int precision = OUT_DEFAULT_DECIMAL_DIGITS;
   int option = 0;
   int flags = 0;
-  char *srs = NULL;
 
   /* Get the temporal value */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -247,29 +148,6 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
    option = PG_GETARG_INT32(1);
 
-  if (tspatial_type(temp->temptype))
-  {
-    /* Even if the option does not request to output the crs, we output the
-     * short crs when the SRID is different from SRID_UNKNOWN. Otherwise,
-     * it is not possible to reconstruct the temporal point from the output
-     * of this function without loosing the SRID */
-    int32_t srid = tspatial_srid(temp);
-    if (srid != SRID_UNKNOWN && !(option & 2) && !(option & 4))
-      option |= 2;
-    if (srid != SRID_UNKNOWN)
-    {
-      if (option & 2)
-        srs = get_srs_cache_by_srid(fcinfo, srid, true);
-      else if (option & 4)
-        srs = get_srs_cache_by_srid(fcinfo, srid, false);
-      if (! srs)
-      {
-        elog(ERROR, "SRID %i unknown in spatial_ref_sys table", srid);
-        PG_RETURN_NULL();
-      }
-    }
-  }
-
   /* Retrieve JSON flags (e.g. for pretty print) if any (default is 0) */
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     flags = PG_GETARG_INT32(2);
@@ -278,7 +156,9 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
     precision = PG_GETARG_INT32(3);
 
-  char *mfjson = temporal_as_mfjson(temp, option, flags, precision, srs,
+  /* MEOS names the coordinate reference system of a spatial value of known
+   * SRID from the PROJ cache */
+  char *mfjson = temporal_as_mfjson(temp, option, flags, precision, NULL,
     &size_out);
   text *result = cstring_to_text(mfjson);
   /* Cannot pfree(mfjson) here — temporal_as_mfjson uses json-c's

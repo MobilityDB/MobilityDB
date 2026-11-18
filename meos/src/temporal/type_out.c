@@ -1431,10 +1431,8 @@ temporal_as_mfjson(const Temporal *temp, int option, int flags,
     precision = OUT_DEFAULT_DECIMAL_DIGITS;
   bool with_bbox = (option & 1) != 0;
 
-#if MEOS
   /* Name the coordinate reference system of a spatial value of known SRID
-   * where the caller names none, as the PostgreSQL function asMFJSON names
-   * it from the table spatial_ref_sys before calling this function */
+   * where the caller names none, from the PROJ cache */
   if (! srs && tspatial_type(temp->temptype))
   {
     int32_t srid = tspatial_srid(temp);
@@ -1445,7 +1443,6 @@ temporal_as_mfjson(const Temporal *temp, int option, int flags,
         return NULL;
     }
   }
-#endif /* MEOS */
 
   /* Get bounding box if needed */
   const bboxunion *box = NULL;

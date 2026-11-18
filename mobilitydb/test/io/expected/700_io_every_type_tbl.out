@@ -10133,7 +10133,7 @@ SELECT asText(tgeometryFromMFJSON(asMFJSON(tgeometry '{[POINT(1 1)@2001-01-01, P
 (1 row)
 
 SELECT asMFJSON(tgeometry 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);
-ERROR:  SRID 123456 unknown in spatial_ref_sys table
+ERROR:  Cannot find SRID (123456) in spatial_ref_sys
 SELECT asBinary(tgeometry 'Point(1 1)@2001-01-01');
                                asbinary                               
 ----------------------------------------------------------------------
@@ -11176,7 +11176,7 @@ SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
 
 RESET DateStyle;
 SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);
-ERROR:  SRID 123456 unknown in spatial_ref_sys table
+ERROR:  Cannot find SRID (123456) in spatial_ref_sys
 SELECT asBinary(tgeompoint 'Point(1 1)@2001-01-01');
                                asbinary                               
 ----------------------------------------------------------------------
@@ -28588,7 +28588,7 @@ SELECT v::text::trgeometry = v, trgeometryFromText(asEWKT(v)) = v FROM (VALUES
 (2 rows)
 
 SELECT asMFJSON(trgeometry 'SRID=123456;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 2);
-ERROR:  SRID 123456 unknown in spatial_ref_sys table
+ERROR:  Cannot find SRID (123456) in spatial_ref_sys
 SELECT asBinary(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2001-01-01');
                                                                                                                 asbinary                                                                                                                
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
