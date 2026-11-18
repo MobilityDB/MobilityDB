@@ -3637,6 +3637,9 @@
 					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Sample an array of <varname>raquet</varname> raster tiles along a trajectory</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_rasterValueSeries"><varname>rasterValue</varname>, <varname>rasterTileValue</varname></link>: Sample a raster series along a trajectory</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
 				</listitem>
 				<listitem>

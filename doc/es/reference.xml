@@ -3628,6 +3628,9 @@
 					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Muestrea un arreglo de teselas ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_rasterValueSeries"><varname>rasterValue</varname>, <varname>rasterTileValue</varname></link>: Muestrea una serie de rásteres a lo largo de una trayectoria</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				</listitem>
 				<listitem>

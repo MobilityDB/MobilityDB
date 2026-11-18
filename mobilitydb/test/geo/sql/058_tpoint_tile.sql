@@ -32,6 +32,10 @@ SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-
 SELECT round(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0), 6);
 SELECT round(spaceBoxes(tgeompoint 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'Point(1 1)'), 6);
 SELECT round(spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, geometry 'Point(1 1 1)'), 6);
+-- A sequence of one instant in a sequence set lies in a tile of its own
+SELECT round(spaceBoxes(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(9 9)@2001-01-05]}', 2.0), 6);
+SELECT spaceBoxes(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(9 9)@2001-01-05]}', 2.0) =
+  spaceBoxes(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(9 9)@2001-01-05]}', 2.0, bitmatrix := false);
 
 /* Errors */
 SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, geometry 'Point(1 1)');
@@ -53,6 +57,11 @@ SELECT timeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-1
 
 SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01'), 6);
 SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1 1)', '2001-01-01'));
+-- A step sequence stays in the tile of an instant through the time bins up to
+-- the next instant
+SELECT round(spaceTimeBoxes(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-09]', 2.0, interval '2 days', 'Point(0 0)', '2001-01-01'), 6);
+SELECT spaceTimeBoxes(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-09]', 2.0, interval '2 days', 'Point(0 0)', '2001-01-01') =
+  spaceTimeBoxes(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-09]', 2.0, interval '2 days', 'Point(0 0)', '2001-01-01', bitmatrix := false);
 
 /* Errors */
 SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01');

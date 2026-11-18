@@ -193,6 +193,7 @@ extern Datum Tcomp_temporal_base(FunctionCallInfo fcinfo,
 
 extern Temporal *temporal_slice(Datum tempdatum);
 extern bool temporal_slices_share_no_time(Datum tempdatum1, Datum tempdatum2);
+extern Oid gist_query_type(FunctionCallInfo fcinfo);
 
 /*****************************************************************************/
 

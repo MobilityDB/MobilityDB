@@ -103,6 +103,11 @@ int main(void)
     1);
   assert(rq);
   const Raquet *rqarr[1] = { rq };
+  /* A series of one raster and of one tile, valid over the whole trip */
+  const Raster *rasts[1] = { rast };
+  Span *period = tstzspan_in("[2020-01-01, 2020-01-02]");
+  assert(period);
+  Span spans[1] = { *period };
   meos_errno_reset();
 
   /* A null trajectory and a temporal geography point are reported rather than
@@ -157,8 +162,104 @@ int main(void)
       araster_tile_value(bad[i], rq, vspan) == -1, errnum[i]);
     refused(CALL("araster_tile_value_array"),
       araster_tile_value_array(bad[i], rqarr, 1, vspan) == -1, errnum[i]);
+    refused(CALL("raster_value_series"),
+      raster_value_series(bad[i], rasts, spans, 1, 1) == NULL, errnum[i]);
+    refused(CALL("raster_at_value_series"),
+      raster_at_value_series(bad[i], rasts, spans, 1, 1, vspan) == NULL,
+      errnum[i]);
+    refused(CALL("raster_minus_value_series"),
+      raster_minus_value_series(bad[i], rasts, spans, 1, 1, vspan) == NULL,
+      errnum[i]);
+    refused(CALL("eraster_value_series"),
+      eraster_value_series(bad[i], rasts, spans, 1, 1, vspan) == -1,
+      errnum[i]);
+    refused(CALL("araster_value_series"),
+      araster_value_series(bad[i], rasts, spans, 1, 1, vspan) == -1,
+      errnum[i]);
+    refused(CALL("raster_tile_value_series"),
+      raster_tile_value_series(bad[i], rqarr, spans, 1) == NULL, errnum[i]);
+    refused(CALL("raster_tile_at_value_series"),
+      raster_tile_at_value_series(bad[i], rqarr, spans, 1, vspan) == NULL,
+      errnum[i]);
+    refused(CALL("raster_tile_minus_value_series"),
+      raster_tile_minus_value_series(bad[i], rqarr, spans, 1, vspan) == NULL,
+      errnum[i]);
+    refused(CALL("eraster_tile_value_series"),
+      eraster_tile_value_series(bad[i], rqarr, spans, 1, vspan) == -1,
+      errnum[i]);
+    refused(CALL("araster_tile_value_series"),
+      araster_tile_value_series(bad[i], rqarr, spans, 1, vspan) == -1,
+      errnum[i]);
 #undef CALL
   }
+
+  /* Two distinct periods that overlap are refused, by the reading and by the
+   * ever and always forms, which answer -1 rather than false; two rasters
+   * sharing one period are the tiles of one raster in space, and are read */
+  Span *early = tstzspan_in("[2020-01-01, 2020-01-01 18:00]");
+  Span *late = tstzspan_in("[2020-01-01 06:00, 2020-01-02]");
+  assert(early && late);
+  Span overlap[2] = { *early, *late };
+  Span shared[2] = { *period, *period };
+  const Raster *rasts2[2] = { rast, rast };
+  refused("raster_value_series(overlapping periods)",
+    raster_value_series(geom, rasts2, overlap, 2, 1) == NULL,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  refused("eraster_value_series(overlapping periods)",
+    eraster_value_series(geom, rasts2, overlap, 2, 1, vspan) == -1,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  refused("araster_value_series(overlapping periods)",
+    araster_value_series(geom, rasts2, overlap, 2, 1, vspan) == -1,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  Temporal *shared_res = raster_value_series(geom, rasts2, shared, 2, 1);
+  printf("raster_value_series(one period shared): %s, errno %d\n",
+    shared_res ? "a value" : "NULL", meos_errno());
+  assert(shared_res != NULL && meos_errno() == 0);
+  free(shared_res); free(late); free(early);
+
+  /* Two rasters of one footprint valid over one period are one tile given
+   * twice: read together where they read one value, refused where they read
+   * two, the ever and always forms answering -1 */
+  uint8_t px7[1] = { 7 }, px9[1] = { 9 };
+  Raster *r7 = raster_make(1, 1, 0.0, 3.0, 3.0, -3.0, 0.0, 0.0, 4326, "8BUI",
+    0.0, false, px7, 1);
+  Raster *r7b = raster_make(1, 1, 0.0, 3.0, 3.0, -3.0, 0.0, 0.0, 4326, "8BUI",
+    0.0, false, px7, 1);
+  Raster *r9 = raster_make(1, 1, 0.0, 3.0, 3.0, -3.0, 0.0, 0.0, 4326, "8BUI",
+    0.0, false, px9, 1);
+  assert(r7 && r7b && r9);
+  const Raster *same[2] = { r7, r7b }, *differ[2] = { r7, r9 };
+  Temporal *same_res = raster_value_series(geom, same, shared, 2, 1);
+  printf("raster_value_series(one tile given twice, one value): %s, errno %d\n",
+    same_res ? "a value" : "NULL", meos_errno());
+  assert(same_res != NULL && meos_errno() == 0);
+  free(same_res);
+  refused("raster_value_series(one tile given twice, two values)",
+    raster_value_series(geom, differ, shared, 2, 1) == NULL,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  refused("eraster_value_series(one tile given twice, two values)",
+    eraster_value_series(geom, differ, shared, 2, 1, vspan) == -1,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  refused("araster_value_series(one tile given twice, two values)",
+    araster_value_series(geom, differ, shared, 2, 1, vspan) == -1,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  /* The same holds for two Raquet tiles of one cell */
+  uint8_t px1[1] = { 1 };
+  Raquet *rq1 = raquet_make(tiles[0], 1, 1, MEOS_PT_UINT8, 0.0, false, px1, 1);
+  assert(rq1);
+  const Raquet *rqdiffer[2] = { rq, rq1 }, *rqsame[2] = { rq, rq };
+  Temporal *rqsame_res = raster_tile_value_series(geom, rqsame, shared, 2);
+  printf("raster_tile_value_series(one tile given twice, one value): %s, "
+    "errno %d\n", rqsame_res ? "a value" : "NULL", meos_errno());
+  assert(rqsame_res != NULL && meos_errno() == 0);
+  free(rqsame_res);
+  refused("raster_tile_value_series(one tile given twice, two values)",
+    raster_tile_value_series(geom, rqdiffer, shared, 2) == NULL,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  refused("eraster_tile_value_series(one tile given twice, two values)",
+    eraster_tile_value_series(geom, rqdiffer, shared, 2, vspan) == -1,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  free(rq1); free(r9); free(r7b); free(r7);
 
   /* A temporal geometry point is read with no error left behind */
   Temporal *res = raster_value(geom, rast, 1, false, "nearest");
@@ -171,6 +272,12 @@ int main(void)
     res ? "a value" : "NULL", meos_errno());
   assert(res != NULL && meos_errno() == 0);
   free(res);
+  res = raster_value_series(geom, rasts, spans, 1, 1);
+  printf("raster_value_series(tgeompoint): %s, errno %d\n",
+    res ? "a value" : "NULL", meos_errno());
+  assert(res != NULL && meos_errno() == 0);
+  free(res);
+  free(period);
   free(tiles); free(ttiles); free(rq); free(vspan); free(rast); free(geog); free(geom);
 
   /* Finalize MEOS */

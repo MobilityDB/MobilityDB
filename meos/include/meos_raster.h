@@ -462,6 +462,32 @@ extern int eraster_tile_value_array(const Temporal *traj,
 extern int araster_tile_value_array(const Temporal *traj,
   const Raquet **rqarr, int count, const Span *vspan);
 
+/* Reading of a raster series: each raster read over the part of the
+ * trajectory within its validity period */
+
+extern Temporal *raster_value_series(const Temporal *traj,
+  const Raster **rasts, const Span *spans, int count, int band);
+extern Temporal *raster_at_value_series(const Temporal *traj,
+  const Raster **rasts, const Span *spans, int count, int band,
+  const Span *vspan);
+extern Temporal *raster_minus_value_series(const Temporal *traj,
+  const Raster **rasts, const Span *spans, int count, int band,
+  const Span *vspan);
+extern int eraster_value_series(const Temporal *traj, const Raster **rasts,
+  const Span *spans, int count, int band, const Span *vspan);
+extern int araster_value_series(const Temporal *traj, const Raster **rasts,
+  const Span *spans, int count, int band, const Span *vspan);
+extern Temporal *raster_tile_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count);
+extern Temporal *raster_tile_at_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count, const Span *vspan);
+extern Temporal *raster_tile_minus_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count, const Span *vspan);
+extern int eraster_tile_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count, const Span *vspan);
+extern int araster_tile_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count, const Span *vspan);
+
 /*****************************************************************************/
 
 #if defined(__GNUC__) && ! defined(_WIN32) && ! defined(__CYGWIN__)
