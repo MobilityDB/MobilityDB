@@ -448,6 +448,35 @@ tnpoint_twcentroid(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @brief Return a temporal network point restricted to the times of the
+ * restriction of its geometry point, in the container of that restriction
+ * @details The network point is restricted to the times rather than
+ * converted back from the geometry point, which would round its positions.
+ * #temporal_restrict_tstzspanset answers a sequence set, so an instant or a
+ * sequence of the geometry point is answered as an instant
+ * (#temporal_as_tinstant) or as a sequence of its interpolation
+ * (#temporal_as_tsequence), as the restriction of a temporal geometry point
+ * answers it
+ * @param[in] temp Temporal network point
+ * @param[in] res Restriction of its geometry point
+ */
+static Temporal *
+tnpoint_restrict_times(const Temporal *temp, const Temporal *res)
+{
+  SpanSet *ss = temporal_time(res);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+  pfree(ss);
+  if (! result || result->subtype == res->subtype)
+    return result;
+  Temporal *same = (res->subtype == TINSTANT) ?
+    (Temporal *) temporal_as_tinstant(result) :
+    (Temporal *) temporal_as_tsequence(result,
+      MEOS_FLAGS_GET_INTERP(res->flags));
+  pfree(result);
+  return same;
+}
+
+/**
  * @ingroup meos_internal_npoint_restrict
  * @brief Return a temporal network point restricted to (the complement of) a
  * geometry
@@ -467,17 +496,11 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
 
   Temporal *tpoint = tnpoint_to_tgeompoint(temp);
   Temporal *res = tgeo_restrict_geom(tpoint, gs, atfunc);
-  Temporal *result = NULL;
-  if (res)
-  {
-    /* We do not call the function tgeompoint_to_tnpoint to avoid
-     * roundoff errors */
-    SpanSet *ss = temporal_time(res);
-    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
-    pfree(res);
-    pfree(ss);
-  }
   pfree(tpoint);
+  if (! res)
+    return NULL;
+  Temporal *result = tnpoint_restrict_times(temp, res);
+  pfree(res);
   return result;
 }
 
@@ -524,43 +547,30 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
-  /* The network point is restricted to the times of the restriction of its
-   * geometry point, which is not converted back to avoid roundoff errors.
-   * Where that restriction reads no point (#tgeo_restrict_stbox), a box with
-   * the time alone or one the value's box does not overlap, its times are
-   * read on the network point, whose box is the one of its geometry point,
-   * so the value is not converted */
+  /* The restriction of the geometry point answers a box with the time alone,
+   * and a box the value's does not overlap, without its points
+   * (#tgeo_restrict_stbox): the network point answers them as it does,
+   * without being converted, its box being the one of its geometry point.
+   * Elsewhere it is restricted to the times of that restriction
+   * (#tnpoint_restrict_times) */
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   if (hasx && (! ensure_same_geodetic(temp->flags, box->flags) ||
       ! ensure_same_srid(tspatial_srid(temp), box->srid)))
     return NULL;
-  Temporal *res = NULL;
-  STBox box1;
   if (hast && ! hasx)
-    res = temporal_restrict_tstzspan(temp, &box->period, atfunc);
-  else
-  {
-    tspatial_set_stbox(temp, &box1);
-    if (! overlaps_stbox_stbox(&box1, box))
-    {
-      if (atfunc)
-        return NULL;
-      res = temporal_copy(temp);
-    }
-    else
-    {
-      Temporal *tpoint = tnpoint_to_tgeompoint(temp);
-      res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
-      pfree(tpoint);
-    }
-  }
+    return temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  STBox box1;
+  tspatial_set_stbox(temp, &box1);
+  if (! overlaps_stbox_stbox(&box1, box))
+    return atfunc ? NULL : temporal_copy(temp);
+  Temporal *tpoint = tnpoint_to_tgeompoint(temp);
+  Temporal *res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
+  pfree(tpoint);
   if (! res)
     return NULL;
-  SpanSet *ss = temporal_time(res);
-  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+  Temporal *result = tnpoint_restrict_times(temp, res);
   pfree(res);
-  pfree(ss);
   return result;
 }
 
