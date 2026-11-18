@@ -140,6 +140,18 @@ datum_s2_cell_to_token(Datum d)
   return PointerGetDatum(result);
 }
 
+/**
+ * @brief Return whether a geodetic S2 cell shares a position with a box, as
+ * #s2cell_cell_meets_box answers it, the twin of `datum_h3_cell_meets_box`
+ * (meos/src/h3/th3index_ops.c)
+ */
+static Datum
+datum_s2_cell_meets_box(Datum d, Datum box, Datum border_inc)
+{
+  return BoolGetDatum(s2cell_cell_meets_box(DatumGetS2Cell(d),
+    (const STBox *) DatumGetPointer(box), DatumGetBool(border_inc)));
+}
+
 /*****************************************************************************
  * Descriptor
  *****************************************************************************/
@@ -161,7 +173,8 @@ const DggsCellOps s2_cellops =
   .cell_to_parent  = &datum_s2_cell_to_parent,
   .cell_to_point   = &datum_s2_cell_to_point,
   .cell_to_boundary = &datum_s2_cell_to_boundary,
-  .cell_area       = &datum_s2_cell_area
+  .cell_area       = &datum_s2_cell_area,
+  .cell_meets_box  = &datum_s2_cell_meets_box
 };
 
 /*****************************************************************************

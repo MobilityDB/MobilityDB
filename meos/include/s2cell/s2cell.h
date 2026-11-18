@@ -113,6 +113,8 @@ extern S2CellId s2cell_point_cell_geodetic(double lon, double lat,
 extern int s2cell_segment_cells_geodetic(double lon1, double lat1,
   double lon2, double lat2, uint32_t level, S2CellId *cells, double *enter,
   DggsEdgeCross *cross, int maxout);
+extern bool s2cell_cell_meets_box(S2CellId cell, const STBox *box,
+  bool border_inc);
 
 /*****************************************************************************/
 

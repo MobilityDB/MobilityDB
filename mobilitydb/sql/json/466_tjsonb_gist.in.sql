@@ -77,6 +77,10 @@ CREATE OPERATOR CLASS tjsonb_rtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (tjsonb, tstzspan),
   OPERATOR  31    #&> (tjsonb, tjsonb),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tjsonb, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (tjsonb, tstzspan),
   -- functions
   FUNCTION  1 tjsonb_gist_consistent(internal, tjsonb, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
