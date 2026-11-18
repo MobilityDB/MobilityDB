@@ -751,6 +751,39 @@ double_sum_zero(const double *x, int n)
 }
 
 /**
+ * @brief Return true if the second of two geography point segments is the
+ * mirror of the first across the plane of a meridian and the first crosses
+ * that plane strictly inside the period
+ * @details The twin of #geogpointsegm_mirrored across the plane of the
+ * meridian L, L + 180, where 2L is the sum of the longitudes of each pair of
+ * mirrored ends, decided exactly (#double_sum_zero): the reflection maps the
+ * great circle of a segment and its motion at a constant angular speed to
+ * those of its mirror, so the two stand at one point where the first crosses
+ * the plane. The distance of a position of longitude l to the plane has the
+ * sign of sin(l - L), whose half difference of longitudes l - L is the half
+ * difference of a pair of mirrored ends, so the first crosses the plane
+ * strictly inside the period where those of its start and of its end have
+ * opposite signs, a half difference of 180 degrees, a point of the plane,
+ * crossing it at a bound. Ends at a pole are left to the other families
+ */
+static bool
+geogpointsegm_meridian_mirrored(const POINT4D *p, bool hasz)
+{
+  if (p[2].y != p[0].y || p[3].y != p[1].y || fabs(p[0].y) == 90.0 ||
+      fabs(p[1].y) == 90.0 || (hasz && (p[2].z != p[0].z ||
+      p[3].z != p[1].z)))
+    return false;
+  const double x[4] = { p[0].x, p[2].x, - p[1].x, - p[3].x };
+  if (! double_sum_zero(x, 4))
+    return false;
+  /* The half differences of the mirrored ends, exact in sign */
+  double d0 = p[0].x - p[2].x, d1 = p[1].x - p[3].x;
+  if (fabs(d0) == 360.0 || fabs(d1) == 360.0)
+    return false;
+  return (d0 > 0.0 && d1 < 0.0) || (d0 < 0.0 && d1 > 0.0);
+}
+
+/**
  * @brief Return the point at which a geography point segment stands at the
  * middle of its period where a half turn exchanging its ends proves it
  * @details A half turn about an axis maps the great circle of a segment
@@ -1474,6 +1507,48 @@ geog_motion_dwithin_crossings_exact(const POINT2D *a0, const POINT2D *a1,
 }
 
 /**
+ * @brief Return true if the microsecond nearest to the instant at which a
+ * geography point segment reaches the angle @p ang from its start is proved,
+ * set in the output argument
+ * @details The segment sweeps the angle om of its arc at a constant angular
+ * speed (#GeogSegmPair), so it reaches the angle at the parameter ang / om,
+ * computed with its error bound (#BoundedDouble). A transcendental offset is
+ * no tie, so the nearest microsecond is proved as #floatsegm_offset_filter
+ * proves it, where the bound keeps the offset away from the middle of two
+ * microseconds; elsewhere it is not stated
+ * @param[in] arc Bounded trigonometry of the segment (#bd_geogsegm_arc)
+ * @param[in] ang Angle from the start, with its bound
+ * @param[in] lower,upper Timestamps defining the segment
+ * @param[out] t Microsecond nearest to the instant, set where it is proved,
+ * a bound where the instant belongs to it
+ * @return False where the date is not proved or where it is a bound
+ */
+static bool
+geogpointsegm_angle_date(const GeogArcBounds *arc, BoundedDouble ang,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t)
+{
+  int64 d = upper - lower;
+  if (d >= FLOATSEGM_FILTER_MAXD)
+    return false;
+  BoundedDouble dur = { (double) d, 0.0 };
+  BoundedDouble x = bd_mul(bd_div(ang, arc->om), dur);
+  if (! bd_valid(arc->hav) || ! bd_valid(arc->comp) || ! bd_valid(arc->om) ||
+      ! bd_valid(ang) || ! bd_valid(x))
+    return false;
+  /* The offset lies within x.e of x.v; not a number fails both comparisons */
+  double y = x.v + 0.5;
+  if (! (y >= 0.0 && y < (double) d + 1.0))
+    return false;
+  TimestampTz est = (TimestampTz) y;
+  if (fabs(x.v - (double) est) + x.e * BD_INFLATE >= 0.5)
+    return false;
+  /* An instant whose nearest microsecond is a bound belongs to the bound,
+   * which dates it */
+  *t = lower + est;
+  return (est > 0 && est < d);
+}
+
+/**
  * @brief Return true if the microsecond nearest to the meeting of a geography
  * point segment and its mirror across the equator is proved, set in the
  * output argument
@@ -1502,14 +1577,11 @@ static bool
 geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
   TimestampTz upper, TimestampTz *t)
 {
-  int64 d = upper - lower;
-  if (d >= FLOATSEGM_FILTER_MAXD)
-    return false;
   /* The bounded trigonometry of the segment (#bd_geogsegm_arc) */
   GeogArcBounds arc;
   bd_geogsegm_arc(p[0].x, p[0].y, p[1].x, p[1].y, &arc);
   BoundedDouble sa = arc.sa, sh = arc.sh, cq = arc.cq, hav = arc.hav,
-    comp = arc.comp, om = arc.om, sinom = arc.sinom;
+    sinom = arc.sinom;
   /* cos(om) sa - sb, which cancels where the ends are near each other or
    * nearly antipodal, in the form that does not: with cos(om) = 1 - 2 hav and
    * sa - sb = -2 cos(Q / 2) sin(P / 2), P and Q the difference and the sum of
@@ -1518,25 +1590,52 @@ geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
    * is 2 ((1 - hav) sa - sq ch) beyond */
   BoundedDouble half = bd_add(bd_mul(cq, sh), bd_mul(hav, sa));
   if (hav.v > 0.5)
-    half = bd_sub(bd_mul(arc.sq, arc.ch), bd_mul(comp, sa));
+    half = bd_sub(bd_mul(arc.sq, arc.ch), bd_mul(arc.comp, sa));
   BoundedDouble mtwo = { -2.0, 0.0 };
   BoundedDouble ang = bd_atan2(bd_mul(sinom, sa), bd_mul(mtwo, half));
-  BoundedDouble dur = { (double) d, 0.0 };
-  BoundedDouble x = bd_mul(bd_div(ang, om), dur);
-  if (! bd_valid(hav) || ! bd_valid(comp) || ! bd_valid(om) ||
-      ! bd_valid(ang) || ! bd_valid(x))
-    return false;
-  /* The offset lies within x.e of x.v; not a number fails both comparisons */
-  double y = x.v + 0.5;
-  if (! (y >= 0.0 && y < (double) d + 1.0))
-    return false;
-  TimestampTz est = (TimestampTz) y;
-  if (fabs(x.v - (double) est) + x.e * BD_INFLATE >= 0.5)
-    return false;
-  /* A meeting whose nearest microsecond is a bound belongs to the bound,
-   * which dates it */
-  *t = lower + est;
-  return (est > 0 && est < d);
+  return geogpointsegm_angle_date(&arc, ang, lower, upper, t);
+}
+
+/**
+ * @brief Return true if the microsecond nearest to the meeting of a geography
+ * point segment and its mirror across the plane of a meridian is proved, set
+ * in the output argument
+ * @details The twin of #geogpointsegm_mirror_date across the plane of the
+ * meridian L (#geogpointsegm_meridian_mirrored). The distances of the ends A
+ * and B of the first segment to the plane are a = cos(lat A) sin(lon A - L)
+ * and b = cos(lat B) sin(lon B - L), of opposite signs, each half difference
+ * lon - L the half difference of a pair of mirrored ends, held exactly
+ * (#two_diff). The position at the angle t from A, sin(om - t) A + sin(t) B
+ * over sin(om), is on the plane where
+ * tan t = |a| sin(om) / (|a| cos(om) + |b|), a sum of positive terms where
+ * om is up to 90 degrees, dated as #geogpointsegm_angle_date dates it
+ * @param[in] p Ends: the start and the end of the first segment, then those
+ * of the second
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Microsecond nearest to the meeting, set where it is proved,
+ * a bound where the meeting belongs to it
+ * @return False where the date is not proved or where it is a bound
+ */
+static bool
+geogpointsegm_meridian_date(const POINT4D *p, TimestampTz lower,
+  TimestampTz upper, TimestampTz *t)
+{
+  GeogArcBounds arc;
+  bd_geogsegm_arc(p[0].x, p[0].y, p[1].x, p[1].y, &arc);
+  double h0, l0, h1, l1;
+  two_diff(p[0].x, p[2].x, &h0, &l0);
+  two_diff(p[1].x, p[3].x, &h1, &l1);
+  BoundedDouble s0, c0, s1, c1;
+  bd_sincos_deg(h0 / 2.0, l0 / 2.0, 0.0, &s0, &c0);
+  bd_sincos_deg(h1 / 2.0, l1 / 2.0, 0.0, &s1, &c1);
+  BoundedDouble a = bd_mul(arc.ca, s0), b = bd_mul(arc.cb, s1);
+  /* The magnitudes, a and b of opposite signs */
+  a.v = fabs(a.v);
+  b.v = fabs(b.v);
+  BoundedDouble cosom = bd_sub(arc.comp, arc.hav);
+  BoundedDouble ang = bd_atan2(bd_mul(a, arc.sinom),
+    bd_add(bd_mul(a, cosom), b));
+  return geogpointsegm_angle_date(&arc, ang, lower, upper, t);
 }
 
 /**
@@ -1555,7 +1654,9 @@ geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
  * (#pointsegm_meet_coord); a segment and its mirror across the equator meet
  * where the first crosses it (#geogpointsegm_mirrored), at the middle where
  * the latitudes of its ends are opposite and at an instant that is not dated
- * otherwise. Elsewhere a meeting is the coincidence of two angles computed in
+ * otherwise; a segment and its mirror across the plane of a meridian meet
+ * where the first crosses that plane (#geogpointsegm_meridian_mirrored).
+ * Elsewhere a meeting is the coincidence of two angles computed in
  * floating trigonometry, which no input proves, and none is stated. The
  * meeting is dated as #tnumbersegm_crossing dates the crossing of one
  * coordinate that changes sign, a tie going to the even timestamp
@@ -1604,6 +1705,13 @@ geogpointsegm_meeting(Datum start1, Datum end1, Datum start2, Datum end2,
     if (p[1].y == - p[0].y)
       return tnumbersegm_crossing(0.0, 1.0, 1.0, 0.0, lower, upper, t);
     return geogpointsegm_mirror_date(p, lower, upper, t);
+  }
+  /* A segment and its mirror across the plane of a meridian meet where the
+   * first crosses the plane (#geogpointsegm_meridian_mirrored) */
+  if (geogpointsegm_meridian_mirrored(p, hasz))
+  {
+    *meet = true;
+    return geogpointsegm_meridian_date(p, lower, upper, t);
   }
   double s1[2], e1[2], s2[2], e2[2];
   int n = geogpointsegm_linear(p, hasz, s1, e1, s2, e2);
