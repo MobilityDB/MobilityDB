@@ -93,8 +93,7 @@ the standard's conformance classes against the fixture.
   and a raster, a Raquet tile and the values a trajectory reads are written as CoverageJSON
   (R4, #3786).
 - The restrictions read the values of a `Raquet` tile and an array of tiles (R2, MobilityDB
-  #3781); one row of a Raquet file is read into a tile (R5, #3782), and a whole Raquet
-  Parquet file is read and written by no MEOS function.
+  #3781); one row of a Raquet file is read into a tile (R5, #3782).
 - `tools/raster_matrix.py` measures the raster surface each binding and MobilityDuck carries
   (R6, MobilityDB #3776).
 - MobilityAPI publishes no raster (R7 to R10).
