@@ -325,6 +325,15 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01
 -- the minimum, are its breakpoints. One disk passes straight through another,
 -- meeting it at f = 0.2 and f = 0.8 of the segment
 SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-05]', tcbuffer '[Cbuffer(Point(5 0),2)@2001-01-01, Cbuffer(Point(5 0),2)@2001-01-05]'), 6);
+-- Disks that overlap at a bound of the segment and part inside it: the distance
+-- is zero until they part, at f = 0.4 against a buffer and at f = 0.3 against a
+-- point, and that instant is its breakpoint though the gap has no interior
+-- minimum
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-05]', tcbuffer '[Cbuffer(Point(1 0),2)@2001-01-01, Cbuffer(Point(1 0),2)@2001-01-05]'), 6);
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(10 0),2)@2001-01-02]', cbuffer 'Cbuffer(Point(1 0),0)'), 6);
+-- Centres that keep their separation while a radius grows: the gap 2 - 4f
+-- reaches zero at f = 0.5, where the disks meet and stay overlapping
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),5)@2001-01-05]', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01, Cbuffer(Point(13 0),0)@2001-01-05]'), 6);
 -- The same meeting at projected coordinates: the first centre jumps 330 km in
 -- 4 seconds and passes 64.9 m from the second, so discs of radius 10 km meet
 -- inside a segment whose ends stand 264 km and 26 km apart. The instants at

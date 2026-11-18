@@ -808,26 +808,30 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   double dy = (ept1->y - spt1->y) - (ept2->y - spt2->y);
   double dr = (ev1->radius - sv1->radius) + (ev2->radius - sv2->radius);
 
-  /* Centres that keep their separation leave an affine gap, whose extrema are
-   * the endpoints the caller already reads */
+  /* The gap at the bounds, which the caller reads */
   double s = dx * dx + dy * dy;
-  if (s == 0.0)
-    return 0;
   double q = dx * dx0 + dy * dy0;
   double e = dx0 * dx0 + dy0 * dy0;
+  double gs = sqrt(e) - r0;
+  double ge = hypot(dx0 + dx, dy0 + dy) - (r0 + dr);
 
   /* g(f) = sqrt(e + 2qf + sf^2) - (r0 + dr f), and g'(f) = 0 reads
-   * q + s f = dr sqrt(e + 2qf + sf^2), which squares to the quadratic below */
+   * q + s f = dr sqrt(e + 2qf + sf^2), which squares to the quadratic below.
+   * The candidates are sought only for a gap that is not negative at either
+   * bound: one that is reaches its breakpoints where it crosses zero, read
+   * below. Centres that keep their separation (s = 0) leave an affine gap,
+   * whose extrema are the bounds */
   double cand[2];
   int ncand = 0;
-  if (dr == 0.0)
+  bool seek = (gs >= 0.0 && ge >= 0.0 && s > 0.0);
+  if (seek && dr == 0.0)
     /* A combined radius that does not change leaves the classic closest
      * approach of the two centres, which is what the temporal point family
      * reads and what the quadratic below degenerates to. Taking it directly
      * keeps the two families bit-compatible and keeps the fourth power s^2 out
      * of a degeneracy test that a segment of small relative motion trips */
     cand[ncand++] = -q / s;
-  else
+  else if (seek)
   {
     double a = s * (s - dr * dr);
     double b = 2 * q * (s - dr * dr);
@@ -843,11 +847,12 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
     else
     {
       double delta = b * b - 4 * a * c;
-      if (delta < 0.0)
-        return 0;
-      double sq = sqrt(delta);
-      cand[ncand++] = (-b - sq) / (2 * a);
-      cand[ncand++] = (-b + sq) / (2 * a);
+      if (delta >= 0.0)
+      {
+        double sq = sqrt(delta);
+        cand[ncand++] = (-b - sq) / (2 * a);
+        cand[ncand++] = (-b + sq) / (2 * a);
+      }
     }
   }
 
@@ -855,8 +860,6 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
    * convex, so it holds at most one interior extremum and that extremum is a
    * minimum lying strictly below both endpoints. Requiring that discards the
    * companion root the squaring introduces, on which g' has the wrong sign */
-  double gs = sqrt(e) - r0;
-  double ge = hypot(dx0 + dx, dy0 + dy) - (r0 + dr);
   double best = (gs < ge) ? gs : ge;
   double fbest = -1.0;
   for (int i = 0; i < ncand; i++)
@@ -871,17 +874,18 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
       fbest = f;
     }
   }
-  if (fbest < 0.0)
-    return 0;
 
-  /* A gap that dips below zero is clamped there by the distance itself, so the
-   * value is flat between the two instants at which it reaches zero and the
-   * minimum is no breakpoint of it. Those instants are where the two disks meet,
-   * which is the crossing question, and the dwithin turning point at a zero
-   * distance answers it */
+  /* A gap that is negative somewhere, at a bound or at its interior minimum,
+   * is clamped at zero by the distance itself, so the value is flat where the
+   * two disks overlap and its breakpoints are the instants at which they meet.
+   * That is the crossing question the dwithin turning point at a zero distance
+   * answers, and it holds as well where the gap has no interior extremum, the
+   * crossing inside being then the only kink of the distance */
   if (best < 0.0)
     return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
       lower, upper, tps, NULL, cap);
+  if (fbest < 0.0)
+    return 0;
 
   tps[0] = lower + (TimestampTz) ((double) (upper - lower) * fbest);
   return 1;
