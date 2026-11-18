@@ -47,9 +47,11 @@ restate none of them.
    met when every abstract test of the class holds against the fixture, each test discharged by
    the answer it states: a test that states a response is discharged by that response, never by
    the existence of the route alone.
-2. **A defect of the standard goes to OGC.** Where the standard cannot be met as written, its
-   candidate resolution, on the wiki page of that standard, is filed with the standards body
-   that owns it; until the standard is corrected MobilityAPI follows the resolution, records the
+2. **A defect of the standard goes to OGC with its implementation.** Where the standard cannot
+   be met as written, its candidate resolution is stated on the wiki page of that standard and
+   implemented production grade: merged, tested against the resolution's own cases and green in
+   CI. Only then is it filed with the standards body that owns it, that implementation its
+   evidence. Until the standard is corrected MobilityAPI follows the resolution, records the
    contradiction in a test, and fakes nothing.
 3. **An extension changes no answer of the standard.** What MobilityAPI serves beyond the
    classes it declares (bulk ingest, export, the time series and trajectories views, the raster

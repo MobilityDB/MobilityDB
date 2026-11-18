@@ -15,7 +15,10 @@
 | Gap | Task | State |
 |---|---|---|
 | Three abstract tests that state a response are discharged by their route alone | A1: the rows `tpgeometry-query-distance`, `-velocity` and `-acceleration` of `ats_part1_test.go` become live rows reading the answer the test states: a TReal curve for distance and velocity, for acceleration the 501 with its reason that issue 3 of the wiki page records; the ledger row of Part 1 then counts what each test reads | to do |
-| The seven candidate resolutions of Part 1 are on its wiki page and in no issue of OGC's repository | A2: each resolution filed with the Moving Features Standards Working Group as an issue of `opengeospatial/ogcapi-movingfeatures`, quoting the issue from the published artefacts, the resolution and MobilityAPI's tests as the evidence it is implementable; the wiki page links each issue | to do; filed once the owner approves the text |
+| Resolutions 1 to 5 of the wiki page, the edits of the normative schemas, have no implementation: MobilityAPI validates against the unmodified schemas and records each contradiction in a test | A2: the resolved schema, the vendored bundle with resolutions 1 to 5 applied by a script that reads the vendored copy and never edits it, and every document MobilityAPI writes and every example OGC publishes validated against it in CI; it shows each resolution implementable and that every document conformant today stays conformant | to do |
+| Resolution 6, the corrected abstract tests A.20, A.26 and A.27, exists as text only | A8: executable rows for the three corrected test methods beside the published ones, each discharged by the answer it states (A.27 under the interpolations it names) | after A1 |
+| Resolution 7, a CI job validating every published example against every published schema, exists as text only | A9: the job, a test file over a vendored copy of the bundle, as the standard's repository would run it, in MobilityAPI's CI | to do |
+| The resolutions are on the wiki page and in no issue of OGC's repository | A10: each resolution filed with the Moving Features Standards Working Group (`opengeospatial/ogcapi-movingfeatures`) only once its implementation row (A2, A8 or A9) is merged and green in CI, quoting the issue, the resolution and that implementation as its evidence; the owner files it | after A2, A8, A9 |
 | No abstract test of Part 4 is read, though `cquery` is declared | A3: the abstract tests of the Part 4 class `cquery`, read from the standard's repository, as executable rows like those of Part 1 | to do |
 
 ## The other standards declared
@@ -46,6 +49,8 @@
 
 ## Order
 
-A1 and A2 first, the abstract tests and the standard of Part 1, which MobilityAPI is the
-implementation of; A3 and A7 for the other classes it declares; A4 once the extensions are
-listed; A5 then A6, so that every campaign measures MobilityAPI as it measures a binding.
+A1 first, then A2, A8 and A9, the production implementation of each resolution of Part 1, which
+MobilityAPI is the implementation of; A10 only after them, since no resolution goes to OGC before
+its implementation is merged and green; A3 and A7 for the other classes MobilityAPI declares; A4
+once the extensions are listed; A5 then A6, so that every campaign measures MobilityAPI as it
+measures a binding.
