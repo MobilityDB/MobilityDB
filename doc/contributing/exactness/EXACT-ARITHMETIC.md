@@ -948,10 +948,17 @@ projected coordinates such a sum loses the area: a ring of 1e-6 at 1e6 reads 0, 
 reads 2.44e-4.
 
 C3 moves the orientation and the empty ring onto `ring_area_sign` and `ring_encloses_no_area`,
-and the hole onto a sum about the first vertex. It is paused because the correct areas expose two
-defects of the buffer, which ship with it: a hole of half-width equal to the radius, which
-`buffer_ring` cannot contract and declines, and the ring assembly stranding pieces at a merged
-node.
+and the hole onto a sum about the first vertex (branch `fix/buffer-ring-area`). On master
+`a17e4f934d` the orientation answers wrongly at projected coordinates: a 0.02 square at 6.4e6
+eroded by 0.001 reads 4.8314e-4, the outward buffer, where at the origin it reads 3.24e-4, and a
+holed square eroded there keeps its hole without growing it; the branch answers both as at the
+origin, and the 1840 queries of the buffer ledger byte-identically. The two defects the correct
+areas were said to expose answer on that master: a hole of half-width equal to the radius closes,
+and the nearly closed lines of the gap map decline in none of their 30 cells. Its oracle needs
+the erosion: `cgal_buffer` decides an outward buffer only, and a point lies in the erosion of P
+by r where it lies in P and its distance to the boundary is at least r. The test of a ring the
+buffer constructs, `fabs(buffer_ring_signed_area(pieces)) <= MEOS_GEOM_TOLERANCE`, stays with the
+construction of the buffer's joints.
 
 `ring_area_sign` takes its first tier about the origin as well. On the 1147 rings of the 192
 real multipolygons of the speed cells it decides 943, and the other 204 build an expansion; the
