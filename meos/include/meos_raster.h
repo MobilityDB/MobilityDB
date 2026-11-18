@@ -241,12 +241,12 @@ typedef struct
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
 extern char *raster_as_coveragejson(const Raster *rast);
 extern uint8_t *raster_as_gdal(const Raster *rast, const char *format,
-  const char *options, int32_t srid, size_t *size_out);
-extern uint8_t *raster_as_tiff(const Raster *rast, const char *options,
+  text **options, int count, int32_t srid, size_t *size_out);
+extern uint8_t *raster_as_tiff(const Raster *rast, text **options, int count,
   int32_t srid, size_t *size_out);
-extern uint8_t *raster_as_png(const Raster *rast, const char *options,
+extern uint8_t *raster_as_png(const Raster *rast, text **options, int count,
   size_t *size_out);
-extern uint8_t *raster_as_jpeg(const Raster *rast, const char *options,
+extern uint8_t *raster_as_jpeg(const Raster *rast, text **options, int count,
   size_t *size_out);
 extern Raster *raster_from_gdal(const uint8_t *data, size_t size,
   int32_t srid);
