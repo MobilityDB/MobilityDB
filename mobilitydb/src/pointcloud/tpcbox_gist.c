@@ -201,7 +201,7 @@ Tpcbox_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  Oid typid = PG_GETARG_OID(3);
+  Oid typid = gist_query_type(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   TPCBox *key = DatumGetTpcboxP(entry->key), query;
   if (! key)
