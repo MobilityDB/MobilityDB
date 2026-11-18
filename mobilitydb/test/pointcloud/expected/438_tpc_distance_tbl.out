@@ -3,6 +3,11 @@
 -------------------------------------------------------------------------------
 -- Self-distance is zero (every value is at distance 0 from its own bbox).
 -------------------------------------------------------------------------------
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tpcpoint AS TABLE tbl_tpcpoint;
+ANALYZE tbl_tpcpoint;
 SELECT bool_and((temp |=| temp) = 0) FROM tbl_tpcpoint;
  bool_and 
 ----------

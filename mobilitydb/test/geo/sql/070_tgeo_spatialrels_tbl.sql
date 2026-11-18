@@ -6,6 +6,13 @@
 -- eContains, aContains
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tgeometry AS TABLE tbl_tgeometry;
+CREATE TEMP TABLE tbl_tgeography AS TABLE tbl_tgeography;
+ANALYZE tbl_tgeometry, tbl_tgeography;
+
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eContains(g, temp);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aContains(g, temp);
 
