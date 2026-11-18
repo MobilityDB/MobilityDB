@@ -1747,9 +1747,13 @@ TInstant *
 tpointinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
   bool atfunc)
 {
-  /* Restrict to the XY dimension */
-  Datum value = tinstant_value_p(inst);
-  if (! geom_intersects2d(DatumGetGserializedP(value), gs))
+  /* A point and a geometry that both have Z meet in three dimensions, by the
+   * exact 3D intersects the relationships read (#datum_geom_intersects3d),
+   * and in the XY dimension otherwise */
+  const GSERIALIZED *point = DatumGetGserializedP(tinstant_value_p(inst));
+  bool meets = (FLAGS_GET_Z(point->gflags) && FLAGS_GET_Z(gs->gflags)) ?
+    geom_intersects3d_intl(point, gs) : geom_intersects2d(point, gs);
+  if (! meets)
       /* For temporal point types we return the instants of the input value */
       return atfunc ? NULL : (TInstant *) inst;
 
@@ -2673,15 +2677,45 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL); 
   /* Ensure the validity of the arguments */
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
-      ! ensure_has_not_Z_geo(gs) ||
       /* Generic 3D geometries cannot be restricted to a geometry */
       (tgeo_type(temp->temptype) &&
        ! ensure_has_not_Z(temp->temptype, temp->flags)))
     return NULL;
 
-  /* Empty geometry */
+  /* A geometry with Z is read on the dimensions the value has, as the
+   * relationships read it (#tgeo_different_dimensions): in two dimensions by
+   * a value without Z, which keeps its own dimensions as
+   * #trgeometry_geo_common_dims keeps them, and in three dimensions by a
+   * point with Z held at each instant, which the exact 3D intersects tells to
+   * meet the geometry or not (#tpointinst_restrict_geom_iter); the path of a
+   * point with Z in linear interpolation crosses the faces of the geometry at
+   * instants no kernel dates, and a geography is not read in three
+   * dimensions */
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    if (! MEOS_FLAGS_GET_Z(temp->flags))
+    {
+      GSERIALIZED *gs2d = geo_force2d_intl(gs);
+      Temporal *result = tgeo_restrict_geom(temp, gs2d, atfunc);
+      pfree(gs2d);
+      return result;
+    }
+    if (MEOS_FLAGS_GET_GEODETIC(temp->flags) && ! ensure_has_not_Z_geo(gs))
+      return NULL;
+  }
+
+  /* Empty geometry, which no value meets in any dimension */
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
+
+  if (FLAGS_GET_Z(gs->gflags) && temp->subtype != TINSTANT &&
+      MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Restriction of a %s with Z in linear interpolation to a geometry "
+      "with Z is not implemented", meostype_name(temp->temptype));
+    return NULL;
+  }
 
   /* A geodetic point travels the great circle between two positions and a
    * geography is bounded by great-circle edges, neither of which a clip of

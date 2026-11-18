@@ -21,7 +21,7 @@
 atGeometry(tgeom,geometry) → tgeom
 minusGeometry(tgeom,geometry) → tgeom
 </programlisting>
-				<para>The geometry must be in 2D and the computation with respect to it is done in 2D. The result preserves the Z dimension of the temporal point, if it exists.</para>
+				<para>A geometry without Z is read in 2D, and the result preserves the Z dimension of the temporal point, if it exists. A geometry with Z is read in 2D by a temporal value without Z, and in 3D by a temporal point with Z in step or discrete interpolation, each of its positions meeting the geometry where the exact 3D intersection of the two holds, as in <varname>tIntersects</varname>. A temporal point with Z in linear interpolation, and a temporal geometry other than a point with Z, are not yet supported against a geometry with Z.</para>
 				<para>A geodetic point is restricted to a <varname>geography</varname>, which must be a polygon or a multipolygon, and the computation is done on the sphere: the point travels the great circle between two positions and the region is bounded by the great circles through its own vertices, so the trip enters and leaves where those paths cross. The difference grows with latitude, a trip along a parallel standing well to the north of it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
