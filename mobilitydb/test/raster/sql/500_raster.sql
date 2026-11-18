@@ -1323,6 +1323,33 @@ SELECT rasterValue(tgeompoint(ST_GeomFromText('POINT(0.5 1)', 4326),
   tstzspan '[2024-01-15, 2024-02-15]', 'Step'), array_agg(r ORDER BY v),
   array_agg(v ORDER BY v), 1)
 FROM series;
+-- The domain follows the positions of the values: one instant is a Point, a
+-- stationary point read over time a PointSeries, a trajectory that moves a
+-- Trajectory.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS r),
+trips(name, t) AS (VALUES
+  ('01 instant', tgeompoint 'SRID=4326;Point(1.5 0.5)@2001-01-01'),
+  ('02 instant, first pixel', tgeompoint 'SRID=4326;Point(0.25 0.75)@2001-01-01'),
+  ('03 stationary, discrete', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03}'),
+  ('04 stationary, two instants far apart', tgeompoint 'SRID=4326;{Point(1.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-12-31}'),
+  ('05 stationary, linear', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02]'),
+  ('06 stationary, step', tgeompoint 'SRID=4326;Interp=Step;[Point(1.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('07 stationary, with a gap', tgeompoint 'SRID=4326;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(0.5 0.5)@2001-01-04, Point(0.5 0.5)@2001-01-05]}'),
+  ('08 moving, discrete', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02}'),
+  ('09 moving, linear across the pixels', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('10 moving within one pixel', tgeompoint 'SRID=4326;{Point(0.25 0.5)@2001-01-01, Point(0.75 0.5)@2001-01-02}'),
+  ('11 moving, then stopped', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(1.5 0.5)@2001-01-03}'),
+  ('12 moving, back to the start', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03}'),
+  ('13 moving, one coordinate apart', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(0.5 0.25)@2001-01-02}'))
+SELECT name, c::json #>> '{domain,domainType}' AS domain,
+  c::json #> '{domain,axes}' AS axes,
+  c::json #> '{ranges,value,axisNames}' AS range_axes,
+  c::json #> '{ranges,value,values}' AS range_values
+FROM (SELECT name, asCoverageJSON(rasterValue(t, r), t) AS c FROM rast, trips) s
+ORDER BY name;
 -- A raster with a skew and a raster in no reference system are refused.
 SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,
   4326));

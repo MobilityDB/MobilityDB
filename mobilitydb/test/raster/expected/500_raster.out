@@ -1660,6 +1660,50 @@ FROM series;
  Interp=Step;[1@2024-01-15 00:00:00+00, 5@2024-02-01 00:00:00+00, 5@2024-02-15 00:00:00+00]
 (1 row)
 
+-- The domain follows the positions of the values: one instant is a Point, a
+-- stationary point read over time a PointSeries, a trajectory that moves a
+-- Trajectory.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS r),
+trips(name, t) AS (VALUES
+  ('01 instant', tgeompoint 'SRID=4326;Point(1.5 0.5)@2001-01-01'),
+  ('02 instant, first pixel', tgeompoint 'SRID=4326;Point(0.25 0.75)@2001-01-01'),
+  ('03 stationary, discrete', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03}'),
+  ('04 stationary, two instants far apart', tgeompoint 'SRID=4326;{Point(1.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-12-31}'),
+  ('05 stationary, linear', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02]'),
+  ('06 stationary, step', tgeompoint 'SRID=4326;Interp=Step;[Point(1.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('07 stationary, with a gap', tgeompoint 'SRID=4326;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(0.5 0.5)@2001-01-04, Point(0.5 0.5)@2001-01-05]}'),
+  ('08 moving, discrete', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02}'),
+  ('09 moving, linear across the pixels', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('10 moving within one pixel', tgeompoint 'SRID=4326;{Point(0.25 0.5)@2001-01-01, Point(0.75 0.5)@2001-01-02}'),
+  ('11 moving, then stopped', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(1.5 0.5)@2001-01-03}'),
+  ('12 moving, back to the start', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03}'),
+  ('13 moving, one coordinate apart', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(0.5 0.25)@2001-01-02}'))
+SELECT name, c::json #>> '{domain,domainType}' AS domain,
+  c::json #> '{domain,axes}' AS axes,
+  c::json #> '{ranges,value,axisNames}' AS range_axes,
+  c::json #> '{ranges,value,values}' AS range_values
+FROM (SELECT name, asCoverageJSON(rasterValue(t, r), t) AS c FROM rast, trips) s
+ORDER BY name;
+                 name                  |   domain    |                                                                                            axes                                                                                             |  range_axes   | range_values  
+---------------------------------------+-------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+---------------
+ 01 instant                            | Point       | {"x":{"values":[1.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00"]}}                                                                                                    | ["t"]         | [20]
+ 02 instant, first pixel               | Point       | {"x":{"values":[0.25]},"y":{"values":[0.75]},"t":{"values":["2001-01-01T00:00:00+00:00"]}}                                                                                                  | ["t"]         | [10]
+ 03 stationary, discrete               | PointSeries | {"x":{"values":[0.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-01-02T00:00:00+00:00","2001-01-03T00:00:00+00:00"]}}                                            | ["t"]         | [10,10,10]
+ 04 stationary, two instants far apart | PointSeries | {"x":{"values":[1.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-12-31T00:00:00+00:00"]}}                                                                        | ["t"]         | [20,20]
+ 05 stationary, linear                 | PointSeries | {"x":{"values":[0.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-01-02T00:00:00+00:00"]}}                                                                        | ["t"]         | [10,10]
+ 06 stationary, step                   | PointSeries | {"x":{"values":[1.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-01-02T00:00:00+00:00"]}}                                                                        | ["t"]         | [20,20]
+ 07 stationary, with a gap             | PointSeries | {"x":{"values":[0.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-01-02T00:00:00+00:00","2001-01-04T00:00:00+00:00","2001-01-05T00:00:00+00:00"]}}                | ["t"]         | [10,10,10,10]
+ 08 moving, discrete                   | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5]]}}                                       | ["composite"] | [10,20]
+ 09 moving, linear across the pixels   | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-01T12:00:00+00:00",1,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5]]}}   | ["composite"] | [10,20,20]
+ 10 moving within one pixel            | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.25,0.5],["2001-01-02T00:00:00+00:00",0.75,0.5]]}}                                     | ["composite"] | [10,10]
+ 11 moving, then stopped               | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5],["2001-01-03T00:00:00+00:00",1.5,0.5]]}} | ["composite"] | [10,20,20]
+ 12 moving, back to the start          | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5],["2001-01-03T00:00:00+00:00",0.5,0.5]]}} | ["composite"] | [10,20,10]
+ 13 moving, one coordinate apart       | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-02T00:00:00+00:00",0.5,0.25]]}}                                      | ["composite"] | [10,10]
+(13 rows)
+
 -- A raster with a skew and a raster in no reference system are refused.
 SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,
   4326));
