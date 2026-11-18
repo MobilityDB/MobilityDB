@@ -90,6 +90,30 @@ CREATE OPERATOR %<> (
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
+CREATE FUNCTION eOverlaps(stbox, ts2cell)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_stbox_ts2cell'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = stbox, RIGHTARG = ts2cell,
+  PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION aOverlaps(stbox, ts2cell)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_stbox_ts2cell'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = stbox, RIGHTARG = ts2cell,
+  PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
 /*****************************************************************************/
 
 CREATE FUNCTION eEqual(ts2cell, s2cell)
@@ -139,6 +163,30 @@ CREATE OPERATOR %<> (
   LEFTARG = ts2cell, RIGHTARG = s2cell,
   PROCEDURE = aNotEqual,
   NEGATOR = ?=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION eOverlaps(ts2cell, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_ts2cell_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = ts2cell, RIGHTARG = stbox,
+  PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION aOverlaps(ts2cell, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_ts2cell_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = ts2cell, RIGHTARG = stbox,
+  PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
