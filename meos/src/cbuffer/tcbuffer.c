@@ -54,6 +54,7 @@
 #include "geo/tgeo_tempspatialrels.h"
 #include "geo/tspatial_parser.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_boxops.h"
 #include "cbuffer/tcbuffer_tempspatialrels.h"
 
@@ -162,10 +163,30 @@ tcbuffersegm_length_roots(const Cbuffer *sv1, const Cbuffer *ev1,
   const POINT2D *ept1 = cbuffer_point2d_p(ev1);
   const POINT2D *spt2 = cbuffer_point2d_p(sv2);
   const POINT2D *ept2 = cbuffer_point2d_p(ev2);
-  double dx0 = spt1->x - spt2->x;
-  double dy0 = spt1->y - spt2->y;
-  double dx = (ept1->x - spt1->x) - (ept2->x - spt2->x);
-  double dy = (ept1->y - spt1->y) - (ept2->y - spt2->y);
+  return tcbuffersegm_length_roots_xy(spt1->x - spt2->x, spt1->y - spt2->y,
+    (ept1->x - spt1->x) - (ept2->x - spt2->x),
+    (ept1->y - spt1->y) - (ept2->y - spt2->y), l0, l1, roots);
+}
+
+/**
+ * @brief Return the fractions of a segment at which a vector that varies
+ * linearly over the segment has a length that varies linearly over it
+ * @details The vector reads (dx0 + dx f, dy0 + dy f) over the fraction f in
+ * [0, 1] of the segment, and the length L(f) = (1 - f) l0 + f l1. This is
+ * the arithmetic of #tcbuffersegm_length_roots, whose vector is the
+ * difference of the centres of two circular buffer segments, given the
+ * coordinates of the vector.
+ * @param[in] dx0,dy0 Vector at the start of the segment
+ * @param[in] dx,dy Change of the vector over the segment
+ * @param[in] l0,l1 Length at the start and at the end of the segment
+ * @param[out] roots Fractions found, in increasing order
+ * @return Number of fractions found, from 0 to 2, or -1 when the length of
+ * the vector equals |L| throughout the segment
+ */
+int
+tcbuffersegm_length_roots_xy(double dx0, double dy0, double dx, double dy,
+  double l0, double l1, long double roots[2])
+{
   double dl = l1 - l0;
   /* The products are summed and the roots taken in extended precision, as
    * #tpointsegm_tdwithin_turnpt takes them */

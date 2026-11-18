@@ -256,6 +256,55 @@ SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1)
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0.814214@Thu Jan 04 00:00:00 2001 PST, 0.814214@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+-- A buffer whose radius grows past a point: the distance turns only at its
+-- minimum, and the point and the circular buffer of radius zero at the same
+-- place answer the same instants
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 2)@2001-01-01, Cbuffer(Point(16 15), 5)@2001-01-04]' <-> geometry 'Point(14 3)', 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ [8.049876@Mon Jan 01 00:00:00 2001 PST, 4.132075@Tue Jan 02 11:49:48.679245 2001 PST, 7.165525@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 2)@2001-01-01, Cbuffer(Point(16 15), 5)@2001-01-04]' <-> cbuffer 'Cbuffer(Point(14 3), 0)', 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ [8.049876@Mon Jan 01 00:00:00 2001 PST, 4.132075@Tue Jan 02 11:49:48.679245 2001 PST, 7.165525@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+-- A buffer whose radius shrinks: the companion root of the squared equation
+-- lies past the minimum, where the distance rises
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 5)@2001-01-01, Cbuffer(Point(16 15), 2)@2001-01-04]' <-> geometry 'Point(14 3)', 6);
+                                                       round                                                       
+-------------------------------------------------------------------------------------------------------------------
+ [5.049876@Mon Jan 01 00:00:00 2001 PST, 3.6@Mon Jan 01 23:24:00 2001 PST, 10.165525@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 5)@2001-01-01, Cbuffer(Point(16 15), 2)@2001-01-04]' <-> cbuffer 'Cbuffer(Point(14 3), 0)', 6);
+                                                       round                                                       
+-------------------------------------------------------------------------------------------------------------------
+ [5.049876@Mon Jan 01 00:00:00 2001 PST, 3.6@Mon Jan 01 23:24:00 2001 PST, 10.165525@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+-- A buffer passing over a point: the distance is zero from the instant the
+-- disc reaches the point to the instant it leaves it
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-03]' <-> geometry 'Point(5 0)', 6);
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ [4@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 19:12:00 2001 PST, 0@Tue Jan 02 04:48:00 2001 PST, 4@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-03]' <-> cbuffer 'Cbuffer(Point(5 0), 0)', 6);
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ [4@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 19:12:00 2001 PST, 0@Tue Jan 02 04:48:00 2001 PST, 4@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 3)@2001-01-03]' <-> geometry 'Point(5 0)', 6);
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ [4@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 16:00:00 2001 PST, 0@Tue Jan 02 12:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
 SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point empty', 6);
  round 
 -------

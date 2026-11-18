@@ -183,29 +183,87 @@ tcbuffer_add_within01(double t, double *cand, int *nc)
  * discriminant can round to a spurious negative, silently dropping the true
  * double root -- the instant the moving centre crosses the edge's supporting
  * line or circle (an exact zero-distance overlap)
+ *
+ * The quadratic is the squared length of the vector (vx0 + vx t, vy0 + vy t),
+ * and the radius varies from @p r0 to @p r1 over the segment, so DR is
+ * r1 - r0.
+ *
+ * When the distance is the length of that vector minus the radius, clamped
+ * at zero, as for a point, an edge endpoint or a supporting line, @p norm is
+ * true and the instants kept are the breakpoints of that distance, as
+ * #tcbuffersegm_distance_turnpt keeps them for two buffers. Unclamped, the
+ * distance is the norm of an affine function minus an affine one, hence
+ * convex, so its only interior turning point is a minimum, where
+ * 2At + B = 2 DR sqrt(Q). Squaring that equation adds a companion root at
+ * which 2At + B and DR have opposite signs, so the distance still falls or
+ * rises there, and it is dropped. The vertex -B/(2A) is the closest approach
+ * of the centre, which is the minimum when the radius does not change, DR
+ * being exactly zero, and is dropped otherwise. A minimum at which the disc
+ * covers the feature lies inside an interval where the clamped distance is
+ * zero, and it is dropped too: the breakpoints there are the instants at
+ * which the disc starts and stops covering the feature, where the length
+ * equals the radius, found as #tcbuffersegm_dwithin_turnpt finds them for two
+ * buffers.
+ *
+ * When the distance is the absolute difference to a circle, as for the
+ * supporting circle of an arc, the root of the other sign is the turning
+ * point inside the circle, and @p norm is false to keep both roots and the
+ * vertex.
  */
 static void
-tcbuffer_add_dist_turnpts(double A, double B, double C, double DR,
-  double *cand, int *nc)
+tcbuffer_add_dist_turnpts(double vx0, double vy0, double vx, double vy,
+  double r0, double r1, bool norm, double *cand, int *nc)
 {
+  double A = vx * vx + vy * vy;
+  double B = 2.0 * (vx0 * vx + vy0 * vy);
+  double C = vx0 * vx0 + vy0 * vy0;
+  double DR = r1 - r0;
   double DR_2 = DR * DR;
   double a2 = A * (A - DR_2);
   double a1 = B * (A - DR_2);
   double a0 = 0.25 * B * B - C * DR_2;
-  if (fabs(a2) > 1e-18)
+  double mins[3];
+  int nmins = 0;
+  /* A radius that does not change leaves the vertex, the double root of the
+   * squared equation, which is taken directly: the quadratic formula loses
+   * half the digits of a double root */
+  if (DR == 0.0)
+    ;
+  else if (fabs(a2) > 1e-18)
   {
     double disc = a1 * a1 - 4.0 * a2 * a0;
     if (disc >= 0.0)
     {
       double sd = sqrt(disc);
-      tcbuffer_add_within01((-a1 + sd) / (2.0 * a2), cand, nc);
-      tcbuffer_add_within01((-a1 - sd) / (2.0 * a2), cand, nc);
+      mins[nmins++] = (-a1 + sd) / (2.0 * a2);
+      mins[nmins++] = (-a1 - sd) / (2.0 * a2);
     }
   }
   else if (fabs(a1) > 1e-18)
-    tcbuffer_add_within01(-a0 / a1, cand, nc);
-  if (fabs(A) > 1e-18)
-    tcbuffer_add_within01(-B / (2.0 * A), cand, nc);
+    mins[nmins++] = -a0 / a1;
+  if (fabs(A) > 1e-18 && (! norm || DR == 0.0))
+    mins[nmins++] = -B / (2.0 * A);
+  for (int i = 0; i < nmins; i++)
+  {
+    double t = mins[i];
+    if (norm)
+    {
+      double r = r0 + DR * t;
+      if (DR != 0.0 && (2.0 * A * t + B) * DR < 0.0)
+        continue;
+      if ((A * t + B) * t + C < r * r)
+        continue;
+    }
+    tcbuffer_add_within01(t, cand, nc);
+  }
+  if (norm)
+  {
+    long double cross[2];
+    int ncross = tcbuffersegm_length_roots_xy(vx0, vy0, vx, vy, r0, r1,
+      cross);
+    for (int i = 0; i < ncross; i++)
+      tcbuffer_add_within01((double) cross[i], cand, nc);
+  }
 }
 
 /**
@@ -222,38 +280,27 @@ static void
 tcbuffersegm_edge_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
   double r1, double r2, const Edge *e, double *cand, int *nc)
 {
-  const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
   const double ux = bx - ax, uy = by - ay, l2 = ux * ux + uy * uy;
 
   /* Closest approach to the edge start */
-  {
-    double A = dcx * dcx + dcy * dcy;
-    double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
-    double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
-    tcbuffer_add_dist_turnpts(A, B, C, dr, cand, nc);
-  }
+  tcbuffer_add_dist_turnpts(cx1 - ax, cy1 - ay, dcx, dcy, r1, r2, true, cand,
+    nc);
   /* Degenerate edge (a point): only the point-distance branch applies */
   if (l2 <= 1e-24)
     return;
 
   /* Closest approach to the edge end */
-  {
-    double A = dcx * dcx + dcy * dcy;
-    double B = 2.0 * ((cx1 - bx) * dcx + (cy1 - by) * dcy);
-    double C = (cx1 - bx) * (cx1 - bx) + (cy1 - by) * (cy1 - by);
-    tcbuffer_add_dist_turnpts(A, B, C, dr, cand, nc);
-  }
-  /* Perpendicular-foot time (moving centre on the supporting line) */
+  tcbuffer_add_dist_turnpts(cx1 - bx, cy1 - by, dcx, dcy, r1, r2, true, cand,
+    nc);
+  /* Perpendicular-foot time (moving centre on the supporting line): the
+   * signed distance of the centre to the line, as a vector of one
+   * coordinate */
+  const double l = sqrt(l2);
   const double k0 = (cx1 - ax) * uy - (cy1 - ay) * ux;
   const double k1 = dcx * uy - dcy * ux;
-  if (fabs(k1) > 1e-18)
-  {
-    double A = k1 * k1 / l2;
-    double B = 2.0 * k0 * k1 / l2;
-    double C = k0 * k0 / l2;
-    tcbuffer_add_dist_turnpts(A, B, C, dr, cand, nc);
-  }
+  tcbuffer_add_dist_turnpts(k0 / l, 0.0, k1 / l, 0.0, r1, r2, true, cand, nc);
   /* Foot-parameter region boundaries (s = 0 and s = 1): the nearest feature
    * changes there, a kink in the per-edge distance */
   const double s0 = (cx1 - ax) * ux + (cy1 - ay) * uy;
@@ -279,11 +326,10 @@ static void
 tcbuffersegm_arc_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
   double r1, double r2, const Edge *e, double *cand, int *nc)
 {
-  const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double px = e->cx, py = e->cy;
   const double A = dcx * dcx + dcy * dcy;
   const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
-  const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
 
   /* Circle crossings, the roots of the power of the moving centre: kinks of
    * the absolute value defining the distance to the arc's supporting circle */
@@ -309,7 +355,8 @@ tcbuffersegm_arc_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
   /* Stationary points of | sqrt(Q) - R | - r(t): R is a constant offset so
    * it cancels in the derivative, giving the same closed form as the
    * straight-edge branches */
-  tcbuffer_add_dist_turnpts(A, B, C, dr, cand, nc);
+  tcbuffer_add_dist_turnpts(cx1 - px, cy1 - py, dcx, dcy, r1, r2, false, cand,
+    nc);
   /* Angular-sector boundary crossings: the moving centre crosses the ray
    * from the arc's centre through an endpoint. Purely positional, so the
    * same closed form applies regardless of the radius */
@@ -328,9 +375,8 @@ tcbuffersegm_arc_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
   for (int ep = 0; ep < 2; ep++)
   {
     double ex = ep == 0 ? e->x1 : e->x2, ey = ep == 0 ? e->y1 : e->y2;
-    double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
-    double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
-    tcbuffer_add_dist_turnpts(A, Be, Ce, dr, cand, nc);
+    tcbuffer_add_dist_turnpts(cx1 - ex, cy1 - ey, dcx, dcy, r1, r2, true,
+      cand, nc);
   }
 }
 
