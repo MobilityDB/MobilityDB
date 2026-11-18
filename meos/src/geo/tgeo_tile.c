@@ -1597,7 +1597,8 @@ tpointsegm_set_tiles(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting a temporal point
- * sequence with discrete or step interpolation, which lies at its instants
+ * sequence with discrete interpolation or of one instant, which lies at its
+ * instants
  * @param[in] seq Temporal point
  * @param[in] tb Bounds of the tiles of the grid
  * @param[out] bm Bit matrix
@@ -1613,6 +1614,43 @@ tpointseq_disc_set_tiles(const TSequence *seq, const TileBounds *tb,
     tpointinst_tile_coords(TSEQUENCE_INST_N(seq, i), tb, coords);
     bitmatrix_set_cell(bm, coords, true);
     result++;
+  }
+  return result;
+}
+
+/**
+ * @brief Set the bit corresponding to the tiles intersecting a temporal point
+ * sequence with step interpolation
+ * @details The value stays at the position of an instant up to the next
+ * instant, so the tile of that position is set, as #tpointseq_disc_set_tiles
+ * sets it, in every time bin from the one of the instant to the one of the
+ * next instant, the bins #tpointsegm_set_tiles crosses for a segment
+ * @param[in] seq Temporal point
+ * @param[in] tb Bounds of the tiles of the grid
+ * @param[out] bm Bit matrix
+ */
+static int
+tpointseq_step_set_tiles(const TSequence *seq, const TileBounds *tb,
+  BitMatrix *bm)
+{
+  assert(seq); assert(tb);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
+  int coords[MAXDIMS], result = 0;
+  memset(coords, 0, sizeof(coords));
+  for (int i = 0; i < seq->count; i++)
+  {
+    tpointinst_tile_coords(TSEQUENCE_INST_N(seq, i), tb, coords);
+    bitmatrix_set_cell(bm, coords, true);
+    result++;
+    if (! tb->hast || i == seq->count - 1)
+      continue;
+    int last = tile_bounds_tindex(tb, TSEQUENCE_INST_N(seq, i + 1)->t);
+    while (coords[tb->nspace] < last)
+    {
+      coords[tb->nspace]++;
+      bitmatrix_set_cell(bm, coords, true);
+      result++;
+    }
   }
   return result;
 }
@@ -1640,6 +1678,9 @@ tpointseq_cont_set_tiles(const TSequence *seq, const TileBounds *tb,
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal
  * point sequence
+ * @details A sequence of one instant lies at its instant whatever its
+ * interpolation, as a sequence of a sequence set may, and takes the tile of
+ * its instant as #tpointseq_disc_set_tiles sets it
  * @param[in] seq Temporal point
  * @param[in] tb Bounds of the tiles of the grid
  * @param[out] bm Bit matrix
@@ -1647,9 +1688,11 @@ tpointseq_cont_set_tiles(const TSequence *seq, const TileBounds *tb,
 static inline int
 tpointseq_set_tiles(const TSequence *seq, const TileBounds *tb, BitMatrix *bm)
 {
+  if (seq->count == 1 || MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return tpointseq_disc_set_tiles(seq, tb, bm);
   return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
     tpointseq_cont_set_tiles(seq, tb, bm) :
-    tpointseq_disc_set_tiles(seq, tb, bm);
+    tpointseq_step_set_tiles(seq, tb, bm);
 }
 
 /**
