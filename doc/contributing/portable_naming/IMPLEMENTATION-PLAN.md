@@ -177,6 +177,16 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   replaces. Head `8bf05621a7` on master `23819c336f` held strict, cppcheck and valgrind (169
   programs) by patch id `768e5a6bda`, the CGAL oracle crs-read (3000 of 3000) and speed (relate
   at parity), Windows waived. MERGED as MobilityDB #3791 (`af8c281d9d`).
+- **The PostgreSQL extension reads its spatial reference systems from the Proj object cache of
+  MEOS**, outside the plan, as the owner decided on 2026-11-17 ("we need to favor MEOS caches since
+  they can be used in any environment"), its user document `doc/specs/meos-caches.md` v1.1.0:
+  branch `meos/caches-serve-every-build` rewrites `7e950c3cb0` there, the copy of the cache of the
+  names of the systems in `mobilitydb/src/temporal/type_out.c` (`MFSrsCache`, `get_srs_by_srid`,
+  `get_srs_cache_by_srid`) and the naming `Temporal_as_mfjson` did with it, which `temporal_as_mfjson`
+  answers from the cache of MEOS; branch `meos/caches-serve-every-build` rewrites `e63fc3f7d8` there,
+  the note of `temporal_as_mfjson` in `meos/src/temporal/type_out.c` that `asMFJSON` names the system
+  from the table before calling it. Head `d373f66fc8` on master `eaffbb532e` holds strict and
+  cppcheck by patch id `8d625e6f62` and valgrind.
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
