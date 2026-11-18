@@ -6214,7 +6214,12 @@ buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
 /**
  * @brief Return the signed area of a ring
  * @details A positive value means counter-clockwise orientation and a
- * negative value means clockwise orientation.
+ * negative value means clockwise orientation. The shoelace sum is taken about
+ * the first vertex, one product a vertex, as #ptarray_signed_area takes it:
+ * about the origin each term would carry the square of a coordinate, and at
+ * projected coordinates the area of a small ring would be lost in their
+ * rounding. A measure in doubles: the orientation of a ring is read exactly
+ * by #ring_area_sign, and a ring enclosing nothing by #ring_encloses_no_area
  */
 static double
 buffer_ring_area(const POINTARRAY *pa)
@@ -6222,12 +6227,14 @@ buffer_ring_area(const POINTARRAY *pa)
   assert(pa);
   if (pa->npoints < 3)
     return 0.0;
-  double area = 0.0;
-  for (uint32_t i = 0; i < pa->npoints - 1; i++)
+  const POINT2D *p0 = getPoint2d_cp(pa, 0);
+  double x0 = p0->x, area = 0.0;
+  for (uint32_t i = 1; i + 1 < pa->npoints; i++)
   {
-    const POINT2D *p1 = getPoint2d_cp(pa, i);
-    const POINT2D *p2 = getPoint2d_cp(pa, i + 1);
-    area += p1->x * p2->y - p2->x * p1->y;
+    const POINT2D *a = getPoint2d_cp(pa, i - 1);
+    const POINT2D *b = getPoint2d_cp(pa, i);
+    const POINT2D *c = getPoint2d_cp(pa, i + 1);
+    area += (b->x - x0) * (c->y - a->y);
   }
   return area * 0.5;
 }
@@ -6242,7 +6249,7 @@ static bool
 buffer_ring_outward_left(const POINTARRAY *pa)
 {
   assert(pa);
-  return buffer_ring_area(pa) < 0.0;
+  return ring_area_sign(pa) < 0;
 }
 
 
@@ -11290,8 +11297,7 @@ buffer_areal_is_degenerate(const LWGEOM *geom)
   if (geom->type == POLYGONTYPE)
   {
     const LWPOLY *poly = (const LWPOLY *) geom;
-    return poly->nrings == 0 ||
-      fabs(buffer_ring_area(poly->rings[0])) <= MEOS_GEOM_TOLERANCE;
+    return poly->nrings == 0 || ring_encloses_no_area(poly->rings[0]);
   }
   if (geom->type == MULTIPOLYGONTYPE)
   {
