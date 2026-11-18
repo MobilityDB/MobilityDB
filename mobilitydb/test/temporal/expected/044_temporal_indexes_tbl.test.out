@@ -2191,3 +2191,41 @@ ANALYZE tbl_tfloat_big_allthesame;
 ANALYZE
 DROP TABLE tbl_tfloat_big_allthesame;
 DROP TABLE
+CREATE TEMP TABLE tbl_tint_excl (k int, temp tint,
+  EXCLUDE USING gist (temp WITH &&));
+CREATE TABLE
+INSERT INTO tbl_tint_excl VALUES
+  (1, tint '[1@2001-01-01, 5@2001-01-05]'),
+  (2, tint '[10@2001-01-03, 15@2001-01-05]');
+INSERT 0 2
+/* Errors */
+INSERT INTO tbl_tint_excl VALUES (3, tint '[3@2001-01-04, 3@2001-01-06]');
+ERROR:  conflicting key value violates exclusion constraint "tbl_tint_excl_temp_excl"
+DETAIL:  Key (temp)=([3@Thu Jan 04 00:00:00 2001 PST, 3@Sat Jan 06 00:00:00 2001 PST]) conflicts with existing key (temp)=([1@Mon Jan 01 00:00:00 2001 PST, 5@Fri Jan 05 00:00:00 2001 PST]).
+SELECT COUNT(*) FROM tbl_tint_excl;
+ count 
+-------
+     2
+(1 row)
+
+DROP TABLE tbl_tint_excl;
+DROP TABLE
+CREATE TEMP TABLE tbl_tbool_excl (k int, temp tbool,
+  EXCLUDE USING gist (temp WITH &&));
+CREATE TABLE
+INSERT INTO tbl_tbool_excl VALUES
+  (1, tbool '[true@2001-01-01, true@2001-01-05)'),
+  (2, tbool '[false@2001-01-05, false@2001-01-10)');
+INSERT 0 2
+/* Errors */
+INSERT INTO tbl_tbool_excl VALUES (3, tbool '[true@2001-01-06, true@2001-01-08)');
+ERROR:  conflicting key value violates exclusion constraint "tbl_tbool_excl_temp_excl"
+DETAIL:  Key (temp)=([t@Sat Jan 06 00:00:00 2001 PST, t@Mon Jan 08 00:00:00 2001 PST)) conflicts with existing key (temp)=([f@Fri Jan 05 00:00:00 2001 PST, f@Wed Jan 10 00:00:00 2001 PST)).
+SELECT COUNT(*) FROM tbl_tbool_excl;
+ count 
+-------
+     2
+(1 row)
+
+DROP TABLE tbl_tbool_excl;
+DROP TABLE

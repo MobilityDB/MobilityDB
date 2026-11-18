@@ -1727,3 +1727,29 @@ ANALYZE tbl_tfloat_big_allthesame;
 DROP TABLE tbl_tfloat_big_allthesame;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Exclusion constraints
+-------------------------------------------------------------------------------
+
+CREATE TEMP TABLE tbl_tint_excl (k int, temp tint,
+  EXCLUDE USING gist (temp WITH &&));
+INSERT INTO tbl_tint_excl VALUES
+  (1, tint '[1@2001-01-01, 5@2001-01-05]'),
+  (2, tint '[10@2001-01-03, 15@2001-01-05]');
+/* Errors */
+INSERT INTO tbl_tint_excl VALUES (3, tint '[3@2001-01-04, 3@2001-01-06]');
+SELECT COUNT(*) FROM tbl_tint_excl;
+DROP TABLE tbl_tint_excl;
+
+CREATE TEMP TABLE tbl_tbool_excl (k int, temp tbool,
+  EXCLUDE USING gist (temp WITH &&));
+INSERT INTO tbl_tbool_excl VALUES
+  (1, tbool '[true@2001-01-01, true@2001-01-05)'),
+  (2, tbool '[false@2001-01-05, false@2001-01-10)');
+/* Errors */
+INSERT INTO tbl_tbool_excl VALUES (3, tbool '[true@2001-01-06, true@2001-01-08)');
+SELECT COUNT(*) FROM tbl_tbool_excl;
+DROP TABLE tbl_tbool_excl;
+
+-------------------------------------------------------------------------------

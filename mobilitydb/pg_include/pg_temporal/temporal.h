@@ -220,6 +220,7 @@ extern Datum Tcomp_temporal_base(FunctionCallInfo fcinfo,
 /* Indexing functions */
 
 extern Temporal *temporal_slice(Datum tempdatum);
+extern Oid gist_query_type(FunctionCallInfo fcinfo);
 
 /*****************************************************************************/
 

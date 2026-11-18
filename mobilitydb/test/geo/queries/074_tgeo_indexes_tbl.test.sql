@@ -282,3 +282,19 @@ DROP TABLE tbl_tgeometry3D_big_allthesame;
 
 -------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------
+-- Exclusion constraints
+-------------------------------------------------------------------------------
+
+CREATE TEMP TABLE tbl_tgeompoint_excl (k int, temp tgeompoint,
+  EXCLUDE USING gist (temp WITH &&));
+INSERT INTO tbl_tgeompoint_excl VALUES
+  (1, tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]'),
+  (2, tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-02]');
+/* Errors */
+INSERT INTO tbl_tgeompoint_excl VALUES
+  (3, tgeompoint '[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-03]');
+SELECT COUNT(*) FROM tbl_tgeompoint_excl;
+DROP TABLE tbl_tgeompoint_excl;
+
+-------------------------------------------------------------------------------
