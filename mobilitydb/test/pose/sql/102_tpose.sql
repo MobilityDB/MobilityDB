@@ -314,6 +314,11 @@ SELECT numInstants(tpose 'Pose(Point(1 1), 0.5)@2001-01-01');
 SELECT numInstants(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}');
 SELECT numInstants(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]');
 SELECT numInstants(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}');
+-- A pose sequence drops a middle instant where its angle turns linearly onto
+-- it, and keeps one across the cut of the angles, which the pose turns the
+-- other way round
+SELECT numInstants(tpose '[Pose(Point(0 0), 0.25)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(2 2), 0.75)@2001-01-03]');
+SELECT numInstants(tpose '[Pose(Point(0 0), 3)@2001-01-01, Pose(Point(1 1), -3.1415926535897931)@2001-01-02, Pose(Point(2 2), -3)@2001-01-03]');
 
 SELECT asText(startInstant(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'));
 SELECT asText(startInstant(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'));
@@ -718,6 +723,8 @@ SELECT splitNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.
 SELECT splitEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
 SELECT mergeNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
 SELECT mergeEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
+SELECT mergeQuerySpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQuerySpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', tstzspan '[2001-01-01, 2001-01-08]');
 
 -- A NULL operand of merge returns the other one
 SELECT merge(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', NULL::tpose) = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';

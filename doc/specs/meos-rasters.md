@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.5.0 |
+| Version | v0.7.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -63,8 +63,9 @@ without its `ST_` prefix.
 |---|---|---|
 | WKB → value | `rasterFromBinary(bytea)`, `rasterFromHexWKB(text)` | `raquetFromBinary(bytea)`, `raquetFromHexWKB(text)` |
 | value → WKB | `asBinary(raster)`, `asHexWKB(raster)` | `asBinary(raquet)`, `asHexWKB(raquet)` |
-| a raster file → value | | `raquetRead(path text, quadbin)`, `raquetRead(bytea, quadbin)` |
+| a raster file → value | `rasterFromGDALRaster(bytea, srid = 0)` | `raquetRead(path text, quadbin)`, `raquetRead(bytea, quadbin)` |
 | a row of a Raquet file → value | | `raquetFromRow(block bigint, band bytea, metadata text, bandnum = 1)` |
+| value → a raster file | `asGDALRaster(raster, format, options = NULL, srid = NULL)`, `asTIFF(raster, options = NULL, srid = NULL)`, `asPNG(raster, options = NULL)`, `asJPEG(raster, options = NULL)` | |
 
 The WKB of a `raster` is PostGIS's raster WKB, so a value written by PostGIS
 is read by every engine and the converse. `raquetRead` reads a raster file of
@@ -72,6 +73,21 @@ any format GDAL reads, from a path on the server or from the bytes of the
 file, into a tile; when no QUADBIN cell is given, the cell is derived from the
 geotransform of the file, which must state Web Mercator. The text of a
 `raquet` is its hexadecimal WKB.
+
+A `raster` is written in a format of GDAL and read from the bytes of a file
+in one as PostGIS writes and reads it: `asGDALRaster`, `asTIFF`, `asPNG` and
+`asJPEG` write the bytes `ST_AsGDALRaster`, `ST_AsTIFF`, `ST_AsPNG` and
+`ST_AsJPEG` write, and `rasterFromGDALRaster` reads the raster
+`ST_FromGDALRaster` reads. `format` is the short name of a GDAL driver that
+writes a copy of a raster into memory (`GTiff`, `PNG`, `JPEG` ...), and
+`options` its creation options, each `KEY=VALUE`; in MEOS the options are one
+string of those pairs separated by spaces, a value holding a space written
+between double quotes, as GDAL tokenizes them. A NULL `srid` when writing is
+the raster's own, the pixels not being reprojected, and an `srid` of 0 when
+reading the one the file states. A format takes the bands its driver takes: a
+GeoTIFF holds one pixel type and one nodata value for all its bands, PNG one
+to four bands of 8 or 16 unsigned bits, JPEG one or three bands of 8 unsigned
+bits.
 
 A Raquet file is a Parquet table whose rows are tiles keyed by their QUADBIN
 cell in the column `block`, the row of block 0 holding the metadata of the
@@ -175,10 +191,32 @@ A raster that changes in time, a satellite archive or a forecast, is a table
 of rows `(validtime tstzspan, rast raster)`. No temporal type holds it: a
 raster does not move, nothing interpolates between two acquisitions, and one
 raster per instant would carry the pixels of every acquisition in a single
-value. The value a trajectory reads from such a table is read today by
-cutting the trajectory at each row's `validtime` (`atTime`) and merging the
-reads of the rows (`merge`), the rows selected by the indexes on `validtime`
-and on the raster's extent.
+value. A trajectory reads such a series through overloads of the names that
+read one raster, given the array of its rasters and the array of their
+periods, paired one to one:
+
+| Function | Result |
+|---|---|
+| `rasterValue(traj, rast raster[], validtime tstzspan[], band = 1)` | `tfloat` |
+| `rasterTileValue(traj, rast raquet[], validtime tstzspan[])` | `tfloat` |
+| `atRasterValue`, `minusRasterValue` `(traj, rast, validtime, vspan[, band])` | `tgeompoint` |
+| `eRasterValue`, `aRasterValue` `(traj, rast, validtime, vspan[, band])` | `boolean` |
+
+Each raster is read over the part of `traj` within its period, as section 5
+reads one raster, and the reads are merged in the order of the periods,
+whatever the order of the arrays. Rows sharing one period are the tiles of
+one raster in space, read together as an array of tiles is read; two rows of
+one place and one period are one tile given twice, read where they hold one
+value and refused where they hold two, as `merge` refuses two temporal values
+that differ at one timestamp. A part of
+the trajectory within no period reads no value, as a nodata pixel reads none.
+Two distinct periods that overlap, which would give two values at one time,
+and arrays of different lengths are refused. The restrictions read these
+values as section 6 states. A query passes the rows that meet the trajectory,
+selected by the indexes on `validtime` and on the raster's extent, gathered
+with `array_agg`. In MEOS: `raster_value_series`, `raster_tile_value_series`
+and their restrictions, `raster_at_value_series` and the others, each taking
+the rasters, a `Span` array of their periods and the count.
 
 ## 8. Versioning and stability
 
@@ -192,24 +230,15 @@ patch number with corrections of wording.
 | v0.3.0 | The restrictions over a Raquet tile and an array of tiles |
 | v0.4.0 | One row of a Raquet file read into a tile, `raquetFromRow` |
 | v0.5.0 | A raster, a Raquet tile and the values a trajectory reads written as CoverageJSON |
+| v0.6.0 | The writers of a raster to a format of GDAL and its reader from the bytes of a file in one |
+| v0.7.0 | The values a trajectory reads from a raster series and their restrictions |
 
 ## 9. Out of scope
 
 Future: each of these is added here with its version.
 
-- `asGDALRaster`, `asTIFF`, `asPNG`, `asJPEG` and `rasterFromGDALRaster`,
-  the writers of a raster to any GDAL format and its reader from the bytes of
-  a GDAL file, as PostGIS's `ST_AsGDALRaster`, `ST_AsTIFF`, `ST_AsPNG`,
-  `ST_AsJPEG` and `ST_FromGDALRaster` write and read; the creation options
-  are one string of `KEY=VALUE` pairs, as GDAL tokenizes them, or in SQL the
-  `text[]` of PostGIS.
 - A Raquet file read as its tiles and written from them, through GDAL's
   Parquet driver.
-- The values a trajectory reads from a raster series and its restrictions,
-  `rasterValue(traj, raster[], tstzspan[], band)` and
-  `rasterTileValue(traj, raquet[], tstzspan[])`: each raster read over the
-  part of the trajectory within its span, a part within no span reading no
-  value, spans that overlap refused.
 
 - MobilityAPI publishing a raster collection through OGC API – Coverages,
   its queries along a path through OGC API – Environmental Data Retrieval,

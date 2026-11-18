@@ -812,6 +812,50 @@ int main(void)
   }
   meos_errno_reset();
 
+  /* Where two lines carrying Z meet, the point carries the elevation both
+   * hold there, exactly where they hold one. The first pair lies on the plane
+   * z = 2^20 x, so the two hold one elevation at their crossing, its nearest
+   * double 882.1446861201454, which each line read back in doubles at the
+   * crossing misses by more than any band of the elevation; the second lies on
+   * two planes a few doubles apart, which hold two elevations there, so the
+   * point is the planar one */
+  const char *lift_lines[2][2] = {
+    { "LINESTRING Z (-0.9649002594580663 -0.2657647316960138 "
+        "-1011771.2544615014, 0.9630669391407999 0.2661586473040449 "
+        "1009848.8787765034)",
+      "LINESTRING Z (0.0673869799156356 -0.9971668705990755 "
+        "70660.36985201751, -0.06569572975847816 0.9984004653697702 "
+        "-68886.965527226)" },
+    { "LINESTRING Z (-0.9801068926702747 -0.19929084071540887 "
+        "-0.9801068926702747, 0.9794404500367355 0.20092686465242537 "
+        "0.9794404500367355)",
+      "LINESTRING Z (-0.9995086210300382 -0.022446779089349868 "
+        "-0.999508621030038, 0.9999545075414508 0.023891083216899478 "
+        "0.999954507541451)" } };
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *la = geom_in(lift_lines[i][0], -1);
+    GSERIALIZED *lb = geom_in(lift_lines[i][1], -1);
+    assert(la != NULL);
+    assert(lb != NULL);
+    GSERIALIZED *meet = geom_intersection2d(la, lb);
+    GSERIALIZED *want = i ?
+      geompoint_make2d(0, -0.000933830321879449, 0.0006953436600629695) :
+      geompoint_make3dz(0, 0.0008412787305070356, 0.0006819706168199973,
+        882.1446861201454);
+    assert(meet != NULL);
+    assert(want != NULL);
+    char *meet_hex = geo_as_hexewkb(meet, "NDR", &size_out);
+    char *want_hex = geo_as_hexewkb(want, "NDR", &size_out);
+    printf("geom_intersection2d(two lines carrying Z %s): %s\n",
+      i ? "on planes a few doubles apart" : "on one steep plane",
+      strcmp(meet_hex, want_hex) == 0 ? "the point they determine" : meet_hex);
+    assert(strcmp(meet_hex, want_hex) == 0);
+    free(meet_hex); free(want_hex); free(meet); free(want);
+    free(la); free(lb);
+  }
+  meos_errno_reset();
+
   /* The box of an arc takes its size from the arc. A semicircle through
    * (0 0), (s s) and (2s 0) is 2s wide and s high, and it holds its own middle
    * vertex (s s), so it intersects that point at every s. A box read off the

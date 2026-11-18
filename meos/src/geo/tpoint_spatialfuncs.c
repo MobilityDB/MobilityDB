@@ -344,6 +344,38 @@ interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
  *****************************************************************************/
 
 /**
+ * @brief Set the last argument to the coordinates of the point interpolated
+ * from the coordinates of a geometry/geography segment with respect to the
+ * fraction of its total length
+ * @details A geography segment is interpolated on the sphere by
+ * #interpolate_point4d_spheroid, and a geometry one coordinate by coordinate
+ * by #floatsegm_interpolate
+ * @param[in] p1,p2 Coordinates of the points defining the segment
+ * @param[in] geodetic True when the segment is a geography one
+ * @param[in] ratio Float between 0 and 1 representing the fraction of the
+ * total length of the segment where the point must be located
+ * @param[out] p Coordinates of the interpolated point
+ */
+void
+point4dsegm_interpolate(const POINT4D *p1, const POINT4D *p2, bool geodetic,
+  long double ratio, POINT4D *p)
+{
+  if (geodetic)
+    interpolate_point4d_spheroid(p1, p2, p, NULL, (double) ratio);
+  else
+  {
+    /* We cannot call the PostGIS function
+     * interpolate_point4d(&p1, &p2, &p, ratio);
+     * since it uses a double and not a long double for the interpolation */
+    p->x = floatsegm_interpolate(p1->x, p2->x, ratio);
+    p->y = floatsegm_interpolate(p1->y, p2->y, ratio);
+    p->z = floatsegm_interpolate(p1->z, p2->z, ratio);
+    p->m = 0.0;
+  }
+  return;
+}
+
+/**
  * @brief Return a point interpolated from the geometry/geography segment with
  * respect to the fraction of its total length
  * @param[in] start,end Points defining the segment
@@ -360,19 +392,7 @@ pointsegm_interpolate(Datum start, Datum end, long double ratio)
   datum_point4d(end, &p2);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  if (geodetic)
-    interpolate_point4d_spheroid(&p1, &p2, &p, NULL, (double) ratio);
-  else
-  {
-    /* We cannot call the PostGIS function
-     * interpolate_point4d(&p1, &p2, &p, ratio);
-     * since it uses a double and not a long double for the interpolation */
-    p.x = floatsegm_interpolate(p1.x, p2.x, ratio);
-    p.y = floatsegm_interpolate(p1.y, p2.y, ratio);
-    p.z = floatsegm_interpolate(p1.z, p2.z, ratio);
-    p.m = 0.0;
-  }
-
+  point4dsegm_interpolate(&p1, &p2, geodetic, ratio, &p);
   Datum result = PointerGetDatum(geopoint_make(p.x, p.y, p.z, hasz, geodetic,
     srid));
   return result;
@@ -844,6 +864,8 @@ geogpointsegm_middle_meet(const POINT4D *p, bool hasz)
 extern double cr_sinpi(double x);
 extern double cr_cospi(double x);
 extern double cr_atan2(double y, double x);
+extern double cr_sin(double x);
+extern double cr_cos(double x);
 
 /**
  * @brief A double and a bound on its distance to the real number it computes
@@ -1018,6 +1040,440 @@ bd_sincos_deg(double deg, double lo, double err, BoundedDouble *s,
 }
 
 /**
+ * @brief Set the sine and the cosine of an angle given in radians, known
+ * within an absolute error
+ * @details The radians twin of #bd_sincos_deg: #cr_sin and #cr_cos of
+ * core-math/ round correctly the sine and the cosine of the double, and each
+ * moves by at most the error of the angle more, their derivatives being
+ * bounded by 1
+ * @param[in] a Angle in radians with its error
+ * @param[out] s,c Sine and cosine
+ */
+static void
+bd_sincos_rad(BoundedDouble a, BoundedDouble *s, BoundedDouble *c)
+{
+  double sv = cr_sin(a.v), cv = cr_cos(a.v);
+  s->v = sv;
+  s->e = (a.e + BD_U * fabs(sv)) * BD_INFLATE;
+  c->v = cv;
+  c->e = (a.e + BD_U * fabs(cv)) * BD_INFLATE;
+}
+
+/**
+ * @brief The sines and the cosines of a geography point segment, the angle
+ * om between its ends and the haversine of that angle, each with its bound
+ * @details Read by #geogpointsegm_mirror_date and #geog_dwithin_grid_set
+ */
+typedef struct
+{
+  BoundedDouble sa, ca, sb, cb;  /**< Sines and cosines of the end latitudes */
+  BoundedDouble sh, ch, sq, cq;  /**< Of half their difference and sum */
+  BoundedDouble sd, cd;          /**< Of half the difference of longitudes */
+  BoundedDouble hav;             /**< sin^2(om / 2) */
+  BoundedDouble comp;            /**< cos^2(om / 2) */
+  BoundedDouble om;              /**< Angle between the ends */
+  BoundedDouble sinom;           /**< Its sine */
+} GeogArcBounds;
+
+/**
+ * @brief Set the bounded trigonometry of a geography point segment
+ * @details The sines and cosines of the end latitudes, of half their
+ * difference and of half their sum, rounded once, and of half the difference
+ * of the longitudes, held exactly (#two_diff), so that its cosine near 90
+ * degrees, the ends nearly antipodal, keeps its relative accuracy. The
+ * haversine of the angle om between the ends and its complement,
+ * hav = sin^2(om / 2) and 1 - hav = cos^2(om / 2), are each a sum of positive
+ * terms, so that both keep their relative accuracy where om is near 0 or
+ * near 180 degrees
+ * @param[in] lon0,lat0,lon1,lat1 Ends of the segment, in degrees
+ * @param[out] arc Bounded trigonometry
+ */
+static void
+bd_geogsegm_arc(double lon0, double lat0, double lon1, double lat1,
+  GeogArcBounds *arc)
+{
+  double dlat = lat1 - lat0, slat = lat0 + lat1, dlon, dlonlo;
+  two_diff(lon1, lon0, &dlon, &dlonlo);
+  bd_sincos_deg(lat0, 0.0, 0.0, &arc->sa, &arc->ca);
+  bd_sincos_deg(lat1, 0.0, 0.0, &arc->sb, &arc->cb);
+  bd_sincos_deg(dlat / 2.0, 0.0, BD_U * fabs(dlat) / 2.0, &arc->sh, &arc->ch);
+  bd_sincos_deg(slat / 2.0, 0.0, BD_U * fabs(slat) / 2.0, &arc->sq, &arc->cq);
+  bd_sincos_deg(dlon / 2.0, dlonlo / 2.0, 0.0, &arc->sd, &arc->cd);
+  BoundedDouble cacb = bd_mul(arc->ca, arc->cb);
+  arc->hav = bd_add(bd_mul(arc->sh, arc->sh),
+    bd_mul(cacb, bd_mul(arc->sd, arc->sd)));
+  arc->comp = bd_add(bd_mul(arc->sq, arc->sq),
+    bd_mul(cacb, bd_mul(arc->cd, arc->cd)));
+  BoundedDouble rh = bd_sqrt(arc->hav), rc = bd_sqrt(arc->comp);
+  BoundedDouble two = { 2.0, 0.0 };
+  arc->om = bd_mul(two, bd_atan2(rh, rc));
+  arc->sinom = bd_mul(two, bd_mul(rh, rc));
+  return;
+}
+
+/**
+ * @brief The great circles of two geography point segments over one segment
+ * of time, read with bounds, for the exact within distance on the sphere
+ * @details The geodetic twin of the planar DWithinGrid of geo_funcs.c. A
+ * segment moves along the great circle of its ends at a constant angular
+ * speed (#GeogSegmPair): at the fraction f it stands at
+ * P(f) = A cos(om f) + C sin(om f), A the unit vector of its start, B that of
+ * its end, C = (B - cos(om) A) / sin(om); a segment whose ends are one
+ * position stands still at A
+ */
+typedef struct
+{
+  BoundedDouble A[2][3];  /**< Unit vectors of the starts */
+  BoundedDouble C[2][3];  /**< Unit vectors orthogonal to them */
+  BoundedDouble om[2];    /**< Angles the segments sweep */
+  bool rest[2];           /**< True for a segment standing still */
+  BoundedDouble lim2;     /**< Square of the chord of the distance */
+  bool all;               /**< True for a distance of half the circumference
+                               or more, which every position satisfies */
+  double w2;              /**< Bound on |P1'' - P2''|, om1^2 + om2^2 */
+  int64 D;                /**< Duration of the segment in microseconds */
+  const POINT2D *ends[4]; /**< Ends of the two segments, for the precise
+                               tier (#geog_motion_dwithin_at_wide) */
+  double dist;            /**< Distance */
+  double radius;          /**< Radius of the sphere */
+} GeogDWithinGrid;
+
+/**
+ * @brief Set the bounded great circle of one geography point segment
+ * @return False where the ends are antipodal, which states no great circle
+ */
+static bool
+geog_dwithin_grid_circle(GeogDWithinGrid *g, int k, const POINT2D *p0,
+  const POINT2D *p1)
+{
+  GeogArcBounds arc;
+  bd_geogsegm_arc(p0->x, p0->y, p1->x, p1->y, &arc);
+  BoundedDouble slo0, clo0, slo1, clo1;
+  bd_sincos_deg(p0->x, 0.0, 0.0, &slo0, &clo0);
+  bd_sincos_deg(p1->x, 0.0, 0.0, &slo1, &clo1);
+  BoundedDouble *A = g->A[k], *C = g->C[k];
+  A[0] = bd_mul(arc.ca, clo0);
+  A[1] = bd_mul(arc.ca, slo0);
+  A[2] = arc.sa;
+  BoundedDouble B[3] = { bd_mul(arc.cb, clo1), bd_mul(arc.cb, slo1), arc.sb };
+  /* The ends are one position, at the same degrees or at a pole */
+  if (arc.hav.v == 0.0 && arc.hav.e == 0.0)
+  {
+    g->rest[k] = true;
+    g->om[k] = arc.hav;
+    for (int i = 0; i < 3; i++)
+      C[i] = arc.hav;
+    return true;
+  }
+  if (arc.comp.v == 0.0 && arc.comp.e == 0.0)
+    return false;
+  g->rest[k] = false;
+  g->om[k] = arc.om;
+  /* cos(om) = cos^2(om / 2) - sin^2(om / 2) */
+  BoundedDouble cosom = bd_sub(arc.comp, arc.hav);
+  for (int i = 0; i < 3; i++)
+    C[i] = bd_div(bd_sub(B[i], bd_mul(cosom, A[i])), arc.sinom);
+  return true;
+}
+
+/**
+ * @brief Set the bounded great circles of two geography point segments and
+ * the chord of a distance on the sphere
+ * @details Two positions of the unit sphere are within the distance d on the
+ * sphere of radius R where their chord is at most 2 sin(d / 2R), the square
+ * of the chord |P1 - P2|^2 = 2 - 2 P1.P2 being a difference of positions that
+ * keeps its relative accuracy for positions near each other, where 1 - P1.P2
+ * cancels
+ * @return False where the ends of a segment are antipodal
+ */
+static bool
+geog_dwithin_grid_set(GeogDWithinGrid *g, const POINT2D *a0,
+  const POINT2D *a1, const POINT2D *b0, const POINT2D *b1, double dist,
+  double radius, int64 D)
+{
+  if (! geog_dwithin_grid_circle(g, 0, a0, a1) ||
+      ! geog_dwithin_grid_circle(g, 1, b0, b1))
+    return false;
+  g->D = D;
+  g->ends[0] = a0; g->ends[1] = a1; g->ends[2] = b0; g->ends[3] = b1;
+  g->dist = dist;
+  g->radius = radius;
+  BoundedDouble d = { dist, 0.0 }, r2 = { 2.0 * radius, 0.0 };
+  BoundedDouble x = bd_div(d, r2);
+  /* d / 2R at pi / 2 or more: the chord of every pair of positions is within
+   * 2 = 2 sin(pi / 2) */
+  g->all = (x.v - x.e >= M_PI_2);
+  BoundedDouble s, c, four = { 4.0, 0.0 };
+  bd_sincos_rad(x, &s, &c);
+  g->lim2 = bd_mul(four, bd_mul(s, s));
+  double w0 = g->om[0].v + g->om[0].e, w1 = g->om[1].v + g->om[1].e;
+  g->w2 = (w0 * w0 + w1 * w1) * (1.0 + 8.0 * DBL_EPSILON);
+  return true;
+}
+
+/**
+ * @brief Set the difference of the positions of the two segments of a grid
+ * at a fraction, and of their derivatives with respect to the fraction
+ */
+static void
+geog_dwithin_grid_diff(const GeogDWithinGrid *g, BoundedDouble f,
+  BoundedDouble *dp, BoundedDouble *dv)
+{
+  BoundedDouble P[2][3], V[2][3];
+  for (int k = 0; k < 2; k++)
+  {
+    if (g->rest[k])
+    {
+      for (int i = 0; i < 3; i++)
+      {
+        P[k][i] = g->A[k][i];
+        V[k][i] = g->om[k];
+      }
+      continue;
+    }
+    BoundedDouble st, ct;
+    bd_sincos_rad(bd_mul(g->om[k], f), &st, &ct);
+    for (int i = 0; i < 3; i++)
+    {
+      P[k][i] = bd_add(bd_mul(g->A[k][i], ct), bd_mul(g->C[k][i], st));
+      V[k][i] = bd_mul(g->om[k], bd_sub(bd_mul(g->C[k][i], ct),
+        bd_mul(g->A[k][i], st)));
+    }
+  }
+  for (int i = 0; i < 3; i++)
+  {
+    dp[i] = bd_sub(P[0][i], P[1][i]);
+    dv[i] = bd_sub(V[0][i], V[1][i]);
+  }
+  return;
+}
+
+/**
+ * @brief Return the fraction of the microsecond @p n of the segment of a grid
+ * with its bound, @p n and the duration being exact doubles
+ */
+static inline BoundedDouble
+geog_dwithin_grid_frac(const GeogDWithinGrid *g, int64 n)
+{
+  BoundedDouble f;
+  f.v = (double) n / (double) g->D;
+  f.e = BD_U * f.v * BD_INFLATE;
+  return f;
+}
+
+/**
+ * @brief Return h = 4 sin^2(d / 2R) - |P1 - P2|^2, not negative where the
+ * positions of the two segments are within the distance, at a fraction
+ */
+static BoundedDouble
+geog_dwithin_grid_h(const GeogDWithinGrid *g, const BoundedDouble *dp)
+{
+  BoundedDouble sq = bd_add(bd_add(bd_mul(dp[0], dp[0]),
+    bd_mul(dp[1], dp[1])), bd_mul(dp[2], dp[2]));
+  return bd_sub(g->lim2, sq);
+}
+
+/**
+ * @brief Return 1 or 0 where the positions of the two segments of a grid are
+ * within the distance at the microsecond @p n, or not, decided exactly, -1
+ * where no precision decides it
+ * @details The geodetic twin of #dwithin_grid_sign of geo_funcs.c: the
+ * bounded doubles first, the precise tier where their bound does not decide
+ * (#geog_motion_dwithin_at_wide)
+ */
+static int
+geog_dwithin_grid_sign(const GeogDWithinGrid *g, int64 n)
+{
+  if (g->all)
+    return 1;
+  BoundedDouble dp[3], dv[3];
+  geog_dwithin_grid_diff(g, geog_dwithin_grid_frac(g, n), dp, dv);
+  BoundedDouble h = geog_dwithin_grid_h(g, dp);
+  if (isfinite(h.v) && isfinite(h.e))
+  {
+    if (h.v - h.e >= 0.0)
+      return 1;
+    if (h.v + h.e < 0.0)
+      return 0;
+  }
+  int w = geog_motion_dwithin_at_wide(g->ends[0], g->ends[1], g->ends[2],
+    g->ends[3], g->dist, g->radius, g->D, n);
+  return (w == 2) ? -1 : w;
+}
+
+/**
+ * @brief Return true where two geography point segments are within a
+ * distance on the sphere at the microsecond @p n of a segment of @p D
+ * microseconds, set in @p result, decided exactly
+ * @details The geodetic twin of #point_motion_dwithin_at_exact. Each segment
+ * moves along the great circle of its ends at a constant angular speed
+ * (#GeogSegmPair); the two are within the distance where the square of the
+ * chord of their positions is at most 4 sin^2(d / 2R), read with the bounds
+ * of the correctly rounded trigonometry of core-math/ (#bd_sincos_deg,
+ * #bd_sincos_rad, #bd_atan2), no position being constructed
+ * @param[in] a0,a1 Ends of the first segment, longitude and latitude
+ * @param[in] b0,b1 Ends of the second segment
+ * @param[in] dist Distance in the units of @p radius, positive
+ * @param[in] radius Radius of the sphere
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] n Microsecond from the start of the segment
+ * @param[out] result True where the two are within the distance
+ * @return False where an end pair is antipodal or the bound does not decide
+ * @pre `0 < D`, `0 <= n <= D`
+ */
+bool
+geog_motion_dwithin_at_exact(const POINT2D *a0, const POINT2D *a1,
+  const POINT2D *b0, const POINT2D *b1, double dist, double radius, int64 D,
+  int64 n, bool *result)
+{
+  assert(D > 0); assert(0 <= n && n <= D); assert(dist > 0.0);
+  GeogDWithinGrid g;
+  /* A fraction of the segment is read from the microsecond and the duration
+   * as exact doubles, as #geogpointsegm_mirror_date reads one */
+  if (D >= FLOATSEGM_FILTER_MAXD ||
+      ! geog_dwithin_grid_set(&g, a0, a1, b0, b1, dist, radius, D))
+    return false;
+  int sign = geog_dwithin_grid_sign(&g, n);
+  if (sign < 0)
+    return false;
+  *result = (sign == 1);
+  return true;
+}
+
+/**
+ * @brief Add the crossings of the distance between the microseconds @p a and
+ * @p b of a grid, at which the two segments are within it or not as @p wa
+ * and @p wb state, in increasing order
+ * @details The function h of #geog_dwithin_grid_h is read at the middle m of
+ * the interval with its bound. With V a bound on |P1' - P2'| over the
+ * interval, |P1' - P2'| at m plus w2 times the half width, and R a bound on
+ * |P1 - P2|, |P1 - P2| at m plus V times the half width, |h'| is at most
+ * 2 R V and |h''| at most 2 (V^2 + R w2): no crossing lies in the interval
+ * where |h(m)| exceeds 2 R V times the half width, and at most one where
+ * |h'(m)| exceeds 2 (V^2 + R w2) times it, which a search on the exact signs
+ * of the microseconds then dates. A crossing between two consecutive
+ * microseconds is dated by the first, as #point_motion_dwithin_period_exact
+ * dates one by truncation: the answer at a microsecond is the exact one, and
+ * after the date the value is the one at the next microsecond
+ * @return False where a sign is not decided or more than @p maxcross
+ * crossings are found
+ */
+static bool
+geog_dwithin_grid_walk(const GeogDWithinGrid *g, int64 a, int64 b, bool wa,
+  bool wb, int64 *dated, bool *after, int *count, int maxcross)
+{
+  if (b - a <= 1)
+  {
+    if (wa == wb)
+      return true;
+    if (*count == maxcross)
+      return false;
+    dated[*count] = a;
+    after[(*count)++] = wb;
+    return true;
+  }
+  int64 m = a + (b - a) / 2;
+  BoundedDouble dp[3], dv[3];
+  geog_dwithin_grid_diff(g, geog_dwithin_grid_frac(g, m), dp, dv);
+  BoundedDouble h = geog_dwithin_grid_h(g, dp);
+  BoundedDouble dh = bd_add(bd_add(bd_mul(dp[0], dv[0]),
+    bd_mul(dp[1], dv[1])), bd_mul(dp[2], dv[2]));
+  double rp = 0.0, rv = 0.0;
+  for (int i = 0; i < 3; i++)
+  {
+    double x = fabs(dp[i].v) + dp[i].e, y = fabs(dv[i].v) + dv[i].e;
+    rp += x * x;
+    rv += y * y;
+  }
+  const double up = 1.0 + 16.0 * DBL_EPSILON;
+  double hw = ((double) Max(m - a, b - m) / (double) g->D) * up;
+  double V = (sqrt(rv) * up + g->w2 * hw) * up;
+  double R = (sqrt(rp) * up + V * hw) * up;
+  if (isfinite(h.v) && isfinite(h.e) && isfinite(R) &&
+      fabs(h.v) - h.e > 2.0 * R * V * hw * up)
+    return true;
+  if (isfinite(dh.v) && isfinite(dh.e) &&
+      2.0 * (fabs(dh.v) - dh.e) > 2.0 * (V * V + R * g->w2) * hw * up)
+  {
+    /* Monotone over the interval: no crossing where the ends agree, else
+     * one, after the last microsecond taking the value at a */
+    if (wa == wb)
+      return true;
+    int64 lo = a, hi = b;
+    while (hi - lo > 1)
+    {
+      int64 mid = lo + (hi - lo) / 2;
+      int s = geog_dwithin_grid_sign(g, mid);
+      if (s < 0)
+        return false;
+      if ((s == 1) == wa)
+        lo = mid;
+      else
+        hi = mid;
+    }
+    if (*count == maxcross)
+      return false;
+    dated[*count] = lo;
+    after[(*count)++] = wb;
+    return true;
+  }
+  int sm = geog_dwithin_grid_sign(g, m);
+  if (sm < 0)
+    return false;
+  return geog_dwithin_grid_walk(g, a, m, wa, sm == 1, dated, after, count,
+      maxcross) &&
+    geog_dwithin_grid_walk(g, m, b, sm == 1, wb, dated, after, count,
+      maxcross);
+}
+
+/**
+ * @brief Return the number of crossings of a distance on the sphere by two
+ * geography point segments over a segment of @p D microseconds, each dated
+ * in @p dated by the microsecond from the start of the segment before it,
+ * with in @p after the value the two take after it, decided exactly; -1
+ * where an end pair is antipodal, a sign is not decided or more than
+ * @p maxcross crossings are found
+ * @details The geodetic twin of #point_motion_dwithin_period_exact, whose
+ * distance on the sphere is not convex in time, so that the two segments may
+ * come within the distance and leave it several times. The answer at every
+ * microsecond is the exact one (#geog_motion_dwithin_at_exact), and between
+ * two consecutive microseconds the value is the one at the later, so that a
+ * crossing is dated by the truncation of its exact instant, as MEOS dates a
+ * crossing, and a touch between two microseconds states no instant
+ * (#geog_dwithin_grid_walk)
+ * @param[in] a0,a1 Ends of the first segment, longitude and latitude
+ * @param[in] b0,b1 Ends of the second segment
+ * @param[in] dist Distance in the units of @p radius, positive
+ * @param[in] radius Radius of the sphere
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] in0 Whether the two are within the distance at the start
+ * @param[out] dated Microseconds dating the crossings, increasing
+ * @param[out] after Values after each crossing
+ * @param[in] maxcross Number of crossings @p dated holds
+ * @pre `0 < D`
+ */
+int
+geog_motion_dwithin_crossings_exact(const POINT2D *a0, const POINT2D *a1,
+  const POINT2D *b0, const POINT2D *b1, double dist, double radius, int64 D,
+  bool *in0, int64 *dated, bool *after, int maxcross)
+{
+  assert(D > 0); assert(dist > 0.0);
+  GeogDWithinGrid g;
+  if (D >= FLOATSEGM_FILTER_MAXD ||
+      ! geog_dwithin_grid_set(&g, a0, a1, b0, b1, dist, radius, D))
+    return -1;
+  int s0 = geog_dwithin_grid_sign(&g, 0), s1 = geog_dwithin_grid_sign(&g, D);
+  if (s0 < 0 || s1 < 0)
+    return -1;
+  *in0 = (s0 == 1);
+  int count = 0;
+  if (! g.all && ! geog_dwithin_grid_walk(&g, 0, D, s0 == 1, s1 == 1, dated,
+      after, &count, maxcross))
+    return -1;
+  return count;
+}
+
+/**
  * @brief Return true if the microsecond nearest to the meeting of a geography
  * point segment and its mirror across the equator is proved, set in the
  * output argument
@@ -1049,29 +1505,11 @@ geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
   int64 d = upper - lower;
   if (d >= FLOATSEGM_FILTER_MAXD)
     return false;
-  /* The sines and cosines of the end latitudes, of half their difference and
-   * of half their sum, rounded once, and of half the difference of the
-   * longitudes, held exactly (#two_diff), so that its cosine near 90
-   * degrees, the ends nearly antipodal, keeps its relative accuracy */
-  double dlat = p[1].y - p[0].y, slat = p[0].y + p[1].y, dlon, dlonlo;
-  two_diff(p[1].x, p[0].x, &dlon, &dlonlo);
-  BoundedDouble sa, ca, sb, cb, sh, ch, sq, cq, sd, cd;
-  bd_sincos_deg(p[0].y, 0.0, 0.0, &sa, &ca);
-  bd_sincos_deg(p[1].y, 0.0, 0.0, &sb, &cb);
-  bd_sincos_deg(dlat / 2.0, 0.0, BD_U * fabs(dlat) / 2.0, &sh, &ch);
-  bd_sincos_deg(slat / 2.0, 0.0, BD_U * fabs(slat) / 2.0, &sq, &cq);
-  bd_sincos_deg(dlon / 2.0, dlonlo / 2.0, 0.0, &sd, &cd);
-  /* The haversine of the angle om between the ends and its complement,
-   * hav = sin^2(om / 2) and 1 - hav = cos^2(om / 2), each a sum of positive
-   * terms, so that both keep their relative accuracy where om is near 0 or
-   * near 180 degrees */
-  BoundedDouble cacb = bd_mul(ca, cb);
-  BoundedDouble hav = bd_add(bd_mul(sh, sh), bd_mul(cacb, bd_mul(sd, sd)));
-  BoundedDouble comp = bd_add(bd_mul(sq, sq), bd_mul(cacb, bd_mul(cd, cd)));
-  BoundedDouble rh = bd_sqrt(hav), rc = bd_sqrt(comp);
-  BoundedDouble two = { 2.0, 0.0 };
-  BoundedDouble om = bd_mul(two, bd_atan2(rh, rc));
-  BoundedDouble sinom = bd_mul(two, bd_mul(rh, rc));
+  /* The bounded trigonometry of the segment (#bd_geogsegm_arc) */
+  GeogArcBounds arc;
+  bd_geogsegm_arc(p[0].x, p[0].y, p[1].x, p[1].y, &arc);
+  BoundedDouble sa = arc.sa, sh = arc.sh, cq = arc.cq, hav = arc.hav,
+    comp = arc.comp, om = arc.om, sinom = arc.sinom;
   /* cos(om) sa - sb, which cancels where the ends are near each other or
    * nearly antipodal, in the form that does not: with cos(om) = 1 - 2 hav and
    * sa - sb = -2 cos(Q / 2) sin(P / 2), P and Q the difference and the sum of
@@ -1080,7 +1518,7 @@ geogpointsegm_mirror_date(const POINT4D *p, TimestampTz lower,
    * is 2 ((1 - hav) sa - sq ch) beyond */
   BoundedDouble half = bd_add(bd_mul(cq, sh), bd_mul(hav, sa));
   if (hav.v > 0.5)
-    half = bd_sub(bd_mul(sq, ch), bd_mul(comp, sa));
+    half = bd_sub(bd_mul(arc.sq, arc.ch), bd_mul(comp, sa));
   BoundedDouble mtwo = { -2.0, 0.0 };
   BoundedDouble ang = bd_atan2(bd_mul(sinom, sa), bd_mul(mtwo, half));
   BoundedDouble dur = { (double) d, 0.0 };
@@ -1244,45 +1682,63 @@ tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 /**
  * @brief Return true if the three values are collinear
  * @details A planar point interpolates its coordinates linearly, so each of
- * them is collinear exactly as #float_collinear decides it. A geodetic point
- * interpolates its longitude and latitude along the great circle through the
- * other two, a point the engine CONSTRUCTS and rounds, so the middle point is
- * on the path where it lies within the rounding of that construction of it
- * (#coordinate_tolerance). A constructed middle point, the point at which a
- * restriction splits a segment, is rounded as well and lies within that
- * rounding of the interpolated point. The Z coordinate interpolates linearly
- * and is collinear as #float_collinear decides it
+ * them is collinear exactly as #float_collinear decides it. A geography point
+ * moves along the great circle of its neighbours at a constant angular speed
+ * (#GeogSegmPair), and the middle point is on that path where the doubles
+ * prove it: on the equator, the longitudes of the three within less than 180
+ * degrees of each other, the longitude moves linearly; on one meridian away
+ * from the poles, the latitude does; and at the middle of the period, a
+ * segment that a half turn exchanging its ends proves to stand at one point
+ * there (#geogpointsegm_middle) stands at the middle point where that is the
+ * point. Elsewhere the middle point is a point no input proves on the path,
+ * and it is kept. The Z coordinate interpolates linearly and is collinear as
+ * #float_collinear decides it
  * @param[in] value1,value2,value3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
  * @param[in] hasz True if the points have Z coordinates
  * @param[in] geodetic True for geography, false for geometry
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  */
 bool
 geopoint_collinear(Datum value1, Datum value2, Datum value3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz, bool geodetic,
-  bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz, bool geodetic)
 {
   POINT4D p1, p2, p3;
   datum_point4d(value1, &p1);
   datum_point4d(value2, &p2);
   datum_point4d(value3, &p3);
-  if (hasz && ! float_collinear(p1.z, p2.z, p3.z, t1, t2, t3, constructed))
+  if (hasz && ! float_collinear(p1.z, p2.z, p3.z, t1, t2, t3))
     return false;
-  if (! geodetic && ! constructed)
-    return float_collinear(p1.x, p2.x, p3.x, t1, t2, t3, false) &&
-      float_collinear(p1.y, p2.y, p3.y, t1, t2, t3, false);
-  POINT4D p;
-  double ratio = (double) (t2 - t1) / (double) (t3 - t1);
-  if (geodetic)
-    interpolate_point4d_spheroid(&p1, &p3, &p, NULL, ratio);
-  else
-    interpolate_point4d(&p1, &p3, &p, ratio);
-  double maxcoord = Max(Max(fabs(p1.x), fabs(p1.y)),
-    Max(fabs(p3.x), fabs(p3.y)));
-  return (hypot(p2.x - p.x, p2.y - p.y) <= coordinate_tolerance(maxcoord,
-    Max(fabs(p2.x), fabs(p2.y))));
+  if (! geodetic)
+    return float_collinear(p1.x, p2.x, p3.x, t1, t2, t3) &&
+      float_collinear(p1.y, p2.y, p3.y, t1, t2, t3);
+  /* On the equator the longitude moves linearly */
+  if (p1.y == 0.0 && p2.y == 0.0 && p3.y == 0.0 &&
+      Max(p1.x, Max(p2.x, p3.x)) - Min(p1.x, Min(p2.x, p3.x)) < 180.0)
+    return float_collinear(p1.x, p2.x, p3.x, t1, t2, t3);
+  /* On one meridian away from the poles the latitude moves linearly */
+  if (p1.x == p2.x && p2.x == p3.x && fabs(p1.y) < 90.0 &&
+      fabs(p2.y) < 90.0 && fabs(p3.y) < 90.0)
+    return float_collinear(p1.y, p2.y, p3.y, t1, t2, t3);
+  /* At the middle of the period, the middle a half turn proves */
+  if (t2 - t1 != t3 - t2)
+    return false;
+  double twice[3];
+  int k = geogpointsegm_middle(&p1, &p3, twice);
+  if (k == 2 || k == 3)
+    return p2.y == (k == 2 ? 90.0 : -90.0);
+  if (k != 1 || p2.y != 0.0 || fabs(p2.x) > 180.0)
+    return false;
+  /* Twice the longitude of the middle against twice that of the point, which
+   * lie within [-360, 720] and name one point where they differ by 0, 720 or
+   * -720 */
+  for (int j = -1; j <= 1; j++)
+  {
+    const double sum[5] = { twice[0], twice[1], twice[2], - 2.0 * p2.x,
+      720.0 * j };
+    if (double_sum_zero(sum, 5))
+      return true;
+  }
+  return false;
 }
 
 /*****************************************************************************

@@ -19,7 +19,11 @@
 #                           of its boxes hand #bbox_merge_n; a point cloud box
 #                           merges through those of the spatiotemporal box it
 #                           begins with, as the in-memory R-tree splits it;
-#   calls                   for each primitive the template calls, the C
+#   MQSIZE                  the size of a box for a query box the query merge
+#                           hands #bbox_merge_query;
+#   calls                   for each primitive the template calls (QVALID, the
+#                           test of the value and the query box of the query
+#                           merge, among them), the C
 #                           expression it stands for, {0}, {1}, ... being the
 #                           arguments of the call, the first of them the value
 #                           the box is read from.
@@ -50,7 +54,9 @@ boxsplit:
     MBOXTYPE: T_STBOX
     MADJUST: stbox_adjust
     MSIZE: stbox_size
+    MQSIZE: stbox_query_size
     calls:
+      QVALID: ensure_valid_tspatial_stbox({0}, {1})
       INSTSET: tspatialinst_set_stbox({1}, {2})
       SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})
       SEQBOX: tspatialseq_set_stbox({0}, {1})
@@ -78,7 +84,9 @@ boxsplit:
     MBOXTYPE: T_TBOX
     MADJUST: tbox_adjust
     MSIZE: tbox_size
+    MQSIZE: tbox_query_size
     calls:
+      QVALID: ensure_valid_tnumber_tbox({0}, {1})
       INSTSET: tnumberinst_set_tbox({1}, {2})
       SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})
       SEQBOX: tnumberseq_set_tbox({0}, {1})
@@ -106,7 +114,9 @@ boxsplit:
     MBOXTYPE: T_TSTZSPAN
     MADJUST: span_adjust
     MSIZE: span_size
+    MQSIZE: span_query_size
     calls:
+      QVALID: ensure_span_isof_type({1}, T_TSTZSPAN)
       INSTSET: tinstant_set_span({1}, {2})
       SLICE: tsequence_set_tstzspan_slice({0}, {1}, {2}, {3})
       SEQBOX: '*({1}) = ({0})->period'
@@ -136,7 +146,9 @@ boxsplit:
     MBOXTYPE: T_STBOX
     MADJUST: stbox_adjust
     MSIZE: stbox_size
+    MQSIZE: stbox_query_size
     calls:
+      QVALID: ensure_valid_tspatial_stbox({0}, {1})
       INSTSET: trgeoinst_set_stbox(geom, {1}, {2})
       SLICE: trgeoseq_slice_stbox(geom, {0}, {1}, {2}, {3})
       SEQBOX: tspatialseq_set_stbox({0}, {1})
@@ -164,7 +176,9 @@ boxsplit:
     MBOXTYPE: T_TPCBOX
     MADJUST: stbox_adjust
     MSIZE: stbox_size
+    MQSIZE: stbox_query_size
     calls:
+      QVALID: ensure_valid_tpointcloud_tpcbox({0}, {1})
       INSTSET: tpointcloudinst_set_tpcbox({1}, {2})
       SLICE: tsequence_set_bbox_slice({0}, {1}, {2}, {3})
       SEQBOX: tsequence_set_bbox_slice({0}, 0, 0, {1})

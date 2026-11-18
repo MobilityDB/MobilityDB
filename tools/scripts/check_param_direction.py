@@ -90,7 +90,7 @@ SUFFIXES = (".c",)
 #: The block and the definition can be separated by preprocessor guards and
 #: blank lines, the shape a `#if MEOS` twin of a symbol uses.
 DEFINITION = re.compile(
-    r"/\*\*(?P<doc>.*?)\*/[^\S\n]*\n"
+    r"/\*\*(?P<doc>(?:(?!\*/).)*?)\*/[^\S\n]*\n"
     r"(?:[^\S\n]*(?:\#[^\n]*|//[^\n]*)?[^\S\n]*\n)*"
     r"(?:[A-Za-z_][\w\s\*]*?\n)?"
     r"(?P<name>[a-z][a-z0-9_]*)\s*\((?P<params>[^;{]*?)\)\s*\{",

@@ -90,6 +90,11 @@ CREATE FUNCTION mergeEachNStboxes(tposechain, integer)
   AS 'MODULE_PATHNAME', 'Tgeo_merge_each_n_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION mergeQueryStboxes(tposechain, stbox)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_merge_query_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION expandSpace(tposechain, float)

@@ -1388,6 +1388,44 @@ tpointcloud_merge_each_n_tpcboxes(const Temporal *temp, int elem_count,
       &stbox_adjust, &stbox_size);
   return result;
 }
+
+/*****************************************************************************
+ * merge_query_tpcboxes function
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_bbox_split
+ * @brief Return an array of point cloud boxes obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal point cloud value into those a query of the extents of a query box
+ * is expected to read least
+ * @details The query twin of #tpointcloud_merge_n_tpcboxes, by #bbox_merge_query:
+ * the widths of the query box are the extents of the query, its position is
+ * not read, and a dimension it lacks restricts no query
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tpointcloud_merge_query_tpcboxes()
+ */
+TPCBox *
+tpointcloud_merge_query_tpcboxes(const Temporal *temp, const TPCBox *query,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_valid_tpointcloud_tpcbox(temp, query))
+    return NULL;
+
+  TPCBox *result = tpointcloud_tpcboxes(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_TPCBOX, result, *count, query, &stbox_adjust,
+      &stbox_query_size);
+  return result;
+}
 /* GENERATED-BOXSPLIT-END tpointcloud */
 
 /*****************************************************************************/

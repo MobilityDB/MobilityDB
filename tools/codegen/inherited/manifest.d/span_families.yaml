@@ -82,6 +82,12 @@ span_families:
   - {sig: "mergeEachNSpans(dateset, {v})", ret: "datespan[]", sym: Set_merge_each_n_spans, only: [int]}
   - {sig: "mergeEachNSpans(tstzset, {v})", ret: "tstzspan[]", sym: Set_merge_each_n_spans, only: [int]}
   - lit: "\n"
+  - {sig: "mergeQuerySpans({vs}, {sp})", ret: "{sp}[]", sym: Set_merge_query_spans, only: [int]}
+  - {sig: "mergeQuerySpans(bigintset, bigintspan)", ret: "bigintspan[]", sym: Set_merge_query_spans, only: [int]}
+  - {sig: "mergeQuerySpans(floatset, floatspan)", ret: "floatspan[]", sym: Set_merge_query_spans, only: [int]}
+  - {sig: "mergeQuerySpans(dateset, datespan)", ret: "datespan[]", sym: Set_merge_query_spans, only: [int]}
+  - {sig: "mergeQuerySpans(tstzset, tstzspan)", ret: "tstzspan[]", sym: Set_merge_query_spans, only: [int]}
+  - lit: "\n"
   - {sig: "{sp}(floatspan)", ret: "{sp}", sym: Floatspan_to_intspan, only: [int]}
   - {sig: "floatspan({sp})", ret: "floatspan", sym: Intspan_to_floatspan, only: [int]}
   - lit: "\n"
@@ -348,6 +354,12 @@ span_families:
   - {sig: "mergeEachNSpans(floatspanset, {v})", ret: "floatspan[]", sym: Spanset_merge_each_n_spans, only: [int]}
   - {sig: "mergeEachNSpans(datespanset, {v})", ret: "datespan[]", sym: Spanset_merge_each_n_spans, only: [int]}
   - {sig: "mergeEachNSpans(tstzspanset, {v})", ret: "tstzspan[]", sym: Spanset_merge_each_n_spans, only: [int]}
+  - lit: "\n"
+  - {sig: "mergeQuerySpans({ss}, {sp})", ret: "{sp}[]", sym: Spanset_merge_query_spans, only: [int]}
+  - {sig: "mergeQuerySpans(bigintspanset, bigintspan)", ret: "bigintspan[]", sym: Spanset_merge_query_spans, only: [int]}
+  - {sig: "mergeQuerySpans(floatspanset, floatspan)", ret: "floatspan[]", sym: Spanset_merge_query_spans, only: [int]}
+  - {sig: "mergeQuerySpans(datespanset, datespan)", ret: "datespan[]", sym: Spanset_merge_query_spans, only: [int]}
+  - {sig: "mergeQuerySpans(tstzspanset, tstzspan)", ret: "tstzspan[]", sym: Spanset_merge_query_spans, only: [int]}
   - lit: "\n/******************************************************************************\n * Comparison operators\n ******************************************************************************/\n\n"
   - {sig: "eq({ss}, {ss})", ret: "boolean", sym: Spanset_eq}
   - lit: "\n"

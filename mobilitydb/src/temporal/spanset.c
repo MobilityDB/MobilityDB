@@ -1159,6 +1159,31 @@ Spanset_merge_each_n_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Spanset_merge_query_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_merge_query_spans);
+/**
+ * @ingroup mobilitydb_temporal_bbox_topo
+ * @brief Return an array of boxes obtained by merging the boxes of
+ * the spans of a span set into those a query of the width of
+ * a query span is expected to read least
+ * @details The width of the query box are the extents of the query, its
+ * position is not read, and a dimension it lacks restricts no query
+ * @sqlfn mergeQuerySpans()
+ */
+Datum
+Spanset_merge_query_spans(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Span *query = PG_GETARG_SPAN_P(1);
+  int count;
+  Span *spans = spanset_merge_query_spans(ss, query, &count);
+  PG_FREE_IF_COPY(ss, 0);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+
 /*****************************************************************************
  * Comparison functions for defining B-tree indexes
  *****************************************************************************/

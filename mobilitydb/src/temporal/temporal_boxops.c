@@ -220,6 +220,31 @@ Temporal_merge_each_n_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Temporal_merge_query_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_merge_query_spans);
+/**
+ * @ingroup mobilitydb_temporal_bbox_split
+ * @brief Return an array of boxes obtained by merging the boxes of
+ * the instants or segments of a temporal value into those a query of the width of
+ * a query time span is expected to read least
+ * @details The width of the query box are the extents of the query, its
+ * position is not read, and a dimension it lacks restricts no query
+ * @sqlfn mergeQuerySpans()
+ */
+Datum
+Temporal_merge_query_spans(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *query = PG_GETARG_SPAN_P(1);
+  int count;
+  Span *spans = temporal_merge_query_spans(temp, query, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+
 PGDLLEXPORT Datum Tnumber_split_each_n_tboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_split_each_n_tboxes);
 /**
@@ -291,6 +316,31 @@ Tnumber_merge_each_n_tboxes(PG_FUNCTION_ARGS)
   pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
 }
+
+PGDLLEXPORT Datum Tnumber_merge_query_tboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_merge_query_tboxes);
+/**
+ * @ingroup mobilitydb_temporal_bbox_split
+ * @brief Return an array of boxes obtained by merging the boxes of
+ * the instants or segments of a temporal number into those a query of the widths of
+ * a query box is expected to read least
+ * @details The widths of the query box are the extents of the query, its
+ * position is not read, and a dimension it lacks restricts no query
+ * @sqlfn mergeQueryTboxes()
+ */
+Datum
+Tnumber_merge_query_tboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TBox *query = PG_GETARG_TBOX_P(1);
+  int count;
+  TBox *boxes = tnumber_merge_query_tboxes(temp, query, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  ArrayType *result = tboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 
 /* GENERATED-BOXOPS-BEGIN tstzspan — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
  * edit the template + manifest.d/boxtypes.yaml and re-run. */

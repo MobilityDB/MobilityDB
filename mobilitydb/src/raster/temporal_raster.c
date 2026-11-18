@@ -45,6 +45,7 @@
 #include <catalog/pg_type.h>
 #include <commands/extension.h>
 #include <executor/executor.h>  /* GetAttributeByNum */
+#include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/guc.h>
 #include <utils/lsyscache.h>
@@ -754,6 +755,175 @@ Tfloat_as_coveragejson(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(traj, 1);
   return coveragejson_text_datum(fcinfo, str);
+}
+
+/*****************************************************************************
+ * The formats of GDAL
+ *****************************************************************************/
+
+/**
+ * @brief Return the creation options of a GDAL driver held in a text array as
+ * the one string MEOS takes, or NULL for an array of none
+ * @details Each option is written between double quotes, a double quote or a
+ * backslash it holds escaped, which is how GDAL's tokenizer reads a string
+ * back into its options
+ * @param[in] array Array of options `KEY=VALUE`
+ */
+static char *
+gdal_options_string(ArrayType *array)
+{
+  Datum *elems;
+  bool *nulls;
+  int count;
+  deconstruct_array(array, TEXTOID, -1, false, 'i', &elems, &nulls, &count);
+  StringInfoData buf;
+  initStringInfo(&buf);
+  int n = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (nulls[i])
+      continue;
+    char *opt = text_to_cstring(DatumGetTextP(elems[i]));
+    if (n++ > 0)
+      appendStringInfoChar(&buf, ' ');
+    appendStringInfoChar(&buf, '"');
+    for (const char *c = opt; *c; c++)
+    {
+      if (*c == '"' || *c == '\\')
+        appendStringInfoChar(&buf, '\\');
+      appendStringInfoChar(&buf, *c);
+    }
+    appendStringInfoChar(&buf, '"');
+    pfree(opt);
+  }
+  pfree(elems); pfree(nulls);
+  if (n == 0)
+  {
+    pfree(buf.data);
+    return NULL;
+  }
+  return buf.data;
+}
+
+/**
+ * @brief Return the bytes a GDAL writer answers as a bytea, or NULL
+ */
+static Datum
+gdal_bytes_datum(FunctionCallInfo fcinfo, uint8_t *bytes, size_t size)
+{
+  if (! bytes)
+    PG_RETURN_NULL();
+  bytea *result = bstring2bytea(bytes, size);
+  pfree(bytes);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Raster_as_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written in a format of GDAL
+ * @sqlfn asGDALRaster()
+ */
+Datum
+Raster_as_gdal(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *format = text_to_cstring(PG_GETARG_TEXT_P(1));
+  char *options = PG_ARGISNULL(2) ? NULL :
+    gdal_options_string(PG_GETARG_ARRAYTYPE_P(2));
+  int32 srid = PG_ARGISNULL(3) ? 0 : PG_GETARG_INT32(3);
+  size_t size;
+  uint8_t *bytes = raster_as_gdal(rast, format, options, srid, &size);
+  pfree(format);
+  if (options) pfree(options);
+  return gdal_bytes_datum(fcinfo, bytes, size);
+}
+
+PGDLLEXPORT Datum Raster_as_tiff(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_tiff);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a GeoTIFF
+ * @sqlfn asTIFF()
+ */
+Datum
+Raster_as_tiff(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *options = PG_ARGISNULL(1) ? NULL :
+    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  int32 srid = PG_ARGISNULL(2) ? 0 : PG_GETARG_INT32(2);
+  size_t size;
+  uint8_t *bytes = raster_as_tiff(rast, options, srid, &size);
+  if (options) pfree(options);
+  return gdal_bytes_datum(fcinfo, bytes, size);
+}
+
+PGDLLEXPORT Datum Raster_as_png(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_png);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a PNG image
+ * @sqlfn asPNG()
+ */
+Datum
+Raster_as_png(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *options = PG_ARGISNULL(1) ? NULL :
+    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  size_t size;
+  uint8_t *bytes = raster_as_png(rast, options, &size);
+  if (options) pfree(options);
+  return gdal_bytes_datum(fcinfo, bytes, size);
+}
+
+PGDLLEXPORT Datum Raster_as_jpeg(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_jpeg);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster written as a JPEG image
+ * @sqlfn asJPEG()
+ */
+Datum
+Raster_as_jpeg(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  char *options = PG_ARGISNULL(1) ? NULL :
+    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  size_t size;
+  uint8_t *bytes = raster_as_jpeg(rast, options, &size);
+  if (options) pfree(options);
+  return gdal_bytes_datum(fcinfo, bytes, size);
+}
+
+PGDLLEXPORT Datum Raster_from_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_from_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster read from the bytes of a file in a format of GDAL
+ * @sqlfn rasterFromGDALRaster()
+ */
+Datum
+Raster_from_gdal(PG_FUNCTION_ARGS)
+{
+  bytea *data = PG_GETARG_BYTEA_P(0);
+  int32 srid = PG_GETARG_INT32(1);
+  Raster *result = raster_from_gdal((uint8_t *) VARDATA(data),
+    VARSIZE(data) - VARHDRSZ, srid);
+  PG_FREE_IF_COPY(data, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Raster_from_wkb(PG_FUNCTION_ARGS);
@@ -2409,6 +2579,407 @@ Araster_tile_value_array(PG_FUNCTION_ARGS)
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * Raster series: rasterValue, rasterTileValue and the restrictions over an
+ * array of rasters or Raquet tiles and an array of their validity periods
+ *****************************************************************************/
+
+/**
+ * @brief Return the validity periods of a raster series, refusing a number of
+ * periods other than the number of rasters
+ * @details The periods are read as #spanarr_extract() reads an array of spans;
+ * a series pairs each raster with the period at its index, so the two arrays
+ * have one length, which no wrapper of the tree checked before: this is the
+ * finding the series brings
+ * @param[in] array Array of validity periods
+ * @param[in] count Number of rasters
+ */
+static Span *
+raster_series_spans(ArrayType *array, int count)
+{
+  int nspans;
+  Span *spans = spanarr_extract(array, &nspans);
+  if (nspans != count)
+  {
+    pfree(spans);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A raster series states one validity period per raster: %d rasters "
+      "and %d periods", count, nspans);
+    return NULL;
+  }
+  return spans;
+}
+
+PGDLLEXPORT Datum Raster_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values a trajectory reads from a raster series
+ * @details Mirrors #Raster_tile_value_array(), reading the validity periods
+ * beside the rasters
+ * @param[in] traj Trajectory
+ * @param[in] rasts Rasters of the series
+ * @param[in] validtime Validity periods of the rasters
+ * @param[in] band Band number
+ * @sqlfn rasterValue()
+ */
+Datum
+Raster_value_series(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *rarray = PG_GETARG_ARRAYTYPE_P(1);
+  ArrayType *sarray = PG_GETARG_ARRAYTYPE_P(2);
+  int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
+  int count;
+  Raster **rasts = rasterarr_extract(rarray, &count);
+  Span *spans = raster_series_spans(sarray, count);
+  Temporal *result = spans ? raster_value_series(traj,
+    (const Raster **) rasts, spans, count, band) : NULL;
+  if (spans)
+    pfree(spans);
+  pfree(rasts);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rarray, 1);
+  PG_FREE_IF_COPY(sarray, 2);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Return a trajectory restricted to the times where the value it reads
+ * from a raster series falls inside or outside a float range
+ * @details Mirrors #Tgeo_restrict_geom(), one function for the two
+ * restrictions
+ * @param[in] fcinfo Arguments: the trajectory, the rasters, their periods,
+ * the value range and the band
+ * @param[in] atfunc True for the times inside the range
+ */
+static Datum
+Raster_restrict_value_series(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *rarray = PG_GETARG_ARRAYTYPE_P(1);
+  ArrayType *sarray = PG_GETARG_ARRAYTYPE_P(2);
+  Span *vspan = PG_GETARG_SPAN_P(3);
+  int32 band = PG_ARGISNULL(4) ? 1 : PG_GETARG_INT32(4);
+  int count;
+  Raster **rasts = rasterarr_extract(rarray, &count);
+  Span *spans = raster_series_spans(sarray, count);
+  Temporal *result = NULL;
+  if (spans)
+  {
+    result = atfunc ?
+      raster_at_value_series(traj, (const Raster **) rasts, spans, count,
+        band, vspan) :
+      raster_minus_value_series(traj, (const Raster **) rasts, spans, count,
+        band, vspan);
+    pfree(spans);
+  }
+  pfree(rasts);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rarray, 1);
+  PG_FREE_IF_COPY(sarray, 2);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_at_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_at_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * raster series falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rasts Rasters of the series
+ * @param[in] validtime Validity periods of the rasters
+ * @param[in] vspan Float value range
+ * @param[in] band Band number
+ * @sqlfn atRasterValue()
+ */
+Datum
+Raster_at_value_series(PG_FUNCTION_ARGS)
+{
+  return Raster_restrict_value_series(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Raster_minus_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_minus_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * raster series falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rasts Rasters of the series
+ * @param[in] validtime Validity periods of the rasters
+ * @param[in] vspan Float value range
+ * @param[in] band Band number
+ * @sqlfn minusRasterValue()
+ */
+Datum
+Raster_minus_value_series(PG_FUNCTION_ARGS)
+{
+  return Raster_restrict_value_series(fcinfo, REST_MINUS);
+}
+
+/**
+ * @brief Return true if the values a trajectory reads from a raster series
+ * ever, or always, fall inside a float range
+ * @details Mirrors #EA_touches_tgeo_geo(), one function for ever and always
+ * @param[in] fcinfo Arguments: the trajectory, the rasters, their periods,
+ * the value range and the band
+ * @param[in] ever True for ever, false for always
+ */
+static Datum
+EA_raster_value_series(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *rarray = PG_GETARG_ARRAYTYPE_P(1);
+  ArrayType *sarray = PG_GETARG_ARRAYTYPE_P(2);
+  Span *vspan = PG_GETARG_SPAN_P(3);
+  int32 band = PG_ARGISNULL(4) ? 1 : PG_GETARG_INT32(4);
+  int count;
+  Raster **rasts = rasterarr_extract(rarray, &count);
+  Span *spans = raster_series_spans(sarray, count);
+  int result = -1;
+  if (spans)
+  {
+    result = ever ?
+      eraster_value_series(traj, (const Raster **) rasts, spans, count, band,
+        vspan) :
+      araster_value_series(traj, (const Raster **) rasts, spans, count, band,
+        vspan);
+    pfree(spans);
+  }
+  pfree(rasts);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rarray, 1);
+  PG_FREE_IF_COPY(sarray, 2);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Eraster_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Eraster_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if a trajectory ever reads a value inside a float range
+ * from a raster series
+ * @param[in] traj Trajectory
+ * @param[in] rasts Rasters of the series
+ * @param[in] validtime Validity periods of the rasters
+ * @param[in] vspan Float value range
+ * @param[in] band Band number
+ * @sqlfn eRasterValue()
+ */
+Datum
+Eraster_value_series(PG_FUNCTION_ARGS)
+{
+  return EA_raster_value_series(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Araster_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Araster_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value a trajectory reads from a raster series
+ * falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rasts Rasters of the series
+ * @param[in] validtime Validity periods of the rasters
+ * @param[in] vspan Float value range
+ * @param[in] band Band number
+ * @sqlfn aRasterValue()
+ */
+Datum
+Araster_value_series(PG_FUNCTION_ARGS)
+{
+  return EA_raster_value_series(fcinfo, ALWAYS);
+}
+
+PGDLLEXPORT Datum Raster_tile_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values a trajectory reads from a series of Raquet tiles
+ * @details Mirrors #Raster_tile_value_array(), reading the validity periods
+ * beside the tiles
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Raquet tiles of the series
+ * @param[in] validtime Validity periods of the tiles
+ * @sqlfn rasterTileValue()
+ */
+Datum
+Raster_tile_value_series(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *rarray = PG_GETARG_ARRAYTYPE_P(1);
+  ArrayType *sarray = PG_GETARG_ARRAYTYPE_P(2);
+  int count;
+  Raquet **rqarr = raquetarr_extract(rarray, &count);
+  Span *spans = raster_series_spans(sarray, count);
+  Temporal *result = spans ? raster_tile_value_series(traj,
+    (const Raquet **) rqarr, spans, count) : NULL;
+  if (spans)
+    pfree(spans);
+  pfree(rqarr);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rarray, 1);
+  PG_FREE_IF_COPY(sarray, 2);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Return a trajectory restricted to the times where the value it reads
+ * from a series of Raquet tiles falls inside or outside a float range
+ * @details Mirrors #Tgeo_restrict_geom(), one function for the two
+ * restrictions
+ * @param[in] fcinfo Arguments: the trajectory, the tiles, their periods and
+ * the value range
+ * @param[in] atfunc True for the times inside the range
+ */
+static Datum
+Raster_tile_restrict_value_series(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *rarray = PG_GETARG_ARRAYTYPE_P(1);
+  ArrayType *sarray = PG_GETARG_ARRAYTYPE_P(2);
+  Span *vspan = PG_GETARG_SPAN_P(3);
+  int count;
+  Raquet **rqarr = raquetarr_extract(rarray, &count);
+  Span *spans = raster_series_spans(sarray, count);
+  Temporal *result = NULL;
+  if (spans)
+  {
+    result = atfunc ?
+      raster_tile_at_value_series(traj, (const Raquet **) rqarr, spans, count,
+        vspan) :
+      raster_tile_minus_value_series(traj, (const Raquet **) rqarr, spans,
+        count, vspan);
+    pfree(spans);
+  }
+  pfree(rqarr);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rarray, 1);
+  PG_FREE_IF_COPY(sarray, 2);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_tile_at_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_at_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * series of Raquet tiles falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Raquet tiles of the series
+ * @param[in] validtime Validity periods of the tiles
+ * @param[in] vspan Float value range
+ * @sqlfn atRasterValue()
+ */
+Datum
+Raster_tile_at_value_series(PG_FUNCTION_ARGS)
+{
+  return Raster_tile_restrict_value_series(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Raster_tile_minus_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_minus_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the times of a trajectory where the value it reads from a
+ * series of Raquet tiles falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Raquet tiles of the series
+ * @param[in] validtime Validity periods of the tiles
+ * @param[in] vspan Float value range
+ * @sqlfn minusRasterValue()
+ */
+Datum
+Raster_tile_minus_value_series(PG_FUNCTION_ARGS)
+{
+  return Raster_tile_restrict_value_series(fcinfo, REST_MINUS);
+}
+
+/**
+ * @brief Return true if the values a trajectory reads from a series of Raquet
+ * tiles ever, or always, fall inside a float range
+ * @details Mirrors #EA_touches_tgeo_geo(), one function for ever and always
+ * @param[in] fcinfo Arguments: the trajectory, the tiles, their periods and
+ * the value range
+ * @param[in] ever True for ever, false for always
+ */
+static Datum
+EA_raster_tile_value_series(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *rarray = PG_GETARG_ARRAYTYPE_P(1);
+  ArrayType *sarray = PG_GETARG_ARRAYTYPE_P(2);
+  Span *vspan = PG_GETARG_SPAN_P(3);
+  int count;
+  Raquet **rqarr = raquetarr_extract(rarray, &count);
+  Span *spans = raster_series_spans(sarray, count);
+  int result = -1;
+  if (spans)
+  {
+    result = ever ?
+      eraster_tile_value_series(traj, (const Raquet **) rqarr, spans, count,
+        vspan) :
+      araster_tile_value_series(traj, (const Raquet **) rqarr, spans, count,
+        vspan);
+    pfree(spans);
+  }
+  pfree(rqarr);
+  PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rarray, 1);
+  PG_FREE_IF_COPY(sarray, 2);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Eraster_tile_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Eraster_tile_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if a trajectory ever reads a value inside a float range
+ * from a series of Raquet tiles
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Raquet tiles of the series
+ * @param[in] validtime Validity periods of the tiles
+ * @param[in] vspan Float value range
+ * @sqlfn eRasterValue()
+ */
+Datum
+Eraster_tile_value_series(PG_FUNCTION_ARGS)
+{
+  return EA_raster_tile_value_series(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Araster_tile_value_series(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Araster_tile_value_series);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value a trajectory reads from a series of Raquet
+ * tiles falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] rqarr Raquet tiles of the series
+ * @param[in] validtime Validity periods of the tiles
+ * @param[in] vspan Float value range
+ * @sqlfn aRasterValue()
+ */
+Datum
+Araster_tile_value_series(PG_FUNCTION_ARGS)
+{
+  return EA_raster_tile_value_series(fcinfo, ALWAYS);
 }
 
 /*****************************************************************************

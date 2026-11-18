@@ -94,6 +94,7 @@ extern ArrayType *posearr_to_array(Pose **posearr, int count, bool free_all);
 #endif
 #if RASTER
 extern Raquet **raquetarr_extract(ArrayType *array, int *count);
+extern Raster **rasterarr_extract(ArrayType *array, int *count);
 #endif
 extern Span *spanarr_extract(ArrayType *array, int *count);
 extern STBox *stboxarr_extract(ArrayType *array, int *count);

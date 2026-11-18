@@ -97,6 +97,28 @@
       "0": "tfloat_cov1",
       "1": "traj1"
     },
+    "raster_as_gdal": {
+      "1": "\"GTiff\"",
+      "2": "\"COMPRESS=DEFLATE\"",
+      "3": "0"
+    },
+    "raster_as_tiff": {
+      "1": "NULL",
+      "2": "0"
+    },
+    "raster_as_png": {
+      "0": "rast_u8",
+      "1": "NULL"
+    },
+    "raster_as_jpeg": {
+      "0": "rast_u8",
+      "1": "NULL"
+    },
+    "raster_from_gdal": {
+      "0": "grid_bytes1",
+      "1": "grid_bytes1_size",
+      "2": "0"
+    },
     "raster_make": {
       "0": "2",
       "1": "2",
@@ -182,6 +204,51 @@
     },
     "raster_slope": {
       "4": "\"DEGREES\""
+    },
+    "raster_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_at_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_minus_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "eraster_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "araster_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_tile_value_series": {
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_tile_at_value_series": {
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_tile_minus_value_series": {
+      "2": "periods1",
+      "3": "2"
+    },
+    "eraster_tile_value_series": {
+      "2": "periods1",
+      "3": "2"
+    },
+    "araster_tile_value_series": {
+      "2": "periods1",
+      "3": "2"
     }
   },
   "manual": [
@@ -239,10 +306,19 @@
     "  Raquet *rq1 = raquet_make(qb1, 2, 2, MEOS_PT_UINT8, 0.0, false, rq_pixels1, 4);",
     "  Raquet *rq2 = raquet_make(qb1, 2, 2, MEOS_PT_UINT8, 0.0, false, rq_pixels2, 4);",
     "  const Raquet *rqarr1[] = { rq1, rq2 };",
+    "  /* A raster series: rast1 valid over the first half of the trip's day and",
+    "   * rast2 over the second, and the two tiles over the same two periods. */",
+    "  const Raster *rastarr1[] = { rast1, rast2 };",
+    "  Span *period1 = tstzspan_in(\"[2001-01-01, 2001-01-01 12:00)\");",
+    "  Span *period2 = tstzspan_in(\"[2001-01-01 12:00, 2001-01-02]\");",
+    "  Span periods1[2] = { *period1, *period2 };",
     "  /* The metadata of a Raquet file of 2 x 2 tiles of one 8-bit band. */",
     "  const char *rq_meta1 = \"{\\\"tiling\\\": {\\\"block_width\\\": 2, \\\"block_height\\\": 2}, \\\"bands\\\": [{\\\"type\\\": \\\"uint8\\\"}]}\";",
     "  /* Values read along the trip, over its own period. */",
     "  Temporal *tfloat_cov1 = tfloat_in(\"[10@2001-01-01, 20@2001-01-02]\");",
+    "  /* A raster of one band of 8 unsigned bits, which the image drivers take. */",
+    "  Raster *rast_u8 = raster_make(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326,",
+    "    \"8BUI\", 0.0, false, rq_pixels1, 4);",
     "  size_t rq_wkb1_size = 0;",
     "  uint8_t *rq_wkb1 = raquet_as_wkb(rq1, 0, &rq_wkb1_size);",
     "  char *rq_hexwkb1 = raquet_as_hexwkb(rq1, 0, &size_out);",
@@ -349,6 +425,7 @@
     "  free(rq_hexwkb1);",
     "  free(rq_wkb1);",
     "  free(tfloat_cov1);",
+    "  free(rast_u8);",
     "  free(rq2);",
     "  free(rq1);",
     "  free(cells1);",
@@ -358,6 +435,7 @@
     "  free(traj1);",
     "  free(rast_wkb1);",
     "  free(rast2);",
-    "  free(rast1);"
+    "  free(rast1);",
+    "  free(period1); free(period2);"
   ]
 }

@@ -127,6 +127,8 @@ extern bool ensure_same_geodetic_stbox_geo(const STBox *box,
 extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern bool ensure_valid_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
+extern bool ensure_valid_tspatial_stbox(const Temporal *temp,
+  const STBox *box);
 extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2);
 extern bool ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box);
@@ -153,6 +155,8 @@ extern int eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 /* Functions specializing the PostGIS functions ST_LineInterpolatePoint and
  * ST_LineLocatePoint */
 
+extern void point4dsegm_interpolate(const POINT4D *p1, const POINT4D *p2,
+  bool geodetic, long double ratio, POINT4D *p);
 extern Datum pointsegm_interpolate(Datum start, Datum end,
   long double ratio);
 extern void interpolate_point4d_spheroid(const POINT4D *p1,
@@ -179,8 +183,7 @@ extern int tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2,
   TimestampTz *t2);
 
 extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz, bool geodetic,
-  bool constructed);
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz, bool geodetic);
 
 /* Trajectory functions */
 

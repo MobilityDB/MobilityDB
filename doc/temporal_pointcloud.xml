@@ -1384,6 +1384,29 @@ SELECT mergeEachNTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-
 -- {"TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-01, 2024-01-03]), 1)"}
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="tpcpoint_mergeQueryTpcboxes">
+					<indexterm significance="normal"><primary><varname>mergeQueryTpcboxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>mergeQuerySpans</varname></primary></indexterm>
+					<para>Return the point cloud boxes or the time spans of a tpcpoint merged into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeQueryTpcboxes(tpcpoint,tpcbox) → tpcbox[]
+mergeQuerySpans(tpcpoint,tstzspan) → tstzspan[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeQueryTpcboxes(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1),
+  '2024-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 9, 9, 9), '2024-01-03'::timestamptz)]),
+  tpcbox(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz)])));
+/* {"TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-01, 2024-01-02]), 1)",
+   "TPCBOX(ZT(((2,2,2),(9,9,9)),[2024-01-02, 2024-01-03]), 1)"} */
+SELECT mergeQuerySpans(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1),
+  '2024-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), tstzspan '[2024-01-01, 2024-01-08]');
+-- {"[2024-01-01, 2024-01-03]"}
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -2413,6 +2436,25 @@ SELECT mergeEachNTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
 -- {"TPCBOX(ZT(((1,1,1),(6,6,6)),[2024-01-01, 2024-01-03]), 1)"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_mergeQueryTpcboxes">
+					<indexterm significance="normal"><primary><varname>mergeQueryTpcboxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>mergeQuerySpans</varname></primary></indexterm>
+					<para>Return the point cloud boxes or the time spans of a tpcpatch merged into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeQueryTpcboxes(tpcpatch,tpcbox) → tpcbox[]
+mergeQuerySpans(tpcpatch,tstzspan) → tstzspan[]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeQueryTpcboxes(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 2, 2, 2), pcpoint(1, 3, 3, 3)), '2024-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 9, 9, 9), pcpoint(1, 10, 10, 10)), '2024-01-03'::timestamptz)]),
+  tpcbox(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
+/* {"TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-01, 2024-01-02]), 1)",
+   "TPCBOX(ZT(((2,2,2),(10,10,10)),[2024-01-02, 2024-01-03]), 1)"} */
 </programlisting>
 				</listitem>
 			</itemizedlist>
