@@ -169,13 +169,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
     61
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_seq WHERE trend(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat_contseq WHERE trend(temp) IS NOT NULL;
  count 
 -------
     89
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(ss) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(temp) IS NOT NULL;
  count 
 -------
     98
@@ -196,7 +196,7 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE abs(temp) IS NOT NULL;
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_step_seq WHERE abs(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat_step_contseq WHERE abs(temp) IS NOT NULL;
  count 
 -------
     99
@@ -280,7 +280,7 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
     61
 (1 row)
 
-SELECT round(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT round(array_agg(temp ORDER BY k), 2) FROM tbl_tfloat_inst WHERE temp IS NOT NULL AND k % 20 = 1;
                                                                          round                                                                         
 -------------------------------------------------------------------------------------------------------------------------------------------------------
  {"73.98@Thu Mar 01 03:42:00 2001 PST","70.99@Fri Sep 14 13:31:00 2001 PDT","65.61@Sat Sep 29 14:47:00 2001 PDT","38.27@Wed Apr 18 14:52:00 2001 PDT"}

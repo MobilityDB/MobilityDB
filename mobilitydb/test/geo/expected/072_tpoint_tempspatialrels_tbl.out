@@ -11,15 +11,15 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
-  WHERE tContains(g, seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_contseq
+  WHERE tContains(g, temp) IS NOT NULL;
  count 
 -------
  16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
-  WHERE tContains(g, ss) IS NOT NULL;
+  WHERE tContains(g, temp) IS NOT NULL;
  count 
 -------
  16000
@@ -35,15 +35,15 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
-  WHERE tContains(g, seq) ?= true <> eContains(g, seq);
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_contseq
+  WHERE tContains(g, temp) ?= true <> eContains(g, temp);
  count 
 -------
      0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
-  WHERE tContains(g, ss) ?= true <> eContains(g, ss);
+  WHERE tContains(g, temp) ?= true <> eContains(g, temp);
  count 
 -------
      0
@@ -67,15 +67,15 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tDisjoint(g, seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq
+  WHERE tDisjoint(g, temp) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tDisjoint(g, ss) IS NOT NULL;
+  WHERE tDisjoint(g, temp) IS NOT NULL;
  count 
 -------
  10000
@@ -98,15 +98,15 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tDisjoint(g, seq) ?= true <> eDisjoint(g, seq);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq
+  WHERE tDisjoint(g, temp) ?= true <> eDisjoint(g, temp);
  count 
 -------
      0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tDisjoint(g, ss) ?= true <> eDisjoint(g, ss);
+  WHERE tDisjoint(g, temp) ?= true <> eDisjoint(g, temp);
  count 
 -------
      0
@@ -145,15 +145,15 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tIntersects(g, seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq
+  WHERE tIntersects(g, temp) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tIntersects(g, ss) IS NOT NULL;
+  WHERE tIntersects(g, temp) IS NOT NULL;
  count 
 -------
  10000
@@ -176,15 +176,15 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tIntersects(g, seq) ?= true <> eIntersects(g, seq);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq
+  WHERE tIntersects(g, temp) ?= true <> eIntersects(g, temp);
  count 
 -------
      0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tIntersects(g, ss) ?= true <> eIntersects(g, ss);
+  WHERE tIntersects(g, temp) ?= true <> eIntersects(g, temp);
  count 
 -------
      0
@@ -223,15 +223,15 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
-  WHERE tTouches(g, seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_contseq
+  WHERE tTouches(g, temp) IS NOT NULL;
  count 
 -------
  16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
-  WHERE tTouches(g, ss) IS NOT NULL;
+  WHERE tTouches(g, temp) IS NOT NULL;
  count 
 -------
  16000
@@ -254,15 +254,15 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
-  WHERE tTouches(g, seq) ?= true <> eTouches(g, seq);
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_contseq
+  WHERE tTouches(g, temp) ?= true <> eTouches(g, temp);
  count 
 -------
      0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
-  WHERE tTouches(g, ss) ?= true <> eTouches(g, ss);
+  WHERE tTouches(g, temp) ?= true <> eTouches(g, temp);
  count 
 -------
      0
@@ -293,15 +293,15 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tDwithin(g, seq, 10) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq
+  WHERE tDwithin(g, temp, 10) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tDwithin(g, ss, 10) IS NOT NULL;
+  WHERE tDwithin(g, temp, 10) IS NOT NULL;
  count 
 -------
  10000
@@ -368,15 +368,15 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tDwithin(g, seq, 10) ?= true <> edwithin(g, seq, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq
+  WHERE tDwithin(g, temp, 10) ?= true <> edwithin(g, temp, 10);
  count 
 -------
      0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tDwithin(g, ss, 10) ?= true <> edwithin(g, ss, 10);
+  WHERE tDwithin(g, temp, 10) ?= true <> edwithin(g, temp, 10);
  count 
 -------
      0

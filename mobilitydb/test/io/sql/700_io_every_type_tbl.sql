@@ -2271,7 +2271,7 @@ SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeometry3D LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography3D LIMIT 10;
 SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3D WHERE temp IS NOT NULL AND k % 10 = 1;
-SELECT asEWKT(array_agg(round(inst, 6) ORDER BY k)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeometry_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT DISTINCT asText(tgeometryFromText(asText(temp))) = asText(temp) FROM tbl_tgeometry;
 SELECT DISTINCT asText(tgeographyFromText(asText(temp))) = asText(temp) FROM tbl_tgeography;
 SELECT DISTINCT asEWKT(tgeometryFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tgeometry;
@@ -2515,7 +2515,7 @@ SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
 SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
-SELECT asEWKT(array_agg(round(inst, 6) ORDER BY k)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeompoint_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT DISTINCT asText(tgeompointFromText(asText(temp))) = asText(temp) FROM tbl_tgeompoint;
 SELECT DISTINCT asText(tgeogpointFromText(asText(temp))) = asText(temp) FROM tbl_tgeogpoint;
 SELECT DISTINCT asEWKT(tgeompointFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tgeompoint;
@@ -2798,8 +2798,8 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeometry LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeography LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 20 = 1;
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE temp IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE temp IS NOT NULL AND k % 20 = 1;
 -------------------------------------------------------------------------------
 -- Extracted from geo/sql/056_tpoint_spatialfuncs.sql
 -------------------------------------------------------------------------------
@@ -3107,8 +3107,8 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE temp IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE temp IS NOT NULL AND k % 20 = 1;
 -------------------------------------------------------------------------------
 -- Extracted from geo/sql/058_tgeo_tile.sql
 -------------------------------------------------------------------------------
@@ -4205,7 +4205,7 @@ SELECT (tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001
 -- Extracted from json/sql/452_tjsonb_tbl.sql
 -------------------------------------------------------------------------------
 
-SELECT MAX(length(getValue(inst)::text)) FROM tbl_tjsonb_inst;
+SELECT MAX(length(getValue(temp)::text)) FROM tbl_tjsonb_inst;
 SELECT MAX(length(startValue(temp)::text)) FROM tbl_tjsonb;
 SELECT MAX(length(endValue(temp)::text)) FROM tbl_tjsonb;
 SELECT MAX(length(valueN(temp, 1)::text)) FROM tbl_tjsonb;
@@ -4805,12 +4805,12 @@ SELECT bool_and(asMFJSON(temp, 1) LIKE '%"pcid":1%' AND
                 asMFJSON(temp, 1) LIKE '%"bbox":%')
 FROM tbl_tpcpoint;
 SELECT bool_and(
-  substring(asMFJSON(inst) FROM '"coordinates":\[\[[^\]]+\]') ~
+  substring(asMFJSON(temp) FROM '"coordinates":\[\[[^\]]+\]') ~
     '^"coordinates":\[\[-?[0-9.]+,-?[0-9.]+(,-?[0-9.]+)?\]$')
 FROM tbl_tpcpoint_inst;
-SELECT bool_and(asMFJSON(inst) LIKE '%"pcid":1%' AND
-                asMFJSON(inst) LIKE '%"npoints":%' AND
-                asMFJSON(inst) LIKE '%"bounds":[%')
+SELECT bool_and(asMFJSON(temp) LIKE '%"pcid":1%' AND
+                asMFJSON(temp) LIKE '%"npoints":%' AND
+                asMFJSON(temp) LIKE '%"bounds":[%')
 FROM tbl_tpcpatch_inst;
 SELECT COUNT(*), COUNT(*) FILTER (WHERE tpcpointFromMFJSON(asMFJSON(temp)) = temp)
 FROM tbl_tpcpoint;
@@ -5814,9 +5814,9 @@ SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeog
 -- Extracted from posechain/sql/552_tposechain_tbl.sql
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
-SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromHexEWKB(asHexEWKB(temp)) <> temp;
-SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tposechain;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE tposechainFromHexEWKB(asHexEWKB(temp)) <> temp;
+SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tposechain2d;
 -------------------------------------------------------------------------------
 -- Extracted from posechain/sql/555_tposechain_geopose.sql
 -------------------------------------------------------------------------------
@@ -7368,7 +7368,7 @@ SELECT astext('{}'::geometry[]);
 
 SELECT asText(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
-SELECT asEWKT(array_agg(round(inst, 6) ORDER BY k)) FROM tbl_trgeometry2d_inst WHERE inst IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_trgeometry2d_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT DISTINCT asText(trgeometryFromText(asText(temp))) = asText(temp) FROM tbl_trgeometry2d;
 SELECT DISTINCT asEWKT(trgeometryFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_trgeometry2d;
 SELECT DISTINCT asText(trgeometryFromMFJSON(asMFJSON(temp))) = asText(temp) FROM tbl_trgeometry2d;
@@ -8253,14 +8253,14 @@ WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER B
 -- tpose, MFJSON, over tbl_tpose2d
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tpose2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asMFJSON(v, maxdecimaldigits => 6), tposeFromMFJSON(asMFJSON(v)) = v AS roundtrip FROM r ORDER BY k;
 
--- tposechain, Text, over tbl_tposechain
-WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tposechain t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asText(v, maxdecimaldigits => 6), tposechainFromText(asText(v)) = v AS roundtrip FROM r ORDER BY k;
+-- tposechain, Text, over tbl_tposechain2d
+WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tposechain2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asText(v, maxdecimaldigits => 6), tposechainFromText(asText(v)) = v AS roundtrip FROM r ORDER BY k;
 
--- tposechain, Binary, over tbl_tposechain
-WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tposechain t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asBinary(v, endian => 'NDR'), tposechainFromBinary(asBinary(v)) = v AS roundtrip FROM r ORDER BY k;
+-- tposechain, Binary, over tbl_tposechain2d
+WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tposechain2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asBinary(v, endian => 'NDR'), tposechainFromBinary(asBinary(v)) = v AS roundtrip FROM r ORDER BY k;
 
--- tposechain, EWKB, over tbl_tposechain
-WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tposechain t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asEWKB(v, endian => 'NDR'), tposechainFromEWKB(asEWKB(v)) = v AS roundtrip FROM r ORDER BY k;
+-- tposechain, EWKB, over tbl_tposechain2d
+WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tposechain2d t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asEWKB(v, endian => 'NDR'), tposechainFromEWKB(asEWKB(v)) = v AS roundtrip FROM r ORDER BY k;
 
 -- ts2cell, Output, over tbl_ts2cell
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_ts2cell t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, (v::varchar)::ts2cell = v AS output_roundtrip FROM r ORDER BY k;

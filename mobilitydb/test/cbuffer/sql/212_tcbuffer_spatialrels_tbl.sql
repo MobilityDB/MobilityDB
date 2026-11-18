@@ -112,19 +112,19 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE aDwithin(t1.temp, t2
 
 -- Step interpolation
 
-SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seq WHERE eDwithin(cb, seq, 10);
-SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE eDwithin(cb, ss, 10);
-SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seq WHERE aDwithin(cb, seq, 10);
-SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE aDwithin(cb, ss, 10);
+SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_contseq WHERE eDwithin(cb, temp, 10);
+SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE eDwithin(cb, temp, 10);
+SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_contseq WHERE aDwithin(cb, temp, 10);
+SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE aDwithin(cb, temp, 10);
 
-SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seq WHERE eDwithin(seq, cb, 10);
-SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE eDwithin(ss, cb, 10);
-SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seq WHERE aDwithin(seq, cb, 10);
-SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE aDwithin(ss, cb, 10);
+SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_contseq WHERE eDwithin(temp, cb, 10);
+SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE eDwithin(temp, cb, 10);
+SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_contseq WHERE aDwithin(temp, cb, 10);
+SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE aDwithin(temp, cb, 10);
 
-SELECT COUNT(*) FROM tbl_tcbuffer_seq t1, tbl_tcbuffer t2 WHERE eDwithin(t1.seq, t2.temp, 10);
-SELECT COUNT(*) FROM tbl_tcbuffer_seqset t1, tbl_tcbuffer t2 WHERE eDwithin(t1.ss, t2.temp, 10);
-SELECT COUNT(*) FROM tbl_tcbuffer_seq t1, tbl_tcbuffer t2 WHERE aDwithin(t1.seq, t2.temp, 10);
-SELECT COUNT(*) FROM tbl_tcbuffer_seqset t1, tbl_tcbuffer t2 WHERE aDwithin(t1.ss, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tcbuffer_contseq t1, tbl_tcbuffer t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tcbuffer_seqset t1, tbl_tcbuffer t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tcbuffer_contseq t1, tbl_tcbuffer t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tcbuffer_seqset t1, tbl_tcbuffer t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 
 -------------------------------------------------------------------------------

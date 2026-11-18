@@ -128,9 +128,9 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eDwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eDwithin(t1.temp, t2.temp, 10);
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seq WHERE eDwithin(g, seq, 10);
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset WHERE eDwithin(g, ss, 10);
-SELECT COUNT(*) FROM tbl_tgeometry_seq t1, tbl_tgeometry t2 WHERE eDwithin(t1.seq, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_contseq WHERE eDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset WHERE eDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeometry_contseq t1, tbl_tgeometry t2 WHERE eDwithin(t1.temp, t2.temp, 10);
 -- 3D
 SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eDwithin(temp, g, 10);
@@ -153,9 +153,9 @@ SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry t2 WHERE t1.k % 3 = 0 AND t2
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_geometry t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_seq t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(g, seq, 10);
-SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_seqset t2 WHERE t1.k % 3 = 0 AND t1.k % 3 = 0 AND aDwithin(g, ss, 10);
-SELECT COUNT(*) FROM tbl_tgeometry_seq t1, tbl_tgeometry t2 WHERE aDwithin(t1.seq, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_contseq t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_seqset t2 WHERE t1.k % 3 = 0 AND t1.k % 3 = 0 AND aDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeometry_contseq t1, tbl_tgeometry t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- 3D
 SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- Geography

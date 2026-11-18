@@ -4,7 +4,7 @@ SELECT asText(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
 
 SELECT asEWKT(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
 
-SELECT asEWKT(array_agg(round(inst, 6) ORDER BY k)) FROM tbl_trgeometry2d_inst WHERE inst IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_trgeometry2d_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 
 -------------------------------------------------------------------------------
 -- Combination of input/output functions
