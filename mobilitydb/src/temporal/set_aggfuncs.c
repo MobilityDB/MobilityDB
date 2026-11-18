@@ -79,8 +79,7 @@ Value_union_transfn(PG_FUNCTION_ARGS)
   /* Skip NULLs */
   if (! PG_ARGISNULL(1))
   {
-    /* The type of the values is read once per query and kept in fn_extra,
-     * as #get_srs_cache_by_srid keeps its SRS */
+    /* The type of the values is read once per query and kept in fn_extra */
     SetValueType *cache = fcinfo->flinfo->fn_extra;
     if (! cache)
     {

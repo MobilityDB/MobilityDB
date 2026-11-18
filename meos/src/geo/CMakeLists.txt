@@ -58,12 +58,17 @@ set(GEO_SOURCES
   tspatial_spgist.c
   tspatial_tempspatialrels.c
   tspatial_srid.c
+  tspatial_transform_cache.c
 )
 
 if(MEOS)
   list(APPEND GEO_SOURCES
   tspatial_transform_meos.c
   # tspatial_rtree.c
+)
+else()
+  list(APPEND GEO_SOURCES
+  tspatial_transform.c
 )
 endif()
 
