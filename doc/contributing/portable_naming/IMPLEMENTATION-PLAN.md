@@ -185,8 +185,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `get_srs_cache_by_srid`) and the naming `Temporal_as_mfjson` did with it, which `temporal_as_mfjson`
   answers from the cache of MEOS; branch `meos/caches-serve-every-build` rewrites `e63fc3f7d8` there,
   the note of `temporal_as_mfjson` in `meos/src/temporal/type_out.c` that `asMFJSON` names the system
-  from the table before calling it. Head `d373f66fc8` on master `eaffbb532e` holds strict and
-  cppcheck by patch id `8d625e6f62` and valgrind.
+  from the table before calling it. The unknown SRID answers `Cannot find SRID (<srid>) in
+  spatial_ref_sys` in both builds. Strict, cppcheck and valgrind by patch id `8d625e6f62`, the CGAL
+  oracle merc (3000 of 3000) and speed (relate at parity), Windows waived. MERGED as MobilityDB
+  #3804 (`954b29392e`).
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
