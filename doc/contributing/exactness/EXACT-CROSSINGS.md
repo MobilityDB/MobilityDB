@@ -547,8 +547,15 @@ diffs classified:
    proves, poses whose angle turns linearly, and the instants a restriction adds, each cut on a
    segment of the input and recognized bit for bit by the join; an MPFR judge at 2400 bits
    agrees on 4000 rows of three geography instants, where a 1e-9 band disagrees on 1511. It
-   costs 1.21, 1.14 and 1.42 times the instructions on three tiling cells, the reason it is a
-   draft.
+   costs 1.21, 1.14 and 1.42 times the instructions on three tiling cells.
+   MobilityDB #3811 (open) meets a geography segment and its mirror across the plane of a
+   meridian where the first crosses it, the mirror decided on the doubles of the ends, and
+   dates the meeting from the angle at which the first reaches the plane; of the 437,601
+   pairs of segments of real AIS trips whose boxes overlap, 481 are such mirrors, and an MPFR
+   judge agrees with the answers on the 794 pairs no other family decides. A bound on the
+   distance of the two positions over the period, read in doubles and in wide arithmetic,
+   proves 298,530 of those pairs apart; 313 stay undecided, all of them pairs that never
+   meet.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
