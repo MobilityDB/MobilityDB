@@ -219,7 +219,7 @@ implementation; "survivor" is the one covering every finite double with the most
 | A point within a distance of a segment | `point_segment_offset_sign`, `point_segm_within`, `geom_dwithin_end`, `cert_point_seg_far_exact` and `_slow`, `point_segment_beyond` and `_inputs` | `point_segment_offset_sign` | `point_segm_within` and `geom_dwithin_end` are one filter and one call; the certificates read it on the polynomial ladder |
 | The double nearest the distance of a point to a segment | `point_segment_distance_offset_exact`, `point_segment_distance_offset_inputs` | the first, with the second as its wide route | |
 | The double nearest an exact value | the nine searches of Section 4.5 | `nearest_double_exact` | each other one is a side function it reads |
-| Ring orientation | `ring_area_sign`, `buffer_ring_signed_area`, `cert_ring_keeps_sense` | `ring_area_sign` | `buffer_ring_signed_area` is in doubles |
+| Ring orientation | `ring_area_sign`, `buffer_ring_signed_area`, `buffer_ring_area`, `cert_ring_keeps_sense` | `ring_area_sign` | `buffer_ring_signed_area` and `buffer_ring_area` are in doubles, about the origin |
 | Point in polygon | `point_in_rings_exact`, `point_arc_ray_parity`, `dist_poly_seg_raycross`, `dist_geom_point_inside`, `pip_point_in_ring` | `point_in_rings_exact` and, for arcs, `point_arc_ray_parity` | from #3575 (C2) the other three read the exact sign (`pip_point_in_ring`) or the exact parities (`dist_poly_seg_raycross`, through `exact_arc_from_edge`); before it, doubles, `MEOS_GEOM_TOLERANCE` and `atan2` |
 | The circle of an arc | `arcarc_centre_exact` and `arcarc_radius2_exact`, `arr_arc_centre_y_side`, `mec_exact_set` and `mec_beyond`, `exact_arc_bound`, `tower_arc_read`, `hull_exact` | `arcarc_centre_exact` | six arc models form the same circumcentre (Section 4.7) |
 | A segment against an arc | the `arcseg_*` meetings, `tower_point_line_circle`, `arcsegm_cross` | the `arcseg_*` meetings on input segments, the tower on tower points | `arcsegm_cross`, which relate reads, answers by `arcsegm_meet_exact` from #3567 (C1); before it, a `1e-14` band, `MEOS_GEOM_TOLERANCE` and `atan2` read three proper crossings as none |
@@ -375,7 +375,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    doubles (`dist_poly_seg_raycross`, `pip_point_in_ring`, the `inside` of
    `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity` (C2,
    #3575, merged), the ring
-   area in doubles of the buffer by `ring_area_sign` (C3, paused), the within-times of a moving
+   area in doubles of the buffer by `ring_area_sign` and `ring_encloses_no_area` (C3, paused: see EA10), the within-times of a moving
    disc in `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact` (C4, #3588,
    merged, for a geometry of segments; one carrying an arc follows), and `seg2d_side` by
    `cross_product_sign` (C5, #3593, merged). These change answers, where the tolerance answers
@@ -931,6 +931,33 @@ of the layer: the cell walks of MobilityDB #3544 read them first. Its unit test
 witness on the cells is the planar oracle of the cell walks (`cgal_h3_planar.cpp` of the oracle kit, the
 shifts exact in `CGAL::Gmpq`), whose control reading the shift in doubles leaves 158 positions
 of its acceptance set held by no cell or by two.
+
+### EA10. The shoelace sums, one family
+
+The engine sums the shoelace of a ring in five places. `ring_area_sign` reads its sign, from a
+sum in doubles to an expansion and to `DyadicWide` (`ring_shoelace_wide`); `geom_area_exact`
+reads the exact area on the same `ring_shoelace_wide`; the area of MobilityDB #3557 sums each
+ring in 128-bit integers, then in pairs of doubles, and places the area among the doubles
+through `nearest_double_search`. The two others are in doubles and take the sum about the
+origin, where each term carries the square of a coordinate: `buffer_ring_signed_area`, over the
+pieces of a buffer ring, and `buffer_ring_area`, over a point array. They answer the orientation
+of a ring (`geo_buffer.c`, `buffer_ring_area(pa) < 0.0`), a ring enclosing nothing as an area
+within `MEOS_GEOM_TOLERANCE` (`buffer_ring_encloses_no_area`, `buffer_areal_is_degenerate`), and
+a hole surviving the radius (`fabs(buffer_ring_area(ring)) < M_PI * radius * radius`). At
+projected coordinates such a sum loses the area: a ring of 1e-6 at 1e6 reads 0, one of 1e-4
+reads 2.44e-4.
+
+C3 moves the orientation and the empty ring onto `ring_area_sign` and `ring_encloses_no_area`,
+and the hole onto a sum about the first vertex. It is paused because the correct areas expose two
+defects of the buffer, which ship with it: a hole of half-width equal to the radius, which
+`buffer_ring` cannot contract and declines, and the ring assembly stranding pieces at a merged
+node.
+
+`ring_area_sign` takes its first tier about the origin as well. On the 1147 rings of the 192
+real multipolygons of the speed cells it decides 943, and the other 204 build an expansion; the
+same sum about the first vertex, the form GEOS and PostGIS take, decides all 1147. Its bound is
+stated again for the differences to the first vertex, which round, and the tier is taken there,
+the expansion and `DyadicWide` behind it unchanged.
 
 ## 8. Decisions asked of the committers
 
