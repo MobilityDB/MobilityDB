@@ -6918,13 +6918,21 @@ coveragejson_time_sb(stringbuffer_t *sb, TimestampTz t)
 
 /**
  * @ingroup meos_raster_base_inout
- * @brief Return the values a trajectory reads as a CoverageJSON trajectory
- * coverage
- * @details The domain is a CoverageJSON `Trajectory`, one point per instant
- * of the values, its time the instant and its position that of the
- * trajectory at the instant, so the values #raster_value reads, whose
- * instants include the exact crossings of the pixels, are written where they
- * are read. The values are the parameter `value`
+ * @brief Return the values a trajectory reads as a CoverageJSON coverage
+ * @details The domain is chosen by the positions of the values, the
+ * position of each instant of the values being that of the trajectory at the
+ * instant:
+ * - one instant is a `Point`, its axes `x`, `y` and `t` one value each;
+ * - several instants at one position, the positions being equal doubles, are
+ *   a `PointSeries`, the axes `x` and `y` one value and `t` one per instant;
+ * - otherwise a `Trajectory`, one point per instant, its time the instant
+ *   and its position that of the trajectory at the instant.
+ *
+ * A stationary point's values over time are thereby the `PointSeries` the
+ * position query of OGC API - Environmental Data Retrieval answers, and the
+ * values #raster_value reads along a moving trajectory, whose instants
+ * include the exact crossings of the pixels, are written where they are read.
+ * The values are the parameter `value`
  * @param[in] temp Temporal float, the values read along @p traj
  * @param[in] traj Temporal geometry point the values are read along
  * @errval NULL
@@ -6938,44 +6946,77 @@ tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj)
 
   int count;
   const TInstant **insts = temporal_insts_p(temp, &count);
-  stringbuffer_t *sb = stringbuffer_create();
-  stringbuffer_append(sb, "{\"type\":\"Coverage\",\"domain\":{\"type\":"
-    "\"Domain\",\"domainType\":\"Trajectory\",\"axes\":{\"composite\":"
-    "{\"dataType\":\"tuple\",\"coordinates\":[\"t\",\"x\",\"y\"],"
-    "\"values\":[");
-  bool ok = true;
-  for (int i = 0; ok && i < count; i++)
+  /* The position of the trajectory at each instant of the values */
+  POINT2D *pos = palloc(sizeof(POINT2D) * count);
+  for (int i = 0; i < count; i++)
   {
     GSERIALIZED *gs;
     if (! tgeo_value_at_timestamptz(traj, insts[i]->t, false, &gs))
     {
+      pfree(pos); pfree(insts);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "The trajectory has no position at an instant of the values");
-      ok = false;
-      break;
+      return NULL;
     }
-    const POINT2D *p = GSERIALIZED_POINT2D_P(gs);
-    stringbuffer_append(sb, i > 0 ? ",[" : "[");
-    ok = coveragejson_time_sb(sb, insts[i]->t);
-    stringbuffer_append_char(sb, ',');
-    stringbuffer_append_double(sb, p->x, OUT_DEFAULT_DECIMAL_DIGITS);
-    stringbuffer_append_char(sb, ',');
-    stringbuffer_append_double(sb, p->y, OUT_DEFAULT_DECIMAL_DIGITS);
-    stringbuffer_append_char(sb, ']');
+    pos[i] = *GSERIALIZED_POINT2D_P(gs);
     pfree(gs);
   }
-  if (ok)
+  bool stationary = true;
+  for (int i = 1; stationary && i < count; i++)
+    stationary = pos[i].x == pos[0].x && pos[i].y == pos[0].y;
+
+  stringbuffer_t *sb = stringbuffer_create();
+  bool ok = true;
+  const char *axis;
+  if (stationary)
   {
+    /* A Point or a PointSeries: one position, the instants on the t axis */
+    axis = "t";
+    stringbuffer_aprintf(sb, "{\"type\":\"Coverage\",\"domain\":{\"type\":"
+      "\"Domain\",\"domainType\":\"%s\",\"axes\":{\"x\":{\"values\":[",
+      count == 1 ? "Point" : "PointSeries");
+    stringbuffer_append_double(sb, pos[0].x, OUT_DEFAULT_DECIMAL_DIGITS);
+    stringbuffer_append(sb, "]},\"y\":{\"values\":[");
+    stringbuffer_append_double(sb, pos[0].y, OUT_DEFAULT_DECIMAL_DIGITS);
+    stringbuffer_append(sb, "]},\"t\":{\"values\":[");
+    for (int i = 0; ok && i < count; i++)
+    {
+      if (i > 0)
+        stringbuffer_append_char(sb, ',');
+      ok = coveragejson_time_sb(sb, insts[i]->t);
+    }
     stringbuffer_append(sb, "]}},\"referencing\":[{\"coordinates\":[\"t\"],"
       "\"system\":{\"type\":\"TemporalRS\",\"calendar\":\"Gregorian\"}},");
-    ok = coveragejson_spatial_rs_sb(sb, tspatial_srid(traj));
   }
+  else
+  {
+    /* A Trajectory: one composite tuple (t, x, y) per instant */
+    axis = "composite";
+    stringbuffer_append(sb, "{\"type\":\"Coverage\",\"domain\":{\"type\":"
+      "\"Domain\",\"domainType\":\"Trajectory\",\"axes\":{\"composite\":"
+      "{\"dataType\":\"tuple\",\"coordinates\":[\"t\",\"x\",\"y\"],"
+      "\"values\":[");
+    for (int i = 0; ok && i < count; i++)
+    {
+      stringbuffer_append(sb, i > 0 ? ",[" : "[");
+      ok = coveragejson_time_sb(sb, insts[i]->t);
+      stringbuffer_append_char(sb, ',');
+      stringbuffer_append_double(sb, pos[i].x, OUT_DEFAULT_DECIMAL_DIGITS);
+      stringbuffer_append_char(sb, ',');
+      stringbuffer_append_double(sb, pos[i].y, OUT_DEFAULT_DECIMAL_DIGITS);
+      stringbuffer_append_char(sb, ']');
+    }
+    stringbuffer_append(sb, "]}},\"referencing\":[{\"coordinates\":[\"t\"],"
+      "\"system\":{\"type\":\"TemporalRS\",\"calendar\":\"Gregorian\"}},");
+  }
+  if (ok)
+    ok = coveragejson_spatial_rs_sb(sb, tspatial_srid(traj));
   if (ok)
   {
     stringbuffer_aprintf(sb, "]},\"parameters\":{\"value\":{\"type\":"
       "\"Parameter\",\"observedProperty\":{\"label\":{\"en\":\"Value\"}}}},"
       "\"ranges\":{\"value\":{\"type\":\"NdArray\",\"dataType\":\"float\","
-      "\"axisNames\":[\"composite\"],\"shape\":[%d],\"values\":[", count);
+      "\"axisNames\":[\"%s\"],\"shape\":[%d],\"values\":[", axis, count);
     for (int i = 0; i < count; i++)
     {
       if (i > 0)
@@ -6985,7 +7026,7 @@ tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj)
     }
     stringbuffer_append(sb, "]}}}");
   }
-  pfree(insts);
+  pfree(pos); pfree(insts);
   char *result = ok ? stringbuffer_getstringcopy(sb) : NULL;
   stringbuffer_destroy(sb);
   return result;
