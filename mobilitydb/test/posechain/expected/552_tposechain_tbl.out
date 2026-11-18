@@ -2,12 +2,12 @@
 -------------------------------------------------------------------------------
 -- Send and receive
 -------------------------------------------------------------------------------
-\copy tbl_tposechain TO 'tbl_tposechain' (FORMAT BINARY);
+\copy tbl_tposechain2d TO 'tbl_tposechain2d' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tposechain_tmp;
 NOTICE:  table "tbl_tposechain_tmp" does not exist, skipping
-CREATE TEMP TABLE tbl_tposechain_tmp AS TABLE tbl_tposechain WITH NO DATA;
-\copy tbl_tposechain_tmp FROM 'tbl_tposechain' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+CREATE TEMP TABLE tbl_tposechain_tmp AS TABLE tbl_tposechain2d WITH NO DATA;
+\copy tbl_tposechain_tmp FROM 'tbl_tposechain2d' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_tposechain2d t1, tbl_tposechain_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 
 -------
      0
@@ -17,19 +17,19 @@ DROP TABLE tbl_tposechain_tmp;
 -------------------------------------------------------------------------------
 -- Representation round trips
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
  count 
 -------
    229
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromHexEWKB(asHexEWKB(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE tposechainFromHexEWKB(asHexEWKB(temp)) <> temp;
  count 
 -------
      0
 (1 row)
 
-SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tposechain;
+SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tposechain2d;
  ?column? 
 ----------
  
@@ -39,13 +39,13 @@ SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM
 -------------------------------------------------------------------------------
 -- Accessors
 -------------------------------------------------------------------------------
-SELECT MIN(numPoses(temp)), MAX(numPoses(temp)) FROM tbl_tposechain;
+SELECT MIN(numPoses(temp)), MAX(numPoses(temp)) FROM tbl_tposechain2d;
  min | max 
 -----+-----
    1 |   5
 (1 row)
 
-SELECT DISTINCT tempSubtype(temp) FROM tbl_tposechain ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tposechain2d ORDER BY 1;
  tempsubtype 
 -------------
  Instant
@@ -54,21 +54,21 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tposechain ORDER BY 1;
  
 (4 rows)
 
-SELECT DISTINCT SRID(temp) FROM tbl_tposechain;
+SELECT DISTINCT SRID(temp) FROM tbl_tposechain2d;
  srid 
 ------
      
  3812
 (2 rows)
 
-SELECT MIN(numInstants(temp)), MAX(numInstants(temp)) FROM tbl_tposechain;
+SELECT MIN(numInstants(temp)), MAX(numInstants(temp)) FROM tbl_tposechain2d;
  min | max 
 -----+-----
    1 |  76
 (1 row)
 
 -- Every instant of a value holds the same number of links
-SELECT COUNT(*) FROM tbl_tposechain WHERE numPoses(startValue(temp)) <> numPoses(endValue(temp));
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE numPoses(startValue(temp)) <> numPoses(endValue(temp));
  count 
 -------
      0
@@ -77,13 +77,13 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE numPoses(startValue(temp)) <> numPoses
 -------------------------------------------------------------------------------
 -- Conversions
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tposechain WHERE stbox(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE stbox(temp) IS NOT NULL;
  count 
 -------
    399
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tposechain WHERE tpose(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE tpose(temp) IS NOT NULL;
  count 
 -------
    399
@@ -92,19 +92,19 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE tpose(temp) IS NOT NULL;
 -------------------------------------------------------------------------------
 -- Restrictions and transformations
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tposechain WHERE atTime(temp, timeSpan(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE atTime(temp, timeSpan(temp)) <> temp;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tposechain WHERE round(temp, 6) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE round(temp, 6) IS NOT NULL;
  count 
 -------
    399
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tposechain WHERE shiftTime(temp, interval '1 day') <> temp;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE shiftTime(temp, interval '1 day') <> temp;
  count 
 -------
    399
@@ -113,7 +113,7 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE shiftTime(temp, interval '1 day') <> t
 -------------------------------------------------------------------------------
 -- Spatial reference system: only the outer link names a frame
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tposechain WHERE SRID(setSRID(temp, 3812)) <> 3812;
+SELECT COUNT(*) FROM tbl_tposechain2d WHERE SRID(setSRID(temp, 3812)) <> 3812;
  count 
 -------
      0

@@ -37,32 +37,32 @@ COPY tbl_tquadbin_big (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tquadbin_discseq (
     k integer,
-    ti tquadbin
+    temp tquadbin
 );
 \set filename :srcdir '/mobilitydb/test/quadbin/data/tbl_tquadbin_discseq.data'
-COPY tbl_tquadbin_discseq (k, ti) FROM :'filename';
+COPY tbl_tquadbin_discseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tquadbin_inst (
     k integer,
-    inst tquadbin
+    temp tquadbin
 );
 \set filename :srcdir '/mobilitydb/test/quadbin/data/tbl_tquadbin_inst.data'
-COPY tbl_tquadbin_inst (k, inst) FROM :'filename';
+COPY tbl_tquadbin_inst (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tquadbin_seq (
+CREATE TABLE tbl_tquadbin_contseq (
     k integer,
-    seq tquadbin
+    temp tquadbin
 );
-\set filename :srcdir '/mobilitydb/test/quadbin/data/tbl_tquadbin_seq.data'
-COPY tbl_tquadbin_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/quadbin/data/tbl_tquadbin_contseq.data'
+COPY tbl_tquadbin_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tquadbin_seqset (
     k integer,
-    ss tquadbin
+    temp tquadbin
 );
 \set filename :srcdir '/mobilitydb/test/quadbin/data/tbl_tquadbin_seqset.data'
-COPY tbl_tquadbin_seqset (k, ss) FROM :'filename';
+COPY tbl_tquadbin_seqset (k, temp) FROM :'filename';
 
 ANALYZE tbl_quadbin, tbl_quadbinset, tbl_stbox_quadbin, tbl_tquadbin,
-  tbl_tquadbin_big, tbl_tquadbin_discseq, tbl_tquadbin_inst, tbl_tquadbin_seq,
+  tbl_tquadbin_big, tbl_tquadbin_discseq, tbl_tquadbin_inst, tbl_tquadbin_contseq,
   tbl_tquadbin_seqset;

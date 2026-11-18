@@ -19,7 +19,7 @@ END;
 $$;
 
 DROP TABLE IF EXISTS tbl_tposechain_idx;
-CREATE TEMP TABLE tbl_tposechain_idx AS SELECT k, temp FROM tbl_tposechain;
+CREATE TEMP TABLE tbl_tposechain_idx AS SELECT k, temp FROM tbl_tposechain2d;
 ANALYZE tbl_tposechain_idx;
 
 DROP TABLE IF EXISTS test_tposechain_idx;
@@ -268,9 +268,9 @@ DROP FUNCTION pg_temp.test_probes_index(text);
 -------------------------------------------------------------------------------
 
 CREATE TEMP TABLE tbl_stbox_tposechain AS
-SELECT k, temp::stbox AS b FROM tbl_tposechain WHERE temp IS NOT NULL;
+SELECT k, temp::stbox AS b FROM tbl_tposechain2d WHERE temp IS NOT NULL;
 CREATE TEMP TABLE tbl_tposechain_q AS
-SELECT temp AS q FROM tbl_tposechain WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
+SELECT temp AS q FROM tbl_tposechain2d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
 CREATE FUNCTION pg_temp.stbox_tposechain_answers() RETURNS text AS $$
   SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
     SELECT 1, (SELECT count(*) FROM tbl_stbox_tposechain WHERE b << q) FROM tbl_tposechain_q

@@ -43,8 +43,8 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 -- Round an array of temporal points
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE temp IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE temp IS NOT NULL AND k % 20 = 1;
 
 SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeompoint;
 SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeogpoint;
