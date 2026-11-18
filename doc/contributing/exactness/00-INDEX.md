@@ -98,14 +98,16 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 - **The area of a geometry is the double nearest its exact value**: `geom_area` raises "not
   supported" where scaling the geometry into 2^-500 to 2^500 is not exact, such as coordinates
   near the largest double beside coordinates the scaling by 2^-523 rounds. MobilityDB #3557
-  (draft) sums the rings of a geometry in one 128-bit integer on the unit of its box, then in doubles with a
-  bound on their rounding, then on `DyadicWide`: 3000 of 3000 rows answer the double nearest the
-  exact area, as CGAL judges them, at kernel speed 0.722 on the natural cell and 0.583 on the
-  area ledger (1.65M and 15.4M instructions against GEOSArea's 1.19M and 8.99M): the ring loop is
-  16.5 instructions a vertex on real polygons, GEOSArea's whole call about 13.8, and the
-  canonical tier 1 (`DDBound`) 133.6. It stays a draft below parity, by the owner's ruling on
-  the drafts. The grid sum is the question the arithmetic layer answers in `square_products_wide`,
-  a sum of products of two doubles, and joins the layer as its first tier (rule 5 of
-  [Exact arithmetic](EXACT-ARITHMETIC.md)), the rounding read through `nearest_double_search`. It
-  is the one topic of MobilityDB #3352 left open.
+  (ready for review) sums the rings of a geometry in one 128-bit integer on the unit of its box,
+  one product a vertex on the coordinates themselves, four vertices a step, then in pairs of
+  doubles with a bound on their rounding, placed among the doubles by `nearest_double_search`,
+  then on `DyadicWide`: 3000 of 3000 rows answer the double nearest the exact area, as CGAL
+  judges them, at kernel speed 0.818 on the natural cell and 0.699 on the area ledger (1.46M and
+  12.9M instructions against GEOSArea's 1.19M and 8.99M) and route speed 8.9 and 6.4. The gap to
+  GEOSArea's kernel is the exact sum itself: GEOS runs the same one-product loop in doubles and
+  answers no nearest double, the integer loop converts each coordinate to its integer and sums in
+  128 bits, about four instructions a vertex more, and no cheaper exact form exists on real
+  coordinates, whose differences carry about 43 bits. The owner accepts that cost for the merge
+  (2026-11-18, "then please explain all this in the body of the PR so we can merge it"), with no
+  hardware fused multiply-add. It is the one topic of MobilityDB #3352 left open.
 - **Open pull requests** on 2026-11-03: this one and MobilityDB #3259.
