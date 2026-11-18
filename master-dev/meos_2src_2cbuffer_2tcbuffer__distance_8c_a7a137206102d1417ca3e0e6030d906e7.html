@@ -105,7 +105,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gabac1839e590edad0b9808d1197c39ac0.html#gabac1839e590edad0b9808d1197c39ac0">shortestline_tcbuffer_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad1cf66426dcd284828e4068b5d26e3a6.html#ad1cf66426dcd284828e4068b5d26e3a6">TCBUF_CTX_DISC</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad230bd024095594026f7c398553bcbd3.html#ad230bd024095594026f7c398553bcbd3">TCBUF_CTX_GEO</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ab53932eaf4985bcde501c10d68c7448c.html#ab53932eaf4985bcde501c10d68c7448c">tcbuffer_add_dist_turnpts</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a7a137206102d1417ca3e0e6030d906e7.html#a7a137206102d1417ca3e0e6030d906e7">tcbuffer_add_dist_turnpts</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a2c3f7c240d066117e3764cc2ed638358.html#a2c3f7c240d066117e3764cc2ed638358">tcbuffer_add_within01</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a3719cd8372997142a9da30989d86c4c5.html#a3719cd8372997142a9da30989d86c4c5">tcbuffer_at_rest</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a6e786598538338021913d53dcef19d6f.html#a6e786598538338021913d53dcef19d6f">tcbuffer_cbuffer_distance_turnpt</a></td></tr>
@@ -151,8 +151,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab53932eaf4985bcde501c10d68c7448c" name="ab53932eaf4985bcde501c10d68c7448c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab53932eaf4985bcde501c10d68c7448c">&#9670;&#160;</a></span>tcbuffer_add_dist_turnpts()</h2>
+<a id="a7a137206102d1417ca3e0e6030d906e7" name="a7a137206102d1417ca3e0e6030d906e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a137206102d1417ca3e0e6030d906e7">&#9670;&#160;</a></span>tcbuffer_add_dist_turnpts()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,25 +164,43 @@ $(function() {
           <td class="memname">static void tcbuffer_add_dist_turnpts </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
+          <td class="paramname"><em>vx0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>B</em>, </td>
+          <td class="paramname"><em>vy0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>C</em>, </td>
+          <td class="paramname"><em>vx</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>DR</em>, </td>
+          <td class="paramname"><em>vy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>r0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>r1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>norm</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -210,7 +228,10 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Append the [0,1] stationary-point candidates of sqrt(A t^2 + B t + C) - (a value increasing at rate DR) </p>
-<p >Same closed form as <a class="el" href="meos_2src_2geo_2tgeo__distance_8c_a92119113ea03e9118e16808dca0982dd.html#a92119113ea03e9118e16808dca0982dd" title="Minimise f(t) = sqrt(A t^2 + B t + C) - (R0 + DR t) over [lo,hi].">dist_minfun</a> (tgeo_distance.c), which minimises this quantity: the constant term of the subtracted value drops out of its derivative, so only DR enters the (up to two) roots of the stationarity equation squared, (A^2 - A DR^2) t^2 + (A B - B DR^2) t + (B^2/4 - C DR^2) = 0, plus the quadratic vertex -B/(2A) explicitly, since in the perpendicular regime that quadratic is a perfect square and the discriminant can round to a spurious negative, silently dropping the true double root &ndash; the instant the moving centre crosses the edge's supporting line or circle (an exact zero-distance overlap) </p>
+<p >Same closed form as <a class="el" href="meos_2src_2geo_2tgeo__distance_8c_a92119113ea03e9118e16808dca0982dd.html#a92119113ea03e9118e16808dca0982dd" title="Minimise f(t) = sqrt(A t^2 + B t + C) - (R0 + DR t) over [lo,hi].">dist_minfun</a> (tgeo_distance.c), which minimises this quantity: the constant term of the subtracted value drops out of its derivative, so only DR enters the (up to two) roots of the stationarity equation squared, (A^2 - A DR^2) t^2 + (A B - B DR^2) t + (B^2/4 - C DR^2) = 0, plus the quadratic vertex -B/(2A) explicitly, since in the perpendicular regime that quadratic is a perfect square and the discriminant can round to a spurious negative, silently dropping the true double root &ndash; the instant the moving centre crosses the edge's supporting line or circle (an exact zero-distance overlap)</p>
+<p >The quadratic is the squared length of the vector (vx0 + vx t, vy0 + vy t), and the radius varies from <code>r0</code> to <code>r1</code> over the segment, so DR is r1 - r0.</p>
+<p >When the distance is the length of that vector minus the radius, clamped at zero, as for a point, an edge endpoint or a supporting line, <code>norm</code> is true and the instants kept are the breakpoints of that distance, as <a class="el" href="tcbuffer_8h_a6686acaefe6cb4c23bc594bf1571c800.html#a6686acaefe6cb4c23bc594bf1571c800">tcbuffersegm_distance_turnpt</a> keeps them for two buffers. Unclamped, the distance is the norm of an affine function minus an affine one, hence convex, so its only interior turning point is a minimum, where 2At + B = 2 DR sqrt(Q). Squaring that equation adds a companion root at which 2At + B and DR have opposite signs, so the distance still falls or rises there, and it is dropped. The vertex -B/(2A) is the closest approach of the centre, which is the minimum when the radius does not change, DR being exactly zero, and is dropped otherwise. A minimum at which the disc covers the feature lies inside an interval where the clamped distance is zero, and it is dropped too: the breakpoints there are the instants at which the disc starts and stops covering the feature, where the length equals the radius, found as <a class="el" href="tcbuffer_8h_a42bef1e66a5cc4bbba948dcd0886c912.html#a42bef1e66a5cc4bbba948dcd0886c912">tcbuffersegm_dwithin_turnpt</a> finds them for two buffers.</p>
+<p >When the distance is the absolute difference to a circle, as for the supporting circle of an arc, the root of the other sign is the turning point inside the circle, and <code>norm</code> is false to keep both roots and the vertex. </p>
 
 </div>
 </div>
