@@ -75,7 +75,7 @@ measures it.
 MobilityAPI publishes moving features through OGC API – Moving Features, their temporal geometry
 in any spatial temporal type of MEOS, and rasters through the standards below. It is a server,
 not a binding: it holds no object layer, so `tools/raster_matrix.py` does not measure it; its
-raster surface is its endpoints, measured by the MobilityAPI plan.
+raster surface is its endpoints, measured by the MobilityAPI plan of MobilityDB #3805.
 
 | Standard | Status | What MobilityAPI serves |
 |---|---|---|

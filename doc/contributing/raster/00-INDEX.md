@@ -26,7 +26,7 @@ each gap.
 
 The names follow the portable naming notes of MobilityDB #2861 (`doc/contributing/portable_naming/`);
 reading and writing every type in every format follows the input and output notes of MobilityDB
-#3353 (`doc/contributing/io/`); the exactness of the pixel walk is the exactness plan of
+#3788 (`doc/contributing/io/`); the exactness of the pixel walk is the exactness plan of
 MobilityDB #3287 (`doc/contributing/exactness/`) and the cell walks of the manual.
 
 ## The notes
@@ -61,7 +61,7 @@ MobilityDB #3287 (`doc/contributing/exactness/`) and the cell walks of the manua
    `distance` and `velocity`, for the values of a raster along a moving feature's own
    trajectory, which only MobilityAPI can answer, the moving feature being on the server.
    MobilityAPI being a server rather than a binding, its surface is measured by the MobilityAPI
-   plan, not by `tools/raster_matrix.py`.
+   plan of MobilityDB #3805, not by `tools/raster_matrix.py`.
 6. **What MobilityAPI answers about a raster is what MobilityDB declares over it.** As for the
    temporal types (`catalog_gen.go`), the functions per raster type are generated from the
    catalog, and a query MobilityDB states no function for is refused naming the function.

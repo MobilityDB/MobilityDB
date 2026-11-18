@@ -13,7 +13,7 @@
 Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it, in order. A row
 names the layer it changes, and its State column names the pull request that closes it. The names
 a row proposes are proposals until the portable naming notes of MobilityDB #2861 state them; a
-format's reader and writer follow the input and output notes of MobilityDB #3353.
+format's reader and writer follow the input and output notes of MobilityDB #3788.
 
 ## MEOS and MobilityDB
 
@@ -45,7 +45,7 @@ format's reader and writer follow the input and output notes of MobilityDB #3353
 Built by `tools/raster_matrix.py` (R6) over the MEOS-API catalog at MobilityDB `eaffbb532e`, each
 binding at the commit its row names, its default branch; 79 functions, of which 7 name no raster
 type (`rasterTileValueQuadbin` and the `summarystats*` accessors). MobilityAPI is a server, not a
-binding, and is measured by the MobilityAPI plan:
+binding, and is measured by the MobilityAPI plan of MobilityDB #3805:
 
 | Binding | Commit | raster | raquet | Functions | Missing |
 |---|---|---|---|---|---|
