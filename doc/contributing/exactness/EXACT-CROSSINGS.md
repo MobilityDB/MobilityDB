@@ -542,7 +542,7 @@ diffs classified:
    order, sort key and hash read the longitude -180 as 180 and that of a pole as 0, and a
    temporal geography is compared by its period rather than its box, which is written in the
    longitudes the value spells; a CGAL::Gmpq judge agrees on 4000 pairs.
-   MobilityDB #3756 (draft) decides the redundant instants of a sequence on the doubles with no
+   MobilityDB #3756, merged as `23819c336f`, decides the redundant instants of a sequence on the doubles with no
    tolerance: geography points on the equator, on one meridian or at the middle a half turn
    proves, poses whose angle turns linearly, and the instants a restriction adds, each cut on a
    segment of the input and recognized bit for bit by the join; an MPFR judge at 2400 bits
