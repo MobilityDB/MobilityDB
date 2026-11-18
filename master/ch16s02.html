@@ -153,14 +153,14 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 asCoverageJSON(raster) → text
 asCoverageJSON(raquet) → text
 asCoverageJSON(tfloat,tgeompoint) → text
-</pre><p>CoverageJSON is the encoding of OGC API – Coverages and OGC API – Environmental Data Retrieval. A <code class="varname">raster</code> is a <code class="varname">Grid</code> coverage: its axes <code class="varname">x</code> and <code class="varname">y</code> run from the centre of the first pixel to the centre of the last, each band is a parameter <code class="varname">band1</code>, <code class="varname">band2</code> ..., whose values run row by row from the top row, and a nodata pixel is <code class="varname">null</code>; a raster with a skew, whose pixels lie on no such axes, and a raster in no spatial reference system raise an error. A <code class="varname">raquet</code> tile is a grid of Web Mercator, EPSG:3857, over the bounds of its QUADBIN cell. The values a trajectory reads, such as those of <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>, are a <code class="varname">Trajectory</code> coverage whose points are the instants of the values, each at the position of the trajectory at its instant. EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MobilityDB states it.</p><pre class="programlisting">
+</pre><p>CoverageJSON is the encoding of OGC API – Coverages and OGC API – Environmental Data Retrieval. A <code class="varname">raster</code> is a <code class="varname">Grid</code> coverage: its axes <code class="varname">x</code> and <code class="varname">y</code> run from the centre of the first pixel to the centre of the last, each band is a parameter <code class="varname">band1</code>, <code class="varname">band2</code> ..., whose values run row by row from the top row, and a nodata pixel is <code class="varname">null</code>; a raster with a skew, whose pixels lie on no such axes, and a raster in no spatial reference system raise an error. A <code class="varname">raquet</code> tile is a grid of Web Mercator, EPSG:3857, over the bounds of its QUADBIN cell. The values a trajectory reads, such as those of <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>, are a <code class="varname">Trajectory</code> coverage whose points are the instants of the values, each at the position of the trajectory at its instant; values read at one place are a <code class="varname">Point</code> for one instant and a <code class="varname">PointSeries</code> for several, the instants on its axis <code class="varname">t</code>, the coverages the position query of OGC API – Environmental Data Retrieval answers. EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MobilityDB states it.</p><pre class="programlisting">
 SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
   ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
   '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
   ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
   #&gt; '{ranges,band1,values}';
 -- [1,2,3,4,-5,null]
-</pre></li><li class="listitem"><a name="raster_asGDALRaster"></a><a class="indexterm" name="id14473"></a><a class="indexterm" name="id14476"></a><a class="indexterm" name="id14479"></a><a class="indexterm" name="id14482"></a><p>Return a raster written in a format of GDAL</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_asGDALRaster"></a><a class="indexterm" name="id14476"></a><a class="indexterm" name="id14479"></a><a class="indexterm" name="id14482"></a><a class="indexterm" name="id14485"></a><p>Return a raster written in a format of GDAL</p><pre class="programlisting">
 asGDALRaster(rast raster,format text,options text[]=NULL,srid integer=NULL) → bytea
 asTIFF(rast raster,options text[]=NULL,srid integer=NULL) → bytea
 asPNG(rast raster,options text[]=NULL) → bytea
@@ -174,7 +174,7 @@ SELECT asTIFF(rast) = ST_AsTIFF(rast),
   encode(substring(asPNG(rast) from 2 for 3), 'escape')
 FROM r;
 -- true | PNG
-</pre></li><li class="listitem"><a name="rasterFromGDALRaster"></a><a class="indexterm" name="id14502"></a><p>Return a raster read from the bytes of a file in a format of GDAL</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="rasterFromGDALRaster"></a><a class="indexterm" name="id14505"></a><p>Return a raster read from the bytes of a file in a format of GDAL</p><pre class="programlisting">
 rasterFromGDALRaster(gdaldata bytea,srid integer=0) → raster
 </pre><p>Reads the raster as PostGIS's <code class="varname">ST_FromGDALRaster</code> reads it, the format found by GDAL from the bytes. <code class="varname">srid</code> is the spatial reference system of the result, the one the file states when 0.</p><pre class="programlisting">
 WITH r AS (

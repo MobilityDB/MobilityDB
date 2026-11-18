@@ -153,14 +153,14 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 asCoverageJSON(raster) → text
 asCoverageJSON(raquet) → text
 asCoverageJSON(tfloat,tgeompoint) → text
-</pre><p>CoverageJSON es la codificación de OGC API – Coverages y de OGC API – Environmental Data Retrieval. Un <code class="varname">raster</code> es una cobertura <code class="varname">Grid</code>: sus ejes <code class="varname">x</code> e <code class="varname">y</code> van del centro del primer píxel al centro del último, cada banda es un parámetro <code class="varname">band1</code>, <code class="varname">band2</code> ..., cuyos valores van fila por fila desde la fila superior, y un píxel nodata es <code class="varname">null</code>; un ráster con sesgo, cuyos píxeles no están sobre tales ejes, y un ráster sin sistema de referencia espacial producen un error. Una tesela <code class="varname">raquet</code> es una malla de Web Mercator, EPSG:3857, sobre los límites de su celda QUADBIN. Los valores que lee una trayectoria, como los de <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>, son una cobertura <code class="varname">Trajectory</code> cuyos puntos son los instantes de los valores, cada uno en la posición de la trayectoria en su instante. EPSG:4326 se declara como OGC CRS84, cuya longitud va primero como la declara MobilityDB.</p><pre class="programlisting">
+</pre><p>CoverageJSON es la codificación de OGC API – Coverages y de OGC API – Environmental Data Retrieval. Un <code class="varname">raster</code> es una cobertura <code class="varname">Grid</code>: sus ejes <code class="varname">x</code> e <code class="varname">y</code> van del centro del primer píxel al centro del último, cada banda es un parámetro <code class="varname">band1</code>, <code class="varname">band2</code> ..., cuyos valores van fila por fila desde la fila superior, y un píxel nodata es <code class="varname">null</code>; un ráster con sesgo, cuyos píxeles no están sobre tales ejes, y un ráster sin sistema de referencia espacial producen un error. Una tesela <code class="varname">raquet</code> es una malla de Web Mercator, EPSG:3857, sobre los límites de su celda QUADBIN. Los valores que lee una trayectoria, como los de <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>, son una cobertura <code class="varname">Trajectory</code> cuyos puntos son los instantes de los valores, cada uno en la posición de la trayectoria en su instante; los valores leídos en un mismo lugar son un <code class="varname">Point</code> para un instante y una <code class="varname">PointSeries</code> para varios, con los instantes en su eje <code class="varname">t</code>, las coberturas que responde la consulta de posición de OGC API – Environmental Data Retrieval. EPSG:4326 se declara como OGC CRS84, cuya longitud va primero como la declara MobilityDB.</p><pre class="programlisting">
 SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
   ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
   '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
   ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
   #&gt; '{ranges,band1,values}';
 -- [1,2,3,4,-5,null]
-</pre></li><li class="listitem"><a name="raster_asGDALRaster"></a><a class="indexterm" name="id13898"></a><a class="indexterm" name="id13901"></a><a class="indexterm" name="id13904"></a><a class="indexterm" name="id13907"></a><p>Devuelve un ráster escrito en un formato de GDAL</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_asGDALRaster"></a><a class="indexterm" name="id13901"></a><a class="indexterm" name="id13904"></a><a class="indexterm" name="id13907"></a><a class="indexterm" name="id13910"></a><p>Devuelve un ráster escrito en un formato de GDAL</p><pre class="programlisting">
 asGDALRaster(rast raster,format text,options text[]=NULL,srid integer=NULL) → bytea
 asTIFF(rast raster,options text[]=NULL,srid integer=NULL) → bytea
 asPNG(rast raster,options text[]=NULL) → bytea
@@ -174,7 +174,7 @@ SELECT asTIFF(rast) = ST_AsTIFF(rast),
   encode(substring(asPNG(rast) from 2 for 3), 'escape')
 FROM r;
 -- true | PNG
-</pre></li><li class="listitem"><a name="rasterFromGDALRaster"></a><a class="indexterm" name="id13927"></a><p>Devuelve un ráster leído de los bytes de un archivo en un formato de GDAL</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="rasterFromGDALRaster"></a><a class="indexterm" name="id13930"></a><p>Devuelve un ráster leído de los bytes de un archivo en un formato de GDAL</p><pre class="programlisting">
 rasterFromGDALRaster(gdaldata bytea,srid integer=0) → raster
 </pre><p>Lee el ráster como lo lee <code class="varname">ST_FromGDALRaster</code> de PostGIS, encontrando GDAL el formato a partir de los bytes. <code class="varname">srid</code> es el sistema de referencia espacial del resultado, el que declara el archivo cuando es 0.</p><pre class="programlisting">
 WITH r AS (
