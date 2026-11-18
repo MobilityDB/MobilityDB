@@ -524,19 +524,43 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
-  Temporal *tpoint = tnpoint_to_tgeompoint(temp);
-  Temporal *res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
-  Temporal *result = NULL;
-  if (res)
+  /* The network point is restricted to the times of the restriction of its
+   * geometry point, which is not converted back to avoid roundoff errors.
+   * Where that restriction reads no point (#tgeo_restrict_stbox), a box with
+   * the time alone or one the value's box does not overlap, its times are
+   * read on the network point, whose box is the one of its geometry point,
+   * so the value is not converted */
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  if (hasx && (! ensure_same_geodetic(temp->flags, box->flags) ||
+      ! ensure_same_srid(tspatial_srid(temp), box->srid)))
+    return NULL;
+  Temporal *res = NULL;
+  STBox box1;
+  if (hast && ! hasx)
+    res = temporal_restrict_tstzspan(temp, &box->period, atfunc);
+  else
   {
-    /* We do not call the function tgeompoint_to_tnpoint to avoid
-     * roundoff errors */
-    SpanSet *ss = temporal_time(res);
-    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
-    pfree(res);
-    pfree(ss);
+    tspatial_set_stbox(temp, &box1);
+    if (! overlaps_stbox_stbox(&box1, box))
+    {
+      if (atfunc)
+        return NULL;
+      res = temporal_copy(temp);
+    }
+    else
+    {
+      Temporal *tpoint = tnpoint_to_tgeompoint(temp);
+      res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
+      pfree(tpoint);
+    }
   }
-  pfree(tpoint);
+  if (! res)
+    return NULL;
+  SpanSet *ss = temporal_time(res);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+  pfree(res);
+  pfree(ss);
   return result;
 }
 
