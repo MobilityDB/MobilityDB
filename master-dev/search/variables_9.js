@@ -40,6 +40,6 @@ var searchData=
   ['high_37',['high',['../structOffsetSide_a1efb5e5e5611330fbd836dfa39d3d8b3.html#a1efb5e5e5611330fbd836dfa39d3d8b3',1,'OffsetSide']]],
   ['histogram_5fcells_38',['histogram_cells',['../structND__STATS__T_a98c76a230859d3c610d7e2146605d5be.html#a98c76a230859d3c610d7e2146605d5be',1,'ND_STATS_T']]],
   ['histogram_5ffeatures_39',['histogram_features',['../structND__STATS__T_a34fb0ed535391a37ccbdd14a72b1adf0.html#a34fb0ed535391a37ccbdd14a72b1adf0',1,'ND_STATS_T']]],
-  ['hits_40',['hits',['../structstruct__PROJSRSCacheItem_a379313ea31d58641e45849000bacc8e9.html#a379313ea31d58641e45849000bacc8e9',1,'struct_PROJSRSCacheItem::hits()'],['../structRelateCtxCacheEntry_a1df448b7883b9f3d7ef6d54e26cd5bd1.html#a1df448b7883b9f3d7ef6d54e26cd5bd1',1,'RelateCtxCacheEntry::hits()']]],
+  ['hits_40',['hits',['../structRelateCtxCacheEntry_a1df448b7883b9f3d7ef6d54e26cd5bd1.html#a1df448b7883b9f3d7ef6d54e26cd5bd1',1,'RelateCtxCacheEntry::hits()'],['../structstruct__PROJSRSCacheItem_ab9309f6b848f15e2f2f42bb01ec6bf97.html#ab9309f6b848f15e2f2f42bb01ec6bf97',1,'struct_PROJSRSCacheItem::hits()']]],
   ['hoff_41',['hoff',['../structArr_a8255e038528517e05459afe9244a96d3.html#a8255e038528517e05459afe9244a96d3',1,'Arr']]]
 ];

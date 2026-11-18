@@ -129,14 +129,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the name of the coordinate reference system of an SRID, as the GeoJSON and MF-JSON representations state it. </p>
-<p >The short name is the authority and its code, as in <code>EPSG:3857</code>, and the long one is the OGC URN, as in <code>urn:ogc:def:crs:EPSG::3857</code>, the two names the PostgreSQL extension reads from the table <code>spatial_ref_sys</code>. Both are read from <code>spatial_ref_sys.csv</code> together with the projection of the SRID onto itself and kept with it in the PROJ cache, so the file is read once per SRID </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The short name is the authority and its code, as in <code>EPSG:3857</code>, and the long one is the OGC URN, as in <code>urn:ogc:def:crs:EPSG::3857</code>. Both are read, from <code>spatial_ref_sys.csv</code> in MEOS and from the table <code>spatial_ref_sys</code> in the PostgreSQL extension, together with the projection of the SRID onto itself and kept with it in the PROJ cache, so the systems are read once per SRID </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">short_crs</td><td>True for the short name, false for the long one </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The name, owned by the PROJ cache and valid until the cache stores another projection, or <code>NULL</code> with an error where the SRID has no authority in <code>spatial_ref_sys.csv</code> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The name, owned by the PROJ cache and valid until the cache stores another projection, or <code>NULL</code> with an error where the SRID has no authority in the systems read </dd></dl>
 
 </div>
 </div>

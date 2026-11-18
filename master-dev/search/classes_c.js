@@ -10,7 +10,6 @@ var searchData=
   ['meos_5fwkb_5fparse_5fstate_7',['meos_wkb_parse_state',['../structmeos__wkb__parse__state.html',1,'']]],
   ['meosarray_8',['MeosArray',['../structMeosArray.html',1,'']]],
   ['meosde9im_9',['MeosDE9IM',['../structMeosDE9IM.html',1,'']]],
-  ['mfsrscache_10',['MFSrsCache',['../structMFSrsCache.html',1,'']]],
-  ['mobilitydb_5fconstants_11',['mobilitydb_constants',['../structmobilitydb__constants.html',1,'']]],
-  ['motionstate_12',['MotionState',['../structMotionState.html',1,'']]]
+  ['mobilitydb_5fconstants_10',['mobilitydb_constants',['../structmobilitydb__constants.html',1,'']]],
+  ['motionstate_11',['MotionState',['../structMotionState.html',1,'']]]
 ];
