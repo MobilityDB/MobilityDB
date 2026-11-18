@@ -25,27 +25,27 @@ CREATE TABLE tbl_tcbuffer_big (
 COPY tbl_tcbuffer_big (k, temp) FROM :'filename';
 CREATE TABLE tbl_tcbuffer_discseq (
     k integer PRIMARY KEY,
-    ti tcbuffer(Sequence)
+    temp tcbuffer(Sequence)
 );
 \set filename :srcdir '/mobilitydb/test/cbuffer/data/tbl_tcbuffer_discseq.data'
-COPY tbl_tcbuffer_discseq (k, ti) FROM :'filename';
+COPY tbl_tcbuffer_discseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tcbuffer_inst (
     k integer PRIMARY KEY,
-    inst tcbuffer(Instant)
+    temp tcbuffer(Instant)
 );
 \set filename :srcdir '/mobilitydb/test/cbuffer/data/tbl_tcbuffer_inst.data'
-COPY tbl_tcbuffer_inst (k, inst) FROM :'filename';
+COPY tbl_tcbuffer_inst (k, temp) FROM :'filename';
 CREATE TABLE tbl_tcbuffer_seqset (
     k integer PRIMARY KEY,
-    ss tcbuffer(SequenceSet)
+    temp tcbuffer(SequenceSet)
 );
 \set filename :srcdir '/mobilitydb/test/cbuffer/data/tbl_tcbuffer_seqset.data'
-COPY tbl_tcbuffer_seqset (k, ss) FROM :'filename';
-CREATE TABLE tbl_tcbuffer_seq (
+COPY tbl_tcbuffer_seqset (k, temp) FROM :'filename';
+CREATE TABLE tbl_tcbuffer_contseq (
     k integer PRIMARY KEY,
-    seq tcbuffer(Sequence)
+    temp tcbuffer(Sequence)
 );
-\set filename :srcdir '/mobilitydb/test/cbuffer/data/tbl_tcbuffer_seq.data'
-COPY tbl_tcbuffer_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/cbuffer/data/tbl_tcbuffer_contseq.data'
+COPY tbl_tcbuffer_contseq (k, temp) FROM :'filename';
 -- Launch the ANALYZE deamon to avoid that it is launched during the tests
 ANALYZE;

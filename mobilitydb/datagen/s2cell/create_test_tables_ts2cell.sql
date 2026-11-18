@@ -67,30 +67,30 @@ FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_ts2cell_inst;
 CREATE TABLE tbl_ts2cell_inst AS
-SELECT k, random_ts2cell_inst(0, 10, '2001-01-01', '2001-12-31') AS inst
+SELECT k, random_ts2cell_inst(0, 10, '2001-01-01', '2001-12-31') AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_ts2cell_discseq;
 CREATE TABLE tbl_ts2cell_discseq AS
-SELECT k, random_ts2cell_discseq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10) AS ti
+SELECT k, random_ts2cell_discseq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_ts2cell_seq;
-CREATE TABLE tbl_ts2cell_seq AS
-SELECT k, random_ts2cell_seq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
+DROP TABLE IF EXISTS tbl_ts2cell_contseq;
+CREATE TABLE tbl_ts2cell_contseq AS
+SELECT k, random_ts2cell_seq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_ts2cell_seqset;
 CREATE TABLE tbl_ts2cell_seqset AS
-SELECT k, random_ts2cell_seqset(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS ss
+SELECT k, random_ts2cell_seqset(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS temp
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_ts2cell;
 CREATE TABLE tbl_ts2cell(k, temp) AS
-(SELECT k, inst FROM tbl_ts2cell_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, ti FROM tbl_ts2cell_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_ts2cell_seq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss FROM tbl_ts2cell_seqset LIMIT size / 4);
+(SELECT k, temp FROM tbl_ts2cell_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, temp FROM tbl_ts2cell_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, temp FROM tbl_ts2cell_contseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp FROM tbl_ts2cell_seqset LIMIT size / 4);
 
 ------------------------------------------------------------------------------
 -- Geodetic spatiotemporal box (operand for the bounding-box operator tests).
@@ -130,7 +130,7 @@ SELECT * FROM tbl_s2cell LIMIT 3;
 SELECT * FROM tbl_s2cellset LIMIT 3;
 SELECT * FROM tbl_ts2cell_inst LIMIT 3;
 SELECT * FROM tbl_ts2cell_discseq LIMIT 3;
-SELECT * FROM tbl_ts2cell_seq LIMIT 3;
+SELECT * FROM tbl_ts2cell_contseq LIMIT 3;
 SELECT * FROM tbl_ts2cell_seqset LIMIT 3;
 SELECT * FROM tbl_ts2cell LIMIT 3;
 */

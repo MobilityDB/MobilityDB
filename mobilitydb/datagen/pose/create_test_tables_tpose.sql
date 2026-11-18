@@ -84,66 +84,66 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_tpose2d_inst;
 CREATE TABLE tbl_tpose2d_inst AS
 SELECT k, random_tpose2d_inst(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), '2001-01-01', '2001-12-31', 3812) AS inst
+  radians(pi()), '2001-01-01', '2001-12-31', 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose2d_discseq;
 CREATE TABLE tbl_tpose2d_discseq AS
 SELECT k, random_tpose2d_discseq(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tpose2d_seq;
-CREATE TABLE tbl_tpose2d_seq AS
+DROP TABLE IF EXISTS tbl_tpose2d_contseq;
+CREATE TABLE tbl_tpose2d_contseq AS
 SELECT k, random_tpose2d_contseq(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose2d_seqset;
 CREATE TABLE tbl_tpose2d_seqset AS
 SELECT k, random_tpose2d_seqset(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS ss
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tpose2d;
 CREATE TABLE tbl_tpose2d(k, temp) AS
-(SELECT k, inst FROM tbl_tpose2d_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, seq FROM tbl_tpose2d_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_tpose2d_seq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss FROM tbl_tpose2d_seqset LIMIT size / 4);
+(SELECT k, temp FROM tbl_tpose2d_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, temp FROM tbl_tpose2d_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, temp FROM tbl_tpose2d_contseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp FROM tbl_tpose2d_seqset LIMIT size / 4);
 
 ------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_tpose3d_inst;
 CREATE TABLE tbl_tpose3d_inst AS
 SELECT k, random_tpose3d_inst(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 
-  0, 1, 0, 1, '2001-01-01', '2001-12-31', 3812) AS inst
+  0, 1, 0, 1, '2001-01-01', '2001-12-31', 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose3d_discseq;
 CREATE TABLE tbl_tpose3d_discseq AS
 SELECT k, random_tpose3d_discseq(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 
-  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
+  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tpose3d_seq;
-CREATE TABLE tbl_tpose3d_seq AS
+DROP TABLE IF EXISTS tbl_tpose3d_contseq;
+CREATE TABLE tbl_tpose3d_contseq AS
 SELECT k, random_tpose3d_contseq(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 
-  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
+  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose3d_seqset;
 CREATE TABLE tbl_tpose3d_seqset AS
 SELECT k, random_tpose3d_seqset(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 
-  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS ss
+  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tpose3d;
 CREATE TABLE tbl_tpose3d(k, temp) AS
-(SELECT k, inst FROM tbl_tpose3d_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, seq FROM tbl_tpose3d_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_tpose3d_seq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss FROM tbl_tpose3d_seqset LIMIT size / 4);
+(SELECT k, temp FROM tbl_tpose3d_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, temp FROM tbl_tpose3d_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, temp FROM tbl_tpose3d_contseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp FROM tbl_tpose3d_seqset LIMIT size / 4);
 
 -------------------------------------------------------------------------------
 RETURN 'The End';
@@ -156,7 +156,7 @@ SELECT * FROM tbl_pose2d LIMIT 3;
 SELECT * FROM tbl_poseset2d LIMIT 3;
 SELECT * FROM tbl_tpose2d_inst LIMIT 3;
 SELECT * FROM tbl_tpose2d_discseq LIMIT 3;
-SELECT * FROM tbl_tpose2d_seq LIMIT 3;
+SELECT * FROM tbl_tpose2d_contseq LIMIT 3;
 SELECT * FROM tbl_tpose2d_seqset LIMIT 3;
 SELECT * FROM tbl_tpose2d LIMIT 3;
 SELECT * FROM tbl_tpose2d LIMIT 3 OFFSET 25;
@@ -167,7 +167,7 @@ SELECT * FROM tbl_pose3d LIMIT 3;
 SELECT * FROM tbl_poseset3d LIMIT 3;
 SELECT * FROM tbl_tpose3d_inst LIMIT 3;
 SELECT * FROM tbl_tpose3d_discseq LIMIT 3;
-SELECT * FROM tbl_tpose3d_seq LIMIT 3;
+SELECT * FROM tbl_tpose3d_contseq LIMIT 3;
 SELECT * FROM tbl_tpose3d_seqset LIMIT 3;
 SELECT * FROM tbl_tpose3d LIMIT 3;
 SELECT * FROM tbl_tpose3d LIMIT 3 OFFSET 25;

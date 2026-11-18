@@ -402,19 +402,19 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eDwithin(t1.temp, 
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seq WHERE eDwithin(g, seq, 10);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_contseq WHERE eDwithin(g, temp, 10);
  count 
 -------
   4296
 (1 row)
 
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset WHERE eDwithin(g, ss, 10);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset WHERE eDwithin(g, temp, 10);
  count 
 -------
   9563
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry_seq t1, tbl_tgeometry t2 WHERE eDwithin(t1.seq, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeometry_contseq t1, tbl_tgeometry t2 WHERE eDwithin(t1.temp, t2.temp, 10);
  count 
 -------
     25
@@ -500,19 +500,19 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aDwithin(t1.temp, 
 (1 row)
 
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_seq t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(g, seq, 10);
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_contseq t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(g, temp, 10);
  count 
 -------
     27
 (1 row)
 
-SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_seqset t2 WHERE t1.k % 3 = 0 AND t1.k % 3 = 0 AND aDwithin(g, ss, 10);
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_seqset t2 WHERE t1.k % 3 = 0 AND t1.k % 3 = 0 AND aDwithin(g, temp, 10);
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry_seq t1, tbl_tgeometry t2 WHERE aDwithin(t1.seq, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeometry_contseq t1, tbl_tgeometry t2 WHERE aDwithin(t1.temp, t2.temp, 10);
  count 
 -------
     25

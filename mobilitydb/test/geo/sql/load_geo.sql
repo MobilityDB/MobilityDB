@@ -79,10 +79,10 @@ COPY tbl_tgeography3D_big (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeography_discseq (
     k integer,
-    ti tgeography
+    temp tgeography
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeography_discseq.data'
-COPY tbl_tgeography_discseq (k, ti) FROM :'filename';
+COPY tbl_tgeography_discseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeography3D_discseq (
     k integer,
@@ -93,10 +93,10 @@ COPY tbl_tgeography3D_discseq (k, ti) FROM :'filename';
 
 CREATE TABLE tbl_tgeography_inst (
     k integer,
-    inst tgeography
+    temp tgeography
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeography_inst.data'
-COPY tbl_tgeography_inst (k, inst) FROM :'filename';
+COPY tbl_tgeography_inst (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeography3D_inst (
     k integer,
@@ -105,12 +105,12 @@ CREATE TABLE tbl_tgeography3D_inst (
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeography3D_inst.data'
 COPY tbl_tgeography3D_inst (k, inst) FROM :'filename';
 
-CREATE TABLE tbl_tgeography_seq (
+CREATE TABLE tbl_tgeography_contseq (
     k integer,
-    seq tgeography
+    temp tgeography
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeography_seq.data'
-COPY tbl_tgeography_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeography_contseq.data'
+COPY tbl_tgeography_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeography3D_seq (
     k integer,
@@ -121,10 +121,10 @@ COPY tbl_tgeography3D_seq (k, seq) FROM :'filename';
 
 CREATE TABLE tbl_tgeography_seqset (
     k integer,
-    ss tgeography
+    temp tgeography
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeography_seqset.data'
-COPY tbl_tgeography_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeography_seqset (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeography3D_seqset (
     k integer,
@@ -156,10 +156,10 @@ COPY tbl_tgeometry3D_big (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeometry_discseq (
     k integer,
-    ti tgeometry
+    temp tgeometry
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeometry_discseq.data'
-COPY tbl_tgeometry_discseq (k, ti) FROM :'filename';
+COPY tbl_tgeometry_discseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeometry3D_discseq (
     k integer,
@@ -170,10 +170,10 @@ COPY tbl_tgeometry3D_discseq (k, ti) FROM :'filename';
 
 CREATE TABLE tbl_tgeometry_inst (
     k integer,
-    inst tgeometry
+    temp tgeometry
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeometry_inst.data'
-COPY tbl_tgeometry_inst (k, inst) FROM :'filename';
+COPY tbl_tgeometry_inst (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeometry3D_inst (
     k integer,
@@ -182,12 +182,12 @@ CREATE TABLE tbl_tgeometry3D_inst (
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeometry3D_inst.data'
 COPY tbl_tgeometry3D_inst (k, inst) FROM :'filename';
 
-CREATE TABLE tbl_tgeometry_seq (
+CREATE TABLE tbl_tgeometry_contseq (
     k integer,
-    seq tgeometry
+    temp tgeometry
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeometry_seq.data'
-COPY tbl_tgeometry_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeometry_contseq.data'
+COPY tbl_tgeometry_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeometry3D_seq (
     k integer,
@@ -198,10 +198,10 @@ COPY tbl_tgeometry3D_seq (k, seq) FROM :'filename';
 
 CREATE TABLE tbl_tgeometry_seqset (
     k integer,
-    ss tgeometry
+    temp tgeometry
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeometry_seqset.data'
-COPY tbl_tgeometry_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeometry_seqset (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeometry3D_seqset (
     k integer,

@@ -2,97 +2,97 @@
 -------------------------------------------------------------------------------
 -- Extent aggregate function
 -------------------------------------------------------------------------------
-SELECT extent(inst) FROM tbl_tbool_inst;
+SELECT extent(temp) FROM tbl_tbool_inst;
                             extent                            
 --------------------------------------------------------------
  [Sun Dec 31 16:30:00 2000 PST, Mon Dec 24 05:41:00 2001 PST]
 (1 row)
 
-SELECT extent(inst) FROM tbl_ttext_inst;
+SELECT extent(temp) FROM tbl_ttext_inst;
                             extent                            
 --------------------------------------------------------------
  [Wed Jan 03 03:45:00 2001 PST, Sun Dec 30 10:54:00 2001 PST]
 (1 row)
 
-SELECT extent(inst) FROM tbl_tint_inst;
+SELECT extent(temp) FROM tbl_tint_inst;
                                       extent                                      
 ----------------------------------------------------------------------------------
  TBOXINT XT([5, 98),[Fri Jan 12 15:34:00 2001 PST, Wed Dec 26 23:03:00 2001 PST])
 (1 row)
 
-SELECT round(extent(inst), 6) FROM tbl_tfloat_inst;
+SELECT round(extent(temp), 6) FROM tbl_tfloat_inst;
                                               round                                               
 --------------------------------------------------------------------------------------------------
  TBOXFLOAT XT([3.649336, 99.511055],[Sun Jan 07 16:47:00 2001 PST, Thu Dec 27 00:54:00 2001 PST])
 (1 row)
 
-SELECT extent(ti) FROM tbl_tbool_discseq;
+SELECT extent(temp) FROM tbl_tbool_discseq;
                             extent                            
 --------------------------------------------------------------
  [Mon Jan 01 03:25:00 2001 PST, Sat Dec 29 03:56:00 2001 PST]
 (1 row)
 
-SELECT extent(ti) FROM tbl_ttext_discseq;
+SELECT extent(temp) FROM tbl_ttext_discseq;
                             extent                            
 --------------------------------------------------------------
  [Thu Jan 04 23:52:00 2001 PST, Sun Dec 30 05:11:00 2001 PST]
 (1 row)
 
-SELECT extent(ti) FROM tbl_tint_discseq;
+SELECT extent(temp) FROM tbl_tint_discseq;
                                       extent                                       
 -----------------------------------------------------------------------------------
  TBOXINT XT([1, 100),[Sun Dec 31 16:34:00 2000 PST, Sun Dec 30 06:46:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ti), 6) FROM tbl_tfloat_discseq;
+SELECT round(extent(temp), 6) FROM tbl_tfloat_discseq;
                                               round                                              
 -------------------------------------------------------------------------------------------------
  TBOXFLOAT XT([1.24961, 99.966431],[Fri Jan 05 00:30:00 2001 PST, Sat Dec 22 07:00:00 2001 PST])
 (1 row)
 
-SELECT extent(seq) FROM tbl_tbool_seq;
+SELECT extent(temp) FROM tbl_tbool_contseq;
                             extent                            
 --------------------------------------------------------------
  [Thu Jan 04 01:35:00 2001 PST, Fri Dec 28 03:39:00 2001 PST]
 (1 row)
 
-SELECT extent(seq) FROM tbl_ttext_seq;
+SELECT extent(temp) FROM tbl_ttext_contseq;
                             extent                            
 --------------------------------------------------------------
  (Mon Jan 01 05:49:00 2001 PST, Fri Dec 28 22:51:00 2001 PST]
 (1 row)
 
-SELECT extent(seq) FROM tbl_tint_seq;
+SELECT extent(temp) FROM tbl_tint_contseq;
                                       extent                                       
 -----------------------------------------------------------------------------------
  TBOXINT XT([1, 100),(Sun Jan 07 01:24:00 2001 PST, Sat Dec 29 12:09:00 2001 PST])
 (1 row)
 
-SELECT round(extent(seq), 6) FROM tbl_tfloat_seq;
+SELECT round(extent(temp), 6) FROM tbl_tfloat_contseq;
                                               round                                               
 --------------------------------------------------------------------------------------------------
  TBOXFLOAT XT([1.582362, 99.917602],[Mon Jan 01 14:27:00 2001 PST, Sun Dec 30 03:15:00 2001 PST])
 (1 row)
 
-SELECT extent(ss) FROM tbl_tbool_seqset;
+SELECT extent(temp) FROM tbl_tbool_seqset;
                             extent                            
 --------------------------------------------------------------
  (Fri Jan 12 20:54:00 2001 PST, Sun Dec 23 04:41:00 2001 PST)
 (1 row)
 
-SELECT extent(ss) FROM tbl_ttext_seqset;
+SELECT extent(temp) FROM tbl_ttext_seqset;
                             extent                            
 --------------------------------------------------------------
  [Fri Jan 05 04:16:00 2001 PST, Mon Dec 24 04:01:00 2001 PST)
 (1 row)
 
-SELECT extent(ss) FROM tbl_tint_seqset;
+SELECT extent(temp) FROM tbl_tint_seqset;
                                       extent                                       
 -----------------------------------------------------------------------------------
  TBOXINT XT([1, 100),[Mon Jan 01 00:20:00 2001 PST, Tue Dec 25 15:26:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ss), 6) FROM tbl_tfloat_seqset;
+SELECT round(extent(temp), 6) FROM tbl_tfloat_seqset;
                                               round                                               
 --------------------------------------------------------------------------------------------------
  TBOXFLOAT XT([1.029263, 99.938934],(Tue Jan 02 10:42:00 2001 PST, Fri Dec 28 19:07:00 2001 PST])
@@ -125,103 +125,103 @@ SELECT round(extent(temp), 6) FROM tbl_tfloat;
 -------------------------------------------------------------------------------
 -- TemporalInst aggregate functions
 -------------------------------------------------------------------------------
-SELECT numInstants(tand(inst)) FROM tbl_tbool_inst;
+SELECT numInstants(tand(temp)) FROM tbl_tbool_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tor(inst)) FROM tbl_tbool_inst;
+SELECT numInstants(tor(temp)) FROM tbl_tbool_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tcount(inst)) FROM tbl_tbool_inst;
+SELECT numInstants(tcount(temp)) FROM tbl_tbool_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tmin(inst)) FROM tbl_tint_inst;
+SELECT numInstants(tmin(temp)) FROM tbl_tint_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tmax(inst)) FROM tbl_tint_inst;
+SELECT numInstants(tmax(temp)) FROM tbl_tint_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tcount(inst)) FROM tbl_tint_inst;
+SELECT numInstants(tcount(temp)) FROM tbl_tint_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tsum(inst)) FROM tbl_tint_inst;
+SELECT numInstants(tsum(temp)) FROM tbl_tint_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tavg(inst)) FROM tbl_tint_inst;
+SELECT numInstants(tavg(temp)) FROM tbl_tint_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tmin(inst)) FROM tbl_tfloat_inst;
+SELECT numInstants(tmin(temp)) FROM tbl_tfloat_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tmax(inst)) FROM tbl_tfloat_inst;
+SELECT numInstants(tmax(temp)) FROM tbl_tfloat_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tcount(inst)) FROM tbl_tfloat_inst;
+SELECT numInstants(tcount(temp)) FROM tbl_tfloat_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tsum(inst)) FROM tbl_tfloat_inst;
+SELECT numInstants(tsum(temp)) FROM tbl_tfloat_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tavg(inst)) FROM tbl_tfloat_inst;
+SELECT numInstants(tavg(temp)) FROM tbl_tfloat_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tmin(inst)) FROM tbl_ttext_inst;
+SELECT numInstants(tmin(temp)) FROM tbl_ttext_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tmax(inst)) FROM tbl_ttext_inst;
+SELECT numInstants(tmax(temp)) FROM tbl_ttext_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT numInstants(tcount(inst)) FROM tbl_ttext_inst;
+SELECT numInstants(tcount(temp)) FROM tbl_ttext_inst;
  numinstants 
 -------------
           97
 (1 row)
 
-SELECT k%10, numInstants(tand(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tand(temp)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -236,7 +236,7 @@ SELECT k%10, numInstants(tand(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY 
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tor(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tor(temp)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -251,7 +251,7 @@ SELECT k%10, numInstants(tor(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tcount(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(temp)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -266,7 +266,7 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER B
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tmin(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(temp)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -281,7 +281,7 @@ SELECT k%10, numInstants(tmin(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tmax(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(temp)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -296,7 +296,7 @@ SELECT k%10, numInstants(tmax(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tcount(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(temp)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -311,7 +311,7 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tsum(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tsum(temp)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -326,7 +326,7 @@ SELECT k%10, numInstants(tsum(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tavg(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tavg(temp)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -341,7 +341,7 @@ SELECT k%10, numInstants(tavg(inst)) FROM tbl_tint_inst GROUP BY k%10 ORDER BY k
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tmin(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(temp)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -356,7 +356,7 @@ SELECT k%10, numInstants(tmin(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tmax(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(temp)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -371,7 +371,7 @@ SELECT k%10, numInstants(tmax(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tcount(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(temp)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -386,7 +386,7 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER 
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tsum(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tsum(temp)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -401,7 +401,7 @@ SELECT k%10, numInstants(tsum(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tavg(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tavg(temp)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -416,7 +416,7 @@ SELECT k%10, numInstants(tavg(inst)) FROM tbl_tfloat_inst GROUP BY k%10 ORDER BY
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tmin(inst)) FROM tbl_ttext_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(temp)) FROM tbl_ttext_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -431,7 +431,7 @@ SELECT k%10, numInstants(tmin(inst)) FROM tbl_ttext_inst GROUP BY k%10 ORDER BY 
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tmax(inst)) FROM tbl_ttext_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(temp)) FROM tbl_ttext_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -446,7 +446,7 @@ SELECT k%10, numInstants(tmax(inst)) FROM tbl_ttext_inst GROUP BY k%10 ORDER BY 
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tcount(inst)) FROM tbl_ttext_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(temp)) FROM tbl_ttext_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -464,103 +464,103 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_ttext_inst GROUP BY k%10 ORDER B
 -------------------------------------------------------------------------------
 -- Temporal discrete sequence aggregate functions
 -------------------------------------------------------------------------------
-SELECT numInstants(tand(ti)) FROM tbl_tbool_discseq;
+SELECT numInstants(tand(temp)) FROM tbl_tbool_discseq;
  numinstants 
 -------------
          475
 (1 row)
 
-SELECT numInstants(tor(ti)) FROM tbl_tbool_discseq;
+SELECT numInstants(tor(temp)) FROM tbl_tbool_discseq;
  numinstants 
 -------------
          475
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tbool_discseq;
+SELECT numInstants(tcount(temp)) FROM tbl_tbool_discseq;
  numinstants 
 -------------
          475
 (1 row)
 
-SELECT numInstants(tmin(ti)) FROM tbl_tint_discseq;
+SELECT numInstants(tmin(temp)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tmax(ti)) FROM tbl_tint_discseq;
+SELECT numInstants(tmax(temp)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tint_discseq;
+SELECT numInstants(tcount(temp)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tsum(ti)) FROM tbl_tint_discseq;
+SELECT numInstants(tsum(temp)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tavg(ti)) FROM tbl_tint_discseq;
+SELECT numInstants(tavg(temp)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tmin(ti)) FROM tbl_tfloat_discseq;
+SELECT numInstants(tmin(temp)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tmax(ti)) FROM tbl_tfloat_discseq;
+SELECT numInstants(tmax(temp)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tfloat_discseq;
+SELECT numInstants(tcount(temp)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tsum(ti)) FROM tbl_tfloat_discseq;
+SELECT numInstants(tsum(temp)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tavg(ti)) FROM tbl_tfloat_discseq;
+SELECT numInstants(tavg(temp)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tmin(ti)) FROM tbl_ttext_discseq;
+SELECT numInstants(tmin(temp)) FROM tbl_ttext_discseq;
  numinstants 
 -------------
          457
 (1 row)
 
-SELECT numInstants(tmax(ti)) FROM tbl_ttext_discseq;
+SELECT numInstants(tmax(temp)) FROM tbl_ttext_discseq;
  numinstants 
 -------------
          457
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_ttext_discseq;
+SELECT numInstants(tcount(temp)) FROM tbl_ttext_discseq;
  numinstants 
 -------------
          457
 (1 row)
 
-SELECT k%10, numInstants(tand(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tand(temp)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          60
@@ -575,7 +575,7 @@ SELECT k%10, numInstants(tand(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY
         9 |          40
 (10 rows)
 
-SELECT k%10, numInstants(tor(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tor(temp)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          60
@@ -590,7 +590,7 @@ SELECT k%10, numInstants(tor(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY 
         9 |          40
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(temp)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          60
@@ -605,7 +605,7 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER 
         9 |          40
 (10 rows)
 
-SELECT k%10, numInstants(tmin(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(temp)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -620,7 +620,7 @@ SELECT k%10, numInstants(tmin(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY 
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tmax(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(temp)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -635,7 +635,7 @@ SELECT k%10, numInstants(tmax(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY 
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(temp)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -650,7 +650,7 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER B
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tsum(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tsum(temp)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -665,7 +665,7 @@ SELECT k%10, numInstants(tsum(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY 
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tavg(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tavg(temp)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -680,7 +680,7 @@ SELECT k%10, numInstants(tavg(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY 
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tmin(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(temp)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -695,7 +695,7 @@ SELECT k%10, numInstants(tmin(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER B
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tmax(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(temp)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -710,7 +710,7 @@ SELECT k%10, numInstants(tmax(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER B
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(temp)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -725,7 +725,7 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tsum(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tsum(temp)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -740,7 +740,7 @@ SELECT k%10, numInstants(tsum(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER B
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tavg(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tavg(temp)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -755,7 +755,7 @@ SELECT k%10, numInstants(tavg(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER B
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tmin(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(temp)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          38
@@ -770,7 +770,7 @@ SELECT k%10, numInstants(tmin(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY
         9 |          47
 (10 rows)
 
-SELECT k%10, numInstants(tmax(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(temp)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          38
@@ -785,7 +785,7 @@ SELECT k%10, numInstants(tmax(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY
         9 |          47
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(temp)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          38
@@ -803,103 +803,103 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER 
 -------------------------------------------------------------------------------
 -- Temporal continuous sequence aggregate functions
 -------------------------------------------------------------------------------
-SELECT numSequences(tand(seq)) FROM tbl_tbool_seq;
+SELECT numSequences(tand(temp)) FROM tbl_tbool_contseq;
  numsequences 
 --------------
            95
 (1 row)
 
-SELECT numSequences(tor(seq)) FROM tbl_tbool_seq;
+SELECT numSequences(tor(temp)) FROM tbl_tbool_contseq;
  numsequences 
 --------------
            96
 (1 row)
 
-SELECT numSequences(tcount(seq)) FROM tbl_tbool_seq;
+SELECT numSequences(tcount(temp)) FROM tbl_tbool_contseq;
  numsequences 
 --------------
            98
 (1 row)
 
-SELECT numSequences(tmin(seq)) FROM tbl_tint_seq;
+SELECT numSequences(tmin(temp)) FROM tbl_tint_contseq;
  numsequences 
 --------------
            97
 (1 row)
 
-SELECT numSequences(tmax(seq)) FROM tbl_tint_seq;
+SELECT numSequences(tmax(temp)) FROM tbl_tint_contseq;
  numsequences 
 --------------
            96
 (1 row)
 
-SELECT numSequences(tcount(seq)) FROM tbl_tint_seq;
+SELECT numSequences(tcount(temp)) FROM tbl_tint_contseq;
  numsequences 
 --------------
            97
 (1 row)
 
-SELECT numSequences(tsum(seq)) FROM tbl_tint_seq;
+SELECT numSequences(tsum(temp)) FROM tbl_tint_contseq;
  numsequences 
 --------------
            97
 (1 row)
 
-SELECT numSequences(tavg(seq)) FROM tbl_tint_seq;
+SELECT numSequences(tavg(temp)) FROM tbl_tint_contseq;
  numsequences 
 --------------
            97
 (1 row)
 
-SELECT numSequences(tmin(seq)) FROM tbl_tfloat_seq;
+SELECT numSequences(tmin(temp)) FROM tbl_tfloat_contseq;
  numsequences 
 --------------
            98
 (1 row)
 
-SELECT numSequences(tmax(seq)) FROM tbl_tfloat_seq;
+SELECT numSequences(tmax(temp)) FROM tbl_tfloat_contseq;
  numsequences 
 --------------
            96
 (1 row)
 
-SELECT numSequences(tcount(seq)) FROM tbl_tfloat_seq;
+SELECT numSequences(tcount(temp)) FROM tbl_tfloat_contseq;
  numsequences 
 --------------
            98
 (1 row)
 
-SELECT numSequences(tsum(seq)) FROM tbl_tfloat_seq;
+SELECT numSequences(tsum(temp)) FROM tbl_tfloat_contseq;
  numsequences 
 --------------
            99
 (1 row)
 
-SELECT numSequences(tavg(seq)) FROM tbl_tfloat_seq;
+SELECT numSequences(tavg(temp)) FROM tbl_tfloat_contseq;
  numsequences 
 --------------
            99
 (1 row)
 
-SELECT numSequences(tmin(seq)) FROM tbl_ttext_seq;
+SELECT numSequences(tmin(temp)) FROM tbl_ttext_contseq;
  numsequences 
 --------------
            95
 (1 row)
 
-SELECT numSequences(tmax(seq)) FROM tbl_ttext_seq;
+SELECT numSequences(tmax(temp)) FROM tbl_ttext_contseq;
  numsequences 
 --------------
            95
 (1 row)
 
-SELECT numSequences(tcount(seq)) FROM tbl_ttext_seq;
+SELECT numSequences(tcount(temp)) FROM tbl_ttext_contseq;
  numsequences 
 --------------
            95
 (1 row)
 
-SELECT k%10, numSequences(tand(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tand(temp)) FROM tbl_tbool_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -914,7 +914,7 @@ SELECT k%10, numSequences(tand(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY k
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tor(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tor(temp)) FROM tbl_tbool_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -929,7 +929,7 @@ SELECT k%10, numSequences(tor(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY k%
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tcount(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(temp)) FROM tbl_tbool_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -944,7 +944,7 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tmin(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmin(temp)) FROM tbl_tint_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -959,7 +959,7 @@ SELECT k%10, numSequences(tmin(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tmax(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmax(temp)) FROM tbl_tint_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -974,7 +974,7 @@ SELECT k%10, numSequences(tmax(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tcount(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(temp)) FROM tbl_tint_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -989,7 +989,7 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY 
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tsum(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tsum(temp)) FROM tbl_tint_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1004,7 +1004,7 @@ SELECT k%10, numSequences(tsum(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tavg(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tavg(temp)) FROM tbl_tint_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1019,7 +1019,7 @@ SELECT k%10, numSequences(tavg(seq)) FROM tbl_tint_seq GROUP BY k%10 ORDER BY k%
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tmin(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmin(temp)) FROM tbl_tfloat_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1034,7 +1034,7 @@ SELECT k%10, numSequences(tmin(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY 
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tmax(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmax(temp)) FROM tbl_tfloat_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1049,7 +1049,7 @@ SELECT k%10, numSequences(tmax(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY 
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tcount(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(temp)) FROM tbl_tfloat_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1064,7 +1064,7 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER B
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tsum(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tsum(temp)) FROM tbl_tfloat_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1079,7 +1079,7 @@ SELECT k%10, numSequences(tsum(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY 
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tavg(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tavg(temp)) FROM tbl_tfloat_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1094,7 +1094,7 @@ SELECT k%10, numSequences(tavg(seq)) FROM tbl_tfloat_seq GROUP BY k%10 ORDER BY 
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tmin(seq)) FROM tbl_ttext_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmin(temp)) FROM tbl_ttext_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1109,7 +1109,7 @@ SELECT k%10, numSequences(tmin(seq)) FROM tbl_ttext_seq GROUP BY k%10 ORDER BY k
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tmax(seq)) FROM tbl_ttext_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmax(temp)) FROM tbl_ttext_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1124,7 +1124,7 @@ SELECT k%10, numSequences(tmax(seq)) FROM tbl_ttext_seq GROUP BY k%10 ORDER BY k
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tcount(seq)) FROM tbl_ttext_seq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(temp)) FROM tbl_ttext_contseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -1142,103 +1142,103 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_ttext_seq GROUP BY k%10 ORDER BY
 -------------------------------------------------------------------------------
 -- Temporal sequence set aggregate functions
 -------------------------------------------------------------------------------
-SELECT numSequences(tand(ss)) FROM tbl_tbool_seqset;
+SELECT numSequences(tand(temp)) FROM tbl_tbool_seqset;
  numsequences 
 --------------
           486
 (1 row)
 
-SELECT numSequences(tor(ss)) FROM tbl_tbool_seqset;
+SELECT numSequences(tor(temp)) FROM tbl_tbool_seqset;
  numsequences 
 --------------
           482
 (1 row)
 
-SELECT numSequences(tcount(ss)) FROM tbl_tbool_seqset;
+SELECT numSequences(tcount(temp)) FROM tbl_tbool_seqset;
  numsequences 
 --------------
           499
 (1 row)
 
-SELECT numSequences(tmin(ss)) FROM tbl_tint_seqset;
+SELECT numSequences(tmin(temp)) FROM tbl_tint_seqset;
  numsequences 
 --------------
           451
 (1 row)
 
-SELECT numSequences(tmax(ss)) FROM tbl_tint_seqset;
+SELECT numSequences(tmax(temp)) FROM tbl_tint_seqset;
  numsequences 
 --------------
           446
 (1 row)
 
-SELECT numSequences(tcount(ss)) FROM tbl_tint_seqset;
+SELECT numSequences(tcount(temp)) FROM tbl_tint_seqset;
  numsequences 
 --------------
           453
 (1 row)
 
-SELECT numSequences(tsum(ss)) FROM tbl_tint_seqset;
+SELECT numSequences(tsum(temp)) FROM tbl_tint_seqset;
  numsequences 
 --------------
           453
 (1 row)
 
-SELECT numSequences(tavg(ss)) FROM tbl_tint_seqset;
+SELECT numSequences(tavg(temp)) FROM tbl_tint_seqset;
  numsequences 
 --------------
           453
 (1 row)
 
-SELECT numSequences(tmin(ss)) FROM tbl_tfloat_seqset;
+SELECT numSequences(tmin(temp)) FROM tbl_tfloat_seqset;
  numsequences 
 --------------
           488
 (1 row)
 
-SELECT numSequences(tmax(ss)) FROM tbl_tfloat_seqset;
+SELECT numSequences(tmax(temp)) FROM tbl_tfloat_seqset;
  numsequences 
 --------------
           498
 (1 row)
 
-SELECT numSequences(tcount(ss)) FROM tbl_tfloat_seqset;
+SELECT numSequences(tcount(temp)) FROM tbl_tfloat_seqset;
  numsequences 
 --------------
           495
 (1 row)
 
-SELECT numSequences(tsum(ss)) FROM tbl_tfloat_seqset;
+SELECT numSequences(tsum(temp)) FROM tbl_tfloat_seqset;
  numsequences 
 --------------
           522
 (1 row)
 
-SELECT numSequences(tavg(ss)) FROM tbl_tfloat_seqset;
+SELECT numSequences(tavg(temp)) FROM tbl_tfloat_seqset;
  numsequences 
 --------------
           522
 (1 row)
 
-SELECT numSequences(tmin(ss)) FROM tbl_ttext_seqset;
+SELECT numSequences(tmin(temp)) FROM tbl_ttext_seqset;
  numsequences 
 --------------
           464
 (1 row)
 
-SELECT numSequences(tmax(ss)) FROM tbl_ttext_seqset;
+SELECT numSequences(tmax(temp)) FROM tbl_ttext_seqset;
  numsequences 
 --------------
           461
 (1 row)
 
-SELECT numSequences(tcount(ss)) FROM tbl_ttext_seqset;
+SELECT numSequences(tcount(temp)) FROM tbl_ttext_seqset;
  numsequences 
 --------------
           479
 (1 row)
 
-SELECT k%10, numSequences(tand(ss)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tand(temp)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           49
@@ -1253,7 +1253,7 @@ SELECT k%10, numSequences(tand(ss)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER BY
         9 |           35
 (10 rows)
 
-SELECT k%10, numSequences(tor(ss)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tor(temp)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           49
@@ -1268,7 +1268,7 @@ SELECT k%10, numSequences(tor(ss)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER BY 
         9 |           35
 (10 rows)
 
-SELECT k%10, numSequences(tcount(ss)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(temp)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           49
@@ -1283,7 +1283,7 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tbool_seqset GROUP BY k%10 ORDER 
         9 |           35
 (10 rows)
 
-SELECT k%10, numSequences(tmin(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmin(temp)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1298,7 +1298,7 @@ SELECT k%10, numSequences(tmin(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY 
         9 |           43
 (10 rows)
 
-SELECT k%10, numSequences(tmax(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmax(temp)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1313,7 +1313,7 @@ SELECT k%10, numSequences(tmax(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY 
         9 |           43
 (10 rows)
 
-SELECT k%10, numSequences(tcount(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(temp)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1328,7 +1328,7 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER B
         9 |           43
 (10 rows)
 
-SELECT k%10, numSequences(tsum(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tsum(temp)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1343,7 +1343,7 @@ SELECT k%10, numSequences(tsum(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY 
         9 |           43
 (10 rows)
 
-SELECT k%10, numSequences(tavg(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tavg(temp)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1358,7 +1358,7 @@ SELECT k%10, numSequences(tavg(ss)) FROM tbl_tint_seqset GROUP BY k%10 ORDER BY 
         9 |           43
 (10 rows)
 
-SELECT k%10, numSequences(tmin(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmin(temp)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1373,7 +1373,7 @@ SELECT k%10, numSequences(tmin(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER B
         9 |           62
 (10 rows)
 
-SELECT k%10, numSequences(tmax(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmax(temp)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1388,7 +1388,7 @@ SELECT k%10, numSequences(tmax(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER B
         9 |           62
 (10 rows)
 
-SELECT k%10, numSequences(tcount(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(temp)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1403,7 +1403,7 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER
         9 |           62
 (10 rows)
 
-SELECT k%10, numSequences(tsum(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tsum(temp)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1418,7 +1418,7 @@ SELECT k%10, numSequences(tsum(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER B
         9 |           62
 (10 rows)
 
-SELECT k%10, numSequences(tavg(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tavg(temp)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           45
@@ -1433,7 +1433,7 @@ SELECT k%10, numSequences(tavg(ss)) FROM tbl_tfloat_seqset GROUP BY k%10 ORDER B
         9 |           62
 (10 rows)
 
-SELECT k%10, numSequences(tmin(ss)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmin(temp)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           43
@@ -1448,7 +1448,7 @@ SELECT k%10, numSequences(tmin(ss)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER BY
         9 |           56
 (10 rows)
 
-SELECT k%10, numSequences(tmax(ss)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tmax(temp)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           43
@@ -1463,7 +1463,7 @@ SELECT k%10, numSequences(tmax(ss)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER BY
         9 |           56
 (10 rows)
 
-SELECT k%10, numSequences(tcount(ss)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(temp)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           43
@@ -1480,10 +1480,10 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER 
 
 -------------------------------------------------------------------------------
 WITH Temp AS (
-  SELECT DISTINCT ON (getTimestamp(inst)) inst
+  SELECT DISTINCT ON (getTimestamp(temp)) temp
   FROM tbl_tint_inst
-  ORDER BY getTimestamp(inst) )
-SELECT numInstants(appendInstant(inst)) FROM temp;
+  ORDER BY getTimestamp(temp) )
+SELECT numInstants(appendInstant(temp)) FROM temp;
  numinstants 
 -------------
           96

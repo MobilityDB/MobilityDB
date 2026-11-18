@@ -13,31 +13,31 @@ DROP TABLE tbl_tjsonb_tmp;
 -- Transformation functions
 ------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tjsonbInst(inst)) FROM tbl_tjsonb_inst;
-SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tjsonb_inst;
-SELECT DISTINCT tempSubtype(tjsonbSeq(inst)) FROM tbl_tjsonb_inst;
-SELECT DISTINCT tempSubtype(tjsonbSeqSet(inst)) FROM tbl_tjsonb_inst;
+SELECT DISTINCT tempSubtype(tjsonbInst(temp)) FROM tbl_tjsonb_inst;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tjsonb_inst;
+SELECT DISTINCT tempSubtype(tjsonbSeq(temp)) FROM tbl_tjsonb_inst;
+SELECT DISTINCT tempSubtype(tjsonbSeqSet(temp)) FROM tbl_tjsonb_inst;
 
 ------------------------------------------------------------------------------/
 
-SELECT DISTINCT tempSubtype(tjsonbInst(seq)) FROM tbl_tjsonb_discseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tjsonb_discseq;
-SELECT DISTINCT tempSubtype(tjsonbSeq(seq)) FROM tbl_tjsonb_discseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tjsonbSeqSet(seq)) FROM tbl_tjsonb_discseq;
+SELECT DISTINCT tempSubtype(tjsonbInst(temp)) FROM tbl_tjsonb_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tjsonb_discseq;
+SELECT DISTINCT tempSubtype(tjsonbSeq(temp)) FROM tbl_tjsonb_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tjsonbSeqSet(temp)) FROM tbl_tjsonb_discseq;
 
 ------------------------------------------------------------------------------/
 
-SELECT DISTINCT tempSubtype(tjsonbInst(seq)) FROM tbl_tjsonb_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tjsonb_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tjsonbSeq(seq)) FROM tbl_tjsonb_seq;
-SELECT DISTINCT tempSubtype(tjsonbSeqSet(seq)) FROM tbl_tjsonb_seq;
+SELECT DISTINCT tempSubtype(tjsonbInst(temp)) FROM tbl_tjsonb_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tjsonb_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tjsonbSeq(temp)) FROM tbl_tjsonb_contseq;
+SELECT DISTINCT tempSubtype(tjsonbSeqSet(temp)) FROM tbl_tjsonb_contseq;
 
 ------------------------------------------------------------------------------/
 
-SELECT DISTINCT tempSubtype(tjsonbInst(ss)) FROM tbl_tjsonb_seqset WHERE numInstants(ss) = 1;
-SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tjsonb_seqset WHERE duration(ss) = '00:00:00';
-SELECT DISTINCT tempSubtype(tjsonbSeq(ss)) FROM tbl_tjsonb_seqset WHERE numSequences(ss) = 1;
-SELECT DISTINCT tempSubtype(tjsonbSeqSet(ss)) FROM tbl_tjsonb_seqset;
+SELECT DISTINCT tempSubtype(tjsonbInst(temp)) FROM tbl_tjsonb_seqset WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tjsonb_seqset WHERE duration(temp) = '00:00:00';
+SELECT DISTINCT tempSubtype(tjsonbSeq(temp)) FROM tbl_tjsonb_seqset WHERE numSequences(temp) = 1;
+SELECT DISTINCT tempSubtype(tjsonbSeqSet(temp)) FROM tbl_tjsonb_seqset;
 
 ------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ SELECT MAX(memSize(temp)) FROM tbl_tjsonb;
 
 SELECT MAX(lower(timeSpan(temp))) FROM tbl_tjsonb;
 
-SELECT MAX(length(getValue(inst)::text)) FROM tbl_tjsonb_inst;
+SELECT MAX(length(getValue(temp)::text)) FROM tbl_tjsonb_inst;
 
 SELECT MAX(numValues(getValues(temp))) FROM tbl_tjsonb;
 
@@ -64,7 +64,7 @@ SELECT MAX(length(endValue(temp)::text)) FROM tbl_tjsonb;
 
 SELECT MAX(length(valueN(temp, 1)::text)) FROM tbl_tjsonb;
 
-SELECT MAX(getTimestamp(inst)) FROM tbl_tjsonb_inst;
+SELECT MAX(getTimestamp(temp)) FROM tbl_tjsonb_inst;
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tjsonb;
 
@@ -72,25 +72,25 @@ SELECT MAX(duration(timeSpan(temp))) FROM tbl_tjsonb;
 
 SELECT MAX(duration(temp)) FROM tbl_tjsonb;
 
-SELECT MAX(numSequences(seq)) FROM tbl_tjsonb_seq;
+SELECT MAX(numSequences(temp)) FROM tbl_tjsonb_contseq;
 
-SELECT MAX(duration(startSequence(seq))) FROM tbl_tjsonb_seq;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tjsonb_contseq;
 
-SELECT MAX(duration(endSequence(seq))) FROM tbl_tjsonb_seq;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tjsonb_contseq;
 
-SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tjsonb_seq;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tjsonb_contseq;
 
-SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tjsonb_seq;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tjsonb_contseq;
 
-SELECT MAX(numSequences(ss)) FROM tbl_tjsonb_seqset;
+SELECT MAX(numSequences(temp)) FROM tbl_tjsonb_seqset;
 
-SELECT MAX(duration(startSequence(ss))) FROM tbl_tjsonb_seqset;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tjsonb_seqset;
 
-SELECT MAX(duration(endSequence(ss))) FROM tbl_tjsonb_seqset;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tjsonb_seqset;
 
-SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tjsonb_seqset;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tjsonb_seqset;
 
-SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tjsonb_seqset;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tjsonb_seqset;
 
 SELECT MAX(numInstants(temp)) FROM tbl_tjsonb;
 
@@ -125,24 +125,24 @@ SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tjsonb, tbl_interval;
 -------------------------------------------------------------------------------
 -- Granularity modification with tsample
 
-SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tjsonb_inst;
-SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tjsonb_discseq;
-SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tjsonb_seq;
-SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tjsonb_seqset;
+SELECT MAX(startTimestamp(tsample(temp, '15 minutes'))) FROM tbl_tjsonb_inst;
+SELECT MAX(startTimestamp(tsample(temp, '15 minutes'))) FROM tbl_tjsonb_discseq;
+SELECT MAX(startTimestamp(tsample(temp, '15 minutes'))) FROM tbl_tjsonb_contseq;
+SELECT MAX(startTimestamp(tsample(temp, '15 minutes'))) FROM tbl_tjsonb_seqset;
 
-SELECT MAX(numInstants(tsample(inst, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_inst;
-SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_discseq;
-SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_seq;
-SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_seqset;
+SELECT MAX(numInstants(tsample(temp, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_inst;
+SELECT MAX(numInstants(tsample(temp, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_discseq;
+SELECT MAX(numInstants(tsample(temp, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_contseq;
+SELECT MAX(numInstants(tsample(temp, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_seqset;
 
 -------------------------------------------------------------------------------
 -- Stop function
 
--- SELECT MAX(numInstants(stops(seq))) FROM tbl_tjsonb_seq;
+-- SELECT MAX(numInstants(stops(temp))) FROM tbl_tjsonb_contseq;
 
--- SELECT MAX(numInstants(stops(seq, '1 min'))) FROM tbl_tjsonb_seq;
+-- SELECT MAX(numInstants(stops(temp, '1 min'))) FROM tbl_tjsonb_contseq;
 
--- SELECT MAX(numInstants(stops(ss, '1 min'))) FROM tbl_tjsonb_seqset;
+-- SELECT MAX(numInstants(stops(temp, '1 min'))) FROM tbl_tjsonb_seqset;
 
 -------------------------------------------------------------------------------
 -- Ever/always comparison functions

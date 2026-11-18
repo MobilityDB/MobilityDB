@@ -127,7 +127,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   MobilityDB #3750 (`c23329c9ff`); the count of the set values accessors, MERGED as
   MobilityDB #3752 (`a01bc90d2b`); the set of `tstzset_tprecision`, MERGED as MobilityDB #3753
   (`322ea2ed18`); the result of `bearing_point_point`, MERGED as MobilityDB #3754
-  (`4479b7c334`).
+  (`4479b7c334`). The boolean functions that refuse an argument return `false`, the 25 number
+  box operators of `temporal_boxops.c` and `ensure_valid_tinstant_value` among them, OPEN as
+  MobilityDB #3809 (branch `meos/bool-functions-return-false`), which rewrites 29c346279f (MobilityDB #3348) by the
+  owner's ruling of 2026-11-18 ("approve the rewrite"): the 25 `return NULL;` lines that commit
+  wrote become `return false;`, the same machine code. These operators answer a boolean, so a
+  refused argument answers false with `meos_errno` set, while the three-valued predicates answer
+  an integer whose -1 is the error.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
@@ -185,8 +191,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `get_srs_cache_by_srid`) and the naming `Temporal_as_mfjson` did with it, which `temporal_as_mfjson`
   answers from the cache of MEOS; branch `meos/caches-serve-every-build` rewrites `e63fc3f7d8` there,
   the note of `temporal_as_mfjson` in `meos/src/temporal/type_out.c` that `asMFJSON` names the system
-  from the table before calling it. Head `d373f66fc8` on master `eaffbb532e` holds strict and
-  cppcheck by patch id `8d625e6f62` and valgrind.
+  from the table before calling it. The unknown SRID answers `Cannot find SRID (<srid>) in
+  spatial_ref_sys` in both builds. Strict, cppcheck and valgrind by patch id `8d625e6f62`, the CGAL
+  oracle merc (3000 of 3000) and speed (relate at parity), Windows waived. MERGED as MobilityDB
+  #3804 (`954b29392e`).
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The

@@ -27,35 +27,35 @@ SELECT COUNT(*) FROM tbl_tpcpatch
 -- pcid uniformity
 -------------------------------------------------------------------------------
 
-SELECT bool_and(pcid(inst) = 1) FROM tbl_tpcpatch_inst;
-SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpatch_discseq;
-SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpatch_seq;
-SELECT bool_and(pcid(ss)   = 1) FROM tbl_tpcpatch_seqset;
+SELECT bool_and(pcid(temp) = 1) FROM tbl_tpcpatch_inst;
+SELECT bool_and(pcid(temp)  = 1) FROM tbl_tpcpatch_discseq;
+SELECT bool_and(pcid(temp)  = 1) FROM tbl_tpcpatch_contseq;
+SELECT bool_and(pcid(temp)   = 1) FROM tbl_tpcpatch_seqset;
 
 -------------------------------------------------------------------------------
 -- Subtype invariants
 -------------------------------------------------------------------------------
 
-SELECT bool_and(numInstants(inst) = 1) FROM tbl_tpcpatch_inst;
-SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpatch_discseq;
-SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpatch_seq;
-SELECT bool_and(numInstants(ss)  BETWEEN 1 AND 100) FROM tbl_tpcpatch_seqset;
+SELECT bool_and(numInstants(temp) = 1) FROM tbl_tpcpatch_inst;
+SELECT bool_and(numInstants(temp) BETWEEN 1 AND 10) FROM tbl_tpcpatch_discseq;
+SELECT bool_and(numInstants(temp) BETWEEN 1 AND 10) FROM tbl_tpcpatch_contseq;
+SELECT bool_and(numInstants(temp)  BETWEEN 1 AND 100) FROM tbl_tpcpatch_seqset;
 
 -------------------------------------------------------------------------------
 -- Per-instant patch metadata
 -------------------------------------------------------------------------------
 
-SELECT bool_and(startNumPoints(inst) BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
-SELECT bool_and(endNumPoints(inst)   BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
+SELECT bool_and(startNumPoints(temp) BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
+SELECT bool_and(endNumPoints(temp)   BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
 
 -------------------------------------------------------------------------------
 -- numPoints — total across every instant — and points(...) SRF
---   numPoints(inst) is just startNumPoints(inst) when inst is a TInstant.
+--   numPoints(temp) is just startNumPoints(temp) when temp is a TInstant.
 --   For multi-instant subtypes the total must equal sum of per-instant
 --   counts, and the row count of points(...) must equal numPoints(...).
 -------------------------------------------------------------------------------
 
-SELECT bool_and(numPoints(inst) = startNumPoints(inst)) FROM tbl_tpcpatch_inst;
+SELECT bool_and(numPoints(temp) = startNumPoints(temp)) FROM tbl_tpcpatch_inst;
 SELECT bool_and(numPoints(temp) >= 1) FROM tbl_tpcpatch;
 SELECT bool_and(numPoints(temp) =
   (SELECT COUNT(*) FROM points(temp))) FROM tbl_tpcpatch;
@@ -142,9 +142,8 @@ WHERE atGeometry(temp,
 -- the operation.
 SELECT bool_and(numPoints(atGeometry(temp, g.poly)) <= numPoints(temp))
 FROM tbl_tpcpatch_inst,
-     LATERAL (SELECT inst AS temp) t,
      (SELECT geometry 'SRID=0;POLYGON((-50 -50, 50 -50, 50 50, -50 50, -50 -50))' AS poly) g
-WHERE atGeometry(t.temp, g.poly) IS NOT NULL;
+WHERE atGeometry(temp, g.poly) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Spatial relationships (per-point) — eIntersects(tpcpatch, geometry)

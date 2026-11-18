@@ -66,30 +66,30 @@ FROM generate_series(perc + 1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tjsonb_inst;
 CREATE TABLE tbl_tjsonb_inst AS
-SELECT k, random_tjsonb_inst(-100, 100, -100, 100, 1, 100, '2001-01-01', '2001-12-31', 3812) AS inst
+SELECT k, random_tjsonb_inst(-100, 100, -100, 100, 1, 100, '2001-01-01', '2001-12-31', 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tjsonb_discseq;
 CREATE TABLE tbl_tjsonb_discseq AS
-SELECT k, random_tjsonb_discseq(-100, 100, -100, 100, 1, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
+SELECT k, random_tjsonb_discseq(-100, 100, -100, 100, 1, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tjsonb_seq;
-CREATE TABLE tbl_tjsonb_seq AS
-SELECT k, random_tjsonb_seq(-100, 100, -100, 100, 1, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
+DROP TABLE IF EXISTS tbl_tjsonb_contseq;
+CREATE TABLE tbl_tjsonb_contseq AS
+SELECT k, random_tjsonb_seq(-100, 100, -100, 100, 1, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tjsonb_seqset;
 CREATE TABLE tbl_tjsonb_seqset AS
-SELECT k, random_tjsonb_seqset(-100, 100, -100, 100, 1, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS ss
+SELECT k, random_tjsonb_seqset(-100, 100, -100, 100, 1, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tjsonb;
 CREATE TABLE tbl_tjsonb(k, temp) AS
-(SELECT k, inst FROM tbl_tjsonb_inst ORDER BY k LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, seq FROM tbl_tjsonb_discseq ORDER BY k LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_tjsonb_seq ORDER BY k LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss FROM tbl_tjsonb_seqset ORDER BY k LIMIT size / 4);
+(SELECT k, temp FROM tbl_tjsonb_inst ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, temp FROM tbl_tjsonb_discseq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, temp FROM tbl_tjsonb_contseq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp FROM tbl_tjsonb_seqset ORDER BY k LIMIT size / 4);
 
 -------------------------------------------------------------------------------
 RETURN 'The End';
@@ -102,7 +102,7 @@ SELECT * FROM tbl_jsonb LIMIT 3;
 SELECT * FROM tbl_jsonbset LIMIT 3;
 SELECT * FROM tbl_tjsonb_inst LIMIT 3;
 SELECT * FROM tbl_tjsonb_discseq LIMIT 3;
-SELECT * FROM tbl_tjsonb_seq LIMIT 3;
+SELECT * FROM tbl_tjsonb_contseq LIMIT 3;
 SELECT * FROM tbl_tjsonb_seqset LIMIT 3;
 SELECT * FROM tbl_tjsonb LIMIT 3;
 */

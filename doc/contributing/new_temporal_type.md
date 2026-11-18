@@ -325,10 +325,10 @@ Every type must ship a setup script that creates the standard family of test tab
 |-------|------|--------|---------|
 | `tbl_foo` | 10 | `i foo` | scalar base-type |
 | `tbl_fooset` | 10 | `s fooset` | set of scalars |
-| `tbl_tfoo_inst` | 50 | `inst tfoo` | TINSTANT subtests |
-| `tbl_tfoo_discseq` | 50 | `ti tfoo` | discrete TSEQUENCE |
-| `tbl_tfoo_seq` | 50 | `seq tfoo` | step/linear TSEQUENCE |
-| `tbl_tfoo_seqset` | 50 | `ss tfoo` | TSEQUENCESET |
+| `tbl_tfoo_inst` | 50 | `temp tfoo` | TINSTANT subtests |
+| `tbl_tfoo_discseq` | 50 | `temp tfoo` | discrete TSEQUENCE |
+| `tbl_tfoo_contseq` | 50 | `temp tfoo` | step/linear TSEQUENCE |
+| `tbl_tfoo_seqset` | 50 | `temp tfoo` | TSEQUENCESET |
 | `tbl_tfoo` | 50 | `temp tfoo` | mixed subtypes (inst + seq) |
 | `tbl_tfoo_big` | 1000 | `temp tfoo` | index-operator tests |
 

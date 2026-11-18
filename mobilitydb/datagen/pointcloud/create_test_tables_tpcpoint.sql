@@ -102,33 +102,33 @@ FROM generate_series(1, size) k;
 DROP TABLE IF EXISTS tbl_tpcpoint_inst;
 CREATE TABLE tbl_tpcpoint_inst AS
 SELECT k, random_tpcpoint_inst(-100, 100, -100, 100, 0, 100,
-  '2001-01-01', '2001-12-31') AS inst
+  '2001-01-01', '2001-12-31') AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpcpoint_discseq;
 CREATE TABLE tbl_tpcpoint_discseq AS
 SELECT k, random_tpcpoint_discseq(-100, 100, -100, 100, 0, 100,
-  '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
+  '2001-01-01', '2001-12-31', 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tpcpoint_seq;
-CREATE TABLE tbl_tpcpoint_seq AS
+DROP TABLE IF EXISTS tbl_tpcpoint_contseq;
+CREATE TABLE tbl_tpcpoint_contseq AS
 SELECT k, random_tpcpoint_contseq(-100, 100, -100, 100, 0, 100,
-  '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
+  '2001-01-01', '2001-12-31', 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpcpoint_seqset;
 CREATE TABLE tbl_tpcpoint_seqset AS
 SELECT k, random_tpcpoint_seqset(-100, 100, -100, 100, 0, 100,
-  '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS ss
+  '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpcpoint;
 CREATE TABLE tbl_tpcpoint(k, temp) AS
-(SELECT k, inst FROM tbl_tpcpoint_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4,     seq FROM tbl_tpcpoint_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2,     seq FROM tbl_tpcpoint_seq     LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss  FROM tbl_tpcpoint_seqset  LIMIT size / 4);
+(SELECT k, temp FROM tbl_tpcpoint_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4,     temp FROM tbl_tpcpoint_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2,     temp FROM tbl_tpcpoint_contseq     LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp  FROM tbl_tpcpoint_seqset  LIMIT size / 4);
 
 ------------------------------------------------------------------------------
 -- Temporal pcpatch
@@ -137,33 +137,33 @@ CREATE TABLE tbl_tpcpoint(k, temp) AS
 DROP TABLE IF EXISTS tbl_tpcpatch_inst;
 CREATE TABLE tbl_tpcpatch_inst AS
 SELECT k, random_tpcpatch_inst(-100, 100, -100, 100, 0, 100,
-  '2001-01-01', '2001-12-31', 1, 10) AS inst
+  '2001-01-01', '2001-12-31', 1, 10) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpcpatch_discseq;
 CREATE TABLE tbl_tpcpatch_discseq AS
 SELECT k, random_tpcpatch_discseq(-100, 100, -100, 100, 0, 100,
-  '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS seq
+  '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tpcpatch_seq;
-CREATE TABLE tbl_tpcpatch_seq AS
+DROP TABLE IF EXISTS tbl_tpcpatch_contseq;
+CREATE TABLE tbl_tpcpatch_contseq AS
 SELECT k, random_tpcpatch_contseq(-100, 100, -100, 100, 0, 100,
-  '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS seq
+  '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpcpatch_seqset;
 CREATE TABLE tbl_tpcpatch_seqset AS
 SELECT k, random_tpcpatch_seqset(-100, 100, -100, 100, 0, 100,
-  '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 1, 10) AS ss
+  '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpcpatch;
 CREATE TABLE tbl_tpcpatch(k, temp) AS
-(SELECT k, inst FROM tbl_tpcpatch_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4,     seq FROM tbl_tpcpatch_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2,     seq FROM tbl_tpcpatch_seq     LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss  FROM tbl_tpcpatch_seqset  LIMIT size / 4);
+(SELECT k, temp FROM tbl_tpcpatch_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4,     temp FROM tbl_tpcpatch_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2,     temp FROM tbl_tpcpatch_contseq     LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp  FROM tbl_tpcpatch_seqset  LIMIT size / 4);
 
 ------------------------------------------------------------------------------
 RETURN 'The End';
