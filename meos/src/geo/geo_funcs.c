@@ -316,7 +316,7 @@ ring_area_sign(const POINTARRAY *pa)
  * it as linework, and which rings those are changes with the scale of the
  * coordinates.
  */
-static bool
+bool
 ring_encloses_no_area(const POINTARRAY *pa)
 {
   if (! pa || pa->npoints < 3)

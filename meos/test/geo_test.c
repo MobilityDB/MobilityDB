@@ -1552,6 +1552,35 @@ int main(void)
   free(holed_geo); free(holed_buf);
   meos_errno_reset();
 
+  /* An erosion at projected coordinates erodes: the buffer of a 0.02 square
+   * at 6.4e6 by -0.001 is the square of side 0.018 inside it, its area
+   * 3.24e-4, whichever way its ring runs. Read about the origin, the area of
+   * the ring at 6.4e6 is lost in the rounding of terms near 4e13, the ring's
+   * orientation with it, and the erosion grows the square instead */
+  const char *erode_rings[2] = {
+    "POLYGON((6400000 6400000,6400000.02 6400000,6400000.02 6400000.02,"
+      "6400000 6400000.02,6400000 6400000))",
+    "POLYGON((6400000 6400000,6400000 6400000.02,6400000.02 6400000.02,"
+      "6400000.02 6400000,6400000 6400000))" };
+  char erode_covers_patt[10] = "T*****FF*";
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *sq = geom_in(erode_rings[i], -1);
+    assert(sq != NULL);
+    GSERIALIZED *eroded = geom_buffer(sq, -0.001, "");
+    assert(eroded != NULL);
+    double sq_area = geom_area(sq), eroded_area = geom_area(eroded);
+    bool covers = geom_relate_pattern(sq, eroded, erode_covers_patt);
+    printf("geom_buffer(a 0.02 square at 6.4e6 running %s, -0.001): area %.6g, "
+      "covered by the square %d\n", i ? "clockwise" : "counter-clockwise",
+      eroded_area, covers);
+    assert(eroded_area < sq_area);
+    assert(fabs(eroded_area - 3.24e-4) < 1e-9);
+    assert(covers == true);
+    free(sq); free(eroded);
+  }
+  meos_errno_reset();
+
   /* The round join at a vertex spans the angle the two edges meeting there
    * turn by, and at a vertex turning by less than about 2e-4 radians it bulges
    * from its chord by less than the rounding of coordinates near 6e6. Such a
