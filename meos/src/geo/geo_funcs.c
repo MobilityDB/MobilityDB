@@ -221,11 +221,14 @@ static int ring_area_sign_wide(const POINTARRAY *pa);
 /**
  * @brief Return the sign of the area a ring encloses, decided exactly
  * @details The shoelace sum of x_i y_{i+1} - x_{i+1} y_i over the edges of a
- * ring is twice the signed area it encloses. The sum taken in floating point
- * answers wherever it stands clear of the bound its rounding reaches: the
- * rounding of each product and of each addition is at most a unit in the last
- * place of the running magnitude, and twice n + 1 of them bound it generously,
- * with 2^-1074 for each product that underflows. Within that bound every
+ * ring is twice the signed area it encloses, and so is its one product a
+ * vertex about the first vertex, `(x_i - x_0) (y_(i+1) - y_(i-1))`, which the
+ * filter takes: about the origin each product would carry the square of a
+ * coordinate. The sum taken in floating point answers wherever it stands clear
+ * of the bound its rounding reaches: the rounding of each difference, each
+ * product and each addition is at most a unit in the last place of the
+ * running magnitude, and twice n + 1 of them bound it generously, with
+ * 2^-1074 for each product that underflows. Within that bound every
  * product is split into the two doubles that hold it exactly (#two_product)
  * and the parts are summed into an expansion (#grow_expansion), whose largest
  * component carries the exact sign, wherever no product overflows or leaves
@@ -237,13 +240,25 @@ ring_area_sign(const POINTARRAY *pa)
 {
   uint32_t n = pa->npoints;
   double sum = 0.0, mag = 0.0;
-  for (uint32_t i = 0; i + 1 < n; i++)
+  /* The sum about the first vertex, one product a vertex,
+   * `(x_i - x_0) (y_(i+1) - y_(i-1))`, the same sum exactly, as
+   * #ptarray_signed_area takes it: about the origin each product would carry
+   * the square of a coordinate, and its bound would bury the area of a ring at
+   * projected coordinates. Each of the two differences rounds once, so a
+   * product carries at most three roundings of its magnitude, within the
+   * bound below. The coordinates are read in place at the stride of the
+   * array, as #geom_pa_point reads them */
+  if (n >= 3)
   {
-    const POINT2D *a = getPoint2d_cp(pa, i);
-    const POINT2D *b = getPoint2d_cp(pa, i + 1);
-    double l = a->x * b->y, r = b->x * a->y;
-    sum += l - r;
-    mag += fabs(l) + fabs(r);
+    size_t st = (size_t) FLAGS_NDIMS(pa->flags);
+    const double *c = (const double *) pa->serialized_pointlist;
+    double x0 = c[0];
+    for (uint32_t i = 1; i + 1 < n; i++)
+    {
+      double t = (c[i * st] - x0) * (c[(i + 1) * st + 1] - c[(i - 1) * st + 1]);
+      sum += t;
+      mag += fabs(t);
+    }
   }
   double bound = 2.0 * ((double) n + 1.0) *
     (DBL_EPSILON * mag + DBL_MIN * DBL_EPSILON);
