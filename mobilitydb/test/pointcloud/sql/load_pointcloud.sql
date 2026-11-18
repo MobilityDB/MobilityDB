@@ -79,31 +79,31 @@ COPY tbl_tpcbox (k, b) FROM :'filename';
 
 CREATE TABLE tbl_tpcpoint_inst (
     k integer,
-    inst tpcpoint
+    temp tpcpoint
 );
 \set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpoint_inst.data'
-COPY tbl_tpcpoint_inst (k, inst) FROM :'filename';
+COPY tbl_tpcpoint_inst (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tpcpoint_discseq (
     k integer,
-    seq tpcpoint
+    temp tpcpoint
 );
 \set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpoint_discseq.data'
-COPY tbl_tpcpoint_discseq (k, seq) FROM :'filename';
+COPY tbl_tpcpoint_discseq (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tpcpoint_seq (
+CREATE TABLE tbl_tpcpoint_contseq (
     k integer,
-    seq tpcpoint
+    temp tpcpoint
 );
-\set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpoint_seq.data'
-COPY tbl_tpcpoint_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpoint_contseq.data'
+COPY tbl_tpcpoint_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tpcpoint_seqset (
     k integer,
-    ss tpcpoint
+    temp tpcpoint
 );
 \set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpoint_seqset.data'
-COPY tbl_tpcpoint_seqset (k, ss) FROM :'filename';
+COPY tbl_tpcpoint_seqset (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tpcpoint (
     k integer,
@@ -114,31 +114,31 @@ COPY tbl_tpcpoint (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tpcpatch_inst (
     k integer,
-    inst tpcpatch
+    temp tpcpatch
 );
 \set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpatch_inst.data'
-COPY tbl_tpcpatch_inst (k, inst) FROM :'filename';
+COPY tbl_tpcpatch_inst (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tpcpatch_discseq (
     k integer,
-    seq tpcpatch
+    temp tpcpatch
 );
 \set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpatch_discseq.data'
-COPY tbl_tpcpatch_discseq (k, seq) FROM :'filename';
+COPY tbl_tpcpatch_discseq (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tpcpatch_seq (
+CREATE TABLE tbl_tpcpatch_contseq (
     k integer,
-    seq tpcpatch
+    temp tpcpatch
 );
-\set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpatch_seq.data'
-COPY tbl_tpcpatch_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpatch_contseq.data'
+COPY tbl_tpcpatch_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tpcpatch_seqset (
     k integer,
-    ss tpcpatch
+    temp tpcpatch
 );
 \set filename :srcdir '/mobilitydb/test/pointcloud/data/tbl_tpcpatch_seqset.data'
-COPY tbl_tpcpatch_seqset (k, ss) FROM :'filename';
+COPY tbl_tpcpatch_seqset (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tpcpatch (
     k integer,
@@ -148,6 +148,6 @@ CREATE TABLE tbl_tpcpatch (
 COPY tbl_tpcpatch (k, temp) FROM :'filename';
 
 ANALYZE tbl_pcpoint, tbl_pcpatch, tbl_pcpointset, tbl_pcpatchset, tbl_tpcbox,
-  tbl_tpcpoint_inst, tbl_tpcpoint_discseq, tbl_tpcpoint_seq,
+  tbl_tpcpoint_inst, tbl_tpcpoint_discseq, tbl_tpcpoint_contseq,
   tbl_tpcpoint_seqset, tbl_tpcpoint, tbl_tpcpatch_inst, tbl_tpcpatch_discseq,
-  tbl_tpcpatch_seq, tbl_tpcpatch_seqset, tbl_tpcpatch;
+  tbl_tpcpatch_contseq, tbl_tpcpatch_seqset, tbl_tpcpatch;

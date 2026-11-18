@@ -16,14 +16,14 @@ FROM tbl_tpcpoint;
 -- Hand-roll a JSON parse via regex extraction: pull the first
 -- coordinate triple out and verify it's three numbers.
 SELECT bool_and(
-  substring(asMFJSON(inst) FROM '"coordinates":\[\[[^\]]+\]') ~
+  substring(asMFJSON(temp) FROM '"coordinates":\[\[[^\]]+\]') ~
     '^"coordinates":\[\[-?[0-9.]+,-?[0-9.]+(,-?[0-9.]+)?\]$')
 FROM tbl_tpcpoint_inst;
 
 -- tpcpatch instants emit pcid + npoints + bounds.
-SELECT bool_and(asMFJSON(inst) LIKE '%"pcid":1%' AND
-                asMFJSON(inst) LIKE '%"npoints":%' AND
-                asMFJSON(inst) LIKE '%"bounds":[%')
+SELECT bool_and(asMFJSON(temp) LIKE '%"pcid":1%' AND
+                asMFJSON(temp) LIKE '%"npoints":%' AND
+                asMFJSON(temp) LIKE '%"bounds":[%')
 FROM tbl_tpcpatch_inst;
 
 -------------------------------------------------------------------------------

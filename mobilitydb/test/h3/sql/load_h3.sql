@@ -37,32 +37,32 @@ COPY tbl_th3index_big (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_th3index_discseq (
     k integer,
-    ti th3index
+    temp th3index
 );
 \set filename :srcdir '/mobilitydb/test/h3/data/tbl_th3index_discseq.data'
-COPY tbl_th3index_discseq (k, ti) FROM :'filename';
+COPY tbl_th3index_discseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_th3index_inst (
     k integer,
-    inst th3index
+    temp th3index
 );
 \set filename :srcdir '/mobilitydb/test/h3/data/tbl_th3index_inst.data'
-COPY tbl_th3index_inst (k, inst) FROM :'filename';
+COPY tbl_th3index_inst (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_th3index_seq (
+CREATE TABLE tbl_th3index_contseq (
     k integer,
-    seq th3index
+    temp th3index
 );
-\set filename :srcdir '/mobilitydb/test/h3/data/tbl_th3index_seq.data'
-COPY tbl_th3index_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/h3/data/tbl_th3index_contseq.data'
+COPY tbl_th3index_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_th3index_seqset (
     k integer,
-    ss th3index
+    temp th3index
 );
 \set filename :srcdir '/mobilitydb/test/h3/data/tbl_th3index_seqset.data'
-COPY tbl_th3index_seqset (k, ss) FROM :'filename';
+COPY tbl_th3index_seqset (k, temp) FROM :'filename';
 
 ANALYZE tbl_geodstbox, tbl_h3index, tbl_h3indexset, tbl_th3index,
-  tbl_th3index_big, tbl_th3index_discseq, tbl_th3index_inst, tbl_th3index_seq,
+  tbl_th3index_big, tbl_th3index_discseq, tbl_th3index_inst, tbl_th3index_contseq,
   tbl_th3index_seqset;
