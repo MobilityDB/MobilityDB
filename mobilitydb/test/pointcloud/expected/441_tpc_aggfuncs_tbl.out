@@ -54,49 +54,49 @@ FROM tbl_tpcpatch, (SELECT extent(temp) AS ext FROM tbl_tpcpatch) e;
 -- Aggregates require uniform subtype per group, so we sample on the
 -- per-subtype tables rather than the merged tbl_tpcpoint / tbl_tpcpatch.
 -------------------------------------------------------------------------------
-SELECT numInstants(tcount(inst)) > 0 FROM tbl_tpcpoint_inst;
+SELECT numInstants(tcount(temp)) > 0 FROM tbl_tpcpoint_inst;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(tcount(seq))  > 0 FROM tbl_tpcpoint_seq;
+SELECT numInstants(tcount(temp))  > 0 FROM tbl_tpcpoint_contseq;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(tcount(inst)) > 0 FROM tbl_tpcpatch_inst;
+SELECT numInstants(tcount(temp)) > 0 FROM tbl_tpcpatch_inst;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(tcount(seq))  > 0 FROM tbl_tpcpatch_seq;
+SELECT numInstants(tcount(temp))  > 0 FROM tbl_tpcpatch_contseq;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(wcount(inst, '1 day'::interval)) > 0 FROM tbl_tpcpoint_inst;
+SELECT numInstants(wcount(temp, '1 day'::interval)) > 0 FROM tbl_tpcpoint_inst;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(wcount(seq,  '1 day'::interval)) > 0 FROM tbl_tpcpoint_seq;
+SELECT numInstants(wcount(temp,  '1 day'::interval)) > 0 FROM tbl_tpcpoint_contseq;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(wcount(inst, '1 day'::interval)) > 0 FROM tbl_tpcpatch_inst;
+SELECT numInstants(wcount(temp, '1 day'::interval)) > 0 FROM tbl_tpcpatch_inst;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(wcount(seq,  '1 day'::interval)) > 0 FROM tbl_tpcpatch_seq;
+SELECT numInstants(wcount(temp,  '1 day'::interval)) > 0 FROM tbl_tpcpatch_contseq;
  ?column? 
 ----------
  t
@@ -106,13 +106,13 @@ SELECT numInstants(wcount(seq,  '1 day'::interval)) > 0 FROM tbl_tpcpatch_seq;
 -- appendInstant — the forms every type without a distance takes: the
 -- interpolation, and the maximum time interval between consecutive instants
 -------------------------------------------------------------------------------
-SELECT numInstants(appendInstant(inst ORDER BY getTimestamp(inst))) =
-    count(DISTINCT getTimestamp(inst)),
-  numInstants(appendInstant(inst, 'step' ORDER BY getTimestamp(inst))) =
-    count(DISTINCT getTimestamp(inst)),
-  numSequences(appendInstant(inst, 'step', interval '1 microsecond'
-    ORDER BY getTimestamp(inst))) = count(DISTINCT getTimestamp(inst))
-FROM (SELECT DISTINCT ON (getTimestamp(inst)) inst FROM tbl_tpcpatch_inst) t;
+SELECT numInstants(appendInstant(temp ORDER BY getTimestamp(temp))) =
+    count(DISTINCT getTimestamp(temp)),
+  numInstants(appendInstant(temp, 'step' ORDER BY getTimestamp(temp))) =
+    count(DISTINCT getTimestamp(temp)),
+  numSequences(appendInstant(temp, 'step', interval '1 microsecond'
+    ORDER BY getTimestamp(temp))) = count(DISTINCT getTimestamp(temp))
+FROM (SELECT DISTINCT ON (getTimestamp(temp)) temp FROM tbl_tpcpatch_inst) t;
  ?column? | ?column? | ?column? 
 ----------+----------+----------
  t        | t        | t
@@ -122,13 +122,13 @@ FROM (SELECT DISTINCT ON (getTimestamp(inst)) inst FROM tbl_tpcpatch_inst) t;
 -- merge — combines instants across rows into one temporal value.
 -- pcid must propagate to the result.
 -------------------------------------------------------------------------------
-SELECT pcid(merge(inst)) FROM tbl_tpcpoint_inst;
+SELECT pcid(merge(temp)) FROM tbl_tpcpoint_inst;
  pcid 
 ------
     1
 (1 row)
 
-SELECT pcid(merge(inst)) FROM tbl_tpcpatch_inst;
+SELECT pcid(merge(temp)) FROM tbl_tpcpatch_inst;
  pcid 
 ------
     1
@@ -143,29 +143,29 @@ SELECT pcid(merge(inst)) FROM tbl_tpcpatch_inst;
 -- zero raises an error, so the density reads the rows whose every patch has
 -- an area.
 -------------------------------------------------------------------------------
-SELECT numInstants(tnpoints(inst)) > 0 FROM tbl_tpcpatch_inst;
+SELECT numInstants(tnpoints(temp)) > 0 FROM tbl_tpcpatch_inst;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(tnpoints(seq))  > 0 FROM tbl_tpcpatch_seq;
+SELECT numInstants(tnpoints(temp))  > 0 FROM tbl_tpcpatch_contseq;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(tdensity(inst)) > 0 FROM tbl_tpcpatch_inst
+SELECT numInstants(tdensity(temp)) > 0 FROM tbl_tpcpatch_inst
 WHERE (SELECT bool_and(area(getValue(i)::tpcbox::stbox) > 0)
-  FROM unnest(instants(inst)) i);
+  FROM unnest(instants(temp)) i);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numInstants(tdensity(seq))  > 0 FROM tbl_tpcpatch_seq
+SELECT numInstants(tdensity(temp))  > 0 FROM tbl_tpcpatch_contseq
 WHERE (SELECT bool_and(area(getValue(i)::tpcbox::stbox) > 0)
-  FROM unnest(instants(seq)) i);
+  FROM unnest(instants(temp)) i);
  ?column? 
 ----------
  t

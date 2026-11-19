@@ -135,7 +135,10 @@ lwgeom_has_interior_ring(const LWGEOM *geom)
  * its exterior ring do, and the contact changes only where a vertex of the
  * edge crosses the target or a vertex of the target crosses the edge
  * (#trgeometry_geom_clip_events); each such fraction is appended, a contact
- * that lasts an instant included.
+ * that lasts an instant included. A body with Z is read by its footprint on
+ * the ground, as its contact with a target without Z is (#body_meets_target):
+ * the edges of the faces of a polyhedral surface, projected, hold the
+ * boundary of the footprint among them.
  */
 static void
 collect_edge_events_m1(const LWGEOM *body0, double dx, double dy,
@@ -164,6 +167,7 @@ collect_edge_events_m1(const LWGEOM *body0, double dx, double dy,
       break;
     }
     case MULTIPOLYGONTYPE:
+    case POLYHEDRALSURFACETYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *coll = (const LWCOLLECTION *) body0;
@@ -249,9 +253,12 @@ static bool
 body_meets_target(const GSERIALIZED *body, const GSERIALIZED *target,
   const STBox *excl, const STBox *box3d)
 {
+  /* A body and a geometry that both have Z meet in three dimensions, by the
+   * exact 3D intersects the relationships read (#datum_geom_intersects3d) */
   bool meets = box3d ?
     body_vertex_in_box(body, box3d) || geom_dwithin3d_intl(body, target, 0.0) :
-    geom_intersects2d(body, target);
+    ((FLAGS_GET_Z(body->gflags) && FLAGS_GET_Z(target->gflags)) ?
+      geom_intersects3d_intl(body, target) : geom_intersects2d(body, target));
   if (! meets)
     return false;
   return excl ? ! body_on_excluded_border(body, excl) : true;
@@ -809,12 +816,40 @@ trgeometry_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc
 Temporal *
 trgeometry_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) || ! ensure_has_not_Z_geo(gs))
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D, as
+   * #ea_spatialrel_trgeometry_geo does */
+  GSERIALIZED *flat = trgeometry_geo_common_dims(temp, gs);
+  if (flat)
+  {
+    Temporal *result = trgeometry_restrict_geom(temp, flat, atfunc);
+    pfree(flat);
+    return result;
+  }
+  /* Ensure the validity of the arguments. The geometry is read on the
+   * dimensions the value and the geometry both have, as
+   * #trgeometry_restrict_stbox reads a box: a body with Z against a geometry
+   * without Z by its projection to the ground, which the overlap reads
+   * placement by placement and segment by segment
+   * (#trgeometry_overlap_spanset) */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
     return NULL;
-
+  /* An empty geometry, which no body meets in any dimension */
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
+  /* A body with Z held at each pose meets a geometry with Z by the exact 3D
+   * intersects of the placed body (#body_meets_target), the solid a closed
+   * body bounds included; a body with Z in linear motion meets it where the
+   * distance of the moving body in three dimensions is zero, which the walk
+   * of the distance does not read in three dimensions */
+  if (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) &&
+      temp->subtype != TINSTANT && MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The restriction of a temporal rigid geometry with Z in linear "
+      "interpolation to a geometry with Z is not implemented");
+    return NULL;
+  }
 
   LWGEOM *lwgs = lwgeom_from_gserialized(gs);
   /* A body that holds each pose is restricted by the static intersection of

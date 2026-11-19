@@ -302,3 +302,48 @@ SELECT getTime(atStbox(
 SELECT getTime(atStbox(
   trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(3 0 1), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(7 2 1), 1, 0, 0, 0)@2001-01-02]',
   stbox 'STBOX Z((4,0,0),(4,3,2))'));
+
+-- A closed body with Z that translates in linear interpolation, read against
+-- a box without Z by its footprint on the ground: a cube crossing a small box,
+-- and a body sliding along the upper edge of a box
+SELECT getTime(atStbox(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(-3 0 7),1,0,0,0)@2001-01-01, Pose(Point(3 0 7),1,0,0,0)@2001-01-02]',
+  stbox 'STBOX X((-0.5,-0.5),(0.5,0.5))'));
+SELECT getTime(atStbox(
+  trgeometry 'PolyhedralSurface Z(((0 -2 -2,0 -1 -2,1 -1 -2,1 -2 -2,0 -2 -2)),((0 -2 0,1 -2 0,1 -1 0,0 -1 0,0 -2 0)),((0 -2 -2,1 -2 -2,1 -2 0,0 -2 0,0 -2 -2)),((0 -1 -2,0 -1 0,1 -1 0,1 -1 -2,0 -1 -2)),((0 -2 -2,0 -2 0,0 -1 0,0 -1 -2,0 -2 -2)),((1 -2 -2,1 -1 -2,1 -1 0,1 -2 0,1 -2 -2)));[Pose(Point(-6 6 3),1,0,0,0)@2001-01-01, Pose(Point(5 6 -2),1,0,0,0)@2001-01-02]',
+  stbox 'STBOX X((-3,1),(-2,4))'));
+
+-- A body with Z held at each pose meets a geometry with Z in three
+-- dimensions, a closed body as the solid it bounds: a point at the centre of
+-- the cube, outside it, and on its face; a 2D body reads the geometry in two;
+-- a body with Z in linear interpolation, refused; and an empty geometry,
+-- which no body meets
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02, Pose(Point(1 0 0),1,0,0,0)@2001-01-03, Pose(Point(5 0 0),1,0,0,0)@2001-01-04]',
+  geometry 'Point(0 0 0)'));
+SELECT getTime(minusGeometry(
+  trgeometry 'Interp=Step;PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02, Pose(Point(1 0 0),1,0,0,0)@2001-01-03, Pose(Point(5 0 0),1,0,0,0)@2001-01-04]',
+  geometry 'Point(0 0 0)'));
+SELECT getTime(atGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));{Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02, Pose(Point(0 0 5),1,0,0,0)@2001-01-03}',
+  geometry 'Point(0 0 0)'));
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02]',
+  geometry 'Point(0 0 7)'));
+SELECT getTime(atGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02]',
+  geometry 'Point(0 0 0)'));
+SELECT getTime(atGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02]',
+  geometry 'Point Z empty'));
+SELECT getTime(minusGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02]',
+  geometry 'Point Z empty'));
+-- A body with Z against a geometry without Z, read by its footprint on the
+-- ground: held at each pose, and translating
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 9),1,0,0,0)@2001-01-01, Pose(Point(5 0 9),1,0,0,0)@2001-01-02]',
+  geometry 'Point(0 0)'));
+SELECT getTime(atGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(-3 0 7),1,0,0,0)@2001-01-01, Pose(Point(3 0 7),1,0,0,0)@2001-01-02]',
+  geometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5))'));

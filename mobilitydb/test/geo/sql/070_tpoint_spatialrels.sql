@@ -680,9 +680,11 @@ SELECT aDisjoint(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]'
 -- meridian, a segment and its reverse at the middle, a segment and its mirror
 -- across the equator, at the microsecond nearest to where the first crosses
 -- it, two segments that a half turn proves to stand at one point at the
--- middle, there, on two great circles, through Point(10 0) or the north pole;
--- a segment off the equator by 1e-6 degrees never meets one on it, nor a
--- segment moved by 1e-6 degrees off the half turn of the other
+-- middle, there, on two great circles, through Point(10 0) or the north pole,
+-- a segment and its mirror across the plane of a meridian where the first
+-- crosses it; a segment off the equator by 1e-6 degrees never meets one on
+-- it, nor a segment moved by 1e-6 degrees off the half turn or the mirror of
+-- the other
 SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' ?= tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]';
 SELECT tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' #= tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]';
 SELECT eDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]', tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]', 0);
@@ -698,6 +700,9 @@ SELECT eDwithin(tgeogpoint '[Point(10 3)@2001-01-01, Point(10 -3)@2001-01-02]', 
 SELECT tgeogpoint '[Point(12 3)@2001-01-01, Point(8 -3)@2001-01-02]' ?= tgeogpoint '[Point(9 -5)@2001-01-01, Point(11 5)@2001-01-02]';
 SELECT tgeogpoint '[Point(10 80)@2001-01-01, Point(-170 80)@2001-01-02]' #= tgeogpoint '[Point(50 85)@2001-01-01, Point(-130 85)@2001-01-02]';
 SELECT tgeogpoint '[Point(10 3)@2001-01-01, Point(10 -3)@2001-01-02]' ?= tgeogpoint '[Point(8 0)@2001-01-01, Point(12.000001 0)@2001-01-02]';
+SELECT tgeogpoint '[Point(8 1)@2001-01-01, Point(12 2)@2001-01-02]' ?= tgeogpoint '[Point(12 1)@2001-01-01, Point(8 2)@2001-01-02]';
+SELECT tgeogpoint '[Point(8 1)@2001-01-01, Point(12 2)@2001-01-02]' #= tgeogpoint '[Point(12 1)@2001-01-01, Point(8 2)@2001-01-02]';
+SELECT tgeogpoint '[Point(8 1)@2001-01-01, Point(12 2)@2001-01-02]' ?= tgeogpoint '[Point(12 1)@2001-01-01, Point(8.000001 2)@2001-01-02]';
 SELECT aDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]', tgeogpoint '[Point(3 0)@2001-01-01, Point(0 0)@2001-01-02]', 0);
 
 -------------------------------------------------------------------------------

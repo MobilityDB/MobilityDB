@@ -471,3 +471,97 @@ SELECT getTime(atStbox(
   trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(3 0 1), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(7 2 1), 1, 0, 0, 0)@2001-01-02]',
   stbox 'STBOX Z((4,0,0),(4,3,2))'));
 ERROR:  The restriction of a temporal rigid geometry with Z in linear interpolation by a box with Z is not implemented
+-- A closed body with Z that translates in linear interpolation, read against
+-- a box without Z by its footprint on the ground: a cube crossing a small box,
+-- and a body sliding along the upper edge of a box
+SELECT getTime(atStbox(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(-3 0 7),1,0,0,0)@2001-01-01, Pose(Point(3 0 7),1,0,0,0)@2001-01-02]',
+  stbox 'STBOX X((-0.5,-0.5),(0.5,0.5))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 06:00:00 2001 PST, Mon Jan 01 18:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(atStbox(
+  trgeometry 'PolyhedralSurface Z(((0 -2 -2,0 -1 -2,1 -1 -2,1 -2 -2,0 -2 -2)),((0 -2 0,1 -2 0,1 -1 0,0 -1 0,0 -2 0)),((0 -2 -2,1 -2 -2,1 -2 0,0 -2 0,0 -2 -2)),((0 -1 -2,0 -1 0,1 -1 0,1 -1 -2,0 -1 -2)),((0 -2 -2,0 -2 0,0 -1 0,0 -1 -2,0 -2 -2)),((1 -2 -2,1 -1 -2,1 -1 0,1 -2 0,1 -2 -2)));[Pose(Point(-6 6 3),1,0,0,0)@2001-01-01, Pose(Point(5 6 -2),1,0,0,0)@2001-01-02]',
+  stbox 'STBOX X((-3,1),(-2,4))'));
+                                   gettime                                    
+------------------------------------------------------------------------------
+ {[Mon Jan 01 04:21:49.090909 2001 PST, Mon Jan 01 08:43:38.181818 2001 PST]}
+(1 row)
+
+-- A body with Z held at each pose meets a geometry with Z in three
+-- dimensions, a closed body as the solid it bounds: a point at the centre of
+-- the cube, outside it, and on its face; a 2D body reads the geometry in two;
+-- a body with Z in linear interpolation, refused; and an empty geometry,
+-- which no body meets
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02, Pose(Point(1 0 0),1,0,0,0)@2001-01-03, Pose(Point(5 0 0),1,0,0,0)@2001-01-04]',
+  geometry 'Point(0 0 0)'));
+                                                           gettime                                                            
+------------------------------------------------------------------------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST), [Wed Jan 03 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST)}
+(1 row)
+
+SELECT getTime(minusGeometry(
+  trgeometry 'Interp=Step;PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02, Pose(Point(1 0 0),1,0,0,0)@2001-01-03, Pose(Point(5 0 0),1,0,0,0)@2001-01-04]',
+  geometry 'Point(0 0 0)'));
+                                                           gettime                                                            
+------------------------------------------------------------------------------------------------------------------------------
+ {[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST), [Thu Jan 04 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(atGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));{Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02, Pose(Point(0 0 5),1,0,0,0)@2001-01-03}',
+  geometry 'Point(0 0 0)'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02]',
+  geometry 'Point(0 0 7)'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
+SELECT getTime(atGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02]',
+  geometry 'Point(0 0 0)'));
+ERROR:  The restriction of a temporal rigid geometry with Z in linear interpolation to a geometry with Z is not implemented
+SELECT getTime(atGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02]',
+  geometry 'Point Z empty'));
+ gettime 
+---------
+ 
+(1 row)
+
+SELECT getTime(minusGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(5 0 0),1,0,0,0)@2001-01-02]',
+  geometry 'Point Z empty'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+-- A body with Z against a geometry without Z, read by its footprint on the
+-- ground: held at each pose, and translating
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(0 0 9),1,0,0,0)@2001-01-01, Pose(Point(5 0 9),1,0,0,0)@2001-01-02]',
+  geometry 'Point(0 0)'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
+SELECT getTime(atGeometry(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(-3 0 7),1,0,0,0)@2001-01-01, Pose(Point(3 0 7),1,0,0,0)@2001-01-02]',
+  geometry 'Polygon((-0.5 -0.5,0.5 -0.5,0.5 0.5,-0.5 0.5,-0.5 -0.5))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 06:00:00 2001 PST, Mon Jan 01 18:00:00 2001 PST]}
+(1 row)
+

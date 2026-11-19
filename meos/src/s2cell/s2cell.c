@@ -1528,6 +1528,22 @@ s2cell_segment_cells_geodetic(double lon1, double lat1, double lon2,
     lat2, level, cells, enter, cross, maxout);
 }
 
+/**
+ * @brief Return true if a geodetic S2 cell shares a position with a geodetic
+ * box, as #dggs_cell_meets_box decides it for the cells of any grid, on the
+ * outlines of decision D7 and the owner rule of S2 (#s2cell_geodetic_ops),
+ * the twin of #h3_cell_meets_box
+ * @param[in] cell Cell
+ * @param[in] box Box, geodetic
+ * @param[in] border_inc True when the box contains its upper bounds
+ */
+bool
+s2cell_cell_meets_box(S2CellId cell, const STBox *box, bool border_inc)
+{
+  return dggs_cell_meets_box(&s2cell_geodetic_ops, (uint64) cell, box,
+    border_inc);
+}
+
 /*****************************************************************************
  * Cells crossed by a segment
  *****************************************************************************/

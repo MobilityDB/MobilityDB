@@ -944,8 +944,7 @@ SELECT ST_AsEWKT(geographyFromHexEWKB('0101000020E61000006666666666661140CDCCCCC
 SELECT asHexEWKB(geometry 'Point(1 1)', 'ABC');
 ERROR:  Invalid value for endian flag
 SELECT geometryFromHexEWKB('XYZ');
-ERROR:  parse error - invalid geometry
-HINT:  "XY" <-- parse error at position 2 within geometry
+ERROR:  Invalid hex string, length (3) has to be a multiple of two!
 --------------------------------------------------------
 -- 2D
 SELECT asText(round(tgeometry 'Point(1.12345 1.12345)@2001-01-01', 2));
@@ -1470,7 +1469,11 @@ ERROR:  The tgeometry cannot have Z dimension
 SELECT atGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  Operation on mixed SRID
 SELECT atGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometry cannot have Z dimension
+                               atgeometry                                
+-------------------------------------------------------------------------
+ 0101000000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
@@ -1556,7 +1559,11 @@ ERROR:  The tgeometry cannot have Z dimension
 SELECT minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  Operation on mixed SRID
 SELECT minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometry cannot have Z dimension
+ minusgeometry 
+---------------
+ 
+(1 row)
+
 --------------------------------------------------------
 -- Equivalences
 WITH test(temp, geo) AS (

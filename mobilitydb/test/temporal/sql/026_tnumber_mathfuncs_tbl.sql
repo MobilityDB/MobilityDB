@@ -57,8 +57,8 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp / t2.temp IS NOT
 SELECT COUNT(*) FROM tbl_tint WHERE deltaValue(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tfloat_seq WHERE trend(seq) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(ss) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat_contseq WHERE trend(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(temp) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Temporal round, degrees, radians, abs, ln, log10
@@ -66,7 +66,7 @@ SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(ss) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tint WHERE abs(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE abs(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat_step_seq WHERE abs(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat_step_contseq WHERE abs(temp) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE round(temp, 1) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_float WHERE degrees(f, true) IS NOT NULL;
@@ -86,7 +86,7 @@ SELECT COUNT(*) FROM tbl_tint WHERE deltaValue(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
 
 
-SELECT round(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT round(array_agg(temp ORDER BY k), 2) FROM tbl_tfloat_inst WHERE temp IS NOT NULL AND k % 20 = 1;
 
 -------------------------------------------------------------------------------
 

@@ -65,6 +65,7 @@
 #include <meos_internal_geo.h>
 #include <meos_raster.h>
 #include <miscadmin.h>
+#include <pgtypes.h>
 #include <utils/datetime.h>
 #include <stringbuffer.h>
 #include "geo/geo_funcs.h"
@@ -535,9 +536,9 @@ raster_gdal_writer(const char *format)
  * @param[in] rast Raster
  * @param[in] format Short name of the GDAL driver, as `GTiff`, `PNG` or
  * `JPEG`
- * @param[in] options Creation options of the driver, as pairs `KEY=VALUE`
- * separated by spaces, a value holding a space written between double
- * quotes, or NULL for none @nullable
+ * @param[in] options Creation options of the driver, one `KEY=VALUE` an
+ * element, a NULL element stating none, as GDAL takes them @nullable
+ * @param[in] count Number of elements of the options
  * @param[in] srid Spatial reference system the file states, or 0 for the
  * raster's own; the pixels are not reprojected
  * @param[out] size_out Size of the result
@@ -545,8 +546,8 @@ raster_gdal_writer(const char *format)
  * @csqlfn #Raster_as_gdal()
  */
 uint8_t *
-raster_as_gdal(const Raster *rast, const char *format, const char *options,
-  int32_t srid, size_t *size_out)
+raster_as_gdal(const Raster *rast, const char *format, text **options,
+  int count, int32_t srid, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(format, NULL);
@@ -585,8 +586,17 @@ raster_as_gdal(const Raster *rast, const char *format, const char *options,
     return NULL;
   }
 
-  char **opts = options ? CSLTokenizeString2(options, " ",
-    CSLT_HONOURSTRINGS) : NULL;
+  /* The options are handed to GDAL as its own list of strings, each one
+   * whole, so that a value holding a space or a quote needs no quoting */
+  char **opts = NULL;
+  for (int i = 0; options && i < count; i++)
+  {
+    if (! options[i])
+      continue;
+    char *opt = text_to_cstring(options[i]);
+    opts = CSLAddString(opts, opt);
+    pfree(opt);
+  }
   /* The address of a local names the file: it is unique among the calls
    * running at the same time, and the file is gone when the call returns */
   int unique = 0;
@@ -630,7 +640,8 @@ raster_as_gdal(const Raster *rast, const char *format, const char *options,
  * @details The raster is written as PostGIS's `ST_AsTIFF` writes it
  * @param[in] rast Raster
  * @param[in] options Creation options of the GTiff driver, as
- * #raster_as_gdal() takes them, or NULL for none @nullable
+ * #raster_as_gdal() takes them @nullable
+ * @param[in] count Number of elements of the options
  * @param[in] srid Spatial reference system the file states, or 0 for the
  * raster's own
  * @param[out] size_out Size of the result
@@ -638,10 +649,10 @@ raster_as_gdal(const Raster *rast, const char *format, const char *options,
  * @csqlfn #Raster_as_tiff()
  */
 uint8_t *
-raster_as_tiff(const Raster *rast, const char *options, int32_t srid,
+raster_as_tiff(const Raster *rast, text **options, int count, int32_t srid,
   size_t *size_out)
 {
-  return raster_as_gdal(rast, "GTiff", options, srid, size_out);
+  return raster_as_gdal(rast, "GTiff", options, count, srid, size_out);
 }
 
 /**
@@ -651,15 +662,17 @@ raster_as_tiff(const Raster *rast, const char *options, int32_t srid,
  * driver takes one to four bands of 8 or 16 unsigned bits
  * @param[in] rast Raster
  * @param[in] options Creation options of the PNG driver, as
- * #raster_as_gdal() takes them, or NULL for none @nullable
+ * #raster_as_gdal() takes them @nullable
+ * @param[in] count Number of elements of the options
  * @param[out] size_out Size of the result
  * @errval NULL
  * @csqlfn #Raster_as_png()
  */
 uint8_t *
-raster_as_png(const Raster *rast, const char *options, size_t *size_out)
+raster_as_png(const Raster *rast, text **options, int count,
+  size_t *size_out)
 {
-  return raster_as_gdal(rast, "PNG", options, SRID_UNKNOWN, size_out);
+  return raster_as_gdal(rast, "PNG", options, count, SRID_UNKNOWN, size_out);
 }
 
 /**
@@ -669,15 +682,18 @@ raster_as_png(const Raster *rast, const char *options, size_t *size_out)
  * JPEG driver takes one or three bands of 8 unsigned bits
  * @param[in] rast Raster
  * @param[in] options Creation options of the JPEG driver, as
- * #raster_as_gdal() takes them, or NULL for none @nullable
+ * #raster_as_gdal() takes them @nullable
+ * @param[in] count Number of elements of the options
  * @param[out] size_out Size of the result
  * @errval NULL
  * @csqlfn #Raster_as_jpeg()
  */
 uint8_t *
-raster_as_jpeg(const Raster *rast, const char *options, size_t *size_out)
+raster_as_jpeg(const Raster *rast, text **options, int count,
+  size_t *size_out)
 {
-  return raster_as_gdal(rast, "JPEG", options, SRID_UNKNOWN, size_out);
+  return raster_as_gdal(rast, "JPEG", options, count, SRID_UNKNOWN,
+    size_out);
 }
 
 /**
@@ -6918,13 +6934,21 @@ coveragejson_time_sb(stringbuffer_t *sb, TimestampTz t)
 
 /**
  * @ingroup meos_raster_base_inout
- * @brief Return the values a trajectory reads as a CoverageJSON trajectory
- * coverage
- * @details The domain is a CoverageJSON `Trajectory`, one point per instant
- * of the values, its time the instant and its position that of the
- * trajectory at the instant, so the values #raster_value reads, whose
- * instants include the exact crossings of the pixels, are written where they
- * are read. The values are the parameter `value`
+ * @brief Return the values a trajectory reads as a CoverageJSON coverage
+ * @details The domain is chosen by the positions of the values, the
+ * position of each instant of the values being that of the trajectory at the
+ * instant:
+ * - one instant is a `Point`, its axes `x`, `y` and `t` one value each;
+ * - several instants at one position, the positions being equal doubles, are
+ *   a `PointSeries`, the axes `x` and `y` one value and `t` one per instant;
+ * - otherwise a `Trajectory`, one point per instant, its time the instant
+ *   and its position that of the trajectory at the instant.
+ *
+ * A stationary point's values over time are thereby the `PointSeries` the
+ * position query of OGC API - Environmental Data Retrieval answers, and the
+ * values #raster_value reads along a moving trajectory, whose instants
+ * include the exact crossings of the pixels, are written where they are read.
+ * The values are the parameter `value`
  * @param[in] temp Temporal float, the values read along @p traj
  * @param[in] traj Temporal geometry point the values are read along
  * @errval NULL
@@ -6938,44 +6962,77 @@ tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj)
 
   int count;
   const TInstant **insts = temporal_insts_p(temp, &count);
-  stringbuffer_t *sb = stringbuffer_create();
-  stringbuffer_append(sb, "{\"type\":\"Coverage\",\"domain\":{\"type\":"
-    "\"Domain\",\"domainType\":\"Trajectory\",\"axes\":{\"composite\":"
-    "{\"dataType\":\"tuple\",\"coordinates\":[\"t\",\"x\",\"y\"],"
-    "\"values\":[");
-  bool ok = true;
-  for (int i = 0; ok && i < count; i++)
+  /* The position of the trajectory at each instant of the values */
+  POINT2D *pos = palloc(sizeof(POINT2D) * count);
+  for (int i = 0; i < count; i++)
   {
     GSERIALIZED *gs;
     if (! tgeo_value_at_timestamptz(traj, insts[i]->t, false, &gs))
     {
+      pfree(pos); pfree(insts);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "The trajectory has no position at an instant of the values");
-      ok = false;
-      break;
+      return NULL;
     }
-    const POINT2D *p = GSERIALIZED_POINT2D_P(gs);
-    stringbuffer_append(sb, i > 0 ? ",[" : "[");
-    ok = coveragejson_time_sb(sb, insts[i]->t);
-    stringbuffer_append_char(sb, ',');
-    stringbuffer_append_double(sb, p->x, OUT_DEFAULT_DECIMAL_DIGITS);
-    stringbuffer_append_char(sb, ',');
-    stringbuffer_append_double(sb, p->y, OUT_DEFAULT_DECIMAL_DIGITS);
-    stringbuffer_append_char(sb, ']');
+    pos[i] = *GSERIALIZED_POINT2D_P(gs);
     pfree(gs);
   }
-  if (ok)
+  bool stationary = true;
+  for (int i = 1; stationary && i < count; i++)
+    stationary = pos[i].x == pos[0].x && pos[i].y == pos[0].y;
+
+  stringbuffer_t *sb = stringbuffer_create();
+  bool ok = true;
+  const char *axis;
+  if (stationary)
   {
+    /* A Point or a PointSeries: one position, the instants on the t axis */
+    axis = "t";
+    stringbuffer_aprintf(sb, "{\"type\":\"Coverage\",\"domain\":{\"type\":"
+      "\"Domain\",\"domainType\":\"%s\",\"axes\":{\"x\":{\"values\":[",
+      count == 1 ? "Point" : "PointSeries");
+    stringbuffer_append_double(sb, pos[0].x, OUT_DEFAULT_DECIMAL_DIGITS);
+    stringbuffer_append(sb, "]},\"y\":{\"values\":[");
+    stringbuffer_append_double(sb, pos[0].y, OUT_DEFAULT_DECIMAL_DIGITS);
+    stringbuffer_append(sb, "]},\"t\":{\"values\":[");
+    for (int i = 0; ok && i < count; i++)
+    {
+      if (i > 0)
+        stringbuffer_append_char(sb, ',');
+      ok = coveragejson_time_sb(sb, insts[i]->t);
+    }
     stringbuffer_append(sb, "]}},\"referencing\":[{\"coordinates\":[\"t\"],"
       "\"system\":{\"type\":\"TemporalRS\",\"calendar\":\"Gregorian\"}},");
-    ok = coveragejson_spatial_rs_sb(sb, tspatial_srid(traj));
   }
+  else
+  {
+    /* A Trajectory: one composite tuple (t, x, y) per instant */
+    axis = "composite";
+    stringbuffer_append(sb, "{\"type\":\"Coverage\",\"domain\":{\"type\":"
+      "\"Domain\",\"domainType\":\"Trajectory\",\"axes\":{\"composite\":"
+      "{\"dataType\":\"tuple\",\"coordinates\":[\"t\",\"x\",\"y\"],"
+      "\"values\":[");
+    for (int i = 0; ok && i < count; i++)
+    {
+      stringbuffer_append(sb, i > 0 ? ",[" : "[");
+      ok = coveragejson_time_sb(sb, insts[i]->t);
+      stringbuffer_append_char(sb, ',');
+      stringbuffer_append_double(sb, pos[i].x, OUT_DEFAULT_DECIMAL_DIGITS);
+      stringbuffer_append_char(sb, ',');
+      stringbuffer_append_double(sb, pos[i].y, OUT_DEFAULT_DECIMAL_DIGITS);
+      stringbuffer_append_char(sb, ']');
+    }
+    stringbuffer_append(sb, "]}},\"referencing\":[{\"coordinates\":[\"t\"],"
+      "\"system\":{\"type\":\"TemporalRS\",\"calendar\":\"Gregorian\"}},");
+  }
+  if (ok)
+    ok = coveragejson_spatial_rs_sb(sb, tspatial_srid(traj));
   if (ok)
   {
     stringbuffer_aprintf(sb, "]},\"parameters\":{\"value\":{\"type\":"
       "\"Parameter\",\"observedProperty\":{\"label\":{\"en\":\"Value\"}}}},"
       "\"ranges\":{\"value\":{\"type\":\"NdArray\",\"dataType\":\"float\","
-      "\"axisNames\":[\"composite\"],\"shape\":[%d],\"values\":[", count);
+      "\"axisNames\":[\"%s\"],\"shape\":[%d],\"values\":[", axis, count);
     for (int i = 0; i < count; i++)
     {
       if (i > 0)
@@ -6985,7 +7042,7 @@ tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj)
     }
     stringbuffer_append(sb, "]}}}");
   }
-  pfree(insts);
+  pfree(pos); pfree(insts);
   char *result = ok ? stringbuffer_getstringcopy(sb) : NULL;
   stringbuffer_destroy(sb);
   return result;

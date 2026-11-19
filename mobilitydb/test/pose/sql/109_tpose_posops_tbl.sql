@@ -1,5 +1,11 @@
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tpose2d AS TABLE tbl_tpose2d;
+ANALYZE tbl_tpose2d;
+
 DROP INDEX IF EXISTS tbl_tpose_rtree_idx;
 DROP INDEX IF EXISTS tbl_tpose_quadtree_idx;
 DROP INDEX IF EXISTS tbl_tpose_kdtree_idx;

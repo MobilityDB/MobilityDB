@@ -38,25 +38,25 @@ SELECT COUNT(*) FROM tbl_tpcpoint
 -------------------------------------------------------------------------------
 -- pcid uniformity across each subtype
 -------------------------------------------------------------------------------
-SELECT bool_and(pcid(inst) = 1) FROM tbl_tpcpoint_inst;
+SELECT bool_and(pcid(temp) = 1) FROM tbl_tpcpoint_inst;
  bool_and 
 ----------
  t
 (1 row)
 
-SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpoint_discseq;
+SELECT bool_and(pcid(temp)  = 1) FROM tbl_tpcpoint_discseq;
  bool_and 
 ----------
  t
 (1 row)
 
-SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpoint_seq;
+SELECT bool_and(pcid(temp)  = 1) FROM tbl_tpcpoint_contseq;
  bool_and 
 ----------
  t
 (1 row)
 
-SELECT bool_and(pcid(ss)   = 1) FROM tbl_tpcpoint_seqset;
+SELECT bool_and(pcid(temp)   = 1) FROM tbl_tpcpoint_seqset;
  bool_and 
 ----------
  t
@@ -65,25 +65,25 @@ SELECT bool_and(pcid(ss)   = 1) FROM tbl_tpcpoint_seqset;
 -------------------------------------------------------------------------------
 -- Subtype invariants
 -------------------------------------------------------------------------------
-SELECT bool_and(numInstants(inst) = 1) FROM tbl_tpcpoint_inst;
+SELECT bool_and(numInstants(temp) = 1) FROM tbl_tpcpoint_inst;
  bool_and 
 ----------
  t
 (1 row)
 
-SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpoint_discseq;
+SELECT bool_and(numInstants(temp) BETWEEN 1 AND 10) FROM tbl_tpcpoint_discseq;
  bool_and 
 ----------
  t
 (1 row)
 
-SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpoint_seq;
+SELECT bool_and(numInstants(temp) BETWEEN 1 AND 10) FROM tbl_tpcpoint_contseq;
  bool_and 
 ----------
  t
 (1 row)
 
-SELECT bool_and(numInstants(ss)  BETWEEN 1 AND 100) FROM tbl_tpcpoint_seqset;
+SELECT bool_and(numInstants(temp)  BETWEEN 1 AND 100) FROM tbl_tpcpoint_seqset;
  bool_and 
 ----------
  t
@@ -93,19 +93,19 @@ SELECT bool_and(numInstants(ss)  BETWEEN 1 AND 100) FROM tbl_tpcpoint_seqset;
 -- Per-dimension projections — every dimension must be a tfloat that
 -- never escapes the datagen range.
 -------------------------------------------------------------------------------
-SELECT bool_and(startValue(getX(inst)) BETWEEN -100 AND 100) FROM tbl_tpcpoint_inst;
+SELECT bool_and(startValue(getX(temp)) BETWEEN -100 AND 100) FROM tbl_tpcpoint_inst;
  bool_and 
 ----------
  t
 (1 row)
 
-SELECT bool_and(startValue(getY(inst)) BETWEEN -100 AND 100) FROM tbl_tpcpoint_inst;
+SELECT bool_and(startValue(getY(temp)) BETWEEN -100 AND 100) FROM tbl_tpcpoint_inst;
  bool_and 
 ----------
  t
 (1 row)
 
-SELECT bool_and(startValue(getZ(inst)) BETWEEN    0 AND 100) FROM tbl_tpcpoint_inst;
+SELECT bool_and(startValue(getZ(temp)) BETWEEN    0 AND 100) FROM tbl_tpcpoint_inst;
  bool_and 
 ----------
  t
@@ -114,13 +114,13 @@ SELECT bool_and(startValue(getZ(inst)) BETWEEN    0 AND 100) FROM tbl_tpcpoint_i
 -------------------------------------------------------------------------------
 -- Cast tpcpoint → tgeompoint
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tpcpoint_inst WHERE inst::tgeompoint IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tpcpoint_inst WHERE temp::tgeompoint IS NOT NULL;
  count 
 -------
    100
 (1 row)
 
-SELECT bool_and(numInstants(inst::tgeompoint) = numInstants(inst))
+SELECT bool_and(numInstants(temp::tgeompoint) = numInstants(temp))
 FROM tbl_tpcpoint_inst;
  bool_and 
 ----------

@@ -345,7 +345,7 @@ asCoverageJSON(raster) → text
 asCoverageJSON(raquet) → text
 asCoverageJSON(tfloat,tgeompoint) → text
 </programlisting>
-				<para>CoverageJSON es la codificación de OGC API – Coverages y de OGC API – Environmental Data Retrieval. Un <varname>raster</varname> es una cobertura <varname>Grid</varname>: sus ejes <varname>x</varname> e <varname>y</varname> van del centro del primer píxel al centro del último, cada banda es un parámetro <varname>band1</varname>, <varname>band2</varname> ..., cuyos valores van fila por fila desde la fila superior, y un píxel nodata es <varname>null</varname>; un ráster con sesgo, cuyos píxeles no están sobre tales ejes, y un ráster sin sistema de referencia espacial producen un error. Una tesela <varname>raquet</varname> es una malla de Web Mercator, EPSG:3857, sobre los límites de su celda QUADBIN. Los valores que lee una trayectoria, como los de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>, son una cobertura <varname>Trajectory</varname> cuyos puntos son los instantes de los valores, cada uno en la posición de la trayectoria en su instante. EPSG:4326 se declara como OGC CRS84, cuya longitud va primero como la declara MobilityDB.</para>
+				<para>CoverageJSON es la codificación de OGC API – Coverages y de OGC API – Environmental Data Retrieval. Un <varname>raster</varname> es una cobertura <varname>Grid</varname>: sus ejes <varname>x</varname> e <varname>y</varname> van del centro del primer píxel al centro del último, cada banda es un parámetro <varname>band1</varname>, <varname>band2</varname> ..., cuyos valores van fila por fila desde la fila superior, y un píxel nodata es <varname>null</varname>; un ráster con sesgo, cuyos píxeles no están sobre tales ejes, y un ráster sin sistema de referencia espacial producen un error. Una tesela <varname>raquet</varname> es una malla de Web Mercator, EPSG:3857, sobre los límites de su celda QUADBIN. Los valores que lee una trayectoria, como los de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>, son una cobertura <varname>Trajectory</varname> cuyos puntos son los instantes de los valores, cada uno en la posición de la trayectoria en su instante; los valores leídos en un mismo lugar son un <varname>Point</varname> para un instante y una <varname>PointSeries</varname> para varios, con los instantes en su eje <varname>t</varname>, las coberturas que responde la consulta de posición de OGC API – Environmental Data Retrieval. EPSG:4326 se declara como OGC CRS84, cuya longitud va primero como la declara MobilityDB.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
   ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
@@ -1155,12 +1155,14 @@ SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
 			<listitem xml:id="tcell_atStbox">
 				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
-				<para>Restringir una celda QUADBIN o H3 temporal a (el complemento de) una caja espaciotemporal</para>
+				<para>Restringir una celda QUADBIN, H3 o S2 temporal a (el complemento de) una caja espaciotemporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atStbox(tquadbin,stbox,borderInc boolean=true) &#8594; tquadbin
 minusStbox(tquadbin,stbox,borderInc boolean=true) &#8594; tquadbin
 atStbox(th3index,stbox,borderInc boolean=true) &#8594; th3index
 minusStbox(th3index,stbox,borderInc boolean=true) &#8594; th3index
+atStbox(ts2cell,stbox,borderInc boolean=true) &#8594; ts2cell
+minusStbox(ts2cell,stbox,borderInc boolean=true) &#8594; ts2cell
 </programlisting>
 				<para>Una celda está en una caja en un instante cuando su tesela, con los puntos del borde que le pertenecen, comparte un punto con la caja. Una tesela contiene sus bordes oeste y norte y su esquina noroeste, y una tesela de la última fila también su borde sur, como para <link linkend="tcell_tgeompoint_to_th3"><varname>tquadbin</varname></link>, por lo que una caja que toca una tesela solo a lo largo de su meridiano este o de su paralelo sur la deja fuera. La caja contiene sus bordes superiores salvo que <varname>borderInc</varname> sea falso. La caja tiene el SRID 4326 de la celda; una caja con solo la dimensión temporal restringe el valor a su período.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1178,13 +1180,19 @@ SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813fffffffffff
   4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
 -- {[4813ffffffffffff@2001-01-02, 4813ffffffffffff@2001-01-03)}
 </programlisting>
-				<para>Una celda H3 toma una caja geodésica, y está en ella en un instante cuando la celda, con los puntos del borde que le pertenecen, comparte una posición con la caja. La celda es la región que delimita su contorno, cuyas aristas son arcos de círculo máximo, y contiene sus lados norte y oeste, como para <link linkend="tcell_tgeompoint_to_th3"><varname>th3index</varname></link>. La caja se lee sobre sus límites, los meridianos y paralelos de sus longitudes y latitudes, nunca sobre el polígono de sus esquinas, cuyas aristas son círculos máximos que se apartan de los paralelos: en la caja <varname>X((0,40),(90,50))</varname> la celda alrededor de <varname>Point(45 55)</varname> está dentro del polígono de las esquinas y fuera de la caja. Un vértice de la celda está en la caja según sus grados, como lo está una posición, y una arista entra en ella donde su círculo máximo cruza los meridianos y paralelos de la caja, como lo hace la trayectoria de un <varname>tgeogpoint</varname> entre dos instantes, por lo que una celda y un punto geográfico temporal que recorre sus aristas se leen igual. La celda misma se lee sobre las posiciones geodésicas de sus vértices, que distan hasta 5&#183;10<superscript>-15</superscript> grados de sus grados, y los cruces de una arista con los paralelos de la caja se calculan en trigonometría de coma flotante: una caja cuyo límite pasa así de cerca de un vértice de una celda puede leerse de uno u otro lado. Las celdas S2 no se restringen a una caja.</para>
+				<para>Una celda H3 toma una caja geodésica, y está en ella en un instante cuando la celda, con los puntos del borde que le pertenecen, comparte una posición con la caja. La celda es la región que delimita su contorno, cuyas aristas son arcos de círculo máximo, y contiene sus lados norte y oeste, como para <link linkend="tcell_tgeompoint_to_th3"><varname>th3index</varname></link>. La caja se lee sobre sus límites, los meridianos y paralelos de sus longitudes y latitudes, nunca sobre el polígono de sus esquinas, cuyas aristas son círculos máximos que se apartan de los paralelos: en la caja <varname>X((0,40),(90,50))</varname> la celda alrededor de <varname>Point(45 55)</varname> está dentro del polígono de las esquinas y fuera de la caja. Un vértice de la celda está en la caja según sus grados, como lo está una posición, y una arista entra en ella donde su círculo máximo cruza los meridianos y paralelos de la caja, como lo hace la trayectoria de un <varname>tgeogpoint</varname> entre dos instantes, por lo que una celda y un punto geográfico temporal que recorre sus aristas se leen igual. La celda misma se lee sobre las posiciones geodésicas de sus vértices, que distan hasta 5&#183;10<superscript>-15</superscript> grados de sus grados, y los cruces de una arista con los paralelos de la caja se calculan en trigonometría de coma flotante: una caja cuyo límite pasa así de cerca de un vértice de una celda puede leerse de uno u otro lado. Una celda S2 se lee igual, sobre el contorno cuyos vértices son las esquinas de su tesela del cubo, cuyas aristas son arcos de círculo máximo, y contiene sus lados de i bajo y de j bajo y la esquina entre ellos, como para <link linkend="tcell_tgeompoint_to_th3"><varname>ts2cell</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
   stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
 -- 832d5afffffffff@2001-01-01
 SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
   stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+-- NULL
+SELECT asText(atStbox(ts2cell '47c3c@2001-01-01',
+  stbox 'SRID=4326;GEODSTBOX X((4,51),(5,52))'));
+-- 47c3c@2001-01-01
+SELECT asText(atStbox(ts2cell '47c3c@2001-01-01',
+  stbox 'SRID=4326;GEODSTBOX X((5,51),(6,52))'));
 -- NULL
 </programlisting>
 			</listitem>
@@ -1632,14 +1640,16 @@ SELECT ts2cell '47c3c@2001-01-01' ~= ts2cell '47c3c@2001-01-01';
 			<listitem xml:id="tcell_ever_always_overlaps">
 				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
-				<para>Superposición alguna vez y siempre de una celda QUADBIN o H3 temporal y una caja espaciotemporal</para>
+				<para>Superposición alguna vez y siempre de una celda QUADBIN, H3 o S2 temporal y una caja espaciotemporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tquadbin {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tquadbin → boolean
 th3index {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} th3index → boolean
+ts2cell {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} ts2cell → boolean
 </programlisting>
-				<para>Si el valor está en una caja espaciotemporal en algún instante, o en todo instante en que está definido, como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; una celda está en una caja cuando su tesela o su celda H3, con los puntos del borde que le pertenecen, comparte un punto con la caja, como la restringe <xref linkend="tcell_atStbox"/>.</para>
+				<para>Si el valor está en una caja espaciotemporal en algún instante, o en todo instante en que está definido, como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; una celda está en una caja cuando su tesela, su celda H3 o su celda S2, con los puntos del borde que le pertenecen, comparte un punto con la caja, como la restringe <xref linkend="tcell_atStbox"/>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' ?&amp;&amp;
   stbox 'SRID=4326;STBOX X((10,10),(20,20))';

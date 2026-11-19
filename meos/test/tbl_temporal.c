@@ -69,7 +69,7 @@
 /* Maximum length in characters of a temporal value in the input data. The
  * program reads every temporal table the data files carry, so the bound is the
  * longest value across all of them rather than one table's:
- * SELECT MAX(length(temp::text)) FROM tbl_tposechain;
+ * SELECT MAX(length(temp::text)) FROM tbl_tposechain2d;
  * -- 20899
  */
 #define MAX_LEN_TEMP 32768

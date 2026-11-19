@@ -22,13 +22,13 @@ DROP TABLE IF EXISTS tbl_tjsonb_idx;
 NOTICE:  table "tbl_tjsonb_idx" does not exist, skipping
 CREATE TEMP TABLE tbl_tjsonb_idx AS
 WITH base(k, temp) AS (
-  SELECT k, inst FROM tbl_tjsonb_inst
+  SELECT k, temp FROM tbl_tjsonb_inst
   UNION ALL
-  SELECT k + 100, seq FROM tbl_tjsonb_discseq
+  SELECT k + 100, temp FROM tbl_tjsonb_discseq
   UNION ALL
-  SELECT k + 200, seq FROM tbl_tjsonb_seq
+  SELECT k + 200, temp FROM tbl_tjsonb_contseq
   UNION ALL
-  SELECT k + 300, ss FROM tbl_tjsonb_seqset )
+  SELECT k + 300, temp FROM tbl_tjsonb_seqset )
 SELECT k + n * 400 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 25) AS n;
 ANALYZE tbl_tjsonb_idx;

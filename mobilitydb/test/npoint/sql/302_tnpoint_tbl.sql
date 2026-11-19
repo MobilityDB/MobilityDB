@@ -2,6 +2,12 @@
 -- Send/receive functions
 --------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tnpoint AS TABLE tbl_tnpoint;
+ANALYZE tbl_tnpoint;
+
 \copy tbl_tnpoint TO 'tbl_tnpoint' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tnpoint_tmp;
 CREATE TEMP TABLE tbl_tnpoint_tmp AS TABLE tbl_tnpoint WITH NO DATA;
@@ -16,21 +22,21 @@ DROP TABLE tbl_tnpoint_tmp;
 SELECT MAX(getPosition(startValue(tnpoint(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
 
 WITH test(temp) AS (
-SELECT tnpointSeq(array_agg(t.inst ORDER BY getTimestamp(t.inst)), 'discrete') FROM tbl_tnpoint_inst t GROUP BY k%10 )
+SELECT tnpointSeq(array_agg(t.temp ORDER BY getTimestamp(t.temp)), 'discrete') FROM tbl_tnpoint_inst t GROUP BY k%10 )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 WITH test(temp) AS (
-SELECT tnpointSeq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY route(t.inst) )
+SELECT tnpointSeq(array_agg(t.temp ORDER BY getTimestamp(t.temp))) FROM tbl_tnpoint_inst t GROUP BY route(t.temp) )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 WITH test(temp) AS (
-SELECT tnpointSeqSet(array_agg(t.seq ORDER BY startTimestamp(t.seq))) FROM tbl_tnpoint_seq t GROUP BY k%10 )
+SELECT tnpointSeqSet(array_agg(t.temp ORDER BY startTimestamp(t.temp))) FROM tbl_tnpoint_contseq t GROUP BY k%10 )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_tnpointinst_test;
-CREATE TEMP TABLE tbl_tnpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tnpoint_seq;
+CREATE TEMP TABLE tbl_tnpointinst_test AS SELECT k, unnest(instants(temp)) AS inst FROM tbl_tnpoint_contseq;
 WITH temp AS (
   SELECT numSequences(tnpointSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tnpointinst_test GROUP BY k )
@@ -41,31 +47,31 @@ DROP TABLE tbl_tnpointinst_test;
 --  Transformation functions
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint(inst)) FROM tbl_tnpoint_inst;
-SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tnpoint_inst;
-SELECT DISTINCT tempSubtype(tnpointSeq(inst)) FROM tbl_tnpoint_inst;
-SELECT DISTINCT tempSubtype(tnpointSeqSet(inst)) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(tnpoint(temp)) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(tnpointSeq(temp)) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(tnpointSeqSet(temp)) FROM tbl_tnpoint_inst;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tnpoint_discseq;
-SELECT DISTINCT tempSubtype(tnpointSeq(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tnpointSeqSet(ti)) FROM tbl_tnpoint_discseq;
+SELECT DISTINCT tempSubtype(tnpoint(temp)) FROM tbl_tnpoint_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tnpoint_discseq;
+SELECT DISTINCT tempSubtype(tnpointSeq(temp)) FROM tbl_tnpoint_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tnpointSeqSet(temp)) FROM tbl_tnpoint_discseq;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tnpointSeq(seq)) FROM tbl_tnpoint_seq;
-SELECT DISTINCT tempSubtype(tnpointSeqSet(seq)) FROM tbl_tnpoint_seq;
+SELECT DISTINCT tempSubtype(tnpoint(temp)) FROM tbl_tnpoint_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tnpoint_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tnpointSeq(temp)) FROM tbl_tnpoint_contseq;
+SELECT DISTINCT tempSubtype(tnpointSeqSet(temp)) FROM tbl_tnpoint_contseq;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint(ss)) FROM tbl_tnpoint_seqset WHERE numInstants(ss) = 1;
-SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tnpoint_seqset WHERE duration(ss) = '00:00:00';
-SELECT DISTINCT tempSubtype(tnpointSeq(ss)) FROM tbl_tnpoint_seqset WHERE numSequences(ss) = 1;
-SELECT DISTINCT tempSubtype(tnpointSeqSet(ss)) FROM tbl_tnpoint_seqset;
+SELECT DISTINCT tempSubtype(tnpoint(temp)) FROM tbl_tnpoint_seqset WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tnpoint_seqset WHERE duration(temp) = '00:00:00';
+SELECT DISTINCT tempSubtype(tnpointSeq(temp)) FROM tbl_tnpoint_seqset WHERE numSequences(temp) = 1;
+SELECT DISTINCT tempSubtype(tnpointSeqSet(temp)) FROM tbl_tnpoint_seqset;
 
 -------------------------------------------------------------------------------
 --  Append functions
@@ -101,19 +107,19 @@ SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
 SELECT stbox(temp) FROM tbl_tnpoint;
 */
 
-SELECT getValue(inst) FROM tbl_tnpoint_inst ORDER BY getValue(inst) LIMIT 1;
+SELECT getValue(temp) FROM tbl_tnpoint_inst ORDER BY getValue(temp) LIMIT 1;
 
 SELECT MAX(numValues(getValues(temp))) FROM tbl_tnpoint;
 
 SELECT MAX(array_length(positions(temp), 1)) FROM tbl_tnpoint;
 
-SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
+SELECT MAX(route(temp)) FROM tbl_tnpoint_inst;
 
 SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tnpoint;
 
-SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
+SELECT MAX(getTimestamp(temp)) FROM tbl_tnpoint_inst;
 
 
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp ?= t2.np;
@@ -132,11 +138,11 @@ SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp %<> t2.np;
 SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE t1.np %<> t2.temp;
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp %<> t2.temp;
 
-SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE eEqual(t1.inst, t2.np);
-SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint_inst t2 WHERE eEqual(t1.np, t2.inst);
+SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE eEqual(t1.temp, t2.np);
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint_inst t2 WHERE eEqual(t1.np, t2.temp);
 
-SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE aEqual(t1.inst, t2.np);
-SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint_inst t2 WHERE aEqual(t1.np, t2.inst);
+SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE aEqual(t1.temp, t2.np);
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint_inst t2 WHERE aEqual(t1.np, t2.temp);
 
 SELECT MAX(startTimestamp(shiftTime(t1.temp, t2.i))) FROM tbl_tnpoint t1, tbl_interval t2;
 
@@ -166,15 +172,15 @@ SELECT MAX(timestampN(temp,1)) FROM tbl_tnpoint;
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;
 
-SELECT MAX(numSequences(ss)) FROM tbl_tnpoint_seqset;
+SELECT MAX(numSequences(temp)) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(startSequence(ss))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(endSequence(ss))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tnpoint_seqset;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tnpoint_seqset;
 
 -------------------------------------------------------------------------------
 --  Restriction functions
@@ -229,12 +235,12 @@ WHERE minusTime(temp, t) IS NOT NULL;
 -- Stops function
 -------------------------------------------------------------------------------
 
-SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tnpoint_seq;
-SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tnpoint_seq;
+SELECT MAX(numInstants(stops(temp, 50.0))) FROM tbl_tnpoint_contseq;
+SELECT MAX(numInstants(stops(temp, 50.0, '5 min'))) FROM tbl_tnpoint_contseq;
 -- The path of a network point follows its route between two instants, so a
 -- stop holds every point of the path within the distance, not only its instants
-SELECT COUNT(*) FROM (SELECT unnest(sequences(stops(seq, 50.0))) AS st
-  FROM tbl_tnpoint_seq) s
+SELECT COUNT(*) FROM (SELECT unnest(sequences(stops(temp, 50.0))) AS st
+  FROM tbl_tnpoint_contseq) s
 WHERE ST_MaxDistance(trajectory(st::tgeompoint), trajectory(st::tgeompoint)) > 50.0;
 
 -------------------------------------------------------------------------------

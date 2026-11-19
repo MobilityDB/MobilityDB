@@ -3102,7 +3102,7 @@ contains_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &contains_span_span, INVERT);
 }
 
@@ -3119,7 +3119,7 @@ contains_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &contains_span_span, INVERT_NO);
 }
 
@@ -3136,7 +3136,7 @@ contains_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &contains_tbox_tbox, INVERT);
 }
 
@@ -3153,7 +3153,7 @@ contains_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &contains_tbox_tbox, INVERT_NO);
 }
 
@@ -3169,7 +3169,7 @@ contains_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
-    return NULL;
+    return false;
   return boxop_tnumber_tnumber(temp1, temp2, &contains_tbox_tbox);
 }
 
@@ -3188,7 +3188,7 @@ contained_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &contained_span_span, INVERT);
 }
 
@@ -3205,7 +3205,7 @@ contained_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &contained_span_span, INVERT_NO);
 }
 
@@ -3222,7 +3222,7 @@ contained_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &contained_tbox_tbox, INVERT);
 }
 
@@ -3239,7 +3239,7 @@ contained_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &contained_tbox_tbox, INVERT_NO);
 }
 
@@ -3255,7 +3255,7 @@ contained_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
-    return NULL;
+    return false;
   return boxop_tnumber_tnumber(temp1, temp2, &contained_tbox_tbox);
 }
 
@@ -3274,7 +3274,7 @@ overlaps_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &overlaps_span_span, INVERT);
 }
 
@@ -3291,7 +3291,7 @@ overlaps_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &overlaps_span_span, INVERT_NO);
 }
 
@@ -3308,7 +3308,7 @@ overlaps_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &overlaps_tbox_tbox, INVERT);
 }
 
@@ -3325,7 +3325,7 @@ overlaps_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &overlaps_tbox_tbox, INVERT_NO);
 }
 
@@ -3340,7 +3340,7 @@ overlaps_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
-    return NULL;
+    return false;
   return boxop_tnumber_tnumber(temp1, temp2, &overlaps_tbox_tbox);
 }
 
@@ -3359,7 +3359,7 @@ same_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &span_eq, INVERT);
 }
 
@@ -3376,7 +3376,7 @@ same_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &span_eq, INVERT_NO);
 }
 
@@ -3393,7 +3393,7 @@ same_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &same_tbox_tbox, INVERT);
 }
 
@@ -3410,7 +3410,7 @@ same_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &same_tbox_tbox, INVERT_NO);
 }
 
@@ -3425,7 +3425,7 @@ same_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
-    return NULL;
+    return false;
   return boxop_tnumber_tnumber(temp1, temp2, &same_tbox_tbox);
 }
 
@@ -3444,7 +3444,7 @@ adjacent_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &adjacent_span_span, INVERT);
 }
 
@@ -3461,7 +3461,7 @@ adjacent_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, s))
-    return NULL;
+    return false;
   return boxop_tnumber_numspan(temp, s, &adjacent_span_span, INVERT_NO);
 }
 
@@ -3478,7 +3478,7 @@ adjacent_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &adjacent_tbox_tbox, INVERT);
 }
 
@@ -3495,7 +3495,7 @@ adjacent_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
-    return NULL;
+    return false;
   return boxop_tnumber_tbox(temp, box, &adjacent_tbox_tbox, INVERT_NO);
 }
 
@@ -3511,7 +3511,7 @@ adjacent_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
-    return NULL;
+    return false;
   return boxop_tnumber_tnumber(temp1, temp2, &adjacent_tbox_tbox);
 }
 

@@ -16,7 +16,7 @@ SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography3D LIMIT 10;
 -- SELECT asEWKT(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
 SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3D WHERE temp IS NOT NULL AND k % 10 = 1;
 
-SELECT asEWKT(array_agg(round(inst, 6) ORDER BY k)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeometry_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 
 -------------------------------------------------------------------------------
 -- Combination of input/output functions
@@ -42,6 +42,28 @@ SELECT DISTINCT tgeometryFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeometry;
 SELECT DISTINCT asText(tgeometryFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeometry;
 SELECT DISTINCT tgeographyFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeography;
 SELECT DISTINCT asText(tgeographyFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeography;
+
+SELECT DISTINCT asText(geometryFromText(asText(g))) = asText(g) FROM tbl_geometry;
+SELECT DISTINCT asText(geographyFromText(asText(g))) = asText(g) FROM tbl_geography;
+
+SELECT DISTINCT asEWKT(geometryFromEWKT(asEWKT(g))) = asEWKT(g) FROM tbl_geometry;
+SELECT DISTINCT asEWKT(geographyFromEWKT(asEWKT(g))) = asEWKT(g) FROM tbl_geography;
+
+-- GeoJSON cannot state an arc
+SELECT DISTINCT asText(geometryFromGeoJSON(asGeoJSON(g, 15))) = asText(g) FROM tbl_geometry
+WHERE NOT ST_HasArc(g);
+SELECT DISTINCT asText(geographyFromGeoJSON(asGeoJSON(g, 15))) = asText(g) FROM tbl_geography;
+
+SELECT DISTINCT asText(geometryFromBinary(asBinary(g))) = asText(g) FROM tbl_geometry;
+SELECT DISTINCT asText(geographyFromBinary(asBinary(g))) = asText(g) FROM tbl_geography;
+
+SELECT DISTINCT asEWKT(geometryFromEWKB(asEWKB(g))) = asEWKT(g) FROM tbl_geometry;
+SELECT DISTINCT asEWKT(geographyFromEWKB(asEWKB(g))) = asEWKT(g) FROM tbl_geography;
+
+SELECT DISTINCT asEWKT(geometryFromHexEWKB(asHexEWKB(g))) = asEWKT(g) FROM tbl_geometry;
+SELECT DISTINCT asText(geometryFromHexWKB(asHexWKB(g))) = asText(g) FROM tbl_geometry;
+SELECT DISTINCT asEWKT(geographyFromHexEWKB(asHexEWKB(g))) = asEWKT(g) FROM tbl_geography;
+SELECT DISTINCT asText(geographyFromHexWKB(asHexWKB(g))) = asText(g) FROM tbl_geography;
 
 -------------------------------------------------------------------------------
 -- MF-JSON output of the temporal geometry values coming from real AIS data

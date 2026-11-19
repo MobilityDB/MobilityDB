@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.7.0 |
+| Version | v0.9.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -80,9 +80,10 @@ in one as PostGIS writes and reads it: `asGDALRaster`, `asTIFF`, `asPNG` and
 `ST_AsJPEG` write, and `rasterFromGDALRaster` reads the raster
 `ST_FromGDALRaster` reads. `format` is the short name of a GDAL driver that
 writes a copy of a raster into memory (`GTiff`, `PNG`, `JPEG` ...), and
-`options` its creation options, each `KEY=VALUE`; in MEOS the options are one
-string of those pairs separated by spaces, a value holding a space written
-between double quotes, as GDAL tokenizes them. A NULL `srid` when writing is
+`options` its creation options, each `KEY=VALUE`; in MEOS the options are an
+array of texts and their number, one option an element and a NULL element
+stating none, handed to GDAL as its own list of strings, so that a value holding
+a space or a quote is written as it is. A NULL `srid` when writing is
 the raster's own, the pixels not being reprojected, and an `srid` of 0 when
 reading the one the file states. A format takes the bands its driver takes: a
 GeoTIFF holds one pixel type and one nodata value for all its bands, PNG one
@@ -111,7 +112,7 @@ Environmental Data Retrieval, CoverageJSON:
 |---|---|
 | `asCoverageJSON(raster)` | a `Grid`: the axes `x` and `y` run from the centre of the first pixel to the centre of the last, each band is a parameter `band1`, `band2` ..., whose values run row by row from the top row, a nodata pixel `null` |
 | `asCoverageJSON(raquet)` | a `Grid` of Web Mercator, EPSG:3857, over the bounds of the tile's QUADBIN cell |
-| `asCoverageJSON(tfloat, tgeompoint)` | a `Trajectory` of the values a trajectory reads (section 5): a point per instant of the values, at the position of the trajectory at that instant, so the instants a trajectory crosses from one pixel to the next are points of the coverage |
+| `asCoverageJSON(tfloat, tgeompoint)` | a `Trajectory` of the values a trajectory reads (section 5): a point per instant of the values, at the position of the trajectory at that instant, so the instants a trajectory crosses from one pixel to the next are points of the coverage; values read at one place, the positions being equal doubles, are a `Point` for one instant and a `PointSeries` for several, the instants on its axis `t`, as the position query of OGC API – Environmental Data Retrieval answers them |
 
 EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MEOS states
 it; another system is stated by its EPSG identifier, its coordinates listed in
@@ -232,6 +233,8 @@ patch number with corrections of wording.
 | v0.5.0 | A raster, a Raquet tile and the values a trajectory reads written as CoverageJSON |
 | v0.6.0 | The writers of a raster to a format of GDAL and its reader from the bytes of a file in one |
 | v0.7.0 | The values a trajectory reads from a raster series and their restrictions |
+| v0.8.0 | The values read at one place written as a CoverageJSON `Point` or `PointSeries` |
+| v0.9.0 | The creation options of the GDAL writers taken in MEOS as an array of texts, as SQL and GDAL take them |
 
 ## 9. Out of scope
 

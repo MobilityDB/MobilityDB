@@ -254,87 +254,87 @@ COPY tbl_tgeogpoint3d_big (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeogpoint3d_discseq (
     k integer PRIMARY KEY,
-    ti tgeogpoint(Sequence,PointZ)
+    temp tgeogpoint(Sequence,PointZ)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_discseq.data'
-COPY tbl_tgeogpoint3d_discseq (k, ti) FROM :'filename';
+COPY tbl_tgeogpoint3d_discseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeogpoint3d_inst (
     k integer PRIMARY KEY,
-    inst tgeogpoint(Instant,PointZ)
+    temp tgeogpoint(Instant,PointZ)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_inst.data'
-COPY tbl_tgeogpoint3d_inst (k, inst) FROM :'filename';
+COPY tbl_tgeogpoint3d_inst (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeogpoint3d_seqset (
     k integer PRIMARY KEY,
-    ss tgeogpoint(SequenceSet,PointZ)
+    temp tgeogpoint(SequenceSet,PointZ)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_seqset.data'
-COPY tbl_tgeogpoint3d_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeogpoint3d_seqset (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tgeogpoint3d_seq (
+CREATE TABLE tbl_tgeogpoint3d_contseq (
     k integer PRIMARY KEY,
-    seq tgeogpoint(Sequence,PointZ)
+    temp tgeogpoint(Sequence,PointZ)
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_seq.data'
-COPY tbl_tgeogpoint3d_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_contseq.data'
+COPY tbl_tgeogpoint3d_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeogpoint3d_step_seqset (
     k integer PRIMARY KEY,
-    ss tgeogpoint
+    temp tgeogpoint
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_step_seqset.data'
-COPY tbl_tgeogpoint3d_step_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeogpoint3d_step_seqset (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tgeogpoint3d_step_seq (
+CREATE TABLE tbl_tgeogpoint3d_step_contseq (
     k integer PRIMARY KEY,
-    seq tgeogpoint
+    temp tgeogpoint
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_step_seq.data'
-COPY tbl_tgeogpoint3d_step_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d_step_contseq.data'
+COPY tbl_tgeogpoint3d_step_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeogpoint_discseq (
     k integer PRIMARY KEY,
-    ti tgeogpoint(Sequence)
+    temp tgeogpoint(Sequence)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_discseq.data'
-COPY tbl_tgeogpoint_discseq (k, ti) FROM :'filename';
+COPY tbl_tgeogpoint_discseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeogpoint_inst (
     k integer PRIMARY KEY,
-    inst tgeogpoint(Instant)
+    temp tgeogpoint(Instant)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_inst.data'
-COPY tbl_tgeogpoint_inst (k, inst) FROM :'filename';
+COPY tbl_tgeogpoint_inst (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeogpoint_seqset (
     k integer PRIMARY KEY,
-    ss tgeogpoint(SequenceSet)
+    temp tgeogpoint(SequenceSet)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_seqset.data'
-COPY tbl_tgeogpoint_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeogpoint_seqset (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tgeogpoint_seq (
+CREATE TABLE tbl_tgeogpoint_contseq (
     k integer PRIMARY KEY,
-    seq tgeogpoint(Sequence)
+    temp tgeogpoint(Sequence)
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_seq.data'
-COPY tbl_tgeogpoint_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_contseq.data'
+COPY tbl_tgeogpoint_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeogpoint_step_seqset (
     k integer PRIMARY KEY,
-    ss tgeogpoint
+    temp tgeogpoint
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_step_seqset.data'
-COPY tbl_tgeogpoint_step_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeogpoint_step_seqset (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tgeogpoint_step_seq (
+CREATE TABLE tbl_tgeogpoint_step_contseq (
     k integer PRIMARY KEY,
-    seq tgeogpoint
+    temp tgeogpoint
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_step_seq.data'
-COPY tbl_tgeogpoint_step_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_step_contseq.data'
+COPY tbl_tgeogpoint_step_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint (
     k integer PRIMARY KEY,
@@ -359,87 +359,87 @@ COPY tbl_tgeompoint3d_big (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint3d_discseq (
     k integer PRIMARY KEY,
-    ti tgeompoint(Sequence,PointZ)
+    temp tgeompoint(Sequence,PointZ)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_discseq.data'
-COPY tbl_tgeompoint3d_discseq (k, ti) FROM :'filename';
+COPY tbl_tgeompoint3d_discseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint3d_inst (
     k integer PRIMARY KEY,
-    inst tgeompoint(Instant,PointZ)
+    temp tgeompoint(Instant,PointZ)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_inst.data'
-COPY tbl_tgeompoint3d_inst (k, inst) FROM :'filename';
+COPY tbl_tgeompoint3d_inst (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint3d_seqset (
     k integer PRIMARY KEY,
-    ss tgeompoint(SequenceSet,PointZ)
+    temp tgeompoint(SequenceSet,PointZ)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_seqset.data'
-COPY tbl_tgeompoint3d_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeompoint3d_seqset (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tgeompoint3d_seq (
+CREATE TABLE tbl_tgeompoint3d_contseq (
     k integer PRIMARY KEY,
-    seq tgeompoint(Sequence,PointZ)
+    temp tgeompoint(Sequence,PointZ)
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_seq.data'
-COPY tbl_tgeompoint3d_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_contseq.data'
+COPY tbl_tgeompoint3d_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint3d_step_seqset (
     k integer PRIMARY KEY,
-    ss tgeompoint
+    temp tgeompoint
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_step_seqset.data'
-COPY tbl_tgeompoint3d_step_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeompoint3d_step_seqset (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tgeompoint3d_step_seq (
+CREATE TABLE tbl_tgeompoint3d_step_contseq (
     k integer PRIMARY KEY,
-    seq tgeompoint
+    temp tgeompoint
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_step_seq.data'
-COPY tbl_tgeompoint3d_step_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d_step_contseq.data'
+COPY tbl_tgeompoint3d_step_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint_discseq (
     k integer PRIMARY KEY,
-    ti tgeompoint(Sequence)
+    temp tgeompoint(Sequence)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_discseq.data'
-COPY tbl_tgeompoint_discseq (k, ti) FROM :'filename';
+COPY tbl_tgeompoint_discseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint_inst (
     k integer PRIMARY KEY,
-    inst tgeompoint(Instant)
+    temp tgeompoint(Instant)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_inst.data'
-COPY tbl_tgeompoint_inst (k, inst) FROM :'filename';
+COPY tbl_tgeompoint_inst (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint_seqset (
     k integer PRIMARY KEY,
-    ss tgeompoint(SequenceSet)
+    temp tgeompoint(SequenceSet)
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_seqset.data'
-COPY tbl_tgeompoint_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeompoint_seqset (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tgeompoint_seq (
+CREATE TABLE tbl_tgeompoint_contseq (
     k integer PRIMARY KEY,
-    seq tgeompoint(Sequence)
+    temp tgeompoint(Sequence)
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_seq.data'
-COPY tbl_tgeompoint_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_contseq.data'
+COPY tbl_tgeompoint_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint_step_seqset (
     k integer PRIMARY KEY,
-    ss tgeompoint
+    temp tgeompoint
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_step_seqset.data'
-COPY tbl_tgeompoint_step_seqset (k, ss) FROM :'filename';
+COPY tbl_tgeompoint_step_seqset (k, temp) FROM :'filename';
 
-CREATE TABLE tbl_tgeompoint_step_seq (
+CREATE TABLE tbl_tgeompoint_step_contseq (
     k integer PRIMARY KEY,
-    seq tgeompoint
+    temp tgeompoint
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_step_seq.data'
-COPY tbl_tgeompoint_step_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_step_contseq.data'
+COPY tbl_tgeompoint_step_contseq (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_geom_circularstring (
     k integer,

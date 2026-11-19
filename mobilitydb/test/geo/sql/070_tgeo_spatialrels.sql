@@ -596,3 +596,33 @@ SELECT aDwithin(tgeography 'Interp=Step;[Point(0 1)@2001-01-01, Point(0 2)@2001-
 -- A point that misses a tilted face by less than a unit in the last place, and one on it
 SELECT eIntersects(tgeometry 'Triangle Z((3 -8 9,-9 -3 -3,-9 8 -8,3 -8 9))@2001-01-01', geometry 'Point(-5 -1 -0.6666666666666666)');
 SELECT eIntersects(tgeometry 'Triangle Z((5 0 7,6 -3 2,1 -6 6,5 0 7))@2001-01-01', geometry 'Point(4 -3 5)');
+
+-------------------------------------------------------------------------------
+-- An empty geometry is an answer: the relationships asking for a common point
+-- are false and the disjointness is true, ever and always, in both orders
+-------------------------------------------------------------------------------
+
+SELECT eContains(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT eContains(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT eCovers(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT eCovers(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT eDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT eDisjoint(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT eIntersects(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT eTouches(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT eTouches(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY', 1);
+SELECT eDwithin(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 1);
+SELECT aContains(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT aContains(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT aCovers(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT aCovers(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT aDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT aDisjoint(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT aIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT aIntersects(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT aTouches(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+SELECT aTouches(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT aDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY', 1);
+SELECT aDwithin(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 1);

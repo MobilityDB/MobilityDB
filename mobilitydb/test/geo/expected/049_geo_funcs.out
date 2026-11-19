@@ -776,7 +776,9 @@ SELECT
 (1 row)
 
 -- The area, the length and the perimeter are read on the serialized form of
--- every geometry but one holding a curve, and are exactly the PostGIS ones, the
+-- every geometry but one holding a curve, and are exactly the PostGIS ones on
+-- these coordinates, whose shoelace terms sum exactly in doubles, the area
+-- being the double nearest its exact value, the
 -- length of a geometry with Z being in 3D and the one of a surface 0; the
 -- geometry of a 3D box is a solid, whose serialized form carries extended flags
 WITH g(geom) AS (VALUES
@@ -814,6 +816,16 @@ SELECT length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))'),
  length | st_length 
 --------+-----------
       0 |         0
+(1 row)
+
+-- The area of a geometry of straight edges is the double nearest its exact
+-- value: a square at projected coordinates less a hole within 1e-9 of it, which
+-- a sum of its terms in doubles reads as 3.9272163121495396e-07
+SELECT area(geometry 'Polygon((500000.1 6000000.3,500100.8 6000000.3,500100.8 6000101.0,500000.1 6000101.0,500000.1 6000000.3),(500000.10000000097 6000000.300000001,500100.79999999894 6000000.300000001,500100.79999999894 6000100.999999999,500000.10000000097 6000100.999999999,500000.10000000097 6000000.300000001))')
+  = 3.927212674136797e-07 AS nearest;
+ nearest 
+---------
+ t
 (1 row)
 
 -- A surface bounded by circular arcs is measured on its arcs, against the
@@ -1419,7 +1431,6 @@ SELECT segmentize(geography 'Linestring(0 0,0 1)', 0);
 ERROR:  geo_segmentize: maximum segment length must be positive
 SELECT asGeoJSON(geometry 'CircularString(0 0,1 1,2 0)');
 ERROR:  lwgeom_to_geojson: 'CircularString' geometry type not supported
-CONTEXT:  SQL function "asgeojson" statement 1
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 -- A point is located on the serialized form of a (multi)polygon, as the

@@ -175,28 +175,28 @@ CREATE TABLE tbl_tbool_big (
 COPY tbl_tbool_big (k, temp) FROM :'filename';
 CREATE TABLE tbl_tbool_discseq (
     k integer PRIMARY KEY,
-    ti tbool(Sequence)
+    temp tbool(Sequence)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_discseq.data'
-COPY tbl_tbool_discseq (k, ti) FROM :'filename';
+COPY tbl_tbool_discseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tbool_inst (
     k integer PRIMARY KEY,
-    inst tbool(Instant)
+    temp tbool(Instant)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_inst.data'
-COPY tbl_tbool_inst (k, inst) FROM :'filename';
+COPY tbl_tbool_inst (k, temp) FROM :'filename';
 CREATE TABLE tbl_tbool_seqset (
     k integer PRIMARY KEY,
-    ss tbool(SequenceSet)
+    temp tbool(SequenceSet)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_seqset.data'
-COPY tbl_tbool_seqset (k, ss) FROM :'filename';
-CREATE TABLE tbl_tbool_seq (
+COPY tbl_tbool_seqset (k, temp) FROM :'filename';
+CREATE TABLE tbl_tbool_contseq (
     k integer PRIMARY KEY,
-    seq tbool(Sequence)
+    temp tbool(Sequence)
 );
-\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_seq.data'
-COPY tbl_tbool_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbool_contseq.data'
+COPY tbl_tbool_contseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tboxfloat (
     k integer PRIMARY KEY,
     b tbox
@@ -235,40 +235,40 @@ CREATE TABLE tbl_tfloat_big (
 COPY tbl_tfloat_big (k, temp) FROM :'filename';
 CREATE TABLE tbl_tfloat_discseq (
     k integer PRIMARY KEY,
-    ti tfloat(Sequence)
+    temp tfloat(Sequence)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_discseq.data'
-COPY tbl_tfloat_discseq (k, ti) FROM :'filename';
+COPY tbl_tfloat_discseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tfloat_inst (
     k integer PRIMARY KEY,
-    inst tfloat(Instant)
+    temp tfloat(Instant)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_inst.data'
-COPY tbl_tfloat_inst (k, inst) FROM :'filename';
+COPY tbl_tfloat_inst (k, temp) FROM :'filename';
 CREATE TABLE tbl_tfloat_seqset (
     k integer PRIMARY KEY,
-    ss tfloat(SequenceSet)
+    temp tfloat(SequenceSet)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_seqset.data'
-COPY tbl_tfloat_seqset (k, ss) FROM :'filename';
-CREATE TABLE tbl_tfloat_seq (
+COPY tbl_tfloat_seqset (k, temp) FROM :'filename';
+CREATE TABLE tbl_tfloat_contseq (
     k integer PRIMARY KEY,
-    seq tfloat(Sequence)
+    temp tfloat(Sequence)
 );
-\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_seq.data'
-COPY tbl_tfloat_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_contseq.data'
+COPY tbl_tfloat_contseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tfloat_step_seqset (
     k integer PRIMARY KEY,
-    ss tfloat
+    temp tfloat
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_step_seqset.data'
-COPY tbl_tfloat_step_seqset (k, ss) FROM :'filename';
-CREATE TABLE tbl_tfloat_step_seq (
+COPY tbl_tfloat_step_seqset (k, temp) FROM :'filename';
+CREATE TABLE tbl_tfloat_step_contseq (
     k integer PRIMARY KEY,
-    seq tfloat
+    temp tfloat
 );
-\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_step_seq.data'
-COPY tbl_tfloat_step_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tfloat_step_contseq.data'
+COPY tbl_tfloat_step_contseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_intset (
     k integer PRIMARY KEY,
     i intset
@@ -295,28 +295,28 @@ CREATE TABLE tbl_tint_big (
 COPY tbl_tint_big (k, temp) FROM :'filename';
 CREATE TABLE tbl_tint_discseq (
     k integer PRIMARY KEY,
-    ti tint(Sequence)
+    temp tint(Sequence)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_discseq.data'
-COPY tbl_tint_discseq (k, ti) FROM :'filename';
+COPY tbl_tint_discseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tint_inst (
     k integer PRIMARY KEY,
-    inst tint(Instant)
+    temp tint(Instant)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_inst.data'
-COPY tbl_tint_inst (k, inst) FROM :'filename';
+COPY tbl_tint_inst (k, temp) FROM :'filename';
 CREATE TABLE tbl_tint_seqset (
     k integer PRIMARY KEY,
-    ss tint(SequenceSet)
+    temp tint(SequenceSet)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_seqset.data'
-COPY tbl_tint_seqset (k, ss) FROM :'filename';
-CREATE TABLE tbl_tint_seq (
+COPY tbl_tint_seqset (k, temp) FROM :'filename';
+CREATE TABLE tbl_tint_contseq (
     k integer PRIMARY KEY,
-    seq tint(Sequence)
+    temp tint(Sequence)
 );
-\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_seq.data'
-COPY tbl_tint_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tint_contseq.data'
+COPY tbl_tint_contseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tstzrange (
     k integer PRIMARY KEY,
     t tstzrange
@@ -337,28 +337,28 @@ CREATE TABLE tbl_ttext_big (
 COPY tbl_ttext_big (k, temp) FROM :'filename';
 CREATE TABLE tbl_ttext_discseq (
     k integer PRIMARY KEY,
-    ti ttext(Sequence)
+    temp ttext(Sequence)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_discseq.data'
-COPY tbl_ttext_discseq (k, ti) FROM :'filename';
+COPY tbl_ttext_discseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_ttext_inst (
     k integer PRIMARY KEY,
-    inst ttext(Instant)
+    temp ttext(Instant)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_inst.data'
-COPY tbl_ttext_inst (k, inst) FROM :'filename';
+COPY tbl_ttext_inst (k, temp) FROM :'filename';
 CREATE TABLE tbl_ttext_seqset (
     k integer PRIMARY KEY,
-    ss ttext(SequenceSet)
+    temp ttext(SequenceSet)
 );
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_seqset.data'
-COPY tbl_ttext_seqset (k, ss) FROM :'filename';
-CREATE TABLE tbl_ttext_seq (
+COPY tbl_ttext_seqset (k, temp) FROM :'filename';
+CREATE TABLE tbl_ttext_contseq (
     k integer PRIMARY KEY,
-    seq ttext(Sequence)
+    temp ttext(Sequence)
 );
-\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_seq.data'
-COPY tbl_ttext_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_ttext_contseq.data'
+COPY tbl_ttext_contseq (k, temp) FROM :'filename';
 -- Launch the ANALYZE deamon to avoid that it is launched during the tests
 ANALYZE;
 CREATE TABLE tbl_tbigint_big (

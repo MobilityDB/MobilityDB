@@ -97,7 +97,7 @@ FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tgeometry_inst;
 CREATE TABLE tbl_tgeometry_inst AS
-SELECT k, random_tgeometry_inst(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 3812) AS inst
+SELECT k, random_tgeometry_inst(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeometry3D_inst;
@@ -107,7 +107,7 @@ FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeometry_discseq;
 CREATE TABLE tbl_tgeometry_discseq AS
-SELECT k, random_tgeometry_discseq(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS ti
+SELECT k, random_tgeometry_discseq(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeometry3D_discseq;
@@ -115,9 +115,9 @@ CREATE TABLE tbl_tgeometry3D_discseq AS
 SELECT k, random_tgeometry3D_discseq(-100, 100, -100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS ti
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tgeometry_seq;
-CREATE TABLE tbl_tgeometry_seq AS
-SELECT k, random_tgeometry_stepseq(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
+DROP TABLE IF EXISTS tbl_tgeometry_contseq;
+CREATE TABLE tbl_tgeometry_contseq AS
+SELECT k, random_tgeometry_stepseq(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeometry3D_seq;
@@ -127,7 +127,7 @@ FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeometry_seqset;
 CREATE TABLE tbl_tgeometry_seqset AS
-SELECT k, random_tgeometry_seqset(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS ss
+SELECT k, random_tgeometry_seqset(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS temp
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tgeometry3D_seqset;
@@ -137,10 +137,10 @@ FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tgeometry;
 CREATE TABLE tbl_tgeometry(k, temp) AS
-(SELECT k, inst FROM tbl_tgeometry_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, ti FROM tbl_tgeometry_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_tgeometry_seq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss FROM tbl_tgeometry_seqset LIMIT size / 4);
+(SELECT k, temp FROM tbl_tgeometry_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, temp FROM tbl_tgeometry_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, temp FROM tbl_tgeometry_contseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp FROM tbl_tgeometry_seqset LIMIT size / 4);
 
 DROP TABLE IF EXISTS tbl_tgeometry3D;
 CREATE TABLE tbl_tgeometry3D(k, temp) AS
@@ -153,7 +153,7 @@ CREATE TABLE tbl_tgeometry3D(k, temp) AS
 
 DROP TABLE IF EXISTS tbl_tgeography_inst;
 CREATE TABLE tbl_tgeography_inst AS
-SELECT k, random_tgeography_inst(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 7844) AS inst
+SELECT k, random_tgeography_inst(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 7844) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeography3D_inst;
@@ -163,7 +163,7 @@ FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeography_discseq;
 CREATE TABLE tbl_tgeography_discseq AS
-SELECT k, random_tgeography_discseq(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 7844) AS ti
+SELECT k, random_tgeography_discseq(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 7844) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeography3D_discseq;
@@ -171,9 +171,9 @@ CREATE TABLE tbl_tgeography3D_discseq AS
 SELECT k, random_tgeography3D_discseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 7844) AS ti
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tgeography_seq;
-CREATE TABLE tbl_tgeography_seq AS
-SELECT k, random_tgeography_stepseq(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 7844) AS seq
+DROP TABLE IF EXISTS tbl_tgeography_contseq;
+CREATE TABLE tbl_tgeography_contseq AS
+SELECT k, random_tgeography_stepseq(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 7844) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeography3D_seq;
@@ -183,7 +183,7 @@ FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tgeography_seqset;
 CREATE TABLE tbl_tgeography_seqset AS
-SELECT k, random_tgeography_seqset(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 7844) AS ss
+SELECT k, random_tgeography_seqset(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 7844) AS temp
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tgeography3D_seqset;
@@ -193,10 +193,10 @@ FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tgeography;
 CREATE TABLE tbl_tgeography(k, temp) AS
-(SELECT k, inst FROM tbl_tgeography_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, ti FROM tbl_tgeography_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_tgeography_seq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss FROM tbl_tgeography_seqset LIMIT size / 4);
+(SELECT k, temp FROM tbl_tgeography_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, temp FROM tbl_tgeography_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, temp FROM tbl_tgeography_contseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp FROM tbl_tgeography_seqset LIMIT size / 4);
 
 DROP TABLE IF EXISTS tbl_tgeography3D;
 CREATE TABLE tbl_tgeography3D(k, temp) AS
@@ -216,7 +216,7 @@ SELECT * FROM tbl_geometry LIMIT 3;
 SELECT * FROM tbl_geometryset LIMIT 3;
 SELECT * FROM tbl_tgeometry_inst LIMIT 3;
 SELECT * FROM tbl_tgeometry_discseq LIMIT 3;
-SELECT * FROM tbl_tgeometry_seq LIMIT 3;
+SELECT * FROM tbl_tgeometry_contseq LIMIT 3;
 SELECT * FROM tbl_tgeometry_seqset LIMIT 3;
 SELECT * FROM tbl_tgeometry LIMIT 3;
 SELECT * FROM tbl_tgeometry LIMIT 3 OFFSET 25;

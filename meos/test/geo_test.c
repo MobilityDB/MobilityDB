@@ -1552,6 +1552,35 @@ int main(void)
   free(holed_geo); free(holed_buf);
   meos_errno_reset();
 
+  /* An erosion at projected coordinates erodes: the buffer of a 0.02 square
+   * at 6.4e6 by -0.001 is the square of side 0.018 inside it, its area
+   * 3.24e-4, whichever way its ring runs. Read about the origin, the area of
+   * the ring at 6.4e6 is lost in the rounding of terms near 4e13, the ring's
+   * orientation with it, and the erosion grows the square instead */
+  const char *erode_rings[2] = {
+    "POLYGON((6400000 6400000,6400000.02 6400000,6400000.02 6400000.02,"
+      "6400000 6400000.02,6400000 6400000))",
+    "POLYGON((6400000 6400000,6400000 6400000.02,6400000.02 6400000.02,"
+      "6400000.02 6400000,6400000 6400000))" };
+  char erode_covers_patt[10] = "T*****FF*";
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *sq = geom_in(erode_rings[i], -1);
+    assert(sq != NULL);
+    GSERIALIZED *eroded = geom_buffer(sq, -0.001, "");
+    assert(eroded != NULL);
+    double sq_area = geom_area(sq), eroded_area = geom_area(eroded);
+    bool covers = geom_relate_pattern(sq, eroded, erode_covers_patt);
+    printf("geom_buffer(a 0.02 square at 6.4e6 running %s, -0.001): area %.6g, "
+      "covered by the square %d\n", i ? "clockwise" : "counter-clockwise",
+      eroded_area, covers);
+    assert(eroded_area < sq_area);
+    assert(fabs(eroded_area - 3.24e-4) < 1e-9);
+    assert(covers == true);
+    free(sq); free(eroded);
+  }
+  meos_errno_reset();
+
   /* The round join at a vertex spans the angle the two edges meeting there
    * turn by, and at a vertex turning by less than about 2e-4 radians it bulges
    * from its chord by less than the rounding of coordinates near 6e6. Such a
@@ -1985,6 +2014,48 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* The erosion of a polygon is the set of its points at least the radius
+   * from its boundary. The square of side 1024 eroded by 500 is the square of
+   * side 24; eroded by its half-width or more it holds nothing, where its
+   * contracted ring comes back out inverted or where its box cannot hold the
+   * disc. The square with a centred hole of half-width 64, eroded by 100, is
+   * the square of side 824 less the hole grown by 100, of area
+   * 4 64^2 + 8 64 100 + pi 100^2; eroded by 300 the grown hole lies around
+   * the contracted exterior and the erosion is empty */
+  const struct { const char *wkt; double radius; double area; } erosions[] = {
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0))", 500.0, 576.0 },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0))", 600.0, 0.0 },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0))", 1024.0, 0.0 },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0))", 2048.0, 0.0 },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0),"
+      "(448 448,448 576,576 576,576 448,448 448))", 100.0,
+      824.0 * 824.0 - (4.0 * 64.0 * 64.0 + 8.0 * 64.0 * 100.0 +
+        M_PI * 100.0 * 100.0) },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0),"
+      "(448 448,448 576,576 576,576 448,448 448))", 300.0, 0.0 },
+  };
+  for (size_t i = 0; i < sizeof(erosions) / sizeof(erosions[0]); i++)
+  {
+    GSERIALIZED *g = geom_in(erosions[i].wkt, -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    GSERIALIZED *e = geom_buffer(g, - erosions[i].radius, "");
+    printf("geom_buffer(an erosion by %g, %zu): answered %d, errno %d\n",
+      erosions[i].radius, i, e != NULL, meos_errno());
+    assert(e != NULL);
+    assert(meos_errno() == 0);
+    bool empty = geo_is_empty(e);
+    double area = empty ? 0.0 : geom_area(e);
+    printf("  empty %d, area %.10g, expected %.10g\n", empty, area,
+      erosions[i].area);
+    if (erosions[i].area == 0.0)
+      assert(empty);
+    else
+      assert(fabs(area - erosions[i].area) <= 1e-6 * erosions[i].area);
+    free(e); free(g);
+    meos_errno_reset();
+  }
+
   /* A repeated vertex draws an edge of no length, and such an edge lies under
    * every point of the plane unless the test that reads a point against it
    * rejects the ones its bounding box cannot hold. The witness is a square
@@ -2186,6 +2257,57 @@ int main(void)
   assert(meos_errno() == 0);
   free(apt); free(aln); free(ahole); free(amulti);
   meos_errno_reset();
+
+  /* The area of a geometry of straight edges is the double nearest its exact
+   * value, a tie going to the even one, at every magnitude of its coordinates.
+   * A square at projected coordinates less a hole within 1e-9 of it encloses
+   * 3.927212674136797e-07, which a sum of its terms in doubles reads as
+   * 3.9272163121495396e-07; a triangle reaching from subnormal coordinates to
+   * 1e307 encloses 3.3118017121875465e-17, its products leaving the doubles
+   * at both ends; a unit square and a triangle of legs 2^-26 enclose
+   * 1 + 2^-53, a tie that goes to 1, and with legs 3 2^-26 and 2^-26
+   * 1 + 3 2^-53, a tie that goes to 1 + 2^-51; a rectangle of 1e154 by
+   * 1.7e154 encloses their product, twice of which leaves the doubles, and a
+   * square of side 1.5e154 an area beyond them, which raises */
+  struct { const char *wkt; double area; } exact_areas[] = {
+    {"POLYGON((500000.1 6000000.3,500100.8 6000000.3,500100.8 6000101.0,"
+      "500000.1 6000101.0,500000.1 6000000.3),(500000.10000000097 "
+      "6000000.300000001,500100.79999999894 6000000.300000001,"
+      "500100.79999999894 6000100.999999999,500000.10000000097 "
+      "6000100.999999999,500000.10000000097 6000000.300000001))",
+      0x1.a5ae666656c00p-22},
+    {"POLYGON((-2.4194e-319 -2.4194e-319,1.584721628692562e+307 "
+      "9.264240401570348e+307,-2.41944e-319 -2.41964e-319,"
+      "-2.4194e-319 -2.4194e-319))", 0x1.3175b4ff1d11bp-55},
+    {"MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((0 0,1.4901161193847656e-08 0,"
+      "0 1.4901161193847656e-08,0 0)))", 1.0},
+    {"MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((0 0,4.470348358154297e-08 0,"
+      "0 1.4901161193847656e-08,0 0)))", 0x1.0000000000002p+0},
+    {"POLYGON((0 0,1e154 0,1e154 1.7e154,0 1.7e154,0 0))", 1e154 * 1.7e154},
+  };
+  for (size_t i = 0; i < sizeof(exact_areas) / sizeof(exact_areas[0]); i++)
+  {
+    GSERIALIZED *g = geom_in(exact_areas[i].wkt, -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    double a = geom_area(g);
+    printf("exact area %zu: %a, nearest %a, errno %d\n", i, a,
+      exact_areas[i].area, meos_errno());
+    assert(a == exact_areas[i].area);
+    assert(meos_errno() == 0);
+    free(g);
+  }
+  GSERIALIZED *aover = geom_in(
+    "POLYGON((0 0,1.5e154 0,1.5e154 1.5e154,0 1.5e154,0 0))", -1);
+  assert(aover != NULL);
+  meos_errno_reset();
+  double aov = geom_area(aover);
+  printf("area beyond the doubles: %g, errno %d\n", aov, meos_errno());
+  assert(aov == DBL_MAX);
+  assert(meos_errno() == MEOS_ERR_VALUE_OUT_OF_RANGE);
+  free(aover);
+  meos_errno_reset();
+
   /* A geodetic geometry is refused, as it is by the other planar measures */
   GSERIALIZED *ageog = geog_in("SRID=4326;POLYGON((0 0,1 0,1 1,0 1,0 0))", -1);
   assert(ageog != NULL);

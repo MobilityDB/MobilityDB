@@ -345,7 +345,7 @@ asCoverageJSON(raster) → text
 asCoverageJSON(raquet) → text
 asCoverageJSON(tfloat,tgeompoint) → text
 </programlisting>
-				<para>CoverageJSON is the encoding of OGC API – Coverages and OGC API – Environmental Data Retrieval. A <varname>raster</varname> is a <varname>Grid</varname> coverage: its axes <varname>x</varname> and <varname>y</varname> run from the centre of the first pixel to the centre of the last, each band is a parameter <varname>band1</varname>, <varname>band2</varname> ..., whose values run row by row from the top row, and a nodata pixel is <varname>null</varname>; a raster with a skew, whose pixels lie on no such axes, and a raster in no spatial reference system raise an error. A <varname>raquet</varname> tile is a grid of Web Mercator, EPSG:3857, over the bounds of its QUADBIN cell. The values a trajectory reads, such as those of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>, are a <varname>Trajectory</varname> coverage whose points are the instants of the values, each at the position of the trajectory at its instant. EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MobilityDB states it.</para>
+				<para>CoverageJSON is the encoding of OGC API – Coverages and OGC API – Environmental Data Retrieval. A <varname>raster</varname> is a <varname>Grid</varname> coverage: its axes <varname>x</varname> and <varname>y</varname> run from the centre of the first pixel to the centre of the last, each band is a parameter <varname>band1</varname>, <varname>band2</varname> ..., whose values run row by row from the top row, and a nodata pixel is <varname>null</varname>; a raster with a skew, whose pixels lie on no such axes, and a raster in no spatial reference system raise an error. A <varname>raquet</varname> tile is a grid of Web Mercator, EPSG:3857, over the bounds of its QUADBIN cell. The values a trajectory reads, such as those of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>, are a <varname>Trajectory</varname> coverage whose points are the instants of the values, each at the position of the trajectory at its instant; values read at one place are a <varname>Point</varname> for one instant and a <varname>PointSeries</varname> for several, the instants on its axis <varname>t</varname>, the coverages the position query of OGC API – Environmental Data Retrieval answers. EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MobilityDB states it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
   ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
@@ -1157,12 +1157,14 @@ SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
 			<listitem xml:id="tcell_atStbox">
 				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
-				<para>Restrict a temporal QUADBIN or H3 cell to (the complement of) a spatiotemporal box</para>
+				<para>Restrict a temporal QUADBIN, H3 or S2 cell to (the complement of) a spatiotemporal box</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atStbox(tquadbin,stbox,borderInc boolean=true) &#8594; tquadbin
 minusStbox(tquadbin,stbox,borderInc boolean=true) &#8594; tquadbin
 atStbox(th3index,stbox,borderInc boolean=true) &#8594; th3index
 minusStbox(th3index,stbox,borderInc boolean=true) &#8594; th3index
+atStbox(ts2cell,stbox,borderInc boolean=true) &#8594; ts2cell
+minusStbox(ts2cell,stbox,borderInc boolean=true) &#8594; ts2cell
 </programlisting>
 				<para>A cell lies in a box at an instant when its tile, with the boundary points it owns, shares a point with the box. A tile holds its west and north boundaries and its north-west corner, and a tile of the last row its south boundary too, as for <link linkend="tcell_tgeompoint_to_th3"><varname>tquadbin</varname></link>, so a box touching a tile only along its east meridian or its south parallel leaves it out. The box holds its upper borders unless <varname>borderInc</varname> is false. The box has the SRID 4326 of the cell; a box with the time dimension alone restricts the value to its period.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1180,13 +1182,19 @@ SELECT asText(minusStbox(tquadbin '[4817ffffffffffff@2001-01-01, 4813fffffffffff
   4817ffffffffffff@2001-01-03]', stbox 'SRID=4326;STBOX X((10,10),(20,20))'));
 -- {[4813ffffffffffff@2001-01-02, 4813ffffffffffff@2001-01-03)}
 </programlisting>
-				<para>An H3 cell takes a geodetic box, and lies in it at an instant when the cell, with the boundary points it owns, shares a position with the box. The cell is the region its outline bounds, its edges great-circle arcs, holding its north and west sides, as for <link linkend="tcell_tgeompoint_to_th3"><varname>th3index</varname></link>. The box is read on its bounds, the meridians and parallels of its longitudes and latitudes, never on the polygon of its corners, whose edges are great circles that leave the parallels: in the box <varname>X((0,40),(90,50))</varname> the cell around <varname>Point(45 55)</varname> lies inside the polygon of the corners and outside the box. A vertex of the cell lies in the box by its degrees, as a position does, and an edge enters it where its great circle crosses the meridians and parallels of the box, as the path of a <varname>tgeogpoint</varname> between two instants does, so a cell and a temporal geography point travelling along its edges are read alike. The cell itself is read on the geodetic positions of its vertices, which lie up to 5&#183;10<superscript>-15</superscript> degrees from their degrees, and the crossings of an edge with the parallels of the box are computed in floating-point trigonometry: a box whose bound passes that close to a vertex of a cell may be read on either side of it. S2 cells are not restricted to a box.</para>
+				<para>An H3 cell takes a geodetic box, and lies in it at an instant when the cell, with the boundary points it owns, shares a position with the box. The cell is the region its outline bounds, its edges great-circle arcs, holding its north and west sides, as for <link linkend="tcell_tgeompoint_to_th3"><varname>th3index</varname></link>. The box is read on its bounds, the meridians and parallels of its longitudes and latitudes, never on the polygon of its corners, whose edges are great circles that leave the parallels: in the box <varname>X((0,40),(90,50))</varname> the cell around <varname>Point(45 55)</varname> lies inside the polygon of the corners and outside the box. A vertex of the cell lies in the box by its degrees, as a position does, and an edge enters it where its great circle crosses the meridians and parallels of the box, as the path of a <varname>tgeogpoint</varname> between two instants does, so a cell and a temporal geography point travelling along its edges are read alike. The cell itself is read on the geodetic positions of its vertices, which lie up to 5&#183;10<superscript>-15</superscript> degrees from their degrees, and the crossings of an edge with the parallels of the box are computed in floating-point trigonometry: a box whose bound passes that close to a vertex of a cell may be read on either side of it. An S2 cell is read alike, on the outline whose vertices are the corners of its tile of the cube, its edges great-circle arcs, holding its low-i and low-j sides and the corner between them, as for <link linkend="tcell_tgeompoint_to_th3"><varname>ts2cell</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-01'),
   stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
 -- 832d5afffffffff@2001-01-01
 SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
   stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
+-- NULL
+SELECT asText(atStbox(ts2cell '47c3c@2001-01-01',
+  stbox 'SRID=4326;GEODSTBOX X((4,51),(5,52))'));
+-- 47c3c@2001-01-01
+SELECT asText(atStbox(ts2cell '47c3c@2001-01-01',
+  stbox 'SRID=4326;GEODSTBOX X((5,51),(6,52))'));
 -- NULL
 </programlisting>
 			</listitem>
@@ -1633,14 +1641,16 @@ SELECT ts2cell '47c3c@2001-01-01' ~= ts2cell '47c3c@2001-01-01';
 			<listitem xml:id="tcell_ever_always_overlaps">
 				<indexterm significance="normal"><primary><varname>?&amp;&amp;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>%&amp;&amp;</varname></primary></indexterm>
-				<para>Ever and always overlaps of a temporal QUADBIN or H3 cell and a spatiotemporal box</para>
+				<para>Ever and always overlaps of a temporal QUADBIN, H3 or S2 cell and a spatiotemporal box</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tquadbin {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tquadbin → boolean
 th3index {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} th3index → boolean
+ts2cell {?&amp;&amp;, %&amp;&amp;} stbox → boolean
+stbox {?&amp;&amp;, %&amp;&amp;} ts2cell → boolean
 </programlisting>
-				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a cell lies in a box when its tile or its H3 cell, with the boundary points it owns, shares a point with the box, as <xref linkend="tcell_atStbox"/> restricts it.</para>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a cell lies in a box when its tile, its H3 cell or its S2 cell, with the boundary points it owns, shares a point with the box, as <xref linkend="tcell_atStbox"/> restricts it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' ?&amp;&amp;
   stbox 'SRID=4326;STBOX X((10,10),(20,20))';

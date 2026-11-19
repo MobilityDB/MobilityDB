@@ -63,7 +63,7 @@ FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tcbuffer_inst;
 CREATE TABLE tbl_tcbuffer_inst AS
-SELECT k, random_tcbuffer_inst(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 5676) AS inst
+SELECT k, random_tcbuffer_inst(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 5676) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tcbuffer_discseq;
@@ -71,22 +71,22 @@ CREATE TABLE tbl_tcbuffer_discseq AS
 SELECT k, random_tcbuffer_discseq(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 5676) AS seq
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tcbuffer_seq;
-CREATE TABLE tbl_tcbuffer_seq AS
-SELECT k, random_tcbuffer_contseq(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 5676) AS seq
+DROP TABLE IF EXISTS tbl_tcbuffer_contseq;
+CREATE TABLE tbl_tcbuffer_contseq AS
+SELECT k, random_tcbuffer_contseq(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 5676) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tcbuffer_seqset;
 CREATE TABLE tbl_tcbuffer_seqset AS
-SELECT k, random_tcbuffer_seqset(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 5676) AS ss
+SELECT k, random_tcbuffer_seqset(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 5676) AS temp
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tcbuffer;
 CREATE TABLE tbl_tcbuffer(k, temp) AS
-(SELECT k, inst FROM tbl_tcbuffer_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, seq FROM tbl_tcbuffer_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_tcbuffer_seq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss FROM tbl_tcbuffer_seqset LIMIT size / 4);
+(SELECT k, temp FROM tbl_tcbuffer_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, temp FROM tbl_tcbuffer_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, temp FROM tbl_tcbuffer_contseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp FROM tbl_tcbuffer_seqset LIMIT size / 4);
 
 -------------------------------------------------------------------------------
 RETURN 'The End';
@@ -99,7 +99,7 @@ SELECT * FROM tbl_cbuffer LIMIT 3;
 SELECT * FROM tbl_nsegment LIMIT 3;
 SELECT * FROM tbl_tcbuffer_inst LIMIT 3;
 SELECT * FROM tbl_tcbuffer_discseq LIMIT 3;
-SELECT * FROM tbl_tcbuffer_seq LIMIT 3;
+SELECT * FROM tbl_tcbuffer_contseq LIMIT 3;
 SELECT * FROM tbl_tcbuffer_seqset LIMIT 3;
 SELECT * FROM tbl_tcbuffer LIMIT 3;
 SELECT * FROM tbl_tcbuffer LIMIT 3 OFFSET 25;
