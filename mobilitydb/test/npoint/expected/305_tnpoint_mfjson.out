@@ -77,3 +77,17 @@ ERROR:  Unable to find 'interpolation' in MFJSON string
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"XXX"}');
 ERROR:  Invalid 'interpolation' value in MFJSON string
 -------------------------------------------------------------------------------
+-- The crs of a document states the SRID of the network: stating that SRID
+-- reads the value, and stating another one contradicts it, as the SRID of an
+-- EWKT or of an EWKB does
+SELECT SRID(tnpointFromMFJSON(asMFJSON(tnpoint 'Npoint(1, 0.5)@2001-01-01')))
+  = SRID(tnpoint 'Npoint(1, 0.5)@2001-01-01');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpointFromMFJSON(regexp_replace(asMFJSON(
+  tnpoint 'Npoint(1, 0.5)@2001-01-01'), '"name":"EPSG:[0-9]+"',
+  '"name":"EPSG:3857"'));
+ERROR:  The SRID of the MFJSON (3857) does not match the SRID of the tnpoint (5676)
