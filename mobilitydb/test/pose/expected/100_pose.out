@@ -138,6 +138,38 @@ SELECT srid(pose 'Pose(SRID=5676;Point(1 1),0.5)');
  5676
 (1 row)
 
+-- setSRID reads an SRID as ST_SetSRID reads it, and the values and the
+-- bounding box of a temporal pose state that one SRID
+WITH s(srid) AS (VALUES (3857), (1000000), (999999999))
+SELECT srid, ST_SRID(ST_SetSRID(geometry 'Point(1 1)', srid)),
+  SRID(setSRID(pose 'Pose(Point(1 1),0.5)', srid)),
+  SRID(setSRID(tpose '[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02]', srid)),
+  SRID(setSRID(tpose '[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02]', srid)::stbox)
+FROM s;
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+   srid    | st_srid |  srid  |  srid  |  srid  
+-----------+---------+--------+--------+--------
+      3857 |    3857 |   3857 |   3857 |   3857
+   1000000 |  999001 | 999001 | 999001 | 999001
+ 999999999 |  999000 | 999000 | 999000 | 999000
+(3 rows)
+
+SELECT SRID(setSRID(pose 'Pose(Point(1 1),0.5)', -1));
+NOTICE:  SRID value -1 converted to the officially unknown SRID value 0
+ srid 
+------
+    0
+(1 row)
+
+SELECT setSRID(pose 'Pose(Point(1 1),0.5)', 1000001);
+ERROR:  The SRID is invalid
 -- (yaw, pitch, roll) accessors. For a 2D pose the rotation theta is yaw;
 -- pitch and roll are zero by definition. For a 3D pose these are the
 -- ZYX intrinsic Tait-Bryan decomposition (the OGC GeoPose convention).

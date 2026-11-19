@@ -1182,6 +1182,7 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 SRID(spatialset) → integer
 setSRID(spatialset,integer) → spatialset
 </programlisting>
+<para>The SRID is set as <link linkend="geo_srid"><varname>setSRID</varname></link> sets it on a geometry, an SRID beyond the reserved range being folded into it, and the values and the bounding box take that one SRID. The invalid SRID is refused, and so is the unknown SRID 0, which a negative SRID is read as.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(geomset '{"Point(1 1)", "Point(2 2)"}');
 -- 0
