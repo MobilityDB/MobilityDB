@@ -40,6 +40,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <string.h>  /* memset */
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
@@ -56,6 +57,8 @@
 #include "temporal/type_util.h"  /* pfree_array */
 #include "geo/tgeo_spatialfuncs.h"  /* tpointinst_make_coords */
 #include "pointcloud/pcpoint.h" /* struct Pcpoint body (.pcid field) */
+#include "pointcloud/pcpatch.h"  /* pcpatch_transf_pj */
+#include "temporal/lifting.h"  /* tfunc_temporal */
 #include "pointcloud/tpc_boxops.h"  /* tpcpoint_restrict_tpcbox */
 
 /*****************************************************************************
@@ -379,3 +382,83 @@ tpcpoint_minus_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Transformation into the schema of another pcid
+ *****************************************************************************/
+
+/**
+ * @brief Return a pcpoint transformed into the schema of another pcid, the
+ * function #tpointcloud_transform lifts
+ * @param[in] value Point
+ * @param[in] pcid Target pcid
+ * @param[in] to Schema of the target pcid
+ * @param[in] pj Transformation, @p NULL when the SRIDs are equal
+ */
+static Datum
+datum_pcpoint_transf_pj(Datum value, Datum pcid, Datum to, Datum pj)
+{
+  return PointerGetDatum(pcpoint_transf_pj(
+    (const Pcpoint *) DatumGetPointer(value), DatumGetUInt32(pcid),
+    (const PCSCHEMA *) DatumGetPointer(to),
+    (const LWPROJ *) DatumGetPointer(pj)));
+}
+
+/**
+ * @brief Return a pcpatch transformed into the schema of another pcid, the
+ * function #tpointcloud_transform lifts
+ * @param[in] value Patch
+ * @param[in] pcid Target pcid
+ * @param[in] to Schema of the target pcid
+ * @param[in] pj Transformation, @p NULL when the SRIDs are equal
+ */
+static Datum
+datum_pcpatch_transf_pj(Datum value, Datum pcid, Datum to, Datum pj)
+{
+  return PointerGetDatum(pcpatch_transf_pj(
+    (const Pcpatch *) DatumGetPointer(value), DatumGetUInt32(pcid),
+    (const PCSCHEMA *) DatumGetPointer(to),
+    (const LWPROJ *) DatumGetPointer(pj)));
+}
+
+/**
+ * @ingroup meos_pointcloud_transf
+ * @brief Return a temporal point cloud value transformed into the schema of
+ * another pcid, which states the target SRID
+ * @details The value of each instant is transformed by #pcpoint_transf_pj or
+ * #pcpatch_transf_pj, as #tspatial_transform transforms each value of a
+ * spatiotemporal value
+ * @param[in] temp Temporal pcpoint or pcpatch
+ * @param[in] pcid Target pcid
+ * @csqlfn #Tpointcloud_transform()
+ */
+Temporal *
+tpointcloud_transform(const Temporal *temp, uint32_t pcid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  bool point = (temp->temptype == T_TPCPOINT);
+  Datum first = temporal_start_value(temp);
+  uint32_t pcid_from = point ?
+    pcpoint_get_pcid((const Pcpoint *) DatumGetPointer(first)) :
+    pcpatch_get_pcid((const Pcpatch *) DatumGetPointer(first));
+  /* The start value is a copy */
+  pfree(DatumGetPointer(first));
+  const PCSCHEMA *to;
+  LWPROJ *pj;
+  if (! pc_transform_lookup(pcid_from, pcid, &to, &pj))
+    return NULL;
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = point ? (varfunc) datum_pcpoint_transf_pj :
+    (varfunc) datum_pcpatch_transf_pj;
+  lfinfo.numparam = 3;
+  lfinfo.param[0] = UInt32GetDatum(pcid);
+  lfinfo.param[1] = PointerGetDatum(to);
+  lfinfo.param[2] = PointerGetDatum(pj);
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  return tfunc_temporal(temp, &lfinfo);
+}

@@ -689,6 +689,26 @@ Tpcbox_round(PG_FUNCTION_ARGS)
   PG_RETURN_TPCBOX_P(result);
 }
 
+PGDLLEXPORT Datum Tpcbox_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_transform);
+/**
+ * @ingroup mobilitydb_pointcloud_box
+ * @brief Return a TPCBox transformed into the schema of another pcid, which
+ * states the target SRID, as #Stbox_transform transforms a spatiotemporal box
+ * into an SRID
+ * @sqlfn transform()
+ * @altsqlfn tpcboxTransform()
+ */
+Datum
+Tpcbox_transform(PG_FUNCTION_ARGS)
+{
+  TPCBox *box = PG_GETARG_TPCBOX_P(0);
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(1);
+  TPCBox *result = tpcbox_transform(box, pcid);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TPCBOX_P(result);
+}
+
 /*****************************************************************************
  * Set operations
  *****************************************************************************/

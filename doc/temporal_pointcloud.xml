@@ -259,6 +259,28 @@ SELECT SRID(pcpatch(pcpoint(1, 10.0, 20.0, 30.0), pcpoint(1, 11.0, 21.0, 31.0)))
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="pcpoint_transform">
+					<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+					<para>Transform to the schema of another pcid</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform({pcpoint,pcpatch,pcpointset,pcpatchset},pcid integer) →
+  {pcpoint,pcpatch,pcpointset,pcpatchset}
+</programlisting>
+					<para>A point cloud value takes its SRID from the schema its pcid names, so it is transformed into the schema of another pcid, which states the target SRID and how the transformed coordinates are stored. The X, Y and Z dimensions are reprojected from the SRID of the source schema to the SRID of the target schema; the other dimensions are matched by name, and a dimension of the target schema that the source schema lacks takes 0, as in the <varname>PC_Transform</varname> function of pgPointCloud. When both schemas state the same SRID, the coordinates are only stored again under the target schema. A patch and a set transform each of their points.</para>
+					<para>An error is raised when the target pcid names no schema, when either schema states no SRID, and when a transformed coordinate does not fit its dimension in the target schema at its scale and offset, rather than being clamped into it.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- pcid 101 names a schema in SRID 4326 with X, Y and Z, and pcid 102 a schema
+-- in SRID 3857 with X, Y, Z and Intensity
+WITH p AS (SELECT transform(pcpoint(101, 4.35, 50.85, 10), 102) AS p)
+SELECT round(getX(p)::numeric, 3), round(getY(p)::numeric, 3), getZ(p),
+  getDim(p, 'Intensity'), pcid(p), SRID(p) FROM p;
+-- 484239.785 | 6594803.227 | 10 | 0 | 102 | 3857
+SELECT ST_AsText(geometry(transform(pcpatch(pcpoint(101, 4.35, 50.85, 10),
+  pcpoint(101, 3.72, 51.05, 5)), 102)), 3);
+-- MULTIPOINT Z ((484239.785 6594803.227 10),(414108.506 6630142.914 5))
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="pcpatch_numPoints">
 					<indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>
 					<para>Return the number of points of a pcpatch</para>
@@ -614,6 +636,21 @@ round(tpcbox,integer=0) → tpcbox
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_transform">
+					<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+					<para>Transform to the schema of another pcid</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform(tpcbox,pcid integer) → tpcbox
+</programlisting>
+					<para>The spatial extent of the box is transformed from the SRID of the schema of its pcid to the SRID of the schema of the target pcid, as the <varname>transform</varname> function of <varname>stbox</varname> transforms it, and the box takes the target pcid. A box without spatial extent only takes the target pcid. An error is raised when the target pcid names no schema or when either schema states no SRID.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- pcid 101 names a schema in SRID 4326 and pcid 102 a schema in SRID 3857
+WITH b AS (SELECT transform(tpcbox(pcpoint(101, 4.35, 50.85, 10)), 102) AS b)
+SELECT round(xMin(b)::numeric, 3), pcid(b), SRID(b) FROM b;
+-- 484239.785 | 102 | 3857
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -982,6 +1019,22 @@ SELECT SRID(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- 0
 SELECT SRID(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
 -- 0
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_transform">
+					<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+					<para>Transform to the schema of another pcid</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform({tpcpoint,tpcpatch},pcid integer) → {tpcpoint,tpcpatch}
+</programlisting>
+					<para>The value of each instant is transformed into the schema of the target pcid as the <varname>transform</varname> function of <varname>pcpoint</varname> and <varname>pcpatch</varname> transforms it, so the errors are the same.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- pcid 101 names a schema in SRID 4326 and pcid 102 a schema in SRID 3857
+WITH t AS (SELECT transform(tpcpoint(pcpoint(101, 4.35, 50.85, 10),
+  timestamptz '2024-01-01'), 102) AS t)
+SELECT pcid(t), SRID(t), round(getX(startValue(t))::numeric, 3) FROM t;
+-- 102 | 3857 | 484239.785
 </programlisting>
 				</listitem>
 
