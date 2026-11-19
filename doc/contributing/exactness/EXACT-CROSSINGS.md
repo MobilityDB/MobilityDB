@@ -576,8 +576,10 @@ diffs classified:
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
 5. **The raster grid walks** of `raster_quadbin.c`: `tpointseq_raster_point_traverse` dates each
    line of the grid a trip crosses as `inst1->t + (TimestampTz) (dt * s)` and reads the value at
-   the fraction `s`, not at the instant it states; the walks at its lines 891 and 1055–1059 date
-   their crossings alike. Witness, the second listing of Sect. "Nearest and Bilinear Values" of
+   the fraction `s`, a hair off the line it crosses. The nearest-pixel walk,
+   `tpointseq_raster_value_traverse`, dates a crossing by the truncation of its exact instant by
+   rule, the pixel left holding that microsecond (CW9 of the cell walks plan, MobilityDB #3544,
+   ruled by the owner on 2026-11-15), so it is no part of this step. Witness, the second listing of Sect. "Nearest and Bilinear Values" of
    chapter 5 of the Vol2 book, over the raster `Depth` of the companion's
    `chapter5/map_algebra.sql`:
 
@@ -598,6 +600,16 @@ diffs classified:
    `chapter5/expected/fields_along_trips.out` still holds the error this listing raised before
    `rasterValue` read bilinear values along a trip; it takes the printed answer when this step
    merges.
+   MobilityDB #3823 (open) dates each crossing of a line of pixel edges or of pixel centres at its
+   nearest microsecond, a tie going to the even timestamp, from the exact truncation of the
+   crossing over twice as many half microseconds (`raster_cross_nearest`, the offset callback of
+   a grid taking a line of pixel centres), reads the value on the line itself, and dates the
+   extremum inside a half-pixel square at its nearest microsecond with no band about the ends of
+   its piece; 500_raster answers the book's listing as printed. Over 4000 trips crossing rasters
+   of 3 to 6 pixels a side, a judge in exact rationals counts 5015 instants of master's answers
+   that are the truncation of a crossing and not its nearest microsecond, and 17 with the
+   change, all in segments of 7 and 1001 microseconds crossing 3 to 11 lines, where several
+   crossings and extrema share a microsecond.
 
 Steps 2–5 carry the dating rule of section 7. If the committers keep truncation instead, the
 steps still apply with truncation computed exactly. The #2852 expected output then moves by one
