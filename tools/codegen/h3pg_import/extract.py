@@ -46,7 +46,7 @@ Inputs:
 
 Outputs:
     meos/src/h3/h3_generated.c
-    meos/src/h3/h3_generated.h
+    meos/include/h3/h3_generated.h
     tools/codegen/h3pg_import/extraction_report.txt           per-function status
 
 Exit codes:
@@ -61,6 +61,7 @@ import fnmatch
 import pathlib
 import re
 import sys
+import textwrap
 from dataclasses import dataclass, field
 from typing import Iterable
 
@@ -122,6 +123,7 @@ class RuleSet:
     arg_readers: list[ArgRule] = field(default_factory=list)
     returns: list[ReturnRule] = field(default_factory=list)
     rewrites: list[RewriteRule] = field(default_factory=list)
+    briefs: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def load(cls, path: pathlib.Path) -> "RuleSet":
@@ -146,6 +148,7 @@ class RuleSet:
                 pattern=re.compile(e["pattern"]),
                 replace=e["replace"],
             ))
+        rs.briefs = dict(data.get("briefs") or {})
         return rs
 
 
@@ -184,6 +187,8 @@ class Extracted:
     src_file: str
     fn_name: str
     signature: str     # "RRR fn_meos(A a, B b)"
+    ret: str           # "RRR"
+    head: str          # "fn_meos(A a, B b)"
     body: str          # transformed body (without surrounding braces)
     doc: str           # leading /* ... */ comment if any
 
@@ -226,6 +231,79 @@ def _initialized_decl(line: str) -> str:
     """
     m = _BARE_DECL.match(line)
     return "%s = {0};" % m.group(1) if m else line
+
+
+#: A local initialized from an expression, `int32_t r = f(x);`
+_INIT_DECL = re.compile(r"^(\s*)[A-Za-z_][\w\s]*?\s+(\w+)\s*=\s*(.+?)\s*;\s*$")
+
+
+def _fold_returned_local(lines: list[str]) -> list[str]:
+    """Return the body with `T v = <expr>; ... return v;` folded into
+    `return <expr>;` when the local exists only to carry the value."""
+    idx = [i for i, l in enumerate(lines) if l.strip()]
+    if len(idx) < 2:
+        return lines
+    last, prev = idx[-1], idx[-2]
+    m = _INIT_DECL.match(lines[prev])
+    if not m or lines[last].strip() != f"return {m.group(2)};":
+        return lines
+    var = re.compile(r"\b%s\b" % re.escape(m.group(2)))
+    if any(var.search(l) for i, l in enumerate(lines) if i not in (prev, last)):
+        return lines
+    return lines[:prev] + [f"{m.group(1)}return {m.group(3)};"]
+
+
+#: The leading words of an h3-pg comment and the MEOS verb replacing them
+_BRIEF_VERBS = (
+    ("Returns true if ", "Return true if "),
+    ("Returns ", "Return "),
+    ("Determines if ", "Return true if "),
+    ("Whether ", "Return true if "),
+    ("Number of ", "Return the number of "),
+)
+
+
+def _meos_verb(text: str) -> str:
+    """Return the sentence with its leading h3-pg verb in MEOS form"""
+    for old, new in _BRIEF_VERBS:
+        if text.startswith(old):
+            return new + text[len(old):]
+    return text
+
+
+def doxygen_comment(e: "Extracted", briefs: dict[str, str]) -> str:
+    """Return the Doxygen comment of an extracted function: the first
+    paragraph of its h3-pg comment as the brief, the other paragraphs as
+    the details, and the source it comes from as the note"""
+    paras: list[list[str]] = []
+    if e.doc:
+        text = re.sub(r"^/\*+|\*/$", "", e.doc.strip())
+        cur: list[str] = []
+        for line in text.splitlines():
+            line = re.sub(r"^\s*\*?\s?", "", line).rstrip()
+            if line:
+                cur.append(line)
+            elif cur:
+                paras.append(cur)
+                cur = []
+        if cur:
+            paras.append(cur)
+    brief = briefs.get(e.fn_name) or (" ".join(paras[0]) if paras else "")
+    if not brief:
+        raise SystemExit(f"{e.fn_name}: no h3-pg comment; add its brief to "
+                         "the briefs section of ruleset.yaml")
+    brief = _meos_verb(brief).rstrip(".")
+    out = ["/**"]
+    out += textwrap.wrap(brief, width=79, initial_indent=" * @brief ",
+                         subsequent_indent=" * ")
+    details = [l for p in paras[1:] for l in p]
+    if details:
+        details[0] = _meos_verb(details[0])
+        out.append(" * @details " + details[0])
+        out += [" * " + l for l in details[1:]]
+    out.append(f" * @note Extracted from {e.src_file} :: {e.fn_name}")
+    out.append(" */")
+    return "\n".join(out) + "\n"
 
 
 def try_transform(ruleset: RuleSet, rel_path: str, doc: str, name: str, body: str
@@ -322,11 +400,12 @@ def try_transform(ruleset: RuleSet, rel_path: str, doc: str, name: str, body: st
     if return_c_type is None:
         return None, "no PG_RETURN_* found — can't infer return type"
 
-    sig = "{ret} {fn}_meos({params})".format(
-        ret=return_c_type,
+    head = "{fn}_meos({params})".format(
         fn=name,
         params=", ".join(f"{t} {n}" for t, n in args) if args else "void",
     )
+    sig = f"{return_c_type} {head}"
+    body_lines = _fold_returned_local(body_lines)
 
     body_text = "\n".join(body_lines).rstrip() + "\n"
     if args_extra:
@@ -336,43 +415,45 @@ def try_transform(ruleset: RuleSet, rel_path: str, doc: str, name: str, body: st
 
     return Extracted(
         src_file=rel_path, fn_name=name, signature=sig,
-        body=body_text, doc=doc.strip(),
+        ret=return_c_type, head=head, body=body_text, doc=doc.strip(),
     ), None
 
 
-def render_c(out: list[Extracted]) -> str:
+#: The rule MEOS files draw between their sections
+SECTION_RULE = "/" + "*" * 77 + "/\n"
+
+
+def render_c(out: list[Extracted], briefs: dict[str, str]) -> str:
     hdr = (
         MDB_LICENSE +
         "/**\n"
         " * @file\n"
-        " * @brief Bodies of the libh3 binding functions translated from\n"
-        " * h3-pg into MEOS.\n"
-        " *\n"
-        " * GENERATED by tools/codegen/h3pg_import/extract.py — DO NOT EDIT.\n"
+        " * @brief Bodies of the libh3 binding functions translated from h3-pg into MEOS\n"
+        " * @details GENERATED by tools/codegen/h3pg_import/extract.py — DO NOT EDIT.\n"
         " *\n"
         " * Bodies extracted from h3-pg at the SHA recorded in\n"
         " * h3-pg/H3PG_REVISION. Regenerate after every `git subtree pull`\n"
         " * of the h3-pg/ directory.\n"
         " */\n\n"
-        '#include "h3/h3_generated.h"\n'
+        '#include "h3/h3_generated.h"\n\n'
+        "/* H3 */\n"
         "#include <h3api.h>\n"
-        "#include <meos.h>\n\n"
+        "/* MEOS */\n"
+        "#include <meos.h>\n\n" +
+        SECTION_RULE + "\n"
     )
     chunks = [hdr]
     for e in out:
-        chunks.append(f"/* Extracted from {e.src_file} :: {e.fn_name} */\n")
-        if e.doc:
-            chunks.append(e.doc + "\n")
-        chunks.append(e.signature + "\n{\n")
+        chunks.append(doxygen_comment(e, briefs))
+        chunks.append(f"{e.ret}\n{e.head}\n{{\n")
         # Re-indent body uniformly. h3-pg source uses a single leading
         # TAB for the function-body indent, so we lstrip tabs only —
         # any surviving leading spaces come from rewrite rules that
         # mark nested continuations (e.g. the h3_assert two-line split)
         # and we want those preserved relative to the fresh 2-space
-        # base indent.
+        # base indent. A body carries no empty line.
         for line in e.body.splitlines():
             if not line.strip():
-                chunks.append("\n")
                 continue
             # Strip leading tabs only.
             stripped = line.lstrip("\t")
@@ -381,6 +462,7 @@ def render_c(out: list[Extracted]) -> str:
             stripped = re.sub(r"\t+", " ", stripped)
             chunks.append("  " + stripped + "\n")
         chunks.append("}\n\n")
+    chunks.append(SECTION_RULE + "\n")
     return "".join(chunks)
 
 
@@ -389,10 +471,9 @@ def render_h(out: list[Extracted]) -> str:
         MDB_LICENSE +
         "/**\n"
         " * @file\n"
-        " * @brief Declarations of the libh3 binding functions translated\n"
-        " * from h3-pg into MEOS (the `*_meos` wrappers used by the h3 family).\n"
-        " *\n"
-        " * GENERATED by tools/codegen/h3pg_import/extract.py — DO NOT EDIT.\n"
+        " * @brief Declarations of the libh3 binding functions translated from h3-pg\n"
+        " * into MEOS (the `*_meos` wrappers used by the h3 family)\n"
+        " * @details GENERATED by tools/codegen/h3pg_import/extract.py — DO NOT EDIT.\n"
         " */\n\n"
         "#pragma once\n\n"
         "#include <h3api.h>\n"
@@ -483,6 +564,14 @@ def main() -> int:
             else:
                 failed.append(Skipped(rel, name, err or "unknown"))
 
+    # A brief of ruleset.yaml stands only for a generated function that
+    # h3-pg leaves without a comment
+    uncommented = {e.fn_name for e in extracted if not e.doc}
+    stale = sorted(set(ruleset.briefs) - uncommented)
+    if stale:
+        sys.exit("ruleset.yaml gives a brief to functions that are not "
+                 "generated or that h3-pg comments: " + ", ".join(stale))
+
     # Report
     report = [
         f"Extracted {len(extracted)} functions, "
@@ -500,14 +589,13 @@ def main() -> int:
         "",
     ]
     report_text = "\n".join(report)
-    REPORT.write_text(report_text)
     print(report_text)
 
     # Write outputs
-    c_text = render_c(extracted)
+    c_text = render_c(extracted, ruleset.briefs)
     h_text = render_h(extracted)
     wrote_change = False
-    for path, body in ((OUT_C, c_text), (OUT_H, h_text)):
+    for path, body in ((OUT_C, c_text), (OUT_H, h_text), (REPORT, report_text)):
         path.parent.mkdir(parents=True, exist_ok=True)
         old = path.read_text() if path.exists() else ""
         if old != body:

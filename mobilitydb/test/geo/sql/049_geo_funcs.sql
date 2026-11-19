@@ -163,6 +163,19 @@ SELECT round(area(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1))::num
 SELECT round(area(buffer(geometry
   'Polygon((0 0,10 0,10 10,0 10,0 0),(4 4,4 6,6 6,6 4,4 4))', 1))::numeric, 6);
 
+-- A hole grown by the distance reaches past the exterior contracted by it,
+-- and the erosion keeps the four corners the exterior holds beyond the
+-- distance of the hole: one lies two and a tenth from the exterior and from
+-- the hole's corner further than two, the other within two of the hole
+SELECT ST_NumGeometries(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),
+  (3.75 3.75,3.75 6.25,6.25 6.25,6.25 3.75,3.75 3.75))', -2)) AS surfaces;
+SELECT contains(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),
+  (3.75 3.75,3.75 6.25,6.25 6.25,6.25 3.75,3.75 3.75))', -2),
+  ST_Point(2.1, 2.1)) AS corner;
+SELECT contains(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),
+  (3.75 3.75,3.75 6.25,6.25 6.25,6.25 3.75,3.75 3.75))', -2),
+  ST_Point(2.1, 5)) AS side;
+
 -- A circular string keeps its arcs, and so does the buffer of one
 SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
