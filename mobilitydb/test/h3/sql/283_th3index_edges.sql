@@ -77,7 +77,7 @@ SELECT isValidCell(th3GetDirectedEdgeDestination(
     th3index '880326b88dfffff@2001-01-01')));
 
 -------------------------------------------------------------------------------
--- th3DirectedEdgeToBoundary — needs h3_adapter.c body
+-- th3DirectedEdgeToBoundary
 -------------------------------------------------------------------------------
 
 SELECT th3DirectedEdgeToBoundary(
