@@ -22142,6 +22142,18 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
        * geometry, and its linear location is read only where the query reads
        * either of them */
       int aloc = relate_point_in_area_index(x, y, &ra, true);
+      /* An edge of positive length leaving an input vertex that lies
+       * strictly inside or outside the area stays on that side for a
+       * stretch of positive length, however near the boundary the vertex
+       * lies, so that side is read off the vertex, exactly, rather than off
+       * a piece the parameters above may be too close to delimit */
+      if (relate_edge_nonempty(line) && isfinite(x) && isfinite(y))
+      {
+        if (aloc == 0)
+          de9im_add(&m->ii, 1);
+        else if (aloc == 2)
+          de9im_add(&m->ie, 1);
+      }
       static const int icell[3] = {DE9IM_II, DE9IM_IB, DE9IM_IE};
       static const int bcell[3] = {DE9IM_BI, DE9IM_BB, DE9IM_BE};
       if (! (want & (icell[aloc] | bcell[aloc])))
