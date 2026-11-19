@@ -152,3 +152,36 @@ indextests:
     dims:
       - {suffix: "", offset: 0, copies: 25, srcfilter: k % 900 = 0,
          fixture: {big: none}}
+  # The base temporal types, one test per type at the number of the index test
+  # of their family, as the geo family has 074_tgeo and 074_tpoint; tbigint has
+  # no fixtures but its table of many values
+  - temp: tbool
+    base: boolean
+    file: mobilitydb/test/temporal/sql/044_tbool_indexes_tbl.sql
+    offset: 10000
+    copies: 0
+    srcfilter: k % 1000 = 0 AND temp IS NOT NULL
+  - temp: ttext
+    base: text
+    file: mobilitydb/test/temporal/sql/044_ttext_indexes_tbl.sql
+    offset: 10000
+    copies: 0
+    srcfilter: k % 1000 = 0 AND temp IS NOT NULL
+  - temp: tint
+    base: integer
+    file: mobilitydb/test/temporal/sql/044_tint_indexes_tbl.sql
+    offset: 10000
+    copies: 0
+    srcfilter: k % 1000 = 0 AND temp IS NOT NULL
+    same: "5"
+    sameq: tbox 'TBOXINT X([5, 5])'
+    labels: true
+  - temp: tfloat
+    base: float
+    file: mobilitydb/test/temporal/sql/044_tfloat_indexes_tbl.sql
+    offset: 10000
+    copies: 0
+    srcfilter: k % 1000 = 0 AND temp IS NOT NULL
+    same: "5.5"
+    sameq: tbox 'TBOXFLOAT X([5.5, 5.5])'
+    labels: true
