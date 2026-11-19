@@ -387,7 +387,12 @@ layer holds it for every question. The phases, each a series of pull requests:
    interval narrower than its band; on 396 pairs of curve polygons whose arcs cross or miss
    2^-38 to 2^-50 of the radius from an end, intersects agrees with CGAL on 396 of 396 (370
    before) and the areal relationships on 1188 of 1188 (1126 before), every relate cell at
-   parity.
+   parity. Queued: `relate_area_edge_intervals` reads the parameters at which a boundary edge
+   meets the other boundary within `MEOS_GEOM_TOLERANCE`, merging two that differ by less and
+   dropping an interval no wider. Each parameter is a quotient of two determinants rounded to a
+   double, so the tolerance is removed by comparing the crossings as exact quotients of the input
+   determinants, never by comparing the rounded doubles exactly; judged by CGAL on its head's
+   answers, after the consolidation below.
 2. **The duplicates of one contract (C7 onwards).** The functions Section 4.6 shows answering the
    survivor's contract become calls to it, one question per pull request, each proven by a
    differential: `certa_sum2_sign` and the sign of
