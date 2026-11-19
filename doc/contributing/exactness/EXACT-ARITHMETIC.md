@@ -375,7 +375,7 @@ layer holds it for every question. The phases, each a series of pull requests:
    doubles (`dist_poly_seg_raycross`, `pip_point_in_ring`, the `inside` of
    `tcbuffer_disc_boundary_sign`) by `point_in_rings_exact` and `point_arc_ray_parity` (C2,
    #3575, merged), the ring
-   area in doubles of the buffer by `ring_area_sign` and `ring_encloses_no_area` (C3, paused: see EA10), the within-times of a moving
+   area in doubles of the buffer by `ring_area_sign` and `ring_encloses_no_area` (C3, #3820, merged), the within-times of a moving
    disc in `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact` (C4, #3588,
    merged, for a geometry of segments; one carrying an arc follows), and `seg2d_side` by
    `cross_product_sign` (C5, #3593, merged). These change answers, where the tolerance answers
@@ -958,20 +958,20 @@ and the nearly closed lines of the gap map decline in none of their 30 cells. It
 the erosion: `cgal_buffer` reads a negative distance as the erosion, a point lying in it where it
 lies inside P, by the exact parity of the edges a ray crosses, at least r from the boundary of P
 (`oracle-kit`, `cpwork/bufring`). The erosion it judges first answered wrongly where it holds
-nothing, and MobilityDB #3817 (open) answers it empty: where the box is narrower than the diameter,
+nothing, and MobilityDB #3817 (merged as `c705e37e1f`) answers it empty: where the box is narrower than the diameter,
 where the contracted exterior passes through itself (the test of the holes,
 `buffer_contracted_ring_inverted`, read against the exterior's own edges), and where a grown hole
 lies around the contracted exterior (`buffer_erosion_place_holes`). On the 400 eroded squares and
 holed squares of the buffer ledger CGAL agrees on 61680 of 61680 answered queries (59432 before)
 and on the 192 real polygons on 3446 of 3446 (2988 of 3074 before), the declines a subset of the
-ones before; every buffer speed cell is at parity. C3 stacks on it: on the erosions of 36 small
+ones before; every buffer speed cell is at parity. C3 (MobilityDB #3820, merged as `d9674bc0d4`) stacks on it: on the erosions of 36 small
 squares and holed squares at 6.4e6, 1e6 and 5.5e5 CGAL agrees on 5808 of 5808, where #3817 alone
 agrees on 5430 of 5684 and declines 124. The test of a ring the
 buffer constructs, `fabs(buffer_ring_signed_area(pieces)) <= MEOS_GEOM_TOLERANCE`, stays with the
 construction of the buffer's joints.
 
 `ring_area_sign` takes its first tier about the first vertex, one product a vertex, the form
-GEOS and PostGIS take, on the coordinates read in place (MobilityDB #3815, open). On the 1147
+GEOS and PostGIS take, on the coordinates read in place (MobilityDB #3815, merged as `23fe8a8a5c`). On the 1147
 rings of the 192 real polygons of the speed cells the tier decides all 1147, where the sum about
 the origin decides 943, and the function costs 0.62 of its instructions; the buffer runs at
 0.956, 0.906 and 0.568 of GEOSBuffer at radius 1, 50 and 500 and at 0.747 on the joints. CGAL
