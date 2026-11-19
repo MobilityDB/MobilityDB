@@ -153,7 +153,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   OPEN as MobilityDB #3834 (`7750336242`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
   settings to 0 and 0). Every text input reads `SRID=` as PostGIS's `wkt_lexer_read_srid` does,
-  branch `fix/srid-text-read-as-postgis` (`91e1d7a819`), which rewrites 9141fa18a0 (MobilityDB #652),
+  OPEN as MobilityDB #3835, branch `fix/srid-text-read-as-postgis` (`eb28502684`, census: 18 of 45
+  readings differing from `geom_in` to 0), which rewrites 9141fa18a0 (MobilityDB #652),
   the body of `srid_parse` that reads a sign or a letter as a digit, by the owner's rulings of
   2026-11-19 ("fix the bugs", "go as you recommend"): a written `SRID=1000001` folds into 999002 as in
   a geometry, while `setSRID` refuses `SRID_INVALID`.
