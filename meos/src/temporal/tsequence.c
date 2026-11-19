@@ -357,19 +357,38 @@ floatsegm_gap_sign(double start1, double end1, double start2, double end2,
     start1);
 }
 
+/* The operands of the gap of two float segments and what the search of
+ * #floatsegm_crossing_search reads of it (#floatsegm_gap_beyond) */
+typedef struct
+{
+  double start1, end1, start2, end2;   /**< Values of the segments */
+  int64 d;        /**< Duration of the segments in microseconds */
+  int sstart;     /**< Sign of the gap at the start */
+  uint64 hikey;   /**< Last key read past the start sign */
+  int hisign;     /**< Sign of the gap at that key */
+} FloatsegmGap;
+
 /**
- * @brief Return the sign of the gap of two float segments half a microsecond
- * after a microsecond of the segments, the last microsecond reading the sign
- * at the end
- * @details The sign at `d + 1/2` is that of the gap at the end, since the gap
- * is linear and the callers read it only where the segments cross inside
+ * @brief Return 1 where the gap of two float segments half a microsecond
+ * after the microsecond `key - 1` keeps its sign at the start, 0 where it
+ * has left it: the side #floatsegm_crossing_search gives #monotone_search
+ * @details The key 0 stands for the microsecond -1, before the crossing,
+ * which lies past the start. The last key read past the start sign keeps
+ * the sign there, which tells a tie
  */
 static int
-floatsegm_gap_sign_half(double start1, double end1, double start2,
-  double end2, int64 d, int64 m, int send)
+floatsegm_gap_beyond(uint64 key, void *arg)
 {
-  return (m < d) ?
-    floatsegm_gap_sign(start1, end1, start2, end2, d, m, 0.5) : send;
+  FloatsegmGap *g = (FloatsegmGap *) arg;
+  if (key == 0)
+    return 1;
+  int s = floatsegm_gap_sign(g->start1, g->end1, g->start2, g->end2, g->d,
+    (int64) key - 1, 0.5);
+  if (g->sstart * s > 0)
+    return 1;
+  g->hikey = key;
+  g->hisign = s;
+  return 0;
 }
 
 /**
@@ -379,17 +398,17 @@ floatsegm_gap_sign_half(double start1, double end1, double start2,
  * @details The crossing lies at the offset `x*` where the gap changes sign.
  * The nearest microsecond is the least `m` at which the gap at `m + 1/2` has
  * left the sign it has at the start, so that `x*` lies in
- * `(m - 1/2, m + 1/2]`. It is searched from the microsecond nearest to the
- * fraction computed in long doubles, by doubling steps and then by
- * bisection, as the dates of the temporal within distance are searched in
- * geo_funcs.c, each step reading one exact sign (#floatsegm_gap_sign), so an
- * estimate that is off costs time and never the answer. A crossing exactly
- * at `m + 1/2`, where that sign is 0, is a tie between `m` and `m + 1`, which
- * goes to the even timestamp: the parity is that of `lower + m`, not of `m`,
- * so that a crossing gets the same instant whatever instant its segment
- * starts at. A nearest microsecond on a bound means the crossing belongs to
- * the bound. Kept out of line, as #point_motion_dwithin_period_wide is, so
- * that the frame of the search does not enlarge every call the filter of
+ * `(m - 1/2, m + 1/2]`, the gap at `d + 1/2` taking the sign at the end. The
+ * one search (#monotone_search) finds it among the keys `m + 1` from the
+ * microsecond nearest to the fraction computed in long doubles, each step
+ * reading one exact sign (#floatsegm_gap_sign), so an estimate that is off
+ * costs time and never the answer. A crossing exactly at `m + 1/2`, where
+ * that sign is 0, is a tie between `m` and `m + 1`, which goes to the even
+ * timestamp: the parity is that of `lower + m`, not of `m`, so that a
+ * crossing gets the same instant whatever instant its segment starts at. A
+ * nearest microsecond on a bound means the crossing belongs to the bound.
+ * Kept out of line, as #point_motion_dwithin_period_wide is, so that the
+ * frame of the search does not enlarge every call the filter of
  * #floatsegm_crossing answers
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
@@ -414,69 +433,17 @@ floatsegm_crossing_search(double start1, double end1, double start2,
     est = llrintl(fraction * (long double) d);
   est = Max(0, Min(d, est));
 
-  /* The least m in [0, d] whose sign at m + 1/2 is not that at the start:
-   * it holds at d, and fails at -1 since the crossing lies past 0 */
-  int64 lo = -1, hi, step = 1;
-  int s = floatsegm_gap_sign_half(start1, end1, start2, end2, d, est, send);
-  int shi = s;
-  if (sstart * s <= 0)
-  {
-    hi = est;
-    while (true)
-    {
-      int64 next = hi - step;
-      if (next < 0)
-      {
-        lo = -1;
-        break;
-      }
-      s = floatsegm_gap_sign_half(start1, end1, start2, end2, d, next, send);
-      if (sstart * s > 0)
-      {
-        lo = next;
-        break;
-      }
-      hi = next;
-      shi = s;
-      step *= 2;
-    }
-  }
-  else
-  {
-    lo = est;
-    hi = d;
-    shi = send;
-    while (true)
-    {
-      int64 next = lo + step;
-      if (next >= d)
-        break;
-      s = floatsegm_gap_sign_half(start1, end1, start2, end2, d, next, send);
-      if (sstart * s <= 0)
-      {
-        hi = next;
-        shi = s;
-        break;
-      }
-      lo = next;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    s = floatsegm_gap_sign_half(start1, end1, start2, end2, d, mid, send);
-    if (sstart * s <= 0)
-    {
-      hi = mid;
-      shi = s;
-    }
-    else
-      lo = mid;
-  }
+  /* The least m in [0, d] whose sign at m + 1/2 is not that at the start,
+   * as the key m + 1: it holds at d, the key d + 1 */
+  FloatsegmGap g = {start1, end1, start2, end2, d, sstart, (uint64) d + 1,
+    send};
+  uint64 key = 0;
+  (void) monotone_search((uint64) est + 1, (uint64) d + 1,
+    &floatsegm_gap_beyond, &g, 0, &key);
+  int64 m = (int64) key - 1;
+  int shi = (key == g.hikey) ? g.hisign : send;
 
   /* A tie goes to the even timestamp */
-  int64 m = hi;
   if (shi == 0 && ((lower + m) & 1))
     m++;
   /* A crossing whose nearest microsecond is a bound belongs to the bound,

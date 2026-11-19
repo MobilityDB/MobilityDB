@@ -1373,6 +1373,33 @@ geog_motion_dwithin_at_exact(const POINT2D *a0, const POINT2D *a1,
   return true;
 }
 
+/* The operands of #geog_dwithin_grid_sign and the value at the start of
+ * the bracket, for #geog_dwithin_cross_beyond */
+typedef struct
+{
+  const GeogDWithinGrid *g;   /**< Operands of the sign */
+  int64 a;                    /**< Microsecond of the key 0 */
+  bool wa;                    /**< Value at that microsecond */
+} GeogDWithinCross;
+
+/**
+ * @brief Return 1 where the value at the microsecond of a key is that at the
+ * start of the bracket, 0 where it is not, 2 where the sign cannot tell: the
+ * side #geog_dwithin_grid_walk gives #monotone_halve
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+geog_dwithin_cross_beyond(uint64 key, void *arg)
+{
+  const GeogDWithinCross *gc = (const GeogDWithinCross *) arg;
+  int s = geog_dwithin_grid_sign(gc->g, gc->a + (int64) key);
+  if (s < 0)
+    return 2;
+  return ((s == 1) == gc->wa) ? 1 : 0;
+}
+
 /**
  * @brief Add the crossings of the distance between the microseconds @p a and
  * @p b of a grid, at which the two segments are within it or not as @p wa
@@ -1432,21 +1459,17 @@ geog_dwithin_grid_walk(const GeogDWithinGrid *g, int64 a, int64 b, bool wa,
      * one, after the last microsecond taking the value at a */
     if (wa == wb)
       return true;
-    int64 lo = a, hi = b;
-    while (hi - lo > 1)
-    {
-      int64 mid = lo + (hi - lo) / 2;
-      int s = geog_dwithin_grid_sign(g, mid);
-      if (s < 0)
-        return false;
-      if ((s == 1) == wa)
-        lo = mid;
-      else
-        hi = mid;
-    }
+    /* The first microsecond whose value is that of b, halving the bracket
+     * (#monotone_halve), the keys counted from a */
+    GeogDWithinCross gc = {g, a, wa};
+    uint64 key = 0;
+    int asked = 0;
+    if (! monotone_halve(0, (uint64) (b - a), &geog_dwithin_cross_beyond,
+        &gc, 0, &asked, &key))
+      return false;
     if (*count == maxcross)
       return false;
-    dated[*count] = lo;
+    dated[*count] = a + (int64) key - 1;
     after[(*count)++] = wb;
     return true;
   }
@@ -1513,9 +1536,9 @@ geog_motion_dwithin_crossings_exact(const POINT2D *a0, const POINT2D *a1,
  * @details The segment sweeps the angle om of its arc at a constant angular
  * speed (#GeogSegmPair), so it reaches the angle at the parameter ang / om,
  * computed with its error bound (#BoundedDouble). A transcendental offset is
- * no tie, so the nearest microsecond is proved as #floatsegm_offset_filter
- * proves it, where the bound keeps the offset away from the middle of two
- * microseconds; elsewhere it is not stated
+ * no tie, so the nearest microsecond is proved by #offset_nearest_bounded,
+ * where the bound keeps the offset away from the middle of two microseconds;
+ * elsewhere it is not stated
  * @param[in] arc Bounded trigonometry of the segment (#bd_geogsegm_arc)
  * @param[in] ang Angle from the start, with its bound
  * @param[in] lower,upper Timestamps defining the segment
@@ -1535,12 +1558,9 @@ geogpointsegm_angle_date(const GeogArcBounds *arc, BoundedDouble ang,
   if (! bd_valid(arc->hav) || ! bd_valid(arc->comp) || ! bd_valid(arc->om) ||
       ! bd_valid(ang) || ! bd_valid(x))
     return false;
-  /* The offset lies within x.e of x.v; not a number fails both comparisons */
-  double y = x.v + 0.5;
-  if (! (y >= 0.0 && y < (double) d + 1.0))
-    return false;
-  TimestampTz est = (TimestampTz) y;
-  if (fabs(x.v - (double) est) + x.e * BD_INFLATE >= 0.5)
+  /* The offset lies within x.e of x.v */
+  int64 est;
+  if (! offset_nearest_bounded(x.v, x.e * BD_INFLATE, d, &est))
     return false;
   /* An instant whose nearest microsecond is a bound belongs to the bound,
    * which dates it */
@@ -1563,9 +1583,9 @@ geogpointsegm_angle_date(const GeogArcBounds *arc, BoundedDouble ang,
  * trigonometry of core-math/ (#BoundedDouble), om from the haversine of the
  * ends and its complement, sums of positive terms that keep their relative
  * accuracy for ends very near each other or nearly antipodal. A transcendental
- * offset is no tie, so the nearest microsecond is proved as
- * #floatsegm_offset_filter proves it, where the bound keeps the offset away
- * from the middle of two microseconds; elsewhere it is not stated
+ * offset is no tie, so the nearest microsecond is proved by
+ * #offset_nearest_bounded, where the bound keeps the offset away from the
+ * middle of two microseconds; elsewhere it is not stated
  * @param[in] p Ends: the start and the end of the first segment, then those
  * of the second
  * @param[in] lower,upper Timestamps defining the segments

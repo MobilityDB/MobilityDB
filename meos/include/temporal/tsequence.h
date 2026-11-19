@@ -76,34 +76,50 @@ extern bool tnumbersegm_crossing(double start1, double end1, double start2,
 #define FLOATSEGM_FILTER_MAXD (INT64CONST(1) << 52)
 
 /**
+ * @brief Return true where the microsecond nearest to an offset known within
+ * a bound is proved, set in the last argument
+ * @details The offset lies within @p err of @p x, in microseconds from the
+ * start of a period of @p d microseconds, shorter than 2^52 microseconds so
+ * that the microseconds and their halves are doubles exactly. The
+ * microsecond tried is the integer part of `x + 1/2`, in `[0, d]`; where
+ * `|x - m| + err`, the difference exact and the one rounding of the sum
+ * monotone, is below 1/2, the offset lies strictly inside
+ * `(m - 1/2, m + 1/2)`, so `m` is its nearest microsecond and no tie. A
+ * nearest microsecond 0 or @p d means the instant belongs to that bound. Not
+ * a number fails every comparison
+ * @return False where the bound does not prove the nearest microsecond
+ */
+static inline bool
+offset_nearest_bounded(double x, double err, int64 d, int64 *m)
+{
+  double y = x + 0.5;
+  if (! (y >= 0.0 && y < (double) d + 1.0))
+    return false;
+  int64 est = (int64) y;
+  if (! (fabs(x - (double) est) + err < 0.5))
+    return false;
+  *m = est;
+  return true;
+}
+
+/**
  * @brief Return true if the crossing whose offset from the start of a period
  * of @p d microseconds is computed as @p x lies strictly inside the window of
  * one interior microsecond, and that microsecond in the last argument
  * @details The offset @p x is within a relative `5.02 u`, `u = 2^-53`, of
  * the exact offset `x*` of the crossing, and the period is shorter than
- * 2^52 microseconds, so that the microseconds and their halves are doubles
- * exactly. Then `|x - x*|` is below `x 2^-48`, which leaves more than the
- * rounding of the sum `|x - m| + x 2^-48`, the one inexact operation of the
- * test, `x - m` being exact where it is at most 1/2. Where that sum is at
- * most 1/2 for the microsecond `m`, `x*` lies strictly inside
- * `(m - 1/2, m + 1/2)`: the gap at `m + 1/2` has left its sign at the start
- * and the gap at `m - 1/2` has not, so `m` is the microsecond
- * #tfloatsegm_crossing answers, with no tie. The microsecond tried, the
- * integer part of `x + 1/2`, is interior, an offset whose rounded `x + 1/2`
- * is below 1, at least `d`, or not a number being refused, as a crossing
- * whose nearest microsecond may be a bound
+ * 2^52 microseconds, so `|x - x*|` is below `|x| 2^-48`, the bound with
+ * which #offset_nearest_bounded proves the nearest microsecond; a crossing
+ * whose nearest microsecond may be a bound is refused
  * @return False where the filter cannot tell, the caller then deciding the
  * crossing with exact signs
  */
 static inline bool
 floatsegm_offset_filter(double x, int64 d, int64 *m)
 {
-  /* Not a number fails both comparisons */
-  double y = x + 0.5;
-  if (! (y >= 1.0 && y < (double) d))
-    return false;
-  TimestampTz est = (TimestampTz) y;
-  if (fabs(x - (double) est) + x * 0x1p-48 > 0.5)
+  int64 est;
+  if (! offset_nearest_bounded(x, fabs(x) * 0x1p-48, d, &est) ||
+      est <= 0 || est >= d)
     return false;
   *m = est;
   return true;
