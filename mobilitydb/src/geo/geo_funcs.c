@@ -237,6 +237,28 @@ Geom_equals(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Geo_same(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_same);
+/**
+ * @ingroup mobilitydb_geo_base_rel
+ * @brief Return true if two geometries have the same vertices in the same
+ * order
+ * @details Two geometries of different SRIDs are not equal; where
+ * #Geom_equals compares the sets of points, this compares the vertices as
+ * PostGIS function @p ST_OrderingEquals does
+ * @sqlfn orderingEquals()
+ */
+Datum
+Geo_same(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
+  bool result = geo_same(gs1, gs2);
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
+  PG_RETURN_BOOL(result);
+}
+
 PGDLLEXPORT Datum Geog_intersects(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geog_intersects);
 /**
@@ -579,6 +601,104 @@ Geo_num_points(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(result);
 }
 
+PGDLLEXPORT Datum Geo_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_srid);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the SRID of a geometry or a geography
+ * @details Read through the public MEOS function, as #Geo_num_points reads
+ * the number of points
+ * @sqlfn SRID()
+ */
+Datum
+Geo_srid(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int32_t result = geo_srid(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Geo_mem_size(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_mem_size);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the size in bytes of a geometry or a geography
+ * @details Read through the public MEOS function, as #Geo_num_points reads
+ * the number of points
+ * @sqlfn memSize()
+ */
+Datum
+Geo_mem_size(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int result = geo_mem_size(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Geo_is_empty(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_is_empty);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return true if a geometry or a geography is empty
+ * @details Read through the public MEOS function, as #Geo_num_points reads
+ * the number of points
+ * @sqlfn isEmpty()
+ */
+Datum
+Geo_is_empty(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  bool result = geo_is_empty(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Geo_points(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_points);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return a multipoint holding every coordinate of a geometry
+ * @details Read through the public MEOS function, as #Geo_num_points counts
+ * the same coordinates
+ * @sqlfn points()
+ */
+Datum
+Geo_points(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geo_points(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geom_azimuth(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_azimuth);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the azimuth of the segment joining two points, or NULL where
+ * the two points are equal
+ * @details Read through the public MEOS function, as #Geo_num_points reads
+ * the number of points
+ * @sqlfn azimuth()
+ */
+Datum
+Geom_azimuth(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
+  double result;
+  bool found = geom_azimuth(gs1, gs2, &result);
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
 /*****************************************************************************
  * Lines
  *****************************************************************************/
@@ -643,6 +763,28 @@ Line_locate_point(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Line_point_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Line_point_n);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the n-th point of a line, 1-based, a negative number counting
+ * from its end, or NULL where there is none
+ * @details Read through the public MEOS function, as #Line_interpolate_point
+ * reads a point of a line
+ * @sqlfn pointN()
+ */
+Datum
+Line_point_n(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int n = PG_GETARG_INT32(1);
+  GSERIALIZED *result = line_point_n(gs, n);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 /*****************************************************************************
  * Densification
  *****************************************************************************/
@@ -666,6 +808,25 @@ Geo_segmentize(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_set_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_set_srid);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry or a geography with its coordinates set to an SRID
+ * @details Written through the public MEOS function, as #Geo_segmentize
+ * transforms a value
+ * @sqlfn setSRID()
+ */
+Datum
+Geo_set_srid(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int32_t srid = PG_GETARG_INT32(1);
+  GSERIALIZED *result = geo_set_srid(gs, srid);
+  PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_GSERIALIZED_P(result);
 }
 
@@ -738,6 +899,55 @@ Datum
 Geo_makeline_garray(PG_FUNCTION_ARGS)
 {
   return Geoarr_construct(fcinfo, &geo_makeline_garray);
+}
+
+PGDLLEXPORT Datum Geom_array_union(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_array_union);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the union of an array of geometries
+ * @details Built from the array as #Geo_collect_garray builds a collection
+ * @sqlfn geoUnion()
+ */
+Datum
+Geom_array_union(PG_FUNCTION_ARGS)
+{
+  return Geoarr_construct(fcinfo, &geom_array_union);
+}
+
+PGDLLEXPORT Datum Geog_array_union(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geog_array_union);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the union of an array of geographies
+ * @details Built from the array as #Geom_array_union builds the union of
+ * geometries
+ * @sqlfn geoUnion()
+ */
+Datum
+Geog_array_union(PG_FUNCTION_ARGS)
+{
+  return Geoarr_construct(fcinfo, &geog_array_union);
+}
+
+PGDLLEXPORT Datum Geom_unary_union(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_unary_union);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the union of the parts of a geometry
+ * @details Computed by the public MEOS function, as #Geom_array_union
+ * computes the union of an array
+ * @sqlfn unaryUnion()
+ */
+Datum
+Geom_unary_union(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geom_unary_union(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Geom_makepoint(PG_FUNCTION_ARGS);

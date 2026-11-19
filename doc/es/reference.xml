@@ -1020,6 +1020,9 @@
 					<para><link linkend="geo_spatialrels"><varname>contains</varname>, <varname>covers</varname>, <varname>disjoint</varname>, <varname>intersects</varname>, <varname>touches</varname>, <varname>geoEquals</varname></link>: Devuelve verdadero si dos geometrías satisfacen una relación espacial</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_orderingequals"><varname>orderingEquals</varname></link>: Devuelve verdadero si dos geometrías tienen los mismos vértices en el mismo orden</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_dwithin"><varname>dwithin</varname></link>: Devuelve verdadero si dos geometrías están a una distancia dada</para>
 				</listitem>
 				<listitem>
@@ -1030,6 +1033,21 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_accessors"><varname>boundary</varname>, <varname>reverse</varname>, <varname>numGeometries</varname>, <varname>geometryN</varname>, <varname>numPoints</varname></link>: Devuelve la frontera, la inversión o las partes de una geometría</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_srid"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial de una geometría o una geografía</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_memsize"><varname>memSize</varname></link>: Devuelve el tamaño en bytes de una geometría o una geografía</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_isempty"><varname>isEmpty</varname></link>: Devuelve verdadero si una geometría o una geografía está vacía</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_points"><varname>points</varname>, <varname>pointN</varname></link>: Devuelve los vértices de una geometría o uno de ellos</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_azimuth"><varname>azimuth</varname></link>: Devuelve el acimut del segmento que une dos puntos</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Devuelve el punto en una fracción de una línea, la parte entre dos fracciones o la fracción más cercana a un punto</para>
@@ -1053,7 +1071,10 @@
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Devuelve la región que dos geometrías cubren en conjunto</para>
+					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Devuelve la región que dos geometrías, o un arreglo de geometrías o de geografías, cubren en conjunto</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_unaryunion"><varname>unaryUnion</varname></link>: Devuelve la unión de las partes de una geometría</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_difference"><varname>difference</varname></link>: Devuelve la región de la primera geometría que la segunda no cubre</para>

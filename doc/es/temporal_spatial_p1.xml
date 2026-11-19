@@ -289,6 +289,23 @@ SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_orderingequals">
+				<indexterm significance="normal"><primary><varname>orderingEquals</varname></primary></indexterm>
+				<para>Devuelve verdadero si dos geometrías tienen los mismos vértices en el mismo orden</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+orderingEquals(geometry,geometry) → boolean
+</programlisting>
+				<para>Responde como la función de PostGIS <varname>ST_OrderingEquals</varname>, mientras que <varname>geoEquals</varname> compara los conjuntos de puntos.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT orderingEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(0 0,1 1)');
+-- true
+SELECT orderingEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(1 1,0 0)');
+-- false
+SELECT geoEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(1 1,0 0)');
+-- true
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_dwithin">
 				<indexterm significance="normal"><primary><varname>dwithin</varname></primary></indexterm>
 				<para>Devuelve verdadero si dos geometrías están a una distancia dada</para>
@@ -390,6 +407,93 @@ SELECT ST_AsText(geometryN(geometry 'MultiPoint(1 1,5 5)', 2));
 -- POINT(5 5)
 SELECT numPoints(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
 -- 5
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_srid">
+				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+				<para>Devuelve o establece el identificador de referencia espacial de una geometría o una geografía</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+SRID({geometry,geography}) → integer
+setSRID({geometry,geography},integer) → {geometry,geography}
+</programlisting>
+				<para>Cada una responde como la función de PostGIS del mismo nombre con el prefijo <varname>ST_</varname>: un SRID negativo se establece como el SRID desconocido 0 y un SRID más allá del rango reservado se pliega dentro de él. El SRID inválido se rechaza.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(geometry 'SRID=3812;Point(1 1)');
+-- 3812
+SELECT SRID(geography 'Point(4.35 50.85)');
+-- 4326
+SELECT ST_AsEWKT(setSRID(geometry 'Point(1 1)', 3812));
+-- SRID=3812;POINT(1 1)
+SELECT setSRID(geometry 'Point(1 1)', 1000001);
+-- ERROR:  The SRID is invalid
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_memsize">
+				<indexterm significance="normal"><primary><varname>memSize</varname></primary></indexterm>
+				<para>Devuelve el tamaño en bytes de una geometría o una geografía</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+memSize({geometry,geography}) → integer
+</programlisting>
+				<para>Responde como la función de PostGIS <varname>ST_MemSize</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT memSize(geometry 'Point(1 2)');
+-- 32
+SELECT memSize(geometry 'Linestring(0 0,4 0,4 3)');
+-- 80
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_isempty">
+				<indexterm significance="normal"><primary><varname>isEmpty</varname></primary></indexterm>
+				<para>Devuelve verdadero si una geometría o una geografía está vacía</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+isEmpty({geometry,geography}) → boolean
+</programlisting>
+				<para>Responde como la función de PostGIS <varname>ST_IsEmpty</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isEmpty(geometry 'Point empty');
+-- true
+SELECT isEmpty(geography 'Point(4.35 50.85)');
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_points">
+				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>pointN</varname></primary></indexterm>
+				<para>Devuelve los vértices de una geometría o uno de ellos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+points(geometry) → geometry
+pointN(geometry,integer) → geometry
+</programlisting>
+				<para>Cada una responde como la función de PostGIS del mismo nombre con el prefijo <varname>ST_</varname>: <varname>points</varname> es un multipunto que contiene todos los vértices, y <varname>pointN</varname> cuenta los vértices de una línea desde 1, un número negativo contando desde su final, y responde <varname>NULL</varname> más allá de ellos.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(points(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
+-- MULTIPOINT((0 0),(4 0),(4 4),(0 4),(0 0))
+SELECT ST_AsText(pointN(geometry 'Linestring(2 2,6 2,6 5)', 2));
+-- POINT(6 2)
+SELECT ST_AsText(pointN(geometry 'Linestring(2 2,6 2,6 5)', -1));
+-- POINT(6 5)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_azimuth">
+				<indexterm significance="normal"><primary><varname>azimuth</varname></primary></indexterm>
+				<para>Devuelve el acimut del segmento que une dos puntos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+azimuth(geometry,geometry) → float
+</programlisting>
+				<para>El acimut es el ángulo en radianes en el sentido de las agujas del reloj desde el norte, como lo responde la función de PostGIS <varname>ST_Azimuth</varname>, y es <varname>NULL</varname> para dos puntos iguales.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(azimuth(geometry 'Point(0 0)', geometry 'Point(1 1)')::numeric, 6);
+-- 0.785398
+SELECT round(azimuth(geometry 'Point(0 0)', geometry 'Point(-1 0)')::numeric, 6);
+-- 4.712389
+SELECT azimuth(geometry 'Point(1 1)', geometry 'Point(1 1)');
+-- NULL
 </programlisting>
 			</listitem>
 
@@ -529,15 +633,38 @@ SELECT intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 
 			<listitem xml:id="geo_geounion">
 				<indexterm significance="normal"><primary><varname>geoUnion</varname></primary></indexterm>
-				<para>Devuelve la región que dos geometrías cubren en conjunto</para>
+				<para>Devuelve la región que dos geometrías, o un arreglo de geometrías o de geografías, cubren en conjunto</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoUnion(geometry,geometry) → geometry
+geoUnion(geometry[]) → geometry
+geoUnion(geography[]) → geography
 </programlisting>
-				<para><varname>UNION</varname> es una palabra reservada de SQL, por lo que esta lleva el nombre del tipo sobre el que responde, como hacen <varname>setUnion</varname> y <varname>spanUnion</varname>. Dos geometrías que no se tocan se responden como un multipolígono.</para>
+				<para><varname>UNION</varname> es una palabra reservada de SQL, por lo que esta lleva el nombre del tipo sobre el que responde, como hacen <varname>setUnion</varname> y <varname>spanUnion</varname>. Dos geometrías que no se tocan se responden como un multipolígono. La unión de un arreglo responde como la función de PostGIS <varname>ST_Union</varname> sobre un arreglo, y la de un arreglo vacío es <varname>NULL</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(geoUnion(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
 -- POLYGON((5 1,1 1,1 5,3 5,3 7,7 7,7 3,5 3,5 1))
+SELECT ST_AsText(geoUnion(ARRAY[geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
+  'Polygon((1 1,3 1,3 3,1 3,1 1))', 'Polygon((5 5,6 5,6 6,5 6,5 5))']));
+-- MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)),((0 0,2 0,2 1,3 1,3 3,1 3,1 2,0 2,0 0)))
+SELECT ST_AsText(geoUnion(ARRAY[geography 'Point(1 1)', 'Point(2 2)', 'Point(1 1)']));
+-- MULTIPOINT((1 1),(2 2))
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_unaryunion">
+				<indexterm significance="normal"><primary><varname>unaryUnion</varname></primary></indexterm>
+				<para>Devuelve la unión de las partes de una geometría</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+unaryUnion(geometry) → geometry
+</programlisting>
+				<para>Responde como la función de PostGIS <varname>ST_UnaryUnion</varname>, y la unión de una geometría vacía es esa geometría.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(unaryUnion(geometry
+  'MultiPolygon(((0 0,2 0,2 2,0 2,0 0)),((1 1,3 1,3 3,1 3,1 1)))'));
+-- POLYGON((2 1,3 1,3 3,1 3,1 2,0 2,0 0,2 0,2 1))
+SELECT ST_AsText(unaryUnion(geometry 'MultiLinestring((0 0,2 0),(1 0,3 0))'));
+-- LINESTRING(0 0,2 0,3 0)
 </programlisting>
 			</listitem>
 
