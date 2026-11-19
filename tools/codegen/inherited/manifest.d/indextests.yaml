@@ -1,0 +1,154 @@
+# ---------------------------------------------------------------------------
+# Index test axis (SQL test generator). The test of the R-tree GiST, quad-tree
+# and k-d tree SP-GiST indexes of a temporal type is the same for every family:
+# under each index every operator of its class, with each argument it declares,
+# answers the rows a sequential scan gives from a plan that probes the index,
+# the search for the nearest values answers the distances a sort gives, and a
+# column of its boxes answers the queries of its values. The rows are those of
+# the class #render_family_tempopclass renders and of the members of the box
+# family #render_boxmembers adds; templates/indextest.sql.tmpl holds the rest,
+# and #render_indextest writes `file` from them. An entry states:
+#   temp, base, srid          the temporal type, its base type and the SRID of
+#                             its boxes;
+#   offset, copies            the keys the fixtures of the instants, discrete
+#                             sequences, sequences and sequence sets take
+#                             after the big table, `offset` apart by 100, and
+#                             the shifted copies of their union;
+#   srcfilter                 the condition taking the values the operators
+#                             are given;
+#   same, sameq, labels       the value every row of the all-the-same table
+#                             carries, the box its query is given, and whether
+#                             its two counts are named;
+#   extra                     the queries of the family ahead of that table.
+# ---------------------------------------------------------------------------
+indextests:
+  - temp: tcbuffer
+    base: cbuffer
+    file: mobilitydb/test/cbuffer/sql/216_tcbuffer_indexes_tbl.sql
+    srid: 3812
+    offset: 1000
+    copies: 4
+    srcfilter: k % 650 = 0
+    same: SRID=3812;Cbuffer(Point(5 5), 1)
+    sameq: stbox 'SRID=3812;STBOX X((5,5),(5,5))'
+    labels: true
+  - temp: tpose
+    base: pose
+    file: mobilitydb/test/pose/sql/110_tpose_indexes_tbl.sql
+    srid: 3812
+    # values in two and in three dimensions, each with its own fixtures
+    dims:
+      - {suffix: 2d, offset: 100, copies: 9, srcfilter: k % 470 = 0,
+         fixture: {big: "tbl_{T}"}}
+      - {suffix: 3d, z: true, offset: 100, copies: 9, srcfilter: k % 470 = 0,
+         fixture: {big: "tbl_{T}"}}
+    same: SRID=3812;Pose(Point(5 5), 0.5)
+    sameq: stbox 'SRID=3812;STBOX X((5,5),(5,5))'
+    labels: true
+  - temp: trgeometry
+    base: geometry
+    file: mobilitydb/test/rgeo/sql/162_trgeo_indexes_tbl.sql
+    srid: 5676
+    # the distance answers a value in two dimensions alone, and the ever and
+    # always overlaps, which restrict the value to the box, refuse a value
+    # with Z in linear motion against a box with Z, which MEOS does not restrict
+    dims:
+      - {suffix: 2d, offset: 100, copies: 4,
+         srcfilter: k % 235 = 0 AND temp IS NOT NULL,
+         fixture: {big: "tbl_{T}"}}
+      - {suffix: 3d, z: true, dist: false, ever: false, offset: 100, copies: 4,
+         srcfilter: k % 235 = 0 AND temp IS NOT NULL,
+         fixture: {big: "tbl_{T}"}}
+    # a rigid geometry is its body and its pose
+    sameexpr: |-
+      trgeometry(geometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1))',
+        tpose(pose 'SRID=5676;Pose(Point(25 25), 0.3)', t))
+    sameq: (SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))', xmin(b), ymin(b), xmax(b), ymax(b))) FROM (SELECT temp::stbox AS b FROM tbl_{TEMP}_allthesame WHERE temp IS NOT NULL LIMIT 1) s)
+    labels: false
+  - temp: tnpoint
+    base: npoint
+    file: mobilitydb/test/npoint/sql/317_tnpoint_indexes_tbl.sql
+    srid: 5676
+    offset: 10100
+    copies: 0
+    srcfilter: k % 1000 = 0 AND temp IS NOT NULL
+    same: Npoint(1, 0.5)
+    sameq: (SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))', xmin(b), ymin(b), xmax(b), ymax(b))) FROM (SELECT temp::stbox AS b FROM tbl_{TEMP}_allthesame WHERE temp IS NOT NULL LIMIT 1) s)
+    labels: false
+    extra: |+
+      -- The distances of the nearest values of the fixture to a value on a route, with
+      -- the distance read along the route
+      CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING GIST(temp);
+
+      WITH test AS (
+        SELECT temp |=| tnpoint '[Npoint(1, 0.2)@2001-06-01, Npoint(1, 0.5)@2001-07-01]' AS distance
+        FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+      SELECT round(distance, 6) FROM test;
+      WITH test AS (
+        SELECT temp |=| npoint 'Npoint(1, 0.4)' AS distance
+        FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+      SELECT round(distance, 6) FROM test;
+      WITH test AS (
+        SELECT temp |=| stbox 'SRID=5676;STBOX XT(((0,0),(50,50)),[2001-06-01, 2001-07-01])' AS distance
+        FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+      SELECT round(distance, 6) FROM test;
+
+      DROP INDEX tbl_tnpoint_rtree_idx;
+
+      CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING SPGIST(temp);
+
+      WITH test AS (
+        SELECT temp |=| tnpoint '[Npoint(1, 0.2)@2001-06-01, Npoint(1, 0.5)@2001-07-01]' AS distance
+        FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+      SELECT round(distance, 6) FROM test;
+      WITH test AS (
+        SELECT temp |=| npoint 'Npoint(1, 0.4)' AS distance
+        FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+      SELECT round(distance, 6) FROM test;
+      WITH test AS (
+        SELECT temp |=| stbox 'SRID=5676;STBOX XT(((0,0),(50,50)),[2001-06-01, 2001-07-01])' AS distance
+        FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+      SELECT round(distance, 6) FROM test;
+
+      DROP INDEX tbl_tnpoint_quadtree_idx;
+
+  - temp: tquadbin
+    base: quadbin
+    file: mobilitydb/test/quadbin/sql/372_tquadbin_indexes_tbl.sql
+    srid: 4326
+    offset: 10100
+    copies: 0
+    srcfilter: k % 1000 = 0
+    same: 4887ecefffffffff
+    sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
+    labels: false
+  - temp: ts2cell
+    base: s2cell
+    file: mobilitydb/test/s2cell/sql/622_ts2cell_indexes_tbl.sql
+    srid: 4326
+    offset: 10100
+    copies: 0
+    srcfilter: k % 1000 = 0
+    same: 4fb119
+    sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
+    labels: false
+  - temp: tposechain
+    base: posechain
+    file: mobilitydb/test/posechain/sql/566_tposechain_indexes_tbl.sql
+    srid: 3812
+    # the fixtures hold values in two dimensions alone
+    dims:
+      - {suffix: 2d, offset: 400, copies: 4,
+         srcfilter: k % 400 = 0 AND temp IS NOT NULL,
+         fixture: {big: "tbl_{T}"}}
+    same: SRID=3812;PoseChain(Pose(Point(5 5), 0.5))
+    sameq: stbox 'SRID=3812;STBOX X((5,5),(5,5))'
+    labels: true
+  - temp: tjsonb
+    base: jsonb
+    file: mobilitydb/test/json/sql/466_tjsonb_indexes_tbl.sql
+    # keyed by the period of the value: no table of many values, and no table
+    # whose values are all equal, the keys of a constant value differing in time
+    dims:
+      - {suffix: "", offset: 0, copies: 25, srcfilter: k % 900 = 0,
+         fixture: {big: none}}
