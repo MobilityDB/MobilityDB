@@ -25,15 +25,15 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eDisjoint(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE eDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE eDisjoint(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE eDisjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE eDisjoint(temp, g);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geom3d, tbl_tgeompoint3d WHERE eDisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_geom3d WHERE eDisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE eDisjoint(t1.temp, t2.temp);
 -- Geography
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eDisjoint(t1.temp, t2.temp);
 -- 3D
 -- The following query return different number of results (9876 vs 9878)
 -- depending on PostGIS version. For this reason it is modified to avoid the problem
-SELECT COUNT(*) > 0 FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
+SELECT COUNT(*) > 0 FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE eDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- Modulo used to reduce time needed for the tests
@@ -42,17 +42,17 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aDisjoint(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE aDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE aDisjoint(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE aDisjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE aDisjoint(temp, g);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aDisjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geom3d, tbl_tgeompoint3d WHERE aDisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_geom3d WHERE aDisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE aDisjoint(t1.temp, t2.temp);
 -- Geography
 SELECT COUNT(*) FROM tbl_geog t1, tbl_tgeogpoint t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_geog t2 WHERE t2.k % 3 = 0 AND aDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aDisjoint(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geog3D t1, tbl_tgeogpoint3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDisjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_geog3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDisjoint(temp, g);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aDisjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geog3d t1, tbl_tgeogpoint3d t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geog3d t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE aDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- eIntersects, aIntersects
@@ -64,9 +64,9 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eIntersects(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE eIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE eIntersects(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE eIntersects(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE eIntersects(temp, g);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eIntersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geom3d, tbl_tgeompoint3d WHERE eIntersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_geom3d WHERE eIntersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE eIntersects(t1.temp, t2.temp);
 -- Geography
 -- The following two queries return different number of results (3302 vs 3300)
 -- depending on PostGIS version. For this reason they are commented out
@@ -74,9 +74,9 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eIntersects(
 -- SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog WHERE eIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eIntersects(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geog3D t1, tbl_tgeogpoint3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND eIntersects(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_geog3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND eIntersects(temp, g);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eIntersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geog3d t1, tbl_tgeogpoint3d t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND eIntersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geog3d t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND eIntersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE eIntersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 
@@ -84,15 +84,15 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aIntersects(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE aIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE aIntersects(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE aIntersects(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE aIntersects(temp, g);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aIntersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geom3d, tbl_tgeompoint3d WHERE aIntersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_geom3d WHERE aIntersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE aIntersects(t1.temp, t2.temp);
 -- Geography
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aIntersects(t1.temp, t2.temp);
 -- 3D
 -- The following query return different number of results (118 vs 116)
 -- depending on PostGIS version. For this reason it is modified to avoid the problem
-SELECT COUNT(*) > 0 FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aIntersects(t1.temp, t2.temp);
+SELECT COUNT(*) > 0 FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE aIntersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- eTouches, aTouches
@@ -117,17 +117,17 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq WHERE eDwithin(
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE eDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint_step_contseq t1, tbl_tgeompoint t2 WHERE eDwithin(t1.temp, t2.temp, 10);
 -- 3D
-SELECT COUNT(*) FROM tbl_geom_point3D, tbl_tgeompoint3D WHERE eDwithin(g, temp, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE eDwithin(temp, g, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point3d, tbl_tgeompoint3d WHERE eDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_geom_point3d WHERE eDwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE eDwithin(t1.temp, t2.temp, 10);
 -- Geography
 SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint WHERE eDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE eDwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eDwithin(t1.temp, t2.temp, 10);
 -- 3D
-SELECT COUNT(*) FROM tbl_geog_point3D, tbl_tgeogpoint3D WHERE eDwithin(g, temp, 10);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE eDwithin(temp, g, 10);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geog_point3d, tbl_tgeogpoint3d WHERE eDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geog_point3d WHERE eDwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE eDwithin(t1.temp, t2.temp, 10);
 
 -------------------------------------------------------------------------------
 
@@ -142,11 +142,11 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq WHERE aDwithin(
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE aDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint_step_contseq t1, tbl_tgeompoint t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- 3D
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- Geography
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- 3D
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 
 -------------------------------------------------------------------------------
 

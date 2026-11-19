@@ -55,7 +55,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
 -- Temporal points
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tDisjoint(t1.temp, t2.temp) ?= true <> eDisjoint(t1.temp, t2.temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
   WHERE tDisjoint(t1.temp, t2.temp) ?= true <> eDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
 -- Temporal points
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
@@ -140,9 +140,9 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   WHERE tDwithin(g, temp, 10) IS NOT NULL;
 
 -- Mixed 2D/3D
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3d t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
 -- Geographies, on the spheroid and on the sphere
@@ -170,9 +170,9 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   WHERE tDwithin(g, temp, 10) ?= true <> edwithin(g, temp, 10);
 
 -- Mixed 2D/3D
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3d t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
 
 -- Geographies, on the spheroid and on the sphere

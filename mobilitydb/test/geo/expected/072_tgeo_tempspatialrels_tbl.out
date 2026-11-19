@@ -102,7 +102,7 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
   WHERE tDisjoint(t1.temp, t2.temp) ?= true <> eDisjoint(t1.temp, t2.temp);
  count 
 -------
@@ -152,7 +152,7 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
  count 
 -------
@@ -216,14 +216,14 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tDwithin(t1.temp, 
 (1 row)
 
 -- Mixed 2D/3D
-SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry3d t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
@@ -255,14 +255,14 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
 
   
 -- Mixed 2D/3D
-SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry3d t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
  count 
 -------

@@ -120,7 +120,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
   WHERE tDisjoint(t1.temp, t2.temp) ?= true <> eDisjoint(t1.temp, t2.temp);
  count 
 -------
@@ -198,7 +198,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
  count 
 -------
@@ -308,14 +308,14 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
 (1 row)
 
 -- Mixed 2D/3D
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3d t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
@@ -383,14 +383,14 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
 (1 row)
 
 -- Mixed 2D/3D
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3d t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
  count 
 -------

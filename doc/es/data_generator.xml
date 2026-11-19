@@ -67,85 +67,85 @@
 					<para><varname>random_geom_point</varname>: Generar un punto geométrico 2D aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_point3D</varname>: Generar un punto geométrico 3D aleatorio</para>
+					<para><varname>random_geom_point3d</varname>: Generar un punto geométrico 3D aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_point</varname>: Generar un punto geográfico 2D aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_point3D</varname>: Generar un punto geográfico 3D aleatorio</para>
+					<para><varname>random_geog_point3d</varname>: Generar un punto geográfico 3D aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_point_array</varname>: Generar una matriz de puntos geométricos 2D aleatorios</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_point3D_array</varname>: Generar una matriz de puntos geométricos 3D aleatorios</para>
+					<para><varname>random_geom_point3d_array</varname>: Generar una matriz de puntos geométricos 3D aleatorios</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_point_array</varname>: Generar una matriz puntos geográficos 2D aleatorios</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_point3D_array</varname>: Generar una matriz de puntos geográficos 3D aleatorios</para>
+					<para><varname>random_geog_point3d_array</varname>: Generar una matriz de puntos geográficos 3D aleatorios</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_linestring</varname>: Generar una cadena lineal geométrica 2D aleatoria</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_linestring3D</varname>: Generar una cadena lineal geométrica 3D aleatoria</para>
+					<para><varname>random_geom_linestring3d</varname>: Generar una cadena lineal geométrica 3D aleatoria</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_linestring</varname>: Generar una cadena lineal geográfica 2D aleatoria</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_linestring3D</varname>: Generar una cadena lineal geográfica 3D aleatoria</para>
+					<para><varname>random_geog_linestring3d</varname>: Generar una cadena lineal geográfica 3D aleatoria</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_polygon</varname>: Generar un polígono geométrico 2D sin agujeros aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_polygon3D</varname>: Generar un polígono geométrico 3D sin agujeros aleatorio</para>
+					<para><varname>random_geom_polygon3d</varname>: Generar un polígono geométrico 3D sin agujeros aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_polygon</varname>: Generar un polígono geográfico 2D sin agujeros aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_polygon3D</varname>: Generar un polígono geográfico 3D sin agujeros aleatorio</para>
+					<para><varname>random_geog_polygon3d</varname>: Generar un polígono geográfico 3D sin agujeros aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_multipoint</varname>: Generar un multipunto geométrico 2D aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_multipoint3D</varname>: Generar un multipunto geométrico 3D aleatorio</para>
+					<para><varname>random_geom_multipoint3d</varname>: Generar un multipunto geométrico 3D aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_multipoint</varname>: Generar un multipunto geográfico 2D aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_multipoint3D</varname>: Generar un multipunto geográfico 3D aleatorio</para>
+					<para><varname>random_geog_multipoint3d</varname>: Generar un multipunto geográfico 3D aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_multilinestring</varname>: Generar una multicadena lineal geométrica 2D aleatoria</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_multilinestring3D</varname>: Generar una multicadena lineal geométrica 3D aleatoria</para>
+					<para><varname>random_geom_multilinestring3d</varname>: Generar una multicadena lineal geométrica 3D aleatoria</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_multilinestring</varname>: Generar una multicadena lineal geográfica 2D aleatoria</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_multilinestring3D</varname>: Generar una multicadena lineal geográfica 3D aleatoria</para>
+					<para><varname>random_geog_multilinestring3d</varname>: Generar una multicadena lineal geográfica 3D aleatoria</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_multipolygon</varname>: Generar un multipolígono geométrico 2D sin agujeros aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_multipolygon3D</varname>: Generar un multipolígono geométrico 3D sin agujeros aleatorio</para>
+					<para><varname>random_geom_multipolygon3d</varname>: Generar un multipolígono geométrico 3D sin agujeros aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_multipolygon</varname>: Generar un multipolígono geográfico 2D sin agujeros aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_multipolygon3D</varname>: Generar un multipolígono geográfico 3D sin agujeros aleatorio</para>
+					<para><varname>random_geog_multipolygon3d</varname>: Generar un multipolígono geográfico 3D sin agujeros aleatorio</para>
 				</listitem>
 			</itemizedlist>
 	</sect1>
@@ -179,13 +179,13 @@
 					<para><varname>random_stbox</varname>: Generar un <varname>stbox</varname> 2D aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_stbox3D</varname>: Generar un <varname>stbox</varname> 3D aleatorio</para>
+					<para><varname>random_stbox3d</varname>: Generar un <varname>stbox</varname> 3D aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geodstbox</varname>: Generar un <varname>stbox</varname> geodético 2D aleatorio</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geodstbox3D</varname>: Generar un <varname>stbox</varname> geodético 3D aleatorio</para>
+					<para><varname>random_geodstbox3d</varname>: Generar un <varname>stbox</varname> geodético 3D aleatorio</para>
 				</listitem>
 			</itemizedlist>
 	</sect1>
@@ -210,13 +210,13 @@
 					<para><varname>random_tgeompoint_inst</varname>: Generar un punto geométrico temporal 2D aleatorio de subtipo instante</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_inst</varname>: Generar un punto geométrico temporal 3D aleatorio de subtipo instante</para>
+					<para><varname>random_tgeompoint3d_inst</varname>: Generar un punto geométrico temporal 3D aleatorio de subtipo instante</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tgeogpoint_inst</varname>: Generar un punto geográfico temporal 2D aleatorio de subtipo instante</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_inst</varname>: Generar un punto geográfico temporal 3D aleatorio de subtipo instante</para>
+					<para><varname>random_tgeogpoint3d_inst</varname>: Generar un punto geográfico temporal 3D aleatorio de subtipo instante</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbool_discseq</varname>: Generar un booleano temporal aleatorio de subtipo secuencia con interpolación discreta</para>
@@ -234,13 +234,13 @@
 					<para><varname>random_tgeompoint_discseq</varname>: Generar un punto temporal geométrico 2D aleatorio de subtipo secuencia con interpolación discreta</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_discseq</varname>: Generar un punto geométrico temporal 3D aleatorio de subtipo secuencia con interpolación discreta</para>
+					<para><varname>random_tgeompoint3d_discseq</varname>: Generar un punto geométrico temporal 3D aleatorio de subtipo secuencia con interpolación discreta</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tgeogpoint_discseq</varname>: Generar un punto geográfico temporal 2D aleatorio de subtipo secuencia con interpolación discreta</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_discseq</varname>: Generar un punto geográfico temporal 3D aleatorio de subtipo secuencia con interpolación discreta</para>
+					<para><varname>random_tgeogpoint3d_discseq</varname>: Generar un punto geográfico temporal 3D aleatorio de subtipo secuencia con interpolación discreta</para>
 				</listitem>
           <listitem>
 					<para><varname>random_tbool_seq</varname>: Generar un booleano temporal aleatorio de subtipo secuencia</para>
@@ -258,13 +258,13 @@
 					<para><varname>random_tgeompoint_seq</varname>: Generar un punto geométrico temporal 2D aleatorio de subtipo secuencia</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_seq</varname>: Generar un punto geométrico temporal 3D aleatorio de subtipo secuencia</para>
+					<para><varname>random_tgeompoint3d_seq</varname>: Generar un punto geométrico temporal 3D aleatorio de subtipo secuencia</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tgeogpoint_seq</varname>: Generar un punto geográfico temporal 2D aleatorio de subtipo secuencia</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_seq</varname>: Generar un punto geográfico temporal 3D aleatorio de subtipo secuencia</para>
+					<para><varname>random_tgeogpoint3d_seq</varname>: Generar un punto geográfico temporal 3D aleatorio de subtipo secuencia</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbool_seqset</varname>: Generar un booleano temporal aleatorio de subtipo conjunto de secuencias</para>
@@ -282,13 +282,13 @@
 					<para><varname>random_tgeompoint_seqset</varname>: Generar un punto geométrico temporal 2D aleatorio de subtipo conjunto de secuencias</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_seqset</varname>: Generar un punto geométrico temporal 3D aleatorio de subtipo conjunto de secuencias</para>
+					<para><varname>random_tgeompoint3d_seqset</varname>: Generar un punto geométrico temporal 3D aleatorio de subtipo conjunto de secuencias</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tgeogpoint_seqset</varname>: Generar un punto geográfico temporal 2D aleatorio de subtipo conjunto de secuencias</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_seqset</varname>: Generar un punto geográfico temporal 3D aleatorio de subtipo conjunto de secuencias</para>
+					<para><varname>random_tgeogpoint3d_seqset</varname>: Generar un punto geográfico temporal 3D aleatorio de subtipo conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 
@@ -381,13 +381,13 @@ SELECT k, random_geom_point(0, 100, 0, 100, 3812) FROM generate_series(2, size) 
 		</para>
 
 		<para>
-			La creación de una tabla <varname>tbl_geog_point3D</varname> que contiene valores aleatorios <varname>geography</varname> 3D point valores, donde las coordenadas x, y, y z están, respectivament, en los rangos [-10, 32], [35, 72] y [0, 1000] y en SRID 7844 se da a continuación.
+			La creación de una tabla <varname>tbl_geog_point3d</varname> que contiene valores aleatorios <varname>geography</varname> 3D point valores, donde las coordenadas x, y, y z están, respectivament, en los rangos [-10, 32], [35, 72] y [0, 1000] y en SRID 7844 se da a continuación.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE TABLE tbl_geog_point3D AS
+CREATE TABLE tbl_geog_point3d AS
 SELECT 1 AS k, geography 'SRID=7844;pointZ empty' AS g UNION
 SELECT k,
-  random_geog_point3D(-10, 32, 35, 72, 0, 1000, 7844) FROM generate_series(2, size) k;
+  random_geog_point3d(-10, 32, 35, 72, 0, 1000, 7844) FROM generate_series(2, size) k;
 </programlisting>
 		<para>
 			Nótese que los valores de latitud y longitud se eligen para cubrir aproximadamente la Europa continental. Si no se proporciona el SRID, se establece de forma predeterminada en 4326.
@@ -414,12 +414,12 @@ SELECT k,
 </programlisting>
 
 		<para>
-			La creación de una tabla <varname>tbl_geom_polygon3D</varname> que contiene valores aleatorios <varname>geometry</varname> 3D polygon valores sin agujeros, que tienen entre 5 y 10 vértices, donde las coordenadas x, y, y z están en el rango [0, 100] y la máxima diferencia entre valores de coordenadas consecutivos es 10 unidades en el SRID subyacente se da a continuación.
+			La creación de una tabla <varname>tbl_geom_polygon3d</varname> que contiene valores aleatorios <varname>geometry</varname> 3D polygon valores sin agujeros, que tienen entre 5 y 10 vértices, donde las coordenadas x, y, y z están en el rango [0, 100] y la máxima diferencia entre valores de coordenadas consecutivos es 10 unidades en el SRID subyacente se da a continuación.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE TABLE tbl_geom_polygon3D AS
+CREATE TABLE tbl_geom_polygon3d AS
 SELECT 1 AS k, geometry 'polygon Z empty' AS g UNION
-SELECT k, random_geom_polygon3D(0, 100, 0, 100, 0, 100, 10, 5, 10)
+SELECT k, random_geom_polygon3d(0, 100, 0, 100, 0, 100, 10, 5, 10)
 FROM generate_series(2, size) k;
 </programlisting>
 
@@ -444,17 +444,17 @@ FROM generate_series(2, size) k;
 </programlisting>
 
 		<para>
-			La creación de una tabla <varname>tbl_geometry3D</varname> que contiene valores aleatorios <varname>geometry</varname> 3D de varios tipos se da a continuación. Esta función requiere que las tablas para los diversos tipos de geometría se hayan creado previamente.
+			La creación de una tabla <varname>tbl_geometry3d</varname> que contiene valores aleatorios <varname>geometry</varname> 3D de varios tipos se da a continuación. Esta función requiere que las tablas para los diversos tipos de geometría se hayan creado previamente.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE TABLE tbl_geometry3D (k serial PRIMARY KEY, g geometry);
-INSERT INTO tbl_geometry3D(g)
-(SELECT g FROM tbl_geom_point3D ORDER BY k LIMIT (size * 0.1)) UNION ALL
-(SELECT g FROM tbl_geom_linestring3D ORDER BY k LIMIT (size * 0.1)) UNION ALL
-(SELECT g FROM tbl_geom_polygon3D ORDER BY k LIMIT (size * 0.2)) UNION ALL
-(SELECT g FROM tbl_geom_multipoint3D ORDER BY k LIMIT (size * 0.2)) UNION ALL
-(SELECT g FROM tbl_geom_multilinestring3D ORDER BY k LIMIT (size * 0.2)) UNION ALL
-(SELECT g FROM tbl_geom_multipolygon3D ORDER BY k LIMIT (size * 0.2));
+CREATE TABLE tbl_geometry3d (k serial PRIMARY KEY, g geometry);
+INSERT INTO tbl_geometry3d(g)
+(SELECT g FROM tbl_geom_point3d ORDER BY k LIMIT (size * 0.1)) UNION ALL
+(SELECT g FROM tbl_geom_linestring3d ORDER BY k LIMIT (size * 0.1)) UNION ALL
+(SELECT g FROM tbl_geom_polygon3d ORDER BY k LIMIT (size * 0.2)) UNION ALL
+(SELECT g FROM tbl_geom_multipoint3d ORDER BY k LIMIT (size * 0.2)) UNION ALL
+(SELECT g FROM tbl_geom_multilinestring3d ORDER BY k LIMIT (size * 0.2)) UNION ALL
+(SELECT g FROM tbl_geom_multipolygon3d ORDER BY k LIMIT (size * 0.2));
 </programlisting>
 
 
@@ -597,30 +597,30 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 </programlisting>
 
 		<para>
-			Finalmente, la creación de una tabla <varname>tbl_tgeompoint3D_seqset</varname> que contiene valores aleatorios <varname>tgeompoint</varname> 3D valores de subtipo conjunto de secuencias que tienen entre 5 y 10 sequences, cada una teniendo entre 5 y 10 marcas de tiempo, donde las coordenadas x, y, y z están en el rango [0, 100] y en SRID 3812, las marcas de tiempo están en el rango [2001-01-01, 2001-12-31], la máxima diferencia entre coordenadas successivas máximo 10 unidades en el SRID subyacente y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
+			Finalmente, la creación de una tabla <varname>tbl_tgeompoint3d_seqset</varname> que contiene valores aleatorios <varname>tgeompoint</varname> 3D valores de subtipo conjunto de secuencias que tienen entre 5 y 10 sequences, cada una teniendo entre 5 y 10 marcas de tiempo, donde las coordenadas x, y, y z están en el rango [0, 100] y en SRID 3812, las marcas de tiempo están en el rango [2001-01-01, 2001-12-31], la máxima diferencia entre coordenadas successivas máximo 10 unidades en el SRID subyacente y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-DROP TABLE IF EXISTS tbl_tgeompoint3D_seqset;
-CREATE TABLE tbl_tgeompoint3D_seqset AS
-SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31',
+DROP TABLE IF EXISTS tbl_tgeompoint3d_seqset;
+CREATE TABLE tbl_tgeompoint3d_seqset AS
+SELECT k, random_tgeompoint3d_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31',
   10, 10, 5, 10, 5, 10, 3812) AS ts FROM generate_series(1, size) AS k;
 /* Add perc duplicates */
-UPDATE tbl_tgeompoint3D_seqset t1
-SET ts = (SELECT ts FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3d_seqset t1
+SET ts = (SELECT ts FROM tbl_tgeompoint3d_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeompoint3D_seqset t1
-SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3d_seqset t1
+SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint3d_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeompoint3D_seqset t1
+UPDATE tbl_tgeompoint3d_seqset t1
 SET ts = (SELECT shift(ts,
-  timeSpan(ts)) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+  timeSpan(ts)) FROM tbl_tgeompoint3d_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeompoint3D_seqset t1
+UPDATE tbl_tgeompoint3d_seqset t1
 SET ts = (SELECT shift(ts, date_trunc('minute', timeSpan(ts)/2))
-  FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeompoint3d_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 </programlisting>
 	</sect1>

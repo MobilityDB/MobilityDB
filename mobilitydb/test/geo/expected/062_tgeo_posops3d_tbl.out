@@ -2,13 +2,13 @@
 -- This test creates its indexes on copies of the tables of the setup scripts,
 -- which hide those tables in its session: every test reads them, and an
 -- index on them would change the plans of the other tests.
-CREATE TEMP TABLE tbl_tgeometry3D AS TABLE tbl_tgeometry3D;
-ANALYZE tbl_tgeometry3D;
-DROP INDEX IF EXISTS tbl_tgeometry3D_rtree_idx;
+CREATE TEMP TABLE tbl_tgeometry3d AS TABLE tbl_tgeometry3d;
+ANALYZE tbl_tgeometry3d;
+DROP INDEX IF EXISTS tbl_tgeometry3d_rtree_idx;
 NOTICE:  index "tbl_tgeometry3d_rtree_idx" does not exist, skipping
-DROP INDEX IF EXISTS tbl_tgeometry3D_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tgeometry3d_quadtree_idx;
 NOTICE:  index "tbl_tgeometry3d_quadtree_idx" does not exist, skipping
-DROP INDEX IF EXISTS tbl_tgeometry3D_kdtree_idx;
+DROP INDEX IF EXISTS tbl_tgeometry3d_kdtree_idx;
 NOTICE:  index "tbl_tgeometry3d_kdtree_idx" does not exist, skipping
 -------------------------------------------------------------------------------
 DROP TABLE IF EXISTS test_posops3d;
@@ -24,387 +24,387 @@ create TEMP TABLE test_posops3d(
 );
 -------------------------------------------------------------------------------
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tstzspan', 'tgeometry3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t <<# temp;
+SELECT '<<#', 'tstzspan', 'tgeometry3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t <<# temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tstzspan', 'tgeometry3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t #>> temp;
+SELECT '#>>', 'tstzspan', 'tgeometry3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t #>> temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tstzspan', 'tgeometry3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t &<# temp;
+SELECT '&<#', 'tstzspan', 'tgeometry3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t &<# temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tstzspan', 'tgeometry3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t #&> temp;
+SELECT '#&>', 'tstzspan', 'tgeometry3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t #&> temp;
 -------------------------------------------------------------------------------
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tstzspan', 'tgeography3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t <<# temp;
+SELECT '<<#', 'tstzspan', 'tgeography3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t <<# temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tstzspan', 'tgeography3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t #>> temp;
+SELECT '#>>', 'tstzspan', 'tgeography3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t #>> temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tstzspan', 'tgeography3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t &<# temp;
+SELECT '&<#', 'tstzspan', 'tgeography3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t &<# temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tstzspan', 'tgeography3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t #&> temp;
+SELECT '#&>', 'tstzspan', 'tgeography3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t #&> temp;
 -------------------------------------------------------------------------------
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeometry3D', 'tstzspan', COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp <<# t;
+SELECT '<<#', 'tgeometry3d', 'tstzspan', COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp <<# t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeometry3D', 'tstzspan', COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp #>> t;
+SELECT '#>>', 'tgeometry3d', 'tstzspan', COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp #>> t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeometry3D', 'tstzspan', COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp &<# t;
+SELECT '&<#', 'tgeometry3d', 'tstzspan', COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp &<# t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeometry3D', 'tstzspan', COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp #&> t;
+SELECT '#&>', 'tgeometry3d', 'tstzspan', COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp #&> t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp << t2.temp;
+SELECT '<<', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp << t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp >> t2.temp;
+SELECT '>>', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp >> t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &< t2.temp;
+SELECT '&<', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &< t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &> t2.temp;
+SELECT '&>', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &> t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<|', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <<| t2.temp;
+SELECT '<<|', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <<| t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '|>>', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp |>> t2.temp;
+SELECT '|>>', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp |>> t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<|', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &<| t2.temp;
+SELECT '&<|', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &<| t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '|&>', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp |&> t2.temp;
+SELECT '|&>', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp |&> t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<</', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <</ t2.temp;
+SELECT '<</', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <</ t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '/>>', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp />> t2.temp;
+SELECT '/>>', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp />> t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&</', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &</ t2.temp;
+SELECT '&</', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &</ t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '/&>', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp /&> t2.temp;
+SELECT '/&>', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp /&> t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <<# t2.temp;
+SELECT '<<#', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <<# t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #>> t2.temp;
+SELECT '#>>', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #>> t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &<# t2.temp;
+SELECT '&<#', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &<# t2.temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeometry3D', 'tgeometry3D', COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #&> t2.temp;
+SELECT '#&>', 'tgeometry3d', 'tgeometry3d', COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #&> t2.temp;
 -------------------------------------------------------------------------------
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeography3D', 'tstzspan', COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp <<# t;
+SELECT '<<#', 'tgeography3d', 'tstzspan', COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp <<# t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeography3D', 'tstzspan', COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp #>> t;
+SELECT '#>>', 'tgeography3d', 'tstzspan', COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp #>> t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeography3D', 'tstzspan', COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp &<# t;
+SELECT '&<#', 'tgeography3d', 'tstzspan', COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp &<# t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeography3D', 'tstzspan', COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp #&> t;
+SELECT '#&>', 'tgeography3d', 'tstzspan', COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp #&> t;
 -------------------------------------------------------------------------------
-CREATE INDEX tbl_tgeometry3D_rtree_idx ON tbl_tgeometry3D USING GIST(temp);
--------------------------------------------------------------------------------
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
+CREATE INDEX tbl_tgeometry3d_rtree_idx ON tbl_tgeometry3d USING GIST(temp);
 -------------------------------------------------------------------------------
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
 -------------------------------------------------------------------------------
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp << t2.temp )
-WHERE op = '<<' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp >> t2.temp )
-WHERE op = '>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &< t2.temp )
-WHERE op = '&<' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &> t2.temp )
-WHERE op = '&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <<| t2.temp )
-WHERE op = '<<|' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp |>> t2.temp )
-WHERE op = '|>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &<| t2.temp )
-WHERE op = '&<|' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp |&> t2.temp )
-WHERE op = '|&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <</ t2.temp )
-WHERE op = '<</' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp />> t2.temp )
-WHERE op = '/>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &</ t2.temp )
-WHERE op = '&</' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp /&> t2.temp )
-WHERE op = '/&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <<# t2.temp )
-WHERE op = '<<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #>> t2.temp )
-WHERE op = '#>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &<# t2.temp )
-WHERE op = '&<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #&> t2.temp )
-WHERE op = '#&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
 -------------------------------------------------------------------------------
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
--------------------------------------------------------------------------------
-DROP INDEX tbl_tgeometry3D_rtree_idx;
--------------------------------------------------------------------------------
-CREATE INDEX tbl_tgeometry3D_quadtree_idx ON tbl_tgeometry3D USING SPGIST(temp);
--------------------------------------------------------------------------------
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
--------------------------------------------------------------------------------
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
--------------------------------------------------------------------------------
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <</ t2.temp )
+WHERE op = '<</' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp />> t2.temp )
+WHERE op = '/>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &</ t2.temp )
+WHERE op = '&</' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp /&> t2.temp )
+WHERE op = '/&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp << t2.temp )
-WHERE op = '<<' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp >> t2.temp )
-WHERE op = '>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &< t2.temp )
-WHERE op = '&<' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &> t2.temp )
-WHERE op = '&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <<| t2.temp )
-WHERE op = '<<|' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp |>> t2.temp )
-WHERE op = '|>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &<| t2.temp )
-WHERE op = '&<|' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp |&> t2.temp )
-WHERE op = '|&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <</ t2.temp )
-WHERE op = '<</' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp />> t2.temp )
-WHERE op = '/>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &</ t2.temp )
-WHERE op = '&</' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp /&> t2.temp )
-WHERE op = '/&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <<# t2.temp )
-WHERE op = '<<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #>> t2.temp )
-WHERE op = '#>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &<# t2.temp )
-WHERE op = '&<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
-UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #&> t2.temp )
-WHERE op = '#&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 -------------------------------------------------------------------------------
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
 -------------------------------------------------------------------------------
-DROP INDEX tbl_tgeometry3D_quadtree_idx;
+DROP INDEX tbl_tgeometry3d_rtree_idx;
 -------------------------------------------------------------------------------
-DROP INDEX tbl_tgeometry3D_rtree_idx;
+CREATE INDEX tbl_tgeometry3d_quadtree_idx ON tbl_tgeometry3d USING SPGIST(temp);
+-------------------------------------------------------------------------------
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
+-------------------------------------------------------------------------------
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
+-------------------------------------------------------------------------------
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <</ t2.temp )
+WHERE op = '<</' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp />> t2.temp )
+WHERE op = '/>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &</ t2.temp )
+WHERE op = '&</' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp /&> t2.temp )
+WHERE op = '/&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
+-------------------------------------------------------------------------------
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
+UPDATE test_posops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
+-------------------------------------------------------------------------------
+DROP INDEX tbl_tgeometry3d_quadtree_idx;
+-------------------------------------------------------------------------------
+DROP INDEX tbl_tgeometry3d_rtree_idx;
 ERROR:  index "tbl_tgeometry3d_rtree_idx" does not exist
 -------------------------------------------------------------------------------
-CREATE INDEX tbl_tgeometry3D_kdtree_idx ON tbl_tgeometry3D USING SPGIST(temp tgeometry_kdtree_ops);
+CREATE INDEX tbl_tgeometry3d_kdtree_idx ON tbl_tgeometry3d USING SPGIST(temp tgeometry_kdtree_ops);
 -------------------------------------------------------------------------------
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3D WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeometry3d WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeometry3d';
 -------------------------------------------------------------------------------
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3D WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeography3d WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeography3d';
 -------------------------------------------------------------------------------
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tstzspan';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp << t2.temp )
-WHERE op = '<<' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp >> t2.temp )
-WHERE op = '>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &< t2.temp )
-WHERE op = '&<' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &> t2.temp )
-WHERE op = '&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <<| t2.temp )
-WHERE op = '<<|' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp |>> t2.temp )
-WHERE op = '|>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &<| t2.temp )
-WHERE op = '&<|' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp |&> t2.temp )
-WHERE op = '|&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <</ t2.temp )
-WHERE op = '<</' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <</ t2.temp )
+WHERE op = '<</' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp />> t2.temp )
-WHERE op = '/>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp />> t2.temp )
+WHERE op = '/>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &</ t2.temp )
-WHERE op = '&</' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &</ t2.temp )
+WHERE op = '&</' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp /&> t2.temp )
-WHERE op = '/&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp /&> t2.temp )
+WHERE op = '/&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp <<# t2.temp )
-WHERE op = '<<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #>> t2.temp )
-WHERE op = '#>>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp &<# t2.temp )
-WHERE op = '&<#' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #&> t2.temp )
-WHERE op = '#&>' AND leftarg = 'tgeometry3D' AND rightarg = 'tgeometry3D';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'tgeometry3d' AND rightarg = 'tgeometry3d';
 -------------------------------------------------------------------------------
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeography3D' AND rightarg = 'tstzspan';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeography3d' AND rightarg = 'tstzspan';
 -------------------------------------------------------------------------------
-DROP INDEX tbl_tgeometry3D_kdtree_idx;
+DROP INDEX tbl_tgeometry3d_kdtree_idx;
 -------------------------------------------------------------------------------
 SELECT * FROM test_posops3d
 WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR

@@ -83,8 +83,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_geometry3D;
-CREATE FUNCTION random_geometry3D(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_geometry3d;
+CREATE FUNCTION random_geometry3d(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, srid int DEFAULT 0)
   RETURNS geometry AS $$
 DECLARE
@@ -92,22 +92,22 @@ DECLARE
 BEGIN
   i = random_int(1, 3);
   IF i = 1 THEN
-    RETURN random_geom_point3D(lowx, highx, lowy, highy, lowz, highz, srid);
+    RETURN random_geom_point3d(lowx, highx, lowy, highy, lowz, highz, srid);
   ELSIF i = 2 THEN
-    RETURN random_geom_linestring3D(lowx, highx, lowy, highy, lowz, highz,
+    RETURN random_geom_linestring3d(lowx, highx, lowy, highy, lowz, highz,
       10, 2, 2, srid);
   ELSE -- i = 0 
-    RETURN random_geom_multipoint3D(lowx, highx, lowy, highy, lowz, highz,
+    RETURN random_geom_multipoint3d(lowx, highx, lowy, highy, lowz, highz,
       10, 2, 2, srid);
   END IF;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, ST_AsText(random_geometry3D(-100, 100, -100, 100, -100, 100)) AS g
+SELECT k, ST_AsText(random_geometry3d(-100, 100, -100, 100, -100, 100)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, ST_AsEWKT(random_geometry3D(-100, 100, -100, 100, -100, 100, 3812)) AS g
+SELECT k, ST_AsEWKT(random_geometry3d(-100, 100, -100, 100, -100, 100, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 */
 
@@ -152,8 +152,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_geography3D;
-CREATE FUNCTION random_geography3D(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_geography3d;
+CREATE FUNCTION random_geography3d(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, srid int DEFAULT 4326)
   RETURNS geography AS $$
 DECLARE
@@ -162,15 +162,15 @@ BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
-  RETURN random_geometry3D(lowx, highx, lowy, highy, lowz, highz, srid)::geography;
+  RETURN random_geometry3d(lowx, highx, lowy, highy, lowz, highz, srid)::geography;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, ST_AsEWKT(random_geography3D(-180, 180, -90, 90, 0, 100)) AS g
+SELECT k, ST_AsEWKT(random_geography3d(-180, 180, -90, 90, 0, 100)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, ST_AsEWKT(random_geography3D(-180, 180, -90, 90, 0, 100, 7844)) AS g
+SELECT k, ST_AsEWKT(random_geography3d(-180, 180, -90, 90, 0, 100, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 */
 
@@ -228,8 +228,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_geometry3D_array;
-CREATE FUNCTION random_geometry3D_array(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_geometry3d_array;
+CREATE FUNCTION random_geometry3d_array(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, mincard int, maxcard int,
   srid int DEFAULT 0)
   RETURNS geometry[] AS $$
@@ -245,12 +245,12 @@ BEGIN
   FOR i IN 1..card
   LOOP
     IF mod(i, 3) = 1 THEN
-      result[i] = random_geom_point3D(lowx, highx, lowy, highy, lowz, highz, srid);
+      result[i] = random_geom_point3d(lowx, highx, lowy, highy, lowz, highz, srid);
     ELSIF mod(i, 3) = 2 THEN
-      result[i] = random_geom_linestring3D(lowx, highx, lowy, highy, 
+      result[i] = random_geom_linestring3d(lowx, highx, lowy, highy, 
         lowz, highz, 10, 2, 2, srid);
     ELSE -- mod(i, 3) = 0 
-      result[i] = random_geom_multipoint3D(lowx, highx, lowy, highy, 
+      result[i] = random_geom_multipoint3d(lowx, highx, lowy, highy, 
         lowz, highz, 10, 2, 2, srid);
     END IF;
   END LOOP;
@@ -259,10 +259,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asText(random_geometry3D_array(-100, 100, -100, 100, 0, 100, 1, 10)) AS g
+SELECT k, asText(random_geometry3d_array(-100, 100, -100, 100, 0, 100, 1, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asText(random_geometry3D_array(-100, 100, -100, 100, 0, 100, 1, 10, 3812)) AS g
+SELECT k, asText(random_geometry3d_array(-100, 100, -100, 100, 0, 100, 1, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 */
 
@@ -315,8 +315,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_geography3D_array;
-CREATE FUNCTION random_geography3D_array(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_geography3d_array;
+CREATE FUNCTION random_geography3d_array(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, mincard int, maxcard int,
   srid int DEFAULT 4326)
   RETURNS geography[] AS $$
@@ -328,7 +328,7 @@ BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
-  geomresult = random_geometry3D_array(lowx, highx, lowy, highy, lowz, highz, 
+  geomresult = random_geometry3d_array(lowx, highx, lowy, highy, lowz, highz, 
     mincard, maxcard, srid);
   FOR i IN 1..array_length(geomresult, 1)
   LOOP
@@ -339,10 +339,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asText(random_geography3D_array(-180, 180, -90, 90, 0, 100, 1, 10)) AS g
+SELECT k, asText(random_geography3d_array(-180, 180, -90, 90, 0, 100, 1, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asText(random_geography3D_array(-180, 180, -90, 90, 0, 100, 1, 10, 3812)) AS g
+SELECT k, asText(random_geography3d_array(-180, 180, -90, 90, 0, 100, 1, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 */
 
@@ -383,22 +383,22 @@ FROM generate_series(1, 15) AS k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the set
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_geometry3D_set;
-CREATE FUNCTION random_geometry3D_set(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_geometry3d_set;
+CREATE FUNCTION random_geometry3d_set(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, mincard int, maxcard int,
   srid int DEFAULT 0)
   RETURNS geomset AS $$
 BEGIN
-  RETURN set(random_geometry3D_array(lowx, highx, lowy, highy, lowz, highz,
+  RETURN set(random_geometry3d_array(lowx, highx, lowy, highy, lowz, highz,
       mincard, maxcard, srid));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEWKT(random_geometry3D_set(1, 100, 1, 100, 1, 100, 5, 10)) AS g
+SELECT k, asEWKT(random_geometry3d_set(1, 100, 1, 100, 1, 100, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEWKT(random_geometry3D_set(1, 100, 1, 100, 1, 100, 5, 10, 3812)) AS g
+SELECT k, asEWKT(random_geometry3d_set(1, 100, 1, 100, 1, 100, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 */
 
@@ -439,22 +439,22 @@ FROM generate_series(1, 15) AS k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the set
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_geography3D_set;
-CREATE FUNCTION random_geography3D_set(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_geography3d_set;
+CREATE FUNCTION random_geography3d_set(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, mincard int, maxcard int,
   srid int DEFAULT 4326)
   RETURNS geogset AS $$
 BEGIN
-  RETURN set(random_geography3D_array(lowx, highx, lowy, highy, lowz, highz,
+  RETURN set(random_geography3d_array(lowx, highx, lowy, highy, lowz, highz,
     mincard, maxcard, srid));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEWKT(random_geography3D_set(-180, 180, -90, 90, 0, 100, 5, 10)) AS g
+SELECT k, asEWKT(random_geography3d_set(-180, 180, -90, 90, 0, 100, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEWKT(random_geography3D_set(-180, 180, -90, 90, 0, 100, 5, 10, 7844)) AS g
+SELECT k, asEWKT(random_geography3d_set(-180, 180, -90, 90, 0, 100, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 */
 
@@ -495,19 +495,19 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_tgeometry3D_inst;
-CREATE FUNCTION random_tgeometry3D_inst(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_tgeometry3d_inst;
+CREATE FUNCTION random_tgeometry3d_inst(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz, 
   hightime timestamptz, srid int DEFAULT 0)
   RETURNS tgeometry AS $$
 BEGIN
-  RETURN tgeometry(random_geometry3D(lowx, highx, lowy, highy, lowz, highz, srid), 
+  RETURN tgeometry(random_geometry3d(lowx, highx, lowy, highy, lowz, highz, srid), 
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asText(random_tgeometry3D_inst(1, 100, 1, 100, 1, 100, '2001-01-01',
+SELECT k, asText(random_tgeometry3d_inst(1, 100, 1, 100, 1, 100, '2001-01-01',
   '2001-12-31')) AS inst
 FROM generate_series(1,10) k;
 */
@@ -553,8 +553,8 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] srid SRID of the coordinates
  */
-DROP FUNCTION IF EXISTS random_tgeography3D_inst;
-CREATE FUNCTION random_tgeography3D_inst(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_tgeography3d_inst;
+CREATE FUNCTION random_tgeography3d_inst(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, srid int DEFAULT 4326)
   RETURNS tgeography AS $$
@@ -563,16 +563,16 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeography(random_geography3D(lowx, highx, lowy, highy, lowz,
+  RETURN tgeography(random_geography3d(lowx, highx, lowy, highy, lowz,
     highz, srid), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEWKT(random_tgeography3D_inst(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01')) AS inst
+SELECT k, asEWKT(random_tgeography3d_inst(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01')) AS inst
 FROM generate_series(1,10) k;
 
-SELECT k, asEWKT(random_tgeography3D_inst(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 7844)) AS inst
+SELECT k, asEWKT(random_tgeography3d_inst(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 7844)) AS inst
 FROM generate_series(1,10) k;
 */
 
@@ -633,8 +633,8 @@ FROM generate_series(1,10) k;
  * @param[in] mincard, maxcard Inclusive bounds of the number of instants
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_tgeometry3D_discseq;
-CREATE FUNCTION random_tgeometry3D_discseq(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_tgeometry3d_discseq;
+CREATE FUNCTION random_tgeometry3d_discseq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz, 
   hightime timestamptz, maxminutes int, mincard int, maxcard int, 
   srid int DEFAULT 0)
@@ -648,7 +648,7 @@ BEGIN
   t = random_timestamptz(lowtime, hightime);
   FOR i IN 1..card
   LOOP
-    result[i] = tgeometry(random_geometry3D(lowx, highx, lowy, highy, lowz, 
+    result[i] = tgeometry(random_geometry3d(lowx, highx, lowy, highy, lowz, 
       highz, srid), t);
     t = t + random_minutes(1, maxminutes);
   END LOOP;
@@ -657,11 +657,11 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asText(random_tgeometry3D_discseq(1, 100, 1, 100, 1, 100,
+SELECT k, asText(random_tgeometry3d_discseq(1, 100, 1, 100, 1, 100,
   '2001-01-01', '2001-12-31', 10, 1, 10)) AS ti
 FROM generate_series(1,10) k;
 
-SELECT k, asEWKT(random_tgeometry3D_discseq(1, 100, 1, 100, 1, 100,
+SELECT k, asEWKT(random_tgeometry3d_discseq(1, 100, 1, 100, 1, 100,
   '2001-01-01', '2001-12-31', 10, 1, 10, 3812)) AS ti
 FROM generate_series(1,10) k;
 */
@@ -725,8 +725,8 @@ FROM generate_series(1,10) k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality sequence
  * @param[in] srid SRID of the coordinates
  */
-DROP FUNCTION IF EXISTS random_tgeography3D_discseq;
-CREATE FUNCTION random_tgeography3D_discseq(lowx float, highx float,
+DROP FUNCTION IF EXISTS random_tgeography3d_discseq;
+CREATE FUNCTION random_tgeography3d_discseq(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxminutes int, mincard int, maxcard int,
   srid int DEFAULT 4326)
@@ -737,7 +737,7 @@ DECLARE
   result tgeography[];
   card int;
 BEGIN
-  SELECT random_geography3D_array(lowx, highx, lowy, highy, lowz, highz,
+  SELECT random_geography3d_array(lowx, highx, lowy, highy, lowz, highz,
     mincard, maxcard, srid)
   INTO pointarr;
   card = array_length(pointarr, 1);
@@ -752,13 +752,13 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEWKT(random_tgeography3D_discseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10))
+SELECT k, asEWKT(random_tgeography3d_discseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, asEWKT(random_tgeography3D_discseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 7844))
+SELECT k, asEWKT(random_tgeography3d_discseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 7844))
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeography3D_discseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10) AS ti
+SELECT k, random_tgeography3d_discseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -850,8 +850,8 @@ SELECT DISTINCT srid(seq) FROM temp;
  *    sequence set value and in this case the start timestamp is already fixed
  * @note Type tgeometry does not accept linear interpolation
  */
-DROP FUNCTION IF EXISTS random_tgeometry3D_stepseq;
-CREATE FUNCTION random_tgeometry3D_stepseq(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_tgeometry3d_stepseq;
+CREATE FUNCTION random_tgeometry3d_stepseq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz, 
   hightime timestamptz, maxminutes int, mincard int, maxcard int, 
   srid int DEFAULT 0, fixstart bool DEFAULT false)
@@ -877,7 +877,7 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeometry(random_geometry3D(lowx, highx, lowy, highy, lowz, 
+    result[i] = tgeometry(random_geometry3d(lowx, highx, lowy, highy, lowz, 
       highz, srid), tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
@@ -885,7 +885,7 @@ BEGIN
   IF card <> 1 AND NOT upper_inc THEN
     result[card] = tgeometry(getValue(result[card - 1]), tsarr[card]);
   ELSE
-    result[card] = tgeometry(random_geometry3D(lowx, highx, lowy, highy, 
+    result[card] = tgeometry(random_geometry3d(lowx, highx, lowy, highy, 
       lowz, highz, srid), tsarr[card]);
   END IF;
   RETURN tgeometrySeq(result, 'Step', lower_inc, upper_inc);
@@ -893,18 +893,18 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asText(random_tgeometry3D_stepseq(1, 100, 1, 100, 1, 100,
+SELECT k, asText(random_tgeometry3d_stepseq(1, 100, 1, 100, 1, 100,
   '2001-01-01', '2001-12-31', 10, 10, 10)) AS seq
 FROM generate_series (1, 15) AS k;
 
 WITH temp AS (
-  SELECT k, random_tgeometry3D_stepseq(1, 100, 1, 100, 1, 100,
+  SELECT k, random_tgeometry3d_stepseq(1, 100, 1, 100, 1, 100,
     '2001-01-01', '2001-12-31', 10, 10, 10) AS seq
   FROM generate_series (1, 15) AS k )
 SELECT DISTINCT srid(seq) FROM temp;
 
 WITH temp AS (
-  SELECT k, random_tgeometry3D_stepseq(1, 100, 1, 100, 1, 100,
+  SELECT k, random_tgeometry3d_stepseq(1, 100, 1, 100, 1, 100,
     '2001-01-01', '2001-12-31', 10, 10, 10, 3812) AS seq
   FROM generate_series (1, 15) AS k )
 SELECT DISTINCT srid(seq) FROM temp;
@@ -988,8 +988,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
  */
-DROP FUNCTION IF EXISTS random_tgeography3D_stepseq;
-CREATE FUNCTION random_tgeography3D_stepseq(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_tgeography3d_stepseq;
+CREATE FUNCTION random_tgeography3d_stepseq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxminutes int, mincard int, maxcard int, 
   srid int DEFAULT 4326, fixstart bool DEFAULT false)
@@ -1003,7 +1003,7 @@ DECLARE
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  SELECT random_geography3D_array(lowx, highx, lowy, highy, lowz, highz,
+  SELECT random_geography3d_array(lowx, highx, lowy, highy, lowz, highz,
     mincard, maxcard, srid) INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
@@ -1031,10 +1031,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEWKT(random_tgeography3D_stepseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10))
+SELECT k, asEWKT(random_tgeography3d_stepseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEWKT(random_tgeography3D_stepseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 7844))
+SELECT k, asEWKT(random_tgeography3d_stepseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 7844))
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1115,8 +1115,8 @@ SELECT DISTINCT srid(seqset) FROM temp;
  * @param[in] mincard, maxcard Inclusive bounds of the number of sequences
  * @param[in] srid Optional SRID
  */
-DROP FUNCTION IF EXISTS random_tgeometry3D_seqset;
-CREATE FUNCTION random_tgeometry3D_seqset(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_tgeometry3d_seqset;
+CREATE FUNCTION random_tgeometry3d_seqset(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz, 
   hightime timestamptz, maxminutes int, mincardseq int, maxcardseq int, 
   mincard int, maxcard int, srid int DEFAULT 0)
@@ -1138,7 +1138,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i > 1
-    SELECT random_tgeometry3D_stepseq(lowx, highx, lowy, highy, lowz, highz,
+    SELECT random_tgeometry3d_stepseq(lowx, highx, lowy, highy, lowz, highz,
       t1, t2, maxminutes, mincardseq, maxcardseq, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -1149,16 +1149,16 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asText(random_geometry3D_seqset(1, 100, 1, 100, 1, 100,
+SELECT k, asText(random_geometry3d_seqset(1, 100, 1, 100, 1, 100,
   '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10)) AS seqset
 FROM generate_series (1, 15) AS k;
 
-SELECT k, asEWKT(random_geometry3D_seqset(1, 100, 1, 100, 1, 100,
+SELECT k, asEWKT(random_geometry3d_seqset(1, 100, 1, 100, 1, 100,
   '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812)) AS seqset
 FROM generate_series (1, 15) AS k;
 
 WITH temp AS (
-  SELECT k, random_geometry3D_seqset(1, 100, 1, 100, 1, 100,
+  SELECT k, random_geometry3d_seqset(1, 100, 1, 100, 1, 100,
     '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS seqset
   FROM generate_series (1, 15) AS k )
 SELECT DISTINCT srid(seqset) FROM temp;
@@ -1230,8 +1230,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
  * @param[in] srid SRID of the coordinates
  */
-DROP FUNCTION IF EXISTS random_tgeography3D_seqset;
-CREATE FUNCTION random_tgeography3D_seqset(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_tgeography3d_seqset;
+CREATE FUNCTION random_tgeography3d_seqset(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxminutes int, mincardseq int, maxcardseq int, 
   mincard int, maxcard int, srid int DEFAULT 4326)
@@ -1253,7 +1253,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i > 1
-    SELECT random_tgeography3D_stepseq(lowx, highx, lowy, highy, lowz, highz,
+    SELECT random_tgeography3d_stepseq(lowx, highx, lowy, highy, lowz, highz,
       t1, t2, maxminutes, mincardseq, maxcardseq, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -1264,19 +1264,19 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEWKT(random_tgeography3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10)) AS ts
+SELECT k, asEWKT(random_tgeography3d_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10)) AS ts
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEWKT(random_tgeography3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10, 7844)) AS ts
+SELECT k, asEWKT(random_tgeography3d_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10, 7844)) AS ts
 FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeography3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10) AS ts
+SELECT k, random_tgeography3d_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, 15) AS k;
 
-SELECT k, numSequences(random_tgeography3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10))
+SELECT k, numSequences(random_tgeography3d_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEWKT(endSequence(random_tgeography3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10))) AS ts
+SELECT k, asEWKT(endSequence(random_tgeography3d_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 5, 10, 5, 10))) AS ts
 FROM generate_series(1, 15) AS k;
 */
 

@@ -142,13 +142,13 @@ SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 
 -------------------------------------------------------------------------------
 -- Constructor
-SELECT memSize(setUnion(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+SELECT memSize(setUnion(g)) FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
  memsize 
 ---------
     4856
 (1 row)
 
-SELECT memSize(setUnion(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+SELECT memSize(setUnion(g)) FROM tbl_geog_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
  memsize 
 ---------
     4856
@@ -171,13 +171,13 @@ LINE 1: SELECT geogset '{"Polygon empty", "Point(4 5)"}';
                        ^
 -------------------------------------------------------------------------------
 -- Cast
-SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+SELECT MAX(memSize(set(g))) FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
  max 
 -----
  152
 (1 row)
 
-SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+SELECT MAX(memSize(set(g))) FROM tbl_geog_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
  max 
 -----
  152
@@ -303,13 +303,13 @@ FROM (VALUES (geogset '{"Point(1.123456789 2.987654321)", "Point(3.333333333 4.4
 
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions
-SELECT numValues(setUnion(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
+SELECT numValues(setUnion(g)) FROM tbl_geom_point3d WHERE NOT ST_IsEmpty(g);
  numvalues 
 -----------
         99
 (1 row)
 
-SELECT numValues(setUnion(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geometry);
+SELECT numValues(setUnion(g)) FROM tbl_geog_point3d WHERE NOT ST_IsEmpty(g::geometry);
  numvalues 
 -----------
         99

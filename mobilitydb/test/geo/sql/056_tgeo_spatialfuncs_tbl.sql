@@ -2,35 +2,35 @@
 
 SELECT DISTINCT SRID(temp) FROM tbl_tgeometry;
 SELECT DISTINCT SRID(temp) FROM tbl_tgeography;
-SELECT DISTINCT SRID(temp) FROM tbl_tgeometry3D;
-SELECT DISTINCT SRID(temp) FROM tbl_tgeography3D;
+SELECT DISTINCT SRID(temp) FROM tbl_tgeometry3d;
+SELECT DISTINCT SRID(temp) FROM tbl_tgeography3d;
 
 /*
 SELECT setSRID(temp,3812) FROM tbl_tgeometry;
 SELECT setSRID(temp,4326) FROM tbl_tgeography;
-SELECT setSRID(temp,3812) FROM tbl_tgeometry3D;
-SELECT setSRID(temp,4326) FROM tbl_tgeography3D;
+SELECT setSRID(temp,3812) FROM tbl_tgeometry3d;
+SELECT setSRID(temp,4326) FROM tbl_tgeography3d;
 */
 
 SELECT COUNT(*) FROM tbl_tgeometry WHERE startValue(transform(setSRID(temp, 3812), 4326)) = ST_Transform(ST_SetSRID(startValue(temp), 3812), 4326);
-SELECT COUNT(*) FROM tbl_tgeometry3D WHERE startValue(transform(setSRID(temp, 3812), 4326)) = ST_Transform(ST_SetSRID(startValue(temp), 3812), 4326);
+SELECT COUNT(*) FROM tbl_tgeometry3d WHERE startValue(transform(setSRID(temp, 3812), 4326)) = ST_Transform(ST_SetSRID(startValue(temp), 3812), 4326);
 
 -------------------------------------------------------------------------------
 
 SELECT tgeography(setSRID(temp,4326)) FROM tbl_tgeometry LIMIT 10;
 SELECT tgeometry(temp) FROM tbl_tgeography LIMIT 10;
-SELECT tgeography(setSRID(temp,7844)) FROM tbl_tgeometry3D LIMIT 10;
-SELECT tgeometry(temp) FROM tbl_tgeography3D LIMIT 10;
+SELECT tgeography(setSRID(temp,7844)) FROM tbl_tgeometry3d LIMIT 10;
+SELECT tgeometry(temp) FROM tbl_tgeography3d LIMIT 10;
 
 SELECT setSRID(temp,4326)::tgeography FROM tbl_tgeometry LIMIT 10;
 SELECT temp::tgeometry FROM tbl_tgeography LIMIT 10;
-SELECT setSRID(temp,4326)::tgeography FROM tbl_tgeometry3D LIMIT 10;
-SELECT temp::tgeometry FROM tbl_tgeography3D LIMIT 10;
+SELECT setSRID(temp,4326)::tgeography FROM tbl_tgeometry3d LIMIT 10;
+SELECT temp::tgeometry FROM tbl_tgeography3d LIMIT 10;
 
 SELECT asText(round(temp, 2)) FROM tbl_tgeometry LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeography LIMIT 10;
-SELECT asText(round(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
-SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeometry3d LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeography3d LIMIT 10;
 
 -- Round an array of temporal points
 SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE temp IS NOT NULL AND k % 20 = 1;
@@ -38,8 +38,8 @@ SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeography_inst WHE
 
 SELECT MAX(ST_NPoints(traversedArea(temp))) FROM tbl_tgeometry;
 SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography;
-SELECT MAX(ST_NPoints(traversedArea(temp))) FROM tbl_tgeometry3D;
-SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography3D;
+SELECT MAX(ST_NPoints(traversedArea(temp))) FROM tbl_tgeometry3d;
+SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography3d;
 
 SELECT MIN(numInstants(centroid(temp))) FROM tbl_tgeometry;
 SELECT MIN(numInstants(centroid(temp))) FROM tbl_tgeography;
