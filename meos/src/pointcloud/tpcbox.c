@@ -1596,13 +1596,42 @@ tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_pointcloud_box_comp
- * @brief Return the sort key of a point cloud box
+ * @brief Return the number of bytes of the sort key of a point cloud box
+ * @param[in] box Point cloud box
+ */
+size_t
+tpcbox_sortkey_size(const TPCBox *box)
+{
+  assert(box);
+  return datum_sortkey_size(T_INT8) + stbox_sortkey_size((const STBox *) box);
+}
+
+/**
+ * @brief Write the sort key of a point cloud box
  * @details The key is the schema id, written as an integer, followed by the
  * sort key of the spatiotemporal box the point cloud box extends, as
- * #stbox_sortkey_intl writes it, so that comparing two keys byte by byte as
+ * #stbox_sortkey_put writes it, so that comparing two keys byte by byte as
  * unsigned values orders the boxes as #tpcbox_cmp does and two boxes have the
  * same key when #tpcbox_eq holds
+ * @param[in] box Point cloud box
+ * @param[out] out Buffer of #tpcbox_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+tpcbox_sortkey_put(const TPCBox *box, uint8_t *out)
+{
+  assert(box); assert(out);
+  /* The schema id is unsigned, so it is written as a big integer, which
+   * holds every value it takes */
+  datum_sortkey_put(Int64GetDatum(box->pcid), T_INT8, out);
+  return stbox_sortkey_put((const STBox *) box,
+    out + datum_sortkey_size(T_INT8));
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_box_comp
+ * @brief Return the sort key of a point cloud box, which #tpcbox_sortkey_put
+ * states
  * @param[in] box Point cloud box
  * @param[out] size Number of bytes of the key
  * @see #tpcbox_sortkey
@@ -1611,13 +1640,9 @@ uint8_t *
 tpcbox_sortkey_intl(const TPCBox *box, size_t *size)
 {
   assert(box); assert(size);
-  /* The schema id is unsigned, so it is written as a big integer, which
-   * holds every value it takes */
-  size_t n = datum_sortkey_size(T_INT8);
-  *size = n + stbox_sortkey_size((const STBox *) box);
+  *size = tpcbox_sortkey_size(box);
   uint8_t *result = palloc(*size);
-  datum_sortkey_put(Int64GetDatum(box->pcid), T_INT8, result);
-  stbox_sortkey_put((const STBox *) box, result + n);
+  tpcbox_sortkey_put(box, result);
   return result;
 }
 

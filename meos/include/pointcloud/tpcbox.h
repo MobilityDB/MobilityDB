@@ -100,6 +100,8 @@ extern TPCBox *tpcbox_parse(const char **str);
 
 /* Comparison functions */
 
+extern size_t tpcbox_sortkey_size(const TPCBox *box);
+extern uint8_t *tpcbox_sortkey_put(const TPCBox *box, uint8_t *out);
 extern uint8_t *tpcbox_sortkey_intl(const TPCBox *box, size_t *size);
 
 /*****************************************************************************/
