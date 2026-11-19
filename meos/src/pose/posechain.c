@@ -1078,6 +1078,8 @@ posechain_set_srid_intl(PoseChain *pc, int32_t srid)
 /**
  * @ingroup meos_posechain_base_srid
  * @brief Return a pose chain with its outer frame set to an SRID
+ * @details The invalid SRID is refused and any other SRID is clamped as
+ * #geo_set_srid clamps it
  * @param[in] pc Pose chain
  * @param[in] srid SRID
  * @csqlfn #Posechain_set_srid()
@@ -1090,7 +1092,7 @@ posechain_set_srid(const PoseChain *pc, int32_t srid)
   if (! ensure_srid_valid(srid))
     return NULL;
   PoseChain *result = posechain_copy(pc);
-  posechain_set_srid_intl(result, srid);
+  posechain_set_srid_intl(result, clamp_srid(srid));
   return result;
 }
 

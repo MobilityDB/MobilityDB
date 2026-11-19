@@ -102,6 +102,12 @@ SELECT asEWKT(round(posechain 'PoseChain(Pose(Point(1.123456789 2.123456789), 0.
 
 SELECT SRID(posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))');
 SELECT SRID(setSRID(posechain 'PoseChain(Pose(Point(1 2), 0)) ', 3812));
+-- setSRID reads an SRID as ST_SetSRID reads it
+WITH s(srid) AS (VALUES (-1), (3857), (1000000), (999999999))
+SELECT srid, ST_SRID(ST_SetSRID(geometry 'Point(1 1)', srid)),
+  SRID(setSRID(posechain 'PoseChain(Pose(Point(1 2), 0))', srid))
+FROM s;
+SELECT setSRID(posechain 'PoseChain(Pose(Point(1 2), 0))', 1000001);
 SELECT asEWKT(round(transform(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 4326), 6));
 SELECT asEWKT(round(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 6));
 
