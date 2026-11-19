@@ -2495,7 +2495,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i > 1
-    SELECT random_tgeogpoint3d_stepseq(lowx, highx, lowy, highy, lowz, highz,
+    SELECT random_tgeogpoint3d_contseq(lowx, highx, lowy, highy, lowz, highz,
       t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);

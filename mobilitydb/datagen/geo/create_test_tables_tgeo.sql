@@ -51,44 +51,44 @@ IF perc < 1 THEN perc := 1; END IF;
 
 DROP TABLE IF EXISTS tbl_geometry;
 CREATE TABLE tbl_geometry AS
-SELECT k, random_geometry(-100, 100, -100, 100, 3812) AS geo
+SELECT k, random_geometry(-100, 100, -100, 100, 3812) AS g
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geometry3d;
 CREATE TABLE tbl_geometry3d AS
-SELECT k, random_geometry3d(-100, 100, -100, 100, -100, 100, 3812) AS geo
+SELECT k, random_geometry3d(-100, 100, -100, 100, -100, 100, 3812) AS g
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geometryset;
 CREATE TABLE tbl_geometryset AS
-SELECT k, random_geometry_set(-100, 100, -100, 100, 1, 10, 3812)
+SELECT k, random_geometry_set(-100, 100, -100, 100, 1, 10, 3812) AS g
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_geometry3dset;
 CREATE TABLE tbl_geometry3dset AS
-SELECT k, random_geometry3d_set(-100, 100, -100, 100, -100, 100, 1, 10, 3812)
+SELECT k, random_geometry3d_set(-100, 100, -100, 100, -100, 100, 1, 10, 3812) AS g
 FROM generate_series(1, size) AS k;
 
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_geography;
 CREATE TABLE tbl_geography AS
-SELECT k, random_geography(-180, 180, -90, 90, 7844) AS geo
+SELECT k, random_geography(-180, 180, -90, 90, 7844) AS g
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geography3d;
 CREATE TABLE tbl_geography3d AS
-SELECT k, random_geography3d(-180, 180, -90, 90, 0, 100, 7844) AS geo
+SELECT k, random_geography3d(-180, 180, -90, 90, 0, 100, 7844) AS g
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geographyset;
 CREATE TABLE tbl_geographyset AS
-SELECT k, random_geography_set(-180, 180, -90, 90, 1, 10, 7844)
+SELECT k, random_geography_set(-180, 180, -90, 90, 1, 10, 7844) AS g
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_geography3dset;
 CREATE TABLE tbl_geography3dset AS
-SELECT k, random_geography3d_set(-180, 180, -90, 90, 0, 100, 1, 10, 7844)
+SELECT k, random_geography3d_set(-180, 180, -90, 90, 0, 100, 1, 10, 7844) AS g
 FROM generate_series(1, size) AS k;
 
 ------------------------------------------------------------------------------
@@ -204,6 +204,7 @@ CREATE TABLE tbl_tgeography3d(k, temp) AS
 (SELECT k + size / 4, temp FROM tbl_tgeography3d_discseq LIMIT size / 4) UNION ALL
 (SELECT k + size / 2, temp FROM tbl_tgeography3d_contseq LIMIT size / 4) UNION ALL
 (SELECT k + size / 4 * 3, temp FROM tbl_tgeography3d_seqset LIMIT size / 4);
+
 
 -------------------------------------------------------------------------------
 RETURN 'The End';
