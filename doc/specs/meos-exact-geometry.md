@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.4.1 |
+| Version | v0.4.2 |
 | Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates, relationships, areas and buffers |
 | Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/src/geo/geo_buffer.c` and `meos/src/geo/geo_arrange.c` (the buffer and the arrangement it is read off), `meos/test/distance_point_test.c`, `meos/test/geo_test.c` and `mobilitydb/test/geo/sql/049_geo_funcs.sql` (the witnesses quoted below) |
 
@@ -435,6 +435,7 @@ arcs as arcs (a `CURVEPOLYGON`, or a `MULTISURFACE` of them).
 | polygon, multipolygon | positive | round joins | the region the offset curves wind around at least once |
 | line, multiline | positive | round joins, any cap | the same, each line walked out to its end and back under a round cap; under a flat or a square cap, the strips of its end segments and the buffer with round caps of the line between them |
 | polygon, multipolygon | negative | round joins | the region the offset curves of the complement wind around clockwise |
+| multipoint | positive | none | the region the circles about its points wind around at least once, a point repeating another dropped |
 
 Round joins and round caps are the default style.
 
@@ -521,6 +522,7 @@ rests on a rounding.
 | polygons with round joins, points about multipolygons | 15402 points about 192 natural-area multipolygons | 15402 of 15402 |
 | lines with round joins and caps | 36960 straight queries; 336 lines with a first vertex from `2^20` to `2^60`; 1576 queries along vessel tracks | 36960 of 36960; 274 answered, 62 declined; 1530 answered, 11 declined, 35 past 60 s |
 | lines with round joins and round, flat or square caps | 1712 lines at two distances, a grid about each and points along and across each end at 0.999 and 1.001 of the distance | 1021872 of 1021872, with no decline |
+| multipoints | 300 multipoints of two to eight points at two distances, a grid about each and points about every crossing of two circles at 0.999 and 1.001 of the distance | 44728 of 44728, with no decline |
 | erosions | 62800 points about 400 eroded squares and squares with holes; 12366 points about 192 natural areas | 62800 of 62800 and 12366 of 12366, with no decline |
 
 Every query a line's certificate declines has a distance below the rounding of
@@ -568,7 +570,7 @@ chords miss the closed form by up to 2.6%; measured by `area`, none of the
   (see [Finite Values](meos-finite-values.md)); the exact answer is defined
   for finite doubles.
 - **Buffers in other styles and of other inputs.** Bevel and mitre joins,
-  a geometry holding circular arcs, a point, and a
+  a geometry holding circular arcs, a single point, and a
   collection of mixed dimension are buffered on the older path, as is a
   polygon whose arrangement leaves a question open (section 8.1); their
   answers are outside this document's guarantee.
