@@ -199,7 +199,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   otherwise on master, a misspelt one as NULL like a cell at the edge), by the owner's ruling of
   2026-11-19 ("approve"),
   branch `meos/quadbin-sibling-direction-as-quadbin-py` (`a5c18c4e22`) rewrites 8fc7962209,
-  MERGED as MobilityDB #3853 (`4c99750137`).
+  MERGED as MobilityDB #3853 (`4c99750137`). Every raster function taking a pixel type reads it
+  through `raster_pixtype`, the PostGIS name in any case or the RaQuet name, as the constructors
+  read it (census of 17 names: `reclass`, the terrain functions and map algebra refusing the 8
+  RaQuet names `make` and `addBand` accept, and these refusing the 2 lowercase PostGIS names, to
+  0), by the owner's rulings of 2026-11-19 ("please uniformize and aim at removing redundancy",
+  "please fix then"), the readers of `raster_reclass`, `raster_terrain` and `raster_map_algebra`,
+  branch `meos/raster-pixel-type-one-reader` (`9c970e36bb`) rewrites c123cb1e00, rewrites 7128c9344a, rewrites 6685673243 and rewrites ee2b35c35d,
+  open.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
