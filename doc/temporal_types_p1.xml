@@ -142,7 +142,7 @@ CREATE TABLE Storm(StormId integer, Route tgeography(Sequence, Linestring, 4326)
 		</para>
 		<itemizedlist>
 			<listitem>
-				<para>The <varname>tstzspan</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, where only the temporal extent is considered.</para>
+				<para>The <varname>tstzspan</varname> type for the <varname>tbool</varname>, <varname>ttext</varname>, and <varname>tjsonb</varname> types, where only the temporal extent is considered.</para>
 			</listitem>
 
 			<listitem>

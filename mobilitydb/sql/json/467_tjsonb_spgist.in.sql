@@ -65,6 +65,10 @@ CREATE OPERATOR CLASS tjsonb_quadtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (tjsonb, tstzspan),
   OPERATOR  31    #&> (tjsonb, tjsonb),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tjsonb, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (tjsonb, tstzspan),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
@@ -107,6 +111,10 @@ CREATE OPERATOR CLASS tjsonb_kdtree_ops
   -- overlaps or after
   OPERATOR  31    #&> (tjsonb, tstzspan),
   OPERATOR  31    #&> (tjsonb, tjsonb),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tjsonb, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (tjsonb, tstzspan),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),

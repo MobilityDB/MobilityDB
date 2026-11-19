@@ -344,8 +344,10 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
   Pose *result;
   if (! MEOS_FLAGS_GET_Z(start->flags))
   {
-    double x = start->data[0] * (1 - ratio) + end->data[0] * ratio;
-    double y = start->data[1] * (1 - ratio) + end->data[1] * ratio;
+    /* The position is interpolated as #interpolate_point4d interpolates a
+     * point, which keeps a coordinate that does not change exact */
+    double x = start->data[0] + (end->data[0] - start->data[0]) * ratio;
+    double y = start->data[1] + (end->data[1] - start->data[1]) * ratio;
     double theta;
     double theta_delta = end->data[2] - start->data[2];
     /* The pose turns where its two angles differ, however little, as
@@ -368,9 +370,9 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
   }
   else
   {
-    double x = start->data[0] * (1 - ratio) + end->data[0] * ratio;
-    double y = start->data[1] * (1 - ratio) + end->data[1] * ratio;
-    double z = start->data[2] * (1 - ratio) + end->data[2] * ratio;
+    double x = start->data[0] + (end->data[0] - start->data[0]) * ratio;
+    double y = start->data[1] + (end->data[1] - start->data[1]) * ratio;
+    double z = start->data[2] + (end->data[2] - start->data[2]) * ratio;
     double W, W1 = start->data[3], W2 = end->data[3];
     double X, X1 = start->data[4], X2 = end->data[4];
     double Y, Y1 = start->data[5], Y2 = end->data[5];

@@ -1552,6 +1552,35 @@ int main(void)
   free(holed_geo); free(holed_buf);
   meos_errno_reset();
 
+  /* An erosion at projected coordinates erodes: the buffer of a 0.02 square
+   * at 6.4e6 by -0.001 is the square of side 0.018 inside it, its area
+   * 3.24e-4, whichever way its ring runs. Read about the origin, the area of
+   * the ring at 6.4e6 is lost in the rounding of terms near 4e13, the ring's
+   * orientation with it, and the erosion grows the square instead */
+  const char *erode_rings[2] = {
+    "POLYGON((6400000 6400000,6400000.02 6400000,6400000.02 6400000.02,"
+      "6400000 6400000.02,6400000 6400000))",
+    "POLYGON((6400000 6400000,6400000 6400000.02,6400000.02 6400000.02,"
+      "6400000.02 6400000,6400000 6400000))" };
+  char erode_covers_patt[10] = "T*****FF*";
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *sq = geom_in(erode_rings[i], -1);
+    assert(sq != NULL);
+    GSERIALIZED *eroded = geom_buffer(sq, -0.001, "");
+    assert(eroded != NULL);
+    double sq_area = geom_area(sq), eroded_area = geom_area(eroded);
+    bool covers = geom_relate_pattern(sq, eroded, erode_covers_patt);
+    printf("geom_buffer(a 0.02 square at 6.4e6 running %s, -0.001): area %.6g, "
+      "covered by the square %d\n", i ? "clockwise" : "counter-clockwise",
+      eroded_area, covers);
+    assert(eroded_area < sq_area);
+    assert(fabs(eroded_area - 3.24e-4) < 1e-9);
+    assert(covers == true);
+    free(sq); free(eroded);
+  }
+  meos_errno_reset();
+
   /* The round join at a vertex spans the angle the two edges meeting there
    * turn by, and at a vertex turning by less than about 2e-4 radians it bulges
    * from its chord by less than the rounding of coordinates near 6e6. Such a
@@ -1982,6 +2011,48 @@ int main(void)
     assert(grows == true);
     assert(grown == true);
     free(g); free(below); free(at); free(above);
+    meos_errno_reset();
+  }
+
+  /* The erosion of a polygon is the set of its points at least the radius
+   * from its boundary. The square of side 1024 eroded by 500 is the square of
+   * side 24; eroded by its half-width or more it holds nothing, where its
+   * contracted ring comes back out inverted or where its box cannot hold the
+   * disc. The square with a centred hole of half-width 64, eroded by 100, is
+   * the square of side 824 less the hole grown by 100, of area
+   * 4 64^2 + 8 64 100 + pi 100^2; eroded by 300 the grown hole lies around
+   * the contracted exterior and the erosion is empty */
+  const struct { const char *wkt; double radius; double area; } erosions[] = {
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0))", 500.0, 576.0 },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0))", 600.0, 0.0 },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0))", 1024.0, 0.0 },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0))", 2048.0, 0.0 },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0),"
+      "(448 448,448 576,576 576,576 448,448 448))", 100.0,
+      824.0 * 824.0 - (4.0 * 64.0 * 64.0 + 8.0 * 64.0 * 100.0 +
+        M_PI * 100.0 * 100.0) },
+    { "POLYGON((0 0,1024 0,1024 1024,0 1024,0 0),"
+      "(448 448,448 576,576 576,576 448,448 448))", 300.0, 0.0 },
+  };
+  for (size_t i = 0; i < sizeof(erosions) / sizeof(erosions[0]); i++)
+  {
+    GSERIALIZED *g = geom_in(erosions[i].wkt, -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    GSERIALIZED *e = geom_buffer(g, - erosions[i].radius, "");
+    printf("geom_buffer(an erosion by %g, %zu): answered %d, errno %d\n",
+      erosions[i].radius, i, e != NULL, meos_errno());
+    assert(e != NULL);
+    assert(meos_errno() == 0);
+    bool empty = geo_is_empty(e);
+    double area = empty ? 0.0 : geom_area(e);
+    printf("  empty %d, area %.10g, expected %.10g\n", empty, area,
+      erosions[i].area);
+    if (erosions[i].area == 0.0)
+      assert(empty);
+    else
+      assert(fabs(area - erosions[i].area) <= 1e-6 * erosions[i].area);
+    free(e); free(g);
     meos_errno_reset();
   }
 

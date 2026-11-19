@@ -82,6 +82,7 @@ extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
 /* Array functions */
 
 extern Datum *datumarr_extract(ArrayType *array, int *count);
+extern text **textarr_extract(ArrayType *array, int *count);
 extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
 #if CBUFFER
 extern Cbuffer **cbufferarr_extract(ArrayType *array, int *count);

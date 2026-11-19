@@ -472,6 +472,7 @@ extern void edges_add_arc(MeosArray *edges, const POINT2D *a,
 extern void edges_add_circle(MeosArray *edges, double cx, double cy,
   double radius, bool ccw);
 extern int ring_area_sign(const POINTARRAY *pa);
+extern bool ring_encloses_no_area(const POINTARRAY *pa);
 extern int mec_radius_cmp(POINT2D *pts, int count, double radius);
 
 /* How a meeting of two edges arises, the data that place it exactly */

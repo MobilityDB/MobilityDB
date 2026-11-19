@@ -51,27 +51,11 @@
 #include <pgtypes.h>
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
+#include "pg_temporal/type_util.h"
 
 /*****************************************************************************
  * Helper functions
  *****************************************************************************/
-
-/**
- * @brief Return the text elements of a one-dimensional text array, and their
- * number in the last argument
- */
-static text **
-textarr_elems(ArrayType *array, int *count)
-{
-  if (ARR_NDIM(array) > 1)
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
-       errmsg("wrong number of array subscripts")));
-  Datum *elems;
-  bool *nulls;
-  deconstruct_array(array, TEXTOID, -1, false, 'i', &elems, &nulls, count);
-  pfree(nulls);
-  return (text **) elems;
-}
 
 /**
  * @brief State of a set-returning function over the values a JSONB value
@@ -275,7 +259,7 @@ Jsonb_extract_path(PG_FUNCTION_ARGS)
   Jsonb *jb = PG_GETARG_JSONB_P(0);
   ArrayType *path = PG_GETARG_ARRAYTYPE_P(1);
   int path_len;
-  text **path_elems = textarr_elems(path, &path_len);
+  text **path_elems = textarr_extract(path, &path_len);
   Jsonb *result = pg_jsonb_extract_path(jb, path_elems, path_len);
   pfree(path_elems);
   PG_FREE_IF_COPY(jb, 0);
@@ -298,7 +282,7 @@ Jsonb_extract_path_text(PG_FUNCTION_ARGS)
   Jsonb *jb = PG_GETARG_JSONB_P(0);
   ArrayType *path = PG_GETARG_ARRAYTYPE_P(1);
   int path_len;
-  text **path_elems = textarr_elems(path, &path_len);
+  text **path_elems = textarr_extract(path, &path_len);
   text *result = pg_jsonb_extract_path_text(jb, path_elems, path_len);
   pfree(path_elems);
   PG_FREE_IF_COPY(jb, 0);
@@ -490,7 +474,7 @@ Jsonb_exists_array(FunctionCallInfo fcinfo, bool any)
   Jsonb *jb = PG_GETARG_JSONB_P(0);
   ArrayType *keys = PG_GETARG_ARRAYTYPE_P(1);
   int keys_len;
-  text **keys_elems = textarr_elems(keys, &keys_len);
+  text **keys_elems = textarr_extract(keys, &keys_len);
   bool result = jsonb_exists_array(jb, keys_elems, keys_len, any);
   pfree(keys_elems);
   PG_FREE_IF_COPY(jb, 0);
@@ -616,7 +600,7 @@ Jsonb_delete_array(PG_FUNCTION_ARGS)
   Jsonb *jb = PG_GETARG_JSONB_P(0);
   ArrayType *keys = PG_GETARG_ARRAYTYPE_P(1);
   int keys_len;
-  text **keys_elems = textarr_elems(keys, &keys_len);
+  text **keys_elems = textarr_extract(keys, &keys_len);
   Jsonb *result = pg_jsonb_delete_array(jb, keys_elems, keys_len);
   pfree(keys_elems);
   PG_FREE_IF_COPY(jb, 0);
@@ -655,7 +639,7 @@ Jsonb_delete_path(PG_FUNCTION_ARGS)
   Jsonb *jb = PG_GETARG_JSONB_P(0);
   ArrayType *path = PG_GETARG_ARRAYTYPE_P(1);
   int path_len;
-  text **path_elems = textarr_elems(path, &path_len);
+  text **path_elems = textarr_extract(path, &path_len);
   Jsonb *result = pg_jsonb_delete_path(jb, path_elems, path_len);
   pfree(path_elems);
   PG_FREE_IF_COPY(jb, 0);
@@ -680,7 +664,7 @@ Jsonb_set(PG_FUNCTION_ARGS)
   Jsonb *newjb = PG_GETARG_JSONB_P(2);
   bool create = PG_GETARG_BOOL(3);
   int path_len;
-  text **path_elems = textarr_elems(path, &path_len);
+  text **path_elems = textarr_extract(path, &path_len);
   Jsonb *result = pg_jsonb_set(jb, path_elems, path_len, newjb, create);
   pfree(path_elems);
   PG_FREE_IF_COPY(jb, 0);
@@ -713,7 +697,7 @@ Jsonb_set_lax(PG_FUNCTION_ARGS)
   bool create = PG_GETARG_BOOL(3);
   text *handle_null = PG_GETARG_TEXT_PP(4);
   int path_len;
-  text **path_elems = textarr_elems(path, &path_len);
+  text **path_elems = textarr_extract(path, &path_len);
   Jsonb *result = pg_jsonb_set_lax(jb, path_elems, path_len, newjb, create,
     handle_null);
   pfree(path_elems);
@@ -739,7 +723,7 @@ Jsonb_insert(PG_FUNCTION_ARGS)
   Jsonb *newjb = PG_GETARG_JSONB_P(2);
   bool after = PG_GETARG_BOOL(3);
   int path_len;
-  text **path_elems = textarr_elems(path, &path_len);
+  text **path_elems = textarr_extract(path, &path_len);
   Jsonb *result = pg_jsonb_insert(jb, path_elems, path_len, newjb, after);
   pfree(path_elems);
   PG_FREE_IF_COPY(jb, 0);

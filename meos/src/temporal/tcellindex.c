@@ -4758,4 +4758,261 @@ dggs_segment_cells_geodetic(const DggsGeodeticOps *ops, double lon1,
   return n;
 }
 
+/*****************************************************************************
+ * The meeting of a geodetic cell of any grid with a box of longitudes and
+ * latitudes
+ *****************************************************************************/
+
+/** @brief Number of spans of an edge of a cell in a box asked for, more than
+ * a great-circle arc shorter than half a turn has */
+#define DGGS_BOX_SPANS 4
+
+/**
+ * @brief Return true if a geodetic cell holds a geodetic position
+ * @details A convex cell holds a position strictly left of every edge of
+ * its ring and none strictly right of one, each side the exact sign of the
+ * triple product of the vertices of the edge and the position
+ * (#triple_product_sign_exact); a position on the circle of an edge, or a
+ * cell that is not convex, is read by #dggs_outline_holds_dir, which answers
+ * the same on every position.
+ */
+static bool
+dggs_cell_holds_vec(const DggsGeodeticOps *ops, uint64 cell, const double *p)
+{
+  const DggsOutline *o = ops->outline(cell);
+  if (! o)
+    return false;
+  if (dggs_outline_convex_geodetic(ops, o))
+  {
+    POINT3D q = { p[0], p[1], p[2] }, a, b;
+    bool zero = false;
+    int n = o->count;
+    dggs_geo_vertex(ops, o, 0, &a);
+    for (int k = 0; k < n; k++)
+    {
+      dggs_geo_vertex(ops, o, (k + 1) % n, &b);
+      int s = triple_product_sign_exact(&a, &b, &q);
+      if (s < 0)
+        return false;
+      zero |= (s == 0);
+      a = b;
+    }
+    if (! zero)
+      return true;
+  }
+  SphereDir *d = sphere_dir_make(p);
+  bool result = dggs_cell_holds_dir(ops, cell, d);
+  sphere_dir_free(d);
+  return result;
+}
+
+/**
+ * @brief Return true if a geodetic cell holds the position of degrees, read
+ * as its geodetic position (#dggs_cell_holds_vec)
+ */
+static bool
+dggs_cell_holds_lonlat(const DggsGeodeticOps *ops, uint64 cell, double lon,
+  double lat)
+{
+  double v[3];
+  dggs_lonlat_vector(lon, lat, v);
+  return dggs_cell_holds_vec(ops, cell, v);
+}
+
+/**
+ * @brief Return true if a geodetic cell meets a box of no width or no height
+ * @details The box is a piece of a meridian or of a parallel. The edges of the
+ * outline cross it at positions that cut it into pieces lying wholly inside
+ * the cell or wholly outside it, each crossing read where
+ * #dggs_arc_meridian_params or #dggs_arc_parallel_params states it, as the
+ * restriction of a geodetic path to a box reads it. The ends of the piece, the
+ * crossings and a position halfway between each two consecutive ones, each
+ * read as a geodetic position the cell holds or not, say whether the cell
+ * holds a position of the box.
+ * @param[in] ops Answers of the grid
+ * @param[in] cell Cell
+ * @param[in] o Outline of the cell
+ * @param[in] xmin,ymin,xmax,ymax Bounds of the box, in degrees, with
+ * `xmin == xmax` or `ymin == ymax`
+ */
+static bool
+dggs_outline_meets_line(const DggsGeodeticOps *ops, uint64 cell,
+  const DggsOutline *o, double xmin, double ymin, double xmax, double ymax)
+{
+  bool meridian = (xmin == xmax);
+  double lo = meridian ? ymin : xmin, hi = meridian ? ymax : xmax;
+  double cut[2 + 2 * DGGS_OUTLINE_MAX];
+  int ncut = 0, n = o->count;
+  cut[ncut++] = lo;
+  cut[ncut++] = hi;
+  for (int k = 0; k < n; k++)
+  {
+    DggsArc arc;
+    int k1 = (k + 1) % n;
+    if (! dggs_arc_init(o->lon[k], o->lat[k], o->lon[k1], o->lat[k1], &arc))
+      continue;
+    double params[2];
+    int np = meridian ? dggs_arc_meridian_params(&arc, xmin, params) :
+      dggs_arc_parallel_params(&arc, ymin, params);
+    for (int i = 0; i < np; i++)
+    {
+      double lon, lat;
+      if (! dggs_arc_point(&arc, params[i], &lon, &lat))
+        continue;
+      /* The plane of a meridian holds the meridian half a turn from it too */
+      if (meridian && cos(lon - xmin * M_PI / 180.0) <= 0.0)
+        continue;
+      double c = (meridian ? lat : lon) * 180.0 / M_PI;
+      if (c > lo && c < hi)
+        cut[ncut++] = c;
+    }
+  }
+  /* In ascending order along the piece */
+  for (int i = 1; i < ncut; i++)
+  {
+    double v = cut[i];
+    int j = i - 1;
+    while (j >= 0 && cut[j] > v)
+    {
+      cut[j + 1] = cut[j];
+      j--;
+    }
+    cut[j + 1] = v;
+  }
+  for (int i = 0; i < ncut; i++)
+  {
+    double c = cut[i];
+    if (dggs_cell_holds_lonlat(ops, cell, meridian ? xmin : c,
+          meridian ? c : ymin))
+      return true;
+    if (i > 0 && cut[i - 1] < c)
+    {
+      double m = (cut[i - 1] + c) / 2.0;
+      if (dggs_cell_holds_lonlat(ops, cell, meridian ? xmin : m,
+            meridian ? m : ymin))
+        return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @brief Return the side of an edge of an outline a box lying along it is on
+ * @details The edge runs along a meridian or the equator bounding the box, and
+ * the cell lies on the side the normal a x b of its vertices points to. The
+ * function returns 1 when the cell lies on the side of the box, -1 when it
+ * lies on the other side, and 0 when the edge does not run along a bound of
+ * the box.
+ */
+static int
+dggs_outline_edge_box_side(const DggsGeodeticOps *ops, const DggsOutline *o,
+  int k, double xmin, double ymin, double xmax, double ymax)
+{
+  int k1 = (k + 1) % o->count;
+  POINT3D a, b, d = { 0.0, 0.0, 0.0 };
+  if (o->lon[k] == o->lon[k1] && (o->lon[k] == xmin || o->lon[k] == xmax))
+  {
+    /* East of the meridian from the west bound, west of it from the east */
+    double x = o->lon[k] * M_PI / 180.0;
+    double sign = (o->lon[k] == xmin) ? 1.0 : -1.0;
+    d.x = -sign * sin(x);
+    d.y = sign * cos(x);
+  }
+  else if (o->lat[k] == 0.0 && o->lat[k1] == 0.0 &&
+      (ymin == 0.0 || ymax == 0.0))
+    /* North of the equator from the south bound, south of it from the north */
+    d.z = (ymin == 0.0) ? 1.0 : -1.0;
+  else
+    return 0;
+  dggs_geo_vertex(ops, o, k, &a);
+  dggs_geo_vertex(ops, o, k1, &b);
+  return triple_product_sign_exact(&a, &b, &d) > 0 ? 1 : -1;
+}
+
+/**
+ * @brief Return true if a geodetic cell of a grid shares a position with a
+ * geodetic box
+ * @details The cell is the region its outline bounds with the boundary points
+ * it owns, as the geodetic walk of the cells reads it
+ * (#dggs_segment_cells_geodetic). The box holds the positions whose longitude
+ * and latitude lie within its bounds, closed, or open at their upper ends when
+ * @p border_inc is false. Each part of the question is decided as MEOS decides
+ * it for a position or a path:
+ * - a vertex of the outline lies in the box by its degrees, as a position
+ *   does, and the cell meets the box there when the vertex lies inside the
+ *   bounds or the cell owns it;
+ * - an edge enters the box where #dggs_arc_lonlat_box_spans states, as a
+ *   geodetic path along that arc does: a piece of some length holds positions
+ *   of the cell's interior in the box, unless the edge runs along a meridian
+ *   or the equator bounding the box with the cell on the other side; a single
+ *   position counts when the cell owns the edge;
+ * - otherwise the box lies inside the cell or apart from it, and its middle
+ *   position says which, read as a geodetic position (#dggs_cell_holds_vec).
+ * The parallels of a box are not great circles, and they are read through the
+ * trigonometry of the restriction of a path, so the answer agrees with the
+ * restriction of a temporal geography point travelling along the edges of the
+ * cell. The planar twin is #quadbin_cell_meets_box.
+ * @param[in] ops Answers of the grid
+ * @param[in] cell Cell
+ * @param[in] box Box, geodetic
+ * @param[in] border_inc True when the box contains its upper bounds
+ */
+bool
+dggs_cell_meets_box(const DggsGeodeticOps *ops, uint64 cell, const STBox *box,
+  bool border_inc)
+{
+  assert(ops); assert(box);
+  double xmin = box->xmin, ymin = box->ymin, xmax = box->xmax,
+    ymax = box->ymax;
+  /* A box of no width or no height holds no position when it leaves out its
+   * upper bounds */
+  if (! border_inc && (xmin == xmax || ymin == ymax))
+    return false;
+  const DggsOutline *o = ops->outline(cell);
+  if (! o)
+    return false;
+  if (xmin == xmax && ymin == ymax)
+    return dggs_cell_holds_lonlat(ops, cell, xmin, ymin);
+  if (xmin == xmax || ymin == ymax)
+    return dggs_outline_meets_line(ops, cell, o, xmin, ymin, xmax, ymax);
+  int n = o->count;
+  /* A vertex in the box */
+  for (int k = 0; k < n; k++)
+  {
+    double lon = o->lon[k], lat = o->lat[k];
+    if (lon < xmin || lat < ymin || (border_inc ?
+          (lon > xmax || lat > ymax) : (lon >= xmax || lat >= ymax)))
+      continue;
+    if ((lon > xmin && lon < xmax && lat > ymin && lat < ymax) ||
+        ops->vertex_held(o, k))
+      return true;
+  }
+  /* An edge entering the box */
+  for (int k = 0; k < n; k++)
+  {
+    DggsArc arc;
+    int k1 = (k + 1) % n;
+    if (! dggs_arc_init(o->lon[k], o->lat[k], o->lon[k1], o->lat[k1], &arc))
+      continue;
+    double tin[DGGS_BOX_SPANS], tout[DGGS_BOX_SPANS];
+    bool tin_upper[DGGS_BOX_SPANS], tout_upper[DGGS_BOX_SPANS];
+    int count = dggs_arc_lonlat_box_spans(&arc, xmin, ymin, xmax, ymax,
+      border_inc, tin, tout, tin_upper, tout_upper, DGGS_BOX_SPANS);
+    for (int i = 0; i < count; i++)
+    {
+      if (tout[i] > tin[i])
+      {
+        if (dggs_outline_edge_box_side(ops, o, k, xmin, ymin, xmax, ymax) >= 0 ||
+            ops->edge_held(o, k))
+          return true;
+      }
+      else if (tin[i] > 0.0 && tin[i] < 1.0 && ops->edge_held(o, k))
+        return true;
+    }
+  }
+  /* The box inside the cell */
+  return dggs_cell_holds_lonlat(ops, cell, (xmin + xmax) / 2.0,
+    (ymin + ymax) / 2.0);
+}
+
 /*****************************************************************************/
