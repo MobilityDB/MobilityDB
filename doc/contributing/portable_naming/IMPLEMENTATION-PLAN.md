@@ -190,7 +190,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   the `int` narrowing of the ring count, by the owner's ruling of 2026-11-19 ("please fix these
   defects"), MERGED as MobilityDB #3845 (`87c8d33e4d`). `ensure_h3_success` describes a code
   by `describeH3Error` alone, H3 4.6.0 being the one release MobilityDB builds against, MERGED
-  as MobilityDB #3847 (`f7326f0a48`).
+  as MobilityDB #3847 (`f7326f0a48`). The one commented-out assert of meos/src and mobilitydb/src,
+  the ends of a point edge in `intervals_from_points`, is live (63 endpoint writes of an Edge read,
+  none leaving a point edge with distinct ends; 11380 evaluations over 4000 Debug clips, none
+  failing), branch `meos/clip-point-edge-assert-live` (`1317183876`).
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
