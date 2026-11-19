@@ -6,6 +6,12 @@
 -- distances a sort gives.
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tnpoint AS TABLE tbl_tnpoint;
+ANALYZE tbl_tnpoint;
+
 CREATE FUNCTION pg_temp.test_probes_index(query text)
 RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
@@ -25,13 +31,13 @@ CREATE TEMP TABLE tbl_tnpoint_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tnpoint_big
   UNION ALL
-  SELECT k + 10100, inst FROM tbl_tnpoint_inst
+  SELECT k + 10100, temp FROM tbl_tnpoint_inst
   UNION ALL
-  SELECT k + 10200, ti FROM tbl_tnpoint_discseq
+  SELECT k + 10200, temp FROM tbl_tnpoint_discseq
   UNION ALL
-  SELECT k + 10300, seq FROM tbl_tnpoint_seq
+  SELECT k + 10300, temp FROM tbl_tnpoint_contseq
   UNION ALL
-  SELECT k + 10400, ss FROM tbl_tnpoint_seqset )
+  SELECT k + 10400, temp FROM tbl_tnpoint_seqset )
 SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tnpoint_idx;

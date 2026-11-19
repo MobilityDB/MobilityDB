@@ -389,6 +389,19 @@ extern bool point_motion_dwithin_at_exact(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
   int64 n);
+/* Their geodetic twins, two geography point segments on the sphere
+ * (tpoint_spatialfuncs.c) */
+extern bool geog_motion_dwithin_at_exact(const POINT2D *a0, const POINT2D *a1,
+  const POINT2D *b0, const POINT2D *b1, double dist, double radius, int64 D,
+  int64 n, bool *result);
+extern int geog_motion_dwithin_crossings_exact(const POINT2D *a0,
+  const POINT2D *a1, const POINT2D *b0, const POINT2D *b1, double dist,
+  double radius, int64 D, bool *in0, int64 *dated, bool *after,
+  int maxcross);
+/* Their precise tier (geo_trig.c) */
+extern int geog_motion_dwithin_at_wide(const POINT2D *a0, const POINT2D *a1,
+  const POINT2D *b0, const POINT2D *b1, double dist, double radius, int64 D,
+  int64 n);
 extern int point_motion_contains_disc_sign(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, int *asign);

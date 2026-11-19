@@ -3,6 +3,18 @@
 -- without an index, whichever index the planner rewrites it into.
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_intset AS TABLE tbl_intset;
+CREATE TEMP TABLE tbl_intspan AS TABLE tbl_intspan;
+CREATE TEMP TABLE tbl_intspanset AS TABLE tbl_intspanset;
+CREATE TEMP TABLE tbl_tstzset AS TABLE tbl_tstzset;
+CREATE TEMP TABLE tbl_tstzspan AS TABLE tbl_tstzspan;
+CREATE TEMP TABLE tbl_tstzspanset AS TABLE tbl_tstzspanset;
+ANALYZE tbl_intset, tbl_intspan, tbl_intspanset, tbl_tstzset, tbl_tstzspan,
+  tbl_tstzspanset;
+
 DROP INDEX IF EXISTS tbl_intset_rtree_idx;
 DROP INDEX IF EXISTS tbl_intspan_rtree_idx;
 DROP INDEX IF EXISTS tbl_intspanset_rtree_idx;

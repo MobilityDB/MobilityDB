@@ -58,6 +58,21 @@ SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1),
 SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
 SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point(1 1)', 6);
 
+-- A buffer whose radius grows past a point: the distance turns only at its
+-- minimum, and the point and the circular buffer of radius zero at the same
+-- place answer the same instants
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 2)@2001-01-01, Cbuffer(Point(16 15), 5)@2001-01-04]' <-> geometry 'Point(14 3)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 2)@2001-01-01, Cbuffer(Point(16 15), 5)@2001-01-04]' <-> cbuffer 'Cbuffer(Point(14 3), 0)', 6);
+-- A buffer whose radius shrinks: the companion root of the squared equation
+-- lies past the minimum, where the distance rises
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 5)@2001-01-01, Cbuffer(Point(16 15), 2)@2001-01-04]' <-> geometry 'Point(14 3)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(4 4), 5)@2001-01-01, Cbuffer(Point(16 15), 2)@2001-01-04]' <-> cbuffer 'Cbuffer(Point(14 3), 0)', 6);
+-- A buffer passing over a point: the distance is zero from the instant the
+-- disc reaches the point to the instant it leaves it
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-03]' <-> geometry 'Point(5 0)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-03]' <-> cbuffer 'Cbuffer(Point(5 0), 0)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 3)@2001-01-03]' <-> geometry 'Point(5 0)', 6);
+
 SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point empty', 6);
 SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point empty', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point empty', 6);
@@ -310,6 +325,15 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01
 -- the minimum, are its breakpoints. One disk passes straight through another,
 -- meeting it at f = 0.2 and f = 0.8 of the segment
 SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-05]', tcbuffer '[Cbuffer(Point(5 0),2)@2001-01-01, Cbuffer(Point(5 0),2)@2001-01-05]'), 6);
+-- Disks that overlap at a bound of the segment and part inside it: the distance
+-- is zero until they part, at f = 0.4 against a buffer and at f = 0.3 against a
+-- point, and that instant is its breakpoint though the gap has no interior
+-- minimum
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-05]', tcbuffer '[Cbuffer(Point(1 0),2)@2001-01-01, Cbuffer(Point(1 0),2)@2001-01-05]'), 6);
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(10 0),2)@2001-01-02]', cbuffer 'Cbuffer(Point(1 0),0)'), 6);
+-- Centres that keep their separation while a radius grows: the gap 2 - 4f
+-- reaches zero at f = 0.5, where the disks meet and stay overlapping
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),5)@2001-01-05]', tcbuffer '[Cbuffer(Point(3 0),0)@2001-01-01, Cbuffer(Point(13 0),0)@2001-01-05]'), 6);
 -- The same meeting at projected coordinates: the first centre jumps 330 km in
 -- 4 seconds and passes 64.9 m from the second, so discs of radius 10 km meet
 -- inside a segment whose ends stand 264 km and 26 km apart. The instants at

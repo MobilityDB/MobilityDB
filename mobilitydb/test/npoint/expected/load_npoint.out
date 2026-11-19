@@ -42,27 +42,27 @@ CREATE TABLE tbl_tnpoint_big (
 COPY tbl_tnpoint_big (k, temp) FROM :'filename';
 CREATE TABLE tbl_tnpoint_discseq (
     k integer PRIMARY KEY,
-    ti tnpoint(Sequence)
+    temp tnpoint(Sequence)
 );
 \set filename :srcdir '/mobilitydb/test/npoint/data/tbl_tnpoint_discseq.data'
-COPY tbl_tnpoint_discseq (k, ti) FROM :'filename';
+COPY tbl_tnpoint_discseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tnpoint_inst (
     k integer PRIMARY KEY,
-    inst tnpoint(Instant)
+    temp tnpoint(Instant)
 );
 \set filename :srcdir '/mobilitydb/test/npoint/data/tbl_tnpoint_inst.data'
-COPY tbl_tnpoint_inst (k, inst) FROM :'filename';
+COPY tbl_tnpoint_inst (k, temp) FROM :'filename';
 CREATE TABLE tbl_tnpoint_seqset (
     k integer PRIMARY KEY,
-    ss tnpoint(SequenceSet)
+    temp tnpoint(SequenceSet)
 );
 \set filename :srcdir '/mobilitydb/test/npoint/data/tbl_tnpoint_seqset.data'
-COPY tbl_tnpoint_seqset (k, ss) FROM :'filename';
-CREATE TABLE tbl_tnpoint_seq (
+COPY tbl_tnpoint_seqset (k, temp) FROM :'filename';
+CREATE TABLE tbl_tnpoint_contseq (
     k integer PRIMARY KEY,
-    seq tnpoint(Sequence)
+    temp tnpoint(Sequence)
 );
-\set filename :srcdir '/mobilitydb/test/npoint/data/tbl_tnpoint_seq.data'
-COPY tbl_tnpoint_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/npoint/data/tbl_tnpoint_contseq.data'
+COPY tbl_tnpoint_contseq (k, temp) FROM :'filename';
 -- Launch the ANALYZE deamon to avoid that it is launched during the tests
 ANALYZE;

@@ -19,27 +19,27 @@ CREATE TABLE tbl_tjsonb (
 COPY tbl_tjsonb (k, temp) FROM :'filename';
 CREATE TABLE tbl_tjsonb_discseq (
     k integer,
-    seq tjsonb
+    temp tjsonb
 );
 \set filename :srcdir '/mobilitydb/test/json/data/tbl_tjsonb_discseq.data'
-COPY tbl_tjsonb_discseq (k, seq) FROM :'filename';
+COPY tbl_tjsonb_discseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tjsonb_inst (
     k integer,
-    inst tjsonb
+    temp tjsonb
 );
 \set filename :srcdir '/mobilitydb/test/json/data/tbl_tjsonb_inst.data'
-COPY tbl_tjsonb_inst (k, inst) FROM :'filename';
-CREATE TABLE tbl_tjsonb_seq (
+COPY tbl_tjsonb_inst (k, temp) FROM :'filename';
+CREATE TABLE tbl_tjsonb_contseq (
     k integer,
-    seq tjsonb
+    temp tjsonb
 );
-\set filename :srcdir '/mobilitydb/test/json/data/tbl_tjsonb_seq.data'
-COPY tbl_tjsonb_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/json/data/tbl_tjsonb_contseq.data'
+COPY tbl_tjsonb_contseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_tjsonb_seqset (
     k integer,
-    ss tjsonb
+    temp tjsonb
 );
 \set filename :srcdir '/mobilitydb/test/json/data/tbl_tjsonb_seqset.data'
-COPY tbl_tjsonb_seqset (k, ss) FROM :'filename';
+COPY tbl_tjsonb_seqset (k, temp) FROM :'filename';
 -- Launch the ANALYZE deamon to avoid that it is launched during the tests
 ANALYZE;

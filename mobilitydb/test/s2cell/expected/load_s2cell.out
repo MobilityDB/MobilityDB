@@ -31,28 +31,28 @@ CREATE TABLE tbl_ts2cell_big (
 COPY tbl_ts2cell_big (k, temp) FROM :'filename';
 CREATE TABLE tbl_ts2cell_discseq (
     k integer,
-    ti ts2cell
+    temp ts2cell
 );
 \set filename :srcdir '/mobilitydb/test/s2cell/data/tbl_ts2cell_discseq.data'
-COPY tbl_ts2cell_discseq (k, ti) FROM :'filename';
+COPY tbl_ts2cell_discseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_ts2cell_inst (
     k integer,
-    inst ts2cell
+    temp ts2cell
 );
 \set filename :srcdir '/mobilitydb/test/s2cell/data/tbl_ts2cell_inst.data'
-COPY tbl_ts2cell_inst (k, inst) FROM :'filename';
-CREATE TABLE tbl_ts2cell_seq (
+COPY tbl_ts2cell_inst (k, temp) FROM :'filename';
+CREATE TABLE tbl_ts2cell_contseq (
     k integer,
-    seq ts2cell
+    temp ts2cell
 );
-\set filename :srcdir '/mobilitydb/test/s2cell/data/tbl_ts2cell_seq.data'
-COPY tbl_ts2cell_seq (k, seq) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/s2cell/data/tbl_ts2cell_contseq.data'
+COPY tbl_ts2cell_contseq (k, temp) FROM :'filename';
 CREATE TABLE tbl_ts2cell_seqset (
     k integer,
-    ss ts2cell
+    temp ts2cell
 );
 \set filename :srcdir '/mobilitydb/test/s2cell/data/tbl_ts2cell_seqset.data'
-COPY tbl_ts2cell_seqset (k, ss) FROM :'filename';
+COPY tbl_ts2cell_seqset (k, temp) FROM :'filename';
 ANALYZE tbl_geodstbox_s2cell, tbl_s2cell, tbl_s2cellset, tbl_ts2cell,
-  tbl_ts2cell_big, tbl_ts2cell_discseq, tbl_ts2cell_inst, tbl_ts2cell_seq,
+  tbl_ts2cell_big, tbl_ts2cell_discseq, tbl_ts2cell_inst, tbl_ts2cell_contseq,
   tbl_ts2cell_seqset;

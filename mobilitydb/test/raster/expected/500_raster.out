@@ -462,6 +462,100 @@ FROM tiles, trip;
 SELECT atRasterValue(tgeompoint 'SRID=4326;Point(0 0)@2001-01-01',
   '{}'::raquet[], floatspan '[0, 1]');
 ERROR:  The input array cannot be empty
+-- A raster series is read through its rows, each raster over the part of the
+-- trip within its validity period. The trip crosses from the western pixel
+-- into the eastern one at 12:00; the raster valid until 06:00 holds 10 | 20,
+-- the one valid after holds 30 | 40, so the trip reads 10, then 30 from 06:00,
+-- then 40 from 12:00. The rows are read in the order of their periods,
+-- whatever their order in the arrays, and a time within no period reads no
+-- value.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS a,
+  ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[30, 40]]::double precision[][]) AS b),
+trip(t) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+periods(p) AS (
+  SELECT ARRAY[tstzspan '[2001-01-01, 2001-01-01 06:00)',
+    tstzspan '[2001-01-01 06:00, 2001-01-02]'])
+SELECT asText(rasterValue(t, ARRAY[a, b], p)) AS series,
+  asText(rasterValue(t, ARRAY[b, a], ARRAY[p[2], p[1]])) AS unordered,
+  asText(rasterValue(t, ARRAY[a, b], ARRAY[p[1],
+    tstzspan '[2001-01-01 18:00, 2001-01-02]'])) AS gap,
+  asText(atRasterValue(t, ARRAY[a, b], p, floatspan '[25, 35]')) AS at_series,
+  asText(minusRasterValue(t, ARRAY[a, b], p, floatspan '[25, 35]')) AS minus_series,
+  eRasterValue(t, ARRAY[a, b], p, floatspan '[35, 45]') AS ever_series,
+  aRasterValue(t, ARRAY[a, b], p, floatspan '[0, 45]') AS always_series,
+  aRasterValue(t, ARRAY[a, b], p, floatspan '[0, 35]') AS not_always_series
+FROM rast, trip, periods;
+                                                          series                                                          |                                                        unordered                                                         |                                                             gap                                                              |                                    at_series                                    |                                                                          minus_series                                                                           | ever_series | always_series | not_always_series 
+--------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------+---------------+-------------------
+ Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-01 06:00:00+00, 40@2001-01-01 12:00:00+00, 40@2001-01-02 00:00:00+00] | Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-01 06:00:00+00, 40@2001-01-01 12:00:00+00, 40@2001-01-02 00:00:00+00] | Interp=Step;{[10@2001-01-01 00:00:00+00, 10@2001-01-01 06:00:00+00), [40@2001-01-01 18:00:00+00, 40@2001-01-02 00:00:00+00]} | {[POINT(0.75 0.5)@2001-01-01 06:00:00+00, POINT(1 0.5)@2001-01-01 12:00:00+00)} | {[POINT(0.5 0.5)@2001-01-01 00:00:00+00, POINT(0.75 0.5)@2001-01-01 06:00:00+00), [POINT(1 0.5)@2001-01-01 12:00:00+00, POINT(1.5 0.5)@2001-01-02 00:00:00+00]} | t           | t             | f
+(1 row)
+
+-- Periods that overlap would give two values at one time, and the rasters and
+-- their periods are paired one to one.
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 1::float8, NULL::float8) AS r)
+SELECT rasterValue(tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[r, r], ARRAY[tstzspan '[2001-01-01, 2001-01-01 12:00]',
+  tstzspan '[2001-01-01 06:00, 2001-01-02]']) FROM rast;
+ERROR:  The validity periods of a raster series overlap
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 1::float8, NULL::float8) AS r)
+SELECT rasterValue(tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[r, r], ARRAY[tstzspan '[2001-01-01, 2001-01-02]']) FROM rast;
+ERROR:  A raster series states one validity period per raster: 2 rasters and 1 periods
+-- Two rasters of one place valid over one period are one tile given twice:
+-- read where they hold one value, refused where they hold two.
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 7::float8, NULL::float8) AS r7,
+  ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 9::float8, NULL::float8) AS r9)
+SELECT asText(rasterValue(tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[r7, r7], ARRAY[tstzspan '[2001-01-01, 2001-01-02]',
+  tstzspan '[2001-01-01, 2001-01-02]'])) AS one_value FROM rast;
+                            one_value                             
+------------------------------------------------------------------
+ Interp=Step;[7@2001-01-01 00:00:00+00, 7@2001-01-02 00:00:00+00]
+(1 row)
+
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 7::float8, NULL::float8) AS r7,
+  ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 9::float8, NULL::float8) AS r9)
+SELECT rasterValue(tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[r7, r9], ARRAY[tstzspan '[2001-01-01, 2001-01-02]',
+  tstzspan '[2001-01-01, 2001-01-02]']) FROM rast;
+ERROR:  Two rasters of one place valid over one period of a raster series read different values at one time
+-- A series of Raquet tiles is read the same way: the western tile holds 10
+-- until 06:00 and 30 after it, read along a trip within it.
+WITH tiles(w10, w30) AS (
+  SELECT raquet('\x0a0a0a0a'::bytea, 2, 2, quadbinTileToCell(0, 0, 1), 'uint8'),
+    raquet('\x1e1e1e1e'::bytea, 2, 2, quadbinTileToCell(0, 0, 1), 'uint8')
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01, Point(-10 45)@2001-01-02]'
+), periods(p) AS (
+  SELECT ARRAY[tstzspan '[2001-01-01, 2001-01-01 06:00)',
+    tstzspan '[2001-01-01 06:00, 2001-01-02]'])
+SELECT asText(rasterTileValue(tp, ARRAY[w10, w30], p)) AS tile_series,
+  asText(atRasterValue(tp, ARRAY[w10, w30], p, floatspan '[25, 35]')) AS at_tiles,
+  asText(minusRasterValue(tp, ARRAY[w10, w30], p, floatspan '[25, 35]')) AS minus_tiles,
+  eRasterValue(tp, ARRAY[w10, w30], p, floatspan '[0, 15]') AS ever_tiles,
+  aRasterValue(tp, ARRAY[w10, w30], p, floatspan '[0, 15]') AS always_tiles
+FROM tiles, trip, periods;
+                                          tile_series                                          |                                    at_tiles                                    |                                  minus_tiles                                   | ever_tiles | always_tiles 
+-----------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+------------+--------------
+ Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-01 06:00:00+00, 30@2001-01-02 00:00:00+00] | {[POINT(-70 45)@2001-01-01 06:00:00+00, POINT(-10 45)@2001-01-02 00:00:00+00]} | {[POINT(-90 45)@2001-01-01 00:00:00+00, POINT(-70 45)@2001-01-01 06:00:00+00)} | t          | f
+(1 row)
+
 -- Tiles valid over successive half-open periods are read along a trip one
 -- period at a time and the reads merged: here the trip crosses from one tile
 -- into the other at 12:00, where a period also starts.
@@ -484,6 +578,37 @@ WHERE period && timeSpan(tp);
                                                         per_period                                                        
 --------------------------------------------------------------------------------------------------------------------------
  Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-01 06:00:00+00, 51@2001-01-01 12:00:00+00, 51@2001-01-02 00:00:00+00]
+(1 row)
+
+-- The overload of rasterTileValue over a series reads the same tiles and
+-- periods in one walk, the tiles of one period read together, and answers the
+-- per-period reads merged above.
+WITH tiles(quadbin, period, tile) AS (
+  SELECT quadbinTileToCell(x, 0, 1), p.period,
+    raquet(decode(repeat(lpad(to_hex(p.v + x), 2, '0'), 4), 'hex'), 2, 2,
+      quadbinTileToCell(x, 0, 1), 'uint8')
+  FROM generate_series(0, 1) x,
+    (VALUES (tstzspan '[2001-01-01 00:00:00, 2001-01-01 06:00:00)', 10),
+            (tstzspan '[2001-01-01 06:00:00, 2001-01-01 12:00:00)', 30),
+            (tstzspan '[2001-01-01 12:00:00, 2001-01-02 00:00:00]', 50)) AS p(period, v)
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01, Point(90 45)@2001-01-02]'
+), per_period(v) AS (
+  SELECT merge(array_agg(rasterTileValue(atTime(tp, period), tile)
+    ORDER BY period, quadbin) FILTER (WHERE rasterTileValue(atTime(tp, period),
+    tile) IS NOT NULL))
+  FROM trip, tiles
+  WHERE period && timeSpan(tp)
+)
+SELECT asText(rasterTileValue(tp, array_agg(tile ORDER BY quadbin DESC),
+    array_agg(period ORDER BY quadbin DESC))) AS series,
+  rasterTileValue(tp, array_agg(tile), array_agg(period)) = (SELECT v FROM per_period)
+    AS series_is_per_period
+FROM trip, tiles
+GROUP BY tp;
+                                                          series                                                          | series_is_per_period 
+--------------------------------------------------------------------------------------------------------------------------+----------------------
+ Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-01 06:00:00+00, 51@2001-01-01 12:00:00+00, 51@2001-01-02 00:00:00+00] | t
 (1 row)
 
 -- The reads of a trip cut at half-open periods, one of them ending where the
@@ -1477,6 +1602,107 @@ SELECT asCoverageJSON(rasterValue(t, r), t) FROM rast, trip;
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"type":"Coverage","domain":{"type":"Domain","domainType":"Trajectory","axes":{"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-01T12:00:00+00:00",1,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5]]}},"referencing":[{"coordinates":["t"],"system":{"type":"TemporalRS","calendar":"Gregorian"}},{"coordinates":["x","y"],"system":{"type":"GeographicCRS","id":"http://www.opengis.net/def/crs/OGC/1.3/CRS84"}}]},"parameters":{"value":{"type":"Parameter","observedProperty":{"label":{"en":"Value"}}}},"ranges":{"value":{"type":"NdArray","dataType":"float","axisNames":["composite"],"shape":[3],"values":[10,20,20]}}}
 (1 row)
+
+-- The values a step trajectory reads keep its bounds and its gaps: each
+-- sequence is read alone, a run ends at an instant with no value (a nodata
+-- pixel or a position outside the raster), its last value holding up to that
+-- instant, excluded, and the first and the last runs take the bounds of the
+-- sequence. The raster is 3 x 1 over (0, 0)-(3, 1), valued 10, nodata, 30.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, 0::float8), 1, 1, 1,
+    ARRAY[[10, 0, 30]]::double precision[][]) AS r),
+trips(name, t) AS (VALUES
+  ('01 closed-open', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02)'),
+  ('02 open-closed', tgeompoint 'SRID=4326;Interp=Step;(Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02]'),
+  ('03 open-open', tgeompoint 'SRID=4326;Interp=Step;(Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03)'),
+  ('04 two pixels', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03]'),
+  ('05 nodata in the middle', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03]'),
+  ('06 nodata at the end', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('07 nodata at the start', tgeompoint 'SRID=4326;Interp=Step;[Point(1.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03]'),
+  ('08 outside in the middle', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03]'),
+  ('09 one instant', tgeompoint 'SRID=4326;Interp=Step;[Point(2.5 0.5)@2001-01-01]'),
+  ('10 sequence set', tgeompoint 'SRID=4326;Interp=Step;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(2.5 0.5)@2001-01-04, Point(2.5 0.5)@2001-01-05)}'),
+  ('11 sequence set, one all nodata', tgeompoint 'SRID=4326;Interp=Step;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(1.5 0.5)@2001-01-04, Point(1.5 0.5)@2001-01-05]}'),
+  ('12 discrete, unchanged', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03}'),
+  ('13 linear, unchanged', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02)'))
+SELECT name, rasterValue(t, r) FROM rast, trips ORDER BY name;
+              name               |                                                         rastervalue                                                          
+---------------------------------+------------------------------------------------------------------------------------------------------------------------------
+ 01 closed-open                  | Interp=Step;[10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00)
+ 02 open-closed                  | Interp=Step;(10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00]
+ 03 open-open                    | Interp=Step;(10@2001-01-01 00:00:00+00, 30@2001-01-02 00:00:00+00, 30@2001-01-03 00:00:00+00)
+ 04 two pixels                   | Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-02 00:00:00+00, 30@2001-01-03 00:00:00+00]
+ 05 nodata in the middle         | Interp=Step;{[10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00), [30@2001-01-03 00:00:00+00]}
+ 06 nodata at the end            | Interp=Step;[10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00)
+ 07 nodata at the start          | Interp=Step;[10@2001-01-02 00:00:00+00, 10@2001-01-03 00:00:00+00]
+ 08 outside in the middle        | Interp=Step;{[10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00), [10@2001-01-03 00:00:00+00]}
+ 09 one instant                  | Interp=Step;[30@2001-01-01 00:00:00+00]
+ 10 sequence set                 | Interp=Step;{[10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00], [30@2001-01-04 00:00:00+00, 30@2001-01-05 00:00:00+00)}
+ 11 sequence set, one all nodata | Interp=Step;[10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00]
+ 12 discrete, unchanged          | {10@2001-01-01 00:00:00+00, 30@2001-01-03 00:00:00+00}
+ 13 linear, unchanged            | Interp=Step;[10@2001-01-01 00:00:00+00, 10@2001-01-02 00:00:00+00)
+(13 rows)
+
+-- A step point held across two adjacent periods of a raster series reads
+-- each period's raster over its part, the January part open at February.
+WITH series(v, r) AS (VALUES
+  (tstzspan '[2024-01-01, 2024-02-01)', ST_AddBand(ST_MakeEmptyRaster(2, 2,
+    0, 2, 1, -1, 0, 0, 4326), '8BUI'::text, 1, 0)),
+  (tstzspan '[2024-02-01, 2024-03-01)', ST_AddBand(ST_MakeEmptyRaster(2, 2,
+    0, 2, 1, -1, 0, 0, 4326), '8BUI'::text, 5, 0)))
+SELECT rasterValue(tgeompoint(ST_GeomFromText('POINT(0.5 1)', 4326),
+  tstzspan '[2024-01-15, 2024-02-15]', 'Step'), array_agg(r ORDER BY v),
+  array_agg(v ORDER BY v), 1)
+FROM series;
+                                        rastervalue                                         
+--------------------------------------------------------------------------------------------
+ Interp=Step;[1@2024-01-15 00:00:00+00, 5@2024-02-01 00:00:00+00, 5@2024-02-15 00:00:00+00]
+(1 row)
+
+-- The domain follows the positions of the values: one instant is a Point, a
+-- stationary point read over time a PointSeries, a trajectory that moves a
+-- Trajectory.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS r),
+trips(name, t) AS (VALUES
+  ('01 instant', tgeompoint 'SRID=4326;Point(1.5 0.5)@2001-01-01'),
+  ('02 instant, first pixel', tgeompoint 'SRID=4326;Point(0.25 0.75)@2001-01-01'),
+  ('03 stationary, discrete', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03}'),
+  ('04 stationary, two instants far apart', tgeompoint 'SRID=4326;{Point(1.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-12-31}'),
+  ('05 stationary, linear', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02]'),
+  ('06 stationary, step', tgeompoint 'SRID=4326;Interp=Step;[Point(1.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('07 stationary, with a gap', tgeompoint 'SRID=4326;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(0.5 0.5)@2001-01-04, Point(0.5 0.5)@2001-01-05]}'),
+  ('08 moving, discrete', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02}'),
+  ('09 moving, linear across the pixels', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('10 moving within one pixel', tgeompoint 'SRID=4326;{Point(0.25 0.5)@2001-01-01, Point(0.75 0.5)@2001-01-02}'),
+  ('11 moving, then stopped', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(1.5 0.5)@2001-01-03}'),
+  ('12 moving, back to the start', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03}'),
+  ('13 moving, one coordinate apart', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(0.5 0.25)@2001-01-02}'))
+SELECT name, c::json #>> '{domain,domainType}' AS domain,
+  c::json #> '{domain,axes}' AS axes,
+  c::json #> '{ranges,value,axisNames}' AS range_axes,
+  c::json #> '{ranges,value,values}' AS range_values
+FROM (SELECT name, asCoverageJSON(rasterValue(t, r), t) AS c FROM rast, trips) s
+ORDER BY name;
+                 name                  |   domain    |                                                                                            axes                                                                                             |  range_axes   | range_values  
+---------------------------------------+-------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+---------------
+ 01 instant                            | Point       | {"x":{"values":[1.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00"]}}                                                                                                    | ["t"]         | [20]
+ 02 instant, first pixel               | Point       | {"x":{"values":[0.25]},"y":{"values":[0.75]},"t":{"values":["2001-01-01T00:00:00+00:00"]}}                                                                                                  | ["t"]         | [10]
+ 03 stationary, discrete               | PointSeries | {"x":{"values":[0.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-01-02T00:00:00+00:00","2001-01-03T00:00:00+00:00"]}}                                            | ["t"]         | [10,10,10]
+ 04 stationary, two instants far apart | PointSeries | {"x":{"values":[1.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-12-31T00:00:00+00:00"]}}                                                                        | ["t"]         | [20,20]
+ 05 stationary, linear                 | PointSeries | {"x":{"values":[0.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-01-02T00:00:00+00:00"]}}                                                                        | ["t"]         | [10,10]
+ 06 stationary, step                   | PointSeries | {"x":{"values":[1.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-01-02T00:00:00+00:00"]}}                                                                        | ["t"]         | [20,20]
+ 07 stationary, with a gap             | PointSeries | {"x":{"values":[0.5]},"y":{"values":[0.5]},"t":{"values":["2001-01-01T00:00:00+00:00","2001-01-02T00:00:00+00:00","2001-01-04T00:00:00+00:00","2001-01-05T00:00:00+00:00"]}}                | ["t"]         | [10,10,10,10]
+ 08 moving, discrete                   | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5]]}}                                       | ["composite"] | [10,20]
+ 09 moving, linear across the pixels   | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-01T12:00:00+00:00",1,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5]]}}   | ["composite"] | [10,20,20]
+ 10 moving within one pixel            | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.25,0.5],["2001-01-02T00:00:00+00:00",0.75,0.5]]}}                                     | ["composite"] | [10,10]
+ 11 moving, then stopped               | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5],["2001-01-03T00:00:00+00:00",1.5,0.5]]}} | ["composite"] | [10,20,20]
+ 12 moving, back to the start          | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-02T00:00:00+00:00",1.5,0.5],["2001-01-03T00:00:00+00:00",0.5,0.5]]}} | ["composite"] | [10,20,10]
+ 13 moving, one coordinate apart       | Trajectory  | {"composite":{"dataType":"tuple","coordinates":["t","x","y"],"values":[["2001-01-01T00:00:00+00:00",0.5,0.5],["2001-01-02T00:00:00+00:00",0.5,0.25]]}}                                      | ["composite"] | [10,10]
+(13 rows)
 
 -- A raster with a skew and a raster in no reference system are refused.
 SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,

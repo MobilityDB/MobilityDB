@@ -2,6 +2,13 @@
 -- Ever/always equal 
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tgeompoint AS TABLE tbl_tgeompoint;
+CREATE TEMP TABLE tbl_tgeogpoint AS TABLE tbl_tgeogpoint;
+ANALYZE tbl_tgeompoint, tbl_tgeogpoint;
+
 SELECT geometry 'Point(1 1)' ?= tgeompoint 'Point(1 1)@2001-01-01';
 SELECT geometry 'Point(1 1)' ?<> tgeompoint 'Point(1 1)@2001-01-01';
 SELECT geometry 'Point(1 1)' %= tgeompoint 'Point(1 1)@2001-01-01';

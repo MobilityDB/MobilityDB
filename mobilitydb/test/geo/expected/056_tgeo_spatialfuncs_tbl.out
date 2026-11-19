@@ -223,13 +223,13 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
 (10 rows)
 
 -- Round an array of temporal points
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE temp IS NOT NULL AND k % 20 = 1;
                                                                                                                                                                    astext                                                                                                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"MULTIPOINT((-83.86 94.41),(-76.25 86.37))@Mon Oct 15 08:59:00 2001 PDT","LINESTRING(-75.85 51.12,-77.87 41.62)@Sun Jul 15 09:55:00 2001 PDT","POINT(-51 15.75)@Fri Jul 27 11:56:00 2001 PDT","LINESTRING(62.53 93.43,67.83 95.4)@Wed Dec 26 16:13:00 2001 PST","MULTIPOINT((-52.75 -6.72),(-61.79 -5.89))@Thu Oct 11 02:07:00 2001 PDT"}
 (1 row)
 
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE temp IS NOT NULL AND k % 20 = 1;
                                                                                                                                                       astext                                                                                                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"POINT(-18.8 39.23)@Tue Jan 30 15:19:00 2001 PST","POINT(-96.64 59.68)@Tue Jul 24 13:56:00 2001 PDT","MULTIPOINT((118.04 -74.92),(122.84 -82.83))@Sun Oct 14 22:50:00 2001 PDT","MULTIPOINT((132.63 -89.27),(126.08 -85.96))@Fri Jan 12 04:46:00 2001 PST","POINT(173.25 -52.98)@Thu Nov 01 13:57:00 2001 PST"}

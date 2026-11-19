@@ -4,6 +4,12 @@
 -- Send / receive round-trip
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tpcbox AS TABLE tbl_tpcbox;
+ANALYZE tbl_tpcbox;
+
 \copy tbl_tpcbox TO 'tbl_tpcbox' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tpcbox_tmp;
 CREATE TEMP TABLE tbl_tpcbox_tmp AS TABLE tbl_tpcbox WITH NO DATA;

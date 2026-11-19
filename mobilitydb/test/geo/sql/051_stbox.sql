@@ -2,6 +2,12 @@
 -- STbox
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_stbox3d AS TABLE tbl_stbox3d;
+ANALYZE tbl_stbox3d;
+
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))';
 SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))';
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])';

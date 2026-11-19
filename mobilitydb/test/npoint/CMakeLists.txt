@@ -25,4 +25,8 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-mobilitydb_add_tests(SETUP load_npoint)
+# This test adds routes to the ways table and removes them, which every
+# network point of the other tests is read against
+mobilitydb_add_tests(SETUP load_npoint
+  ALONE
+    300_npoint)

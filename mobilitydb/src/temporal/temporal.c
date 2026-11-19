@@ -44,6 +44,7 @@
 #include <access/heaptoast.h>
 #include <access/detoast.h>
 #include <libpq/pqformat.h>
+#include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -284,6 +285,32 @@ temporal_slices_share_no_time(Datum tempdatum1, Datum tempdatum2)
     pfree(temp1);
   if ((Pointer) temp2 != DatumGetPointer(tempdatum2))
     pfree(temp2);
+  return result;
+}
+
+/**
+ * @brief Return the type of the query of a GiST consistent method
+ * @details A scan built by the planner passes the type of the right argument
+ * of the operator as the subtype of the scan key. The check of an exclusion
+ * constraint passes an invalid subtype instead, which by the convention of
+ * PostgreSQL means that the query has the type of the indexed column, as
+ * `range_gist_consistent` reads it. Every operator class declares its
+ * consistent method with the indexed type as second argument, so that type
+ * is read from the signature of the function called.
+ * @note It sits beside #temporal_slice, the other helper of the index methods
+ * @param[in] fcinfo Catalog information about the consistent method
+ */
+Oid
+gist_query_type(FunctionCallInfo fcinfo)
+{
+  Oid result = PG_GETARG_OID(3);
+  if (OidIsValid(result))
+    return result;
+  Oid *argtypes;
+  int nargs;
+  get_func_signature(fcinfo->flinfo->fn_oid, &argtypes, &nargs);
+  result = argtypes[1];
+  pfree(argtypes);
   return result;
 }
 

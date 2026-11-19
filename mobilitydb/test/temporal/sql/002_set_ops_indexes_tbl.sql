@@ -3,6 +3,16 @@
 -- Tests of operators that involve indexes for set types.
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_intset AS TABLE tbl_intset;
+CREATE TEMP TABLE tbl_bigintset AS TABLE tbl_bigintset;
+CREATE TEMP TABLE tbl_floatset AS TABLE tbl_floatset;
+CREATE TEMP TABLE tbl_dateset AS TABLE tbl_dateset;
+CREATE TEMP TABLE tbl_tstzset AS TABLE tbl_tstzset;
+ANALYZE tbl_intset, tbl_bigintset, tbl_floatset, tbl_dateset, tbl_tstzset;
+
 DROP INDEX IF EXISTS tbl_intset_rtree_idx;
 DROP INDEX IF EXISTS tbl_bigintset_rtree_idx;
 DROP INDEX IF EXISTS tbl_floatset_rtree_idx;

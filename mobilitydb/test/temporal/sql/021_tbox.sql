@@ -2,6 +2,12 @@
 -- Tbox
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tboxfloat AS TABLE tbl_tboxfloat;
+ANALYZE tbl_tboxfloat;
+
 SELECT tbox 'TBOXINT XT([1, 1],[2001-01-01,2001-01-02])'; -- Both X and T dimensions
 SELECT tbox 'TBOXBIGINT XT([1, 1],[2001-01-01,2001-01-02])'; -- Both X and T dimensions
 SELECT tbox 'TBOXFLOAT XT([1.0, 1.0],[2001-01-01,2001-01-02])'; -- Both X and T dimensions

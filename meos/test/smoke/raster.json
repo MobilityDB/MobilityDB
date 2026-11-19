@@ -204,6 +204,51 @@
     },
     "raster_slope": {
       "4": "\"DEGREES\""
+    },
+    "raster_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_at_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_minus_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "eraster_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "araster_value_series": {
+      "1": "rastarr1",
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_tile_value_series": {
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_tile_at_value_series": {
+      "2": "periods1",
+      "3": "2"
+    },
+    "raster_tile_minus_value_series": {
+      "2": "periods1",
+      "3": "2"
+    },
+    "eraster_tile_value_series": {
+      "2": "periods1",
+      "3": "2"
+    },
+    "araster_tile_value_series": {
+      "2": "periods1",
+      "3": "2"
     }
   },
   "manual": [
@@ -261,6 +306,12 @@
     "  Raquet *rq1 = raquet_make(qb1, 2, 2, MEOS_PT_UINT8, 0.0, false, rq_pixels1, 4);",
     "  Raquet *rq2 = raquet_make(qb1, 2, 2, MEOS_PT_UINT8, 0.0, false, rq_pixels2, 4);",
     "  const Raquet *rqarr1[] = { rq1, rq2 };",
+    "  /* A raster series: rast1 valid over the first half of the trip's day and",
+    "   * rast2 over the second, and the two tiles over the same two periods. */",
+    "  const Raster *rastarr1[] = { rast1, rast2 };",
+    "  Span *period1 = tstzspan_in(\"[2001-01-01, 2001-01-01 12:00)\");",
+    "  Span *period2 = tstzspan_in(\"[2001-01-01 12:00, 2001-01-02]\");",
+    "  Span periods1[2] = { *period1, *period2 };",
     "  /* The metadata of a Raquet file of 2 x 2 tiles of one 8-bit band. */",
     "  const char *rq_meta1 = \"{\\\"tiling\\\": {\\\"block_width\\\": 2, \\\"block_height\\\": 2}, \\\"bands\\\": [{\\\"type\\\": \\\"uint8\\\"}]}\";",
     "  /* Values read along the trip, over its own period. */",
@@ -384,6 +435,7 @@
     "  free(traj1);",
     "  free(rast_wkb1);",
     "  free(rast2);",
-    "  free(rast1);"
+    "  free(rast1);",
+    "  free(period1); free(period2);"
   ]
 }

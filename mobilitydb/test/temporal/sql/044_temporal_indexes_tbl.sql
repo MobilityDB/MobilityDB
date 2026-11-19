@@ -1,3 +1,14 @@
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tbool_big AS TABLE tbl_tbool_big;
+CREATE TEMP TABLE tbl_tint_big AS TABLE tbl_tint_big;
+CREATE TEMP TABLE tbl_tfloat_big AS TABLE tbl_tfloat_big;
+CREATE TEMP TABLE tbl_ttext_big AS TABLE tbl_ttext_big;
+CREATE TEMP TABLE tbl_tbigint_big AS TABLE tbl_tbigint_big;
+ANALYZE tbl_tbool_big, tbl_tint_big, tbl_tfloat_big, tbl_ttext_big,
+  tbl_tbigint_big;
+
 CREATE TEMP TABLE test AS
 SELECT NULL::ttext FROM generate_series(1, 10);
 ANALYZE test;
@@ -2217,5 +2228,31 @@ SELECT * FROM pg_temp.index_structures('tbl_index_structures', 'tbox',
 DROP TABLE tbl_index_structures;
 DROP FUNCTION pg_temp.day_of(int);
 DROP FUNCTION pg_temp.index_structures(text, text, text[], text[], text[]);
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Exclusion constraints
+-------------------------------------------------------------------------------
+
+CREATE TEMP TABLE tbl_tint_excl (k int, temp tint,
+  EXCLUDE USING gist (temp WITH &&));
+INSERT INTO tbl_tint_excl VALUES
+  (1, tint '[1@2001-01-01, 5@2001-01-05]'),
+  (2, tint '[10@2001-01-03, 15@2001-01-05]');
+/* Errors */
+INSERT INTO tbl_tint_excl VALUES (3, tint '[3@2001-01-04, 3@2001-01-06]');
+SELECT COUNT(*) FROM tbl_tint_excl;
+DROP TABLE tbl_tint_excl;
+
+CREATE TEMP TABLE tbl_tbool_excl (k int, temp tbool,
+  EXCLUDE USING gist (temp WITH &&));
+INSERT INTO tbl_tbool_excl VALUES
+  (1, tbool '[true@2001-01-01, true@2001-01-05)'),
+  (2, tbool '[false@2001-01-05, false@2001-01-10)');
+/* Errors */
+INSERT INTO tbl_tbool_excl VALUES (3, tbool '[true@2001-01-06, true@2001-01-08)');
+SELECT COUNT(*) FROM tbl_tbool_excl;
+DROP TABLE tbl_tbool_excl;
 
 -------------------------------------------------------------------------------

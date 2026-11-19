@@ -82,8 +82,8 @@ SELECT k, random_tposechain2d_discseq(-100, 100, -100, 100, radians(-pi()),
   radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 5, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tposechain2d_seq;
-CREATE TABLE tbl_tposechain2d_seq AS
+DROP TABLE IF EXISTS tbl_tposechain2d_contseq;
+CREATE TABLE tbl_tposechain2d_contseq AS
 SELECT k, random_tposechain2d_contseq(-100, 100, -100, 100, radians(-pi()),
   radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 5, 1, 10, 3812) AS temp
 FROM generate_series(1, size) k;
@@ -95,15 +95,15 @@ SELECT k, random_tposechain2d_seqset(-100, 100, -100, 100, radians(-pi()),
   AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tposechain;
-CREATE TABLE tbl_tposechain(k, temp) AS
+DROP TABLE IF EXISTS tbl_tposechain2d;
+CREATE TABLE tbl_tposechain2d(k, temp) AS
 SELECT k, temp FROM tbl_tposechain2d_inst UNION ALL
 SELECT k + size, temp FROM tbl_tposechain2d_discseq UNION ALL
-SELECT k + 2 * size, temp FROM tbl_tposechain2d_seq UNION ALL
+SELECT k + 2 * size, temp FROM tbl_tposechain2d_contseq UNION ALL
 SELECT k + 3 * size, temp FROM tbl_tposechain2d_seqset;
 
 /* Add perc NULL values */
-UPDATE tbl_tposechain
+UPDATE tbl_tposechain2d
 SET temp = NULL
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 

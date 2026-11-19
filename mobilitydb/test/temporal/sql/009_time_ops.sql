@@ -2,6 +2,18 @@
 -- File time_ops.c
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tstzspan_big AS TABLE tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tstzset_big AS TABLE tbl_tstzset_big;
+CREATE TEMP TABLE tbl_tstzspanset_big AS TABLE tbl_tstzspanset_big;
+CREATE TEMP TABLE tbl_tstzset AS TABLE tbl_tstzset;
+CREATE TEMP TABLE tbl_tstzspan AS TABLE tbl_tstzspan;
+CREATE TEMP TABLE tbl_tstzspanset AS TABLE tbl_tstzspanset;
+ANALYZE tbl_tstzspan_big, tbl_tstzset_big, tbl_tstzspanset_big, tbl_tstzset,
+  tbl_tstzspan, tbl_tstzspanset;
+
 SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-03}' @> timestamptz '2001-01-01';
 SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-03}' @> tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
 SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' @> tstzset '{2001-01-02, 2001-01-04}';

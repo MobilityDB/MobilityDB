@@ -1,3 +1,10 @@
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_intspanset AS TABLE tbl_intspanset;
+CREATE TEMP TABLE tbl_floatspanset AS TABLE tbl_floatspanset;
+ANALYZE tbl_intspanset, tbl_floatspanset;
+
 -------------------------------------------------------------------------------
 -- File span_ops.c
 -- Tests of operators for span types.
@@ -97,5 +104,40 @@ SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspanset ORDER BY 1 
 
 DROP INDEX IF EXISTS tbl_intspanset_quadtree_idx;
 DROP INDEX IF EXISTS tbl_floatspanset_quadtree_idx;
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Exclusion constraints
+-------------------------------------------------------------------------------
+
+CREATE TEMP TABLE tbl_datespanset_excl (k int, d datespanset,
+  EXCLUDE USING gist (d WITH &&));
+INSERT INTO tbl_datespanset_excl VALUES
+  (1, '{[2001-01-01, 2001-01-05), [2001-01-10, 2001-01-15)}'),
+  (2, '{[2001-01-05, 2001-01-10)}');
+/* Errors */
+INSERT INTO tbl_datespanset_excl VALUES (3, '{[2001-01-12, 2001-01-20)}');
+SELECT k, d FROM tbl_datespanset_excl ORDER BY k;
+DROP TABLE tbl_datespanset_excl;
+
+CREATE TEMP TABLE tbl_tstzspanset_excl (k int, t tstzspanset,
+  EXCLUDE USING gist (t WITH &&));
+INSERT INTO tbl_tstzspanset_excl VALUES
+  (1, '{[2001-01-01, 2001-01-05), [2001-01-10, 2001-01-15)}'),
+  (2, '{[2001-01-05, 2001-01-10)}');
+/* Errors */
+INSERT INTO tbl_tstzspanset_excl VALUES (3, '{[2001-01-12, 2001-01-20)}');
+SELECT COUNT(*) FROM tbl_tstzspanset_excl;
+DROP TABLE tbl_tstzspanset_excl;
+
+CREATE TEMP TABLE tbl_datespan_excl (k int, d datespan,
+  EXCLUDE USING gist (d WITH &&));
+INSERT INTO tbl_datespan_excl VALUES
+  (1, '[2001-01-01, 2001-01-05)'), (2, '[2001-01-05, 2001-01-10)');
+/* Errors */
+INSERT INTO tbl_datespan_excl VALUES (3, '[2001-01-06, 2001-01-08)');
+SELECT COUNT(*) FROM tbl_datespan_excl;
+DROP TABLE tbl_datespan_excl;
 
 -------------------------------------------------------------------------------

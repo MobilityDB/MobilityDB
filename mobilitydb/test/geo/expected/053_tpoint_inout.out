@@ -721,7 +721,7 @@ SELECT asMFJSON(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
 RESET DateStyle;
 /* Errors */
 SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);
-ERROR:  SRID 123456 unknown in spatial_ref_sys table
+ERROR:  Cannot find SRID (123456) in spatial_ref_sys
 -------------------------------------------------------------------------------
 SELECT asBinary(tgeompoint 'Point(1 1)@2001-01-01');
                                asbinary                               

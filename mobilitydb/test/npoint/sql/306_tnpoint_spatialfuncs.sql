@@ -82,6 +82,11 @@ SELECT round(minusStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@200
 SELECT round(minusStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
 SELECT round(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
 
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'STBOX T([2001-01-01,2001-01-02])'), 6);
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'STBOX T([2001-01-01,2001-01-02])'), 6);
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX X((1000,1000),(2000,2000))'), 6);
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX X((1000,1000),(2000,2000))'), 6);
+
 -------------------------------------------------------------------------------
 -- atStbox/minusStbox for a linear tnpoint whose route (gid 1) bends between
 -- the two instants, so the box boundary is crossed at a point that is NOT on

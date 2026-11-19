@@ -1,3 +1,13 @@
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tgeometry3D_big AS TABLE tbl_tgeometry3D_big;
+CREATE TEMP TABLE tbl_tgeography3D_big AS TABLE tbl_tgeography3D_big;
+CREATE TEMP TABLE tbl_tgeometry AS TABLE tbl_tgeometry;
+CREATE TEMP TABLE tbl_tgeometry3D AS TABLE tbl_tgeometry3D;
+ANALYZE tbl_tgeometry3D_big, tbl_tgeography3D_big, tbl_tgeometry,
+  tbl_tgeometry3D;
+
 CREATE TEMP TABLE test AS
 SELECT NULL::tgeometry FROM generate_series(1, 10);
 ANALYZE test;
@@ -531,3 +541,20 @@ FROM tbl_stbox_tgeography_seq;
 RESET enable_seqscan;
 DROP TABLE tbl_stbox_tgeography, tbl_tgeography_q, tbl_stbox_tgeography_seq;
 DROP FUNCTION pg_temp.stbox_tgeography_indexed(), pg_temp.stbox_tgeography_answers(), pg_temp.stbox_tgeography_probes_index(text);
+
+-------------------------------------------------------------------------------
+-- Exclusion constraints
+-------------------------------------------------------------------------------
+
+CREATE TEMP TABLE tbl_tgeompoint_excl (k int, temp tgeompoint,
+  EXCLUDE USING gist (temp WITH &&));
+INSERT INTO tbl_tgeompoint_excl VALUES
+  (1, tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]'),
+  (2, tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-02]');
+/* Errors */
+INSERT INTO tbl_tgeompoint_excl VALUES
+  (3, tgeompoint '[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-03]');
+SELECT COUNT(*) FROM tbl_tgeompoint_excl;
+DROP TABLE tbl_tgeompoint_excl;
+
+-------------------------------------------------------------------------------

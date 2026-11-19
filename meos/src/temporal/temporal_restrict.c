@@ -854,14 +854,14 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
   if (! overlaps_tbox_tbox(box, &box1))
     return temporal_copy(temp);
 
-  Temporal *result = NULL;
+  /* The boxes may overlap where the value never lies in the box, its
+   * complement then being the whole value, as #tgeo_restrict_stbox answers */
   Temporal *temp1 = tnumber_at_tbox(temp, box);
-  if (temp1)
-  {
-    SpanSet *ss = temporal_time(temp1);
-    result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
-    pfree(temp1); pfree(ss);
-  }
+  if (! temp1)
+    return temporal_copy(temp);
+  SpanSet *ss = temporal_time(temp1);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
+  pfree(temp1); pfree(ss);
   return result;
 }
 

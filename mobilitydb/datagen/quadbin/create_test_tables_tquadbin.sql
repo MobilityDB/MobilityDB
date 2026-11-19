@@ -69,30 +69,30 @@ FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tquadbin_inst;
 CREATE TABLE tbl_tquadbin_inst AS
-SELECT k, random_tquadbin_inst(0, 10, '2001-01-01', '2001-12-31') AS inst
+SELECT k, random_tquadbin_inst(0, 10, '2001-01-01', '2001-12-31') AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tquadbin_discseq;
 CREATE TABLE tbl_tquadbin_discseq AS
-SELECT k, random_tquadbin_discseq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10) AS ti
+SELECT k, random_tquadbin_discseq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tquadbin_seq;
-CREATE TABLE tbl_tquadbin_seq AS
-SELECT k, random_tquadbin_seq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
+DROP TABLE IF EXISTS tbl_tquadbin_contseq;
+CREATE TABLE tbl_tquadbin_contseq AS
+SELECT k, random_tquadbin_seq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tquadbin_seqset;
 CREATE TABLE tbl_tquadbin_seqset AS
-SELECT k, random_tquadbin_seqset(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS ss
+SELECT k, random_tquadbin_seqset(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS temp
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tquadbin;
 CREATE TABLE tbl_tquadbin(k, temp) AS
-(SELECT k, inst FROM tbl_tquadbin_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, ti FROM tbl_tquadbin_discseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_tquadbin_seq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ss FROM tbl_tquadbin_seqset LIMIT size / 4);
+(SELECT k, temp FROM tbl_tquadbin_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, temp FROM tbl_tquadbin_discseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, temp FROM tbl_tquadbin_contseq LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, temp FROM tbl_tquadbin_seqset LIMIT size / 4);
 
 ------------------------------------------------------------------------------
 -- Planar spatiotemporal box at SRID 4326 (operand for the bounding-box
@@ -134,7 +134,7 @@ SELECT * FROM tbl_quadbin LIMIT 3;
 SELECT * FROM tbl_quadbinset LIMIT 3;
 SELECT * FROM tbl_tquadbin_inst LIMIT 3;
 SELECT * FROM tbl_tquadbin_discseq LIMIT 3;
-SELECT * FROM tbl_tquadbin_seq LIMIT 3;
+SELECT * FROM tbl_tquadbin_contseq LIMIT 3;
 SELECT * FROM tbl_tquadbin_seqset LIMIT 3;
 SELECT * FROM tbl_tquadbin LIMIT 3;
 */
