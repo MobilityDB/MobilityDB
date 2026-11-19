@@ -909,6 +909,8 @@ polynomial_sign_filter(const ExactSum *sums, const PolyTerm *terms,
   return polynomial_sign_pairs(sums, terms, nterms);
 }
 
+extern int polynomial_sign_exact_pairs(const ExactSum *sums,
+  const PolyTerm *terms, int nterms);
 extern int polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
   int nterms);
 
@@ -916,7 +918,9 @@ extern int polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
  * @brief Return the sign of a polynomial in exact sums, computed exactly
  * @details The polynomial is first evaluated in doubles together with a bound
  * on the error of every operation, then in pairs of doubles against its own
- * bound (#polynomial_sign_filter); where neither tells, the sign is read on
+ * bound (#polynomial_sign_filter). Where neither tells, which a zero never
+ * does, a polynomial whose terms are exact in pairs of doubles is summed
+ * exactly (#polynomial_sign_exact_pairs); elsewhere the sign is read on
  * the expression ladder from its expansions on (#polynomial_sign_dyadic), in
  * expansions and in #DyadicWide where those leave their exact range, so it is
  * exact for any finite sums
@@ -929,6 +933,9 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   int nterms)
 {
   int sign = polynomial_sign_filter(sums, terms, nterms);
+  if (sign != 2)
+    return sign;
+  sign = polynomial_sign_exact_pairs(sums, terms, nterms);
   if (sign != 2)
     return sign;
   return polynomial_sign_dyadic(sums, terms, nterms);
