@@ -661,3 +661,65 @@ pcpatch_union_transfn(Set *state, const Pcpatch *pa)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Transformation into the schema of another pcid
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_set_srid
+ * @brief Return a point cloud set transformed into the schema of another
+ * pcid, which states the target SRID
+ * @details Each value is transformed by #pcpoint_transf_pj or
+ * #pcpatch_transf_pj, as #spatialset_transform transforms each value of a
+ * spatial set
+ * @param[in] s Set of pcpoints or pcpatches
+ * @param[in] pcid Target pcid
+ * @csqlfn #Pointcloudset_transform()
+ */
+Set *
+pointcloudset_transform(const Set *s, uint32_t pcid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  if (! pointcloudset_type(s->settype))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set must be a set of point cloud values: %s",
+      meostype_name(s->settype));
+    return NULL;
+  }
+  bool point = (s->basetype == T_PCPOINT);
+  Datum first = SET_VAL_N(s, 0);
+  uint32_t pcid_from = point ?
+    pcpoint_get_pcid((const Pcpoint *) DatumGetPointer(first)) :
+    pcpatch_get_pcid((const Pcpatch *) DatumGetPointer(first));
+  const PCSCHEMA *to;
+  LWPROJ *pj;
+  if (! pc_transform_lookup(pcid_from, pcid, &to, &pj))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+  {
+    const void *value = DatumGetPointer(SET_VAL_N(s, i));
+    void *res = point ?
+      (void *) pcpoint_transf_pj((const Pcpoint *) value, pcid, to, pj) :
+      (void *) pcpatch_transf_pj((const Pcpatch *) value, pcid, to, pj);
+    if (! res)
+    {
+      for (int j = 0; j < i; j++)
+        pfree(DatumGetPointer(values[j]));
+      pfree(values);
+      return NULL;
+    }
+    values[i] = PointerGetDatum(res);
+  }
+  /* The set copies the values, which are freed after it, as in
+   * #spatialset_transform */
+  Set *result = set_make(values, s->count, s->basetype, ORDER);
+  for (int i = 0; i < s->count; i++)
+    pfree(DatumGetPointer(values[i]));
+  pfree(values);
+  return result;
+}

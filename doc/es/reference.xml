@@ -3747,6 +3747,9 @@
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial (heredado del esquema)</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="pcpoint_transform"><varname>transform</varname></link>: Transforma al esquema de otro pcid</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="pcpatch_numPoints"><varname>numPoints</varname></link>: Devuelve el número de puntos de un pcpatch</para>
 					</listitem>
 					<listitem>
@@ -3843,7 +3846,7 @@
 						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Devuelve un tpcbox con las coordenadas redondeadas al número de dígitos decimales indicado</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Devuelve un tpcbox que declara un sistema de referencia que su esquema no declara</para>
+						<para><link linkend="tpcbox_transform"><varname>transform</varname></link>: Transforma al esquema de otro pcid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3932,6 +3935,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_SRID"><varname>SRID</varname></link>: Devuelve el SRID heredado del esquema</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_transform"><varname>transform</varname></link>: Transforma al esquema de otro pcid</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Proyecta un tpcpoint sobre una dimensión espacial, produciendo un tfloat</para>

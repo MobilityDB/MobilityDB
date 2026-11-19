@@ -40,6 +40,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <liblwgeom.h>
 #include <meos_pointcloud.h>
 
 /*****************************************************************************
@@ -104,6 +105,10 @@ extern bool pcpoint_schema_get_z(const Pcpoint *pt, PCSCHEMA *schema,
 extern bool pcpoint_schema_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
   const char *name, double *out);
 extern TPCBox *pcpoint_schema_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
+extern bool pc_transform_lookup(uint32_t pcid_from, uint32_t pcid_to,
+  const PCSCHEMA **schema_to, LWPROJ **pj);
+extern Pcpoint *pcpoint_transf_pj(const Pcpoint *pt, uint32_t pcid_to,
+  const PCSCHEMA *to, const LWPROJ *pj);
 
 /*****************************************************************************/
 

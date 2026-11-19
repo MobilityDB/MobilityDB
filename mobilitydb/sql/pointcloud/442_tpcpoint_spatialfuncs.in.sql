@@ -50,6 +50,18 @@ CREATE FUNCTION SRID(tpcpatch)
   AS 'MODULE_PATHNAME', 'Tspatial_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- A temporal point cloud value takes its SRID from the schema its pcid names,
+-- so it is transformed into the schema of another pcid, which states the
+-- target SRID
+CREATE FUNCTION transform(tpcpoint, pcid integer)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Tpointcloud_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(tpcpatch, pcid integer)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Tpointcloud_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION centroid(tpcpoint)
   RETURNS tgeompoint
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
