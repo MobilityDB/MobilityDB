@@ -10915,6 +10915,102 @@ buffer_round_line_rings(const LWGEOM *geom, double radius, EndCapStyle cap,
   return found;
 }
 
+/*
+ * Order two points by x then y, for #buffer_round_point_rings to drop a point
+ * repeating another
+ */
+static int
+buffer_point2d_cmp(const void *a, const void *b)
+{
+  const POINT2D *p = (const POINT2D *) a, *q = (const POINT2D *) b;
+  if (p->x != q->x)
+    return (p->x < q->x) ? -1 : 1;
+  if (p->y != q->y)
+    return (p->y < q->y) ? -1 : 1;
+  return 0;
+}
+
+/**
+ * @brief Return the rings bounding the buffer of a multipoint, the union of
+ * the discs of the distance about its points, read off the exact arrangement
+ * of their circles, as #buffer_round_rings answers a polygon
+ * @details The arrangement takes edges ending where tangents touch circles,
+ * so the circle about a point is the two half turns, counterclockwise,
+ * between the points where the two common tangents of that circle and the
+ * one of the distance about another point touch it (#TangentPoint): the
+ * point above it, or the next double above where the coordinate does not
+ * move. Each circle winds once around every point of its disc, so the
+ * buffer is the set of points the circles wind around at least once, a
+ * point repeating another dropped. Every circle is fixed by the input doubles
+ * and the distance, and only the vertices of the answer are rounded
+ * @param[in] geom Multipoint
+ * @param[in] radius Distance, positive
+ * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
+ * owning each, as #arrange_wound_tangent_surfaces answers them
+ * @return False for another type, an empty multipoint, where the
+ * arrangement leaves the region unanswered or answers no ring -- a caller
+ * that has another way to answer may take it
+ */
+static bool
+buffer_round_point_rings(const LWGEOM *geom, double radius,
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner)
+{
+  assert(geom); assert(radius > 0.0);
+  if (geom->type != MULTIPOINTTYPE || lwgeom_is_empty(geom))
+    return false;
+  const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+  POINT2D *pts = palloc(sizeof(POINT2D) * Max(col->ngeoms, 1u));
+  uint32_t n = 0;
+  for (uint32_t i = 0; i < col->ngeoms; i++)
+  {
+    const LWPOINT *pt = (const LWPOINT *) col->geoms[i];
+    if (col->geoms[i]->type != POINTTYPE || lwgeom_is_empty(col->geoms[i]))
+      continue;
+    pts[n++] = *getPoint2d_cp(pt->point, 0);
+  }
+  if (n == 0)
+  {
+    pfree(pts);
+    return false;
+  }
+  qsort(pts, n, sizeof(POINT2D), buffer_point2d_cmp);
+  uint32_t m = 1;
+  for (uint32_t i = 1; i < n; i++)
+    if (buffer_point2d_cmp(&pts[i], &pts[m - 1]) != 0)
+      pts[m++] = pts[i];
+  TangentPoint *tps = palloc(sizeof(TangentPoint) * 2 * m);
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  edge_array_reserve(edges, 2 * (size_t) m);
+  for (uint32_t i = 0; i < m; i++)
+  {
+    const POINT2D *p = &pts[i];
+    double qy = p->y + 1.0;
+    if (qy == p->y)
+      qy = nextafter(p->y, INFINITY);
+    TangentPoint *t = &tps[2 * i];
+    t[0] = (TangentPoint) {p->x, p->y, radius, p->x, qy, radius, 1, 0, 0};
+    t[1] = (TangentPoint) {p->x, p->y, radius, p->x, qy, radius, -1, 0, 0};
+    edges_add_tangent_arc(edges, p->x, p->y, radius, true, &t[0], &t[1]);
+    edges_add_tangent_arc(edges, p->x, p->y, radius, true, &t[1], &t[0]);
+  }
+  pfree(pts);
+  bool found = false;
+  if (arrange_wound_tangent_surfaces(edges, rings, nrings, owner, NULL) ==
+      ARR_ANSWERED)
+  {
+    found = *nrings > 0;
+    if (! found)
+    {
+      arrange_rings_free(*rings, *nrings);
+      if (*owner)
+        pfree(*owner);
+    }
+  }
+  meos_array_destroy(edges);
+  pfree(tps);
+  return found;
+}
+
 /**
  * @brief Return the buffer of a polygon or a multipolygon with round joins,
  * the surfaces the rings of #buffer_round_rings bound
@@ -11828,6 +11924,28 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
     uint32_t nrings;
     int32_t *owner;
     if (buffer_round_rings(lwg, size, &rings, &nrings, &owner))
+    {
+      GSERIALIZED *result = buffer_rings_serialize(rings, nrings, owner,
+        lwgeom_get_srid(lwg));
+      if (result)
+      {
+        lwgeom_free(lwg);
+        return result;
+      }
+      arrange_rings_free(rings, nrings);
+      pfree(owner);
+    }
+  }
+  /* The discs about the points of a multipoint: the region their exact
+   * circles wind around (#buffer_round_point_rings), serialized from the rings
+   * of their arrangement at once; where it leaves a question open, the older
+   * path */
+  if (size > 0.0 && lwg->type == MULTIPOINTTYPE)
+  {
+    MeosArray **rings;
+    uint32_t nrings;
+    int32_t *owner;
+    if (buffer_round_point_rings(lwg, size, &rings, &nrings, &owner))
     {
       GSERIALIZED *result = buffer_rings_serialize(rings, nrings, owner,
         lwgeom_get_srid(lwg));

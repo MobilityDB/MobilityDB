@@ -113,6 +113,12 @@ SELECT isSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))') =
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 0), 6));
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
+-- The buffer of a multipoint is the union of the disks about its points: two
+-- overlapping disks are one surface, a point repeating another adds nothing
+SELECT ST_AsText(round(buffer(geometry 'Multipoint(0 0,1 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Multipoint(0 0,1 0,0 0)', 1), 6));
+SELECT contains(buffer(geometry 'Multipoint(0 0,1 0)', 1), geometry 'Point(0.5 0.86)') AS lens,
+  contains(buffer(geometry 'Multipoint(0 0,1 0)', 1), geometry 'Point(0.5 0.87)') AS past;
 
 -- The two offsets of a line, closed by a cap at each end: a half disc about
 -- each end, nothing past it, or a square stretching the line by the distance
