@@ -339,6 +339,35 @@ if(H3)
       "  -DH3_LIBRARY=/path/to/libh3.so -DH3_INCLUDE_DIR=/path/to/h3api.h\n"
       "to cmake.")
   endif()
+  # The one H3 release MobilityDB supports. The boundary of a cell, and so its
+  # box, is read on the vertices the library states, and releases state
+  # different doubles for them (4.5.0 rewrote the indexing code on Vec3d, 4.6.0
+  # the latitude near the poles), so every build reads the same release. The
+  # CI script .github/scripts/install-h3.sh builds this release.
+  set(H3_REQUIRED_VERSION "4.6.0")
+  file(STRINGS "${H3_INCLUDE_DIR}/h3api.h" _h3_version_lines
+    REGEX "^#define H3_VERSION_(MAJOR|MINOR|PATCH) ")
+  set(H3_FOUND_VERSION "")
+  foreach(_part MAJOR MINOR PATCH)
+    string(REGEX MATCH "H3_VERSION_${_part} ([0-9]+)" _m "${_h3_version_lines}")
+    list(APPEND H3_FOUND_VERSION "${CMAKE_MATCH_1}")
+  endforeach()
+  string(REPLACE ";" "." H3_FOUND_VERSION "${H3_FOUND_VERSION}")
+  if(NOT H3_FOUND_VERSION STREQUAL H3_REQUIRED_VERSION)
+    message(FATAL_ERROR
+      "MobilityDB requires H3 ${H3_REQUIRED_VERSION}, but the header found at\n"
+      "  ${H3_INCLUDE_DIR}/h3api.h\n"
+      "is H3 ${H3_FOUND_VERSION}. Build the release from its tag\n"
+      "  https://github.com/uber/h3/tree/v${H3_REQUIRED_VERSION}\n"
+      "(.github/scripts/install-h3.sh does it) and pass\n"
+      "  -DH3_LIBRARY=/path/to/libh3.so -DH3_INCLUDE_DIR=/path/to/include/h3\n"
+      "to cmake.")
+  endif()
+  message(STATUS "H3 ${H3_FOUND_VERSION}: ${H3_LIBRARY}")
+  # The installed meos_h3.h includes <h3/h3api.h>, the layout H3 installs, so
+  # the directory holding h3/ is on the include path beside H3_INCLUDE_DIR
+  get_filename_component(H3_INCLUDE_PARENT "${H3_INCLUDE_DIR}" DIRECTORY)
+  include_directories(${H3_INCLUDE_PARENT})
   # A static libh3.a built without -fPIC links fine into an executable but
   # fails the final MobilityDB .so link with a cryptic
   #   relocation R_X86_64_PC32 ... can not be used when making a shared object;

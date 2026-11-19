@@ -129,7 +129,7 @@ On Fedora and other RPM-based distributions, the same dependencies are installed
 dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis proj-devel json-c-devel
 ```
 
-The optional families that `-DALL=ON` enables need two more packages, `gdal-devel` for the raster operators and `h3-devel` for the H3 index type.
+The optional families that `-DALL=ON` enables need GDAL (`gdal-devel`) for the raster operators and H3 for the H3 index type. MobilityDB supports one H3 release, 4.6.0, since the box of a cell is read on the vertices the library states and releases state different ones: build it from its tag, as `.github/scripts/install-h3.sh /usr/local` does, rather than installing a distribution package, which may carry another release. The configure step refuses any other release.
 
 Building & Installation
 -----------------------

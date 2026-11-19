@@ -50,10 +50,15 @@ jobs:
             libproj-dev \
             libjson-c-dev \
             libgdal-dev \
-            libh3-dev \
             libpq-dev \
             libxml2-dev \
             zlib1g-dev
+
+      - name: Install the H3 release MobilityDB supports
+        # Built from its tag by .github/scripts/install-h3.sh, the release
+        # H3_REQUIRED_VERSION of CMakeLists.txt names, since a package carries
+        # whatever release it last took and releases state different vertices
+        run: sudo .github/scripts/install-h3.sh /usr/local
 
       - name: Build
         run: |
@@ -263,13 +268,18 @@ jobs:
             libproj-dev \
             libjson-c-dev \
             libgdal-dev \
-            libh3-dev \
             libxml2-dev \
             zlib1g-dev \
             autoconf automake libtool
 
       # Install into a local prefix rather than /usr/local, so the link test
       # below cannot silently resolve against a system-installed libmeos.
+      - name: Install the H3 release MobilityDB supports
+        # Built from its tag by .github/scripts/install-h3.sh, the release
+        # H3_REQUIRED_VERSION of CMakeLists.txt names, since a package carries
+        # whatever release it last took and releases state different vertices
+        run: sudo .github/scripts/install-h3.sh /usr/local
+
       - name: Build the static library
         run: |
           cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DALL=on \

@@ -112,6 +112,16 @@ indextests:
 
       DROP INDEX tbl_tnpoint_quadtree_idx;
 
+  - temp: th3index
+    base: h3index
+    file: mobilitydb/test/h3/sql/272_th3index_indexes_tbl.sql
+    srid: 4326
+    offset: 10100
+    copies: 0
+    srcfilter: k % 1000 = 0
+    same: 8110fffffffffff
+    sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
+    labels: false
   - temp: tquadbin
     base: quadbin
     file: mobilitydb/test/quadbin/sql/372_tquadbin_indexes_tbl.sql

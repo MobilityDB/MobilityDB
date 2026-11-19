@@ -274,7 +274,7 @@ sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
   proj-devel json-c-devel
 </programlisting>
 			<para>
-				Las familias opcionales que habilita <varname>-DALL=ON</varname> requieren dos paquetes adicionales, <varname>gdal-devel</varname> para los operadores de rásteres y <varname>h3-devel</varname> para el tipo de índice H3.
+				Las familias opcionales que habilita <varname>-DALL=ON</varname> requieren GDAL (<varname>gdal-devel</varname>) para los operadores de rásteres y H3 para el tipo de índice H3. MobilityDB admite una sola versión de H3, la 4.6.0, ya que la caja de una celda se lee sobre los vértices que la biblioteca da y cada versión da otros: compílela desde su etiqueta, como lo hace <varname>.github/scripts/install-h3.sh /usr/local</varname>, en lugar de instalar un paquete de la distribución, que puede traer otra versión. La configuración rechaza cualquier otra versión.
 			</para>
 		</sect2>
 
