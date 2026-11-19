@@ -1769,6 +1769,20 @@ SELECT (s).count AS n, (s).sum AS total
 FROM (SELECT ST_SummaryStats(
   reclass(r, 1, '[0-50):1, [50-100]:2', '32BF', -9999)) AS s FROM rast) t;
 
+-- The pixel type is named in either vocabulary and in any case, the name
+-- bandPixelType answers included, so every spelling gives the band one type.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT t, bandPixelType(reclass(r, 1, '0-50:1, 51-100:2', t, 0))
+FROM rast, unnest(ARRAY['8BUI', '8bui', 'uint8', 'UINT8',
+  bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '8BUI'))]) AS t;
+
 -- A band the raster does not have, and an expression stating no mapping, are
 -- both errors.
 WITH rast AS (
@@ -1783,6 +1797,12 @@ WITH rast AS (
     '32BF'::text, 0.0::float8, NULL::float8) AS r
 )
 SELECT reclass(r, 1, '0-50', '32BF') FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT reclass(r, 1, '0-50:1', '8bit') FROM rast;
 
 -------------------------------------------------------------------------------
 -- clip
@@ -2507,6 +2527,21 @@ SELECT
     ST_DumpValues(ST_TRI(r, 1, '64BF'), 1) AS tri,
   ST_DumpValues(tpi(r, 1, '64BF', true), 1) =
     ST_DumpValues(ST_TPI(r, 1, '64BF', true), 1) AS tpi_interpolated
+FROM dem;
+
+-- The terrain functions read the pixel type in either vocabulary
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT
+  ST_DumpValues(slope(r, 1, 'float64'), 1) =
+    ST_DumpValues(slope(r, 1, '64BF'), 1) AS slope,
+  ST_DumpValues(tri(r, 1, 'Float64'), 1) =
+    ST_DumpValues(tri(r, 1, '64bf'), 1) AS tri
 FROM dem;
 
 -- A plane rising by 1 for each pixel to the east: 45 degrees, 100 percent,

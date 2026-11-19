@@ -2258,17 +2258,24 @@ raster_dump_values(const Raster *rast, int band, bool exclude_nodata,
 /**
  * @brief Return the pixel type of rt_core a name states
  * @details The name is either the one PostGIS gives a pixel type, such as
- * `8BUI`, or the one #raster_band_pixel_type answers, such as `uint8`, so the
- * type a raster states carries into the constructors as it stands
+ * `8BUI`, or the one #raster_band_pixel_type answers, such as `uint8`, read
+ * without regard to case as #meospixtype_from_string reads both, so the type a
+ * raster states carries into every function of a band as it stands. A PostGIS
+ * name keeps its band type, the ones bounding a pixel to less than a byte
+ * included, as `ST_AddBand` reads it
  * @param[in] name Name of the pixel type
  * @return The pixel type, or `PT_END` with an error stated
  */
 static rt_pixtype
 raster_pixtype(const char *name)
 {
-  rt_pixtype result = rt_pixtype_index_from_name(name);
-  if (result != PT_END)
-    return result;
+  static const rt_pixtype RT_PIXTYPES[] = {PT_1BB, PT_2BUI, PT_4BUI, PT_8BSI,
+    PT_8BUI, PT_16BSI, PT_16BUI, PT_32BSI, PT_32BUI, PT_32BF, PT_64BF};
+  for (size_t i = 0; i < sizeof(RT_PIXTYPES) / sizeof(RT_PIXTYPES[0]); i++)
+  {
+    if (pg_strcasecmp(name, rt_pixtype_name(RT_PIXTYPES[i])) == 0)
+      return RT_PIXTYPES[i];
+  }
   for (int i = 0; i <= (int) MEOS_PT_FLOAT16; i++)
   {
     const char *rqname = meospixtype_name((MeosPixType) i);
@@ -3296,13 +3303,9 @@ raster_reclass(const Raster *rast, int band, const char *expr,
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(expr, NULL);
   VALIDATE_NOT_NULL(pixeltype, NULL);
 
-  rt_pixtype pixtype = rt_pixtype_index_from_name(pixeltype);
+  rt_pixtype pixtype = raster_pixtype(pixeltype);
   if (pixtype == PT_END)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Unknown pixel type: %s", pixeltype);
     return NULL;
-  }
 
   /* The band values are read and written, so the subject is deserialized in
    * full */
@@ -4501,13 +4504,9 @@ raster_terrain(const Raster *rast, int band, const Raster *customextent,
   const char *pixeltype, bool interpolate_nodata, RasterPixelFn callback,
   void *userarg)
 {
-  rt_pixtype pixtype = rt_pixtype_index_from_name(pixeltype);
+  rt_pixtype pixtype = raster_pixtype(pixeltype);
   if (pixtype == PT_END)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Unknown pixel type: %s", pixeltype);
     return NULL;
-  }
 
   /* The bands are read, so the rasters are deserialized in full */
   rt_raster raster = rt_raster_deserialize((void *) rast, 0);
@@ -4923,13 +4922,9 @@ raster_map_algebra(const Raster *rast, int band, const char *stat,
   rt_pixtype pixtype = PT_END;
   if (pixeltype)
   {
-    pixtype = rt_pixtype_index_from_name(pixeltype);
+    pixtype = raster_pixtype(pixeltype);
     if (pixtype == PT_END)
-    {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Unknown pixel type: %s", pixeltype);
       return NULL;
-    }
   }
 
   /* The bands are read, so the raster is deserialized in full */
