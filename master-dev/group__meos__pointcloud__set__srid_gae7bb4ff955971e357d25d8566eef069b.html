@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Tpcbox_set_srid</title>
+<title>MobilityDB: pointcloudset_transform</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__mobilitydb__pointcloud__box.html">PG wrappers for the TPCBox type</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__pointcloud__set__srid.html">Spatial reference system functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,29 +79,45 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box_ga5f75972ed2242bc3fbe293e2d9b8aeb6.html#ga5f75972ed2242bc3fbe293e2d9b8aeb6">Tpcbox_round</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pointcloud__box_ga665c9d0dd249c0d08b963bb0243aab20.html#ga665c9d0dd249c0d08b963bb0243aab20">Tpcbox_set_srid</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__set__srid_gae7bb4ff955971e357d25d8566eef069b.html#gae7bb4ff955971e357d25d8566eef069b">pointcloudset_transform</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga665c9d0dd249c0d08b963bb0243aab20" name="ga665c9d0dd249c0d08b963bb0243aab20"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga665c9d0dd249c0d08b963bb0243aab20">&#9670;&#160;</a></span>Tpcbox_set_srid()</h2>
+<a id="gae7bb4ff955971e357d25d8566eef069b" name="gae7bb4ff955971e357d25d8566eef069b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae7bb4ff955971e357d25d8566eef069b">&#9670;&#160;</a></span>pointcloudset_transform()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Datum Tpcbox_set_srid </td>
+          <td class="memname"><a class="el" href="structSet.html">Set</a> * pointcloudset_transform </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>pcid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> with the SRID overwritten (no coordinate reprojection) @sqlfn setSRID() </p>
+<p>Return a point cloud set transformed into the schema of another pcid, which states the target SRID. </p>
+<p >Each value is transformed by <a class="el" href="pcpoint_8h_aafc50f90374d8d66e3ee9dcf7af2488c.html#aafc50f90374d8d66e3ee9dcf7af2488c" title="Return a pcpoint transformed into the schema of another pcid.">pcpoint_transf_pj</a> or <a class="el" href="pcpatch_8h_a1af8ce51d75933d5752e87568ff1e368.html#a1af8ce51d75933d5752e87568ff1e368" title="Return a pcpatch transformed into the schema of another pcid.">pcpatch_transf_pj</a>, as <a class="el" href="group__meos__geo__set__srid_ga2547167783972fd6a5c2ab701b5ac451.html#ga2547167783972fd6a5c2ab701b5ac451" title="Return a spatial set transformed to another SRID.">spatialset_transform</a> transforms each value of a spatial set </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> of pcpoints or pcpatches </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pcid</td><td>Target pcid @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__srid_ga9f6a962a178163338911b034850f4680.html#ga9f6a962a178163338911b034850f4680" title="Return a set of pcpoints or pcpatches transformed into the schema of another pcid,...">Pointcloudset_transform()</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -86,6 +86,7 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__pointcloud_8h_source.html">meos_pointcloud.h</a>&gt;</code><br />
 </div>
 <p><a href="pcpatch_8h_source.html">Go to the source code of this file.</a></p>
@@ -120,6 +121,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a1fc3229efd0622fc729e8528d85ae7ac"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcpatch_8h_a1fc3229efd0622fc729e8528d85ae7ac.html#a1fc3229efd0622fc729e8528d85ae7ac">pcpatch_to_wkb_bytes</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa, uint8_t variant, size_t *size_out)</td></tr>
 <tr class="memdesc:a1fc3229efd0622fc729e8528d85ae7ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the pgPointCloud Well-Known Binary (WKB) representation of a pcpatch in the byte order the variant states.  <a href="pcpatch_8h_a1fc3229efd0622fc729e8528d85ae7ac.html#a1fc3229efd0622fc729e8528d85ae7ac">More...</a><br /></td></tr>
 <tr class="separator:a1fc3229efd0622fc729e8528d85ae7ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1af8ce51d75933d5752e87568ff1e368"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPcpatch.html">Pcpatch</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcpatch_8h_a1af8ce51d75933d5752e87568ff1e368.html#a1af8ce51d75933d5752e87568ff1e368">pcpatch_transf_pj</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa, uint32_t pcid_to, const <a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *<a class="el" href="trgeo__distance_8txt_a935fe4a8913cc7c10dae744f8f0f357a.html#a935fe4a8913cc7c10dae744f8f0f357a">to</a>, const <a class="el" href="structLWPROJ.html">LWPROJ</a> *pj)</td></tr>
+<tr class="memdesc:a1af8ce51d75933d5752e87568ff1e368"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pcpatch transformed into the schema of another pcid.  <a href="pcpatch_8h_a1af8ce51d75933d5752e87568ff1e368.html#a1af8ce51d75933d5752e87568ff1e368">More...</a><br /></td></tr>
+<tr class="separator:a1af8ce51d75933d5752e87568ff1e368"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96e50e831b060ebaf4d8589f33dcf836"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPcpatch.html">Pcpatch</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcpatch_8h_a96e50e831b060ebaf4d8589f33dcf836.html#a96e50e831b060ebaf4d8589f33dcf836">pg_pcpatch_transform</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa, uint32_t pcid)</td></tr>
+<tr class="memdesc:a96e50e831b060ebaf4d8589f33dcf836"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pcpatch transformed into the schema of another pcid, which states the target SRID.  <a href="pcpatch_8h_a96e50e831b060ebaf4d8589f33dcf836.html#a96e50e831b060ebaf4d8589f33dcf836">More...</a><br /></td></tr>
+<tr class="separator:a96e50e831b060ebaf4d8589f33dcf836"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Internal declarations for pcpatch — binary-compatible with pgpointcloud's <a class="el" href="structSERIALIZED__PATCH.html" title="Serialized varlena layout for a pcpatch.">SERIALIZED_PATCH</a> varlena. </p>

@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Spatial reference system functions for pcpoint / pcpatch.  
+<p>Spatial reference system functions for pcpoint / pcpatch and their sets.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -84,12 +84,21 @@ Functions</h2></td></tr>
 <tr class="memitem:gad32c7a3b6ab36a19d85ed969f6660bd4"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__srid_gad32c7a3b6ab36a19d85ed969f6660bd4.html#gad32c7a3b6ab36a19d85ed969f6660bd4">Pcpatch_srid</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gad32c7a3b6ab36a19d85ed969f6660bd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of a pcpatch @sqlfn SRID()  <a href="group__mobilitydb__pointcloud__base__srid_gad32c7a3b6ab36a19d85ed969f6660bd4.html#gad32c7a3b6ab36a19d85ed969f6660bd4">More...</a><br /></td></tr>
 <tr class="separator:gad32c7a3b6ab36a19d85ed969f6660bd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga61144cc618203ac1f084ee16a450b51c"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__srid_ga61144cc618203ac1f084ee16a450b51c.html#ga61144cc618203ac1f084ee16a450b51c">Pcpatch_transform</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga61144cc618203ac1f084ee16a450b51c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pcpatch transformed into the schema of another pcid, which states the target SRID @sqlfn <a class="el" href="postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56.html#a735c1d7c7c5777ed809bb3fa651a3c56">transform()</a> @altsqlfn pcpatchTransform()  <a href="group__mobilitydb__pointcloud__base__srid_ga61144cc618203ac1f084ee16a450b51c.html#ga61144cc618203ac1f084ee16a450b51c">More...</a><br /></td></tr>
+<tr class="separator:ga61144cc618203ac1f084ee16a450b51c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9442cc711a4b4088d793d7494c4b89b4"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__srid_ga9442cc711a4b4088d793d7494c4b89b4.html#ga9442cc711a4b4088d793d7494c4b89b4">Pcpoint_srid</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga9442cc711a4b4088d793d7494c4b89b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of a pcpoint @sqlfn SRID()  <a href="group__mobilitydb__pointcloud__base__srid_ga9442cc711a4b4088d793d7494c4b89b4.html#ga9442cc711a4b4088d793d7494c4b89b4">More...</a><br /></td></tr>
 <tr class="separator:ga9442cc711a4b4088d793d7494c4b89b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1337e4626ed9a9e98af487890f58ba18"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__srid_ga1337e4626ed9a9e98af487890f58ba18.html#ga1337e4626ed9a9e98af487890f58ba18">Pcpoint_transform</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga1337e4626ed9a9e98af487890f58ba18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pcpoint transformed into the schema of another pcid, which states the target SRID @sqlfn <a class="el" href="postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56.html#a735c1d7c7c5777ed809bb3fa651a3c56">transform()</a> @altsqlfn pcpointTransform()  <a href="group__mobilitydb__pointcloud__base__srid_ga1337e4626ed9a9e98af487890f58ba18.html#ga1337e4626ed9a9e98af487890f58ba18">More...</a><br /></td></tr>
+<tr class="separator:ga1337e4626ed9a9e98af487890f58ba18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9f6a962a178163338911b034850f4680"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__srid_ga9f6a962a178163338911b034850f4680.html#ga9f6a962a178163338911b034850f4680">Pointcloudset_transform</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga9f6a962a178163338911b034850f4680"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a set of pcpoints or pcpatches transformed into the schema of another pcid, which states the target SRID @sqlfn <a class="el" href="postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56.html#a735c1d7c7c5777ed809bb3fa651a3c56">transform()</a> @altsqlfn pcpointTransform(), pcpatchTransform()  <a href="group__mobilitydb__pointcloud__base__srid_ga9f6a962a178163338911b034850f4680.html#ga9f6a962a178163338911b034850f4680">More...</a><br /></td></tr>
+<tr class="separator:ga9f6a962a178163338911b034850f4680"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Spatial reference system functions for pcpoint / pcpatch. </p>
+<p >Spatial reference system functions for pcpoint / pcpatch and their sets. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

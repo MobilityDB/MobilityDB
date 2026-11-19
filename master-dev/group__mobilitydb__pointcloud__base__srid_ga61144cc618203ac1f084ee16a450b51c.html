@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpcbox_set_srid</title>
+<title>MobilityDB: Pcpatch_transform</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__pointcloud__box__transf.html">Transformation functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__mobilitydb__pointcloud__base__srid.html">Spatial reference system functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,40 +79,32 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__transf_gad4dc5ca8e0a7fe43d164cb54160320c3.html#gad4dc5ca8e0a7fe43d164cb54160320c3">tpcbox_round</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__box__transf_gaa2d6fcc6eff7303c6b36abf11ce58bda.html#gaa2d6fcc6eff7303c6b36abf11ce58bda">tpcbox_set_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__srid_gad32c7a3b6ab36a19d85ed969f6660bd4.html#gad32c7a3b6ab36a19d85ed969f6660bd4">Pcpatch_srid</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pointcloud__base__srid_ga61144cc618203ac1f084ee16a450b51c.html#ga61144cc618203ac1f084ee16a450b51c">Pcpatch_transform</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__srid_ga9442cc711a4b4088d793d7494c4b89b4.html#ga9442cc711a4b4088d793d7494c4b89b4">Pcpoint_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__srid_ga1337e4626ed9a9e98af487890f58ba18.html#ga1337e4626ed9a9e98af487890f58ba18">Pcpoint_transform</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__srid_ga9f6a962a178163338911b034850f4680.html#ga9f6a962a178163338911b034850f4680">Pointcloudset_transform</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaa2d6fcc6eff7303c6b36abf11ce58bda" name="gaa2d6fcc6eff7303c6b36abf11ce58bda"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaa2d6fcc6eff7303c6b36abf11ce58bda">&#9670;&#160;</a></span>tpcbox_set_srid()</h2>
+<a id="ga61144cc618203ac1f084ee16a450b51c" name="ga61144cc618203ac1f084ee16a450b51c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga61144cc618203ac1f084ee16a450b51c">&#9670;&#160;</a></span>Pcpatch_transform()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTPCBox.html">TPCBox</a> * tpcbox_set_srid </td>
+          <td class="memname">Datum Pcpatch_transform </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTPCBox.html">TPCBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a tpcbox stating a reference system its schema does not state. </p>
-<p >The schema a pcid names is what holds the reference system, so where that schema states one it is not the caller's to set and the box is refused. A pcid of 0 names no schema and a schema may state none, and there the box itself is the only level there is. Coordinates are not transformed either way; to reproject, project the underlying tpcpoint and take its box. The invalid SRID is refused and any other SRID is clamped as <a class="el" href="group__meos__geo__base__srid_ga664cf0a7d6e12eccdfe64df6524a5a38.html#ga664cf0a7d6e12eccdfe64df6524a5a38" title="Set the SRID of a geometry/geography.">geo_set_srid</a> clamps it. @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box_ga665c9d0dd249c0d08b963bb0243aab20.html#ga665c9d0dd249c0d08b963bb0243aab20" title="Return a TPCBox with the SRID overwritten (no coordinate reprojection) @sqlfn setSRID()">Tpcbox_set_srid()</a> </p>
+<p>Return a pcpatch transformed into the schema of another pcid, which states the target SRID @sqlfn <a class="el" href="postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56.html#a735c1d7c7c5777ed809bb3fa651a3c56">transform()</a> @altsqlfn pcpatchTransform() </p>
 
 </div>
 </div>
