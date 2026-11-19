@@ -1,11 +1,8 @@
 -- §1.8 Metrics — three lifts.
 --
--- All three depend on adapters in h3_adapter.c (h3_cell_area_meos,
--- h3_edge_length_meos, h3_gs_great_circle_distance_meos). The unit
--- argument is parsed once at the MEOS entry point via
--- `h3_unit_from_cstring`, which IS implemented (Plan §6.4) — so
--- the unit-validation tests below succeed independently of the
--- per-instant adapters being filled in.
+-- The three call h3_cell_area_meos, h3_edge_length_meos and
+-- h3_gs_great_circle_distance_meos of th3index_metrics.c, in square
+-- metres and metres.
 
 -------------------------------------------------------------------------------
 -- cellArea(th3index) — lift_with_const

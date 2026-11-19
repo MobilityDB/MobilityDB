@@ -1,7 +1,6 @@
 -- Accessors: startValue / endValue / valueN / getValues /
 -- valueAtTimestamp on th3index. All route to the generic
--- `Temporal_*` C symbols — no h3_adapter.c dependency, so these
--- tests run today against any build that has H3=ON.
+-- `Temporal_*` C symbols.
 
 -- Test cells (h3-pg fixture):
 --   590464338553208831 = res 3 hexagon
