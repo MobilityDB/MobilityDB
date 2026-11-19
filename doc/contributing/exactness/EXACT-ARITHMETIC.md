@@ -478,10 +478,9 @@ layer holds it for every question. The phases, each a series of pull requests:
 4. **One arithmetic (EA1, EA4 to EA8, EA10, EA11).** One ladder, one pair type, one wide number, one
    search, every sign with every tier; then one arc model and one time model, each merge after a
    differential; then the double nearest a transcendental value (EA8), read by the one search;
-   then the roots of a sum of terms `(a + b t) cos(c + d t)` isolated exactly (EA11, the shared
-   layer's step that the root finder of the rigid geometry distance reads), on EA6's search and
-   EA8's sine and cosine, its
-   witness stated with the step.
+   then the near contacts of a turning body decided on the operands placed by the exact poses
+   (EA11, the shared layer's step that the walk of the rigid geometry distance reads), on EA8's
+   sine and cosine read in radians, its witness stated with the step.
 5. **The arithmetic in its own file (EA3)**, moved in the shape the merges give it, so that each
    function moves once. The signs on coordinates shifted by multiples of 360 (EA9, #3577, merged) come
    ahead of it, in `geo_funcs.c`, since the cell walks read them, and EA3 moves them with the rest.
@@ -987,24 +986,32 @@ sum about the origin decides 4269: rings joining vertices within 1e-150 of the o
 at units, at 1e150 or near the largest double cancel to an exact zero about the first vertex or
 overflow their differences, and the expansion or `DyadicWide` decides them.
 
-### EA11. The roots of a sum of terms with sines and cosines
+### EA11. The near contacts of a turning body
 
 The distance of two rigid geometries in linear motion is a function of the family of
 `trgeo_distsolve.c`, a sum of terms `(a2 t^2 + a1 t + a0) cos(w t) + (b2 t^2 + b1 t + b0) sin(w t)`
-with coefficients in doubles computed from the sines and cosines of the angles of the poses. Its
-root finder isolates each root with a proof where the function stays above its tolerance, and reads
-a value within `ftol`, `1e-14` times the square of the scale of the bodies, as zero, so a body that
-turns past a geometry within about 1e-15 is read as meeting it. EA11 decides that case exactly: a
-candidate contact is a sign of the least distance of the operands placed by the exact poses, read
-where the function's derivative changes sign, the sines and cosines of the angles in radians
-enclosed as EA8 encloses those of degrees, and the placement in the tiers of the one ladder. A gap
-the enclosure proves positive is no contact, an overlap it proves is one, and a gap of exactly zero,
-which no enclosure proves, keeps master's answer. The bounded doubles of tier 0 prove none of the
-12 measured gaps, their bound on a placed coordinate being 0.95e-15 to 1.64e-15 against gaps of
-7.8e-16 to 9.2e-16 (`~/cpwork/tg19/bd_reach.py`). It comes first, ahead of EA1 to EA10, by the
-owner's ruling of 2026-11-19 ("bugs are high priority"), since master answers 8 of the 12 wrongly;
-its witness is 5 rows of `173_trgeo_distance_walk` and the 18 passes of `graze2d.py`, judged at 50
-digits.
+with coefficients in doubles computed from the sines and cosines of the angles of the poses, and the
+walk of the closest features (`trgeo_distwalk.c`) reads its values in those doubles. Where a body
+turns past a geometry within a few units in the last place, a value at an event of the walk is
+below what the doubles separate from 0: at the change of feature where a turning square's corner
+passes a point at a least distance of 7.8e-16 to 9.2e-16 (50 digits), the cross function of the
+next edge rounds to 0, and `eIntersects` answers true on 8 of 12 such passes; with the point inside
+the square by two or three times that gap, the walk reads 1.1e-16 to 4.4e-16, and `eIntersects`
+answers false on 10 of 24. EA11 decides each run of events at a distance of at most the square root
+of the walk's tolerance on the operands placed by the exact poses, over the time from the event
+before the run to the one after it (`distevents_settle`): two convex bodies are apart where, in each
+cell of that time, an edge of one has every vertex of the other strictly outside by the Taylor bound
+with which the root finder excludes a root from a cell, and meet where a vertex of one is strictly
+inside the other or an edge of each crosses the other (`rigid_convex_apart`, `geo_trig.c`); bodies
+apart take the double nearest their distance at each event (`rigid_convex_distance`), bodies that
+meet the distance 0 at a time at which they meet, and a run the precision decides neither way keeps
+master's answer. The sines and cosines of radians are reduced by the quadrant on the enclosure of
+pi and enclosed by `wide_interval_sincos`, as EA8 encloses those of degrees. The bounded doubles of
+tier 0 prove none of the 12 gaps, their bound on a placed coordinate being 0.95e-15 to 1.64e-15. It
+comes first, ahead of EA1 to EA10, by the owner's ruling of 2026-11-19 ("bugs are high priority");
+its witness is 7 rows of `173_trgeo_distance_walk` (5 passes, 2 contacts) and the 18 passes of
+`graze2d.py` with their 24 refuters, judged at 50 digits. A pass reads its positive distance at the
+time of the walk's event, not at the time of its least distance.
 
 ### EA12. One search for every monotone sign
 
