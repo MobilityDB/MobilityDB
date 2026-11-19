@@ -102,10 +102,14 @@ them `nad_*`, `nai_*`, `shortestline_*`, `tdwithin_*`) do not call the lifting.
 `meos/src/rgeo/trgeo_distance.c` has its own `dist_temporal` (instant, sequence, sequence set),
 `dist_seq` (discrete and step interpolation, minimum over the convex parts of a static geometry with
 `tfloatseq_min_tfloatseq` and `dist2d_seq_exact_values`) and `dist_walk_seq` (segment loop, linear
-against step split into one sequence per segment). The kernel itself is exact and correct:
-`distwalk_segm` (`trgeo_distwalk.c`) follows the closest features, the root finder
-`distfun_roots` / `distfun_crossings` (`trgeo_distsolve.c`) comes with a proof for each part of the
-interval, and the design is in `meos/src/rgeo/trgeo_distance.txt`. What the cap forces is the code
+against step split into one sequence per segment). `distwalk_segm` (`trgeo_distwalk.c`) follows
+the closest features, the root finder `distfun_roots` / `distfun_crossings` (`trgeo_distsolve.c`)
+comes with a proof for each part of the interval where the function stays above its tolerance
+`ftol`, and the design is in `meos/src/rgeo/trgeo_distance.txt`. A value within `ftol`, `1e-14`
+times the square of the scale of the bodies, is read as zero, so a turning body that passes a
+geometry within about 1e-15 is read as meeting it: 8 of 12 unit squares turning past a point at a
+least distance of 7.8e-16 to 9.2e-16 answer `eIntersects` true and a distance of 0 (row TG36 of
+the plan of the temporal rigid geometries), which EA11 decides. What the cap forces is the code
 around it. Each rule of the shared walk (the bound rule, linear against step, exclusive upper bound)
 has to be kept a second time here.
 
