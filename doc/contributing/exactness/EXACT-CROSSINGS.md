@@ -600,7 +600,7 @@ diffs classified:
    `chapter5/expected/fields_along_trips.out` still holds the error this listing raised before
    `rasterValue` read bilinear values along a trip; it takes the printed answer when this step
    merges.
-   MobilityDB #3823 (open) dates each crossing of a line of pixel edges or of pixel centres at its
+   MobilityDB #3823, merged as `5fd29b0597`, dates each crossing of a line of pixel edges or of pixel centres at its
    nearest microsecond, a tie going to the even timestamp, from the exact truncation of the
    crossing over twice as many half microseconds (`raster_cross_nearest`, the offset callback of
    a grid taking a line of pixel centres), reads the value on the line itself, and dates the
