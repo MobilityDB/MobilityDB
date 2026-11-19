@@ -402,6 +402,14 @@ extern int geog_motion_dwithin_crossings_exact(const POINT2D *a0,
 extern int geog_motion_dwithin_at_wide(const POINT2D *a0, const POINT2D *a1,
   const POINT2D *b0, const POINT2D *b1, double dist, double radius, int64 D,
   int64 n);
+/* Two convex bodies in rigid motion, decided on their poses (geo_trig.c) */
+extern int rigid_convex_apart(const double *axy, int na,
+  const double *apose0, const double *apose1, const double *bxy, int nb,
+  const double *bpose0, const double *bpose1, double t0, double t1,
+  double *tmeet);
+extern double rigid_convex_distance(const double *axy, int na,
+  const double *apose0, const double *apose1, const double *bxy, int nb,
+  const double *bpose0, const double *bpose1, double t);
 extern int point_motion_contains_disc_sign(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, int *asign);

@@ -731,6 +731,131 @@ distpiece_dist(const DistPiece *p, double t)
   return p->zero ? 0.0 : fun_dist(&p->f, p->len, t);
 }
 
+/**
+ * @brief Insert the distance 0 at the time @p t into the events, in time
+ * order, where no event is at that time
+ */
+static void
+distevents_insert_zero(DistEvents *events, double t)
+{
+  int k = 0;
+  while (k < events->count && events->ev[k].t < t)
+    k++;
+  if (k < events->count && events->ev[k].t == t)
+  {
+    events->ev[k].dist = 0.0;
+    return;
+  }
+  if (events->count == events->size)
+  {
+    events->size *= 2;
+    events->ev = repalloc(events->ev, sizeof(DistEvent) * events->size);
+  }
+  memmove(&events->ev[k + 1], &events->ev[k],
+    sizeof(DistEvent) * (events->count - k));
+  events->ev[k].t = t;
+  events->ev[k].dist = 0.0;
+  events->count++;
+}
+
+/**
+ * @brief Settle the events of a walk at a distance of at most @p near on the
+ * two bodies placed by their poses, exactly
+ * @details The walk reads its functions in doubles, so that where a body
+ * turns past the other within a few units in the last place, the distance
+ * it reads may be 0 while they are apart, or a few units in the last place
+ * while they meet, at a change of feature as at an extremum or an entry.
+ * The bound @p near is the one below which the doubles of the walk do not
+ * separate a distance from 0.  A run of events at a distance of at most
+ * @p near, with the overlaps between them, is decided on the bodies placed by
+ * their poses (#rigid_convex_apart) over the time from the event before the
+ * run to the event after it.  Where the bodies are apart over that time, each
+ * event of the run takes the double nearest the distance at its time
+ * (#rigid_convex_distance), and each overlap of the run the function of the
+ * feature next to it.  Where they meet, the distance 0 at a time at which
+ * they meet joins the events.  Where the precision decides neither, the run
+ * keeps the values of the walk.
+ * @param[in,out] events Events of a walk of a segment
+ * @param[in] near Distance at or below which an event is settled
+ * @param[in] axy,na Vertices of body A in its own frame, see
+ * #distrefpoly_xy()
+ * @param[in] apose0,apose1 Poses of A at the ends of the segment, x, y and
+ * the angle, or NULL for a body at rest
+ * @param[in] bxy,nb,bpose0,bpose1 The same for body B
+ */
+void
+distevents_settle(DistEvents *events, double near, const double *axy, int na,
+  const double *apose0, const double *apose1, const double *bxy, int nb,
+  const double *bpose0, const double *bpose1)
+{
+  assert(events); assert(axy); assert(bxy); assert(near >= 0.0);
+  int i = 0;
+  while (i < events->count)
+  {
+    if (events->ev[i].dist > near)
+    {
+      i++;
+      continue;
+    }
+    int j = i;
+    while (j + 1 < events->count && events->ev[j + 1].dist <= near)
+      j++;
+    double t0 = events->ev[(i > 0) ? i - 1 : i].t;
+    double t1 = events->ev[(j + 1 < events->count) ? j + 1 : j].t;
+    double tmeet;
+    int apart = rigid_convex_apart(axy, na, apose0, apose1, bxy, nb, bpose0,
+      bpose1, t0, t1, &tmeet);
+    if (apart == 0)
+    {
+      bool zero = false;
+      for (int k = i; k <= j && ! zero; k++)
+        zero = (events->ev[k].dist == 0.0);
+      if (! zero)
+      {
+        distevents_insert_zero(events, tmeet);
+        j++;
+      }
+    }
+    else if (apart == 1)
+    {
+      double *dist = palloc(sizeof(double) * (j - i + 1));
+      bool ok = true;
+      for (int k = i; k <= j && ok; k++)
+      {
+        dist[k - i] = rigid_convex_distance(axy, na, apose0, apose1, bxy, nb,
+          bpose0, bpose1, events->ev[k].t);
+        ok = dist[k - i] > 0.0;
+      }
+      if (ok)
+      {
+        for (int k = i; k <= j; k++)
+          events->ev[k].dist = dist[k - i];
+        /* An overlap of the run takes the function of the feature before it,
+         * or after it */
+        for (int p = 0; p < events->npc; p++)
+        {
+          DistPiece *pc = &events->pc[p];
+          if (! pc->zero || pc->t0 < events->ev[i].t ||
+              pc->t1 > events->ev[j].t)
+            continue;
+          const DistPiece *next = (p > 0 && ! events->pc[p - 1].zero) ?
+            &events->pc[p - 1] : ((p + 1 < events->npc &&
+            ! events->pc[p + 1].zero) ? &events->pc[p + 1] : NULL);
+          if (next)
+          {
+            pc->zero = false;
+            pc->len = next->len;
+            distfun_copy(&pc->f, &next->f);
+          }
+        }
+      }
+      pfree(dist);
+    }
+    i = j + 1;
+  }
+  return;
+}
+
 /*****************************************************************************
  * Region of a feature
  *
@@ -1657,6 +1782,26 @@ distrefpoly_set_point(DistRefPoly *rp)
   rp->verts = palloc(sizeof(DistRefVert));
   rp->edges = NULL;
   distrefvert_set(&rp->verts[0], 0.0, 0.0);
+}
+
+/**
+ * @brief Return the vertices of a body, x, y pairs relative to its rotation
+ * center, as #distevents_settle() reads them
+ * @details A body of a temporal rigid geometry is relative to the origin of
+ * its reference geometry, so that its vertices are those of the reference
+ * geometry, exactly.
+ */
+double *
+distrefpoly_xy(const DistRefPoly *rp)
+{
+  assert(rp); assert(rp->nvert >= 1);
+  double *result = palloc(sizeof(double) * 2 * rp->nvert);
+  for (int i = 0; i < rp->nvert; i++)
+  {
+    result[2 * i] = rp->verts[i].x;
+    result[2 * i + 1] = rp->verts[i].y;
+  }
+  return result;
 }
 
 /**
