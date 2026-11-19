@@ -149,6 +149,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `h3_generated.c` and `h3_generated.h` as committed, and `extract.py --check` runs in
   check-code.yml, OPEN as MobilityDB #3833 (`90befdf17a`). Future: the error describing the
   libh3 code as h3-pg does, branch `meos/h3-errors-described`, based on #3833.
+  Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
+  other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
+  OPEN as MobilityDB #3834 (`7750336242`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
+  settings to 0 and 0). Every text input reads `SRID=` as PostGIS's `wkt_lexer_read_srid` does,
+  branch `fix/srid-text-read-as-postgis` (`91e1d7a819`), which rewrites 9141fa18a0 (MobilityDB #652),
+  the body of `srid_parse` that reads a sign or a letter as a digit, by the owner's rulings of
+  2026-11-19 ("fix the bugs", "go as you recommend"): a written `SRID=1000001` folds into 999002 as in
+  a geometry, while `setSRID` refuses `SRID_INVALID`.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
