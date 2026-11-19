@@ -574,6 +574,23 @@ diffs classified:
    walk deciding a planar meeting in continuous time whichever microsecond dates it; CGAL agrees
    on the 15001 planar crossprobe rows and 9000 meetings near a bound.
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
+   MobilityDB #3841, a draft, dates the extremum of the product of two temporal floats, which the
+   quotient also adds, at its nearest microsecond, a tie going to the even timestamp:
+   `tfloat_arithop_turnpt` reads the signs of the derivative at the ends as cross products of the
+   doubles, proves the microsecond from the offset computed with its error bound
+   (`BoundedDouble`, moved to `geo_dyadic.h`), and elsewhere searches it with
+   `linear_crossing_search`, the search of the float crossings made generic over a sign linear in
+   the offset, read here by `polynomial_sign_exact`. A judge in exact rationals agrees with all
+   30000 pairs of claude-kits `oracle-kit/home/cpwork/exact-turnpt`; on 10000 of them the formula
+   it replaces truncates 3035 extrema, drops 1213 within 1e-6 of a bound, states 184 whose
+   nearest microsecond is a bound and places 403 further off. Instructions of the product against
+   that formula called in the same process: 1.04 on random values, 1.06 over long periods, 1.07
+   over wide binades, 2.0 for extrema within 3 microseconds of a bound and 2.96 for extrema at a
+   tie, hence the draft. Left in this step: the bearing, whose north passage turns 2π into 0, a
+   jump no continuous linear result states, so dating it needs a ruling on how the result states
+   the jump; and the instant of `exp`, `ln` and `log10` where the chord departs most from the
+   curve, a transcendental offset whose nearest microsecond needs error bounds on `expm1` and
+   `log` that the vendored CORE-MATH does not provide.
 5. **The raster grid walks** of `raster_quadbin.c`: `tpointseq_raster_point_traverse` dates each
    line of the grid a trip crosses as `inst1->t + (TimestampTz) (dt * s)` and reads the value at
    the fraction `s`, a hair off the line it crosses. The nearest-pixel walk,
