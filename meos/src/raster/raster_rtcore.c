@@ -6775,14 +6775,16 @@ coveragejson_range_start_sb(stringbuffer_t *sb, int band, bool integer,
  * centre of the last, so a raster with a skew, whose pixels lie on no such
  * axes, is refused, as is a raster in no spatial reference system
  * @param[in] rast Raster
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Raster_as_coveragejson()
  */
 char *
-raster_as_coveragejson(const Raster *rast)
+raster_as_coveragejson(const Raster *rast, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(size_out, NULL);
 
   rt_raster raster = rt_raster_deserialize((void *) rast, 0);
   if (! raster)
@@ -6841,6 +6843,7 @@ raster_as_coveragejson(const Raster *rast)
   {
     stringbuffer_append(sb, "}}");
     result = stringbuffer_getstringcopy(sb);
+    *size_out = (size_t) stringbuffer_getlength(sb) + 1;
   }
   stringbuffer_destroy(sb);
   return result;
@@ -6855,14 +6858,16 @@ raster_as_coveragejson(const Raster *rast)
  * Mercator bounds of the tile's QUADBIN cell. The band is the parameter
  * `band1`, a nodata pixel written `null`
  * @param[in] rq Raquet tile
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Raquet_as_coveragejson()
  */
 char *
-raquet_as_coveragejson(const Raquet *rq)
+raquet_as_coveragejson(const Raquet *rq, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, NULL);
+  VALIDATE_NOT_NULL(rq, NULL); VALIDATE_NOT_NULL(size_out, NULL);
 
   /* The Mercator bounds of the cell, on the sphere of Web Mercator */
   const double R = 6378137.0;
@@ -6903,6 +6908,7 @@ raquet_as_coveragejson(const Raquet *rq)
   {
     stringbuffer_append(sb, "]}}}");
     result = stringbuffer_getstringcopy(sb);
+    *size_out = (size_t) stringbuffer_getlength(sb) + 1;
   }
   stringbuffer_destroy(sb);
   return result;
@@ -6951,14 +6957,18 @@ coveragejson_time_sb(stringbuffer_t *sb, TimestampTz t)
  * The values are the parameter `value`
  * @param[in] temp Temporal float, the values read along @p traj
  * @param[in] traj Temporal geometry point the values are read along
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Tfloat_as_coveragejson()
  */
 char *
-tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj)
+tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj,
+  size_t *size_out)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
+  VALIDATE_NOT_NULL(size_out, NULL);
 
   int count;
   const TInstant **insts = temporal_insts_p(temp, &count);
@@ -7044,6 +7054,8 @@ tfloat_as_coveragejson(const Temporal *temp, const Temporal *traj)
   }
   pfree(pos); pfree(insts);
   char *result = ok ? stringbuffer_getstringcopy(sb) : NULL;
+  if (result)
+    *size_out = (size_t) stringbuffer_getlength(sb) + 1;
   stringbuffer_destroy(sb);
   return result;
 }
