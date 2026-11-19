@@ -94,7 +94,7 @@ CREATE TABLE tbl_th3index(k, temp) AS
 ------------------------------------------------------------------------------
 -- Geodetic spatiotemporal box (operand for the bounding-box operator tests).
 -- A 2D geodetic STBox at SRID 4326 (geodetic = true, no Z), matching the 2D
--- geodetic bounding box of th3index. NOT the 3D tbl_geodstbox3D.
+-- geodetic bounding box of th3index. NOT the 3D tbl_geodstbox3d.
 ------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_geodstbox;

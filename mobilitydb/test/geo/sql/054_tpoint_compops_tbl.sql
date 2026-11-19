@@ -6,11 +6,11 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE g #= temp IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #= t2.temp IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp #= t2.temp IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE g #= temp IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE g #= temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_geom_point3d WHERE g #= temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geog_point3d WHERE g #= temp IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp #= t2.temp IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp #= t2.temp IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
@@ -20,11 +20,11 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE g #<> temp IS NOT NULL
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE g #<> temp IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE g #<> temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_geom_point3d WHERE g #<> temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geog_point3d WHERE g #<> temp IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
@@ -39,9 +39,9 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp %&& stbox(t2.temp) <> (minusStbox(t1.temp, stbox(t2.temp)) IS NULL);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE stbox(t2.temp) ?&& t1.temp <> t1.temp ?&& stbox(t2.temp);
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3d t2
 WHERE t1.temp ?&& stbox(timeSpan(t2.temp)) <> (atStbox(t1.temp, stbox(timeSpan(t2.temp))) IS NOT NULL);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
 WHERE t1.temp ?&& expandSpace(stbox(startValue(t2.temp), startTimestamp(t2.temp)), 1) <>
   (atStbox(t1.temp, expandSpace(stbox(startValue(t2.temp), startTimestamp(t2.temp)), 1)) IS NOT NULL);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2

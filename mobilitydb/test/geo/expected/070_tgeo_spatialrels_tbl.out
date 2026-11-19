@@ -108,19 +108,19 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eDisjoint(t1.temp,
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eDisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_geometry3d, tbl_tgeometry3d WHERE eDisjoint(g, temp);
  count 
 -------
   9997
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eDisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_geometry3d WHERE eDisjoint(temp, g);
  count 
 -------
   9997
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE eDisjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE eDisjoint(t1.temp, t2.temp);
  count 
 -------
      2
@@ -134,7 +134,7 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE eDisjoint(t1.tem
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE eDisjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2 WHERE eDisjoint(t1.temp, t2.temp);
  count 
 -------
      0
@@ -161,19 +161,19 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aDisjoint(t1.temp,
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_geometry3D t1, tbl_tgeometry3D t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_geometry3d t1, tbl_tgeometry3d t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
  count 
 -------
   3293
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_geometry3D t2 WHERE t1.k % 3 = 0 AND aDisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_geometry3d t2 WHERE t1.k % 3 = 0 AND aDisjoint(temp, g);
  count 
 -------
   3295
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aDisjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE aDisjoint(t1.temp, t2.temp);
  count 
 -------
      2
@@ -199,19 +199,19 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE aDisjoint(t1.tem
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_geography3D t1, tbl_tgeography3D t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_geography3d t1, tbl_tgeography3d t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
  count 
 -------
   3299
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_geography3D t2 WHERE t1.k % 3 = 0 AND aDisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_geography3d t2 WHERE t1.k % 3 = 0 AND aDisjoint(temp, g);
  count 
 -------
   3298
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aDisjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2 WHERE aDisjoint(t1.temp, t2.temp);
  count 
 -------
      0
@@ -240,19 +240,19 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eIntersects(t1.tem
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eIntersects(g, temp);
+SELECT COUNT(*) FROM tbl_geometry3d, tbl_tgeometry3d WHERE eIntersects(g, temp);
  count 
 -------
     19
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eIntersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_geometry3d WHERE eIntersects(temp, g);
  count 
 -------
     19
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE eIntersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE eIntersects(t1.temp, t2.temp);
  count 
 -------
    100
@@ -270,19 +270,19 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE eIntersects(t1.t
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeography3D WHERE eIntersects(g, temp);
+SELECT COUNT(*) FROM tbl_geography3d, tbl_tgeography3d WHERE eIntersects(g, temp);
  count 
 -------
     10
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE eIntersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_geography3d WHERE eIntersects(temp, g);
  count 
 -------
     10
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE eIntersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2 WHERE eIntersects(t1.temp, t2.temp);
  count 
 -------
    100
@@ -308,19 +308,19 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aIntersects(t1.tem
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE aIntersects(g, temp);
+SELECT COUNT(*) FROM tbl_geometry3d, tbl_tgeometry3d WHERE aIntersects(g, temp);
  count 
 -------
      3
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE aIntersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_geometry3d WHERE aIntersects(temp, g);
  count 
 -------
      3
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aIntersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE aIntersects(t1.temp, t2.temp);
  count 
 -------
    100
@@ -334,7 +334,7 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE aIntersects(t1.t
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aIntersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2 WHERE aIntersects(t1.temp, t2.temp);
  count 
 -------
    100
@@ -421,19 +421,19 @@ SELECT COUNT(*) FROM tbl_tgeometry_contseq t1, tbl_tgeometry t2 WHERE eDwithin(t
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_geometry3d, tbl_tgeometry3d WHERE eDwithin(g, temp, 10);
  count 
 -------
   1076
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eDwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_geometry3d WHERE eDwithin(temp, g, 10);
  count 
 -------
   1076
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE eDwithin(t1.temp, t2.temp, 10);
  count 
 -------
    100
@@ -459,19 +459,19 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE eDwithin(t1.temp
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeography3D WHERE eDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_geography3d, tbl_tgeography3d WHERE eDwithin(g, temp, 10);
  count 
 -------
     10
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE eDwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_geography3d WHERE eDwithin(temp, g, 10);
  count 
 -------
     10
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2 WHERE eDwithin(t1.temp, t2.temp, 10);
  count 
 -------
    100
@@ -519,7 +519,7 @@ SELECT COUNT(*) FROM tbl_tgeometry_contseq t1, tbl_tgeometry t2 WHERE aDwithin(t
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE aDwithin(t1.temp, t2.temp, 10);
  count 
 -------
    100
@@ -533,7 +533,7 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE aDwithin(t1.temp
 (1 row)
 
 -- 3D
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2 WHERE aDwithin(t1.temp, t2.temp, 10);
  count 
 -------
    100

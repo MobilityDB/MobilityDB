@@ -11,13 +11,13 @@ SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint;
  4326
 (1 row)
 
-SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint3D;
+SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint3d;
  srid 
 ------
     0
 (1 row)
 
-SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint3D;
+SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint3d;
  srid 
 ------
  4326
@@ -26,8 +26,8 @@ SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint3D;
 /*
 SELECT setSRID(temp,5676) FROM tbl_tgeompoint;
 SELECT setSRID(temp,4326) FROM tbl_tgeogpoint;
-SELECT setSRID(temp,5676) FROM tbl_tgeompoint3D;
-SELECT setSRID(temp,4326) FROM tbl_tgeogpoint3D;
+SELECT setSRID(temp,5676) FROM tbl_tgeompoint3d;
+SELECT setSRID(temp,4326) FROM tbl_tgeogpoint3d;
 */
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE startValue(transform(setSRID(temp, 5676), 4326)) = st_transform(st_setSRID(startValue(temp), 5676), 4326);
  count 
@@ -35,7 +35,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE startValue(transform(setSRID(temp, 567
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5676), 4326)) = st_transform(st_setSRID(startValue(temp), 5676), 4326);
+SELECT COUNT(*) FROM tbl_tgeompoint3d WHERE startValue(transform(setSRID(temp, 5676), 4326)) = st_transform(st_setSRID(startValue(temp), 5676), 4326);
  count 
 -------
    100
@@ -98,7 +98,7 @@ SELECT tgeompoint(temp) FROM tbl_tgeogpoint LIMIT 10;
  0101000020E61000000000600E98AD1CC00000D5707C284640@Sun Dec 09 01:19:00 2001 PST
 (10 rows)
 
-SELECT tgeogpoint(temp) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT tgeogpoint(temp) FROM tbl_tgeompoint3d LIMIT 10;
                                            tgeogpoint                                            
 -------------------------------------------------------------------------------------------------
  01010000A0E610000000004453E6914D40000020108B4132400000C02D06D85540@Sun Dec 31 21:13:00 2000 PST
@@ -113,7 +113,7 @@ SELECT tgeogpoint(temp) FROM tbl_tgeompoint3D LIMIT 10;
  01010000A0E610000000005404A91E52400000387402D1414000007069D9784F40@Wed Apr 25 17:13:00 2001 PDT
 (10 rows)
 
-SELECT tgeompoint(temp) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT tgeompoint(temp) FROM tbl_tgeogpoint3d LIMIT 10;
                                            tgeompoint                                            
 -------------------------------------------------------------------------------------------------
  01010000A0E6100000000024DA9682374000000012D7AD41400000B00959467A40@Fri Jun 22 03:37:00 2001 PDT
@@ -158,7 +158,7 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint LIMIT 10;
  0101000020E61000000000600E98AD1CC00000D5707C284640@Sun Dec 09 01:19:00 2001 PST
 (10 rows)
 
-SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
+SELECT temp::tgeogpoint FROM tbl_tgeompoint3d LIMIT 10;
                                               temp                                               
 -------------------------------------------------------------------------------------------------
  01010000A0E610000000004453E6914D40000020108B4132400000C02D06D85540@Sun Dec 31 21:13:00 2000 PST
@@ -173,7 +173,7 @@ SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
  01010000A0E610000000005404A91E52400000387402D1414000007069D9784F40@Wed Apr 25 17:13:00 2001 PDT
 (10 rows)
 
-SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT temp::tgeompoint FROM tbl_tgeogpoint3d LIMIT 10;
                                               temp                                               
 -------------------------------------------------------------------------------------------------
  01010000A0E6100000000024DA9682374000000012D7AD41400000B00959467A40@Fri Jun 22 03:37:00 2001 PDT
@@ -218,7 +218,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
  POINT(-7.17 44.32)@Sun Dec 09 01:19:00 2001 PST
 (10 rows)
 
-SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3d LIMIT 10;
                           astext                          
 ----------------------------------------------------------
  POINT Z (59.14 18.26 87.38)@Sun Dec 31 21:13:00 2000 PST
@@ -233,7 +233,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
  POINT Z (72.48 35.63 62.94)@Wed Apr 25 17:13:00 2001 PDT
 (10 rows)
 
-SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3d LIMIT 10;
                           astext                           
 -----------------------------------------------------------
  POINT Z (23.51 35.36 420.4)@Fri Jun 22 03:37:00 2001 PDT
@@ -285,37 +285,37 @@ SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeogpoint;
  67.815801
 (1 row)
 
-SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeompoint3d;
   round   
 ----------
  88.83362
 (1 row)
 
-SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeogpoint3d;
    round   
 -----------
  31.711561
 (1 row)
 
-SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeompoint3d;
    round   
 -----------
  97.438117
 (1 row)
 
-SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeogpoint3d;
    round   
 -----------
  71.386957
 (1 row)
 
-SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeompoint3d;
    round   
 -----------
  97.118984
 (1 row)
 
-SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeogpoint3d;
    round    
 ------------
  984.325312
@@ -333,13 +333,13 @@ SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint;
   47
 (1 row)
 
-SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint3d;
  max 
 -----
   52
 (1 row)
 
-SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3D;
+SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3d;
  max 
 -----
   52
@@ -352,7 +352,7 @@ SELECT MAX(ST_NPoints(trajectory(temp, true))) FROM tbl_tgeompoint;
   56
 (1 row)
 
-SELECT MAX(ST_NPoints(trajectory(temp, true))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_NPoints(trajectory(temp, true))) FROM tbl_tgeompoint3d;
  max 
 -----
   52
@@ -364,7 +364,7 @@ SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint;
  2517.03444
 (1 row)
 
-SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint3d;
     round    
 -------------
  2974.577302
@@ -377,7 +377,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(te
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
+SELECT COUNT(*) FROM tbl_tgeogpoint3d WHERE length(temp) = ST_Length(trajectory(temp));
  count 
 -------
    100
@@ -395,13 +395,13 @@ SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeogpoint;
  75503509.305624
 (1 row)
 
-SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeompoint3d;
     round    
 -------------
  2974.577302
 (1 row)
 
-SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeogpoint3d;
       round      
 -----------------
  75084456.388854
@@ -419,7 +419,7 @@ SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tgeompoint WHERE interp(tem
  1.606515
 (1 row)
 
-SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
+SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tgeompoint3d WHERE interp(temp) = 'Linear';
   round   
 ----------
  1.860218
@@ -434,7 +434,7 @@ AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instant
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D
+SELECT COUNT(*) FROM tbl_tgeogpoint3d
 WHERE interp(temp) = 'Linear' AND startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
  count 
@@ -448,7 +448,7 @@ SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint;
   26
 (1 row)
 
-SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
+SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3d;
  max 
 -----
   39
@@ -466,13 +466,13 @@ SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeogpoint;
  169.178471
 (1 row)
 
-SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeompoint3d;
    round    
 ------------
  180.963911
 (1 row)
 
-SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeogpoint3D;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeogpoint3d;
    round    
 ------------
  193.561739
@@ -484,7 +484,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL;
     48
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint3d WHERE azimuth(temp) IS NOT NULL;
  count 
 -------
     47
@@ -497,7 +497,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL;
     48
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint3d WHERE azimuth(temp) IS NOT NULL;
  count 
 -------
     41
@@ -515,7 +515,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE angularDifference(temp) IS NOT NULL;
     48
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE angularDifference(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint3d WHERE angularDifference(temp) IS NOT NULL;
  count 
 -------
     43
@@ -561,42 +561,42 @@ WHERE bearing(temp, g) IS NOT NULL;
 -- SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 -- WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
 -- 3D
-SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point3d t1, tbl_tgeompoint3d t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     
 ------------
  359.999319
 (1 row)
 
-SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint3D t1, tbl_geom_point3D t2
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint3d t1, tbl_geom_point3d t2
 WHERE bearing(temp, g) IS NOT NULL;
  max 
 -----
  360
 (1 row)
 
-SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
 WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
  max 
 -----
  360
 (1 row)
 
-SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point3d t1, tbl_tgeogpoint3d t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     
 ------------
  359.997568
 (1 row)
 
-SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint3D t1, tbl_geog_point3D t2
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint3d t1, tbl_geog_point3d t2
 WHERE bearing(temp, g) IS NOT NULL;
  max 
 -----
  360
 (1 row)
 
--- SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+-- SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2
 -- WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
 -------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
@@ -605,7 +605,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
     67
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE isSimple(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3d WHERE isSimple(temp);
  count 
 -------
     65
@@ -617,7 +617,7 @@ SELECT SUM(numInstants(t)) FROM tbl_tgeompoint, unnest(makeSimple(temp)) t;
  1034
 (1 row)
 
-SELECT SUM(numInstants(t)) FROM tbl_tgeompoint3D, unnest(makeSimple(temp)) t;
+SELECT SUM(numInstants(t)) FROM tbl_tgeompoint3d, unnest(makeSimple(temp)) t;
  sum  
 ------
  1028
@@ -629,7 +629,7 @@ SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint;
  t
 (1 row)
 
-SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3D;
+SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3d;
  ?column? 
 ----------
  t
@@ -667,13 +667,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geodstbox3d t2 WHERE temp != merge
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_floatspan t2 WHERE temp != merge(atElevation(temp, f), minusElevation(temp, f));
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_floatspan t2 WHERE temp != merge(atElevation(temp, f), minusElevation(temp, f));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_floatspan t2 WHERE temp != merge(atElevation(temp, f), minusElevation(temp, f));
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_floatspan t2 WHERE temp != merge(atElevation(temp, f), minusElevation(temp, f));
  count 
 -------
      0
