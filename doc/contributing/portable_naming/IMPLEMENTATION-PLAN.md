@@ -206,7 +206,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   0), by the owner's rulings of 2026-11-19 ("please uniformize and aim at removing redundancy",
   "please fix then"), the readers of `raster_reclass`, `raster_terrain` and `raster_map_algebra`,
   branch `meos/raster-pixel-type-one-reader` (`9c970e36bb`) rewrites c123cb1e00, rewrites 7128c9344a, rewrites 6685673243 and rewrites ee2b35c35d,
-  open.
+  MobilityDB #3860, open.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
