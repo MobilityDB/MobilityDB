@@ -275,7 +275,7 @@ sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
   proj-devel json-c-devel
 </programlisting>
 			<para>
-				The optional families enabled by <varname>-DALL=ON</varname> need two further packages, <varname>gdal-devel</varname> for the raster operators and <varname>h3-devel</varname> for the H3 index type.
+				The optional families enabled by <varname>-DALL=ON</varname> need GDAL (<varname>gdal-devel</varname>) for the raster operators and H3 for the H3 index type. MobilityDB supports one H3 release, 4.6.0, since the box of a cell is read on the vertices the library states and releases state different ones: build it from its tag, as <varname>.github/scripts/install-h3.sh /usr/local</varname> does, rather than installing a distribution package, which may carry another release. The configure step refuses any other release.
 			</para>
 		</sect2>
 

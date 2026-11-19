@@ -170,6 +170,65 @@ ensure_h3index_vertex(H3Index vertex)
   return false;
 }
 
+/**
+ * @brief Return the description libh3 gives an error code
+ * @details libh3 describes a code by describeH3Error from version 4.2 on.
+ * Against libh3 4.1, which has no such function, the descriptions are those
+ * libh3 4.2 gives the sixteen codes 4.1 defines, so every build states the
+ * same text.
+ * @param[in] err Code returned by a libh3 call
+ */
+static const char *
+h3_error_description(H3Error err)
+{
+#if H3_VERSION_MAJOR > 4 || (H3_VERSION_MAJOR == 4 && H3_VERSION_MINOR >= 2)
+  return describeH3Error(err);
+#else
+  static const char *H3_ERROR_DESCRIPTIONS[] = {
+    /* E_SUCCESS */ "Success",
+    /* E_FAILED */
+    "The operation failed but a more specific error is not available",
+    /* E_DOMAIN */ "Argument was outside of acceptable range",
+    /* E_LATLNG_DOMAIN */
+    "Latitude or longitude arguments were outside of acceptable range",
+    /* E_RES_DOMAIN */ "Resolution argument was outside of acceptable range",
+    /* E_CELL_INVALID */ "Cell argument was not valid",
+    /* E_DIR_EDGE_INVALID */ "Directed edge argument was not valid",
+    /* E_UNDIR_EDGE_INVALID */ "Undirected edge argument was not valid",
+    /* E_VERTEX_INVALID */ "Vertex argument was not valid",
+    /* E_PENTAGON */ "Pentagon distortion was encountered",
+    /* E_DUPLICATE_INPUT */ "Duplicate input",
+    /* E_NOT_NEIGHBORS */ "Cell arguments were not neighbors",
+    /* E_RES_MISMATCH */ "Cell arguments had incompatible resolutions",
+    /* E_MEMORY_ALLOC */ "Memory allocation failed",
+    /* E_MEMORY_BOUNDS */ "Bounds of provided memory were insufficient",
+    /* E_OPTION_INVALID */ "Mode or flags argument was not valid"};
+  return err < 16 ? H3_ERROR_DESCRIPTIONS[err] : "Invalid error code";
+#endif
+}
+
+/**
+ * @brief Ensure that a call to libh3 succeeded
+ * @details The error raised otherwise states the code and the description
+ * libh3 gives it, as h3-pg does. A failed allocation and a failure libh3
+ * does not specify are internal errors; every other code names an argument
+ * outside the domain of the call. Its siblings #ensure_h3index_cell,
+ * #ensure_h3index_directed_edge and #ensure_h3index_vertex test a value
+ * before the call.
+ * @param[in] err Code returned by the libh3 call
+ */
+bool
+ensure_h3_success(H3Error err)
+{
+  if (err == E_SUCCESS)
+    return true;
+  int code = (err == E_MEMORY_ALLOC) ? MEOS_ERR_MEMORY_ALLOC_ERROR :
+    (err == E_FAILED) ? MEOS_ERR_INTERNAL_ERROR : MEOS_ERR_INVALID_ARG_VALUE;
+  meos_error(ERROR, code, "H3 error %u: %s", (unsigned) err,
+    h3_error_description(err));
+  return false;
+}
+
 /*****************************************************************************
  * Scalar MEOS API for the shared DggsCellOps faces
  *
@@ -737,12 +796,9 @@ h3index_out(H3Index cell, size_t *size_out)
   /* Maximum 16 hex chars for 64 bits + null terminator. Delegate to
    * libh3, exactly as the h3-pg extension's output function does */
   char *buf = palloc(17);
-  H3Error err;
-  if ((err = h3ToString(cell, buf, 17)) != E_SUCCESS)
+  if (! ensure_h3_success(h3ToString(cell, buf, 17)))
   {
     pfree(buf);
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "h3 library error %u while formatting an h3index", (unsigned) err);
     return NULL;
   }
   return cstring_size(buf, size_out);

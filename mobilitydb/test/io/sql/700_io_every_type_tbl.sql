@@ -4124,9 +4124,9 @@ SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-0
 SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
   stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
 SELECT asText(atStbox(th3index(h3index '8009fffffffffff', timestamptz '2001-01-01'),
-  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194323584,73.310223685443958),(0.32561035194323584,73.310223685443958))'));
 SELECT asText(atStbox(th3index(h3index '8001fffffffffff', timestamptz '2001-01-01'),
-  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194323584,73.310223685443958),(0.32561035194323584,73.310223685443958))'));
 SELECT asText(atStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
   stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
 SELECT asText(minusStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',

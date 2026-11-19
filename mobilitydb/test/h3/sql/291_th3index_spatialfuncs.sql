@@ -241,9 +241,9 @@ SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-0
 -- A vertex belongs to one of the cells meeting there: a box holding only that
 -- vertex keeps the cell owning it and leaves out its neighbour
 SELECT asText(atStbox(th3index(h3index '8009fffffffffff', timestamptz '2001-01-01'),
-  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194323584,73.310223685443958),(0.32561035194323584,73.310223685443958))'));
 SELECT asText(atStbox(th3index(h3index '8001fffffffffff', timestamptz '2001-01-01'),
-  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194323584,73.310223685443958),(0.32561035194323584,73.310223685443958))'));
 
 -- A sequence keeps the times at which its cell meets the box, and the
 -- restriction to the complement the others
