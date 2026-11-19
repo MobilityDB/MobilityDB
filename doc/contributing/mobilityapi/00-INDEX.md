@@ -62,8 +62,9 @@ restate none of them.
    MEOS-API catalog (`catalog_gen.go`, `tools/codegen`); a query MobilityDB states no function for
    is refused naming the function.
 5. **A server is measured by its own surface.** MobilityAPI holds no object layer, so the
-   matrices that measure a binding (`tools/raster_matrix.py`, `tools/io_matrix.py`) read nothing
-   in it; MobilityAPI states its surface itself, route by route, for them to read.
+   matrices that measure a binding (`tools/raster_matrix.py`, `tools/io_matrix.py`) do not
+   measure it; MobilityAPI states its surface itself, route by route, and its own tests read that
+   surface against the catalog.
 
 ## Where things stand
 
