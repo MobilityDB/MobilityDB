@@ -6,5 +6,7 @@ var searchData=
   ['h3_5fpoint_5fcell_5frings_3',['H3_POINT_CELL_RINGS',['../meos_2src_2h3_2h3__geo_8c_a524b2951d28c1a43b6bba26d1cb41e23.html#a524b2951d28c1a43b6bba26d1cb41e23',1,'h3_geo.c']]],
   ['h3_5fresolution_5fcount_4',['H3_RESOLUTION_COUNT',['../th3index__boxops_8c_ae66bf8d7b48722a8d71f849f80730716.html#ae66bf8d7b48722a8d71f849f80730716',1,'th3index_boxops.c']]],
   ['h3indexgetdatum_5',['H3IndexGetDatum',['../h3index_8h_a31cbe6bea3979c7f0aa264b8caffe8e1.html#a31cbe6bea3979c7f0aa264b8caffe8e1',1,'h3index.h']]],
-  ['hausdorff_5fdensify_5ffraction_6',['HAUSDORFF_DENSIFY_FRACTION',['../geo__op__diff_8c_a3c9c41bed9298048c6be2fa40caf1006.html#a3c9c41bed9298048c6be2fa40caf1006',1,'geo_op_diff.c']]]
+  ['hausdorff_5fdensify_5ffraction_6',['HAUSDORFF_DENSIFY_FRACTION',['../geo__op__diff_8c_a3c9c41bed9298048c6be2fa40caf1006.html#a3c9c41bed9298048c6be2fa40caf1006',1,'geo_op_diff.c']]],
+  ['header_5fsize_7',['HEADER_SIZE',['../raquet__wkb__validity__test_8c_a49999be01380f41cc0d0f1f1406fb277.html#a49999be01380f41cc0d0f1f1406fb277',1,'raquet_wkb_validity_test.c']]],
+  ['height_5foffset_8',['HEIGHT_OFFSET',['../raquet__wkb__validity__test_8c_abeaed8ebfced11028a9e1e4521a7a1bd.html#abeaed8ebfced11028a9e1e4521a7a1bd',1,'raquet_wkb_validity_test.c']]]
 ];
