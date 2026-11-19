@@ -262,3 +262,10 @@ SELECT mergeQuerySpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@20
 SELECT mergeQuerySpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', tstzspan '[2001-01-01, 2001-01-08]');
 
 -------------------------------------------------------------------------------
+
+-- The crs of a document states WGS84, the SRID of every cell: stating it reads
+-- the value, and stating another one contradicts it, as the SRID of an EWKT or
+-- of an EWKB does
+SELECT th3indexFromMFJSON(regexp_replace(asMFJSON(
+  th3index '880326b885fffff@2012-01-01 08:00:00'), '"name":"EPSG:[0-9]+"',
+  '"name":"EPSG:3857"'));

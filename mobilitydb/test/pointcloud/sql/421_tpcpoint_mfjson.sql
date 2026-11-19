@@ -101,3 +101,16 @@ SELECT tpcpointFromMFJSON('{"type":"MovingPCPoint","values":[{"pcid":1,"pt":[1,2
   '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
 
 -------------------------------------------------------------------------------
+
+-- The crs of a document states the SRID of the schema its pcid names: stating
+-- that SRID reads the value, and stating another one contradicts it, as the
+-- SRID of an EWKT or of an EWKB does
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (105, 4326, 'none');
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
+  (105, 1, 'X', 'double'), (105, 2, 'Y', 'double');
+SELECT SRID(tpcpointFromMFJSON(asMFJSON(tpcpoint(pcpoint(105, 4.35, 50.85),
+  timestamptz '2024-01-01'))));
+SELECT tpcpointFromMFJSON(regexp_replace(asMFJSON(tpcpoint(pcpoint(105, 4.35,
+  50.85), timestamptz '2024-01-01')), '"name":"EPSG:[0-9]+"',
+  '"name":"EPSG:3857"'));
+DELETE FROM pointcloud_schemas WHERE pcid = 105;

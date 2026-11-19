@@ -1978,6 +1978,27 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
       return NULL;
     }
   }
+  /* A crs that states an SRID states the one of the value. The values of the
+   * network points, the cell indexes and the point clouds take no SRID from
+   * the crs, so a crs stating another one contradicts the value, as a WKB
+   * header does in #temporal_from_wkb_state */
+  if (result && pszName && spatial && srid != SRID_UNKNOWN)
+  {
+    int32_t srid_value = tspatial_srid(result);
+    if (srid_value != SRID_UNKNOWN && srid_value != srid)
+    {
+      json_object_put(poObj);
+      pfree(result);
+#if RGEO
+      if (gs)
+        pfree(gs);
+#endif /* RGEO */
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "The SRID of the MFJSON (%d) does not match the SRID of the %s (%d)",
+        srid, meostype_name(temptype), srid_value);
+      return NULL;
+    }
+  }
   json_object_put(poObj);
 #if RGEO
   if (temptype_orig == T_TRGEOMETRY && temptype == T_TPOSE)
