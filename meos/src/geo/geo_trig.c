@@ -1793,6 +1793,640 @@ geog_motion_dwithin_at_wide(const POINT2D *a0, const POINT2D *a1,
 }
 
 /*****************************************************************************
+ * Bodies in rigid motion
+ *
+ * A body in rigid motion in the plane, from the pose (x0, y0, th0) to the
+ * pose (x1, y1, th1), places its point u, given in its own frame, at the
+ * fraction t of the segment at C(t) + R(th(t)) u, where
+ * C(t) = C0 + (C1 - C0) t and th(t) = th0 + om t, om being the turn
+ * #posesegm_interpolate takes: the difference of the two angles, less or plus
+ * a full turn where it exceeds a half turn.  A body at rest has its point u
+ * at u.  Each position is enclosed on the intervals of exact values above,
+ * the sine and the cosine of the angle being those of radians.
+ *****************************************************************************/
+
+/* The number of cells #rigid_convex_apart reads before it answers 2 */
+#define RIGID_CELL_BUDGET 4096
+
+/** @brief The motion of a body in a segment, enclosed */
+typedef struct
+{
+  bool still;              /**< True for a body at rest */
+  WideInterval cx, cy;     /**< Position at the start, C0 */
+  WideInterval dx, dy;     /**< Displacement, C1 - C0 */
+  WideInterval th0;        /**< Angle at the start */
+  WideInterval om;         /**< Turn */
+} RigidMotion;
+
+/** @brief A vertex of a body placed at a time or over an interval of time,
+ * with its first and second derivatives in time */
+typedef struct
+{
+  WideInterval x, y;
+  WideInterval dx, dy;
+  WideInterval ddx, ddy;
+} RigidPlaced;
+
+/* The interval of the opposites of the values of an interval */
+static WideInterval
+wide_interval_neg(DyadicWideArena *ar, WideInterval a)
+{
+  WideInterval r = { dyadic_wide_neg(ar, a.hi), dyadic_wide_neg(ar, a.lo) };
+  return r;
+}
+
+/**
+ * @brief Enclose the sine and the cosine of the angle @p x in radians, an
+ * interval of width at most pi / 4, at the scale 2^-K
+ * @details The angle is reduced by the multiple k pi / 2 of a right angle
+ * that brings its middle into [pi / 4, 3 pi / 4], pi enclosed (#fix_pi), so
+ * that the reduced angle lies in [0, pi], where #wide_interval_sincos
+ * encloses its sine and cosine; the quadrant k mod 4 turns them back
+ * @return False where the width or the reduction does not allow it
+ */
+static bool
+wide_interval_sincos_rad(DyadicWideArena *ar, WideInterval x, int L, int K,
+  WideInterval *s, WideInterval *c)
+{
+  double xlo = dyadic_wide_approx(x.lo), xhi = dyadic_wide_approx(x.hi);
+  if (! isfinite(xlo) || ! isfinite(xhi) || xhi - xlo > M_PI_4 ||
+      fabs(xlo) > 1.0e6 || fabs(xhi) > 1.0e6)
+    return false;
+  int64 k = llround(0.5 * (xlo + xhi) / M_PI_2) - 1;
+  uint32_t *lo = palloc(L * sizeof(uint32_t));
+  uint32_t *hi = palloc(L * sizeof(uint32_t));
+  /* pi / 2 at the scale 2^-K is pi at the scale 2^-(K - 1) */
+  fix_pi(lo, hi, L, K - 1);
+  WideInterval half = { wide_interval_of_fixed(ar, lo, L, K, 1),
+    wide_interval_of_fixed(ar, hi, L, K, 1) };
+  pfree(lo); pfree(hi);
+  WideInterval y = wide_interval_sub(ar, x, wide_interval_mul(ar,
+    wide_interval_point(dyadic_wide_of_int64(ar, k)), half));
+  if (wide_sign(y.lo) < 0)
+    return false;
+  WideInterval sy, cy;
+  if (! wide_interval_sincos(ar, y, L, K, &sy, &cy))
+    return false;
+  int64 quadrant = ((k % 4) + 4) % 4;
+  switch (quadrant)
+  {
+    case 0: *s = sy; *c = cy; break;
+    case 1: *s = cy; *c = wide_interval_neg(ar, sy); break;
+    case 2: *s = wide_interval_neg(ar, sy); *c = wide_interval_neg(ar, cy);
+      break;
+    default: *s = wide_interval_neg(ar, cy); *c = sy; break;
+  }
+  return true;
+}
+
+/**
+ * @brief Set the motion of a body from its poses @p pose0 and @p pose1,
+ * x, y and the angle in radians, or at rest where they are NULL
+ * @details The turn is the one of #posesegm_interpolate, decided on the same
+ * difference of the angles in doubles, and read exactly: the difference of
+ * the two angles, less or plus 2 pi enclosed
+ */
+static void
+rigid_motion_set(DyadicWideArena *ar, const double *pose0,
+  const double *pose1, int L, int K, RigidMotion *m)
+{
+  WideInterval zero = wide_interval_point(dyadic_wide_of_int64(ar, 0));
+  m->still = (pose0 == NULL);
+  m->cx = m->cy = m->dx = m->dy = m->th0 = m->om = zero;
+  if (m->still)
+    return;
+  DyadicWide *x0 = dyadic_wide_of_double(ar, pose0[0]);
+  DyadicWide *y0 = dyadic_wide_of_double(ar, pose0[1]);
+  m->cx = wide_interval_point(x0);
+  m->cy = wide_interval_point(y0);
+  m->dx = wide_interval_point(dyadic_wide_sub(ar,
+    dyadic_wide_of_double(ar, pose1[0]), x0));
+  m->dy = wide_interval_point(dyadic_wide_sub(ar,
+    dyadic_wide_of_double(ar, pose1[1]), y0));
+  DyadicWide *t0 = dyadic_wide_of_double(ar, pose0[2]);
+  m->th0 = wide_interval_point(t0);
+  double delta = pose1[2] - pose0[2];
+  if (delta == 0.0)
+    return;
+  m->om = wide_interval_point(dyadic_wide_sub(ar,
+    dyadic_wide_of_double(ar, pose1[2]), t0));
+  int turn = 0;
+  if (delta > M_PI)
+    turn = -1;
+  else if (delta <= -M_PI)
+    turn = 1;
+  if (turn != 0)
+  {
+    uint32_t *lo = palloc(L * sizeof(uint32_t));
+    uint32_t *hi = palloc(L * sizeof(uint32_t));
+    /* 2 pi at the scale 2^-K is pi at the scale 2^-(K + 1) */
+    fix_pi(lo, hi, L, K + 1);
+    WideInterval twopi = { wide_interval_of_fixed(ar, lo, L, K, 1),
+      wide_interval_of_fixed(ar, hi, L, K, 1) };
+    pfree(lo); pfree(hi);
+    m->om = (turn > 0) ? wide_interval_add(ar, m->om, twopi) :
+      wide_interval_sub(ar, m->om, twopi);
+  }
+  return;
+}
+
+/**
+ * @brief Place the @p n vertices @p xy of a body moving with @p m at the
+ * times @p t, an interval, with their first and, where @p second, their
+ * second derivatives in time
+ * @return False where the angle is not enclosed (#wide_interval_sincos_rad)
+ */
+static bool
+rigid_place(DyadicWideArena *ar, const RigidMotion *m, const double *xy,
+  int n, WideInterval t, bool second, int L, int K, RigidPlaced *p)
+{
+  WideInterval s, c;
+  if (m->still)
+  {
+    s = wide_interval_point(dyadic_wide_of_int64(ar, 0));
+    c = wide_interval_point(dyadic_wide_of_int64(ar, 1));
+  }
+  else if (! wide_interval_sincos_rad(ar, wide_interval_add(ar, m->th0,
+      wide_interval_mul(ar, m->om, t)), L, K, &s, &c))
+    return false;
+  WideInterval cx = wide_interval_add(ar, m->cx, wide_interval_mul(ar, m->dx,
+    t));
+  WideInterval cy = wide_interval_add(ar, m->cy, wide_interval_mul(ar, m->dy,
+    t));
+  WideInterval om2 = wide_interval_mul(ar, m->om, m->om);
+  for (int i = 0; i < n; i++)
+  {
+    WideInterval ux = wide_interval_point(dyadic_wide_of_double(ar,
+      xy[2 * i]));
+    WideInterval uy = wide_interval_point(dyadic_wide_of_double(ar,
+      xy[2 * i + 1]));
+    /* R(th) u */
+    WideInterval rx = wide_interval_sub(ar, wide_interval_mul(ar, c, ux),
+      wide_interval_mul(ar, s, uy));
+    WideInterval ry = wide_interval_add(ar, wide_interval_mul(ar, s, ux),
+      wide_interval_mul(ar, c, uy));
+    p[i].x = wide_interval_add(ar, cx, rx);
+    p[i].y = wide_interval_add(ar, cy, ry);
+    /* C1 - C0 + om R(th + pi / 2) u */
+    p[i].dx = wide_interval_sub(ar, m->dx, wide_interval_mul(ar, m->om, ry));
+    p[i].dy = wide_interval_add(ar, m->dy, wide_interval_mul(ar, m->om, rx));
+    if (second)
+    {
+      /* - om^2 R(th) u */
+      p[i].ddx = wide_interval_neg(ar, wide_interval_mul(ar, om2, rx));
+      p[i].ddy = wide_interval_neg(ar, wide_interval_mul(ar, om2, ry));
+    }
+  }
+  return true;
+}
+
+/* The greatest magnitude of the values of an interval */
+static DyadicWide *
+wide_interval_absmax(DyadicWideArena *ar, WideInterval a)
+{
+  DyadicWide *lo = (wide_sign(a.lo) < 0) ? dyadic_wide_neg(ar, a.lo) : a.lo;
+  DyadicWide *hi = (wide_sign(a.hi) < 0) ? dyadic_wide_neg(ar, a.hi) : a.hi;
+  return (dyadic_wide_cmp(lo, hi) > 0) ? lo : hi;
+}
+
+/* The cross product a.x b.y - a.y b.x of two vectors of intervals */
+static WideInterval
+wide_interval_cross(DyadicWideArena *ar, WideInterval ax, WideInterval ay,
+  WideInterval bx, WideInterval by)
+{
+  return wide_interval_sub(ar, wide_interval_mul(ar, ax, by),
+    wide_interval_mul(ar, ay, bx));
+}
+
+/**
+ * @brief Return true where @p sign c(t), c(t) = (b - a) x (v - a) the side of
+ * the vertex @p v of the edge from @p a to @p b, is positive at every time of
+ * the cell of half width @p h
+ * @details It reads the value and the first derivative of c at the middle of
+ * the cell (@p am, @p bm, @p vm) and its second derivative over the cell
+ * (@p ac, @p bc, @p vc), with the bound by which the root finder of the
+ * temporal rigid geometries excludes a root from a cell (#distfun_roots):
+ * c(t) >= c(m) - |c'(m)| h - max |c''| h^2 / 2.  With @p h NULL it reads the
+ * value at the middle alone.
+ */
+static bool
+rigid_side_holds(DyadicWideArena *ar, const RigidPlaced *am,
+  const RigidPlaced *bm, const RigidPlaced *vm, const RigidPlaced *ac,
+  const RigidPlaced *bc, const RigidPlaced *vc, const DyadicWide *h,
+  int sign)
+{
+  WideInterval ex = wide_interval_sub(ar, bm->x, am->x);
+  WideInterval ey = wide_interval_sub(ar, bm->y, am->y);
+  WideInterval wx = wide_interval_sub(ar, vm->x, am->x);
+  WideInterval wy = wide_interval_sub(ar, vm->y, am->y);
+  WideInterval c = wide_interval_cross(ar, ex, ey, wx, wy);
+  const DyadicWide *low = (sign > 0) ? c.lo : dyadic_wide_neg(ar, c.hi);
+  if (h == NULL || wide_sign(low) <= 0)
+    return wide_sign(low) > 0;
+  /* c' = e' x w + e x w' at the middle */
+  WideInterval c1 = wide_interval_add(ar,
+    wide_interval_cross(ar, wide_interval_sub(ar, bm->dx, am->dx),
+      wide_interval_sub(ar, bm->dy, am->dy), wx, wy),
+    wide_interval_cross(ar, ex, ey, wide_interval_sub(ar, vm->dx, am->dx),
+      wide_interval_sub(ar, vm->dy, am->dy)));
+  /* c'' = e'' x w + 2 e' x w' + e x w'' over the cell */
+  WideInterval Ex = wide_interval_sub(ar, bc->x, ac->x);
+  WideInterval Ey = wide_interval_sub(ar, bc->y, ac->y);
+  WideInterval Wx = wide_interval_sub(ar, vc->x, ac->x);
+  WideInterval Wy = wide_interval_sub(ar, vc->y, ac->y);
+  WideInterval mid = wide_interval_cross(ar,
+    wide_interval_sub(ar, bc->dx, ac->dx),
+    wide_interval_sub(ar, bc->dy, ac->dy),
+    wide_interval_sub(ar, vc->dx, ac->dx),
+    wide_interval_sub(ar, vc->dy, ac->dy));
+  WideInterval c2 = wide_interval_add(ar, wide_interval_add(ar,
+    wide_interval_cross(ar, wide_interval_sub(ar, bc->ddx, ac->ddx),
+      wide_interval_sub(ar, bc->ddy, ac->ddy), Wx, Wy),
+    wide_interval_add(ar, mid, mid)),
+    wide_interval_cross(ar, Ex, Ey, wide_interval_sub(ar, vc->ddx, ac->ddx),
+      wide_interval_sub(ar, vc->ddy, ac->ddy)));
+  const DyadicWide *r1 = dyadic_wide_mul(ar, wide_interval_absmax(ar, c1), h);
+  DyadicWide *r2 = dyadic_wide_mul(ar, wide_interval_absmax(ar, c2),
+    dyadic_wide_mul(ar, h, h));
+  if (r2->sign)
+    r2->exp -= 1;
+  return wide_sign(dyadic_wide_sub(ar, dyadic_wide_sub(ar, low, r1),
+    r2)) > 0;
+}
+
+/**
+ * @brief Return the orientation of the polygon of @p n >= 3 vertices @p xy,
+ * the sign of twice its signed area, exactly
+ */
+static int
+rigid_orientation(DyadicWideArena *ar, const double *xy, int n)
+{
+  const DyadicWide *area = dyadic_wide_of_int64(ar, 0);
+  for (int i = 0; i < n; i++)
+  {
+    int j = (i + 1) % n;
+    area = dyadic_wide_add(ar, area, dyadic_wide_sub(ar,
+      dyadic_wide_mul(ar, dyadic_wide_of_double(ar, xy[2 * i]),
+        dyadic_wide_of_double(ar, xy[2 * j + 1])),
+      dyadic_wide_mul(ar, dyadic_wide_of_double(ar, xy[2 * j]),
+        dyadic_wide_of_double(ar, xy[2 * i + 1]))));
+  }
+  return wide_sign(area);
+}
+
+/**
+ * @brief Return 1 where the cell [@p t0, @p t1] proves two convex bodies apart
+ * over it, 0 where it proves them meeting at the time @p tmid inside it, 2
+ * where it proves neither, and 3 where it is too wide to be read whole, at
+ * the scale 2^-K, see #rigid_convex_apart
+ */
+static int
+rigid_cell(DyadicWideArena *ar, const double *const *xy, const int *n,
+  const RigidMotion *m, const int *outer, double t0, double tmid, double t1,
+  int L, int K)
+{
+  DyadicWide *a = dyadic_wide_of_double(ar, t0);
+  DyadicWide *b = dyadic_wide_of_double(ar, t1);
+  /* The middle and the greater of its distances to the ends, exactly */
+  DyadicWide *tm = dyadic_wide_of_double(ar, tmid);
+  const DyadicWide *h = dyadic_wide_sub(ar, tm, a);
+  const DyadicWide *h2 = dyadic_wide_sub(ar, b, tm);
+  if (dyadic_wide_cmp(h2, h) > 0)
+    h = h2;
+  WideInterval cellt = { a, b };
+  RigidPlaced *pm[2], *pc[2];
+  for (int k = 0; k < 2; k++)
+  {
+    pm[k] = palloc(sizeof(RigidPlaced) * n[k]);
+    pc[k] = palloc(sizeof(RigidPlaced) * n[k]);
+  }
+  bool ok = true, whole = true;
+  for (int k = 0; k < 2 && ok; k++)
+  {
+    ok = rigid_place(ar, &m[k], xy[k], n[k], wide_interval_point(tm), false,
+      L, K, pm[k]);
+    /* A cell over which an angle turns too far is not read whole */
+    if (ok && whole)
+      whole = rigid_place(ar, &m[k], xy[k], n[k], cellt, true, L, K, pc[k]);
+  }
+  int result = 2;
+  /* Apart: an edge of one body with every vertex of the other strictly on
+   * its outer side over the cell */
+  for (int k = 0; k < 2 && ok && whole && result == 2; k++)
+  {
+    int o = 1 - k;
+    if (n[k] < 2 || outer[k] == 0)
+      continue;
+    for (int i = 0; i < n[k] && result == 2; i++)
+    {
+      int j = (i + 1) % n[k];
+      bool all = true;
+      for (int v = 0; v < n[o] && all; v++)
+        all = rigid_side_holds(ar, &pm[k][i], &pm[k][j], &pm[o][v],
+          &pc[k][i], &pc[k][j], &pc[o][v], h, outer[k]);
+      if (all)
+        result = 1;
+    }
+  }
+  /* Meeting at the middle: a vertex of one body strictly inside the other */
+  for (int k = 0; k < 2 && ok && result == 2; k++)
+  {
+    int o = 1 - k;
+    if (n[k] < 3 || outer[k] == 0)
+      continue;
+    for (int v = 0; v < n[o] && result == 2; v++)
+    {
+      bool inside = true;
+      for (int i = 0; i < n[k] && inside; i++)
+        inside = rigid_side_holds(ar, &pm[k][i], &pm[k][(i + 1) % n[k]],
+          &pm[o][v], NULL, NULL, NULL, NULL, - outer[k]);
+      if (inside)
+        result = 0;
+    }
+  }
+  /* Or an edge of each body with the ends of the other strictly on its two
+   * sides */
+  for (int i = 0; i < n[0] && ok && n[0] >= 2 && n[1] >= 2 && result == 2;
+      i++)
+    for (int j = 0; j < n[1] && result == 2; j++)
+    {
+      const RigidPlaced *p = &pm[0][i], *q = &pm[0][(i + 1) % n[0]];
+      const RigidPlaced *r = &pm[1][j], *s = &pm[1][(j + 1) % n[1]];
+      for (int sg = -1; sg <= 1 && result == 2; sg += 2)
+        for (int sh = -1; sh <= 1 && result == 2; sh += 2)
+          if (rigid_side_holds(ar, p, q, r, NULL, NULL, NULL, NULL, sg) &&
+              rigid_side_holds(ar, p, q, s, NULL, NULL, NULL, NULL, - sg) &&
+              rigid_side_holds(ar, r, s, p, NULL, NULL, NULL, NULL, sh) &&
+              rigid_side_holds(ar, r, s, q, NULL, NULL, NULL, NULL, - sh))
+            result = 0;
+    }
+  for (int k = 0; k < 2; k++)
+  {
+    pfree(pm[k]); pfree(pc[k]);
+  }
+  if (! ok)
+    return 2;
+  return (result == 2 && ! whole) ? 3 : result;
+}
+
+/**
+ * @brief Return 1 where two convex bodies in rigid motion are apart at every
+ * time of [@p t0, @p t1], 0 where they meet at a time of it, 2 where the
+ * precision decides neither
+ * @details Each body is a point, a segment or a convex polygon of vertices
+ * @p axy, @p bxy, x, y pairs in its own frame, the first not repeated, which
+ * moves from the pose @p apose0 to @p apose1, @p bpose0 to @p bpose1, x, y
+ * and the angle in radians, as #posesegm_interpolate places it, or is at rest
+ * where its poses are NULL; the times are fractions of the segment.  Two
+ * convex bodies are apart where an edge of one has every vertex of the other
+ * strictly on its outer side, which a cell of time proves by the Taylor
+ * bound of the side at its middle (#rigid_side_holds), and meet where a
+ * vertex of one is strictly inside the other, or an edge of each has the
+ * ends of the other strictly on its two sides.  A cell that proves neither
+ * is halved, within a budget of cells, and the precision is raised where
+ * the budget is spent, as #geog_motion_dwithin_at_wide raises it.  The outer
+ * side of the edges of a polygon is decided by its orientation, exactly; a
+ * segment is read as its two edges, one each way, each with its right side
+ * as the outer one.
+ * @param[out] tmeet A time at which the bodies meet, where they do
+ */
+int
+rigid_convex_apart(const double *axy, int na, const double *apose0,
+  const double *apose1, const double *bxy, int nb, const double *bpose0,
+  const double *bpose1, double t0, double t1, double *tmeet)
+{
+  assert(axy); assert(bxy); assert(na >= 1); assert(nb >= 1);
+  assert(0.0 <= t0 && t0 <= t1 && t1 <= 1.0);
+  const double *xy[2] = { axy, bxy };
+  const int n[2] = { na, nb };
+  const double *pose0[2] = { apose0, bpose0 };
+  const double *pose1[2] = { apose1, bpose1 };
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  /* The outer side of the edges: the right of a counterclockwise polygon,
+   * the right of each edge of a segment, none for a point or a polygon that
+   * bounds no area */
+  int outer[2];
+  for (int k = 0; k < 2; k++)
+    outer[k] = (n[k] == 2) ? -1 :
+      ((n[k] >= 3) ? - rigid_orientation(ar, xy[k], n[k]) : 0);
+  int result = 2;
+  for (int K = ANGLE_FIRST_BITS; K <= 4 * ANGLE_FIRST_BITS && result == 2;
+      K *= 4)
+  {
+    int L = (2 * K + 192) / 32;
+    DyadicWideMark mark = dyadic_wide_arena_mark(ar);
+    RigidMotion m[2];
+    for (int k = 0; k < 2; k++)
+      rigid_motion_set(ar, pose0[k], pose1[k], L, K, &m[k]);
+    /* The cells on a stack, the earliest on top */
+    int size = 64, count = 1, cells = 0;
+    double *stack = palloc(sizeof(double) * 2 * size);
+    stack[0] = t0;
+    stack[1] = t1;
+    result = 1;
+    while (count > 0 && result == 1)
+    {
+      count--;
+      double a = stack[2 * count], b = stack[2 * count + 1];
+      double mid = a + 0.5 * (b - a);
+      DyadicWideMark cmark = dyadic_wide_arena_mark(ar);
+      int r = rigid_cell(ar, xy, n, m, outer, a, mid, b, L, K);
+      dyadic_wide_arena_release(ar, cmark);
+      if (r == 1)
+        continue;
+      if (r == 0)
+      {
+        *tmeet = mid;
+        result = 0;
+        break;
+      }
+      if (++cells > RIGID_CELL_BUDGET || mid <= a || mid >= b)
+      {
+        result = 2;
+        break;
+      }
+      if (count + 2 > size)
+      {
+        size *= 2;
+        stack = repalloc(stack, sizeof(double) * 2 * size);
+      }
+      stack[2 * count] = mid; stack[2 * count + 1] = b; count++;
+      stack[2 * count] = a; stack[2 * count + 1] = mid; count++;
+    }
+    pfree(stack);
+    dyadic_wide_arena_release(ar, mark);
+  }
+  dyadic_wide_arena_free(ar);
+  return result;
+}
+
+/**
+ * @brief Set bounds @p lon / @p lod and @p hin / @p hid of the square of the
+ * distance between the vertex @p v and the edge from @p a to @p b, whose
+ * square of length is @p len2, exactly
+ * @details The distance to the line of the edge, |e x w| / |e|, is no more
+ * than the distance to the edge, and the distances to its ends are no less.
+ * Where the projection of the vertex lies strictly before or after the edge,
+ * the distance is the one to the nearer end; where it lies on the edge, the
+ * one to the line.
+ */
+static void
+rigid_edge_dist2(DyadicWideArena *ar, const RigidPlaced *a,
+  const RigidPlaced *b, const RigidPlaced *v, const DyadicWide *len2,
+  const DyadicWide **lon, const DyadicWide **lod, const DyadicWide **hin,
+  const DyadicWide **hid)
+{
+  WideInterval ex = wide_interval_sub(ar, b->x, a->x);
+  WideInterval ey = wide_interval_sub(ar, b->y, a->y);
+  WideInterval wx = wide_interval_sub(ar, v->x, a->x);
+  WideInterval wy = wide_interval_sub(ar, v->y, a->y);
+  WideInterval zx = wide_interval_sub(ar, v->x, b->x);
+  WideInterval zy = wide_interval_sub(ar, v->y, b->y);
+  WideInterval cr = wide_interval_cross(ar, ex, ey, wx, wy);
+  WideInterval perp = wide_interval_mul(ar, cr, cr);
+  WideInterval s = wide_interval_add(ar, wide_interval_mul(ar, ex, wx),
+    wide_interval_mul(ar, ey, wy));
+  WideInterval wa = wide_interval_add(ar, wide_interval_mul(ar, wx, wx),
+    wide_interval_mul(ar, wy, wy));
+  WideInterval wb = wide_interval_add(ar, wide_interval_mul(ar, zx, zx),
+    wide_interval_mul(ar, zy, zy));
+  const DyadicWide *one = dyadic_wide_of_int64(ar, 1);
+  bool before = wide_sign(s.hi) < 0;
+  bool after = dyadic_wide_cmp(s.lo, len2) > 0;
+  bool within = wide_sign(s.lo) >= 0 && dyadic_wide_cmp(s.hi, len2) <= 0;
+  if (before)
+  {
+    *lon = wa.lo;
+    *lod = one;
+  }
+  else if (after)
+  {
+    *lon = wb.lo;
+    *lod = one;
+  }
+  else
+  {
+    *lon = perp.lo;
+    *lod = len2;
+  }
+  *hin = within ? perp.hi :
+    ((dyadic_wide_cmp(wa.hi, wb.hi) < 0) ? wa.hi : wb.hi);
+  *hid = within ? len2 : one;
+  return;
+}
+
+/* -1, 0 or 1 as n1 / d1 is below, equal to or above n2 / d2, d1, d2 > 0 */
+static int
+rigid_ratio_cmp(DyadicWideArena *ar, const DyadicWide *n1,
+  const DyadicWide *d1, const DyadicWide *n2, const DyadicWide *d2)
+{
+  return dyadic_wide_cmp(dyadic_wide_mul(ar, n1, d2),
+    dyadic_wide_mul(ar, n2, d1));
+}
+
+/**
+ * @brief Return the double nearest the distance at the time @p t between two
+ * convex bodies in rigid motion that do not meet then, or -1 where the
+ * precision does not decide it
+ * @details The bodies are those of #rigid_convex_apart.  The distance of two
+ * convex bodies apart is the least of the distances between a vertex of one
+ * and an edge of the other, or the distance of their vertices where both are
+ * points, each bounded by exact quotients (#rigid_edge_dist2), the least of
+ * which bound the least; the length of an edge is that of its vertices in
+ * the frame of its body, exactly.  The double nearest the square root of the
+ * lower bound is the answer where it is also the one of the upper bound, the
+ * rounding being monotone, and the precision is raised until it is.
+ */
+double
+rigid_convex_distance(const double *axy, int na, const double *apose0,
+  const double *apose1, const double *bxy, int nb, const double *bpose0,
+  const double *bpose1, double t)
+{
+  assert(axy); assert(bxy); assert(na >= 1); assert(nb >= 1);
+  const double *xy[2] = { axy, bxy };
+  const int n[2] = { na, nb };
+  const double *pose0[2] = { apose0, bpose0 };
+  const double *pose1[2] = { apose1, bpose1 };
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  double result = -1.0;
+  for (int K = ANGLE_FIRST_BITS; K <= ANGLE_LAST_BITS && result < 0.0;
+      K *= 2)
+  {
+    DyadicWideMark mark = dyadic_wide_arena_mark(ar);
+    int L = (2 * K + 192) / 32;
+    WideInterval tt = wide_interval_point(dyadic_wide_of_double(ar, t));
+    RigidPlaced *p[2];
+    bool ok = true;
+    for (int k = 0; k < 2; k++)
+    {
+      RigidMotion m;
+      rigid_motion_set(ar, pose0[k], pose1[k], L, K, &m);
+      p[k] = palloc(sizeof(RigidPlaced) * n[k]);
+      if (ok)
+        ok = rigid_place(ar, &m, xy[k], n[k], tt, false, L, K, p[k]);
+    }
+    const DyadicWide *lon = NULL, *lod = NULL, *hin = NULL, *hid = NULL;
+    for (int k = 0; k < 2 && ok; k++)
+    {
+      int o = 1 - k;
+      for (int i = 0; i < n[k] && n[k] >= 2; i++)
+      {
+        int j = (i + 1) % n[k];
+        const DyadicWide *ex = dyadic_wide_sub(ar,
+          dyadic_wide_of_double(ar, xy[k][2 * j]),
+          dyadic_wide_of_double(ar, xy[k][2 * i]));
+        const DyadicWide *ey = dyadic_wide_sub(ar,
+          dyadic_wide_of_double(ar, xy[k][2 * j + 1]),
+          dyadic_wide_of_double(ar, xy[k][2 * i + 1]));
+        const DyadicWide *len2 = dyadic_wide_add(ar,
+          dyadic_wide_mul(ar, ex, ex), dyadic_wide_mul(ar, ey, ey));
+        if (! len2->sign)
+          continue;
+        for (int v = 0; v < n[o]; v++)
+        {
+          const DyadicWide *a, *b, *c, *d;
+          rigid_edge_dist2(ar, &p[k][i], &p[k][j], &p[o][v], len2, &a, &b,
+            &c, &d);
+          if (! lon || rigid_ratio_cmp(ar, a, b, lon, lod) < 0)
+          {
+            lon = a;
+            lod = b;
+          }
+          if (! hin || rigid_ratio_cmp(ar, c, d, hin, hid) < 0)
+          {
+            hin = c;
+            hid = d;
+          }
+        }
+      }
+    }
+    if (ok && n[0] == 1 && n[1] == 1)
+    {
+      WideInterval dx = wide_interval_sub(ar, p[1][0].x, p[0][0].x);
+      WideInterval dy = wide_interval_sub(ar, p[1][0].y, p[0][0].y);
+      WideInterval d2 = wide_interval_add(ar, wide_interval_mul(ar, dx, dx),
+        wide_interval_mul(ar, dy, dy));
+      lon = d2.lo;
+      hin = d2.hi;
+      lod = hid = dyadic_wide_of_int64(ar, 1);
+    }
+    if (ok && lon && hin)
+    {
+      double lo = dyadic_wide_nearest_root(ar, lon, lod);
+      double hi = dyadic_wide_nearest_root(ar, hin, hid);
+      if (lo == hi)
+        result = lo;
+    }
+    pfree(p[0]); pfree(p[1]);
+    dyadic_wide_arena_release(ar, mark);
+  }
+  dyadic_wide_arena_free(ar);
+  return result;
+}
+
+/*****************************************************************************
  * Exported functions
  *****************************************************************************/
 
