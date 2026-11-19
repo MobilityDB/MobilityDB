@@ -338,7 +338,8 @@ def render_family_tempopclass(kind: str, sub: dict) -> str:
 
 def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
                     prefix: str, hasz: bool, hasdist: bool = True,
-                    hasever: bool = True, opnames: dict = None) -> list:
+                    hasever: bool = True, opnames: dict = None,
+                    valspan: str = None) -> list:
     """The rows of the index test of `temp` over the tables `tbl_<stem>_*` of
     one dimension, as (label, query, cast), each label opening with `prefix`:
     each member of its class `cls` against a period, a box, the box of space
@@ -358,6 +359,9 @@ def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
     table = {"tstzspan": ("span", "t"), temp: ("val", "temp")}
     if box != "tstzspan":
         table[box] = ("box", "b")
+    # A temporal number reads the span of its values from the table of spans
+    if valspan:
+        table[valspan] = ("vspan", "v")
     rows, rev, dist = [], [], []
     members = re.findall(rf"OPERATOR +(\d+) +(\S+) \({temp}, (\w+)\)( FOR ORDER BY)?",
                          cls)
@@ -365,7 +369,7 @@ def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
         if order and not hasdist:
             continue
         if order:
-            tbl, col = {box: ("box", "b"), temp: ("val", "temp")}.get(arg, ("geo", "g"))
+            tbl, col = table.get(arg, ("geo", "g"))
             dist.append((f"{prefix}|=| {arg}",
                          f"SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM "
                          f"tbl_{stem}_{tbl} t2, LATERAL (SELECT t1.temp |=| t2.{col} AS d "
@@ -378,7 +382,8 @@ def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
         tbl, col = table[arg]
         for label, t in ((f"{prefix}{op} {arg}", tbl),) + (
                 ((f"{prefix}{op} {arg} x", "xbox"),)
-                if arg == box == "stbox" and axis.get(num) not in ("t", "ever")
+                if arg == box and box in ("stbox", "tbox")
+                and axis.get(num) not in ("t", "ever")
                 else ()):
             rows.append((label, f"SELECT COUNT(*) FROM tbl_{stem}_idx t1, tbl_{stem}_{t} "
                                 f"t2 WHERE t1.temp {op} t2.{col}", "::text"))
@@ -394,15 +399,18 @@ def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
 
 
 def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
-                      box: str = "stbox") -> str:
+                      box: str = "stbox", valspan: str = None) -> str:
     """The tables of one dimension of an index test over the fixtures
     `tbl_<stem>_*`, templates/indextest_tables.sql.tmpl with the coordinates
     of the boxes of that dimension, the keyword `boxkw` of their literals and
     the fixtures `dim` states, a template filled per dimension as
     #render_tempopclass fills the class per axis; a type keyed by its period
     alone takes templates/indextest_tables_span.sql.tmpl, the same tables
-    without the boxes of space. A fixture stating `big: none` has no table of
-    many values, its instants keeping their keys"""
+    without the boxes of space, and a temporal number keyed by a tbox
+    templates/indextest_tables_tbox.sql.tmpl, its boxes of values alone and
+    the spans `valspan` of its values in place of those of space. A fixture
+    stating `big: none` has no table of many values, its instants keeping
+    their keys"""
     axes = ("x", "y", "z") if dim.get("z") else ("x", "y")
     mid = [f"({a}min(b) + {a}max(b)) / 2" for a in axes]
     o = dim["offset"]
@@ -419,8 +427,10 @@ def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
         f"  SELECT k + {o + 300}, temp FROM tbl_{stem}_seqset )",
         f"SELECT k + n * {o + 400} AS k, shiftTime(temp, n * interval '1 week') AS temp",
         f"FROM base, generate_series(0, {dim['copies']}) AS n;"])
-    text = read_template("indextest_tables.sql.tmpl" if box == "stbox"
-                         else "indextest_tables_span.sql.tmpl")
+    text = read_template({"stbox": "indextest_tables.sql.tmpl",
+                          "tbox": "indextest_tables_tbox.sql.tmpl"}.get(
+                              box, "indextest_tables_span.sql.tmpl"))
+    text = text.replace("{VSPAN}", valspan or "").replace("{D}", "1")
     for k, v in (("{FIXTURE}", fixture), ("{SRCFILTER}", dim["srcfilter"]),
                  ("{XT}", "ZT" if dim.get("z") else "XT"),
                  ("{X}", "Z" if dim.get("z") else "X"),
@@ -464,8 +474,8 @@ def _indextest_class(sub: dict, kind: str):
                                            part.get("distwith") or [], kind,
                                            mf.get("boxstrategies", []),
                                            part.get("valspan"), part.get("opnames")),
-                        bt["box"], part.get("opnames") or {})
-    return render_family_tempopclass(kind, sub), "stbox", {}
+                        bt["box"], part.get("opnames") or {}, part.get("valspan"))
+    return render_family_tempopclass(kind, sub), "stbox", {}, None
 
 
 def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
@@ -480,7 +490,7 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
     file of a subtype"""
     mf = load_manifest()
     temp, q = sub["temp"], "'"
-    cls, box, opnames = _indextest_class(sub, "rtree")
+    cls, box, opnames, valspan = _indextest_class(sub, "rtree")
     # The dimensions of the values, each with its own tables and file; one
     # dimension takes the fixtures of the type
     alldims = test.get("dims") or [{"suffix": "", "offset": test["offset"],
@@ -498,10 +508,10 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
         rows += _indextest_rows(temp, box, cls, mf, stem,
                                 f"{d['suffix']} " if len(dims) > 1 else "",
                                 bool(d.get("z")), d.get("dist", True) and classdist,
-                                d.get("ever", True), opnames)
+                                d.get("ever", True), opnames, valspan)
     # A cell bounded by great-circle arcs has a geodetic box
     boxkw = "GEODSTBOX" if sub.get("geodetic_target") else "STBOX"
-    tables = "\n".join(_indextest_tables(stem, d, test.get("srid"), boxkw, box)
+    tables = "\n".join(_indextest_tables(stem, d, test.get("srid"), boxkw, box, valspan)
                        for d, stem in zip(dims, stems))
     out = []
     for idx, using in (("rtree", "gist(temp)"), ("quadtree", "spgist(temp)"),
@@ -536,8 +546,9 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
                            subsequent_indent="-- ")
     counts = "\n".join(f"SELECT COUNT(*) FROM tbl_{stem}_idx;" for stem in stems)
     drops = "\n".join(f"DROP TABLE tbl_{stem}_{t};" for stem in stems
-                      for t in (("geo", "span", "xbox", "box") if box == "stbox"
-                                else ("span",)) + ("val", "src", "idx"))
+                      for t in {"stbox": ("geo", "span", "xbox", "box"),
+                                "tbox": ("span", "vspan", "xbox", "box")}.get(
+                                    box, ("span",)) + ("val", "src", "idx"))
     sameq = (test.get("sameq") or "").replace("{TEMP}", temp)
     scan, index = ((" AS rows_scan", " AS rows_index") if test.get("labels")
                    else ("", ""))
@@ -6342,7 +6353,7 @@ def main() -> int:
         for test, which, f in [(t, i, f) for t in mf.get("indextests", [])
                                for i, f in enumerate(indextest_files(t))]:
             p = ROOT / f
-            gen = render_indextest(test, bytemp[test["temp"]], which)
+            gen = render_indextest(test, bytemp.get(test["temp"]) or {"temp": test["temp"], "base": test["base"]}, which)
             cur = p.read_text() if p.exists() else ""
             same = gen == cur
             ok = ok and same
@@ -6844,7 +6855,7 @@ def main() -> int:
             if args.check:
                 print(f"would write {p.relative_to(ROOT)}")
                 continue
-            p.write_text(render_indextest(test, bytemp[test["temp"]], which))
+            p.write_text(render_indextest(test, bytemp.get(test["temp"]) or {"temp": test["temp"], "base": test["base"]}, which))
             print(f"wrote {p.relative_to(ROOT)}")
 
     for fam in mf.get("tempspatialrel_families", []):
