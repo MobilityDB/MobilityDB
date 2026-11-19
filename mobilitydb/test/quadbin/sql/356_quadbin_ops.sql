@@ -30,6 +30,13 @@ SELECT cellToChildren(quadbin '480fffffffffffff', 1);
 SELECT bool_and(cellToParent(c, 0) = quadbin '480fffffffffffff')
   FROM unnest(cellToChildren(quadbin '480fffffffffffff', 1)) AS c;
 
+-- Children are finer than their cell, at most at resolution 26, and number
+-- no more than the largest allocation PostgreSQL makes holds
+/* Errors */
+SELECT cellToChildren(quadbin '48a6227affffffff', 5);
+SELECT cellToChildren(quadbin '48a6227affffffff', 27);
+SELECT cellToChildren(quadbin '480fffffffffffff', 14);
+
 -- Sibling: moving right then left returns to the origin (same resolution)
 SELECT quadbinCellSibling(quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
   = quadbin '48427fffffffffff';
@@ -56,6 +63,12 @@ FROM s;
 
 /* Errors */
 SELECT gridDisk(gridDisk(quadbin '48a6227affffffff', 1), -1);
+SELECT gridDisk(quadbin '48a6227affffffff', -1);
+-- A ring of more cells than the largest allocation PostgreSQL makes: the
+-- 134258569 cells within 5793 of a cell of zoom 14, and the 8590138489 cells
+-- within 46341 of a cell of zoom 17, a count no int holds
+SELECT gridDisk(quadbinTileToCell(8192, 8192, 14), 5793);
+SELECT gridDisk(quadbinTileToCell(65535, 65535, 17), 46341);
 
 -------------------------------------------------------------------------------
 -- cellToCover / coverCells
