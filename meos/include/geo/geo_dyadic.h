@@ -978,71 +978,109 @@ nearest_bits_beyond_sign(int s, uint64 bits)
   return s > 0 || (s == 0 && (bits & 1) != 0);
 }
 
+/* The side of a monotone search over keys (#monotone_search): 1 where the
+ * answer lies above the key, 0 where it is the key or lies below it, 2 where
+ * the side cannot tell */
+typedef int (*MonotoneSide)(uint64 key, void *arg);
+
 /**
- * @brief Find the bit pattern of the double nearest a nonnegative value that
- * @p side places against midpoints, a tie going to the even double, returning
- * false where a side it asks cannot tell or its budget runs out
- * @details The answer is the smallest bit pattern whose upper midpoint the
- * value does not pass, infinity standing above the largest double, whose
- * upper midpoint is `2^1024 - 2^970`. A gallop from the candidate
- * @p bits brackets it, its first two steps of one double, so that a
- * candidate a neighbour or two from the answer asks no more sides than a
- * walk, the steps then doubling, and halving the bracket finds it; a candidate whose own side cannot tell is read from its lower
- * neighbour, which places the value below it or decides nothing. An exact
+ * @brief Find the smallest key above @p lo and at most @p hi that @p side
+ * does not place below the answer, by halving the bracket, returning false
+ * where a side it asks cannot tell or the budget runs out
+ * @details The halving of #monotone_search, read alone by a search that has
+ * its bracket and no candidate. The key @p lo lies below the answer and
+ * @p hi does not; neither is asked
+ * @param[in] lo,hi Bracket, @p lo below @p hi
+ * @param[in] side,arg The side and its argument
+ * @param[in] budget Largest number of sides asked, 0 for no limit
+ * @param[in,out] asked Number of sides asked so far
+ * @param[out] result The answer where the search answers
+ */
+static pg_attribute_always_inline bool
+monotone_halve(uint64 lo, uint64 hi, MonotoneSide side, void *arg,
+  int budget, int *asked, uint64 *result)
+{
+  while (hi - lo > 1)
+  {
+    uint64 mid = lo + (hi - lo) / 2;
+    if (budget > 0 && (*asked)++ >= budget)
+      return false;
+    int beyond = side(mid, arg);
+    if (beyond == 2)
+      return false;
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  *result = hi;
+  return true;
+}
+
+/**
+ * @brief Find the smallest key that @p side does not place below the
+ * answer, returning false where a side it asks cannot tell or its budget
+ * runs out
+ * @details The one search of the engine for an answer that a monotone side
+ * places among keys: the bit patterns of the doubles (#nearest_double_search)
+ * and the microseconds of a period. A gallop from the candidate @p key
+ * brackets the answer, its first two steps of one key, so that a candidate a
+ * neighbour or two from the answer asks no more sides than a walk, the steps
+ * then doubling, and halving the bracket finds it (#monotone_halve); a
+ * candidate whose own side
+ * cannot tell is read from its lower neighbour, which places the answer
+ * below it or decides nothing. The key @p max_key is known not to lie below
+ * the answer and is never asked; the key 0 is asked as every other. An exact
  * side never answers 2 and a budget of 0 sets no limit, so the search always
  * answers; a side of a filter on doubles answers 2 where it cannot tell, and
  * its budget bounds the sides it is asked, so that the exact search behind it
  * answers what the filter cannot
- * @param[in] bits Bit pattern of the candidate, at most infinity's
+ * @param[in] key Candidate, at most @p max_key
+ * @param[in] max_key Largest key, not below the answer
  * @param[in] side,arg The side and its argument
  * @param[in] budget Largest number of sides asked, 0 for no limit
- * @param[out] result The bit pattern of the answer where the search answers
+ * @param[out] result The answer where the search answers
  */
-static inline bool
-nearest_double_search(uint64 bits, NearestBitsSide side,
-  void *arg, int budget, uint64 *result)
+static pg_attribute_always_inline bool
+monotone_search(uint64 key, uint64 max_key, MonotoneSide side, void *arg,
+  int budget, uint64 *result)
 {
   int asked = 0;
-#define NEAREST_ASK(b, res) \
+#define MONOTONE_ASK(k, res) \
   do { \
     if (budget > 0 && asked++ >= budget) \
       return false; \
-    int s_ = side((b), arg); \
-    if (s_ == 2) \
-      (res) = 2; \
-    else \
-      (res) = nearest_bits_beyond_sign(s_, (b)) ? 1 : 0; \
+    (res) = side((k), arg); \
   } while (0)
-  const uint64 max_bits = NEAREST_INF_BITS;
   uint64 lo, hi, step = 1;
   int beyond, moves = 0;
-  if (bits > max_bits)
-    bits = max_bits;
-  if (bits == max_bits)
+  if (key > max_key)
+    key = max_key;
+  if (key == max_key)
     beyond = 0;
   else
-    NEAREST_ASK(bits, beyond);
+    MONOTONE_ASK(key, beyond);
   if (beyond == 2)
   {
-    /* The candidate cannot tell: below its lower midpoint the answer is at
-     * most its lower neighbour, otherwise nothing is decided */
-    if (bits == 0)
+    /* The candidate cannot tell: below its lower neighbour the answer is at
+     * most that neighbour, otherwise nothing is decided */
+    if (key == 0)
       return false;
-    NEAREST_ASK(bits - 1, beyond);
+    MONOTONE_ASK(key - 1, beyond);
     if (beyond != 0)
       return false;
-    bits -= 1;
+    key -= 1;
   }
   if (beyond == 1)
   {
-    /* The answer is above: lo is beyond, hi is not */
-    lo = bits;
+    /* The answer is above: lo is below it, hi is not */
+    lo = key;
     while (true)
     {
-      hi = (lo < max_bits - step) ? lo + step : max_bits;
-      if (hi == max_bits)
+      hi = (lo < max_key - step) ? lo + step : max_key;
+      if (hi == max_key)
         break;
-      NEAREST_ASK(hi, beyond);
+      MONOTONE_ASK(hi, beyond);
       if (beyond == 2)
         return false;
       if (! beyond)
@@ -1054,8 +1092,9 @@ nearest_double_search(uint64 bits, NearestBitsSide side,
   }
   else
   {
-    /* The answer is at or below: hi is not beyond, lo is beyond or below 0 */
-    hi = bits;
+    /* The answer is the key or below it: hi is not below it, lo is below it
+     * or below 0 */
+    hi = key;
     while (true)
     {
       if (hi == 0)
@@ -1064,7 +1103,7 @@ nearest_double_search(uint64 bits, NearestBitsSide side,
         return true;
       }
       lo = (hi > step) ? hi - step : 0;
-      NEAREST_ASK(lo, beyond);
+      MONOTONE_ASK(lo, beyond);
       if (beyond == 2)
         return false;
       if (beyond)
@@ -1079,20 +1118,57 @@ nearest_double_search(uint64 bits, NearestBitsSide side,
         step *= 2;
     }
   }
-  while (hi - lo > 1)
-  {
-    uint64 mid = lo + (hi - lo) / 2;
-    NEAREST_ASK(mid, beyond);
-    if (beyond == 2)
-      return false;
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef NEAREST_ASK
-  *result = hi;
-  return true;
+#undef MONOTONE_ASK
+  return monotone_halve(lo, hi, side, arg, budget, &asked, result);
+}
+
+/* The side of a search for the nearest double and its argument, read by
+ * #nearest_bits_beyond */
+typedef struct
+{
+  NearestBitsSide side;   /**< Sign of the value against a midpoint */
+  void *arg;              /**< Argument of the side */
+} NearestBeyond;
+
+/**
+ * @brief Return 1 where the value lies beyond the upper midpoint of the
+ * double of bit pattern @p bits, a tie going to the even double, 0 where it
+ * does not and 2 where the side cannot tell: the side #nearest_double_search
+ * gives #monotone_search
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static pg_attribute_always_inline int
+/* cppcheck-suppress constParameterCallback */
+nearest_bits_beyond(uint64 bits, void *arg)
+{
+  const NearestBeyond *n = (const NearestBeyond *) arg;
+  int s = n->side(bits, n->arg);
+  if (s == 2)
+    return 2;
+  return nearest_bits_beyond_sign(s, bits) ? 1 : 0;
+}
+
+/**
+ * @brief Find the bit pattern of the double nearest a nonnegative value that
+ * @p side places against midpoints, a tie going to the even double, returning
+ * false where a side it asks cannot tell or its budget runs out
+ * @details The answer is the smallest bit pattern whose upper midpoint the
+ * value does not pass, infinity standing above the largest double, whose
+ * upper midpoint is `2^1024 - 2^970`, found by #monotone_search over the bit
+ * patterns
+ * @param[in] bits Bit pattern of the candidate, at most infinity's
+ * @param[in] side,arg The side and its argument
+ * @param[in] budget Largest number of sides asked, 0 for no limit
+ * @param[out] result The bit pattern of the answer where the search answers
+ */
+static inline bool
+nearest_double_search(uint64 bits, NearestBitsSide side,
+  void *arg, int budget, uint64 *result)
+{
+  NearestBeyond n = {side, arg};
+  return monotone_search(bits, NEAREST_INF_BITS, &nearest_bits_beyond, &n,
+    budget, result);
 }
 
 /* A value 0 of an arena with room for @p n limbs */

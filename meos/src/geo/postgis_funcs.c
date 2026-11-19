@@ -10754,56 +10754,50 @@ mec_value(uint64 key)
   return d;
 }
 
+/* The circle and the coordinate a search reads, the keys counted from that
+ * of the most negative double, for #mec_nearest_beyond */
+typedef struct
+{
+  MecExact *e;     /**< Exact sums of the circle */
+  int which;       /**< Coordinate of the centre, or the radius */
+  uint64 minkey;   /**< Key of -DBL_MAX */
+} MecSearch;
+
+/**
+ * @brief Return 1 where the coordinate lies beyond the upper midpoint of the
+ * double of a key, 0 where it does not: the side #mec_nearest gives
+ * #monotone_search, the most negative double read as beyond
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+mec_nearest_beyond(uint64 key, void *arg)
+{
+  const MecSearch *ms = (const MecSearch *) arg;
+  if (key == 0)
+    return 1;
+  return mec_beyond(ms->e, ms->which, mec_value(ms->minkey + key)) ? 1 : 0;
+}
+
 /**
  * @brief Return the double nearest a coordinate of the centre or the radius
  * of the circle of #MecExact, a tie going to the even one
- * @details The answer is the smallest double that is not beyond (#mec_beyond):
- * gallop from the candidate to bracket it, then halve the bracket. A zero is
- * the positive one. Mirrors #point_segment_distance_offset_exact
+ * @details The answer is the smallest double that is not beyond (#mec_beyond),
+ * found by the one search (#monotone_search) over the keys of the signed
+ * doubles (#mec_key). A zero is the positive one
  */
 static double
 mec_nearest(MecExact *e, int which, double cand)
 {
   const uint64 maxkey = mec_key(DBL_MAX), minkey = mec_key(-DBL_MAX);
-  uint64 lo, hi, step = 1;
   if (! isfinite(cand))
     cand = 0.0;
-  uint64 key = mec_key(cand);
-  if (mec_beyond(e, which, cand))
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    lo = key;
-    while (true)
-    {
-      hi = (step > maxkey - lo) ? maxkey : lo + step;
-      if (hi == maxkey || ! mec_beyond(e, which, mec_value(hi)))
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond */
-    hi = key;
-    while (true)
-    {
-      lo = (step > hi - minkey) ? minkey : hi - step;
-      if (lo == minkey || mec_beyond(e, which, mec_value(lo)))
-        break;
-      hi = lo;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    uint64 mid = lo + (hi - lo) / 2;
-    if (mec_beyond(e, which, mec_value(mid)))
-      lo = mid;
-    else
-      hi = mid;
-  }
-  double result = mec_value(hi);
+  MecSearch ms = {e, which, minkey};
+  uint64 key = 0;
+  (void) monotone_search(mec_key(cand) - minkey, maxkey - minkey,
+    &mec_nearest_beyond, &ms, 0, &key);
+  double result = mec_value(minkey + key);
   return (result == 0.0) ? 0.0 : result;
 }
 
