@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>MEOS lifting for metric functions, plus the static unit-string dispatcher and libh3-wrapping adapters that back them.  
+<p>MEOS lifting for metric functions, and the libh3-wrapping functions that back them.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;h3api.h&gt;</code><br />
@@ -118,8 +118,8 @@ Functions</h2></td></tr>
 <tr class="separator:ae34c58d80b12f625b0a4f3c2a6b79481"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >MEOS lifting for metric functions, plus the static unit-string dispatcher and libh3-wrapping adapters that back them. </p>
-<p >All three entries take a text <code>unit</code> argument. The unit is validated once at the MEOS entry point (via <code>h3_unit_from_cstring</code> defined below) and then carried through the lifting machinery as an <code>Int32</code> datum holding the <code>H3Unit</code> enum — saves parsing the string at every instant. </p>
+<div class="textblock"><p >MEOS lifting for metric functions, and the libh3-wrapping functions that back them. </p>
+<p >The area of a cell answers square metres, the length of an edge and the great-circle distance metres. The lifting machinery carries the unit as an <code>Int32</code> datum holding the <code>H3Unit</code> enum. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
