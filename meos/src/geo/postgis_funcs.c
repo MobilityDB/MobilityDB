@@ -533,6 +533,7 @@ geo_mem_size(const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_base_constructor
  * @brief Return a 2D geometry point constructed from the arguments
+ * @csqlfn #Geom_makepoint()
  */
 GSERIALIZED *
 geompoint_make2d(int32_t srid, double x, double y)
@@ -568,6 +569,7 @@ geogpoint_make2d(int32_t srid, double x, double y)
 /**
  * @ingroup meos_geo_base_constructor
  * @brief Return a 3DZ geometry point constructed from the arguments
+ * @csqlfn #Geom_makepoint3dz()
  */
 GSERIALIZED *
 geompoint_make3dz(int32_t srid, double x, double y, double z)
@@ -5359,8 +5361,11 @@ geo_points(const GSERIALIZED *gs)
 GSERIALIZED **
 geo_pointarr(const GSERIALIZED *gs, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(gs, NULL);
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   LWMPOINT *res = lwmpoint_from_lwgeom(lwgeom);
@@ -9394,9 +9399,13 @@ geom_in(const char *str, int32 typmod)
     }
     if (srs)
     {
-      srid = SRID_DEFAULT; // TODO
-      // srid = GetSRIDCacheBySRS(fcinfo, srs);
+      srid = srs_srid(srs);
       lwfree(srs);
+      if (srid == SRID_INVALID)
+      {
+        lwgeom_free(lwgeom);
+        return NULL;
+      }
       lwgeom_set_srid(lwgeom, srid);
     }
     result = geo_serialize(lwgeom);
@@ -9699,6 +9708,42 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 }
 
 /**
+ * @brief Return the SRID of a coordinate reference system named as the GeoJSON
+ * and MF-JSON representations name it
+ * @details The name is the short one, as in `EPSG:3857`, or the OGC URN, as in
+ * `urn:ogc:def:crs:EPSG::3857`, the two names #srid_srs writes, or an OGC name
+ * of the WGS84 longitude and latitude, as in `urn:ogc:def:crs:OGC:1.3:CRS84`
+ * @param[in] srs Name of the coordinate reference system
+ * @return The SRID, or #SRID_INVALID with an error where the name is none of
+ * these
+ */
+int32_t
+srs_srid(const char *srs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(srs, SRID_INVALID);
+  int32_t srid = 0;
+  int len = 0;
+  /* The short name, then the OGC URN without and with a version of the code */
+  if ((sscanf(srs, "EPSG:%d%n", &srid, &len) == 1 && srs[len] == '\0') ||
+      (sscanf(srs, "urn:ogc:def:crs:EPSG::%d%n", &srid, &len) == 1 &&
+        srs[len] == '\0') ||
+      (sscanf(srs, "urn:ogc:def:crs:EPSG:%*[0-9.]:%d%n", &srid, &len) == 1 &&
+        srs[len] == '\0'))
+  {
+    if (srid > 0)
+      return srid;
+  }
+  else if (strcmp(srs, "urn:ogc:def:crs:OGC:1.3:CRS84") == 0 ||
+      strcmp(srs, "urn:ogc:def:crs:OGC::CRS84") == 0 ||
+      strcmp(srs, "OGC:CRS84") == 0)
+    return WGS84_SRID;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown coordinate reference system: %s", srs);
+  return SRID_INVALID;
+}
+
+/**
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry/geography from its GeoJSON representation
  * @param[in] geojson GeoJSON string
@@ -9723,12 +9768,18 @@ geo_from_geojson(const char *geojson)
     return NULL;
   }
 
-  // if (srs)
-  // {
-    // srid = GetSRIDCacheBySRS(fcinfo, srs);
+  /* The SRID the coordinate reference system names, WGS84 where it names
+   * none, as the GeoJSON specification states */
+  if (srs)
+  {
+    srid = srs_srid(srs);
     lwfree(srs);
-  // }
-
+    if (srid == SRID_INVALID)
+    {
+      lwgeom_free(geom);
+      return NULL;
+    }
+  }
   lwgeom_set_srid(geom, srid);
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
@@ -9774,7 +9825,6 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
    */
   int output_bbox = (option & 1) ? LW_TRUE : LW_FALSE;
 
-#if MEOS
   /* Name the coordinate reference system the options ask for, as PostGIS
    * function LWGEOM_asGeoJson names it, where the caller names none */
   if (! srs)
@@ -9790,7 +9840,6 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
         return NULL;
     }
   }
-#endif /* MEOS */
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *txt = lwgeom_to_geojson(geom, srs, precision, output_bbox);

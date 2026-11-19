@@ -26,13 +26,13 @@ CREATE TEMP TABLE tbl_tpose2d_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tpose2d
   UNION ALL
-  SELECT k + 100, inst FROM tbl_tpose2d_inst
+  SELECT k + 100, temp FROM tbl_tpose2d_inst
   UNION ALL
-  SELECT k + 200, seq FROM tbl_tpose2d_discseq
+  SELECT k + 200, temp FROM tbl_tpose2d_discseq
   UNION ALL
-  SELECT k + 300, seq FROM tbl_tpose2d_seq
+  SELECT k + 300, temp FROM tbl_tpose2d_contseq
   UNION ALL
-  SELECT k + 400, ss FROM tbl_tpose2d_seqset )
+  SELECT k + 400, temp FROM tbl_tpose2d_seqset )
 SELECT k + n * 500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 9) AS n;
 ANALYZE tbl_tpose2d_idx;
@@ -129,13 +129,13 @@ CREATE TEMP TABLE tbl_tpose3d_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tpose3d
   UNION ALL
-  SELECT k + 100, inst FROM tbl_tpose3d_inst
+  SELECT k + 100, temp FROM tbl_tpose3d_inst
   UNION ALL
-  SELECT k + 200, seq FROM tbl_tpose3d_discseq
+  SELECT k + 200, temp FROM tbl_tpose3d_discseq
   UNION ALL
-  SELECT k + 300, seq FROM tbl_tpose3d_seq
+  SELECT k + 300, temp FROM tbl_tpose3d_contseq
   UNION ALL
-  SELECT k + 400, ss FROM tbl_tpose3d_seqset )
+  SELECT k + 400, temp FROM tbl_tpose3d_seqset )
 SELECT k + n * 500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 9) AS n;
 ANALYZE tbl_tpose3d_idx;

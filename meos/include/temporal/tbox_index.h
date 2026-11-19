@@ -149,6 +149,7 @@ extern qsort_comparator tbox_dim_cmp(TboxDim dim);
 extern int tbox_level_cmp(const TBox *centroid, const TBox *query, int level);
 extern void tbox_adjust(void *bbox1, void *bbox2);
 extern double tbox_size(const void *bbox);
+extern double tbox_query_size(const void *bbox, const void *query);
 extern double tbox_penalty(void *bbox1, void *bbox2);
 
 /*****************************************************************************/

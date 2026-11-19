@@ -1121,6 +1121,44 @@ tgeo_merge_each_n_stboxes(const Temporal *temp, int elem_count, int *count)
       &stbox_adjust, &stbox_size);
   return result;
 }
+
+/*****************************************************************************
+ * merge_query_stboxes function
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_geo_bbox_split
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal geo into those a query of the extents of a query box
+ * is expected to read least
+ * @details The query twin of #tgeo_merge_n_stboxes, by #bbox_merge_query:
+ * the widths of the query box are the extents of the query, its position is
+ * not read, and a dimension it lacks restricts no query
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Tgeo_merge_query_stboxes()
+ */
+STBox *
+tgeo_merge_query_stboxes(const Temporal *temp, const STBox *query,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_valid_tspatial_stbox(temp, query))
+    return NULL;
+
+  STBox *result = tgeo_stboxes(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_STBOX, result, *count, query, &stbox_adjust,
+      &stbox_query_size);
+  return result;
+}
 /* GENERATED-BOXSPLIT-END tgeo */
 
 /*****************************************************************************
@@ -1323,9 +1361,10 @@ STBox *
 geo_stboxes(const GSERIALIZED *gs, int *count)
 {
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_mline_type(gs))
     return NULL;
   /* An empty geometry has no point, so it has no box */
@@ -1578,9 +1617,10 @@ STBox *
 geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)
 {
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_positive(box_count) || ! ensure_mline_type(gs))
     return NULL;
   /* An empty geometry has no point, so it has no box */
@@ -1666,6 +1706,41 @@ geo_merge_each_n_stboxes(const GSERIALIZED *gs, int elem_count, int *count)
       &stbox_adjust, &stbox_size);
   return result;
 }
+
+/**
+ * @ingroup meos_geo_base_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging the
+ * boxes of the consecutive segments of a (multi)line into those a query of
+ * the extents of a query box is expected to read least
+ * @details The query twin of #geo_merge_n_stboxes, by #bbox_merge_query: the
+ * widths of the query box are the extents of the query, its position is not
+ * read, and a dimension it lacks restricts no query
+ * @param[in] gs (multi)line
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #Geo_merge_query_stboxes()
+ */
+STBox *
+geo_merge_query_stboxes(const GSERIALIZED *gs, const STBox *query, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_mline_type(gs))
+    return NULL;
+  if (MEOS_FLAGS_GET_X(query->flags) && ! ensure_valid_stbox_geo(query, gs))
+    return NULL;
+
+  STBox *result = geo_stboxes(gs, count);
+  if (result)
+    *count = bbox_merge_query(T_STBOX, result, *count, query, &stbox_adjust,
+      &stbox_query_size);
+  return result;
+}
+
 
 /*****************************************************************************/
 
@@ -1838,9 +1913,10 @@ STBox *
 geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
 {
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_positive(elems_per_box) || ! ensure_mline_type(gs))
     return NULL;
   /* An empty geometry has no point, so it has no box */

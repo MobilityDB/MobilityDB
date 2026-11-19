@@ -3,6 +3,12 @@
 -- over zoom levels 1 to 8, so tiles of one zoom partition the plane while
 -- tiles of different zooms overlap.
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_raquet AS TABLE tbl_raquet;
+ANALYZE tbl_raquet;
+
 SET timezone = 'UTC';
 SET datestyle = 'ISO, MDY';
 

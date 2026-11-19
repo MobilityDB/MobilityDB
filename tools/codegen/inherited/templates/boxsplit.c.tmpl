@@ -617,3 +617,41 @@ static int
       &{MADJUST}, &{MSIZE});
   return result;
 }
+
+/*****************************************************************************
+ * merge_query_{BOXES} function
+ *****************************************************************************/
+
+/**
+ * @ingroup {GROUP}
+ * @brief Return an array of {NOUNBOXES} obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * {NOUN} into those a query of the extents of a query box
+ * is expected to read least
+ * @details The query twin of #{PFX}_merge_n_{BOXES}, by #bbox_merge_query:
+ * the widths of the query box are the extents of the query, its position is
+ * not read, and a dimension it lacks restricts no query
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ * @errval NULL
+ * @csqlfn #{CSTEM}_merge_query_{BOXES}()
+ */
+{CTYPE} *
+{PFX}_merge_query_{BOXES}(const Temporal *temp, const {CTYPE} *query,
+  int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  {VALIDATE}(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! {QVALID}(temp, query))
+    return NULL;
+
+  {CTYPE} *result = {PFX}_{BOXES}(temp, count);
+  if (result)
+    *count = bbox_merge_query({MBOXTYPE}, result, *count, query, &{MADJUST},
+      &{MQSIZE});
+  return result;
+}

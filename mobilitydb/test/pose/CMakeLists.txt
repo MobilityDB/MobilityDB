@@ -25,4 +25,8 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-mobilitydb_add_tests(SETUP load_pose)
+# This test registers and removes GeoPose frames, which the other pose tests
+# read
+mobilitydb_add_tests(SETUP load_pose
+  ALONE
+    107_geopose_frames)

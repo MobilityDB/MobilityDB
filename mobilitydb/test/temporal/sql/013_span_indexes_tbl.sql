@@ -1,3 +1,10 @@
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tstzspan_big AS TABLE tbl_tstzspan_big;
+CREATE TEMP TABLE tbl_tstzspanset_big AS TABLE tbl_tstzspanset_big;
+ANALYZE tbl_tstzspan_big, tbl_tstzspanset_big;
+
 -------------------------------------------------------------------------------
 -- File span_ops.c
 -- Tests of operators for span types.

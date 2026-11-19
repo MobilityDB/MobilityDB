@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v1.0.0 |
+| Version | v1.1.0 |
 | Scope | The data MEOS keeps between two calls, the thread it belongs to, and what frees it |
 | Reference | `meos/src/temporal/meos.c` (`meos_initialize`, `meos_finalize`), `meos/include/meos_tls.h` (`MEOS_TLS`) |
 
@@ -70,7 +70,7 @@ before it ends, `meos_finalize`.
 | Current time | `cache_ts`, `cache_tm`, ... (`pgtypes/utils/datetime.c`) | the current instant broken down under the current time zone | the keywords of the current instant and of `today`, `tomorrow`, `yesterday` | the current time zone is set or freed | holds no memory |
 | Default collation | `default_locale` (`pgtypes/utils/pg_locale.c`) | the locale of the default collation, `C.UTF-8` | `meos_initialize_collation` | — | `meos_finalize_collation` |
 | Other collations | `CollationCache` (`pgtypes/utils/pg_locale.c`) | the locale of each collation other than the default | a collation other than the default, which no function of MEOS passes | — | — |
-| Spatial reference systems | `MEOS_PROJ_CACHE`, `MEOS_PROJ_CACHE_PATH` (`meos/src/geo/tspatial_transform_meos.c`) | the PROJ transformations and the systems read from `spatial_ref_sys.csv`, and the path of that file | a transformation | the next transformation after `meos_set_spatial_ref_sys_csv` names another file | `meos_finalize_projsrs` |
+| Spatial reference systems | `MEOS_PROJ_CACHE`, `MEOS_PROJ_CACHE_PATH` (`meos/src/geo/tspatial_transform_meos.c`, `meos/src/geo/tspatial_transform.c`) | the PROJ transformations and the systems read from `spatial_ref_sys.csv` with their names in GeoJSON and MF-JSON, and the path of that file | a transformation, a geodetic operation, a GeoJSON or MF-JSON value written | the next transformation after `meos_set_spatial_ref_sys_csv` names another file | `meos_finalize_projsrs` |
 | PROJ context | `MEOS_PJ_CONTEXT` (`meos/src/temporal/meos.c`) | the PROJ context of the thread | the first transformation | — | `meos_finalize` |
 | Spatial relationships | `MEOS_RELATE_CTX_CACHE` (`meos/src/geo/geo_funcs.c`) | the edges of the geometries a relationship is asked about | a spatial relationship | — | `meos_finalize_relate` |
 | Ways | `MEOS_WAYS_CACHE`, `MEOS_WAYS_CACHE_PATH`, `MEOS_WAYS_INDEX` (`meos/src/npoint/ways_meos.c`) | the routes read from the ways file, the path of that file, and their index | a network point turned into a geometry | the next network point turned into a geometry after `meos_set_ways_csv` names another file | `meos_finalize_ways` |
@@ -115,14 +115,28 @@ then reads into its own cache on its first lookup. Reading a value needs no
 schema; only an operation decoding a coordinate looks the schema of its pcid
 up.
 
-## 7. Out of scope
+## 7. The spatial reference systems in the PostgreSQL extension
+
+The MobilityDB extension asks the same cache of spatial reference systems as
+MEOS does, through the same functions: a transformation, a geodetic
+operation, and the coordinate reference system that `asMFJSON` names. It
+holds no second cache of them. In the extension the cache belongs to the
+backend: it lies in a child of the `CacheMemoryContext`, as the ways cache
+of `meos/src/npoint/ways.c` does, its systems are read from the table
+`spatial_ref_sys`, and a reset of that context destroys its PROJ objects and
+forgets it, the next lookup filling it again.
+
+An SRID that the systems read do not hold is refused alike in both builds,
+with the message `Cannot find SRID (<srid>) in spatial_ref_sys`.
+
+## 8. Out of scope
 
 The caches of the PostgreSQL extension other than those listed, which live in
 the memory contexts of the backend, and the caches of the libraries MEOS
 links, such as PROJ's own, which MEOS reaches only through the PROJ context of
 each thread.
 
-## 8. References
+## 9. References
 
 - `meos/include/meos_tls.h`: the `MEOS_TLS` qualifier.
 - `meos/src/temporal/meos.c`: `meos_initialize` and `meos_finalize`.

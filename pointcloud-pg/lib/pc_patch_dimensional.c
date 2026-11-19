@@ -297,9 +297,12 @@ PCPATCH *pc_patch_dimensional_from_wkb(const PCSCHEMA *schema,
   {
     PCBYTES *pcb = &(patch->bytes[i]);
     PCDIMENSION *dim = schema->dims[i];
-    pc_bytes_deserialize(buf, dim, pcb, PC_FALSE /*readonly*/, swap_endian);
+    /* A flip of zlib bytes compresses them again, so the buffer advances by
+     * the size it states, not by the size of the result */
+    size_t insize = 1 + 4 + (uint32_t) wkb_get_int32(buf + 1, swap_endian);
     pcb->npoints = npoints;
-    buf += pc_bytes_serialized_size(pcb);
+    pc_bytes_deserialize(buf, dim, pcb, PC_FALSE /*readonly*/, swap_endian);
+    buf += insize;
   }
 
   return (PCPATCH *)patch;

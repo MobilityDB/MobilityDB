@@ -2,6 +2,15 @@
 -- Ever/always comparison functions
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tbool_big AS TABLE tbl_tbool_big;
+CREATE TEMP TABLE tbl_tint_big AS TABLE tbl_tint_big;
+CREATE TEMP TABLE tbl_tfloat_big AS TABLE tbl_tfloat_big;
+CREATE TEMP TABLE tbl_ttext_big AS TABLE tbl_ttext_big;
+ANALYZE tbl_tbool_big, tbl_tint_big, tbl_tfloat_big, tbl_ttext_big;
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
 SELECT COUNT(*) FROM tbl_tint WHERE temp ?= startValue(temp);
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?= startValue(temp);

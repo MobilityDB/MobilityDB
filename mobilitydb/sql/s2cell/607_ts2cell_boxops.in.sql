@@ -62,4 +62,10 @@ CREATE FUNCTION mergeEachNSpans(ts2cell, integer)
   AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- mergeQuerySpans()
+CREATE FUNCTION mergeQuerySpans(ts2cell, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

@@ -34,6 +34,7 @@
 
 /* C */
 #include <assert.h>
+#include <ctype.h>
 #include <limits.h>
 #include <float.h>
 /* PostgreSQL */
@@ -1223,20 +1224,64 @@ jsonb_to_alphanum_error(MeosType basetype)
 }
 
 /**
+ * @brief Convert the number of a JSONB value into a base number or boolean
+ * @details The number is converted as #jsonb_to_int32, #jsonb_to_int64 and
+ * #jsonb_to_float8 convert a JSONB number, that is, as PostgreSQL casts a
+ * numeric: an integer is the number rounded to the nearest, half away from
+ * zero, and a number outside the range of the integer type is an error, whose
+ * value is the one #jsonb_to_alphanum_error states for the type; a float is
+ * the double nearest the number. A boolean is true when the number is not
+ * zero.
+ * @param[in] num Number
+ * @param[in] resbasetype Resulting base type
+ */
+static Datum
+numeric_to_alphanum(Numeric num, MeosType resbasetype)
+{
+  assert(num); assert(resbasetype != T_TEXT);
+  switch (resbasetype)
+  {
+    case T_BOOL:
+    {
+      Numeric zero = int32_to_numeric(0);
+      bool result = pg_numeric_cmp(num, zero) != 0;
+      pfree(zero);
+      return BoolGetDatum(result);
+    }
+    case T_INT4:
+      return Int32GetDatum(numeric_to_int32(num));
+    case T_INT8:
+      return Int64GetDatum(numeric_to_int64(num));
+    case T_FLOAT8:
+      return Float8GetDatum(numeric_to_float8(num));
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown numeric base type: %s", meostype_name(resbasetype));
+      return PointerGetDatum(NULL);
+  }
+}
+
+/**
  * @brief Convert a JSONB value into a base alphanumeric value
  * @param[in] jb JSONB value
  * @param[in] key Key to extract from the JSONB object
  * @param[in] resbasetype Resulting base type
  * @param[in] null_handle States the null value treatment
- * @note Supported JSONB types: boolean, numeric, string. A boolean read from
- * a number is true when the number is not zero, as a number read from a
- * boolean is 1 when the boolean is true.
+ * @param[out] absent True when the result has no value, the key missing or
+ * its value invalid, since every number is an answer and none can stand for
+ * no value
+ * @note Supported JSONB types: boolean, numeric, string. A number, and a
+ * string holding one, is converted by #numeric_to_alphanum, as PostgreSQL
+ * casts a numeric. A boolean read from a number is true when the number is
+ * not zero, as a number read from a boolean is 1 when the boolean is true.
  */
 static Datum
 jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
-  nullHandleType null_handle)
+  nullHandleType null_handle, bool *absent)
 {
   assert(jb); assert(key); assert(alphanum_basetype(resbasetype));
+  assert(absent);
+  *absent = false;
 
   /* Lookup key in the JSONB object, which writes the value found */
   JsonbValue found;
@@ -1252,7 +1297,10 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
         "The lifted operation returned NULL");
     if (null_handle == NULL_ERROR || null_handle == NULL_RETURN ||
         null_handle == NULL_DELETE)
+    {
+      *absent = true;
       return jsonb_to_alphanum_error(resbasetype);
+    }
     if (null_handle == NULL_JSON_NULL)
       return PointerGetDatum(pg_jsonb_in("null"));
     /* NULL_INVALID or any other unhandled case */
@@ -1281,35 +1329,12 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
 
     case jbvNumeric:
     {
-      /* Convert Numeric to C string to double */
-      char *cstr = pg_numeric_out(v->val.numeric);
       if (resbasetype != T_TEXT)
-      {
-        char *endptr;
-        double dval = strtod(cstr, &endptr);
-        bool invalid = (endptr == cstr);
-        pfree(cstr);
-        if (invalid)
-        {
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "Invalid numeric value for key \"%s\"", key);
-          return jsonb_to_alphanum_error(resbasetype);
-        }
-        if (resbasetype == T_BOOL)
-          return BoolGetDatum(dval != 0.0);
-        else if (resbasetype == T_INT4)
-          return Int32GetDatum((int) dval);
-        else if (resbasetype == T_INT8)
-          return Int64GetDatum((int64) dval);
-        else /* resbasetype == T_FLOAT8 */
-          return Float8GetDatum(dval);
-      }
-      else /* resbasetype == T_TEXT */
-      {
-        Datum val = PointerGetDatum(pg_cstring_to_text(cstr));
-        pfree(cstr);
-        return val;
-      }
+        return numeric_to_alphanum(v->val.numeric, resbasetype);
+      char *cstr = pg_numeric_out(v->val.numeric);
+      Datum val = PointerGetDatum(pg_cstring_to_text(cstr));
+      pfree(cstr);
+      return val;
     }
 
     case jbvString:
@@ -1324,21 +1349,25 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
       }
       else if (tnumber_basetype(resbasetype))
       {
+        /* The whole string is a number, read exactly by #pg_numeric_in */
         char *endptr;
-        double dval = strtod(buf, &endptr);
-        if (endptr == buf)
+        (void) strtod(buf, &endptr);
+        while (isspace((unsigned char) *endptr))
+          endptr++;
+        Numeric num = (endptr == buf || *endptr != '\0') ? NULL :
+          pg_numeric_in(buf, -1);
+        if (! num)
         {
+          *absent = true;
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "Invalid numeric string for key \"%s\": %s", key, buf);
           pfree(buf);
           return jsonb_to_alphanum_error(resbasetype);
         }
-        if (resbasetype == T_INT4)
-          return Int32GetDatum((int) dval);
-        else if (resbasetype == T_INT8)
-          return Int64GetDatum((int64) dval);
-        else /* resbasetype == T_FLOAT8 */
-          return Float8GetDatum(dval);
+        pfree(buf);
+        val = numeric_to_alphanum(num, resbasetype);
+        pfree(num);
+        return val;
       }
       else /* resbasetype == T_TTEXT */
       {
@@ -1351,6 +1380,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
 
     default:
     {
+      *absent = true;
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Unsupported JSONB value type for key \"%s\"", key);
       return jsonb_to_alphanum_error(resbasetype);
@@ -1360,19 +1390,23 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
 
 /**
  * @brief Convert a JSONB value into a base alphanumeric value
+ * @details The Datum form of #jsonb_to_alphanum, the function a lift applies
  * @param[in] jb JSONB value
  * @param[in] key Key to extract from the JSONB object
  * @param[in] resbasetype Resulting type
  * @param[in] null_handle States the null value treatment
+ * @param[out] absent Pointer to the flag stating that the result has no
+ * value, the @p resabsent of the lifted function that @p reportsabsent
  * @note Supported JSONB types: boolean, numeric, string
  */
 Datum
 datum_jsonb_to_alphanum(Datum jb, Datum key, Datum resbasetype,
-  Datum null_handle)
+  Datum null_handle, Datum absent)
 {
   return jsonb_to_alphanum(DatumGetJsonbP(jb),
     (const char *) DatumGetPointer(key), (MeosType) DatumGetInt32(resbasetype),
-    (nullHandleType) DatumGetInt32(null_handle));
+    (nullHandleType) DatumGetInt32(null_handle),
+    (bool *) DatumGetPointer(absent));
 }
 
 /**
@@ -1480,14 +1514,17 @@ tjsonb_to_talphanum(const Temporal *temp, const char *key,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_to_alphanum;
   lfinfo.argtype[0] = T_JSONB;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(key);
   lfinfo.param[1] = Int32GetDatum(resbasetype);
   lfinfo.param[2] = null_handle;
+  lfinfo.param[3] = PointerGetDatum(&lfinfo.resabsent);
   lfinfo.restype = restype;
   lfinfo.reslinear = (interp == LINEAR);
-  /* Set the error value to test */
+  /* Every number is an answer, so the function states a result with no
+   * value in resabsent */
   lfinfo.reserror = jsonb_to_alphanum_error(resbasetype);
+  lfinfo.reportsabsent = true;
   lfinfo.resnull = null_handle; /* per-instant result may be NULL */
   return tfunc_temporal(temp, &lfinfo);
 }

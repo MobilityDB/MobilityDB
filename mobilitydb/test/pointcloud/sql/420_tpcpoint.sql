@@ -368,6 +368,8 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT mergeNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT mergeEachNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT mergeQuerySpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQuerySpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), tstzspan '[2001-01-01, 2001-01-08]');
 
 SELECT tpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]));
 SELECT tpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3], 'discrete'));
@@ -375,6 +377,7 @@ SELECT splitNTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT mergeNTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT mergeEachNTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT mergeQueryTpcboxes(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), tpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3])));
 -- Every box lies within the box of its value, also when the bounds of the
 -- value exclude its first instant.
 SELECT bool_and(b <@ tpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3], 'step', false, true)))
@@ -419,6 +422,40 @@ SELECT pcpointFromHexWKB(asHexWKB(pcpoint(1, 1.0, 2.0, 3.0))) =
 /* Errors */
 SELECT pcpointFromHexWKB('020100000064000000C80000002C010000');
 SELECT pcpointFromHexWKB('010100000064000000C8000000');
+
+-- asBinary and asHexWKB write the WKB of pgPointCloud in the byte order the
+-- endian argument states, the big-endian one being the one pgPointCloud
+-- writes on a big-endian machine, and pcpointFromBinary reads either one
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR');
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'NDR');
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR') =
+  '000000000100000064000000C80000012C';
+SELECT asBinary(pcpoint(1, 1.0, 2.0, 3.0));
+SELECT asBinary(pcpoint(1, 1.0, 2.0, 3.0), 'XDR');
+SELECT pcpointFromBinary(asBinary(pcpoint(1, 1.0, 2.0, 3.0))) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+SELECT pcpointFromBinary(asBinary(pcpoint(1, 1.0, 2.0, 3.0), 'XDR')) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+SELECT pcpointFromHexWKB(asHexWKB(pcpoint(1, 1.0, 2.0, 3.0), 'XDR')) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+SELECT getZ(pcpointFromBinary('\x000000000100000064000000c80000012c'));
+-- A set and a temporal value carry, after its size, the WKB of each point in
+-- their own byte order
+SELECT asHexWKB(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0)]), 'XDR');
+SELECT position('000000000100000064000000C80000012C' IN
+  asHexWKB(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0)]), 'XDR')) > 0;
+SELECT pcpointsetFromBinary(asBinary(set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0)]), 'XDR')) =
+  set(ARRAY[pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)]);
+SELECT position('000000000100000064000000C80000012C' IN
+  asHexWKB(tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), timestamptz '2024-01-01'),
+  'XDR')) > 0;
+SELECT tpcpointFromBinary(asBinary(tpcpoint(pcpoint(1, 1.0, 2.0, 3.0),
+  timestamptz '2024-01-01'), 'XDR')) =
+  tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), timestamptz '2024-01-01');
+/* Errors */
+SELECT pcpointFromBinary('\x0101000000'::bytea);
+SELECT pcpointFromBinary('\x020100000064000000c80000002c010000'::bytea);
 
 -------------------------------------------------------------------------------
 -- A value whose pcid names no schema

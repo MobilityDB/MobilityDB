@@ -88,16 +88,13 @@
  * collinear as #float_collinear decides it
  * @param[in] np1,np2,np3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  */
 bool
 npoint_collinear(const Npoint *np1, const Npoint *np2, const Npoint *np3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   assert(np1->rid == np2->rid); assert(np1->rid == np3->rid);
-  return float_collinear(np1->pos, np2->pos, np3->pos, t1, t2, t3,
-    constructed);
+  return float_collinear(np1->pos, np2->pos, np3->pos, t1, t2, t3);
 }
 
 /**
@@ -1011,27 +1008,44 @@ npoint_to_nsegment(const Npoint *np)
 /**
  * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument the spatiotemporal box of a network point
+ * @details The box is the point of the route at the position, whose
+ * coordinates #route_point_at reads from the line and the fractions of the
+ * route kept by the ways cache, as #tnpointinst_tgeompointinst reads them for
+ * the conversion, so they are the coordinates of #npoint_to_geompoint. A
+ * route is a planar line without Z (#ensure_valid_route)
  * @param[in] np Network point
  * @param[out] box Spatiotemporal box
+ * @return False where the route is not found
  */
 bool
 npoint_set_stbox(const Npoint *np, STBox *box)
 {
-  GSERIALIZED *geom = npoint_to_geompoint(np);
-  bool result = geo_set_stbox(geom, box);
-  pfree(geom);
-  return result;
+  assert(np); assert(box);
+  /* A route that is found is not empty. The line belongs to the ways cache */
+  const double *fracs;
+  const LWLINE *line = route_line_bound(np->rid, NULL, &fracs);
+  if (! line)
+    return false;
+  POINT4D pt;
+  route_point_at(line->points, ptarray_length_2d(line->points), fracs,
+    np->pos, &pt);
+  stbox_set(true, false, false, line->srid, pt.x, pt.x, pt.y, pt.y, 0.0, 0.0,
+    NULL, box);
+  return true;
 }
 
 /**
  * @ingroup meos_npoint_base_conversion
  * @brief Convert a network point into a spatiotemporal box
+ * @details The argument is validated as #npoint_to_geompoint validates it
  * @param[in] np Network point
  * @csqlfn #Npoint_to_stbox()
  */
 STBox *
 npoint_to_stbox(const Npoint *np)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL);
   STBox box;
   if (! npoint_set_stbox(np, &box))
     return NULL;
@@ -1042,11 +1056,11 @@ npoint_to_stbox(const Npoint *np)
  * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument a spatiotemporal box constructed from
  * an array of network points
- * @details The geometry of a route is read once for each run of points on
- * it, which the order of the points of a set makes one run per route, and each
- * point is located on the route as #npointarr_geom locates it. The box of a
- * point is its coordinates, the ones #npoint_set_stbox reads back from the
- * serialized point
+ * @details The line of a route is read from the ways cache once for each run
+ * of points on it, which the order of the points of a set makes one run per
+ * route, and each point is located on it by #route_point_at, as
+ * #npoint_set_stbox locates one, so the box of a point is its coordinates. A
+ * route is a planar line without Z (#ensure_valid_route)
  * @param[in] values Network points
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -1054,44 +1068,34 @@ npoint_to_stbox(const Npoint *np)
 void
 npointarr_set_stbox(const Datum *values, int count, STBox *box)
 {
-  LWGEOM *line = NULL;
+  const LWLINE *line = NULL;
+  const double *fracs = NULL;
+  double length = 0.0;
   int64 rid = 0;
-  int32_t srid = SRID_UNKNOWN;
-  bool hasz = false, geodetic = false;
   for (int i = 0; i < count; i++)
   {
     const Npoint *np = DatumGetNpointP(values[i]);
     if (! line || np->rid != rid)
     {
-      if (line)
-        lwgeom_free(line);
-      const GSERIALIZED *gsline = route_geom(np->rid);
-      if (! gsline)
+      /* A route that is found is not empty. The line belongs to the ways
+       * cache, which keeps the route used last while the next one is read */
+      line = route_line_bound(np->rid, NULL, &fracs);
+      if (! line)
         return;
       rid = np->rid;
-      srid = gserialized_get_srid(gsline);
-      hasz = (bool) FLAGS_GET_Z(gsline->gflags);
-      geodetic = (bool) FLAGS_GET_GEODETIC(gsline->gflags);
-      line = lwgeom_from_gserialized(gsline);
+      length = ptarray_length_2d(line->points);
     }
-    LWGEOM *point = lwgeom_line_interpolate_point(line, np->pos, srid, 0);
     POINT4D p;
-    lwpoint_getPoint4d_p((LWPOINT *) point, &p);
-    lwgeom_free(point);
+    route_point_at(line->points, length, fracs, np->pos, &p);
     if (i == 0)
-      stbox_set(true, hasz, geodetic, srid, p.x, p.x, p.y, p.y,
-        hasz ? p.z : 0.0, hasz ? p.z : 0.0, NULL, box);
+      stbox_set(true, false, false, line->srid, p.x, p.x, p.y, p.y, 0.0, 0.0,
+        NULL, box);
     else
     {
       box->xmin = Min(box->xmin, p.x); box->xmax = Max(box->xmax, p.x);
       box->ymin = Min(box->ymin, p.y); box->ymax = Max(box->ymax, p.y);
-      if (hasz)
-      {
-        box->zmin = Min(box->zmin, p.z); box->zmax = Max(box->zmax, p.z);
-      }
     }
   }
-  lwgeom_free(line);
   return;
 }
 

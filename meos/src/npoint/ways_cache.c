@@ -73,6 +73,8 @@ typedef struct
   LWLINE *the_line;       /**< Geometry read as a line, a view over the
                                points of the geometry it is read from, which
                                it is released with */
+  double *the_fracs;      /**< Fractions of the segments of the line, read
+                               and released with it */
   double length;          /**< Length of the route */
   double bound;           /**< Bound of the construction of a point on the
                                route, read with the line */
@@ -228,6 +230,23 @@ ways_cache_touch(WaysCache *cache, int32 pos)
 }
 
 /**
+ * @brief Return the bytes an entry of the cache holds, its geometry and the
+ * fractions of the segments of its line, which the bound of the cache
+ * counts
+ * @details The relate context cache bounds its entries by their number
+ * (#relate_ctx_victim), so no sibling counts bytes; this is the count of
+ * what #ways_cache_release_geom releases
+ */
+static size_t
+ways_cache_entry_bytes(const WaysCacheEntry *entry)
+{
+  size_t result = VARSIZE(entry->the_geom);
+  if (entry->the_fracs)
+    result += sizeof(double) * (2 * entry->the_line->points->npoints - 1);
+  return result;
+}
+
+/**
  * @brief Release the geometry of an entry of the cache and the line read
  * from it
  * @details The line is a view over the points of the geometry, so it is
@@ -237,9 +256,12 @@ ways_cache_touch(WaysCache *cache, int32 pos)
 static void
 ways_cache_release_geom(WaysCacheEntry *entry)
 {
+  if (entry->the_fracs)
+    pfree(entry->the_fracs);
   if (entry->the_line)
     lwline_free(entry->the_line);
   pfree(entry->the_geom);
+  entry->the_fracs = NULL;
   entry->the_line = NULL;
   entry->the_geom = NULL;
   return;
@@ -262,7 +284,7 @@ ways_cache_evict(WaysCache *cache)
     int32 pos = cache->tail;
     WaysCacheEntry *entry = &cache->entries[pos];
     ways_cache_unlink(cache, pos);
-    cache->geombytes -= VARSIZE(entry->the_geom);
+    cache->geombytes -= ways_cache_entry_bytes(entry);
     ways_cache_release_geom(entry);
   }
   return;
@@ -280,9 +302,11 @@ ways_cache_set_geom(WaysCache *cache, int32 pos, GSERIALIZED *geom)
 {
   cache->entries[pos].the_geom = geom;
   cache->entries[pos].the_line = (LWLINE *) lwgeom_from_gserialized(geom);
+  cache->entries[pos].the_fracs =
+    route_segment_fractions(cache->entries[pos].the_line->points);
   cache->entries[pos].bound =
     route_construction_bound(cache->entries[pos].the_line);
-  cache->geombytes += VARSIZE(geom);
+  cache->geombytes += ways_cache_entry_bytes(&cache->entries[pos]);
   ways_cache_push(cache, pos);
   ways_cache_evict(cache);
   return;
@@ -301,6 +325,7 @@ ways_cache_add(WaysCache *cache, const ways_record *rec)
   entry->gid = rec->gid;
   entry->the_geom = NULL;
   entry->the_line = NULL;
+  entry->the_fracs = NULL;
   entry->length = rec->length;
   entry->bound = 0.0;
   entry->prev = entry->next = WAYS_CACHE_NONE;
@@ -414,6 +439,7 @@ ways_cache_lookup(WaysCache *cache, int64 gid, bool any_gid,
   rec->gid = entry->gid;
   rec->the_geom = entry->the_geom;
   rec->the_line = entry->the_line;
+  rec->the_fracs = entry->the_fracs;
   rec->length = entry->length;
   rec->bound = entry->bound;
   return true;

@@ -6,6 +6,13 @@
 -- eContains, aContains
 -------------------------------------------------------------------------------
 
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_tgeompoint AS TABLE tbl_tgeompoint;
+CREATE TEMP TABLE tbl_tgeogpoint AS TABLE tbl_tgeogpoint;
+ANALYZE tbl_tgeompoint, tbl_tgeogpoint;
+
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eContains(g, temp);
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aContains(g, temp);
 
@@ -106,9 +113,9 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE eDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE eDwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE eDwithin(t1.temp, t2.temp, 10);
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq WHERE eDwithin(g, seq, 10);
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE eDwithin(g, ss, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE eDwithin(t1.seq, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq WHERE eDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE eDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint_step_contseq t1, tbl_tgeompoint t2 WHERE eDwithin(t1.temp, t2.temp, 10);
 -- 3D
 SELECT COUNT(*) FROM tbl_geom_point3D, tbl_tgeompoint3D WHERE eDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE eDwithin(temp, g, 10);
@@ -131,9 +138,9 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE aDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE aDwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq WHERE aDwithin(g, seq, 10);
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE aDwithin(g, ss, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE aDwithin(t1.seq, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_contseq WHERE aDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE aDwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint_step_contseq t1, tbl_tgeompoint t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- 3D
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
 -- Geography

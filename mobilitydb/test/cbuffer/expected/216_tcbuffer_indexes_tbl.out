@@ -24,13 +24,13 @@ CREATE TEMP TABLE tbl_tcbuffer_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tcbuffer_big
   UNION ALL
-  SELECT k + 1000, inst FROM tbl_tcbuffer_inst
+  SELECT k + 1000, temp FROM tbl_tcbuffer_inst
   UNION ALL
-  SELECT k + 1100, ti FROM tbl_tcbuffer_discseq
+  SELECT k + 1100, temp FROM tbl_tcbuffer_discseq
   UNION ALL
-  SELECT k + 1200, seq FROM tbl_tcbuffer_seq
+  SELECT k + 1200, temp FROM tbl_tcbuffer_contseq
   UNION ALL
-  SELECT k + 1300, ss FROM tbl_tcbuffer_seqset )
+  SELECT k + 1300, temp FROM tbl_tcbuffer_seqset )
 SELECT k + n * 1400 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 4) AS n;
 ANALYZE tbl_tcbuffer_idx;

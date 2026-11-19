@@ -103,6 +103,7 @@ extern Raquet *raquet_from_wkb(const uint8_t *wkb, size_t size);
 extern Raquet *raquet_from_hexwkb(const char *hexwkb);
 extern uint8_t *raquet_as_wkb(const Raquet *rq, uint8_t variant, size_t *size_out);
 extern char *raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_out);
+extern char *raquet_as_coveragejson(const Raquet *rq);
 
 /* Constructor functions for Raquet tiles */
 
@@ -112,6 +113,8 @@ extern Raquet *raquet_make(Quadbin quadbin, int32 width, int32 height,
 extern Raquet *raquet_copy(const Raquet *rq);
 extern Raquet *raquet_read(const char *path, Quadbin quadbin);
 extern Raquet *raquet_read_bytes(const uint8_t *data, size_t size, Quadbin quadbin);
+extern Raquet *raquet_from_row(Quadbin block, const uint8_t *data, size_t size,
+  const char *metadata, int band);
 
 /* Accessor functions for Raquet tiles */
 
@@ -236,6 +239,17 @@ typedef struct
 /* Input and output functions for PostGIS rasters */
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
+extern char *raster_as_coveragejson(const Raster *rast);
+extern uint8_t *raster_as_gdal(const Raster *rast, const char *format,
+  const char *options, int32_t srid, size_t *size_out);
+extern uint8_t *raster_as_tiff(const Raster *rast, const char *options,
+  int32_t srid, size_t *size_out);
+extern uint8_t *raster_as_png(const Raster *rast, const char *options,
+  size_t *size_out);
+extern uint8_t *raster_as_jpeg(const Raster *rast, const char *options,
+  size_t *size_out);
+extern Raster *raster_from_gdal(const uint8_t *data, size_t size,
+  int32_t srid);
 extern Raster *raster_from_hexwkb(const char *hexwkb);
 extern uint8_t *raster_as_wkb(const Raster *rast, uint8_t variant, size_t *size_out);
 extern char *raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_out);
@@ -426,9 +440,53 @@ extern Temporal *raster_tile_value_quadbin(const Temporal *traj,
   const uint8_t *pixels, size_t pixels_size, int32 width, int32 height,
   Quadbin quadbin, MeosPixType pixtype, double nodata, bool has_nodata);
 
+extern char *tfloat_as_coveragejson(const Temporal *temp,
+  const Temporal *traj);
 extern Temporal *raster_tile_value(const Temporal *traj, const Raquet *rq);
 extern Temporal *raster_tile_value_array(const Temporal *traj,
   const Raquet **rqarr, int count);
+extern Temporal *raster_tile_at_value(const Temporal *traj, const Raquet *rq,
+  const Span *vspan);
+extern Temporal *raster_tile_minus_value(const Temporal *traj,
+  const Raquet *rq, const Span *vspan);
+extern int eraster_tile_value(const Temporal *traj, const Raquet *rq,
+  const Span *vspan);
+extern int araster_tile_value(const Temporal *traj, const Raquet *rq,
+  const Span *vspan);
+extern Temporal *raster_tile_at_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count, const Span *vspan);
+extern Temporal *raster_tile_minus_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count, const Span *vspan);
+extern int eraster_tile_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count, const Span *vspan);
+extern int araster_tile_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count, const Span *vspan);
+
+/* Reading of a raster series: each raster read over the part of the
+ * trajectory within its validity period */
+
+extern Temporal *raster_value_series(const Temporal *traj,
+  const Raster **rasts, const Span *spans, int count, int band);
+extern Temporal *raster_at_value_series(const Temporal *traj,
+  const Raster **rasts, const Span *spans, int count, int band,
+  const Span *vspan);
+extern Temporal *raster_minus_value_series(const Temporal *traj,
+  const Raster **rasts, const Span *spans, int count, int band,
+  const Span *vspan);
+extern int eraster_value_series(const Temporal *traj, const Raster **rasts,
+  const Span *spans, int count, int band, const Span *vspan);
+extern int araster_value_series(const Temporal *traj, const Raster **rasts,
+  const Span *spans, int count, int band, const Span *vspan);
+extern Temporal *raster_tile_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count);
+extern Temporal *raster_tile_at_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count, const Span *vspan);
+extern Temporal *raster_tile_minus_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count, const Span *vspan);
+extern int eraster_tile_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count, const Span *vspan);
+extern int araster_tile_value_series(const Temporal *traj,
+  const Raquet **rqarr, const Span *spans, int count, const Span *vspan);
 
 /*****************************************************************************/
 

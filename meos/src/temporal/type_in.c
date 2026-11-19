@@ -55,6 +55,7 @@
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/meos_transform.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
@@ -1868,6 +1869,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
 #endif /* RGEO */
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
+    json_object_put(poObj);
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string, expected: %s, received: %s",
       meostype_name(temptype), meostype_name(jtemptype));
@@ -1913,9 +1915,12 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     }
     if (pszName)
     {
-      // The following call requires a valid spatial_ref_sys table entry
-      // srid = getSRIDbySRS(fcinfo, srs);
-      sscanf(pszName, "EPSG:%d", &srid);
+      srid = srs_srid(pszName);
+      if (srid == SRID_INVALID)
+      {
+        json_object_put(poObj);
+        return NULL;
+      }
     }
     else if (tgeodetic_type(temptype))
       srid = WGS84_SRID;
@@ -2187,25 +2192,31 @@ text_from_wkb_state(meos_wkb_parse_state *s)
 
 #if POINTCLOUD
 /**
- * @brief Read a pgPointCloud pcpoint or pcpatch varlena and advance the parse
- * state
- * @details The encoding is int32 body length + body bytes; we wrap the body in
- * a varlena header.
+ * @brief Read a pcpoint or a pcpatch component and advance the parse state
+ * @details Read as #cbuffer_from_wkb_state reads a circular buffer component,
+ * except that the WKB is the one of pgPointCloud, whose own reader reads it in
+ * either byte order under the schema of its pcid; the component is preceded
+ * by its size (@p int32), which the reader passes over
+ * @param[in] s Parse state
+ * @param[in] type Type of the value, @c T_PCPOINT or @c T_PCPATCH
  */
 static void *
-pcvarlena_from_wkb_state(meos_wkb_parse_state *s)
+pcvalue_from_wkb_state(meos_wkb_parse_state *s, MeosType type)
 {
-  int32_t body_len = int32_from_wkb_state(s);
-  /* The body must include the pcid */
-  if (! wkb_length_check(s, body_len, sizeof(uint32_t)))
+  int32_t size = int32_from_wkb_state(s);
+  /* The WKB holds at least the endian flag and the pcid */
+  if (! wkb_length_check(s, size, 1 + sizeof(uint32_t)))
     return NULL;
-  /* Allocate a varlena: header + body. */
-  size_t total = VARHDRSZ + (size_t) body_len;
-  void *vl = palloc(total);
-  SET_VARSIZE(vl, total);
-  memcpy(VARDATA(vl), s->pos, (size_t) body_len);
-  s->pos += body_len;
-  return vl;
+  void *result = (type == T_PCPOINT) ?
+    (void *) pcpoint_from_wkb(s->pos, (size_t) size) :
+    (void *) pcpatch_from_wkb(s->pos, (size_t) size);
+  if (! result)
+  {
+    s->error = true;
+    return NULL;
+  }
+  s->pos += size;
+  return result;
 }
 #endif /* POINTCLOUD */
 
@@ -2731,7 +2742,7 @@ base_from_wkb_state(meos_wkb_parse_state *s)
 #if POINTCLOUD
     case T_PCPOINT:
     case T_PCPATCH:
-      result = PointerGetDatum(pcvarlena_from_wkb_state(s));
+      result = PointerGetDatum(pcvalue_from_wkb_state(s, s->basetype));
       break;
 #endif /* POINTCLOUD */
 #if POSE

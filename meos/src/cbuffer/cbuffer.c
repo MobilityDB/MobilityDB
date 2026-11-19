@@ -75,31 +75,18 @@
  * @brief Return true if the three values are collinear
  * @details A circular buffer interpolates its centre and its radius
  * linearly, so each coordinate of them is collinear exactly as
- * #float_collinear decides it. A constructed middle buffer has its centre
- * within the rounding of the interpolated centre (#coordinate_tolerance) and
- * its radius as #float_collinear decides it
+ * #float_collinear decides it
  * @param[in] cb1,cb2,cb3 Values
  * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
- * @param[in] constructed True when the middle value is constructed, false
- * when the three values are input values
  */
 bool
 cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2, const Cbuffer *cb3,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
-  if (! float_collinear(cb1->radius, cb2->radius, cb3->radius, t1, t2, t3,
-      constructed))
-    return false;
-  if (! constructed)
-    return float_collinear(cb1->x, cb2->x, cb3->x, t1, t2, t3, false) &&
-      float_collinear(cb1->y, cb2->y, cb3->y, t1, t2, t3, false);
-  double ratio = (double) (t2 - t1) / (double) (t3 - t1);
-  double x = cb1->x + (cb3->x - cb1->x) * ratio;
-  double y = cb1->y + (cb3->y - cb1->y) * ratio;
-  double maxcoord = Max(Max(fabs(cb1->x), fabs(cb1->y)),
-    Max(fabs(cb3->x), fabs(cb3->y)));
-  return (hypot(cb2->x - x, cb2->y - y) <= coordinate_tolerance(maxcoord,
-    Max(fabs(cb2->x), fabs(cb2->y))));
+  return float_collinear(cb1->radius, cb2->radius, cb3->radius, t1, t2,
+      t3) &&
+    float_collinear(cb1->x, cb2->x, cb3->x, t1, t2, t3) &&
+    float_collinear(cb1->y, cb2->y, cb3->y, t1, t2, t3);
 }
 
 /**

@@ -390,6 +390,30 @@ SELECT round(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint
  Interp=Step;{[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.2)@Tue Jan 02 00:00:00 2001 PST), (NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'STBOX T([2001-01-01,2001-01-02])'), 6);
+                                          round                                           
+------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'STBOX T([2001-01-01,2001-01-02])'), 6);
+                                           round                                            
+--------------------------------------------------------------------------------------------
+ {(NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX X((1000,1000),(2000,2000))'), 6);
+ round 
+-------
+ 
+(1 row)
+
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX X((1000,1000),(2000,2000))'), 6);
+                                                                round                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
 -------------------------------------------------------------------------------
 -- atStbox/minusStbox for a linear tnpoint whose route (gid 1) bends between
 -- the two instants, so the box boundary is crossed at a point that is NOT on

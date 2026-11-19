@@ -359,7 +359,7 @@ SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'a');
 SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
  intset 
 --------
- {2}
+ {3}
 (1 row)
 
 SELECT intset(jsonbset '{"{\"a\":\"1\", \"b\":2.5}"}', text 'a');
@@ -403,6 +403,13 @@ SELECT floatset(jsonbset '{"{\"a\":0}", "{\"a\":2.5}"}', text 'a');
  floatset 
 ----------
  {0, 2.5}
+(1 row)
+
+SELECT numValues(s), startValue(s) = 1.7976931348623157e308
+FROM (SELECT floatset(jsonbset '{"{\"a\":1.7976931348623157e308}", "{\"b\":1}"}', text 'a', 'delete_key') AS s) AS x;
+ numvalues | ?column? 
+-----------+----------
+         1 | t
 (1 row)
 
 /* Errors */

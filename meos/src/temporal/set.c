@@ -1421,9 +1421,11 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
 int *
 intset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_INTSET(s, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   int *result = palloc(sizeof(int) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt32(SET_VAL_N(s, i));
@@ -1442,9 +1444,11 @@ intset_values(const Set *s, int *count)
 int64 *
 bigintset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSET(s, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   int64 *result = palloc(sizeof(int64) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt64(SET_VAL_N(s, i));
@@ -1463,9 +1467,11 @@ bigintset_values(const Set *s, int *count)
 double *
 floatset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   double *result = palloc(sizeof(double) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetFloat8(SET_VAL_N(s, i));
@@ -1484,9 +1490,11 @@ floatset_values(const Set *s, int *count)
 text **
 textset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TEXTSET(s, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   text **result = palloc(sizeof(text *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetTextP(datum_copy(SET_VAL_N(s, i), s->basetype));
@@ -1505,9 +1513,11 @@ textset_values(const Set *s, int *count)
 DateADT *
 dateset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_DATESET(s, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   DateADT *result = palloc(sizeof(DateADT) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetDateADT(SET_VAL_N(s, i));
@@ -1526,9 +1536,11 @@ dateset_values(const Set *s, int *count)
 TimestampTz *
 tstzset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
   TimestampTz *result = palloc(sizeof(TimestampTz) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetTimestampTz(SET_VAL_N(s, i));

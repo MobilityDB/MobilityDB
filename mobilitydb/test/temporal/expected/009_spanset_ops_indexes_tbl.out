@@ -1,6 +1,16 @@
 -------------------------------------------------------------------------------
 -- Tests of operators for span types.
 -------------------------------------------------------------------------------
+-- This test creates its indexes on copies of the tables of the setup scripts,
+-- which hide those tables in its session: every test reads them, and an
+-- index on them would change the plans of the other tests.
+CREATE TEMP TABLE tbl_intspanset AS TABLE tbl_intspanset;
+CREATE TEMP TABLE tbl_bigintspanset AS TABLE tbl_bigintspanset;
+CREATE TEMP TABLE tbl_floatspanset AS TABLE tbl_floatspanset;
+CREATE TEMP TABLE tbl_datespanset AS TABLE tbl_datespanset;
+CREATE TEMP TABLE tbl_tstzspanset AS TABLE tbl_tstzspanset;
+ANALYZE tbl_intspanset, tbl_bigintspanset, tbl_floatspanset, tbl_datespanset,
+  tbl_tstzspanset;
 DROP INDEX IF EXISTS tbl_intspanset_rtree_idx;
 NOTICE:  index "tbl_intspanset_rtree_idx" does not exist, skipping
 DROP INDEX IF EXISTS tbl_bigintspanset_rtree_idx;

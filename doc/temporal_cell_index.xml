@@ -337,6 +337,65 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 -- true
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_asCoverageJSON">
+				<indexterm significance="normal"><primary><varname>asCoverageJSON</varname></primary></indexterm>
+				<para>Return a raster, a Raquet tile or the values a trajectory reads as a CoverageJSON coverage</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asCoverageJSON(raster) → text
+asCoverageJSON(raquet) → text
+asCoverageJSON(tfloat,tgeompoint) → text
+</programlisting>
+				<para>CoverageJSON is the encoding of OGC API – Coverages and OGC API – Environmental Data Retrieval. A <varname>raster</varname> is a <varname>Grid</varname> coverage: its axes <varname>x</varname> and <varname>y</varname> run from the centre of the first pixel to the centre of the last, each band is a parameter <varname>band1</varname>, <varname>band2</varname> ..., whose values run row by row from the top row, and a nodata pixel is <varname>null</varname>; a raster with a skew, whose pixels lie on no such axes, and a raster in no spatial reference system raise an error. A <varname>raquet</varname> tile is a grid of Web Mercator, EPSG:3857, over the bounds of its QUADBIN cell. The values a trajectory reads, such as those of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>, are a <varname>Trajectory</varname> coverage whose points are the instants of the values, each at the position of the trajectory at its instant; values read at one place are a <varname>Point</varname> for one instant and a <varname>PointSeries</varname> for several, the instants on its axis <varname>t</varname>, the coverages the position query of OGC API – Environmental Data Retrieval answers. EPSG:4326 is stated as OGC CRS84, whose longitude comes first as MobilityDB states it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]))::json
+  #> '{ranges,band1,values}';
+-- [1,2,3,4,-5,null]
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_asGDALRaster">
+				<indexterm significance="normal"><primary><varname>asGDALRaster</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asTIFF</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asPNG</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asJPEG</varname></primary></indexterm>
+				<para>Return a raster written in a format of GDAL</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asGDALRaster(rast raster,format text,options text[]=NULL,srid integer=NULL) → bytea
+asTIFF(rast raster,options text[]=NULL,srid integer=NULL) → bytea
+asPNG(rast raster,options text[]=NULL) → bytea
+asJPEG(rast raster,options text[]=NULL) → bytea
+</programlisting>
+				<para>Writes the raster as PostGIS's <varname>ST_AsGDALRaster</varname>, <varname>ST_AsTIFF</varname>, <varname>ST_AsPNG</varname> and <varname>ST_AsJPEG</varname> write it, so that the bytes are those PostGIS writes. <varname>format</varname> is the short name of a GDAL driver that writes a copy of a raster into memory, such as <varname>GTiff</varname>, <varname>PNG</varname> or <varname>JPEG</varname>; <varname>options</varname> are the creation options of the driver, each <varname>KEY=VALUE</varname>; <varname>srid</varname> is the spatial reference system the file states, the raster's own when <varname>NULL</varname>, the pixels not being reprojected. A GeoTIFF holds one pixel type and one nodata value for all its bands, PNG one to four bands of 8 or 16 unsigned bits, JPEG one or three bands of 8 unsigned bits; a format refusing the bands of the raster raises an error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH r AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[1, 2], [3, 4]]::double precision[][]) AS rast)
+SELECT asTIFF(rast) = ST_AsTIFF(rast),
+  encode(substring(asPNG(rast) from 2 for 3), 'escape')
+FROM r;
+-- true | PNG
+</programlisting>
+			</listitem>
+			<listitem xml:id="rasterFromGDALRaster">
+				<indexterm significance="normal"><primary><varname>rasterFromGDALRaster</varname></primary></indexterm>
+				<para>Return a raster read from the bytes of a file in a format of GDAL</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterFromGDALRaster(gdaldata bytea,srid integer=0) → raster
+</programlisting>
+				<para>Reads the raster as PostGIS's <varname>ST_FromGDALRaster</varname> reads it, the format found by GDAL from the bytes. <varname>srid</varname> is the spatial reference system of the result, the one the file states when 0.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH r AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '16BSI'::text, 7::float8, 0::float8) AS rast)
+SELECT SRID(rasterFromGDALRaster(asTIFF(rast))),
+  SRID(rasterFromGDALRaster(asTIFF(rast), 4326))
+FROM r;
+-- 3857 | 4326
+</programlisting>
+			</listitem>
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_constructors">
 		<title>Constructors</title>
@@ -461,6 +520,21 @@ SELECT numBands(addBand(r, r))
 FROM (SELECT addBand(makeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 3857),
   NULL::integer, '8BUI', 1) AS r) t;
 -- 2
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquetFromRow">
+				<indexterm significance="normal"><primary><varname>raquetFromRow</varname></primary></indexterm>
+				<para>Return the tile of one band of a row of a Raquet file</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquetFromRow(block bigint,band bytea,metadata text,bandnum integer=1) → raquet
+</programlisting>
+				<para>A Raquet file is a Parquet table whose rows are the tiles of a raster, keyed by their QUADBIN cell in the column <varname>block</varname>, the row of block 0 holding the metadata of the file as JSON. An engine that reads Parquet scans the rows and hands each to <varname>raquetFromRow</varname> with the metadata, which states the size of a tile, the type and nodata value of each band, the layout of the bands, sequential (one column per band) or interleaved (the bands of a pixel side by side in one column), and their compression: none, <varname>gzip</varname>, or <varname>jpeg</varname> and <varname>webp</varname>, an image of every band. <varname>bandnum</varname> is the band of the bytes, or the band taken from an interleaved column. The row of block 0, a band the metadata does not state, bytes of another size than the tile, and a band stating a scale or an offset raise an error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pixels(raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint,
+  '\x010a0214031e0428'::bytea,
+  '{"band_layout": "interleaved", "tiling": {"block_width": 2, "block_height": 2},
+    "bands": [{"type": "uint8"}, {"type": "uint8"}]}', 2));
+-- \x0a141e28
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetRead">
@@ -3314,6 +3388,39 @@ GROUP BY t.tripid, t.trip;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_rasterValueSeries">
+				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
+				<para>Sample a raster series along a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterValue(tgeompoint,rast raster[],validtime tstzspan[],band integer=1) → tfloat
+rasterTileValue(tgeompoint,rast raquet[],validtime tstzspan[]) → tfloat
+</programlisting>
+				<para>A raster that changes in time is a series of rows <varname>(validtime, rast)</varname>, each raster valid over its period, not a temporal raster: a value holding a whole raster at every instant would weigh a raster per instant, and nothing between two rasters interpolates. These forms read a series given as the array of its rasters and the array of their periods, paired one to one: each raster is read over the part of <varname>traj</varname> within its period, as <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> and <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> read one raster, and the reads are merged in the order of the periods, whatever the order of the arrays. Rows sharing one period are the tiles of one raster in space, read together as <link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link> reads an array of tiles. Two rows of one place and one period are one tile given twice, which a Raquet file never holds: they are read where they hold one value and raise an error where they hold two, as merging two temporal values that differ at one timestamp does. A part of the trip within no period has no value, as a nodata pixel has none. Two distinct periods that overlap, and arrays of different lengths, raise an error. A query passes the rows meeting the trip, which the indexes on the period and on the extent of the raster select, and gathers them with <varname>array_agg</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A raster of 10 | 20 valid until 06:00 and one of 30 | 40 valid after it,
+-- read along a trip crossing from the western pixel into the eastern one at 12:00
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS a,
+  ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[30, 40]]::double precision[][]) AS b )
+SELECT asText(rasterValue(
+  tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[a, b], ARRAY[tstzspan '[2001-01-01, 2001-01-01 06:00)',
+  tstzspan '[2001-01-01 06:00, 2001-01-02]'])) FROM rast;
+-- Interp=Step;[10@2001-01-01 00:00:00+00, 30@2001-01-01 06:00:00+00,
+--   40@2001-01-01 12:00:00+00, 40@2001-01-02 00:00:00+00]
+-- The rows of a series meeting each trip
+SELECT t.tripid, rasterValue(t.trip, array_agg(s.rast), array_agg(s.validtime))
+FROM trips t JOIN ndvi_series s
+  ON s.validtime &amp;&amp; t.trip::tstzspan AND s.rast::geometry &amp;&amp; t.trip::geometry
+GROUP BY t.tripid, t.trip;
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_rasterTileValueQuadbin">
 				<indexterm significance="normal"><primary><varname>rasterTileValueQuadbin</varname></primary></indexterm>
 				<para>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
@@ -3342,8 +3449,13 @@ JOIN sst_raquet r ON r.block IN (SELECT unnest(getValues(tquadbin(t.trip, 6)))::
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 atRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
+atRasterValue(tgeompoint,rast raquet,vspan floatspan) → tgeompoint
+atRasterValue(tgeompoint,rast raquet[],vspan floatspan) → tgeompoint
+atRasterValue(tgeompoint,rast raster[],validtime tstzspan[],vspan floatspan,
+  band integer=1) → tgeompoint
+atRasterValue(tgeompoint,rast raquet[],validtime tstzspan[],vspan floatspan) → tgeompoint
 </programlisting>
-				<para>Reads <varname>rasterValue</varname> along <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no time satisfies the condition. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does.</para>
+				<para>Reads <varname>rasterValue</varname> along <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no time satisfies the condition. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap. The forms taking an array of rasters or of tiles and the array of their periods read the series <link linkend="raster_rasterValueSeries"><varname>rasterValue</varname></link> reads.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
@@ -3365,8 +3477,13 @@ SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 minusRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
+minusRasterValue(tgeompoint,rast raquet,vspan floatspan) → tgeompoint
+minusRasterValue(tgeompoint,rast raquet[],vspan floatspan) → tgeompoint
+minusRasterValue(tgeompoint,rast raster[],validtime tstzspan[],vspan floatspan,
+  band integer=1) → tgeompoint
+minusRasterValue(tgeompoint,rast raquet[],validtime tstzspan[],vspan floatspan) → tgeompoint
 </programlisting>
-				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when the pixel value lies within <varname>vspan</varname> at every time. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does.</para>
+				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when the pixel value lies within <varname>vspan</varname> at every time. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap. The forms taking an array of rasters or of tiles and the array of their periods read the series <link linkend="raster_rasterValueSeries"><varname>rasterValue</varname></link> reads.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Keep only the instant whose raster value (10) is below 40
 SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
@@ -3380,8 +3497,13 @@ SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM 
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 eRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
+eRasterValue(tgeompoint,rast raquet,vspan floatspan) → boolean
+eRasterValue(tgeompoint,rast raquet[],vspan floatspan) → boolean
+eRasterValue(tgeompoint,rast raster[],validtime tstzspan[],vspan floatspan,
+  band integer=1) → boolean
+eRasterValue(tgeompoint,rast raquet[],validtime tstzspan[],vspan floatspan) → boolean
 </programlisting>
-				<para>Returns <varname>true</varname> when <varname>traj</varname> ever reads a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does.</para>
+				<para>Returns <varname>true</varname> when <varname>traj</varname> ever reads a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap. The forms taking an array of rasters or of tiles and the array of their periods read the series <link linkend="raster_rasterValueSeries"><varname>rasterValue</varname></link> reads.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid FROM trips,
@@ -3395,8 +3517,13 @@ SELECT tripid FROM trips,
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 aRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
+aRasterValue(tgeompoint,rast raquet,vspan floatspan) → boolean
+aRasterValue(tgeompoint,rast raquet[],vspan floatspan) → boolean
+aRasterValue(tgeompoint,rast raster[],validtime tstzspan[],vspan floatspan,
+  band integer=1) → boolean
+aRasterValue(tgeompoint,rast raquet[],validtime tstzspan[],vspan floatspan) → boolean
 </programlisting>
-				<para>Returns <varname>true</varname> when every pixel value <varname>traj</varname> reads over the raster lies within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does.</para>
+				<para>Returns <varname>true</varname> when every pixel value <varname>traj</varname> reads over the raster lies within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does. The forms taking a <varname>raquet</varname> tile or an array of tiles read the values <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> reads, the tile of highest zoom answering where tiles overlap. The forms taking an array of rasters or of tiles and the array of their periods read the series <link linkend="raster_rasterValueSeries"><varname>rasterValue</varname></link> reads.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that stayed entirely below 100 m elevation
 SELECT tripid FROM trips,

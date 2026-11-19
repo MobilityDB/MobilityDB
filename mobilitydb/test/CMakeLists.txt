@@ -29,6 +29,13 @@
 # registers its tests with mobilitydb_add_tests, and the schedule lists the
 # setup scripts of every module, which create and load the tables the tests
 # read, before the tests.
+#
+# The tests run concurrently, in one database, so a test leaves the tables of
+# the setup scripts as they are: it creates its tables as temporary tables and
+# its functions in pg_temp, it creates an index on a copy of a table of the
+# setup scripts, and it analyzes no such table. A test that cannot do so,
+# because it changes a table other tests read, is registered with ALONE and
+# runs when no other test does.
 
 # The temporary instance of the tests lies in tmptest under the build
 # directory, unless another directory is given at configure time
@@ -55,10 +62,16 @@ get_filename_component(PG_REGRESS
 
 # Register the tests of the module of the current directory: its setup
 # scripts, which run first in the order given, and every other file of its
-# sql directory. A test whose name ends in _pg<N> or _pgis<N> runs only with
-# PostgreSQL or PostGIS <N> or later.
+# sql directory. The tests after ALONE run by themselves. A test whose name
+# ends in _pg<N> or _pgis<N> runs only with PostgreSQL or PostGIS <N> or later.
 function(mobilitydb_add_tests)
-  cmake_parse_arguments(ARG "" "" "SETUP" ${ARGN})
+  cmake_parse_arguments(ARG "" "" "SETUP;ALONE" ${ARGN})
+  foreach(_name ${ARG_SETUP} ${ARG_ALONE})
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sql/${_name}.sql")
+      message(FATAL_ERROR "mobilitydb_add_tests: there is no test "
+        "${CMAKE_CURRENT_SOURCE_DIR}/sql/${_name}.sql")
+    endif()
+  endforeach()
   file(GLOB _files "${CMAKE_CURRENT_SOURCE_DIR}/sql/*.sql")
   list(SORT _files)
   foreach(_file ${_files})
@@ -77,6 +90,9 @@ function(mobilitydb_add_tests)
       continue()
     endif()
     set_property(GLOBAL APPEND PROPERTY MOBILITYDB_TESTS ${_name})
+    if(_name IN_LIST ARG_ALONE)
+      set_property(GLOBAL APPEND PROPERTY MOBILITYDB_TESTS_ALONE ${_name})
+    endif()
   endforeach()
   set_property(GLOBAL APPEND PROPERTY MOBILITYDB_TEST_SETUPS ${ARG_SETUP})
   set_property(GLOBAL APPEND PROPERTY MOBILITYDB_TEST_DIRS
@@ -127,10 +143,37 @@ get_property(MOBILITYDB_TEST_SETUPS GLOBAL PROPERTY MOBILITYDB_TEST_SETUPS)
 get_property(_tests GLOBAL PROPERTY MOBILITYDB_TESTS)
 get_property(MOBILITYDB_TEST_DIRS GLOBAL PROPERTY MOBILITYDB_TEST_DIRS)
 
+get_property(_alone GLOBAL PROPERTY MOBILITYDB_TESTS_ALONE)
+
+# A line of the schedule is a group of tests pg_regress runs at the same time,
+# each line after the one before. The setup scripts run one after the other.
+# The tests follow in their order, in groups of at most 20, a test registered
+# with ALONE ending the group before it and running by itself.
 set(_schedule "")
-foreach(_test ${MOBILITYDB_TEST_SETUPS} ${_tests})
+foreach(_test ${MOBILITYDB_TEST_SETUPS})
   string(APPEND _schedule "test: ${_test}\n")
 endforeach()
+set(_group "")
+macro(_end_group)
+  if(_group)
+    list(JOIN _group " " _group)
+    string(APPEND _schedule "test: ${_group}\n")
+    set(_group "")
+  endif()
+endmacro()
+foreach(_test ${_tests})
+  if(_test IN_LIST _alone)
+    _end_group()
+    string(APPEND _schedule "test: ${_test}\n")
+  else()
+    list(APPEND _group ${_test})
+    list(LENGTH _group _length)
+    if(_length EQUAL 20)
+      _end_group()
+    endif()
+  endif()
+endforeach()
+_end_group()
 file(WRITE ${MOBILITYDB_REGRESS_DIR}/schedule "${_schedule}")
 
 # The settings of the temporary instance

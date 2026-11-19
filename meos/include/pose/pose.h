@@ -97,8 +97,7 @@ extern void pose_compose_values(const double *parent, const double *child,
 /* Collinear and interpolation functions */
 
 extern bool pose_collinear(const Pose *pose1, const Pose *pose2,
-  const Pose *pose3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
-  bool constructed);
+  const Pose *pose3, TimestampTz t1, TimestampTz t2, TimestampTz t3);
 extern Pose *posesegm_interpolate(const Pose *start, const Pose *end,
   double ratio);
 extern long double posesegm_locate(const Pose *start, const Pose *end,

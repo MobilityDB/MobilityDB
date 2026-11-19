@@ -219,6 +219,24 @@ raquetarr_extract(ArrayType *array, int *count)
     NULL, count);
   return result;
 }
+
+/**
+ * @brief Extract a C array from a PostgreSQL array containing PostGIS rasters
+ * @details Each raster is detoasted, as #Raster_value() reads a single one,
+ * so that the raster core reads it whole
+ */
+Raster **
+rasterarr_extract(ArrayType *array, int *count)
+{
+  Datum *datums;
+  deconstruct_array(array, array->elemtype, -1, false, 'd', &datums, NULL,
+    count);
+  Raster **result = palloc(sizeof(Raster *) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = (Raster *) PG_DETOAST_DATUM(datums[i]);
+  pfree(datums);
+  return result;
+}
 #endif /* RASTER */
 
 /**

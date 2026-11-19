@@ -668,6 +668,8 @@ SELECT splitNSpans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-0
 SELECT splitEachNSpans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 2);
 SELECT mergeNSpans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 2);
 SELECT mergeEachNSpans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 2);
+SELECT mergeQuerySpans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', tstzspan '[2001-01-01, 2001-01-01 06:00]');
+SELECT mergeQuerySpans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', tstzspan '[2001-01-01, 2001-01-08]');
 
 -- A NULL operand of merge returns the other one
 SELECT merge(tnpoint 'Npoint(1, 0.5)@2001-01-01', NULL::tnpoint) = tnpoint 'Npoint(1, 0.5)@2001-01-01';

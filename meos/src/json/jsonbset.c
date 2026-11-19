@@ -208,8 +208,11 @@ jsonbset_value_n(const Set *s, int n, Jsonb **result)
 Jsonb **
 jsonbset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_JSONBSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_JSONBSET(s, NULL);
   Jsonb **result = palloc(sizeof(Jsonb *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetJsonbP(datum_copy(SET_VAL_N(s, i), s->basetype));

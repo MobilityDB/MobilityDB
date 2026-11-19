@@ -46,6 +46,7 @@
 #include "temporal/span.h"
 #include "temporal/spanset.h"
 #include "temporal/tnumber_mathfuncs.h"
+#include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
 #include "geo/tgeo_distance.h"
@@ -53,6 +54,7 @@
 #include "geo/tgeo_tempspatialrels.h"
 #include "geo/tspatial_parser.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_boxops.h"
 #include "cbuffer/tcbuffer_tempspatialrels.h"
 
@@ -161,10 +163,30 @@ tcbuffersegm_length_roots(const Cbuffer *sv1, const Cbuffer *ev1,
   const POINT2D *ept1 = cbuffer_point2d_p(ev1);
   const POINT2D *spt2 = cbuffer_point2d_p(sv2);
   const POINT2D *ept2 = cbuffer_point2d_p(ev2);
-  double dx0 = spt1->x - spt2->x;
-  double dy0 = spt1->y - spt2->y;
-  double dx = (ept1->x - spt1->x) - (ept2->x - spt2->x);
-  double dy = (ept1->y - spt1->y) - (ept2->y - spt2->y);
+  return tcbuffersegm_length_roots_xy(spt1->x - spt2->x, spt1->y - spt2->y,
+    (ept1->x - spt1->x) - (ept2->x - spt2->x),
+    (ept1->y - spt1->y) - (ept2->y - spt2->y), l0, l1, roots);
+}
+
+/**
+ * @brief Return the fractions of a segment at which a vector that varies
+ * linearly over the segment has a length that varies linearly over it
+ * @details The vector reads (dx0 + dx f, dy0 + dy f) over the fraction f in
+ * [0, 1] of the segment, and the length L(f) = (1 - f) l0 + f l1. This is
+ * the arithmetic of #tcbuffersegm_length_roots, whose vector is the
+ * difference of the centres of two circular buffer segments, given the
+ * coordinates of the vector.
+ * @param[in] dx0,dy0 Vector at the start of the segment
+ * @param[in] dx,dy Change of the vector over the segment
+ * @param[in] l0,l1 Length at the start and at the end of the segment
+ * @param[out] roots Fractions found, in increasing order
+ * @return Number of fractions found, from 0 to 2, or -1 when the length of
+ * the vector equals |L| throughout the segment
+ */
+int
+tcbuffersegm_length_roots_xy(double dx0, double dy0, double dx, double dy,
+  double l0, double l1, long double roots[2])
+{
   double dl = l1 - l0;
   /* The products are summed and the roots taken in extended precision, as
    * #tpointsegm_tdwithin_turnpt takes them */
@@ -786,26 +808,30 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   double dy = (ept1->y - spt1->y) - (ept2->y - spt2->y);
   double dr = (ev1->radius - sv1->radius) + (ev2->radius - sv2->radius);
 
-  /* Centres that keep their separation leave an affine gap, whose extrema are
-   * the endpoints the caller already reads */
+  /* The gap at the bounds, which the caller reads */
   double s = dx * dx + dy * dy;
-  if (s == 0.0)
-    return 0;
   double q = dx * dx0 + dy * dy0;
   double e = dx0 * dx0 + dy0 * dy0;
+  double gs = sqrt(e) - r0;
+  double ge = hypot(dx0 + dx, dy0 + dy) - (r0 + dr);
 
   /* g(f) = sqrt(e + 2qf + sf^2) - (r0 + dr f), and g'(f) = 0 reads
-   * q + s f = dr sqrt(e + 2qf + sf^2), which squares to the quadratic below */
+   * q + s f = dr sqrt(e + 2qf + sf^2), which squares to the quadratic below.
+   * The candidates are sought only for a gap that is not negative at either
+   * bound: one that is reaches its breakpoints where it crosses zero, read
+   * below. Centres that keep their separation (s = 0) leave an affine gap,
+   * whose extrema are the bounds */
   double cand[2];
   int ncand = 0;
-  if (dr == 0.0)
+  bool seek = (gs >= 0.0 && ge >= 0.0 && s > 0.0);
+  if (seek && dr == 0.0)
     /* A combined radius that does not change leaves the classic closest
      * approach of the two centres, which is what the temporal point family
      * reads and what the quadratic below degenerates to. Taking it directly
      * keeps the two families bit-compatible and keeps the fourth power s^2 out
      * of a degeneracy test that a segment of small relative motion trips */
     cand[ncand++] = -q / s;
-  else
+  else if (seek)
   {
     double a = s * (s - dr * dr);
     double b = 2 * q * (s - dr * dr);
@@ -821,11 +847,12 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
     else
     {
       double delta = b * b - 4 * a * c;
-      if (delta < 0.0)
-        return 0;
-      double sq = sqrt(delta);
-      cand[ncand++] = (-b - sq) / (2 * a);
-      cand[ncand++] = (-b + sq) / (2 * a);
+      if (delta >= 0.0)
+      {
+        double sq = sqrt(delta);
+        cand[ncand++] = (-b - sq) / (2 * a);
+        cand[ncand++] = (-b + sq) / (2 * a);
+      }
     }
   }
 
@@ -833,8 +860,6 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
    * convex, so it holds at most one interior extremum and that extremum is a
    * minimum lying strictly below both endpoints. Requiring that discards the
    * companion root the squaring introduces, on which g' has the wrong sign */
-  double gs = sqrt(e) - r0;
-  double ge = hypot(dx0 + dx, dy0 + dy) - (r0 + dr);
   double best = (gs < ge) ? gs : ge;
   double fbest = -1.0;
   for (int i = 0; i < ncand; i++)
@@ -849,17 +874,18 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
       fbest = f;
     }
   }
-  if (fbest < 0.0)
-    return 0;
 
-  /* A gap that dips below zero is clamped there by the distance itself, so the
-   * value is flat between the two instants at which it reaches zero and the
-   * minimum is no breakpoint of it. Those instants are where the two disks meet,
-   * which is the crossing question, and the dwithin turning point at a zero
-   * distance answers it */
+  /* A gap that is negative somewhere, at a bound or at its interior minimum,
+   * is clamped at zero by the distance itself, so the value is flat where the
+   * two disks overlap and its breakpoints are the instants at which they meet.
+   * That is the crossing question the dwithin turning point at a zero distance
+   * answers, and it holds as well where the gap has no interior extremum, the
+   * crossing inside being then the only kink of the distance */
   if (best < 0.0)
     return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
       lower, upper, tps, NULL, cap);
+  if (fbest < 0.0)
+    return 0;
 
   tps[0] = lower + (TimestampTz) ((double) (upper - lower) * fbest);
   return 1;
@@ -1211,10 +1237,12 @@ TInstant *
 tcbufferinst_tgeompointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TCBUFFER);
-  GSERIALIZED *point = cbuffer_point(DatumGetCbufferP(tinstant_value_p(inst)));
-  TInstant *result = tinstant_make(PointerGetDatum(point), T_TGEOMPOINT,
-    inst->t);
-  pfree(point);
+  /* The point is written from the coordinates of the centre, finite and
+   * planar in every circular buffer */
+  const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  TInstant *result = palloc(tpointinst_coords_size(false));
+  tpointinst_coords_set(result, NULL, cb->x, cb->y, 0.0, false, false,
+    cb->srid, inst->t);
   return result;
 }
 
@@ -1226,11 +1254,27 @@ TSequence *
 tcbufferseq_tgeompointseq(const TSequence *seq)
 {
   assert(seq); assert(seq->temptype == T_TCBUFFER);
+  /* The instants are written in one block, the instants after the first
+   * with its header, as #tpointseq_make_coords writes its points */
+  size_t slot = DOUBLE_PAD(tpointinst_coords_size(false));
+  char *block = palloc(slot * seq->count);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    instants[i] = tcbufferinst_tgeompointinst(TSEQUENCE_INST_N(seq, i));
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+    instants[i] = (TInstant *) (block + slot * i);
+    tpointinst_coords_set(instants[i], i ? instants[0] : NULL, cb->x, cb->y,
+      0.0, false, false, cb->srid, inst->t);
+  }
+  /* The centres of a temporal circular buffer share its SRID and its
+   * increasing timestamps, and equal circular buffers have equal centres,
+   * so the instants are not tested again */
+  TSequence *result = tsequence_make_exp1(instants, seq->count, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO, NULL);
+  pfree(instants); pfree(block);
+  return result;
 }
 
 /**
@@ -1517,8 +1561,11 @@ tcbuffer_value_n(const Temporal *temp, int n, Cbuffer **result)
 Cbuffer **
 tcbuffer_values(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TCBUFFER(temp, NULL);
 
   Datum *datumarr = temporal_values_p(temp, count);
   Cbuffer **result = palloc(sizeof(Cbuffer *) * *count);

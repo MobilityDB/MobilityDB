@@ -178,8 +178,11 @@ cbufferset_value_n(const Set *s, int n, Cbuffer **result)
 Cbuffer **
 cbufferset_values(const Set *s, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_CBUFFERSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_CBUFFERSET(s, NULL);
 
   Cbuffer **result = palloc(sizeof(Cbuffer *) * s->count);
   for (int i = 0; i < s->count; i++)

@@ -409,6 +409,9 @@
 					<listitem>
 						<para><link linkend="setspan_mergeEachNSpans"><varname>mergeEachNSpans</varname></link>: Devuelve un arreglo de lapsos obtenido fusionando los lapsos de los elementos de un conjunto o los lapsos de un conjunto de lapsos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que un lapso contenga en promedio un número dado de ellos</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="setspan_mergeQuerySpans"><varname>mergeQuerySpans</varname></link>: Devuelve un arreglo de lapsos obtenido fusionando los lapsos de los elementos de un conjunto o los lapsos de un conjunto de lapsos en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
@@ -1017,6 +1020,9 @@
 					<para><link linkend="geo_constructors"><varname>collect</varname>, <varname>makeLine</varname></link>: Devuelve la colección de un arreglo de geometrías o la línea que las une</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_makepoint"><varname>makePoint</varname></link>: Devuelve un punto geométrico a partir de sus coordenadas y su SRID</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_output"><varname>asText</varname>, <varname>asEWKT</varname>, <varname>asEWKB</varname>, <varname>asGeoJSON</varname></link>: Devuelve la representación Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary o GeoJSON de una geometría o una geografía</para>
 				</listitem>
 				<listitem>
@@ -1338,6 +1344,9 @@
 					<para><link linkend="ttype_mergeEachNSpans"><varname>mergeEachNSpans</varname></link>: Devuelve un arreglo de lapsos de tiempo obtenido fusionando los lapsos de tiempo de los instantes o segmentos de un valor temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que un lapso contenga en promedio un número dado de ellos</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeQuerySpans"><varname>mergeQuerySpans</varname></link>: Devuelve un arreglo de lapsos de tiempo obtenido fusionando los lapsos de tiempo de los instantes o segmentos de un valor temporal en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitNTboxes"><varname>splitNTboxes</varname></link>: Devuelve una matriz de N cuadros temporales obtenida fusionando los instantes o segmentos de un número temporal</para>
 				</listitem>
 				<listitem>
@@ -1350,6 +1359,9 @@
 					<para><link linkend="ttype_mergeEachNTboxes"><varname>mergeEachNTboxes</varname></link>: Devuelve un arreglo de cajas temporales obtenido fusionando las cajas de los instantes o segmentos de un número temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que una caja contenga en promedio un número dado de ellos</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_mergeQueryTboxes"><varname>mergeQueryTboxes</varname></link>: Devuelve un arreglo de cajas temporales obtenido fusionando las cajas de los instantes o segmentos de un número temporal en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_splitNStboxes"><varname>splitNStboxes</varname></link>: Devuelve ya sea una matriz de N cuadros espaciales obtenida fusionando los segmentos de una (multi)línea o una matriz de N cuadros espaciotemporales obtenida fusionando los instantes o segmentos de un punto temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
@@ -1360,6 +1372,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_mergeEachNStboxes"><varname>mergeEachNStboxes</varname></link>: Devuelve un arreglo de cajas espaciales obtenido fusionando las cajas de los segmentos de una (multi)línea, o de cajas espaciotemporales obtenido fusionando las cajas de los instantes o segmentos de un punto temporal, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos, hasta que una caja contenga en promedio un número dado de ellos</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttype_mergeQueryStboxes"><varname>mergeQueryStboxes</varname></link>: Devuelve un arreglo de cajas espaciales obtenido fusionando las cajas de los segmentos de una (multi)línea, o de cajas espaciotemporales obtenido fusionando las cajas de los instantes o segmentos de un punto temporal en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2769,6 +2784,9 @@
 				<listitem>
 					<para><link linkend="trgeometry_merge_boxes"><varname>mergeNStboxes</varname>, <varname>mergeEachNStboxes</varname>, <varname>mergeNSpans</varname>, <varname>mergeEachNSpans</varname></link>: Devuelve las cajas espaciotemporales o los lapsos de tiempo de una geometría rígida temporal fusionados en un número dado de cajas, o hasta que una caja contenga en promedio un número dado de segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_merge_query_boxes"><varname>mergeQueryStboxes</varname>, <varname>mergeQuerySpans</varname></link>: Devuelve las cajas espaciotemporales o los lapsos de tiempo de una geometría rígida temporal fusionados en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2981,7 +2999,7 @@
 					<para><link linkend="tjson_array_element"><varname>tjsonArrayElement</varname>, <varname>tjsonbArrayElement</varname>, <varname>tjsonbArrayElementText</varname></link>: Extrae un elemento de un arreglo JSON temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tjsonb_talphanum"><varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname></link>: Extrae un valor alfanumérico temporal de un valor JSONB temporal dado por una clave</para>
+					<para><link linkend="tjsonb_talphanum"><varname>tbool</varname>, <varname>tint</varname>, <varname>tbigint</varname>, <varname>tfloat</varname>, <varname>ttext</varname></link>: Extrae un valor alfanumérico temporal de un valor JSONB temporal dado por una clave</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tjsonb_tgeo"><varname>tgeompoint</varname>, <varname>tgeogpoint</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname></link>: Extrae un valor geo temporal de un valor JSONB temporal dado por una clave</para>
@@ -3105,6 +3123,15 @@
 				<listitem>
 					<para><link linkend="raquetFromHexWKB"><varname>rasterFromHexWKB</varname>, <varname>raquetFromHexWKB</varname></link>: Devuelve un ráster o una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_asCoverageJSON"><varname>asCoverageJSON</varname></link>: Devuelve un ráster, una tesela Raquet o los valores que lee una trayectoria como una cobertura CoverageJSON</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_asGDALRaster"><varname>asGDALRaster</varname>, <varname>asTIFF</varname>, <varname>asPNG</varname>, <varname>asJPEG</varname></link>: Devuelve un ráster escrito en un formato de GDAL</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="rasterFromGDALRaster"><varname>rasterFromGDALRaster</varname></link>: Devuelve un ráster leído de los bytes de un archivo en un formato de GDAL</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -3127,6 +3154,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="raster_addBand"><varname>addBand</varname></link>: Añade una banda a un ráster</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetFromRow"><varname>raquetFromRow</varname></link>: Devuelve la tesela de una banda de una fila de un archivo Raquet</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decodifica un archivo ráster en una tesela ráster Raquet mediante GDAL</para>
@@ -3598,6 +3628,9 @@
 					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Muestrea un arreglo de teselas ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_rasterValueSeries"><varname>rasterValue</varname>, <varname>rasterTileValue</varname></link>: Muestrea una serie de rásteres a lo largo de una trayectoria</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				</listitem>
 				<listitem>
@@ -3638,10 +3671,10 @@
 				<title>Entrada y salida</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pcpoint_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB) de un pcpoint o de un pcpatch</para>
+						<para><link linkend="pcpoint_asHexWKB"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB) de un pcpoint o de un pcpatch</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Entrada de un pcpoint o de un pcpatch a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
+						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromBinary</varname>, <varname>pcpatchFromBinary</varname>, <varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Entrada de un pcpoint o de un pcpatch a partir de su representación binaria conocida (WKB) o de su representación hexadecimal binaria conocida (HexWKB)</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3944,6 +3977,9 @@
 					<listitem>
 						<para><link linkend="tpcpoint_mergeNTpcboxes"><varname>mergeNTpcboxes</varname>, <varname>mergeEachNTpcboxes</varname></link>: Devuelve las cajas de nube de puntos de un tpcpoint fusionadas en un número dado de cajas, o hasta que una caja contenga en promedio un número dado de instantes o segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_mergeQueryTpcboxes"><varname>mergeQueryTpcboxes</varname>, <varname>mergeQuerySpans</varname></link>: Devuelve las cajas de nube de puntos o los lapsos de tiempo de un tpcpoint fusionados en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -4148,6 +4184,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_mergeNTpcboxes"><varname>mergeNTpcboxes</varname>, <varname>mergeEachNTpcboxes</varname></link>: Devuelve las cajas de nube de puntos de un tpcpatch fusionadas en un número dado de cajas, o hasta que una caja contenga en promedio un número dado de instantes o segmentos, cada vez el par consecutivo cuya unión añade el menor tamaño a los suyos</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_mergeQueryTpcboxes"><varname>mergeQueryTpcboxes</varname>, <varname>mergeQuerySpans</varname></link>: Devuelve las cajas de nube de puntos o los lapsos de tiempo de un tpcpatch fusionados en aquellos que una consulta de las extensiones de una caja de consulta debe leer en menor número esperado: los anchos de la caja de consulta son las extensiones de una consulta, su posición no se lee y una dimensión que le falta no restringe ninguna consulta</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

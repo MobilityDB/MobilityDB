@@ -89,8 +89,7 @@ extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,
 extern bool srid_matches_ways(int32_t srid);
 extern bool ensure_srid_ways(int32_t srid);
 extern bool npoint_collinear(const Npoint *np1, const Npoint *np2,
-  const Npoint *np3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
-  bool constructed);
+  const Npoint *np3, TimestampTz t1, TimestampTz t2, TimestampTz t3);
 
 /* Interpolation functions */
 
@@ -138,9 +137,11 @@ extern Datum datum_npoint_round(Datum npoint, Datum size);
 /* Conversion functions */
 
 extern const LWLINE *route_line(int64 rid);
-extern const LWLINE *route_line_bound(int64 rid, double *bound);
+extern const LWLINE *route_line_bound(int64 rid, double *bound,
+  const double **fracs);
 extern void route_point_at(const POINTARRAY *pa, double length,
-  double fraction, POINT4D *pt);
+  const double *fracs, double fraction, POINT4D *pt);
+extern double *route_segment_fractions(const POINTARRAY *pa);
 extern double *route_vertex_positions(const POINTARRAY *pa, int *count);
 extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst,
   double *bound);

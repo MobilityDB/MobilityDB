@@ -70,6 +70,12 @@ CREATE FUNCTION mergeEachNSpans(tpcpoint, integer)
   AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- mergeQuerySpans()
+CREATE FUNCTION mergeQuerySpans(tpcpoint, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- splitNTpcboxes()
 CREATE FUNCTION splitNTpcboxes(tpcpoint, integer)
   RETURNS tpcbox[]
@@ -92,6 +98,12 @@ CREATE FUNCTION mergeNTpcboxes(tpcpoint, integer)
 CREATE FUNCTION mergeEachNTpcboxes(tpcpoint, integer)
   RETURNS tpcbox[]
   AS 'MODULE_PATHNAME', 'Tpointcloud_merge_each_n_tpcboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeQueryTpcboxes()
+CREATE FUNCTION mergeQueryTpcboxes(tpcpoint, tpcbox)
+  RETURNS tpcbox[]
+  AS 'MODULE_PATHNAME', 'Tpointcloud_merge_query_tpcboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- tpcpatch
@@ -132,6 +144,12 @@ CREATE FUNCTION mergeEachNSpans(tpcpatch, integer)
   AS 'MODULE_PATHNAME', 'Temporal_merge_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- mergeQuerySpans()
+CREATE FUNCTION mergeQuerySpans(tpcpatch, tstzspan)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_merge_query_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- splitNTpcboxes()
 CREATE FUNCTION splitNTpcboxes(tpcpatch, integer)
   RETURNS tpcbox[]
@@ -154,6 +172,12 @@ CREATE FUNCTION mergeNTpcboxes(tpcpatch, integer)
 CREATE FUNCTION mergeEachNTpcboxes(tpcpatch, integer)
   RETURNS tpcbox[]
   AS 'MODULE_PATHNAME', 'Tpointcloud_merge_each_n_tpcboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- mergeQueryTpcboxes()
+CREATE FUNCTION mergeQueryTpcboxes(tpcpatch, tpcbox)
+  RETURNS tpcbox[]
+  AS 'MODULE_PATHNAME', 'Tpointcloud_merge_query_tpcboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

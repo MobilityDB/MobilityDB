@@ -46,6 +46,7 @@
 
 /* Restriction Functions */
 
+extern Temporal *tnumber_at_span_tstzspan(const Temporal *temp, const Span *s, const Span *p);
 extern TSequence *tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
 extern TSequence *tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
 extern TSequence *tdiscseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict);

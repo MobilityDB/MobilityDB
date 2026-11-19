@@ -365,6 +365,105 @@ SELECT rasterTileValue(tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01,
     Point(0 45)@2001-01-02]', raquet('\x14141414'::bytea, 2, 2,
     quadbinTileToCell(1, 0, 1), 'uint8'))) AS closed_end;
 
+-- The restrictions read a trip over a Raquet tile and over an array of tiles:
+-- the trip crosses from the western tile (value 10) into the eastern one
+-- (value 50) at 12:00.
+WITH tiles(w, e) AS (
+  SELECT raquet('\x0a0a0a0a'::bytea, 2, 2, quadbinTileToCell(0, 0, 1), 'uint8'),
+    raquet('\x32323232'::bytea, 2, 2, quadbinTileToCell(1, 0, 1), 'uint8')
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01, Point(90 45)@2001-01-02]'
+)
+SELECT asText(atRasterValue(tp, w, floatspan '[0, 20]')) AS at_tile,
+  minusRasterValue(tp, w, floatspan '[0, 20]') IS NULL AS minus_tile,
+  eRasterValue(tp, e, floatspan '[40, 60]') AS ever_tile,
+  aRasterValue(tp, w, floatspan '[40, 60]') AS always_tile,
+  asText(atRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]')) AS at_tiles,
+  asText(minusRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]')) AS minus_tiles,
+  eRasterValue(tp, ARRAY[w, e], floatspan '[40, 60]') AS ever_tiles,
+  aRasterValue(tp, ARRAY[w, e], floatspan '[0, 60]') AS always_tiles,
+  aRasterValue(tp, ARRAY[w, e], floatspan '[0, 20]') AS not_always_tiles
+FROM tiles, trip;
+SELECT atRasterValue(tgeompoint 'SRID=4326;Point(0 0)@2001-01-01',
+  '{}'::raquet[], floatspan '[0, 1]');
+
+-- A raster series is read through its rows, each raster over the part of the
+-- trip within its validity period. The trip crosses from the western pixel
+-- into the eastern one at 12:00; the raster valid until 06:00 holds 10 | 20,
+-- the one valid after holds 30 | 40, so the trip reads 10, then 30 from 06:00,
+-- then 40 from 12:00. The rows are read in the order of their periods,
+-- whatever their order in the arrays, and a time within no period reads no
+-- value.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS a,
+  ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[30, 40]]::double precision[][]) AS b),
+trip(t) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+periods(p) AS (
+  SELECT ARRAY[tstzspan '[2001-01-01, 2001-01-01 06:00)',
+    tstzspan '[2001-01-01 06:00, 2001-01-02]'])
+SELECT asText(rasterValue(t, ARRAY[a, b], p)) AS series,
+  asText(rasterValue(t, ARRAY[b, a], ARRAY[p[2], p[1]])) AS unordered,
+  asText(rasterValue(t, ARRAY[a, b], ARRAY[p[1],
+    tstzspan '[2001-01-01 18:00, 2001-01-02]'])) AS gap,
+  asText(atRasterValue(t, ARRAY[a, b], p, floatspan '[25, 35]')) AS at_series,
+  asText(minusRasterValue(t, ARRAY[a, b], p, floatspan '[25, 35]')) AS minus_series,
+  eRasterValue(t, ARRAY[a, b], p, floatspan '[35, 45]') AS ever_series,
+  aRasterValue(t, ARRAY[a, b], p, floatspan '[0, 45]') AS always_series,
+  aRasterValue(t, ARRAY[a, b], p, floatspan '[0, 35]') AS not_always_series
+FROM rast, trip, periods;
+-- Periods that overlap would give two values at one time, and the rasters and
+-- their periods are paired one to one.
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 1::float8, NULL::float8) AS r)
+SELECT rasterValue(tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[r, r], ARRAY[tstzspan '[2001-01-01, 2001-01-01 12:00]',
+  tstzspan '[2001-01-01 06:00, 2001-01-02]']) FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 1::float8, NULL::float8) AS r)
+SELECT rasterValue(tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[r, r], ARRAY[tstzspan '[2001-01-01, 2001-01-02]']) FROM rast;
+-- Two rasters of one place valid over one period are one tile given twice:
+-- read where they hold one value, refused where they hold two.
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 7::float8, NULL::float8) AS r7,
+  ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 9::float8, NULL::float8) AS r9)
+SELECT asText(rasterValue(tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[r7, r7], ARRAY[tstzspan '[2001-01-01, 2001-01-02]',
+  tstzspan '[2001-01-01, 2001-01-02]'])) AS one_value FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 7::float8, NULL::float8) AS r7,
+  ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '8BUI'::text, 9::float8, NULL::float8) AS r9)
+SELECT rasterValue(tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]',
+  ARRAY[r7, r9], ARRAY[tstzspan '[2001-01-01, 2001-01-02]',
+  tstzspan '[2001-01-01, 2001-01-02]']) FROM rast;
+-- A series of Raquet tiles is read the same way: the western tile holds 10
+-- until 06:00 and 30 after it, read along a trip within it.
+WITH tiles(w10, w30) AS (
+  SELECT raquet('\x0a0a0a0a'::bytea, 2, 2, quadbinTileToCell(0, 0, 1), 'uint8'),
+    raquet('\x1e1e1e1e'::bytea, 2, 2, quadbinTileToCell(0, 0, 1), 'uint8')
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01, Point(-10 45)@2001-01-02]'
+), periods(p) AS (
+  SELECT ARRAY[tstzspan '[2001-01-01, 2001-01-01 06:00)',
+    tstzspan '[2001-01-01 06:00, 2001-01-02]'])
+SELECT asText(rasterTileValue(tp, ARRAY[w10, w30], p)) AS tile_series,
+  asText(atRasterValue(tp, ARRAY[w10, w30], p, floatspan '[25, 35]')) AS at_tiles,
+  asText(minusRasterValue(tp, ARRAY[w10, w30], p, floatspan '[25, 35]')) AS minus_tiles,
+  eRasterValue(tp, ARRAY[w10, w30], p, floatspan '[0, 15]') AS ever_tiles,
+  aRasterValue(tp, ARRAY[w10, w30], p, floatspan '[0, 15]') AS always_tiles
+FROM tiles, trip, periods;
+
 -- Tiles valid over successive half-open periods are read along a trip one
 -- period at a time and the reads merged: here the trip crosses from one tile
 -- into the other at 12:00, where a period also starts.
@@ -384,6 +483,33 @@ SELECT asText(merge(array_agg(rasterTileValue(atTime(tp, period), tile)
   IS NOT NULL))) AS per_period
 FROM trip, tiles
 WHERE period && timeSpan(tp);
+
+-- The overload of rasterTileValue over a series reads the same tiles and
+-- periods in one walk, the tiles of one period read together, and answers the
+-- per-period reads merged above.
+WITH tiles(quadbin, period, tile) AS (
+  SELECT quadbinTileToCell(x, 0, 1), p.period,
+    raquet(decode(repeat(lpad(to_hex(p.v + x), 2, '0'), 4), 'hex'), 2, 2,
+      quadbinTileToCell(x, 0, 1), 'uint8')
+  FROM generate_series(0, 1) x,
+    (VALUES (tstzspan '[2001-01-01 00:00:00, 2001-01-01 06:00:00)', 10),
+            (tstzspan '[2001-01-01 06:00:00, 2001-01-01 12:00:00)', 30),
+            (tstzspan '[2001-01-01 12:00:00, 2001-01-02 00:00:00]', 50)) AS p(period, v)
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01, Point(90 45)@2001-01-02]'
+), per_period(v) AS (
+  SELECT merge(array_agg(rasterTileValue(atTime(tp, period), tile)
+    ORDER BY period, quadbin) FILTER (WHERE rasterTileValue(atTime(tp, period),
+    tile) IS NOT NULL))
+  FROM trip, tiles
+  WHERE period && timeSpan(tp)
+)
+SELECT asText(rasterTileValue(tp, array_agg(tile ORDER BY quadbin DESC),
+    array_agg(period ORDER BY quadbin DESC))) AS series,
+  rasterTileValue(tp, array_agg(tile), array_agg(period)) = (SELECT v FROM per_period)
+    AS series_is_per_period
+FROM trip, tiles
+GROUP BY tp;
 
 -- The reads of a trip cut at half-open periods, one of them ending where the
 -- trip crosses into the next pixel, merge into the read of the whole trip.
@@ -1097,6 +1223,189 @@ SELECT rasterFromBinary(asBinary(r, 'XDR')) = r AS xdr,
   get_byte(asBinary(r, 'XDR'), 0) AS xdr_first_byte,
   asBinary(r, 'XDR') <> asBinary(r, 'NDR') AS orders_differ
 FROM rast;
+
+-- A row of a Raquet file is read into a tile as an engine scanning the
+-- Parquet file hands it over: its block, the bytes of a band and the metadata
+-- of the file. Raw, gzip and zlib bands give the tile the constructor gives;
+-- an interleaved column gives each of its bands; a JPEG image gives its band.
+WITH m(meta, inter, img, cell) AS (SELECT
+  '{"file_format": "raquet", "version": "0.5.0", "tiling": {"scheme": "quadbin", "block_width": 2, "block_height": 2}, "bands": [{"name": "band_1", "type": "uint8", "nodata": 0}]}'::text,
+  '{"file_format": "raquet", "band_layout": "interleaved", "tiling": {"block_width": 2, "block_height": 2}, "bands": [{"name": "r", "type": "uint8", "nodata": null}, {"name": "g", "type": "uint8", "nodata": null}]}'::text,
+  '{"file_format": "raquet", "band_layout": "interleaved", "compression": "jpeg", "tiling": {"block_width": 2, "block_height": 2}, "bands": [{"name": "band_1", "type": "uint8", "nodata": null}]}'::text,
+  quadbinTileToCell(1, 0, 1)::bigint)
+SELECT raquetFromRow(cell, '\x01020304'::bytea, meta) =
+    raquet('\x01020304'::bytea, 2, 2, cell::quadbin, 'uint8', 0) AS raw,
+  raquetFromRow(cell, '\x1f8b08000000000002ff636462660100cdfb3cb604000000'::bytea,
+    replace(meta, '"version"', '"compression": "gzip", "version"')) =
+    raquetFromRow(cell, '\x01020304'::bytea, meta) AS gzip,
+  raquetFromRow(cell, '\x789c6364626601000018000b'::bytea,
+    replace(meta, '"version"', '"compression": "gzip", "version"')) =
+    raquetFromRow(cell, '\x01020304'::bytea, meta) AS zlib,
+  pixels(raquetFromRow(cell, '\x010a0214031e0428'::bytea, inter, 2)) AS second_band,
+  pixels(raquetFromRow(cell, '\xffd8ffe000104a46494600010100000100010000ffdb004300080606070605080707070909080a0c140d0c0b0b0c1912130f141d1a1f1e1d1a1c1c20242e2720222c231c1c2837292c30313434341f27393d38323c2e333432ffc0000b080002000201011100ffc40014000100000000000000000000000000000005ffc40014100100000000000000000000000000000000ffda0008010100003f000dffd9'::bytea, img)) AS jpeg_band
+FROM m;
+-- The metadata row, a band the metadata does not state, a band of the wrong
+-- size and a band stating a scale are refused.
+SELECT raquetFromRow(0, '\x01020304'::bytea, '{}');
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x01020304'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8"}]}', 2);
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x010203'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8"}]}');
+SELECT raquetFromRow(quadbinTileToCell(1, 0, 1)::bigint, '\x01020304'::bytea,
+  '{"tiling": {"block_width": 2, "block_height": 2}, "bands": [{"type": "uint8", "scale": 0.5}]}');
+
+-- A raster is a CoverageJSON grid coverage: its axes run from the centre of
+-- the first pixel to the centre of the last, a band is a parameter whose
+-- values run row by row from the top, a nodata pixel is null.
+SELECT asCoverageJSON(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+  '16BSI'::text, 7::float8, 0::float8), 1, 1, 1,
+  ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]));
+-- EPSG:4326 is stated as OGC CRS84, its longitude first as MEOS states it,
+-- and a band of floats has float values.
+SELECT (asCoverageJSON(ST_AddBand(
+  ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 0.5, -1.0, 0.0, 0.0, 4326),
+  '32BF'::text, 1.5::float8, NULL::float8))::json)
+  #> '{domain,referencing,0,system,id}' AS crs84;
+-- A Raquet tile is a grid of Web Mercator over the bounds of its cell: its
+-- axes run between the centres of its pixels, read here to the centimetre.
+SELECT j #>> '{domain,domainType}' AS domain,
+  round((j #>> '{domain,axes,x,start}')::numeric, 2) AS x_start,
+  round((j #>> '{domain,axes,x,stop}')::numeric, 2) AS x_stop,
+  round((j #>> '{domain,axes,y,start}')::numeric, 2) AS y_start,
+  round((j #>> '{domain,axes,y,stop}')::numeric, 2) AS y_stop,
+  j #>> '{domain,axes,x,num}' AS num,
+  j #>> '{domain,referencing,0,system,id}' AS crs,
+  j #> '{ranges,band1,values}' AS band1
+FROM (SELECT asCoverageJSON(raquet('\x01020304'::bytea, 2, 2,
+  quadbinTileToCell(1, 0, 1), 'uint8'))::json AS j) t;
+-- The values a trip reads are a trajectory coverage, each value at the
+-- position of the trip at its instant.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS r),
+trip(t) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]')
+SELECT asCoverageJSON(rasterValue(t, r), t) FROM rast, trip;
+-- The values a step trajectory reads keep its bounds and its gaps: each
+-- sequence is read alone, a run ends at an instant with no value (a nodata
+-- pixel or a position outside the raster), its last value holding up to that
+-- instant, excluded, and the first and the last runs take the bounds of the
+-- sequence. The raster is 3 x 1 over (0, 0)-(3, 1), valued 10, nodata, 30.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, 0::float8), 1, 1, 1,
+    ARRAY[[10, 0, 30]]::double precision[][]) AS r),
+trips(name, t) AS (VALUES
+  ('01 closed-open', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02)'),
+  ('02 open-closed', tgeompoint 'SRID=4326;Interp=Step;(Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02]'),
+  ('03 open-open', tgeompoint 'SRID=4326;Interp=Step;(Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03)'),
+  ('04 two pixels', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03]'),
+  ('05 nodata in the middle', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03]'),
+  ('06 nodata at the end', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('07 nodata at the start', tgeompoint 'SRID=4326;Interp=Step;[Point(1.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03]'),
+  ('08 outside in the middle', tgeompoint 'SRID=4326;Interp=Step;[Point(0.5 0.5)@2001-01-01, Point(5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03]'),
+  ('09 one instant', tgeompoint 'SRID=4326;Interp=Step;[Point(2.5 0.5)@2001-01-01]'),
+  ('10 sequence set', tgeompoint 'SRID=4326;Interp=Step;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(2.5 0.5)@2001-01-04, Point(2.5 0.5)@2001-01-05)}'),
+  ('11 sequence set, one all nodata', tgeompoint 'SRID=4326;Interp=Step;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(1.5 0.5)@2001-01-04, Point(1.5 0.5)@2001-01-05]}'),
+  ('12 discrete, unchanged', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(2.5 0.5)@2001-01-03}'),
+  ('13 linear, unchanged', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02)'))
+SELECT name, rasterValue(t, r) FROM rast, trips ORDER BY name;
+-- A step point held across two adjacent periods of a raster series reads
+-- each period's raster over its part, the January part open at February.
+WITH series(v, r) AS (VALUES
+  (tstzspan '[2024-01-01, 2024-02-01)', ST_AddBand(ST_MakeEmptyRaster(2, 2,
+    0, 2, 1, -1, 0, 0, 4326), '8BUI'::text, 1, 0)),
+  (tstzspan '[2024-02-01, 2024-03-01)', ST_AddBand(ST_MakeEmptyRaster(2, 2,
+    0, 2, 1, -1, 0, 0, 4326), '8BUI'::text, 5, 0)))
+SELECT rasterValue(tgeompoint(ST_GeomFromText('POINT(0.5 1)', 4326),
+  tstzspan '[2024-01-15, 2024-02-15]', 'Step'), array_agg(r ORDER BY v),
+  array_agg(v ORDER BY v), 1)
+FROM series;
+-- The domain follows the positions of the values: one instant is a Point, a
+-- stationary point read over time a PointSeries, a trajectory that moves a
+-- Trajectory.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10, 20]]::double precision[][]) AS r),
+trips(name, t) AS (VALUES
+  ('01 instant', tgeompoint 'SRID=4326;Point(1.5 0.5)@2001-01-01'),
+  ('02 instant, first pixel', tgeompoint 'SRID=4326;Point(0.25 0.75)@2001-01-01'),
+  ('03 stationary, discrete', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03}'),
+  ('04 stationary, two instants far apart', tgeompoint 'SRID=4326;{Point(1.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-12-31}'),
+  ('05 stationary, linear', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02]'),
+  ('06 stationary, step', tgeompoint 'SRID=4326;Interp=Step;[Point(1.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('07 stationary, with a gap', tgeompoint 'SRID=4326;{[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-02], [Point(0.5 0.5)@2001-01-04, Point(0.5 0.5)@2001-01-05]}'),
+  ('08 moving, discrete', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02}'),
+  ('09 moving, linear across the pixels', tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02]'),
+  ('10 moving within one pixel', tgeompoint 'SRID=4326;{Point(0.25 0.5)@2001-01-01, Point(0.75 0.5)@2001-01-02}'),
+  ('11 moving, then stopped', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(1.5 0.5)@2001-01-03}'),
+  ('12 moving, back to the start', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(1.5 0.5)@2001-01-02, Point(0.5 0.5)@2001-01-03}'),
+  ('13 moving, one coordinate apart', tgeompoint 'SRID=4326;{Point(0.5 0.5)@2001-01-01, Point(0.5 0.25)@2001-01-02}'))
+SELECT name, c::json #>> '{domain,domainType}' AS domain,
+  c::json #> '{domain,axes}' AS axes,
+  c::json #> '{ranges,value,axisNames}' AS range_axes,
+  c::json #> '{ranges,value,values}' AS range_values
+FROM (SELECT name, asCoverageJSON(rasterValue(t, r), t) AS c FROM rast, trips) s
+ORDER BY name;
+-- A raster with a skew and a raster in no reference system are refused.
+SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0,
+  4326));
+SELECT asCoverageJSON(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  0));
+
+-- A raster is written in a format of GDAL as PostGIS writes it and read as
+-- PostGIS reads it, and a GeoTIFF read back keeps the values of every band,
+-- the georeferencing and the SRID: three bands of 16 signed bits sharing
+-- their pixel type and their nodata value, the one of each a TIFF holds for
+-- all its bands, in EPSG:3857.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 3857),
+    '16BSI'::text, 7::float8, 0::float8),
+    '16BSI'::text, -3::float8, 0::float8),
+    '16BSI'::text, 1::float8, 0::float8), 1, 1, 1,
+    ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]) AS r),
+back AS (
+  SELECT r, rasterFromGDALRaster(asTIFF(r)) AS b FROM rast)
+SELECT asTIFF(r) = ST_AsTIFF(r) AS writes_as_postgis,
+  asGDALRaster(r, 'GTiff') = ST_AsGDALRaster(r, 'GTiff') AS gdal_as_postgis,
+  asHexWKB(b) = asHexWKB(ST_FromGDALRaster(ST_AsTIFF(r))) AS reads_as_postgis,
+  dumpValues(b, 1) = dumpValues(r, 1) AND dumpValues(b, 2) = dumpValues(r, 2)
+    AND dumpValues(b, 3) = dumpValues(r, 3) AS values_kept,
+  bandPixelType(b, 1) || ' ' || bandPixelType(b, 2) || ' ' ||
+    bandPixelType(b, 3) AS pixel_types,
+  width(b) = width(r) AND height(b) = height(r) AND
+    upperLeftX(b) = upperLeftX(r) AND upperLeftY(b) = upperLeftY(r) AND
+    scaleX(b) = scaleX(r) AND scaleY(b) = scaleY(r) AS grid_kept,
+  dumpValues(rasterFromGDALRaster(asTIFF(r, ARRAY['COMPRESS=DEFLATE',
+    'TILED=YES'])), 1) = dumpValues(r, 1) AS deflate_kept,
+  SRID(b) AS srid_of_file,
+  SRID(rasterFromGDALRaster(asTIFF(r), 4326)) AS srid_given,
+  SRID(rasterFromGDALRaster(asTIFF(r, NULL, 4326))) AS srid_written
+FROM back;
+
+-- An image is written by the drivers that take its bands: PNG and JPEG of one
+-- band of 8 unsigned bits, each opening with its own signature.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[0, 64, 128, 255], [0, 64, 128, 255], [0, 64, 128, 255],
+          [0, 64, 128, 255]]::double precision[][]) AS r)
+SELECT encode(substring(asPNG(r) from 1 for 8), 'hex') AS png_signature,
+  encode(substring(asJPEG(r) from 1 for 2), 'hex') AS jpeg_signature,
+  dumpValues(rasterFromGDALRaster(asPNG(r)), 1) =
+    dumpValues(r, 1) AS png_values
+FROM rast;
+
+-- A format GDAL has no driver of, and bytes that are no raster file, are
+-- refused.
+SELECT asGDALRaster(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  4326), 'NoSuchFormat');
+SELECT rasterFromGDALRaster('\x0102030405'::bytea);
 
 -- A string shorter than the raster it states is refused, not read past its end.
 SELECT rasterFromHexWKB('0100');

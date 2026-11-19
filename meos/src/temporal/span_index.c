@@ -194,4 +194,21 @@ span_size(const void *bbox)
   return distance_value_value_double(s->lower, s->upper, s->basetype);
 }
 
+/**
+ * @brief Return the size of a span for a query span: its width plus the
+ * width of the query span, to which a query of that width placed at random
+ * reads it in proportion
+ * @details The query twin of #span_size, the widths read as it reads them
+ * @param[in] bbox Span
+ * @param[in] query Query span, of the span type of the span
+ */
+double
+span_query_size(const void *bbox, const void *query)
+{
+  assert(bbox); assert(query);
+  const Span *q = (const Span *) query;
+  assert(((const Span *) bbox)->spantype == q->spantype);
+  return span_size(bbox) + span_size(q);
+}
+
 /*****************************************************************************/

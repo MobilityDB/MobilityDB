@@ -954,12 +954,13 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool border_inc, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
   *count = 0;
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
@@ -984,6 +985,9 @@ STBox *
 stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
   const GSERIALIZED *sorigin,  bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
@@ -1009,6 +1013,9 @@ STBox *
 stbox_time_tiles(const STBox *bounds, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, NULL);
   return stbox_space_time_tiles_intl(bounds, 0.0, 0.0, 0.0, duration, NULL,
@@ -1272,12 +1279,13 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
   *count = 0;
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
@@ -1305,12 +1313,13 @@ tgeo_space_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
   *count = 0;
   VALIDATE_TGEO(temp, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
@@ -1337,9 +1346,10 @@ STBox *
 tgeo_time_boxes(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   *count = 0;
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   return tspatial_space_time_boxes(temp, 0.0, 0.0, 0.0, duration, NULL,
@@ -1587,7 +1597,8 @@ tpointsegm_set_tiles(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting a temporal point
- * sequence with discrete or step interpolation, which lies at its instants
+ * sequence with discrete interpolation or of one instant, which lies at its
+ * instants
  * @param[in] seq Temporal point
  * @param[in] tb Bounds of the tiles of the grid
  * @param[out] bm Bit matrix
@@ -1603,6 +1614,43 @@ tpointseq_disc_set_tiles(const TSequence *seq, const TileBounds *tb,
     tpointinst_tile_coords(TSEQUENCE_INST_N(seq, i), tb, coords);
     bitmatrix_set_cell(bm, coords, true);
     result++;
+  }
+  return result;
+}
+
+/**
+ * @brief Set the bit corresponding to the tiles intersecting a temporal point
+ * sequence with step interpolation
+ * @details The value stays at the position of an instant up to the next
+ * instant, so the tile of that position is set, as #tpointseq_disc_set_tiles
+ * sets it, in every time bin from the one of the instant to the one of the
+ * next instant, the bins #tpointsegm_set_tiles crosses for a segment
+ * @param[in] seq Temporal point
+ * @param[in] tb Bounds of the tiles of the grid
+ * @param[out] bm Bit matrix
+ */
+static int
+tpointseq_step_set_tiles(const TSequence *seq, const TileBounds *tb,
+  BitMatrix *bm)
+{
+  assert(seq); assert(tb);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
+  int coords[MAXDIMS], result = 0;
+  memset(coords, 0, sizeof(coords));
+  for (int i = 0; i < seq->count; i++)
+  {
+    tpointinst_tile_coords(TSEQUENCE_INST_N(seq, i), tb, coords);
+    bitmatrix_set_cell(bm, coords, true);
+    result++;
+    if (! tb->hast || i == seq->count - 1)
+      continue;
+    int last = tile_bounds_tindex(tb, TSEQUENCE_INST_N(seq, i + 1)->t);
+    while (coords[tb->nspace] < last)
+    {
+      coords[tb->nspace]++;
+      bitmatrix_set_cell(bm, coords, true);
+      result++;
+    }
   }
   return result;
 }
@@ -1630,6 +1678,9 @@ tpointseq_cont_set_tiles(const TSequence *seq, const TileBounds *tb,
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal
  * point sequence
+ * @details A sequence of one instant lies at its instant whatever its
+ * interpolation, as a sequence of a sequence set may, and takes the tile of
+ * its instant as #tpointseq_disc_set_tiles sets it
  * @param[in] seq Temporal point
  * @param[in] tb Bounds of the tiles of the grid
  * @param[out] bm Bit matrix
@@ -1637,9 +1688,11 @@ tpointseq_cont_set_tiles(const TSequence *seq, const TileBounds *tb,
 static inline int
 tpointseq_set_tiles(const TSequence *seq, const TileBounds *tb, BitMatrix *bm)
 {
+  if (seq->count == 1 || MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return tpointseq_disc_set_tiles(seq, tb, bm);
   return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
     tpointseq_cont_set_tiles(seq, tb, bm) :
-    tpointseq_disc_set_tiles(seq, tb, bm);
+    tpointseq_step_set_tiles(seq, tb, bm);
 }
 
 /**
@@ -1939,12 +1992,13 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count)
 {
-  /* Ensure the validity of the arguments */
+  /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
   *count = 0;
   VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
@@ -1974,6 +2028,9 @@ tgeo_space_split(const Temporal *temp, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_bins, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
   if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
       ! ensure_finite(zsize))

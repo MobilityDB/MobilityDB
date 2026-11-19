@@ -135,6 +135,18 @@ SELECT tbigint(tjsonb '"{\"a\":\"1\", \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tfloat(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tfloat(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tfloat(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
+-- A number is converted as PostgreSQL casts a numeric: an integer is the
+-- number rounded to the nearest, half away from zero, and a float the double
+-- nearest the number, whether the JSON value is a number or a string
+SELECT tint(tjsonb '[{"a":1.7}@2001-01-01, {"a":-1.7}@2001-01-02, {"a":-2.5}@2001-01-03, {"a":"1.7"}@2001-01-04]', text 'a');
+SELECT tint(tjsonb '"{\"a\":-2147483648}"@2001-01-01', text 'a');
+SELECT tbigint(tjsonb '[{"a":1.7}@2001-01-01, {"a":-2.5}@2001-01-02, {"a":"2.5"}@2001-01-03]', text 'a');
+SELECT tbigint(tjsonb '[{"a":9007199254740993}@2001-01-01, {"a":"9007199254740995"}@2001-01-02, {"a":-9223372036854775808}@2001-01-03]', text 'a');
+SELECT asText(tfloat(tjsonb '[{"a":0.1}@2001-01-01, {"a":"1e-5"}@2001-01-02, {"a":1234.56789012}@2001-01-03]', text 'a', 'step'), 6);
+-- Every number is a value, the largest double included, and a missing key
+-- alone has none
+SELECT numInstants(t), startValue(t) = 1.7976931348623157e308, endValue(t) = -1.7976931348623157e308
+FROM (SELECT tfloat(tjsonb '[{"a":1.7976931348623157e308}@2001-01-01, {"b":1}@2001-01-02, {"a":-1.7976931348623157e308}@2001-01-03]', text 'a', 'step', 'delete_key') AS t) AS x;
 -- The interpolation of a temporal float is the one asked, linear by default
 SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-03]', text 'b');
 SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-03]', text 'b', 'step');
@@ -168,6 +180,11 @@ SELECT asEWKT(tgeography(tjsonb '[{"area":"Polygon((4 50,5 50,5 51,4 50))"}@2001
 /* Errors */
 SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'xxx');
 SELECT tint(tjsonb '"{\"a\":\"xxx\", \"b\":2.5}"@2001-01-01', text 'a');
+SELECT tint(tjsonb '"{\"a\":2147483648}"@2001-01-01', text 'a');
+SELECT tint(tjsonb '"{\"a\":\"-2147483649\"}"@2001-01-01', text 'a');
+SELECT tbigint(tjsonb '"{\"a\":9223372036854775808}"@2001-01-01', text 'a');
+SELECT tint(tjsonb '"{\"a\":\"12abc\"}"@2001-01-01', text 'a');
+SELECT tint(tjsonb '"{\"a\":2147483647}"@2001-01-01', text 'a', 'delete_key');
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Polygon((0 0,1 0,1 1,0 0))\"}"@2001-01-01', text 'pos');
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 xxx)\"}"@2001-01-01', text 'pos');
 SELECT tgeompoint(tjsonb '"{\"pos\":1}"@2001-01-01', text 'pos');

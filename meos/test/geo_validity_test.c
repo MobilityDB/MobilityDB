@@ -53,7 +53,8 @@
  * point, its M encoding the time or the measure. And it verifies that
  * #line_locate_point answers -1.0 with no error for an empty line or point,
  * which have no position to locate, as `doc/specs/meos-empty-geometries.md`
- * states.
+ * states. Last, it verifies that #geo_stboxes, #geo_split_n_stboxes and
+ * #geo_split_each_n_stboxes report a null count rather than write through it.
  *
  * The program can be build as follows
  * @code
@@ -359,6 +360,39 @@ int main(void)
     meos_errno());
   assert(frac == 1.0 && meos_errno() == 0);
   free(lline); free(lpoint); free(eline); free(epoint);
+
+  /* The functions splitting a line into boxes report a null count rather
+   * than write through it */
+  GSERIALIZED *bline = geom_in("Linestring(0 0,1 1,2 0)", -1);
+  STBox *boxes = geo_stboxes(bline, NULL);
+  printf("geo_stboxes(line, NULL): %s, errno %d\n",
+    boxes ? "a value" : "NULL", meos_errno());
+  assert(boxes == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxes = geo_split_n_stboxes(bline, 1, NULL);
+  printf("geo_split_n_stboxes(line, 1, NULL): %s, errno %d\n",
+    boxes ? "a value" : "NULL", meos_errno());
+  assert(boxes == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxes = geo_split_each_n_stboxes(bline, 1, NULL);
+  printf("geo_split_each_n_stboxes(line, 1, NULL): %s, errno %d\n",
+    boxes ? "a value" : "NULL", meos_errno());
+  assert(boxes == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+
+  /* A null line is reported and the count is left at zero, and a valid call
+   * still answers one box per segment with no error left behind */
+  int count = -1;
+  boxes = geo_stboxes(NULL, &count);
+  printf("geo_stboxes(NULL, &count): %s, count %d, errno %d\n",
+    boxes ? "a value" : "NULL", count, meos_errno());
+  assert(boxes == NULL && count == 0 && meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxes = geo_stboxes(bline, &count);
+  printf("geo_stboxes(line, &count): %s, count %d, errno %d\n",
+    boxes ? "a value" : "NULL", count, meos_errno());
+  assert(boxes != NULL && count == 2 && meos_errno() == 0);
+  free(boxes); free(bline);
 
   /* Finalize MEOS */
   meos_finalize();

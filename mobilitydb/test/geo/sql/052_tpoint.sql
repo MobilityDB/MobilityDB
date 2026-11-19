@@ -396,7 +396,7 @@ SELECT asEWKT(tgeompoint(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_tgeompointinst_test;
-CREATE TEMP TABLE tbl_tgeompointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeompoint_seq;
+CREATE TEMP TABLE tbl_tgeompointinst_test AS SELECT k, unnest(instants(temp)) AS inst FROM tbl_tgeompoint_contseq;
 WITH temp AS (
   SELECT numSequences(tgeompointSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tgeompointinst_test GROUP BY k )
@@ -404,7 +404,7 @@ SELECT MAX(numSequences) FROM temp;
 DROP TABLE tbl_tgeompointinst_test;
 
 DROP TABLE IF EXISTS tbl_tgeogpointinst_test;
-CREATE TEMP TABLE tbl_tgeogpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeogpoint_seq;
+CREATE TEMP TABLE tbl_tgeogpointinst_test AS SELECT k, unnest(instants(temp)) AS inst FROM tbl_tgeogpoint_contseq;
 WITH temp AS (
   SELECT numSequences(tgeogpointSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
   FROM tbl_tgeogpointinst_test GROUP BY k )
@@ -834,6 +834,15 @@ SELECT numInstants(tgeogpoint 'Point(1.5 1.5)@2001-01-01');
 SELECT numInstants(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}');
 SELECT numInstants(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]');
 SELECT numInstants(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}');
+-- A geography sequence drops a middle instant where the doubles prove it on the
+-- path: on the equator, on one meridian and at the middle a half turn proves,
+-- and keeps one only floating trigonometry places on its arc; two pieces cut
+-- at an instant a restriction constructs merge back into one segment
+SELECT numInstants(tgeogpoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02, Point(2 0)@2001-01-03]');
+SELECT numInstants(tgeogpoint '[Point(5 0)@2001-01-01, Point(5 1)@2001-01-02, Point(5 2)@2001-01-03]');
+SELECT numInstants(tgeogpoint '[Point(12 3)@2001-01-01, Point(10 0)@2001-01-02, Point(8 -3)@2001-01-03]');
+SELECT numInstants(tgeogpoint '[Point(1 1)@2001-01-01, Point(1.4996952201137808 2.0000760948915994)@2001-01-02, Point(2 3)@2001-01-03]');
+SELECT numInstants(merge(atTime(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 3)@2001-01-02]', tstzspan '[2001-01-01, 2001-01-01 07:00]'), atTime(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 3)@2001-01-02]', tstzspan '[2001-01-01 07:00, 2001-01-02]')));
 
 SELECT asEWKT(startInstant(tgeompoint 'Point(1 1)@2001-01-01'));
 SELECT asEWKT(startInstant(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'));
