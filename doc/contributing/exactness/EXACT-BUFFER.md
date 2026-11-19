@@ -190,12 +190,12 @@ items).
   holes. Its restructure into the arrangement's own passes, stated above, comes first.
 - **The union a relationship reads for a collection** of areal members not shown apart
   (`relate_union_edges`) cuts an edge of one member only where an edge of another meets it,
-  MobilityDB #3829 (open): master cut a curve polygon's edge where an adjacent arc of the same
+  MobilityDB #3829 (merged as `9601c1c7da`): master cut a curve polygon's edge where an adjacent arc of the same
   member meets it tangentially, about 1e-12 inside the edge, and located a point wrongly in the
   buffer of a multipolygon of two polygons. CGAL agrees with 15402 of 15402 points about the 192
   natural-area multipolygons, master with 15394; every relationship speed cell at parity. It is
   master's engine; step 16 replaces it.
-- **Step 22** is MobilityDB #3831 (draft, its first commit #3829's): the erosion of a polygon or a
+- **Step 22** is MobilityDB #3831 (open, on master past #3829): the erosion of a polygon or a
   multipolygon with round joins is the region the exact offset curves of the complement's parts
   wind around clockwise (`buffer_round_erosion`), read with a sense the caller fixes
   (`arrange_wound_tangent_surfaces_signed`). CGAL agrees with 62800 of 62800 erosion queries of the
