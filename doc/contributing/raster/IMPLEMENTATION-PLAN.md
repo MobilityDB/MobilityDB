@@ -31,7 +31,8 @@ format's reader and writer follow the input and output notes of MobilityDB #3788
 | Gap | Task | State |
 |---|---|---|
 | How much of the raster surface each binding carries is not measured | R6: `tools/raster_matrix.py`, which reads the raster functions a binding calls from the catalog (the public functions of the family `RASTER` carrying a SQL name, less the support functions of a type and of an aggregate, an aggregate counted once under its name) and each binding's object layer as `tools/io_matrix.py --repo` reads it, and credits a function when the layer names it (its SQL name, its `altSqlName` or its C name) and carries every raster type its signatures name; `--check` compares its rows with the table below | MERGED as MobilityDB #3776 |
-| MobilityDuck lacks 8 of the 79 functions: `asCoverageJSON`, `asGDALRaster`, `asJPEG`, `asPNG`, `asTIFF`, `raquetFromRow`, `rasterFromGDALRaster`, `setValues` | R12: its generators register them from the catalog, as they register the family's other functions: the writers through the creation options MEOS takes as an array of texts (MobilityDB #3808, MERGED), raquetFromRow through a bigint read as the uint64 of its cell, and its MEOS commit advanced past R3 to R5 | OPEN as MobilityDuck #566 |
+| MobilityDuck lacks 8 of the 79 functions: `asCoverageJSON`, `asGDALRaster`, `asJPEG`, `asPNG`, `asTIFF`, `raquetFromRow`, `rasterFromGDALRaster`, `setValues` | R12: its generators register them from the catalog, as they register the family's other functions: the writers through the creation options MEOS takes as an array of texts (MobilityDB #3808, MERGED), raquetFromRow through a bigint read as the uint64 of its cell, and its MEOS commit advanced past R3 to R5 | MERGED as MobilityDuck #566 for all but `setValues` |
+| MobilityDuck lacks `setValues` | R12b: `raster_set_values` takes two blocks of pixels, the values with their nodata flags and the flags of the pixels not to set, each a two-dimensional SQL array whose width and height MEOS takes as parameters of their own (`width`, `height`, `nosetwidth`, `nosetheight`, `count`). The catalog states each of the three arrays counted by `nosetwidth`, whereas `values` and `nodata` hold `count` = `width` x `height` elements; the catalog first states each array's length and dimensions, then MobilityDuck's generator reads a two-dimensional array into them | after R12 |
 | GoMEOS lacks 21: the writers and the reader of R3 and R4, `raquetFromRow`, `aRasterValue`, `eRasterValue`, the map algebra (`rasterAdd`, `rasterSub`, `rasterMul`, `rasterDiv`), `rasterUnion` and the `summaryStats` aggregate and accessors | R13: `tools/codegen.py` projects them from the catalog | after R6 |
 | MEOS.js lacks 31: those of GoMEOS less the map algebra, plus the readers along a trajectory (`rasterValue`, `rasterTileValue`, `rasterTileValueQuadbin`), the restrictions `atRasterValue` and `minusRasterValue`, the readers `rasterFromBinary`, `rasterFromHexWKB`, `raquetFromHexWKB` and `raquetRead`, `makeEmptyRaster`, `valuePercent`, and the casts `raster`, `raquet` and `stbox` | R14: `FunctionsGenerator.ts` projects them from the catalog | after R6 |
 | MEOS.NET lacks 33: those of MEOS.js less the three casts, plus the map algebra and `asBinary` | R15: `tools/codegen.py` projects them from the catalog | after R6 |
@@ -42,7 +43,7 @@ format's reader and writer follow the input and output notes of MobilityDB #3788
 
 ### The raster surface of each binding
 
-Built by `tools/raster_matrix.py` (R6) over the MEOS-API catalog at MobilityDB `eaffbb532e`, each
+Built by `tools/raster_matrix.py` (R6) over the MEOS-API catalog at MobilityDB `5fd29b0597`, each
 binding at the commit its row names, its default branch; 79 functions, of which 7 name no raster
 type (`rasterTileValueQuadbin` and the `summarystats*` accessors). MobilityAPI is a server, not a
 binding, and is measured by the MobilityAPI plan of MobilityDB #3805:
@@ -54,7 +55,7 @@ binding, and is measured by the MobilityAPI plan of MobilityDB #3805:
 | MEOS.NET | `359675c41e` | yes | yes | 46 of 79 | `aRasterValue`, `asBinary`, `asCoverageJSON`, `asGDALRaster`, `asJPEG`, ... |
 | meos-rs | `2b49f27223` | **no** | **no** | 0 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
 | MEOS.js | `bbda83df38` | yes | yes | 48 of 79 | `aRasterValue`, `asCoverageJSON`, `asGDALRaster`, `asJPEG`, `asPNG`, ... |
-| MobilityDuck | `e47d67c413` | yes | yes | 71 of 79 | `asCoverageJSON`, `asGDALRaster`, `asJPEG`, `asPNG`, `asTIFF`, ... |
+| MobilityDuck | `1014794c32` | yes | yes | 78 of 79 | `setValues` |
 | MobilityNebula | `5c0974e0a0` | **no** | **no** | 1 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
 | PyMEOS | `33717764b7` | **no** | **no** | 0 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
 | PyMEOS-CFFI | `7d41acfbd7` | **no** | **no** | 7 of 79 | `SRID`, `aRasterValue`, `addBand`, `asBinary`, `asCoverageJSON`, ... |
