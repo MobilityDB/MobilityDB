@@ -130,6 +130,11 @@ SELECT tbox 'TBOXINT X([-5,-4))' |=| tint '[0@2001-01-01, 5@2001-01-03]';
 SELECT tfloat '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOXFLOAT X([-5,-4])';
 SELECT tfloat '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOXFLOAT X([10,12])';
 SELECT tint '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOXINT XT([-5,-4),[2001-01-02,2001-01-04])';
+-- A box whose period meets that of a discrete value between two of its
+-- instants, where the value is not defined: they share no time
+SELECT tint '{1@2001-01-01, 5@2001-01-03}' |=| tbox 'TBOXINT XT([60,61),[2001-01-02,2001-01-02])';
+SELECT tbox 'TBOXINT XT([60,61),[2001-01-02,2001-01-02])' |=| tint '{1@2001-01-01, 5@2001-01-03}';
+SELECT tfloat '{1@2001-01-01, 5@2001-01-03}' |=| tbox 'TBOXFLOAT XT([60,61],[2001-01-02,2001-01-02])';
 
 -- A number span against a box and against a temporal number, on either side
 SELECT intspan '[-5,-4)' |=| tbox 'TBOXINT XT([0,6),[2001-01-01,2001-01-03])';
