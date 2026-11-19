@@ -423,8 +423,8 @@ with values in two and three dimensions has one test per dimension
 (`<nnn>_<fam>_indexes_tbl` and `<nnn>_<fam>_indexes3d_tbl`), and a family of several types one
 test per type at the number of the family (`044_tbool`, `044_ttext`, `044_tint`, `044_tfloat`,
 as `074_tgeo` and `074_tpoint`). Generated: tcbuffer, tpose (2D and 3D), trgeometry (2D and 3D),
-tnpoint, th3index, tquadbin, ts2cell, tposechain, tjsonb, tbool, ttext, tint and tfloat; tbigint
-has no fixtures but its table of many values. The counts of th3index hold because every build
+tnpoint, th3index, tquadbin, ts2cell, tposechain, tjsonb, tbool, ttext, tint and tfloat. The
+counts of th3index hold because every build
 reads the one H3 release MobilityDB supports (`H3_REQUIRED_VERSION`), on whose vertices the box
 of a cell is read. Written by hand: the tests of the temporal geometries and points (`074_tgeo`,
 `074_tpoint`), which test the structure of the trees; and `044_temporal`, which keeps the B-tree

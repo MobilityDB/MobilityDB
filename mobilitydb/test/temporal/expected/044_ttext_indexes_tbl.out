@@ -23,14 +23,14 @@ CREATE TEMP TABLE tbl_ttext_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_ttext_big
   UNION ALL
-  SELECT k + 10000, temp FROM tbl_ttext_inst
+  SELECT k + 10100, temp FROM tbl_ttext_inst
   UNION ALL
-  SELECT k + 10100, temp FROM tbl_ttext_discseq
+  SELECT k + 10200, temp FROM tbl_ttext_discseq
   UNION ALL
-  SELECT k + 10200, temp FROM tbl_ttext_contseq
+  SELECT k + 10300, temp FROM tbl_ttext_contseq
   UNION ALL
-  SELECT k + 10300, temp FROM tbl_ttext_seqset )
-SELECT k + n * 10400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, temp FROM tbl_ttext_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_ttext_idx;
 -- The values and periods the operators are given. Those of the fixture are
@@ -392,7 +392,7 @@ DROP INDEX tbl_ttext_idx_kdtree;
 SELECT COUNT(*) FROM tbl_ttext_idx;
  count 
 -------
- 10400
+ 10500
 (1 row)
 
 SELECT COUNT(*) FROM test_ttext_idx;
@@ -404,33 +404,33 @@ SELECT COUNT(*) FROM test_ttext_idx;
 SELECT op, no_idx FROM test_ttext_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
          op         | no_idx 
 --------------------+--------
- #&> tstzspan       | 255758
- #&> ttext          | 140227
- #>> tstzspan       | 255148
- #>> ttext          | 140176
- %&& tstzspan       | 593
- && tstzspan        | 662
- && ttext           | 70
- &<# tstzspan       | 194620
- &<# ttext          | 109695
- -|- tstzspan       | 18
- -|- ttext          | 18
- <<# tstzspan       | 194010
- <<# ttext          | 109654
- <@ tstzspan        | 593
- <@ ttext           | 38
- ?&& tstzspan       | 651
- @> tstzspan        | 50
- @> ttext           | 37
- tstzspan #>> ttext | 194010
- tstzspan && ttext  | 662
- tstzspan -|- ttext | 18
- tstzspan <<# ttext | 255148
- tstzspan <@ ttext  | 50
- tstzspan @> ttext  | 593
- tstzspan ~= ttext  | 14
- ~= tstzspan        | 14
- ~= ttext           | 21
+ #&> tstzspan       | 268446
+ #&> ttext          | 147272
+ #>> tstzspan       | 267773
+ #>> ttext          | 147185
+ %&& tstzspan       | 646
+ && tstzspan        | 763
+ && ttext           | 127
+ &<# tstzspan       | 204465
+ &<# ttext          | 115169
+ -|- tstzspan       | 15
+ -|- ttext          | 16
+ <<# tstzspan       | 203784
+ <<# ttext          | 115088
+ <@ tstzspan        | 646
+ <@ ttext           | 63
+ ?&& tstzspan       | 755
+ @> tstzspan        | 67
+ @> ttext           | 43
+ tstzspan #>> ttext | 203784
+ tstzspan && ttext  | 763
+ tstzspan -|- ttext | 15
+ tstzspan <<# ttext | 267773
+ tstzspan <@ ttext  | 67
+ tstzspan @> ttext  | 646
+ tstzspan ~= ttext  | 12
+ ~= tstzspan        | 12
+ ~= ttext           | 19
 (27 rows)
 
 -- The distances of the nearest values are compared, not stated

@@ -92,6 +92,24 @@ CREATE TABLE tbl_tcbuffer(k, temp) AS
 (SELECT k + size / 2, temp FROM tbl_tcbuffer_contseq LIMIT size / 4) UNION ALL
 (SELECT k + size / 4 * 3, temp FROM tbl_tcbuffer_seqset LIMIT size / 4);
 
+------------------------------------------------------------------------------
+-- The tables of the index tests: big enough that the planner chooses a
+-- GiST/SP-GiST index scan over a sequential scan, otherwise the index tests
+-- exercise nothing. The threshold is around 10 000 rows; size * 100 + 100
+-- keeps a small margin above it (10 100 at the default size of 100). The four
+-- quarters of a temporal table are the four subtypes, as in its table above,
+-- each made by the call that makes the table of that subtype.
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tcbuffer_big;
+CREATE TABLE tbl_tcbuffer_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tcbuffer_inst(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 3812)
+  WHEN 1 THEN random_tcbuffer_discseq(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
+  WHEN 2 THEN random_tcbuffer_contseq(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
+  ELSE random_tcbuffer_seqset(-100, 100, -100, 100, 0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
 
 -------------------------------------------------------------------------------
 RETURN 'The End';

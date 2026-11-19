@@ -24,15 +24,15 @@ CREATE TEMP TABLE tbl_tcbuffer_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tcbuffer_big
   UNION ALL
-  SELECT k + 1000, temp FROM tbl_tcbuffer_inst
+  SELECT k + 10100, temp FROM tbl_tcbuffer_inst
   UNION ALL
-  SELECT k + 1100, temp FROM tbl_tcbuffer_discseq
+  SELECT k + 10200, temp FROM tbl_tcbuffer_discseq
   UNION ALL
-  SELECT k + 1200, temp FROM tbl_tcbuffer_contseq
+  SELECT k + 10300, temp FROM tbl_tcbuffer_contseq
   UNION ALL
-  SELECT k + 1300, temp FROM tbl_tcbuffer_seqset )
-SELECT k + n * 1400 AS k, shiftTime(temp, n * interval '1 week') AS temp
-FROM base, generate_series(0, 4) AS n;
+  SELECT k + 10400, temp FROM tbl_tcbuffer_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
+FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tcbuffer_idx;
 -- The values, boxes and periods the operators are given. Those of the fixture
 -- are random, so they meet few values exactly: the others come from the rows of
@@ -41,7 +41,7 @@ DROP TABLE IF EXISTS tbl_tcbuffer_src;
 NOTICE:  table "tbl_tcbuffer_src" does not exist, skipping
 CREATE TEMP TABLE tbl_tcbuffer_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
-FROM tbl_tcbuffer_idx WHERE k % 650 = 0;
+FROM tbl_tcbuffer_idx WHERE k % 1000 = 0;
 -- A value of the fixture, a value of the table, and one whose period ends where
 -- that of the value starts. The search for the nearest values, whose distance
 -- costs more than a box, is given the second alone.
@@ -962,7 +962,7 @@ DROP INDEX tbl_tcbuffer_idx_kdtree;
 SELECT COUNT(*) FROM tbl_tcbuffer_idx;
  count 
 -------
-  7000
+ 10500
 (1 row)
 
 SELECT COUNT(*) FROM test_tcbuffer_idx;
@@ -974,80 +974,80 @@ SELECT COUNT(*) FROM test_tcbuffer_idx;
 SELECT op, no_idx FROM test_tcbuffer_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
           op           | no_idx 
 -----------------------+--------
- #&> stbox             | 168855
- #&> tcbuffer          | 93847
- #&> tstzspan          | 178201
- #>> stbox             | 168426
- #>> tcbuffer          | 93811
- #>> tstzspan          | 177781
- %&& stbox             | 102
- && stbox              | 384
- && stbox x            | 179540
- && tcbuffer           | 54
- && tstzspan           | 466
- &< stbox              | 128535
- &< stbox x            | 107580
- &< tcbuffer           | 84195
- &<# stbox             | 146306
- &<# tcbuffer          | 81037
- &<# tstzspan          | 136948
- &<| stbox             | 143300
- &<| stbox x           | 120810
- &<| tcbuffer          | 94920
- &> stbox              | 128575
- &> stbox x            | 81950
- &> tcbuffer           | 83855
- -|- stbox             | 15
- -|- stbox x           | 50
- -|- tcbuffer          | 13
- -|- tstzspan          | 14
- << stbox              | 32685
- << stbox x            | 56480
- << tcbuffer           | 13885
- <<# stbox             | 145880
- <<# tcbuffer          | 81010
- <<# tstzspan          | 136528
- <<| stbox             | 28015
- <<| stbox x           | 23895
- <<| tcbuffer          | 12000
- <@ stbox              | 82
- <@ stbox x            | 21565
- <@ tcbuffer           | 22
- <@ tstzspan           | 408
- >> stbox              | 30135
- >> stbox x            | 28900
- >> tcbuffer           | 11985
- ?&& stbox             | 327
- @> stbox              | 42
- @> stbox x            | 84715
- @> tcbuffer           | 29
- @> tstzspan           | 46
- stbox #>> tcbuffer    | 145880
- stbox && tcbuffer     | 384
- stbox -|- tcbuffer    | 15
- stbox << tcbuffer     | 30135
- stbox <<# tcbuffer    | 168426
- stbox <<| tcbuffer    | 30575
- stbox <@ tcbuffer     | 42
- stbox >> tcbuffer     | 32685
- stbox @> tcbuffer     | 82
- stbox |>> tcbuffer    | 28015
+ #&> stbox             | 239652
+ #&> tcbuffer          | 133160
+ #&> tstzspan          | 252988
+ #>> stbox             | 239011
+ #>> tcbuffer          | 133098
+ #>> tstzspan          | 252363
+ %&& stbox             | 229
+ && stbox              | 591
+ && stbox x            | 282369
+ && tcbuffer           | 87
+ && tstzspan           | 682
+ &< stbox              | 205645
+ &< stbox x            | 173842
+ &< tcbuffer           | 136355
+ &<# stbox             | 233429
+ &<# tcbuffer          | 129368
+ &<# tstzspan          | 220076
+ &<| stbox             | 221260
+ &<| stbox x           | 187900
+ &<| tcbuffer          | 147622
+ &> stbox              | 219090
+ &> stbox x            | 139396
+ &> tcbuffer           | 142978
+ -|- stbox             | 16
+ -|- stbox x           | 10
+ -|- tcbuffer          | 15
+ -|- tstzspan          | 15
+ << stbox              | 34577
+ << stbox x            | 79238
+ << tcbuffer           | 12591
+ <<# stbox             | 232793
+ <<# tcbuffer          | 129313
+ <<# tstzspan          | 219455
+ <<| stbox             | 35119
+ <<| stbox x           | 29073
+ <<| tcbuffer          | 14512
+ <@ stbox              | 182
+ <@ stbox x            | 50234
+ <@ tcbuffer           | 33
+ <@ tstzspan           | 605
+ >> stbox              | 41116
+ >> stbox x            | 39423
+ >> tcbuffer           | 15063
+ ?&& stbox             | 532
+ @> stbox              | 48
+ @> stbox x            | 131099
+ @> tcbuffer           | 28
+ @> tstzspan           | 53
+ stbox #>> tcbuffer    | 232793
+ stbox && tcbuffer     | 591
+ stbox -|- tcbuffer    | 16
+ stbox << tcbuffer     | 41116
+ stbox <<# tcbuffer    | 239011
+ stbox <<| tcbuffer    | 45880
+ stbox <@ tcbuffer     | 48
+ stbox >> tcbuffer     | 34577
+ stbox @> tcbuffer     | 182
+ stbox |>> tcbuffer    | 35119
  stbox ~= tcbuffer     | 15
- tstzspan #>> tcbuffer | 136528
- tstzspan && tcbuffer  | 466
- tstzspan -|- tcbuffer | 14
- tstzspan <<# tcbuffer | 177781
- tstzspan <@ tcbuffer  | 46
- tstzspan @> tcbuffer  | 408
+ tstzspan #>> tcbuffer | 219455
+ tstzspan && tcbuffer  | 682
+ tstzspan -|- tcbuffer | 15
+ tstzspan <<# tcbuffer | 252363
+ tstzspan <@ tcbuffer  | 53
+ tstzspan @> tcbuffer  | 605
  tstzspan ~= tcbuffer  | 12
- |&> stbox             | 139125
- |&> stbox x           | 118750
- |&> tcbuffer          | 90625
- |>> stbox             | 30575
- |>> stbox x           | 29575
- |>> tcbuffer          | 11860
+ |&> stbox             | 221347
+ |&> stbox x           | 191083
+ |&> tcbuffer          | 143912
+ |>> stbox             | 45880
+ |>> stbox x           | 44359
+ |>> tcbuffer          | 17439
  ~= stbox              | 15
- ~= stbox x            | 50
+ ~= stbox x            | 10
  ~= tcbuffer           | 17
  ~= tstzspan           | 12
 (76 rows)
@@ -1084,7 +1084,7 @@ CREATE INDEX tbl_tcbuffer_allthesame_quadtree ON tbl_tcbuffer_allthesame USING s
 SELECT COUNT(*) AS rows_scan FROM tbl_tcbuffer_allthesame WHERE temp && stbox 'SRID=3812;STBOX X((5,5),(5,5))';
  rows_scan 
 -----------
-     12380
+     10100
 (1 row)
 
 SET enable_seqscan = off;
@@ -1097,7 +1097,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_allthesame W
 SELECT COUNT(*) AS rows_index FROM tbl_tcbuffer_allthesame WHERE temp && stbox 'SRID=3812;STBOX X((5,5),(5,5))';
  rows_index 
 ------------
-      12380
+      10100
 (1 row)
 
 RESET enable_seqscan;

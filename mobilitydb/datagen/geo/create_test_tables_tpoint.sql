@@ -851,6 +851,34 @@ SET temp = (SELECT shiftTime(temp, date_trunc('minute', duration(temp, true)/2))
   FROM tbl_tgeogpoint3d_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
+------------------------------------------------------------------------------
+-- The tables of the index tests: big enough that the planner chooses a
+-- GiST/SP-GiST index scan over a sequential scan, otherwise the index tests
+-- exercise nothing. The threshold is around 10 000 rows; size * 100 + 100
+-- keeps a small margin above it (10 100 at the default size of 100). The four
+-- quarters of a temporal table are the four subtypes, as in its table above,
+-- each made by the call that makes the table of that subtype.
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tgeompoint3d_big;
+CREATE TABLE tbl_tgeompoint3d_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeompoint3d_inst(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31')
+  WHEN 1 THEN random_tgeompoint3d_discseq(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+  WHEN 2 THEN random_tgeompoint3d_contseq(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+  ELSE random_tgeompoint3d_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
+DROP TABLE IF EXISTS tbl_tgeogpoint3d_big;
+CREATE TABLE tbl_tgeogpoint3d_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeogpoint3d_inst(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31')
+  WHEN 1 THEN random_tgeogpoint3d_discseq(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+  WHEN 2 THEN random_tgeogpoint3d_contseq(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+  ELSE random_tgeogpoint3d_seqset(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
 
 -------------------------------------------------------------------------------
 RETURN 'The End';

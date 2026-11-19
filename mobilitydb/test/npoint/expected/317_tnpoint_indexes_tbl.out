@@ -1161,7 +1161,7 @@ CREATE INDEX tbl_tnpoint_allthesame_quadtree ON tbl_tnpoint_allthesame USING spg
 SELECT COUNT(*) FROM tbl_tnpoint_allthesame WHERE temp && (SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))', xmin(b), ymin(b), xmax(b), ymax(b))) FROM (SELECT temp::stbox AS b FROM tbl_tnpoint_allthesame WHERE temp IS NOT NULL LIMIT 1) s);
  count 
 -------
- 12380
+ 10100
 (1 row)
 
 SET enable_seqscan = off;
@@ -1174,7 +1174,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_allthesame WH
 SELECT COUNT(*) FROM tbl_tnpoint_allthesame WHERE temp && (SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))', xmin(b), ymin(b), xmax(b), ymax(b))) FROM (SELECT temp::stbox AS b FROM tbl_tnpoint_allthesame WHERE temp IS NOT NULL LIMIT 1) s);
  count 
 -------
- 12380
+ 10100
 (1 row)
 
 RESET enable_seqscan;
