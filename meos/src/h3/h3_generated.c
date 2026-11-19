@@ -74,7 +74,8 @@ h3_cells_to_directed_edge_meos(H3Index origin, H3Index destination)
 }
 
 /**
- * @brief Return true if the provided H3Index is a valid unidirectional edge index
+ * @brief Return true if the provided H3Index is a valid unidirectional edge
+ * index
  * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_is_valid_directed_edge
  */
 bool
@@ -84,7 +85,7 @@ h3_is_valid_directed_edge_meos(H3Index edge)
 }
 
 /**
- * @brief Return the origin hexagon from the unidirectional edge H3Index.
+ * @brief Return the origin hexagon from the unidirectional edge H3Index
  * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_get_directed_edge_origin
  */
 H3Index
@@ -97,7 +98,7 @@ h3_get_directed_edge_origin_meos(H3Index edge)
 }
 
 /**
- * @brief Return the destination hexagon from the unidirectional edge H3Index.
+ * @brief Return the destination hexagon from the unidirectional edge H3Index
  * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_get_directed_edge_destination
  */
 H3Index
@@ -137,7 +138,7 @@ h3_cell_to_center_child_meos(H3Index origin, int32 resolution)
 }
 
 /**
- * @brief Return
+ * @brief Return the position of a cell among the children of its parent
  * @note Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_cell_to_child_pos
  */
 int64
@@ -150,7 +151,7 @@ h3_cell_to_child_pos_meos(H3Index child, int32 parentRes)
 }
 
 /**
- * @brief Return
+ * @brief Return the child of a cell at a position among its children
  * @note Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_child_pos_to_cell
  */
 H3Index
@@ -226,7 +227,7 @@ h3_get_num_cells_meos(int32 resolution)
 }
 
 /**
- * @brief Return the distance in grid cells between the two indexes.
+ * @brief Return the distance in grid cells between the two indexes
  * @details Return a negative number if finding the distance failed.
  * Finding the distance can fail because the two indexes are not comparable
  * (different resolutions), too far apart, or are separated by pentagonal
