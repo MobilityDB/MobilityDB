@@ -646,3 +646,13 @@ the parameter of the segments, without constructing the points, and removes the 
 [Any number of turning points in the lifting](N-TURNING-POINTS.md). The order is: that note's
 first pull request (one turning-point callback per arity, with the same results), then steps 2–5
 here on the merged readers, then that note's intervals of any number and its rigid geometries.
+
+**The cell walks on the H3 release.** The rows of the five H3 unit tests of MEOS
+(`meos/test/unit/h3`: the ring crossings, the cells holding a position, the planar walks and covers,
+the geodetic covers) are the answers of the exact oracles of the cell walks
+(`doc/specs/meos-cell-walks.md`) on the outlines H3 4.6.0 states, the one release
+`H3_REQUIRED_VERSION` names, and the Test MEOS compilation workflow runs them after building MEOS:
+MobilityDB #3856. On the outlines of 4.6.0 the rows computed on 4.2.0 failed on 13, 24, 18, 4 and 5
+rows, the oracles giving MEOS's answers on every one of them; judged again on 4.6.0, the 35 tests of
+the MEOS build pass. Each row keeps the kind it is there for: a ring row dated by the doubles at
+another microsecond, a position the library's `latLngToCell` places in another cell.
