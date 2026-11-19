@@ -188,6 +188,13 @@ items).
   write their rings with no certificate. Applied to them as it stands, the certificate reads 1.313
   and 1.120 on natural areas at distances 1 and 50, 1.004 on the joints and 1.017 on the jittered
   holes. Its restructure into the arrangement's own passes, stated above, comes first.
+- **The union a relationship reads for a collection** of areal members not shown apart
+  (`relate_union_edges`) cuts an edge of one member only where an edge of another meets it,
+  MobilityDB #3829 (open): master cut a curve polygon's edge where an adjacent arc of the same
+  member meets it tangentially, about 1e-12 inside the edge, and located a point wrongly in the
+  buffer of a multipolygon of two polygons. CGAL agrees with 15402 of 15402 points about the 192
+  natural-area multipolygons, master with 15394; every relationship speed cell at parity. It is
+  master's engine; step 16 replaces it.
 - **Step 20** is branch `geo/buffer-exact-mitre-bevel` at `07a8b90b61`, blocked on speed as its
   row states. **Step 16** is branch `fix/relate-areas-on-the-noded-arrangement` at `236793af75`,
   one commit on master `d043de2e04`. Neither is on GitHub.
