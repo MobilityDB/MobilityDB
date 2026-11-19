@@ -50,6 +50,7 @@
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
+#include "h3/h3index.h"
 #include "h3/th3index_internal.h"
 
 /*****************************************************************************
@@ -66,11 +67,8 @@ GSERIALIZED *
 h3_cell_to_local_ij_meos(H3Index origin, H3Index cell)
 {
   CoordIJ coord;
-  if (cellToLocalIj(origin, cell, 0, &coord) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(cellToLocalIj(origin, cell, 0, &coord)))
     return NULL;
-  }
   return geopoint_make((double) coord.i, (double) coord.j, 0.0,
     false, false, SRID_UNKNOWN);
 }
@@ -84,11 +82,8 @@ h3_local_ij_to_cell_meos(H3Index origin, const GSERIALIZED *coord)
   const POINT2D *p = GSERIALIZED_POINT2D_P(coord);
   CoordIJ ij = { .i = (int) p->x, .j = (int) p->y };
   H3Index cell;
-  if (localIjToCell(origin, &ij, 0, &cell) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(localIjToCell(origin, &ij, 0, &cell)))
     return (H3Index) 0;
-  }
   return cell;
 }
 

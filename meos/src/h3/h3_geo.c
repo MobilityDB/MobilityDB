@@ -1422,7 +1422,9 @@ h3index_cell_to_cover(H3Index cell, int32 resolution)
   }
 
   CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
+  if (! ensure_h3_success(cellToBoundary(cell, &bnd)))
+    return NULL;
+  if (bnd.numVerts < 3)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
     return NULL;

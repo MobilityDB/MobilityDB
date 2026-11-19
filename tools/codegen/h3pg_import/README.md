@@ -84,7 +84,13 @@ is usually a minute of work.
   function h3-pg leaves without a comment takes its brief from the
   `briefs:` section of `ruleset.yaml`. The script refuses to run when
   such a brief is missing, or when the section names a function that
-  is not generated or that h3-pg comments.
+  is not generated or that h3-pg comments. The `details:` section
+  replaces the details of a function whose h3-pg comment, copied from
+  libh3, states a result the binding does not give.
+- **A libh3 failure raises the error h3-pg raises.** The rule for
+  h3-pg's `h3_assert(expr)` emits `ensure_h3_success(expr)`, whose
+  error states the code libh3 returns and the description
+  `describeH3Error` gives it.
 - **No hand-editing of `h3-pg/`.** Only the binding sources are
   vendored — `h3/src/binding/*.c` (what `extract.py` reads), `LICENSE`,
   and `H3PG_REVISION` — each byte-identical to upstream. Mirroring the

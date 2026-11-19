@@ -124,6 +124,7 @@ class RuleSet:
     returns: list[ReturnRule] = field(default_factory=list)
     rewrites: list[RewriteRule] = field(default_factory=list)
     briefs: dict[str, str] = field(default_factory=dict)
+    details: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def load(cls, path: pathlib.Path) -> "RuleSet":
@@ -149,6 +150,7 @@ class RuleSet:
                 replace=e["replace"],
             ))
         rs.briefs = dict(data.get("briefs") or {})
+        rs.details = dict(data.get("details") or {})
         return rs
 
 
@@ -271,10 +273,12 @@ def _meos_verb(text: str) -> str:
     return text
 
 
-def doxygen_comment(e: "Extracted", briefs: dict[str, str]) -> str:
+def doxygen_comment(e: "Extracted", briefs: dict[str, str],
+                    details_of: dict[str, str]) -> str:
     """Return the Doxygen comment of an extracted function: the first
     paragraph of its h3-pg comment as the brief, the other paragraphs as
-    the details, and the source it comes from as the note"""
+    the details unless ruleset.yaml states them, and the source it comes
+    from as the note; #_meos_verb puts the leading verbs in MEOS form"""
     paras: list[list[str]] = []
     if e.doc:
         text = re.sub(r"^/\*+|\*/$", "", e.doc.strip())
@@ -296,7 +300,13 @@ def doxygen_comment(e: "Extracted", briefs: dict[str, str]) -> str:
     out = ["/**"]
     out += textwrap.wrap(brief, width=79, initial_indent=" * @brief ",
                          subsequent_indent=" * ")
-    details = [l for p in paras[1:] for l in p]
+    if e.fn_name in details_of:
+        out += textwrap.wrap(details_of[e.fn_name], width=79,
+                             initial_indent=" * @details ",
+                             subsequent_indent=" * ")
+        details = []
+    else:
+        details = [l for p in paras[1:] for l in p]
     if details:
         details[0] = _meos_verb(details[0])
         out.append(" * @details " + details[0])
@@ -423,7 +433,7 @@ def try_transform(ruleset: RuleSet, rel_path: str, doc: str, name: str, body: st
 SECTION_RULE = "/" + "*" * 77 + "/\n"
 
 
-def render_c(out: list[Extracted], briefs: dict[str, str]) -> str:
+def render_c(out: list[Extracted], ruleset: RuleSet) -> str:
     hdr = (
         MDB_LICENSE +
         "/**\n"
@@ -439,12 +449,13 @@ def render_c(out: list[Extracted], briefs: dict[str, str]) -> str:
         "/* H3 */\n"
         "#include <h3api.h>\n"
         "/* MEOS */\n"
-        "#include <meos.h>\n\n" +
+        "#include <meos.h>\n"
+        '#include "h3/h3index.h"\n\n' +
         SECTION_RULE + "\n"
     )
     chunks = [hdr]
     for e in out:
-        chunks.append(doxygen_comment(e, briefs))
+        chunks.append(doxygen_comment(e, ruleset.briefs, ruleset.details))
         chunks.append(f"{e.ret}\n{e.head}\n{{\n")
         # Re-indent body uniformly. h3-pg source uses a single leading
         # TAB for the function-body indent, so we lstrip tabs only —
@@ -571,6 +582,10 @@ def main() -> int:
     if stale:
         sys.exit("ruleset.yaml gives a brief to functions that are not "
                  "generated or that h3-pg comments: " + ", ".join(stale))
+    stale = sorted(set(ruleset.details) - {e.fn_name for e in extracted})
+    if stale:
+        sys.exit("ruleset.yaml gives details to functions that are not "
+                 "generated: " + ", ".join(stale))
 
     # Report
     report = [
@@ -592,7 +607,7 @@ def main() -> int:
     print(report_text)
 
     # Write outputs
-    c_text = render_c(extracted, ruleset.briefs)
+    c_text = render_c(extracted, ruleset)
     h_text = render_h(extracted)
     wrote_change = False
     for path, body in ((OUT_C, c_text), (OUT_H, h_text), (REPORT, report_text)):
