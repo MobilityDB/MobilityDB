@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.5.0 |
+| Version | v0.6.0 |
 | Scope | The values a binding of MEOS holds, the functions it calls on them, and the casts that connect them to the types of its host language |
 | Reference | `meos/include/meos.h` (`timestamptz_to_unix_us`, `timestamp_to_unix_us`, `date_to_unix_days`, `interval_to_parts` and their inverses), `pgtypes/pg_time.h` (`time_to_parts`, `timetz_to_parts` and their inverses), `meos/src/temporal/span.c`, `meos/test/unix_epoch_test.c`; the MEOS-API catalog (`typeEncodings`, `bindingScope`) |
 
@@ -301,6 +301,22 @@ that records no error number: `tbool_in('xyz@2001-01-01')` and
 `floatspan_in('[1, xyz]')` answer no value and one error, whose number
 `meos_errno` reads.
 
+### 5.10 A value built from a host time
+
+A program building a temporal value from the times of its host builds it with
+a constructor of MEOS taking the time the cast of 5.1 answers (an instant from
+`tpointinst_make` or `tfloatinst_make`, a sequence from `tsequence_make` over
+them), never by writing the time as text for a reader of MEOS to parse. A
+host's text of a time holds what its format states and no more: a format of
+whole seconds, `yyyy-MM-dd HH:mm:ss`, writes the event at
+`2024-08-01 13:52:28.123+00` as `2024-08-01 13:52:28+00`, so MEOS holds a
+time 123 milliseconds from the event's. Two events within one second then
+write the same time, and the sequence of the two is refused, as
+`mobilitydb/test/temporal/expected/022_temporal.out` records for two instants
+at one time: `tbool '[true@2001-01-01 08:00:00, true@2001-01-01 08:00:00)'`
+raises "Timestamps for temporal value must be increasing". The cast carries
+every microsecond the host holds, or refuses the time (rule 3).
+
 ## 6. Types out of binding scope
 
 `numeric`, `box2d` and `box3d` are no class of any object layer.
@@ -323,6 +339,7 @@ types of its host.
 | v0.3.0 | The width of a discrete span, Go's host types of `time` and `timetz`, the time zone of a thread |
 | v0.4.0 | The host types of .NET and JavaScript, the integers of 64 bits of a host whose number holds 2^53 |
 | v0.5.0 | The infinities of a host, refused where they enter a value; the error of a cast under any handler |
+| v0.6.0 | A value built from a host time by a constructor over the cast, never through the host's text of the time |
 
 A minor version adds what MEOS and the catalog newly guarantee; a major
 version changes a rule a binding follows.
