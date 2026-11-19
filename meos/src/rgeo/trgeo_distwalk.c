@@ -55,14 +55,15 @@
 /**
  * @brief Return the rotation from the angle @p th1 to the angle @p th2
  * @details The rotation takes the shorter way, as in
- * #posesegm_interpolate(), with the same rule for a half turn.  Thus the walk
+ * #posesegm_interpolate(), with the same rule for a half turn, and is 0 only
+ * where the two angles are equal, however little they differ.  Thus the walk
  * and the database place a body at the same position.
  */
 static double
 motion_omega(double th1, double th2)
 {
   double d = th2 - th1;
-  if (fabs(d) < MEOS_EPSILON)
+  if (d == 0.0)
     return 0.0;
   if (d > 0.0)
     return (d <= M_PI) ? d : d - 2.0 * M_PI;
