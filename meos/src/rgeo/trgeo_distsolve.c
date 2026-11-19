@@ -395,8 +395,8 @@ distfun_copy(DistFun *dst, const DistFun *src)
  * Thus two functions of the same segment have the same frequencies, and
  * their sum or difference is a sum of terms.
  *
- * The frequencies are compared exactly.  A rotation below #MEOS_EPSILON is
- * already exactly zero (see motion_omega() in trgeo_distwalk.c), and two
+ * The frequencies are compared exactly.  A body that does not rotate has a
+ * rotation of exactly zero (see motion_omega() in trgeo_distwalk.c), and two
  * bodies that rotate at the same rate give a frequency wA - wB that is
  * exactly zero.  A frequency that is only close to zero stays a term, which
  * is exact and costs nothing.
