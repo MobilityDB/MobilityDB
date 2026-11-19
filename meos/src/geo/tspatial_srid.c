@@ -253,6 +253,9 @@ spatialset_srid(const Set *s)
 /**
  * @ingroup meos_geo_set_srid
  * @brief Return a spatial set with the coordinates set to an SRID
+ * @details The invalid SRID is refused and any other SRID is clamped as
+ * #geo_set_srid clamps it; the unknown SRID, which a negative SRID reads as,
+ * is refused. The values and the bounding box state the clamped SRID.
  * @param[in] s Spatial set
  * @param[in] srid SRID
  * @errval NULL
@@ -263,6 +266,9 @@ spatialset_set_srid(const Set *s, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_SPATIALSET(s, NULL);
+  if (! ensure_srid_valid(srid))
+    return NULL;
+  srid = clamp_srid(srid);
   if (! ensure_srid_known(srid))
     return NULL;
 
@@ -272,7 +278,10 @@ spatialset_set_srid(const Set *s, int32_t srid)
   {
     if (! spatial_set_srid(SET_VAL_N(result, i), s->basetype, srid))
     {
-      pfree(result); 
+      pfree(result);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The SRID %d cannot be stated for the %s", srid,
+        meostype_name(s->basetype));
       return NULL;
     }
   }
@@ -392,6 +401,9 @@ tspatialseqset_set_srid(TSequenceSet *ss, int32_t srid)
 /**
  * @ingroup meos_geo_srid
  * @brief Return a spatiotemporal value with the coordinates set to an SRID
+ * @details The invalid SRID is refused and any other SRID is clamped as
+ * #geo_set_srid clamps it; the unknown SRID, which a negative SRID reads as,
+ * is refused. The values and the bounding box state the clamped SRID.
  * @param[in] temp Spatiotemporal value
  * @param[in] srid SRID
  * @errval NULL
@@ -405,10 +417,26 @@ tspatial_set_srid(const Temporal *temp, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL);
+  if (! ensure_srid_valid(srid))
+    return NULL;
+  srid = clamp_srid(srid);
   if (! ensure_srid_known(srid))
     return NULL;
 
   Temporal *result = temporal_copy(temp);
+  /* A value holding its SRID by reference, as a network point, a cell or a
+   * point cloud value does, takes no other SRID than that one, which its
+   * first value answers for all of them */
+  MeosType basetype = temptype_basetype(result->temptype);
+  const TInstant *first = temporal_start_inst(result);
+  if (! spatial_set_srid(tinstant_value_p(first), basetype, srid))
+  {
+    pfree(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The SRID %d cannot be stated for the %s", srid,
+      meostype_name(basetype));
+    return NULL;
+  }
   assert(temptype_subtype(result->subtype));
   switch (result->subtype)
   {

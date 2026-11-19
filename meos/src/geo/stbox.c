@@ -1899,6 +1899,8 @@ stbox_srid(const STBox *box)
 /**
  * @ingroup meos_geo_box_srid
  * @brief Return a spatiotemporal box with the coordinates set to an SRID
+ * @details The invalid SRID is refused and any other SRID is clamped as
+ * #geo_set_srid clamps it
  * @param[in] box Spatiotemporal box
  * @param[in] srid SRID
  * @csqlfn #Stbox_set_srid()
@@ -1908,10 +1910,10 @@ stbox_set_srid(const STBox *box, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_has_X(T_STBOX, box->flags))
+  if (! ensure_has_X(T_STBOX, box->flags) || ! ensure_srid_valid(srid))
     return NULL;
   STBox *result = stbox_copy(box);
-  result->srid = srid;
+  result->srid = clamp_srid(srid);
   return result;
 }
 

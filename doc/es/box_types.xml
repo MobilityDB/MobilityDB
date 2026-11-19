@@ -727,6 +727,7 @@ SELECT round(tstzspan '[2001-01-01, 2001-01-02]'::tbox);
 SRID(stbox) → integer
 setSRID(stbox,integer) → stbox
 </programlisting>
+<para>El SRID se establece como <link linkend="geo_srid"><varname>setSRID</varname></link> lo establece en una geometría: un SRID negativo se establece como el SRID desconocido 0 y un SRID más allá del rango reservado se pliega dentro de él. El SRID inválido se rechaza.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
 -- 0

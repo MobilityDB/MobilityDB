@@ -623,6 +623,7 @@ SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 setSRID(tpcbox,integer) → tpcbox
 </programlisting>
+<para>The SRID is set as <link linkend="geo_srid"><varname>setSRID</varname></link> sets it on a geometry: a negative SRID is set as the unknown SRID 0 and an SRID beyond the reserved range is folded into it. The invalid SRID is refused.</para>
 					<para>The schema a pcid names is what holds the reference system, so where that schema states one the box is refused: a pcid of 0 names no schema, and a schema may state none. Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10), 4326));
