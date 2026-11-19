@@ -125,6 +125,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Parse a SRID specification from the buffer. </p>
+<p >The specification is <code>SRID=</code> followed by an integer and ended by <code>,</code> or <code>;</code>, the delimiter being gobbled. The SRID is read as <code>wkt_lexer_read_srid</code> of the PostGIS parser reads it, a negative SRID being the unknown SRID 0 and an SRID above the maximum folding into the reserved range. A specification that is not of this form is left in the buffer, where the parse of what follows refuses it, as the PostGIS parser does. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">str</td><td>Buffer, advanced past the specification when one is read </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">srid</td><td>SRID read, <code>SRID_UNKNOWN</code> when none is </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True when a specification is read </dd></dl>
 
 </div>
 </div>
