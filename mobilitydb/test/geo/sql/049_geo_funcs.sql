@@ -114,10 +114,19 @@ SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 0), 6));
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
 
--- The two offsets of a line, closed by a cap at each end
+-- The two offsets of a line, closed by a cap at each end: a half disc about
+-- each end, nothing past it, or a square stretching the line by the distance
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
+-- A line turning back on itself keeps the disc about its turn and one ring,
+-- whatever its cap
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,0 0.5)', 1, 'endcap=flat'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,0 0.5)', 1, 'endcap=square'), 6));
+-- Past the end of the line under a flat cap, a point within the distance of
+-- the vertex before it lies in the buffer
+SELECT contains(buffer(geometry 'Linestring(10 10,3 5,3 6)', 1.5, 'endcap=flat'),
+  geometry 'Point(3.66 6.24)');
 
 -- A line from far away to a unit square holds, within half the root of two, a
 -- point at half that distance from its long edge, and not one a thousand times

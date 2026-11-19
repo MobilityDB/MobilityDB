@@ -1108,7 +1108,7 @@ arr_vertex_at_origin(const Edge *e, double x, double y)
 static inline bool
 arr_tangent_signs(const TangentPoint *tp, int *sx, int *sy)
 {
-  if (tp->r1 != tp->r2)
+  if (tp->r1 != tp->r2 || tp->along)
     return false;
   int dx = (tp->c2x > tp->c1x) - (tp->c2x < tp->c1x);
   int dy = (tp->c2y > tp->c1y) - (tp->c2y < tp->c1y);
@@ -2030,6 +2030,8 @@ arr_support_sigma(const Arr *a, uint32_t s, int sigma)
 static inline bool
 arr_tangent_on(const TangentPoint *tp, const Edge *c)
 {
+  if (tp->along)
+    return false;
   return tp->k ? (tp->c2x == c->cx && tp->c2y == c->cy && tp->r2 == c->radius) :
     (tp->c1x == c->cx && tp->c1y == c->cy && tp->r1 == c->radius);
 }
@@ -2085,7 +2087,8 @@ static bool
 arr_offset_of(const Edge *e, POINT2D *u, POINT2D *v, int *side, double *r)
 {
   const TangentPoint *f = e->from, *t = e->to;
-  if (! f || e->centred || f->k != 0 || t->k != 1 || f->r1 != f->r2 ||
+  if (! f || e->centred || f->along || t->along || f->k != 0 || t->k != 1 ||
+      f->r1 != f->r2 ||
       t->r1 != f->r1 || t->r2 != f->r1 || t->side != f->side ||
       t->c1x != f->c1x || t->c1y != f->c1y || t->c2x != f->c2x ||
       t->c2y != f->c2y)
@@ -3389,7 +3392,8 @@ static inline bool
 arr_tangent_along(const Edge *e, int *s)
 {
   const TangentPoint *a = e->from, *b = e->to;
-  if (e->centred || ! a || ! b || a->r1 != a->r2 || b->r1 != a->r1 ||
+  if (e->centred || ! a || ! b || a->along || b->along || a->r1 != a->r2 ||
+      b->r1 != a->r1 ||
       b->r2 != a->r1 || a->side != b->side || a->k == b->k ||
       a->c1x != b->c1x || a->c1y != b->c1y || a->c2x != b->c2x ||
       a->c2y != b->c2y)
@@ -3520,7 +3524,7 @@ arr_half_exact(const Arr *a, uint32_t e, bool out, const ArrNode *nd,
   if (! ed->centred || ! nd->tower || nd->meet.kind != MEET_TANGENT)
     return false;
   const TangentPoint *t = nd->meet.tp;
-  if (t->r1 != t->r2 || ed->radius != t->r1 ||
+  if (t->along || t->r1 != t->r2 || ed->radius != t->r1 ||
       ed->cx != (t->k ? t->c2x : t->c1x) || ed->cy != (t->k ? t->c2y : t->c1y))
     return false;
   *tp = t;
@@ -4154,7 +4158,7 @@ arr_node_meet(const Arr *a, uint32_t v)
 static bool
 arr_tangent_x_sum(const TangentPoint *tp, double x[2])
 {
-  if (tp->r1 != tp->r2)
+  if (tp->r1 != tp->r2 || tp->along)
     return false;
   x[0] = tp->k ? tp->c2x : tp->c1x;
   if (tp->c1y == tp->c2y && tp->c1x != tp->c2x)

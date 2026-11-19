@@ -93,6 +93,10 @@ typedef enum
 /**
  * @brief A point where a common tangent of two circles touches one of them,
  * which no double holds in general: what defines it, exactly
+ * @details With @p along nonzero, which two circles of one radius r alone
+ * carry, the point lies past that one by r along the line of the centres:
+ * Ck + r (along d + side rot(d)) / |d|, d = C2 - C1, a corner of the square
+ * cap of a buffer, where its offset meets the tangent across the end
  */
 typedef struct
 {
@@ -103,6 +107,9 @@ typedef struct
                                       one on its right */
   int k;                         /**< 0 for the point on the first circle, 1
                                       for the one on the second */
+  int along;                     /**< 0 for the point on the circle, 1 or -1
+                                      for the one past it by the radius along
+                                      C2 - C1 or C1 - C2 */
 } TangentPoint;
 
 /**
