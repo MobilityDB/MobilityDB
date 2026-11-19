@@ -2492,7 +2492,7 @@ SELECT isValidIndex(quadbin '504b5fffffffffff');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 quadbinCellSibling(quadbin,text) → quadbin
 </programlisting>
-				<para><varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>. La respuesta es NULL para una celda vecina más allá de un borde de la cuadrícula, que no tiene celdas allí: una columna no da la vuelta en el antimeridiano y una fila no cruza un polo.</para>
+				<para><varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>, en mayúsculas o minúsculas, como <varname>cell_sibling</varname> de la referencia de CARTO lee la dirección; otra dirección produce un error. La respuesta es NULL para una celda vecina más allá de un borde de la cuadrícula, que no tiene celdas allí: una columna no da la vuelta en el antimeridiano y una fila no cruza un polo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT quadbinCellSibling(
   quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
