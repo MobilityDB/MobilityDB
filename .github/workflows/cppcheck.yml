@@ -123,6 +123,8 @@ jobs:
             --suppress='*:pointcloud-pg/*' \
             --suppress='*:*/core-math/*' \
             --suppress='*:core-math/*' \
+            --suppress='*:*/h3lib/*' \
+            --suppress='*:h3lib/*' \
             --suppress='*:*lwin_wkt_lex*' \
             --suppress='*:*lwin_wkt_parse*' \
             --suppress='*:*jsonpath_gram*' \
@@ -256,7 +258,7 @@ jobs:
           # slips the suppress glob. Cppcheck sometimes reports paths
           # by basename (especially flex/bison-generated files), so we
           # also match a list of vendored basenames.
-          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/", "core-math/")
+          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/", "core-math/", "h3lib/")
           VENDORED_BASENAMES = (
               # liblwgeom flex/bison-generated parsers
               "lwin_wkt_lex.c", "lwin_wkt_lex.l",
@@ -322,7 +324,7 @@ jobs:
           # The classes the job enables, and "error", which cppcheck always
           # reports; "information" describes the run, not the code.
           SEVERITIES = {"error", "warning", "style", "performance", "portability"}
-          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/", "core-math/")
+          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/", "core-math/", "h3lib/")
           VENDORED_BASENAMES = (
               "lwin_wkt_lex.c", "lwin_wkt_lex.l",
               "lwin_wkt_parse.c", "lwin_wkt_parse.y",

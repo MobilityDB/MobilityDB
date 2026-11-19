@@ -1,0 +1,82 @@
+/*
+ * Copyright 2017-2018, 2022 Uber Technologies, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/** @file mathExtensions.h
+ * @brief   Math functions that should've been in math.h but aren't
+ */
+
+#ifndef MATHEXTENSIONS_H
+#define MATHEXTENSIONS_H
+
+#include <float.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#if (FLT_EVAL_METHOD != 0) && (FLT_EVAL_METHOD != 1) && \
+    !defined(H3_SKIP_FLT_EVAL_METHOD_CHECK)
+/*
+ * FLT_EVAL_METHOD of 0 or 1 are compatible with H3, because 0 uses the width of
+ * the float or double type, and 1 uses the width of the double type (which is
+ * fine because as a general rule H3 uses doubles.) 2 indicates extended
+ * precision and is not recommended because some behavior in our test suite is
+ * not compatible with it. -1 indicates indeterminate.
+ *
+ * For a lot of cases, overriding this check and using extended precision will
+ * in fact work. However, edge cases are not tested and could have issues.
+ */
+#error H3 being compiled with FLT_EVAL_METHOD != 0 or 1 (i.e. extended precision double math) is not recommended.
+#endif
+
+/**
+ * MAX returns the maximum of two values.
+ */
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
+/**
+ * MIN returns the minimum of two values.
+ */
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
+/** Evaluates to true if a + b would overflow for int32 */
+static inline bool ADD_INT32S_OVERFLOWS(int32_t a, int32_t b) {
+    if (a > 0) {
+        return INT32_MAX - a < b;
+    } else {
+        return INT32_MIN - a > b;
+    }
+}
+
+/** Evaluates to true if a + b would overflow for int64 */
+static inline bool ADD_INT64S_OVERFLOWS(int64_t a, int64_t b) {
+    if (a > 0) {
+        return INT64_MAX - a < b;
+    } else {
+        return INT64_MIN - a > b;
+    }
+}
+
+/** Evaluates to true if a - b would overflow for int32 */
+static inline bool SUB_INT32S_OVERFLOWS(int32_t a, int32_t b) {
+    if (a >= 0) {
+        return INT32_MIN + a >= b;
+    } else {
+        return INT32_MAX + a + 1 < b;
+    }
+}
+
+// Internal functions
+int64_t _ipow(int64_t base, int64_t exp);
+
+#endif
