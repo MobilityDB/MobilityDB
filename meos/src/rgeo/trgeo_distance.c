@@ -934,6 +934,69 @@ dist_lift_motion2(const DistLift *lift, Datum start2, Datum end2,
 }
 
 /**
+ * @brief Set @p pose to x, y and the angle of a value of the second operand,
+ * a pose, or a point at the angle 0
+ */
+static void
+dist_value_pose(const DistOps *ops, Datum value, double *pose)
+{
+  if (ops->ref2)
+  {
+    const Pose *p = DatumGetPoseP(value);
+    pose[0] = p->data[0];
+    pose[1] = p->data[1];
+    pose[2] = p->data[2];
+    return;
+  }
+  const POINT2D *p = GSERIALIZED_POINT2D_P(DatumGetGserializedP(value));
+  pose[0] = p->x;
+  pose[1] = p->y;
+  pose[2] = 0.0;
+}
+
+/**
+ * @brief Settle the events @p ev of the walk in the segment @p dseg of the
+ * piece @p ra of the first body, from the pose @p start1 to @p end1, and the
+ * piece @p rb of the second operand, from @p start2 to @p end2, or the part
+ * @p part of a static geometry where @p rb is NULL
+ * @details The events settled are those at a distance below which the
+ * doubles of the walk do not separate a distance from 0: the square root of
+ * the tolerance of its function values (#distwalk_ftol), the error of a
+ * distance read as the square root of a squared length.  The bodies are
+ * placed by the poses themselves (#distevents_settle): the vertices of a
+ * piece of a body are those of its reference geometry, and the vertices of a
+ * part those of the geometry, at rest.
+ */
+static void
+dist_settle(const DistOps *ops, DistEvents *ev, const DistSegm *dseg,
+  const DistRefPoly *ra, Datum start1, Datum end1, const DistRefPoly *rb,
+  const DistPart *part, Datum start2, Datum end2)
+{
+  double near = sqrt(distwalk_ftol(dseg, ra, rb ? rb : &part->body));
+  bool settle = false;
+  for (int i = 0; i < ev->count && ! settle; i++)
+    settle = (ev->ev[i].dist <= near);
+  if (! settle)
+    return;
+  double *axy = distrefpoly_xy(ra);
+  const Pose *a1 = DatumGetPoseP(start1), *a2 = DatumGetPoseP(end1);
+  if (! rb)
+    distevents_settle(ev, near, axy, ra->nvert, a1->data, a2->data, part->xy,
+      part->npts, NULL, NULL);
+  else
+  {
+    double b1[3], b2[3];
+    dist_value_pose(ops, start2, b1);
+    dist_value_pose(ops, end2, b2);
+    double *bxy = distrefpoly_xy(rb);
+    distevents_settle(ev, near, axy, ra->nvert, a1->data, a2->data, bxy,
+      rb->nvert, b1, b2);
+    pfree(bxy);
+  }
+  pfree(axy);
+}
+
+/**
  * @brief Add to the instants of the segment walked those of the walk of the
  * closest features between the first operand, moving with @p ma, and the body
  * of the second one, and return false if the walk fails
@@ -956,6 +1019,10 @@ dist_lift_walk(DistLift *lift, const DistMotion *ma, Datum start1,
       distwalk_ftol(&dseg, &ops->body1[0], &lift->rb[0]), ops->level,
       &lift->cf, &lift->events) != DISTWALK_OK)
     return false;
+  /* A static second operand walked alone is the one part of its geometry */
+  dist_settle(ops, &lift->events, &dseg, &ops->body1[0], start1, end1,
+    lift->mb ? NULL : &lift->rb[0], lift->mb ? &ops->parts[0] : NULL,
+    start2, end2);
   for (int j = 0; j < lift->events.count; j++)
   {
     double ratio = lift->events.ev[j].t;
@@ -1008,6 +1075,11 @@ dist_lift_parts(DistLift *lift, const DistMotion *ma, Datum start1,
     if (distwalk_segm(&dseg, ra, rb, distwalk_ftol(&dseg, ra, rb), ops->level,
         &lift->pcf[k], &ev[k]) != DISTWALK_OK)
       return false;
+    /* A static second operand, walked as parts or as its one part, is read
+     * as the part */
+    bool still = (! lift->rb || lift->mb);
+    dist_settle(ops, &ev[k], &dseg, ra, start1, end1, still ? NULL : rb,
+      still ? &ops->parts[k % n2] : NULL, start2, end2);
   }
   DistActive *active = NULL;
   double *corners = NULL;
@@ -1885,6 +1957,14 @@ dist_ever_seq(const DistOps *ops, const TSequence *seq1,
         result = -1;
         break;
       }
+      /* The values at the ends of the segment, as #dist_segmotion() reads
+       * them */
+      int j1 = linear1 ? i + 1 : i, j2 = linear2 ? i + 1 : i;
+      dist_settle(ops, &events, &dseg, ra,
+        tinstant_value_p(TSEQUENCE_INST_N(seq1, i)),
+        tinstant_value_p(TSEQUENCE_INST_N(seq1, j1)), rb, NULL,
+        tinstant_value_p(TSEQUENCE_INST_N(seq2, i)),
+        tinstant_value_p(TSEQUENCE_INST_N(seq2, j2)));
       for (int j = 0; j < events.count && result == 0; j++)
         if (events.ev[j].dist <= dist)
           result = 1;
@@ -2184,6 +2264,9 @@ trgeometry_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2
         result = true;
         break;
       }
+      dist_settle(ops, &dw->events, &dseg, ra, PointerGetDatum(p1),
+        PointerGetDatum(q1), rb, NULL, PointerGetDatum(p2),
+        PointerGetDatum(q2));
       for (int i = 0; i < dw->events.count && ! result; i++)
         result = dw->events.ev[i].dist <= dw->dist;
     }
