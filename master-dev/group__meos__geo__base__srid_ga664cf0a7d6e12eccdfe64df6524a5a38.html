@@ -114,10 +114,10 @@ $(function() {
 </div><div class="memdoc">
 
 <p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the SRID of a geometry/geography. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The invalid SRID is refused, as <a class="el" href="group__meos__cbuffer__base__srid_ga04d24312858a32d4f91ca37b22e4500f.html#ga04d24312858a32d4f91ca37b22e4500f" title="Return a circular buffer with the coordinates set to an SRID.">cbuffer_set_srid</a> refuses it; any other SRID is clamped into the range of the reference systems as PostGIS clamps it, a negative SRID reading as the unknown SRID 0 </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID @csqlfn <a class="el" href="group__mobilitydb__geo__base__transf_ga897964c81183a73aa6a32e7354713fc0.html#ga897964c81183a73aa6a32e7354713fc0" title="Return a geometry or a geography with its coordinates set to an SRID.">Geo_set_srid()</a> </td></tr>
   </table>
   </dd>
 </dl>
