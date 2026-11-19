@@ -71,6 +71,15 @@ extern bool tfloatsegm_crossing(double start, double end, double value,
 extern bool tnumbersegm_crossing(double start1, double end1, double start2,
   double end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
 
+/* The exact sign, at the offset `m + half` microseconds from the start of a
+ * period, of a function linear in the offset, read by
+ * #linear_crossing_nearest */
+typedef int (*LinearSignFn)(const void *ctx, int64 m, double half);
+
+extern bool linear_crossing_nearest(LinearSignFn sign, const void *ctx,
+  int sstart, int send, double x, double err, TimestampTz lower,
+  TimestampTz upper, TimestampTz *t);
+
 /* The durations, 2^52 microseconds, below which the offsets of a crossing
  * and their halves are doubles exactly */
 #define FLOATSEGM_FILTER_MAXD (INT64CONST(1) << 52)
