@@ -136,7 +136,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   an integer: 0 or 1 an answer, an empty geometry included, and -1 either an error with
   `meos_errno` set or, for two temporal values with no common time, the absent answer SQL reads
   as NULL. `070_tgeo_spatialrels` asks every ever and always relationship of an empty geometry,
-  MERGED as MobilityDB #3812 (`18aa7c292b`).
+  MERGED as MobilityDB #3812 (`18aa7c292b`). Every reader taking a byte length refuses a length
+  one byte short or zero (`~/cpwork/contract/scan_counts.py`: the WKB readers of every type, the
+  two aggregate state deserializers, and the four raster readers, whose GDAL readers hand the
+  length to `/vsimem/` and whose Raquet row reader tests it). The Raquet WKB reader refuses a
+  width or height outside [1, 65535] before narrowing it to the tile's 16-bit field, OPEN as
+  MobilityDB #3821 (branch `fix/raquet-wkb-dimensions`): of 121 WKB stating every pair of 11
+  dimensions, master reads 40 of the 112 outside the range as another tile, and the branch refuses
+  all 112.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
