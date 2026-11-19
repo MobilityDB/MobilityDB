@@ -128,8 +128,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   MobilityDB #3752 (`a01bc90d2b`); the set of `tstzset_tprecision`, MERGED as MobilityDB #3753
   (`322ea2ed18`); the result of `bearing_point_point`, MERGED as MobilityDB #3754
   (`4479b7c334`). The boolean functions that refuse an argument return `false`, the 25 number
-  box operators of `temporal_boxops.c` and `ensure_valid_tinstant_value` among them, OPEN as
-  MobilityDB #3809 (branch `meos/bool-functions-return-false`), which rewrites 29c346279f (MobilityDB #3348) by the
+  box operators of `temporal_boxops.c` and `ensure_valid_tinstant_value` among them, MERGED as
+  MobilityDB #3809 (`8df14af18b`), which rewrites 29c346279f (MobilityDB #3348) by the
   owner's ruling of 2026-11-18 ("approve the rewrite"): the 25 `return NULL;` lines that commit
   wrote become `return false;`, the same machine code. These operators answer a boolean, so a
   refused argument answers false with `meos_errno` set, while the three-valued predicates answer
