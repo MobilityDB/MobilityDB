@@ -134,6 +134,6 @@ var searchData=
   ['sweep_131',['sweep',['../structHullPiece_a21c1a7aa519bae8df99fd8c0a287b6d5.html#a21c1a7aa519bae8df99fd8c0a287b6d5',1,'HullPiece']]],
   ['sx_132',['sx',['../structEdge_a231f0fcaeeae910d54f3adb66acfd4bd.html#a231f0fcaeeae910d54f3adb66acfd4bd',1,'Edge::sx()'],['../structDistRefEdge_a1e5fc14b8b16c05078df4602e7b4572c.html#a1e5fc14b8b16c05078df4602e7b4572c',1,'DistRefEdge::sx()']]],
   ['sy_133',['sy',['../structEdge_aefc98ac054f610936a7dc9aecae1103a.html#aefc98ac054f610936a7dc9aecae1103a',1,'Edge::sy()'],['../structDistRefEdge_ac741b10d362cbda0e534f417f031c29a.html#ac741b10d362cbda0e534f417f031c29a',1,'DistRefEdge::sy()']]],
-  ['syncs_134',['SYNCS',['../sync__crossing__test_8c_a601b82524828f9409965b4c780839711.html#a601b82524828f9409965b4c780839711',1,'sync_crossing_test.c']]],
+  ['syncs_134',['SYNCS',['../sync__crossing__test_8c_a441f7f6085e6d1e40e0070a35ce89136.html#a441f7f6085e6d1e40e0070a35ce89136',1,'sync_crossing_test.c']]],
   ['sz_135',['sz',['../typeof__test_8c_aad50db3bff52eed270f16ef9e6acd8b1.html#aad50db3bff52eed270f16ef9e6acd8b1',1,'typeof_test.c']]]
 ];

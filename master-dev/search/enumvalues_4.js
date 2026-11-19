@@ -23,5 +23,7 @@ var searchData=
   ['everle_5fop_20',['EVERLE_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dbae9bfdcfcaae873d0d7f63b0251c9d379',1,'meos_catalog.h']]],
   ['everlt_5fop_21',['EVERLT_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dbad7cdd6a7d91beaba8201ce63367cc0d0',1,'meos_catalog.h']]],
   ['everne_5fop_22',['EVERNE_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dbaff786e34002f8d066ef4c2b04cc030f2',1,'meos_catalog.h']]],
-  ['everoverlaps_5fop_23',['EVEROVERLAPS_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dbaa069ddd2948a74a7ee91e44c3e7362cb',1,'meos_catalog.h']]]
+  ['everoverlaps_5fop_23',['EVEROVERLAPS_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dbaa069ddd2948a74a7ee91e44c3e7362cb',1,'meos_catalog.h']]],
+  ['ewkt3857_24',['EWKT3857',['../geo__io__test_8c_a385c44f6fb256e5716a2302a5b940388.html#a385c44f6fb256e5716a2302a5b940388ae1a76c590d28da28d929dcdbf93d6d87',1,'geo_io_test.c']]],
+  ['ewkt4326_25',['EWKT4326',['../geo__io__test_8c_a385c44f6fb256e5716a2302a5b940388.html#a385c44f6fb256e5716a2302a5b940388aa74b31e0d78175120020652ede30082f',1,'geo_io_test.c']]]
 ];
