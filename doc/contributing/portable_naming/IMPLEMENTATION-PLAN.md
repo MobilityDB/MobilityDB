@@ -209,6 +209,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   the body of `srid_parse` that reads a sign or a letter as a digit, by the owner's rulings of
   2026-11-19 ("fix the bugs", "go as you recommend"): a written `SRID=1000001` folds into 999002 as in
   a geometry, while `setSRID` refuses `SRID_INVALID`.
+  A temporal value and a spatial set set the unknown SRID as a geometry does, the one exception
+  MobilityDB #3834 kept, branch `fix/setsrid-unknown-as-geo`, which rewrites 9141fa18a0 (MobilityDB #652),
+  the refusal of the unknown SRID in `tspatial_set_srid` and `spatialset_set_srid`, by the owner's ruling of
+  2026-11-19 ("go"): `meos/test/srid_validity_test.c` compares every setter with `geo_set_srid` at -5 and
+  0, and CGAL agrees with all 3000 points of the Mercator corpus set to SRID -1, back to 4326 and to 3857.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
