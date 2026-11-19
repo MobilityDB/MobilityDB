@@ -83,7 +83,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   The nearest crossing of any sign linear in the offset, `linear_crossing_nearest`, comes with
   MobilityDB #3841, the product of two temporal floats dated at its nearest microsecond:
   branch `fix/exact-unary-turning-points` rewrites `6aa9d0c47b` there, the search of the nearest crossing of two float segments;
-  branch `fix/exact-unary-turning-points` rewrites `b8be143a79` there, the sign of the gap of two float segments it reads.
+  branch `fix/exact-unary-turning-points` rewrites `b8be143a79` there, the sign of the gap of two float segments it reads;
+  branch `fix/exact-unary-turning-points` rewrites `687f768c8d` there, the side of the float crossings that `linear_crossing_nearest` states for any linear sign.
 - **The conversion of a temporal network point to a temporal geometry point builds each point in
   the stack**, outside the plan, as the owner decided on 2026-11-07 ("approve the rewrite"):
   branch `perf/tnpoint-to-tgeompoint-points` rewrites `842c640e83` there, the
