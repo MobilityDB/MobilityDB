@@ -574,7 +574,7 @@ diffs classified:
    walk deciding a planar meeting in continuous time whichever microsecond dates it; CGAL agrees
    on the 15001 planar crossprobe rows and 9000 meetings near a bound.
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
-   MobilityDB #3841, a draft, dates the extremum of the product of two temporal floats, which the
+   MobilityDB #3841, merged as `d3add96551`, dates the extremum of the product of two temporal floats, which the
    quotient also adds, at its nearest microsecond, a tie going to the even timestamp, on the shared
    machinery alone (EA12 of [the exact arithmetic](EXACT-ARITHMETIC.md)): `tfloat_arithop_turnpt`
    reads the signs of the derivative at the ends with no arithmetic where the four products share
@@ -588,7 +588,8 @@ diffs classified:
    places 403 further off. Instructions of the product against that formula called in the same
    process: 1.027 on random values, 1.031 over long periods, 1.053 over wide binades, 1.88 for
    extrema within 3 microseconds of a bound and 2.70 for extrema at a tie, where the one exact sign
-   proving a zero is read on the exact tier of the shared ladder, hence the draft. Left in this step:
+   proving a zero is read on the exact tier of the shared ladder, a cost the owner accepted on
+   2026-11-19. Left in this step:
    the bearing, whose north passage turns 2π into 0, a jump no continuous linear result states, so
    dating it needs a ruling on how the result states the jump; and the instant of `exp`, `ln` and
    `log10` where the chord departs most from the curve, a transcendental offset whose nearest
