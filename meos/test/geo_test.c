@@ -472,6 +472,37 @@ int main(void)
   }
   meos_errno_reset();
 
+  /* The first line crosses the slanted edge of the triangle at a point the
+   * doubles cannot hold, and the second line ends at (3.05 0.95), the double
+   * nearest that crossing, which lies off the edge, inside the triangle. The
+   * crossing is in the interior of the lines and the end is not on the
+   * boundary of the triangle: the interior meets the boundary at a point, and
+   * no boundary meets a boundary. In the second pair the second line ends at
+   * the crossing itself, (3 1), which is then in the boundary of the lines,
+   * on the boundary of the triangle. CGAL's exact kernel answers both */
+  struct { const char *a, *b, *matrix; } crossends[] = {
+    { "MULTILINESTRING((1.1 0.3,5.3 1.7),(3.05 0.95,2.68 0.44))",
+      "POLYGON((0 0,4 0,1 3,0 0))", "1010F0212" },
+    { "MULTILINESTRING((1 0.5,5 1.5),(3 1,2.5 0.5))",
+      "POLYGON((0 0,4 0,1 3,0 0))", "1F1000212" },
+  };
+  for (size_t i = 0; i < sizeof(crossends) / sizeof(crossends[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(crossends[i].a, -1);
+    GSERIALIZED *gb = geom_in(crossends[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb, &size_out);
+    printf("geom_relate(a line end near a crossing, %zu): %s, errno %d\n",
+      i, gm ? gm : "(NULL)", meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, crossends[i].matrix) == 0);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
   /* Two input points are one point exactly where their coordinates are
    * equal, and an input point lies on a segment exactly where it lies on its
    * line within its span. Points 1e-13 apart are two points: the two are
