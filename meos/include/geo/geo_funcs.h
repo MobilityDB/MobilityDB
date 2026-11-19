@@ -473,6 +473,30 @@ extern void edges_add_circle(MeosArray *edges, double cx, double cy,
   double radius, bool ccw);
 extern int ring_area_sign(const POINTARRAY *pa);
 extern bool ring_encloses_no_area(const POINTARRAY *pa);
+
+/**
+ * @brief Running sum of twice the area of the rings of a geometry, a double
+ * and its compensation, with a bound on its error (#area_sum_ring)
+ */
+typedef struct
+{
+  double sum;    /**< Rounded running sum */
+  double err;    /**< Compensation of the running sum */
+  double bound;  /**< Bound on the error of `sum + err` */
+  bool ok;       /**< False once a ring is not read in doubles */
+  int unitx;     /**< Exponent of the integer unit of the X axis of every
+                   ring, `INT_MIN` where each ring reads its own */
+  int unity;     /**< Exponent of the integer unit of the Y axis of every
+                   ring, `INT_MIN` where each ring reads its own */
+  int128 isum;   /**< Exact sum on those units of the rings summed in one
+                   128-bit integer (#area_sum_ring) */
+} AreaSum;
+
+extern void area_sum_init(AreaSum *acc, const GSERIALIZED *gs);
+extern void area_sum_ring(AreaSum *acc, const double *c, uint32_t npoints,
+  uint32_t ndims, bool hole);
+extern bool area_sum_nearest(const AreaSum *acc, double *result);
+extern bool geom_area_exact(const LWGEOM *geom, double *result);
 extern int mec_radius_cmp(POINT2D *pts, int count, double radius);
 
 /* How a meeting of two edges arises, the data that place it exactly */

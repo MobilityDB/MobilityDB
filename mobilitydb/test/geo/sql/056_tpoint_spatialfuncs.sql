@@ -953,9 +953,19 @@ SELECT asText(atGeometry(tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(7 
 SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Interp=Step;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02, Point(1 1)@2001-01-03]', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
 SELECT asText(atGeometry(tgeogpoint 'SRID=4326;{Point(1 1)@2001-01-01, Point(5 5)@2001-01-02}', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
 
+-- A point with Z held at each instant meets a geometry with Z in three
+-- dimensions: on the tilted triangle, a quarter above it, at its vertex and on
+-- the middle of an edge; a point without Z reads the geometry in two
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(1 1 1.25)@2001-01-02, Point(3 0 0)@2001-01-03, Point(1.5 1.5 0)@2001-01-04]', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+SELECT asText(minusGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(1 1 1.25)@2001-01-02, Point(3 0 0)@2001-01-03, Point(1.5 1.5 0)@2001-01-04]', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+SELECT asText(atGeometry(tgeompoint '{Point(1 1 1)@2001-01-01, Point(1 1 1.25)@2001-01-02, Point(0 0 3)@2001-01-03}', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+SELECT asText(atGeometry(tgeompoint 'Point(1 1 1.25)@2001-01-01', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+SELECT asText(atGeometry(tgeompoint '{Point(1 1)@2001-01-01, Point(4 4)@2001-01-02}', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+
 /* Errors */
 SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4326;Linestring(0 0,2 2)'));
 SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4269;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 1 2)@2001-01-02]', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
 
 --------------------------------------------------------
 
