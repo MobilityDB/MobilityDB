@@ -954,9 +954,19 @@ eroded by 0.001 reads 4.8314e-4, the outward buffer, where at the origin it read
 holed square eroded there keeps its hole without growing it; the branch answers both as at the
 origin, and the 1840 queries of the buffer ledger byte-identically. The two defects the correct
 areas were said to expose answer on that master: a hole of half-width equal to the radius closes,
-and the nearly closed lines of the gap map decline in none of their 30 cells. Its oracle needs
-the erosion: `cgal_buffer` decides an outward buffer only, and a point lies in the erosion of P
-by r where it lies in P and its distance to the boundary is at least r. The test of a ring the
+and the nearly closed lines of the gap map decline in none of their 30 cells. Its oracle is
+the erosion: `cgal_buffer` reads a negative distance as the erosion, a point lying in it where it
+lies inside P, by the exact parity of the edges a ray crosses, at least r from the boundary of P
+(`oracle-kit`, `cpwork/bufring`). The erosion it judges first answered wrongly where it holds
+nothing, and MobilityDB #3817 (open) answers it empty: where the box is narrower than the diameter,
+where the contracted exterior passes through itself (the test of the holes,
+`buffer_contracted_ring_inverted`, read against the exterior's own edges), and where a grown hole
+lies around the contracted exterior (`buffer_erosion_place_holes`). On the 400 eroded squares and
+holed squares of the buffer ledger CGAL agrees on 61680 of 61680 answered queries (59432 before)
+and on the 192 real polygons on 3446 of 3446 (2988 of 3074 before), the declines a subset of the
+ones before; every buffer speed cell is at parity. C3 stacks on it: on the erosions of 36 small
+squares and holed squares at 6.4e6, 1e6 and 5.5e5 CGAL agrees on 5808 of 5808, where #3817 alone
+agrees on 5430 of 5684 and declines 124. The test of a ring the
 buffer constructs, `fabs(buffer_ring_signed_area(pieces)) <= MEOS_GEOM_TOLERANCE`, stays with the
 construction of the buffer's joints.
 
