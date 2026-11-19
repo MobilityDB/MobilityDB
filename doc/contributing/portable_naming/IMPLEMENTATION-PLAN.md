@@ -159,7 +159,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   66 children counts overflowing int, to 0),
   branch `meos/quadbin-ring-children-bounded` (`a24712d1f9`) rewrites 8fc7962209,
   the `int` narrowing of the ring count, by the owner's ruling of 2026-11-19 ("please fix these
-  defects"). `ensure_h3_success` describes a code
+  defects"), OPEN as MobilityDB #3845, CI green 48/48. `ensure_h3_success` describes a code
   by `describeH3Error` alone, H3 4.6.0 being the one release MobilityDB builds against, branch
   `meos/h3-error-describe-direct`.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
