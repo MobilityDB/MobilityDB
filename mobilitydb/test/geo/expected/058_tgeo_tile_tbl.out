@@ -50,14 +50,14 @@ SELECT extent(getSpaceTile(g, 2.5, geometry 'Point(10 10)')) FROM
 
 -- 3D
 SELECT extent(getSpaceTile(g, 2.5)) FROM
-(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
+(SELECT * FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
                 extent                
 --------------------------------------
  STBOX Z((2.5,10,0),(72.5,92.5,97.5))
 (1 row)
 
 SELECT extent(getSpaceTile(g, 2.5, geometry 'Point(10 10 10)')) FROM
-(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
+(SELECT * FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
                 extent                
 --------------------------------------
  STBOX Z((2.5,10,0),(72.5,92.5,97.5))
@@ -97,7 +97,7 @@ SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days', geometry 'Point(10 
 
 -- 3D
 SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days')) FROM
-(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL) t2;
                                                 extent                                                
 ------------------------------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days')) FROM
 (1 row)
 
 SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days', geometry 'Point(10 10 10)', '2001-06-01')) FROM
-(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL) t2;
                                                 extent                                                
 ------------------------------------------------------------------------------------------------------

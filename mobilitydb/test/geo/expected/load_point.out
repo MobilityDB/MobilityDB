@@ -23,12 +23,12 @@ CREATE TABLE tbl_stbox3d (
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_stbox3d.data'
 COPY tbl_stbox3d (k, b) FROM :'filename';
-CREATE TABLE tbl_geodstbox3D (
+CREATE TABLE tbl_geodstbox3d (
     k integer PRIMARY KEY,
     b stbox
 );
-\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geodstbox3D.data'
-COPY tbl_geodstbox3D (k, b) FROM :'filename';
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_geodstbox3d.data'
+COPY tbl_geodstbox3d (k, b) FROM :'filename';
 CREATE TABLE tbl_geog (
     k integer PRIMARY KEY,
     g geography
