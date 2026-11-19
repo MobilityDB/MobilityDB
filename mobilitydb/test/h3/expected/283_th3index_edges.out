@@ -112,7 +112,7 @@ SELECT isValidCell(th3GetDirectedEdgeDestination(
 (1 row)
 
 -------------------------------------------------------------------------------
--- th3DirectedEdgeToBoundary — needs h3_adapter.c body
+-- th3DirectedEdgeToBoundary
 -------------------------------------------------------------------------------
 SELECT th3DirectedEdgeToBoundary(
   th3CellsToDirectedEdge(

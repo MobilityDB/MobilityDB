@@ -218,7 +218,7 @@ th3index_get_directed_edge_destination(const Temporal *edge)
 }
 
 /*****************************************************************************
- * th3DirectedEdgeToBoundary — needs h3_adapter.c body
+ * th3DirectedEdgeToBoundary
  *****************************************************************************/
 
 /**

@@ -1,6 +1,6 @@
 -- Comparison ops: ever/always + temporal eq/ne on th3index.
--- No h3_adapter.c dependency (the operators route through
--- eacomp_temporal_* / tcomp_temporal_* which are purely generic).
+-- The operators route through eacomp_temporal_* / tcomp_temporal_*,
+-- which are generic.
 -------------------------------------------------------------------------------
 -- eEqual / ?= : at least one instant equals the probe
 -------------------------------------------------------------------------------
