@@ -117,4 +117,4 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   arcs: the 48 closed-form deviations of chords at `2^-24` and `2^-27` are the measure, not the
   buffer), the union a relationship reads for a collection, and the buffers left on the older path.
   Each later step of [Exact buffer](EXACT-BUFFER.md) states its buffers there in its own commit.
-- **Open pull requests** of this plan on 2026-11-19: this one and MobilityDB #3841.
+- **Open pull requests** of this plan on 2026-11-20: this one, MobilityDB #3859, #3861 and #3862.
