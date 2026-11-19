@@ -403,6 +403,25 @@ time strategies against the span and itself, and `opnames` gives `tjsonb` its `#
 since `@>` and `<@` state the containment of its JSONB values. No temporal type's index
 operator class is written by hand.
 
+**The index tests of the temporal types are generated from the same classes**
+(`manifest.d/indextests.yaml`, `render_indextest`, `templates/indextest.sql.tmpl`). The rows of
+a test are the members of the R-tree class of its type, read by `_indextest_class` from the
+partner of its box as the class itself is written, or from `render_family_tempopclass` over the
+`stbox`: each operator with each right argument it declares, the commutated form against a
+period or a box through the `comm` of `boxtopops.yaml` and `boxposops.yaml` (renamed back
+through the type's `opnames`), the nearest-approach distances where the class orders by one, and
+the ever and always overlaps. Under each of the GiST, quad-tree and k-d tree indexes every row
+answers what the scan gives, from a plan that probes the index. A type keyed by an `stbox` takes
+`templates/indextest_tables.sql.tmpl`, a type keyed by its period
+`templates/indextest_tables_span.sql.tmpl`, the same tables without the boxes of space; a family
+with values in two and three dimensions has one test per dimension
+(`<nnn>_<fam>_indexes_tbl` and `<nnn>_<fam>_indexes3d_tbl`). Generated: tcbuffer, tpose (2D and
+3D), trgeometry (2D and 3D), tnpoint, tquadbin, ts2cell, tposechain and tjsonb; the tests of the
+temporal geometries and points (`074_tgeo`, `074_tpoint`) and of the base temporal types
+(`044_temporal`) test the structure of the trees and are written by hand, and so is that of
+th3index (`272_th3index`), since the latitudes its geodetic boxes reach along the edges of a cell
+are not correctly rounded and the counts of the scan differ by platform.
+
 **`topops.sql.tmpl`/`posops.sql.tmpl` serve two independent manifest tracks** that
 happen to share a template name: the `topop_families`/`posop_families` axes (§9,
 Set<T>/Span<T> topological/position operators) and the `subtypes:` `files:` track
