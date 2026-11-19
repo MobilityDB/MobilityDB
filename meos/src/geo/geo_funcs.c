@@ -24358,6 +24358,32 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
   Edge **edges = palloc(sizeof(Edge *) * Max(nall, 1));
   for (int i = 0; i < nall; i++)
     edges[i] = (Edge *) meos_array_get_intl(all, i);
+  /* The component each areal edge belongs to. The boundary of one component
+   * meets itself only at the vertices its rings share, which cut nothing, so
+   * an edge is cut only where the edge of ANOTHER component meets it: a
+   * tangent meeting of two adjacent edges of one ring, read a few units in
+   * the last place inside the edge, would otherwise cut it into a sliver.
+   * The collection's edges and its components' edges are read by the same
+   * extraction (#geom_extract_edges) member after member, so the areal edges
+   * of the collection are those of its components in order; where the counts
+   * do not show it, every edge is cut against every other */
+  int *ecomp = palloc(sizeof(int) * Max(nall, 1));
+  int nareal = 0, ncompedges = 0;
+  for (int i = 0; i < nall; i++)
+    if (relate_area_boundary_edge(edges[i]))
+      nareal++;
+  for (int c = 0; c < ncomp; c++)
+    ncompedges += comps[c].nedges;
+  for (int i = 0, c = 0, left = comps[0].nedges; i < nall; i++)
+  {
+    ecomp[i] = -1;
+    if (nareal != ncompedges || ! relate_area_boundary_edge(edges[i]))
+      continue;
+    while (left == 0 && c + 1 < ncomp)
+      left = comps[++c].nedges;
+    ecomp[i] = c;
+    left--;
+  }
   RelateEdges re;
   relate_edges_init(&re, edges, nall, index);
   MeosArray *candidates = re.index ? index_result_create() : NULL;
@@ -24389,7 +24415,8 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     {
       int j = candidates ? (int) INDEX_RESULT_ID_N(candidates, c) : c;
       const Edge *other = edges[j];
-      if (j == i || ! relate_area_boundary_edge(other))
+      if (j == i || ! relate_area_boundary_edge(other) ||
+          (ecomp[i] >= 0 && ecomp[i] == ecomp[j]))
         continue;
       double ix[2], iy[2];
       bool overlap;
@@ -24476,6 +24503,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     meos_array_destroy(candidates);
   relate_edges_clear(&re);
   pfree(edges);
+  pfree(ecomp);
 
   relate_comps_free(comps, ncomp);
   return result;

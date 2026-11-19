@@ -170,6 +170,16 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
 -- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
 SELECT ST_GeometryType(buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))', 1));
+-- The buffers of two polygons that stay apart are a surface each, and a point
+-- within the distance of the first lies in their union, the arcs where each
+-- buffer turns meeting nothing of the other
+SELECT contains(buffer(geometry 'MultiPolygon(((549003.378756243 6088596.943731396,
+  548948.5604034535 6088519.939385607,548961.794964137 6088546.243981731,
+  548986.1779411763 6088570.599007793,548993.3848006604 6088604.432136278,
+  549003.378756243 6088596.943731396)),((550539.9835761178 6089586.122404569,
+  550574.5007171528 6089599.619660147,550571.2435751263 6089598.329909987,
+  550539.9835761178 6089586.122404569)))', 316.42868675352696),
+  ST_Point(549094.7014601384, 6088726.222741437)) AS inside;
 
 -------------------------------------------------------------------------------
 -- Intersection matrix
