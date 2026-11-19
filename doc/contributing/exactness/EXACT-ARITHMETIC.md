@@ -1021,9 +1021,12 @@ of a nearest microsecond from an offset and its bound twice, in `floatsegm_offse
 `monotone_halve`, its halving, which a search with a bracket and no candidate reads alone;
 `nearest_double_search` is `monotone_search` over the bit patterns, and every other search reads one
 of them with a side of its own. `offset_nearest_bounded` in `tsequence.h` is the one proof of a
-nearest microsecond, which the float crossings and the geodetic dates read.
+nearest microsecond, which the float crossings and the geodetic dates read. The nearest crossing
+of any sign linear in the offset, `linear_crossing_nearest`, with the one sign at the middle of two
+microseconds where a bound leaves the crossing between them, goes with MobilityDB #3841, whose
+product of two temporal floats reads it on its derivative.
 
-MobilityDB #3848, branch `consol/one-monotone-search`. Measured: a measurement build compiles each
+MobilityDB #3848, merged as `687f768c8d`. Measured: a measurement build compiles each
 rewritten function twice, as master states it and as EA12 states it, and answers both on every call,
 stopping at any difference of result, output argument or decline (claude-kits
 `oracle-kit/home/cpwork/one-search`, `make_diff_build.py`). The 379 tests of the SQL suite, the 7997
