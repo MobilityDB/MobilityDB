@@ -183,8 +183,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   branch `meos/quadbin-ring-children-bounded` (`a24712d1f9`) rewrites 8fc7962209,
   the `int` narrowing of the ring count, by the owner's ruling of 2026-11-19 ("please fix these
   defects"), MERGED as MobilityDB #3845 (`87c8d33e4d`). `ensure_h3_success` describes a code
-  by `describeH3Error` alone, H3 4.6.0 being the one release MobilityDB builds against, OPEN as
-  MobilityDB #3847 (`7c90191526`).
+  by `describeH3Error` alone, H3 4.6.0 being the one release MobilityDB builds against, MERGED
+  as MobilityDB #3847 (`f7326f0a48`).
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
