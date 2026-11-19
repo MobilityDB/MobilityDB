@@ -10899,6 +10899,107 @@ buffer_mpoly_arranged(const LWMPOLY *mpoly, double radius, int32_t srid)
 }
 
 /**
+ * @brief Return the erosion of a polygon or a multipolygon with round joins,
+ * the region the exact offset curves of its rings wind around clockwise
+ * @details The erosion is what the buffer of the complement of the polygons
+ * leaves, so it is read off the curves #buffer_round_rings reads a buffer
+ * off, with the parts of the complement: the exterior of every polygon is a
+ * hole of the complement, offset turning clockwise into the polygon, and
+ * every hole a shell of it, offset turning counterclockwise out of the hole
+ * (#buffer_round_ring_offsets). The unbounded part of the complement adds
+ * one to the winding number everywhere, so the buffer of the complement is
+ * where the curves wind around at least zero times and the erosion is where
+ * they wind around clockwise at least once
+ * (#arrange_wound_tangent_surfaces_signed), however the grown holes and the
+ * contracted exteriors cross. A polygon within a circle no larger than the
+ * distance holds no point of the erosion and adds no curve, as
+ * #buffer_round_rings leaves out such a hole, the smallest enclosing circle
+ * compared with the distance exactly (#mec_radius_cmp). A region with no such
+ * point is the empty polygon
+ * @param[in] geom Polygon or multipolygon
+ * @param[in] radius Distance, positive
+ * @param[in] srid Spatial reference identifier
+ * @return NULL for another type, a ring enclosing no area, or where the
+ * arrangement leaves the region unanswered -- a caller that has another way
+ * to answer may take it
+ */
+static LWGEOM *
+buffer_round_erosion(const LWGEOM *geom, double radius, int32_t srid)
+{
+  assert(geom); assert(radius > 0.0);
+  if (geom->type != POLYGONTYPE && geom->type != MULTIPOLYGONTYPE)
+    return NULL;
+  const LWGEOM *const *parts = &geom;
+  uint32_t nparts = 1;
+  if (geom->type == MULTIPOLYGONTYPE)
+  {
+    parts = (const LWGEOM *const *) ((const LWCOLLECTION *) geom)->geoms;
+    nparts = ((const LWCOLLECTION *) geom)->ngeoms;
+  }
+  uint32_t total = 0;
+  for (uint32_t i = 0; i < nparts; i++)
+  {
+    const LWPOLY *poly = (const LWPOLY *) parts[i];
+    if (parts[i]->type != POLYGONTYPE)
+      return NULL;
+    /* A ring enclosing no area, a slit, takes a band about itself from the
+     * erosion, which these curves do not state */
+    for (uint32_t r = 0; r < poly->nrings; r++)
+    {
+      if (ring_area_sign(poly->rings[r]) == 0)
+        return NULL;
+      total += poly->rings[r]->npoints;
+    }
+  }
+  TangentPoint *tps = palloc(sizeof(TangentPoint) * 2 * Max(total, 1u));
+  /* An offset segment and at most one arc for every point */
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  edge_array_reserve(edges, 2 * (size_t) total);
+  uint32_t ntp = 0;
+  POINT2D *pts = palloc(sizeof(POINT2D) * Max(total, 1u));
+  for (uint32_t i = 0; i < nparts; i++)
+  {
+    const LWPOLY *poly = (const LWPOLY *) parts[i];
+    if (poly->nrings == 0)
+      continue;
+    const POINTARRAY *ext = poly->rings[0];
+    for (uint32_t k = 0; k < ext->npoints; k++)
+      pts[k] = *getPoint2d_cp(ext, k);
+    if (mec_radius_cmp(pts, (int) ext->npoints, radius) <= 0)
+      continue;
+    for (uint32_t r = 0; r < poly->nrings; r++)
+      buffer_round_ring_offsets(poly->rings[r], r != 0, radius, tps, &ntp,
+        edges);
+  }
+  pfree(pts);
+  LWGEOM *result = NULL;
+  if (edges->count == 0)
+    result = lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
+  else
+  {
+    MeosArray **rings;
+    uint32_t nrings;
+    int32_t *owner;
+    if (arrange_wound_tangent_surfaces_signed(edges, -1, &rings, &nrings,
+          &owner) == ARR_ANSWERED)
+    {
+      if (nrings == 0)
+      {
+        arrange_rings_free(rings, nrings);
+        if (owner)
+          pfree(owner);
+        result = lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
+      }
+      else
+        result = buffer_surfaces_from_rings(rings, nrings, owner, srid);
+    }
+  }
+  meos_array_destroy(edges);
+  pfree(tps);
+  return result;
+}
+
+/**
  * @brief Return the erosion of a polygon from its contracted exterior and its
  * grown holes, which no boundary crosses
  * @details Where no two of the curves cross, a grown hole stands inside the
@@ -11398,6 +11499,15 @@ meos_buffer(const LWGEOM *geom, double radius, JoinStyle join_style,
       return buffer_areal_is_degenerate(geom) ?
         lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0)) :
         lwgeom_clone_deep(geom);
+    /* Round joins about the vertices of polygons are arcs of the circles the
+     * vertices and the distance fix exactly, and the erosion the region the
+     * exact offset curves wind around clockwise */
+    if (join_style == JOIN_ROUND)
+    {
+      LWGEOM *exact = buffer_round_erosion(geom, -radius, srid);
+      if (exact)
+        return exact;
+    }
     if (geom->type == POLYGONTYPE)
       return meos_buffer_poly((const LWPOLY *) geom, -radius, join_style,
         cap_style, mitre_limit, true);
