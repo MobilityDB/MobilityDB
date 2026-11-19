@@ -10,36 +10,8 @@
 <chapter xml:id="tgeo_p1">
 	<title>Temporal Geometry Types (Part 1)</title>
 
-	<sect1 xml:id="tspatial">
-		<title>Spatiotemporal Types</title>
-		<para>MobilityDB provides a set of spatiotemporal types, namely, <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tnpoint</varname> (temporal network point), <varname>tpose</varname> (temporal pose), <varname>tposechain</varname> (temporal pose chain), <varname>trgeometry</varname> (temporal rigid geometry), <varname>th3index</varname>, <varname>tquadbin</varname>, and <varname>ts2cell</varname> (the temporal DGGS cell indexes), and <varname>tpcpoint</varname> (temporal point cloud point) and <varname>tpcpatch</varname> (temporal point cloud patch). At a conceptual level, these spatiotemporal types are organized in the hierarchy depicted in <xref linkend="tspatial_fig" />.</para>
-
-		<figure xml:id="tspatial_fig" float="start">
-			<title>Hierarchy of spatiotemporal types in MobilityDB.</title>
-			<mediaobject>
-				<imageobject><imagedata format="PDF" width="100%" scalefit="1" fileref="images/tspatial.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" width="100%" scalefit="1" fileref="images/tspatial.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" width="100%" scalefit="1" fileref="images/tspatial.png"/></imageobject>
-			</mediaobject>
-		</figure>
-
-		<para>In this chapter and the following one we cover the type <varname>TGeo</varname> and its subtypes, that is, the spatiotemporal types derived from the PostGIS types <varname>geometry</varname> and <varname>geography</varname>. In the subsequent chapters we continue describing the remaining spatiotemporal types.</para>
-
-		<para><xref linkend="tpoint_tgeo" /> illustrates the use of the <varname>tgeompoint</varname> (top) and the <varname>tgeometry</varname> (bottom) types for modelling the trajectory and the wind swath of tropical storms in 2024. The data is obtained from the National Oceanic and Atmospherique Administration (<ulink url="https://www.nhc.noaa.gov/data/tcr/">NOAA</ulink>). As illustrated in the figure, the type <varname>tgeompoint</varname> allows <emphasis>linear</emphasis> interpolation, while the type <varname>tgeometry</varname> only allows <emphasis>step</emphasis> interpolation.</para>
-
-		<figure xml:id="tpoint_tgeo" float="start">
-			<title>Illustration of the use of the <varname>tgeompoint</varname> (top) and the <varname>tgeometry</varname> (bottom) types for modelling the trajectory and the wind swath of tropical storms in 2024.</title>
-			<mediaobject>
-				<imageobject><imagedata format="PNG" scale='30' fileref="images/tgeompoint.png"/></imageobject>
-			</mediaobject>
-			<mediaobject>
-				<imageobject><imagedata format="PNG" scale='30' fileref="images/tgeometry.png"/></imageobject>
-			</mediaobject>
-		</figure>
-	</sect1>
-
 	<sect1 xml:id="geo_funcs">
-		<title>Functions on Geometries</title>
+		<title>Static Geometries</title>
 
 		<para>The functions in this section answer a question about a geometry rather than about a temporal type. Each states how it reads a geometry bounded by circular arcs, since an answer built from the arcs themselves and an answer built from a polygonal approximation of them are not the same answer.</para>
 
@@ -603,6 +575,34 @@ SELECT symDifference(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 </programlisting>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tspatial">
+		<title>Spatiotemporal Types</title>
+		<para>MobilityDB provides a set of spatiotemporal types, namely, <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tnpoint</varname> (temporal network point), <varname>tpose</varname> (temporal pose), <varname>tposechain</varname> (temporal pose chain), <varname>trgeometry</varname> (temporal rigid geometry), <varname>th3index</varname>, <varname>tquadbin</varname>, and <varname>ts2cell</varname> (the temporal DGGS cell indexes), and <varname>tpcpoint</varname> (temporal point cloud point) and <varname>tpcpatch</varname> (temporal point cloud patch). At a conceptual level, these spatiotemporal types are organized in the hierarchy depicted in <xref linkend="tspatial_fig" />.</para>
+
+		<figure xml:id="tspatial_fig" float="start">
+			<title>Hierarchy of spatiotemporal types in MobilityDB.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" width="100%" scalefit="1" fileref="images/tspatial.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" width="100%" scalefit="1" fileref="images/tspatial.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" width="100%" scalefit="1" fileref="images/tspatial.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>In this chapter and the following one we cover the type <varname>TGeo</varname> and its subtypes, that is, the spatiotemporal types derived from the PostGIS types <varname>geometry</varname> and <varname>geography</varname>. In the subsequent chapters we continue describing the remaining spatiotemporal types.</para>
+
+		<para><xref linkend="tpoint_tgeo" /> illustrates the use of the <varname>tgeompoint</varname> (top) and the <varname>tgeometry</varname> (bottom) types for modelling the trajectory and the wind swath of tropical storms in 2024. The data is obtained from the National Oceanic and Atmospherique Administration (<ulink url="https://www.nhc.noaa.gov/data/tcr/">NOAA</ulink>). As illustrated in the figure, the type <varname>tgeompoint</varname> allows <emphasis>linear</emphasis> interpolation, while the type <varname>tgeometry</varname> only allows <emphasis>step</emphasis> interpolation.</para>
+
+		<figure xml:id="tpoint_tgeo" float="start">
+			<title>Illustration of the use of the <varname>tgeompoint</varname> (top) and the <varname>tgeometry</varname> (bottom) types for modelling the trajectory and the wind swath of tropical storms in 2024.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PNG" scale='30' fileref="images/tgeompoint.png"/></imageobject>
+			</mediaobject>
+			<mediaobject>
+				<imageobject><imagedata format="PNG" scale='30' fileref="images/tgeometry.png"/></imageobject>
+			</mediaobject>
+		</figure>
 	</sect1>
 
 	<sect1 xml:id="tgeo_notation">
