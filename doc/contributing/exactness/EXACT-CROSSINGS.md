@@ -548,7 +548,7 @@ diffs classified:
    segment of the input and recognized bit for bit by the join; an MPFR judge at 2400 bits
    agrees on 4000 rows of three geography instants, where a 1e-9 band disagrees on 1511. It
    costs 1.21, 1.14 and 1.42 times the instructions on three tiling cells.
-   MobilityDB #3811 (open) meets a geography segment and its mirror across the plane of a
+   MobilityDB #3811, merged as `9bcd02758b`, meets a geography segment and its mirror across the plane of a
    meridian where the first crosses it, the mirror decided on the doubles of the ends, and
    dates the meeting from the angle at which the first reaches the plane; of the 437,601
    pairs of segments of real AIS trips whose boxes overlap, 481 are such mirrors, and an MPFR
