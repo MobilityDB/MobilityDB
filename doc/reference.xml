@@ -981,7 +981,7 @@
 	<sect1>
 		<title>Temporal Geometry Types</title>
 		<sect2>
-			<title>Functions on Geometries</title>
+			<title>Static Geometries</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="geo_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>

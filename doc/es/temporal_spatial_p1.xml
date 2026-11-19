@@ -10,36 +10,8 @@
 <chapter xml:id="tgeo_p1">
 	<title>Tipos temporales geométricos (Parte 1)</title>
 
-	<sect1 xml:id="tspatial">
-		<title>Tipos espaciotemporales</title>
-		<para>MobilityDB proporciona un conjunto de tipos espaciotemporales, a saber, <varname>tgeometry</varname> (geometría temporal), <varname>tgeography</varname> (geografía temporal), <varname>tgeompoint</varname> (punto geométrico temporal), <varname>tgeogpoint</varname> (punto geográfico temporal), <varname>tcbuffer</varname> (buffer circular temporal), <varname>tnpoint</varname> (punto de red temporal), <varname>tpose</varname> (pose temporal), <varname>tposechain</varname> (cadena de poses temporal), <varname>trgeometry</varname> (geometría rígida temporal), <varname>th3index</varname>, <varname>tquadbin</varname> y <varname>ts2cell</varname> (los índices de celdas DGGS temporales), y <varname>tpcpoint</varname> (punto de nube de puntos temporal) y <varname>tpcpatch</varname> (parche de nube de puntos temporal). A nivel conceptual, estos tipos espaciotemporales se organizan en la jerarquía que se muestra en la <xref linkend="tspatial_fig" />.</para>
-
-		<figure xml:id="tspatial_fig" float="start">
-			<title>Jerarquía de tipos espaciotemporales en MobilityDB.</title>
-			<mediaobject>
-				<imageobject><imagedata format="PDF" width="100%" scalefit="1" fileref="../images/tspatial.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" width="100%" scalefit="1" fileref="../images/tspatial.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" width="100%" scalefit="1" fileref="../images/tspatial.png"/></imageobject>
-			</mediaobject>
-		</figure>
-
-		<para>En este capítulo y el siguiente cubrimos el tipo <varname>TGeo</varname> y sus subtipos, es decir, los tipos espaciotemporales derivados de los tipos <varname>geometry</varname> y <varname>geography</varname> de PostGIS. En los capítulos siguientes, continuamos describiendo los tipos espaciotemporales restantes.</para>
-
-		<para>La <xref linkend="tpoint_tgeo" /> ilustra el uso de los tipos <varname>tgeompoint</varname> (arriba) y <varname>tgeometry</varname> (abajo) para modelizar la trayectoria y la franja de viento de las tormentas tropicales en 2024. Los datos provienen de National Oceanic and Atmospherique Administration (<ulink url="https://www.nhc.noaa.gov/data/tcr/">NOAA</ulink>). Como se ilustra en la figura, el tipo <varname>tgeompoint</varname> permite la interpolación <emphasis>lineal</emphasis>, mientras que el tipo <varname>tgeometry</varname> solo permite la interpolación <emphasis>escalonada</emphasis>.</para>
-
-		<figure xml:id="tpoint_tgeo" float="start">
-			<title>Ilustración del uso de los tipos <varname>tgeompoint</varname> (arriba) y <varname>tgeometry</varname> (abajo) para modelizar la trayectoria y la franja de viento de las tormentas tropicales en 2024.</title>
-			<mediaobject>
-				<imageobject><imagedata format="PNG" scale='30' fileref="../images/tgeompoint.png"/></imageobject>
-			</mediaobject>
-			<mediaobject>
-				<imageobject><imagedata format="PNG" scale='30' fileref="../images/tgeometry.png"/></imageobject>
-			</mediaobject>
-		</figure>
-	</sect1>
-
 	<sect1 xml:id="geo_funcs">
-		<title>Funciones sobre Geometrías</title>
+		<title>Geometrías estáticas</title>
 
 		<para>Las funciones de esta sección responden una pregunta sobre una geometría y no sobre un tipo temporal. Cada una indica cómo lee una geometría delimitada por arcos circulares, ya que una respuesta construida a partir de los arcos mismos y una construida a partir de una aproximación poligonal de ellos no son la misma respuesta.</para>
 
@@ -603,6 +575,34 @@ SELECT symDifference(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 </programlisting>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tspatial">
+		<title>Tipos espaciotemporales</title>
+		<para>MobilityDB proporciona un conjunto de tipos espaciotemporales, a saber, <varname>tgeometry</varname> (geometría temporal), <varname>tgeography</varname> (geografía temporal), <varname>tgeompoint</varname> (punto geométrico temporal), <varname>tgeogpoint</varname> (punto geográfico temporal), <varname>tcbuffer</varname> (buffer circular temporal), <varname>tnpoint</varname> (punto de red temporal), <varname>tpose</varname> (pose temporal), <varname>tposechain</varname> (cadena de poses temporal), <varname>trgeometry</varname> (geometría rígida temporal), <varname>th3index</varname>, <varname>tquadbin</varname> y <varname>ts2cell</varname> (los índices de celdas DGGS temporales), y <varname>tpcpoint</varname> (punto de nube de puntos temporal) y <varname>tpcpatch</varname> (parche de nube de puntos temporal). A nivel conceptual, estos tipos espaciotemporales se organizan en la jerarquía que se muestra en la <xref linkend="tspatial_fig" />.</para>
+
+		<figure xml:id="tspatial_fig" float="start">
+			<title>Jerarquía de tipos espaciotemporales en MobilityDB.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" width="100%" scalefit="1" fileref="../images/tspatial.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" width="100%" scalefit="1" fileref="../images/tspatial.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" width="100%" scalefit="1" fileref="../images/tspatial.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>En este capítulo y el siguiente cubrimos el tipo <varname>TGeo</varname> y sus subtipos, es decir, los tipos espaciotemporales derivados de los tipos <varname>geometry</varname> y <varname>geography</varname> de PostGIS. En los capítulos siguientes, continuamos describiendo los tipos espaciotemporales restantes.</para>
+
+		<para>La <xref linkend="tpoint_tgeo" /> ilustra el uso de los tipos <varname>tgeompoint</varname> (arriba) y <varname>tgeometry</varname> (abajo) para modelizar la trayectoria y la franja de viento de las tormentas tropicales en 2024. Los datos provienen de National Oceanic and Atmospherique Administration (<ulink url="https://www.nhc.noaa.gov/data/tcr/">NOAA</ulink>). Como se ilustra en la figura, el tipo <varname>tgeompoint</varname> permite la interpolación <emphasis>lineal</emphasis>, mientras que el tipo <varname>tgeometry</varname> solo permite la interpolación <emphasis>escalonada</emphasis>.</para>
+
+		<figure xml:id="tpoint_tgeo" float="start">
+			<title>Ilustración del uso de los tipos <varname>tgeompoint</varname> (arriba) y <varname>tgeometry</varname> (abajo) para modelizar la trayectoria y la franja de viento de las tormentas tropicales en 2024.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PNG" scale='30' fileref="../images/tgeompoint.png"/></imageobject>
+			</mediaobject>
+			<mediaobject>
+				<imageobject><imagedata format="PNG" scale='30' fileref="../images/tgeometry.png"/></imageobject>
+			</mediaobject>
+		</figure>
 	</sect1>
 
 	<sect1 xml:id="tgeo_notation">
