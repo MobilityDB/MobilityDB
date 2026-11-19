@@ -153,6 +153,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   gives its sixteen codes, MERGED as MobilityDB #3840 (`37e3cfd2ac`). The opt-out reasons of the
   importer name the MEOS function implementing each skipped function, and no comment names the
   `h3_adapter.c` MEOS does not have, MERGED as MobilityDB #3842 (`3cb603d64c`).
+  `quadbin_k_ring` refuses a negative radius, and it and `quadbin_cell_to_children` count their
+  cells in 64 bits and refuse an array beyond `MaxAllocSize` (census over 1716 rings and 351
+  resolution pairs: 390 negative radii answering unwritten cells, 187 ring counts overflowing int,
+  66 children counts overflowing int, to 0), branch `meos/quadbin-ring-children-bounded`
+  (`a24712d1f9`), which rewrites 8fc7962209 (the `int` narrowing of the ring count), by the
+  owner's ruling of 2026-11-19 ("please fix these defects"). `ensure_h3_success` describes a code
+  by `describeH3Error` alone, H3 4.6.0 being the one release MobilityDB builds against, branch
+  `meos/h3-error-describe-direct`.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
