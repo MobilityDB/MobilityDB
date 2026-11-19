@@ -613,9 +613,11 @@ quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
  * CARTO reference states: a column does not wrap at the antimeridian and a
  * row does not cross a pole
  * @param[in] cell Quadbin cell
- * @param[in] direction One of "up", "down", "left", "right"
- * @return The sibling cell, or 0 on an unknown direction or where the sibling
- * would lie beyond an edge of the grid
+ * @param[in] direction One of "up", "down", "left", "right", in any case, as
+ * `cell_sibling` of the CARTO reference reads it
+ * @return The sibling cell, or 0 where the sibling would lie beyond an edge of
+ * the grid
+ * @errval 0
  * @csqlfn #Quadbin_cell_sibling()
  */
 Quadbin
@@ -629,16 +631,21 @@ quadbin_cell_sibling(Quadbin cell, const char *direction)
   /* The column and row of the sibling, in long as the tile indices of
    * quadbin_tile_index, so that one beyond an edge is outside the grid */
   long last = (1L << z) - 1, col = x, row = y;
-  if (strcmp(direction, "up") == 0)
+  if (pg_strcasecmp(direction, "up") == 0)
     row -= 1;
-  else if (strcmp(direction, "down") == 0)
+  else if (pg_strcasecmp(direction, "down") == 0)
     row += 1;
-  else if (strcmp(direction, "left") == 0)
+  else if (pg_strcasecmp(direction, "left") == 0)
     col -= 1;
-  else if (strcmp(direction, "right") == 0)
+  else if (pg_strcasecmp(direction, "right") == 0)
     col += 1;
   else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The direction of a sibling must be up, down, left or right: \"%s\"",
+      direction);
     return 0;
+  }
   if (col < 0 || col > last || row < 0 || row > last)
     return 0;
   return quadbin_tile_to_cell(col, row, z);
