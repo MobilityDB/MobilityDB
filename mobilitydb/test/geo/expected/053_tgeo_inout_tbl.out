@@ -229,6 +229,92 @@ SELECT DISTINCT asText(tgeographyFromHexWKB(asHexWKB(temp))) = asText(temp) FROM
  t
 (1 row)
 
+SELECT DISTINCT asText(geometryFromText(asText(g))) = asText(g) FROM tbl_geometry;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(geographyFromText(asText(g))) = asText(g) FROM tbl_geography;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asEWKT(geometryFromEWKT(asEWKT(g))) = asEWKT(g) FROM tbl_geometry;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asEWKT(geographyFromEWKT(asEWKT(g))) = asEWKT(g) FROM tbl_geography;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- GeoJSON cannot state an arc
+SELECT DISTINCT asText(geometryFromGeoJSON(asGeoJSON(g, 15))) = asText(g) FROM tbl_geometry
+WHERE NOT ST_HasArc(g);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(geographyFromGeoJSON(asGeoJSON(g, 15))) = asText(g) FROM tbl_geography;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(geometryFromBinary(asBinary(g))) = asText(g) FROM tbl_geometry;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(geographyFromBinary(asBinary(g))) = asText(g) FROM tbl_geography;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asEWKT(geometryFromEWKB(asEWKB(g))) = asEWKT(g) FROM tbl_geometry;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asEWKT(geographyFromEWKB(asEWKB(g))) = asEWKT(g) FROM tbl_geography;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asEWKT(geometryFromHexEWKB(asHexEWKB(g))) = asEWKT(g) FROM tbl_geometry;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(geometryFromHexWKB(asHexWKB(g))) = asText(g) FROM tbl_geometry;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asEWKT(geographyFromHexEWKB(asHexEWKB(g))) = asEWKT(g) FROM tbl_geography;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(geographyFromHexWKB(asHexWKB(g))) = asText(g) FROM tbl_geography;
+ ?column? 
+----------
+ t
+(1 row)
+
 -------------------------------------------------------------------------------
 -- MF-JSON output of the temporal geometry values coming from real AIS data
 -- The AIS footprints are the vessel outlines computed from the recorded

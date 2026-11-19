@@ -93,3 +93,34 @@ runs:
             sudo rm -f "$source"
           done
         fi
+
+    - name: Read the Ubuntu archive from the Azure mirror
+      shell: bash
+      run: |
+        # A runner reads the Ubuntu archive from the mirror of the region it runs
+        # in, named in its package sources or, on the runner images, in the
+        # mirror list they read (`mirror+file:/etc/apt/apt-mirrors.txt`). The
+        # regional EC2 mirror, us-east-2.ec2.archive.ubuntu.com, sends some jobs
+        # their packages so slowly that every bounded attempt above runs out, and
+        # the job fails before it builds anything; the Azure mirror, which the
+        # other runners read, serves the same archive. The EC2 mirrors are read
+        # from that one, and the package lists are fetched again for it, so the
+        # apt-get calls that follow, including those that install before
+        # updating, find every package where its list says. The mirror list is
+        # printed, so the log states the mirrors apt reads.
+        files=$(grep -rlE 'https?://[a-z0-9.-]*\.ec2\.archive\.ubuntu\.com' \
+          /etc/apt/apt-mirrors.txt /etc/apt/sources.list \
+          /etc/apt/sources.list.d 2>/dev/null || true)
+        if [ -n "$files" ]; then
+          echo "$files" | while IFS= read -r file; do
+            echo "rewrote the EC2 mirror to azure.archive.ubuntu.com in $file"
+            sudo sed -i -E \
+              's#https?://[a-z0-9.-]*\.ec2\.archive\.ubuntu\.com#http://azure.archive.ubuntu.com#g' \
+              "$file"
+          done
+          sudo apt-get update
+        fi
+        if [ -f /etc/apt/apt-mirrors.txt ]; then
+          echo "apt mirror list:"
+          cat /etc/apt/apt-mirrors.txt
+        fi

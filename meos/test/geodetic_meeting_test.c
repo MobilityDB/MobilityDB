@@ -40,8 +40,10 @@
  * meridian segment and an equator segment on two great circles, each
  * exchanged by the half turn about the axis through Point(10 0), which meet
  * there at 12:00, on two segments that cross the north pole at the middle,
- * which meet there at 12:00, and on the meridian and equator pair with one
- * end moved by 1e-6 degrees, which never meets.
+ * which meet there at 12:00, on the meridian and equator pair with one end
+ * moved by 1e-6 degrees, which never meets, on mirror images across the
+ * meridian 10, which meet where the first crosses it at 12:00:09.876370, and
+ * on that mirror pair with one end moved by 1e-6 degrees, which never meets.
  *
  * The program can be built as follows
  * @code
@@ -99,6 +101,18 @@ static const struct
    * meets */
   {"[Point(10 3)@2019-09-01, Point(10 -3)@2019-09-02]",
    "[Point(8 0)@2019-09-01, Point(12.000001 0)@2019-09-02]",
+   "[f@2019-09-01 00:00:00+00, f@2019-09-02 00:00:00+00]"},
+  /* Mirror images across the plane of the meridian 10 meet where the first
+   * crosses it, at an instant no double states exactly, dated at the
+   * microsecond nearest to it, 12:00:09.876370 in 2400-bit MPFR */
+  {"[Point(8 1)@2019-09-01, Point(12 2)@2019-09-02]",
+   "[Point(12 1)@2019-09-01, Point(8 2)@2019-09-02]",
+   "{[f@2019-09-01 00:00:00+00, t@2019-09-01 12:00:09.87637+00], "
+     "(f@2019-09-01 12:00:09.87637+00, f@2019-09-02 00:00:00+00]}"},
+  /* The meridian mirror pair with one end moved by 1e-6 degrees never
+   * meets */
+  {"[Point(8 1)@2019-09-01, Point(12 2)@2019-09-02]",
+   "[Point(12 1)@2019-09-01, Point(8.000001 2)@2019-09-02]",
    "[f@2019-09-01 00:00:00+00, f@2019-09-02 00:00:00+00]"},
 };
 

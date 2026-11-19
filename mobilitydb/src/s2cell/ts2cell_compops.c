@@ -41,8 +41,10 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_s2cell.h>
+#include <meos_cellindex.h>
 #include "temporal/temporal.h"
 #include "s2cell/s2cell.h"
+#include "pg_geo/tspatial.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -335,5 +337,71 @@ PG_FUNCTION_INFO_V1(Tne_ts2cell_s2cell);
 inline Datum
 Tne_ts2cell_s2cell(PG_FUNCTION_ARGS)
 { return Tcomp_ts2cell_s2cell(fcinfo, &tne_ts2cell_s2cell); }
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Ever/always overlaps with a box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Ever_overlaps_stbox_ts2cell(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_stbox_ts2cell);
+/**
+ * @ingroup mobilitydb_s2cell_comp_ever
+ * @brief Return true if a temporal S2 cell ever lies in a geodetic box, as
+ * #Ever_overlaps_stbox_th3index answers it for a temporal H3 cell
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+Datum
+Ever_overlaps_stbox_ts2cell(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &ever_overlaps_stbox_tcellindex);
+}
+
+PGDLLEXPORT Datum Ever_overlaps_ts2cell_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_overlaps_ts2cell_stbox);
+/**
+ * @ingroup mobilitydb_s2cell_comp_ever
+ * @brief Return true if a temporal S2 cell ever lies in a geodetic box, as
+ * #Ever_overlaps_th3index_stbox answers it for a temporal H3 cell
+ * @sqlfn eOverlaps()
+ * @sqlop @p ?&&
+ */
+Datum
+Ever_overlaps_ts2cell_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &ever_overlaps_tcellindex_stbox);
+}
+
+PGDLLEXPORT Datum Always_overlaps_stbox_ts2cell(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_stbox_ts2cell);
+/**
+ * @ingroup mobilitydb_s2cell_comp_ever
+ * @brief Return true if a temporal S2 cell always lies in a geodetic box, as
+ * #Always_overlaps_stbox_th3index answers it for a temporal H3 cell
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+Datum
+Always_overlaps_stbox_ts2cell(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_stbox_tspatial(fcinfo, &always_overlaps_stbox_tcellindex);
+}
+
+PGDLLEXPORT Datum Always_overlaps_ts2cell_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_overlaps_ts2cell_stbox);
+/**
+ * @ingroup mobilitydb_s2cell_comp_ever
+ * @brief Return true if a temporal S2 cell always lies in a geodetic box, as
+ * #Always_overlaps_th3index_stbox answers it for a temporal H3 cell
+ * @sqlfn aOverlaps()
+ * @sqlop @p %&&
+ */
+Datum
+Always_overlaps_ts2cell_stbox(PG_FUNCTION_ARGS)
+{
+  return EAoverlaps_tspatial_stbox(fcinfo, &always_overlaps_tcellindex_stbox);
+}
 
 /*****************************************************************************/

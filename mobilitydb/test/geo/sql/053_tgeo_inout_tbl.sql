@@ -43,6 +43,28 @@ SELECT DISTINCT asText(tgeometryFromHexWKB(asHexWKB(temp))) = asText(temp) FROM 
 SELECT DISTINCT tgeographyFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeography;
 SELECT DISTINCT asText(tgeographyFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeography;
 
+SELECT DISTINCT asText(geometryFromText(asText(g))) = asText(g) FROM tbl_geometry;
+SELECT DISTINCT asText(geographyFromText(asText(g))) = asText(g) FROM tbl_geography;
+
+SELECT DISTINCT asEWKT(geometryFromEWKT(asEWKT(g))) = asEWKT(g) FROM tbl_geometry;
+SELECT DISTINCT asEWKT(geographyFromEWKT(asEWKT(g))) = asEWKT(g) FROM tbl_geography;
+
+-- GeoJSON cannot state an arc
+SELECT DISTINCT asText(geometryFromGeoJSON(asGeoJSON(g, 15))) = asText(g) FROM tbl_geometry
+WHERE NOT ST_HasArc(g);
+SELECT DISTINCT asText(geographyFromGeoJSON(asGeoJSON(g, 15))) = asText(g) FROM tbl_geography;
+
+SELECT DISTINCT asText(geometryFromBinary(asBinary(g))) = asText(g) FROM tbl_geometry;
+SELECT DISTINCT asText(geographyFromBinary(asBinary(g))) = asText(g) FROM tbl_geography;
+
+SELECT DISTINCT asEWKT(geometryFromEWKB(asEWKB(g))) = asEWKT(g) FROM tbl_geometry;
+SELECT DISTINCT asEWKT(geographyFromEWKB(asEWKB(g))) = asEWKT(g) FROM tbl_geography;
+
+SELECT DISTINCT asEWKT(geometryFromHexEWKB(asHexEWKB(g))) = asEWKT(g) FROM tbl_geometry;
+SELECT DISTINCT asText(geometryFromHexWKB(asHexWKB(g))) = asText(g) FROM tbl_geometry;
+SELECT DISTINCT asEWKT(geographyFromHexEWKB(asHexEWKB(g))) = asEWKT(g) FROM tbl_geography;
+SELECT DISTINCT asText(geographyFromHexWKB(asHexWKB(g))) = asText(g) FROM tbl_geography;
+
 -------------------------------------------------------------------------------
 -- MF-JSON output of the temporal geometry values coming from real AIS data
 -- The AIS footprints are the vessel outlines computed from the recorded

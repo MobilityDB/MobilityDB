@@ -1748,7 +1748,13 @@ TGEOMETRY_CONFIG = dict(
         "geo_as_hexewkb":        {1: "geo_endian1"},
         "geo_from_geojson":      {0: "geo_geojson1"},
         "geo_from_text":         {0: "geo_text_wkt1", 1: "5676"},
-        "geom_from_hexewkb":     {0: "geom_wkt1"},
+        "geom_from_hexewkb":     {0: "geom_hexewkb1"},
+        "geog_from_hexewkb":     {0: "geog_hexewkb1"},
+        "geom_from_ewkt":        {0: "geom_wkt1"},
+        "geog_from_ewkt":        {0: "geo_text_wkt1"},
+        "geog_from_geojson":     {0: "geo_geojson1"},
+        "geo_as_wkb":            {1: "geo_endian1"},
+        "geo_as_hexwkb":         {1: "geo_endian1"},
         "geom_in":               {0: "geom_wkt1", 1: "-1"},
         # geo_transform_pipeline's pipeline arg is a non-const char * (unlike
         # its pose/cbuffer/stbox/tspatial siblings); geo_pipeline1 is a
@@ -1924,6 +1930,10 @@ TGEOMETRY_CONFIG = dict(
   char *geo_geojson1 = "{\\"type\\":\\"Point\\",\\"coordinates\\":[1,1]}";
   char *geo_text_wkt1 = "Point(1 1)";
   char *geom_wkt1 = "SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))";
+  /* geo_as_hexewkb() on geom_wkt1 and on the geography Point(1 1) */
+  char *geom_hexewkb1 = "01030000202C1600000100000005000000000000000000000000000000000000000000000000"
+    "00F03F0000000000000000000000000000F03F000000000000F03F0000000000000000000000000000F03F00000000000000000000000000000000";
+  char *geog_hexewkb1 = "0101000020E6100000000000000000F03F000000000000F03F";
   /* geo_transform_pipeline's pipeline arg is a non-const char *; use a
    * writable array rather than a string-literal pointer. */
   char geo_pipeline1[] = "+proj=pipeline +step +proj=noop";

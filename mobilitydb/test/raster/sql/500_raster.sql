@@ -1401,6 +1401,28 @@ SELECT encode(substring(asPNG(r) from 1 for 8), 'hex') AS png_signature,
     dumpValues(r, 1) AS png_values
 FROM rast;
 
+-- The creation options reach the driver as PostGIS hands them, one option an
+-- element: a level of compression, a quality, a value holding spaces and
+-- quotes, written into the file; an element NULL and an empty array state no
+-- option.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '8BUI'::text, 0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[0, 64, 128, 255], [0, 64, 128, 255], [0, 64, 128, 255],
+          [0, 64, 128, 255]]::double precision[][]) AS r)
+SELECT asPNG(r, ARRAY['ZLEVEL=9']) = ST_AsPNG(r, ARRAY['ZLEVEL=9']) AS png_level,
+  asJPEG(r, ARRAY['QUALITY=50']) = ST_AsJPEG(r, ARRAY['QUALITY=50'])
+    AS jpeg_quality,
+  asPNG(r, ARRAY['COMMENT=two words, "quoted"']) =
+    ST_AsPNG(r, ARRAY['COMMENT=two words, "quoted"']) AS png_comment,
+  asPNG(r, ARRAY['COMMENT=two words, "quoted"']) <> asPNG(r)
+    AS png_comment_written,
+  asGDALRaster(r, 'PNG', ARRAY['ZLEVEL=1', NULL]) =
+    asGDALRaster(r, 'PNG', ARRAY['ZLEVEL=1']) AS null_element,
+  asPNG(r, ARRAY[]::text[]) = asPNG(r) AS empty_array
+FROM rast;
+
 -- A format GDAL has no driver of, and bytes that are no raster file, are
 -- refused.
 SELECT asGDALRaster(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,

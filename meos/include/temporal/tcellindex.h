@@ -376,6 +376,8 @@ extern int64 dggs_geodetic_edge_offset(const double *p0, const double *p1,
 extern int dggs_segment_cells_geodetic(const DggsGeodeticOps *ops,
   double lon1, double lat1, double lon2, double lat2, int32 resolution,
   uint64 *cells, double *enter, DggsEdgeCross *cross, int maxout);
+extern bool dggs_cell_meets_box(const DggsGeodeticOps *ops, uint64 cell,
+  const STBox *box, bool border_inc);
 
 /*****************************************************************************
  * Membership of a temporal cell index in a cell set — shared by every DGGS.

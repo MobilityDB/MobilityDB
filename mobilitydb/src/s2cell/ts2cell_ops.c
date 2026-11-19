@@ -53,7 +53,9 @@
 #include <meos_cellindex.h>
 #include <meos_s2cell.h>
 #include "temporal/temporal.h"
+#include "temporal/tcellindex.h"
 #include "s2cell/ts2cell.h"
+#include "geo/stbox.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -370,6 +372,58 @@ Datum
 Tgeogpoint_s2cell_split(PG_FUNCTION_ARGS)
 {
   return Tpoint_s2cell_split_ext(fcinfo);
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Restriction to a box
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal S2 cell restricted to (the complement of) a
+ * spatiotemporal box, as #Th3index_restrict_stbox restricts a temporal H3
+ * cell
+ */
+static Datum
+Ts2cell_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tcellindex_restrict_stbox(temp, box, border_inc, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Ts2cell_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ts2cell_at_stbox);
+/**
+ * @ingroup mobilitydb_s2cell_restrict
+ * @brief Return a temporal S2 cell restricted to a geodetic box, the times at
+ * which its cell shares a position with the box
+ * @sqlfn atStbox()
+ */
+inline Datum
+Ts2cell_at_stbox(PG_FUNCTION_ARGS)
+{
+  return Ts2cell_restrict_stbox(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Ts2cell_minus_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ts2cell_minus_stbox);
+/**
+ * @ingroup mobilitydb_s2cell_restrict
+ * @brief Return a temporal S2 cell restricted to the complement of a geodetic
+ * box, the times at which its cell shares no position with the box
+ * @sqlfn minusStbox()
+ */
+inline Datum
+Ts2cell_minus_stbox(PG_FUNCTION_ARGS)
+{
+  return Ts2cell_restrict_stbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

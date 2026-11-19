@@ -302,3 +302,13 @@ SELECT getTime(atStbox(
 SELECT getTime(atStbox(
   trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point Z(3 0 1), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(7 2 1), 1, 0, 0, 0)@2001-01-02]',
   stbox 'STBOX Z((4,0,0),(4,3,2))'));
+
+-- A closed body with Z that translates in linear interpolation, read against
+-- a box without Z by its footprint on the ground: a cube crossing a small box,
+-- and a body sliding along the upper edge of a box
+SELECT getTime(atStbox(
+  trgeometry 'PolyhedralSurface Z(((-1 -1 -1,-1 1 -1,1 1 -1,1 -1 -1,-1 -1 -1)),((-1 -1 1,1 -1 1,1 1 1,-1 1 1,-1 -1 1)),((-1 -1 -1,1 -1 -1,1 -1 1,-1 -1 1,-1 -1 -1)),((-1 1 -1,-1 1 1,1 1 1,1 1 -1,-1 1 -1)),((-1 -1 -1,-1 -1 1,-1 1 1,-1 1 -1,-1 -1 -1)),((1 -1 -1,1 1 -1,1 1 1,1 -1 1,1 -1 -1)));[Pose(Point(-3 0 7),1,0,0,0)@2001-01-01, Pose(Point(3 0 7),1,0,0,0)@2001-01-02]',
+  stbox 'STBOX X((-0.5,-0.5),(0.5,0.5))'));
+SELECT getTime(atStbox(
+  trgeometry 'PolyhedralSurface Z(((0 -2 -2,0 -1 -2,1 -1 -2,1 -2 -2,0 -2 -2)),((0 -2 0,1 -2 0,1 -1 0,0 -1 0,0 -2 0)),((0 -2 -2,1 -2 -2,1 -2 0,0 -2 0,0 -2 -2)),((0 -1 -2,0 -1 0,1 -1 0,1 -1 -2,0 -1 -2)),((0 -2 -2,0 -2 0,0 -1 0,0 -1 -2,0 -2 -2)),((1 -2 -2,1 -1 -2,1 -1 0,1 -2 0,1 -2 -2)));[Pose(Point(-6 6 3),1,0,0,0)@2001-01-01, Pose(Point(5 6 -2),1,0,0,0)@2001-01-02]',
+  stbox 'STBOX X((-3,1),(-2,4))'));

@@ -984,6 +984,24 @@
 			<title>Funciones sobre Geometrías</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="geo_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT) &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_asGeoJSON"><varname>asGeoJSON</varname></link>: Devuelve la representación GeoJSON &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_geometryFromText"><varname>geometryFromText</varname>, <varname>geometryFromEWKT</varname>, <varname>geographyFromText</varname>, <varname>geographyFromEWKT</varname></link>: Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT) &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_geometryFromGeoJSON"><varname>geometryFromGeoJSON</varname>, <varname>geographyFromGeoJSON</varname></link>: Entrada desde la representación GeoJSON &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_geometryFromBinary"><varname>geometryFromBinary</varname>, <varname>geometryFromEWKB</varname>, <varname>geometryFromHexWKB</varname>, <varname>geometryFromHexEWKB</varname>, <varname>geographyFromBinary</varname>, <varname>geographyFromEWKB</varname>, <varname>geographyFromHexWKB</varname>, <varname>geographyFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_orientedenvelope"><varname>orientedEnvelope</varname></link>: Devuelve el rectángulo de área mínima que encierra una geometría</para>
 				</listitem>
 				<listitem>
@@ -1021,9 +1039,6 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_makepoint"><varname>makePoint</varname></link>: Devuelve un punto geométrico a partir de sus coordenadas y su SRID</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="geo_output"><varname>asText</varname>, <varname>asEWKT</varname>, <varname>asEWKB</varname>, <varname>asGeoJSON</varname></link>: Devuelve la representación Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary o GeoJSON de una geometría o una geografía</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_transform"><varname>transform</varname></link>: Transforma una geometría o una geografía a un identificador de referencia espacial</para>
@@ -1067,7 +1082,7 @@
 					<para><link linkend="tspatialFromMFJSON"><varname>tspatialFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (MF-JSON) &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname>, <varname>geometryFromHexEWKB</varname>, <varname>geographyFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
+					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3271,7 +3286,7 @@
 					<para><link linkend="tcell_at_time"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restringir una celda temporal a (el complemento de) un valor de tiempo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restringir una celda QUADBIN o H3 temporal a (el complemento de) una caja espaciotemporal</para>
+					<para><link linkend="tcell_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restringir una celda QUADBIN, H3 o S2 temporal a (el complemento de) una caja espaciotemporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3344,7 +3359,7 @@
 					<para><link linkend="tcell_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Operadores topológicos</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Superposición alguna vez y siempre de una celda QUADBIN o H3 temporal y una caja espaciotemporal</para>
+					<para><link linkend="tcell_ever_always_overlaps"><varname>?&amp;&amp;</varname>, <varname>%&amp;&amp;</varname></link>: Superposición alguna vez y siempre de una celda QUADBIN, H3 o S2 temporal y una caja espaciotemporal</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_position"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Operadores de posición</para>

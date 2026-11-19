@@ -135,7 +135,10 @@ lwgeom_has_interior_ring(const LWGEOM *geom)
  * its exterior ring do, and the contact changes only where a vertex of the
  * edge crosses the target or a vertex of the target crosses the edge
  * (#trgeometry_geom_clip_events); each such fraction is appended, a contact
- * that lasts an instant included.
+ * that lasts an instant included. A body with Z is read by its footprint on
+ * the ground, as its contact with a target without Z is (#body_meets_target):
+ * the edges of the faces of a polyhedral surface, projected, hold the
+ * boundary of the footprint among them.
  */
 static void
 collect_edge_events_m1(const LWGEOM *body0, double dx, double dy,
@@ -164,6 +167,7 @@ collect_edge_events_m1(const LWGEOM *body0, double dx, double dy,
       break;
     }
     case MULTIPOLYGONTYPE:
+    case POLYHEDRALSURFACETYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *coll = (const LWCOLLECTION *) body0;

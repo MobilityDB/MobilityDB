@@ -65,6 +65,7 @@
 #include <meos_internal_geo.h>
 #include <meos_raster.h>
 #include <miscadmin.h>
+#include <pgtypes.h>
 #include <utils/datetime.h>
 #include <stringbuffer.h>
 #include "geo/geo_funcs.h"
@@ -535,9 +536,9 @@ raster_gdal_writer(const char *format)
  * @param[in] rast Raster
  * @param[in] format Short name of the GDAL driver, as `GTiff`, `PNG` or
  * `JPEG`
- * @param[in] options Creation options of the driver, as pairs `KEY=VALUE`
- * separated by spaces, a value holding a space written between double
- * quotes, or NULL for none @nullable
+ * @param[in] options Creation options of the driver, one `KEY=VALUE` an
+ * element, a NULL element stating none, as GDAL takes them @nullable
+ * @param[in] count Number of elements of the options
  * @param[in] srid Spatial reference system the file states, or 0 for the
  * raster's own; the pixels are not reprojected
  * @param[out] size_out Size of the result
@@ -545,8 +546,8 @@ raster_gdal_writer(const char *format)
  * @csqlfn #Raster_as_gdal()
  */
 uint8_t *
-raster_as_gdal(const Raster *rast, const char *format, const char *options,
-  int32_t srid, size_t *size_out)
+raster_as_gdal(const Raster *rast, const char *format, text **options,
+  int count, int32_t srid, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(format, NULL);
@@ -585,8 +586,17 @@ raster_as_gdal(const Raster *rast, const char *format, const char *options,
     return NULL;
   }
 
-  char **opts = options ? CSLTokenizeString2(options, " ",
-    CSLT_HONOURSTRINGS) : NULL;
+  /* The options are handed to GDAL as its own list of strings, each one
+   * whole, so that a value holding a space or a quote needs no quoting */
+  char **opts = NULL;
+  for (int i = 0; options && i < count; i++)
+  {
+    if (! options[i])
+      continue;
+    char *opt = text_to_cstring(options[i]);
+    opts = CSLAddString(opts, opt);
+    pfree(opt);
+  }
   /* The address of a local names the file: it is unique among the calls
    * running at the same time, and the file is gone when the call returns */
   int unique = 0;
@@ -630,7 +640,8 @@ raster_as_gdal(const Raster *rast, const char *format, const char *options,
  * @details The raster is written as PostGIS's `ST_AsTIFF` writes it
  * @param[in] rast Raster
  * @param[in] options Creation options of the GTiff driver, as
- * #raster_as_gdal() takes them, or NULL for none @nullable
+ * #raster_as_gdal() takes them @nullable
+ * @param[in] count Number of elements of the options
  * @param[in] srid Spatial reference system the file states, or 0 for the
  * raster's own
  * @param[out] size_out Size of the result
@@ -638,10 +649,10 @@ raster_as_gdal(const Raster *rast, const char *format, const char *options,
  * @csqlfn #Raster_as_tiff()
  */
 uint8_t *
-raster_as_tiff(const Raster *rast, const char *options, int32_t srid,
+raster_as_tiff(const Raster *rast, text **options, int count, int32_t srid,
   size_t *size_out)
 {
-  return raster_as_gdal(rast, "GTiff", options, srid, size_out);
+  return raster_as_gdal(rast, "GTiff", options, count, srid, size_out);
 }
 
 /**
@@ -651,15 +662,17 @@ raster_as_tiff(const Raster *rast, const char *options, int32_t srid,
  * driver takes one to four bands of 8 or 16 unsigned bits
  * @param[in] rast Raster
  * @param[in] options Creation options of the PNG driver, as
- * #raster_as_gdal() takes them, or NULL for none @nullable
+ * #raster_as_gdal() takes them @nullable
+ * @param[in] count Number of elements of the options
  * @param[out] size_out Size of the result
  * @errval NULL
  * @csqlfn #Raster_as_png()
  */
 uint8_t *
-raster_as_png(const Raster *rast, const char *options, size_t *size_out)
+raster_as_png(const Raster *rast, text **options, int count,
+  size_t *size_out)
 {
-  return raster_as_gdal(rast, "PNG", options, SRID_UNKNOWN, size_out);
+  return raster_as_gdal(rast, "PNG", options, count, SRID_UNKNOWN, size_out);
 }
 
 /**
@@ -669,15 +682,18 @@ raster_as_png(const Raster *rast, const char *options, size_t *size_out)
  * JPEG driver takes one or three bands of 8 unsigned bits
  * @param[in] rast Raster
  * @param[in] options Creation options of the JPEG driver, as
- * #raster_as_gdal() takes them, or NULL for none @nullable
+ * #raster_as_gdal() takes them @nullable
+ * @param[in] count Number of elements of the options
  * @param[out] size_out Size of the result
  * @errval NULL
  * @csqlfn #Raster_as_jpeg()
  */
 uint8_t *
-raster_as_jpeg(const Raster *rast, const char *options, size_t *size_out)
+raster_as_jpeg(const Raster *rast, text **options, int count,
+  size_t *size_out)
 {
-  return raster_as_gdal(rast, "JPEG", options, SRID_UNKNOWN, size_out);
+  return raster_as_gdal(rast, "JPEG", options, count, SRID_UNKNOWN,
+    size_out);
 }
 
 /**
