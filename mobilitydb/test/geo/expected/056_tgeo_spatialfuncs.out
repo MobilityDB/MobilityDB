@@ -167,18 +167,26 @@ NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
  999999999 |   999000 | 999000 | 999000 | 999000 |  999000 | 999000 | 999000 |  999000
 (3 rows)
 
--- The invalid SRID is refused, and so is the unknown SRID a negative SRID
--- reads as where a temporal point or a set does not take it
+-- The invalid SRID is refused, and a negative SRID is set as the unknown SRID
+-- 0, on a temporal point and a set as on a geometry
 SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 1000001);
 ERROR:  The SRID is invalid
 SELECT setSRID(tgeompoint 'Point(1 1)@2001-01-01', 1000001);
 ERROR:  The SRID is invalid
 SELECT setSRID(tgeompoint 'Point(1 1)@2001-01-01', -1);
 NOTICE:  SRID value -1 converted to the officially unknown SRID value 0
-ERROR:  The SRID cannot be unknown
+                                 setsrid                                 
+-------------------------------------------------------------------------
+ 0101000000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT setSRID(geomset '{"Point(1 1)"}', -1);
 NOTICE:  SRID value -1 converted to the officially unknown SRID value 0
-ERROR:  The SRID cannot be unknown
+                    setsrid                     
+------------------------------------------------
+ {"0101000000000000000000F03F000000000000F03F"}
+(1 row)
+
 -- Tests independent of the PROJ version
 WITH test(geoset) AS (
   SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
