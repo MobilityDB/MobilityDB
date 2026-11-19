@@ -170,6 +170,16 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
 -- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
 SELECT ST_GeometryType(buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))', 1));
+-- The buffers of two polygons that stay apart are a surface each, and a point
+-- within the distance of the first lies in their union, the arcs where each
+-- buffer turns meeting nothing of the other
+SELECT contains(buffer(geometry 'MultiPolygon(((549003.378756243 6088596.943731396,
+  548948.5604034535 6088519.939385607,548961.794964137 6088546.243981731,
+  548986.1779411763 6088570.599007793,548993.3848006604 6088604.432136278,
+  549003.378756243 6088596.943731396)),((550539.9835761178 6089586.122404569,
+  550574.5007171528 6089599.619660147,550571.2435751263 6089598.329909987,
+  550539.9835761178 6089586.122404569)))', 316.42868675352696),
+  ST_Point(549094.7014601384, 6088726.222741437)) AS inside;
 
 -------------------------------------------------------------------------------
 -- Intersection matrix
@@ -384,7 +394,9 @@ SELECT
   (SELECT count(*) FROM pairs WHERE round(ST_Length(shortestLine(a, b))::numeric, 9) IS DISTINCT FROM round(ST_Length(ST_ShortestLine(a, b))::numeric, 9)) AS shortestline;
 
 -- The area, the length and the perimeter are read on the serialized form of
--- every geometry but one holding a curve, and are exactly the PostGIS ones, the
+-- every geometry but one holding a curve, and are exactly the PostGIS ones on
+-- these coordinates, whose shoelace terms sum exactly in doubles, the area
+-- being the double nearest its exact value, the
 -- length of a geometry with Z being in 3D and the one of a surface 0; the
 -- geometry of a 3D box is a solid, whose serialized form carries extended flags
 WITH g(geom) AS (VALUES
@@ -414,6 +426,11 @@ FROM g;
 /* A curve polygon is a surface and has no length, as a polygon */
 SELECT length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))'),
   ST_Length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))');
+-- The area of a geometry of straight edges is the double nearest its exact
+-- value: a square at projected coordinates less a hole within 1e-9 of it, which
+-- a sum of its terms in doubles reads as 3.9272163121495396e-07
+SELECT area(geometry 'Polygon((500000.1 6000000.3,500100.8 6000000.3,500100.8 6000101.0,500000.1 6000101.0,500000.1 6000000.3),(500000.10000000097 6000000.300000001,500100.79999999894 6000000.300000001,500100.79999999894 6000100.999999999,500000.10000000097 6000100.999999999,500000.10000000097 6000000.300000001))')
+  = 3.927212674136797e-07 AS nearest;
 
 -- A surface bounded by circular arcs is measured on its arcs, against the
 -- closed form of each area: a disc, a disc less its concentric half, a half
@@ -581,6 +598,93 @@ SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)'
 -- An empty line or point has no position to locate
 SELECT lineLocatePoint(geometry 'Linestring empty', geometry 'Point(4 4)');
 SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point empty');
+
+-------------------------------------------------------------------------------
+-- SRID, size, emptiness, points, azimuth, unions and vertex equality
+-- Each answers as the PostGIS function of the same name with the prefix ST_ on
+-- the geometries of the accessors, and ST_Union for the union of an array
+-------------------------------------------------------------------------------
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'SRID=3812;Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'SRID=4326;Point(4 2)'),
+  (4, geometry 'Linestring(2 2,6 2,6 5)'),
+  (5, geometry 'MultiPoint(1 1,5 5)'),
+  (6, geometry 'MultiPolygon(((0 0,2 0,2 2,0 2,0 0)),((1 1,3 1,3 3,1 3,1 1)))'),
+  (7, geometry 'Linestring Z(0 0 1,1 1 2)'),
+  (8, geometry 'Point empty'),
+  (9, geometry 'Polygon empty'))
+SELECT count(*) AS geoms,
+  count(*) FILTER (WHERE SRID(geom) IS DISTINCT FROM ST_SRID(geom)) AS srid,
+  count(*) FILTER (WHERE memSize(geom) IS DISTINCT FROM ST_MemSize(geom)) AS memsize,
+  count(*) FILTER (WHERE isEmpty(geom) IS DISTINCT FROM ST_IsEmpty(geom)) AS isempty,
+  count(*) FILTER (WHERE ST_AsEWKT(points(geom)) IS DISTINCT FROM ST_AsEWKT(ST_Points(geom))) AS points,
+  count(*) FILTER (WHERE ST_AsEWKT(setSRID(geom, 3857)) IS DISTINCT FROM ST_AsEWKT(ST_SetSRID(geom, 3857))) AS setsrid,
+  count(*) FILTER (WHERE NOT ST_Equals(unaryUnion(geom), ST_UnaryUnion(geom))) AS unaryunion,
+  count(*) FILTER (WHERE ST_AsEWKT(pointN(geom, 2)) IS DISTINCT FROM ST_AsEWKT(ST_PointN(geom, 2))) AS pointn2,
+  count(*) FILTER (WHERE ST_AsEWKT(pointN(geom, -1)) IS DISTINCT FROM ST_AsEWKT(ST_PointN(geom, -1))) AS pointnlast
+FROM g;
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Point(0 0)'), (2, geometry 'Point(0 1)'), (3, geometry 'Point(1 1)'),
+  (4, geometry 'Point(1 0)'), (5, geometry 'Point(-1 -1)'), (6, geometry 'Point(0 0)')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT count(*) AS pairs,
+  count(*) FILTER (WHERE round(azimuth(a, b)::numeric, 12) IS DISTINCT FROM
+    round(ST_Azimuth(a, b)::numeric, 12)) AS azimuth,
+  count(*) FILTER (WHERE azimuth(a, b) IS NULL) AS equalpoints
+FROM pairs;
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Linestring(0 0,1 1)'), (2, geometry 'Linestring(1 1,0 0)'),
+  (3, geometry 'Linestring(0 0,0.5 0.5,1 1)'), (4, geometry 'Point(0 0)'),
+  (5, geometry 'SRID=3812;Linestring(0 0,1 1)'), (6, geometry 'Linestring(0 0,1 1)')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b WHERE ST_SRID(a.geom) = ST_SRID(b.geom))
+SELECT count(*) AS pairs,
+  count(*) FILTER (WHERE orderingEquals(a, b) IS DISTINCT FROM ST_OrderingEquals(a, b)) AS orderingequals,
+  count(*) FILTER (WHERE orderingEquals(a, b)) AS holds
+FROM pairs;
+
+WITH a(arr) AS (VALUES
+  (ARRAY[geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))', 'Polygon((1 1,3 1,3 3,1 3,1 1))']),
+  (ARRAY[geometry 'Linestring(0 0,2 0)', 'Linestring(1 0,3 0)', 'Point(5 5)']),
+  (ARRAY[geometry 'Point(1 1)', 'Point(1 1)', 'Point(2 2)']))
+SELECT count(*) FILTER (WHERE NOT ST_Equals(geoUnion(arr), ST_Union(arr))) AS geounion
+FROM a;
+
+-- The answers above are not empty: the SRID and the size of a polygon, the
+-- points of a line, its second point, the azimuth of a diagonal, the union of
+-- two squares and of the parts of a multipolygon
+SELECT SRID(geometry 'SRID=3812;Polygon((0 0,4 0,4 4,0 4,0 0))');
+SELECT memSize(geometry 'Point(1 2)');
+SELECT isEmpty(geometry 'Point empty'), isEmpty(geometry 'Point(1 2)');
+SELECT ST_AsText(points(geometry 'Linestring(2 2,6 2,6 5)'));
+SELECT ST_AsText(pointN(geometry 'Linestring(2 2,6 2,6 5)', 2));
+SELECT round(azimuth(geometry 'Point(0 0)', geometry 'Point(1 1)')::numeric, 6);
+SELECT ST_AsText(geoUnion(ARRAY[geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
+  'Polygon((1 1,3 1,3 3,1 3,1 1))']));
+SELECT ST_AsText(unaryUnion(geometry
+  'MultiPolygon(((0 0,2 0,2 2,0 2,0 0)),((1 1,3 1,3 3,1 3,1 1)))'));
+SELECT orderingEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(1 1,0 0)');
+
+-- A geography answers its SRID, size and emptiness, and the union of an array
+-- of geographies is a geography
+SELECT SRID(geography 'Point(4.35 50.85)'), memSize(geography 'Point(4.35 50.85)'),
+  isEmpty(geography 'Point(4.35 50.85)');
+SELECT SRID(setSRID(geography 'Point(4.35 50.85)', 4258));
+SELECT ST_AsText(geoUnion(ARRAY[geography 'Point(1 1)', 'Point(2 2)']));
+
+-- The SRID is set as PostGIS sets it, clamping a negative one to 0, and the
+-- invalid SRID is refused
+SELECT SRID(setSRID(geometry 'Point(1 1)', -1));
+SELECT setSRID(geometry 'Point(1 1)', 1000001);
+-- The union of an empty array is NULL
+SELECT geoUnion(ARRAY[]::geometry[]);
+-- The union of an empty geometry is that geometry, as ST_UnaryUnion answers it
+WITH e(geom) AS (VALUES (geometry 'Point empty'), (geometry 'SRID=3812;Linestring empty'),
+  (geometry 'Polygon empty'), (geometry 'MultiPolygon empty'), (geometry 'GeometryCollection empty'))
+SELECT ST_AsEWKT(geom), ST_AsEWKT(unaryUnion(geom)), ST_AsEWKT(ST_UnaryUnion(geom)) FROM e;
 
 -------------------------------------------------------------------------------
 

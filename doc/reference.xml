@@ -981,7 +981,7 @@
 	<sect1>
 		<title>Temporal Geometry Types</title>
 		<sect2>
-			<title>Functions on Geometries</title>
+			<title>Static Geometries</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="geo_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>
@@ -1020,6 +1020,9 @@
 					<para><link linkend="geo_spatialrels"><varname>contains</varname>, <varname>covers</varname>, <varname>disjoint</varname>, <varname>intersects</varname>, <varname>touches</varname>, <varname>geoEquals</varname></link>: Return true if two geometries satisfy a spatial relationship</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_orderingequals"><varname>orderingEquals</varname></link>: Return true if two geometries have the same vertices in the same order</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_dwithin"><varname>dwithin</varname></link>: Return true if two geometries are within a distance</para>
 				</listitem>
 				<listitem>
@@ -1030,6 +1033,21 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_accessors"><varname>boundary</varname>, <varname>reverse</varname>, <varname>numGeometries</varname>, <varname>geometryN</varname>, <varname>numPoints</varname></link>: Return the boundary, the reversal or the parts of a geometry</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_srid"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier of a geometry or a geography</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_memsize"><varname>memSize</varname></link>: Return the size in bytes of a geometry or a geography</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_isempty"><varname>isEmpty</varname></link>: Return true if a geometry or a geography is empty</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_points"><varname>points</varname>, <varname>pointN</varname></link>: Return the vertices of a geometry or one of them</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_azimuth"><varname>azimuth</varname></link>: Return the azimuth of the segment joining two points</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Return the point at a fraction of a line, the part between two fractions, or the fraction closest to a point</para>
@@ -1053,7 +1071,10 @@
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Return the region two geometries cover together</para>
+					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Return the region two geometries, or an array of geometries or of geographies, cover together</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_unaryunion"><varname>unaryUnion</varname></link>: Return the union of the parts of a geometry</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_difference"><varname>difference</varname></link>: Return the region of the first geometry that the second does not cover</para>

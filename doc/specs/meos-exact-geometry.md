@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.2.0 |
-| Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates and relationships |
-| Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/test/distance_point_test.c` (the witnesses quoted below) |
+| Version | v0.3.0 |
+| Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates, relationships and areas |
+| Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/test/distance_point_test.c` and `meos/test/geo_test.c` (the witnesses quoted below) |
 
 ## 1. Scope and intent
 
@@ -77,18 +77,62 @@ engine computes from the doubles that define it, and rounds only the answer
 operation must build a point and then ask a question of it, such as a corner
 of a buffer computed from two offset edges, the built point is rounded, so a
 question asked of it exactly would be about that rounding. There the engine
-compares within a distance sized to the rounding of the construction, a fixed
-`MEOS_GEOM_TOLERANCE` plus a few ulps of the coordinates
-(`coordinate_tolerance`).
+compares within a distance sized to the rounding of the construction, in one
+of two formulas, with `m` the largest absolute coordinate of the points
+compared:
+
+    coordinate_rounding   = 4 * DBL_EPSILON * m
+    coordinate_tolerance  = MEOS_GEOM_TOLERANCE + 4 * DBL_EPSILON * m
+
+`coordinate_rounding` is the distance a point constructed from coordinates of
+that size misses by, with no absolute term; `coordinate_tolerance` adds
+`MEOS_GEOM_TOLERANCE`, equal to `1e-12`.
+
+| Band | Where | The constructed point it judges |
+|---|---|---|
+| `coordinate_rounding` | the lift of the Z and M of an overlay's answer (`meos_lift_ordinates`, `lift_point_read`, `arc_ordinates_at`); the relate engine: two constructed points read as one (`relate_same_coordinate`) and a constructed point read on a boundary within the band each edge carries (`edge_set_tolerance`, `relate_point_on_boundary_scan`) | a vertex the overlay constructs, read on a vertex, a segment or an arc of an input; a point the relate engine constructs |
+| `coordinate_tolerance` | the buffer (`buffer_join_is_point`, `buffer_piece_contains_point`, `buffer_add_arc`, `buffer_ring_rebuild_at_nodes`); the ordinates an overlay's vertex takes from its inputs once an arc gave the first (`lift_point_take`); a constructed point read on a segment of the relate engine where an arc meets a segment or at the middle of a piece of a boundary (`point_on_segment` in `relate_point_in_linear` and `relate_linear_area`) | a corner, a join, a piece end or the midpoint of a piece the buffer computes; a vertex an overlay constructs, read along the angle of an arc; a point the relate engine constructs |
+| `coordinate_tolerance`, as a filter | the candidates of the buffer's node index (`buffer_node_index_cand`); the edges a disc can reach (`tcbuffer_disc_boundary_sign`); two extents or two members of the relate engine apart (`relate_extents_apart`, `relate_members_apart_within`); the segments of two areal boundaries an index admits (`geom_areal_touching_stretches`) | none: the band only admits candidates, and an exact test decides each, so a wider band costs time and never an answer |
+| `tnpoint_meeting_band` | the ever and always overlaps of two temporal network points (`eaoverlaps_tnpoint_tnpoint`) | the positions of the two values at one instant, each within the bound of construction of its route, the band being the sum of the two bounds, with no absolute term |
+
+The band is a distance in the units of the coordinates. It decides whether two
+constructed points are one point, never a question about the input, which the
+engine decides exactly. The cast of a geometry to a network point decides
+exactly whether a segment of the route meets the box of the bound of the
+point's construction (`segment_meets_point_box`), and the meeting of two
+temporal geography points is decided where the ends of their segments prove
+it; neither reads a band. Nor does the sewing of the lines a merge of temporal
+geometries unites, whose ends are input vertices and are one point where their
+coordinates are equal (`sew_same_point`), nor whether the crossing of two
+straight edges of the relate engine is in the boundary of a line, decided on
+the input vertices that could be that crossing (`relate_crossing_in_linear`),
+nor the normalization of a sequence: whether three instants are collinear is a
+question about the input, decided exactly (`float_collinear`, and
+`geopoint_collinear`, `pose_collinear` and `cbuffer_collinear` on it).
+
+The absolute term of `coordinate_tolerance` is not the rounding of a
+construction: below a largest coordinate of about `1.1e3`, where
+`4 * DBL_EPSILON * m` falls under `1e-12`, it widens the band beyond the
+rounding it stands for. An answer that a band of `coordinate_tolerance`
+decides, in the second row of the table, is therefore outside this document's
+guarantee where that term rules, as the comparisons with a fixed tolerance
+below are; in the filter row it costs time and never an answer.
+
+**A tolerance is never an accuracy of the output.** `MEOS_GEOM_TOLERANCE`
+and `MEOS_EPSILON` (`1e-6`, the equality of two modelled values, which the
+microsecond of a timestamp pins) are the two tolerances MEOS owns. A value
+MEOS would have to build to a stated accuracy, such as a polygon following a
+curve the geometry cannot state, would need a third, and MEOS does not build
+it: the geography of a geodetic box is the polygon of its four corners, whose
+edges are great circles where the box's horizontal edges are parallels.
 
 **Some comparisons still read a fixed tolerance.** Parts of the engine compare
 a length or a parameter with `MEOS_GEOM_TOLERANCE` or `MEOS_EPSILON`, among
 them the ray crossing of a point in a polygon (`dist_poly_seg_raycross`), the
 closest point on an arc (`dist_geom_closest_on_arc`) and the turning points of
-the distance of a moving point (`tpoint_geo_distance_turnpt`). The exactness
-plan of the project, MobilityDB #3287, lists them and the changes that decide
-each one exactly. The answers this document states are the ones the CGAL
-judges check (section 8).
+the distance of a moving point (`tgeogpointsegm_distance_turnpt`). Their answers
+are not covered by this document's guarantee. The answers this document
+states are the ones the CGAL judges check (section 9).
 
 ## 4. How the engine reaches an exact answer
 
@@ -263,14 +307,105 @@ it against the other geometry within a tolerance sized to the construction
 Asking an exact question of that rounded point would answer about its rounding,
 not about the input: the point is not on the edge it was built from. A decision
 with no tolerance therefore needs the arrangement of the two geometries, whose
-vertices are held exactly and never located by a rounded coordinate. Step 16 of
-the exact buffer plan of the project, MobilityDB #3287, reads the relationship
-of two areal operands off that arrangement.
+vertices are held exactly and never located by a rounded coordinate, and the
+relationship of two areal operands read off that arrangement.
 
 The temporal relationships inherit this: at an instant they read the same
 engine.
 
-## 7. What lies outside
+## 7. Areas
+
+### 7.1 The answer
+
+The area of a geometry of straight edges is half the sum of the shoelace sums
+of its rings, the exterior counted positive and each hole negative. It is a
+rational of the coordinates, and `geom_area` (`area` in SQL) answers the double
+nearest it, a tie going to the even one, whatever the magnitudes of the
+coordinates, from the subnormal doubles to `±DBL_MAX`. An area beyond
+`DBL_MAX` raises `value out of range`. A geometry holding a circular arc keeps
+its area in doubles, since its circular segments are not rationals of its
+coordinates (see [Finite Values](meos-finite-values.md)).
+
+A sum of the shoelace terms in doubles rounds at every term, and the terms of
+a ring cancel: a thin hole, a sliver or a vertex far from the others leaves an
+area much smaller than the terms that make it. The witnesses below, tests of
+the tree (`meos/test/geo_test.c`), set the answer of the engine beside that of
+a sum in doubles, as GEOS 3.14's `GEOSArea` computes it:
+
+| geometry | `geom_area` (the nearest double) | a sum in doubles |
+|---|---|---|
+| a square of side about 100 at projected coordinates, less a hole within `1e-9` of its edges | `3.927212674136797e-07` | `3.9272163121495396e-07` |
+| a triangle reaching from subnormal coordinates to `1e307` | `3.3118017121875465e-17` | `3.3118017121875471e-17` |
+| a rectangle of `1e154` by `1.7e154` | `1.7e308` | infinity |
+| a unit square and a triangle of legs `2^-26`, an area of `1 + 2^-53` | `1`, the tie to the even double | `1` |
+| a square of side `1.5e154`, an area beyond `DBL_MAX` | raises `value out of range` | infinity |
+
+How often a sum in doubles differs from the nearest double, judged by CGAL
+(section 9) on three sets of geometries; `geom_area` answers the nearest double
+on every one of their rows:
+
+| geometries | a sum in doubles differs on | by |
+|---|---|---|
+| 192 multipolygons of real data at projected coordinates | 145 of 192 | at most 29 ulps, 1 ulp on 53 rows |
+| 2000 shapes built to cancel (thin holes, slivers, degenerate rings) | 978 of 2000 | 1 ulp on 462 rows, more than `1e9` ulps on 76 |
+| 1000 geometries from the subnormal doubles to `±DBL_MAX` | 236 of 1000 | more than `1e9` ulps on 48, infinity on some finite areas |
+
+On data at ordinary magnitudes the two agree to about 14 significant digits,
+and differ in the last ones: two systems, or two orders of the same rings, may
+not give the same double. Where the terms cancel or the magnitudes are
+extreme, the sum in doubles may differ from the first digits on.
+
+### 7.2 How the engine reaches it
+
+Each ring is read once, in the layers of section 4, the first that applies
+answering:
+
+1. **Integers.** Where the binary exponents of all the coordinates of a ring
+   lie within 4 of each other, every coordinate is an integer multiple of one
+   power of two. The exponents are bounded once per geometry by its stored
+   box, whose corners are rounded outwards to floats, wherever the box keeps
+   clear of 0 and of the largest float on an axis; elsewhere they are read
+   once per ring from the bitwise AND and OR of the bit patterns. The ring is
+   summed in 128-bit integers, one product per vertex in the form
+   `x_i (y_(i-1) - y_(i+1))` GEOS uses, exactly and so on the coordinates
+   themselves, four vertices a step. This is the path of the geometries data
+   holds.
+2. **A compensated sum in doubles.** Elsewhere, the same one product per
+   vertex, about the first vertex, is split into its rounded value and its
+   exact error (Dekker's product), the rounded values are summed exactly, and
+   the errors are summed with a bound on their rounding. The one search for the
+   nearest double places half that sum against the midpoints of the doubles;
+   where the bound shows which double is nearest, that is the answer.
+3. **Wide integers.** Where the bound cannot decide, or a product leaves the
+   doubles, the shoelace sums are computed exactly in wide integers and
+   rounded once.
+
+### 7.3 Its cost
+
+The speed of a MEOS operation is stated against two references, each as the
+cost of the reference divided by the cost of MEOS, counted in instructions, so
+that above `1` MEOS is faster and below `1` slower:
+
+- the **kernel speed**, against GEOS called directly on geometries already
+  converted to it;
+- the **route speed**, against GEOS called on a MEOS geometry, the conversion
+  to GEOS and back included.
+
+| geometries | kernel speed | route speed |
+|---|---|---|
+| 192 multipolygons of real data | 0.82 | 8.9 |
+| the 1871 polygons and multipolygons among the 2000 shapes | 0.70 | 6.4 |
+
+The area is the one measure of this engine whose exact layer runs on nearly
+every call: a sum that cancels has no bound in doubles that decides its nearest
+double cheaply, so the integers are the first layer, not a filter in front of
+them. The answer is the nearest double on every call. The integer layer takes
+about 14 instructions a vertex, three of them converting each coordinate to its
+integer, where the sum in doubles of GEOS takes about 13, and a
+ring whose coordinates span more than 4 binades, as degrees across an axis do,
+takes the compensated sum.
+
+## 8. What lies outside
 
 - **Geodetic distances.** A distance on the spheroid is not a rational of the
   coordinates; MEOS computes it by iteration, accurate to the iteration and
@@ -286,7 +421,7 @@ engine.
   (see [Finite Values](meos-finite-values.md)); the exact answer is defined
   for finite doubles.
 
-## 8. How the answers are checked
+## 9. How the answers are checked
 
 The reference for every exact answer of the engine is CGAL, an independent
 library of exact geometry, computing on the same doubles in exact rational

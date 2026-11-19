@@ -8,6 +8,7 @@ on:
       - '.github/actions/apt-resilient/**'
       - 'datagen/**'
       - 'doc/**'
+      - 'h3-pg/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
@@ -25,6 +26,17 @@ jobs:
         uses: actions/checkout@v7
       - name: Portable-operator coverage (every operator classified; 0 unclassified)
         run: python3 tools/codegen/portable_aliases/generate.py --check
+
+  h3pg_import_check:
+    name: h3-pg import reproduces its generated files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install pyyaml
+        run: pip install pyyaml
+      - name: Regenerate h3_generated.{c,h} and compare with the committed files
+        run: python3 tools/codegen/h3pg_import/extract.py --check
 
   int64_check:
     name: int64 vs int64_t header convention

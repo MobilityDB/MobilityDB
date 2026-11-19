@@ -2588,10 +2588,19 @@ raquet_from_wkb_state(meos_wkb_parse_state *s)
 {
   uint64 quadbin = (uint64) int64_from_wkb_state(s);
   uint8_t pixtype = byte_from_wkb_state(s);
-  uint16_t width = (uint16_t) int32_from_wkb_state(s);
-  uint16_t height = (uint16_t) int32_from_wkb_state(s);
+  int32 width = int32_from_wkb_state(s);
+  int32 height = int32_from_wkb_state(s);
   bool has_nodata = (bool) byte_from_wkb_state(s);
   double nodata = double_from_wkb_state(s);
+  /* The dimensions are read in the type the WKB writes them and tested before
+   * they size the payload, since a tile holds at most UINT16_MAX pixels a side */
+  if (width <= 0 || height <= 0 || width > UINT16_MAX || height > UINT16_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "The width and height of a raquet tile in WKB must be between 1 and %d: "
+      "%d x %d", UINT16_MAX, width, height);
+    return PointerGetDatum(NULL);
+  }
   /* A zero size is the unknown-pixel-type signal of #raquet_pixtype_size */
   size_t pixsize = raquet_pixtype_size((MeosPixType) pixtype);
   if (pixsize == 0)

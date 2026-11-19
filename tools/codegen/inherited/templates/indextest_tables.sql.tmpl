@@ -1,0 +1,91 @@
+DROP TABLE IF EXISTS tbl_{T}_idx;
+CREATE TEMP TABLE tbl_{T}_idx AS
+{FIXTURE}
+ANALYZE tbl_{T}_idx;
+
+-- The values, boxes and periods the operators are given. Those of the fixture
+-- are random, so they meet few values exactly: the others come from the rows of
+-- the table, so that every operator has rows to answer.
+DROP TABLE IF EXISTS tbl_{T}_src;
+CREATE TEMP TABLE tbl_{T}_src AS
+SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
+FROM tbl_{T}_idx WHERE {SRCFILTER};
+
+-- A value of the fixture, a value of the table, and one whose period ends where
+-- that of the value starts. The search for the nearest values, whose distance
+-- costs more than a box, is given the second alone.
+DROP TABLE IF EXISTS tbl_{T}_val;
+CREATE TEMP TABLE tbl_{T}_val AS
+SELECT temp, false AS knn FROM tbl_{T} WHERE k % 20 = 0
+UNION ALL
+SELECT temp, true FROM tbl_{T}_src
+UNION ALL
+SELECT shiftTime(temp, lower(t) - upper(t)), false FROM tbl_{T}_src;
+ANALYZE tbl_{T}_val;
+
+-- The box of a value of the fixture, the box of a value, one around it, one
+-- inside it, and one whose period meets it
+DROP TABLE IF EXISTS tbl_{T}_box;
+CREATE TEMP TABLE tbl_{T}_box AS
+SELECT temp::stbox AS b, false AS knn FROM tbl_{T} WHERE k % 20 = 0
+UNION ALL
+SELECT b, true FROM tbl_{T}_src
+UNION ALL
+SELECT expandTime(expandSpace(b, 0.1), interval '1 day'), false FROM tbl_{T}_src
+UNION ALL
+SELECT stbox(format('SRID={SRID};{BOXKW} {XT}((({P}),({P})),[%s,%s])',
+    {MID}, {MIDE},
+    lower(t) + (upper(t) - lower(t)) / 2, lower(t) + (upper(t) - lower(t)) / 2)), false
+FROM tbl_{T}_src
+UNION ALL
+SELECT stbox(format('SRID={SRID};{BOXKW} {XT}((({P}),({P})),[%s,%s%s)',
+    {MINMAX}, lower(t) - interval '1 hour', lower(t),
+    CASE WHEN lowerInc(t) THEN ')' ELSE ']' END)), false
+FROM tbl_{T}_src;
+ANALYZE tbl_{T}_box;
+
+-- A box of space alone, which the operators on time refuse: one around a value,
+-- one inside it, the space of a value, and one that meets it
+DROP TABLE IF EXISTS tbl_{T}_xbox;
+CREATE TEMP TABLE tbl_{T}_xbox AS
+SELECT stbox(format('SRID={SRID};{BOXKW} {X}(({P}),({P}))',
+    {AROUND})) AS b
+FROM tbl_{T}_src
+UNION ALL
+SELECT stbox(format('SRID={SRID};{BOXKW} {X}(({P}),({P}))',
+    {MID}, {MIDE})) AS b
+FROM tbl_{T}_src
+UNION ALL
+SELECT stbox(format('SRID={SRID};{BOXKW} {X}(({P}),({P}))',
+    {MINMAX})) AS b
+FROM tbl_{T}_src
+UNION ALL
+SELECT stbox(format('SRID={SRID};{BOXKW} {X}(({P}),({P}))',
+    {MEETS})) AS b
+FROM tbl_{T}_src;
+ANALYZE tbl_{T}_xbox;
+
+-- A period of the fixture, the period of a value, one around it, one inside it,
+-- and one that meets it
+DROP TABLE IF EXISTS tbl_{T}_span;
+CREATE TEMP TABLE tbl_{T}_span AS
+SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
+UNION ALL
+SELECT t FROM tbl_{T}_src
+UNION ALL
+SELECT tstzspan(format('[%s, %s]', lower(t) - interval '1 day', upper(t) + interval '1 day'))
+FROM tbl_{T}_src
+UNION ALL
+SELECT tstzspan(format('[%s, %s]', lower(t) + (upper(t) - lower(t)) / 2, lower(t) + (upper(t) - lower(t)) / 2))
+FROM tbl_{T}_src
+UNION ALL
+SELECT tstzspan(format('[%s, %s%s', lower(t) - interval '1 hour', lower(t),
+    CASE WHEN lowerInc(t) THEN ')' ELSE ']' END))
+FROM tbl_{T}_src;
+ANALYZE tbl_{T}_span;
+
+-- A point at a corner of the box of a value
+DROP TABLE IF EXISTS tbl_{T}_geo;
+CREATE TEMP TABLE tbl_{T}_geo AS
+SELECT ST_SetSRID(ST_MakePoint({CORNER}), {SRID}) AS g, true AS knn FROM tbl_{T}_src;
+ANALYZE tbl_{T}_geo;

@@ -1,0 +1,55 @@
+-------------------------------------------------------------------------------
+{HEADER}
+-------------------------------------------------------------------------------
+
+{SHADOWS}CREATE FUNCTION pg_temp.test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+
+{TABLES}
+DROP TABLE IF EXISTS test_{TEMP}_idx;
+CREATE TEMP TABLE test_{TEMP}_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+  kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
+  kdtree_probe boolean);
+
+{ROWS}
+
+-- With no index a plan cannot probe one, whatever the planner settings
+SET enable_seqscan = off;
+SELECT pg_temp.test_probes_index('{NOIDXQUERY}') AS no_index_probe;
+RESET enable_seqscan;
+
+{BLOCKS}
+
+-------------------------------------------------------------------------------
+
+{COUNTS}
+SELECT COUNT(*) FROM test_{TEMP}_idx;
+SELECT op, no_idx FROM test_{TEMP}_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
+-- The distances of the nearest values are compared, not stated
+SELECT op FROM test_{TEMP}_idx WHERE op LIKE '%|=|%' AND no_idx IS NULL ORDER BY op;
+SELECT * FROM test_{TEMP}_idx
+WHERE no_idx IS DISTINCT FROM rtree_idx OR no_idx IS DISTINCT FROM quadtree_idx OR
+  no_idx IS DISTINCT FROM kdtree_idx OR NOT rtree_probe OR NOT quadtree_probe OR
+  NOT kdtree_probe
+ORDER BY op;
+
+DROP TABLE test_{TEMP}_idx;
+{DROPS}
+{EXTRA}{ALLTHESAME}
+
+DROP FUNCTION pg_temp.test_probes_index(text);
+
+-------------------------------------------------------------------------------
+
+{STBOXCOL}

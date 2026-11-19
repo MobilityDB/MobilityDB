@@ -556,6 +556,23 @@ FROM rast, trip, generate_series(timestamptz '2001-01-01',
   '2001-01-11', interval '1 day') ts
 GROUP BY r, t;
 
+-- Along the centres of a row whose values 10, 12 and 14 lie on a line, the
+-- crossings of the lines of the grid fall on whole seconds, each dated and read
+-- at its instant, so the answer, unrounded, merges the three collinear values:
+-- 9 to 10 is linear up to the centre of the second pixel, and 10 to 14 from
+-- there on.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 600000, 6400400, 100, -100, 0, 0, 25832),
+    '32BF'::text, 0, -9999), 1, 1, 1,
+    ARRAY[[12,14,16,18], [11,13,15,17], [9,10,12,14], [6,8,9,11]]::float[][])
+    AS r
+)
+SELECT asText(rasterValue(tgeompoint '[SRID=25832;Point(600020 6400150)@2001-01-01 08:00,
+  SRID=25832;Point(600380 6400150)@2001-01-01 08:06]', r, 1, true,
+  'bilinear')) AS along_centres
+FROM rast;
+
 -- Across a grid axis the value reaches an extremum inside a half-pixel
 -- square where its four pixels do not lie on a plane, and the answer holds it
 -- beside the instants of the trip and the lines it crosses, linear between
