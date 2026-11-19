@@ -103,8 +103,11 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_ga48c94fad13a2561eddad58b648fc4eaa.html#ga48c94fad13a2561eddad58b648fc4eaa">div_tfloat_float</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_gaec42597b6b783c0e45ba79d89874bd3c.html#gaec42597b6b783c0e45ba79d89874bd3c">div_tint_int</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_ga17f7ab097d4805e1704326d987107681.html#ga17f7ab097d4805e1704326d987107681">div_tnumber_tnumber</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tnumber__mathfuncs_8c_ab606009217a1d053c1990aab98fc5529.html#ab606009217a1d053c1990aab98fc5529">DOUBLE_SIGN</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__base__float_ga6c62ac15ba0f189610cf7411f2cd90c8.html#ga6c62ac15ba0f189610cf7411f2cd90c8">float_angular_difference</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tnumber__mathfuncs_8c_a19ee7b7e5fdad56f255c35b799c0d0f5.html#a19ee7b7e5fdad56f255c35b799c0d0f5">float_interval_has_tan_pole</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tnumber__mathfuncs_8c_a87a273a6be2c20410c70d0ea48da1275.html#a87a273a6be2c20410c70d0ea48da1275">FLOATSEGM_PRODUCT_MAX</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tnumber__mathfuncs_8c_a0cdeaa379a5c4a04d301b9610c70657f.html#a0cdeaa379a5c4a04d301b9610c70657f">floatsegm_product_slope_half</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_gad775dbe30c1994a928d0cde5493e9faa.html#gad775dbe30c1994a928d0cde5493e9faa">mul_bigint_tbigint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_ga22893fac60bc604adc1bccb128d64c26.html#ga22893fac60bc604adc1bccb128d64c26">mul_float_tfloat</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_gac3e86c5b72fd78d04f7bec289fd12434.html#gac3e86c5b72fd78d04f7bec289fd12434">mul_int_tint</a></td></tr>
@@ -227,14 +230,20 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Find the single timestamptz at which the operation of two temporal float segments is at a local minimum/maximum. </p>
-<p >The function supposes that the instants are synchronized, that is, <code>start1-&gt;t = start2-&gt;t</code> and <code>end1-&gt;t = end2-&gt;t</code>. The function only return an intersection at the middle, that is, it it returns false if the timestamp found is not at a bound </p><dl class="section note"><dt>Note</dt><dd>This function is called only when both sequences are linear </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 if the product of two temporal float segments has an extremum strictly inside their period, dated in the output argument by the microsecond nearest to it, 0 otherwise. </p>
+<p >With the first segment from <code>x1</code> to <code>x2</code> and the second from <code>x3</code> to <code>x4</code>, <code>a = x2 - x1</code> and <code>c = x4 - x3</code>, the derivative of the product moves linearly from <code>a x3 + c x1</code> at the start to <code>a x4 + c x2</code> at the end, so the product has an extremum strictly inside where their signs are opposite; where the four products have the sign of their factors in common no arithmetic is needed. The filter of this function computes both in doubles with an error bound, the sign being the exact one where the value exceeds the bound and otherwise that of a cross product of the doubles (<a class="el" href="geo__dyadic_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a>), and the offset of the extremum with its bound, which proves its nearest microsecond where it keeps the offset clear of the middle of two microseconds (<a class="el" href="tsequence_8h_adb18a20c250f58a32cc44ee7e0a8555f.html#adb18a20c250f58a32cc44ee7e0a8555f" title="Return true where the microsecond nearest to an offset known within a bound is proved,...">offset_nearest_bounded</a>); a nearest microsecond on a bound means the extremum belongs to the bound, which states its value. Elsewhere <a class="el" href="tsequence_8h_a374a7c85c5fcd8888b35551fbe735b36.html#a374a7c85c5fcd8888b35551fbe735b36" title="Return true if a function linear in the offset whose signs at the bounds of a period are opposite cro...">linear_crossing_nearest</a> dates it from the exact sign of the derivative (<a class="el" href="meos_2src_2temporal_2tnumber__mathfuncs_8c_a0cdeaa379a5c4a04d301b9610c70657f.html#a0cdeaa379a5c4a04d301b9610c70657f" title="Return the sign of the derivative of the product of two float segments at an offset from their start,...">floatsegm_product_slope_half</a>), a tie going to the even timestamp. The extremum lies midway between the instants at which the segments are zero, which also places the instant a quotient of the two segments adds </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Values defining the first segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Values defining the second segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">param</td><td>Additional parameter </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">tps</td><td>Array of the instants found </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">values</td><td>Values of the function at the instants, which this function does not write, NULL </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cap</td><td>Number of instants <code>tps</code> holds </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>This function is called only when both sequences are linear, and supposes that they are synchronized </dd></dl>
 
 </div>
 </div>
