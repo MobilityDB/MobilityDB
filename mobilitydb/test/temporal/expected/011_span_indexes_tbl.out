@@ -124,17 +124,17 @@ SELECT '&>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f &
 SELECT round((f <-> 101.0), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
- 1.391026
- 1.682749
- 1.708919
+ 1.661336
+ 1.671726
+ 1.731441
 (3 rows)
 
 SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
- 1.391026
- 1.682749
- 1.708919
+ 1.661336
+ 1.671726
+ 1.731441
 (3 rows)
 
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -170,7 +170,7 @@ SELECT d <-> date '2002-06-01' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 ----------
       154
       154
-      155
+      154
 (3 rows)
 
 SELECT d <-> datespan '[2002-06-01,2002-07-01]' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
@@ -178,7 +178,7 @@ SELECT d <-> datespan '[2002-06-01,2002-07-01]' FROM tbl_datespan_big ORDER BY 1
 ----------
       154
       154
-      155
+      154
 (3 rows)
 
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -210,19 +210,19 @@ SELECT '#>>', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan_big WHERE t #>>
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)';
 SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-          ?column?          
-----------------------------
- @ 152 days 8 hours 6 mins
- @ 152 days 8 hours 54 mins
- @ 152 days 9 hours 43 mins
+          ?column?           
+-----------------------------
+ @ 151 days 23 hours 27 mins
+ @ 152 days 31 mins
+ @ 152 days 59 mins
 (3 rows)
 
 SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-          ?column?          
-----------------------------
- @ 152 days 8 hours 6 mins
- @ 152 days 8 hours 54 mins
- @ 152 days 9 hours 43 mins
+          ?column?           
+-----------------------------
+ @ 151 days 23 hours 27 mins
+ @ 152 days 31 mins
+ @ 152 days 59 mins
 (3 rows)
 
 -------------------------------------------------------------------------------
@@ -335,17 +335,17 @@ WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 SELECT round((f <-> 101.0), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
- 1.391026
- 1.682749
- 1.708919
+ 1.661336
+ 1.671726
+ 1.731441
 (3 rows)
 
 SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
- 1.391026
- 1.682749
- 1.708919
+ 1.661336
+ 1.671726
+ 1.731441
 (3 rows)
 
 UPDATE test_idxops
@@ -395,7 +395,7 @@ SELECT d <-> date '2002-06-01' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 ----------
       154
       154
-      155
+      154
 (3 rows)
 
 SELECT d <-> datespan '[2002-06-01,2002-07-01]' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
@@ -403,7 +403,7 @@ SELECT d <-> datespan '[2002-06-01,2002-07-01]' FROM tbl_datespan_big ORDER BY 1
 ----------
       154
       154
-      155
+      154
 (3 rows)
 
 UPDATE test_idxops
@@ -449,19 +449,19 @@ UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-          ?column?          
-----------------------------
- @ 152 days 8 hours 6 mins
- @ 152 days 8 hours 54 mins
- @ 152 days 9 hours 43 mins
+          ?column?           
+-----------------------------
+ @ 151 days 23 hours 27 mins
+ @ 152 days 31 mins
+ @ 152 days 59 mins
 (3 rows)
 
 SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-          ?column?          
-----------------------------
- @ 152 days 8 hours 6 mins
- @ 152 days 8 hours 54 mins
- @ 152 days 9 hours 43 mins
+          ?column?           
+-----------------------------
+ @ 151 days 23 hours 27 mins
+ @ 152 days 31 mins
+ @ 152 days 59 mins
 (3 rows)
 
 DROP INDEX IF EXISTS tbl_intspan_big_rtree_idx;
@@ -578,17 +578,17 @@ WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 SELECT round((f <-> 101.0), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
- 1.391026
- 1.682749
- 1.708919
+ 1.661336
+ 1.671726
+ 1.731441
 (3 rows)
 
 SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
- 1.391026
- 1.682749
- 1.708919
+ 1.661336
+ 1.671726
+ 1.731441
 (3 rows)
 
 UPDATE test_idxops
@@ -638,7 +638,7 @@ SELECT d <-> date '2002-06-01' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 ----------
       154
       154
-      155
+      154
 (3 rows)
 
 SELECT d <-> datespan '[2002-06-01,2002-07-01]' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
@@ -646,7 +646,7 @@ SELECT d <-> datespan '[2002-06-01,2002-07-01]' FROM tbl_datespan_big ORDER BY 1
 ----------
       154
       154
-      155
+      154
 (3 rows)
 
 UPDATE test_idxops
@@ -692,19 +692,19 @@ UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-          ?column?          
-----------------------------
- @ 152 days 8 hours 6 mins
- @ 152 days 8 hours 54 mins
- @ 152 days 9 hours 43 mins
+          ?column?           
+-----------------------------
+ @ 151 days 23 hours 27 mins
+ @ 152 days 31 mins
+ @ 152 days 59 mins
 (3 rows)
 
 SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-          ?column?          
-----------------------------
- @ 152 days 8 hours 6 mins
- @ 152 days 8 hours 54 mins
- @ 152 days 9 hours 43 mins
+          ?column?           
+-----------------------------
+ @ 151 days 23 hours 27 mins
+ @ 152 days 31 mins
+ @ 152 days 59 mins
 (3 rows)
 
 -- The nearest neighbors the index returns are the nearest ones
@@ -838,17 +838,17 @@ WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 SELECT round((f <-> 101.0), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
- 1.391026
- 1.682749
- 1.708919
+ 1.661336
+ 1.671726
+ 1.731441
 (3 rows)
 
 SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
- 1.391026
- 1.682749
- 1.708919
+ 1.661336
+ 1.671726
+ 1.731441
 (3 rows)
 
 UPDATE test_idxops
@@ -898,7 +898,7 @@ SELECT d <-> date '2002-06-01' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 ----------
       154
       154
-      155
+      154
 (3 rows)
 
 SELECT d <-> datespan '[2002-06-01,2002-07-01]' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
@@ -906,7 +906,7 @@ SELECT d <-> datespan '[2002-06-01,2002-07-01]' FROM tbl_datespan_big ORDER BY 1
 ----------
       154
       154
-      155
+      154
 (3 rows)
 
 UPDATE test_idxops
@@ -952,19 +952,19 @@ UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-          ?column?          
-----------------------------
- @ 152 days 8 hours 6 mins
- @ 152 days 8 hours 54 mins
- @ 152 days 9 hours 43 mins
+          ?column?           
+-----------------------------
+ @ 151 days 23 hours 27 mins
+ @ 152 days 31 mins
+ @ 152 days 59 mins
 (3 rows)
 
 SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-          ?column?          
-----------------------------
- @ 152 days 8 hours 6 mins
- @ 152 days 8 hours 54 mins
- @ 152 days 9 hours 43 mins
+          ?column?           
+-----------------------------
+ @ 151 days 23 hours 27 mins
+ @ 152 days 31 mins
+ @ 152 days 59 mins
 (3 rows)
 
 -- The nearest neighbors the index returns are the nearest ones

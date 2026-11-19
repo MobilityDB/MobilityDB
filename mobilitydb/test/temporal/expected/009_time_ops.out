@@ -1655,11 +1655,11 @@ SELECT tstzspanset '{[2001-01-03, 2001-01-04],[2001-01-07, 2001-01-08]}' <-> tst
 CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING SPGIST(t);
 -- EXPLAIN ANALYZE
 SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
- ?column? 
-----------
- @ 0
- @ 0
- @ 0
+ ?column?  
+-----------
+ @ 8 mins
+ @ 9 mins
+ @ 46 mins
 (3 rows)
 
 SELECT t <-> tstzspan '[2001-06-01, 2001-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
@@ -1689,50 +1689,50 @@ CREATE INDEX tbl_tstzspanset_big_rtree_idx ON tbl_tstzspanset_big USING gist(t);
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01}';
  count 
 -------
-     1
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-  1498
+   835
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-   982
+   846
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
-  1498
+   835
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
-   982
+   846
 (1 row)
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
-     1
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
-   501
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> tstzset '{2001-06-01, 2001-07-01}';
@@ -1769,19 +1769,19 @@ SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> tstzspanset '{[2001-06-01, 2
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
-     1
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
-   501
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@ t;
@@ -1923,50 +1923,50 @@ CREATE INDEX tbl_tstzspanset_big_quadtree_idx ON tbl_tstzspanset_big USING spgis
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01}';
  count 
 -------
-     1
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-  1498
+   835
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-   982
+   846
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
-  1498
+   835
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
-   982
+   846
 (1 row)
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
-     1
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
-   501
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> tstzset '{2001-06-01, 2001-07-01}';
@@ -2003,19 +2003,19 @@ SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> tstzspanset '{[2001-06-01, 2
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
-     1
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
-   501
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@ t;

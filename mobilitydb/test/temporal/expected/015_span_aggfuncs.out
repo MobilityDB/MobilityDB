@@ -88,19 +88,19 @@ SELECT extent(t) FROM tbl_tstzspanset;
 SELECT numValues(setUnion(t)) from tbl_tstzset_big;
  numvalues 
 -----------
-     55883
+     70560
 (1 row)
 
 SELECT extent(temp::tstzspan) FROM tbl_tfloat_big;
                             extent                            
 --------------------------------------------------------------
- [Sun Dec 31 15:36:00 2000 PST, Sun Dec 30 18:50:00 2001 PST)
+ [Mon Jan 01 00:47:00 2001 PST, Sun Dec 30 21:49:00 2001 PST]
 (1 row)
 
 SELECT numSpans(spanUnion(temp::tstzspan)) from tbl_tfloat_big;
  numspans 
 ----------
-     3995
+     1642
 (1 row)
 
 -------------------------------------------------------------------------------

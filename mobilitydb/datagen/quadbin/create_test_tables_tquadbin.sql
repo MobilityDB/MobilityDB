@@ -111,16 +111,22 @@ SELECT k, random_stbox(-170, 170, -80, 80, '2001-01-01', '2001-12-31', 10, 10,
 FROM generate_series(1, size) k;
 
 ------------------------------------------------------------------------------
--- Large temporal QUADBIN cell index table for the index-operator tests. It
--- must be big enough that the planner chooses a GiST/SP-GiST index scan over a
--- sequential scan, otherwise the index tests exercise nothing. The threshold
--- is around 10 000 rows; size * 100 + 100 keeps a small margin above it
--- (10 100 at the default size of 100).
+-- The tables of the index tests: big enough that the planner chooses a
+-- GiST/SP-GiST index scan over a sequential scan, otherwise the index tests
+-- exercise nothing. The threshold is around 10 000 rows; size * 100 + 100
+-- keeps a small margin above it (10 100 at the default size of 100). The four
+-- quarters of a temporal table are the four subtypes, as in its table above,
+-- each made by the call that makes the table of that subtype.
 ------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_tquadbin_big;
 CREATE TABLE tbl_tquadbin_big(k, temp) AS
-SELECT k, random_tquadbin_seq(0, 10, '2001-01-01', '2001-12-31', 10, 5, 10) AS temp
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tquadbin_inst(0, 10, '2001-01-01', '2001-12-31')
+  WHEN 1 THEN random_tquadbin_discseq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10)
+  WHEN 2 THEN random_tquadbin_seq(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10)
+  ELSE random_tquadbin_seqset(0, 10, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10)
+  END AS temp
 FROM generate_series(1, size * 100 + 100) k;
 
 -------------------------------------------------------------------------------

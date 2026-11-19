@@ -24,14 +24,14 @@ CREATE TEMP TABLE tbl_tint_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tint_big
   UNION ALL
-  SELECT k + 10000, temp FROM tbl_tint_inst
+  SELECT k + 10100, temp FROM tbl_tint_inst
   UNION ALL
-  SELECT k + 10100, temp FROM tbl_tint_discseq
+  SELECT k + 10200, temp FROM tbl_tint_discseq
   UNION ALL
-  SELECT k + 10200, temp FROM tbl_tint_contseq
+  SELECT k + 10300, temp FROM tbl_tint_contseq
   UNION ALL
-  SELECT k + 10300, temp FROM tbl_tint_seqset )
-SELECT k + n * 10400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, temp FROM tbl_tint_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tint_idx;
 -- The values, boxes, value spans and periods the operators are given. Those of
@@ -919,7 +919,7 @@ DROP INDEX tbl_tint_idx_kdtree;
 SELECT COUNT(*) FROM tbl_tint_idx;
  count 
 -------
- 10400
+ 10500
 (1 row)
 
 SELECT COUNT(*) FROM test_tint_idx;
@@ -931,77 +931,77 @@ SELECT COUNT(*) FROM test_tint_idx;
 SELECT op, no_idx FROM test_tint_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
         op         | no_idx 
 -------------------+--------
- #&> tbox          | 205735
- #&> tint          | 112065
- #&> tstzspan      | 225517
- #>> tbox          | 205077
- #>> tint          | 112019
- #>> tstzspan      | 224872
- %&& tbox          | 242
- && intspan        | 311092
- && tbox           | 609
- && tbox x         | 267119
- && tint           | 77
- && tstzspan       | 701
- &< intspan        | 231860
- &< tbox           | 223260
- &< tbox x         | 201030
- &< tint           | 141142
- &<# tbox          | 244683
- &<# tint          | 137845
- &<# tstzspan      | 224893
- &> intspan        | 140943
- &> tbox           | 180135
- &> tbox x         | 112813
- &> tint           | 117422
- -|- intspan       | 5715
- -|- tbox          | 27
- -|- tbox x        | 5362
- -|- tint          | 17
- -|- tstzspan      | 19
- << intspan        | 105232
- << tbox           | 62087
- << tbox x         | 102363
- << tint           | 26891
- <<# tbox          | 244023
- <<# tint          | 137802
- <<# tstzspan      | 224247
- <@ intspan        | 87029
- <@ tbox           | 242
- <@ tbox x         | 65575
- <@ tint           | 30
- <@ tstzspan       | 630
- >> intspan        | 33496
- >> tbox           | 34587
- >> tbox x         | 30358
- >> tint           | 14046
- ?&& tbox          | 498
- @> intspan        | 173422
- @> tbox           | 56
- @> tbox x         | 159795
- @> tint           | 37
- @> tstzspan       | 55
- tbox #>> tint     | 244023
- tbox && tint      | 609
- tbox -|- tint     | 27
- tbox << tint      | 34587
- tbox <<# tint     | 205077
- tbox <@ tint      | 56
- tbox >> tint      | 62087
- tbox @> tint      | 242
- tbox ~= tint      | 18
- tstzspan #>> tint | 224247
- tstzspan && tint  | 701
- tstzspan -|- tint | 19
- tstzspan <<# tint | 224872
- tstzspan <@ tint  | 55
- tstzspan @> tint  | 630
- tstzspan ~= tint  | 15
- ~= intspan        | 734
- ~= tbox           | 18
- ~= tbox x         | 598
- ~= tint           | 18
- ~= tstzspan       | 15
+ #&> tbox          | 232557
+ #&> tint          | 125948
+ #&> tstzspan      | 253340
+ #>> tbox          | 231882
+ #>> tint          | 125871
+ #>> tstzspan      | 252678
+ %&& tbox          | 196
+ && intspan        | 238975
+ && tbox           | 524
+ && tbox x         | 195832
+ && tint           | 115
+ && tstzspan       | 758
+ &< intspan        | 197073
+ &< tbox           | 193807
+ &< tbox x         | 162596
+ &< tint           | 121285
+ &<# tbox          | 240343
+ &<# tint          | 136481
+ &<# tstzspan      | 219547
+ &> intspan        | 236261
+ &> tbox           | 271127
+ &> tbox x         | 201646
+ &> tint           | 162533
+ -|- intspan       | 6781
+ -|- tbox          | 24
+ -|- tbox x        | 6278
+ -|- tint          | 13
+ -|- tstzspan      | 15
+ << intspan        | 101970
+ << tbox           | 72562
+ << tbox x         | 97496
+ << tint           | 32466
+ <<# tbox          | 239670
+ <<# tint          | 136407
+ <<# tstzspan      | 218884
+ <@ intspan        | 72371
+ <@ tbox           | 196
+ <@ tbox x         | 47788
+ <@ tint           | 43
+ <@ tstzspan       | 631
+ >> intspan        | 131375
+ >> tbox           | 133496
+ >> tbox x         | 126512
+ >> tint           | 63049
+ ?&& tbox          | 471
+ @> intspan        | 117720
+ @> tbox           | 62
+ @> tbox x         | 108975
+ @> tint           | 39
+ @> tstzspan       | 76
+ tbox #>> tint     | 239670
+ tbox && tint      | 524
+ tbox -|- tint     | 24
+ tbox << tint      | 133496
+ tbox <<# tint     | 231882
+ tbox <@ tint      | 62
+ tbox >> tint      | 72562
+ tbox @> tint      | 196
+ tbox ~= tint      | 17
+ tstzspan #>> tint | 218884
+ tstzspan && tint  | 758
+ tstzspan -|- tint | 15
+ tstzspan <<# tint | 252678
+ tstzspan <@ tint  | 76
+ tstzspan @> tint  | 631
+ tstzspan ~= tint  | 12
+ ~= intspan        | 462
+ ~= tbox           | 17
+ ~= tbox x         | 379
+ ~= tint           | 17
+ ~= tstzspan       | 12
 (71 rows)
 
 -- The distances of the nearest values are compared, not stated
@@ -1036,7 +1036,7 @@ CREATE INDEX tbl_tint_allthesame_quadtree ON tbl_tint_allthesame USING spgist(te
 SELECT COUNT(*) AS rows_scan FROM tbl_tint_allthesame WHERE temp && tbox 'TBOXINT X([5, 5])';
  rows_scan 
 -----------
-     12380
+     10100
 (1 row)
 
 SET enable_seqscan = off;
@@ -1049,7 +1049,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_allthesame WHERE
 SELECT COUNT(*) AS rows_index FROM tbl_tint_allthesame WHERE temp && tbox 'TBOXINT X([5, 5])';
  rows_index 
 ------------
-      12380
+      10100
 (1 row)
 
 RESET enable_seqscan;
