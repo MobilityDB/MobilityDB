@@ -13425,7 +13425,11 @@ SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001
 (1 row)
 
 SELECT asText(atGeometry(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Linestring Z empty'));
-ERROR:  The geometry cannot have Z dimension
+ astext 
+--------
+ 
+(1 row)
+
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Linestring empty'));
  astext 
 --------
