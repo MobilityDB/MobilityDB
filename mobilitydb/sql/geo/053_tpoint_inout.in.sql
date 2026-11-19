@@ -102,6 +102,51 @@ CREATE FUNCTION tgeogpointFromHexEWKB(text)
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION geometryFromText(text)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geographyFromText(text)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geometryFromEWKT(text)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geographyFromEWKT(text)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geometryFromBinary(bytea)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geographyFromBinary(bytea)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geometryFromEWKB(bytea)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geographyFromEWKB(bytea)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geometryFromHexWKB(text)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_from_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geographyFromHexWKB(text)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_from_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION geometryFromHexEWKB(text)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geom_from_hexewkb'
@@ -109,6 +154,15 @@ CREATE FUNCTION geometryFromHexEWKB(text)
 CREATE FUNCTION geographyFromHexEWKB(text)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Geog_from_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geometryFromGeoJSON(text)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_from_geojson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geographyFromGeoJSON(text)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_from_geojson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -135,12 +189,12 @@ CREATE FUNCTION asText(tgeogpoint[], maxdecimaldigits integer DEFAULT 15)
 
 CREATE FUNCTION asText(geometry, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
-  AS 'SELECT @extschema@.ST_AsText($1, $2)'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(geography, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
-  AS 'SELECT @extschema@.ST_AsText($1, $2)'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(geometry[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
@@ -169,19 +223,14 @@ CREATE FUNCTION asEWKT(tgeogpoint[], maxdecimaldigits integer DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Single base geometry/geography EWKT. In the PostgreSQL extension this rewrites
--- to PostGIS ST_AsEWKT; the standalone MEOS library and the generated bindings
--- back the same asEWKT(geometry) surface with the geo_as_ewkt() kernel. Together
--- with transform(geometry, integer) this lets one portable generator/suite use
--- MobilityDB names (asEWKT, transform) instead of PostGIS-only ST_AsEWKT/ST_Transform.
 CREATE FUNCTION asEWKT(geometry, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
-  AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(geography, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
-  AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKT(geometry[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
@@ -212,6 +261,15 @@ CREATE FUNCTION asBinary(tgeogpoint, endian text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asBinary(geometry, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Geo_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(geography, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Geo_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asEWKB(tgeompoint, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
@@ -233,13 +291,13 @@ CREATE FUNCTION asEWKB(geography, endian text DEFAULT '')
 CREATE FUNCTION asGeoJSON(geometry, maxdecimaldigits integer DEFAULT 9,
     options integer DEFAULT 8)
   RETURNS text
-  AS 'SELECT @extschema@.ST_AsGeoJSON($1, $2, $3)'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_as_geojson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asGeoJSON(geography, maxdecimaldigits integer DEFAULT 9,
     options integer DEFAULT 0)
   RETURNS text
-  AS 'SELECT @extschema@.ST_AsGeoJSON($1, $2, $3)'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_as_geojson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- asHexWKB: base hex-WKB (variant 0, no SRID) — portable RFC #861 name,
 -- byte-for-byte identical to MobilityDuck asHexWKB and MobilitySpark asHexWKB.
@@ -250,6 +308,15 @@ CREATE FUNCTION asHexWKB(tgeompoint, endian text DEFAULT '')
 CREATE FUNCTION asHexWKB(tgeogpoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(geometry, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Geo_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(geography, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Geo_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- asHexEWKB: extended hex-WKB (WKB_EXTENDED flag, includes SRID) —

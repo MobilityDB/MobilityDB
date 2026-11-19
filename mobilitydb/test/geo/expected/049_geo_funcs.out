@@ -1419,7 +1419,6 @@ SELECT segmentize(geography 'Linestring(0 0,0 1)', 0);
 ERROR:  geo_segmentize: maximum segment length must be positive
 SELECT asGeoJSON(geometry 'CircularString(0 0,1 1,2 0)');
 ERROR:  lwgeom_to_geojson: 'CircularString' geometry type not supported
-CONTEXT:  SQL function "asgeojson" statement 1
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 -- A point is located on the serialized form of a (multi)polygon, as the

@@ -218,11 +218,11 @@ PGDLLEXPORT Datum Geom_from_hexewkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geom_from_hexewkb);
 /**
  * @ingroup mobilitydb_geo_base_inout
- * @brief Return a geometry from its ASCII hex-encoded Extended Well-Known
- * Binary (HexEWKB) representation
+ * @brief Return a geometry from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) or Extended Well-Known Binary (HexEWKB) representation
  * @details Read through the public MEOS reader, as #Cbuffer_from_hexwkb reads
  * a circular buffer
- * @sqlfn geometryFromHexEWKB()
+ * @sqlfn geometryFromHexWKB(), geometryFromHexEWKB()
  */
 Datum
 Geom_from_hexewkb(PG_FUNCTION_ARGS)
@@ -239,11 +239,11 @@ PGDLLEXPORT Datum Geog_from_hexewkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geog_from_hexewkb);
 /**
  * @ingroup mobilitydb_geo_base_inout
- * @brief Return a geography from its ASCII hex-encoded Extended Well-Known
- * Binary (HexEWKB) representation
+ * @brief Return a geography from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) or Extended Well-Known Binary (HexEWKB) representation
  * @details Read through the public MEOS reader, as #Cbuffer_from_hexwkb reads
  * a circular buffer
- * @sqlfn geographyFromHexEWKB()
+ * @sqlfn geographyFromHexWKB(), geographyFromHexEWKB()
  */
 Datum
 Geog_from_hexewkb(PG_FUNCTION_ARGS)
@@ -305,6 +305,246 @@ Geo_as_hexewkb(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(endian_text, 1);
   PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geo_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_as_hexwkb);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a geometry or a geography
+ * @details Written through the public MEOS writer, as #Geo_as_hexewkb writes
+ * the HexEWKB representation
+ * @sqlfn asHexWKB()
+ */
+Datum
+Geo_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  size_t size_out;
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  text *endian_text = PG_GETARG_TEXT_P(1);
+  char *endian = text_to_cstring(endian_text);
+  char *hexwkb = geo_as_hexwkb(gs, endian, &size_out);
+  text *result = cstring_to_text(hexwkb);
+  pfree(endian); pfree(hexwkb);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(endian_text, 1);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geo_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_as_wkb);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a geometry or a
+ * geography
+ * @details Written through the public MEOS writer, as #Geo_as_ewkb writes the
+ * EWKB representation
+ * @sqlfn asBinary()
+ */
+Datum
+Geo_as_wkb(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  text *endian_text = PG_GETARG_TEXT_P(1);
+  char *endian = text_to_cstring(endian_text);
+  size_t wkb_size;
+  uint8_t *wkb = geo_as_wkb(gs, endian, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(endian); pfree(wkb);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(endian_text, 1);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Geo_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_as_text);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of a geometry or a
+ * geography
+ * @details Written through the public MEOS writer, as #Geo_as_hexewkb writes
+ * the HexEWKB representation
+ * @sqlfn asText()
+ */
+Datum
+Geo_as_text(PG_FUNCTION_ARGS)
+{
+  size_t size_out;
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int precision = PG_GETARG_INT32(1);
+  char *str = geo_as_text(gs, precision, &size_out);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geo_as_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_as_ewkt);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * geometry or a geography
+ * @details Written through the public MEOS writer, as #Geo_as_text writes the
+ * WKT representation
+ * @sqlfn asEWKT()
+ */
+Datum
+Geo_as_ewkt(PG_FUNCTION_ARGS)
+{
+  size_t size_out;
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int precision = PG_GETARG_INT32(1);
+  char *str = geo_as_ewkt(gs, precision, &size_out);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geo_as_geojson(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_as_geojson);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return the GeoJSON representation of a geometry or a geography
+ * @details Written through the public MEOS writer, which names the coordinate
+ * reference system the options ask for from the Proj object cache of MEOS
+ * @sqlfn asGeoJSON()
+ */
+Datum
+Geo_as_geojson(PG_FUNCTION_ARGS)
+{
+  size_t size_out;
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int precision = PG_GETARG_INT32(1);
+  int option = PG_GETARG_INT32(2);
+  char *str = geo_as_geojson(gs, option, precision, NULL, &size_out);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geom_from_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_from_ewkt);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return a geometry from its Well-Known Text (WKT) or Extended
+ * Well-Known Text (EWKT) representation
+ * @details Read through the public MEOS reader, as #Geom_from_hexewkb reads
+ * the HexEWKB representation
+ * @sqlfn geometryFromText(), geometryFromEWKT()
+ */
+Datum
+Geom_from_ewkt(PG_FUNCTION_ARGS)
+{
+  text *str_text = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(str_text);
+  GSERIALIZED *result = geom_from_ewkt(str);
+  pfree(str);
+  PG_FREE_IF_COPY(str_text, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geog_from_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geog_from_ewkt);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return a geography from its Well-Known Text (WKT) or Extended
+ * Well-Known Text (EWKT) representation
+ * @details Read through the public MEOS reader, as #Geog_from_hexewkb reads
+ * the HexEWKB representation
+ * @sqlfn geographyFromText(), geographyFromEWKT()
+ */
+Datum
+Geog_from_ewkt(PG_FUNCTION_ARGS)
+{
+  text *str_text = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(str_text);
+  GSERIALIZED *result = geog_from_ewkt(str);
+  pfree(str);
+  PG_FREE_IF_COPY(str_text, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geom_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_from_wkb);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return a geometry from its Well-Known Binary (WKB) or Extended
+ * Well-Known Binary (EWKB) representation
+ * @details Read through the public MEOS reader, as #Set_from_wkb reads a set
+ * @sqlfn geometryFromBinary(), geometryFromEWKB()
+ */
+Datum
+Geom_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  GSERIALIZED *result = geo_from_ewkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ, 0);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geog_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geog_from_wkb);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return a geography from its Well-Known Binary (WKB) or Extended
+ * Well-Known Binary (EWKB) representation
+ * @details Read through the public MEOS reader, as #Geom_from_wkb reads a
+ * geometry
+ * @sqlfn geographyFromBinary(), geographyFromEWKB()
+ */
+Datum
+Geog_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  GSERIALIZED *result = geog_from_ewkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geom_from_geojson(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_from_geojson);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return a geometry from its GeoJSON representation
+ * @details Read through the public MEOS reader, as #Geom_from_ewkt reads the
+ * EWKT representation
+ * @sqlfn geometryFromGeoJSON()
+ */
+Datum
+Geom_from_geojson(PG_FUNCTION_ARGS)
+{
+  text *str_text = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(str_text);
+  GSERIALIZED *result = geo_from_geojson(str);
+  pfree(str);
+  PG_FREE_IF_COPY(str_text, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geog_from_geojson(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geog_from_geojson);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return a geography from its GeoJSON representation
+ * @details Read through the public MEOS reader, as #Geog_from_ewkt reads the
+ * EWKT representation
+ * @sqlfn geographyFromGeoJSON()
+ */
+Datum
+Geog_from_geojson(PG_FUNCTION_ARGS)
+{
+  text *str_text = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(str_text);
+  GSERIALIZED *result = geog_from_geojson(str);
+  pfree(str);
+  PG_FREE_IF_COPY(str_text, 0);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************
