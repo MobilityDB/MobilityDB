@@ -131,14 +131,17 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * @brief Return true if two points are the same to the tolerance their own
- * coordinates fix
+ * @brief Return true if two points are the same point
+ * @details The lines sewn are those of the union of the values, whose every
+ * end is an input vertex copied as the input holds it
+ * (#linear_union_same_point), so two ends are the same point exactly where
+ * their coordinates are equal: two distinct doubles are two distinct points,
+ * however near
  */
 static bool
 sew_same_point(const POINT2D *a, const POINT2D *b)
 {
-  return fabs(a->x - b->x) <= coordinate_tolerance(a->x, b->x) &&
-    fabs(a->y - b->y) <= coordinate_tolerance(a->y, b->y);
+  return a->x == b->x && a->y == b->y;
 }
 
 /**

@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.9.0 |
+| Version | v0.10.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -235,6 +235,7 @@ patch number with corrections of wording.
 | v0.7.0 | The values a trajectory reads from a raster series and their restrictions |
 | v0.8.0 | The values read at one place written as a CoverageJSON `Point` or `PointSeries` |
 | v0.9.0 | The creation options of the GDAL writers taken in MEOS as an array of texts, as SQL and GDAL take them |
+| v0.10.0 | The CoverageJSON writers in MEOS write the size of their string, the terminating null character included, as every string MEOS returns |
 
 ## 9. Out of scope
 

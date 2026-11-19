@@ -21230,6 +21230,52 @@ relate_segments_intersect(const Edge *a, const Edge *b)
 }
 
 /**
+ * @brief Classify the point where a straight linear edge crosses a straight
+ * boundary edge with respect to the complete linear geometry
+ * @details The point is the one the two input segments determine
+ * (#relate_segments_intersect), in general no pair of doubles, so it is not
+ * located by a rounded construction of it. It lies on the linear geometry, on
+ * @p line, and is in its boundary where an odd number of the endpoints
+ * #relate_point_on_linear_boundary counts are that point. The two segments
+ * meet at that one point, so an endpoint is that point exactly where it lies
+ * on both input segments, a question on input vertices
+ * (#point_on_segment_exact)
+ * @param[in] line,boundary Edges whose input segments cross at one point
+ * @param[in] edges,nedges Edges of the linear geometry
+ * @return 0 for the interior, 1 for the boundary, as #relate_point_in_linear
+ */
+static int
+relate_crossing_in_linear(const Edge *line, const Edge *boundary,
+  Edge **edges, int nedges)
+{
+  Edge la, lb;
+  relate_input_segment(line->cut ? line->sx : line->x1,
+    line->cut ? line->sy : line->y1, line->cut ? line->ex : line->x2,
+    line->cut ? line->ey : line->y2, &la);
+  relate_input_segment(boundary->cut ? boundary->sx : boundary->x1,
+    boundary->cut ? boundary->sy : boundary->y1,
+    boundary->cut ? boundary->ex : boundary->x2,
+    boundary->cut ? boundary->ey : boundary->y2, &lb);
+  int count = 0;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->etype != EDGE_LINESEG && e->etype != EDGE_LINEARC)
+      continue;
+    if (! relate_edge_nonempty(e))
+      continue;
+    for (int k = 0; k < 2; k++)
+    {
+      double x = k == 0 ? e->x1 : e->x2, y = k == 0 ? e->y1 : e->y2;
+      if (point_on_segment_exact(x, y, la.x1, la.y1, la.x2, la.y2) &&
+          point_on_segment_exact(x, y, lb.x1, lb.y1, lb.x2, lb.y2))
+        count++;
+    }
+  }
+  return count & 1;
+}
+
+/**
  * @brief Process the intersection between one linear edge and one polygon
  * boundary edge
  * @details Updates the DE-9IM cells corresponding to the intersection between
@@ -21258,12 +21304,9 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
     }
 
     /* Point intersection */
-    double x = line->x1 + r.t0 * line->dx;
-    double y = line->y1 + r.t0 * line->dy;
-    int lloc = relate_point_in_linear(x, y, all_lines, nlines, false);
-    if (lloc == 0)
+    if (relate_crossing_in_linear(line, boundary, all_lines, nlines) == 0)
       de9im_add(&m->ib, 0);
-    else if (lloc == 1)
+    else
       m->bb = 0;
     relate_add_parameter(r.t0, params, nparams, maxparams);
     return;
@@ -24358,6 +24401,32 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
   Edge **edges = palloc(sizeof(Edge *) * Max(nall, 1));
   for (int i = 0; i < nall; i++)
     edges[i] = (Edge *) meos_array_get_intl(all, i);
+  /* The component each areal edge belongs to. The boundary of one component
+   * meets itself only at the vertices its rings share, which cut nothing, so
+   * an edge is cut only where the edge of ANOTHER component meets it: a
+   * tangent meeting of two adjacent edges of one ring, read a few units in
+   * the last place inside the edge, would otherwise cut it into a sliver.
+   * The collection's edges and its components' edges are read by the same
+   * extraction (#geom_extract_edges) member after member, so the areal edges
+   * of the collection are those of its components in order; where the counts
+   * do not show it, every edge is cut against every other */
+  int *ecomp = palloc(sizeof(int) * Max(nall, 1));
+  int nareal = 0, ncompedges = 0;
+  for (int i = 0; i < nall; i++)
+    if (relate_area_boundary_edge(edges[i]))
+      nareal++;
+  for (int c = 0; c < ncomp; c++)
+    ncompedges += comps[c].nedges;
+  for (int i = 0, c = 0, left = comps[0].nedges; i < nall; i++)
+  {
+    ecomp[i] = -1;
+    if (nareal != ncompedges || ! relate_area_boundary_edge(edges[i]))
+      continue;
+    while (left == 0 && c + 1 < ncomp)
+      left = comps[++c].nedges;
+    ecomp[i] = c;
+    left--;
+  }
   RelateEdges re;
   relate_edges_init(&re, edges, nall, index);
   MeosArray *candidates = re.index ? index_result_create() : NULL;
@@ -24389,7 +24458,8 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     {
       int j = candidates ? (int) INDEX_RESULT_ID_N(candidates, c) : c;
       const Edge *other = edges[j];
-      if (j == i || ! relate_area_boundary_edge(other))
+      if (j == i || ! relate_area_boundary_edge(other) ||
+          (ecomp[i] >= 0 && ecomp[i] == ecomp[j]))
         continue;
       double ix[2], iy[2];
       bool overlap;
@@ -24476,6 +24546,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     meos_array_destroy(candidates);
   relate_edges_clear(&re);
   pfree(edges);
+  pfree(ecomp);
 
   relate_comps_free(comps, ncomp);
   return result;

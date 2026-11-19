@@ -717,7 +717,8 @@ Datum
 Raster_as_coveragejson(PG_FUNCTION_ARGS)
 {
   Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-  char *str = raster_as_coveragejson(rast);
+  size_t size_out;
+  char *str = raster_as_coveragejson(rast, &size_out);
   PG_FREE_IF_COPY(rast, 0);
   return coveragejson_text_datum(fcinfo, str);
 }
@@ -733,7 +734,8 @@ Datum
 Raquet_as_coveragejson(PG_FUNCTION_ARGS)
 {
   Raquet *rq = PG_GETARG_RAQUET_P(0);
-  char *str = raquet_as_coveragejson(rq);
+  size_t size_out;
+  char *str = raquet_as_coveragejson(rq, &size_out);
   PG_FREE_IF_COPY(rq, 0);
   return coveragejson_text_datum(fcinfo, str);
 }
@@ -751,7 +753,8 @@ Tfloat_as_coveragejson(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *traj = PG_GETARG_TEMPORAL_P(1);
-  char *str = tfloat_as_coveragejson(temp, traj);
+  size_t size_out;
+  char *str = tfloat_as_coveragejson(temp, traj, &size_out);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(traj, 1);
   return coveragejson_text_datum(fcinfo, str);

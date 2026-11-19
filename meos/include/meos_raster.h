@@ -103,7 +103,7 @@ extern Raquet *raquet_from_wkb(const uint8_t *wkb, size_t size);
 extern Raquet *raquet_from_hexwkb(const char *hexwkb);
 extern uint8_t *raquet_as_wkb(const Raquet *rq, uint8_t variant, size_t *size_out);
 extern char *raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_out);
-extern char *raquet_as_coveragejson(const Raquet *rq);
+extern char *raquet_as_coveragejson(const Raquet *rq, size_t *size_out);
 
 /* Constructor functions for Raquet tiles */
 
@@ -239,7 +239,7 @@ typedef struct
 /* Input and output functions for PostGIS rasters */
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
-extern char *raster_as_coveragejson(const Raster *rast);
+extern char *raster_as_coveragejson(const Raster *rast, size_t *size_out);
 extern uint8_t *raster_as_gdal(const Raster *rast, const char *format,
   text **options, int count, int32_t srid, size_t *size_out);
 extern uint8_t *raster_as_tiff(const Raster *rast, text **options, int count,
@@ -441,7 +441,7 @@ extern Temporal *raster_tile_value_quadbin(const Temporal *traj,
   Quadbin quadbin, MeosPixType pixtype, double nodata, bool has_nodata);
 
 extern char *tfloat_as_coveragejson(const Temporal *temp,
-  const Temporal *traj);
+  const Temporal *traj, size_t *size_out);
 extern Temporal *raster_tile_value(const Temporal *traj, const Raquet *rq);
 extern Temporal *raster_tile_value_array(const Temporal *traj,
   const Raquet **rqarr, int count);

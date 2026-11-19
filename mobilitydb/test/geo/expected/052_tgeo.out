@@ -1587,6 +1587,18 @@ SELECT asText(merge(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, P
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(1 1)@Thu Jan 04 00:00:00 2001 PST, POINT(1 1)@Fri Jan 05 00:00:00 2001 PST], [POINT(2 2)@Sat Jan 06 00:00:00 2001 PST, POINT(1 1)@Sun Jan 07 00:00:00 2001 PST], [POINT(1 1)@Mon Jan 08 00:00:00 2001 PST, POINT(1 1)@Tue Jan 09 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asText(merge(tgeometry 'Linestring(0 0,1 0)@2001-01-01', tgeometry 'Linestring(1 0,2 1)@2001-01-01'));
+                        astext                        
+------------------------------------------------------
+ LINESTRING(0 0,1 0,2 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(merge(tgeometry 'Linestring(0 0,1 0)@2001-01-01', tgeometry 'Linestring(1.0000000000001 0,2 1)@2001-01-01'));
+                                     astext                                      
+---------------------------------------------------------------------------------
+ MULTILINESTRING((0 0,1 0),(1.0000000000001 0,2 1))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(merge(tgeography 'Point(1.5 1.5)@2001-01-01', tgeography 'Point(1.5 1.5)@2001-01-02'));
                                            astext                                           
 --------------------------------------------------------------------------------------------

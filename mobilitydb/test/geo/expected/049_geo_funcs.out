@@ -397,6 +397,21 @@ SELECT ST_GeometryType(buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))
  ST_MultiSurface
 (1 row)
 
+-- The buffers of two polygons that stay apart are a surface each, and a point
+-- within the distance of the first lies in their union, the arcs where each
+-- buffer turns meeting nothing of the other
+SELECT contains(buffer(geometry 'MultiPolygon(((549003.378756243 6088596.943731396,
+  548948.5604034535 6088519.939385607,548961.794964137 6088546.243981731,
+  548986.1779411763 6088570.599007793,548993.3848006604 6088604.432136278,
+  549003.378756243 6088596.943731396)),((550539.9835761178 6089586.122404569,
+  550574.5007171528 6089599.619660147,550571.2435751263 6089598.329909987,
+  550539.9835761178 6089586.122404569)))', 316.42868675352696),
+  ST_Point(549094.7014601384, 6088726.222741437)) AS inside;
+ inside 
+--------
+ t
+(1 row)
+
 -------------------------------------------------------------------------------
 -- Intersection matrix
 -------------------------------------------------------------------------------
@@ -1152,6 +1167,186 @@ SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point empty
 -----------------
                 
 (1 row)
+
+-------------------------------------------------------------------------------
+-- SRID, size, emptiness, points, azimuth, unions and vertex equality
+-- Each answers as the PostGIS function of the same name with the prefix ST_ on
+-- the geometries of the accessors, and ST_Union for the union of an array
+-------------------------------------------------------------------------------
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'SRID=3812;Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'SRID=4326;Point(4 2)'),
+  (4, geometry 'Linestring(2 2,6 2,6 5)'),
+  (5, geometry 'MultiPoint(1 1,5 5)'),
+  (6, geometry 'MultiPolygon(((0 0,2 0,2 2,0 2,0 0)),((1 1,3 1,3 3,1 3,1 1)))'),
+  (7, geometry 'Linestring Z(0 0 1,1 1 2)'),
+  (8, geometry 'Point empty'),
+  (9, geometry 'Polygon empty'))
+SELECT count(*) AS geoms,
+  count(*) FILTER (WHERE SRID(geom) IS DISTINCT FROM ST_SRID(geom)) AS srid,
+  count(*) FILTER (WHERE memSize(geom) IS DISTINCT FROM ST_MemSize(geom)) AS memsize,
+  count(*) FILTER (WHERE isEmpty(geom) IS DISTINCT FROM ST_IsEmpty(geom)) AS isempty,
+  count(*) FILTER (WHERE ST_AsEWKT(points(geom)) IS DISTINCT FROM ST_AsEWKT(ST_Points(geom))) AS points,
+  count(*) FILTER (WHERE ST_AsEWKT(setSRID(geom, 3857)) IS DISTINCT FROM ST_AsEWKT(ST_SetSRID(geom, 3857))) AS setsrid,
+  count(*) FILTER (WHERE NOT ST_Equals(unaryUnion(geom), ST_UnaryUnion(geom))) AS unaryunion,
+  count(*) FILTER (WHERE ST_AsEWKT(pointN(geom, 2)) IS DISTINCT FROM ST_AsEWKT(ST_PointN(geom, 2))) AS pointn2,
+  count(*) FILTER (WHERE ST_AsEWKT(pointN(geom, -1)) IS DISTINCT FROM ST_AsEWKT(ST_PointN(geom, -1))) AS pointnlast
+FROM g;
+ geoms | srid | memsize | isempty | points | setsrid | unaryunion | pointn2 | pointnlast 
+-------+------+---------+---------+--------+---------+------------+---------+------------
+     9 |    0 |       0 |       0 |      0 |       0 |          0 |       0 |          0
+(1 row)
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Point(0 0)'), (2, geometry 'Point(0 1)'), (3, geometry 'Point(1 1)'),
+  (4, geometry 'Point(1 0)'), (5, geometry 'Point(-1 -1)'), (6, geometry 'Point(0 0)')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT count(*) AS pairs,
+  count(*) FILTER (WHERE round(azimuth(a, b)::numeric, 12) IS DISTINCT FROM
+    round(ST_Azimuth(a, b)::numeric, 12)) AS azimuth,
+  count(*) FILTER (WHERE azimuth(a, b) IS NULL) AS equalpoints
+FROM pairs;
+ pairs | azimuth | equalpoints 
+-------+---------+-------------
+    36 |       0 |           8
+(1 row)
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Linestring(0 0,1 1)'), (2, geometry 'Linestring(1 1,0 0)'),
+  (3, geometry 'Linestring(0 0,0.5 0.5,1 1)'), (4, geometry 'Point(0 0)'),
+  (5, geometry 'SRID=3812;Linestring(0 0,1 1)'), (6, geometry 'Linestring(0 0,1 1)')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b WHERE ST_SRID(a.geom) = ST_SRID(b.geom))
+SELECT count(*) AS pairs,
+  count(*) FILTER (WHERE orderingEquals(a, b) IS DISTINCT FROM ST_OrderingEquals(a, b)) AS orderingequals,
+  count(*) FILTER (WHERE orderingEquals(a, b)) AS holds
+FROM pairs;
+ pairs | orderingequals | holds 
+-------+----------------+-------
+    26 |              0 |     8
+(1 row)
+
+WITH a(arr) AS (VALUES
+  (ARRAY[geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))', 'Polygon((1 1,3 1,3 3,1 3,1 1))']),
+  (ARRAY[geometry 'Linestring(0 0,2 0)', 'Linestring(1 0,3 0)', 'Point(5 5)']),
+  (ARRAY[geometry 'Point(1 1)', 'Point(1 1)', 'Point(2 2)']))
+SELECT count(*) FILTER (WHERE NOT ST_Equals(geoUnion(arr), ST_Union(arr))) AS geounion
+FROM a;
+ geounion 
+----------
+        0
+(1 row)
+
+-- The answers above are not empty: the SRID and the size of a polygon, the
+-- points of a line, its second point, the azimuth of a diagonal, the union of
+-- two squares and of the parts of a multipolygon
+SELECT SRID(geometry 'SRID=3812;Polygon((0 0,4 0,4 4,0 4,0 0))');
+ srid 
+------
+ 3812
+(1 row)
+
+SELECT memSize(geometry 'Point(1 2)');
+ memsize 
+---------
+      32
+(1 row)
+
+SELECT isEmpty(geometry 'Point empty'), isEmpty(geometry 'Point(1 2)');
+ isempty | isempty 
+---------+---------
+ t       | f
+(1 row)
+
+SELECT ST_AsText(points(geometry 'Linestring(2 2,6 2,6 5)'));
+           st_astext           
+-------------------------------
+ MULTIPOINT((2 2),(6 2),(6 5))
+(1 row)
+
+SELECT ST_AsText(pointN(geometry 'Linestring(2 2,6 2,6 5)', 2));
+ st_astext  
+------------
+ POINT(6 2)
+(1 row)
+
+SELECT round(azimuth(geometry 'Point(0 0)', geometry 'Point(1 1)')::numeric, 6);
+  round   
+----------
+ 0.785398
+(1 row)
+
+SELECT ST_AsText(geoUnion(ARRAY[geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
+  'Polygon((1 1,3 1,3 3,1 3,1 1))']));
+                   st_astext                    
+------------------------------------------------
+ POLYGON((2 1,3 1,3 3,1 3,1 2,0 2,0 0,2 0,2 1))
+(1 row)
+
+SELECT ST_AsText(unaryUnion(geometry
+  'MultiPolygon(((0 0,2 0,2 2,0 2,0 0)),((1 1,3 1,3 3,1 3,1 1)))'));
+                   st_astext                    
+------------------------------------------------
+ POLYGON((2 1,3 1,3 3,1 3,1 2,0 2,0 0,2 0,2 1))
+(1 row)
+
+SELECT orderingEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(1 1,0 0)');
+ orderingequals 
+----------------
+ f
+(1 row)
+
+-- A geography answers its SRID, size and emptiness, and the union of an array
+-- of geographies is a geography
+SELECT SRID(geography 'Point(4.35 50.85)'), memSize(geography 'Point(4.35 50.85)'),
+  isEmpty(geography 'Point(4.35 50.85)');
+ srid | memsize | isempty 
+------+---------+---------
+ 4326 |      32 | f
+(1 row)
+
+SELECT SRID(setSRID(geography 'Point(4.35 50.85)', 4258));
+ srid 
+------
+ 4258
+(1 row)
+
+SELECT ST_AsText(geoUnion(ARRAY[geography 'Point(1 1)', 'Point(2 2)']));
+        st_astext        
+-------------------------
+ MULTIPOINT((1 1),(2 2))
+(1 row)
+
+-- The SRID is set as PostGIS sets it, clamping a negative one to 0, and the
+-- invalid SRID is refused
+SELECT SRID(setSRID(geometry 'Point(1 1)', -1));
+NOTICE:  SRID value -1 converted to the officially unknown SRID value 0
+ srid 
+------
+    0
+(1 row)
+
+SELECT setSRID(geometry 'Point(1 1)', 1000001);
+ERROR:  The SRID is invalid
+-- The union of an empty array is NULL
+SELECT geoUnion(ARRAY[]::geometry[]);
+ geounion 
+----------
+ 
+(1 row)
+
+-- The union of an empty geometry is that geometry, as ST_UnaryUnion answers it
+WITH e(geom) AS (VALUES (geometry 'Point empty'), (geometry 'SRID=3812;Linestring empty'),
+  (geometry 'Polygon empty'), (geometry 'MultiPolygon empty'), (geometry 'GeometryCollection empty'))
+SELECT ST_AsEWKT(geom), ST_AsEWKT(unaryUnion(geom)), ST_AsEWKT(ST_UnaryUnion(geom)) FROM e;
+         st_asewkt          |         st_asewkt          |         st_asewkt          
+----------------------------+----------------------------+----------------------------
+ POINT EMPTY                | POINT EMPTY                | POINT EMPTY
+ SRID=3812;LINESTRING EMPTY | SRID=3812;LINESTRING EMPTY | SRID=3812;LINESTRING EMPTY
+ POLYGON EMPTY              | POLYGON EMPTY              | POLYGON EMPTY
+ MULTIPOLYGON EMPTY         | MULTIPOLYGON EMPTY         | MULTIPOLYGON EMPTY
+ GEOMETRYCOLLECTION EMPTY   | GEOMETRYCOLLECTION EMPTY   | GEOMETRYCOLLECTION EMPTY
+(5 rows)
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------

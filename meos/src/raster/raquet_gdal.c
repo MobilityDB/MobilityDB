@@ -785,7 +785,7 @@ raster_value_gdal_side(const void *ctxp, double x, double y, int axis, int k)
  */
 static int64
 raster_value_gdal_offset(const void *ctxp, double x1, double y1, double x2, double y2,
-  int64 D, int axis, int k, bool *whole)
+  int64 D, int axis, double k, bool *whole)
 {
   const RasterValueGdalCtx *ctx = (const RasterValueGdalCtx *) ctxp;
   return raster_affine_offset(ctx->gt, x1, y1, x2, y2, D, axis, k, whole);

@@ -521,6 +521,7 @@ geo_copy(const GSERIALIZED *gs)
  * value, which #geo_copy duplicates
  * @param[in] gs Geometry
  * @errval INT_MAX
+ * @csqlfn #Geo_mem_size()
  */
 int
 geo_mem_size(const GSERIALIZED *gs)
@@ -612,6 +613,7 @@ geogpoint_make3dz(int32_t srid, double x, double y, double z)
  * @ingroup meos_geo_base_srid
  * @brief Get the SRID of a geometry/geography
  * @param[in] gs Geometry
+ * @csqlfn #Geo_srid()
  */
 int32_t
 geo_srid(const GSERIALIZED *gs)
@@ -624,14 +626,20 @@ geo_srid(const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_base_srid
  * @brief Set the SRID of a geometry/geography
+ * @details The invalid SRID is refused, as #cbuffer_set_srid refuses it; any
+ * other SRID is clamped into the range of the reference systems as PostGIS
+ * clamps it, a negative SRID reading as the unknown SRID 0
  * @param[in] gs Geometry
  * @param[in] srid SRID
+ * @csqlfn #Geo_set_srid()
  */
 GSERIALIZED *
 geo_set_srid(const GSERIALIZED *gs, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_srid_valid(srid))
+    return NULL;
   GSERIALIZED *result = geo_copy(gs);
   gserialized_set_srid(result, srid);
   return result;
@@ -639,8 +647,9 @@ geo_set_srid(const GSERIALIZED *gs, int32_t srid)
 
 /**
  * @ingroup meos_geo_base_accessor
- * @brief Get the SRID of a geometry/geography
+ * @brief Return true if a geometry/geography is empty
  * @param[in] gs Geometry
+ * @csqlfn #Geo_is_empty()
  */
 bool
 geo_is_empty(const GSERIALIZED *gs)
@@ -5108,6 +5117,7 @@ geo_segmentize(const GSERIALIZED *gs, double max_seg_length)
  * @param[in] gs1,gs2 Geometries
  * @param[out] result Result
  * @return Return false on exception (same point)
+ * @csqlfn #Geom_azimuth()
  */
 bool
 geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result)
@@ -5350,6 +5360,7 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
  * @brief Return a MultiPoint containing all the coordinates of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_points()
  */
 GSERIALIZED *
 geo_points(const GSERIALIZED *gs)
@@ -7739,6 +7750,7 @@ union_lifted(GSERIALIZED *result, GSERIALIZED **gsarr, int count)
  * @param[in] gsarr Array of geometries
  * @param[in] count Number of elements in the array
  * @errval NULL
+ * @csqlfn #Geom_array_union()
  */
 GSERIALIZED *
 geom_array_union(GSERIALIZED **gsarr, int count)
@@ -7789,6 +7801,7 @@ geom_array_union(GSERIALIZED **gsarr, int count)
  * question: a geodesic is not the segment joining two positions in degree
  * space, and two geodesics meet where those segments need not, so the answer
  * awaits an overlay that works on the spheroid.
+ * @csqlfn #Geog_array_union()
  */
 GSERIALIZED *
 geog_array_union(GSERIALIZED **gsarr, int count)
@@ -7930,6 +7943,7 @@ geo_arealess_parts_as_lines(const LWGEOM *geom)
  * @param[in] gs Geometry
  * @note PostGIS function: @p ST_UnaryUnion(PG_FUNCTION_ARGS). With respect
  * to the original function we do not use the @p prec argument.
+ * @csqlfn #Geom_unary_union()
  */
 GSERIALIZED *
 geom_unary_union(const GSERIALIZED *gs)
@@ -7938,6 +7952,11 @@ geom_unary_union(const GSERIALIZED *gs)
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_geodetic_geo(gs))
     return NULL;
+  /* The union of the empty set is the empty set, of the type and the SRID of
+   * the argument, as PostGIS function ST_UnaryUnion answers it and as
+   * #geo_segmentize answers an empty geometry */
+  if (gserialized_is_empty(gs))
+    return geo_copy(gs);
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs) ;
   /* The native routes dissolve the PROJECTION of a geometry carrying Z or M,
@@ -9996,6 +10015,7 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
  * @details Two values in different spatial reference systems are not the
  * same whatever their coordinates, as for the circular buffers and the poses
  * @param[in] gs1,gs2 Geometries/geographies
+ * @csqlfn #Geo_same()
  */
 bool
 geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -10278,6 +10298,7 @@ geog_from_geojson(const char *geojson)
  * @brief Return a geography from a geometry
  * @param[in] gs Geometry
  * @note PostGIS function: @p geography_from_geometry(PG_FUNCTION_ARGS)
+ * @sqlfn geography()
  */
 GSERIALIZED *
 geom_to_geog(const GSERIALIZED *gs)
@@ -10320,6 +10341,7 @@ geom_to_geog(const GSERIALIZED *gs)
  * @brief Return a geometry from a geography
  * @param[in] gs Geography
  * @note PostGIS function: @p geometry_from_geography(PG_FUNCTION_ARGS)
+ * @sqlfn geometry()
  */
 GSERIALIZED *
 geog_to_geom(const GSERIALIZED *gs)
@@ -11349,6 +11371,7 @@ geo_typename(int type)
  * @param[in] n Number (1-based)
  * @return  Return @p NULL if there is no LINESTRING(..) in GEOMETRY or @p n
  * is out of bounds.
+ * @csqlfn #Line_point_n()
  */
 GSERIALIZED *
 line_point_n(const GSERIALIZED *gs, int n)
