@@ -114,7 +114,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return a spatial set with the coordinates set to an SRID. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The invalid SRID is refused and any other SRID is clamped as <a class="el" href="group__meos__geo__base__srid_ga664cf0a7d6e12eccdfe64df6524a5a38.html#ga664cf0a7d6e12eccdfe64df6524a5a38" title="Set the SRID of a geometry/geography.">geo_set_srid</a> clamps it; the unknown SRID, which a negative SRID reads as, is refused. The values and the bounding box state the clamped SRID. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Spatial set </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID </td></tr>
