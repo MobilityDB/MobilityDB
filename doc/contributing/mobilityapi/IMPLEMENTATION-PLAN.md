@@ -31,7 +31,7 @@
 
 | Gap | Task | State |
 |---|---|---|
-| No test states that each extension is named as one and changes no answer of the standard | A4: every route of the API definition is either a requirement of a declared class or marked as a MobilityAPI extension, and a test reads the routing table against that marking | to do |
+| No test states that each extension is named as one and changes no answer of the standard | A4: every route of the API definition is either a requirement of a declared class or marked as a MobilityAPI extension, and a test reads the routing table against that marking. `routeTable` holds every operation with its class or `extension`; the routing and the API definition (`x-conformance-class`, `x-mobilityapi-extension`) both read it, and `ats_routes_test.go` fails a route marked with an undeclared class, a route undescribed, an operation unserved, and an Annex A route marked otherwise than its test's class. 45 routes: 33 of a declared class, 12 extensions, `/health`, `trajectories` and `timeseries` among them, which the API definition describes from this row on | OPEN as MobilityAPI #85 |
 
 ## The surface
 
