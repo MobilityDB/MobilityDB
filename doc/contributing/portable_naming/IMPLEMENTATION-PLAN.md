@@ -56,6 +56,29 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   owner decided on 2026-10-27: `tools/scripts/check_strict_nullable.py` checks it with a baseline,
   MERGED as MobilityDB #3215 (`db1109b935`), its baseline of 203 findings fixed one topic at a time:
   178 after G86 to G89, with no unchecked read left; G90 and G91 carry the rest.
+- **One search for every monotone sign of the engine**, step EA12 of the exactness plan (#3287
+  `EXACT-ARITHMETIC.md`), as the owner decided on 2026-11-19 ("yes factor", "please factorize as
+  much as you can, we cannot continue duplicating code in the geometry engine"): `monotone_search`
+  and `monotone_halve` in `geo_dyadic.h` and `offset_nearest_bounded` in `tsequence.h` replace ten
+  copies of the gallop and halving and two of the proof of a nearest microsecond.
+  branch `consol/one-monotone-search` rewrites `6aa9d0c47b` there, the search of the nearest crossing of two float segments;
+  branch `consol/one-monotone-search` rewrites `5b10501659` there, the search of the distance of the interiors of two segments;
+  branch `consol/one-monotone-search` rewrites `923ace06ac` there, the search of the offset at which a moving disc reaches a point;
+  branch `consol/one-monotone-search` rewrites `2328296126` there, the first and last microsecond of a sign of the temporal within distance;
+  branch `consol/one-monotone-search` rewrites `47d51bf743` there, the truncated crossing of a great circle by a geodetic segment;
+  branch `consol/one-monotone-search` rewrites `e77dca8cb2` there, the search for the nearest double;
+  branch `consol/one-monotone-search` rewrites `f4191cc11f` there, the truncated crossing of a line;
+  branch `consol/one-monotone-search` rewrites `adbb2ebad1` there, the search of the coordinates of the enclosing circle;
+  branch `consol/one-monotone-search` rewrites `0d1e28541c` there, the halving of the walk of the geodetic within distance;
+  branch `consol/one-monotone-search` rewrites `735e372a2e` there, the side of the offset of a moving disc;
+  branch `consol/one-monotone-search` rewrites `f832d136a6` there, the side of the offset of a moving disc read in pairs of doubles;
+  branch `consol/one-monotone-search` rewrites `9bcd02758b` there, the proof of the nearest microsecond of a geodetic date;
+  branch `consol/one-monotone-search` rewrites `2f8f723099` there, the searches of the periods within a distance;
+  branch `consol/one-monotone-search` rewrites `f7cf0559d1` there, the search of the truncated crossing of a line;
+  branch `consol/one-monotone-search` rewrites `f3336c4d07` there, the note naming the proof of a geodetic date;
+  branch `consol/one-monotone-search` rewrites `b2c0122cf4` there, the note of the search for the nearest double;
+  branch `consol/one-monotone-search` rewrites `690ce7e169` there, the guards of the side of the distance of segment interiors;
+  branch `consol/one-monotone-search` rewrites `566bb7fe4c` there, the pair tier of the side of the distance of segment interiors.
 - **The conversion of a temporal network point to a temporal geometry point builds each point in
   the stack**, outside the plan, as the owner decided on 2026-11-07 ("approve the rewrite"):
   branch `perf/tnpoint-to-tgeompoint-points` rewrites `842c640e83` there, the
