@@ -113,7 +113,7 @@ $(function() {
 <li>area(polygon) = the area it encloses, its holes taken out</li>
 <li>area(curve polygon) = the same, read on its circular arcs (<a class="el" href="geo__funcs_8h_a35a982eb677e01c08cb44d789e17447c.html#a35a982eb677e01c08cb44d789e17447c" title="Return the area of a geometry, on its circular arcs.">meos_area</a>)</li>
 </ul>
-<p >Uses Euclidean 2D computation even if input is 3D. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Uses Euclidean 2D computation even if input is 3D. The area of a geometry of straight edges is the double nearest its exact value at every magnitude of its coordinates, a tie going to the even one (<a class="el" href="postgis__funcs_8c_aa7fd78050a131b9791359440e857ac6d.html#aa7fd78050a131b9791359440e857ac6d" title="Return the area of a geometry, the double nearest its exact value for a geometry of straight edges.">geom_area_walk</a>). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
   </table>

@@ -23,7 +23,7 @@ var searchData=
   ['inside_20',['INSIDE',['../tgeo__restrict_8c_acfa2640db44de30a53e9f638e1236571.html#acfa2640db44de30a53e9f638e1236571',1,'tgeo_restrict.c']]],
   ['inst_21',['inst',['../structtrip__record_a0b0ff98817920629e374cd5da94be3b0.html#a0b0ff98817920629e374cd5da94be3b0',1,'trip_record']]],
   ['instants_22',['instants',['../structTDwithinRun_a4535141e92e6ad481fbdf250ad080784.html#a4535141e92e6ad481fbdf250ad080784',1,'TDwithinRun']]],
-  ['insts_23',['insts',['../structtrip__t_a28c551fbec54cf47cc48f9f0ec7b82e8.html#a28c551fbec54cf47cc48f9f0ec7b82e8',1,'trip_t::insts()'],['../structRasterRun_a20c6d933a9a01970745abc35d99c8475.html#a20c6d933a9a01970745abc35d99c8475',1,'RasterRun::insts()']]],
+  ['insts_23',['insts',['../structRasterRun_a20c6d933a9a01970745abc35d99c8475.html#a20c6d933a9a01970745abc35d99c8475',1,'RasterRun::insts()'],['../structtrip__t_a28c551fbec54cf47cc48f9f0ec7b82e8.html#a28c551fbec54cf47cc48f9f0ec7b82e8',1,'trip_t::insts()']]],
   ['interp_24',['interp',['../structmeos__wkb__parse__state_ab7078221407e8512699d39fa61766a69.html#ab7078221407e8512699d39fa61766a69',1,'meos_wkb_parse_state']]],
   ['interpretation_25',['interpretation',['../structPCDimensionSpec_a2f9e23f82067b210c2ca7c01b29d999b.html#a2f9e23f82067b210c2ca7c01b29d999b',1,'PCDimensionSpec']]],
   ['interval_26',['interval',['../trgeo__distance_8txt_ad56403c621e1b204b44c035e01db2b1d.html#ad56403c621e1b204b44c035e01db2b1d',1,'trgeo_distance.txt']]],
@@ -34,12 +34,13 @@ var searchData=
   ['invert_31',['invert',['../structRasterArithArg_adf2c349d47ef93800e12a7b939460e37.html#adf2c349d47ef93800e12a7b939460e37',1,'RasterArithArg::invert()'],['../structLiftedFunctionInfo_af63eedf967d20fcf7557af1de580f1ba.html#af63eedf967d20fcf7557af1de580f1ba',1,'LiftedFunctionInfo::invert()']]],
   ['inverted_32',['inverted',['../structBufferSideAsk_a7ef607390d5a6394f0931009e6b9ef32.html#a7ef607390d5a6394f0931009e6b9ef32',1,'BufferSideAsk']]],
   ['is_33',['is',['../trgeo__distance_8txt_af053ff65b5890312933da01148b62f23.html#af053ff65b5890312933da01148b62f23',1,'trgeo_distance.txt']]],
-  ['is_5farc_34',['is_arc',['../structHullFeature_a3e0659efc9f26f4114113d3c9fc08bd2.html#a3e0659efc9f26f4114113d3c9fc08bd2',1,'HullFeature::is_arc()'],['../structHullBoundary_afdbb32d926c21378b7a03c369b3ba98f.html#afdbb32d926c21378b7a03c369b3ba98f',1,'HullBoundary::is_arc()']]],
+  ['is_5farc_34',['is_arc',['../structHullBoundary_afdbb32d926c21378b7a03c369b3ba98f.html#afdbb32d926c21378b7a03c369b3ba98f',1,'HullBoundary::is_arc()'],['../structHullFeature_a3e0659efc9f26f4114113d3c9fc08bd2.html#a3e0659efc9f26f4114113d3c9fc08bd2',1,'HullFeature::is_arc()']]],
   ['is_5femit_35',['is_emit',['../structSPNNEntry_ad8e934df0849ed99161ade65a7dec0ee.html#ad8e934df0849ed99161ade65a7dec0ee',1,'SPNNEntry']]],
   ['is_5fgeographic_36',['is_geographic',['../structGeoPoseFrame_a4b92708252081a1fcc7609e129aaeed4.html#a4b92708252081a1fcc7609e129aaeed4',1,'GeoPoseFrame']]],
   ['is_5fleaf_5fentry_37',['is_leaf_entry',['../structRTreeNNEntry_a4de3913b3ceb2c9ee8898e84e1db03dd.html#a4de3913b3ceb2c9ee8898e84e1db03dd',1,'RTreeNNEntry']]],
   ['is_5fsin_38',['is_sin',['../structTrigFactor_ae66ec8f06381c21dd619813049af374a.html#ae66ec8f06381c21dd619813049af374a',1,'TrigFactor']]],
   ['is_5fvalid_5fcell_39',['is_valid_cell',['../structDggsCellOps_ac9faeb2e965811eb12c134e002f21f46.html#ac9faeb2e965811eb12c134e002f21f46',1,'DggsCellOps']]],
-  ['it_40',['it',['../trgeo__distance_8txt_ad2f39721af58ebf9f129f11d8d6b4618.html#ad2f39721af58ebf9f129f11d8d6b4618',1,'trgeo_distance.txt']]],
-  ['iters_41',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
+  ['isum_40',['isum',['../structAreaSum_aa70defb31f6aad10980b6ad7b1e9ca32.html#aa70defb31f6aad10980b6ad7b1e9ca32',1,'AreaSum']]],
+  ['it_41',['it',['../trgeo__distance_8txt_ad2f39721af58ebf9f129f11d8d6b4618.html#ad2f39721af58ebf9f129f11d8d6b4618',1,'trgeo_distance.txt']]],
+  ['iters_42',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
 ];
