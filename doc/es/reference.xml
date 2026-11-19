@@ -3741,7 +3741,7 @@
 						<para><link linkend="pcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Devuelve una coordenada de un pcpoint, NULL si la dimensión está ausente del esquema</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Devuelve cualquier dimensión con nombre de un pcpoint, NULL si el nombre es desconocido para el esquema</para>
+						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Devuelve cualquier dimensión con nombre de un pcpoint</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial (heredado del esquema)</para>
