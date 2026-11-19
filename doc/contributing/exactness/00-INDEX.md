@@ -95,10 +95,10 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   of its decisions is an exact sign, CGAL finds no answer it certifies wrong (1 199 of 1 199
   natural areas certified), and it owes its speed (1.045 of GEOS called directly at distance 1);
   [Exact buffer](EXACT-BUFFER.md), where these steps stand.
-- **The area of a geometry is the double nearest its exact value**: `geom_area` raises "not
-  supported" where scaling the geometry into 2^-500 to 2^500 is not exact, such as coordinates
-  near the largest double beside coordinates the scaling by 2^-523 rounds. MobilityDB #3557
-  (ready for review) sums the rings of a geometry in one 128-bit integer on the unit of its box,
+- **The area of a geometry is the double nearest its exact value**: `geom_area` answers it at
+  every magnitude, an area beyond the largest double raising "value out of range" and a geometry
+  holding a circular arc keeping its measure in doubles. MobilityDB #3557 (merged as
+  `051f7e0920`) sums the rings of a geometry in one 128-bit integer on the unit of its box,
   one product a vertex on the coordinates themselves, four vertices a step, then in pairs of
   doubles with a bound on their rounding, placed among the doubles by `nearest_double_search`,
   then on `DyadicWide`: 3000 of 3000 rows answer the double nearest the exact area, as CGAL
@@ -109,5 +109,5 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   128 bits, about four instructions a vertex more, and no cheaper exact form exists on real
   coordinates, whose differences carry about 43 bits. The owner accepts that cost for the merge
   (2026-11-18, "then please explain all this in the body of the PR so we can merge it"), with no
-  hardware fused multiply-add. It is the one topic of MobilityDB #3352 left open.
+  hardware fused multiply-add. It closes the last open topic of MobilityDB #3352.
 - **Open pull requests** on 2026-11-03: this one and MobilityDB #3259.
