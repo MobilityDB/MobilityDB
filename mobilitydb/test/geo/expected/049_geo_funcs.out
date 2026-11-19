@@ -269,7 +269,8 @@ SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
  POLYGON EMPTY
 (1 row)
 
--- The two offsets of a line, closed by a cap at each end
+-- The two offsets of a line, closed by a cap at each end: a half disc about
+-- each end, nothing past it, or a square stretching the line by the distance
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
                                                                                    st_astext                                                                                    
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -277,15 +278,38 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
 (1 row)
 
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
-                       st_astext                        
---------------------------------------------------------
- CURVEPOLYGON(COMPOUNDCURVE((0 1,10 1,10 -1,0 -1,0 1)))
+                        st_astext                        
+---------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((0 -1,10 -1,10 1,0 1,0 -1)))
 (1 row)
 
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
-               st_astext                
-----------------------------------------
- CURVEPOLYGON(COMPOUNDCURVE((0 1,0 1)))
+                         st_astext                          
+------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((-1 -1,11 -1,11 1,-1 1,-1 -1)))
+(1 row)
+
+-- A line turning back on itself keeps the disc about its turn and one ring,
+-- whatever its cap
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,0 0.5)', 1, 'endcap=flat'), 6));
+                                                                                           st_astext                                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(10 -1,10.999688 -0.024977,10.049938 0.998752),(10.049938 0.998752,0.049938 1.498752,0.025 1,0 1,0 0.5,-0.049938 -0.498752,0 -0.501249,0 -1,10 -1)))
+(1 row)
+
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,0 0.5)', 1, 'endcap=square'), 6));
+                                                                                                 st_astext                                                                                                 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(10 -1,10.999688 -0.024977,10.049938 0.998752),(10.049938 0.998752,-0.948815 1.54869,-0.976249 1,-1 1,-1 0.524984,-1.04869 -0.448815,-1 -0.451249,-1 -1,10 -1)))
+(1 row)
+
+-- Past the end of the line under a flat cap, a point within the distance of
+-- the vertex before it lies in the buffer
+SELECT contains(buffer(geometry 'Linestring(10 10,3 5,3 6)', 1.5, 'endcap=flat'),
+  geometry 'Point(3.66 6.24)');
+ contains 
+----------
+ t
 (1 row)
 
 -- A line from far away to a unit square holds, within half the root of two, a

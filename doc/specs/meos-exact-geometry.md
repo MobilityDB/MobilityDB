@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.4.0 |
+| Version | v0.4.1 |
 | Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates, relationships, areas and buffers |
 | Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/src/geo/geo_buffer.c` and `meos/src/geo/geo_arrange.c` (the buffer and the arrangement it is read off), `meos/test/distance_point_test.c`, `meos/test/geo_test.c` and `mobilitydb/test/geo/sql/049_geo_funcs.sql` (the witnesses quoted below) |
 
@@ -433,7 +433,7 @@ arcs as arcs (a `CURVEPOLYGON`, or a `MULTISURFACE` of them).
 | Input | Distance | Style | Answer |
 |---|---|---|---|
 | polygon, multipolygon | positive | round joins | the region the offset curves wind around at least once |
-| line, multiline | positive | round joins and round caps | the same, each line walked out to its end and back |
+| line, multiline | positive | round joins, any cap | the same, each line walked out to its end and back under a round cap; under a flat or a square cap, the strips of its end segments and the buffer with round caps of the line between them |
 | polygon, multipolygon | negative | round joins | the region the offset curves of the complement wind around clockwise |
 
 Round joins and round caps are the default style.
@@ -456,6 +456,20 @@ whose smallest enclosing circle is no larger than `r` lies within the
 distance of its own ring and is covered whole, the radius of that circle
 compared with `r` exactly from the points that define it.
 
+**A flat or a square cap is read off strips.** A flat cap leaves out the half
+disc about an end, part of which the disc about the vertex before it may
+cover; a curve turning back across the end would take that part from the
+winding number too. The buffer is instead the union of three curves, each
+winding a positive number of times around every point it covers: the strip of
+each end segment, bounded by its two offsets and the chords across its ends,
+and the buffer with round caps of the line between them, whose caps are the
+discs of the joins at its second and its last but one vertices. A square cap
+stretches the strip by `r` past the free end; its corners lie past the points
+where the offsets touch the circle about the end by `r` along the segment,
+`Ck + r (d + side rot(d)) / |d|`, which the arrangement holds as exactly as the
+points where a tangent touches a circle. A closed line has no end and keeps
+its round walk whatever the cap.
+
 **The erosion is what the buffer of the complement leaves.** The exterior of
 every polygon is offset clockwise into it and every hole counterclockwise out
 of it; the unbounded part of the complement adds one to the winding number
@@ -471,8 +485,9 @@ no other path answers it exactly; the erosion of a polygon holding a ring that
 encloses no area is built on the older path.
 
 **The rings of a line's buffer carry a certificate.** The rings are written in
-doubles, and the written end of every offset segment must lie strictly on the
-side of the edge it offsets: where the distance falls below the rounding of
+doubles, and the written end of every offset segment, chord or corner of a
+strip must lie strictly on the side of the edge at that end that its exact
+point takes: where the distance falls below the rounding of
 the coordinates, an end rounds onto the edge or across it, and the buffer is
 declined rather than answered. The rings of a polygon's buffer are written
 with no such certificate.
@@ -486,6 +501,9 @@ with no such certificate.
 | the square of side 10 with the hole from 3.75 to 6.25, eroded by 2 | four surfaces; `(2.1 2.1)` in it, `(2.1 5)` not | the grown hole reaches 1.75 from the sides, past the contracted exterior at 2, and leaves its four corners, which lie `1.75 sqrt(2)` from the hole's corners |
 | the line from `(2^40, 2^40)` to the corners of a unit square, buffered by `sqrt(1/2)` | holds `(2^39, 2^39)`, not the point 1024 above it | the exact distances decide both, at coordinates near `1e12` |
 | the same line from `(2^60, 2^60)` | declined | the coordinates round by 256, more than the distance |
+| `LINESTRING(0 0,10 0)` buffered by 1 with a flat cap, and with a square cap | the rectangles from `(0 -1)` to `(10 1)` and from `(-1 -1)` to `(11 1)` | the strip of the one segment, stretched by 1 past both ends for the square cap |
+| `LINESTRING(0 0,10 0,0 0.5)` buffered by 1 with a flat cap, and with a square cap | one curve polygon each | the line turns back; the disc about the turn and the two strips unite in one ring |
+| `LINESTRING(10 10,3 5,3 6)` buffered by 1.5 with a flat cap, the point `(3.66 6.24)` past its end | in the buffer | the point lies within the distance of the vertex before the end |
 | a multipolygon of two polygons buffered by `316.42868675352696`, a point within the distance of the first | in the buffer | the answer is two curve polygons, and the point is located in the union of section 6.3 |
 
 ### 8.3 What CGAL measured
@@ -493,14 +511,16 @@ with no such certificate.
 A buffer is judged as the set it is (section 10): a point lies in it exactly
 where its distance to the geometry is at most the radius, and in an erosion
 exactly where it lies inside the geometry at least the radius from its
-boundary. Each query point stands clear of the boundary by a factor of two, at
-half and at twice its distance, so no verdict rests on a rounding.
+boundary. Unless its row says otherwise, each query point stands clear of the
+boundary by a factor of two, at half and at twice its distance, so no verdict
+rests on a rounding.
 
 | Buffers | Queries | CGAL agrees with |
 |---|---|---|
 | polygons with round joins | sharp shapes and 1313 points about natural areas | 3979820 of 3979820 and 1313 of 1313 |
 | polygons with round joins, points about multipolygons | 15402 points about 192 natural-area multipolygons | 15402 of 15402 |
 | lines with round joins and caps | 36960 straight queries; 336 lines with a first vertex from `2^20` to `2^60`; 1576 queries along vessel tracks | 36960 of 36960; 274 answered, 62 declined; 1530 answered, 11 declined, 35 past 60 s |
+| lines with round joins and round, flat or square caps | 1712 lines at two distances, a grid about each and points along and across each end at 0.999 and 1.001 of the distance | 1021872 of 1021872, with no decline |
 | erosions | 62800 points about 400 eroded squares and squares with holes; 12366 points about 192 natural areas | 62800 of 62800 and 12366 of 12366, with no decline |
 
 Every query a line's certificate declines has a distance below the rounding of
@@ -548,7 +568,7 @@ chords miss the closed form by up to 2.6%; measured by `area`, none of the
   (see [Finite Values](meos-finite-values.md)); the exact answer is defined
   for finite doubles.
 - **Buffers in other styles and of other inputs.** Bevel and mitre joins,
-  square and flat caps, a geometry holding circular arcs, a point, and a
+  a geometry holding circular arcs, a point, and a
   collection of mixed dimension are buffered on the older path, as is a
   polygon whose arrangement leaves a question open (section 8.1); their
   answers are outside this document's guarantee.

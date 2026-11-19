@@ -11480,8 +11480,10 @@ tower_point_xy(DyadicCtx *ctx, double px, double py, double ox, double oy,
  * E = |d|^2 - (r1 - r2)^2 > 0, the tangent on the side @p side of C1 -> C2,
  * 1 its left, touches circle k at Ck + rk u with the unit normal
  * u = ((r1 - r2) d + side sqrt(E) rot(d)) / |d|^2, rot(x, y) = (-y, x):
- * the points #trapezoid_make constructs by angles, Ta for side 1. The tower
- * has the one root sqrt(E)
+ * the points #trapezoid_make constructs by angles, Ta for side 1. A point
+ * past it along the line of the centres (#TangentPoint, member along), of
+ * two circles of one radius, adds along rk sqrt(E) d, sqrt(E) being |d|.
+ * The tower has the one root sqrt(E)
  */
 static void
 tower_point_tangent(DyadicCtx *ctx, const TangentPoint *tp, double ox,
@@ -11504,6 +11506,13 @@ tower_point_tangent(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   out->y.c[0] = dx_add(ctx, dx_mul(ctx,
     dx_diff(ctx, tp->k ? tp->c2y : tp->c1y, oy), d2), dx_mul(ctx, rkdr, dy));
   out->y.c[1] = dx_mul(ctx, srk, dx);
+  if (tp->along)
+  {
+    assert(tp->r1 == tp->r2);
+    DyadicX ark = dx_scale(ctx, rk, (double) tp->along);
+    out->x.c[1] = dx_add(ctx, out->x.c[1], dx_mul(ctx, ark, dx));
+    out->y.c[1] = dx_add(ctx, out->y.c[1], dx_mul(ctx, ark, dy));
+  }
   tower_set(ctx, d2, 1, out->w.c);
   return;
 }
@@ -11726,8 +11735,10 @@ tangent_point_round(const TangentPoint *tp, double *x, double *y)
 {
   double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
   double d2 = dx * dx + dy * dy, dr = tp->r1 - tp->r2;
-  double se = tp->side * sqrt(fmax(d2 - dr * dr, 0.0));
-  double ux = (dr * dx - se * dy) / d2, uy = (dr * dy + se * dx) / d2;
+  double e = sqrt(fmax(d2 - dr * dr, 0.0));
+  double se = tp->side * e, ae = tp->along * e;
+  double ux = (dr * dx - se * dy + ae * dx) / d2;
+  double uy = (dr * dy + se * dx + ae * dy) / d2;
   double rk = tp->k ? tp->r2 : tp->r1;
   *x = (tp->k ? tp->c2x : tp->c1x) + rk * ux;
   *y = (tp->k ? tp->c2y : tp->c1y) + rk * uy;
@@ -13133,10 +13144,11 @@ meet_point_bounds_pred(DyadicCtx *ctx, const void *arg)
 }
 
 /* A point where the common tangent of two circles of one radius touches one
- * of them, Ck + side r rot(d) / |d| as #tangent_point_round reads it, and a
- * box holding it exactly: each operation rounds to nearest, so the offset is
- * off by less than 12 units of the machine epsilon of its size and the sum
- * by half a unit of its own, a bound taken four times over. False for two
+ * of them, Ck + r (along d + side rot(d)) / |d| as #tangent_point_round reads
+ * it, and a box holding it exactly: each operation rounds to nearest, so each
+ * term of the offset is off by less than 12 units of the machine epsilon of
+ * its size and the sum by half a unit of its own, a bound taken four times
+ * over. False for two
  * radii, or where the squares leave the range the bound holds in, which
  * #meet_point_bounds_pred places in the tower instead */
 static bool
@@ -13149,15 +13161,16 @@ tangent_point_bounds(const TangentPoint *tp, double *x, double *y,
   double d2 = dx * dx + dy * dy;
   if (! (d2 > 0x1p-900 && d2 < 0x1p900))
     return false;
-  double f = tp->side * tp->r1 / sqrt(d2);
-  double ox = - f * dy, oy = f * dx;
+  double l = tp->r1 / sqrt(d2);
+  double f = tp->side * l, g = tp->along * l;
+  double ox = g * dx - f * dy, oy = f * dx + g * dy;
   double cx = tp->k ? tp->c2x : tp->c1x, cy = tp->k ? tp->c2y : tp->c1y;
   *x = cx + ox;
   *y = cy + oy;
-  double ex = 48.0 * DBL_EPSILON * fabs(ox) + 2.0 * DBL_EPSILON * fabs(*x) +
-    4.0 * DBL_MIN;
-  double ey = 48.0 * DBL_EPSILON * fabs(oy) + 2.0 * DBL_EPSILON * fabs(*y) +
-    4.0 * DBL_MIN;
+  double ex = 48.0 * DBL_EPSILON * (fabs(g * dx) + fabs(f * dy)) +
+    2.0 * DBL_EPSILON * fabs(*x) + 4.0 * DBL_MIN;
+  double ey = 48.0 * DBL_EPSILON * (fabs(f * dx) + fabs(g * dy)) +
+    2.0 * DBL_EPSILON * fabs(*y) + 4.0 * DBL_MIN;
   if (! isfinite(*x) || ! isfinite(*y) || ! isfinite(ex) || ! isfinite(ey))
     return false;
   box[0] = *x - ex; box[1] = *x + ex;
@@ -13170,8 +13183,8 @@ tangent_point_bounds(const TangentPoint *tp, double *x, double *y,
  * two circles of one radius, given the point as #tangent_point_bounds
  * rounds it, as the ends of a segment between tangent points carry it
  * (#edges_add_tangent_segment): the bound of #tangent_point_bounds with the
- * offset, whose length the rounding keeps below twice the radius, taken at
- * twice the radius
+ * offset, whose length the rounding keeps below twice the radius, the sqrt(2)
+ * radii of a point past the circle included, taken at twice the radius
  * @return False where #tangent_point_bounds does not read the point off the
  * doubles
  */
@@ -13206,7 +13219,8 @@ static inline bool
 towerseg_offset(const Edge *e, int *s)
 {
   const TangentPoint *a = e->from, *b = e->to;
-  if (! a || ! b || a->r1 != a->r2 || a->side != b->side || a->k == b->k ||
+  if (! a || ! b || a->along || b->along || a->r1 != a->r2 ||
+      a->side != b->side || a->k == b->k ||
       a->c1x != b->c1x || a->c1y != b->c1y || a->c2x != b->c2x ||
       a->c2y != b->c2y || a->r1 != b->r1)
     return false;
@@ -13871,7 +13885,8 @@ edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
    * its centres plus the one offset f rot(d), f = side r / |d|
    * (#tangent_point_bounds): read once, the same doubles, the edge written
    * in its place in the array */
-  if (from->r1 == from->r2 && to->r1 == to->r2 && from->r1 == to->r1 &&
+  if (! from->along && ! to->along && from->r1 == from->r2 &&
+      to->r1 == to->r2 && from->r1 == to->r1 &&
       from->side == to->side && from->k != to->k &&
       from->c1x == to->c1x && from->c1y == to->c1y &&
       from->c2x == to->c2x && from->c2y == to->c2y)
