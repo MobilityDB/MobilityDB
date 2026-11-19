@@ -35,6 +35,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG33 | A temporal rigid geometry in step interpolation does not read back from what its writers write: `trgeometry_out`, `trgeometry_as_text` and `trgeometry_as_ewkt` write `POLYGON((0 0,1 0,1 1,0 1,0 0));Interp=Step;[...]`, the interpolation of the poses after the reference geometry, where `trgeometry_parse` reads the SRID and the interpolation before it, so `trgeometry_in` answers `parse error - invalid geometry`, and in PostgreSQL the output that `pg_dump` writes does not restore such a value. Over master `20f8c3b597`, 0 of 2200 step values read back from each writer, and 2200 of 4400 with an SRID | MERGED as #3601 (`5052874f80`, branch `fix/trgeometry-step-text-reads-back`): the writers write `Interp=Step;` and the SRID, as `SRID=3812,Interp=Step;`, before the geometry; 2200 of 2200 in each interpolation and 4400 of 4400 with an SRID read back, the 18000 texts of the linear and discrete values unchanged |
 | TG34 | The merged `traversedArea` of a sequence set sweeps across the gaps between its sequences, in 2D and with Z: a unit square translating from (0 0) to (1 0) and, after a gap, from (5 0) to (6 0) answers x in [0, 7], where the body is never between 2 and 5 | merged as #3619 (`7eb4ef3446`): the placements record where a sequence starts and every sweep reads only pairs within one sequence; CGAL agrees with the branch on the 400 rows of `ground_corpus.py --sets` (two or three translating sequences, in 2D or with Z) and with TG5 on 198 |
 | TG35 | The box of a value in linear motion that does not turn is the box of its positions grown by the radius of the geometry, as if it turned: `stbox(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]')` answers `((-1.414213562373095,-1.414213562373095),(11.414213562373096,1.414213562373095))`, 3.3 times the box `((0,0),(11,1))` of its placements, so `&&` and the indexes keep values whose geometry never meets the query (one row of the `temp && stbox` count of 156_trgeo_topops) and the manual's `splitNStboxes` example answers otherwise than it states | #3757 merged (`f55a9b7c06`): the box of a linear value is the union of the boxes of its segments, a segment whose poses hold one orientation boxed by its end placements, one that turns by the rotating box; over 300 random sequences of 2 to 7 instants the segment boxes of a value of one orientation hold 1.0000 times the area its sampled geometry covers where they held 3.7 to 4.3, a value that turns keeps its boxes, and no box misses its geometry at any of the 17 instants read in each |
+| TG36 | A body in linear motion that turns and passes a geometry within about 1e-15 is read as meeting it: the root finder of the distance, `distfun_roots` (`trgeo_distsolve.c`), takes a value of at most `ftol`, `1e-14` times the square of the scale of the bodies, as zero, so `eIntersects`, `tIntersects` and the nearest approach distance read a near pass as a contact. On 12 unit squares turning past a point at a least distance of 7.8e-16 to 9.2e-16 (50 digits, `graze2d.py`), `eIntersects` answers true and the distance 0 on 8, and the 4 others answer a distance of 1.1e-16 or 2.2e-16; a square that translates past a point by 1 to 8 units in the last place is answered exactly on 6 of 6. The bounded doubles of master (`BoundedDouble`, `bd_sincos_rad`) prove none of the 12 gaps, their bound on a placed coordinate being 0.95e-15 to 1.64e-15, so a decision needs the sine, the cosine and the placement past the double, in the shared exact arithmetic of MEOS | open, first, by the owner's ruling (2026-11-19, "bugs are high priority"); the witness is 5 rows of 173 |
 
 ## Defects
 
@@ -58,7 +59,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG16 | `transform`, `transformPipeline` | merged as #3541 (`67771c197f`), by decision 3 |
 | TG17 | `asMFJSON`, `round` over a surface | merged as #3606 (`c5174b8af1`) and #3611 (`688f31947b`), by decision 7: `round` rounds a surface face by face and the reference geometry of a `trgeometry` as its poses; `asMFJSON` writes a surface as the `MultiPolygon` of its faces, which `trgeometryFromMFJSON` reads back as the surface |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1. #3819 merged (`843bec5d09`): `atGeometry` and `minusGeometry` of a temporal point or a temporal rigid geometry read a geometry with Z on the dimensions the value has; a value without Z reads it in 2D, a rigid value with Z reads a geometry without Z by the footprint of its body, and a value with Z in step or discrete interpolation keeps the instants at which its placed point or body meets the geometry by the exact 3D intersects (`geom_intersects3d_intl`), a closed body read as its solid; an empty geometry, which no value meets, answers the empty restriction before any refusal; CGAL agrees on 815 of 815 instants of 200 rigid values (`cgal_solid_inside`) and 791 of 791 of 200 points (`cgal_on_triangle`) of `rest_corpus.py`. Left: a value with Z in linear interpolation, and a temporal geometry with Z other than a point, both refused |
-| TG19 | The distance of a value in 3D | open, decision 4 |
+| TG19 | The distance of a value in 3D | open, decision 4; its linear case needs the exact grazes of TG36 |
 | TG25 | A point at the mean of the vertices of a polygon reads as away from it in 3D, in `eIntersects` and the distance, since `project_point_on_plane` of the vendored liblwgeom returns without setting its output; every temporal type measuring through it, and PostGIS itself | merged as #3450 |
 | TG24 | `force2D(trgeometry)` and `force2D(tpose)`, in MEOS `trgeometry_force2d` and `tpose_force2d`, in place of `EgoBody2D` and `ObjectTrip2D` of the companion, refusing a body with real height; decided by the owner | merged as #3448; the book and its companion read it |
 
@@ -90,10 +91,21 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
    position, and keeps the reference geometry. The body is placed in the plane of its poses, so a
    geographic target is refused. TG16. A circular buffer, planar for the same reason, refuses a
    geographic target too (#3542), and the build requires PROJ 7.1 for `proj_degree_output`.
-4. **The distance in 3D.** Bodies gain faces, and a quaternion replaces the one angle the solver of
-   `trgeo_distance.txt` is built on, so this is a new algorithm and a change to Chapter 4.
-   **The recommendation** is to write its algorithm as a note of this plan before any code, and to
-   state the limit in the manual meanwhile.
+4. **The distance in 3D: one walk for every interpolation, the pose turned by SLERP at every
+   angle.** Decided by the owner (2026-11-19). Bodies gain faces, and a quaternion replaces the one
+   angle the solver of `trgeo_distance.txt` is built on, so this is a new algorithm and a change to
+   Chapter 4, written as a note of this plan before any code. The 2D walk answers step and linear
+   interpolation alike, a step segment being one whose pose does not change, so the 3D walk does
+   too, in one pull request. `posesegm_interpolate` turns a 3D pose by SLERP at every angle, where
+   master blends the quaternions linearly below a turn of about 3.6 degrees, so that a vertex moves
+   as `a cos(wt) + b sin(wt) + c t + d` and every function of the walk is a sum of the terms the
+   solver of `trgeo_distsolve.c` isolates; its change of the interpolated orientations is measured
+   and stated in its own commit. Measured by the prototype (`~/cpwork/tg19`): the crossing of a
+   vertex and a face, the side of an edge and the meeting of two edges are sums of 1 to 4 terms
+   of degree 1, their squares 12 terms of degree 2, and the comparison of the distance of two edges
+   with another distance 40 terms where both bodies turn; the solver dates 150 of 150 crossings
+   through a face within 2.4e-6 microseconds of their exact instant, and reads 33 of 50 passes
+   within about 1e-15 of a face as two crossings, which TG36 decides.
 5. **The body a closed polyhedral surface bounds: the solid.** Decided by the owner. A reference
    geometry that is a closed polyhedral surface is the solid it encloses, so a point inside
    it meets the body in the ever, temporal and distance relationships alike, as PostGIS reads a
