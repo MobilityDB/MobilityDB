@@ -888,17 +888,47 @@ pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
 }
 
 /*****************************************************************************
- * Comparison
+ * Comparison and sort key, which #pointcloud_bytes_cmp and
+ * #pointcloud_sortkey_put state for a point and a patch alike
  *****************************************************************************/
 
 /**
+ * @brief Return the number of bytes of the sort key of a pcpatch
+ * @param[in] pa Patch
+ */
+size_t
+pcpatch_sortkey_size(const Pcpatch *pa)
+{
+  assert(pa);
+  return pointcloud_sortkey_size((const uint8_t *) pa + PC_BYTES_OFFSET,
+    pcpatch_meaningful_size(pa) - PC_BYTES_OFFSET);
+}
+
+/**
+ * @brief Write the sort key of a pcpatch, which #pointcloud_sortkey_put
+ * states
+ * @param[in] pa Patch
+ * @param[out] out Buffer of #pcpatch_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+pcpatch_sortkey_put(const Pcpatch *pa, uint8_t *out)
+{
+  assert(pa); assert(out);
+  return pointcloud_sortkey_put(pcpatch_get_pcid(pa),
+    (const uint8_t *) pa + PC_BYTES_OFFSET,
+    pcpatch_meaningful_size(pa) - PC_BYTES_OFFSET, out);
+}
+
+/**
  * @ingroup meos_pointcloud_base_comp
- * @brief Compare two pcpatch values byte-wise
+ * @brief Compare two pcpatch values, first by their pcid as a number, then by
+ * the bytes stored after it
  * @return -1 / 0 / 1
  * @errval INT_MAX
- * @note Compares only the meaningful-prefix bytes — pgpointcloud's
- *   struct-tail padding is skipped so two pcpatches that disagree only
- *   on those padding bytes compare equal.
+ * @note Reads only the meaningful bytes, pgPointCloud's struct-tail padding
+ * being skipped, so that two patches that differ only on those bytes compare
+ * equal
  * @csqlfn #Pcpatch_cmp()
  */
 int
@@ -906,13 +936,11 @@ pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa1, INT_MAX); VALIDATE_NOT_NULL(pa2, INT_MAX);
-  size_t sz1 = pcpatch_meaningful_size(pa1);
-  size_t sz2 = pcpatch_meaningful_size(pa2);
-  size_t minsz = (sz1 < sz2) ? sz1 : sz2;
-  int c = memcmp(pa1, pa2, minsz);
-  if (c != 0) return (c < 0) ? -1 : 1;
-  if (sz1 == sz2) return 0;
-  return (sz1 < sz2) ? -1 : 1;
+  return pointcloud_bytes_cmp(pcpatch_get_pcid(pa1),
+    (const uint8_t *) pa1 + PC_BYTES_OFFSET,
+    pcpatch_meaningful_size(pa1) - PC_BYTES_OFFSET, pcpatch_get_pcid(pa2),
+    (const uint8_t *) pa2 + PC_BYTES_OFFSET,
+    pcpatch_meaningful_size(pa2) - PC_BYTES_OFFSET);
 }
 
 /**
