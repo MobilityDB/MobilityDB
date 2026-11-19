@@ -143,6 +143,12 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   width or height outside [1, 65535] before narrowing it to the tile's 16-bit field, MERGED as
   MobilityDB #3821 (`0d5a079d63`): of 121 WKB stating every pair of 11 dimensions, it refuses all
   112 outside the range, 40 of which the previous reader answered as another tile.
+  Every integer argument of an external function (`scan_counts.py --all-ints`, 342 on master
+  `051f7e0920`) is read by class; the H3 resolutions and vertex numbers reach libh3, whose
+  failure MEOS reports as "h3 library error". `tools/codegen/h3pg_import/extract.py` writes
+  `h3_generated.c` and `h3_generated.h` as committed, and `extract.py --check` runs in
+  check-code.yml, OPEN as MobilityDB #3833 (`90befdf17a`). Future: the error describing the
+  libh3 code as h3-pg does, branch `meos/h3-errors-described`, based on #3833.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
