@@ -780,6 +780,12 @@ datum_sortkey_type(MeosType type)
   if (type == T_POSE || type == T_POSECHAIN)
     return true;
 #endif
+#if POINTCLOUD
+  /* A point-cloud point and patch have a key whose length depends on the
+   * value */
+  if (type == T_PCPOINT || type == T_PCPATCH)
+    return true;
+#endif
   return datum_sortkey_size(type) > 0 || type == T_TEXT;
 }
 
@@ -792,7 +798,9 @@ datum_sortkey_type(MeosType type)
  * key of a circular buffer and of a network point have a fixed size, which
  * #cbuffer_sortkey_size and #npoint_sortkey_size give, and the key of a pose
  * and of a pose chain the length #pose_sortkey_size and
- * #posechain_sortkey_size give, which depends on the value.
+ * #posechain_sortkey_size give, which depends on the value, as the key of a
+ * point-cloud point and patch the length #pcpoint_sortkey_size and
+ * #pcpatch_sortkey_size give.
  * @param[in] d Value
  * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
  * or geography type when the value is a point
@@ -825,6 +833,12 @@ datum_sortkey_len(Datum d, MeosType type)
       return pose_sortkey_size(DatumGetPoseP(d));
     case T_POSECHAIN:
       return posechain_sortkey_size(DatumGetPoseChainP(d));
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_sortkey_size(DatumGetPcpointP(d));
+    case T_PCPATCH:
+      return pcpatch_sortkey_size(DatumGetPcpatchP(d));
 #endif
     case T_BOOL:
     case T_INT4:
@@ -885,7 +899,9 @@ sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
  * #geopoint_sortkey_put, a circular buffer its SRID, centre and radius
  * through #cbuffer_sortkey_put, a network point its route and position
  * through #npoint_sortkey_put, and a pose and a pose chain their flags, SRID
- * and values through #pose_sortkey_put and #posechain_sortkey_put.
+ * and values through #pose_sortkey_put and #posechain_sortkey_put, and a
+ * point-cloud point and patch their pcid and stored bytes through
+ * #pcpoint_sortkey_put and #pcpatch_sortkey_put.
  * @param[in] d Value
  * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
  * or geography type when the value is a point
@@ -996,6 +1012,14 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
       return;
     case T_POSECHAIN:
       posechain_sortkey_put(DatumGetPoseChainP(d), out);
+      return;
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      pcpoint_sortkey_put(DatumGetPcpointP(d), out);
+      return;
+    case T_PCPATCH:
+      pcpatch_sortkey_put(DatumGetPcpatchP(d), out);
       return;
 #endif
     default: /* Error! */
