@@ -110,8 +110,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the sort key of a point cloud box. </p>
-<p >The key is the schema id, written as an integer, followed by the sort key of the spatiotemporal box the point cloud box extends, as <a class="el" href="group__meos__internal__geo__box__comp_gac8a624313109b6935d729c91f7dc3a2d.html#gac8a624313109b6935d729c91f7dc3a2d" title="Return the sort key of a spatiotemporal box.">stbox_sortkey_intl</a> writes it, so that comparing two keys byte by byte as unsigned values orders the boxes as <a class="el" href="group__meos__pointcloud__box__comp_ga9c17e573e3088dad2d85ceca78a5fbd7.html#ga9c17e573e3088dad2d85ceca78a5fbd7" title="Total-order comparator for TPCBox.">tpcbox_cmp</a> does and two boxes have the same key when <a class="el" href="group__meos__pointcloud__box__comp_ga8bfb60fd5f317f79bed2c0d566ac6a9c.html#ga8bfb60fd5f317f79bed2c0d566ac6a9c" title="Return true if two TPCBox values are strictly equal @csqlfn Tpcbox_eq()">tpcbox_eq</a> holds </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the sort key of a point cloud box, which <a class="el" href="meos_2src_2pointcloud_2tpcbox_8c_a5e226424260e4e9dbf2b69a786ae7ad7.html#a5e226424260e4e9dbf2b69a786ae7ad7" title="Write the sort key of a point cloud box.">tpcbox_sortkey_put</a> states. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Point cloud box </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">size</td><td>Number of bytes of the key </td></tr>
