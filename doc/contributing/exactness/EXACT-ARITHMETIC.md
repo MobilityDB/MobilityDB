@@ -1001,6 +1001,32 @@ owner's ruling of 2026-11-19 ("bugs are high priority"), since master answers 8 
 its witness is 5 rows of `173_trgeo_distance_walk` and the 18 passes of `graze2d.py`, judged at 50
 digits.
 
+### EA12. One search for every monotone sign
+
+The engine finds two kinds of answer among ordered keys by a side that changes once: the double
+nearest an exact value among the bit patterns of the doubles, which EA6 gives one search, and the
+microsecond of a crossing among the microseconds of a period. On master `1f59b32c28` the gallop and
+halving are written ten times: `nearest_double_search` and the walks of
+`point_motion_point_offset_exact`, `segment_interior_distance` and `mec_nearest` for the doubles,
+and `grid_sign_last`, `grid_sign_first`, `linear_cross_offset`, `dggs_geodetic_edge_offset`, the
+walk of `geog_dwithin_grid_walk` and `floatsegm_crossing_search` for the microseconds, and the proof
+of a nearest microsecond from an offset and its bound twice, in `floatsegm_offset_filter` and
+`geogpointsegm_angle_date`. EA12 keeps one: `monotone_search` in `geo_dyadic.h`, the gallop of
+`nearest_double_search` over any range of keys with its side answering 1, 0 or 2, and
+`monotone_halve`, its halving, which a search with a bracket and no candidate reads alone;
+`nearest_double_search` is `monotone_search` over the bit patterns, and every other search reads one
+of them with a side of its own. `offset_nearest_bounded` in `tsequence.h` is the one proof of a
+nearest microsecond, which the float crossings and the geodetic dates read.
+
+MobilityDB #3848, branch `consol/one-monotone-search`. Measured: a measurement build compiles each
+rewritten function twice, as master states it and as EA12 states it, and answers both on every call,
+stopping at any difference of result, output argument or decline (claude-kits
+`oracle-kit/home/cpwork/one-search`, `make_diff_build.py`). The 379 tests of the SQL suite, the 7997
+pairs of the geography mirror corpus, 120000 crossings of two float segments at a tie and near a
+bound over the scales 2^-600 to 2^470, and 20000 point sets on and off circles through Pythagorean
+triples made 42.6 million calls, every one alike, and the 379 outputs of the SQL suite are those
+committed.
+
 ## 8. Decisions asked of the committers
 
 1. The one ladder: the expression ladder with each question's own first tier ahead of it, at
