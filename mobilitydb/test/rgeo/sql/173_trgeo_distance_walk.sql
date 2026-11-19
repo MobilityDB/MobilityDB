@@ -361,3 +361,17 @@ SELECT id, eIntersects(trg, pt), nearestApproachDistance(trg, pt) > 0
 FROM graze ORDER BY id;
 
 -------------------------------------------------------------------------------
+
+-- A body that turns by less than 1e-6 radians turns in the walk as the
+-- database places it: at the middle of the segment the square, 1000 units
+-- from its rotation center, has turned by 2.5e-7, which raises its top edge
+-- by 2.5e-4 to meet the point, and the temporal distance there is the
+-- distance of the body placed by valueAtTimestamp, 0.
+WITH small(trg, pt, t) AS (VALUES
+  (trgeometry 'Polygon((999 -1,1001 -1,1001 1,999 1,999 -1));[Pose(Point(0 0),0)@2001-01-01 00:00:00+00, Pose(Point(0 0),5e-7)@2001-01-01 01:00:00+00]',
+    geometry 'Point(1000 1.0001)', timestamptz '2001-01-01 00:30:00+00'))
+SELECT valueAtTimestamp(tDistance(trg, pt), t),
+  ST_Distance(valueAtTimestamp(trg, t), pt)
+FROM small;
+
+-------------------------------------------------------------------------------
