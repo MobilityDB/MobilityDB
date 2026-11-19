@@ -21230,6 +21230,52 @@ relate_segments_intersect(const Edge *a, const Edge *b)
 }
 
 /**
+ * @brief Classify the point where a straight linear edge crosses a straight
+ * boundary edge with respect to the complete linear geometry
+ * @details The point is the one the two input segments determine
+ * (#relate_segments_intersect), in general no pair of doubles, so it is not
+ * located by a rounded construction of it. It lies on the linear geometry, on
+ * @p line, and is in its boundary where an odd number of the endpoints
+ * #relate_point_on_linear_boundary counts are that point. The two segments
+ * meet at that one point, so an endpoint is that point exactly where it lies
+ * on both input segments, a question on input vertices
+ * (#point_on_segment_exact)
+ * @param[in] line,boundary Edges whose input segments cross at one point
+ * @param[in] edges,nedges Edges of the linear geometry
+ * @return 0 for the interior, 1 for the boundary, as #relate_point_in_linear
+ */
+static int
+relate_crossing_in_linear(const Edge *line, const Edge *boundary,
+  Edge **edges, int nedges)
+{
+  Edge la, lb;
+  relate_input_segment(line->cut ? line->sx : line->x1,
+    line->cut ? line->sy : line->y1, line->cut ? line->ex : line->x2,
+    line->cut ? line->ey : line->y2, &la);
+  relate_input_segment(boundary->cut ? boundary->sx : boundary->x1,
+    boundary->cut ? boundary->sy : boundary->y1,
+    boundary->cut ? boundary->ex : boundary->x2,
+    boundary->cut ? boundary->ey : boundary->y2, &lb);
+  int count = 0;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->etype != EDGE_LINESEG && e->etype != EDGE_LINEARC)
+      continue;
+    if (! relate_edge_nonempty(e))
+      continue;
+    for (int k = 0; k < 2; k++)
+    {
+      double x = k == 0 ? e->x1 : e->x2, y = k == 0 ? e->y1 : e->y2;
+      if (point_on_segment_exact(x, y, la.x1, la.y1, la.x2, la.y2) &&
+          point_on_segment_exact(x, y, lb.x1, lb.y1, lb.x2, lb.y2))
+        count++;
+    }
+  }
+  return count & 1;
+}
+
+/**
  * @brief Process the intersection between one linear edge and one polygon
  * boundary edge
  * @details Updates the DE-9IM cells corresponding to the intersection between
@@ -21258,12 +21304,9 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
     }
 
     /* Point intersection */
-    double x = line->x1 + r.t0 * line->dx;
-    double y = line->y1 + r.t0 * line->dy;
-    int lloc = relate_point_in_linear(x, y, all_lines, nlines, false);
-    if (lloc == 0)
+    if (relate_crossing_in_linear(line, boundary, all_lines, nlines) == 0)
       de9im_add(&m->ib, 0);
-    else if (lloc == 1)
+    else
       m->bb = 0;
     relate_add_parameter(r.t0, params, nparams, maxparams);
     return;

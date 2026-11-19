@@ -91,22 +91,24 @@ that size misses by, with no absolute term; `coordinate_tolerance` adds
 | Band | Where | The constructed point it judges |
 |---|---|---|
 | `coordinate_rounding` | the lift of the Z and M of an overlay's answer (`meos_lift_ordinates`, `lift_point_read`, `arc_ordinates_at`); the relate engine: two constructed points read as one (`relate_same_coordinate`) and a constructed point read on a boundary within the band each edge carries (`edge_set_tolerance`, `relate_point_on_boundary_scan`) | a vertex the overlay constructs, read on a vertex, a segment or an arc of an input; a point the relate engine constructs |
-| `coordinate_tolerance` | the buffer (`buffer_join_is_point`, `buffer_piece_contains_point`, `buffer_add_arc`, `buffer_ring_rebuild_at_nodes`); the ordinates an overlay's vertex takes from its inputs once an arc gave the first (`lift_point_take`); a constructed point read on a segment of the relate engine (`point_on_segment` in `relate_point_in_linear` and `relate_linear_area`) | a corner, a join, a piece end or the midpoint of a piece the buffer computes; a vertex an overlay constructs, read along the angle of an arc; a point the relate engine constructs |
+| `coordinate_tolerance` | the buffer (`buffer_join_is_point`, `buffer_piece_contains_point`, `buffer_add_arc`, `buffer_ring_rebuild_at_nodes`); the ordinates an overlay's vertex takes from its inputs once an arc gave the first (`lift_point_take`); a constructed point read on a segment of the relate engine where an arc meets a segment or at the middle of a piece of a boundary (`point_on_segment` in `relate_point_in_linear` and `relate_linear_area`) | a corner, a join, a piece end or the midpoint of a piece the buffer computes; a vertex an overlay constructs, read along the angle of an arc; a point the relate engine constructs |
 | `coordinate_tolerance`, as a filter | the candidates of the buffer's node index (`buffer_node_index_cand`); the edges a disc can reach (`tcbuffer_disc_boundary_sign`); two extents or two members of the relate engine apart (`relate_extents_apart`, `relate_members_apart_within`); the segments of two areal boundaries an index admits (`geom_areal_touching_stretches`) | none: the band only admits candidates, and an exact test decides each, so a wider band costs time and never an answer |
 | `tnpoint_meeting_band` | the ever and always overlaps of two temporal network points (`eaoverlaps_tnpoint_tnpoint`) | the positions of the two values at one instant, each within the bound of construction of its route, the band being the sum of the two bounds, with no absolute term |
 
 The band is a distance in the units of the coordinates. It decides whether two
-constructed points are one point, never a question about the input, which
-the engine decides exactly. The cast of a geometry to a network point decides
+constructed points are one point, never a question about the input, which the
+engine decides exactly. The cast of a geometry to a network point decides
 exactly whether a segment of the route meets the box of the bound of the
 point's construction (`segment_meets_point_box`), and the meeting of two
 temporal geography points is decided where the ends of their segments prove
-it; neither reads a band. Nor does the sewing of the lines a merge of
-temporal geometries unites, whose ends are input vertices and are one point
-where their coordinates are equal (`sew_same_point`), nor the normalization
-of a sequence: whether three instants are collinear is a question about the
-input, decided exactly (`float_collinear`, and `geopoint_collinear`,
-`pose_collinear` and `cbuffer_collinear` on it).
+it; neither reads a band. Nor does the sewing of the lines a merge of temporal
+geometries unites, whose ends are input vertices and are one point where their
+coordinates are equal (`sew_same_point`), nor whether the crossing of two
+straight edges of the relate engine is in the boundary of a line, decided on
+the input vertices that could be that crossing (`relate_crossing_in_linear`),
+nor the normalization of a sequence: whether three instants are collinear is a
+question about the input, decided exactly (`float_collinear`, and
+`geopoint_collinear`, `pose_collinear` and `cbuffer_collinear` on it).
 
 The absolute term of `coordinate_tolerance` is not the rounding of a
 construction: below a largest coordinate of about `1.1e3`, where
