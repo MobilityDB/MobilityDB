@@ -467,6 +467,10 @@ typedef struct
   double certd;           /**< The margin D, 0 where the certificate is off */
   uint32_t *pfirst;       /**< First piece of each edge, one past the last */
   bool *ekept;            /**< Whether each edge keeps a piece */
+  int sense;              /**< The sign of the winding number of the region,
+                               1 or -1 where the caller fixes it, 0 where the
+                               side of the outermost piece away from the
+                               outside reads it */
 } Arr;
 
 /* Whether stretches i and j lie on one edge or on edges following each
@@ -5408,8 +5412,10 @@ arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
       a->ekept[p->edge] = true;
   }
   /* The outermost piece bounds the region, unless it is linework, which
-   * bounds nothing (#arr_weight) */
-  if (outer_piece == UINT32_MAX || (! a->pieces[outer_piece].result &&
+   * bounds nothing (#arr_weight), or the caller fixes the sense of the
+   * region, which then need not reach the outermost piece */
+  if (outer_piece == UINT32_MAX || (a->sense == 0 &&
+      ! a->pieces[outer_piece].result &&
       arr_piece_weight(a, &a->pieces[outer_piece]) != 0))
     return ARR_SHELLS;
   uint32_t cap = 4, n = 0;
@@ -7156,6 +7162,9 @@ arr_finish(Arr *a, ArrPair *pairs, uint32_t npairs, MeosArray ***rings,
      * linework turn counterclockwise (#arrange_union_surfaces_lines) */
     if (arr_piece_weight(a, p) == 0)
       sgn = 1;
+    /* A sense the caller fixes is read as given */
+    if (a->sense != 0)
+      sgn = a->sense;
     uint32_t *rp = NULL, *roff = NULL;
     if (sout)
       st = arr_stretches_write(a, sgn, outer, sout, nsout);
@@ -8298,14 +8307,16 @@ typedef struct
  * of the winding number across each stretch from its right to its left
  * (#arr_weight), one otherwise; where @p cv is given, the curves the
  * stretches lie on, whose neighbours meet at their common end alone
- * (#arr_curve_neighbours)
+ * (#arr_curve_neighbours); the region of winding number of sign @p sense
+ * where it is 1 or -1, of the sign the outermost stretch reads where it is
+ * 0 (#arr_finish)
  */
 static ArrangeStatus
 arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
   const ArrLinework *lw, const int32_t *weight, const ArrCurves *cv,
   MeosArray ***rings,
   uint32_t *nrings, int32_t **owner, ArrStretch **sout, uint32_t *nsout,
-  ArrangeCert *cert)
+  ArrangeCert *cert, int sense)
 {
   if (n == 0)
     return ARR_NOT_CLOSED;
@@ -8316,6 +8327,7 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
       return ARR_OVERLAP;
   Arr a;
   memset(&a, 0, sizeof(Arr));
+  a.sense = sense;
   /* The margin D of the certificate, 16 eps of the largest coordinate the
    * rings can be written at */
   if (cert)
@@ -8718,7 +8730,7 @@ arrange_union_surfaces_lines(const MeosArray *edges, const uint32_t *soff,
       ArrStretch *out = NULL;
       uint32_t nout = 0;
       st = arr_arrange_stretches(both, nboth, count[g], NULL, NULL, NULL,
-        NULL, NULL, NULL, &out, &nout, NULL);
+        NULL, NULL, NULL, &out, &nout, NULL, 0);
       pfree(both);
       part[k] = out;
       count[k++] = (st == ARR_ANSWERED) ? nout : 0;
@@ -8749,7 +8761,7 @@ arrange_union_surfaces_lines(const MeosArray *edges, const uint32_t *soff,
     ArrLinework lw = {lines, nlines, lout, pts, npts, pkeep};
     st = arr_arrange_stretches(all, total, (m == 2) ? count[0] : 0,
       (nlines || npts) ? &lw : NULL, NULL, NULL, rings, nrings, owner, NULL,
-      NULL, NULL);
+      NULL, NULL, 0);
     pfree(all);
   }
   for (uint32_t g = 0; g < m; g++)
@@ -8818,6 +8830,10 @@ arr_stretch_make(const Edge *s, ArrMeet from, ArrMeet to)
   return st;
 }
 
+static ArrangeStatus arr_wound_tangent_surfaces(const MeosArray *edges,
+  int sense, MeosArray ***rings, uint32_t *nrings, int32_t **owner,
+  ArrangeCert *cert);
+
 /**
  * @brief Return the rings bounding the region closed curves of segments and
  * arcs between tangent points wind around, as surfaces: each shell and the
@@ -8851,6 +8867,44 @@ arr_stretch_make(const Edge *s, ArrMeet from, ArrMeet to)
 ArrangeStatus
 arrange_wound_tangent_surfaces(const MeosArray *edges, MeosArray ***rings,
   uint32_t *nrings, int32_t **owner, ArrangeCert *cert)
+{
+  return arr_wound_tangent_surfaces(edges, 0, rings, nrings, owner, cert);
+}
+
+/**
+ * @brief Return the rings bounding the region where closed curves of
+ * segments and arcs between tangent points wind around with a winding number
+ * of a given sign, as surfaces: each shell and the holes it owns
+ * @details As #arrange_wound_tangent_surfaces, the region being the points
+ * whose winding number is at least one in the sense @p sense, whichever
+ * curve is outermost: where a curve winding the other way reaches beyond the
+ * others, its side away from the outside is not the region, and the region
+ * may be empty, answered as no ring
+ * @param[in] edges The edges of the curves
+ * @param[in] sense 1 for the points the curves wind around counterclockwise,
+ * -1 for those they wind around clockwise
+ * @param[out] rings,nrings The rings, released by #arrange_rings_free
+ * @param[out] owner For every ring, the index of the shell owning it where it
+ * is a hole, -1 where it is a shell; released by the caller
+ * @return #ARR_ANSWERED, or the question left unanswered
+ */
+ArrangeStatus
+arrange_wound_tangent_surfaces_signed(const MeosArray *edges, int sense,
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner)
+{
+  assert(sense == 1 || sense == -1);
+  return arr_wound_tangent_surfaces(edges, sense, rings, nrings, owner,
+    NULL);
+}
+
+/*
+ * The region closed curves of segments and arcs between tangent points wind
+ * around, as #arrange_wound_tangent_surfaces answers it, read with the sense
+ * @p sense as #arr_arrange_stretches reads it
+ */
+static ArrangeStatus
+arr_wound_tangent_surfaces(const MeosArray *edges, int sense,
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner, ArrangeCert *cert)
 {
   assert(edges); assert(rings); assert(nrings); assert(owner);
   *rings = NULL;
@@ -9014,7 +9068,7 @@ arrange_wound_tangent_surfaces(const MeosArray *edges, MeosArray ***rings,
   {
     ArrCurves cv = {src, next};
     status = arr_arrange_stretches(st, m, 0, NULL, w, &cv, rings, nrings,
-      owner, NULL, NULL, cert);
+      owner, NULL, NULL, cert, sense);
   }
   pfree(next); pfree(src);
   pfree(w); pfree(ctab);
