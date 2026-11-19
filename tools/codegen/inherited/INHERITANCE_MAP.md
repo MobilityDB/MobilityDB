@@ -413,14 +413,21 @@ through the type's `opnames`), the nearest-approach distances where the class or
 the ever and always overlaps. Under each of the GiST, quad-tree and k-d tree indexes every row
 answers what the scan gives, from a plan that probes the index. A type keyed by an `stbox` takes
 `templates/indextest_tables.sql.tmpl`, a type keyed by its period
-`templates/indextest_tables_span.sql.tmpl`, the same tables without the boxes of space; a family
+`templates/indextest_tables_span.sql.tmpl`, the same tables without the boxes of space, and a
+temporal number keyed by a `tbox` `templates/indextest_tables_tbox.sql.tmpl`, its boxes of values
+alone and the spans of its values (`valspan`) in place of those of space; a family
 with values in two and three dimensions has one test per dimension
-(`<nnn>_<fam>_indexes_tbl` and `<nnn>_<fam>_indexes3d_tbl`). Generated: tcbuffer, tpose (2D and
-3D), trgeometry (2D and 3D), tnpoint, tquadbin, ts2cell, tposechain and tjsonb; the tests of the
-temporal geometries and points (`074_tgeo`, `074_tpoint`) and of the base temporal types
-(`044_temporal`) test the structure of the trees and are written by hand, and so is that of
-th3index (`272_th3index`), since the latitudes its geodetic boxes reach along the edges of a cell
-are not correctly rounded and the counts of the scan differ by platform.
+(`<nnn>_<fam>_indexes_tbl` and `<nnn>_<fam>_indexes3d_tbl`), and a family of several types one
+test per type at the number of the family (`044_tbool`, `044_ttext`, `044_tint`, `044_tfloat`,
+as `074_tgeo` and `074_tpoint`). Generated: tcbuffer, tpose (2D and 3D), trgeometry (2D and 3D),
+tnpoint, tquadbin, ts2cell, tposechain, tjsonb, tbool, ttext, tint and tfloat; tbigint has no
+fixtures but its table of many values. Written by hand: the tests of the temporal geometries and
+points (`074_tgeo`, `074_tpoint`), which test the structure of the trees; `044_temporal`, which
+keeps the B-tree comparisons of the base types, the function forms of `ttext` (`overlaps`,
+`contains`, `before`, ...) and the structure of the trees; and that of th3index
+(`272_th3index`), since the box of an H3 cell is read on the vertices the linked H3 library
+states, which differ by version, so the counts of the scan over the fixture differ by build until
+MEOS reads vertices of its own.
 
 **`topops.sql.tmpl`/`posops.sql.tmpl` serve two independent manifest tracks** that
 happen to share a template name: the `topop_families`/`posop_families` axes (§9,
