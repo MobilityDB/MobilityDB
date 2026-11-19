@@ -554,8 +554,14 @@ diffs classified:
    pairs of segments of real AIS trips whose boxes overlap, 481 are such mirrors, and an MPFR
    judge agrees with the answers on the 794 pairs no other family decides. A bound on the
    distance of the two positions over the period, read in doubles and in wide arithmetic,
-   proves 298,530 of those pairs apart; 313 stay undecided, all of them pairs that never
-   meet.
+   with a first-order bound in wide arithmetic near the closest approach, proves apart every
+   pair of those trips that no family proves to meet: 298,696 apart strictly inside the
+   period and 114,286 meeting only at a bound, and a CGAL judge agrees on all 412,982. On
+   the 5437 built pairs, 91 stay undecided, exactly those whose latitude 0 is moved to the
+   smallest subnormal double, all of them pairs that never meet. By the owner's ruling of
+   2026-11-19 a pair neither proved to meet nor separated is answered as no meeting, which
+   is the answer of all 91, so the separation is a measure and no part of the engine; this
+   closes the section 7 order.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
