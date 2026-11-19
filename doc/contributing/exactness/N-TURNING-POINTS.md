@@ -105,11 +105,12 @@ them `nad_*`, `nai_*`, `shortestline_*`, `tdwithin_*`) do not call the lifting.
 against step split into one sequence per segment). `distwalk_segm` (`trgeo_distwalk.c`) follows
 the closest features, the root finder `distfun_roots` / `distfun_crossings` (`trgeo_distsolve.c`)
 comes with a proof for each part of the interval where the function stays above its tolerance
-`ftol`, and the design is in `meos/src/rgeo/trgeo_distance.txt`. A value within `ftol`, `1e-14`
-times the square of the scale of the bodies, is read as zero, so a turning body that passes a
-geometry within about 1e-15 is read as meeting it: 8 of 12 unit squares turning past a point at a
-least distance of 7.8e-16 to 9.2e-16 answer `eIntersects` true and a distance of 0 (row TG36 of
-the plan of the temporal rigid geometries), which EA11 decides. What the cap forces is the code
+`ftol`, and the design is in `meos/src/rgeo/trgeo_distance.txt`. The walk reads its values in
+doubles, so where a turning body passes a geometry within a few units in the last place, a value at
+an event of the walk reads 0 while they are apart, or a few units in the last place while they
+meet: 8 of 12 unit squares turning past a point at a least distance of 7.8e-16 to 9.2e-16 answer
+`eIntersects` true, and 10 of 24 with the point inside by two or three times that gap answer false
+(row TG36 of the plan of the temporal rigid geometries), which EA11 decides. What the cap forces is the code
 around it. Each rule of the shared walk (the bound rule, linear against step, exclusive upper bound)
 has to be kept a second time here.
 
