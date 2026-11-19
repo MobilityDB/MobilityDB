@@ -39,7 +39,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <h3api.h>
+#include <h3/h3api.h>
 #include <meos.h>
 #include <meos_geo.h>
 
