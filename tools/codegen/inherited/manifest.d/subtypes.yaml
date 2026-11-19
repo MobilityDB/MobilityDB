@@ -91,6 +91,7 @@ subtypes:
     boxmembers: [topo, x, y, t]
     base:  s2cell
     brief: "temporal S2 cells"
+    overlaps: box
     bin:   600
     category: tspatial
     # A cell-index inherits the scalar base::stbox cast — same as tquadbin and
@@ -142,6 +143,7 @@ subtypes:
     base:  jsonb
     fam:   json
     brief: "temporal JSONB"
+    overlaps: true
     bin:   454
     reference: true
     files: [compops]

@@ -195,4 +195,22 @@ CREATE OPERATOR ?= (
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
+/******************************************************************************
+ * Restriction to a box
+ *
+ * `atStbox` keeps the times at which the cell shares a position with the
+ * geodetic box, with the boundary points the cell owns; `minusStbox` keeps
+ * the others.
+ ******************************************************************************/
+
+CREATE FUNCTION atStbox(ts2cell, stbox, boolean DEFAULT TRUE)
+  RETURNS ts2cell
+  AS 'MODULE_PATHNAME', 'Ts2cell_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusStbox(ts2cell, stbox, boolean DEFAULT TRUE)
+  RETURNS ts2cell
+  AS 'MODULE_PATHNAME', 'Ts2cell_minus_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

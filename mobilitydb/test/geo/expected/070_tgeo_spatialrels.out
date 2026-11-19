@@ -2480,3 +2480,151 @@ SELECT eIntersects(tgeometry 'Triangle Z((5 0 7,6 -3 2,1 -6 6,5 0 7))@2001-01-01
  t
 (1 row)
 
+-------------------------------------------------------------------------------
+-- An empty geometry is an answer: the relationships asking for a common point
+-- are false and the disjointness is true, ever and always, in both orders
+-------------------------------------------------------------------------------
+SELECT eContains(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT eContains(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT eCovers(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDisjoint(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT eIntersects(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT eTouches(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ etouches 
+----------
+ f
+(1 row)
+
+SELECT eTouches(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ etouches 
+----------
+ f
+(1 row)
+
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY', 1);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT eDwithin(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 1);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT aContains(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aContains(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aCovers(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT aCovers(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT aDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT aIntersects(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT aTouches(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Polygon EMPTY', 1);
+ adwithin 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(geometry 'Polygon EMPTY', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 1);
+ adwithin 
+----------
+ f
+(1 row)
+

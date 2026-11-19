@@ -6214,7 +6214,12 @@ buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
 /**
  * @brief Return the signed area of a ring
  * @details A positive value means counter-clockwise orientation and a
- * negative value means clockwise orientation.
+ * negative value means clockwise orientation. The shoelace sum is taken about
+ * the first vertex, one product a vertex, as #ptarray_signed_area takes it:
+ * about the origin each term would carry the square of a coordinate, and at
+ * projected coordinates the area of a small ring would be lost in their
+ * rounding. A measure in doubles: the orientation of a ring is read exactly
+ * by #ring_area_sign, and a ring enclosing nothing by #ring_encloses_no_area
  */
 static double
 buffer_ring_area(const POINTARRAY *pa)
@@ -6222,12 +6227,14 @@ buffer_ring_area(const POINTARRAY *pa)
   assert(pa);
   if (pa->npoints < 3)
     return 0.0;
-  double area = 0.0;
-  for (uint32_t i = 0; i < pa->npoints - 1; i++)
+  const POINT2D *p0 = getPoint2d_cp(pa, 0);
+  double x0 = p0->x, area = 0.0;
+  for (uint32_t i = 1; i + 1 < pa->npoints; i++)
   {
-    const POINT2D *p1 = getPoint2d_cp(pa, i);
-    const POINT2D *p2 = getPoint2d_cp(pa, i + 1);
-    area += p1->x * p2->y - p2->x * p1->y;
+    const POINT2D *a = getPoint2d_cp(pa, i - 1);
+    const POINT2D *b = getPoint2d_cp(pa, i);
+    const POINT2D *c = getPoint2d_cp(pa, i + 1);
+    area += (b->x - x0) * (c->y - a->y);
   }
   return area * 0.5;
 }
@@ -6242,7 +6249,7 @@ static bool
 buffer_ring_outward_left(const POINTARRAY *pa)
 {
   assert(pa);
-  return buffer_ring_area(pa) < 0.0;
+  return ring_area_sign(pa) < 0;
 }
 
 
@@ -7236,6 +7243,65 @@ buffer_ring_inverted(LWCOMPOUND *ring, const MeosArray *edges, double radius,
     return false;
   return buffer_point_edges_distance(hx, hy, edges) <
     radius - MEOS_GEOM_TOLERANCE;
+}
+
+/**
+ * @brief Return whether a polygon is narrower than a disc of a radius in the
+ * width or the height of its box
+ * @details A disc inside the polygon lies inside its box, so where the box is
+ * narrower than the diameter the polygon holds no such disc and its erosion
+ * by the radius is empty. The box is read as #buffer_round_line_rings reads
+ * it. The width is a rounded difference, within half a unit in the last
+ * place of itself, and its product with 1 + 4 epsilon stands above the exact
+ * width however both round, so the comparison answers only where the exact
+ * width is narrower: where it does not, the erosion is built and decided as
+ * before.
+ * @param[in] poly Polygon
+ * @param[in] radius Erosion distance
+ */
+static bool
+buffer_poly_narrower_than_disc(const LWPOLY *poly, double radius)
+{
+  GBOX gb;
+  if (poly->bbox)
+    gb = *poly->bbox;
+  else
+    lwgeom_calculate_gbox((const LWGEOM *) poly, &gb);
+  double diameter = 2.0 * radius;
+  double margin = 1.0 + 4.0 * DBL_EPSILON;
+  return (gb.xmax - gb.xmin) * margin < diameter ||
+    (gb.ymax - gb.ymin) * margin < diameter;
+}
+
+/**
+ * @brief Return whether a contracted ring that does not cross itself has
+ * passed through itself
+ * @details A contraction that does not cross itself is inverted as a whole
+ * or not at all, and the point it holds says which (#buffer_ring_inverted);
+ * one that crosses itself is left to the resolution of its crossings. The
+ * crossing test reads the boundary of a surface, so the ring is asked as the
+ * boundary of one, as #buffer_ring_encloses_no_area does. The edges of the
+ * geometry are extracted on the first call and kept in @p edges.
+ * @param[in] ring Contracted ring
+ * @param[in] geom Geometry being buffered
+ * @param[in,out] edges Edges of the geometry, NULL until extracted
+ * @param[in] radius Buffer distance
+ * @param[in] srid Spatial reference identifier
+ */
+static bool
+buffer_contracted_ring_inverted(LWCOMPOUND *ring, const LWGEOM *geom,
+  MeosArray **edges, double radius, int32_t srid)
+{
+  LWCURVEPOLY *probe = lwcurvepoly_construct_empty(srid, 0, 0);
+  lwcurvepoly_add_ring(probe, lwgeom_clone_deep(lwcompound_as_lwgeom(ring)));
+  LWGEOM *surface = lwcurvepoly_as_lwgeom(probe);
+  bool crosses = buffer_boundary_self_intersects(surface);
+  lwgeom_free(surface);
+  if (crosses)
+    return false;
+  if (! *edges)
+    *edges = geom_extract_edges(geom);
+  return buffer_ring_inverted(ring, *edges, radius, srid);
 }
 
 /**
@@ -10833,6 +10899,49 @@ buffer_mpoly_arranged(const LWMPOLY *mpoly, double radius, int32_t srid)
 }
 
 /**
+ * @brief Return the erosion of a polygon from its contracted exterior and its
+ * grown holes, which no boundary crosses
+ * @details Where no two of the curves cross, a grown hole stands inside the
+ * contracted exterior, around it, or outside it, as #buffer_areal_contains
+ * answers for each pair of the surfaces they bound. Inside, it is a hole of
+ * the erosion; around, every point the exterior holds is nearer a hole than
+ * the radius and the erosion is empty; outside, it removes nothing the
+ * exterior holds and is dropped.
+ * @param[in] poly Contracted exterior followed by the grown holes, owned by
+ * this function
+ * @param[in] srid Spatial reference identifier
+ */
+static LWGEOM *
+buffer_erosion_place_holes(LWCURVEPOLY *poly, int32_t srid)
+{
+  LWCURVEPOLY *shell = lwcurvepoly_construct_empty(srid, 0, 0);
+  lwcurvepoly_add_ring(shell, lwgeom_clone_deep(poly->rings[0]));
+  LWGEOM *shellg = lwcurvepoly_as_lwgeom(shell);
+  LWCURVEPOLY *result = lwcurvepoly_construct_empty(srid, 0, 0);
+  lwcurvepoly_add_ring(result, lwgeom_clone_deep(poly->rings[0]));
+  bool empty = false;
+  for (uint32_t i = 1; i < poly->nrings && ! empty; i++)
+  {
+    LWCURVEPOLY *hole = lwcurvepoly_construct_empty(srid, 0, 0);
+    lwcurvepoly_add_ring(hole, lwgeom_clone_deep(poly->rings[i]));
+    LWGEOM *holeg = lwcurvepoly_as_lwgeom(hole);
+    if (buffer_areal_contains(shellg, holeg))
+      lwcurvepoly_add_ring(result, lwgeom_clone_deep(poly->rings[i]));
+    else if (buffer_areal_contains(holeg, shellg))
+      empty = true;
+    lwgeom_free(holeg);
+  }
+  lwgeom_free(shellg);
+  lwgeom_free(lwcurvepoly_as_lwgeom(poly));
+  if (empty)
+  {
+    lwgeom_free(lwcurvepoly_as_lwgeom(result));
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
+  }
+  return lwcurvepoly_as_lwgeom(result);
+}
+
+/**
  * @brief Buffer a POLYGON
  * @details The exterior ring is expanded and interior rings are contracted.
  * Round joins are represented using exact circular arcs.
@@ -10864,6 +10973,11 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
       return arranged;
   }
 
+  /* An erosion by more than half the width of the box holds no disc of the
+   * radius and is empty */
+  if (inward && buffer_poly_narrower_than_disc(poly, radius))
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
+
   /* The first ring is the exterior ring, which a buffer expands and an
    * erosion contracts */
   bool exterior_left = buffer_ring_outward_left(poly->rings[0]);
@@ -10876,6 +10990,31 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
     return (inward && geom_ring_is_convex(poly->rings[0])) ?
       lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0)) : NULL;
 
+  /* An erosion contracts the exterior ring as a positive buffer contracts a
+   * hole: contracted by more than the polygon is wide, it passes through
+   * itself and comes back out inverted at the distance it overshot by, which
+   * bounds nothing, so the erosion is empty. Whether it did is a question
+   * about the exterior ring alone, so the point it holds is measured against
+   * that ring's edges: a hole grows by the radius on its own below, and a
+   * point near a hole says nothing about the exterior */
+  if (inward)
+  {
+    MeosArray *ext_edges = NULL;
+    LWLINE *ext = lwline_construct(srid, NULL, poly->rings[0]);
+    bool inverted = buffer_contracted_ring_inverted(exterior,
+      lwline_as_lwgeom(ext), &ext_edges, radius, srid);
+    /* The line borrows the points of the ring, which the polygon owns */
+    lwfree(ext);
+    if (ext_edges)
+      meos_array_destroy(ext_edges);
+    if (inverted)
+    {
+      lwgeom_free(lwcompound_as_lwgeom(exterior));
+      return lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
+    }
+  }
+  MeosArray *edges = NULL;
+
   /* Construct the curved polygon */
   LWCURVEPOLY *result = lwcurvepoly_construct_empty(srid, 0, 0);
   buffer_curvepoly_add_ring(result, exterior);
@@ -10884,7 +11023,6 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
    * A positive polygon buffer contracts the holes. Therefore the
    * buffering side is the opposite of the exterior side.
    */
-  MeosArray *edges = NULL;
   for (uint32_t i = 1; i < poly->nrings; i++)
   {
     /* A positive buffer erodes a hole, and what is left of one is non-empty
@@ -10914,30 +11052,14 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
      * more than the disc can still be narrower than it everywhere. Contracted
      * by more than it is wide, it passes through itself and comes back out
      * inverted at the distance it overshot by, which bounds nothing, so the
-     * hole closes rather than punching that ring out of the answer. Where the
-     * contraction does not cross itself it is inverted as a whole or not at
-     * all, and the point it holds says which (#buffer_ring_inverted); where it
-     * crosses itself, the resolution below keeps the parts that are a hole */
-    if (! inward)
+     * hole closes rather than punching that ring out of the answer
+     * (#buffer_contracted_ring_inverted); where it crosses itself, the
+     * resolution below keeps the parts that are a hole */
+    if (! inward && buffer_contracted_ring_inverted(hole,
+          (const LWGEOM *) poly, &edges, radius, srid))
     {
-      /* The crossing test reads the boundary of a surface, so the ring is
-       * asked as the boundary of one, as #buffer_ring_encloses_no_area does */
-      LWCURVEPOLY *probe = lwcurvepoly_construct_empty(srid, 0, 0);
-      lwcurvepoly_add_ring(probe, lwgeom_clone_deep(lwcompound_as_lwgeom(
-        hole)));
-      LWGEOM *surface = lwcurvepoly_as_lwgeom(probe);
-      bool crosses = buffer_boundary_self_intersects(surface);
-      lwgeom_free(surface);
-      if (! crosses)
-      {
-        if (! edges)
-          edges = geom_extract_edges((const LWGEOM *) poly);
-        if (buffer_ring_inverted(hole, edges, radius, srid))
-        {
-          lwgeom_free(lwcompound_as_lwgeom(hole));
-          continue;
-        }
-      }
+      lwgeom_free(lwcompound_as_lwgeom(hole));
+      continue;
     }
     buffer_curvepoly_add_ring(result, hole);
   }
@@ -10959,6 +11081,10 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
     lwgeom_free(geom);
     return lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
   }
+  /* A grown hole that no curve crosses stands inside the contracted exterior,
+   * around it or outside it */
+  if (inward && result->nrings > 1)
+    return buffer_erosion_place_holes(result, srid);
   /* A ring turning tighter than the buffer distance carries offsets that run
    * into one another, and what a crossing encloses lies inside the buffer
    * rather than on its boundary */
@@ -11171,8 +11297,7 @@ buffer_areal_is_degenerate(const LWGEOM *geom)
   if (geom->type == POLYGONTYPE)
   {
     const LWPOLY *poly = (const LWPOLY *) geom;
-    return poly->nrings == 0 ||
-      fabs(buffer_ring_area(poly->rings[0])) <= MEOS_GEOM_TOLERANCE;
+    return poly->nrings == 0 || ring_encloses_no_area(poly->rings[0]);
   }
   if (geom->type == MULTIPOLYGONTYPE)
   {

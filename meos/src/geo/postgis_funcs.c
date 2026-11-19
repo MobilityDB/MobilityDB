@@ -9506,6 +9506,51 @@ geo_from_text(const char *wkt, int32_t srid)
 }
 
 /**
+ * @brief Return a geometry from its Extended Well-Known Text (EWKT)
+ * representation, the WKT representation optionally prefixed with
+ * @p 'SRID=#;', and nothing else
+ * @param[in] ewkt EWKT string
+ */
+static LWGEOM *
+lwgeom_from_ewkt(const char *ewkt)
+{
+  LWGEOM_PARSER_RESULT lwg_parser_result;
+  lwgeom_parser_result_init(&lwg_parser_result);
+  if (lwgeom_parse_wkt(&lwg_parser_result, (char *) ewkt,
+      LW_PARSER_CHECK_ALL) == LW_FAILURE)
+  {
+    PG_PARSER_ERROR(lwg_parser_result);
+    return NULL;
+  }
+  return lwg_parser_result.geom;
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a geometry from its Well-Known Text (WKT) or Extended
+ * Well-Known Text (EWKT) representation
+ * @details The text is the WKT representation, optionally prefixed with
+ * @p 'SRID=#;', as a temporal point is read from its text; the HexEWKB and
+ * GeoJSON representations #geom_in also reads are refused
+ * @param[in] ewkt EWKT string
+ * @csqlfn #Geom_from_ewkt()
+ */
+GSERIALIZED *
+geom_from_ewkt(const char *ewkt)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ewkt, NULL);
+  LWGEOM *lwgeom = lwgeom_from_ewkt(ewkt);
+  if (! lwgeom)
+    return NULL;
+  if (lwgeom_needs_bbox(lwgeom))
+    lwgeom_add_bbox(lwgeom);
+  GSERIALIZED *result = geo_serialize(lwgeom);
+  lwgeom_free(lwgeom);
+  return geo_read_result(result);
+}
+
+/**
  * @ingroup meos_internal_geo_base_inout
  * @brief Return the (Extended) Well-Known Text (EWKT or WKT) representation of
  * a geometry/geography
@@ -9539,7 +9584,7 @@ geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended,
  * @param[out] size_out Size of the result, the terminating null character
  * included
  * @note PostGIS function: @p LWGEOM_asText(PG_FUNCTION_ARGS)
- * @sqlfn asText()
+ * @csqlfn #Geo_as_text()
  */
 char *
 geo_as_text(const GSERIALIZED *gs, int precision, size_t *size_out)
@@ -9563,7 +9608,7 @@ geo_as_text(const GSERIALIZED *gs, int precision, size_t *size_out)
  * @note This is a a stricter version of #geom_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: @p LWGEOM_asEWKT(PG_FUNCTION_ARGS)
- * @sqlfn asEWKT()
+ * @csqlfn #Geo_as_ewkt()
  */
 char *
 geo_as_ewkt(const GSERIALIZED *gs, int precision, size_t *size_out)
@@ -9578,32 +9623,60 @@ geo_as_ewkt(const GSERIALIZED *gs, int precision, size_t *size_out)
 
 /**
  * @ingroup meos_geo_base_inout
- * @brief Return a geometry from its ASCII hex-encoded Extended Well-Known
- * Binary (HexEWKB) representation
- * @details The value is read as #geom_in reads it, so a HexWKB without an
- * SRID is read as well
+ * @brief Return a geometry from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) or Extended Well-Known Binary (HexEWKB) representation
+ * @details The text is read as hexadecimal bytes only, as a temporal value is
+ * read from its HexWKB; the WKT, EWKT and GeoJSON representations #geom_in
+ * also reads are refused
  * @param[in] hexwkb HexEWKB string
  * @csqlfn #Geom_from_hexewkb()
  */
 GSERIALIZED *
 geom_from_hexewkb(const char *hexwkb)
 {
-  return geom_in(hexwkb, -1);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(hexwkb, NULL);
+  LWGEOM *lwgeom = lwgeom_from_hexwkb(hexwkb, LW_PARSER_CHECK_ALL);
+  if (! lwgeom)
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Could not parse geometry value: %s", hexwkb);
+    return NULL;
+  }
+  if (lwgeom_needs_bbox(lwgeom))
+    lwgeom_add_bbox(lwgeom);
+  GSERIALIZED *result = geo_serialize(lwgeom);
+  lwgeom_free(lwgeom);
+  return geo_read_result(result);
 }
 
 /**
  * @ingroup meos_geo_base_inout
- * @brief Return a geography from its ASCII hex-encoded Extended Well-Known
- * Binary (HexEWKB) representation
- * @details The value is read as #geog_in reads it, so a HexWKB without an
- * SRID is read as well
- * @param[in] hexwkb HexEWKB string
- * @csqlfn #Geog_from_hexewkb()
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a geometry/geography
+ * @details The representation states no SRID, as #geo_as_hexewkb states it,
+ * and the byte order is read as #geo_as_hexewkb reads it
+ * @param[in] gs Geometry/geography
+ * @param[in] endian Byte order @nullable
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
+ * @errval NULL
+ * @csqlfn #Geo_as_hexwkb()
  */
-GSERIALIZED *
-geog_from_hexewkb(const char *hexwkb)
+char *
+geo_as_hexwkb(const GSERIALIZED *gs, const char *endian, size_t *size_out)
 {
-  return geog_in(hexwkb, -1);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  VALIDATE_NOT_NULL(gs, NULL);
+  uint8_t variant = wkb_variant_from_endian(endian);
+  /* A non-empty order read as the machine's is one the decoder refused */
+  if (variant == 0 && endian && *endian)
+    return NULL;
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  char *result = lwgeom_to_hexwkb_buffer(geom, variant);
+  lwgeom_free(geom);
+  return cstring_size(result, size_out);
 }
 
 /**
@@ -9646,6 +9719,7 @@ geo_as_hexewkb(const GSERIALIZED *gs, const char *endian, size_t *size_out)
  * @param[in] srid SRID
  * @note PostGIS function: @p LWGEOMFromEWKB(wkb, [SRID])
  * @note wkb is in *binary* not hex form
+ * @csqlfn #Geom_from_wkb()
  */
 GSERIALIZED *
 geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
@@ -9682,7 +9756,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
  * @param[out] size Size of result
  * @errval NULL
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
- * @sqlfn asEWKB()
+ * @csqlfn #Geo_as_ewkb()
  */
 uint8_t *
 geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
@@ -9698,6 +9772,41 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
   /* Create the WKB string */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *wkb = lwgeom_to_wkb_varlena(geom, variant | WKB_EXTENDED);
+
+  size_t data_size = VARSIZE(wkb) - LWVARHDRSZ;
+  uint8_t *result = palloc(data_size);
+  memcpy(result, wkb->data, data_size);
+  lwgeom_free(geom); pfree(wkb);
+  *size = data_size;
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a
+ * geometry/geography
+ * @details The representation states no SRID, as #geo_as_ewkb states it, and
+ * the byte order is read as #geo_as_ewkb reads it
+ * @param[in] gs Geometry/geography
+ * @param[in] endian Byte order @nullable
+ * @param[out] size Size of result
+ * @errval NULL
+ * @csqlfn #Geo_as_wkb()
+ */
+uint8_t *
+geo_as_wkb(const GSERIALIZED *gs, const char *endian, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size, NULL); *size = 0;
+  VALIDATE_NOT_NULL(gs, NULL);
+  uint8_t variant = wkb_variant_from_endian(endian);
+  /* A non-empty order read as the machine's is one the decoder refused */
+  if (variant == 0 && endian && *endian)
+    return NULL;
+
+  /* Create the WKB string */
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  lwvarlena_t *wkb = lwgeom_to_wkb_varlena(geom, variant);
 
   size_t data_size = VARSIZE(wkb) - LWVARHDRSZ;
   uint8_t *result = palloc(data_size);
@@ -9744,17 +9853,14 @@ srs_srid(const char *srs)
 }
 
 /**
- * @ingroup meos_geo_base_inout
- * @brief Return a geometry/geography from its GeoJSON representation
+ * @brief Return a geometry from its GeoJSON representation, of the SRID the
+ * coordinate reference system it names, WGS84 where it names none, as
+ * #lwgeom_from_ewkt reads the EWKT representation
  * @param[in] geojson GeoJSON string
- * @note PostGIS function: @p geom_from_geojson(PG_FUNCTION_ARGS)
  */
-GSERIALIZED *
-geo_from_geojson(const char *geojson)
+static LWGEOM *
+lwgeom_from_geojson_srid(const char *geojson)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(geojson, NULL);
-
   char *srs = NULL;
   int32_t srid = WGS84_SRID;
 
@@ -9781,6 +9887,24 @@ geo_from_geojson(const char *geojson)
     }
   }
   lwgeom_set_srid(geom, srid);
+  return geom;
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a geometry from its GeoJSON representation
+ * @param[in] geojson GeoJSON string
+ * @note PostGIS function: @p geom_from_geojson(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_from_geojson()
+ */
+GSERIALIZED *
+geo_from_geojson(const char *geojson)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geojson, NULL);
+  LWGEOM *geom = lwgeom_from_geojson_srid(geojson);
+  if (! geom)
+    return NULL;
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
   return geo_read_result(result);
@@ -9804,7 +9928,7 @@ geo_from_geojson(const char *geojson)
  * included
  * @errval NULL
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
- * @sqlfn asGeoJSON()
+ * @csqlfn #Geo_as_geojson()
  */
 char *
 geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
@@ -10027,6 +10151,113 @@ geog_in(const char *str, int32 typmod)
   /* Clean up and return */
   lwgeom_free(lwgeom);
   return geo_read_result(result);
+}
+
+/**
+ * @brief Return a geography from a geometry a reader of a representation
+ * read, refusing an SRID that is not a longitude and latitude system and
+ * taking WGS84 where it states none, as #geog_in does
+ * @param[in] lwgeom Geometry read, freed by the function
+ */
+static GSERIALIZED *
+geog_from_read(LWGEOM *lwgeom)
+{
+  GSERIALIZED *result = NULL;
+  if (lwgeom->srid == SRID_UNKNOWN || ensure_srid_is_latlong(lwgeom->srid))
+    result = geog_from_lwgeom(lwgeom, -1);
+  lwgeom_free(lwgeom);
+  return geo_read_result(result);
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a geography from its Well-Known Text (WKT) or Extended
+ * Well-Known Text (EWKT) representation
+ * @details The text is the WKT representation, optionally prefixed with
+ * @p 'SRID=#;' naming a longitude and latitude system, WGS84 where it names
+ * none, as #geom_from_ewkt reads a geometry; the HexEWKB representation
+ * #geog_in also reads is refused
+ * @param[in] ewkt EWKT string
+ * @csqlfn #Geog_from_ewkt()
+ */
+GSERIALIZED *
+geog_from_ewkt(const char *ewkt)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ewkt, NULL);
+  LWGEOM *lwgeom = lwgeom_from_ewkt(ewkt);
+  if (! lwgeom)
+    return NULL;
+  return geog_from_read(lwgeom);
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a geography from its Well-Known Binary (WKB) or Extended
+ * Well-Known Binary (EWKB) representation
+ * @details The SRID is the one the value states, a longitude and latitude
+ * system, WGS84 where it states none, as #geo_from_ewkb reads a geometry
+ * @param[in] wkb WKB bytes
+ * @param[in] wkb_size Number of WKB bytes
+ * @csqlfn #Geog_from_wkb()
+ */
+GSERIALIZED *
+geog_from_ewkb(const uint8_t *wkb, size_t wkb_size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(wkb, NULL);
+  LWGEOM *lwgeom = lwgeom_from_wkb(wkb, wkb_size, LW_PARSER_CHECK_ALL);
+  if (! lwgeom)
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Unable to parse WKB string");
+    return NULL;
+  }
+  return geog_from_read(lwgeom);
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a geography from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) or Extended Well-Known Binary (HexEWKB) representation
+ * @details The text is read as hexadecimal bytes only, as #geom_from_hexewkb
+ * reads a geometry; the WKT and EWKT representations #geog_in also reads are
+ * refused
+ * @param[in] hexwkb HexEWKB string
+ * @csqlfn #Geog_from_hexewkb()
+ */
+GSERIALIZED *
+geog_from_hexewkb(const char *hexwkb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(hexwkb, NULL);
+  LWGEOM *lwgeom = lwgeom_from_hexwkb(hexwkb, LW_PARSER_CHECK_ALL);
+  if (! lwgeom)
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Could not parse geography value: %s", hexwkb);
+    return NULL;
+  }
+  return geog_from_read(lwgeom);
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a geography from its GeoJSON representation
+ * @details The SRID is the one of the coordinate reference system the value
+ * names, a longitude and latitude system, WGS84 where it names none, as
+ * #geo_from_geojson reads a geometry
+ * @param[in] geojson GeoJSON string
+ * @csqlfn #Geog_from_geojson()
+ */
+GSERIALIZED *
+geog_from_geojson(const char *geojson)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geojson, NULL);
+  LWGEOM *lwgeom = lwgeom_from_geojson_srid(geojson);
+  if (! lwgeom)
+    return NULL;
+  return geog_from_read(lwgeom);
 }
 
 /**

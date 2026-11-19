@@ -170,7 +170,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		<para>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <xref linkend="ttype_p1"/>, these are
 			<itemizedlist>
 				<listitem>
-					<para>the <varname>tstzspan</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types,</para>
+					<para>the <varname>tstzspan</varname> type for the <varname>tbool</varname>, <varname>ttext</varname>, and <varname>tjsonb</varname> types,</para>
 				</listitem>
 
 				<listitem>

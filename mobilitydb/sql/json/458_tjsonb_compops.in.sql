@@ -85,6 +85,30 @@ CREATE OPERATOR %<> (
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
+CREATE FUNCTION eOverlaps(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tstzspan_tjsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = tstzspan, RIGHTARG = tjsonb,
+  PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+CREATE FUNCTION aOverlaps(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tstzspan_tjsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = tstzspan, RIGHTARG = tjsonb,
+  PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
 /*****************************************************************************/
 
 CREATE FUNCTION eEqual(tjsonb, jsonb)
@@ -135,6 +159,30 @@ CREATE OPERATOR %<> (
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
+CREATE FUNCTION eOverlaps(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tjsonb_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = tjsonb, RIGHTARG = tstzspan,
+  PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+CREATE FUNCTION aOverlaps(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tjsonb_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = tjsonb, RIGHTARG = tstzspan,
+  PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
 /*****************************************************************************/
 
 CREATE FUNCTION eEqual(tjsonb, tjsonb)
@@ -182,6 +230,30 @@ CREATE OPERATOR %<> (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = aNotEqual,
   NEGATOR = ?=,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+CREATE FUNCTION eOverlaps(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_overlaps_tjsonb_tjsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?&& (
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = eOverlaps,
+  COMMUTATOR = ?&&,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+CREATE FUNCTION aOverlaps(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_overlaps_tjsonb_tjsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %&& (
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = aOverlaps,
+  COMMUTATOR = %&&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 

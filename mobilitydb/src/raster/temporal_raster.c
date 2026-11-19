@@ -762,50 +762,6 @@ Tfloat_as_coveragejson(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Return the creation options of a GDAL driver held in a text array as
- * the one string MEOS takes, or NULL for an array of none
- * @details Each option is written between double quotes, a double quote or a
- * backslash it holds escaped, which is how GDAL's tokenizer reads a string
- * back into its options
- * @param[in] array Array of options `KEY=VALUE`
- */
-static char *
-gdal_options_string(ArrayType *array)
-{
-  Datum *elems;
-  bool *nulls;
-  int count;
-  deconstruct_array(array, TEXTOID, -1, false, 'i', &elems, &nulls, &count);
-  StringInfoData buf;
-  initStringInfo(&buf);
-  int n = 0;
-  for (int i = 0; i < count; i++)
-  {
-    if (nulls[i])
-      continue;
-    char *opt = text_to_cstring(DatumGetTextP(elems[i]));
-    if (n++ > 0)
-      appendStringInfoChar(&buf, ' ');
-    appendStringInfoChar(&buf, '"');
-    for (const char *c = opt; *c; c++)
-    {
-      if (*c == '"' || *c == '\\')
-        appendStringInfoChar(&buf, '\\');
-      appendStringInfoChar(&buf, *c);
-    }
-    appendStringInfoChar(&buf, '"');
-    pfree(opt);
-  }
-  pfree(elems); pfree(nulls);
-  if (n == 0)
-  {
-    pfree(buf.data);
-    return NULL;
-  }
-  return buf.data;
-}
-
-/**
  * @brief Return the bytes a GDAL writer answers as a bytea, or NULL
  */
 static Datum
@@ -832,11 +788,12 @@ Raster_as_gdal(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
   char *format = text_to_cstring(PG_GETARG_TEXT_P(1));
-  char *options = PG_ARGISNULL(2) ? NULL :
-    gdal_options_string(PG_GETARG_ARRAYTYPE_P(2));
+  int count = 0;
+  text **options = PG_ARGISNULL(2) ? NULL :
+    textarr_extract(PG_GETARG_ARRAYTYPE_P(2), &count);
   int32 srid = PG_ARGISNULL(3) ? 0 : PG_GETARG_INT32(3);
   size_t size;
-  uint8_t *bytes = raster_as_gdal(rast, format, options, srid, &size);
+  uint8_t *bytes = raster_as_gdal(rast, format, options, count, srid, &size);
   pfree(format);
   if (options) pfree(options);
   return gdal_bytes_datum(fcinfo, bytes, size);
@@ -855,11 +812,12 @@ Raster_as_tiff(PG_FUNCTION_ARGS)
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
   Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-  char *options = PG_ARGISNULL(1) ? NULL :
-    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  int count = 0;
+  text **options = PG_ARGISNULL(1) ? NULL :
+    textarr_extract(PG_GETARG_ARRAYTYPE_P(1), &count);
   int32 srid = PG_ARGISNULL(2) ? 0 : PG_GETARG_INT32(2);
   size_t size;
-  uint8_t *bytes = raster_as_tiff(rast, options, srid, &size);
+  uint8_t *bytes = raster_as_tiff(rast, options, count, srid, &size);
   if (options) pfree(options);
   return gdal_bytes_datum(fcinfo, bytes, size);
 }
@@ -877,10 +835,11 @@ Raster_as_png(PG_FUNCTION_ARGS)
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
   Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-  char *options = PG_ARGISNULL(1) ? NULL :
-    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  int count = 0;
+  text **options = PG_ARGISNULL(1) ? NULL :
+    textarr_extract(PG_GETARG_ARRAYTYPE_P(1), &count);
   size_t size;
-  uint8_t *bytes = raster_as_png(rast, options, &size);
+  uint8_t *bytes = raster_as_png(rast, options, count, &size);
   if (options) pfree(options);
   return gdal_bytes_datum(fcinfo, bytes, size);
 }
@@ -898,10 +857,11 @@ Raster_as_jpeg(PG_FUNCTION_ARGS)
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
   Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-  char *options = PG_ARGISNULL(1) ? NULL :
-    gdal_options_string(PG_GETARG_ARRAYTYPE_P(1));
+  int count = 0;
+  text **options = PG_ARGISNULL(1) ? NULL :
+    textarr_extract(PG_GETARG_ARRAYTYPE_P(1), &count);
   size_t size;
-  uint8_t *bytes = raster_as_jpeg(rast, options, &size);
+  uint8_t *bytes = raster_as_jpeg(rast, options, count, &size);
   if (options) pfree(options);
   return gdal_bytes_datum(fcinfo, bytes, size);
 }

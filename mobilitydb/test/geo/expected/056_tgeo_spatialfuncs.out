@@ -944,8 +944,7 @@ SELECT ST_AsEWKT(geographyFromHexEWKB('0101000020E61000006666666666661140CDCCCCC
 SELECT asHexEWKB(geometry 'Point(1 1)', 'ABC');
 ERROR:  Invalid value for endian flag
 SELECT geometryFromHexEWKB('XYZ');
-ERROR:  parse error - invalid geometry
-HINT:  "XY" <-- parse error at position 2 within geometry
+ERROR:  Invalid hex string, length (3) has to be a multiple of two!
 --------------------------------------------------------
 -- 2D
 SELECT asText(round(tgeometry 'Point(1.12345 1.12345)@2001-01-01', 2));

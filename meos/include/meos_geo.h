@@ -348,14 +348,19 @@ extern uint8_t *geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *s
 extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision, size_t *size_out);
 extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs, size_t *size_out);
 extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian, size_t *size_out);
+extern char *geo_as_hexwkb(const GSERIALIZED *gs, const char *endian, size_t *size_out);
 extern char *geo_as_text(const GSERIALIZED *gs, int precision, size_t *size_out);
+extern uint8_t *geo_as_wkb(const GSERIALIZED *gs, const char *endian, size_t *size);
 extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid);
 extern GSERIALIZED *geo_from_geojson(const char *geojson);
 extern GSERIALIZED *geo_from_text(const char *wkt, int32_t srid);
 extern char *geo_out(const GSERIALIZED *gs, size_t *size_out);
-// extern GSERIALIZED *geog_from_binary(const char *wkb_bytea);
+extern GSERIALIZED *geog_from_ewkb(const uint8_t *wkb, size_t wkb_size);
+extern GSERIALIZED *geog_from_ewkt(const char *ewkt);
+extern GSERIALIZED *geog_from_geojson(const char *geojson);
 extern GSERIALIZED *geog_from_hexewkb(const char *hexwkb);
 extern GSERIALIZED *geog_in(const char *str, int32 typmod);
+extern GSERIALIZED *geom_from_ewkt(const char *ewkt);
 extern GSERIALIZED *geom_from_hexewkb(const char *hexwkb);
 extern GSERIALIZED *geom_in(const char *str, int32 typmod);
 
