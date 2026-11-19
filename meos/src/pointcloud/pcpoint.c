@@ -597,22 +597,133 @@ pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
 }
 
 /*****************************************************************************
- * Comparison
+ * Comparison and sort key
  *
- * Byte-wise on the full varlena, with length as the primary key. This gives
- * a stable total order usable by MEOS Set dedup/sort machinery without
- * making any claim about meaningful ordering on pcpoint values.
+ * pgPointCloud defines no order on a point or a patch, and the one order it
+ * states, along the decoded dimensions (PC_Sort), needs the schema of the
+ * pcid, which a comparison does not read: a value is read and compared with
+ * no catalog, only a question that decodes a coordinate reports a missing
+ * schema. A point cloud value is therefore ordered first by its pcid as a
+ * number, then by the bytes stored after the pcid as unsigned bytes, a value
+ * whose bytes prefix those of another sorting first, so that two values are
+ * equal exactly when their meaningful bytes are, which their hash reads.
  *****************************************************************************/
 
 /**
+ * @brief Compare two point cloud values given their pcid and the bytes
+ * stored after it
+ * @details Ordered by the pcid as a number, then by the bytes as unsigned
+ * bytes, a prefix sorting first
+ * @param[in] pcid1,pcid2 Pcids of the values
+ * @param[in] b1,b2 Bytes stored after the pcid
+ * @param[in] n1,n2 Number of meaningful bytes after the pcid
+ * @return -1 / 0 / 1
+ */
+int
+pointcloud_bytes_cmp(uint32_t pcid1, const uint8_t *b1, size_t n1,
+  uint32_t pcid2, const uint8_t *b2, size_t n2)
+{
+  assert(b1); assert(b2);
+  if (pcid1 != pcid2)
+    return (pcid1 < pcid2) ? -1 : 1;
+  int c = memcmp(b1, b2, Min(n1, n2));
+  if (c != 0)
+    return (c < 0) ? -1 : 1;
+  return (n1 > n2) - (n1 < n2);
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a point cloud value
+ * given the bytes stored after its pcid
+ * @param[in] b Bytes stored after the pcid
+ * @param[in] n Number of meaningful bytes after the pcid
+ */
+size_t
+pointcloud_sortkey_size(const uint8_t *b, size_t n)
+{
+  assert(b);
+  size_t result = sizeof(uint32_t) + n + 2;
+  for (size_t i = 0; i < n; i++)
+    if (b[i] == 0)
+      result++;
+  return result;
+}
+
+/**
+ * @brief Write the sort key of a point cloud value given its pcid and the
+ * bytes stored after it
+ * @details The key holds the pcid as a 4-byte integer, most significant byte
+ * first, then the bytes as #datum_sortkey_put writes the bytes of a text: a
+ * zero byte as a zero byte followed by 0xFF, ended by two zero bytes, which
+ * sort below every byte that continues a longer value, so that comparing two
+ * keys byte by byte as unsigned values orders the values as
+ * #pointcloud_bytes_cmp does, also when other keys follow. Its length is
+ * #pointcloud_sortkey_size
+ * @param[in] pcid Pcid of the value
+ * @param[in] b Bytes stored after the pcid
+ * @param[in] n Number of meaningful bytes after the pcid
+ * @param[out] out Buffer of #pointcloud_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+pointcloud_sortkey_put(uint32_t pcid, const uint8_t *b, size_t n,
+  uint8_t *out)
+{
+  assert(b); assert(out);
+  for (int i = 3; i >= 0; i--)
+  {
+    out[i] = pcid & 0xFF;
+    pcid >>= 8;
+  }
+  out += sizeof(uint32_t);
+  for (size_t i = 0; i < n; i++)
+  {
+    *out++ = b[i];
+    if (b[i] == 0)
+      *out++ = 0xFF;
+  }
+  *out++ = 0;
+  *out++ = 0;
+  return out;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a pcpoint
+ * @param[in] pt Point
+ */
+size_t
+pcpoint_sortkey_size(const Pcpoint *pt)
+{
+  assert(pt);
+  return pointcloud_sortkey_size((const uint8_t *) pt + PC_BYTES_OFFSET,
+    pcpoint_meaningful_size(pt) - PC_BYTES_OFFSET);
+}
+
+/**
+ * @brief Write the sort key of a pcpoint, which #pointcloud_sortkey_put
+ * states
+ * @param[in] pt Point
+ * @param[out] out Buffer of #pcpoint_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+pcpoint_sortkey_put(const Pcpoint *pt, uint8_t *out)
+{
+  assert(pt); assert(out);
+  return pointcloud_sortkey_put(pcpoint_get_pcid(pt),
+    (const uint8_t *) pt + PC_BYTES_OFFSET,
+    pcpoint_meaningful_size(pt) - PC_BYTES_OFFSET, out);
+}
+
+/**
  * @ingroup meos_pointcloud_base_comp
- * @brief Compare two pcpoints byte-wise
+ * @brief Compare two pcpoints, first by their pcid as a number, then by the
+ * bytes stored after it
  * @return -1 / 0 / 1
  * @errval INT_MAX
- * @note Compares only the meaningful-prefix bytes — pgpointcloud's
- * struct-tail padding is skipped (see the padding comment above).
- * Two pcpoints that disagree only on those padding bytes now compare
- * equal, making Set dedup and B-tree equality deterministic.
+ * @note Reads only the meaningful bytes, pgPointCloud's struct-tail padding
+ * being skipped (see the padding comment above), so that Set dedup and B-tree
+ * equality are deterministic
  * @csqlfn #Pcpoint_cmp()
  */
 int
@@ -620,13 +731,11 @@ pcpoint_cmp(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pt1, INT_MAX); VALIDATE_NOT_NULL(pt2, INT_MAX);
-  size_t sz1 = pcpoint_meaningful_size(pt1);
-  size_t sz2 = pcpoint_meaningful_size(pt2);
-  size_t minsz = (sz1 < sz2) ? sz1 : sz2;
-  int c = memcmp(pt1, pt2, minsz);
-  if (c != 0) return (c < 0) ? -1 : 1;
-  if (sz1 == sz2) return 0;
-  return (sz1 < sz2) ? -1 : 1;
+  return pointcloud_bytes_cmp(pcpoint_get_pcid(pt1),
+    (const uint8_t *) pt1 + PC_BYTES_OFFSET,
+    pcpoint_meaningful_size(pt1) - PC_BYTES_OFFSET, pcpoint_get_pcid(pt2),
+    (const uint8_t *) pt2 + PC_BYTES_OFFSET,
+    pcpoint_meaningful_size(pt2) - PC_BYTES_OFFSET);
 }
 
 /**

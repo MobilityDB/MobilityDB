@@ -71,6 +71,9 @@
 #if NPOINT
   #include "npoint/tnpoint.h"
 #endif
+#if POINTCLOUD
+  #include "pointcloud/tpcbox.h"
+#endif
 #if POSE
   #include "pose/pose.h"
   #include "pose/posechain.h"
@@ -5314,6 +5317,12 @@ temporal_bbox_sortkey_put(const bboxunion *box, MeosType bboxtype,
       if (out)
         stbox_sortkey_put(&box->g, out);
       return stbox_sortkey_size(&box->g);
+#if POINTCLOUD
+    case T_TPCBOX:
+      if (out)
+        tpcbox_sortkey_put(&box->c, out);
+      return tpcbox_sortkey_size(&box->c);
+#endif
     default:
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
         "Unknown bounding box type for a sort key: %s",
@@ -5348,7 +5357,8 @@ tinstant_sortkey_put(const TInstant *inst, uint8_t *out)
  * @brief Write the sort key of a temporal value, or count its bytes when the
  * buffer is NULL
  * @details The key holds the fields in the order #temporal_cmp compares them:
- * - the bounding box, as #tbox_sortkey_put, #stbox_sortkey_put or
+ * - the bounding box, as #tbox_sortkey_put, #stbox_sortkey_put,
+ *   #tpcbox_sortkey_put or
  *   #span_sortkey_body writes it, and for a temporal geography its period, as
  *   #span_sortkey_body writes it;
  * - each instant, as #tinstant_sortkey_put writes it;
@@ -5464,7 +5474,8 @@ temporal_sortkey_intl(const Temporal *temp, size_t *size)
  * @details The key is the bytes whose unsigned byte order is the order of
  * #temporal_cmp and whose byte equality is #temporal_eq. The temporal
  * Booleans, integers, big integers, floats, texts, points, cells, circular
- * buffers, network points, poses and pose chains have a sort key.
+ * buffers, network points, poses, pose chains, point-cloud points and
+ * point-cloud patches have a sort key.
  * @param[in] temp Temporal value
  * @param[out] size Number of bytes of the key
  * @errval NULL
