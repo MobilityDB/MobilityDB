@@ -234,10 +234,11 @@ WITH pt AS (SELECT pcpoint(1, 10.0, 20.0, 30.0) p)
 
 				<listitem xml:id="pcpoint_getDim">
 					<indexterm significance="normal"><primary><varname>getDim</varname></primary></indexterm>
-					<para>Devuelve cualquier dimensión con nombre de un pcpoint, NULL si el nombre es desconocido para el esquema</para>
+					<para>Devuelve cualquier dimensión con nombre de un pcpoint</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 getDim(pcpoint,text) → float
 </programlisting>
+					<para>El nombre se lee sin distinguir mayúsculas de minúsculas, y un nombre que el esquema del punto no declara produce un error, como lo produce <varname>PC_Get</varname> de pgPointCloud.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getDim(pcpoint(1, 10.0, 20.0, 30.0), 'X');
 -- 10
@@ -1061,6 +1062,7 @@ SELECT startValue(getX(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 getDim(tpcpoint,text) → tfloat
 </programlisting>
+					<para>El nombre se lee como <link linkend="pcpoint_getDim"><varname>getDim</varname></link> lo lee para un pcpoint, de modo que un nombre que el esquema no declara produce un error.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getDim(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]), 'X');

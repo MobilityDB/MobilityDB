@@ -235,10 +235,11 @@ WITH pt AS (SELECT pcpoint(1, 10.0, 20.0, 30.0) p)
 
 				<listitem xml:id="pcpoint_getDim">
 					<indexterm significance="normal"><primary><varname>getDim</varname></primary></indexterm>
-					<para>Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</para>
+					<para>Return any named dimension of a pcpoint</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 getDim(pcpoint,text) → float
 </programlisting>
+					<para>The name is read without regard to case, and a name the schema of the point does not state raises an error, as pgPointCloud's <varname>PC_Get</varname> raises it.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getDim(pcpoint(1, 10.0, 20.0, 30.0), 'X');
 -- 10
@@ -1061,6 +1062,7 @@ SELECT startValue(getX(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 getDim(tpcpoint,text) → tfloat
 </programlisting>
+					<para>The name is read as <link linkend="pcpoint_getDim"><varname>getDim</varname></link> reads it for a pcpoint, so a name the schema does not state raises an error.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getDim(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]), 'X');

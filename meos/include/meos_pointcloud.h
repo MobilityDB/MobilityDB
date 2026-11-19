@@ -555,6 +555,10 @@ extern Temporal *tpcpoint_from_base_temp(const Pcpoint *pt, const Temporal *temp
 extern Pcpoint *tpcpoint_start_value(const Temporal *temp);
 extern Pcpoint *tpcpoint_end_value(const Temporal *temp);
 extern Pcpoint *tpcpoint_value(const Temporal *temp);
+extern Temporal *tpcpoint_get_x(const Temporal *temp);
+extern Temporal *tpcpoint_get_y(const Temporal *temp);
+extern Temporal *tpcpoint_get_z(const Temporal *temp);
+extern Temporal *tpcpoint_get_dim(const Temporal *temp, const char *name);
 extern bool tpcpoint_value_n(const Temporal *temp, int n, Pcpoint **result);
 extern Pcpoint **tpcpoint_values(const Temporal *temp, int *count);
 extern SpanSet **tpcpoint_unnest(const Temporal *temp, Pcpoint ***values, int *count);
