@@ -147,8 +147,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `051f7e0920`) is read by class; the H3 resolutions and vertex numbers reach libh3, whose
   failure MEOS reports as "h3 library error". `tools/codegen/h3pg_import/extract.py` writes
   `h3_generated.c` and `h3_generated.h` as committed, and `extract.py --check` runs in
-  check-code.yml, MERGED as MobilityDB #3833 (`084317785b`). Future: every error raised on a
-  libh3 code describes it as h3-pg does, branch `meos/h3-errors-described`.
+  check-code.yml, MERGED as MobilityDB #3833 (`084317785b`). Every error raised on a libh3 code
+  states the code and its description as h3-pg does, through `ensure_h3_success` (11 generated
+  sites, 16 of `h3index_sets.c`, 13 others), OPEN as MobilityDB #3840 (`8c04ad40a6`).
+  Future: the opt-out reasons of the importer name the MEOS function implementing each skipped
+  function, branch `tools/h3pg-opt-out-names-its-homes`.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   OPEN as MobilityDB #3834 (`7750336242`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
