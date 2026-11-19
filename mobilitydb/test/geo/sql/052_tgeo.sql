@@ -579,6 +579,8 @@ SELECT asText(merge(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Po
 SELECT asText(merge(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry '[Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]'));
 SELECT asText(merge(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(1 1)@2001-01-04, Point(1 1)@2001-01-05]}', tgeometry '{[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06, Point(1 1)@2001-01-07],[Point(1 1)@2001-01-08, Point(1 1)@2001-01-09]}'));
 SELECT asText(merge(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(1 1)@2001-01-04, Point(1 1)@2001-01-05]}', tgeometry '{[Point(2 2)@2001-01-06, Point(1 1)@2001-01-07],[Point(1 1)@2001-01-08, Point(1 1)@2001-01-09]}'));
+SELECT asText(merge(tgeometry 'Linestring(0 0,1 0)@2001-01-01', tgeometry 'Linestring(1 0,2 1)@2001-01-01'));
+SELECT asText(merge(tgeometry 'Linestring(0 0,1 0)@2001-01-01', tgeometry 'Linestring(1.0000000000001 0,2 1)@2001-01-01'));
 
 SELECT asText(merge(tgeography 'Point(1.5 1.5)@2001-01-01', tgeography 'Point(1.5 1.5)@2001-01-02'));
 SELECT asText(merge(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', tgeography '{Point(1.5 1.5)@2001-01-03, Point(2.5 2.5)@2001-01-04, Point(1.5 1.5)@2001-01-05}'));
