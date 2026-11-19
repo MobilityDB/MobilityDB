@@ -6233,7 +6233,7 @@ raster_value_side(const void *ctxp, double x, double y, int axis, int k)
  */
 static int64
 raster_value_offset(const void *ctxp, double x1, double y1, double x2, double y2,
-  int64 D, int axis, int k, bool *whole)
+  int64 D, int axis, double k, bool *whole)
 {
   const RasterSampleState *state = (const RasterSampleState *) ctxp;
   return raster_affine_offset(state->gt, x1, y1, x2, y2, D, axis, k, whole);
