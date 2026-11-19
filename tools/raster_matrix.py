@@ -36,7 +36,10 @@ function, by its SQL name, by the name another engine gives it
 each in any casing a language takes (#normal), or names it in the class the
 catalog's object model assigns it to by the method name the model gives it
 (`ooName` of `objectModel.classes.<C>.methods` and `.operators`: `add` of
-`Raster` for `add_raster_float`), AND carries every raster type
+`Raster` for `add_raster_float`), or names it after that class or a raster
+type its signatures name, as a package holding every class's functions
+together spells a function of a class (GoMEOS's `RasterEValue` for
+`eRasterValue`, `RasterRasterUnion` for `rasterUnion`), AND carries every raster type
 the function's SQL signatures name.  The type test keeps a name the binding
 defines for another family from crediting a raster function: a binding
 carries the type `raster` or `raquet` when its object layer declares a class
@@ -165,7 +168,14 @@ def binding_cover(path, roots, functions):
     by_key.setdefault(key, set()).update(names)
   covered, missing = [], []
   for sql, names, needs, methods in functions:
-    named = names & every or any(oo in by_key.get(cls, ()) for cls, oo in methods)
+    # A binding whose package holds every class's functions together names a
+    # function of a class after it (GoMEOS's `RasterEValue`, `RasterRasterUnion`),
+    # so a name is also read after the class the model gives the method or a
+    # raster type the signature names, never after any class at all.
+    named = names & every or any(
+      oo in by_key.get(cls, ()) or cls + oo in by_key.get(cls, ())
+      for cls, oo in methods) or any(
+      t + n in by_key.get(t, ()) for t in needs for n in names)
     if named and needs <= types:
       covered.append(sql)
     else:
