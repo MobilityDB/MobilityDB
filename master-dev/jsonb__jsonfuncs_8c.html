@@ -94,6 +94,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos__json_8h_source.html">meos_json.h</a>&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2type__util_8h_source.html">pg_temporal/type_util.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -271,9 +272,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa21bbf6402e4dc8d53ea9d17c966cf07"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__json__json_gaa21bbf6402e4dc8d53ea9d17c966cf07.html#gaa21bbf6402e4dc8d53ea9d17c966cf07">Jsonb_strip_nulls</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gaa21bbf6402e4dc8d53ea9d17c966cf07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a JSONB value without its object fields whose value is null, and without its null array elements when the last argument is true @sqlfn jsonbStripNulls()  <a href="group__mobilitydb__json__json_gaa21bbf6402e4dc8d53ea9d17c966cf07.html#gaa21bbf6402e4dc8d53ea9d17c966cf07">More...</a><br /></td></tr>
 <tr class="separator:gaa21bbf6402e4dc8d53ea9d17c966cf07"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0297c5cf83a0c794f123fe67926cf7ab"><td class="memItemLeft" align="right" valign="top">static text **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="jsonb__jsonfuncs_8c_a0297c5cf83a0c794f123fe67926cf7ab.html#a0297c5cf83a0c794f123fe67926cf7ab">textarr_elems</a> (ArrayType *array, int *count)</td></tr>
-<tr class="memdesc:a0297c5cf83a0c794f123fe67926cf7ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the text elements of a one-dimensional text array, and their number in the last argument.  <a href="jsonb__jsonfuncs_8c_a0297c5cf83a0c794f123fe67926cf7ab.html#a0297c5cf83a0c794f123fe67926cf7ab">More...</a><br /></td></tr>
-<tr class="separator:a0297c5cf83a0c794f123fe67926cf7ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >JSON functions for JSONB values. </p>
