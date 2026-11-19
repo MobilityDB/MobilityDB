@@ -32,7 +32,7 @@
  * @brief Build the test tables for the static and temporal H3 cell index types
  * @details This
  * is the OFFLINE regeneration job that produces the frozen fixture
- * test/h3/data/*.data; it is NOT part of the mobilitydb_datagen
+ * test/h3/data/<table>.data; it is NOT part of the mobilitydb_datagen
  * extension (only the random_* helpers are).
  */
 

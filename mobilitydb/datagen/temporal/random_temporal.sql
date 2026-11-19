@@ -491,11 +491,11 @@ BEGIN
     RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
       mincard, maxcard;
   END IF;
-  IF lowvalue > highvalue - maxdelta * (maxcard - mincard) THEN
+  IF lowvalue > highvalue - maxdelta * (maxcard - 1) THEN
     RAISE EXCEPTION 'The difference between lowvalue and highvalue is not enough to generate the intset';
   END IF;
   card = random_int(mincard, maxcard);
-  v = random_int(lowvalue, highvalue - maxdelta * card);
+  v = random_int(lowvalue, highvalue - maxdelta * (card - 1));
   FOR i IN 1..card
   LOOP
     iarr[i] = v;
@@ -536,11 +536,11 @@ BEGIN
     RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
       mincard, maxcard;
   END IF;
-  IF lowvalue > highvalue - maxdelta * (maxcard - mincard) THEN
+  IF lowvalue > highvalue - maxdelta * (maxcard - 1) THEN
     RAISE EXCEPTION 'The difference between lowvalue and highvalue is not enough to generate the bigintset';
   END IF;
   card = random_int(mincard, maxcard);
-  v = random_bigint(lowvalue, highvalue - maxdelta * card);
+  v = random_bigint(lowvalue, highvalue - maxdelta * (card - 1));
   FOR i IN 1..card
   LOOP
     iarr[i] = v;
@@ -581,11 +581,11 @@ BEGIN
     RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
       mincard, maxcard;
   END IF;
-  IF lowvalue > highvalue - maxdelta * (maxcard - mincard) THEN
+  IF lowvalue > highvalue - maxdelta * (maxcard - 1) THEN
     RAISE EXCEPTION 'The difference between lowvalue and highvalue is not enough to generate the floatset';
   END IF;
   card = random_int(mincard, maxcard);
-  v = random_float(lowvalue, highvalue - maxdelta * card);
+  v = random_float(lowvalue, highvalue - maxdelta * (card - 1));
   FOR i IN 1..card
   LOOP
     farr[i] = v;
@@ -858,9 +858,9 @@ DECLARE
   v1 int;
   v2 int;
 BEGIN
-  IF lowvalue > highvalue - maxdelta * 2 * (maxcard - mincard) THEN
+  IF lowvalue > highvalue - maxdelta * 2 * (maxcard - 1) THEN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - '
-      'maxdelta * 2 * (maxcard - mincard): %, %, %, %, %',
+      'maxdelta * 2 * (maxcard - 1): %, %, %, %, %',
       lowvalue, highvalue, maxdelta, mincard, maxcard;
   END IF;
   card = random_int(mincard, maxcard);
@@ -899,9 +899,9 @@ DECLARE
   v1 bigint;
   v2 bigint;
 BEGIN
-  IF lowvalue > highvalue - maxdelta * 2 * (maxcard - mincard) THEN
+  IF lowvalue > highvalue - maxdelta * 2 * (maxcard - 1) THEN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - '
-      'maxdelta * 2 * (maxcard - mincard): %, %, %, %, %',
+      'maxdelta * 2 * (maxcard - 1): %, %, %, %, %',
       lowvalue, highvalue, maxdelta, mincard, maxcard;
   END IF;
   card = random_bigint(mincard, maxcard);
@@ -940,9 +940,9 @@ DECLARE
   v1 float;
   v2 float;
 BEGIN
-  IF lowvalue > highvalue - maxdelta * 2 * (maxcard - mincard) THEN
+  IF lowvalue > highvalue - maxdelta * 2 * (maxcard - 1) THEN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - '
-      'maxdelta * 2 * (maxcard - mincard): %, %, %, %, %',
+      'maxdelta * 2 * (maxcard - 1): %, %, %, %, %',
       lowvalue, highvalue, maxdelta, mincard, maxcard;
   END IF;
   card = random_float(mincard, maxcard);

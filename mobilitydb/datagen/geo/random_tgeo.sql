@@ -114,8 +114,8 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * @brief Generate a random geography which can be (currently) a point, a 
- * linestring or a polygon
+ * @brief Generate a random geography of one of the kinds a geography holds:
+ * a point, a linestring, a polygon or one of their multi variants
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] srid Optional SRID
@@ -130,7 +130,23 @@ BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
-  RETURN random_geometry(lowx, highx, lowy, highy, srid)::geography;
+  /* The kinds a geography holds (geography_valid_type), but the collection */
+  i = random_int(1, 6);
+  IF i = 1 THEN
+    RETURN random_geog_point(lowx, highx, lowy, highy, srid);
+  ELSIF i = 2 THEN
+    RETURN random_geog_linestring(lowx, highx, lowy, highy, 10, 5, 10, srid);
+  ELSIF i = 3 THEN
+    RETURN random_geog_polygon(lowx, highx, lowy, highy, 10, 5, 10, srid);
+  ELSIF i = 4 THEN
+    RETURN random_geog_multipoint(lowx, highx, lowy, highy, 10, 5, 10, srid);
+  ELSIF i = 5 THEN
+    RETURN random_geog_multilinestring(lowx, highx, lowy, highy, 10, 5, 10, 5,
+      10, srid);
+  ELSE -- i = 6
+    RETURN random_geog_multipolygon(lowx, highx, lowy, highy, 10, 5, 10, 5, 10,
+      srid);
+  END IF;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -145,8 +161,8 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * @brief Generate a random geography which can be (currently) a point, a 
- * linestring or a polygon
+ * @brief Generate a random geography of one of the kinds a geography holds:
+ * a point, a linestring, a polygon or one of their multi variants
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -162,7 +178,26 @@ BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
-  RETURN random_geometry3d(lowx, highx, lowy, highy, lowz, highz, srid)::geography;
+  /* The kinds a geography holds (geography_valid_type), but the collection */
+  i = random_int(1, 6);
+  IF i = 1 THEN
+    RETURN random_geog_point3d(lowx, highx, lowy, highy, lowz, highz, srid);
+  ELSIF i = 2 THEN
+    RETURN random_geog_linestring3d(lowx, highx, lowy, highy, lowz, highz, 10,
+      5, 10, srid);
+  ELSIF i = 3 THEN
+    RETURN random_geog_polygon3d(lowx, highx, lowy, highy, lowz, highz, 10, 5,
+      10, srid);
+  ELSIF i = 4 THEN
+    RETURN random_geog_multipoint3d(lowx, highx, lowy, highy, lowz, highz, 10,
+      5, 10, srid);
+  ELSIF i = 5 THEN
+    RETURN random_geog_multilinestring3d(lowx, highx, lowy, highy, lowz, highz,
+      10, 5, 10, 5, 10, srid);
+  ELSE -- i = 6
+    RETURN random_geog_multipolygon3d(lowx, highx, lowy, highy, lowz, highz,
+      10, 5, 10, 5, 10, srid);
+  END IF;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
