@@ -2493,7 +2493,7 @@ SELECT isValidIndex(quadbin '504b5fffffffffff');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 quadbinCellSibling(quadbin,text) → quadbin
 </programlisting>
-				<para><varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>. The answer is NULL for a sibling beyond an edge of the grid, which has no cell there: a column does not wrap at the antimeridian and a row does not cross a pole.</para>
+				<para><varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>, in any case, as <varname>cell_sibling</varname> of the CARTO reference reads the direction; another direction raises an error. The answer is NULL for a sibling beyond an edge of the grid, which has no cell there: a column does not wrap at the antimeridian and a row does not cross a pole.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT quadbinCellSibling(
   quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
