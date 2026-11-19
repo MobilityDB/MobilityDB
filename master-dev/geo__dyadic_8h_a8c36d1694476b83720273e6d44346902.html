@@ -174,8 +174,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_ab06982ab2da19316c5d335033752a8dc.html#ab06982ab2da19316c5d335033752a8dc">exact_sum_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_a03c3a55d4c1ce68d2397e52898489320.html#a03c3a55d4c1ce68d2397e52898489320">grow_expansion</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415">incircle_sign</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_a5582f5df6fa1fc86ee26c1c8136aadc2.html#a5582f5df6fa1fc86ee26c1c8136aadc2">MONOTONE_ASK</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_ab6b297962e0b34acf543be9c58e8189e.html#ab6b297962e0b34acf543be9c58e8189e">monotone_halve</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_af5309470f8110de1f130756e518b4c42.html#af5309470f8110de1f130756e518b4c42">monotone_search</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_a7a86fa359bb54cf0791922d581b524dc.html#a7a86fa359bb54cf0791922d581b524dc">MonotoneSide</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_a407f14a60b24d2cdf30b32b76803bc94.html#a407f14a60b24d2cdf30b32b76803bc94">NEAREST_ASK</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_a407f14a60b24d2cdf30b32b76803bc94.html#a407f14a60b24d2cdf30b32b76803bc94">NEAREST_ASK</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_a9d4ac9c283d765d4197e79d87e3930fe.html#a9d4ac9c283d765d4197e79d87e3930fe">nearest_bits_beyond</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_aaa6de6427caad6df1327da0c751f50e2.html#aaa6de6427caad6df1327da0c751f50e2">nearest_bits_beyond_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__dyadic_8h_a455ecfe801d4576a52837aebf73da069.html#a455ecfe801d4576a52837aebf73da069">nearest_double_exact</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="geo__dyadic_8h_a8c36d1694476b83720273e6d44346902.html#a8c36d1694476b83720273e6d44346902">nearest_double_search</a></td></tr>
@@ -275,7 +279,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Find the bit pattern of the double nearest a nonnegative value that <code>side</code> places against midpoints, a tie going to the even double, returning false where a side it asks cannot tell or its budget runs out. </p>
-<p >The answer is the smallest bit pattern whose upper midpoint the value does not pass, infinity standing above the largest double, whose upper midpoint is <code>2^1024 - 2^970</code>. A gallop from the candidate <code>bits</code> brackets it, its first two steps of one double, so that a candidate a neighbour or two from the answer asks no more sides than a walk, the steps then doubling, and halving the bracket finds it; a candidate whose own side cannot tell is read from its lower neighbour, which places the value below it or decides nothing. An exact side never answers 2 and a budget of 0 sets no limit, so the search always answers; a side of a filter on doubles answers 2 where it cannot tell, and its budget bounds the sides it is asked, so that the exact search behind it answers what the filter cannot </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The answer is the smallest bit pattern whose upper midpoint the value does not pass, infinity standing above the largest double, whose upper midpoint is <code>2^1024 - 2^970</code>, found by <a class="el" href="geo__dyadic_8h_af5309470f8110de1f130756e518b4c42.html#af5309470f8110de1f130756e518b4c42" title="Find the smallest key that side does not place below the answer, returning false where a side it asks...">monotone_search</a> over the bit patterns </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">bits</td><td>Bit pattern of the candidate, at most infinity's </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">side,arg</td><td>The side and its argument </td></tr>

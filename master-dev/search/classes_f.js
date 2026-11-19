@@ -19,10 +19,11 @@ var searchData=
   ['pointdistancefirstside_16',['PointDistanceFirstSide',['../structPointDistanceFirstSide.html',1,'']]],
   ['pointdistanceside_17',['PointDistanceSide',['../structPointDistanceSide.html',1,'']]],
   ['pointmotiongap_18',['PointMotionGap',['../structPointMotionGap.html',1,'']]],
-  ['pointrow_19',['PointRow',['../structPointRow.html',1,'']]],
-  ['polypointmovingedgestate_20',['PolypointMovingEdgeState',['../structPolypointMovingEdgeState.html',1,'']]],
-  ['polysignarg_21',['PolySignArg',['../structPolySignArg.html',1,'']]],
-  ['polyterm_22',['PolyTerm',['../structPolyTerm.html',1,'']]],
-  ['pose_23',['Pose',['../structPose.html',1,'']]],
-  ['posechain_24',['PoseChain',['../structPoseChain.html',1,'']]]
+  ['pointmotionoffsetside_19',['PointMotionOffsetSide',['../structPointMotionOffsetSide.html',1,'']]],
+  ['pointrow_20',['PointRow',['../structPointRow.html',1,'']]],
+  ['polypointmovingedgestate_21',['PolypointMovingEdgeState',['../structPolypointMovingEdgeState.html',1,'']]],
+  ['polysignarg_22',['PolySignArg',['../structPolySignArg.html',1,'']]],
+  ['polyterm_23',['PolyTerm',['../structPolyTerm.html',1,'']]],
+  ['pose_24',['Pose',['../structPose.html',1,'']]],
+  ['posechain_25',['PoseChain',['../structPoseChain.html',1,'']]]
 ];

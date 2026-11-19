@@ -343,6 +343,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aba395f7340588585514900b0a749a006.html#aba395f7340588585514900b0a749a006">mec_exact_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0902bf47b5c0c9af7a486bd13ee2409d.html#a0902bf47b5c0c9af7a486bd13ee2409d">mec_key</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a2b4ae2f54bc2b45ba1eded7f0581de58.html#a2b4ae2f54bc2b45ba1eded7f0581de58">mec_nearest</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aef42653d8925cdbb9240c13edd0d3760.html#aef42653d8925cdbb9240c13edd0d3760">mec_nearest_beyond</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a35e52e272ba4db9f0ce8c8f386d91cc8.html#a35e52e272ba4db9f0ce8c8f386d91cc8">mec_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ad0e5d7e0d185ed0671ab1494f06c291b.html#ad0e5d7e0d185ed0671ab1494f06c291b">mec_radius_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af3964af71dbc08d61f78060bbac35c6f.html#af3964af71dbc08d61f78060bbac35c6f">MEC_RADIUS_TERMS</a></td></tr>
@@ -422,7 +423,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the double nearest a coordinate of the centre or the radius of the circle of <a class="el" href="structMecExact.html" title="Exact sums of the circle through three points A, B and C that turn: the coordinates of u = B - A,...">MecExact</a>, a tie going to the even one. </p>
-<p >The answer is the smallest double that is not beyond (<a class="el" href="postgis__funcs_8c_a21d6b0059edbdb5e55a08fa809085836.html#a21d6b0059edbdb5e55a08fa809085836" title="Return true where a coordinate of the centre (which 0 or 1) or the radius (which 2) of the circle of ...">mec_beyond</a>): gallop from the candidate to bracket it, then halve the bracket. A zero is the positive one. Mirrors <a class="el" href="geo__funcs_8h_a0cba23cd24b48b511a57c440faf4a58d.html#a0cba23cd24b48b511a57c440faf4a58d" title="Return the distance of a point to a segment less a radius, computed exactly and rounded once,...">point_segment_distance_offset_exact</a> </p>
+<p >The answer is the smallest double that is not beyond (<a class="el" href="postgis__funcs_8c_a21d6b0059edbdb5e55a08fa809085836.html#a21d6b0059edbdb5e55a08fa809085836" title="Return true where a coordinate of the centre (which 0 or 1) or the radius (which 2) of the circle of ...">mec_beyond</a>), found by the one search (<a class="el" href="geo__dyadic_8h_af5309470f8110de1f130756e518b4c42.html#af5309470f8110de1f130756e518b4c42" title="Find the smallest key that side does not place below the answer, returning false where a side it asks...">monotone_search</a>) over the keys of the signed doubles (<a class="el" href="postgis__funcs_8c_a0902bf47b5c0c9af7a486bd13ee2409d.html#a0902bf47b5c0c9af7a486bd13ee2409d" title="Return the unsigned key ordering the doubles as their values do.">mec_key</a>). A zero is the positive one </p>
 
 </div>
 </div>

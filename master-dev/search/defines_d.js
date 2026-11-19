@@ -156,7 +156,7 @@ var searchData=
   ['merge_153',['MERGE',['../meos_2include_2temporal_2temporal_8h_a76920359bed3adc755c7f50ecd2728c9.html#a76920359bed3adc755c7f50ecd2728c9',1,'temporal.h']]],
   ['merge_5fno_154',['MERGE_NO',['../meos_2include_2temporal_2temporal_8h_a5717b88574e7e91188329d1fdf8e632f.html#a5717b88574e7e91188329d1fdf8e632f',1,'temporal.h']]],
   ['mfjson_5fcases_155',['MFJSON_CASES',['../nan__refusal__test_8c_a3e0c921d6110ecb6256d90b9cb9ba634.html#a3e0c921d6110ecb6256d90b9cb9ba634',1,'nan_refusal_test.c']]],
-  ['min_5fdimension_5fwidth_156',['MIN_DIMENSION_WIDTH',['../tspatial__selfuncs_8h_af34efc9f00d94382973cf7d68b314932.html#af34efc9f00d94382973cf7d68b314932',1,'MIN_DIMENSION_WIDTH():&#160;tspatial_selfuncs.h'],['../tspatial__analyze_8c_af34efc9f00d94382973cf7d68b314932.html#af34efc9f00d94382973cf7d68b314932',1,'MIN_DIMENSION_WIDTH():&#160;tspatial_analyze.c']]],
+  ['min_5fdimension_5fwidth_156',['MIN_DIMENSION_WIDTH',['../tspatial__analyze_8c_af34efc9f00d94382973cf7d68b314932.html#af34efc9f00d94382973cf7d68b314932',1,'MIN_DIMENSION_WIDTH():&#160;tspatial_analyze.c'],['../tspatial__selfuncs_8h_af34efc9f00d94382973cf7d68b314932.html#af34efc9f00d94382973cf7d68b314932',1,'MIN_DIMENSION_WIDTH():&#160;tspatial_selfuncs.h']]],
   ['min_5fdistance_5ftolerance_157',['MIN_DISTANCE_TOLERANCE',['../geo__op__diff_8c_a4309f3bebde32bcbd5d0b615c2ce5b6e.html#a4309f3bebde32bcbd5d0b615c2ce5b6e',1,'geo_op_diff.c']]],
   ['min_5fexpected_5fhits_158',['MIN_EXPECTED_HITS',['../rtree__load__test_8c_afcc9a301f064230f519dc01df6a1f44f.html#afcc9a301f064230f519dc01df6a1f44f',1,'MIN_EXPECTED_HITS():&#160;rtree_load_test.c'],['../sptree__load__test_8c_afcc9a301f064230f519dc01df6a1f44f.html#afcc9a301f064230f519dc01df6a1f44f',1,'MIN_EXPECTED_HITS():&#160;sptree_load_test.c']]],
   ['min_5fexpected_5fpairs_159',['MIN_EXPECTED_PAIRS',['../rtree__join__test_8c_af7c061fa197376cd0892c004cd347942.html#af7c061fa197376cd0892c004cd347942',1,'MIN_EXPECTED_PAIRS():&#160;rtree_join_test.c'],['../sptree__join__test_8c_af7c061fa197376cd0892c004cd347942.html#af7c061fa197376cd0892c004cd347942',1,'MIN_EXPECTED_PAIRS():&#160;sptree_join_test.c']]],
@@ -165,8 +165,9 @@ var searchData=
   ['minitems_162',['MINITEMS',['../temporal__rtree_8h_a5d61ec2970397047b7b5fe98a1ceca30.html#a5d61ec2970397047b7b5fe98a1ceca30',1,'temporal_rtree.h']]],
   ['minitems_5fpercentage_163',['MINITEMS_PERCENTAGE',['../temporal__rtree_8h_a178ab9c0110896ec7aa47f521d2e380e.html#a178ab9c0110896ec7aa47f521d2e380e',1,'temporal_rtree.h']]],
   ['mobdb_5fversion_5fstr_5fmaxlen_164',['MOBDB_VERSION_STR_MAXLEN',['../meos_2src_2temporal_2temporal_8c_aade493cf3e65a84c61e9ee0fb5de5963.html#aade493cf3e65a84c61e9ee0fb5de5963',1,'temporal.c']]],
-  ['motion_5ffilter_5fmaxmag_165',['MOTION_FILTER_MAXMAG',['../meos_2src_2geo_2geo__funcs_8c_a55d863c47fa63a20f1e73c23d1f8dd9d.html#a55d863c47fa63a20f1e73c23d1f8dd9d',1,'geo_funcs.c']]],
-  ['motion_5ffilter_5fminmag_166',['MOTION_FILTER_MINMAG',['../meos_2src_2geo_2geo__funcs_8c_ad0c09addfadf923a0c66ce04f714cd5f.html#ad0c09addfadf923a0c66ce04f714cd5f',1,'geo_funcs.c']]],
-  ['motion_5ffilter_5fslack_167',['MOTION_FILTER_SLACK',['../meos_2src_2geo_2geo__funcs_8c_a0de4d3963740243ada9dfcf55e9a384f.html#a0de4d3963740243ada9dfcf55e9a384f',1,'geo_funcs.c']]],
-  ['motion_5ffilter_5ftiny_168',['MOTION_FILTER_TINY',['../meos_2src_2geo_2geo__funcs_8c_aea1fd25607ffd48796dc3473143e396f.html#aea1fd25607ffd48796dc3473143e396f',1,'geo_funcs.c']]]
+  ['monotone_5fask_165',['MONOTONE_ASK',['../geo__dyadic_8h_a5582f5df6fa1fc86ee26c1c8136aadc2.html#a5582f5df6fa1fc86ee26c1c8136aadc2',1,'geo_dyadic.h']]],
+  ['motion_5ffilter_5fmaxmag_166',['MOTION_FILTER_MAXMAG',['../meos_2src_2geo_2geo__funcs_8c_a55d863c47fa63a20f1e73c23d1f8dd9d.html#a55d863c47fa63a20f1e73c23d1f8dd9d',1,'geo_funcs.c']]],
+  ['motion_5ffilter_5fminmag_167',['MOTION_FILTER_MINMAG',['../meos_2src_2geo_2geo__funcs_8c_ad0c09addfadf923a0c66ce04f714cd5f.html#ad0c09addfadf923a0c66ce04f714cd5f',1,'geo_funcs.c']]],
+  ['motion_5ffilter_5fslack_168',['MOTION_FILTER_SLACK',['../meos_2src_2geo_2geo__funcs_8c_a0de4d3963740243ada9dfcf55e9a384f.html#a0de4d3963740243ada9dfcf55e9a384f',1,'geo_funcs.c']]],
+  ['motion_5ffilter_5ftiny_169',['MOTION_FILTER_TINY',['../meos_2src_2geo_2geo__funcs_8c_aea1fd25607ffd48796dc3473143e396f.html#aea1fd25607ffd48796dc3473143e396f',1,'geo_funcs.c']]]
 ];

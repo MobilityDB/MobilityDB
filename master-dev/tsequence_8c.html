@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">tsequence.c File Reference</div></div>
@@ -112,6 +113,11 @@ $(function() {
 <code>#include &lt;utils/numeric.h&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFloatsegmGap.html">FloatsegmGap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:aac68fa4f9cd0f2122c72d1e6847705f8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_aac68fa4f9cd0f2122c72d1e6847705f8.html#aac68fa4f9cd0f2122c72d1e6847705f8">INT64_SPLIT_LOW</a>&#160;&#160;&#160;(INT64CONST(1) &lt;&lt; 11)</td></tr>
@@ -152,12 +158,12 @@ Functions</h2></td></tr>
 <tr class="memitem:af38a077280eb8d8604291e2e4a64cecf"><td class="memItemLeft" align="right" valign="top">static pg_noinline bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_af38a077280eb8d8604291e2e4a64cecf.html#af38a077280eb8d8604291e2e4a64cecf">floatsegm_crossing_search</a> (double start1, double end1, double start2, double end2, int sstart, int send, TimestampTz lower, TimestampTz <a class="el" href="enum__token__test_8c_ab2eb7df8cd4afb01567cfaca6e750f25.html#ab2eb7df8cd4afb01567cfaca6e750f25">upper</a>, TimestampTz *<a class="el" href="trgeo__distance_8txt_abb5993ac027732cab8badd32f1507f44.html#abb5993ac027732cab8badd32f1507f44">t</a>)</td></tr>
 <tr class="memdesc:af38a077280eb8d8604291e2e4a64cecf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two float segments whose gaps at the bounds have opposite signs cross strictly inside their period, and the microsecond nearest to the crossing in the output argument, searched with exact signs.  <a href="tsequence_8c_af38a077280eb8d8604291e2e4a64cecf.html#af38a077280eb8d8604291e2e4a64cecf">More...</a><br /></td></tr>
 <tr class="separator:af38a077280eb8d8604291e2e4a64cecf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a486063a5f1f2446bdf9b7226b693cc79"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_a486063a5f1f2446bdf9b7226b693cc79.html#a486063a5f1f2446bdf9b7226b693cc79">floatsegm_gap_beyond</a> (uint64 key, void *arg)</td></tr>
+<tr class="memdesc:a486063a5f1f2446bdf9b7226b693cc79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 where the gap of two float segments half a microsecond after the microsecond <code>key - 1</code> keeps its sign at the start, 0 where it has left it: the side <a class="el" href="tsequence_8c_af38a077280eb8d8604291e2e4a64cecf.html#af38a077280eb8d8604291e2e4a64cecf" title="Return true if two float segments whose gaps at the bounds have opposite signs cross strictly inside ...">floatsegm_crossing_search</a> gives <a class="el" href="geo__dyadic_8h_af5309470f8110de1f130756e518b4c42.html#af5309470f8110de1f130756e518b4c42" title="Find the smallest key that side does not place below the answer, returning false where a side it asks...">monotone_search</a>.  <a href="tsequence_8c_a486063a5f1f2446bdf9b7226b693cc79.html#a486063a5f1f2446bdf9b7226b693cc79">More...</a><br /></td></tr>
+<tr class="separator:a486063a5f1f2446bdf9b7226b693cc79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f595dcf6a438c8a8ab1c8748a87df55"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_a4f595dcf6a438c8a8ab1c8748a87df55.html#a4f595dcf6a438c8a8ab1c8748a87df55">floatsegm_gap_sign</a> (double start1, double end1, double start2, double end2, int64 d, int64 m, double half)</td></tr>
 <tr class="memdesc:a4f595dcf6a438c8a8ab1c8748a87df55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sign of the gap of two float segments at an offset from their start, exactly.  <a href="tsequence_8c_a4f595dcf6a438c8a8ab1c8748a87df55.html#a4f595dcf6a438c8a8ab1c8748a87df55">More...</a><br /></td></tr>
 <tr class="separator:a4f595dcf6a438c8a8ab1c8748a87df55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc035e74ca139cba2e3fe97e41eb363d"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_acc035e74ca139cba2e3fe97e41eb363d.html#acc035e74ca139cba2e3fe97e41eb363d">floatsegm_gap_sign_half</a> (double start1, double end1, double start2, double end2, int64 d, int64 m, int send)</td></tr>
-<tr class="memdesc:acc035e74ca139cba2e3fe97e41eb363d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sign of the gap of two float segments half a microsecond after a microsecond of the segments, the last microsecond reading the sign at the end.  <a href="tsequence_8c_acc035e74ca139cba2e3fe97e41eb363d.html#acc035e74ca139cba2e3fe97e41eb363d">More...</a><br /></td></tr>
-<tr class="separator:acc035e74ca139cba2e3fe97e41eb363d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add08b1765391fa989d07ff554a8fff47"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_add08b1765391fa989d07ff554a8fff47.html#add08b1765391fa989d07ff554a8fff47">floatsegm_interpolate</a> (double start, double end, long double ratio)</td></tr>
 <tr class="memdesc:add08b1765391fa989d07ff554a8fff47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float interpolated from a float segment with respect to a fraction of its total length.  <a href="tsequence_8c_add08b1765391fa989d07ff554a8fff47.html#add08b1765391fa989d07ff554a8fff47">More...</a><br /></td></tr>
 <tr class="separator:add08b1765391fa989d07ff554a8fff47"><td class="memSeparator" colspan="2">&#160;</td></tr>
