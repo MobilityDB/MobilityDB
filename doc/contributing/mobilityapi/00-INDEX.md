@@ -70,9 +70,8 @@ restate none of them.
 - MobilityAPI declares 13 conformance classes: three of Moving Features Part 1, `cquery` of
   Part 4, two of OGC API – Common, six of Coverages Part 1 and the core of EDR 1.1.
 - The 45 abstract tests of Part 1, Annex A, are executable (`ats_part1_test.go`): 17 discharged
-  by a live answer, 21 by the route, 4 by the response shape and 3 by the service description.
-- Three tests that state a response are discharged by the route alone: the distance, velocity
-  and acceleration queries of a temporal geometry.
+  by a live answer, 18 by the route, 7 by the response shape and 3 by the service description;
+  each of the 24 that state a response names the test reading it (MobilityAPI #82).
 - The wiki page of Part 1 states nine issues of the standard and seven candidate resolutions;
   no issue of `opengeospatial/ogcapi-movingfeatures` carries them.
 - The class `cquery` of Part 4 is tested for its declaration only, and the ledger of the
