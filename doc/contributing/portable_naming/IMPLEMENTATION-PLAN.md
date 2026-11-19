@@ -61,6 +61,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   much as you can, we cannot continue duplicating code in the geometry engine"): `monotone_search`
   and `monotone_halve` in `geo_dyadic.h` and `offset_nearest_bounded` in `tsequence.h` replace ten
   copies of the gallop and halving and two of the proof of a nearest microsecond: MobilityDB #3848,
+  MERGED as `687f768c8d`,
   branch `consol/one-monotone-search` rewrites `6aa9d0c47b` there, the search of the nearest crossing of two float segments;
   branch `consol/one-monotone-search` rewrites `5b10501659` there, the search of the distance of the interiors of two segments;
   branch `consol/one-monotone-search` rewrites `923ace06ac` there, the search of the offset at which a moving disc reaches a point;
@@ -79,6 +80,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   branch `consol/one-monotone-search` rewrites `b2c0122cf4` there, the note of the search for the nearest double;
   branch `consol/one-monotone-search` rewrites `690ce7e169` there, the guards of the side of the distance of segment interiors;
   branch `consol/one-monotone-search` rewrites `566bb7fe4c` there, the pair tier of the side of the distance of segment interiors.
+  The nearest crossing of any sign linear in the offset, `linear_crossing_nearest`, comes with
+  MobilityDB #3841, the product of two temporal floats dated at its nearest microsecond:
+  branch `fix/exact-unary-turning-points` rewrites `6aa9d0c47b` there, the search of the nearest crossing of two float segments;
+  branch `fix/exact-unary-turning-points` rewrites `b8be143a79` there, the sign of the gap of two float segments it reads.
 - **The conversion of a temporal network point to a temporal geometry point builds each point in
   the stack**, outside the plan, as the owner decided on 2026-11-07 ("approve the rewrite"):
   branch `perf/tnpoint-to-tgeompoint-points` rewrites `842c640e83` there, the
