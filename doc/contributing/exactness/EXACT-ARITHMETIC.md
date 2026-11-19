@@ -1043,6 +1043,28 @@ bound over the scales 2^-600 to 2^470, and 20000 point sets on and off circles t
 triples made 42.6 million calls, every one alike, and the 379 outputs of the SQL suite are those
 committed.
 
+### EA13. One certificate of an exact zero
+
+No bound tells a zero, so without a certificate a tie of the ladder falls to the expansions on their arena,
+about 9000 instructions a sign, though the inputs of a tie span few bits and their products are exact
+in pairs of doubles. Two signs stated that certificate for themselves, the all-exact branches of
+`cross_product_sign_exact` and `vector_triple_sign`. EA13 states it once for every polynomial:
+`polynomial_sign_exact_pairs`, between the two filters and the expansions of `polynomial_sign_exact`,
+keeps each term as a pair of doubles where its parts add up to at most two components
+(`two_product`, `grow_expansion`, no product below `DDB_EXACT_PRODUCT`, as `ddb_mul` reads one), adds
+the terms exactly into one expansion whose largest component carries the sign, a zero included, and
+answers 2 for a term past a pair, which the expansions decide as before. The two filters keep their
+contract of answering only a sign bounded away from zero, which their direct readers in `geo_funcs.c`
+rely on.
+
+MobilityDB #3859. Measured: a measurement build reads every undecided sign both
+ways and stops at any difference: the MEOS tests, the 379 tests of the SQL suite, whose outputs are
+those committed, and 62000 products of two temporal floats at random, at a tie, near a bound and
+scaled from 2^-600 to 2^470. The certificate decides 176666 of the 854991 signs the filters leave,
+each as the expansions answer. On the product of two temporal floats the sign at a tie costs 4088
+instructions against about 9500, the product of two segments at a tie 10385 against about 15100 and
+near a bound 7969 against about 10400; the random rows never reach the stage.
+
 ## 8. Decisions asked of the committers
 
 1. The one ladder: the expression ladder with each question's own first tier ahead of it, at
