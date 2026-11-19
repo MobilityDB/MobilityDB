@@ -150,7 +150,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   check-code.yml, MERGED as MobilityDB #3833 (`084317785b`). Every error raised on a libh3 code
   states the code and its description as h3-pg does, through `ensure_h3_success` (11 generated
   sites, 16 of `h3index_sets.c`, 13 others) and, against libh3 4.1, the descriptions libh3 4.2
-  gives its sixteen codes, OPEN as MobilityDB #3840 (`4386e2815d`). The opt-out reasons of the
+  gives its sixteen codes, MERGED as MobilityDB #3840 (`37e3cfd2ac`). The opt-out reasons of the
   importer name the MEOS function implementing each skipped function, and no comment names the
   `h3_adapter.c` MEOS does not have, MERGED as MobilityDB #3842 (`3cb603d64c`).
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
