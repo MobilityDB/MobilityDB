@@ -171,11 +171,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a geodetic H3 cell shares a position with a geodetic box. </p>
-<p >The cell is the region its outline bounds with the boundary points it owns, as the cell walks read it (<a class="el" href="meos_2src_2h3_2h3__geo_8c_a38e3d44cfc760f46204e2b44c3d98f77.html#a38e3d44cfc760f46204e2b44c3d98f77" title="Return in the last argument the canonical outline of a cell.">h3_cell_outline</a>). The box holds the positions whose longitude and latitude lie within its bounds, closed, or open at their upper ends when <code>border_inc</code> is false. Each part of the question is decided as MEOS decides it for a position or a path:</p><ul>
-<li>a vertex of the outline lies in the box by its degrees, as a position does, and the cell meets the box there when the vertex lies inside the bounds or the cell owns it;</li>
-<li>an edge enters the box where <a class="el" href="tcellindex_8h_ab01a73e9f4c39454c210babf805284a7.html#ab01a73e9f4c39454c210babf805284a7" title="Return in tin and tout the parameters between which a geodetic path lies in a box of longitudes and l...">dggs_arc_lonlat_box_spans</a> states, as a geodetic path along that arc does: a piece of some length holds positions of the cell's interior in the box, unless the edge runs along a meridian or the equator bounding the box with the cell on the other side; a single position counts when the cell owns the edge;</li>
-<li>otherwise the box lies inside the cell or apart from it, and its middle position says which, read as a geodetic position (<a class="el" href="meos_2src_2h3_2h3__geo_8c_a19888cf016ea3b173cc6b8d0fe4410c8.html#a19888cf016ea3b173cc6b8d0fe4410c8" title="Return true if a geodetic cell holds a geodetic position.">h3_cell_holds_vec</a>). The parallels of a box are not great circles, and they are read through the trigonometry of the restriction of a path, so the answer agrees with the restriction of a temporal geography point travelling along the edges of the cell. The QUADBIN twin is <a class="el" href="quadbin_8h_aeacb2d01ffaade87fe9bc0e61ace4c39.html#aeacb2d01ffaade87fe9bc0e61ace4c39" title="Return true if the tile of a QUADBIN cell shares a point with a planar box.">quadbin_cell_meets_box</a>. <dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if a geodetic H3 cell shares a position with a geodetic box, as <a class="el" href="tcellindex_8h_a78a9c4afe42e5838bab5cd8328696ed9.html#a78a9c4afe42e5838bab5cd8328696ed9" title="Return true if a geodetic cell of a grid shares a position with a geodetic box.">dggs_cell_meets_box</a> decides it for the cells of any grid, on the outlines and the owner rule of H3 (<a class="el" href="meos_2src_2h3_2h3__geo_8c_a6ed72f81b3b4d2c08decbb341431f643.html#a6ed72f81b3b4d2c08decbb341431f643" title="The geodetic walk of H3: its outlines, the vectors of decision D6 of their vertices,...">h3_geodetic_ops</a>). </p>
+<p >The QUADBIN twin is <a class="el" href="quadbin_8h_aeacb2d01ffaade87fe9bc0e61ace4c39.html#aeacb2d01ffaade87fe9bc0e61ace4c39" title="Return true if the tile of a QUADBIN cell shares a point with a planar box.">quadbin_cell_meets_box</a>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cell</td><td>Cell </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Box, geodetic </td></tr>
@@ -183,8 +180,6 @@ $(function() {
   </table>
   </dd>
 </dl>
-</li>
-</ul>
 
 </div>
 </div>
