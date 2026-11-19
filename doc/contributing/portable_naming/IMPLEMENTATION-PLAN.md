@@ -193,8 +193,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   as MobilityDB #3847 (`f7326f0a48`). The one commented-out assert of meos/src and mobilitydb/src,
   the ends of a point edge in `intervals_from_points`, is live (63 endpoint writes of an Edge read,
   none leaving a point edge with distinct ends; 11380 evaluations over 4000 Debug clips, none
-  failing; CGAL agreeing on 3000 point clips; speed at parity on its 25 compared cells), OPEN as
-  MobilityDB #3849 (`594fbae574`). `quadbin_cell_sibling` reads its direction in any case and
+  failing; CGAL agreeing on 3000 point clips; speed at parity on its 25 compared cells), MERGED
+  as MobilityDB #3849 (`9a1f122db2`). `quadbin_cell_sibling` reads its direction in any case and
   raises on another, as `cell_sibling` of quadbin-py does (census of 16 directions: 12 answered
   otherwise on master, a misspelt one as NULL like a cell at the edge), by the owner's ruling of
   2026-11-19 ("approve"),
