@@ -348,3 +348,26 @@ Tpcpoint_get_dim(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Transformation into the schema of another pcid
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpointcloud_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpointcloud_transform);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return a temporal pcpoint or pcpatch transformed into the schema of
+ * another pcid, which states the target SRID
+ * @sqlfn transform()
+ * @altsqlfn pcpointTransform(), pcpatchTransform()
+ */
+Datum
+Tpointcloud_transform(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(1);
+  Temporal *result = tpointcloud_transform(temp, pcid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}

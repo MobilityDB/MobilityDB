@@ -43,8 +43,11 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>           /* FLT_MAX */
 #include <limits.h>
+#include <math.h>            /* fabs, isfinite */
 #include <stddef.h>          /* offsetof */
+#include <stdint.h>          /* INT8_MIN and the other bounds */
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -64,6 +67,9 @@
 #include "pointcloud/meos_schema_hook.h"
 #include "pointcloud/pgsql_compat.h"
 #include "pointcloud/tpcbox.h"
+#include "geo/geo_funcs.h"          /* ensure_srid_known */
+#include "geo/meos_transform.h"     /* lwproj_lookup */
+#include "geo/tspatial.h"           /* point4d_transf_pj */
 
 /*****************************************************************************
  * Struct-tail padding
@@ -972,3 +978,167 @@ pcpoint_to_tpcbox(const Pcpoint *pt)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Transformation into the schema of another pcid
+ *****************************************************************************/
+
+/**
+ * @brief Return true if a coordinate fits a dimension of a schema
+ * @details A dimension stores a coordinate as `(value - offset) / scale` in
+ * its interpretation, which pgpointcloud's @c pc_double_to_ptr clamps into the
+ * range of that interpretation, so a coordinate beyond it would be stored as
+ * another one; the transformation refuses it instead
+ * @param[in] dim Dimension
+ * @param[in] value Coordinate
+ */
+static bool
+pc_dimension_holds(const PCDIMENSION *dim, double value)
+{
+  double raw = (value - dim->offset) / dim->scale;
+  switch (dim->interpretation)
+  {
+    case PC_INT8:   return raw >= INT8_MIN && raw <= INT8_MAX;
+    case PC_UINT8:  return raw >= 0 && raw <= UINT8_MAX;
+    case PC_INT16:  return raw >= INT16_MIN && raw <= INT16_MAX;
+    case PC_UINT16: return raw >= 0 && raw <= UINT16_MAX;
+    case PC_INT32:  return raw >= INT32_MIN && raw <= INT32_MAX;
+    case PC_UINT32: return raw >= 0 && raw <= UINT32_MAX;
+    case PC_INT64:  return raw >= (double) INT64_MIN &&
+                      raw <= (double) INT64_MAX;
+    case PC_UINT64: return raw >= 0 && raw <= (double) UINT64_MAX;
+    case PC_FLOAT:  return fabs(raw) <= FLT_MAX;
+    case PC_DOUBLE: return isfinite(raw);
+    default:        return false;
+  }
+}
+
+/**
+ * @brief Return in the last arguments the schema of the target pcid of a
+ * point cloud transformation and the transformation between the SRIDs of the
+ * two schemas, @p NULL when they state the same SRID
+ * @details A point cloud value takes its SRID from the schema its pcid names,
+ * so it is transformed into another schema, which states the target SRID and
+ * how the transformed coordinates are stored. Both schemas must be registered
+ * and state an SRID, and the target one must have an X and a Y dimension
+ * @param[in] pcid_from pcid of the value
+ * @param[in] pcid_to Target pcid
+ * @param[out] schema_to Schema of the target pcid
+ * @param[out] pj Transformation, @p NULL when the SRIDs are equal
+ */
+bool
+pc_transform_lookup(uint32_t pcid_from, uint32_t pcid_to,
+  const PCSCHEMA **schema_to, LWPROJ **pj)
+{
+  *pj = NULL;
+  const PCSCHEMA *from = meos_pc_schema(pcid_from);
+  const PCSCHEMA *to = meos_pc_schema(pcid_to);
+  if (! from || ! to)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", from ? pcid_to : pcid_from);
+    return false;
+  }
+  if (! ensure_srid_known((int32_t) from->srid) ||
+      ! ensure_srid_known((int32_t) to->srid))
+    return false;
+  if (! to->xdim || ! to->ydim)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The schema of pcid %u has no X and Y dimensions", pcid_to);
+    return false;
+  }
+  *schema_to = to;
+  if (from->srid == to->srid)
+    return true;
+  return lwproj_lookup((int32_t) from->srid, (int32_t) to->srid, pj) != 0;
+}
+
+/**
+ * @brief Return a pcpoint transformed into the schema of another pcid
+ * @details Each dimension of the target schema takes the coordinate of the
+ * dimension of the same name of the point, or 0 where the point has none, as
+ * pgpointcloud's @c PC_Transform fills it. The X, Y and Z coordinates are
+ * then transformed between the SRIDs of the two schemas, and a coordinate
+ * that does not fit its target dimension is refused
+ * @param[in] pt Point
+ * @param[in] pcid_to Target pcid
+ * @param[in] to Schema of the target pcid
+ * @param[in] pj Transformation, @p NULL when the SRIDs are equal
+ * @errval NULL
+ */
+Pcpoint *
+pcpoint_transf_pj(const Pcpoint *pt, uint32_t pcid_to, const PCSCHEMA *to,
+  const LWPROJ *pj)
+{
+  assert(pt); assert(to);
+  PCSCHEMA *from = pcpoint_schema(pt);
+  if (! from)
+    return NULL;
+  double *values = palloc(sizeof(double) * to->ndims);
+  for (uint32_t i = 0; i < to->ndims; i++)
+  {
+    values[i] = 0.0;
+    const char *name = to->dims[i]->name;
+    if (pc_schema_get_dimension_by_name(from, name))
+      (void) pcpoint_schema_get_dim(pt, from, name, &values[i]);
+  }
+  if (pj)
+  {
+    POINT4D p = {0.0, 0.0, 0.0, 0.0};
+    bool hasz = from->zdim && to->zdim;
+    if (! pcpoint_schema_get_x(pt, from, &p.x) ||
+        ! pcpoint_schema_get_y(pt, from, &p.y) ||
+        (hasz && ! pcpoint_schema_get_z(pt, from, &p.z)))
+    {
+      pfree(values);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The schema of pcid %u has no X and Y dimensions",
+        pcpoint_get_pcid(pt));
+      return NULL;
+    }
+    if (! point4d_transf_pj(&p, hasz, pj))
+    {
+      pfree(values);
+      return NULL;
+    }
+    values[to->xdim->position] = p.x;
+    values[to->ydim->position] = p.y;
+    if (hasz)
+      values[to->zdim->position] = p.z;
+  }
+  for (uint32_t i = 0; i < to->ndims; i++)
+  {
+    if (! pc_dimension_holds(to->dims[i], values[i]))
+    {
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+        "The coordinate %g of dimension %s does not fit the schema of pcid %u",
+        values[i], to->dims[i]->name, pcid_to);
+      pfree(values);
+      return NULL;
+    }
+  }
+  Pcpoint *result = pcpoint_make(pcid_to, values, (int) to->ndims);
+  pfree(values);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_base_srid
+ * @brief Return a pcpoint transformed into the schema of another pcid, which
+ * states the target SRID
+ * @param[in] pt Point
+ * @param[in] pcid Target pcid
+ * @csqlfn #Pcpoint_transform()
+ */
+Pcpoint *
+pcpoint_transform(const Pcpoint *pt, uint32_t pcid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, NULL);
+  const PCSCHEMA *to;
+  LWPROJ *pj;
+  if (! pc_transform_lookup(pcpoint_get_pcid(pt), pcid, &to, &pj))
+    return NULL;
+  return pcpoint_transf_pj(pt, pcid, to, pj);
+}

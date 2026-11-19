@@ -84,7 +84,8 @@ Temporal<T>              temporal_type      = ALL temporal types
   | where the SRID lives | families | `SRID` | `setSRID` | `transform` |
   |---|---|---|---|---|
   | stored in the value | tgeo, tcbuffer, tpose, tposechain | ✓ | ✓ | ✓ |
-  | inherited from a table | tnpoint (`ways`), tpcpoint/tpcpatch (`pointcloud_schemas`) | ✓ | — | — |
+  | inherited from a table | tnpoint (`ways`) | ✓ | — | — |
+  | inherited from the schema of a pcid | tpcpoint/tpcpatch (`pointcloud_schemas`) | ✓ | — | `transform(·, pcid integer)` |
   | imposed by the specification | th3index, tquadbin, ts2cell | — | — | — |
 
   ⭐ **The pointcloud table is `pointcloud_schemas`, stated in SQL.** `mobilitydb/sql/pointcloud/399_pointcloud_schemas.in.sql`
@@ -96,7 +97,9 @@ Temporal<T>              temporal_type      = ALL temporal types
 
   ⛔ So an absent `setSRID`/`transform` is the PROPERTY of an inherited or imposed reference
   system, never a parity gap: nothing per value can be set or transformed when the value
-  holds its SRID by reference. `th3index`/`tquadbin`/`ts2cell` declare NONE of the three and are
+  holds its SRID by reference. A point cloud value holds a pcid, so it is moved into the schema
+  of another pcid, which states the target SRID: `transform(·, pcid integer)` reprojects into it,
+  and no `transform(·, srid integer)` exists for it. `th3index`/`tquadbin`/`ts2cell` declare NONE of the three and are
   members, which is what shows membership carries no obligation.
 - **`posechain`** is a base type carrying a nested chain of reference frames.
   Its own surface is `550_posechain.in.sql` and its set type is

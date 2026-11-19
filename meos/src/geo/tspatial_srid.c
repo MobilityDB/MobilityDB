@@ -456,7 +456,7 @@ tspatial_set_srid(const Temporal *temp, int32_t srid)
  * Defitions taken from file lwgeom_transform.c
  *****************************************************************************/
 
-#if CBUFFER || POSE
+#if CBUFFER || POSE || POINTCLOUD
 /**
  * @brief Convert decimal degress to radians
  */
@@ -476,7 +476,7 @@ to_dec(POINT4D *pt)
   pt->x *= 180.0/M_PI;
   pt->y *= 180.0/M_PI;
 }
-#endif /* CBUFFER || POSE */
+#endif /* CBUFFER || POSE || POINTCLOUD */
 
 /*****************************************************************************
  * Functions fetching an LWPROJ structure containing transform information
@@ -560,7 +560,7 @@ srid_is_latlong(int32_t srid)
 }
 
 
-#if CBUFFER || POSE
+#if CBUFFER || POSE || POINTCLOUD
 /**
  * @brief Transform the coordinates of a point with a transformation
  * @param[in,out] p Coordinates, transformed in place
@@ -632,7 +632,7 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
   gserialized_set_srid(gs, srid_to);
   return true;
 }
-#endif /* CBUFFER || POSE */
+#endif /* CBUFFER || POSE || POINTCLOUD */
 
 /*****************************************************************************
  * Generic functions
@@ -657,11 +657,11 @@ Datum
 #if POINTCLOUD
     case T_PCPOINT:
     case T_PCPATCH:
-      /* A point cloud value holds its SRID by reference, so transforming it
-       * would rewrite coordinates the schema its pcid names describes */
+      /* A point cloud value holds its SRID by reference: it is transformed
+       * into the schema of another pcid, which states the target SRID */
       meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-        "A %s cannot be transformed to another SRID",
-        meostype_name(basetype));
+        "A %s is transformed into the schema of a target pcid, which states "
+        "the SRID, rather than to an SRID", meostype_name(basetype));
       return (Datum) 0;
 #endif
     case T_GEOMETRY:

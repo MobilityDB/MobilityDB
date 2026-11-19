@@ -69,6 +69,7 @@
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
 #include "geo/stbox.h"
+#include "pointcloud/pcpoint.h"   /* pc_transform_lookup */
 #include "geo/tspatial_parser.h"
 #include "pointcloud/pcpatch.h"
 #include "pointcloud/pgsql_compat.h"
@@ -1180,6 +1181,43 @@ tpcbox_round(const TPCBox *box, int maxdd)
       result->zmax = float8_round(box->zmax, maxdd);
     }
   }
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_box_transf
+ * @brief Return a TPCBox transformed into the schema of another pcid, which
+ * states the target SRID
+ * @details The spatial extent of the box is transformed as #stbox_transform
+ * transforms a spatiotemporal box, and the box takes the target pcid; a box
+ * with no spatial extent takes the pcid and the SRID of the target schema
+ * @param[in] box Box
+ * @param[in] pcid Target pcid
+ * @csqlfn #Tpcbox_transform()
+ */
+TPCBox *
+tpcbox_transform(const TPCBox *box, uint32_t pcid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, NULL);
+  const PCSCHEMA *to;
+  LWPROJ *pj;
+  if (! pc_transform_lookup(box->pcid, pcid, &to, &pj))
+    return NULL;
+  TPCBox *result = tpcbox_copy(box);
+  if (pj && MEOS_FLAGS_GET_X(box->flags))
+  {
+    STBox *extent = stbox_transform((const STBox *) box, (int32_t) to->srid);
+    if (! extent)
+    {
+      pfree(result);
+      return NULL;
+    }
+    memcpy(result, extent, sizeof(STBox));
+    pfree(extent);
+  }
+  result->srid = (int32_t) to->srid;
+  result->pcid = pcid;
   return result;
 }
 

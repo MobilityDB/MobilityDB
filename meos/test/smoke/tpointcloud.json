@@ -64,6 +64,14 @@
     "^pcpoint_get_dim$": {
       "char *": "\"X\""
     },
+    "_transform$": {
+      "Pcpoint *": "pcpoint_t1",
+      "Pcpatch *": "pcpatch_t1",
+      "Set *": "pcpointset_t1",
+      "Temporal *": "tpcpoint_t1",
+      "TPCBox *": "tpcbox_t1",
+      "uint32_t": "6"
+    },
     "^meos_pc_schema_register_dims$": {
       "char *": "\"none\"",
       "int": "3"
@@ -190,7 +198,17 @@
     "  double d_out = 0;",
     "  TimestampTz t_out = 0;",
     "  bool b_out = false;",
-    "  int n_out = 0;"
+    "  int n_out = 0;",
+    "  /* A point cloud value is transformed from the schema of its pcid to the",
+    "   * schema of a target pcid, both stating an SRID: pcid 5 in SRID 4326 and",
+    "   * pcid 6 in SRID 3857, laid out as schema 1, whose SRID is unknown. */",
+    "  meos_pc_schema_register_dims(5, 4326, \"none\", pcdims1, 3);",
+    "  meos_pc_schema_register_dims(6, 3857, \"none\", pcdims1, 3);",
+    "  Pcpoint *pcpoint_t1 = pcpoint_make(5, pccoords1, 3);",
+    "  Pcpatch *pcpatch_t1 = pcpatch_make((const Pcpoint **) &pcpoint_t1, 1);",
+    "  Set *pcpointset_t1 = pcpointset_make(&pcpoint_t1, 1);",
+    "  Temporal *tpcpoint_t1 = (Temporal *) tpcpointinst_make(pcpoint_t1, tstz1);",
+    "  TPCBox *tpcbox_t1 = pcpoint_to_tpcbox(pcpoint_t1);"
   ],
   "cleanup": [
     "  /* meos_set_pointcloud_schemas_xml is the setter the suite names its schema",
@@ -262,6 +280,11 @@
     "  free(pcpointset1);",
     "  free(pcpatch1);",
     "  free(pcpoint2);",
+    "  free(tpcbox_t1);",
+    "  free(tpcpoint_t1);",
+    "  free(pcpointset_t1);",
+    "  free(pcpatch_t1);",
+    "  free(pcpoint_t1);",
     "  free(pcpoint1);",
     "  free(geom1);",
     "  free(interv1);",

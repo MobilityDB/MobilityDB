@@ -55,6 +55,7 @@
 #include <meos_pointcloud.h>
 #include "temporal/temporal.h"
 #include "temporal/type_inout.h"
+#include "temporal/type_util.h"   /* pfree_array */
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/meos_schema_hook.h"
 #include "pointcloud/pgsql_compat.h"
@@ -981,3 +982,65 @@ pcpatch_ge(const Pcpatch *pa1, const Pcpatch *pa2)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Transformation into the schema of another pcid
+ *****************************************************************************/
+
+/**
+ * @brief Return a pcpatch transformed into the schema of another pcid
+ * @details Each point of the patch is transformed by #pcpoint_transf_pj, in
+ * the order the patch stores them
+ * @param[in] pa Patch
+ * @param[in] pcid_to Target pcid
+ * @param[in] to Schema of the target pcid
+ * @param[in] pj Transformation, @p NULL when the SRIDs are equal
+ * @errval NULL
+ */
+Pcpatch *
+pcpatch_transf_pj(const Pcpatch *pa, uint32_t pcid_to, const PCSCHEMA *to,
+  const LWPROJ *pj)
+{
+  assert(pa); assert(to);
+  int count;
+  Pcpoint **points = pcpatch_points(pa, &count);
+  if (! points)
+    return NULL;
+  Pcpoint **result_points = palloc(sizeof(Pcpoint *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    result_points[i] = pcpoint_transf_pj(points[i], pcid_to, to, pj);
+    if (! result_points[i])
+    {
+      pfree_array((void **) result_points, i);
+      pfree_array((void **) points, count);
+      return NULL;
+    }
+  }
+  Pcpatch *result = pcpatch_make((const Pcpoint **) result_points, count);
+  pfree_array((void **) result_points, count);
+  pfree_array((void **) points, count);
+  return result;
+}
+
+/**
+ * @brief Return a pcpatch transformed into the schema of another pcid, which
+ * states the target SRID
+ * @details The function is named with the prefix pg_ since pgPointCloud names
+ * pcpatch_transform the C function of its PC_Transform, which the PostgreSQL
+ * extension would otherwise call in its place. MEOS states it as
+ * #pcpatch_transform.
+ * @param[in] pa Patch
+ * @param[in] pcid Target pcid
+ */
+Pcpatch *
+pg_pcpatch_transform(const Pcpatch *pa, uint32_t pcid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, NULL);
+  const PCSCHEMA *to;
+  LWPROJ *pj;
+  if (! pc_transform_lookup(pcpatch_get_pcid(pa), pcid, &to, &pj))
+    return NULL;
+  return pcpatch_transf_pj(pa, pcid, to, pj);
+}
