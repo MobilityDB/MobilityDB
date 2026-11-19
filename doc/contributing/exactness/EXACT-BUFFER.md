@@ -229,9 +229,11 @@ adds one optional base weight per input curve to the merge of overlapping stretc
   input of theirs that no native route reads is refused, in every build.
 - **Four CGAL disagreements of 32 668 on the buffer ledger** are not attributed (note 6 §6.5):
   they may be the judge rather than the engine, and are resolved before either is called wrong.
-- **44 closed-form deviations of the buffer ledger** sit at the scales 2^−24 and 2^−27 alone and
-  are the probe's area function: measured by `geom_area` in place of `lwgeom_area`, the closed-form
-  arm reads 0 areas off the formula (note 6 §6.5).
+- **The closed-form deviations of the buffer ledger**, 44 of its outward rows and 48 of its holed
+  erosions, sit at the scales 2^−24 and 2^−27 alone and are the probe's area function, which strokes
+  the arcs: measured by `geo_area` in place of `lwgeom_area`, the closed-form arm reads 0 areas off
+  the formula (note 6 §6.5), on #3831's head 0 of the 1400 closed-form rows, the worst 1.34e-12
+  relative.
 - **No exact-reference run is recorded for convex hull, oriented envelope and the simplicity
   test** (note 4 §4.6). The centroid has one: MobilityDB #3171 (`d51b32e664`) states CGAL agreeing
   with every answer of its head over 75 rows in six classes.
