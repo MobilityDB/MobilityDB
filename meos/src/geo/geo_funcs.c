@@ -21405,11 +21405,62 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
 }
 
 /**
+ * @brief Return true if a piece of a straight linear edge lies on the
+ * boundary of an area, for an area whose boundary edges are all straight
+ * @details A straight boundary edge holds a stretch of positive length of the
+ * linear edge exactly where the two lie on one line, a sign of cross products
+ * of input coordinates (#cross_product_sign), and the piece lies between its
+ * ends, read along the linear edge as #relate_boundary_piece_covered reads a
+ * piece of a boundary edge
+ * @param[in] line Straight linear edge
+ * @param[in] tm Parameter of the middle of the piece along @p line
+ * @param[in] ra Edges of the area
+ * @param[out] arcs True where the area has a circular edge, whose answer this
+ * function does not give
+ */
+static bool
+relate_line_piece_on_boundary(const Edge *line, double tm,
+  const RelateEdges *ra, bool *arcs)
+{
+  double lx1 = line->cut ? line->sx : line->x1;
+  double ly1 = line->cut ? line->sy : line->y1;
+  double lx2 = line->cut ? line->ex : line->x2;
+  double ly2 = line->cut ? line->ey : line->y2;
+  double dx = line->x2 - line->x1, dy = line->y2 - line->y1;
+  bool alongx = fabs(dx) >= fabs(dy);
+  *arcs = false;
+  for (int i = 0; i < ra->nedges; i++)
+  {
+    const Edge *b = ra->edges[i];
+    if (b->etype == EDGE_POLYARC)
+    {
+      *arcs = true;
+      continue;
+    }
+    if (b->etype != EDGE_POLYSEG || ! relate_edge_nonempty(b))
+      continue;
+    if (cross_product_sign(lx1, ly1, lx2, ly2, lx1, ly1, b->x1, b->y1) != 0 ||
+        cross_product_sign(lx1, ly1, lx2, ly2, lx1, ly1, b->x2, b->y2) != 0)
+      continue;
+    double t1 = alongx ? (b->x1 - line->x1) / dx : (b->y1 - line->y1) / dy;
+    double t2 = alongx ? (b->x2 - line->x1) / dx : (b->y2 - line->y1) / dy;
+    if (Min(t1, t2) <= tm && tm <= Max(t1, t2))
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Classify the open portion of a linear edge between two consecutive
  * parameters
  * @details Since the portion contains no intersection with the polygon
  * boundary, one representative point is sufficient to determine whether the
- * complete open portion belongs to the polygon interior or exterior.
+ * complete open portion belongs to the polygon interior or exterior. The
+ * point is constructed and read within the band of the boundary, so a
+ * straight portion read on a boundary of straight edges lies on it exactly
+ * where a boundary edge lies on its line and holds it
+ * (#relate_line_piece_on_boundary); otherwise it lies inside or outside, read
+ * by parity alone (#relate_point_in_area_parity)
  */
 static void
 relate_linear_area_interval(const Edge *line, double t0, double t1,
@@ -21421,6 +21472,31 @@ relate_linear_area_interval(const Edge *line, double t0, double t1,
   double x, y;
   relate_edge_point(line, tm, &x, &y);
   int loc = relate_point_in_area_index(x, y, ra, false);
+  if (loc == 1 && line->etype == EDGE_LINESEG && relate_edge_nonempty(line))
+  {
+    bool arcs;
+    if (! relate_line_piece_on_boundary(line, tm, ra, &arcs) && ! arcs)
+    {
+      /* A whole edge, cut nowhere, that meets no boundary edge, which the
+       * exact segment kernel decides on the input vertices
+       * (#linesegm_intersect), lies with both its ends strictly on one side
+       * of the boundary, the side its first vertex is located on exactly; a
+       * piece between two cuts is read at its constructed middle by parity */
+      bool apart = (t0 == 0.0 && t1 == 1.0 && ! line->cut);
+      for (int i = 0; apart && i < ra->nedges; i++)
+      {
+        const Edge *b = ra->edges[i];
+        if (b->etype != EDGE_POLYSEG)
+          continue;
+        if (linesegm_intersect(line->x1, line->y1, line->x2, line->y2, b->x1,
+              b->y1, b->x2, b->y2).type != INTERSECT_NONE)
+          apart = false;
+      }
+      int vloc = apart ?
+        relate_point_in_area_index(line->x1, line->y1, ra, true) : 1;
+      loc = (vloc != 1) ? vloc : relate_point_in_area_parity(x, y, ra);
+    }
+  }
   switch (loc)
   {
     case 0:
@@ -21911,6 +21987,53 @@ relate_linear_area_stop(const MeosDE9IM *m, int want, const RelateQuery *q,
 }
 
 /**
+ * @brief Return true if a piece of a straight boundary edge of an area lies
+ * in a linear geometry
+ * @details A straight linear edge holds a stretch of positive length of the
+ * boundary edge exactly where the two lie on one line, a sign of cross
+ * products of input coordinates (#cross_product_sign), and the piece lies
+ * between its ends: the boundary is split at the parameters of those ends
+ * (#relate_area_edge_parameter), so the parameter @p tm of the middle of a
+ * piece lies within that stretch or outside it, read on the same doubles. A
+ * circular linear edge is read at the middle of the piece within its band
+ * (#point_on_arc)
+ * @param[in] boundary Straight boundary edge
+ * @param[in] tm Parameter of the middle of the piece along @p boundary
+ * @param[in] lines,nlines Edges of the linear geometry
+ */
+static bool
+relate_boundary_piece_covered(const Edge *boundary, double tm, Edge **lines,
+  int nlines)
+{
+  double bx1 = boundary->cut ? boundary->sx : boundary->x1;
+  double by1 = boundary->cut ? boundary->sy : boundary->y1;
+  double bx2 = boundary->cut ? boundary->ex : boundary->x2;
+  double by2 = boundary->cut ? boundary->ey : boundary->y2;
+  for (int i = 0; i < nlines; i++)
+  {
+    const Edge *e = lines[i];
+    if (e->etype == EDGE_LINEARC)
+    {
+      double x, y;
+      relate_area_edge_point(boundary, tm, &x, &y);
+      if (point_on_arc(x, y, e))
+        return true;
+      continue;
+    }
+    if (e->etype != EDGE_LINESEG || ! relate_edge_nonempty(e))
+      continue;
+    if (cross_product_sign(bx1, by1, bx2, by2, bx1, by1, e->x1, e->y1) != 0 ||
+        cross_product_sign(bx1, by1, bx2, by2, bx1, by1, e->x2, e->y2) != 0)
+      continue;
+    double t1 = relate_area_edge_parameter(boundary, e->x1, e->y1);
+    double t2 = relate_area_edge_parameter(boundary, e->x2, e->y2);
+    if (Min(t1, t2) <= tm && tm <= Max(t1, t2))
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Compute the DE-9IM matrix for a linear geometry and an areal geometry
  * @details Only the cells named in @p want are answered, and the walk over the
  * edges of the linear geometry stops once each of them holds the largest
@@ -22009,15 +22132,20 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
           relate_area_add_parameter(relate_area_edge_parameter(boundary,
             ix[k], iy[k]), bparams, &nbparams, maxbparams);
         /* A linear edge running along the boundary edge ends somewhere on
-         * it, and the boundary is split there as well */
+         * it, and the boundary is split there as well; an end that is an
+         * input vertex lies on a straight boundary edge exactly where it
+         * lies on it (#point_on_segment_exact) */
         for (int endpoint = 0; endpoint < 2; endpoint++)
         {
           double x = endpoint == 0 ? line->x1 : line->x2;
           double y = endpoint == 0 ? line->y1 : line->y2;
           bool on = boundary->etype == EDGE_POLYARC ?
             point_on_arc(x, y, boundary) :
-            point_on_segment(x, y, boundary->x1, boundary->y1, boundary->x2,
-              boundary->y2);
+            (line->cut ?
+              point_on_segment(x, y, boundary->x1, boundary->y1,
+                boundary->x2, boundary->y2) :
+              point_on_segment_exact(x, y, boundary->x1, boundary->y1,
+                boundary->x2, boundary->y2));
           if (on)
             relate_area_add_parameter(relate_area_edge_parameter(boundary, x,
               y), bparams, &nbparams, maxbparams);
@@ -22028,9 +22156,18 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
       {
         if (bparams[k + 1] - bparams[k] <= MEOS_GEOM_TOLERANCE)
           continue;
+        double tm = (bparams[k] + bparams[k + 1]) * 0.5;
+        if (boundary->etype == EDGE_POLYSEG)
+        {
+          if (! relate_boundary_piece_covered(boundary, tm, lines, nl))
+          {
+            m->eb = 1;
+            break;
+          }
+          continue;
+        }
         double x, y;
-        relate_area_edge_point(boundary, (bparams[k] + bparams[k + 1]) * 0.5,
-          &x, &y);
+        relate_area_edge_point(boundary, tm, &x, &y);
         if (relate_point_in_linear(x, y, lines, nl, false) == 2)
         {
           m->eb = 1;
