@@ -495,10 +495,10 @@ raster_affine_side(const double *gt, double x, double y, int axis, int k)
  */
 int64
 raster_affine_offset(const double *gt, double x1, double y1, double x2,
-  double y2, int64 D, int axis, int k, bool *whole)
+  double y2, int64 D, int axis, double k, bool *whole)
 {
-  return segment_grid_line_cross_offset(x1, y1, x2, y2, D, gt, axis,
-    (double) k, whole);
+  return segment_grid_line_cross_offset(x1, y1, x2, y2, D, gt, axis, k,
+    whole);
 }
 
 /**
@@ -511,12 +511,11 @@ raster_affine_offset(const double *gt, double x1, double y1, double x2,
  * 1 - 2 y / n (#mercator_lat_nearest), n a power of 2
  */
 static double
-raquet_line(const RaquetSampleState *state, int axis, int k)
+raquet_line(const RaquetSampleState *state, int axis, double k)
 {
   if (axis == 0)
-    return (state->col0 + (double) k) / state->ncols * 360.0 - 180.0;
-  return mercator_lat_nearest(1.0 - 2.0 * (state->row0 + (double) k) /
-    state->nrows);
+    return (state->col0 + k) / state->ncols * 360.0 - 180.0;
+  return mercator_lat_nearest(1.0 - 2.0 * (state->row0 + k) / state->nrows);
 }
 
 /**
@@ -544,7 +543,7 @@ raquet_side(const void *ctxp, double x, double y, int axis, int k)
  */
 static int64
 raquet_offset(const void *ctxp, double x1, double y1, double x2, double y2,
-  int64 D, int axis, int k, bool *whole)
+  int64 D, int axis, double k, bool *whole)
 {
   const RaquetSampleState *state = (const RaquetSampleState *) ctxp;
   double line = raquet_line(state, axis, k);
@@ -922,6 +921,45 @@ raster_cross_offset(const RasterGridOps *ops, const POINT2D *p1,
 }
 
 /**
+ * @brief Return the microsecond nearest to the instant at which a segment
+ * crosses the grid line @p k of an axis, as the offset from the start of the
+ * segment, a tie going to the even timestamp
+ * @details On a grid whose engine dates a crossing exactly, the crossing over
+ * the 2D half microseconds of the segment, truncated (#raster_cross_offset),
+ * is m2, so the crossing lies at m2 / 2 where the segment lies on the line
+ * then and between m2 / 2 and (m2 + 1) / 2 otherwise: the nearest microsecond
+ * is (m2 + 1) / 2 rounded down, and a crossing at m2 / 2 with m2 odd lies
+ * halfway between two microseconds, a tie going to the even timestamp, the
+ * parity that of @p lower plus the offset, as #floatsegm_crossing_search
+ * dates the crossing of two float segments. Another grid, or a segment of
+ * 2^52 microseconds or more, reads it from the parameter @p s in doubles, as
+ * #raster_cross_offset does
+ * @param[in] ops Grid the segment crosses
+ * @param[in] p1,p2 Endpoints of the segment
+ * @param[in] lower Timestamp of the start of the segment
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] axis 0 for a column line, 1 for a row line
+ * @param[in] k Grid line, a multiple of 1/2
+ * @param[in] s Parameter of the crossing in doubles
+ */
+static int64
+raster_cross_nearest(const RasterGridOps *ops, const POINT2D *p1,
+  const POINT2D *p2, TimestampTz lower, int64 D, int axis, double k, double s)
+{
+  if (ops->offset && D < (INT64CONST(1) << 52))
+  {
+    bool whole;
+    int64 m2 = ops->offset(ops->ctx, p1->x, p1->y, p2->x, p2->y, 2 * D, axis,
+      k, &whole);
+    int64 m = (m2 + 1) / 2;
+    if (whole && (m2 % 2) != 0 && ((lower + m) & 1) != 0)
+      m--;
+    return m;
+  }
+  return llrint((double) D * fmin(fmax(s, 0.0), 1.0));
+}
+
+/**
  * @brief Append a temporal float to the sequences of an answer, which takes
  * its sequences over
  */
@@ -1222,6 +1260,30 @@ raster_half_joins(const RasterGridOps *ops, int hc0, int hr0, int hc1,
 }
 
 /**
+ * @brief Read the value at the grid coordinates @p g with the polynomial of
+ * a half-pixel square, @p g clamped into the square
+ * @details The square holds its lower lines and not its upper ones, so a
+ * position on an upper line is read a hair inside, at the largest double
+ * below it, as a read at a parameter is (#raster_half_read)
+ */
+static bool
+raster_half_read_at(const RasterGridOps *ops, double *g, int hc, int hr,
+  double *value)
+{
+  const int h[2] = {hc, hr};
+  for (int axis = 0; axis < 2; axis++)
+  {
+    double lo = 0.5 * h[axis];
+    double hi = nextafter(0.5 * (h[axis] + 1), lo);
+    if (g[axis] < lo)
+      g[axis] = lo;
+    else if (g[axis] > hi)
+      g[axis] = hi;
+  }
+  return ops->point(ops->ctx, g[0], g[1], value);
+}
+
+/**
  * @brief Return the value a half-pixel square reads at the parameter @p s of
  * a segment
  * @details The position is held inside the square, so that at an end of the
@@ -1239,17 +1301,7 @@ raster_half_read(const RasterGridOps *ops, const double *g1, const double *g2,
   double s, int hc, int hr, double *value)
 {
   double g[2] = {g1[0] + s * (g2[0] - g1[0]), g1[1] + s * (g2[1] - g1[1])};
-  const int h[2] = {hc, hr};
-  for (int axis = 0; axis < 2; axis++)
-  {
-    double lo = 0.5 * h[axis];
-    double hi = nextafter(0.5 * (h[axis] + 1), lo);
-    if (g[axis] < lo)
-      g[axis] = lo;
-    else if (g[axis] > hi)
-      g[axis] = hi;
-  }
-  return ops->point(ops->ctx, g[0], g[1], value);
+  return raster_half_read_at(ops, g, hc, hr, value);
 }
 
 /**
@@ -1260,14 +1312,15 @@ raster_half_read(const RasterGridOps *ops, const double *g1, const double *g2,
  * polynomial of degree two in time: linear where the segment runs along a
  * grid axis or where d is zero, and otherwise reaching one extremum. The
  * values at the ends and at the middle of the piece state the polynomial,
- * and the extremum, when it falls inside the piece, is read at its instant,
- * as #tfloat_arithop_turnpt() places the extremum of the product of two
- * temporal floats.
+ * and the extremum, when it falls inside the piece, is read there and dated
+ * at the microsecond nearest to it, as #tfloat_arithop_turnpt() places the
+ * extremum of the product of two temporal floats.
+ * @param[in] tb Instant dating the end of the piece
  */
 static void
 raster_half_turnpt(const RasterGridOps *ops, const double *g1,
   const double *g2, double sa, double sb, int hc, int hr, TimestampTz t1,
-  double dt, RasterRun *run)
+  double dt, TimestampTz tb, RasterRun *run)
 {
   double fa, fm, fb;
   if (! (sb > sa) ||
@@ -1281,15 +1334,14 @@ raster_half_turnpt(const RasterGridOps *ops, const double *g1,
     return;
   double b = fb - fa - d;
   double u = -b / (2.0 * d);
-  if (u <= MEOS_EPSILON || u >= 1.0 - MEOS_EPSILON)
+  if (! (u > 0.0 && u < 1.0))
     /* The extremum lies outside the piece */
     return;
   double s = sa + u * (sb - sa);
-  TimestampTz t = t1 + (TimestampTz) (dt * s);
-  /* An extremum that rounds onto an instant already stated or onto the end
-   * of the piece holds no time of its own */
-  if ((run->count > 0 && t <= run->insts[run->count - 1]->t) ||
-      t >= t1 + (TimestampTz) (dt * sb))
+  TimestampTz t = t1 + llrint(dt * s);
+  /* An extremum dated at an instant already stated or at the end of the
+   * piece holds no time of its own */
+  if ((run->count > 0 && t <= run->insts[run->count - 1]->t) || t >= tb)
     return;
   double value;
   if (raster_half_read(ops, g1, g2, s, hc, hr, &value))
@@ -1342,6 +1394,11 @@ raster_run_close_linear(RasterRun *run, bool upper_inc, RasterAnswer *answer)
  * value at the instants of the trip, at every line it crosses and at every
  * extremum between them, and is linear between those. It is the value itself
  * wherever the trip runs along a grid axis, where the polynomial is linear.
+ * The value at a line is the one the trip reads on the line, at its exact
+ * crossing, and the crossing is dated at its nearest microsecond
+ * (#raster_cross_nearest), so the values of a row or a column in arithmetic
+ * progression lie on one segment and the answer holds none of their
+ * crossings.
  *
  * The value is continuous across the lines through the pixel centres, and
  * across a pixel edge unless a pixel read there holds no data. There it may
@@ -1380,7 +1437,8 @@ tpointseq_raster_point_traverse(const TSequence *seq, const RasterGridOps *ops,
     ops->grid(ops->ctx, p2->x, p2->y, &g2[0], &g2[1]);
     int hce = raster_half_index(g2[0], ops->width);
     int hre = raster_half_index(g2[1], ops->height);
-    double dt = (double) (inst2->t - inst1->t);
+    int64 D = inst2->t - inst1->t;
+    double dt = (double) D;
     double s_prev = 0.0;
     /* A segment lying on one side outside the grid along its whole length
      * meets no square, see #tpointseq_raster_value_traverse() */
@@ -1394,12 +1452,14 @@ tpointseq_raster_point_traverse(const TSequence *seq, const RasterGridOps *ops,
       int guard = abs(hce - hc) + abs(hre - hr);
       while ((hc != hce || hr != hre) && guard-- > 0)
       {
+        /* The next column line and row line, of pixel edges or of pixel
+         * centres */
+        double kc = 0.5 * ((stepc > 0) ? hc + 1 : hc);
+        double kr = 0.5 * ((stepr > 0) ? hr + 1 : hr);
         double sc = (hc == hce) ? DBL_MAX :
-          raster_cross_param(ops, p1, p2, g1, g2, 0,
-            0.5 * ((stepc > 0) ? hc + 1 : hc));
+          raster_cross_param(ops, p1, p2, g1, g2, 0, kc);
         double sr = (hr == hre) ? DBL_MAX :
-          raster_cross_param(ops, p1, p2, g1, g2, 1,
-            0.5 * ((stepr > 0) ? hr + 1 : hr));
+          raster_cross_param(ops, p1, p2, g1, g2, 1, kr);
         if (sc == DBL_MAX && sr == DBL_MAX)
           break;
         /* A segment passing through a corner of the squares crosses both
@@ -1413,14 +1473,24 @@ tpointseq_raster_point_traverse(const TSequence *seq, const RasterGridOps *ops,
           s = s_prev;
         if (s > 1.0)
           s = 1.0;
+        /* The crossing is dated at its nearest microsecond and read on the
+         * line it crosses, the value of the exact crossing */
+        TimestampTz t = inst1->t + ((sc <= sr) ?
+          raster_cross_nearest(ops, p1, p2, inst1->t, D, 0, kc, s) :
+          raster_cross_nearest(ops, p1, p2, inst1->t, D, 1, kr, s));
+        double gx[2] = {g1[0] + s * (g2[0] - g1[0]),
+          g1[1] + s * (g2[1] - g1[1])};
+        if (sc <= sr)
+          gx[0] = kc;
+        if (sr <= sc)
+          gx[1] = kr;
         if (in)
-          raster_half_turnpt(ops, g1, g2, s_prev, s, hc, hr, inst1->t, dt,
+          raster_half_turnpt(ops, g1, g2, s_prev, s, hc, hr, inst1->t, dt, t,
             &run);
-        TimestampTz t = inst1->t + (TimestampTz) (dt * s);
         bool in1 = raster_half_value(ops, hc1, hr1);
         if (in && in1 && raster_half_joins(ops, hc, hr, hc1, hr1))
         {
-          if (raster_half_read(ops, g1, g2, s, hc1, hr1, &value))
+          if (raster_half_read_at(ops, gx, hc1, hr1, &value))
             raster_run_push(&run, value, t);
         }
         else
@@ -1429,12 +1499,13 @@ tpointseq_raster_point_traverse(const TSequence *seq, const RasterGridOps *ops,
            * it enters from the crossing on */
           if (in)
           {
-            if (raster_half_read(ops, g1, g2, s, hc, hr, &value))
+            double gl[2] = {gx[0], gx[1]};
+            if (raster_half_read_at(ops, gl, hc, hr, &value))
               raster_run_push(&run, value, t);
             raster_run_close_linear(&run, false, answer);
           }
           run.lower_inc = true;
-          if (in1 && raster_half_read(ops, g1, g2, s, hc1, hr1, &value))
+          if (in1 && raster_half_read_at(ops, gx, hc1, hr1, &value))
             raster_run_push(&run, value, t);
         }
         hc = hc1;
@@ -1458,7 +1529,7 @@ tpointseq_raster_point_traverse(const TSequence *seq, const RasterGridOps *ops,
     if (in)
     {
       raster_half_turnpt(ops, g1, g2, s_prev, 1.0, hc, hr, inst1->t, dt,
-        &run);
+        inst2->t, &run);
       if (ops->point(ops->ctx, g2[0], g2[1], &value))
         raster_run_push(&run, value, inst2->t);
     }

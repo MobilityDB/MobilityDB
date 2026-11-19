@@ -110,10 +110,11 @@ typedef int (*raster_side_fn)(const void *ctx, double x, double y, int axis,
  * @brief Callback returning the microsecond at which the segment from
  * (@p x1, @p y1) to (@p x2, @p y2), of @p D microseconds, crosses the grid
  * line @p k of an axis, as the offset from its start, truncated, and in
- * @p whole whether the segment lies on the line exactly at it
+ * @p whole whether the segment lies on the line exactly at it; @p k is a
+ * multiple of 1/2, a line of pixel edges or of pixel centres
  */
 typedef int64 (*raster_offset_fn)(const void *ctx, double x1, double y1,
-  double x2, double y2, int64 D, int axis, int k, bool *whole);
+  double x2, double y2, int64 D, int axis, double k, bool *whole);
 
 /**
  * @brief What a raster engine tells the sampling about its grid: where a
@@ -153,7 +154,7 @@ extern double raster_affine_cross(const double *gt, double x1, double y1,
 extern int raster_affine_side(const double *gt, double x, double y, int axis,
   int k);
 extern int64 raster_affine_offset(const double *gt, double x1, double y1,
-  double x2, double y2, int64 D, int axis, int k, bool *whole);
+  double x2, double y2, int64 D, int axis, double k, bool *whole);
 extern Temporal *raster_value_sampler(const Temporal *traj,
   const RasterGridOps *ops);
 extern Temporal *raster_values_restrict(const Temporal *traj, Temporal *v,
