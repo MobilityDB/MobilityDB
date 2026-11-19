@@ -40,6 +40,7 @@ restate none of them.
 |---|---|
 | [Assessment](ASSESSMENT.md) | The conformance classes MobilityAPI declares, how each abstract test of Part 1 is discharged, the tests met in form only, the defects of Annex A, the extensions, and how the surface of a server is measured |
 | [Implementation plan](IMPLEMENTATION-PLAN.md) | The pull request or request to OGC that closes each gap, and its state |
+| [The filings with OGC](ogc-filings/README.md) | The texts of the issues and comments filed with the OGC Standards Working Groups, each stating the defect, the resolution, how MobilityAPI solves it and the evidence |
 
 ## The rules
 
