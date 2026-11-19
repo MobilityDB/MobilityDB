@@ -71,6 +71,26 @@ extern bool tfloatsegm_crossing(double start, double end, double value,
 extern bool tnumbersegm_crossing(double start1, double end1, double start2,
   double end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
 
+/* The low part of an integer split by #int64_half_split, 2^11 */
+#define INT64_SPLIT_LOW (INT64CONST(1) << 11)
+
+/**
+ * @brief Split an integer plus a half or zero into two doubles whose exact
+ * sum it is
+ * @details The integer is split into its multiple of 2^11, which below 2^63
+ * has at most 52 significant bits, and its remainder, which with @p half
+ * lies below 2^11 in magnitude; both are doubles exactly, at any duration a
+ * timestamp holds
+ */
+static inline void
+int64_half_split(int64 v, double half, double *hi, double *lo)
+{
+  int64 r = v % INT64_SPLIT_LOW;
+  *hi = (double) (v - r);
+  *lo = (double) r + half;
+  return;
+}
+
 /* The exact sign, at the offset `m + half` microseconds from the start of a
  * period, of a function linear in the offset, read by
  * #linear_crossing_nearest */
