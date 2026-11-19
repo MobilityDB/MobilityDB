@@ -110,4 +110,5 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   coordinates, whose differences carry about 43 bits. The owner accepts that cost for the merge
   (2026-11-18, "then please explain all this in the body of the PR so we can merge it"), with no
   hardware fused multiply-add. It closes the last open topic of MobilityDB #3352.
-- **Open pull requests** on 2026-11-03: this one and MobilityDB #3259.
+- **Open pull requests** of this plan on 2026-11-19: this one; MobilityDB #3259 is merged
+  (2026-11-05).
