@@ -1011,7 +1011,8 @@ tier 0 prove none of the 12 gaps, their bound on a placed coordinate being 0.95e
 comes first, ahead of EA1 to EA10, by the owner's ruling of 2026-11-19 ("bugs are high priority");
 its witness is 7 rows of `173_trgeo_distance_walk` (5 passes, 2 contacts) and the 18 passes of
 `graze2d.py` with their 24 refuters, judged at 50 digits. A pass reads its positive distance at the
-time of the walk's event, not at the time of its least distance.
+time of the walk's event, not at the time of its least distance. Merged as MobilityDB #3851
+(`d2a7ca45ca`, 2026-11-19).
 
 ### EA12. One search for every monotone sign
 
