@@ -195,7 +195,7 @@ items).
   buffer of a multipolygon of two polygons. CGAL agrees with 15402 of 15402 points about the 192
   natural-area multipolygons, master with 15394; every relationship speed cell at parity. It is
   master's engine; step 16 replaces it.
-- **Step 22** is MobilityDB #3831 (open, on master past #3829): the erosion of a polygon or a
+- **Step 22** is MobilityDB #3831 (merged as `913d0f8d54`): the erosion of a polygon or a
   multipolygon with round joins is the region the exact offset curves of the complement's parts
   wind around clockwise (`buffer_round_erosion`), read with a sense the caller fixes
   (`arrange_wound_tangent_surfaces_signed`). CGAL agrees with 62800 of 62800 erosion queries of the
