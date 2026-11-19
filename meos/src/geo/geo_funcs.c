@@ -1129,6 +1129,37 @@ linear_side_approx(const ExactSum *sums, const PolyTerm *f, int n)
   return val;
 }
 
+/* The operands of #linear_side_at and the sign at the start, for
+ * #linear_cross_beyond */
+typedef struct
+{
+  const ExactSum *sums;   /**< Exact sums the terms refer to */
+  const PolyTerm *f0;     /**< Terms of f(P0) */
+  int n0;                 /**< Number of terms of f(P0) */
+  const PolyTerm *f1;     /**< Terms of f(P1) */
+  int n1;                 /**< Number of terms of f(P1) */
+  int64 D;                /**< Duration of the segment in microseconds */
+  int s0;                 /**< Side at the start, not zero */
+} LinearCross;
+
+/**
+ * @brief Return 1 where the point is still on the side of the line it starts
+ * on, or on the line, at the microsecond of a key, 0 where it is past it: the
+ * side #linear_cross_offset gives #monotone_search
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+linear_cross_beyond(uint64 key, void *arg)
+{
+  const LinearCross *lc = (const LinearCross *) arg;
+  if (key == 0)
+    return 1;
+  return lc->s0 * linear_side_at(lc->sums, lc->f0, lc->n0, lc->f1, lc->n1,
+    lc->D, (int64) key) >= 0;
+}
+
 /**
  * @brief Return the microsecond at which a segment crosses a line given by a
  * function affine in the position, as the offset from the start of the
@@ -1139,8 +1170,8 @@ linear_side_approx(const ExactSum *sums, const PolyTerm *f, int n)
  * at which the point is still on the side of the line it starts on or on
  * the line, each side the exact sign #linear_side_at decides, so the
  * crossing is dated by the truncation of its exact parameter and no rounded
- * parameter decides it. A double estimate starts a galloping search, then a
- * bisection, on that sign.
+ * parameter decides it. A double estimate starts the one search
+ * (#monotone_search) on that sign.
  * @param[in] sums Exact sums the terms refer to
  * @param[in] f0,n0 Terms of `f(P0)` and their number
  * @param[in] f1,n1 Terms of `f(P1)` and their number
@@ -1169,57 +1200,13 @@ linear_cross_offset(const ExactSum *sums, const PolyTerm *f0, int n0,
   int64 n = 0;
   if (isfinite(est) && est > 0.0)
     n = (est >= (double) D) ? D : (int64) est;
-  /* lo is the last microsecond known on the start side, hi the first known
-   * past it, D + 1 standing for none */
-  int64 lo, hi;
-  if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, n) >= 0)
-  {
-    lo = n;
-    int64 step = 1;
-    for (;;)
-    {
-      if (lo == D)
-      {
-        hi = D + 1;
-        break;
-      }
-      int64 c = (step > D - lo) ? D : lo + step;
-      if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, c) >= 0)
-      {
-        lo = c;
-        step *= 2;
-      }
-      else
-      {
-        hi = c;
-        break;
-      }
-    }
-  }
-  else
-  {
-    hi = n;
-    int64 step = 1;
-    for (;;)
-    {
-      int64 c = (step >= hi) ? 0 : hi - step;
-      if (c == 0 || s0 * linear_side_at(sums, f0, n0, f1, n1, D, c) >= 0)
-      {
-        lo = c;
-        break;
-      }
-      hi = c;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, mid) >= 0)
-      lo = mid;
-    else
-      hi = mid;
-  }
+  /* The first microsecond past the start side, D + 1 standing for none,
+   * found by the one search (#monotone_search) */
+  LinearCross lc = {sums, f0, n0, f1, n1, D, s0};
+  uint64 key = 0;
+  (void) monotone_search((uint64) n, (uint64) D + 1, &linear_cross_beyond,
+    &lc, 0, &key);
+  int64 lo = (int64) key - 1;
   *whole = (linear_side_at(sums, f0, n0, f1, n1, D, lo) == 0);
   return lo;
 }
@@ -5266,12 +5253,41 @@ dwithin_grid_start(double est, int64 lo, int64 hi)
  */
 typedef int (*GridSignFn)(const void *ctx, int64 n);
 
+/* The sign of a grid search and the side #monotone_search reads of it,
+ * the key being the offset from @p lo (#grid_search_beyond) */
+typedef struct
+{
+  const void *ctx;   /**< Operands of the sign */
+  GridSignFn fn;     /**< Sign read at a microsecond */
+  int64 lo;          /**< Microsecond of the key 0 */
+  bool last;         /**< True for #grid_sign_last, false for #grid_sign_first */
+} GridSearch;
+
+/**
+ * @brief Return 1 where the microsecond of a key lies below the answer of a
+ * grid search, 0 otherwise: for #grid_sign_last where the sign is not
+ * positive there, for #grid_sign_first where it is positive; the key 0 is
+ * @p lo, below the answer
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+grid_search_beyond(uint64 key, void *arg)
+{
+  const GridSearch *g = (const GridSearch *) arg;
+  if (key == 0)
+    return 1;
+  int s = g->fn(g->ctx, g->lo + (int64) key);
+  return g->last ? (s <= 0) : (s > 0);
+}
+
 /**
  * @brief Return the largest @p n in [@p lo, @p hi) at which the sign @p fn
  * reads is not positive, that sign being not positive at @p lo, positive at
  * @p hi and changing once in between
- * @details A gallop from the estimate @p est brackets the answer, then halving
- * the bracket finds it, as #dyadic_wide_nearest_root finds its answer
+ * @details The one search (#monotone_search) from the estimate @p est finds
+ * the first microsecond at which the sign is positive
  */
 static int64
 grid_sign_last(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
@@ -5280,46 +5296,11 @@ grid_sign_last(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
   if (hi - lo <= 1)
     return lo;
   int64 start = dwithin_grid_start(est, lo, hi);
-  int64 step = 1;
-  if (fn(ctx, start) <= 0)
-  {
-    lo = start;
-    while (true)
-    {
-      int64 next = (hi - lo > step) ? lo + step : hi;
-      if (next == hi || fn(ctx, next) > 0)
-      {
-        hi = next;
-        break;
-      }
-      lo = next;
-      step *= 2;
-    }
-  }
-  else
-  {
-    hi = start;
-    while (true)
-    {
-      int64 next = (hi - lo > step) ? hi - step : lo;
-      if (next == lo || fn(ctx, next) <= 0)
-      {
-        lo = next;
-        break;
-      }
-      hi = next;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    if (fn(ctx, mid) <= 0)
-      lo = mid;
-    else
-      hi = mid;
-  }
-  return lo;
+  GridSearch g = {ctx, fn, lo, true};
+  uint64 key = 0;
+  (void) monotone_search((uint64) (start - lo), (uint64) (hi - lo),
+    &grid_search_beyond, &g, 0, &key);
+  return lo + (int64) key - 1;
 }
 
 /**
@@ -5334,46 +5315,11 @@ grid_sign_first(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
   if (hi - lo <= 1)
     return hi;
   int64 start = dwithin_grid_start(est, lo, hi);
-  int64 step = 1;
-  if (fn(ctx, start) <= 0)
-  {
-    hi = start;
-    while (true)
-    {
-      int64 next = (hi - lo > step) ? hi - step : lo;
-      if (next == lo || fn(ctx, next) > 0)
-      {
-        lo = next;
-        break;
-      }
-      hi = next;
-      step *= 2;
-    }
-  }
-  else
-  {
-    lo = start;
-    while (true)
-    {
-      int64 next = (hi - lo > step) ? lo + step : hi;
-      if (next == hi || fn(ctx, next) <= 0)
-      {
-        hi = next;
-        break;
-      }
-      lo = next;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    if (fn(ctx, mid) <= 0)
-      hi = mid;
-    else
-      lo = mid;
-  }
-  return hi;
+  GridSearch g = {ctx, fn, lo, false};
+  uint64 key = 0;
+  (void) monotone_search((uint64) (start - lo), (uint64) (hi - lo),
+    &grid_search_beyond, &g, 0, &key);
+  return lo + (int64) key;
 }
 
 /* The sign of `D^2 q(n / D)` (#dwithin_grid_sign) */
@@ -6812,6 +6758,58 @@ point_motion_point_offset_bounds(const double *c1, const double *c2,
   return false;
 }
 
+/* The operands of the gap of a moving disc to a point and its exact parts,
+ * set at the first side the filters leave open, for
+ * #point_motion_offset_side */
+typedef struct
+{
+  const double *c1, *c2, *p;   /**< Ends of the centre and the point */
+  int ndims;                   /**< Number of coordinates */
+  double r1, r2;               /**< Radii at the ends */
+  bool gapset;                 /**< True where gap is set */
+  PointMotionGap gap;          /**< Exact parts of the quadratic */
+} PointMotionOffsetSide;
+
+/**
+ * @brief Return the sign of the offset at which a moving disc reaches a
+ * point against the upper midpoint of the double of bit pattern @p bits: the
+ * side #point_motion_point_offset_exact gives #nearest_double_search
+ * @details Positive where the disc is certainly never within the upper
+ * neighbour, negative where it is certainly within the double itself, the
+ * filter answering every step but those next to the answer, and otherwise
+ * the sign of the gap at the midpoint, read by
+ * #point_motion_gap_sign_filter and else exactly
+ */
+static int
+point_motion_offset_side(uint64 bits, void *arg)
+{
+  PointMotionOffsetSide *ps = (PointMotionOffsetSide *) arg;
+  double cc, nn;
+  uint64 b2 = bits + 1;
+  memcpy(&cc, &bits, sizeof(cc));
+  memcpy(&nn, &b2, sizeof(nn));
+  if (! isinf(nn) && point_motion_dwithin_ever_filter(ps->c1, ps->c2, ps->p,
+      ps->ndims, ps->r1, ps->r2, nn) == 0)
+    return 1;
+  if (point_motion_dwithin_ever_filter(ps->c1, ps->c2, ps->p, ps->ndims,
+      ps->r1, ps->r2, cc) == 1)
+    return -1;
+  double hh = isinf(nn) ? ldexp(1.0, 970) : (nn - cc) / 2.0;
+  int s = point_motion_gap_sign_filter(ps->c1, ps->c2, ps->p, ps->ndims,
+    ps->r1, ps->r2, cc, hh);
+  if (s == 2)
+  {
+    if (! ps->gapset)
+    {
+      point_motion_gap_init(&ps->gap, ps->c1, ps->c2, ps->p, ps->ndims,
+        ps->r1, ps->r2);
+      ps->gapset = true;
+    }
+    s = point_motion_gap_sign_at(&ps->gap, cc, hh);
+  }
+  return s;
+}
+
 /**
  * @brief Return the least distance of a disc moving linearly to a point, less
  * the radius, the double nearest its exact value, or 0 where the disc reaches
@@ -6850,105 +6848,22 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
   double c = point_motion_offset_estimate(c1, c2, p, ndims, r1, r2);
   uint64_t bits;
   memcpy(&bits, &c, sizeof(bits));
-  /* The exact parts of the quadratic, set at the first side the filters of
-   * #point_motion_gap_sign_filter leave open, and freed on return */
-  PointMotionGap gap;
-  bool gapset = false;
-#define PMO_BEYOND(bb, res) \
-  do { \
-    double cc, nn; \
-    uint64_t b1 = (bb), b2 = (bb) + 1; \
-    memcpy(&cc, &b1, sizeof(cc)); \
-    memcpy(&nn, &b2, sizeof(nn)); \
-    /* Beyond where certainly never within the upper neighbour, and not \
-     * where certainly within the double itself: the filter answers every \
-     * step but those next to the answer */ \
-    if (! isinf(nn) && point_motion_dwithin_ever_filter(c1, c2, p, ndims, \
-        r1, r2, nn) == 0) \
-    { \
-      (res) = true; \
-      break; \
-    } \
-    if (point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, cc) == 1) \
-    { \
-      (res) = false; \
-      break; \
-    } \
-    double hh = isinf(nn) ? ldexp(1.0, 970) : (nn - cc) / 2.0; \
-    int s = point_motion_gap_sign_filter(c1, c2, p, ndims, r1, r2, cc, hh); \
-    if (s == 2) \
-    { \
-      if (! gapset) \
-      { \
-        point_motion_gap_init(&gap, c1, c2, p, ndims, r1, r2); \
-        gapset = true; \
-      } \
-      s = point_motion_gap_sign_at(&gap, cc, hh); \
-    } \
-    (res) = s > 0 || (s == 0 && (b1 & 1) != 0); \
-  } while (0)
-  uint64_t lo, hi;
-  bool beyond;
-  PMO_BEYOND(bits, beyond);
-  if (beyond)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    uint64_t step = 1;
-    lo = bits;
-    const uint64_t inf_bits = 0x7FF0000000000000ULL;
-    while (true)
-    {
-      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
-      if (hi == inf_bits)
-        break;
-      PMO_BEYOND(hi, beyond);
-      if (! beyond)
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    uint64_t step = 1;
-    hi = bits;
-    while (true)
-    {
-      if (hi == 0)
-      {
-        if (gapset)
-          point_motion_gap_free(&gap);
-        return 0.0;
-      }
-      lo = (hi > step) ? hi - step : 0;
-      PMO_BEYOND(lo, beyond);
-      if (beyond)
-        break;
-      hi = lo;
-      if (lo == 0)
-      {
-        if (gapset)
-          point_motion_gap_free(&gap);
-        return 0.0;
-      }
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    PMO_BEYOND(mid, beyond);
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef PMO_BEYOND
-  if (gapset)
-    point_motion_gap_free(&gap);
+  /* The one search for the nearest double (#nearest_double_search) */
+  PointMotionOffsetSide side;
+  memset(&side, 0, sizeof(side));
+  side.c1 = c1;
+  side.c2 = c2;
+  side.p = p;
+  side.ndims = ndims;
+  side.r1 = r1;
+  side.r2 = r2;
+  uint64 found = 0;
+  (void) nearest_double_search(bits, &point_motion_offset_side, &side, 0,
+    &found);
+  if (side.gapset)
+    point_motion_gap_free(&side.gap);
   double result;
-  memcpy(&result, &hi, sizeof(result));
+  memcpy(&result, &found, sizeof(result));
   return result;
 }
 
@@ -9190,6 +9105,55 @@ segment_interior_certify_pairs(const SegmentPairs *pv, double f, double g,
   return false;
 }
 
+/* The values the distance of the interiors of two segments is read against
+ * a midpoint with, for #segment_interior_side */
+typedef struct
+{
+  const SegmentPairs *pv;   /**< Evaluation in pairs of doubles */
+  ExactSum *sums;           /**< Exact sums, the sum SI_M written per side */
+  const PolyTerm *terms;    /**< Terms of (e . n)^2 - m^2 (n . n) */
+  int nt;                   /**< Number of terms */
+  int k;                    /**< Exponent of the scaling of the sums */
+  double f1, f2;            /**< Factors of that scaling */
+  double pscale;            /**< Scale of the values of the pairs */
+} SegmentInteriorSide;
+
+/**
+ * @brief Return the sign of the distance of the interiors of two segments
+ * against the upper midpoint of the double of bit pattern @p bits, or 2
+ * where a candidate or a half gap scaled below 2^-179 leaves a product of
+ * six outside the doubles: the side #segment_interior_distance gives
+ * #nearest_double_search
+ * @details The evaluation in pairs of doubles first, which tells every
+ * midpoint clear of the distance by more than its bound, then
+ * #polynomial_sign_exact
+ */
+static int
+segment_interior_side(uint64 bits, void *arg)
+{
+  SegmentInteriorSide *si = (SegmentInteriorSide *) arg;
+  double cc, nx;
+  uint64 b2 = bits + 1;
+  memcpy(&cc, &bits, sizeof(cc));
+  memcpy(&nx, &b2, sizeof(nx));
+  if ((cc != 0.0 && double_lowest_set_bit(cc) + si->k < -179) ||
+      (! isinf(nx) && double_lowest_set_bit(nx - cc) - 1 + si->k < -179))
+    return 2;
+  double hh = isinf(nx) ? ldexp(1.0, 970 + si->k) :
+    (nx - cc) * si->f1 * si->f2 / 2.0;
+  double hp = isinf(nx) ? ldexp(1.0, 970) * si->pscale :
+    (nx - cc) / 2.0 * si->pscale;
+  int sign = segment_interior_mid_sign(si->pv->en, si->pv->nn,
+    cc * si->pscale, hp);
+  if (sign == 0)
+  {
+    const double mt[2] = {cc * si->f1 * si->f2, hh};
+    exact_sum_set(&si->sums[SI_M], mt, 2);
+    sign = polynomial_sign_exact(si->sums, si->terms, si->nt);
+  }
+  return sign;
+}
+
 /**
  * @brief Return true where the nearest points of two segments in 3D lie
  * inside both, setting in @p result the double nearest their distance
@@ -9457,94 +9421,17 @@ segment_interior_distance(const double *a, const double *b, const double *c,
   uint64_t bits;
   memcpy(&bits, &cand, sizeof(bits));
 
-  /* The answer is the smallest bit pattern that is not beyond: gallop from the
-   * candidate to bracket it, then halve the bracket. A candidate or a half
-   * gap scaled below 2^-179 leaves a product of six outside the doubles, and
-   * the values are then read on #DyadicWide */
-  bool wide = false;
-#define SI_BEYOND(bb, res) \
-  do { \
-    double cc, nx; \
-    uint64_t b1 = (bb), b2 = (bb) + 1; \
-    memcpy(&cc, &b1, sizeof(cc)); \
-    memcpy(&nx, &b2, sizeof(nx)); \
-    if ((cc != 0.0 && double_lowest_set_bit(cc) + k < -179) || \
-        (! isinf(nx) && double_lowest_set_bit(nx - cc) - 1 + k < -179)) \
-    { \
-      wide = true; \
-      (res) = false; \
-      break; \
-    } \
-    double hh = isinf(nx) ? ldexp(1.0, 970 + k) : (nx - cc) * f1 * f2 / 2.0; \
-    /* The evaluation in pairs of doubles first, which tells every midpoint \
-     * clear of the distance by more than its bound */ \
-    double hp = isinf(nx) ? ldexp(1.0, 970) * pscale : \
-      (nx - cc) / 2.0 * pscale; \
-    int sign = segment_interior_mid_sign(pv.en, pv.nn, cc * pscale, hp); \
-    if (sign == 0) \
-    { \
-      const double mt[2] = {cc * f1 * f2, hh}; \
-      exact_sum_set(&sums[SI_M], mt, 2); \
-      sign = polynomial_sign_exact(sums, terms, nt); \
-    } \
-    (res) = sign > 0 || (sign == 0 && (b1 & 1) != 0); \
-  } while (0)
-  uint64_t lo, hi;
-  bool beyond;
-  SI_BEYOND(bits, beyond);
-  if (beyond)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    uint64_t step = 1;
-    lo = bits;
-    const uint64_t inf_bits = 0x7FF0000000000000ULL;
-    while (! wide)
-    {
-      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
-      if (hi == inf_bits)
-        break;
-      SI_BEYOND(hi, beyond);
-      if (! beyond)
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    uint64_t step = 1;
-    hi = bits;
-    lo = 0;
-    while (! wide && hi > 0)
-    {
-      lo = (hi > step) ? hi - step : 0;
-      SI_BEYOND(lo, beyond);
-      if (beyond)
-        break;
-      hi = lo;
-      step *= 2;
-    }
-    if (! wide && hi == 0)
-    {
-      *result = 0.0;
-      return true;
-    }
-  }
-  /* lo is beyond, hi is not, and the answer is the least not beyond */
-  while (! wide && hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    SI_BEYOND(mid, beyond);
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef SI_BEYOND
-  if (wide)
+  /* The answer is the smallest bit pattern whose upper midpoint the distance
+   * does not pass, found by the one search for the nearest double
+   * (#nearest_double_search); a candidate or a half gap scaled below 2^-179
+   * leaves a product of six outside the doubles, and the values are then
+   * read on #DyadicWide */
+  SegmentInteriorSide side = {&pv, sums, terms, nt, k, f1, f2, pscale};
+  uint64 found = 0;
+  if (! nearest_double_search(bits, &segment_interior_side, &side, 0,
+      &found))
     return segment_interior_wide(a, b, c, d, result);
-  memcpy(result, &hi, sizeof(double));
+  memcpy(result, &found, sizeof(double));
   return true;
 }
 

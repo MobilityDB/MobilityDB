@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.3.0 |
-| Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates, relationships and areas |
-| Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/test/distance_point_test.c` and `meos/test/geo_test.c` (the witnesses quoted below) |
+| Version | v0.4.0 |
+| Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates, relationships, areas and buffers |
+| Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/src/geo/geo_buffer.c` and `meos/src/geo/geo_arrange.c` (the buffer and the arrangement it is read off), `meos/test/distance_point_test.c`, `meos/test/geo_test.c` and `mobilitydb/test/geo/sql/049_geo_funcs.sql` (the witnesses quoted below) |
 
 ## 1. Scope and intent
 
@@ -135,7 +135,7 @@ them the ray crossing of a point in a polygon (`dist_poly_seg_raycross`), the
 closest point on an arc (`dist_geom_closest_on_arc`) and the turning points of
 the distance of a moving point (`tgeogpointsegm_distance_turnpt`). Their answers
 are not covered by this document's guarantee. The answers this document
-states are the ones the CGAL judges check (section 9).
+states are the ones the CGAL judges check (section 10).
 
 ## 4. How the engine reaches an exact answer
 
@@ -313,6 +313,14 @@ with no tolerance therefore needs the arrangement of the two geometries, whose
 vertices are held exactly and never located by a rounded coordinate, and the
 relationship of two areal operands read off that arrangement.
 
+A collection of areal members, such as a multipolygon or the multisurface a
+buffer answers, is read as the union of its members. An edge of one member is
+cut only where an edge of another member meets it: the boundary of one member
+meets itself only at the vertices its rings share, where its edges already
+end, so two adjacent edges of one member, an arc and the segment it turns into
+included, cut nothing. A point lying in one member therefore lies in the union
+whatever the other members are.
+
 The temporal relationships inherit this: at an instant they read the same
 engine.
 
@@ -344,7 +352,7 @@ a sum in doubles, as GEOS 3.14's `GEOSArea` computes it:
 | a square of side `1.5e154`, an area beyond `DBL_MAX` | raises `value out of range` | infinity |
 
 How often a sum in doubles differs from the nearest double, judged by CGAL
-(section 9) on three sets of geometries; `geom_area` answers the nearest double
+(section 10) on three sets of geometries; `geom_area` answers the nearest double
 on every one of their rows:
 
 | geometries | a sum in doubles differs on | by |
@@ -408,7 +416,123 @@ integer, where the sum in doubles of GEOS takes about 13, and a
 ring whose coordinates span more than 4 binades, as degrees across an axis do,
 takes the compensated sum.
 
-## 8. What lies outside
+## 8. Buffers
+
+### 8.1 The answer
+
+The buffer of a geometry at a distance `r` is the set of the points whose
+distance to the geometry is at most `r`. A negative distance asks for the
+erosion of an areal geometry: the points it holds that lie at least `r` from
+its boundary. In MobilityDB, `buffer(geometry, float)` answers both; in MEOS,
+`geom_buffer`.
+
+The engine reads the buffer off the exact arrangement of the offset curves of
+the geometry, for the inputs and styles below; the answer keeps its circular
+arcs as arcs (a `CURVEPOLYGON`, or a `MULTISURFACE` of them).
+
+| Input | Distance | Style | Answer |
+|---|---|---|---|
+| polygon, multipolygon | positive | round joins | the region the offset curves wind around at least once |
+| line, multiline | positive | round joins and round caps | the same, each line walked out to its end and back |
+| polygon, multipolygon | negative | round joins | the region the offset curves of the complement wind around clockwise |
+
+Round joins and round caps are the default style.
+
+**Each piece of the curves is fixed by the input and the distance.** The offset
+of an edge is the segment between the points where the common tangent of the
+circles of radius `r` about its two ends touches them, and the join at a vertex
+is the arc of the circle about that vertex. No point of the curves is
+constructed and then asked about: every crossing of two pieces is decided by
+the arrangement from the doubles that define them, and only the vertices of
+the answer are rounded, each once.
+
+**The region is decided by the winding number.** The curves wind around a
+point as many times as the parts of the geometry within the distance of it,
+less the holes lying within that distance whole, so the buffer is the set of
+points they wind around at least once, however the offsets of a narrow or
+self-touching geometry cross; the buffers of the polygons of a multipolygon,
+and of the lines of a multiline, are united in the one arrangement. A hole
+whose smallest enclosing circle is no larger than `r` lies within the
+distance of its own ring and is covered whole, the radius of that circle
+compared with `r` exactly from the points that define it.
+
+**The erosion is what the buffer of the complement leaves.** The exterior of
+every polygon is offset clockwise into it and every hole counterclockwise out
+of it; the unbounded part of the complement adds one to the winding number
+everywhere, so the erosion is the set of points the curves wind around
+clockwise at least once. That holds however a grown hole meets the contracted
+exterior: inside it, around it, or crossing it. A polygon whose smallest
+enclosing circle is no larger than `r` holds no point of its erosion.
+
+**Where the arrangement leaves a question open**, the buffer of a polygon is
+built on the older path, whose answers read the tolerances of section 3 and
+are outside this document's guarantee; the buffer of a line is declined, since
+no other path answers it exactly; the erosion of a polygon holding a ring that
+encloses no area is built on the older path.
+
+**The rings of a line's buffer carry a certificate.** The rings are written in
+doubles, and the written end of every offset segment must lie strictly on the
+side of the edge it offsets: where the distance falls below the rounding of
+the coordinates, an end rounds onto the edge or across it, and the buffer is
+declined rather than answered. The rings of a polygon's buffer are written
+with no such certificate.
+
+### 8.2 Witnesses
+
+| Query | Answer | Why |
+|---|---|---|
+| the area of the square of side 10 buffered by 1 | `143.141593` | `140 + pi`, the four corners being quarter circles read as arcs |
+| that square with the hole from 4 to 6, buffered by 1 | `143.141593` | the hole is as wide as twice the distance and closes |
+| the square of side 10 with the hole from 3.75 to 6.25, eroded by 2 | four surfaces; `(2.1 2.1)` in it, `(2.1 5)` not | the grown hole reaches 1.75 from the sides, past the contracted exterior at 2, and leaves its four corners, which lie `1.75 sqrt(2)` from the hole's corners |
+| the line from `(2^40, 2^40)` to the corners of a unit square, buffered by `sqrt(1/2)` | holds `(2^39, 2^39)`, not the point 1024 above it | the exact distances decide both, at coordinates near `1e12` |
+| the same line from `(2^60, 2^60)` | declined | the coordinates round by 256, more than the distance |
+| a multipolygon of two polygons buffered by `316.42868675352696`, a point within the distance of the first | in the buffer | the answer is two curve polygons, and the point is located in the union of section 6.3 |
+
+### 8.3 What CGAL measured
+
+A buffer is judged as the set it is (section 10): a point lies in it exactly
+where its distance to the geometry is at most the radius, and in an erosion
+exactly where it lies inside the geometry at least the radius from its
+boundary. Each query point stands clear of the boundary by a factor of two, at
+half and at twice its distance, so no verdict rests on a rounding.
+
+| Buffers | Queries | CGAL agrees with |
+|---|---|---|
+| polygons with round joins | sharp shapes and 1313 points about natural areas | 3979820 of 3979820 and 1313 of 1313 |
+| polygons with round joins, points about multipolygons | 15402 points about 192 natural-area multipolygons | 15402 of 15402 |
+| lines with round joins and caps | 36960 straight queries; 336 lines with a first vertex from `2^20` to `2^60`; 1576 queries along vessel tracks | 36960 of 36960; 274 answered, 62 declined; 1530 answered, 11 declined, 35 past 60 s |
+| erosions | 62800 points about 400 eroded squares and squares with holes; 12366 points about 192 natural areas | 62800 of 62800 and 12366 of 12366, with no decline |
+
+Every query a line's certificate declines has a distance below the rounding of
+its coordinates, at most 0.32 of an ulp; answered instead, five of them are
+wrong.
+
+### 8.4 Its cost
+
+Against GEOS called directly, in the kernel speed of section 7.3 (above `1`
+MEOS is faster):
+
+| Buffers | Distance 1 | Distance 50 | Distance 500 |
+|---|---|---|---|
+| polygons of natural areas | 1.05 | 1.11 | 1.76 |
+| lines | 1.57 | 3.52 | 2.22 |
+
+The joins of polygons read 1.34.
+
+### 8.5 Measuring a buffer
+
+A buffer with round joins holds circular arcs, and its area is `140 + pi` only
+where the arcs are read as arcs. `area` measures the circular segment each arc
+encloses, in doubles (section 7.1); a measure that first replaces each arc
+with chords answers a smaller
+area, and a buffer far smaller than its coordinates, where the chords leave
+the arcs furthest in proportion, reads off its closed form. On the eroded
+squares of the ledger at the scales `2^-24` and `2^-27`, 48 areas measured on
+chords miss the closed form by up to 2.6%; measured by `area`, none of the
+1400 closed-form areas does, the largest relative difference being
+`1.34e-12`.
+
+## 9. What lies outside
 
 - **Geodetic distances.** A distance on the spheroid is not a rational of the
   coordinates; MEOS computes it by iteration, accurate to the iteration and
@@ -423,8 +547,13 @@ takes the compensated sum.
 - **Values that are not finite.** NaN and infinity are not numbers MEOS holds
   (see [Finite Values](meos-finite-values.md)); the exact answer is defined
   for finite doubles.
+- **Buffers in other styles and of other inputs.** Bevel and mitre joins,
+  square and flat caps, a geometry holding circular arcs, a point, and a
+  collection of mixed dimension are buffered on the older path, as is a
+  polygon whose arrangement leaves a question open (section 8.1); their
+  answers are outside this document's guarantee.
 
-## 9. How the answers are checked
+## 10. How the answers are checked
 
 The reference for every exact answer of the engine is CGAL, an independent
 library of exact geometry, computing on the same doubles in exact rational
@@ -433,3 +562,12 @@ exact answer, and refuses the same answer moved by one ulp, so it tells a
 correct double from its neighbour. The witnesses of the tables above are tests
 of the tree (`meos/test/distance_point_test.c`): each expected value is a
 constant the CGAL judge accepts, never the result of a formula.
+
+A buffer is judged without building one: whether a point lies within a
+distance of a geometry is a comparison of the squared distance from the point
+to each segment, a rational of the doubles, with the squared distance, which
+CGAL decides in exact rationals; for an erosion, whether the point lies inside
+the geometry is decided by the exact parity of the edges a ray crosses. Each
+judge is run with two controls: the verdict read in doubles, which stands a
+factor of two clear of the boundary and must be accepted, and the same verdict
+with every ninth answer flipped, which must be refused on exactly those lines.
