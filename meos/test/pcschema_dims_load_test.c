@@ -287,6 +287,33 @@ main(void)
   check(meos_pc_schema_ndims(94) == -1, "and no schema answers for that pcid");
   meos_errno_reset();
 
+  /* A compression is read in any case among the names of the library, and
+   * any other name is refused rather than read as none, as the dimensions
+   * the library refuses are above */
+  static const struct { const char *name; const char *reads; } comps[] = {
+    { "none", "none" }, { "NONE", "none" }, { "None", "none" },
+    { "dimensional", "dimensional" }, { "DIMENSIONAL", "dimensional" },
+    { "laz", "laz" }, { "LAZ", "laz" },
+    { "lazperf", NULL }, { "zlib", NULL }, { "ght", NULL }, { "", NULL },
+    { "dim", NULL }
+  };
+  for (size_t i = 0; i < sizeof(comps) / sizeof(comps[0]); i++)
+  {
+    uint32_t pcid = 200 + (uint32_t) i;
+    meos_errno_reset();
+    bool ok = meos_pc_schema_register_dims(pcid, 4326, comps[i].name, dims, 3);
+    const char *got = ok ? meos_pc_schema_compression(pcid) : NULL;
+    bool answered = comps[i].reads ?
+      (ok && got && strcmp(got, comps[i].reads) == 0) :
+      (! ok && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE &&
+        meos_pc_schema_ndims(pcid) == -1);
+    printf("compression '%s': %s\n", comps[i].name,
+      got ? got : "refused");
+    check(answered, comps[i].reads ? "a name of the library is read" :
+      "another name is refused");
+  }
+  meos_errno_reset();
+
   printf("%s: %d field(s) disagree\n", failures ? "FAILED" : "PASSED",
     failures);
   meos_finalize();
