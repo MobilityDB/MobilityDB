@@ -470,11 +470,12 @@ layer holds it for every question. The phases, each a series of pull requests:
    step after. A turn past pi is read on the unwrapped angle the interpolation
    computes. A 3D pose follows apart: SLERP's parameter is transcendental, so its rotation keeps a
    band sized to the rounding of the constructed value (EXACT-POSE.md P2), not a fixed 1e-6.
-4. **One arithmetic (EA1, EA4 to EA8, EA10).** One ladder, one pair type, one wide number, one
+4. **One arithmetic (EA1, EA4 to EA8, EA10, EA11).** One ladder, one pair type, one wide number, one
    search, every sign with every tier; then one arc model and one time model, each merge after a
    differential; then the double nearest a transcendental value (EA8), read by the one search;
-   then the roots of a sum of terms `(a + b t) cos(c + d t)` isolated exactly (EA10, the shared
-   layer's step that EXACT-POSE.md P3 reads), on EA6's search and EA8's sine and cosine, its
+   then the roots of a sum of terms `(a + b t) cos(c + d t)` isolated exactly (EA11, the shared
+   layer's step that the root finder of the rigid geometry distance reads), on EA6's search and
+   EA8's sine and cosine, its
    witness stated with the step.
 5. **The arithmetic in its own file (EA3)**, moved in the shape the merges give it, so that each
    function moves once. The signs on coordinates shifted by multiples of 360 (EA9, #3577, merged) come
@@ -980,6 +981,25 @@ judges every sign, 192 of 192 real rows and 2871 of 2871 polygon rows of the are
 sum about the origin decides 4269: rings joining vertices within 1e-150 of the origin to vertices
 at units, at 1e150 or near the largest double cancel to an exact zero about the first vertex or
 overflow their differences, and the expansion or `DyadicWide` decides them.
+
+### EA11. The roots of a sum of terms with sines and cosines
+
+The distance of two rigid geometries in linear motion is a function of the family of
+`trgeo_distsolve.c`, a sum of terms `(a2 t^2 + a1 t + a0) cos(w t) + (b2 t^2 + b1 t + b0) sin(w t)`
+with coefficients in doubles computed from the sines and cosines of the angles of the poses. Its
+root finder isolates each root with a proof where the function stays above its tolerance, and reads
+a value within `ftol`, `1e-14` times the square of the scale of the bodies, as zero, so a body that
+turns past a geometry within about 1e-15 is read as meeting it. EA11 decides that case exactly: a
+candidate contact is a sign of the least distance of the operands placed by the exact poses, read
+where the function's derivative changes sign, the sines and cosines of the angles in radians
+enclosed as EA8 encloses those of degrees, and the placement in the tiers of the one ladder. A gap
+the enclosure proves positive is no contact, an overlap it proves is one, and a gap of exactly zero,
+which no enclosure proves, keeps master's answer. The bounded doubles of tier 0 prove none of the
+12 measured gaps, their bound on a placed coordinate being 0.95e-15 to 1.64e-15 against gaps of
+7.8e-16 to 9.2e-16 (`~/cpwork/tg19/bd_reach.py`). It comes first, ahead of EA1 to EA10, by the
+owner's ruling of 2026-11-19 ("bugs are high priority"), since master answers 8 of the 12 wrongly;
+its witness is 5 rows of `173_trgeo_distance_walk` and the 18 passes of `graze2d.py`, judged at 50
+digits.
 
 ## 8. Decisions asked of the committers
 
