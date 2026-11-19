@@ -181,7 +181,7 @@ ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * value states and the one the schema of its pcid states
  * @details A TPCBox states its reference system at two levels: the SRID the
  * value carries and the schema its pcid names, read with
- * #meos_pc_schema_srid as #tpcbox_set_srid reads it. A level reading
+ * #meos_pc_schema_srid as #tpcbox_pcid_srid reads it. A level reading
  * `SRID_UNKNOWN` states nothing, so either level alone carries the answer
  * and the schema is preferred where it speaks; two levels stating different
  * systems is a value contradicting itself, which is an error rather than a
@@ -1180,41 +1180,6 @@ tpcbox_round(const TPCBox *box, int maxdd)
       result->zmax = float8_round(box->zmax, maxdd);
     }
   }
-  return result;
-}
-
-/**
- * @ingroup meos_pointcloud_box_transf
- * @brief Return a tpcbox stating a reference system its schema does not state
- * @details The schema a pcid names is what holds the reference system, so
- * where that schema states one it is not the caller's to set and the box is
- * refused. A pcid of 0 names no schema and a schema may state none, and there
- * the box itself is the only level there is. Coordinates are not transformed
- * either way; to reproject, project the underlying tpcpoint and take its box.
- * The invalid SRID is refused and any other SRID is clamped as #geo_set_srid
- * clamps it.
- * @csqlfn #Tpcbox_set_srid()
- */
-TPCBox *
-tpcbox_set_srid(const TPCBox *box, int32_t srid)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPCBOX(box, NULL);
-  if (! ensure_srid_valid(srid))
-    return NULL;
-  if (box->pcid != 0)
-  {
-    int32_t schema_srid = meos_pc_schema_srid(box->pcid);
-    if (schema_srid != SRID_INVALID && schema_srid != SRID_UNKNOWN)
-    {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The SRID of a TPCBox is the one its schema states: pcid %u states "
-        "SRID %d", box->pcid, schema_srid);
-      return NULL;
-    }
-  }
-  TPCBox *result = tpcbox_copy(box);
-  result->srid = clamp_srid(srid);
   return result;
 }
 
