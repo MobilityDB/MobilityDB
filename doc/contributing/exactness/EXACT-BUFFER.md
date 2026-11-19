@@ -195,6 +195,12 @@ items).
   buffer of a multipolygon of two polygons. CGAL agrees with 15402 of 15402 points about the 192
   natural-area multipolygons, master with 15394; every relationship speed cell at parity. It is
   master's engine; step 16 replaces it.
+- **Step 22** is MobilityDB #3831 (draft, its first commit #3829's): the erosion of a polygon or a
+  multipolygon with round joins is the region the exact offset curves of the complement's parts
+  wind around clockwise (`buffer_round_erosion`), read with a sense the caller fixes
+  (`arrange_wound_tangent_surfaces_signed`). CGAL agrees with 62800 of 62800 erosion queries of the
+  ledger and 12366 of 12366 of the 192 natural areas, with no decline, where #3817's head declines
+  1120 and 8920; every buffer speed cell at parity.
 - **Step 20** is branch `geo/buffer-exact-mitre-bevel` at `07a8b90b61`, blocked on speed as its
   row states. **Step 16** is branch `fix/relate-areas-on-the-noded-arrangement` at `236793af75`,
   one commit on master `d043de2e04`. Neither is on GitHub.
