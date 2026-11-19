@@ -110,11 +110,11 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   coordinates, whose differences carry about 43 bits. The owner accepts that cost for the merge
   (2026-11-18, "then please explain all this in the body of the PR so we can merge it"), with no
   hardware fused multiply-add. It closes the last open topic of MobilityDB #3352.
-- **The specification states the buffer**: MobilityDB #3843 (draft) gives
+- **The specification states the buffer**: MobilityDB #3843, merged as `eb44541013`, gives
   `doc/specs/meos-exact-geometry.md` (v0.4.0) a section on the buffers the engine reads off the
   exact arrangement (polygons and erosions with round joins, lines with round joins and caps), their
   witnesses, what CGAL measured and their kernel speed, how a buffer's area is measured (arcs as
   arcs: the 48 closed-form deviations of chords at `2^-24` and `2^-27` are the measure, not the
   buffer), the union a relationship reads for a collection, and the buffers left on the older path.
-  It stays a draft while steps 19 to 24 of [Exact buffer](EXACT-BUFFER.md) are open.
-- **Open pull requests** of this plan on 2026-11-19: this one, MobilityDB #3841 and #3843.
+  Each later step of [Exact buffer](EXACT-BUFFER.md) states its buffers there in its own commit.
+- **Open pull requests** of this plan on 2026-11-19: this one and MobilityDB #3841.
