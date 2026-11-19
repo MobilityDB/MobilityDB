@@ -18,7 +18,7 @@ tests, CI, docs, and the `h3_postgis/` tree are not — mirroring the
 tools/codegen/h3pg_import/
 ├── README.md            this file
 ├── extract.py           the transformer
-├── ruleset.yaml         PG-macro → MEOS-helper rules
+├── ruleset.yaml         PG-macro → MEOS-helper rules, briefs of uncommented functions
 ├── opt-out.yaml         functions we implement by hand (h3_adapter.c)
 └── extraction_report.txt (generated) last run's per-function status
 ```
@@ -72,9 +72,18 @@ is usually a minute of work.
 
 - **No hand-editing of `h3_generated.{c,h}`.** The files start with a
   "GENERATED — DO NOT EDIT" banner; any manual edit is clobbered on
-  the next run. CI should run `extract.py --check` and fail the
-  build if the committed files don't match what the script would
-  currently emit.
+  the next run. The `h3pg_import_check` job of `check-code.yml` runs
+  `extract.py --check`, which fails when the committed files or the
+  extraction report differ from what the script emits.
+- **Every generated function carries a Doxygen comment in MEOS form.**
+  Its `@brief` is the first paragraph of the h3-pg comment, with the
+  leading verb in MEOS form (`Returns` becomes `Return`, `Determines if`
+  becomes `Return true if`) and no final period; the other paragraphs
+  become its `@details`, and its `@note` names the h3-pg source. A
+  function h3-pg leaves without a comment takes its brief from the
+  `briefs:` section of `ruleset.yaml`. The script refuses to run when
+  such a brief is missing, or when the section names a function that
+  is not generated or that h3-pg comments.
 - **No hand-editing of `h3-pg/`.** Only the binding sources are
   vendored — `h3/src/binding/*.c` (what `extract.py` reads), `LICENSE`,
   and `H3PG_REVISION` — each byte-identical to upstream. Mirroring the
