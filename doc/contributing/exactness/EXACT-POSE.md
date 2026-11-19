@@ -56,7 +56,8 @@ tolerances beside an exact sign that the consolidation removes, and it belongs w
 The walk of the distance of the temporal rigid geometries holds the same tolerance in
 `motion_omega` (`trgeo_distwalk.c`): a body turning by 5e-7 radians, 1000 units from its rotation
 center, is walked at its start angle, a temporal distance of 5e-05 where the body valueAtTimestamp
-places meets the point. MobilityDB #3852 turns it wherever its two angles differ.
+places meets the point. MobilityDB #3852, merged as `44db671e85` (2026-11-19), turns it wherever
+its two angles differ.
 
 ### P2. A composed joint is a constructed point
 
