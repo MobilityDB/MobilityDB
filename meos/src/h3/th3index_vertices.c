@@ -49,6 +49,7 @@
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
+#include "h3/h3index.h"
 #include "h3/th3index_internal.h"
 
 /*****************************************************************************
@@ -62,11 +63,8 @@ GSERIALIZED *
 h3_vertex_to_gs_point(H3Index vertex)
 {
   LatLng ll;
-  if (vertexToLatLng(vertex, &ll) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(vertexToLatLng(vertex, &ll)))
     return NULL;
-  }
   return geopoint_make(radsToDegs(ll.lng), radsToDegs(ll.lat), 0.0,
     false, true, SRID_DEFAULT);
 }

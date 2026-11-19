@@ -122,7 +122,7 @@ SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 12)) = 49;
 /* Errors */
 -- childRes coarser than cellRes
 SELECT cellToChildren(h3index '8a2a1072b59ffff', 5);
-ERROR:  h3_cell_to_children: cellToChildrenSize failed (child resolution coarser than cell resolution?)
+ERROR:  H3 error 4: Resolution argument was outside of acceptable range
 -------------------------------------------------------------------------------
 -- cellToCover / coverCells
 -------------------------------------------------------------------------------

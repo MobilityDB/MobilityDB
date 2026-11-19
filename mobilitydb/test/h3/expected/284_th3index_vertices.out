@@ -52,7 +52,7 @@ SELECT th3CellToVertex(th3index '880326b885fffff@2001-01-01', 0)
 -- Out-of-range vertex number must error
 /* Errors */
 SELECT th3CellToVertex(th3index '880326b885fffff@2001-01-01', 9);
-ERROR:  h3 library error
+ERROR:  H3 error 2: Argument was outside of acceptable range
 -------------------------------------------------------------------------------
 -- isValidVertex
 -------------------------------------------------------------------------------
